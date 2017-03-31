@@ -1,0 +1,66 @@
+ &ECPlist
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+! crystal structure filename
+ xtalname = 'undefined',
+! size of output pattern in pixels (image is always square npix x npix)
+ npix = 256,
+! half angle of cone for incident beams (degrees)
+ thetac = 5.0,
+! mask pattern or not; 'y' or 'n'
+ maskpattern = 'n',
+! monte carlo input file; path relative to EMdatapathname
+ energyfile = 'undefined',
+! master pattern input file; path relative to EMdatapathname
+ masterfile = 'undefined',
+! input file for list of angles
+ anglefile = 'undefined',
+! euler angle convention in input angle file; 'hkl' or 'tsl'
+ eulerconvention = 'hkl',
+! gamma scaling value
+ gammavalue = 1.0,
+! output format; 'gui' for IDL and 'bin' for dictionary
+ outputformat = 'gui',
+! output file ; path relative to EMdatapathname
+ datafile = 'undefined',
+! number of threads for parallel execution
+ nthreads = 1,
+! tilt of the sample; only one angle incorporated for now
+ sampletilt = 0.D0,
+! detector geometry parameters
+! working distance [in mm]
+ workingdistance = 13.0,
+! inner radius of annular detector [in mm]
+ Rin = 2.0,
+! outer radius of annular detector [in mm]
+ Rout = 6.0,
+!
+!==============================================================
+! the nml parameters only used in case of two layered structure
+! ignore them for normal ECP calculation
+!==============================================================
+! foil normal of film
+ fn_f = 0,0,1,
+! foil normal of substrate
+ fn_s = 0,0,1,
+! second (substrate) crystal structure filename
+ xtalname2 = 'undefined',
+! plane normal in Film
+ gF = 0,0,0,
+! plane normal in Substrate
+ gS = 0,0,0,
+! direction in Film
+ tF = 0,0,0,
+! direction in Substrate
+ tS = 0,0,0,
+! smallest d-spacing to take into account [nm]
+ dmin = 0.025,
+! film thickness if present  (0.0 if not present)
+ filmthickness = 0.0,
+! output file for film signal
+ filmfile = 'undefined',
+! output file for substrate signal
+ subsfile = 'undefined'
+ /

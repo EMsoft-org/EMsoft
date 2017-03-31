@@ -1,0 +1,22 @@
+\select@language {english}
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}
+\contentsline {section}{\numberline {2}How Does Dictionary-Based Indexing Work?}{3}{section.2}
+\contentsline {subsection}{\numberline {2.1}Introductory comments}{3}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Things we can do with dot-products}{4}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Uniform Sampling of Orientation Space}{4}{subsection.2.3}
+\contentsline {subsection}{\numberline {2.4}The Dictionary Indexing Approach}{6}{subsection.2.4}
+\contentsline {subsection}{\numberline {2.5}Example Input}{7}{subsection.2.5}
+\contentsline {subsection}{\numberline {2.6}OpenCL platforms and devices}{12}{subsection.2.6}
+\contentsline {section}{\numberline {3}Fitting the Detector Parameters}{14}{section.3}
+\contentsline {subsection}{\numberline {3.1}A few important notes about our detector geometry}{14}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Fitting the detector parameters}{15}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}Using the interactive IDL \textsf {Efit} virtual app}{16}{subsubsection.3.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2}Using the \textsf {EMDPfit} program}{18}{subsubsection.3.2.2}
+\contentsline {subsection}{\numberline {3.3}Theoretical Framework}{19}{subsection.3.3}
+\contentsline {subsection}{\numberline {3.4}Example script}{19}{subsection.3.4}
+\contentsline {section}{\numberline {4}Example Dictionary Runs for a Ni data set}{23}{section.4}
+\contentsline {subsection}{\numberline {4.1}Getting the EBSD data in the correct format}{23}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Fitting the detector parameters}{23}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Executing the indexing run}{23}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Interpreting the indexing output}{23}{subsection.4.4}
+\contentsline {section}{\numberline {5}Availability of Example Data Files}{23}{section.5}

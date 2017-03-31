@@ -1,0 +1,187 @@
+\documentclass[11pt]{amsart}
+\usepackage{geometry}                % See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   % ... or a4paper or a5paper or ... 
+%\geometry{landscape}                % Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    % Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+
+\textwidth=6.5in
+\textheight=9.0in
+\oddsidemargin=0.0in
+\evensidemargin=0.0in
+\topmargin=-0.5in
+
+\title{Building DREAM.3D with EMsoft support on Mac OS X}
+\author{Marc De Graef}
+\date{\today}                                           % Activate to display a given date or no date
+
+\newcommand{\ems}{\textsf{EMsoft}}
+\newcommand{\emsb}{\textsf{Workspace/EMsoftBuild}}
+\newcommand{\emsdk}{\textsf{EMsoft\_SDK}}
+\newcommand{\dtd}{\textsf{DREAM.3D}}
+\newcommand{\dtdsdk}{\textsf{DREAM3D\_SDK}}
+\newcommand{\emtb}{\textsf{EMsoftToolbox}}
+\newcommand{\ws}{\textsf{Workspace}}
+\newcommand{\wsesh}{\textsf{Workspace/EMsoft/Support/SDK\_Build\_Scripts}}
+
+\renewcommand{\baselinestretch}{1.3}
+
+\begin{document}
+\maketitle
+The \emtb\ contains a number of \dtd\ filters to create \ems\ input files, or to actually
+run \ems\ programs, either via system calls or via shared dynamical library calls.  To set up the development
+environment for the \emtb\ requires a number of things to be in place.  This document describes which steps to take and in 
+what order.  It is assumed that you start from scratch; in all cases you must pay attention to proper upper and lower case!
+You must have XCode, gcc, and gfortran installed; instructions for other (non-Mac) platforms may follow in  later version
+of this document.
+
+\begin{enumerate}
+\item \textit{Download the source codes}:
+\begin{enumerate}
+\item Create a folder called \ws\ somewhere in your home folder\footnote{In this document, pathnames will be relative to 
+this folder, unless stated otherwise.}; inside this folder, create a \textsf{DREAM3D\_Plugins} folder.
+\item Pull the latest source codes for \ems\ and \dtd\ into the \ws\ folder; this should create an \ems\ folder and a \textsf{DREAM3D} folder.
+\item Pull the latest source code for \emtb\ into the \textsf{DREAM3D\_Plugins} folder; this should create an \textsf{EMsoftToolbox} folder.
+\end{enumerate}
+\item \textit{Build \ems}:
+\begin{enumerate}
+\item Navigate to the \wsesh\textsf{/OSX\_Build\_Scripts} folder, edit the \textsf{SDK\_Configuration.conf} file to define 
+to location of the SDK as well as the location of the fortran compiler, and build the \ems\ Software Developer Kit (SDK) by executing the following command:
+{\small\begin{verbatim}prompt> sudo ./Build_SDK.sh
+\end{verbatim}}
+Note that you will need to have sudo access.  The scripts are currently set up so that the \emsdk\ is built in the 
+\textsf{/opt/EMsoft\_SDK} folder.  This can be changed by editing the \textsf{SDK\_Configuration.conf} file in the \wsesh\/ \textsf{/OSX\_Build\_Scripts} folder.  
+Another logical location would be the \textsf{/Users/Shared} folder.
+
+The build process will download an archive with several libraries from the BlueQuartz web site and unpack the archive; then each package will be 
+built and installed within the SDK folder.  This takes several minutes during which the following packages will be installed:
+\begin{itemize}
+\item CMake: this is the preferred build environment for this entire package;
+\item fftw3: fast Fourier transform package;
+\item fortrancl: limited fortran-90 interface to the OpenCL language;
+\item json-fortran: fortran-90 implementation of the Java Script Object Notation (json);
+\item HDF5: Hierarchical Data Format libraries; these will be built with fortran support turned on.  Ignore any compilation warnings during 
+the build of this library.
+\end{itemize}
+\item Add the following command to your \textit{.bash\_rc} file and restart your shell:
+{\small
+\begin{verbatim}
+export PATH=$PATH:/opt/EMSoft_SDK/cmake-3.4.1-Darwin-x86_64/CMake.app/Contents/bin/
+\end{verbatim}}
+Note that the version numbers (3.4.1) may change over time; use the correct numbers and the correct SDK location for your particular installation. If you use
+a different shell, e.g., \textit{csh}, then use the appropriate command to extend your path.  \textit{Make sure that there is no other CMake
+installation anywhere in your path!}  Don't forget to restart your shell.
+\item Navigate to the \textsf{Workspace} folder and create a \textsf{EMsoftBuild} subfolder; cd to the \textsf{EMsoftBuild} folder and execute the 
+following command:
+{\small
+\begin{verbatim}
+cmake -DEMsoft_SDK=/opt/EMsoft_SDK -DCMAKE_BUILD_TYPE=Debug ../EMsoft
+\end{verbatim}}
+This step will read the \textsf{/opt/EMsoft\_SDK/EMsoft\_SDK.cmake} file and initialize the proper variables to enable compilation of the project.
+Note that this step only needs to be carried out once after each update of the SDK.
+\item In the \textsf{Build} folder, execute the command
+{\small
+\begin{verbatim}
+make -j
+\end{verbatim}}
+to carry out a parallel compile of the \ems\ project.
+\end{enumerate}
+
+\item \textit{Build the \dtd\ SDK:}
+\begin{enumerate}
+\item Navigate to the \textsf{/Users/Shared} folder and create the \textsf{DREAM3D\_SDK} folder.
+\item Go to URL \textsf{http://download.qt.io/official\_releases/qt/5.5/5.5.1/} and download the 
+following file:
+{\small\begin{verbatim}
+qt-opensource-mac-x64-clang-5.5.1.dmg
+\end{verbatim}}
+Once the download is completed, double click on the .dmg icon and then on the .app file to start the installation process; \textit{make sure
+you set the installation folder to the following string:} \textsf{/Users/Shared/DREAM3D\_SDK/Qt5.5.1}.  Click on Continue and wait
+until the installation process is completed.
+\item Navigate to the \textsf{Workspace/DREAM3D/Support/Scripts/OSX\_Build\_Scripts} folder and execute the command:
+{\small
+\begin{verbatim}
+prompt> sudo ./Build_SDK.sh
+\end{verbatim}}
+This will download and unpack an archive from the BlueQuartz web site; then, the script will build and install several packages:
+\begin{itemize}
+\item CMake
+\item boost
+\item Doxygen
+\item DREAM3D\_Data
+\item Eigen
+\item HDF5
+\item InsightToolkit
+\item ITK
+\item protobuf
+\item qwt
+\item threading building blocks (tbb)
+\end{itemize}
+The build process takes a while, and you will likely see many warnings during the compilation of HDF5 which you can safely ignore.  Note that the 
+HDF5 library is built twice, once in Debug mode and once in Release mode.  In addition, this build does not enable fortran support, so it is different
+from the HDF5 build in the \emsdk; both HDF5 builds are needed to enable the integration of \ems\ and \dtd.\footnote{This is due to an issue with 
+the compilation of HDF5 on Mac OS X when fortran support is enabled; in this case, there is a bug that prevents the creation of dynamical libraries,
+which is what \dtd\ needs for its compilation.  Hence, \ems\ uses static HDF5 libraries, which are not compatible with \dtd.  This issue only occurs on 
+Mac OS X and may be resolved by the HDF-Group in the future.}
+\end{enumerate}
+
+\item \textit{Install \ems\ in the \dtdsdk\ folder:}
+\begin{enumerate}
+\item To enable compilation of \dtd\ with support for \ems\ routines, a release version of the \ems\ libraries needs to be installed inside the \dtdsdk.  
+In a Terminal window, navigate to the \emsb\ folder and execute the following command (all on one line):
+{\small\begin{verbatim}
+prompt> cmake -DCMAKE_BUILD_TYPE=Release 
+         -DCMAKE_INSTALL_PREFIX=/Users/Shared/DREAM3D_SDK/EMsoft ../EMsoft
+\end{verbatim}}
+Then recompile \ems\ with the \textsf{make -j} command, followed by \textsf{make install}.  This will install an \ems\ folder inside the \dtdsdk.
+\item To return \ems\ to debug mode for further development, execute
+{\small\begin{verbatim}
+prompt> cmake -DCMAKE_BUILD_TYPE=Debug ../
+\end{verbatim}}
+followed by \textsf{make -j} to recompile the package.
+\end{enumerate}
+
+\item \textit{Tell \dtd\ where to look for the \ems\ installation:}  
+\begin{enumerate}
+\item Navigate to the \textsf{Workspace/DREAM3D\_Plugins/EMsoftToolbox/Support/Scripts} folder and execute the following command:
+{\small\begin{verbatim}
+prompt> ./Create_EMsoftToolbox_SDK.sh  /Users/Shared/DREAM3D_SDK /opt/EMsoft_SDK
+\end{verbatim}}
+This will create an extra CMake configuration file inside the \dtdsdk\ folder which will inform \dtd\ about the whereabouts of the \ems\ libraries.
+\end{enumerate}
+
+\item \textit{Build \dtd\ with \ems\ support:}
+\begin{enumerate}
+\item In a Terminal window, go to the \ws\ folder and enter the following commands:
+{\small\begin{verbatim}
+prompt> mkdir DREAM3D-Build-Debug
+\end{verbatim}}
+{\small\begin{verbatim}
+prompt> open /Users/Shared/DREAM3D_SDK/cmake-3.4.1-Darwin-x86_64
+\end{verbatim}}
+This will open a Finder window; double click on the \textit{CMake.app} which will pop up an interactive display.  Browse to the \dtd\ source folder
+and select it (should be \textsf{/path/Workspace/DREAM3D} where \textsf{path} will depend on your home folder setup); then browse to
+the binaries folder that you just created and select it (\textsf{/path/Workspace/ DREAM3D-Build-Debug}).
+\item Click on the \textsf{Add Entry} button and enter \textsf{DREAM3D\_SDK} for the first prompt, \textsf{Path} for the second, and \textsf{/Users/Shared/DREAM3D\_SDK}
+for the third.  Accept these entries, which will pop up a line with a red background in the main Name-Value window.
+\item Click once on the \textsf{Configure} button below the main window.  Many additional entries will appear with a red background.  Next,
+look for the \textsf{DREAM3D\_EXTRA\_PLUGINS} entry and enter \textsf{EMsoftToolbox} (note upper and lower case!).  Then hit the \textsf{Configure}
+button again until no more items with a red background appear.
+\item Click on the \textsf{Generate} button; select \textit{Unix Makefiles} from the list of options and  \textit{Use default native compilers}.  
+Hit Done to start the generation process.  Then quit the CMake app.
+\item In the \textsf{DREAM3D-Build-Debug} folder, execute the command \textsf{make -j} to build \dtd; this will take quite a while, but should result in 
+a \dtd\ executable in the \textsf{Bin} subfolder that includes the \emtb\ filters.
+\end{enumerate}
+
+\end{enumerate}
+
+Further comments: As of February 2016, the source code structure of the \dtd\ package has been modified substantially. The source code is 
+now split over several code repositories.  In principle, only the \dtd\ code needs to be pulled from the GitHub repository, and the CMake 
+scripts will take care of checking out code from the other repositories, but this is only done for the initial installation.  The user needs 
+to make sure that all source code folders are regularly pulled from the respective repositories (\dtd, \textsf{SIMPL}, \textsf{SIMPLView} and \textsf{CMP}).
+Once \dtd\ has been installed, all other operations described in this manual are still valid.
+
+\end{document}  

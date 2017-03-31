@@ -1,0 +1,34 @@
+ &RFZlist
+! template file for the EMsampleRFZ program
+!
+! sampling mode; 'RFZ' standard Rodrigues FZ; 'MIS' misorientation ball sampling; 'CON' conical sampling
+samplemode = 'RFZ'
+! maximum misorientation [degrees], for 'MIS' samplemode only
+maxmisor = 5.D0,
+! Rodrigues vector (n,tan(omega/2)) for center of misorientation ball, for 'MIS' samplemode only
+rodrigues = 0.D0, 0.D0, 0.D0, 0.D0,
+! cone axis for conical sampling 
+ conevector = 0.D0, 0.D0, 1.D0,
+! cone semi-angle (in degrees)
+ semiconeangle = 2.D0,
+! point group number
+ pgnum = 32,
+! number of sampling points along cube semi-edge
+ nsteps = 100,
+! grid type: 0 contains origin, 1 is has origin at center of grid box
+ gridtype = 0,
+! euler angle output file name
+ euoutname = 'undefined',
+! cubochoric output file name
+ cuoutname = 'undefined',
+! homochoric output file name
+ hooutname = 'undefined',
+! Rodrigues output file name
+ rooutname = 'undefined',
+! quaternion output file name
+ quoutname = 'undefined',
+! orientation matrix output file name
+ omoutname = 'undefined',
+! axis angle pair output file name
+ axoutname = 'undefined'
+ /

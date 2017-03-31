@@ -1,0 +1,12 @@
+ &EMkinematical
+! smallest d-spacing to take into account [nm]
+ dmin = 0.05,
+! name of crystal structure file
+ xtalname = 'undefined',
+! name of HDF5 output file
+ datafile = 'undefined',
+! microscope accelerating voltage [kV]
+ voltage = 30., 
+! threshold value for intensity cutoff
+ thr = 1.0,
+ /

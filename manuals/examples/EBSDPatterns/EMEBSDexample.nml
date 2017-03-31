@@ -1,0 +1,44 @@
+&EBSDdata
+! template file for the EMEBSD program
+!
+! distance between scintillator and illumination point [microns]
+L = 15000.0
+! tilt angle of the camera (positive below horizontal, [degrees])
+thetac = 10.0
+! CCD pixel size on the scintillator surface [microns]
+delta = 50.0
+! number of CCD pixels along x and y
+numsx = 640
+numsy = 480
+energymin = 10.0
+energymax = 25.0
+! pattern center coordinates in units of pixels
+xpc = 0.0
+ypc = 0.0
+! name of angle file (euler angles or quaternions)
+anglefile = 'testeuler.txt'
+! 'tsl' or 'hkl' Euler angle convention parameter
+eulerconvention = 'tsl'
+! name of EBSD master output file
+masterfile = 'AL_EBSDmaster.h5'
+! name of Monte Carlo output file
+energyfile = 'Al_MCoutput.h5'
+! name of output file
+datafile = 'Al_EBSDout.h5'
+! incident beam current [nA]
+beamcurrent = 150.0
+! beam dwell time [micro s]
+dwelltime = 100.0
+! binning mode (1, 2, 4, or 8)
+binning = 1
+! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
+scalingmode = 'gam'
+! gamma correction factor
+gammavalue = 0.4
+! output format selector  'bin' for dictionaries, 'gui' for interactive mode
+outputformat = 'bin'
+! should a circular mask be applied to the data? 'y', 'n'
+maskpattern = 'n'
+! number of threads (default = 1)
+nthreads = 1
+/

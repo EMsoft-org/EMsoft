@@ -1,0 +1,32 @@
+&Kossellist
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the crystal input file MUST be specified (full pathname)
+xtalname = 'Si.xtal'
+! output goes to screen (6) or to a file (any number >10)
+stdout = 6
+! microscope accelerating voltage [V]
+voltage = 100000.
+! zone axis indices
+k = 0,0,1
+! foil normal indices
+fn = 0,0,1
+! minimum d-spacing to be taken into account [nm]
+dmin = 0.015
+! incident beam convergence angle [mrad]
+convergence = 100.0
+! output will be diffraction disks inside a square of area (2*npix+1)^2
+npix = 512
+! number of thicknes values to be used in the output
+numthick = 10
+! starting thickness value [nm]
+startthick = 20.0
+! thickness increment value [nm]
+thickinc = 20.0
+! output will be stored here (full pathname)
+outname = '/Volumes/Drive2/playarea/Kossel/Si001.data'
+! this last line must be present!
+/

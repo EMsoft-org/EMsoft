@@ -1,0 +1,100 @@
+&EBSDFulldata
+
+!===============================================================
+!=====================MATERIAL SPECIFICATION====================
+!===============================================================
+
+! name of the crystal structure file
+ xtalname = 'undefined',
+! smallest d-spacing to take into account [nm]
+ dmin = 0.04D0,
+
+!===============================================================
+!=====================INCIDENT ELECTRON BEAM====================
+!===============================================================
+
+! total number of incident electrons and multiplier for Monte Carlo
+ totnum_el = 2000000000,
+ multiplier = 1,
+! incident beam energy [keV]
+ EkeV = 30.D0,
+! minimum energy to consider [keV]
+ Ehistmin = 15.D0,
+! energy binsize [keV]
+ Ebinsize = 1.0D0,
+! maximum depth to consider for exit depth statistics [nm]
+ depthmax = 100.D0,
+! depth step size [nm]
+ depthstep = 1.0D0,
+! incident beam current [nA]
+ beamcurrent = 150.D0,
+! beam dwell time [micro s]
+ dwelltime = 100.D0,
+
+!===============================================================
+!=====================SAMPLE GEOMETRY===========================
+!===============================================================
+
+! for full mode: sample tilt angle from horizontal [degrees]
+ sig = 70.D0,
+! sample tilt angle around RD axis [degrees]
+ omega = 0.D0,
+
+!===============================================================
+!=====================DETECTOR GEOMETRY=========================
+!===============================================================
+
+! distance between scintillator and illumination point [microns]
+ L = 15000.0,
+! tilt angle of the camera (positive below horizontal, [degrees])
+ thetac = 10.0,
+! CCD pixel size on the scintillator surface [microns]
+ delta = 50.0,
+! number of CCD pixels along x and y
+ numsx = 480,
+ numsy = 480,
+! pattern center coordinates in units of pixels
+ xpc = 0.0,
+ ypc = 0.0,
+
+!===============================================================
+!======================DETECTOR SETTINGS========================
+!===============================================================
+
+! binning mode
+ binning = 1,
+! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
+ scalingmode = 'lin',
+! gamma correction factor
+ gammavalue = 0.34,
+! should a circular mask be applied to the data? 'y', 'n'
+ maskpattern = 'n',
+
+!===============================================================
+!=====================CPU AND GPU PARAMETERS====================
+!===============================================================
+
+! number of CPU threads for pattern computation
+ nthreads = 1,
+! GPU platform ID selector 
+ platid = 2,
+! GPU device ID selector 
+ devid = 1,
+! number of work items (depends on GPU card; leave unchanged)
+ globalworkgrpsz = 512,
+
+!===============================================================
+!=========================FILE I/O==============================
+!===============================================================
+
+! 'tsl' or 'hkl' Euler angle convention parameter
+ eulerconvention = 'tsl',
+! name of angle file (euler angles or quaternions); path relative to EMdatapathname
+ anglefile = 'undefined',
+! output HDF5 file
+ datafile = 'EBSDout.h5'
+
+/
+
+
+

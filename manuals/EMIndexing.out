@@ -1,0 +1,21 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{How Does Dictionary-Based Indexing Work?}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Introductory comments}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Things we can do with dot-products}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Uniform Sampling of Orientation Space}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{The Dictionary Indexing Approach}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.5}{Example Input}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.6}{OpenCL platforms and devices}{section.2}% 8
+\BOOKMARK [1][-]{section.3}{Fitting the Detector Parameters}{}% 9
+\BOOKMARK [2][-]{subsection.3.1}{A few important notes about our detector geometry}{section.3}% 10
+\BOOKMARK [2][-]{subsection.3.2}{Fitting the detector parameters}{section.3}% 11
+\BOOKMARK [3][-]{subsubsection.3.2.1}{Using the interactive IDL Efit virtual app}{subsection.3.2}% 12
+\BOOKMARK [3][-]{subsubsection.3.2.2}{Using the EMDPfit program}{subsection.3.2}% 13
+\BOOKMARK [2][-]{subsection.3.3}{Theoretical Framework}{section.3}% 14
+\BOOKMARK [2][-]{subsection.3.4}{Example script}{section.3}% 15
+\BOOKMARK [1][-]{section.4}{Example Dictionary Runs for a Ni data set}{}% 16
+\BOOKMARK [2][-]{subsection.4.1}{Getting the EBSD data in the correct format}{section.4}% 17
+\BOOKMARK [2][-]{subsection.4.2}{Fitting the detector parameters}{section.4}% 18
+\BOOKMARK [2][-]{subsection.4.3}{Executing the indexing run}{section.4}% 19
+\BOOKMARK [2][-]{subsection.4.4}{Interpreting the indexing output}{section.4}% 20
+\BOOKMARK [1][-]{section.5}{Availability of Example Data Files}{}% 21

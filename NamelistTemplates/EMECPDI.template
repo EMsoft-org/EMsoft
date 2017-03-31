@@ -1,0 +1,69 @@
+ &ECPIndexingdata
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+!###################################################################
+! DICTIONARY PARAMETERS
+!###################################################################
+!
+! number of cubochoric points to generate list of orientations
+ ncubochoric = 100,
+! total number of experimental patterns in datafile
+ totnumexpt = 10,
+! number of top matches to keep from the dot product results
+ nnk = 2,
+! size of output pattern in pixels (image is always square npix x npix)
+ npix = 256,
+! half angle of cone for incident beams (degrees)
+ thetac = 5.0,
+! mask pattern or not; 'y' or 'n'
+ maskpattern = 'n',
+! radius of mask applied to the pattern
+ maskradius = 128,
+! gamma scaling value
+ gammavalue = 1.0,
+! tilt of the sample; only one angle incorporated for now
+ sampletilt = 0.D0,
+! number of regions for adaptive histogram equalization
+ nregions = 10,
+!
+!###################################################################
+! FILE PARAMETERS
+!###################################################################
+!
+! monte carlo input file; path relative to EMdatapathname
+ energyfile = 'undefined',
+! master pattern input file; path relative to EMdatapathname
+ masterfile = 'undefined',
+! name of datafile where the patterns are stored; path relative to EMdatapathname
+ exptfile = 'undefined',
+! output file ; path relative to EMdatapathname
+ datafile = 'undefined',
+!
+!###################################################################
+! DETECTOR GEOMETRY
+!###################################################################
+!
+! working distance [in mm]
+ workingdistance = 13.0,
+! inner radius of annular detector [in mm]
+ Rin = 2.0,
+! outer radius of annular detector [in mm]
+ Rout = 6.0,
+!
+!###################################################################
+! SYSTEM PARAMETERS
+!###################################################################
+!
+! number of dictionary patterns arranged in column for dot product on GPU (multiples of 16 perform better)
+ numdictsingle = 1024,
+! number of experimental filestterns arranged in column for dot product on GPU (multiples of 16 perform better)
+ numexptsingle = 1024,
+! number of threads for parallel execution
+ nthreads = 1,
+! GPU platform id
+platid = 2
+! opencl device id (1 by default)
+ devid = 1
+ /

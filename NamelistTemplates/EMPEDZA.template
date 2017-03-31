@@ -1,0 +1,36 @@
+ &EMPEDZA
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the crystal input file MUST be specified (full pathname)
+ xtalname = 'undefined',
+! output goes to screen (6) or to a file (any number >10)
+ stdout = 6,
+! microscope accelerating voltage [kV]
+ voltage = 200.,
+! zone axis indices
+ k = 0,0,1,
+! foil normal indices
+ fn = 0,0,1,
+! minimum d-spacing to be taken into account [nm]
+ dmin = 0.025,
+! precession angle [mrad]
+ precangle = 10.472,
+! precession half width [mrad]
+ prechalfwidth = 0.25,
+! number of tilt direction samples
+ precsample = 10,
+! number of azimuthal samples
+ precazimuthal = 360,
+! output will be diffraction disks inside a square of area (2*npix+1)^2
+ npix = 256,
+! thickness value [nm]
+ thickness = 10.0,
+! output will be stored here (full pathname)
+ outname = '/some/folder/on/my/disk/ped.data',
+! camera length
+ camlen = 1000.0
+! this last line must be present!
+ /

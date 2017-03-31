@@ -1,0 +1,34 @@
+
+.r Efit
+resolve_all                                                                                                                                                                            
+
+;define a few variables
+appname = 'Efit'
+saveappname = appname+'.sav'
+IDLappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL'
+VMappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps'
+Resdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps/Efit/Resources'
+
+cd,CURRENT=cdir
+
+; add whatever resource folder is needed
+cmd = '/bin/mkdir '+IDLappdir
+spawn,cmd
+cmd = '/bin/mkdir '+VMappdir
+spawn,cmd
+
+; create the .sav file
+save,/routines,filename=saveappname
+
+; create the Virtual Machine app for Mac OS X 64bit
+make_rt,appname,VMappdir,savefile=cdir+'/'+saveappname,/VM,/MACINT64,/OVERWRITE
+
+; add whatever resource folder is needed
+cmd = '/bin/mkdir '+Resdir
+spawn,cmd
+
+; and add the logo file to it
+cmd = '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftlogo.jpg '+ResDir
+spawn,cmd
+
+exit

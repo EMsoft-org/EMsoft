@@ -1,0 +1,30 @@
+ &Kosselmasterlist 
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the crystal input file MUST be specified (full pathname)
+ xtalname = 'undefined',
+! output goes to screen (6) or to a file (any number >10)
+ stdout = 6,
+! microscope accelerating voltage [kV]
+ voltage = 200.,
+! minimum d-spacing to be taken into account [nm]
+ dmin = 0.025,
+! output will be diffraction disks inside a square of area (2*npx+1)^2
+ npx = 500,
+! number of thicknes values to be used in the output
+ numthick = 10,
+! starting thickness value [nm]
+ startthick = 10.0,
+! thickness increment value [nm]
+ thickinc = 10.0,
+! thickness fraction parameter [dimensionless], used when Kosselmode = 'thicks'
+ tfraction = 0.1,
+! output mode 'normal' or 'thicks'
+ Kosselmode = 'normal',
+! output will be stored here (full pathname)
+ outname = '/some/folder/on/my/disk/KosselMaster.data'
+! this last line must be present!
+ /

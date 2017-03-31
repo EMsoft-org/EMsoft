@@ -1,0 +1,58 @@
+ &ECCIlist
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+!------------
+! multi-threading parameters
+!------------
+ SETNTHR = 1,
+!------------
+! microscope parameters
+!------------
+! microscope accelerating voltage [V]
+ voltage = 30000.,
+!------------
+! crystal structure and incident beam parameters
+!------------
+! crystal structure filename
+ xtalname = 'undefined',
+! program mode  'array' or 'trace'
+ progmode = 'array',
+! summation mode  'diag' or 'full'
+ summode = 'diag',
+! incident beam direction 
+ k = 0,0,1,
+! kt step size
+ dkt = 0.1,
+! beam convergence angle in terms of the ratio kt/|g_a| (i.e., kt_max)
+ ktmax = 5.0,
+!  laue center coordinates
+ lauec = 0.0, 0.0,
+!  second laue point for trace mode
+ lauec2 = 0.0, 0.0,
+! number of steps along trace
+ nktstep = 20,
+! smallest d-spacing to take into account [nm]
+ dmin = 0.1,
+!------------
+! various filenames
+!------------
+! name of the nml file with the foil parameters
+ defectfilename = 'some/folder/EMdefect.json',
+! full filename of the output file, including complete path
+ dataname = '/some/folder/on/your/drive/trialbinary.data',
+! full filename of the corresponding ECP file
+ ECPname = '/some/folder/on/your/drive/ECPfile.data',
+!------------
+! image parameters and scattering matrix step size
+!------------
+! edge length of a column [nm] in the column approximation context
+ DF_L = 1.0,
+! number of x-columns (=number of x-pixels in output image)
+ DF_npix = 256,
+! number of y-columns (=number of y-pixels in output image)
+ DF_npiy = 256,
+! slice thickness for scattering matrix approach [nm]
+ DF_slice = 1.0
+ /

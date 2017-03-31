@@ -1,0 +1,12 @@
+ &Disorientations
+! name of input text file with two sets of three columns (six columns per row) of Euler angles (degrees)
+ inputfile = 'undefined',
+! name of output text file with disorientations
+ outputfile = 'undefined',
+! point group number
+ pgnum = 32,
+! for the EMDisorientationsTwoPhase program, we need a second point group number for the second phase
+! this parameter can be ignored for the EMDisorientations program
+ pgnum2 = 32,
+ /
+

@@ -1,0 +1,12 @@
+\BOOKMARK [1][-]{section.1}{Introductory comments}{}% 1
+\BOOKMARK [1][-]{section.2}{The HDFsupport.f90 Module}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Push-pop stack}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Initializing the fortran interface}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{File level operations}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Group level operations}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.5}{Dataset level operations}{section.2}% 7
+\BOOKMARK [3][-]{subsubsection.2.5.1}{Writing to a dataset}{subsection.2.5}% 8
+\BOOKMARK [3][-]{subsubsection.2.5.2}{Reading from a dataset}{subsection.2.5}% 9
+\BOOKMARK [3][-]{subsubsection.2.5.3}{Writing and reading hyperslabs}{subsection.2.5}% 10
+\BOOKMARK [2][-]{subsection.2.6}{Example source code}{section.2}% 11
+\BOOKMARK [1][-]{section.3}{Crystal structure data in HDF5 format}{}% 12

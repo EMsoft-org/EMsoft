@@ -1,0 +1,25 @@
+\boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
+\defcounter {refsection}{0}\relax 
+\select@language {english}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {1}What is \textbf {\textsf {EMsoft}}?}{2}{section.1}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {2}System Requirements}{2}{section.2}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {3}The \textbf {\textsf {EMsoft}}\ Software Developer Kit}{2}{section.3}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {4}Compiling \textbf {\textsf {EMsoft}}}{4}{section.4}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {5}Installation Instructions}{4}{section.5}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6}The general structure of EMsoft programs}{7}{section.6}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {7}Program input files}{8}{section.7}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {8}Generating a crystal structure file}{10}{section.8}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {9}List of programs}{10}{section.9}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {10}Release Updates}{12}{section.10}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {11}Future releases}{12}{section.11}

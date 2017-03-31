@@ -1,0 +1,44 @@
+ &EMOrientationViz
+! name of crystal structure file
+ xtalname = 'undefined',
+! name of part of PoVray output file name WITHOUT THE .pov EXTENSION (i.e., no '.' character allowed)
+! (note that the partial path should be included)
+! The program will compose the output file name as follows:
+! EMdatapathname/povrayfile-##.pov, where ## is a 2-character string determined by
+! the next series of entries
+ povrayfile = 'undefined',
+! cubochoric output 'cu' [1 if needed, 0 if not]
+ cubochoric = 1,
+! homochoric output 'ho' [1 if needed, 0 if not]
+ homochoric = 1,
+! Rodrigues output 'ro' [1 if needed, 0 if not]
+ rodrigues = 1,
+! 3D stereographic output 'sp' [1 if needed, 0 if not]
+ stereographic = 1,
+! primary Euler cell output 'eu' [1 if needed, 0 if not]
+ eulerspace = 1,
+! reduce orientations to RFZ (1) or display all equivalent orientations (0)
+ reducetoRFZ = 1,
+! override the point group number read from the xtal file ?  0 for no, new pgnum for yes
+ overridepgnum = 0,
+! RGB color triplet for the spheres
+ rgb = 0.0, 0.0, 1.0,
+! sphere radius  (0.015 or smaller produces reasonable results) 
+ sphrad = 0.015,
+! distance parameter; 4.0 is good for overall view, 1.5-2.0 for zoom; will be multiplied by 10 for euler space
+ distance = 2.0,
+! data scaling 'lin' for linear, 'log' for log10, 'lev' for discrete level contours (includes 'log')
+ scalingmode = 'lin',
+!
+! set these parameters if you want a density field representation (DO NOT ADD THE .DF3 EXTENSION!!!)
+ df3file = 'undefined',
+ nx = 64,
+ ny = 64,
+ nz = 64,
+!
+! the angle file,  a simple text file with the following format
+! ##      ! two characters denoting the representation (eu, ro, ho, cu, ax, qu)
+! n       ! number of entries in file
+! ...     ! one line per entry, components separated by spaces
+ anglefile = 'undefined',
+ /

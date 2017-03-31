@@ -1,0 +1,833 @@
+
+\documentclass[DIV=calc, paper=letter, fontsize=11pt]{scrartcl}	 % A4 paper and 11pt font size
+% this is another comment that Mike is writing
+
+\usepackage[body={6.5in,9.0in},
+  top=1.0in, left=1.0in]{geometry}
+  
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage[protrusion=true,expansion=true]{microtype} % Better typography
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage[svgnames]{xcolor} % Enabling colors by their 'svgnames'
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{fix-cm}	 % Custom font sizes - used for the initial letter in the document
+
+\usepackage{sectsty} % Enables custom section titles
+\allsectionsfont{\usefont{OT1}{phv}{b}{n}} % Change the font of all section commands
+
+\usepackage{fancyhdr} % Needed to define custom headers/footers
+\pagestyle{fancy} % Enables the custom headers/footers
+\usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
+\usepackage[squaren]{mySIunits}
+\usepackage{epsfig}
+
+\usepackage{fancyvrb}% used to include files verbatim
+%\usepackage{chemsym}
+
+\usepackage{hyperref}
+
+\usepackage[backend=bibtex,style=numeric,sorting=ydnt,maxnames=15]{biblatex}
+\renewbibmacro{in:}{}
+
+% Count total number of entries in each refsection
+\AtDataInput{%
+  \csnumgdef{entrycount:\therefsection}{%
+    \csuse{entrycount:\therefsection}+1}}
+
+% Print the labelnumber as the total number of entries in the
+% current refsection, minus the actual labelnumber, plus one
+\DeclareFieldFormat{labelnumber}{\mkbibdesc{#1}}    
+\newrobustcmd*{\mkbibdesc}[1]{%
+  \number\numexpr\csuse{entrycount:\therefsection}+1-#1\relax}
+
+
+%\addbibresource[label=papers]{mypubs.bib}
+%\addbibresource[label=books]{mypubs.bib}
+%\addbibresource[label=edited]{mypubs.bib}
+%\addbibresource[label=chapters]{mypubs.bib}
+
+
+% Headers - all currently empty
+\lhead{}
+\chead{}
+\rhead{}
+
+% Footers
+\lfoot{\textsf{CTEMZAdefect/CTEMSRdefect} manual, v1.0, \today}
+\cfoot{}
+\rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
+
+\renewcommand{\headrulewidth}{0.0pt} % No header rule
+\renewcommand{\footrulewidth}{0.4pt} % Thin footer rule
+
+\usepackage{lettrine} % Package to accentuate the first letter of the text
+\newcommand{\initial}[1]{ % Defines the command and style for the first letter
+\lettrine[lines=3,lhang=0.3,nindent=0em]{
+\color{DarkGoldenrod}
+{\textsf{#1}}}{}}
+
+\usepackage{titling} % Allows custom title configuration
+
+\newcommand{\HorRule}{\color{DarkGoldenrod} \rule{\linewidth}{1pt}} % Defines the gold horizontal rule around the title
+
+\pretitle{\vspace{-1.5in} \begin{center} \HorRule \fontsize{25}{25} \usefont{OT1}{phv}{b}{n} \color{DarkRed} \selectfont} % Horizontal rule before the title
+
+\title{Zone Axis and Systematic Row\\ (S)TEM Defect Image Simulations} % Your article title
+
+\posttitle{\par\end{center}\vskip 0.5em} % Whitespace under the title
+
+\preauthor{\begin{center}\large \lineskip 0.5em \usefont{OT1}{phv}{b}{sl} \color{DarkRed}} % Author font configuration
+
+\author{\vspace*{-0.7in}} % Your name
+
+\postauthor{\footnotesize \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
+
+\par\end{center}\HorRule} % Horizontal rule after the title
+\date{Program Manual, v1.0, \today}
+
+\newcommand{\ctp}{\textsf{CTEMsoft-2013}}
+\newcommand{\button}[1]{\colorbox{green}{\textsf{#1}} button}
+
+\begin{document}
+\maketitle
+
+
+\begin{figure*}[h]
+\leavevmode\centering
+\epsffile{figs/CTEMlogo}
+\end{figure*}
+
+\renewcommand{\contentsname}{Table of Contents}
+{\small\tableofcontents}
+
+\newpage
+\section{Introduction}
+This manual describes a set of several programs, two written in Fortran-90,\footnote{f90 is a much richer language than the original fortran-f77, and is
+used for all programs in the \ctp\ package.} 
+the others in IDL,\footnote{The \textit{Interactive Data Language} is an interpreted scripting language with extensive graphics capabilities.} 
+that can be used for the simulation of bright field (BF) and high angle annular dark field (HAADF) STEM defect images.  The f90 programs
+are named \textsf{CTEMZAdefect} and \textsf{CTEMSRdefect} (note that all program in the \ctp\ package start with the letters ``CTEM'') and are capable of 
+generating either computed images for a range of detector parameters, or a rather large output file which can then be visualized with the 
+IDL routine \textsf{STEMDisplay.pro}.  The advantage of using a separate visualization routine is that one can freely change a large number
+of parameters without having to re-calculate the underlying data.
+
+On the following pages we will try to accomplish four tasks:
+\begin{enumerate}
+	\item Explain the underlying image formation theory and the numerical approach followed by the f90 program (\ref{sec:theory});
+	\item Document the various input files for the f90 programs (\ref{sec:f90});
+	\item Document the IDL interface (\ref{sec:idl});
+	\item Explain the use of these program by means of a few basic examples (\ref{sec:examples}).
+\end{enumerate}
+
+\input{common.tex}
+
+\newpage
+\section{(S)TEM defect imaging: the underlying theory\label{sec:theory}}
+The Darwin-Howie-Whelan equations of dynamical electron scattering can be formulated as a set of coupled first order 
+differential equations, one for each scattered beam:
+\begin{equation}
+    \frac{\mathrm{d} S_{\mathbf{g}}(z)}{\mathrm{d}z} =
+    2\pi\mathrm{i}s_{\mathbf{g}}S_{\mathbf{g}}(z) + \mathrm{i}\pi {\sum_{\mathbf{g}'}}
+    \frac{\mathrm{e}^{-\mathrm{i}\alpha_{\mathbf{g}-\mathbf{g}'}(\mathbf{r})}}
+    {q_{\mathbf{g}-\mathbf{g}'}}S_{\mathbf{g}'}(z),\label{eq:defectequation}
+\end{equation}
+where $\alpha_{\mathbf{g}}(\mathbf{r})=2\pi\mathbf{g}\cdot\mathbf{R}(\mathbf{r})$ and $\mathbf{R}(\mathbf{r})$ is the 
+total displacement field at location $\mathbf{r}$ due to all defects in the foil.  The wave 
+function of the scattered beam $\mathbf{g}$ as a function of depth $z$ in the sample is represented by:
+\begin{equation}
+	\psi_{\mathbf{g}}(z) = S_{\mathbf{g}}(z) \mathrm{e}^{\mathrm{i}\theta_{\mathbf{g}}},
+\end{equation}
+where $\theta_{\mathbf{g}}$ is the phase factor of the Fourier coefficient $U_{\mathbf{g}}$ of the
+electrostatic lattice potential.  In eq.~(\ref{eq:defectequation}), $s_{\mathbf{g}}$ is the excitation
+error, and the coefficients $q_{\mathbf{g}}$ are defined as:
+\begin{equation}
+	\frac{1}{q_{\mathbf{g}}} \equiv \frac{1}{\xi_{\mathbf{g}}} + \mathrm{i}
+	\frac{\mathrm{e}^{\mathrm{i} (\theta^{\prime}_{\mathbf{g}}-\theta_{\mathbf{g}})}}{\xi^{\prime}_{\mathbf{g}}};
+	\label{eq:defineq}
+\end{equation}
+the extinction distance $\xi_{\mathbf{g}}$ and anomalous absorption length $\xi'_{\mathbf{g}}$ are defined as:
+\begin{equation}
+	\frac{1}{\xi_{\mathbf{g}}}\equiv \frac{\vert U_{\mathbf{g}}\vert}{\vert\mathbf{k}_0+\mathbf{g}\vert\cos\alpha};\qquad
+	\frac{1}{\xi'_{\mathbf{g}}}\equiv \frac{\vert U'_{\mathbf{g}}\vert}{\vert\mathbf{k}_0+\mathbf{g}\vert\cos\alpha};
+\end{equation}
+$U_{\mathbf{g}} = (2me/h^2) V_{\mathbf{g}} $, $\alpha$ is the angle between the beam direction and $\mathbf{k}_0+\mathbf{g}$, and $\mathbf{k}_0$ is 
+the incident wave vector corrected for refraction.  The absorption potential Fourier coefficients are represented by $U'_{\mathbf{g}} = (2me/h^2) V'_{\mathbf{g}}$.
+
+In matrix form, arranging the scattered amplitudes as a column vector $\mathbf{S}(z)$, one can rewrite the DHW equations as,
+\begin{equation}
+	\frac{\mathrm{d}\mathbf{S}(z)}{\mathrm{d}z} = \mathrm{i}\mathcal{A}(\mathbf{r})\mathbf{S}(z),\label{eq:matrix}
+\end{equation}
+where the structure matrix $\mathcal{A}$ contains the excitation errors and the normal absorption coefficient $1/q_{\mathbf{0}}$ 
+along its diagonal, and the interaction parameters $1/q_{\mathbf{g}}$ as well as the defect phase factors on the off-diagonal positions:
+\begin{align*}
+    \mathcal{A}_{\mathbf{g},\mathbf{g}} & = 2\pi s_{\mathbf{g}} + \frac{\pi}{q_{\mathbf{0}}};\\
+    \mathcal{A}_{\mathbf{g},\mathbf{g}'} & = \frac{\pi \mathrm{e}^{-\mathrm{i}\alpha_{\mathbf{g}-\mathbf{g}'}(\mathbf{r})}}
+    {q_{\mathbf{g}-\mathbf{g}'}}
+\end{align*}
+The formal solution to eq.~(\ref{eq:matrix}) for a thin defect-free crystal of thickness $\epsilon$ is given by:
+\begin{equation}
+	\mathbf{S}(\epsilon) = e^{\mathrm{i}\mathcal{A}\epsilon}\mathbf{S}(0) = \mathcal{S}(\epsilon)\mathbf{S}(0);
+\end{equation}
+the matrix exponential $\mathcal{S}(z)$ is commonly known as the \textit{scattering matrix};  
+the exponential of a matrix can be defined (and computed) by means of the Taylor expansion of the exponential function, i.e.,
+\begin{equation}
+	e^{\mathrm{i}\mathcal{A}\epsilon} = \mathbf{1}+\mathrm{i}\frac{\mathcal{A}}{1!}\epsilon-\frac{\mathcal{A}^2}{2!}\epsilon^2+\cdots+(\mathrm{i})^n\frac{\mathcal{A}^n}{n!}\epsilon^n+\cdots.\label{eq:Taylor}
+\end{equation}
+Since both the excitation errors $s_{\mathbf{g}}$ and the interaction coefficients $(q_{\mathbf{g}-\mathbf{g}'})^{-1}$ are small numbers, this expansion typically converges quickly for 
+small values of $\epsilon$.  The solution for a foil with a thickness that is a multiple of $\epsilon$ $(z=m\epsilon)$ is then given by:
+\begin{equation}
+	\mathbf{S}(z) =  \mathcal{S}(\epsilon)^m\mathbf{S}(0),
+\end{equation}
+which is readily computed using matrix multiplications.  In the current version of the \textsf{CTEMZAdefect} and \textsf{CTEMSRdefect} programs, we employ the Pad\'e approximation 
+for the efficient computation of the scattering matrix.\footnote{C. Moler and C. Van Loan, Nineteen dubious ways to compute the exponential of a matrix, 
+twenty-five years later, SIAM Review 45:3-49, 2003.}  
+
+To perform image simulations we employ the column approximation, and divide the sample into columns parallel to the incident 
+beam direction; each column is subdivided into $N$ slices, so that $N\epsilon=t$, with $t$ the local foil thickness.
+Once the scattering matrix is known for each slice $i$, the wave amplitudes can be computed throughout the thickness 
+of the foil by successive multiplication with $\mathcal{S}_i$; for numerical efficiency, we compute the amplitude 
+vectors rather than matrix products, so that the scattered amplitudes at a given layer $i$ are given by:
+\[
+	\mathbf{S}_i = \mathcal{S}_i\mathbf{S}_{i-1}.
+\]
+At the entrance surface, we have $\mathbf{S}_0=(1,0,\ldots,0)^{T}$, where the incident beam is the first entry at unit amplitude and the superscript $^{T}$ denotes the transpose.
+In the absence of defects, all scattering matrices $\mathcal{S}_i$ are identical, so that the integration along a column
+can be performed efficiently.  
+
+It is important to note that the defect phase factor in equation~(\ref{eq:defectequation}) is a periodic function of its argument, so that only values of 
+$\mathbf{g}\cdot\mathbf{R}\,\text{modulo}\,1$ are relevant, with $\mathbf{R}$ the total displacement vector at a given position.  If we consider a systematic row
+condition, with all reflections written as integer multiples of a fundamental reflection $\mathbf{G}$, then the phase factor becomes
+\begin{equation}\label{eq:phasefactor}
+	e^{-\mathrm{i}\alpha_{\mathbf{g}-\mathbf{g}'}(\mathbf{r})} \rightarrow e^{-2\pi\mathrm{i}(n-n')\mathbf{G}\cdot\mathbf{R}(\mathbf{r})}.
+\end{equation}
+For the one axis case, we need to define two separate independent $\mathbf{g}$ vectors, which we will refer to as $\mathbf{g}_a$ and $\mathbf{g}_b$; all 
+reflections in the zone can be written as integer linear combinations of these two vectors.  It is then easy to see that the defect phase factor for
+general reflections $\mathbf{g}=m\mathbf{g}_a+n\mathbf{g}_b$ and $\mathbf{g}'=m'\mathbf{g}_a+n'\mathbf{g}_b$ can be written as:
+\begin{equation}\label{eq:phasefactorZA}
+	e^{-\mathrm{i}\alpha_{\mathbf{g}-\mathbf{g}'}(\mathbf{r})} \rightarrow e^{-2\pi\mathrm{i}(m-m')\mathbf{g}_a\cdot\mathbf{R}(\mathbf{r})} 
+	e^{-2\pi\mathrm{i}(n-n')\mathbf{g}_b\cdot\mathbf{R}(\mathbf{r})}.
+\end{equation}
+In both cases above, the defect contribution is described by a periodic phase factor, so we can pre-compute an array of scattering matrices for 
+the possible range of $\mathbf{g}\cdot\mathbf{R}$ values; in the systematic row case, we sample at $0.1^{\circ}$ intervals, resulting in the pre-computation
+of $3,600$ scattering matrices.  For the zone axis case, we use a coarser sampling combined with bilinear complex interpolation, and the pre-computed
+array has dimensions $181\times 181$, i.e., sampling at $2^{\circ}$ intervals. The total memory
+storage required for the zone axis program is mostly determined by the storage of these arrays; for $N=31$ beams, the array of scattering matrices takes up about 
+$240$ Mb of RAM, and this amount scales with $N^2$.  This array must be recomputed for each incident beam orientation since the integration columns have a slightly
+different orientation, leading to changes in the excitation errors.  Using this approach for defect contrast simulations was first suggested by Th{\"o}l{\'e}n in 
+1970\footnote{A.R. Th{\"o}l{\'e}n,  A {R}apid {M}ethod for {O}btaining {E}lectron {M}icroscope {C}ontrast {M}aps of {V}arious {L}attice {D}efects,
+{\em Phil.\ Mag.}, 22:175--182, 1970.} as a potential solution to the
+geometrical restrictions of the Head \& Humble approach but it has not been widely used since.  
+
+\section{The \protect\textsf{CTEMZAdefect.f90} program\label{sec:f90}}
+
+\subsection{Program overview\label{sec:f90overview}}
+To implement the scattering matrix approach in a flexible way is not an easy task.  The current version of 
+the \textsf{CTEMZAdefect} program is about half-way to providing complete flexibility in terms of defining the 
+defect configuration and computing the image for an arbitrary incident beam orientation.  In a future version
+of the code, there will be complete flexibility with implementation of the scattering matrix formalism that 
+includes Bethe potentials, but in the present version the goals were a little more modest.
+
+The program consists of three broad segments: 
+\begin{itemize}
+	\item initialization of foil geometry, defect geometry, beam direction, active reflections, and detector geometry;
+	\item computation of the overall defect displacement array;
+	\item generation of and multiplication of the appropriate sequence of scattering matrices for each image column.
+\end{itemize}
+Interaction with the program is predominantly by means of namelist files, which are described in the following sections.
+
+The program can produce conventional BF/DF images for a given defect configuration and diffraction condition; in that
+case, the output consists of a single file with $\mathbf{g}$-vectors and images.  Alternatively, the program can produce 
+simulations for STEM mode, in which case
+a much larger output file is produced; both cases can be analyzed using the \textsf{STEMDisplay} program.  The IDL interface
+has the ability to convert simulated images to basic image file formats.
+
+\subsection{Namelist input files\label{sec:f90input}}
+All user input is performed via namelist files; the basic format of a namelist file is explained in the \ctp\ manual.
+Below we define each of the input files needed for the \textsf{CTEMZAdefect} program.  Remember that each \ctp\ program
+has a command line option to automatically generate all relevant template namelist files in the current folder.
+
+\subsubsection{CTEMZAdefect.nml\label{sec:f90input1}}
+This is the main namelist file for this program.  If the filename is different from \textsf{CTEMZAdefect.nml}, then that
+new name must be passed on to the program as a command line argument; if no filename is provided, then the program expects 
+a file by the name \textsf{CTEMZAdefect.nml} in the folder in which the program is executed. 
+
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/CTEMZAdefect.template}
+
+
+\subsubsection{STEM\_rundata.nml\label{sec:f90input2}}
+The program will look for a namelist file with parameters that are related to the STEM detector and camera length setup.  The file 
+template is as follows:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/STEM_rundata.template}
+The final entry, \textsf{numberofsvalues}, refers to how many points should be used to sample the incident beam cone; the program
+will take the beam convergence angle and subdivide it into \textsf{numberofsvalues} equal-size segments.  This means that the
+computation time will be proportional to the square of \textsf{numberofsvalues}; the total number of incident beam directions 
+inside the cone is approximately $\pi\times$ \textsf{numberofsvalues}$^2$. The larger \textsf{numberofsvalues}, the more
+detail will be resolved inside the diffraction disk, but the longer the program will take.
+
+\subsubsection{FOIL\_rundata.nml\label{sec:f90input3}}
+This file defines the foil geometry, and requires a bit of explanation (see also section~\ref{sec:f90frames}).  The basic 
+reference frame of the foil is defined by means of the foil normal (in direction indices) and what will become the 
+horizontal image direction (defined as the reciprocal lattice vector pointing towards the airlock along the primary tilt axis).
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/FOIL_rundata.template}
+The shape of the foil can be defined as an elliptic paraboloid of the form:
+\[
+	z = \text{brx} \times (x-\text{cpx})^2 + \text{bry} \times (y-\text{cpy})^2 + \text{brxy} \times (x-\text{cpx})(y-\text{cpy}).
+\]
+$(\text{cpx},\text{cpy})$ define the center of the paraboloid; if $\text{brx}$ and $\text{bry}$ have opposite signs, then 
+the foil will have a saddle surface shape, otherwise the shape will have curvature of the same sign all across.
+This has not been tested extensively, but one can basically define the foil to be curved according to this
+relation; foil curvature changes the local excitation error and hence produces bend contrast.  This is just
+added for fun, since it is virtually impossible to determine the exact foil shape.  The prefactors in the equation
+above should be kept of the order of $10^{-7}$ or so to obtain realistic results.
+
+In a later version of the program it will be possible to define the sample tilt angles and to have the program
+determine automatically which reflections need to be considered for the image computation.  In the present 
+version of \textsf{CTEMZAdefect}, \textit{the foil can be tilted but the diffraction conditions remain unchanged};
+this is therefore not a very realistic way of doing things.  Automatically determining which reflections contribute
+to an image is not difficult, but one can imagine entering a relatively large tilt angle, say $30^{\circ}$, which
+would cause problems for the \textsf{STEMDisplay} visualization program, which expects its input data to be based 
+on zone axis geometry (namely the zone axis corresponding to the foil normal).  A more comprehensive implementation
+will require a nearly complete rewrite of the reflection handling part of the code, and will also require conceptual
+changes to the visualization routine.  Long and short of it: keep the tilt angles at zero for now.
+
+The foil thickness is expressed in \nano\meter, and corresponds to the untilted foil; i.e., it is the thickness measured
+along the foil normal.  
+
+Finally, the elastic moduli are needed for the computation of dislocation displacement fields.  One should only
+enter the non-zero elements of the $6\times 6$ elastic moduli matrix (in Voigt notation).  The program only needs
+the non-zero diagonal and upper diagonal values and will apply symmetry to obtain the complete matrix.  The units 
+of the moduli do not matter, as long as all of them are the same. The program only uses relative values, scaled 
+to the $(1,1)$ value.
+
+
+
+\subsubsection{Defect nml files\label{sec:f90input4}}
+
+Dislocations can be defined by means of the following namelist template:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/dislocation.template}
+Note that a dislocation inherently has a discontinuity plane and a logarithmic singularity at the core,
+which from a mathematical point of view means that one can encounter non-physical values in the image
+computation, which might give rise to artifacts located at the core of the dislocation.  To minimize the
+chances of this happening, it is good practice to avoid placing the dislocation at ``simple'' positions;
+instead, one should use coordinates of the type $0.501$ instead of $0.5$, and so on.  The reference frame
+will be defined in the following section.
+
+For dislocations with line directions normal to the foil normal, one must also specifiy the \textsf{zfrac}
+parameter, which indicates the depth of the dislocation with respect to the foil surfaces. The depth parameter
+equals $0$ at the top surface, and $1$ at the foil bottom surface.\\
+
+\noindent For stacking faults, we need to define the fault plane, both partials, and their separation (in \nano\meter):
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/stackingfault.template}
+
+\noindent For voids, we use a basic text file:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/void.template}
+Note that this is not a namelist file, so it is not possible to put comments in the file.
+The first line sets the number of voids.  Each following line describes the location (3 parameters)
+and radius (last number) of the void.  The void radius is defined in nanometers, the position is 
+defined in the image reference frame, with the $x$ and $y$ coordinates in the interval $[-1,1]$, 
+and the $z$-coordinate in the interval $[0,1]$, with $z=0$ the top of the foil and $z=1$ the bottom.
+
+Finally, for small inclusions, we use a similar format with five columns, the final column denoting the 
+value of the parameter $C$ in equation $(8.36)$ of the CTEM text book.
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/inclusion.template}
+
+
+\subsection{Program modes\label{sec:f90modes}}
+The \textsf{CTEMZAdefect} program can be executed in three different modes defined by the \textsf{progmode} parameter:
+\begin{itemize}
+	\item \textit{CTEM mode}: When the \textsf{progmode} parameter in the main input file is set to \textsf{CTEM},
+	then the program will operate with a single incident beam direction along the specified zone axis.  The algorithm will
+	automatically determine which beams to take into account, based on a combination of the \textsf{dmin} parameter and the 
+	setting of the \textsf{cutoff} parameters in the \textsf{BetheParameters.nml} file.  The output consists of a file with 
+	a single BF image and as many DF images as there are independent reflections.  In this mode, the \textsf{STEMnmlfile} 
+	namelist file is ignored.
+	
+	\item \textit{BF/HAADF mode}: In this mode, the \textsf{progmode} parameter in the main input file is set to \textsf{BFDF}.
+	The program reads the \textsf{STEMnmlfile} and computes BF/HAADF image pairs
+	for all camera lengths specified in this file.
+	
+	\item \textit{Full STEM mode}: This is the most general mode, which requires \textsf{progmode} to be set to \textsf{STEM}.
+	A large data file is created with a CBED pattern for each image pixel (although internally,
+	the data is stored in a different way).  Camera lengths in \textsf{STEMnmlfile} are ignored. 
+	This mode allows for the user to define the detector parameters afterwards, via the IDL \textsf{STEMDisplay} visualization tool.
+\end{itemize}
+
+\subsection{Creating image series\label{sec:series}}
+Sometimes it is useful to display simulated images as a function of some parameter, for instance the excitation error, or
+the microscope voltage.  The IDL visualization program described later in this document has a operation mode in which 
+such an image series is generated automatically from a series of existing data files.  From the point of view of the fortran
+programs, no special steps need to be taken to accomplish this, except for the data file naming.
+
+To enable the automatic generation of a series of images, based on a series of data files, a special file naming and numbering
+convention must be followed.  Each data file in a series must have a filename that is structured as follows:
+\begin{verbatim}
+	fileroot__####.extension
+\end{verbatim}
+\textsf{fileroot} can be any string that does not contain two consecutive underscore characters; the symbol \textsf{\#\#\#\#} stands for 
+a four digit sequential number, e.g., \textsf{0001}; the extension can be any string, but typically would be \textsf{data} or something similar.
+Note that there must be a double underscore separating the \textsf{fileroot} string from the sequential number (this is how the visualization 
+program recognizes that the file is part of a series).  The starting number in the series can be any number, but consecutive files must have
+consecutive numbers, and all numbers must be formatted with four digits (including leading zeroes).  This convention works for both the 
+zone axis and systematic row defect simulation programs.  Note that the amount of data generated for an image series can be very large,
+so make sure you have sufficient disk space available before starting image series runs.
+
+
+\subsection{Coordinate systems\label{sec:f90frames}}
+To make effective use of this program, it is of utter importance to fully understand the coordinate systems that are being used
+to describe the relative positions of all defects. These reference frames have been defined in detail in the CTEM text book, but there are 
+some subtleties involved and a few changes have been made since the book was published in 2003. 
+The basic output reference frame is the \textit{image coordinate system},
+which we describe first.  The output image is a rectangular array of \textsf{DF\_npix}$\times$\textsf{DF\_npiy} pixels; each
+pixel is square, with an edge length of \textsf{DF\_L} nanometers, which sets the effective magnification.  For instance, if 
+the image dimensions are set to $512\times 384$, with \textsf{DF\_L}$=2.5$ \nano\meter, then the real field of view measures
+$1.28\times 0.96$ \micro\squaren\meter.  The horizontal image direction will always line up with the reciprocal space direction 
+$\mathbf{q}$, which is entered in the foil namelist file.  The image normal will always be the beam direction, and the vertical direction 
+completes a right-handed reference frame.  
+
+The center of the image is the origin of the defect position reference frame, and every point in the image has fractional coordinates
+$(i_d,j_d)$ in the interval $[-1,+1]$.  Fig.~\ref{fig:ZAimagereferenceframe} shows schematically how the reference frame is organized.  For dislocations, 
+the coordinates $(i_d,j_d)$ will always refer to the intersection of the dislocation line with the center plane of the foil.  For inclusions
+and voids, the coordinates indicate the center of the defect, which involves a third coordinate to define the depth of the defect;
+this coordinate varies between $0$ (foil top) and $1$ (foil bottom).  For dislocations that are parallel to the foil top and bottom 
+surfaces, one must specify the depth \textsf{zfrac} in the same interval $[0,1]$.  For stacking faults, the coordinates \textsf{(SFi,SFj)} refer to the point 
+midway between the partials and on the foil center plane;  once this point is defined, then the foil geometry is used along with the stacking fault
+plane normal to determine the locations and surface intersection points of the partial dislocations, which may be located outside of the field 
+of view for a large separation parameter \textsf{SFsep}.
+
+\begin{figure}[h]
+\centering\leavevmode
+\epsffile{figs/ZAimref}
+\caption{\label{fig:ZAimagereferenceframe}Definition of the image reference frame.}
+\end{figure}
+
+When the program initializes all its reference frames, it will load the crystal structure data, the foil geometry and the image dimension information first.  
+From the foil geometry and the unit cell data, several reference frames and transformation matrices are defined.  The unit cell reference frame is
+a non-cartesian frame (the Bravais reference frame), as is its dual, the reciprocal reference frame.  From these two, we construct a cartesian crystal
+reference frame that has its $x$ direction along $\mathbf{a}$, and its $z$ direction along $\mathbf{c}^{\ast}$, with $y$ completing a right-handed triad.
+All directions, including the foil normal, are defined with respect to the direct space Bravais unit cell, all reciprocal lattice vectors, the beam
+direction, and the primary tilt axis (in the form of the vector $\mathbf{q}$, which is the reciprocal space vector, not necessarily with integer components,
+that points along the primary tilt axis towards the sample airlock) are defined in the reciprocal reference frame; all these vectors can be 
+transformed to the cartesian frame and back by a special subroutine.  The program then computes a transformation between the image cartesian frame
+and the crystal cartesian frame; due to the efficiency of quaternions for the description of rotations, all transformations between orthonormal 
+reference frames are carried out internally with quaternion multiplication.
+
+Once the coordinate transformations are set up, the foil can be tilted along either of the two orthogonal primary and secondary tilt
+axes, as illustrated in Fig.~\ref{fig:ZAimagereferenceframe} (note that counterclockwise rotations are positive for both $\alpha$ 
+and $\beta$ tilt, looking at the origin from points located on the positive $x$ and positive $y$ image axes).  
+Note that in a future version of the program, the sample tilt angles will be used to determine what the beam direction is, so that one can simply
+define foil tilt angles and the program will then determine which reflections contribute and what the actual beam direction is.\footnote{It
+is obviously useful to always set things up so that simple (low index) directions are parallel to the main image directions
+for the zero tilt orientation, but the program will be capable in the future of dealing with more general orientations as well.}
+For the actual image calculation, the foil and image reference frames are kept untilted, and it is the incident beam, in the form
+of the orientation of the columns in the column approximation, that is being tilted.
+
+
+\subsection{To do list\label{sec:f90todo}}
+
+This program is a work in progress.  It was first created in March, 2010, and has undergone many modifications since.
+There is an older sister program, \textsf{CTEMSRdefect}, that performs similar computations for the systematic row case, since the mathematics
+is a little simpler in that case (although the weight factors for BF and HAADF detectors are more complicated).  This
+is an artificial separation, though, since systematic row orientations can be reached starting from zone axis orientations
+by tilting around certain directions.  The current implementation does have the ability to include HOLZ reflections when
+needed (the program automatically decides which reflections are important); at the moment, Bethe potentials are not yet 
+implemented, but this is just a matter of time and is a relatively high priority, with as an immediate payoff a considerable 
+reduction in the time it takes to compute a full HAADF-STEM data set. 
+
+So, here's a list of things that would be nice to have:
+\begin{itemize}
+	\item ability to deal with \textit{any} incident beam direction, so that the systematic row case becomes an automatic part of the program;
+	\item automatic selection of relevant reflections for each incident beam direction, with inclusion of Bethe potentials;
+	\item all output should be either in the form of image and data files (which has already been implemented) or in the form
+	of an HDF5 data file for subsequent analysis using the \textsf{STEMDisplay.pro} routine.  HDF5 should really be used for all 
+	the programs in the \ctp\ package, but that is a considerably larger task that is pushed into the future.
+\end{itemize}
+The first of these items will automatically happen if we can get the second one resolved.  The third item is a much longer 
+term issue, but it would be really nice to get that to work.
+
+\section{The \protect\textsf{CTEMSRdefect.f90} program\label{sec:f90SR}}
+The \textsf{CTEMSRdefect} program is a separate program, but it shares most of the input files with the \textsf{CTEMZAdefect} program.  
+There are only a few differences in terms of input.  The main input file with default name \textsf{CTEMSRdefect.nml} has the following entries:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../templatefolder/CTEMSRdefect.template}
+Note that the parameter \textsf{progmode} has only two possible settings: \textsf{BFDF}, which generates BF/HAADF image pairs for the 
+detector settings in the \textsf{STEM} name list  file, or \textsf{STEM}, which produces an output file that can be used for interactive 
+detector setting adjustments.  Both types of output file can be read by the \textsf{STEMDisplay} visualization program.
+
+To define the systematic row, two new parameters are needed: \textsf{SRG}, which represents the fundamental systematic 
+row vector $\mathbf{G}$ (integer Miller indices), and \textsf{Grange}, which defines how many reflections need to be taken into
+account.  The number of beams is then equal to $2$\textsf{Grange}$+1$, with the beams numbered from -\textsf{Grange*SRG} to
++\textsf{Grange*SRG}.  The \textsf{GLaue} parameter refers to the location of the Laue center along the systematic row,
+measured in units of $k_t/\vert\mathbf{G}\vert$; a value of $0.5$ corresponds to the Bragg orientation being satisfied at the 
+center of the $\mathbf{G}$ diffraction disk.
+
+One should note that the \textsf{numberofsvalues} parameter in the \textsf{STEM\_rundata.nml} file has a different meaning for the 
+systematic row program (for historical reasons); the value of \textsf{numberofsvalues} for the \textsf{CTEMSRdefect} program is 
+equal to the number of points along the \textit{diameter} of the diffraction disk, not along the radius, as is the case for the 
+zone axis program.  
+
+All other input parameters, including the STEM and defect input files, are identical to the ones needed for the zone axis program.  
+Note that at some future time, these programs
+will be merged into a single program, and the algorithm will decide automatically which beams need to be taken into account.  
+
+
+\section{The \protect\textsf{STEMDisplay.pro} program\label{sec:idl}}
+
+\subsection{Program overview\label{sec:idloverview}}
+When the \textsf{progmode} program parameter is set to \textsf{STEM} in the \textsf{CTEMZAdefect.nml} namelist file, the program will
+create a generally rather large data file.  The data file consists of geometrical information and, for each image
+pixel, the intensity of each participating reflection for each incident beam direction; this data file can become quite large in size, easily multiple gigabytes.
+The main reason for storing this data is that it then becomes possible to interactively play with a series of detector parameters,
+in particular the nature of the dark field detector (segmented or not).  The same program can be used to display the output 
+from the other two program modes described in section~\ref{sec:f90modes}.
+
+The \textsf{STEMDisplay.pro} routine requires an IDL program license, or one can execute the program in the Virtual Machine mode.  
+For a licensed implementation, make sure that the folder containing the routines is part of your IDL pathname,
+and that IDL is properly installed for the UNIX shell that you will be using (csh, bsh, etc...).
+To execute the program, first start an IDL session in a terminal window (using the /Appplications/Utilities/Terminal program), 
+start IDL, compile the \textsf{STEMdisplay.pro} routine by typing:
+\begin{verbatim}
+	IDL> .r STEMDisplay <return>
+\end{verbatim}
+at the IDL prompt and hitting return, followed by typing 
+\begin{verbatim}
+	IDL> STEMDisplay <return>
+\end{verbatim}
+to start the display program.  The main program widget window will appear as well as a file selector window.  
+Details of all the windows are described in the following subsections.
+
+All IDL programs, either in licensed form or via the Virtual Machine, expect the X-windows environment to be installed.  On the Mac, this corresponds
+to the \textsf{XQuartz} program which can be downloaded from the open source site \textsf{http://xquartz.macosforge.org/}.  This program
+must be installed in the system /Applications/Utilities folder and requires OS X 10.6 or later.
+
+Useful thing to know: if the \textsf{STEMDisplay.pro}  program hangs for some reason (in licensed mode), you can reset your IDL session by typing
+\begin{verbatim}
+	IDL> .reset <return>
+\end{verbatim}
+This will destroy all program widgets and reset IDL to its original state.  If that does not work, then you may have to ``force quit'' the Terminal program
+using the standard Esc-Option-Command key stroke.
+
+\subsection{Main window\label{sec:idlmain}}
+The main window contains most of the parameters that can be set by the user.  When the program first starts, a program preferences file 
+will be read (see section~\ref{sec:idlpref}). The user can then select which type of data file to read by clicking on any of the file load buttons at the bottom.
+Let's assume for now that we load a zone axis STEM file.  Use the file selection controls to navigate to the folder where your data file resides,
+and select that file, either by double clicking the file name, or single clicking followed by clicking on the \button{enter}.  The program will now 
+read the first section of the data file, which contains various geometrical parameters as well as a list of all potential reflections and all 
+incident beam directions in the illumination cone.  Then the program reads the actual diffraction data, which may take a while; check the progress bar
+that is located next to the FileSize box.\footnote{It is not unusual for the f90 program to create very large data files, so you must have sufficient 
+memory in your system to be able to use this display program.  If insufficient memory is available, then the IDL session will halt with an error message.}
+
+\begin{figure}[t]
+\leavevmode\centering
+\epsffile{figs/STEMwidget1}
+\caption{\label{fig:STEMex1}Main widget of the \textsf{STEMDisplay} interface.}
+\end{figure}
+
+The \textsf{STEMDisplay} program can operate in two different modes which are selected by means of the \textsf{Diffraction Display Mode} switch (see 
+Fig.~\ref{fig:STEMex1}): the available modes are \textit{HAADF-STEM} and \textit{regular dark field} (DF), which we will now describe in more detail.
+Note that each mode is available for both the systematic row and the zone axis cases; this is indicated in the text field below the file loading progress bar.
+
+\subsubsection{HAADF-STEM program mode}  
+In HAADF-STEM mode, the display 
+window will show a schematic of the HAADF (green) and BF (red) detectors along with a superimposed schematic CBED pattern with a blue disk
+outline for each reflection.  The detector parameters can be set in a number of ways: the BF and HAADF detector radii can be changed (all changes
+will be updated immediately in the detector schematic), as well as the camera length, which changes the size of the CBED disk outlines with respect 
+to the detector.  The option \textit{\# detector segments} is somewhat experimental; the detector can be subdivided into radial segments, and the orientation
+of the segment cuts can be set with the offset angle (clockwise in degrees). 
+
+\begin{figure}[t]
+\leavevmode\centering
+\epsffile{figs/STEMwidget2}
+\caption{\label{fig:STEMex2}BF and HAADF/DF display window.}
+\end{figure}
+
+If there is only one HAADF detector segment, and the \textit{Sector Selection Mode} is set to \textit{Single}, then pressing on the \button{Go}\ 
+will create a new widget with two graphics display windows, one for the BF image, the other for the HAADF image in this mode (in the regular Dark Field
+mode, this window will contain the DF image).  An example of this window is shown in Fig.~\ref{fig:STEMex2}.  After a short time, both BF and HAADF images 
+will be displayed.  Using the controls in this widget, one can save the image pair in either \textit{.jpeg}, \textit{.tiff}, or \textit{.bmp} file
+format.  One can also display a scale bar in the BF window; check the log window to determine what length the bar corresponds to.\footnote{It is assumed 
+that the user will add the scale marker text in a separate program, such as GIMP or Illustrator, so this program only draws the scale bar without text.}
+Both of the display windows indicate the minimum and maximum total intensity present in the image; each image is scaled separately so that 
+black corresponds to the minimum intensity and white to the maximum.
+
+If the \textit{Sector Selection Mode} is set to \textit{Single}, and the detector has multiple sectors, then selecting a sector by clicking on it 
+in the schematic window, followed by clicking on the \button{Go}\ will display 
+the HAADF image from that sector only in the HAADF/BF window.  Setting the \textit{Sector Selection Mode} to \textit{Multiple} will allow the 
+user to select multiple sectors, and then display the corresponding HAADF image by clicking the \button{Go}.  This option was included as a 
+test to determine whether or not multi-sector detectors can be used to perform a basic $\mathbf{g}\cdot\mathbf{b}$ analysis by selecting one or
+more sectors and analyzing the resulting HAADF images.  When the \button{Save}\ is used, the program will save whatever is currently displayed in
+the BF and HAADF/DF windows as a single image.
+
+The BF window is sensitive to mouse clicks; when the user clicks on any point in that window, the program will create a 
+new graphics window (an example is shown in Fig.~\ref{fig:STEMex3}) with the corresponding CBED pattern for that location.
+Clicking on different points near or on the defect(s) then allows the user to display the CBED pattern, and save it using the
+controls at the bottom of the window.  The CBED pattern scale can be changed with the \textsf{Zoom Factor} buttons; for a 
+zoom factor of $1$, the pattern is displayed at its native magnification, meaning the each CBED disk will have as many pixels 
+in it as there are individual incident beam directions (check the \textit{\# of k-vectors} entry on the main program panel).
+Increasing the magnification of the pattern produces pixelated CBED patterns, since there is insufficient resolution in the 
+data file to properly display all the intensity values.  The scale bar can be toggled on and off, and properly displays
+the scale of the CBED pattern in \nano\meter$^{-1}$; check the program log window to find out what the actual length of the 
+scale bar is.  Usually, the best patterns are obtained with the logarithmic intensity scaling mode, but this can be switched
+to linear scaling as well.  As before, the CBED pattern can be stored in one of three different image file formats using the 
+format selector and the \button{Save}.  Clicking on the \button{Close}\ will remove this window; it will be recreated automatically
+whenever it is needed.
+
+\begin{figure}[t]
+\leavevmode\centering
+\epsffile{figs/STEMwidget3}
+\caption{\label{fig:STEMex3}CBED display window.}
+\end{figure}
+
+
+\begin{figure}[b]
+\leavevmode\centering
+\epsffile{figs/STEMwidget4}
+\caption{\label{fig:STEMex4}Detector display window in regular dark field mode.}
+\end{figure}
+
+
+\subsubsection{Regular Dark Field program mode}
+The second major operational mode of the \textsf{STEMDisplay} program provides the option to compute standard BF/DF
+image pairs using an aperture superimposed on the CBED pattern.  When this option is selected, the detector display 
+window in the main widget changes to a schematic diffraction pattern (blue disk outlines), with a cross through the 
+center BF disk (see Fig.~\ref{fig:STEMex4}).  This mode is controlled by the row of options at the bottom of the
+detector display window.  The aperture radius (in mrad) can be set to any value less than the beam convergence angle.
+The first thing to do is to position the aperture in the BF disk by making sure the \button{set k vector} is 
+selected and then clicking at the appropriate location inside the BF disk.  Note that the radius of the aperture 
+will automatically be reduced to the largest possible radius if the clicked position is too close to the edge of 
+the diffraction disk; the aperture must fall entirely inside the BF disk.  Once the aperture position has been selected,
+the BF image will be updated to show an image obtained only with the incident wave vectors inside the aperture.
+After clicking the \button{select g}, one can select any of the dark field disks inside the detector window, and the 
+corresponding DF image will be displayed next to the BF image.
+
+\subsubsection{Systematic row data files}
+The \textsf{STEMDisplay} program can also display data files from the \textsf{CTEMSRdefect} program.  In this case, the 
+diffraction pattern consists of only a single row of diffraction disks.  The functionality of all the program options remains 
+unchanged for this type of data file, so there is no need for a separate description.  It should be noted that the input file
+for the systematic row mode is typically quite a bit smaller than for the zone axis case.  This is because one only needs
+to compute the scattered intensities along the central line of the systematic row, and then copy those values along lines
+normal to the systematic row to reconstruct the diffraction disks.  Only the central line is stored by the \textsf{CTEMSRdefect} program,
+and the display program copies the intensities to the correct locations in each of the diffraction disks.  This is an approximation,
+since there are no HOLZ contributions to these patterns.  As stated before, in a later version of the \textsf{CTEMZAdefect} program,
+it will be possible to define any incident beam orientation on or off zone axis; combined with sample tilt, this will be used to 
+automatically determine all the relevant diffracted beams, and the systematic row case will simply become a special case that does
+not require a separate program.  The current \textsf{CTEMSRdefect} program is provided as an approximate tool for 
+defect image computation; the program is much faster than the zone axis version, since it only has to compute intensities along
+the central line of the diffraction disks.
+
+\subsubsection{Generation of image series}
+As stated in section~\ref{sec:series}, it is possible to generate image series automatically, given a series of data files
+that were generated by either of the two fortran programs (zone axis or systematic row), provided the output files adhere 
+to a particular file naming convention.  When a data file with a name satisfying the naming convention is opened using the 
+standard mechanism, the program will automatically recognize that this file is part of a series, and will determine how many
+files there are in the series.  Then the user can proceed in the usual way, setting various parameters and/or the program modes
+described in the next section.  Once the proper parameters have been set, the user can click on the \button{Series} in the 
+BF/HAADF Image Display window, and each data file from the series will be loaded individually, all current imaging 
+parameters will be applied to the data, and the corresponding images will be stored in image files.  The program will
+repeat this operation sequentially for each file in the series.  All image files will be placed in a separate folder that has
+a name that starts with the \textsf{fileroot} (see section~\ref{sec:series}) followed by a sequential number.  Repeated 
+clicks on the \button{Series} will generate separate folders with images.  The user could then proceed with other programs,
+such as ImageJ or Fiji, to create a movie from the individual image files.
+
+\subsubsection{Displaying data files from other program modes}
+As described in section~\ref{sec:f90modes}, the \textsf{CTEMZAdefect} program can be used in two other modes besides
+the full STEM mode: CTEM, and BF/HAADF; the \textsf{CTEMSRdefect} program has a single alternative mode for BF/HAADF 
+images. Such files can be loaded with the \button{CTEM File} and \button{BF/HAADF File}
+at the bottom of the main window.
+\begin{itemize}
+\item\textbf{CTEM data files}: After selecting a data file that contains CTEM BF and DF images, a new widget will
+pop up with two graphics windows, one for the BF image, and one for the DF image.  All the available reflections will
+be listed, and the user can select any one of them to be displayed.  The usual controls are available to save BF/DF
+image pairs.
+
+\item\textbf{BF/HAADF data files}: After selecting a data file, a new widget appears that allows the user to 
+select one of the available camera lengths and display the corresponding BF and HAADF images.  The usual controls
+are available to save BF/HAADF image pairs.
+\end{itemize}
+
+\subsection{Preferences file\label{sec:idlpref}}
+Upon the first execution of the \textsf{STEMDisplay.pro} routine, a preferences file will be created in the user's home folder.  The file is called \textsf{.STEMgui.prefs}; the starting period
+means that the file will not show up in a Finder window or on the UNIX command line when a simple \textsf{ls} command is issued.  This is a 
+regular editable text file consisting of name::value pairs.  The first line shows the number of entries in the file, and then each entry is listed on a 
+separate line.  A commented version of the preferences file is as follows:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize,numbers=left}
+\VerbatimInput{STEMgui-commented.prefs}
+Note that the comments are not part of the actual preferences file.  All lines must be present in the file or the program will exit with an error message.
+All values above, except for BFmrad, HAADFimrad, and HAADFomrad, which are computed from the actual detector dimensions and the camera length, can be altered by the user
+(although there should not be any reason for manually editing this file).
+The values shown above are not default values, but represent a random snapshot of the program status after it has been used for a while.
+
+When the program starts, it will first internally initialize all variables to default values, and then read the preferences
+file, if it exists.  Then the widgets will be created using the preference values.  When the program is ended normally (by
+pressing the \button{QUIT}), all current values, including the widget locations, are written to the preferences
+file.
+
+
+
+
+
+\section{A few worked examples\label{sec:examples}}
+In this final section, we show a few simple worked examples that illustrate how to use the combination of f90 and IDL visualization programs 
+to obtain simulated CTEM and STEM defect images for both systematic row and zone axis cases.\footnote{Note that all the input
+files for the examples described in this section can be found in the \textsf{examples} folder; they are labeled by section number.}  
+
+\subsection{BF/DF TEM images of a pair of dislocations\label{sec:ex1}}
+We begin this series of examples with a pair of simple perfect edge and screw dislocations in fcc copper. Note that it is not very 
+likely that one would carry out dislocation observations in CTEM zone axis mode, but the program is capable of performing the 
+corresponding image simulations.
+  
+The \textsf{Ex6.1.nml} input file contains the following entries:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.1.nml}
+We note that this is a regular CTEM simulation for the $[100]$ zone axis at $200$ kV, on a $256\times 256$ pixel image, with pixel size $1.0$ \nano\meter,
+and the slice thickness is set to $1.0$ \nano\meter.  The input crystal structure file is \textsf{Cu.xtal} in the main \textsf{xtal} folder,\footnote{Recall that
+on a UNIX system, the symbol $../$ means to go one directory up in the file system.} and we
+assume that the program is executed from within the \textsf{examples} folder.
+
+The next file to set up is the foil description file, \textsf{EX6.1\_FOIL.nml}:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.1_FOIL.nml}
+We take the foil normal to be parallel to the incident beam direction, and the vector $\mathbf{q}$ that points towards the 
+airlock (and is the horizontal image direction) along $\mathbf{g}_{001}$.  The foil thickness is $100$ \nano\meter, and the 
+elastic moduli for copper are listed in GPa.  Note that all other parameters that are allowed in this file can be omitted,
+since the default values specified in the corresponding template file are acceptable.
+
+Finally we need to create the defect files.  We have two perfect dislocations, one edge, the other screw, and we'll take
+two different line directions as well.  The namelist files are as follows:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.1.disl1.nml}
+and
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.1.disl2.nml}
+The first dislocation is a perfect edge with $\mathbf{u}=[101]$ and $\mathbf{b}=\frac{1}{2}[10\bar{1}]$; the second one a 
+perfect screw with $\mathbf{u}=[011]$ and $\mathbf{b}=\frac{1}{2}[011]$.  They are located at two different positions, 
+$(0.251,0.251)$ and $(-0.251,-0.251)$; recall that these points are the locations of the intersection of the dislocation line
+with the center of the foil.
+
+The total number of beams in the simulation is partially determined by the \textsf{dmin} entry in the main input file,
+but also by the settings in the \textsf{BetheParameters.nml} file:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/BetheParameters.nml}
+A main cutoff parameter of $70$ reduces the total number of beam to $25$.  The current implementation of the \textsf{CTEMZAdefect} program
+does not implement the Bethe potentials, so the \textsf{weakcutoff} parameter is not used.
+
+When the program was executed with the command line \textsf{../../exe/CTEMZAdefect Ex6.1.nml} on a Mac Pro ($2\times 3.06$ GHz, $6$-core
+Intel Xeon with $96$ Gb RAM), a total of $37$ diffracted beams were determined to contribute to the scattering process.  
+The program took about $10$ seconds to create the total displacement field (note that this generates an array
+of dimensions $2\times 256\times 256\times 100$); another $17$ seconds were needed to compute the scattering matrices and
+perform the column integrations, using $6$ threads.  The total memory required for the computation was just under $600$ Mb of RAM; this is mostly
+taken up by the defect displacement array and the precomputed scattering matrix array. 
+
+The output file has a size of just under $10$ Mb, and contains the BF image and $36$ DF images.  
+This file must be read by the \textsf{CTEMDisplay} visualization program using the \textsf{CTEM File} option.
+Note once again that this is not a very realistic case, since one would typically not perform conventional dark field imaging 
+in zone axis orientation.  An example of the simulated images is shown in Fig.~\ref{fig:example61}, which
+shows the bright field image and two dark field images, for the $(0\bar{2}0)$ and $(020)$ reflections.
+
+\begin{figure}[t]
+\leavevmode\centering
+\epsfxsize=4in\epsffile{figs/example61}
+\caption{\label{fig:example61}Example BF and DF images for test case 6.1; the DF images are for the $(0\bar{2}0)$ and $(020)$ reflections.}
+\end{figure}
+
+
+
+A more realistic simulation would make use of the main input file \textsf{Ex6.1b.nml}:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.1b.nml}
+Note that all entries are identical to the previous file, except for the \textsf{progmode} parameter, which is
+now set to \textsf{BFDF}, the \textsf{STEMnmlfile}, which is needed to define the camera lengths and such, and 
+the name of the output file.  The \textsf{STEMnmlfile} file is as follows:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.1_STEM.nml}
+Executing the command \textsf{../../exe/CTEMZAdefect Ex6.1b.nml} resulted in a program run of just about one hour, 
+for a total of $81$ incident beam directions in the illumination cone.  
+The number of scattered beams in this case was $37$, which is larger than the $25$ used for the CTEM simulation;
+this difference is due to the fact that the STEM computation takes HOLZ contributions into account as well.
+The resulting images are shown in Fig.~\ref{fig:example61b} for the indicated camera lengths.
+
+
+\begin{figure}[t]
+\leavevmode\centering
+\epsfxsize=4in\epsffile{figs/example61b.eps}
+\caption{\label{fig:example61b}BF and HAADF images for test case 6.1b as a function of camera length.}
+\end{figure}
+
+The final example in this subsection uses input file \textsf{Ex6.1c.nml}:
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.1c.nml}
+In this case \textsf{progmode} is set to \textsf{STEM}, so that the output is a large file that can be read using the 
+\button{STEM File} in the display program.  The user can now interactively change all parameters and generate BF/HAADF
+image pairs for any desired detector configuration.
+
+
+
+\subsection{BF/HAADF systematic row STEM images of a stacking fault\label{sec:ex2}}
+In this second example we will illustrate how to compute systematic row BF/HAADF images for a stacking fault in 
+the $\gamma$ phase of a Ni-based superalloy; we will employ the imaging parameters used for Figures 5 and 6 in the following paper:
+\begin{verbatim}
+P.J. Phillips, M. Mills, and M. De Graef. 
+“Systematic row and zone axis STEM defect image simulations”. 
+Philosophical Magazine A 91 (2011), pp. 2081-2101.
+\end{verbatim}
+The input files can again be found in the \textsf{examples} folder, and are as follows:\\
+\textsf{Ex6.2.nml}
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.2.nml}
+the foil description file \textsf{Ex6.2\_FOIL.nml}
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.2_FOIL.nml}
+the STEM setup file \textsf{Ex6.2\_STEM.nml}
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.2_STEM.nml}
+and the stacking fault descriptor file \textsf{Ex6.2.sf.nml}
+\fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
+\VerbatimInput{../examples/DefectSimulations/Ex6.2.sf.nml}
+Note that the stacking fault lies on the $(\bar{1}11)$ plane, has
+leading partial burgers vector $\frac{1}{3}[1\bar{1}\bar{1}]$,
+trailing partial burgers vector $\frac{1}{3}[\bar{1}11]$, and 
+both dislocations have line directions $[110]$.  The separation between
+the partial dislocations is set to a large number, so that the partials
+themselves will not appear in the image.  Note also the rotation angle 
+\textsf{foilalR}\footnote{This is the secondary rotation angle for a tilt-rotation holder.} 
+which is set to $135^{\circ}$ in the \textsf{Ex6.2\_FOIL.nml}
+file; this will make sure that the stacking fault appears as horizontal lines
+in the images.  Omitting this rotation angle will give rise to images with 
+the stacking fault fringes running at $45^{\circ}$ from bottom left to top right.
+
+Finally, the crystal structure file \textsf{gam.xtal} is created with the 
+following command (again from within the \textsf{examples/DefectSimulations} folder): 
+\begin{verbatim}
+	../../exe/CTEMmkxtal <Ex6.2.gam.txt
+\end{verbatim}
+which sends the contents of the \textsf{Ex6.2.gam.txt} file to the \textsf{CTEMmkxtal} program.
+The text file contains all the commands that one would have to enter manually; creating the 
+structure file in this way will minimize typographical errors in the coordinates, since one 
+can simply correct them and then run the \textsf{CTEMmkxtal} program again, without having to 
+retype all the coordinates.
+
+Executing the following command
+\begin{verbatim}
+	../../exe/CTEMSRdefect Ex6.2.nml
+\end{verbatim}
+will then carry out the image simulation, which takes only about a minute using $6$ threads.  The output
+file can then be opened with the \button{STEM File} in the \textsf{STEMDisplay} program and the BF/HAADF
+images can be compared with Figures 5 and 6 in the above cited paper.  One
+should find that the computed images agree perfectly with the ones shown in figure 5.  To obtain
+the results for Figure 6, one can either replace the parameter \textsf{SRG} by $1,1,-1$, or, one can 
+keep \textsf{SRG} set to $-1,-1,1$ and set \textsf{GLaue} to $-0.5$, which brings the reflection $1,1,-1$
+into Bragg orientation.
+
+
+
+\end{document}
+
+
+

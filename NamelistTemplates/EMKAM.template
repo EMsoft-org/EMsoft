@@ -1,0 +1,10 @@
+ &KAM
+! cutoff value to use for the KAM map
+ kamcutoff = 5.0,
+! orientation average (0 for no, integer otherwise; default 0)
+ orav = 20,
+! name of input dot product HDF5 file 
+ dotproductfile = 'undefined',
+! name of tiff output file for KAM
+ kamtiff = 'undefined',
+ /

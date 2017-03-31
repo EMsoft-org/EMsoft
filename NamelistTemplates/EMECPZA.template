@@ -1,0 +1,24 @@
+ &ECPZAlist
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+! smallest d-spacing to take into account [nm]
+ dmin = 0.025,
+! incident beam direction 
+ k = 0,0,1,
+! foil normal
+ fn = 0,0,1,
+! beam convergence angle in terms of the ratio kt/|g_a| (i.e., kt_max)
+ ktmax = 5.0,
+! output patterns will be (2*npix+1)^2 in size
+ npix = 256,
+! mask pattern or not; 'y' or 'n'
+ maskpattern = 'n',
+! number of threads for parallel execution
+ nthreads = 1,
+! monte carlo energy file
+ energyfile = 'undefined',
+! output file name (relative pathname)
+ outname = 'undefined',
+/

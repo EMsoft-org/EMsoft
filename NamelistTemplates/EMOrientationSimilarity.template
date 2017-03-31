@@ -1,0 +1,8 @@
+ &OrientationSimilarity
+! number of near matches to use in similarity analysis
+ nmuse = 10,
+! name of input dot product HDF5 file 
+ dotproductfile = 'undefined',
+! name of tiff output file for OSM
+ osmtiff = 'undefined',
+ /

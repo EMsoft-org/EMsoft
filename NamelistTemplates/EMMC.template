@@ -1,0 +1,28 @@
+ &MCdata
+! name of the crystal structure file
+ xtalname = 'somestructure.xtal',
+! sample tilt angle from horizontal [degrees]
+ sig = 70.0,
+! sample tilt angle around RD axis [degrees]
+ omega = 0.0,
+! number of pixels along x-direction of square projection [odd number!]
+ numsx = 1501,
+! seed for Monte Carlo random number generator [should be a prime number]
+ primeseed = 932117,
+! number of incident electrons per thread
+ num_el = 12500000,
+! number of OpenMP threads
+ nthreads = 8,
+! incident beam energy [keV]
+ EkeV = 30.D0,
+! minimum energy to consider [keV]
+ Ehistmin = 5.D0,
+! energy binsize [keV]
+ Ebinsize = 0.5D0,
+! maximum depth to consider for exit depth statistics [nm]
+ depthmax = 100.D0,
+! depth step size [nm]
+ depthstep = 1.0D0,
+! output data file name
+ dataname = '/some/folder/somewhere/MCoutput.data'
+ /

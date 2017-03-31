@@ -1,0 +1,15 @@
+ &EBSDmastervars
+! smallest d-spacing to take into account [nm]
+ dmin = 0.05,
+! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
+ npx = 500,
+! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname
+! this file will also contain the output data of the master program
+ energyfile = 'MCoutput.h5',
+! number of OpenMP threads
+ nthreads = 1,
+! restart computation ?
+ restart = .FALSE.,
+! create output file with uniform master patterns set to 1.0 (used to study background only)
+ uniform = .FALSE.,
+ /

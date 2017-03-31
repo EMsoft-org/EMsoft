@@ -1,0 +1,17 @@
+ &AverageOrientation
+! number of near matches to use in averaging procedure
+ nmuse = 10,
+! old format hdf5 file or new ?
+ oldformat=.FALSE.,
+! name of input dot product HDF5 file (new or old format)
+ dotproductfile = 'undefined',
+! name of ctf output file for averaged orientations (oldformat=.FALSE.)
+ averagectffile = 'undefined',
+! name of txt output file for averaged orientations (oldformat=.TRUE.)
+ averagetxtfile = 'undefined',
+! relative disorientation map
+ disorientationmap = 'undefined',
+! point with respect to which to compute the relative disorientation map
+ reldisx = 0,
+ reldisy = 0,
+ /

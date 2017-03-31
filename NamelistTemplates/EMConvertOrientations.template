@@ -1,0 +1,32 @@
+ &EMConvertOrientations
+! name of crystal structure file
+ xtalname = 'undefined',
+!
+! output file names; to obtain an output file for a given representation, change the corresponding 'undefined' string
+!
+! cubochoric output file name
+ cubochoric = 'undefined',
+! homochoric output file name
+ homochoric = 'undefined',
+! Rodrigues output file name
+ rodrigues = 'undefined',
+! 3D stereographic output file name
+ stereographic = 'undefined',
+! primary Euler cell output file name
+ eulerangles = 'undefined',
+! axis-angle output file name
+ axisangle = 'undefined',
+! quaternion output file name
+ quaternion = 'undefined',
+! orientation matrix output file name (all 9 matrix entries in one row)
+ rotationmatrix = 'undefined',
+!
+! should input orientations be reduced to the correct RFZ (1) or not (0) ?
+ reducetoRFZ = 1,
+!
+! the input angle file,  a simple text file with the following format
+! ##      ! two characters denoting the representation (eu, ro, ho, cu, ax, qu, sp, om)
+! n       ! number of entries in file
+! ...     ! one line per entry, components separated by spaces
+ anglefile = 'undefined',
+ / 

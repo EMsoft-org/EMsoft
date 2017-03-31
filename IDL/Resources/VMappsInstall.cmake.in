@@ -1,0 +1,35 @@
+#---------------------------------------------------------------------
+# This file is auto generated during cmake time and executed during
+# the installation/packaging of EMsoft. If you need to make changes
+# to this file MAKE SURE you are editing the original file located at
+# @EMsoft_SOURCE_DIR@/IDL/Resources/VMappsInstall.cmake.in
+
+# The whole installation depends on a specific version of IDL which is
+# encoded into the following variable:
+set(IDL_MAJOR_VERSION "8")
+set(IDL_MINOR_VERSION "5")
+
+# Make sure the proper directory exists, then create the symlink in that
+# directory. This probabaly only should work on OS X systems?
+if(APPLE)
+  execute_process(COMMAND mkdir -p "IDL/VMapps/SEMDisplay/idl${IDL_MAJOR_VERSION}${IDL_MINOR_VERSION}/bin"
+                  WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+  execute_process(COMMAND mkdir "lib"
+                  WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}")
+
+  if(EXISTS "${CMAKE_INSTALL_PREFIX}/IDL/VMapps/SEMDisplay/idl${IDL_MAJOR_VERSION}${IDL_MINOR_VERSION}/bin")
+
+    execute_process( COMMAND ln -s "../../../../../lib" "lib"
+                     WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}/IDL/VMapps/SEMDisplay/idl${IDL_MAJOR_VERSION}${IDL_MINOR_VERSION}/bin" )
+  else()
+    set(errorMsg "The proper directory for the IDL VMapps folder was not found. Are you using the proper version of IDL?\n")
+    set(errorMsg "${errorMsg} Currently the project is setup for IDL Version ${IDL_MAJOR_VERSION}.${IDL_MINOR_VERSION}\n")
+    set(errorMsg "${errorMsg} We are ABORTING the packaging process. Please fix the issue and try again.\n")
+    set(errorMsg "${errorMsg} The current installation directory is ${CMAKE_INSTALL_PREFIX}")
+    message(FATAL_ERROR "${errorMsg}")
+  endif()
+
+else()
+  message(STATUS "The creation of the symlink for the IDL VMApps is for OS X Only.")
+
+endif()
