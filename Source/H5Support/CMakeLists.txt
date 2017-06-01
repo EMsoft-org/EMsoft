@@ -121,8 +121,11 @@ set(PROJECT_SRCS
     ${H5Support_BINARY_DIR}/${CMP_VERSION_SOURCE_FILE_NAME}
 )
 
+set(lib_type "static")
+if(${${HDF5_PACKAGE_NAME}_BUILD_SHARED_LIBS})
+  set(lib_type "shared")
+endif()
 
-string(TOLOWER ${LIB_TYPE} lib_type)
 set(hdf5LinkLibs hdf5 hdf5_f90cstub hdf5_fortran hdf5_hl hdf5_hl_f90cstub hdf5_hl_fortran)
 set(comps ${hdf5LinkLibs})
 if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
@@ -163,6 +166,3 @@ if(BUILD_SHARED_LIBS AND NOT APPLE)
         BUNDLE DESTINATION "."
     )
 endif()
-
-
-
