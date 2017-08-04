@@ -75,7 +75,7 @@ pro EBSDfit,dummy
 common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
 common CommonCore, status, logmode, logunit
-common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel
+common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 
 !EXCEPT = 0
 logmode = 0
