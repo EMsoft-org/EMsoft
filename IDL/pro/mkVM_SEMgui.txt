@@ -7,7 +7,7 @@ appname = 'SEMDisplay'
 saveappname = appname+'.sav'
 IDLappdir = '/home/joao/EMsoftPublic/Build/Bin/IDL'
 VMappdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps'
-Resdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps/SEMDisplay/Resources'
+Resdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps/Resources'
 
 cd,CURRENT=cdir
 

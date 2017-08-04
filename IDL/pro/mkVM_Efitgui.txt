@@ -7,7 +7,7 @@ appname = 'Efit'
 saveappname = appname+'.sav'
 IDLappdir = '/home/joao/EMsoftPublic/Build/Bin/IDL'
 VMappdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps'
-Resdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps/Efit/Resources'
+Resdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps/Resources'
 
 cd,CURRENT=cdir
 
