@@ -100,7 +100,7 @@ if keyword_set(single) then begin
   KosselPattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsx)
   KosselPattern = reform(KosselPattern,SEMdata.detnumsx,SEMdata.detnumsx,1)
 
-  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
         ipar, fpar, KosselPattern, quats, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin
@@ -119,7 +119,7 @@ end else begin
 
   KosselPattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsx,SEMdata.numangles)
 
-  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
         ipar, fpar, KosselPattern, quaternions, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin

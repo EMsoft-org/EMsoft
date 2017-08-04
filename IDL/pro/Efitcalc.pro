@@ -85,7 +85,7 @@ EBSDpattern = reform(EBSDpattern,Efitdata.detnumsx,Efitdata.detnumsy,1)
 
 callname = 'getEBSDPatternsWrapper'
 
-res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
       ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
 EBSDpattern = reform(EBSDpattern)

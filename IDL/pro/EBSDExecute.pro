@@ -114,7 +114,7 @@ if keyword_set(single) then begin
   EBSDpattern = reform(EBSDpattern,SEMdata.detnumsx,SEMdata.detnumsy,1)
 
 ; call the EMsoft wrapper routine from EMdymod.f90
-  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
         ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin
@@ -139,7 +139,7 @@ end else begin ; computation of multiple EBSDpatterns
   EBSDpattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy,SEMdata.numangles)
 
 ; call the EMsoft wrapper routine from EMdymod.f90
-  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+  res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
         ipar, fpar, EBSDpattern, quaternions, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin
