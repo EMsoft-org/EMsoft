@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; CTE.dylibft2013:ECCIreaddatafile.pro
+; CTEMsoft2013:ECCIreaddatafile.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECCIreaddatafile.pro
@@ -69,7 +69,7 @@ if (ftp ne 'ECCI') then begin
   goto, skip
 end
 
-; ok, we've.dylibrted out the filetype; next we read the remainder of the input file
+; ok, we've sorted out the filetype; next we read the remainder of the input file
 
 ; first a pair of strings of 132 characters each
 ECCIname = bytarr(132)
@@ -227,10 +227,10 @@ close,1
 ;--------------------------------------------------------------------------
 ;--------------------------------------------------------------------------
 ;--------------------------------------------------------------------------
-; we're not done yet, since we a.dylib need to read the ECP data ... 
+; we're not done yet, since we also need to read the ECP data ... 
 ; we'll do this silently, since the user shoud be able to run the ECPDisplay program
 ; to get the details for that pattern
-; The only re.dylibn for producing output in the log window is if one of the parameters
+; The only reason for producing output in the log window is if one of the parameters
 ; of the ECP computation is different from the corresponding one in the ECCI file
 
 ; test for existence of file 

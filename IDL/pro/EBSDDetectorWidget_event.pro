@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:EBSDDetectorWidget_event.pro
+; EMsoft:EBSDDetectorWidget_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: EBSDDetectorWidget_event.pro
@@ -138,7 +138,7 @@ end else begin
 	  filename = DIALOG_PICKFILE(/write,path=SEMdata.pathname,title='enter EBSD output file name ')
 	  if (filename ne '') then begin
 	    SEMdata.EBSDpatternfilename = filename
-; and correct this for the relative pathnames of the E.dylibft package
+; and correct this for the relative pathnames of the EMsoft package
             SEMdata.EBSDpatternfilename = strmid(SEMdata.EBSDpatternfilename,strpos(SEMdata.EBSDpatternfilename,SEMdata.mcpathname))
 	    WIDGET_CONTROL, set_value=filename, SEMwidget_s.EBSDpatternfilename
 	    WIDGET_CONTROL, SEMwidget_s.DisplayEBSD, sensitive=1

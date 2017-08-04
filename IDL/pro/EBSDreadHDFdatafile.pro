@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2016, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:EBSDreadHDFdatafile.pro
+; EMsoft:EBSDreadHDFdatafile.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: EBSDreadHDFdatafile.pro
@@ -37,7 +37,7 @@
 ;
 ;> @date 03/19/14 MDG 1.0 first attempt 
 ;> @date 04/02/15 MDG 2.0 modfied from EBSDreaddatafile to cover HDF formatted files
-;> @date 05/07/15 MDG 2.1 modified to accommodate changes in path names for the entire E.dylibft package
+;> @date 05/07/15 MDG 2.1 modified to accommodate changes in path names for the entire EMsoft package
 ;> @date 10/29/15 MDG 2.2 added support for ECP master files
 ;> @date 10/31/15 MDG 2.3 removed widget fields and redirected all output to status widget
 ;> @date 11/09/15 MDG 2.4 disabled separate MCFile display option; incorporated Kossel pattern option
@@ -69,7 +69,7 @@ EMdatapathname = ''
     goto,skipall
   endif
 
-; ok,.dylib it is an HDF file; let's open it
+; ok, so it is an HDF file; let's open it
   file_id = H5F_OPEN(SEMdata.pathname+'/'+SEMdata.mpfilename)
   if (file_id eq -1L) then begin
     Core_Print,'  Error opening file',/blank
@@ -134,7 +134,7 @@ EMdatapathname = ''
 ; =====================================================
 ; =====================================================
 ; open and read the Monte Carlo dataset in the EMheader groups
-  if (SEMdata.mpfiletype ne 3) then begin ; Kossel mode does not have any a.dylibciated Monte Carlo data sets 
+  if (SEMdata.mpfiletype ne 3) then begin ; Kossel mode does not have any associated Monte Carlo data sets 
     if (SEMdata.mpfiletype lt 3) then group_id = H5G_open(file_id,'EMheader/MCOpenCL') else group_id = H5G_open(file_id,'EMheader/MCfoil')
     Core_Print,'Reading Monte Carlo data sets '
     SEMdata.Esel = 0
@@ -298,9 +298,9 @@ EMdatapathname = ''
 ; =====================================================
 ; =====================================================
 
-; ok, we're done reading the Monte Carlo data, if any,.dylib we continue with the remainder of the master pattern data
+; ok, we're done reading the Monte Carlo data, if any, so we continue with the remainder of the master pattern data
 
-; open the NMLparameters.dylibmethingorother group
+; open the NMLparameters/somethingorother group
   namelistnames = ['','NMLparameters/EBSDMasterNameList','NMLparameters/ECPMasterNameList','NMLparameters/KosselMasterNameList','NMLparameters/TKDMasterNameList']
   group_id = H5G_open(file_id,namelistnames[SEMdata.mpfiletype])
 

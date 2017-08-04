@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; CTE.dylibft2013:ECCIECPWidget_event.pro
+; CTEMsoft2013:ECCIECPWidget_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECCIECPWidget_event.pro
@@ -117,7 +117,7 @@ end else begin
 	            WIDGET_CONTROL, SET_VALUE=string(ma,format="(F6.1)"), widget_s.ECCIdrawmax
 
 
-; then we a.dylib need to display the averaged ECCI image
+; then we also need to display the averaged ECCI image
 	            wset,widget_s.ECCIavdrawID
 	            erase
 	            WIDGET_CONTROL, SET_VALUE=string(0.0,format="(F6.1)"), widget_s.ECCIavdrawmin
@@ -165,7 +165,7 @@ end else begin
 	      	      WIDGET_CONTROL, SET_VALUE=string(mi,format="(F6.1)"), widget_s.ECCIdrawmin
 	      	      WIDGET_CONTROL, SET_VALUE=string(ma,format="(F6.1)"), widget_s.ECCIdrawmax
 
-; then we a.dylib need to display the averaged ECCI image
+; then we also need to display the averaged ECCI image
 ; first determine all the points that are inside the circle and add the corresponding ECCI images 
 ; together
 	      	      wset,widget_s.ECCIavdrawID

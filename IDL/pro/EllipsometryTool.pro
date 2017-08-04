@@ -1,6 +1,6 @@
 @Core_WTextE
 @Core_Print
-@Elli.dylibmetryTool_event
+@EllipsometryTool_event
 @OMETbuttonevent
 @OMMuellerMatrixCalculus
 @OMETinitrotator
@@ -19,7 +19,7 @@
 @OMETStokesVectorWidget_event
 @OMETsampleWidget
 @OMETsampleWidget_event
-@Elli.dylibmetryTool_event
+@EllipsometryTool_event
 @OMETfindchainID
 @OMETdebug
 @OMETshufflewidgets
@@ -30,17 +30,17 @@
 ; Copyright (c) 2017-, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -54,10 +54,10 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:Elli.dylibmetryTool.pro
+; EMsoft:EllipsometryTool.pro
 ;--------------------------------------------------------------------------
 ;
-; PROGRAM: Elli.dylibmetryTool.pro
+; PROGRAM: EllipsometryTool.pro
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
@@ -65,10 +65,10 @@
 ;
 ;> @date 02/15/17 MDG 1.0 first attempt at a user-friendly interface
 ;--------------------------------------------------------------------------
-pro Elli.dylibmetryTool,dummy
+pro EllipsometryTool,dummy
 ;
 ;------------------------------------------------------------
-; common blocks  (OMET = Optical Microscopy Elli.dylibmetry Tool)
+; common blocks  (OMET = Optical Microscopy Ellipsometry Tool)
 common OMET_widget_common, OMETwidget_s
 common OMET_data_common, OMETdata
 common fontstrings, fontstr, fontstrlarge, fontstrsmall
@@ -82,8 +82,8 @@ shuffleflag = 1
 
 ;------------------------------------------------------------
 ; make sure that this program isn't already running
-if (XRegistered("Elli.dylibmetryTool") NE 0) then begin
-  print,'Elli.dylibmetryTool is already running ... (if it is not, please restart your IDL session)'
+if (XRegistered("EllipsometryTool") NE 0) then begin
+  print,'EllipsometryTool is already running ... (if it is not, please restart your IDL session)'
   return
 end
 
@@ -124,7 +124,7 @@ OMETwidget_s = {widgetstruct, $
     outputdelta:long(0), $
     inputpolarization:long(0), $
     outputpolarization:long(0), $
-    logodraw:long(0), $           ; top widget with spo.dylibr logo
+    logodraw:long(0), $           ; top widget with sponsor logo
     logodrawID:long(0), $
     PEdraw:long(0), $
     PEdrawID:long(0), $
@@ -172,14 +172,14 @@ OMETdata = {OMETdatastruct, $
     scrdimy:0L}                   ; display area y size in pixels 
 
 ; a few font strings (this will need to be redone for Windows systems !!!)
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-.dylib8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-.dylib8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-.dylib8859-1'
+fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
+fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
+fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
 ; We'll need to guess whether or not the user has a double screen: if the aspect ratio is larger than 16/9,
-; then there are likely two screens,.dylib we need to limit ourselves to just the first one...
+; then there are likely two screens, so we need to limit ourselves to just the first one...
 ; This should really become a core function that we can call from all programs.
 device,decomposed = 0
 device, GET_SCREEN_SIZE = scr
@@ -204,7 +204,7 @@ optelemptr = ptrarr(maxnumoptelem)
 ; 1 : polarizer
 ; 2 : retarder
 ; 3 : rotator
-; 4 : Stokes vector .dyliburce)
+; 4 : Stokes vector (source)
 ; 5 : sample (which has its own Mueller matrix)
 ; 6 : Stokes vector (detector)
 ;
@@ -237,12 +237,12 @@ optelemptr[OMETdata.availableOEnumber] = PTR_NEW(OMETinitStokesVector(OMETdata.a
 
 ;------------------------------------------------------------
 ; create the top level widget
-OMETwidget_s.base = WIDGET_BASE(TITLE='Optical Microscopy Elli.dylibmetry Tool', $
+OMETwidget_s.base = WIDGET_BASE(TITLE='Optical Microscopy Ellipsometry Tool', $
                       /ROW, $
                       XSIZE=1200, $
                       /ALIGN_LEFT, $
   						        /TLB_MOVE_EVENTS, $
-  				        		EVENT_PRO='Elli.dylibmetryTool_event', $
+  				        		EVENT_PRO='EllipsometryTool_event', $
                       XOFFSET=OMETdata.xlocation, $
                       YOFFSET=OMETdata.ylocation)
 
@@ -278,21 +278,21 @@ file3 = WIDGET_LABEL(file2, VALUE='Select an optical element:', font=fontstr, /A
 OMETwidget_s.createpolarizer = WIDGET_BUTTON(file2, $
                                 UVALUE='CREATEPOLARIZER', $
                                 VALUE='New polarizer', $
-                                EVENT_PRO='Elli.dylibmetryTool_event', $
+                                EVENT_PRO='EllipsometryTool_event', $
                                 SENSITIVE=1, $
                                 /FRAME)
 
 OMETwidget_s.createretarder = WIDGET_BUTTON(file2, $
                                 UVALUE='CREATERETARDER', $
                                 VALUE='New retarder', $
-                                EVENT_PRO='Elli.dylibmetryTool_event', $
+                                EVENT_PRO='EllipsometryTool_event', $
                                 SENSITIVE=1, $
                                 /FRAME)
 
 OMETwidget_s.createrotator  = WIDGET_BUTTON(file2, $
                                 UVALUE='CREATEROTATOR', $
                                 VALUE='New rotator', $
-                                EVENT_PRO='Elli.dylibmetryTool_event', $
+                                EVENT_PRO='EllipsometryTool_event', $
                                 SENSITIVE=1, $
                                 /FRAME)
 
@@ -300,10 +300,10 @@ OMETwidget_s.createrotator  = WIDGET_BUTTON(file2, $
 OMETwidget_s.numleft = Core_WText(file2,' # available', fontstr, 90, 25, 3, 1, string(OMETdata.numleft,format="(I2)"))
 
 file11 = WIDGET_BASE(block21, XSIZE=600, /ROW)
-OMETwidget_s.inputchi= Core_WTextE(file11,'Input: chi ', fontstr, 90, 25, 10, 1, string(OMETdata.inputchi,format="(F10.6)"),'INPUTCHI','Elli.dylibmetryTool_event')
-OMETwidget_s.inputpsi= Core_WTextE(file11,' psi ', fontstr, 30, 25, 10, 1, string(OMETdata.inputpsi,format="(F10.6)"),'INPUTPSI','Elli.dylibmetryTool_event')
-OMETwidget_s.inputalpha= Core_WTextE(file11,' alpha ', fontstr, 50, 25, 10, 1, string(OMETdata.inputalpha,format="(F10.6)"),'INPUTALPHA','Elli.dylibmetryTool_event')
-OMETwidget_s.inputdelta= Core_WTextE(file11,' delta ', fontstr, 50, 25, 10, 1, string(OMETdata.inputdelta,format="(F10.6)"),'INPUTDELTA','Elli.dylibmetryTool_event')
+OMETwidget_s.inputchi= Core_WTextE(file11,'Input: chi ', fontstr, 90, 25, 10, 1, string(OMETdata.inputchi,format="(F10.6)"),'INPUTCHI','EllipsometryTool_event')
+OMETwidget_s.inputpsi= Core_WTextE(file11,' psi ', fontstr, 30, 25, 10, 1, string(OMETdata.inputpsi,format="(F10.6)"),'INPUTPSI','EllipsometryTool_event')
+OMETwidget_s.inputalpha= Core_WTextE(file11,' alpha ', fontstr, 50, 25, 10, 1, string(OMETdata.inputalpha,format="(F10.6)"),'INPUTALPHA','EllipsometryTool_event')
+OMETwidget_s.inputdelta= Core_WTextE(file11,' delta ', fontstr, 50, 25, 10, 1, string(OMETdata.inputdelta,format="(F10.6)"),'INPUTDELTA','EllipsometryTool_event')
 
 ;------------------------------------------------------------
 ;------------------------------------------------------------
@@ -328,28 +328,28 @@ file11 = WIDGET_BASE(block1, XSIZE=590, /FRAME, /ROW)
 OMETwidget_s.loadchain = WIDGET_BUTTON(file11, $
                           UVALUE='LOADOPTICALCHAIN', $
                           VALUE='Load Optical Chain', $
-                          EVENT_PRO='Elli.dylibmetryTool_event', $
+                          EVENT_PRO='EllipsometryTool_event', $
                           SENSITIVE=1, $
                           /FRAME)
 
 OMETwidget_s.savechain = WIDGET_BUTTON(file11, $
                           UVALUE='SAVEOPTICALCHAIN', $
                           VALUE='Save Optical Chain', $
-                          EVENT_PRO='Elli.dylibmetryTool_event', $
+                          EVENT_PRO='EllipsometryTool_event', $
                           SENSITIVE=0, $
                           /FRAME)
 
 OMETwidget_s.resetchain = WIDGET_BUTTON(file11, $
                           UVALUE='RESETOPTICALCHAIN', $
                           VALUE='Reset Optical Chain', $
-                          EVENT_PRO='Elli.dylibmetryTool_event', $
+                          EVENT_PRO='EllipsometryTool_event', $
                           SENSITIVE=0, $
                           /FRAME)
 
 OMETwidget_s.mainstop = WIDGET_BUTTON(file11, $
                           VALUE='Quit', $
                           UVALUE='QUIT', $
-                          EVENT_PRO='Elli.dylibmetryTool_event', $
+                          EVENT_PRO='EllipsometryTool_event', $
                           SENSITIVE=1, $
                           /FRAME)
 
@@ -409,13 +409,13 @@ OMETwidget_s.PEdrawID = PEdrawID
 WIDGET_CONTROL, OMETwidget_s.logodraw, GET_VALUE=drawID
 OMETwidget_s.logodrawID = drawID
 ;
-read_jpeg,'../R.dyliburces/E.dylibftlogo.jpg',logo
-;read_jpeg,'R.dyliburces/E.dylibftlogo.jpg',logo
+read_jpeg,'../Resources/EMsoftlogo.jpg',logo
+;read_jpeg,'Resources/EMsoftlogo.jpg',logo
 wset,OMETwidget_s.logodrawID
 tvscl,logo,true=1
 
 ; and hand over control to the xmanager
-XMANAGER,"Elli.dylibmetryTool",OMETwidget_s.base,/NO_BLOCK
+XMANAGER,"EllipsometryTool",OMETwidget_s.base,/NO_BLOCK
 
 ; at this point we need to generate the widgets for all existing optical elements;
 ; in the default case, this will simply be the incident and outgoing Stokes vectors

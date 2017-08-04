@@ -11,7 +11,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:EBSDPatternWidget_event.pro
+; EMsoft:EBSDPatternWidget_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: EBSDPatternWidget_event.pro

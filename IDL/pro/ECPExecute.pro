@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:ECPExecute.pro
+; EMsoft:ECPExecute.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECPExecute.pro
@@ -109,7 +109,7 @@ if keyword_set(single) then begin
   ECPattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy)
   ECPattern = reform(ECPattern,SEMdata.detnumsx,SEMdata.detnumsy,1)
 
-  res = call_external(librarylocation+'/libE.dylibftLib.dylib', callname, $
+  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
         ipar, fpar, ECPattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin
@@ -128,7 +128,7 @@ end else begin
 
   ECPattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy,SEMdata.numangles)
 
-  res = call_external(librarylocation+'/libE.dylibftLib.dylib', callname, $
+  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
         ipar, fpar, ECPattern, quaternions, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin

@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2016, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:EBSDExecute.pro
+; EMsoft:EBSDExecute.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: EBSDExecute.pro
@@ -55,7 +55,7 @@ common getenv_common, librarylocation
 
 status = 1
 
-if (SEMdata.E.dylibftpathname eq 'path_unknown') then SEMdata.E.dylibftpathname = Core_getenv()
+if (SEMdata.EMsoftpathname eq 'path_unknown') then SEMdata.EMsoftpathname = Core_getenv()
 
 ; check whether the mask needs to be recomputed or not
 s = size(circularmask)
@@ -113,8 +113,8 @@ if keyword_set(single) then begin
   EBSDpattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy)
   EBSDpattern = reform(EBSDpattern,SEMdata.detnumsx,SEMdata.detnumsy,1)
 
-; call the E.dylibft wrapper routine from EMdymod.f90
-  res = call_external(librarylocation+'/libE.dylibftLib.dylib', callname, $
+; call the EMsoft wrapper routine from EMdymod.f90
+  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
         ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin
@@ -138,8 +138,8 @@ end else begin ; computation of multiple EBSDpatterns
 ; initialize the simulated pattern array
   EBSDpattern = fltarr(SEMdata.detnumsx,SEMdata.detnumsy,SEMdata.numangles)
 
-; call the E.dylibft wrapper routine from EMdymod.f90
-  res = call_external(librarylocation+'/libE.dylibftLib.dylib', callname, $
+; call the EMsoft wrapper routine from EMdymod.f90
+  res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
         ipar, fpar, EBSDpattern, quaternions, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
   if (res ne 1.0) then begin

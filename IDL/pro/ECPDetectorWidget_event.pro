@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:ECPDetectorWidget_event.pro
+; EMsoft:ECPDetectorWidget_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECPDetectorWidget_event.pro
@@ -92,9 +92,9 @@ end else begin
  'DISPLAYECP': begin
 ; first we need to make sure that the path to the fortran executables is known... this is stored in the 
 ; preferences file, but is initially set to 'path_unknown'
-	  if (SEMdata.E.dylibftpathname eq 'path_unknown') then begin
-                SEMdata.E.dylibftpathname = Core_getenv(/bin)+'Build/Bin'
-                Core_print,'exeutable path set to '+SEMdata.E.dylibftpathname 
+	  if (SEMdata.EMsoftpathname eq 'path_unknown') then begin
+                SEMdata.EMsoftpathname = Core_getenv(/bin)+'Build/Bin'
+                Core_print,'exeutable path set to '+SEMdata.EMsoftpathname 
 	  end
 
 ; is the correct widget up on the screen ?

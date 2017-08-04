@@ -1,17 +1,17 @@
 ; Copyright (c) 2017-, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -25,34 +25,34 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:Elli.dylibmetryTool_event.pro
+; EMsoft:EllipsometryTool_event.pro
 ;--------------------------------------------------------------------------
 ;
-; PROGRAM: Elli.dylibmetryTool_event.pro
+; PROGRAM: EllipsometryTool_event.pro
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief Main event handler for Elli.dylibmetryTool routine
+;> @brief Main event handler for EllipsometryTool routine
 ;
 ;> @date 02/15/17 MDG 1.0 initial version
 ;--------------------------------------------------------------------------
-pro Elli.dylibmetryTool_event, event
+pro EllipsometryTool_event, event
 
 ;------------------------------------------------------------
-; common blocks  (OMET = Optical Microscopy Elli.dylibmetry Tool)
+; common blocks  (OMET = Optical Microscopy Ellipsometry Tool)
 common OMET_widget_common, OMETwidget_s
 common OMET_data_common, OMETdata
 common fontstrings, fontstr, fontstrlarge, fontstrsmall
 common CommonCore, status, logmode, logunit
 common OMET_optelem_common, optelemptr
 
-if (OMETdata.eventverbose eq 1) then print,'entering Elli.dylibmetryTool_event'
+if (OMETdata.eventverbose eq 1) then print,'entering EllipsometryTool_event'
 
 ; used for debugging purposes
 if (OMETdata.eventverbose eq 1) then help,event,/structure
 
 ; there are only two different events: either the window has been moved or 
-;.dylibme button or.dylibmething has been activated inside the window
+; some button or something has been activated inside the window
 if (event.id eq OMETwidget_s.base) then begin
   OMETdata.xlocation = event.x
   OMETdata.ylocation = event.y-25

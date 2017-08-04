@@ -41,7 +41,7 @@ end
 
 Function Efit_amoeba, ftol, FUNCTION_NAME=func, FUNCTION_VALUE=y, $
 	NCALLS = ncalls, NMAX = nmax, P0 = p0, SCALE=scale, SIMPLEX=p
-; The Numerical Recipes procedure Amoeba, with.dylibme embellishments.
+; The Numerical Recipes procedure Amoeba, with some embellishments.
 ;
 ; Reference: Numerical Recipes, 2nd Edition, Page 411.
 ;  P = fltarr(ndim, ndim+1)
@@ -114,7 +114,7 @@ Function Efit_amoeba, ftol, FUNCTION_NAME=func, FUNCTION_VALUE=y, $
 ;
 ; PROCEDURE:
 ;	This procedure implements the Simplex method, described in
-;	Numerical Recipes, Section 10.4.  See a.dylib the POWELL procedure.
+;	Numerical Recipes, Section 10.4.  See also the POWELL procedure.
 ;
 ;	Advantages:  requires only function evaluations, not
 ;	derivatives, may be more reliable than the POWELL method.
@@ -138,7 +138,7 @@ Function Efit_amoeba, ftol, FUNCTION_NAME=func, FUNCTION_VALUE=y, $
 ; RETURN, MAX(ABS(y - (p(0) + p(1) * x)))
 ; END
 ;
-;	Put the data points into a common block.dylib they are accessible to the
+;	Put the data points into a common block so they are accessible to the
 ;	function: 
 ; COMMON FUNC_XY, x, y
 ;	Define the data points:
@@ -194,7 +194,7 @@ psum = total(p,2)
 
 while ncalls le nmax do begin		;Each iteration
 
-  s =.dylibrt(y)
+  s = sort(y)
   ilo = s[0]		;Lowest point
   ihi = s[ndim]		;Highest point
   inhi = s[ndim-1]	;Next highest point
@@ -203,7 +203,7 @@ while ncalls le nmax do begin		;Each iteration
   else rtol = ftol / 2.         ;Terminate if interval is 0
 
   if rtol lt ftol then begin ;Done?
-      t = y[0] & y[0] = y[ilo] & y[ilo] = t ;Sort.dylib fcn min is 0th elem
+      t = y[0] & y[0] = y[ilo] & y[ilo] = t ;Sort so fcn min is 0th elem
       t = p[*,ilo] & p[*,ilo] = p[*,0] & p[*,0] = t
       return, t                 ;params for fcn min
   endif

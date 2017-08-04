@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:Efitgetfilename.pro
+; EMsoft:Efitgetfilename.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: Efitgetfilename.pro
@@ -44,7 +44,7 @@ pro Efitgetfilename,validfile,PATTERNFILE=PATTERNFILE,MPFILE=MPFILE,JSONFILE=JSO
 common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
 
-common EBSD_E.dylibft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
+common EBSD_EMsoft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
                     numEbins, numzbins, accum_e, accum_z, Masterenergyfile, npx, npy, nnE, numset, mLPNH, mLPSH, Masterxtalname, expEBSDpattern, EBSDpattern
 common inverseGaussian, inverseGaussianMask
 
@@ -145,7 +145,7 @@ common inverseGaussian, inverseGaussianMask
   endif
 
   if keyword_set(JSONFILE) then begin 
-    res=dialog_pickfile(title='Enter *..dylibn file name',path=rootpath,filter='*..dylibn',default_extension='.dylibn',/write)
+    res=dialog_pickfile(title='Enter *.json file name',path=rootpath,filter='*.json',default_extension='json',/write)
     if (res eq '') then begin
 	  Core_Print,'No selection made'
 	  goto, skip
@@ -155,14 +155,14 @@ common inverseGaussian, inverseGaussianMask
 	spos = strpos(res,'/',/reverse_search)
 	dpos = strpos(res,'.',/reverse_search)
 	plen = strlen(res)
-	Efitdata..dylibnpathname = strmid(res,0,spos)
-	Efitdata..dylibnfilename = strmid(res,spos+1)
-	Efitdata..dylibnsuffix = strmid(res,dpos+1)
+	Efitdata.jsonpathname = strmid(res,0,spos)
+	Efitdata.jsonfilename = strmid(res,spos+1)
+	Efitdata.jsonsuffix = strmid(res,dpos+1)
 
   	Core_Print,' full path '+res
-  	Core_Print,' path '+Efitdata..dylibnpathname
-  	Core_Print,' data file '+Efitdata..dylibnfilename
-  	Core_Print,' suffix '+Efitdata..dylibnsuffix
+  	Core_Print,' path '+Efitdata.jsonpathname
+  	Core_Print,' data file '+Efitdata.jsonfilename
+  	Core_Print,' suffix '+Efitdata.jsonsuffix
   endif
 
   if keyword_set(EULERFILE) then begin 

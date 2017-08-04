@@ -25,17 +25,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -49,7 +49,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:EBSDfit.pro
+; EMsoft:EBSDfit.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: EBSDfit.pro
@@ -150,7 +150,7 @@ Efitdata = {Efitdatastruct, $
                 detphi:float(0), $
                 detphi2:float(0), $
                 detsL:float(100), $
-                de.dylibmega:float(0.5), $
+                detsomega:float(0.5), $
                 detsxpc:float(5.0), $
                 detsypc:float(5.0), $
                 detsgamma:float(0.1), $
@@ -198,7 +198,7 @@ Efitdata = {Efitdatastruct, $
 ;------------------------------------------------------------
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-; number of fitting parameters in this program and a.dylibciated arrays; new parameters should be added at the end of each array!
+; number of fitting parameters in this program and associated arrays; new parameters should be added at the end of each array!
 fitName = [ ' Scintillator Distance',  $
             '   Sample omega angle ',  $
             '         Detector pcx ',  $
@@ -222,7 +222,7 @@ fitValue[3] = Efitdata.detypc
 fitValue[4] = Efitdata.detgamma
 fitStep = fltarr(nFit)
 fitStep[0] = Efitdata.detsL
-fitStep[1] = Efitdata.de.dylibmega
+fitStep[1] = Efitdata.detsomega
 fitStep[2] = Efitdata.detsxpc
 fitStep[3] = Efitdata.detsypc
 fitStep[4] = Efitdata.detsgamma
@@ -241,14 +241,14 @@ fitManualStep[6] = Efitdata.detmphi
 fitManualStep[7] = Efitdata.detmphi2
 
 ; a few font strings (this will need to be redone for Windows systems)
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-.dylib8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-.dylib8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-.dylib8859-1'
+fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
+fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
+fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
 ; We'll need to guess whether or not the user has a double screen: if the aspect ratio is larger than 16/9,
-; then there are likely two screens,.dylib we need to limit ourselves to just the first one...
+; then there are likely two screens, so we need to limit ourselves to just the first one...
 ; This should really become a core function that we can call from all programs.
 device,decomposed = 0
 device, GET_SCREEN_SIZE = scr
@@ -264,7 +264,7 @@ Efitdata.ylocation = Efitdata.scrdimx / 8.0
 
 ;------------------------------------------------------------
 ; does the preferences file exist ?  If not, create it, otherwise read it
-; this should a.dylib fill in.dylibme of the default values for the refinable parameters and the stepsizes and such
+; this should also fill in some of the default values for the refinable parameters and the stepsizes and such
 Efitgetpreferences,/noprint
 
 ;------------------------------------------------------------
@@ -477,7 +477,7 @@ for i=0,nFit-1 do ret = Core_FitLine(block2, i)
 
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-; we'll a.dylib need.dylibme options for background subtraction,.dylibrt of as a preprocessing step
+; we'll also need some options for background subtraction, sort of as a preprocessing step
 ;  - fit 2D Gaussian shape
 ;  - high-pass filter
 
@@ -531,7 +531,7 @@ WIDGET_CONTROL,Efitwidget_s.base,/REALIZE
 WIDGET_CONTROL, Efitwidget_s.logodraw, GET_VALUE=drawID
 Efitwidget_s.logodrawID = drawID
 ;
-read_jpeg,'R.dyliburces/E.dylibftlogo.jpg',logo
+read_jpeg,'Resources/EMsoftlogo.jpg',logo
 wset,Efitwidget_s.logodrawID
 tvscl,logo,true=1
 

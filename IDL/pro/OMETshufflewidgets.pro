@@ -2,17 +2,17 @@
 ; Copyright (c) 2017-, Marc De Graef Research Group/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
+; Redistribution and use in source and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
+;     - Redistributions of source code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this.dylibftware without specific prior written permission.
+;        this software without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; E.dylibft:OMETshufflewidgets.pro
+; EMsoft:OMETshufflewidgets.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: OMETshufflewidgets.pro
@@ -51,11 +51,11 @@ common OMET_optelem_common, optelemptr
 if (OMETdata.eventverbose eq 1) then print,'entering OMETshufflewidgets', curchainID
 
 ; if we're going to move a widget, there's a good chance that others will need to be moved as well,
-;.dylib we need to turn off temporarily their sensitivity to move events to prevent their event handler
-; routines from being called; this caused all.dylibrts of problems during the debug phase of this program...
+; so we need to turn off temporarily their sensitivity to move events to prevent their event handler
+; routines from being called; this caused all sorts of problems during the debug phase of this program...
 OMETwidgetsensitivity, curchainID, /off
 
-wtype = ['',  'polarizer', 'retarder', 'rotator', 'Stokes vector .dyliburce)', 'sample', 'Stokes vector (detector)']
+wtype = ['',  'polarizer', 'retarder', 'rotator', 'Stokes vector (source)', 'sample', 'Stokes vector (detector)']
 
 maxoenum = OMETgetnextfreepos()
 maxposx = (maxoenum-1) * OMETdata.xstepsize
@@ -69,7 +69,7 @@ if (eventx ge maxposx) then begin
 	    WIDGET_CONTROL, OMETwidget_s.chainIDs[curchainID], TLB_SET_XOFFSET = (*optelemptr[curchainID]).oenum*OMETdata.xstepsize, TLB_SET_YOFFSET = OMEtdata.ylocationwidgets
 	    Core_Print,'1 moving widget '+wtype[(*optelemptr[curchainID]).oetype]+':'+string(curchainID,format="(I2)")+' to '+string((*optelemptr[curchainID]).oenum*OMETdata.xstepsize,format="(I4)")+', '+string(OMEtdata.ylocationwidgets,format="(I4)")
 end else begin
-; determine where to move the curchainID widget to, and a.dylib which other widgets need to be moved 	
+; determine where to move the curchainID widget to, and also which other widgets need to be moved 	
 ; this requires a bit of logic ,,,
     if (curchainID eq OMETgetnextfreepos()-1) then begin
 	; if this is the last widget in the row, then we can only move it to the left and we need to move the 
@@ -101,7 +101,7 @@ end else begin
     ;endif
 end else begin
     if ((curchainID lt OMETdata.availableOEnumber-1) and (curchainID gt 0)) then begin
-	; this is not the last or the first widget,.dylib we can really move it either to the left or to the right 
+	; this is not the last or the first widget, so we can really move it either to the left or to the right 
 	; the logic is thus a little more complicated than the case above...
 	; get the new position to move to as well as the old position
 	    newpos = fix(eventx/OMETdata.xstepsize)
