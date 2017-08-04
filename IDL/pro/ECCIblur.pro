@@ -6,7 +6,7 @@ function ECCIblur,im,blur
   if (dim lt 3) then dim=3
   d2 = (dim-1)/2
 
-; some useful auxiliary variables
+;.dylibme useful auxiliary variables
   kernel = fltarr(dim,dim)
   line = findgen(dim)-float(dim/2)
   x = line#replicate(1.0,dim)

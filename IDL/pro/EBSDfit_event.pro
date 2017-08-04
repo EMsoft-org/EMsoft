@@ -2,17 +2,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:EBSDfit_event.pro
+; E.dylibft:EBSDfit_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: EBSDfit_event.pro
@@ -134,7 +134,7 @@ Core_Print,'Starting pattern computation'
                 Efitdata.detsL = Core_WidgetEvent( Efitwidget_s.fitStep[0],  'Scintillator distance step size set to [micron] ', '(F9.2)', /flt)
 	endcase
         'DETsOMEGA' : begin
-                Efitdata.detsomega = Core_WidgetEvent( Efitwidget_s.fitStep[1],  'Sample omega angle step size set to [degrees] ', '(F9.2)', /flt)
+                Efitdata.de.dylibmega = Core_WidgetEvent( Efitwidget_s.fitStep[1],  'Sample omega angle step size set to [degrees] ', '(F9.2)', /flt)
 	endcase
         'DETsXPC' : begin
                 Efitdata.detsxpc = Core_WidgetEvent( Efitwidget_s.fitStep[2],  'Pattern center x step size set to [pixels] ', '(F9.2)', /flt)

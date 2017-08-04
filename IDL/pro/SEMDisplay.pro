@@ -42,17 +42,17 @@
 ; Copyright (c) 2014-2016, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -66,7 +66,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:SEMDisplay.pro
+; E.dylibft:SEMDisplay.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: SEMDisplay.pro
@@ -83,7 +83,7 @@
 ;> or microscope geometric distortions; only the detector geometry, noise (on/off),
 ;> binning, and brightness/contrast controls are available.  The other options 
 ;> will be included in a next version (as will be the dictionary generation option).
-;> The current program can also read ECP and Kossel pattern files.
+;> The current program can a.dylib read ECP and Kossel pattern files.
 ;
 ;> @todo Long list of things to be added:
 ;> - incorporate automated calibration of pattern parameters (now done in separate Efit program)
@@ -317,7 +317,7 @@ SEMdata = {SEMdatastruct, $
 	mcmode: '', $					; 'CSDA' (continuous slowing down approximation) or 'DLOS' (discrete losses)
 	Esel: long(0), $				; energy selection for slider in MC and MP display routines
 	mcprogname: '', $ 				; MC program name
-	mcscversion: '', $ 				; source code version number
+	mcscversion: '', $ 				;.dyliburce code version number
 	mcdataedims: lon64arr(3), $		; dimensions of accum_e
 	mcdatazdims: lon64arr(4), $		; dimensions of accum_z
     mcfilmthickness: float(0.0), $  ; film thickness for two-layer structures
@@ -337,7 +337,7 @@ SEMdata = {SEMdatastruct, $
 	xtalname: '', $					; crystal structure filename
 	xtalname2: '', $				; crystal structure 2 filename
 	mpprogname: '', $ 				; Master Pattern program name
-	mpscversion: '', $ 				; source code version number
+	mpscversion: '', $ 				;.dyliburce code version number
 	mpdatadims: lon64arr(3), $		; dimensions of raw data array
 
 	; detector parameters
@@ -402,18 +402,18 @@ SEMdata = {SEMdatastruct, $
 	Ncubochoric: long(0), $			; number of sampling points for cubochoric cell (N, as in 2N+1)
 	NinRFZ: long(0), $				; number of points in Rodrigues Fundamental Zone
 	f90exepath: 'path_unknown', $	; path to f90 executables
-	EMsoftpathname: 'path_unknown', $ ; new path to f90 executables
+	E.dylibftpathname: 'path_unknown', $ ; new path to f90 executables
 
 	; then general program parameters
 	eventverbose: fix(0), $			; used for event debugging (0=off, 1=on)
-	scversion: '', $				; source code version number
+	scversion: '', $				;.dyliburce code version number
 	pathname: '', $					; pathname (obviously)
 	mcpathname: '', $				; MC pathname (obviously)
 	suffix: '', $					; filename suffix 
 	homefolder: '', $				; startup folder of the program
 	EBSDroot: 'undefined', $		; current pathname (is stored in preferences file)
 	EBSDMCroot: 'undefined', $		; current pathname (is stored in preferences file)
-	prefname: '~/.config/EMsoft/EBSDgui.prefs', $		; filename of preferences file (including path)
+	prefname: '~/.config/E.dylibft/EBSDgui.prefs', $		; filename of preferences file (including path)
 	nprefs: fix(0), $				; number of preferences in file
 	MCLSmode: fix(0), $				; Monte Carlo Lambert Selector tag
 	MCLSum: fix(0), $				; Monte Carlo Lambert sum or individual tag
@@ -448,9 +448,9 @@ SEMdata = {SEMdatastruct, $
         } ; end of data structure definition
 
 ; a few font strings (this will need to be redone for Windows systems !!!)
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-.dylib8859-1'
+fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-.dylib8859-1'
+fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-.dylib8859-1'
 
 ; here are the possible master pattern file types
 SEMdata.mpfiletypestring = ['  ','EBSD','ECP','Kossel','TKD']
@@ -458,7 +458,7 @@ SEMdata.mpfiletypestring = ['  ','EBSD','ECP','Kossel','TKD']
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
 ; We'll need to guess whether or not the user has a double screen: if the aspect ratio is larger than 16/9,
-; then there are likely two screens, so we need to limit ourselves to just the first one...
+; then there are likely two screens,.dylib we need to limit ourselves to just the first one...
 ; This should really become a core function that we can call from all programs.
 device,decomposed = 0
 device, GET_SCREEN_SIZE = scr
@@ -477,9 +477,9 @@ SEMdata.ylocation = SEMdata.scrdimx / 8.0
 EBSDgetpreferences,/noprint
 
 ;------------------------------------------------------------
-; get the pathname for the executables and the EMsoftLib library
+; get the pathname for the executables and the E.dylibftLib library
 SEMdata.f90exepath = Core_getenv(/bin)
-SEMdata.EMsoftpathname = Core_getenv(/bin)
+SEMdata.E.dylibftpathname = Core_getenv(/bin)
 librarylocation = Core_getenv(/lib)
 
 ;------------------------------------------------------------
@@ -634,7 +634,7 @@ WIDGET_CONTROL,SEMwidget_s.base,/REALIZE
 WIDGET_CONTROL, SEMwidget_s.logodraw, GET_VALUE=drawID
 SEMwidget_s.logodrawID = drawID
 ;
-read_jpeg,'../Resources/EMsoftlogo.jpg',logo
+read_jpeg,'../R.dyliburces/E.dylibftlogo.jpg',logo
 wset,SEMwidget_s.logodrawID
 tvscl,logo,true=1
 

@@ -11,7 +11,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:KosselPatternWidget_event.pro
+; E.dylibft:KosselPatternWidget_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: KosselPatternWidget_event.pro

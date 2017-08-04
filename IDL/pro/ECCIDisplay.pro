@@ -20,17 +20,17 @@
 ; Copyright (c) 2013-2017, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -44,7 +44,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:ECCIDisplay.pro
+; E.dylibft:ECCIDisplay.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECCIDisplay.pro
@@ -220,9 +220,9 @@ ECPdata = {ECPdatastruct, $
         }
 
 ; a few font strings
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-.dylib8859-1'
+fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-.dylib8859-1'
+fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-.dylib8859-1'
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
@@ -404,7 +404,7 @@ widget_s.logodrawID = drawID
 WIDGET_CONTROL, widget_s.progress, GET_VALUE=drawID
 widget_s.progressdrawID = drawID
 ;
-logo = read_image('Resources/SEMlogo.jpg')
+logo = read_image('R.dyliburces/SEMlogo.jpg')
 wset,widget_s.logodrawID
 tvscl,logo,true=1
 

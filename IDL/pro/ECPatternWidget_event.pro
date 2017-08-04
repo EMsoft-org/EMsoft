@@ -11,7 +11,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:ECPatternWidget_event.pro
+; E.dylibft:ECPatternWidget_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECPatternWidget_event.pro

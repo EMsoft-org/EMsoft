@@ -2,17 +2,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efitevent.pro
+; E.dylibft:Efitevent.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: Efitevent.pro
@@ -49,7 +49,7 @@ common fontstrings, fontstr, fontstrlarge, fontstrsmall
 common CommonCore, status, logmode, logunit
 common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 
-common EBSD_EMsoft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
+common EBSD_E.dylibft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
                     numEbins, numzbins, accum_e, accum_z, Masterenergyfile, npx, npy, nnE, numset, mLPNH, mLPSH, Masterxtalname, expEBSDpattern, EBSDpattern
 
 WIDGET_CONTROL, event.id, GET_UVALUE = eventval         ;find the user value
@@ -101,7 +101,7 @@ CASE eventval OF
         endcase
 
         'HIPASSONOFF' : begin
-                Efitdata.hipassonoff = Core_WidgetChoiceEvent( Efitwidget_s.hipassonoff,  'Hipass filter? ')
+                Efitdata.hipa.dylibnoff = Core_WidgetChoiceEvent( Efitwidget_s.hipa.dylibnoff,  'Hipass filter? ')
                 if ((max(EBSDpattern) gt 0) or (max(expEBSDpattern) gt 0)) then Efit_showpattern
         endcase
 
@@ -133,9 +133,9 @@ CASE eventval OF
                 Efitdata.detoL = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[0],  'Fit scintillator distance? ')
                 if (Efitdata.detoL eq 0) then fitOnOff[0] = 0 else fitOnOff[0] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -143,9 +143,9 @@ CASE eventval OF
                 Efitdata.detoomega = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[1],  'Fit sample omega angle? ')
                 if (Efitdata.detoomega eq 0) then fitOnOff[1] = 0 else fitOnOff[1] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -153,9 +153,9 @@ CASE eventval OF
                 Efitdata.detoxpc = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[2],  'Fit pattern center x? ')
                 if (Efitdata.detoxpc eq 0) then fitOnOff[2] = 0 else fitOnOff[2] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -163,9 +163,9 @@ CASE eventval OF
                 Efitdata.detoypc = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[3],  'Fit pattern center y? ')
                 if (Efitdata.detoypc eq 0) then fitOnOff[3] = 0 else fitOnOff[3] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -173,9 +173,9 @@ CASE eventval OF
                 Efitdata.detogamma = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[4],  'Fit intensity gammma? ') 
                 if (Efitdata.detogamma eq 0) then fitOnOff[4] = 0 else fitOnOff[4] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -183,9 +183,9 @@ CASE eventval OF
                 Efitdata.detophi1 = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[5],  'Fit Euler phi1 angle? ')
                 if (Efitdata.detophi1 eq 0) then fitOnOff[5] = 0 else fitOnOff[5] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -193,9 +193,9 @@ CASE eventval OF
                 Efitdata.detophi = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[6],  'Fit Euler Phi angle? ')
                 if (Efitdata.detophi eq 0) then fitOnOff[6] = 0 else fitOnOff[6] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -203,9 +203,9 @@ CASE eventval OF
                 Efitdata.detophi2 = Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[7],  'Fit Euler phi2 angle? ')
                 if (Efitdata.detophi2 eq 0) then fitOnOff[7] = 0 else fitOnOff[7] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 
@@ -213,9 +213,9 @@ CASE eventval OF
                 Efitdata.detotheta= Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[8],  'Fit detector tilt angle? ')
                 if (Efitdata.detotheta eq 0) then fitOnOff[8] = 0 else fitOnOff[8] = 1
                 if (total(fitOnOff) gt 0) then begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =1
                 end else begin
-                  WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =0
+                  WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive =0
                 endelse
 	endcase
 

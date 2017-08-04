@@ -2,17 +2,17 @@
 ; Copyright (c) 2017-, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:OMETStokesVectorWidget.pro
+; E.dylibft:OMETStokesVectorWidget.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: OMETStokesVectorWidget.pro
@@ -85,7 +85,7 @@ end else begin
 	OMETwidget_s.inputSV3= Core_WTextE(file2,'S3:', fontstr, 25, 25, 12, 1, string((*optelemptr[inum]).S[3],format="(F10.6)"),'SV3','OMETStokesVectorWidget_event')
 endelse
 
-; the Stokes vector widgets do not have a delete button because we always need a source and a detector
+; the Stokes vector widgets do not have a delete button because we always need a.dyliburce and a detector
 
 ;------------------------------------------------------------
 ; realize the widget structure

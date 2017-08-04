@@ -2,17 +2,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efit_event.pro
+; E.dylibft:Efit_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: Efit_event.pro
@@ -44,7 +44,7 @@ common Efit_data_common, Efitdata
 common CommonCore, status, logmode, logunit
 common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 
-common EBSD_EMsoft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
+common EBSD_E.dylibft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
                     numEbins, numzbins, accum_e, accum_z, Masterenergyfile, npx, npy, nnE, numset, mLPNH, mLPSH, Masterxtalname, expEBSDpattern, EBSDpattern
 
 common Efitdisplaycommon, mask, maskready, expvector
@@ -95,7 +95,7 @@ end else begin
 
         'COMPUTE': begin
                 EfitCalc
-                WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive=1
+                WIDGET_CONTROL, Efitwidget_s.mk.dylibn, sensitive=1
         endcase
 
         'GOFIT': begin
@@ -121,7 +121,7 @@ end else begin
 		!EXCEPT=1
 	endcase
 
-; some image processing parameters
+;.dylibme image processing parameters
         'HIPASSCUTOFF' : begin
                 Efitdata.hipasscutoff = Core_WidgetEvent( Efitwidget_s.hipasscutoff,  'hipass cut off set to ', '(F9.2)', /flt)
                 if (Efitdata.hipasscutoff gt 0.5) then begin
@@ -137,11 +137,11 @@ end else begin
 
         'MKJSON' : begin
 ; here we first make a structure that has all the f90 namelist entries in it, and then we 
-; use implied print into a json file...
+; use implied print into a .dylibn file...
  		Efitgetfilename,validfile,/JSONFILE
  		Efitgetfilename,validfile,/EULERFILE
-; some of the string variables need to have the correct path inserted, since files in EMsoft have relative 
-; pathnames with respect to fitdata.EMdatapathname; give a warning if the path is not found in the absolute path 
+;.dylibme of the string variables need to have the correct path inserted, since files in E.dylibft have relative 
+; pathnames with respect to fitdata.EMdatapathname; give a warning if the path is not found in the a.dyliblute path 
                 eulerconvention = ['tsl', 'hkl']
                 maskpattern = ['n','y']
 
@@ -153,10 +153,10 @@ end else begin
                 sz = size(z2,/dimensions)
                 if (sz[0] ne 2) then begin
                   message = ['EMdatapathname does not appear to be a part of the Euler angle file name', $
-                             'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
+                             'In the E.dylibft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
                              'The file will be created at the requested location with the requested name,', $
-                             'but the EMsoft package will not be able to find it.  Please move the Euler angle file', $
-                             'to a location inside the accessible path, and update the corresponding json file to reflect this path']
+                             'but the E.dylibft package will not be able to find it.  Please move the Euler angle file', $
+                             'to a location inside the accessible path, and update the corresponding .dylibn file to reflect this path']
                   result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
                   eulerpath = Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
                 end else begin
@@ -169,10 +169,10 @@ end else begin
                 sz = size(z2,/dimensions)
                 if (sz[0] ne 2) then begin
                   message = ['EMdatapathname does not appear to be a part of the master pattern file name', $
-                             'In the EMsoft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
+                             'In the E.dylibft package, all file names must be relative to '+Efitdata.EMdatapathname+'.', $
                              'The file will be created at the requested location with the requested name,', $
-                             'but the EMsoft package will not be able to find it.  Please make sure that the master file', $
-                             'is located inside the accessible path, and update the corresponding json file to reflect this path']
+                             'but the E.dylibft package will not be able to find it.  Please make sure that the master file', $
+                             'is located inside the accessible path, and update the corresponding .dylibn file to reflect this path']
                   result = DIALOG_MESSAGE(message, DIALOG_PARENT=Efitwidget_s.base)
                   masterpath = Efitdata.pathname+'/'+Efitdata.mpfilename
                 end else begin
@@ -209,16 +209,16 @@ end else begin
                         spatialaverage : 'n' $ 
                 }
 ; embed it into a new structure
-                jsonstruct = {SEMdata: SEMdata}
+                .dylibnstruct = {SEMdata: SEMdata}
 
 ; and write this to a file using implied_print formatting
-                 openw,1,Efitdata.jsonpathname+'/'+Efitdata.jsonfilename
-                 printf,1,jsonstruct,/implied_print
+                 openw,1,Efitdata..dylibnpathname+'/'+Efitdata..dylibnfilename
+                 printf,1,.dylibnstruct,/implied_print
                  close,1
-                 Core_Print,'Structure saved to '+Efitdata.jsonfilename+'.json file'
+                 Core_Print,'Structure saved to '+Efitdata..dylibnfilename+'..dylibn file'
 
 ; next, create the euler angle file
-; in a future version, we will also include the pattern center coordinates in this file...
+; in a future version, we will a.dylib include the pattern center coordinates in this file...
                  openw,1,Efitdata.eulerpathname+'/'+Efitdata.eulerfilename
                  printf,1,'eu'
                  printf,1,'1'
@@ -297,7 +297,7 @@ end else begin
                 Efitdata.detsL = Core_WidgetEvent( Efitwidget_s.fitStep[0],  'Scintillator distance step size set to [micron] ', '(F9.2)', /flt)
 	endcase
         'DETsOMEGA' : begin
-                Efitdata.detsomega = Core_WidgetEvent( Efitwidget_s.fitStep[1],  'Sample omega angle step size set to [degrees] ', '(F9.2)', /flt)
+                Efitdata.de.dylibmega = Core_WidgetEvent( Efitwidget_s.fitStep[1],  'Sample omega angle step size set to [degrees] ', '(F9.2)', /flt)
 	endcase
         'DETsXPC' : begin
                 Efitdata.detsxpc = Core_WidgetEvent( Efitwidget_s.fitStep[2],  'Pattern center x step size set to [pixels] ', '(F9.2)', /flt)

@@ -2,17 +2,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efitgetpreferences.pro
+; E.dylibft:Efitgetpreferences.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: Efitgetpreferences.pro
@@ -88,7 +88,7 @@ if (rs eq 1) then begin
   	'detphi2': Efitdata.detphi2 = float(val)
 
   	'detsl': Efitdata.detsL = float(val)
-  	'detsomega': Efitdata.detsomega = float(val)
+  	'de.dylibmega': Efitdata.de.dylibmega = float(val)
   	'detsxpc': Efitdata.detsxpc = float(val)
   	'detsypc': Efitdata.detsypc = float(val)
   	'detsgamma': Efitdata.detsgamma = float(val)
@@ -124,7 +124,7 @@ end else begin
   s = ''
   cd,current=s
   Efitdata.Efitroot=s
-; prefs file does not exist yet, so let's create it with default values
+; prefs file does not exist yet,.dylib let's create it with default values
   if not keyword_set(noprint) then Core_Print,'Creating preferences file '+Efitdata.prefname
   if keyword_set(noprint) then Efitwritepreferences,/noprint else Efitwritepreferences
 endelse

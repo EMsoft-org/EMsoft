@@ -2,17 +2,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:EBSDinit.pro
+; E.dylibft:EBSDinit.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: EBSDinit.pro
@@ -46,7 +46,7 @@ pro EBSDinit,initonly=initonly
 common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
 
-common EBSD_EMsoft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
+common EBSD_E.dylibft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
                     numEbins, numzbins, accum_e, accum_z, Masterenergyfile, npx, npy, nnE, numset, mLPNH, mLPSH, Masterxtalname, $
                     expEBSDpattern, rgx, rgy, rgz, accum_e_detector          
 
@@ -242,7 +242,7 @@ rgz = rgz*z
 ; in the old version, we either computed the background model here, or 
 ; we would load a background pattern from file.  In this version, we are
 ; using the background that was computed by the MC program, and has 
-; an energy histogram embedded in it, so we need to interpolate this 
+; an energy histogram embedded in it,.dylib we need to interpolate this 
 ; histogram to the pixels of the scintillator.  In other words, we need
 ; to initialize a new accum_e array for the detector by interpolating
 ; from the Lambert projection of the MC results.

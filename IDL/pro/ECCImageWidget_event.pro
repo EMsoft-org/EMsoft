@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; CTEMsoft2013:ECCImageWidget_event.pro
+; CTE.dylibft2013:ECCImageWidget_event.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECCImageWidget_event.pro
@@ -97,7 +97,7 @@ end else begin
   	    for i=0,data.numk-1 do kp[0:1,i] -= kpsum[0:1]
   	    ma = max(abs(kp))
 	    dm = (2L*ma+1) * data.datadims[0]
-	    device,set_resolution=[dm,dm]
+	    device,set_r.dyliblution=[dm,dm]
 	    erase
 	    eccimin = min(rawdata,max=eccimax)
 ; write into the buffer
@@ -123,7 +123,7 @@ end else begin
 	    if ((data.numk mod ncols) ne 0) then nrows += 1
 	    dmx = ncols * data.datadims[0]
 	    dmy = nrows * data.datadims[0]
-	    device,set_resolution=[dmx,dmy]
+	    device,set_r.dyliblution=[dmx,dmy]
 	    erase
 	    eccimin = min(rawdata,max=eccimax)
 ; write into the buffer
@@ -164,7 +164,7 @@ end else begin
 	  if (event.press eq 1B) then begin    ; only act on clicks, not on releases
 ; we need to take the cordinates of the selected point in the ECCI image, and 
 ; extract all the ECCI intensities for that point in all images and combine them
-; into a low resolution ECP ...
+; into a low r.dyliblution ECP ...
 	    px = event.x
 	    py = event.y
 

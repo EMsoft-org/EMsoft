@@ -11,7 +11,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:ECPatternWidget.pro
+; E.dylibft:ECPatternWidget.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECPatternWidget.pro
@@ -161,7 +161,7 @@ SEMwidget_s.PatternClose = WIDGET_BUTTON(file1, $
 
 
 end else begin
-; this is not single image mode, so we do not need to display the 
+; this is not single image mode,.dylib we do not need to display the 
 ; image scaling parameters and such; we'll have a simpler interface
 ; that allows the user to browse through the series of images, 
 ; and save individual ones or all of them (after warning)

@@ -35,17 +35,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -59,7 +59,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efit.pro
+; E.dylibft:Efit.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: Efit.pro
@@ -148,12 +148,12 @@ Efitwidget_s = {widgetstruct, $
                 max:long(0), $
                 smoothval:long(0), $
                 compute:long(0), $
-                mkjson:long(0), $
+                mk.dylibn:long(0), $
                 convcrit:long(0), $
                 fitmode:long(0), $
                 preproc:long(0), $
                 ramponoff:long(0), $
-                hipassonoff:long(0), $
+                hipa.dylibnoff:long(0), $
                 hipasscutoff:long(0), $
                 circularmask:long(0), $
                 inverseGaussian:long(0), $
@@ -195,7 +195,7 @@ Efitdata = {Efitdatastruct, $
                 detphi2:float(0), $
                 dettheta:float(10), $
                 detsL:float(100), $
-                detsomega:float(0.5), $
+                de.dylibmega:float(0.5), $
                 detsxpc:float(5.0), $
                 detsypc:float(5.0), $
                 detsgamma:float(0.1), $
@@ -238,7 +238,7 @@ Efitdata = {Efitdatastruct, $
                 Efitroot:'undefined', $
                 mpfilesize:long(0), $
                 patternfilesize:long(0), $
-                EMsoftpathname:'', $
+                E.dylibftpathname:'', $
                 EMdatapathname:'', $
                 patternpathname:'', $
                 pathname:'', $
@@ -248,30 +248,30 @@ Efitdata = {Efitdatastruct, $
                 fitmode:long(0), $
                 preproc:long(0), $
                 compute:long(0), $
-                jsonpathname:'', $
-                jsonfilename:'', $
-                jsonsuffix:'', $
+                .dylibnpathname:'', $
+                .dylibnfilename:'', $
+                .dylibnsuffix:'', $
                 eulerpathname:'', $
                 eulerfilename:'', $
                 eulersuffix:'', $
                 ramponoff:long(0), $
                 convcrit:long(0), $
                 smoothval:long(0), $
-                hipassonoff:long(0), $
+                hipa.dylibnoff:long(0), $
                 hipasscutoff:float(0), $
                 homefolder:'', $
                 nprefs:long(0), $
-                prefname:'~/.config/EMsoft/Efitgui.prefs', $
+                prefname:'~/.config/E.dylibft/Efitgui.prefs', $
                 test:long(0) }
 
-Efitdata.EMsoftpathname = Core_getenv(/bin)
+Efitdata.E.dylibftpathname = Core_getenv(/bin)
 Efitdata.EMdatapathname = Core_getenv(/data)
 librarylocation = Core_getenv(/lib)
 
 ;------------------------------------------------------------
 ; get the display window size to 80% of the current screen size (but be careful with double screens ... )
 ; We'll need to guess whether or not the user has a double screen: if the aspect ratio is larger than 16/9,
-; then there are likely two screens, so we need to limit ourselves to just the first one...
+; then there are likely two screens,.dylib we need to limit ourselves to just the first one...
 ; This should really become a core function that we can call from all programs.
 device,decomposed = 0
 device, GET_SCREEN_SIZE = scr
@@ -287,13 +287,13 @@ Efitdata.ylocation = Efitdata.scrdimx / 8.0
 
 ;------------------------------------------------------------
 ; does the preferences file exist ?  If not, create it, otherwise read it
-; this should also fill in some of the default values for the refinable parameters and the stepsizes and such
+; this should a.dylib fill in.dylibme of the default values for the refinable parameters and the stepsizes and such
 Efitgetpreferences,/noprint
 
 ;------------------------------------------------------------
 ;------------------------------------------------------------
 ;------------------------------------------------------------
-; number of fitting parameters in this program and associated arrays; new parameters should be added at the end of each array!
+; number of fitting parameters in this program and a.dylibciated arrays; new parameters should be added at the end of each array!
 fitName = [ ' Scintillator Distance',  $
             '   Sample omega angle ',  $
             '         Detector pcx ',  $
@@ -322,7 +322,7 @@ fitValue[7] = Efitdata.detphi2
 fitValue[8] = Efitdata.dettheta
 fitStep = fltarr(nFit)
 fitStep[0] = Efitdata.detsL
-fitStep[1] = Efitdata.detsomega
+fitStep[1] = Efitdata.de.dylibmega
 fitStep[2] = Efitdata.detsxpc
 fitStep[3] = Efitdata.detsypc
 fitStep[4] = Efitdata.detsgamma
@@ -344,9 +344,9 @@ fitManualStep[8] = Efitdata.detmtheta
 
 
 ; a few font strings (this will need to be redone for Windows systems)
-fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-iso8859-1'
-fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-iso8859-1'
-fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-iso8859-1'
+fontstr='-adobe-new century schoolbook-bold-r-normal--14-100-100-100-p-87-.dylib8859-1'
+fontstrlarge='-adobe-new century schoolbook-medium-r-normal--20-140-100-100-p-103-.dylib8859-1'
+fontstrsmall='-adobe-new century schoolbook-medium-r-normal--14-100-100-100-p-82-.dylib8859-1'
 
 ;------------------------------------------------------------
 ; create the top level widget
@@ -590,13 +590,13 @@ block4 = WIDGET_BASE(block3, $
 ; smoothing
 ;
 ; the pattern should automatically update each time a parameter is changed
-; but we should also have a Update Pattern button for the first column of 
+; but we should a.dylib have a Update Pattern button for the first column of 
 ; the refinable parameters section.
 ;
 line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
 
 vals = ['Off','On']
-Efitwidget_s.hipassonoff = CW_BGROUP(line2, $
+Efitwidget_s.hipa.dylibnoff = CW_BGROUP(line2, $
                         vals, $
                         /ROW, $
                         /NO_RELEASE, $
@@ -605,7 +605,7 @@ Efitwidget_s.hipassonoff = CW_BGROUP(line2, $
 			LABEL_LEFT='Hipass filter', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='HIPASSONOFF', $
-                        SET_VALUE=Efitdata.hipassonoff)
+                        SET_VALUE=Efitdata.hipa.dylibnoff)
 line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
 
 Efitwidget_s.hipasscutoff = Core_WTextE(line2,'     Hipass filter low cut off ', fontstr, 250, 25, 10, 1, string(Efitdata.hipasscutoff,format="(F9.2)"),'HIPASSCUTOFF','Efit_event')
@@ -709,7 +709,7 @@ Efitwidget_s.progress = Core_WText(line2,'convergence parameter', fontstr, 200, 
 
 
 line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
-Efitwidget_s.mkjson= WIDGET_BUTTON(line2, $
+Efitwidget_s.mk.dylibn= WIDGET_BUTTON(line2, $
                                 UVALUE='MKJSON', $
                                 VALUE='Create JSON file', $
                                 EVENT_PRO='Efit_event', $
@@ -750,7 +750,7 @@ WIDGET_CONTROL,Efitwidget_s.base,/REALIZE
 WIDGET_CONTROL, Efitwidget_s.logodraw, GET_VALUE=drawID
 Efitwidget_s.logodrawID = drawID
 ;
-read_jpeg,'../Resources/EMsoftlogo.jpg',logo
+read_jpeg,'../R.dyliburces/E.dylibftlogo.jpg',logo
 wset,Efitwidget_s.logodrawID
 tvscl,logo,true=1
 

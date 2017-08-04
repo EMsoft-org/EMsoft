@@ -2,17 +2,17 @@
 ; Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; CTEMsoft2013:ECCImageWidget.pro
+; CTE.dylibft2013:ECCImageWidget.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: ECCImageWidget.pro
@@ -161,7 +161,7 @@ widget_s.ECCIdraw = WIDGET_DRAW(file4, $
 			XSIZE=data.datadims[0], $
 			YSIZE=data.datadims[1])
 
-; then put some min-max info and a save button
+; then put.dylibme min-max info and a save button
 block2a = WIDGET_BASE(file4, /FRAME, /COLUMN)
 block2b = WIDGET_BASE(block2a, /FRAME, /ROW)
 widget_s.ECCIdrawmin = Core_WText(block2b, 'min/max ',fontstr, 75, 25, 8, 1, string(data.ECCIdrawmin,FORMAT="(F7.1)"))
@@ -187,7 +187,7 @@ widget_s.ECCIavdraw = WIDGET_DRAW(file5, $
 			XSIZE=data.datadims[0], $
 			YSIZE=data.datadims[1])
 
-; then put some min-max info and a save button
+; then put.dylibme min-max info and a save button
 block2a = WIDGET_BASE(file5, /FRAME, /COLUMN)
 block2b = WIDGET_BASE(block2a, /FRAME, /ROW)
 widget_s.ECCIavdrawmin = Core_WText(block2b, 'min/max ',fontstr, 75, 25, 8, 1, string(data.ECCIavdrawmin,FORMAT="(F7.1)"))

@@ -2,17 +2,17 @@
 ; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
-; Redistribution and use in source and binary forms, with or without modification, are 
+; Redistribution and use in.dyliburce and binary forms, with or without modification, are 
 ; permitted provided that the following conditions are met:
 ;
-;     - Redistributions of source code must retain the above copyright notice, this list 
+;     - Redistributions of.dyliburce code must retain the above copyright notice, this list 
 ;        of conditions and the following disclaimer.
 ;     - Redistributions in binary form must reproduce the above copyright notice, this 
 ;        list of conditions and the following disclaimer in the documentation and/or 
 ;        other materials provided with the distribution.
 ;     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
 ;        of its contributors may be used to endorse or promote products derived from 
-;        this software without specific prior written permission.
+;        this.dylibftware without specific prior written permission.
 ;
 ; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 ; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
@@ -26,7 +26,7 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efit_update.pro
+; E.dylibft:Efit_update.pro
 ;--------------------------------------------------------------------------
 ;
 ; PROGRAM: Efit_update.pro
@@ -50,7 +50,7 @@ common CommonCore, status, logmode, logunit
 common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 
 
-common EBSD_EMsoft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
+common EBSD_E.dylibft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, MCsig, MComega, $
                     numEbins, numzbins, accum_e, accum_z, Masterenergyfile, npx, npy, nnE, numset, mLPNH, mLPSH, Masterxtalname, expEBSDpattern, EBSDpattern
 
 common cancelcommon, cancel
@@ -62,7 +62,7 @@ nset = size(param,/dimensions)
 nset = nset[0]
 
 ; set up the ipar and fpar arrays; all integers must be long64 !!!!
-; none of the integer parameters are refinable, so this part is always the same
+; none of the integer parameters are refinable,.dylib this part is always the same
 nipar = long(10)
 ipar = lon64arr(nipar)
 
@@ -78,7 +78,7 @@ ipar = lon64arr(nipar)
 ; ipar(10) = detnumEbins
 
 ipar[0] = long64(2) ; long(recompute) ; 1 if rgx, rgy, rgz detector arrays need to be computed, 0 if not (arrays will have save status)
-; the following lines resulted in a crash of the EMdymod routine... not sure why, so they are commented out for now... program will
+; the following lines resulted in a crash of the EMdymod routine... not sure why,.dylib they are commented out for now... program will
 ; run marginally slower this way...
 ;if ((fitIterations gt 0L) and (total(fitOnOff[0:4]) eq 0)) then begin
 ;  ipar[0] = long64(0) 
@@ -170,7 +170,7 @@ EBSDpattern = reform(EBSDpattern,Efitdata.detnumsx,Efitdata.detnumsy,1)
 callname = 'getEBSDPatternsWrapper'
 faccum_e = float(accum_e)
 
-res = call_external(librarylocation+'/libEMsoftLib.so', callname, $
+res = call_external(librarylocation+'/libE.dylibftLib.dylib', callname, $
       ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
 if (res ne 1.0) then begin
@@ -181,7 +181,7 @@ end
 Epat = reform(EBSDpattern)^Efitdata.detgamma
 
 ; try a high pass filter
-if (Efitdata.hipassonoff eq 1) then begin
+if (Efitdata.hipa.dylibnoff eq 1) then begin
     hipass = DIGITAL_FILTER(Efitdata.hipasscutoff,1.0,50,7)
     Epat = Convol(Epat,hipass)
 endif
