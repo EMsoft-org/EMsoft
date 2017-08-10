@@ -1,3 +1,12 @@
+@Core_LambertS2C				; modified Lambert to Lambert projection
+@Core_LambertS2SP				; modified Lambert to stereographic projection
+@Core_colorwheel				; color representation of energy distribution
+@Core_WText						; generate a text widget with a label
+@Core_WTextE					; generate an editable text widget with a label
+@Core_Print						; print messages to status window and log file
+@Core_WidgetEvent				; general data handler for various widget events
+@Core_getenv                    ; read the environment variable(s)
+@Core_eu2qu                     ; convert euler angles to quaternion
 @SEMDisplay_event    			; EBSD event handler
 @EBSDgetfilename				; select a geometry file
 @EBSDreadHDFdatafile			; read geometry and HDF data files
@@ -29,15 +38,6 @@
 @KosselPatternWidget_event      ; Kossel pattern widget event handler
 @Kosselevent                    ; Kossel choice event handler
 @KosselshowPattern              ; show Kossel pattern
-@Core_LambertS2C				; modified Lambert to Lambert projection
-@Core_LambertS2SP				; modified Lambert to stereographic projection
-@Core_colorwheel				; color representation of energy distribution
-@Core_WText						; generate a text widget with a label
-@Core_WTextE					; generate an editable text widget with a label
-@Core_Print						; print messages to status window and log file
-@Core_WidgetEvent				; general data handler for various widget events
-@Core_getenv                    ; read the environment variable(s)
-@Core_eu2qu                     ; convert euler angles to quaternion
 ;
 ; Copyright (c) 2014-2016, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.

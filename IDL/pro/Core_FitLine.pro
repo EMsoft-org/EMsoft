@@ -41,7 +41,7 @@ function Core_FitLine,block2, sel
 
 common Efit_widget_common, Efitwidget_s
 common Efit_data_common, Efitdata
-common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel
+common FitParameters, nFit, fitName, defValue, fitValue, fitStep, fitOnOff, fitManualStep, fitManualUpDown, fitUserLabel, fitStepLabel, fitOnOffLabel, fitUpLabel, fitDownLabel, fitManualStepLabel, fitIterations
 
 
 ; refinable parameters, each one a row with name, value, fit step size, fit on/off, manual inc and dec, and manual step
@@ -76,7 +76,7 @@ Efitwidget_s.fitManualUp[sel]= WIDGET_BUTTON(line1, $
                                 EVENT_PRO='Efit_event', $
                                 SENSITIVE=1)
 
-item1 = WIDGET_LABEL(line1, VALUE=' ', font=fontstrlarge, /ALIGN_LEFT)
+qitem1 = WIDGET_LABEL(line1, VALUE=' ', font=fontstrlarge, /ALIGN_LEFT)
 Efitwidget_s.fitManualDown[sel]= WIDGET_BUTTON(line1, $
                                 UVALUE=fitDownLabel[sel], $
                                 VALUE=' - ', $
