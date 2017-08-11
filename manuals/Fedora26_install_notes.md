@@ -18,8 +18,6 @@
 <li><a href="#sec-1-10-1">1.10.1. Install IDL</a></li>
 <li><a href="#sec-1-10-2">1.10.2. Fix links to EMsoftLib library</a></li>
 <li><a href="#sec-1-10-3">1.10.3. Change IDL installation scripts</a></li>
-<li><a href="#sec-1-10-4">1.10.4. Compiling Efit virtual machine</a></li>
-<li><a href="#sec-1-10-5">1.10.5. Compiling SEMDisplay virtual machine</a></li>
 </ul>
 </li>
 </ul>
@@ -99,8 +97,6 @@ The first thing to do is run EMsoftinit in **Bin/** directory and follow the ins
 
 ## IDL routines<a id="sec-1-10" name="sec-1-10"></a>
 
-There are a number of useful IDL routines, however, lots of TLC seems to be needed to get them to run. 
-
 ### Install IDL<a id="sec-1-10-1" name="sec-1-10-1"></a>
 
 Firstly you will need an IDL licence (and installation) so that you can install and compile the IDL routines. How you will do this will depend on your local arrangements.
@@ -111,59 +107,9 @@ The next thing to do is to create **.dylib** versions of the **.so** shared libr
 
     >>sed -i -- 's/dylib/so/g' *
 
+The dylib version is a dynamic library, whereas the default compilation settings for EMsoft generate static libraries.  You can generate the dynamic libraries by rebuilding EMsoft with the cmake option -DBUILD_SHARED_LIBS=ON.
+
 ### Change IDL installation scripts<a id="sec-1-10-3" name="sec-1-10-3"></a>
 
-There are 3 installation scripts for creating virtual IDL machines that can then be run without a license. These are mkVM\_Efitgui.txt, mkVM\_SEMgui.txt and mkVM\_ellipsometrytool.txt. These need to be edited to change the directory inofrmtation to reflect your local configuration and to change the compilation flag from MACINT64 to LIN64. After this, going into the IDL prompt and entering @mkVM\_Efitgui.txt should create a virtual machine in the directory defined in the \*.txt script. But instead we get a bunch of compilation errors. 
+There are 3 installation scripts for creating virtual IDL machines that can then be run without a license. These are mkVM\_Efitgui.txt, mkVM\_SEMgui.txt and mkVM\_ellipsometrytool.txt. These need to be edited to change the directory information to reflect your local configuration and to change the compilation flag from MACINT64 to LIN64. After this, going into the IDL prompt and entering @mkVM\_Efitgui.txt should create a virtual machine in the directory defined in the \*.txt script. In an earlier version, this produced a bunch of compilation errors, but those were eliminated by fixing the capitalization and changing the order in which routines were compiled with the @ command.  **[Thanks JQFonseca for figuring out the necessary fixes]**
 
-### Compiling Efit virtual machine<a id="sec-1-10-4" name="sec-1-10-4"></a>
-
-Some of these errors appear because the names of the IDL routines called do not match the filenames because of different capitalization (e.g. Efit.pro calls @CoreWtest but the filename is CoreWTest.pro, @CoreWtextE>CreWTestE.pro, @Core\_event>core\_event.pro). I guess this isn't a problem on a Mac but it just doesn't work on Linux. I capitalized the cpre\_event.pro file name but made the other changes on the routine.
-
-You also need to move all the routines named Core\_\\\* to the top of the list of the main routine (Efit.pro for example). For some reason, in my setup, these need to come first or there will be compilation errors later on. The error is cryptically: "Only 8 subscripts allowed." Also, @Efit\_amoeba must preceed @Efit\_fit and you need to add @Efit\_showpattern to the end of the list in **Efit.pro**. 
-
-1.  List of commands on an Efit.pro that compiles OK:
-
-        @Core_WidgetEvent
-        @Core_WidgetChoiceEvent
-        @Core_WText
-        @Core_WTextE
-        @Core_FitLine
-        @Core_Print
-        @Core_getenv
-        @Core_quatmult
-        @Core_quat_Lp
-        @Core_eu2qu
-        @Core_qu2eu
-        @Core_LambertSphereToSquare
-        @Core_histnd
-        @Core_mind
-        @Efitcalc
-        @Efitinit
-        @Efit_display
-        @Efit_display_event
-        @Efitevent
-        @Efit_control
-        @Efit_control_event
-        @Efit_event
-        @Efit_amoeba
-        @Efit_fit
-        @Efit_update
-        @Efitgetpreferences
-        @Efitwritepreferences
-        @Efitgetfilename
-        @Efit_navigator
-        @Efit_navigator_event
-        @Efit_updatePC
-        @Efit_showpattern
-
-2.  
-
-    Another error that crops up is "% Attempt to extend common block: FITPARAMETERS". This comes from the fact that this commonblock has different number of parameters in different routines. To fix this you need to add **fitIterations** to the common block in 3 files: EBSDfit.pro, EBSDfit\_event.pro and Core\_FitLine.pro.
-
-### Compiling SEMDisplay virtual machine<a id="sec-1-10-5" name="sec-1-10-5"></a>
-
-There is only one typo in a filename:
-
-    >>mv Core_Lamberts2SP.pro Core_LambertS2SP.pro.
-
-After this, and the changes to directory, flags etc it compiles fine.
