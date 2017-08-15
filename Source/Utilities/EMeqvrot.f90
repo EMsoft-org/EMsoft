@@ -113,7 +113,7 @@ do while (next)
   call Message(' ')
 
   do k=1,num
-    qus = quat_mult( qu, dict%Pm(1:4,k) )
+    qus = quat_mult( dict%Pm(1:4,k), qu )
     res = init_orientation(qus,'qu')
     ro = res%rodrigues
     ax = res%axang
