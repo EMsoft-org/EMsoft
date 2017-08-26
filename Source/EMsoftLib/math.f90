@@ -60,6 +60,67 @@ contains
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: get_bit_parameters
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief interpret a bitdepth string and return parameters
+!
+!> @param bd bitdepth string
+!> @param numbits number of bits 
+!> @param bitrange 2^(number of bits)-1 
+!> @param bitmode char, int, or float
+!
+!> @date    8/25/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine get_bit_parameters(bd, numbits, bitrange, bitmode)
+!DEC$ ATTRIBUTES DLLEXPORT :: get_bit_parameters
+
+use io
+
+character(5),INTENT(IN)         :: bd
+integer(kind=irg),INTENT(OUT)   :: numbits
+real(kind=sgl),INTENT(OUT)      :: bitrange
+character(5),INTENT(OUT)        :: bitmode
+
+character(2)                    :: bitval
+integer(kind=irg)               :: io_int(1)
+
+!====================================
+! analyze the bitdepth parameter; if we have integers, then we need to analyze the 
+! digits in the string to figure out how to scale the data.  '10int' means that we
+! store the data as 32-bit integers, but the scaled values range from 0 to 2^(10)-1
+if ((trim(bd).ne.'8bit').and.(trim(bd).ne.'float')) then
+  bitval(1:1) = bd(1:1)
+  if (bd(2:2).ne.'i') then
+    bitval(2:2) = bd(2:2)
+  else
+    bitval(2:2) = ''
+  end if
+  read (bitval,*) numbits
+  io_int(1) = numbits 
+  call WriteValue(' ---> Integer format requested with bit depth ',io_int,1,"(I3)")
+  bitrange = 2.0**numbits-1.0
+  bitmode = 'int'
+end if
+if (trim(bd).eq.'8bit') then 
+  numbits = 8
+  io_int(1) = numbits 
+  call WriteValue(' ---> character format requested with bit depth ',io_int,1,"(I3)")
+  bitrange = 2.0**numbits-1.0
+  bitmode = 'char'
+end if
+if (trim(bd).eq.'float') then
+  call Message(' ---> 32-bit float format requested')
+  numbits = 32
+  bitrange = 0.0
+  bitmode = 'float'
+end if
+
+end subroutine get_bit_parameters
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:mInvert
 !
 !> @author Marc De Graef, Carnegie Mellon University

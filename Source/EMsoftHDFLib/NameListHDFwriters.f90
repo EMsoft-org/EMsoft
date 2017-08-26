@@ -1300,6 +1300,11 @@ line2(1) = trim(enl%outputformat)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create outputformat dataset',.TRUE.)
 
+dataset = 'bitdepth'
+line2(1) = trim(enl%bitdepth)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create bitdepth dataset',.TRUE.)
+
 dataset = 'energyfile'
 line2(1) = trim(enl%energyfile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)

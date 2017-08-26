@@ -30,6 +30,10 @@
  energyfile = 'MC.h5',
 ! name of output file; path relative to EMdatapathname
  datafile = 'EBSDout.h5',
+! bitdepth '8bit' for [0..255] bytes; 'float' for 32-bit reals; '##int' for 32-bit integers with ##-bit dynamic range
+! e.g., '9int' will get you 32-bit integers with intensities scaled to the range [ 0 .. 2^(9)-1 ]; 
+! '17int' results in the intensity range [ 0 .. 2^(17)-1 ]
+ bitdepth = '8bit',
 ! incident beam current [nA]
  beamcurrent = 150.0,
 ! beam dwell time [micro s]

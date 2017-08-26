@@ -1945,6 +1945,7 @@ character(1)            :: spatialaverage
 character(3)            :: scalingmode
 character(3)            :: eulerconvention
 character(3)            :: outputformat
+character(5)            :: bitdepth
 character(fnlen)        :: anglefile
 character(fnlen)        :: masterfile
 character(fnlen)        :: energyfile 
@@ -1953,7 +1954,8 @@ character(fnlen)        :: datafile
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
-                        scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage
+                        scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
+                        bitdepth
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -1979,6 +1981,10 @@ maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
 outputformat    = 'gui'         ! output format for 'bin' or 'gui' use
+bitdepth        = '8bit'        ! format for output; '8char' for [0..255], '##int' for integers, 'float' for floats
+! the '##int' notation stands for the actual bitdepth; all values are stored as 32bit integers, but they are scaled
+! from the float values to a maximum that is given by the first two digits, which indicate the bit depth; so, valid
+! values would be '10int' for a 10-bit integer scale, '16int' for a 16-bit integer scale, and so on.
 anglefile       = 'undefined'   ! filename
 masterfile      = 'undefined'   ! filename
 energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
@@ -2036,6 +2042,7 @@ enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
 enl%eulerconvention = eulerconvention
 enl%outputformat = outputformat
+enl%bitdepth = bitdepth
 enl%anglefile = anglefile
 enl%masterfile = masterfile
 enl%energyfile = energyfile

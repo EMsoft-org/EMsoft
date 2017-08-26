@@ -310,6 +310,7 @@ type EBSDNameListType
         character(3)            :: eulerconvention
         character(3)            :: outputformat
         character(1)            :: spatialaverage
+        character(5)            :: bitdepth
         character(fnlen)        :: anglefile
         character(fnlen)        :: masterfile
         character(fnlen)        :: energyfile 

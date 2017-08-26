@@ -199,6 +199,7 @@ end program EMEBSD
 !> @date 04/18/16  SS  6.6 removed outputformat .eq. bin check while writing hyperslab
 !> @date 11/15/16  MDG 6.7 added CrystalData output to HDF file and removed unused entries.
 !> @date 02/07/17  MDG 6.8 corrected bug when number of Euler angle triplets was smaller than requested number of threads
+!> @date 08/25/17  MDG 6.9 added 16-bit integer and 32-bit float output option for EBSD patterns [requested by Tijmen Vermeij]
 !--------------------------------------------------------------------------
 subroutine ComputeEBSDPatterns(enl, angles, acc, master, progname, nmldeffile)
 
@@ -222,6 +223,7 @@ use HDFsupport
 use ISO_C_BINDING
 use omp_lib
 use timing
+use math
 
 IMPLICIT NONE
 
@@ -269,7 +271,9 @@ real(kind=dbl)                          :: sx, dx, dxm, dy, dym, rhos, x        
 real(kind=dbl)                          :: ixy(2), tmp
 
 real(kind=sgl),allocatable              :: mask(:,:), lx(:), ly(:)
-character(kind=c_char),allocatable            :: batchpatterns(:,:,:), bpat(:,:), threadbatchpatterns(:,:,:) 
+character(kind=c_char),allocatable      :: batchpatterns(:,:,:), bpat(:,:), threadbatchpatterns(:,:,:) 
+integer(kind=irg),allocatable           :: batchpatternsint(:,:,:), bpatint(:,:), threadbatchpatternsint(:,:,:) 
+real(kind=sgl),allocatable              :: batchpatterns32(:,:,:), threadbatchpatterns32(:,:,:) 
 integer(kind=irg),allocatable           :: acc_array(:,:)
 real(kind=sgl),allocatable              :: master_arrayNH(:,:), master_arraySH(:,:), wf(:) 
 character(len=3)                        :: outputformat
@@ -289,6 +293,9 @@ character(15)                           :: tstrb
 character(15)                           :: tstre
 character(fnlen)                        :: datafile
 logical                                 :: overwrite = .TRUE., insert = .TRUE., singlebatch
+character(5)                            :: bitmode
+integer(kind=irg)                       :: numbits
+real(kind=sgl)                          :: bitrange
 
 !====================================
 ! max number of OpenMP threads on this platform
@@ -300,6 +307,10 @@ nullify(cell)
 !====================================
 ! what is the output format?  GUI or BIN ?
 outputformat = enl%outputformat
+
+!====================================
+! bit depth and format of output
+call get_bit_parameters(enl%bitdepth, numbits, bitrange, bitmode)
 
 ! define some energy-related parameters derived from MC input parameters
 !====================================
@@ -346,9 +357,8 @@ cell%fname = trim(enl%MCxtalname)
 call ReadDataHDF(cell)
 
 !====================================
-! ------ and open the output file for IDL visualization (only thread 0 can write to this file)
+! ------ and open the output file 
 !====================================
-! we need to write the image dimensions, and also how many of those there are...
 
 ! Initialize FORTRAN interface.
 !
@@ -423,7 +433,6 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Euler
 ! to speed things up, we'll split the computation into batches of 1,024 patterns per thread; once those 
 ! are computed, we leave the OpenMP part to write them to a file 
 !====================================
-
 
 ! and allocate space to store each batch; this requires some careful analysis
 ! since we are doing things in multiple threads
@@ -500,8 +509,16 @@ end if
   end if
   patinbatch = sum(istop-istart,1) + nthreads
 
-! and allocate the batchpatterns array for hyperslab writing
+! and allocate the batchpatterns array for hyperslab writing [modified 8/25/17 for different output formats]
+if (trim(bitmode).eq.'char') then 
   allocate(batchpatterns(binx,biny,ninbatch*nthreads),stat=istat)
+end if
+if (trim(bitmode).eq.'int') then 
+  allocate(batchpatternsint(binx,biny,ninbatch*nthreads),stat=istat)
+end if
+if (trim(bitmode).eq.'float') then 
+  allocate(batchpatterns32(binx,biny,ninbatch*nthreads),stat=istat)
+end if
 
 !====================================
 ! here we also create a mask if necessary
@@ -575,8 +592,8 @@ call Time_tick(tick)
 do ibatch=1,totnumbatches
 
 ! use OpenMP to run on multiple cores ... 
-!$OMP PARALLEL default(shared)  PRIVATE(TID,iang,i,j,istat,EBSDpattern,binned,idum,bpat,ma,mi,threadbatchpatterns)&
-!$OMP& PRIVATE(tmLPNH, tmLPSH, trgx, trgy, trgz, taccum, dims2, dims3)
+!$OMP PARALLEL default(shared)  PRIVATE(TID,iang,i,j,istat,EBSDpattern,binned,idum,bpat,ma,mi,threadbatchpatterns,bpatint)&
+!$OMP& PRIVATE(tmLPNH, tmLPSH, trgx, trgy, trgz, taccum, dims2, dims3, threadbatchpatternsint, threadbatchpatterns32)
 
   NUMTHREADS = OMP_GET_NUM_THREADS()
   TID = OMP_GET_THREAD_NUM()
@@ -602,27 +619,63 @@ do ibatch=1,totnumbatches
 
 ! allocate the arrays that will hold the computed pattern
   allocate(binned(binx,biny),stat=istat)
-  allocate(bpat(binx,biny),stat=istat)
+  if (trim(bitmode).eq.'char') then 
+    allocate(bpat(binx,biny),stat=istat)
+  end if
+  if (trim(bitmode).eq.'int') then 
+    allocate(bpatint(binx,biny),stat=istat)
+  end if
 
 ! this array requires some care in terms of its size parameters...
   if ((singlebatch.eqv..TRUE.).AND.(ibatch.eq.totnumbatches)) then 
     if (TID.eq.nthreads-1) then
-      allocate(threadbatchpatterns(binx,biny,nlastremainder),stat=istat)
+      if (trim(bitmode).eq.'char') then 
+        allocate(threadbatchpatterns(binx,biny,nlastremainder),stat=istat)
+      end if
+      if (trim(bitmode).eq.'int') then 
+        allocate(threadbatchpatternsint(binx,biny,nlastremainder),stat=istat)
+      end if
+      if (trim(bitmode).eq.'float') then 
+        allocate(threadbatchpatterns32(binx,biny,nlastremainder),stat=istat)
+      end if
     else
-      allocate(threadbatchpatterns(binx,biny,ninlastbatch),stat=istat)
+      if (trim(bitmode).eq.'char') then 
+        allocate(threadbatchpatterns(binx,biny,ninlastbatch),stat=istat)
+      end if
+      if (trim(bitmode).eq.'int') then 
+        allocate(threadbatchpatternsint(binx,biny,ninlastbatch),stat=istat)
+      end if
+      if (trim(bitmode).eq.'float') then 
+        allocate(threadbatchpatterns32(binx,biny,ninlastbatch),stat=istat)
+      end if
     end if
   else
-    allocate(threadbatchpatterns(binx,biny,ninbatch),stat=istat)
+    if (trim(bitmode).eq.'char') then 
+      allocate(threadbatchpatterns(binx,biny,ninbatch),stat=istat)
+    end if
+    if (trim(bitmode).eq.'16bit') then 
+      allocate(threadbatchpatternsint(binx,biny,ninbatch),stat=istat)
+    end if
+    if (trim(bitmode).eq.'float') then 
+      allocate(threadbatchpatterns32(binx,biny,ninbatch),stat=istat)
+    end if
   end if
 
-  threadbatchpatterns = ' '
+  if (trim(enl%bitdepth).eq.'char') then 
+    threadbatchpatterns = ' '
+  end if
+  if (trim(enl%bitdepth).eq.'int') then 
+    threadbatchpatternsint = 0_irg
+  end if
+  if (trim(enl%bitdepth).eq.'float') then 
+    threadbatchpatterns32 = 0.0
+  end if
 
   do iang=istart(TID,ibatch),istop(TID,ibatch)
 ! convert the direction cosines to quaternions, include the 
 ! sample quaternion orientation, and then back to direction cosines...
 ! then convert these individually to the correct EBSD pattern location
     binned = 0.0
-    bpat = ' '
 
     call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
                                    Emin,Emax,mask,prefactor)
@@ -631,12 +684,27 @@ do ibatch=1,totnumbatches
         binned = binned**enl%gammavalue
     end if
 
-    ma = maxval(binned)
-    mi = minval(binned)
-    binned = mask * ((binned - mi)/ (ma-mi))
-    bpat = char(nint(255.0*binned))
+    if (trim(bitmode).eq.'char') then 
+      ma = maxval(binned)
+      mi = minval(binned)
+      binned = mask * ((binned - mi)/ (ma-mi))
+      bpat = char(nint(bitrange*binned))
 
-    threadbatchpatterns(1:binx,1:biny, iang-istart(TID,ibatch)+1) = bpat
+      threadbatchpatterns(1:binx,1:biny, iang-istart(TID,ibatch)+1) = bpat
+    end if
+
+    if (trim(bitmode).eq.'int') then 
+      ma = maxval(binned)
+      mi = minval(binned)
+      binned = mask * ((binned - mi)/ (ma-mi))
+      bpatint = nint(bitrange*binned)
+
+      threadbatchpatternsint(1:binx,1:biny, iang-istart(TID,ibatch)+1) = bpatint
+    end if
+    
+    if (trim(bitmode).eq.'float') then 
+      threadbatchpatterns32(1:binx,1:biny, iang-istart(TID,ibatch)+1) = binned
+    end if
 
   end do ! end of iang loop
 
@@ -645,14 +713,50 @@ do ibatch=1,totnumbatches
 !$OMP CRITICAL
   if ((singlebatch.eqv..TRUE.).AND.(ibatch.eq.totnumbatches)) then 
     if (TID.eq.nthreads-1) then
-      batchpatterns(1:binx,1:biny,TID*ninlastbatch+1:TID*ninlastbatch+nlastremainder)=&
-        threadbatchpatterns(1:binx,1:biny, 1:nlastremainder)
+
+      if (trim(bitmode).eq.'char') then 
+        batchpatterns(1:binx,1:biny,TID*ninlastbatch+1:TID*ninlastbatch+nlastremainder)=&
+          threadbatchpatterns(1:binx,1:biny, 1:nlastremainder)
+      end if
+      
+      if (trim(bitmode).eq.'int') then 
+        batchpatternsint(1:binx,1:biny,TID*ninlastbatch+1:TID*ninlastbatch+nlastremainder)=&
+          threadbatchpatternsint(1:binx,1:biny, 1:nlastremainder)
+      end if
+      
+      if (trim(bitmode).eq.'float') then 
+        batchpatterns32(1:binx,1:biny,TID*ninlastbatch+1:TID*ninlastbatch+nlastremainder)=&
+          threadbatchpatterns32(1:binx,1:biny, 1:nlastremainder)
+      end if
+      
     else
-      batchpatterns(1:binx,1:biny, TID*ninlastbatch+1:(TID+1)*ninlastbatch) = &
-        threadbatchpatterns(1:binx,1:biny, 1:ninlastbatch)
+      if (trim(bitmode).eq.'char') then 
+        batchpatterns(1:binx,1:biny, TID*ninlastbatch+1:(TID+1)*ninlastbatch) = &
+          threadbatchpatterns(1:binx,1:biny, 1:ninlastbatch)
+      end if
+      
+      if (trim(bitmode).eq.'int') then 
+        batchpatternsint(1:binx,1:biny, TID*ninlastbatch+1:(TID+1)*ninlastbatch) = &
+          threadbatchpatternsint(1:binx,1:biny, 1:ninlastbatch)
+      end if
+      
+      if (trim(bitmode).eq.'float') then 
+        batchpatterns32(1:binx,1:biny, TID*ninlastbatch+1:(TID+1)*ninlastbatch) = &
+          threadbatchpatterns32(1:binx,1:biny, 1:ninlastbatch)
+      end if
     end if
   else
-    batchpatterns(1:binx,1:biny, TID*ninbatch+1:(TID+1)*ninbatch) = threadbatchpatterns(1:binx,1:biny, 1:ninbatch)
+    if (trim(bitmode).eq.'char') then 
+      batchpatterns(1:binx,1:biny, TID*ninbatch+1:(TID+1)*ninbatch) = threadbatchpatterns(1:binx,1:biny, 1:ninbatch)
+    end if
+    
+    if (trim(bitmode).eq.'int') then 
+      batchpatternsint(1:binx,1:biny, TID*ninbatch+1:(TID+1)*ninbatch) = threadbatchpatternsint(1:binx,1:biny, 1:ninbatch)
+    end if
+    
+    if (trim(bitmode).eq.'float') then 
+      batchpatterns32(1:binx,1:biny, TID*ninbatch+1:(TID+1)*ninbatch) = threadbatchpatterns32(1:binx,1:biny, 1:ninbatch)
+    end if
   end if
 !$OMP END CRITICAL
 
@@ -667,13 +771,37 @@ do ibatch=1,totnumbatches
    dim1 = biny
    dim2 = patinbatch(ibatch)
    if (ibatch.eq.1) then
-     hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head)
-     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
+     if (trim(bitmode).eq.'char') then 
+       hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
+                                              dim0, dim1, dim2, HDF_head)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
+     end if
+     if (trim(bitmode).eq.'int') then 
+       hdferr = HDF_writeHyperslabIntegerArray3D(dataset, batchpatternsint(1:binx,1:biny,1:dim2), hdims, offset, &
+                                              dim0, dim1, dim2, HDF_head)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabIntegerArray3D EBSDpatterns')
+     end if
+     if (trim(bitmode).eq.'float') then 
+       hdferr = HDF_writeHyperslabFloatArray3D(dataset, batchpatterns32(1:binx,1:biny,1:dim2), hdims, offset, &
+                                              dim0, dim1, dim2, HDF_head)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
+     end if
    else
-     hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head, insert)
-     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
+     if (trim(bitmode).eq.'char') then 
+       hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
+                                              dim0, dim1, dim2, HDF_head, insert)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
+     end if
+     if (trim(bitmode).eq.'int') then 
+       hdferr = HDF_writeHyperslabIntegerArray3D(dataset, batchpatternsint(1:binx,1:biny,1:dim2), hdims, offset, &
+                                              dim0, dim1, dim2, HDF_head, insert)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabIntegerArray3D EBSDpatterns')
+     end if
+     if (trim(bitmode).eq.'float') then 
+       hdferr = HDF_writeHyperslabFloatArray3D(dataset, batchpatterns32(1:binx,1:biny,1:dim2), hdims, offset, &
+                                              dim0, dim1, dim2, HDF_head, insert)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
+     end if
    end if
  !end if
 
