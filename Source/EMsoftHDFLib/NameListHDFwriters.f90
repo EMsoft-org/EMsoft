@@ -369,7 +369,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(MCNameListType),INTENT(INOUT)                    :: mcnl
 
-integer(kind=irg),parameter                           :: n_int = 5, n_real = 7
+integer(kind=irg),parameter                           :: n_int = 6, n_real = 7
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=dbl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -377,16 +377,17 @@ character(fnlen)                                      :: dataset, sval(1), group
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'MCNameList'
+groupname = 'MCCLNameList'
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%primeseed, mcnl%num_el, mcnl%nthreads /)
+io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%primeseed, mcnl%num_el, mcnl%nthreads, mcnl%totnum_el /)
 intlist(1) = 'stdout'
 intlist(2) = 'numsx'
 intlist(3) = 'primeseed'
 intlist(4) = 'num_el'
 intlist(5) = 'nthreads'
+intlist(6) = 'totnum_el'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single doubles
@@ -415,6 +416,11 @@ dataset = 'dataname'
 line2(1) = mcnl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create dataname dataset',.TRUE.)
+
+dataset = 'mode'
+sval(1) = mcnl%mode
+hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create mode dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)

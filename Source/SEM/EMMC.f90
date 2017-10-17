@@ -59,6 +59,7 @@
 !> @date 03/17/14  MDG 3.2 modified output file format for IDL GUI
 !> @date 06/19/14  MDG 4.0 converted to remove all globals and split namelist handling from computation
 !> @date 09/24/14  MDG 4.1 test version to compare with Saransh's OpenCL code
+!> @date 10/13/17  MDG 5.0 fixed program to current output format (requested by Chad Parish)
 !--------------------------------------------------------------------------
 program EMMC
 
@@ -87,7 +88,7 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 20 /), progname)
 call GetMCNameList(nmldeffile,mcnl)
 
 ! perform a Monte Carlo simulation
- call DoMCsimulation(mcnl, progname)
+ call DoMCsimulation(mcnl, progname, nmldeffile)
  
 end program EMMC 
  
@@ -109,8 +110,9 @@ end program EMMC
 !> @date 09/25/13  MDG 3.2 added a few parameters to the output file 
 !> @date 03/17/14  MDG 3.3 added a few more for the IDL visualization program
 !> @date 06/19/14  MDG 4.0 rewrite with name list handling removed
+!> @date 10/13/17  MDG 5.0 converted all output to HDF5
 !--------------------------------------------------------------------------
-subroutine DoMCsimulation(mcnl, progname)
+subroutine DoMCsimulation(mcnl, progname, nmldeffile)
 
 use local
 use typedefs
@@ -126,11 +128,15 @@ use diffraction, only:CalcWaveLength
 use rng
 use Lambert
 use omp_lib
+use HDF5
+use NameListHDFwriters
+use HDFsupport
 
 IMPLICIT NONE
 
-type(MCNameListType),INTENT(IN)         :: mcnl
+type(MCNameListType),INTENT(INOUT)      :: mcnl
 character(fnlen),INTENT(IN)             :: progname
+character(fnlen),INTENT(IN)             :: nmldeffile
 
 
 type(unitcell),pointer  :: cell
@@ -150,7 +156,7 @@ logical                 :: verbose
 
 ! variable passing array
 real(kind=dbl)          :: varpas(13) 
-integer(kind=irg)       :: i, TID, nx, skip, io_int(1)
+integer(kind=irg)       :: i, TID, nx, skip, io_int(1), hdferr, one=1
 real(kind=sgl)          :: dens, avA, avZ, io_real(3), dmin ! used with CalcDensity routine
 
 ! variables used for parallel random number generator (based on http://http://jblevins.org/log/openmp)
@@ -161,6 +167,17 @@ integer(kind=irg),allocatable   :: accum_e(:,:,:), acc_e(:,:,:), accum_z(:,:,:,:
 
 ! various 
 integer(kind=irg)       :: istat
+character(11)           :: dstr
+character(15)           :: tstrb
+character(15)           :: tstre
+logical                 :: f_exists
+
+! HDF output stuff
+type(HDFobjectStackType),pointer  :: HDF_head
+character(fnlen)                  :: groupname, dataset, datagroupname, dataname
+
+ nullify(HDF_head)
+ call timestamp(datestring=dstr, timestring=tstrb)
 
  numsy = mcnl%numsx
 
@@ -182,6 +199,8 @@ integer(kind=irg)       :: istat
 ! allocate the accumulator arrays for number of electrons and energy
  numEbins =  int((mcnl%EkeV-mcnl%Ehistmin)/mcnl%Ebinsize)+1
  numzbins =  int(mcnl%depthmax/mcnl%depthstep)+1
+ mcnl%totnum_el = mcnl%num_el * mcnl%nthreads
+ mcnl%mode = 'full'
  nx = (mcnl%numsx-1)/2
  allocate(accum_e(numEbins,-nx:nx,-nx:nx),accum_z(numEbins,numzbins,-nx/10:nx/10,-nx/10:nx/10),stat=istat)
  allocate(rngs(mcnl%nthreads),stat=istat)
@@ -227,7 +246,82 @@ integer(kind=irg)       :: istat
 
 !$OMP END PARALLEL
 
-! and here we create the output file
+! output in .h5 format.
+
+! Initialize FORTRAN interface.
+!
+call h5open_EMsoft(hdferr)
+call timestamp(datestring=dstr, timestring=tstre)
+
+! get the filename; if it already exists, then delete it and create a new one
+dataname = trim(EMsoft_getEMdatapathname())//trim(mcnl%dataname)
+dataname = EMsoft_toNativePath(dataname)
+inquire(file=trim(dataname), exist=f_exists)
+
+if (f_exists) then
+  open(unit=dataunit, file=trim(dataname), status='old',form='unformatted')
+  close(unit=dataunit, status='delete')
+end if
+
+! Create a new file using the default properties.
+hdferr =  HDF_createFile(dataname, HDF_head)
+
+! write the EMheader to the file
+datagroupname = 'MCOpenCL'
+call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
+
+! add the CrystalData group at the top level of the file
+call SaveDataHDF(cell, HDF_head)
+
+! create a namelist group to write all the namelist files into
+groupname = 'NMLfiles'
+hdferr = HDF_createGroup(groupname, HDF_head)
+
+! read the text file and write the array to the file
+dataset = 'MCOpenCLNML'
+hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
+
+! leave this group
+call HDF_pop(HDF_head)
+
+! create a namelist group to write all the namelist files into
+groupname = 'NMLparameters'
+hdferr = HDF_createGroup(groupname, HDF_head)
+call HDFwriteMCNameList(HDF_head, mcnl)
+
+! leave this group
+call HDF_pop(HDF_head)
+
+! then the remainder of the data in a EMData group
+groupname = 'EMData'
+hdferr = HDF_createGroup(groupname, HDF_head)
+hdferr = HDF_createGroup(datagroupname, HDF_head)
+
+dataset = 'numzbins'
+hdferr = HDF_writeDatasetInteger(dataset, numzbins, HDF_head)
+
+! modified using multiplier
+dataset = 'totnum_el'
+hdferr = HDF_writeDatasetInteger(dataset, mcnl%num_el*mcnl%nthreads, HDF_head)
+
+dataset = 'multiplier'
+hdferr = HDF_writeDatasetInteger(dataset, one, HDF_head)
+
+dataset = 'numEbins'
+hdferr = HDF_writeDatasetInteger(dataset, numEbins, HDF_head)
+
+dataset = 'accum_e'
+hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_e, numEbins, 2*nx+1, 2*nx+1, HDF_head)
+
+dataset = 'accum_z'
+hdferr = HDF_writeDatasetIntegerArray4D(dataset, accum_z, numEbins, numzbins, 2*(nx/10)+1, 2*(nx/10)+1, HDF_head)
+
+call HDF_pop(HDF_head,.TRUE.)
+
+! and close the fortran hdf interface
+call h5close_EMsoft(hdferr)
+
+! and some finale messages...
  call Message(' ',"(A)")
  call Message(' All threads complete; saving data to file '//trim(mcnl%dataname), frm = "(A)")
 
@@ -235,24 +329,6 @@ integer(kind=irg)       :: istat
  call WriteValue(' Total number of electrons generated = ',io_int, 1, "(I15)")
  io_int(1) = sum(accum_e)
  call WriteValue(' Number of electrons on detector       = ',io_int, 1, "(I15)")
-
- open(dataunit,file=trim(EMsoft_toNativePath(mcnl%dataname)),status='unknown',form='unformatted')
-! write the program identifier
- write (dataunit) progname
-! write the version number
- write (dataunit) EMsoft_getEMsoftversion()
-! then the name of the crystal data file
- write (dataunit) mcnl%xtalname
-! energy information etc...
- write (dataunit) numEbins, numzbins, mcnl%numsx, numsy, mcnl%num_el*NUMTHREADS ! , NUMTHREADS
- write (dataunit) mcnl%EkeV, mcnl%Ehistmin, mcnl%Ebinsize, mcnl%depthmax, mcnl%depthstep
- write (dataunit) mcnl%sig, mcnl%omega
- write (dataunit) mcnl%MCmode
-! and here are the actual results
- write (dataunit) accum_e
- write (dataunit) accum_z
- close (dataunit,status='keep')
-! this is the end of the main subroutine
 
 
 ! the routine contains one function called single_run
@@ -280,12 +356,21 @@ contains
 !> @date 07/23/13  MDG 3.0 complete rewrite, integration with EMsoft libraries
 !> @date 07/30/13  MDG 3.1 added Patrick's code for tilted sample surface (sigma, omega)
 !> @date 07/31/13  MDG 3.2 corrected off-by-one error in energy binning
+!> @date 10/13/17  MDG 4.0 reverted some older changes to get program functioning again
 !--------------------------------------------------------------------------
 recursive subroutine  single_run(varpas,rngt,accum_e,accum_z,nx,numEbins,numzbins)
 
 use local
-!use rng
+use rng
 use Lambert
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)       :: varpas(13)
+type(rng_t), INTENT(INOUT)      :: rngt
+integer(kind=irg),INTENT(IN)    :: nx
+integer(kind=irg),INTENT(IN)    :: numEbins, numzbins
+integer(kind=irg),INTENT(OUT)   :: accum_e(numEbins,-nx:nx,-nx:nx), accum_z(numEbins,numzbins,-nx/10:nx/10,-nx/10:nx/10)
 
 ! all geometrical parameters for the scintillator setup
 real(kind=dbl)          :: sig          ! TD sample tile angle [degrees]
@@ -294,8 +379,6 @@ integer(kind=irg)       :: numsx        ! number of scintillator points along x
 integer(kind=irg)       :: numsy        ! number of scintillator points along y
 real(kind=dbl)          :: Ehistmin     ! minimum energy for energy histogram (in keV)
 real(kind=dbl)          :: Ebinsize     ! binsize in keV
-integer(kind=irg),INTENT(IN)    :: numEbins, numzbins
-integer(kind=irg),INTENT(IN)    :: nx
 real(kind=dbl)          :: Emin         ! Ehistmin - Ebinsize/2
 integer(kind=irg)       :: iE           ! energy bin counter
 integer(kind=irg)       :: iz           ! exit depth bin counter
@@ -332,29 +415,12 @@ real(kind=dbl)          :: Ze                   ! average atomic number
 real(kind=dbl)          :: density              ! density in g/cm^3
 real(kind=dbl)          :: at_wt                ! average atomic weight in g/mole
 
-! variable passing arrays
-real(kind=dbl),INTENT(IN)       :: varpas(13)
-integer(kind=irg),INTENT(OUT)   :: accum_e(numEbins,-nx:nx,-nx:nx), accum_z(numEbins,numzbins,-nx/10:nx/10,-nx/10:nx/10)
 integer(kind=irg)               :: TID
 
 ! parallel random number variable 
-type(rng_t), intent(inout)      :: rngt
-real(kind=dbl)                  :: rn(1501)
 real(kind=dbl)                  :: rr   ! random number
 
 real(kind=dbl), parameter :: cDtoR = 0.017453293D0
-
-  write (*,*) 'entered single_run routine'
-
-! in this test program, we'll only follow one electron for 500 steps; to do so,
-! we'll need 1501 random numbers from the RandomSeeds.data file, which we read here:
-open(unit=20,file='randomuniform.txt',status='old',form='formatted')
-do i=1,1501
-  read(20,"(F14.12)") rn(i)
-  write (*,*) rn(i)
-end do
-close(unit=20,status='keep')
-
 
 ! get the current thread number
  TID = OMP_GET_THREAD_NUM()
@@ -363,7 +429,7 @@ close(unit=20,status='keep')
  sig = varpas(1)
  numsx = int(varpas(2),kind=irg)
  numsy = int(varpas(3),kind=irg) 
- num_el = 1 ! int(varpas(4),kind=k12)
+ num_el = int(varpas(4),kind=k12)
  EkeV = varpas(5)
  Ze = varpas(6) 
  density = varpas(7) 
@@ -391,18 +457,12 @@ close(unit=20,status='keep')
  tano = tan(omega * cDtoR)
 
 ! parameter for the Lambert projection scaling
- delta = dble(nx) / LPs%sPio2
+ delta = dble(nx)
 
 ! beam direction cosines
  cxstart = dcos( (90.D0-sig) * cDtoR)
  czstart = -dsin( (90.D0-sig) * cDtoR)
  
-! random number counter
- iran = 1
-
-open(unit=dataunit,file='singlerun.txt',status='unknown',form='formatted')
-open(unit=dataunit2,file='singlerun2.txt',status='unknown',form='formatted')
-
 ! and here is the main loop
  mainloop: do el = 1,num_el
 
@@ -424,17 +484,13 @@ open(unit=dataunit2,file='singlerun2.txt',status='unknown',form='formatted')
     step = Ec*(Ec+1024.D0)/Ze/(Ec+511.D0)               ! step is used here as a dummy variable
     sige =  presig * step * step * alpha * (1.D0+alpha)
     lambda = pre * sige
-    rr = rn(iran)
-    iran = iran+1
+    rr = rng_uniform(rngt)
     step = - lambda * log(rr)
  
     cxyz = (/ cxstart, 0.D0, czstart /)         ! direction cosines for beam on tilted sample
  
 ! advance the coordinates 
     xyz = xyz + step * scaled * cxyz
-
-  write (dataunit,"(I6,':',F10.4,',',5(F12.4,','),F12.4)") iran-2, Ec, cxyz(1:3), xyz(1:3)
-  write (dataunit2,"(I6,':',E12.4,',',E12.4,',',E12.4,',',E12.4)") iran-2, alpha, step*scaled, sige, lambda*scaled 
 
   traj = 0
   trajloop: do while (traj.lt.num)
@@ -447,14 +503,12 @@ open(unit=dataunit2,file='singlerun2.txt',status='unknown',form='formatted')
     if (Ec.lt.min_energy) EXIT trajloop
     
 !  Find the angle the electron is deflected through by the scattering event.
-    rr = rn(iran)  ! rng_uniform(rngt)
-    iran = iran+1
+    rr = rng_uniform(rngt)
     cphi = 1.D0-2.D0*alpha*rr/(1.D0+alpha-rr)
     sphi = dsin(dacos(cphi)) !  dsqrt(1.D0-cphi*cphi)
 
 ! Find the azimuthal scattering angle psi
-    rr = rn(iran) ! rng_uniform(rngt)
-    iran = iran+1
+    rr = rng_uniform(rngt)
     psi = tpi * rr
     spsi = dsin(psi)
     cpsi = dcos(psi)
@@ -482,8 +536,7 @@ open(unit=dataunit2,file='singlerun2.txt',status='unknown',form='formatted')
     sige =  presig * step * step * alpha * (1.D0+alpha)
     lambda = pre * sige
 
-    rr = rn(iran) ! rng_uniform(rngt)
-    iran = iran+1
+    rr = rng_uniform(rngt)
     step = - lambda * log(rr)
 
 ! apply the step to the next location    
@@ -529,20 +582,10 @@ open(unit=dataunit2,file='singlerun2.txt',status='unknown',form='formatted')
    xyz = xyzn
    traj = traj + 1
   
-   write (dataunit,"(I6,':',F10.4,',',5(F12.4,','),F12.4)") traj, Ec, cxyz(1:3), xyz(1:3)
-   write (dataunit2,"(I6,':',E12.4,',',E12.4,',',E12.4,',',E12.4)") traj, alpha, step*scaled, sige, lambda*scaled 
-
   end do trajloop
 
 end do mainloop
 
-close(unit=dataunit,status='keep')
-close(unit=dataunit2,status='keep')
-
-
 end subroutine single_run
-
-
-
 
 end subroutine DoMCsimulation

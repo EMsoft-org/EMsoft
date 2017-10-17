@@ -96,6 +96,7 @@ type MCNameListType
         integer(kind=irg)       :: numsx
         integer(kind=irg)       :: primeseed
         integer(kind=irg)       :: num_el
+        integer(kind=irg)       :: totnum_el
         integer(kind=irg)       :: nthreads
         real(kind=dbl)          :: sig
         real(kind=dbl)          :: omega
@@ -105,6 +106,7 @@ type MCNameListType
         real(kind=dbl)          :: depthmax
         real(kind=dbl)          :: depthstep
         character(4)            :: MCmode
+        character(fnlen)        :: mode
         character(fnlen)        :: xtalname
         character(fnlen)        :: dataname
 end type MCNameListType
