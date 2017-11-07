@@ -43,6 +43,7 @@
 !> @date 01/01/15 MDG 2.1 added IsinsideFZ function, also used in dictionary indexing approach
 !> @date 01/17/15 MDG 2.2 added gridtype option to SampleRFZ
 !> @date 03/03/16 MDG 2.3 added uniform sampling for constant misorientations
+!> @date 04/01/17 MDG 3.0 start to add FZs for two-phase systems (e.g., cubic-hexagonal, etc.)
 !--------------------------------------------------------------------------
 module so3
 
@@ -59,6 +60,111 @@ public:: insideCyclicFZ, insideDihedralFZ, insideCubicFZ
 
 
 contains
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+! Routine to return the FZtype and FZorder parameters for single or two-phase
+! fundamental zone (FZ) computations; this includes all the FZ types from the 
+! following paper:
+!
+! "Representation of Orientation and Disorientation data for Cubic, Hexagonal, 
+! Tetragonal, and Orthorhombic Crystals", A. Heinz and P. Neumann, Acta Cryst. A47, 
+! 780-789 (1991)
+!
+! this routine also allows for icosahedral symmetry, although this is not part 
+! of the paper above.
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getFZtypeandorder
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief does Rodrigues point lie inside the relevant FZ
+!
+!> @param pgnum1 point group number for phase 1
+!> @param FZtype FZ type
+!> @param FZorder FZ order
+!> @param pgnum2 point group number for phase 2 (optional)
+!
+!> @date 04/02/17 MDG 1.0 new routine, needed for two-phase disorientations
+!--------------------------------------------------------------------------
+recursive subroutine getFZtypeandorder(pgnum1,FZtype,FZorder,pgnum2) 
+!DEC$ ATTRIBUTES DLLEXPORT :: getFZtypeandorder
+
+use typedefs
+use constants
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)              :: pgnum1
+integer(kind=irg),INTENT(OUT)             :: FZtype
+integer(kind=irg),INTENT(OUT)             :: FZorder
+integer(kind=irg),INTENT(IN),OPTIONAL     :: pgnum2
+
+integer(kind=irg)                         :: thisFZType
+logical                                   :: twophase
+
+! 0 -> x  (no symmetry or unbounded FZ for the cyclic symmetries)
+! 1 -> a  mixed cubic-hexagonal FZ  -> FZtype = 6
+! 2 -> b  mixed FZ -> FZtype = 7
+! 3 -> c  octahedral FZ
+! 4 -> d  tetrahedral FZ
+! 5 -> e  24-sided prismatic FZ -> FZtype = 8
+! 6 -> f  622 hexagonal dihedral FZ
+! 7 -> g  422 octagonal dihedral FZ
+! 8 -> h  32 trigonal dihedral FZ
+! 9 -> i  222 dihedral FZ
+
+! we reserve FZtype = 5 for icosahedral symmetry, which is under development on a separate code branch
+
+twophase = .FALSE.
+if (present(pgnum2)) twophase = .TRUE.
+
+if (twophase.eqv..TRUE.) then
+  thisFZtype = FZtypeTable(pgnum1,pgnum2)
+
+  select case(thisFZtype)
+    case (0)
+      ! this needs some more work since we need to properly handle the cyclic groups of FZtype = 1 ...
+      FZtype = 0
+      FZorder = 0
+    case (1)
+      FZtype = 6
+      FZorder = 0
+    case (2)
+      FZtype = 7
+      FZorder = 0
+    case (3)
+      FZtype = 4
+      FZorder = 0
+    case (4)
+      FZtype = 3
+      FZorder = 0
+    case (5)
+      FZtype = 8
+      FZorder = 0
+    case (6)
+      FZtype = 2
+      FZorder = 6
+    case (7)
+      FZtype = 2
+      FZorder = 4
+    case (8)
+      FZtype = 2
+      FZorder = 3
+    case (9)
+      FZtype = 2
+      FZorder = 2
+  end select
+else  ! single phase so use the old way of doing things...
+  FZtype = FZtarray(pgnum1)
+  FZorder = FZoarray(pgnum1)
+end if
+
+end subroutine getFZtypeandorder
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -86,11 +192,13 @@ contains
 !
 !> @date 01/01/15 MDG 1.0 new routine, needed for dictionary indexing approach
 !> @date 06/04/15 MDG 1.1 corrected infty to inftyd (double precision infinity)
+!> @date 04/02/17 MDG 1.2 expanded FZ types to include misorientation FZs and icosahedral
 !--------------------------------------------------------------------------
 recursive function IsinsideFZ(rod,FZtype,FZorder) result(insideFZ)
 !DEC$ ATTRIBUTES DLLEXPORT :: IsinsideFZ
 
 use constants
+use math
 
 IMPLICIT NONE
 
@@ -98,6 +206,8 @@ real(kind=dbl), INTENT(IN)              :: rod(4)
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
 logical                                 :: insideFZ
+
+insideFZ = .FALSE.
 
 ! dealing with 180 rotations is needed only for 
 ! FZtypes 0 and 1; the other FZs are always finite.
@@ -107,11 +217,19 @@ logical                                 :: insideFZ
     case (1)
       insideFZ = insideCyclicFZ(rod,FZtype,FZorder)        ! infinity is checked inside this function
     case (2)
-      if (rod(4).ne.inftyd) insideFZ = insideDihedralFZ(rod,FZorder)
+      if (rod(4).ne.inftyd()) insideFZ = insideDihedralFZ(rod,FZorder)
     case (3)
-      if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'tet')
+      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(rod,'tet')
     case (4)
-      if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'oct')
+      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(rod,'oct')
+    case (5) ! icosahedral symmetry
+!     if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'oct')
+    case (6) ! cubic-hexagonal misorientation FZ
+      if (rod(4).ne.inftyd()) insideFZ = insideCubeHexFZ(rod)
+    case (7)
+!     if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'oct')
+    case (8)
+!     if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'oct')
   end select
 
 end function IsinsideFZ
@@ -137,6 +255,7 @@ recursive function insideCyclicFZ(rod,FZtype,FZorder) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: insideCyclicFZ
 
 use constants
+use math
 
 IMPLICIT NONE
 
@@ -148,7 +267,7 @@ logical                                   :: res
 
 res = .FALSE.
 
-if (rod(4).ne.inftyd) then
+if (rod(4).ne.inftyd()) then
   if ((FZtype.eq.1.).and.(FZorder.eq.2)) then
 ! check the y-component vs. tan(pi/2n)
     res = dabs(rod(2)*rod(4)).le.LPs%BP(FZorder)
@@ -261,6 +380,7 @@ character(3), INTENT(IN)                  :: ot
 logical                                   :: res, c1, c2
 real(kind=dbl)                            :: r(3)
 real(kind=dbl),parameter                  :: r1 = 1.0D0
+real(kind=dbl),parameter                  :: eps = 1.0D-6
 
 r(1:3) = rod(1:3) * rod(4)
 
@@ -268,18 +388,62 @@ res = .FALSE.
 
 ! primary cube planes (only needed for octahedral case)
 if (ot.eq.'oct') then
-  c1 = (maxval(dabs(r)).le.LPS%BP(4)) 
+  c1 = (maxval(dabs(r)) - LPS%BP(4) .le. eps) 
 else 
   c1 = .TRUE.
 end if
 
 ! octahedral truncation planes, both for tetrahedral and octahedral point groups
-c2 = ((dabs(r(1))+dabs(r(2))+dabs(r(3))).le.r1)
+c2 = ((dabs(r(1))+dabs(r(2))+dabs(r(3))) - r1 .le. eps)
 
 ! if both c1 and c2, then the point is inside
 if (c1.and.c2) res = .TRUE.
 
 end function insideCubicFZ
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: insideCubeHexFZ
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief does Rodrigues point lie inside combined cubic-hexagonal FZ?
+!
+!> @note For details on this test, see section 8 in "Representation of Orientation and
+!> Disorientation data for Cubic, Hexagonal, Tetragonal, and Orthorhombic Crystals", A. Heinz
+!> and P. Neumann, Acta Cryst. A47, 780-789 (1991)
+!
+!> @param rod Rodrigues coordinates  (double precision)
+!
+!> @date 04/01/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function insideCubeHexFZ(rod) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: insideCubeHexFZ
+
+use constants
+
+IMPLICIT NONE
+
+real(kind=dbl), INTENT(IN)                :: rod(4)
+
+logical                                   :: res
+real(kind=dbl)                            :: r(3)
+real(kind=dbl),parameter                  :: r1 = 0.414213562373095D0, r2 = 0.131652497587396D0, &
+                                             alpha = 0.267949192431123D0, beta = 0.464101615137755D0
+real(kind=dbl),parameter                  :: eps = 1.0D-6
+
+
+r(1:3) = rod(1:3) * rod(4)
+
+res = .FALSE.
+
+if ( (r(2).ge.0.D0).and.(r(3).ge.0.D0) ) then 
+  if ( ((alpha * (r(1)+r(3)) + r(2)) - beta .le. eps).and.( (alpha * (r(2)-r(3)) + r(1)) - beta .le. eps) ) then 
+    if ( (r(1) - r1 .le. eps) .and. (r(2) - r1 .le. eps) .and. (r(3) - r2 .le. eps) ) res = .TRUE.
+  end if
+end if 
+
+end function insideCubeHexFZ
 
 !--------------------------------------------------------------------------
 !
@@ -1075,14 +1239,14 @@ end subroutine sample_isoCubeFilled
 !> @brief sample a cone centered on a unit vector with apex in the origin and given opening angle
 !
 !> @param unitvector  unit vector describing the cone axis
-!> @param dpmax = cosine of half the cone angle
+!> @param dpmin = cosine of half the cone angle
 !> @param N number of points along cube edge
 !> @param CMcnt the number of components in the returned linked list
 !> @param CMlist (output) linked list of Rodrigues vectors
 !
 !> @date 02/01/17 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine sample_Cone(unitvector, dpmax, N, FZtype, FZorder, cnt, list) 
+recursive subroutine sample_Cone(unitvector, dpmin, N, FZtype, FZorder, cnt, list) 
 !DEC$ ATTRIBUTES DLLEXPORT :: sample_Cone
 
 use constants
@@ -1092,7 +1256,7 @@ use rotations
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: unitvector(3)! axis of cone
-real(kind=dbl),INTENT(IN)               :: dpmax        ! maximum dot product
+real(kind=dbl),INTENT(IN)               :: dpmin        ! maximum dot product
 integer(kind=irg),INTENT(IN)            :: N            ! number of sampling points along cube semi edge
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
@@ -1144,7 +1308,7 @@ do while (x.lt.s)
 ! compute the dot product of this vector and the unitvector
       dp = unitvector(1)*r(1)+unitvector(2)*r(2)+unitvector(3)*r(3)
 ! conditionally add the point to the list if it lies inside the cone (dpmax <= dp)
-      if ((dp.ge.dpmax).and.(IsinsideFZ(rod,FZtype,FZorder))) then
+      if ((dp.ge.dpmin).and.(IsinsideFZ(rod,FZtype,FZorder))) then
         allocate(tmp%next)
         tmp => tmp%next
         nullify(tmp%next)
@@ -1161,6 +1325,107 @@ do while (x.lt.s)
 end do
 
 end subroutine sample_Cone
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: sample_Fiber
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief sample a fiber texture with a given fiber axis and angular spread
+!
+!> @param itmp  array of equivalent unit vectors describing the fiber axis in the crystal frame
+!> @param num  number of unique entries in itmp array
+!> @param dpmin = cosine of half the cone angle
+!> @param N number of points along cube edge
+!> @param CMcnt the number of components in the returned linked list
+!> @param CMlist (output) linked list of Rodrigues vectors
+!
+!> @date 08/16/17 MDG 1.0 original
+!> @date 08/16/17 MDG 1.1 incorporate family symmetry for the input unitvector
+!--------------------------------------------------------------------------
+recursive subroutine sample_Fiber(itmp, num, dpmin, N, FZtype, FZorder, cnt, list) 
+!DEC$ ATTRIBUTES DLLEXPORT :: sample_Fiber
+
+use constants
+use typedefs
+use rotations
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)               :: itmp(48,3)   ! equivalent fiber axis unit vectors
+integer(kind=irg),INTENT(IN)            :: num
+real(kind=dbl),INTENT(IN)               :: dpmin        ! maximum dot product
+integer(kind=irg),INTENT(IN)            :: N            ! number of sampling points along cube semi edge
+integer(kind=irg),INTENT(IN)            :: FZtype
+integer(kind=irg),INTENT(IN)            :: FZorder
+integer(kind=irg),INTENT(INOUT)         :: cnt          ! number of entries in linked list
+type(FZpointd),pointer                  :: list         ! pointer to start of linked list
+
+type(FZpointd),pointer                  :: tmp, tmp2
+real(kind=dbl)                          :: dx, qu(4), x, y, z, s, delta, dp, Fr(3), Fn(3), rod(4)
+integer(kind=irg)                       :: j
+
+! initialize parameters
+cnt = 0
+! cube semi-edge length
+s = 0.5D0 * LPs%ap
+! step size for sampling of grid; total number of samples = (2*nsteps+1)**3
+delta = s/dble(N)
+
+! make sure the linked list is empty
+if (associated(list)) then
+  tmp => list%next
+  tmp2 => list
+  do
+    deallocate(tmp2)  
+    if (.not. associated(tmp) ) EXIT
+    tmp2 => tmp
+    tmp => tmp%next
+  end do
+  nullify(list)
+end if
+
+! allocate the linked list and insert the origin
+allocate(list)
+tmp => list
+nullify(tmp%next)
+cnt = 0
+
+! and generate the linked list of points inside the cone
+x = -s
+do while (x.lt.s)
+  y = -s
+  do while (y.lt.s)
+    z = -s
+    do while (z.lt.s)
+
+! convert to Rodrigues representation
+      qu = cu2qu( (/ x, y, z /) )
+      rod = cu2ro( (/ x, y, z /) )
+
+! loop over the equivalent fiber axis indices
+      do j=1,num
+        Fr = quat_Lp(conjg(qu), itmp(j,1:3))
+
+! conditionally add the point to the list if it lies inside the cone (dpmax <= dp)
+        if ((Fr(3).ge.dpmin).and.(IsinsideFZ(rod,FZtype,FZorder))) then
+          tmp%trod = rod
+          allocate(tmp%next)
+          tmp => tmp%next
+          nullify(tmp%next)
+          cnt = cnt + 1
+        end if
+      end do
+
+    z = z + delta
+  end do
+  y = y + delta
+ end do
+ x = x + delta
+end do
+
+end subroutine sample_Fiber
 
 !--------------------------------------------------------------------------
 !
@@ -1309,6 +1574,7 @@ recursive function IsinsideMFZ(rod,MFZtype,MFZorder) result(insideMFZ)
 !DEC$ ATTRIBUTES DLLEXPORT :: IsinsideMFZ
 
 use constants
+use math
 
 IMPLICIT NONE
 
@@ -1323,11 +1589,11 @@ logical                                 :: insideMFZ
     case (1)
       insideMFZ = insideCyclicFZ(rod,MFZtype,MFZorder)        ! infinity is checked inside this function
     case (2)
-      if (rod(4).ne.inftyd) insideMFZ = insideDihedralMFZ(rod,MFZorder)
+      if (rod(4).ne.inftyd()) insideMFZ = insideDihedralMFZ(rod,MFZorder)
     case (3)
-      if (rod(4).ne.inftyd) insideMFZ = insideCubicMFZ(rod,'tet')
+      if (rod(4).ne.inftyd()) insideMFZ = insideCubicMFZ(rod,'tet')
     case (4)
-      if (rod(4).ne.inftyd) insideMFZ = insideCubicMFZ(rod,'oct')
+      if (rod(4).ne.inftyd()) insideMFZ = insideCubicMFZ(rod,'oct')
   end select
 
 end function IsinsideMFZ

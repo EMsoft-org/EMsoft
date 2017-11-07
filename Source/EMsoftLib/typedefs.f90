@@ -296,7 +296,6 @@ integer(kind=irg),parameter :: SGPG(32) =(/1,2,3,6,10,16,25,47,75,81,83,89,99,11
                                           200,207,215,221/)
 !DEC$ ATTRIBUTES DLLEXPORT :: SGPG
 
-
 !>  SGsym contains the numbers of all the symmorphic space groups
 integer(kind=irg),parameter :: SGsym(73) =(/1,2,3,5,6,8,10,12,16,21,22,23,25,35,38,42,44,47, &
                                             65,69,71,75,79,81,82,83,87,89,97,99,107,111,115, &
@@ -347,7 +346,6 @@ integer(kind=irg),parameter       :: PGrot(32) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,1
 integer(kind=irg),parameter       :: PGLaue(32) =(/2,2,5,5,5,8,8,8,11,11,11,15,15,15,15,17,17, &
                                                   20,20,20,23,23,23,27,27,27,27,29,29,32,32,32/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGLaue
-
 
 !> 3D point groups : inverted Laue group number
 integer(kind=irg),parameter       :: PGLaueinv(32) = (/1,1,2,2,2,3,3,3,4,4,4,5,5,5,5,6,6, &
@@ -519,6 +517,68 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,35) = reshape( (/ &
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_Qsymop
 ! need to add the hexagonal and trigonal twofold rotational operators !
 
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+! the following table is used for two-phase disorientation fundamental zones
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+! this table encodes Figure 1 of the paper  "Representation of Orientation and
+! Disorientation data for Cubic, Hexagonal, Tetragonal, and Orthorhombic Crystals", A. Heinz
+! and P. Neumann, Acta Cryst. A47, 780-789 (1991)
+! The following conversions are used
+! 0 -> x  (no symmetry)
+! 1 -> a  mixed cubic-hexagonal FZ
+! 2 -> b  mixed FZ
+! 3 -> c  octahedral FZ
+! 4 -> d  tetrahedral FZ
+! 5 -> e  24-sided prismatic FZ
+! 6 -> f  622 hexagonal dihedral FZ
+! 7 -> g  422 octagonal dihedral FZ
+! 8 -> h  32 trigonal dihedral FZ
+! 9 -> i  222 dihedral FZ
+! This table is used in the so3.f90 module to figure out which FZ should be used for a single phase
+! or two phase FZ computation; all FZs are also available in the povray.f90 module for 3D visualization.
+! The new routine getFZtypeandorder in so3.f90 will take two point group numbers, possibly identical,
+! and return the FZtype and FZorder parameters that are currently used already in other routines.  
+integer(kind=irg), parameter        :: FZtypeTable(32,32) = reshape( (/ &
+ 0, 0, 0, 0, 0, 9, 0, 9, 0, 0, 0, 7, 0, 9, 7, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 4, 4, 3, 4, 3, &
+ 0, 0, 0, 0, 0, 9, 0, 9, 0, 0, 0, 7, 0, 9, 7, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 4, 4, 3, 4, 3, &
+ 0, 0, 0, 0, 0, 9, 9, 9, 7, 9, 7, 7, 7, 7, 7, 8, 8, 6, 8, 6, 6, 8, 6, 6, 6, 6, 6, 4, 4, 3, 4, 3, &
+ 0, 0, 0, 0, 0, 9, 0, 9, 0, 0, 0, 7, 0, 9, 7, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 4, 4, 3, 4, 3, &
+ 0, 0, 0, 0, 0, 9, 9, 9, 7, 9, 7, 7, 7, 7, 7, 8, 8, 6, 8, 6, 6, 8, 6, 6, 6, 6, 6, 4, 4, 3, 4, 3, &
+ 9, 9, 9, 9, 9, 9, 9, 9, 7, 9, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, 4, 3, 4, 3, &
+ 0, 0, 9, 0, 9, 9, 0, 9, 0, 0, 0, 7, 0, 9, 7, 0, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 6, 4, 4, 3, 4, 3, &
+ 9, 9, 9, 9, 9, 9, 9, 9, 7, 9, 7, 7, 7, 7, 7, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, 4, 3, 4, 3, &
+ 0, 0, 7, 0, 7, 7, 0, 7, 0, 0, 0, 7, 0, 7, 7, 0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 5, 3, 3, 3, 3, 3, &
+ 0, 0, 9, 0, 9, 9, 0, 9, 0, 0, 0, 7, 0, 9, 7, 0, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 6, 4, 4, 3, 4, 3, &
+ 0, 0, 7, 0, 7, 7, 0, 7, 0, 0, 0, 7, 0, 7, 7, 0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 5, 3, 3, 3, 3, 3, &
+ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 3, 3, 3, 3, &
+ 0, 0, 7, 0, 7, 7, 0, 7, 0, 0, 0, 7, 0, 7, 7, 0, 0, 5, 0, 5, 0, 0, 0, 5, 0, 5, 5, 3, 3, 3, 3, 3, &
+ 9, 9, 7, 9, 7, 7, 9, 7, 7, 9, 7, 7, 7, 9, 7, 6, 6, 5, 6, 5, 6, 6, 6, 5, 6, 5, 5, 3, 3, 3, 3, 3, &
+ 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 3, 3, 3, 3, 3, &
+ 0, 0, 8, 0, 8, 6, 0, 6, 0, 0, 0, 5, 0, 6, 5, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 2, 2, 1, 2, 1, &
+ 0, 0, 8, 0, 8, 6, 0, 6, 0, 0, 0, 5, 0, 6, 5, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 2, 2, 1, 2, 1, &
+ 8, 8, 6, 8, 6, 6, 6, 6, 5, 6, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 6, 8, 6, 6, 6, 8, 6, 2, 2, 1, 2, 1, &
+ 0, 0, 8, 0, 8, 6, 0, 6, 0, 0, 0, 5, 0, 6, 5, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 2, 2, 1, 2, 1, &
+ 8, 8, 6, 8, 6, 6, 6, 6, 5, 6, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 6, 8, 6, 6, 6, 8, 6, 2, 2, 1, 2, 1, &
+ 0, 0, 6, 0, 6, 6, 0, 6, 0, 0, 0, 5, 0, 6, 5, 0, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 6, 2, 2, 1, 2, 1, &
+ 0, 0, 8, 0, 8, 6, 0, 6, 0, 0, 0, 5, 0, 6, 5, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 6, 6, 2, 2, 1, 2, 1, &
+ 0, 0, 6, 0, 6, 6, 0, 6, 0, 0, 0, 5, 0, 6, 5, 0, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 6, 2, 2, 1, 2, 1, &
+ 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 1, 2, 1, &
+ 0, 0, 6, 0, 6, 6, 0, 6, 0, 0, 0, 5, 0, 6, 5, 0, 0, 6, 0, 6, 0, 0, 0, 6, 0, 6, 6, 2, 2, 1, 2, 1, &
+ 8, 8, 6, 8, 6, 6, 6, 6, 5, 6, 5, 5, 5, 5, 5, 8, 8, 8, 8, 8, 6, 6, 6, 6, 6, 8, 6, 2, 2, 1, 2, 1, &
+ 6, 6, 6, 6, 6, 6, 6, 6, 5, 6, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 1, 2, 1, &
+ 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 3, 4, 3, &
+ 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 3, 4, 3, &
+ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, &
+ 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 4, 4, 3, 4, 3, &
+ 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3 &
+ /), (/ 32, 32/) )
+
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -552,6 +612,7 @@ type reflisttype
                                    sangle, &          ! scattering angle (mrad)
                                    thetag             ! phase angle, needed for ECCI simulations
   logical                       :: strong, weak       ! is this a strong beam or not; both .FALSE. means 'do not consider'
+  integer(kind=irg)             :: variant            ! one of the four variants of a superlattice reflection in fcc
   complex(kind=dbl)             :: Ucg                  ! Fourier coefficient, copied from cell%LUT
   complex(kind=dbl)             :: qg                  ! scaled Fourier coefficient, copied from cell%LUTqg
   type(reflisttype),pointer     :: next                 ! connection to next entry in master linked list
@@ -897,11 +958,8 @@ end type BetheParameterType
 !--------------------------------------------------------------------------
 
 type STEMtype
-        character(fnlen)                :: weightoutput
-        character(2)                    :: geometry
-        integer(kind=irg)               :: numberofsvalues, numk, numCL
-        real(kind=sgl)                  :: BFradius,ADFinnerradius,ADFouterradius,kt,beamconvergence,cameralength, &
-                                           BFmrad,ADFimrad,ADFomrad, diffapmrad, diffapmcenter, CLarray(20)
+        integer(kind=irg)               :: numk
+        real(kind=sgl)                  :: BFmrad,ADFimrad,ADFomrad, diffapmrad, diffapmcenter
         logical,allocatable             :: ZABFweightsarray(:,:,:),ZAADFweightsarray(:,:,:)       ! only used for the zone axis case
         real(kind=sgl),allocatable      :: sgarray(:,:),BFweightsarray(:,:,:),ADFweightsarray(:,:,:)   ! only used for the systematic row case
 end type STEMtype
@@ -972,6 +1030,7 @@ type orientationtype
   real(kind=sgl)        :: quat(4)              ! quaternion representation (q(1) is scalar part, q(2:4) vector part)
   real(kind=sgl)        :: homochoric(3)        ! homochoric representation according to Frank's paper  
   real(kind=sgl)        :: cubochoric(3)        ! cubic grid representation (derived from homochoric)
+  real(kind=sgl)        :: stereographic(3)     ! 3D stereographic  [added 10/05/17]
 end type orientationtype
 
 
@@ -984,6 +1043,7 @@ type orientationtyped
   real(kind=dbl)        :: quat(4)              ! quaternion representation (q(1) is scalar part, q(2:4) vector part)
   real(kind=dbl)        :: homochoric(3)        ! homochoric representation according to Frank's paper  
   real(kind=dbl)        :: cubochoric(3)        ! cubic grid representation (derived from homochoric)
+  real(kind=dbl)        :: stereographic(3)     ! 3D stereographic  [added 10/05/17]
 end type orientationtyped
 
 !--------------------------------------------------------------------------
@@ -1110,5 +1170,90 @@ type QCStructureType
   complex(kind=dbl),allocatable         :: LUTqg(:,:,:,:,:,:)
 end type QCStructureType
 
+type PoleFigures
+  integer(kind=irg),allocatable         :: hkl(:,:)
+  real(kind=dbl),allocatable            :: PFhkl(:,:,:)
+  complex(kind=dbl),allocatable         :: xraysf(:)  
+  real(kind=dbl),allocatable            :: wf(:)  
+end type PoleFigures
+
+type sparse_ll
+    integer(kind=ill)               :: idcol, idrow, idlin, idrow_inc, idlin_inc
+    real(kind=dbl)                  :: val
+    type(sparse_ll),pointer         :: next, next_inc
+end type sparse_ll
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+! type definitions for mrc file format writing
+type FEIstruct
+    real(kind=sgl)      :: a_tilt = 0.0
+    real(kind=sgl)      :: b_tilt = 0.0
+    real(kind=sgl)      :: x_stage = 0.0
+    real(kind=sgl)      :: y_stage = 0.0
+    real(kind=sgl)      :: z_stage = 0.0
+    real(kind=sgl)      :: x_shift = 0.0
+    real(kind=sgl)      :: y_shift = 0.0
+    real(kind=sgl)      :: defocus = 0.0
+    real(kind=sgl)      :: exp_time = 0.0
+    real(kind=sgl)      :: mean_int = 0.0
+    real(kind=sgl)      :: tiltaxis = 0.0
+    real(kind=sgl)      :: pixelsize = 0.0
+    real(kind=sgl)      :: magnification = 0.0
+    real(kind=sgl)      :: voltage = 0.0
+    character(72)       :: unused
+end type FEIstruct
+
+type MRCstruct
+    integer(kind=irg)       :: nx = 0 ! number of columns
+    integer(kind=irg)       :: ny = 0 ! number of rows
+    integer(kind=irg)       :: nz = 0 ! number of sections
+    integer(kind=irg)       :: mode = 1 ! type of image pixel 
+    integer(kind=irg)       :: nxstart = 0 ! starting point of subimage
+    integer(kind=irg)       :: nystart = 0 !  
+    integer(kind=irg)       :: nzstart = 0 ! 
+    integer(kind=irg)       :: mx = 0 ! grid size in x
+    integer(kind=irg)       :: my = 0 ! grid size in y
+    integer(kind=irg)       :: mz = 0 ! grid size in z
+    real(kind=sgl)          :: xlen = 0 ! cell size; pixel spacing = xlen/mx, ylen/my, zlen/mz
+    real(kind=sgl)          :: ylen = 0 !
+    real(kind=sgl)          :: zlen = 0 !
+    real(kind=sgl)          :: alpha = 90.0 ! cell angles - ignored by IMOD
+    real(kind=sgl)          :: beta =90.0 !
+    real(kind=sgl)          :: gamma = 90.0 !
+    integer(kind=irg)       :: mapc = 1 ! map column  1=x,2=y,3=z
+    integer(kind=irg)       :: mapr = 2 ! map row     1=x,2=y,3=z
+    integer(kind=irg)       :: maps =3 ! map section 1=x,2=y,3=z
+    real(kind=sgl)          :: amin = 0.0 ! minimum pixel value (needs to be set for proper scaling of data)
+    real(kind=sgl)          :: amax = 0.0 ! maximum pixel value
+    real(kind=sgl)          :: amean = 0.0 ! mean pixel value
+    integer(kind=ish)       :: ispg = 0 ! space group number
+    integer(kind=ish)       :: nsymbt = 0 ! NOT SURE WHAT THIS IS
+    integer(kind=irg)       :: next = 131072 ! number of bytes in extended header (1024 * 128 for FEI)
+    integer(kind=ish)       :: creatid = 0 ! used to be an ID number, is 0 as of IMOD 4.2.23
+    character(30)           :: extra_data = '00                            ' ! string(' ',format='(A30)'), not used, first two bytes should be 0
+    integer(kind=ish)       :: numint = 0 ! number of bytes per section (SerialEM interpretation) [renamed from nint to numin]
+    integer(kind=ish)       :: nreal = 32 ! bit flags for short data type
+    character(20)           :: extra_data_2= '                    ' ! string(' ',format='(A20)'), $ ; not used
+    integer(kind=irg)       :: imodStamp = 0 ! 
+    integer(kind=irg)       :: imodFlags = 0 !
+    integer(kind=ish)       :: idtype = 0 !  ( 0 = mono, 1 = tilt, 2 = tilts, 3 = lina, 4 = lins)
+    integer(kind=ish)       :: lens = 0 !
+    integer(kind=ish)       :: nd1 = 0 ! for idtype = 1, nd1 = axis (1, 2, or 3)
+    integer(kind=ish)       :: nd2 = 0 ! 
+    integer(kind=ish)       :: vd1 = 0 ! vd1 = 100. * tilt increment
+    integer(kind=ish)       :: vd2 = 0 ! vd2 = 100. * starting angle
+    real(kind=sgl)          :: tiltangles(6) !  0,1,2 = original:  3,4,5 = current
+    real(kind=sgl)          :: xorg = 0.0 ! origin of image
+    real(kind=sgl)          :: yorg = 0.0 !
+    real(kind=sgl)          :: zorg = 0.0 !
+    character(4)            :: cmap = 'MAP '
+    character(4)            :: stamp = 'DA  ' ! First two bytes have 17 and 17 for big-endian or 68 and 65 for little-endian
+    real(kind=sgl)          :: rms = 0.0 ! RMS deviation of densities from mean density
+    integer(kind=irg)       :: nlabels =0 ! Number of labels with useful data
+    character(800)          :: labels ! string(' ',format='(A800)') $ ; 10 labels of 80 characters each
+end type MRCstruct
 
 end module typedefs

@@ -5,9 +5,9 @@ resolve_all
 ;define a few variables
 appname = 'SEMDisplay'
 saveappname = appname+'.sav'
-IDLappdir = '/home/joao/EMsoftPublic/Build/Bin/IDL'
-VMappdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps'
-Resdir = '/home/joao/EMsoftPublic/Build/Bin/IDL/VMapps/Resources'
+IDLappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL'
+VMappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps'
+Resdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps/SEMDisplay/Resources'
 
 cd,CURRENT=cdir
 
@@ -20,15 +20,15 @@ spawn,cmd
 ; create the .sav file
 save,/routines,filename=saveappname
 
-; create the Virtual Machine app for Linux
-make_rt,appname,VMappdir,savefile=cdir+'/'+saveappname,/VM,/LIN64,/OVERWRITE
+; create the Virtual Machine app for Mac OS X 64bit
+make_rt,appname,VMappdir,savefile=cdir+'/'+saveappname,/VM,/MACINT64,/OVERWRITE
 
 ; add whatever resource folder is needed
 cmd = '/bin/mkdir '+Resdir
 spawn,cmd
 
 ; and add the logo file to it
-cmd = '/bin/cp /home/joao/EMsoftPublic/IDL/Resources/EMsoftlogo.jpg '+ResDir
+cmd = '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftlogo.jpg '+ResDir
 spawn,cmd
 
 exit

@@ -1,5 +1,21 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    echo "This script requires 2 arguments: Path where you want the SDK Installed and the "
+    echo "the number of build threads to use when building. For example if you pass "
+    echo "'Build_SDK.sh /opt/EMsoft_SDK 8' then /opt/EMsoft_SDK will be the folder"
+    echo "that has all the dependent library folders in it."
+    exit 
+fi
+
+SDK_INSTALL=${1}
+PARALLEL_BUILD=${2}
+HOST_SYSTEM=`uname`
+echo "SDK_INSTALL=$SDK_INSTALL"
+echo "PARALLEL_BUILD=$PARALLEL_BUILD"
+echo "Host System: $HOST_SYSTEM"
+
+
 #------------------------------------------------------------------------------
 # Read the configuration file for the SDK Build. All important variables are 
 # stored in the .conf file. DO NOT CHANGE variables in this file.
@@ -38,14 +54,14 @@ cd $SDK_INSTALL/${CLFORTRAN_FOLDER_NAME}
 
 mkdir Build
 cd Build
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/$CLFORTRAN_INSTALL_NAME-Debug ../
+$SDK_INSTALL/$CMAKE_FOLDER_NAME/${CMAKE_EXE_PATH}/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/$CLFORTRAN_INSTALL_NAME-Debug ../
 make -j$PARALLEL_BUILD
 make install
 
 cd ../
 mkdir zRel
 cd zRel
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/$CLFORTRAN_INSTALL_NAME-Release ../
+$SDK_INSTALL/$CMAKE_FOLDER_NAME/${CMAKE_EXE_PATH}/bin/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/$CLFORTRAN_INSTALL_NAME-Release ../
 make -j$PARALLEL_BUILD
 make install
 

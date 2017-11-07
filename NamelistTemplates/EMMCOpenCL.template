@@ -36,6 +36,8 @@
  depthmax = 100.D0,
 ! depth step size [nm]
  depthstep = 1.0D0,
+! should the user be notified by email or Slack that the program has completed its run?
+ Notify = 'Off',
 ! output data file name; pathname is relative to the EMdatapathname path !!!
  dataname = 'MCoutput.h5'
  /

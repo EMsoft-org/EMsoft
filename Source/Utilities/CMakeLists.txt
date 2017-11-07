@@ -1,31 +1,35 @@
 
-
-include("${EMsoft_SOURCE_DIR}/Source/EMsoft_Functions.cmake")
+set(EXE_LINK_LIBRARIES "EMsoftLib")
 
 if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  set(FORTRAN_LIBRARIES gomp gcc_eh)
+  set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} gomp gcc_eh)
 endif()
 
+if (Fortran_COMPILER_NAME MATCHES "ifort.*")
+  if(WIN32)
+    add_definitions("/Qopenmp /Qdiag-disable:11082 /Qip")
+  endif()
+endif()
 
 include_directories("${EMsoftHDFLib_BINARY_DIR}")
+
+
 set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/Utilities")
 set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
+set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
 
 if(EMsoft_ENABLE_HDF5_SUPPORT)
   
-  string(TOLOWER ${LIB_TYPE} lib_type)
-  set(hdf5LinkLibs hdf5 hdf5_f90cstub hdf5_fortran hdf5_hl hdf5_hl_f90cstub hdf5_hl_fortran)
-  set(comps ${hdf5LinkLibs})
-  if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
-    set(hdf5LinkLibs "")
-    foreach(comp ${comps})
-      if(TARGET ${comp}-${lib_type})
-        set(hdf5LinkLibs ${hdf5LinkLibs} ${comp}-${lib_type})
-      endif()
-    endforeach()
-  endif()
+      GetHDF5LinkLibraries(EMSOFT)
+      set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib)
+    
 
-  set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${hdf5LinkLibs} EMsoftHDFLib)
+      Add_EMsoft_Executable(TARGET EMsoftSlackTest
+                                    SOURCES ${APP_DIR}/EMsoftSlackTest.f90 
+                                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                                    SOLUTION_FOLDER EMsoftPublic/Utilities 
+                                    INSTALL_PROGRAM TRUE)
 
       Add_EMsoft_Executable(TARGET EMDisorientations
                                     SOURCES ${APP_DIR}/EMDisorientations.f90 
@@ -140,6 +144,11 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                                     SOLUTION_FOLDER EMsoftPublic/Utilities 
                                     INSTALL_PROGRAM TRUE)
+      Add_EMSoft_Executable(TARGET EMsampleRFZ 
+                                    SOURCES ${APP_DIR}/EMsampleRFZ.f90 
+                                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                                    SOLUTION_FOLDER EMsoftPublic/Utilities 
+                                    INSTALL_PROGRAM TRUE)
 
 endif()
 
@@ -156,11 +165,6 @@ Add_EMSoft_Executable(TARGET EMOpenCLinfo
                               INSTALL_PROGRAM TRUE)
 Add_EMsoft_Executable(TARGET EMsoftinit 
                               SOURCES ${APP_DIR}/EMsoftinit.f90 
-                              LINK_LIBRARIES EMsoftLib
-                              SOLUTION_FOLDER EMsoftPublic/Utilities 
-                              INSTALL_PROGRAM TRUE)
-Add_EMSoft_Executable(TARGET EMsampleRFZ 
-                              SOURCES ${APP_DIR}/EMsampleRFZ.f90 
                               LINK_LIBRARIES EMsoftLib
                               SOLUTION_FOLDER EMsoftPublic/Utilities 
                               INSTALL_PROGRAM TRUE)

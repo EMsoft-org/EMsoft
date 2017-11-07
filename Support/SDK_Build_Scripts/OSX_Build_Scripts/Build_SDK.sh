@@ -1,5 +1,19 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    echo "This script requires 2 arguments: Path where you want the SDK Installed and the "
+    echo "the number of build threads to use when building. For example if you pass "
+    echo "'Build_SDK.sh /opt/EMsoft_SDK 8' then /opt/EMsoft_SDK will be the folder"
+    echo "that has all the dependent library folders in it."
+    exit 
+fi
+
+SDK_INSTALL=${1}
+PARALLEL_BUILD=${2}
+HOST_SYSTEM=`uname`
+echo "SDK_INSTALL=$SDK_INSTALL"
+echo "PARALLEL_BUILD=$PARALLEL_BUILD"
+echo "Host System: $HOST_SYSTEM"
 
 #------------------------------------------------------------------------------
 # Read the configuration file for the SDK Build. All important variables are 
@@ -20,13 +34,6 @@ done < $configfile.unix
 rm $configfile.unix
 #------------------------------------------------------------------------------
 
-
-echo "SDK_INSTALL=$SDK_INSTALL"
-echo "PARALLEL_BUILD=$PARALLEL_BUILD"
-
-HOST_SYSTEM=`uname`
-echo "Host System: $HOST_SYSTEM"
-
 if [[ "$FORTRAN_VENDOR" = "gnu" ]];
   then
   export FC=${GFORTRAN_INSTALL}/bin/gfortran
@@ -42,32 +49,10 @@ fi
 
 SCRIPT_DIR=`pwd`
 
-# if [ ! -e "$SDK_PARENT/$SDK_ARCHIVE_FILENAME" ];
-#   then
-#   echo "-------------------------------------------"
-#   echo " Downloading EMsoft SDK Source Archive "
-#   echo "-------------------------------------------"
-#   $DOWNLOAD_PROG  "$SDK_DOWNLOAD_SITE/$SDK_ARCHIVE_FILENAME" -o $SDK_PARENT/$SDK_ARCHIVE_FILENAME
-# fi
-
-# #-------------------------------------------------
-# # Move one Directory Above the SDK Folder and untar the
-# if [ -e "$SDK_PARENT/$SDK_ARCHIVE_FILENAME" ];
-#   then
-#   echo "Decompressing Archive $SDK_PARENT/$SDK_ARCHIVE_FILENAME"
-#   mkdir -p ${SDK_INSTALL}
-#   chmod ugo+rwx ${SDK_INSTALL}
-#   cd "$SDK_INSTALL/../"
-#   tar -xvzf $SDK_ARCHIVE_FILENAME
-#   chmod ugo+rwx $SDK_INSTALL
-#   USER=`whoami`
-#   chown -R ${USER} "$SDK_INSTALL"
-# fi
-
 #-------------------------------------------------
 # Move into the SDK directory
-mkdir ${SDK_INSTALL}
-cd ${SDK_INSTALL}
+mkdir "${SDK_INSTALL}"
+cd "${SDK_INSTALL}"
 
 CMAKE_BASE_NAME=cmake-${CMAKE_VERSION}-${HOST_SYSTEM}-x86_64
 # Make sure we have a CMake installed, if not download from the web site
@@ -119,15 +104,15 @@ echo "endif()" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 echo "" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 echo "message(STATUS \"The Current Build type being used is \${BUILD_TYPE}\")" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 echo "" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
-echo "set(BUILD_SHARED_LIBS ON CACHE BOOL \"\")" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
+echo "set(BUILD_SHARED_LIBS OFF CACHE BOOL \"\")" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 echo "set(EMsoft_SDK_ROOT \"$SDK_INSTALL\")" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 echo "set(EMsoft_DATA_DIR \${EMsoft_SDK_ROOT}/EMsoft_Data CACHE PATH \"\")" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 
 # Write out the Qt5 directory/installation
 echo "#--------------------------------------------------------------------------------------------------" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 echo "# Currently EMsoft does not Depend on Qt5, but if it did, this line is needed." >> "$SDK_INSTALL/EMsoft_SDK.cmake"
-echo "# Qt 5.6.1 Library" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
-echo "# set(Qt5_DIR \"\${EMsoft_SDK_ROOT}/Qt5.6.1/5.6/clang_64/lib/cmake/Qt5\" CACHE PATH \"\")" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
+echo "# Qt 5.9.1 Library" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
+echo "# set(Qt5_DIR \"\${EMsoft_SDK_ROOT}/Qt5.9.1/5.9.1/clang_64/lib/cmake/Qt5\" CACHE PATH \"\")" >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 echo ""  >> "$SDK_INSTALL/EMsoft_SDK.cmake"
 
 #-------------------------------------------------
@@ -149,6 +134,14 @@ cd $SCRIPT_DIR
 #-------------------------------------------------
 # Build HDF5 Library
 ./Build_HDF5.sh "${SDK_INSTALL}" ${PARALLEL_BUILD}
+
+#-------------------------------------------------
+# Build bcls Library
+./Build_bcls.sh "${SDK_INSTALL}" ${PARALLEL_BUILD}
+
+#-------------------------------------------------
+# Build bcls Library
+./Build_Eigen.sh "${SDK_INSTALL}" ${PARALLEL_BUILD}
 
 # Continue writing the EMsoft_SDK.cmake file after all those libraries were compiled
 echo "" >> "$SDK_INSTALL/EMsoft_SDK.cmake"

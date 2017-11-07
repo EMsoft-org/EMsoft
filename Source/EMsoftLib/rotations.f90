@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2017, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -57,7 +57,8 @@
 !> ro : Rodrigues vector representation (3)
 !> qu : unit quaternion representation (4)
 !> ho : homochoric representation (3)
-!> cu : cubochoric representation (3).
+!> cu : cubochoric representation (3)
+!> st : 3D stereographic representation (3)  [added in October 2017]
 !>
 !> hence, conversion from homochoric to euler angle is called as ho2eu(); the argument of 
 !> each routine must have the correct number of dimensions and entries.
@@ -106,12 +107,14 @@
 !> @date 03/16/15 MDG 3.9 added quat_average routine
 !> @date 04/17/15 MDG 3.91 simplification to qu2eu routines
 !> @date 09/23/15 MDG 3.92 changes to .eq. tests on reals; replaced all by close_enough calls
+!> @date 10/05/17 MDG 4.0 added 3D stereographic representation
 !--------------------------------------------------------------------------
 module rotations
 
 use local
 use typedefs
 use quaternions
+use math
 
 
 !--------------------------------
@@ -156,6 +159,12 @@ public :: om_check
 interface om_check
         module procedure om_check
         module procedure om_check_d
+end interface 
+
+public :: st_check
+interface st_check
+        module procedure st_check
+        module procedure st_check_d
 end interface 
 
 !--------------------------------
@@ -219,6 +228,13 @@ interface eu2cu
         module procedure eu2cu_d
 end interface
 
+! convert Euler angles to stereographic
+public :: eu2st
+interface eu2st
+        module procedure eu2st
+        module procedure eu2st_d
+end interface
+
 !--------------------------------
 ! convert 3x3 orientation matrix to Euler angles
 public :: om2eu
@@ -260,6 +276,13 @@ public :: om2cu
 interface om2cu
         module procedure om2cu
         module procedure om2cu_d
+end interface
+
+! convert 3x3 rotation matrix to stereographic
+public :: om2st
+interface om2st
+        module procedure om2st
+        module procedure om2st_d
 end interface
 
 !--------------------------------
@@ -305,6 +328,13 @@ interface ax2cu
         module procedure ax2cu_d
 end interface
 
+! convert axis angle pair to stereographic
+public :: ax2st
+interface ax2st
+        module procedure ax2st
+        module procedure ax2st_d
+end interface
+
 !--------------------------------
 ! convert Rodrigues vector to Euler angles
 public :: ro2eu
@@ -346,6 +376,13 @@ public :: ro2cu
 interface ro2cu
         module procedure ro2cu
         module procedure ro2cu_d
+end interface
+
+! convert Rodrigues vector to stereographic
+public :: ro2st
+interface ro2st
+        module procedure ro2st
+        module procedure ro2st_d
 end interface
 
 !--------------------------------
@@ -391,6 +428,13 @@ interface qu2cu
         module procedure qu2cu_d
 end interface
 
+! convert quaternion to stereographic
+public :: qu2st
+interface qu2st
+        module procedure qu2st
+        module procedure qu2st_d
+end interface
+
 !--------------------------------
 ! convert homochoric to euler
 public :: ho2eu
@@ -432,6 +476,13 @@ public :: ho2cu
 interface ho2cu
         module procedure ho2cu
         module procedure ho2cu_d
+end interface
+
+! convert homochoric to steregraphic
+public :: ho2st
+interface ho2st
+        module procedure ho2st
+        module procedure ho2st_d
 end interface
 
 !--------------------------------
@@ -477,6 +528,64 @@ interface cu2ho
         module procedure cu2ho_d
 end interface
 
+! convert cubochoric to stereographic
+public :: cu2st
+interface cu2st
+        module procedure cu2st
+        module procedure cu2st_d
+end interface
+
+!--------------------------------
+! convert stereographic to euler
+public :: st2eu
+interface st2eu
+        module procedure st2eu
+        module procedure st2eu_d
+end interface
+
+! convert stereographic to orientation matrix
+public :: st2om
+interface st2om
+        module procedure st2om
+        module procedure st2om_d
+end interface
+
+! convert stereographic to axis angle
+public :: st2ax
+interface st2ax
+        module procedure st2ax
+        module procedure st2ax_d
+end interface
+
+! convert stereographic to Rodrigues
+public :: st2ro
+interface st2ro
+        module procedure st2ro
+        module procedure st2ro_d
+end interface
+
+! convert stereographic to quaternion
+public :: st2qu
+interface st2qu
+        module procedure st2qu
+        module procedure st2qu_d
+end interface
+
+! convert stereographic to homochoric
+public :: st2ho
+interface st2ho
+        module procedure st2ho
+        module procedure st2ho_d
+end interface
+
+! convert stereographic to homochoric
+public :: st2cu
+interface st2cu
+        module procedure st2cu
+        module procedure st2cu_d
+end interface
+
+!--------------------------------
 ! Rodrigues vector product
 public :: RodriguesProduct
 interface RodriguesProduct
@@ -529,7 +638,7 @@ contains
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief compares two reals and returns .TRUE. is they are closer than machine precision
+!> @brief compares two reals and returns .TRUE. is they are closer than E-8 ! machine precision
 !
 !> @param a (single precision)  
 !> @param b (single precision)  
@@ -549,7 +658,7 @@ real(kind=sgl),INTENT(IN)       :: a
 real(kind=sgl),INTENT(IN)       :: b
 logical                         :: res
 
-real(kind=sgl)                  :: eps = epsilon(1.0) 
+real(kind=sgl)                  :: eps = 1.E-08 ! epsilon(1.0) 
 
 res = .FALSE.
 if (abs(a-b).lt.eps) res = .TRUE.
@@ -562,7 +671,7 @@ end function close_enough
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief compares two reals and returns .TRUE. is they are closer than machine precision
+!> @brief compares two reals and returns .TRUE. is they are closer than D-12 ! machine precision
 !
 !> @param a (double precision)  
 !> @param b (double precision)  
@@ -582,7 +691,7 @@ real(kind=dbl),INTENT(IN)       :: a
 real(kind=dbl),INTENT(IN)       :: b
 logical                         :: res
 
-real(kind=sgl)                  :: eps = epsilon(1.0D0) 
+real(kind=sgl)                  :: eps = 1.D-12 ! epsilon(1.0D0) 
 
 res = .FALSE.
 if (dabs(a-b).lt.eps) res = .TRUE.
@@ -993,6 +1102,82 @@ end function qu_check_d
 
 !--------------------------------------------------------------------------
 !
+! Function: st_check
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief verify that the stereographic vector lies inside the unit ball
+!
+!> @param st 3-component vector (single precision)  
+!>  
+!> @date 10/05/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st_check(st) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st_check
+
+use local
+use constants
+use error
+
+IMPLICIT NONE
+
+real(kind=sgl),INTENT(IN)       :: st(4)
+
+integer(kind=irg)               :: res
+real(kind=sgl)                  :: r
+real(kind=sgl), parameter       :: eps = 1.e-10
+
+res = 1
+
+r = sqrt(sum(st*st))
+if (abs(r-1.0).gt.eps) then
+   call FatalError('rotations:st_check','stereographic vector must have unit norm')
+endif
+
+res = 0
+
+end function st_check
+
+!--------------------------------------------------------------------------
+!
+! Function: st_check_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief verify that the stereographic vector lies inside the unit ball
+!
+!> @param st 3-component vector (double precision)  
+!>  
+!> @date 10/05/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st_check_d(st) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st_check_d
+
+use local
+use constants
+use error
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)       :: st(4)
+
+integer(kind=irg)               :: res
+real(kind=dbl)                  :: r
+real(kind=dbl), parameter       :: eps = 1.d-10
+
+res = 1
+
+r = sqrt(sum(st*st))
+if (abs(r-1.0).gt.eps) then
+   call FatalError('rotations:st_check_d','stereographic vector must have unit norm')
+endif
+
+res = 0
+
+end function st_check_d
+
+!--------------------------------------------------------------------------
+!
 ! Function: ax_check
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -1329,6 +1514,7 @@ select case (intype)
                 res%axang = eu2ax(res%eulang)
                 res%homochoric = ax2ho(res%axang)
                 res%cubochoric = ho2cu(res%homochoric)
+                res%stereographic = qu2st(res%quat)
         case ('ro')     ! Rodrigues vector
                 ! verify the Rodrigues-Frank vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1341,6 +1527,7 @@ select case (intype)
                 res%axang = ro2ax(res%rodrigues)
                 res%homochoric = ax2ho(res%axang)
                 res%cubochoric = ho2cu(res%homochoric)
+                res%stereographic = qu2st(res%quat)
         case ('ho')     ! homochoric
                 ! verify the homochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1353,6 +1540,7 @@ select case (intype)
                 res%rodrigues = eu2ro(res%eulang)
                 res%quat = eu2qu(res%eulang)
                 res%cubochoric = ho2cu(res%homochoric)
+                res%stereographic = qu2st(res%quat)
         case ('cu')     ! cubochoric
                 ! verify the cubochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1365,6 +1553,20 @@ select case (intype)
                 res%quat = cu2qu(res%cubochoric)
                 res%axang = cu2ax(res%cubochoric)
                 res%rodrigues = cu2ro(res%cubochoric)
+                res%stereographic = qu2st(res%quat)
+        case ('st')     ! stereographic
+                ! verify the cstereographic vector; this will abort program if values are outside range
+                if (present(rotcheck)) then 
+                        if (rotcheck.eqv..TRUE.) i = st_check(orient)
+                endif
+                res%stereographic = orient(1:3)
+                res%cubochoric = st2cu(res%cubochoric)
+                res%homochoric = st2ho(res%cubochoric)
+                res%eulang = st2eu(res%cubochoric)
+                res%om = st2om(res%cubochoric)
+                res%quat = st2qu(res%cubochoric)
+                res%axang = st2ax(res%cubochoric)
+                res%rodrigues = st2ro(res%cubochoric)
         case ('qu')     ! quaternion
                 ! verify the quaternion; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1377,6 +1579,7 @@ select case (intype)
                 res%axang = ro2ax(res%rodrigues)
                 res%homochoric = ax2ho(res%axang)
                 res%cubochoric = ho2cu(res%homochoric)
+                res%stereographic = qu2st(res%quat)
         case ('ax')     ! axis angle pair
                 ! verify the axis angle pair; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1389,6 +1592,7 @@ select case (intype)
                 res%quat = eu2qu(res%eulang)
                 res%homochoric = ax2ho(res%axang)
                 res%cubochoric = ho2cu(res%homochoric)
+                res%stereographic = qu2st(res%quat)
 end select 
 
 end function init_orientation
@@ -1438,6 +1642,7 @@ select case (intype)
                 res%axang = eu2ax_d(res%eulang)
                 res%homochoric = ax2ho_d(res%axang)
                 res%cubochoric = ho2cu_d(res%homochoric)
+                res%stereographic = qu2st_d(res%quat)
         case ('ro')     ! Rodrigues vector
                 ! verify the Rodrigues-Frank vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1449,6 +1654,7 @@ select case (intype)
                 res%quat = eu2qu_d(res%eulang)
                 res%axang = ro2ax_d(res%rodrigues)
                 res%homochoric = ax2ho_d(res%axang)
+                res%stereographic = qu2st_d(res%quat)
                 res%cubochoric = ho2cu_d(res%homochoric)
         case ('ho')     ! homochoric
                 ! verify the homochoric vector; this will abort program if values are outside range
@@ -1461,6 +1667,7 @@ select case (intype)
                 res%eulang = om2eu_d(res%om)
                 res%rodrigues = eu2ro_d(res%eulang)
                 res%quat = eu2qu_d(res%eulang)
+                res%stereographic = qu2st_d(res%quat)
                 res%cubochoric = ho2cu_d(res%homochoric)
         case ('cu')     ! cubochoric
                 ! verify the cubochoric vector; this will abort program if values are outside range
@@ -1473,6 +1680,7 @@ select case (intype)
                 res%om = cu2om_d(res%cubochoric)
                 res%quat = cu2qu_d(res%cubochoric)
                 res%axang = cu2ax_d(res%cubochoric)
+                res%stereographic = qu2st_d(res%quat)
                 res%rodrigues = cu2ro_d(res%cubochoric)
         case ('qu')     ! quaternion
                 ! verify the quaternion; this will abort program if values are outside range
@@ -1485,7 +1693,21 @@ select case (intype)
                 res%rodrigues = eu2ro_d(res%eulang)
                 res%axang = ro2ax_d(res%rodrigues)
                 res%homochoric = ax2ho_d(res%axang)
+                res%stereographic = qu2st_d(res%quat)
                 res%cubochoric = ho2cu_d(res%homochoric)
+        case ('st')     ! stereographic
+                ! verify the cstereographic vector; this will abort program if values are outside range
+                if (present(rotcheck)) then 
+                        if (rotcheck.eqv..TRUE.) i = st_check_d(orient)
+                endif
+                res%stereographic = orient(1:3)
+                res%cubochoric = st2cu_d(res%cubochoric)
+                res%homochoric = st2ho_d(res%cubochoric)
+                res%eulang = st2eu_d(res%cubochoric)
+                res%om = st2om_d(res%cubochoric)
+                res%quat = st2qu_d(res%cubochoric)
+                res%axang = st2ax_d(res%cubochoric)
+                res%rodrigues = st2ro_d(res%cubochoric)
         case ('ax')     ! axis angle pair
                 ! verify the axis angle pair; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1497,6 +1719,7 @@ select case (intype)
                 res%rodrigues = eu2ro_d(res%eulang)
                 res%quat = eu2qu_d(res%eulang)
                 res%homochoric = ax2ho_d(res%axang)
+                res%stereographic = qu2st_d(res%quat)
                 res%cubochoric = ho2cu_d(res%homochoric)
 end select 
 
@@ -1543,6 +1766,7 @@ select case (intype)
                 res%rodrigues = eu2ro(res%eulang)
                 res%axang = ro2ax(res%rodrigues)
                 res%homochoric = ax2ho(res%axang)
+                res%stereographic = qu2st(res%quat)
                 res%cubochoric = ho2cu(res%homochoric)
 end select 
 
@@ -1590,6 +1814,7 @@ select case (intype)
                 res%rodrigues = eu2ro_d(res%eulang)
                 res%axang = ro2ax_d(res%rodrigues)
                 res%homochoric = ax2ho_d(res%axang)
+                res%stereographic = qu2st_d(res%quat)
                 res%cubochoric = ho2cu_d(res%homochoric)
 end select 
 
@@ -1843,7 +2068,7 @@ res = eu2ax(e)
 ! then adjust the fourth component to be tan(omega/2)
 t = res(4)
 if (abs(t-sngl(cPi)).lt.thr) then
-  res(4) = infty
+  res(4) = infty()
   return
 end if
  
@@ -1888,7 +2113,7 @@ res = eu2ax_d(e)
 ! then adjust the fourth component to be tan(omega/2)
 t = res(4)
 if (abs(t-cPi).lt.thr) then
-  res(4) = infty
+  res(4) = inftyd()
   return
 end if
  
@@ -2521,6 +2746,7 @@ end function ho2ax_d
 !> @date 8/12/13  MDG 1.0 original
 !> @date 07/08/14 MDG 2.0 replaced by direct solution
 !> @date 09/28/15 MDG 2.1 corrected dgeev -> sgeev
+!> @date 10/25/17 MDG 2.2 corrected issue in which the WORK space was too small
 !--------------------------------------------------------------------------
 recursive function om2ax(om) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: om2ax
@@ -2534,7 +2760,7 @@ real(kind=sgl), INTENT(IN)              :: om(3,3)
 real(kind=sgl)                          :: res(4)
 
 real(kind=sgl)                          :: t, omega, qq(4), o(3,3)
-real(kind=sgl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(10)
+real(kind=sgl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(100)
 complex(kind=sgl)                       :: ev
 complex(kind=sgl),parameter             :: cone = cmplx(1.0,0.0)
 real(kind=sgl),parameter                :: thr = 1.0E-7
@@ -2601,6 +2827,7 @@ end function om2ax
 !> @date 8/12/13  MDG 1.0 original
 !> @date 07/08/14 MDG 2.0 replaced by direct solution
 !> @date 08/20/14 MDG 3.0 replaced by eigenvalue-based method
+!> @date 10/25/17 MDG 3.1 corrected issue in which the WORK space was too small
 !--------------------------------------------------------------------------
 recursive function om2ax_d(om) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: om2ax_d
@@ -2614,7 +2841,7 @@ real(kind=dbl), INTENT(IN)              :: om(3,3)
 real(kind=dbl)                          :: res(4)
 
 real(kind=dbl)                          :: t, omega, qq(4), o(3,3)
-real(kind=dbl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(10)
+real(kind=dbl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(100)
 complex(kind=dbl)                       :: ev
 complex(kind=dbl),parameter             :: cone = cmplx(1.D0,0.D0)
 real(kind=dbl),parameter                :: thr = 1.0D-10
@@ -2700,7 +2927,7 @@ if (close_enough(ta,0.0)) then
   return
 end if
 
-if (ta.eq.infty) then
+if (ta.eq.infty()) then
   res = (/ r(1), r(2), r(3), sngl(cPi) /)
 else
   angle = 2.0*atan(ta)
@@ -2744,7 +2971,7 @@ if (close_enough(ta,0.D0)) then
   return
 end if
 
-if (ta.eq.infty) then
+if (ta.eq.inftyd()) then
   res = (/ r(1), r(2), r(3), cPi /)
 else
   angle = 2.D0*datan(ta)
@@ -2792,7 +3019,7 @@ res(1:3) =  a(1:3)
 ! we need to deal with the 180 degree case
 if (abs(a(4)-sngl(cPi)).lt.thr) then
 !if (close_enough(abs(a(4)-sngl(cPi)),0.0)) then
-  res(4) = infty
+  res(4) = infty()
 else
   res(4) = tan( a(4) * 0.5 )
 end if
@@ -2836,7 +3063,7 @@ res(1:3) =  a(1:3)
 ! we need to deal with the 180 degree case
 if (dabs(a(4)-cPi).lt.thr) then
 !if (close_enough(dabs(a(4)-cPi),0.D0)) then
-  res(4) = infty
+  res(4) = inftyd()
 else
   res(4) = dtan( a(4) * 0.5D0 )
 end if
@@ -2943,7 +3170,7 @@ if (close_enough(rv,0.0)) then
         return
 end if
 
-if (r(4).eq.infty) then
+if (r(4).eq.infty()) then
         f = 0.750 * sngl(cPi)
 else
         t = 2.0*atan(r(4))
@@ -2983,7 +3210,7 @@ if (close_enough(rv,0.D0)) then
         return
 end if
 
-if (r(4).eq.infty) then
+if (r(4).eq.inftyd()) then
         f = 0.75D0 * cPi
 else
         t = 2.D0*datan(r(4))
@@ -3328,7 +3555,7 @@ res(1:3) = q(2:4)
 res(4) = 0.0
 
 if (q(1).lt.thr) then
-  res(4)=infty
+  res(4)=infty()
   return
 end if
 
@@ -3372,7 +3599,7 @@ res(1:3) = q(2:4)
 res(4) = 0.D0
 
 if (q(1).lt.thr) then
-  res(4)=infty
+  res(4)=inftyd()
   return
 end if
 
@@ -3604,8 +3831,9 @@ end function cu2ho_d
 !> @param r Rodrigues vector (single precision)  
 !>  
 !
-!> @date 8/04/13   MDG 1.0 original
-!> @date 8/11/14   MDG 1.1 added infty handling
+!> @date  8/04/13   MDG 1.0 original
+!> @date  8/11/14   MDG 1.1 added infty handling
+!> @date 10/20/17   MDG 1.2 check for small values that could cause rounding issues in other routines
 !--------------------------------------------------------------------------
 recursive function ro2eu(r) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: ro2eu
@@ -3618,9 +3846,18 @@ IMPLICIT NONE
 real(kind=sgl),INTENT(IN)       :: r(4)         !< Rodrigues vector
 real(kind=sgl)                  :: res(3)
         
-real(kind=sgl)                  :: rr(3), s, d
+real(kind=sgl)                  :: rr(3), s, d, eps = 1.0e-8
+integer(kind=irg)               :: i, j
+real(kind=sgl), parameter       :: pivals(4) = (/ 1.570796326794, 3.141592653589, 4.712388980384, 6.283185307179 /)
 
 res = om2eu(ro2om(r))
+
+do i=1,3
+  if (abs(res(i)).lt.eps) res(i) = 0.0
+  do j=1,4
+    if (abs(res(i)-pivals(j)).lt.eps) res(i) = pivals(j)
+  end do 
+end do
 
 end function ro2eu
 
@@ -3635,8 +3872,9 @@ end function ro2eu
 !> @param r Rodrigues vector (double precision)  
 !>  
 ! 
-!> @date 8/04/13   MDG 1.0 original
-!> @date 8/11/14   MDG 1.1 added infty handling
+!> @date  8/04/13   MDG 1.0 original
+!> @date  8/11/14   MDG 1.1 added infty handling
+!> @date 10/20/17   MDG 1.2 check for small values that could cause rounding issues in other routines
 !--------------------------------------------------------------------------
 recursive function ro2eu_d(r) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: ro2eu_d
@@ -3649,10 +3887,18 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)       :: r(4)         !< Rodrigues vector
 real(kind=dbl)                  :: res(3)
 
-real(kind=dbl)                  :: rr(3), s, d
-
+real(kind=dbl)                  :: rr(3), s, d, eps = 1.0D-12
+integer(kind=irg)               :: i, j
+real(kind=dbl), parameter       :: pivals(4) = (/ cPi*0.5D0, cPi, 3.D0*cPi*0.5D0, 2.D0*cPi /)
 
 res = om2eu_d(ro2om_d(r))
+
+do i=1,3
+  if (abs(res(i)).lt.eps) res(i) = 0.D0
+  do j=1,4
+    if (abs(res(i)-pivals(j)).lt.eps) res(i) = pivals(j)
+  end do 
+end do
 
 end function ro2eu_d
 
@@ -4697,6 +4943,913 @@ end function cu2qu_d
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
+! new routines for 3D stereographic representation [added October 2017] 
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: om2st
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert orientation matrix to stereographic
+!
+!> @param c rotation matrix (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function om2st(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: om2st
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(3,3)         !< input 
+real(kind=sgl)                          :: res(3)
+
+res = qu2st(om2qu(c))
+
+end function om2st
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: om2st_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert orientation matrix to stereographic
+!
+!> @param c rotation matrix (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function om2st_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: om2st_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(3,3)         !< input 
+real(kind=dbl)                          :: res(3)
+
+res = qu2st_d(om2qu_d(c))
+
+end function om2st_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: ax2st
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert axis-angle pair to stereographic
+!
+!> @param c axis-angle pair (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function ax2st(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ax2st
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(4)         !< input 
+real(kind=sgl)                          :: res(3)
+
+res = qu2st(ax2qu(c))
+
+end function ax2st
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: ax2st_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert axis-angle pair to stereographic
+!
+!> @param c axis-angle pair (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function ax2st_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ax2st_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(4)         !< input 
+real(kind=dbl)                          :: res(3)
+
+res = qu2st_d(ax2qu_d(c))
+
+end function ax2st_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: ro2st
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert Rodrigues vector to stereographic
+!
+!> @param c Rodrigues vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function ro2st(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ro2st
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(4)         !< input 
+real(kind=sgl)                          :: res(3)
+
+res = qu2st(ro2qu(c))
+
+end function ro2st
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: ro2st_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert Rodrigues vector to stereographic
+!
+!> @param c Rodrigues vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function ro2st_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ro2st_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(4)         !< input 
+real(kind=dbl)                          :: res(3)
+
+res = qu2st_d(ro2qu_d(c))
+
+end function ro2st_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: ho2st
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert homochoric vector to stereographic
+!
+!> @param c homochoric vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function ho2st(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ho2st
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(3)
+
+res = qu2st(ho2qu(c))
+
+end function ho2st
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: ho2st_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert homochoric vector to stereographic
+!
+!> @param c homochoric vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function ho2st_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ho2st_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(3)
+
+res = qu2st_d(ho2qu_d(c))
+
+end function ho2st_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: cu2st
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert homochoric vector to stereographic
+!
+!> @param c homochoric vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function cu2st(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: cu2st
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(3)
+
+res = qu2st(cu2qu(c))
+
+end function cu2st
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: cu2st_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert homochoric vector to stereographic
+!
+!> @param c homochoric vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function cu2st_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: cu2st_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(3)
+
+res = qu2st_d(cu2qu_d(c))
+
+end function cu2st_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: eu2st
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert Euler angles to stereographic
+!
+!> @param c Euler angles (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function eu2st(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: eu2st
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(3)
+
+res = qu2st(eu2qu(c))
+
+end function eu2st
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: eu2st_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert Euler angles to stereographic
+!
+!> @param c Euler angles (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function eu2st_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: eu2st_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(3)
+
+res = qu2st_d(eu2qu_d(c))
+
+end function eu2st_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: qu2st
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert quaternion to stereographic
+!
+!> @param c quaternion (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function qu2st(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: qu2st
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(4)         !< input 
+real(kind=sgl)                          :: res(3)
+
+res(1:3) = c(2:4)
+if (c(1).ne.0.0) then
+   res = res / (1.0 + c(1))
+end if
+
+end function qu2st
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: qu2st_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert quaternion to stereographic
+!
+!> @param c quaternion (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function qu2st_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: qu2st_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(4)         !< input 
+real(kind=dbl)                          :: res(3)
+
+res(1:3) = c(2:4)
+if (c(1).ne.0.D0) then
+   res = res / (1.D0 + c(1))
+end if
+
+end function qu2st_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2om
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to orientation matrix 
+!
+!> @param c stereographic vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2om(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2om
+
+use local 
+use constants
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(3,3)
+
+real(kind=sgl)                          :: l, tmp(3), ax(4)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough(l,1.0) ) then
+        ax = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+   else
+        ax = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
+   end if
+   res = ax2om(ax)
+else ! return the identity matrix
+   res = 0.0
+   res(1,1) = 1.0
+   res(2,2) = 1.0
+   res(3,3) = 1.0
+end if
+
+end function st2om
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2om_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to orientation matrix 
+!
+!> @param c stereographic vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2om_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2om_d
+
+use local 
+use constants
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(3,3)
+
+real(kind=dbl)                          :: l, tmp(3), ax(4)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.D0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough_d(l,1.D0) ) then
+        ax = (/ tmp(1), tmp(2), tmp(3), cPi /)
+   else
+        ax = (/ tmp(1), tmp(2), tmp(3), 4.D0*datan(l) /)
+   end if
+   res = ax2om_d(ax)
+else ! return the identity matrix
+   res = 0.D0
+   res(1,1) = 1.D0
+   res(2,2) = 1.D0
+   res(3,3) = 1.D0
+end if
+
+end function st2om_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2eu
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to Euler angles 
+!
+!> @param c stereographic vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2eu(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2eu
+
+use local 
+use constants
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(3)
+
+real(kind=sgl)                          :: l, tmp(3), ax(4)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough(l,1.0) ) then
+        ax = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+   else
+        ax = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
+   end if
+   res = ax2eu(ax)
+else ! return the identity orientation
+   res = 0.0
+end if
+
+end function st2eu
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2eu_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to Euler angles 
+!
+!> @param c stereographic vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2eu_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2eu_d
+
+use local 
+use constants
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(3)
+
+real(kind=dbl)                          :: l, tmp(3), ax(4)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.D0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough_d(l,1.D0) ) then
+        ax = (/ tmp(1), tmp(2), tmp(3), cPi /)
+   else
+        ax = (/ tmp(1), tmp(2), tmp(3), 4.D0*datan(l) /)
+   end if
+   res = ax2eu_d(ax)
+else ! return the identity orientation
+   res = 0.D0
+end if
+
+end function st2eu_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2qu
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to quaternion
+!
+!> @param c stereographic vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2qu(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2qu
+
+use local 
+use constants
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(4)
+
+real(kind=sgl)                          :: l, tmp(3), ax(4)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough(l,1.0) ) then
+        ax = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+   else
+        ax = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
+   end if
+   res = ax2qu(ax)
+else ! return the identity orientation
+   res = (/ 1.0, 0.0, 0.0, 0.0 /)
+end if
+
+end function st2qu
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2qu_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to quaternion
+!
+!> @param c stereographic vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2qu_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2qu_d
+
+use local 
+use constants
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(4)
+
+real(kind=dbl)                          :: l, tmp(3), ax(4)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.D0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough_d(l,1.D0) ) then
+        ax = (/ tmp(1), tmp(2), tmp(3), cPi /)
+   else
+        ax = (/ tmp(1), tmp(2), tmp(3), 4.D0*datan(l) /)
+   end if
+   res = ax2qu_d(ax)
+else ! return the identity orientation
+   res = (/ 1.D0, 0.D0, 0.D0, 0.D0 /)
+end if
+
+end function st2qu_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2ax
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to axis-angle pair
+!
+!> @param c stereographic vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2ax(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2ax
+
+use local 
+use constants
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(4)
+
+real(kind=sgl)                          :: l, tmp(3)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough(l,1.0) ) then
+        res = (/ tmp(1), tmp(2), tmp(3), sngl(cPi) /)
+   else
+        res = (/ tmp(1), tmp(2), tmp(3), 4.0*atan(l) /)
+   end if
+else ! return the identity orientation
+   res = (/ 0.0, 0.0, 1.0, 0.0 /)
+end if
+
+end function st2ax
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2ax_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to axis-angle pair
+!
+!> @param c stereographic vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2ax_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2ax_d
+
+use local 
+use constants
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(4)
+
+real(kind=dbl)                          :: l, tmp(3)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.D0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough_d(l,1.D0) ) then
+        res = (/ tmp(1), tmp(2), tmp(3), cPi /)
+   else
+        res = (/ tmp(1), tmp(2), tmp(3), 4.D0*datan(l) /)
+   end if
+else ! return the identity orientation
+   res = (/ 0.D0, 0.D0, 1.D0, 0.D0 /)
+end if
+
+end function st2ax_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2ro
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to Rodrigues vector
+!
+!> @param c stereographic vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2ro(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2ro
+
+use local 
+use constants
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(4)
+
+real(kind=sgl)                          :: l, tmp(3)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough(l,1.0) ) then
+        res = (/ tmp(1), tmp(2), tmp(3), 0.0 /)
+        res(4) = infty()
+   else
+        res = (/ tmp(1), tmp(2), tmp(3), tan(2.0*atan(l)) /)
+   end if
+else ! return the identity orientation
+   res = (/ 0.0, 0.0, 1.0, 0.0 /)
+end if
+
+end function st2ro
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2ro_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to Rodrigues vector
+!
+!> @param c stereographic vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2ro_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2ro_d
+
+use local 
+use constants
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(4)
+
+real(kind=dbl)                          :: l, tmp(3)
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.D0) then ! not the identity rotation
+   tmp = c/l
+   if ( close_enough_d(l,1.D0) ) then
+        res = (/ tmp(1), tmp(2), tmp(3), 0.D0 /)
+        res(4) = inftyd()
+   else
+        res = (/ tmp(1), tmp(2), tmp(3), tan(2.D0*datan(l)) /)
+   end if
+else ! return the identity orientation
+   res = (/ 0.D0, 0.D0, 1.D0, 0.D0 /)
+end if
+
+end function st2ro_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2ho
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to homochoric vector
+!
+!> @param c stereographic vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2ho(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2ho
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(3)
+
+real(kind=sgl)                          :: l, tmp(3), angle
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   angle = 4.0*atan(l)
+   res = tmp * (3.0 * ( angle - sin(angle) ) / 4.0) ** (1.0/3.0)
+else ! return the identity orientation
+   res = (/ 0.0, 0.0, 0.0 /)
+end if
+
+end function st2ho
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2ho_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to homochoric vector
+!
+!> @param c stereographic vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2ho_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2ho_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(3)
+
+real(kind=dbl)                          :: l, tmp(3), angle
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   angle = 4.D0*datan(l)
+   res = tmp * (3.D0 * ( angle - dsin(angle) ) / 4.D0) ** (1.D0/3.D0)
+else ! return the identity orientation
+   res = (/ 0.D0, 0.D0, 0.D0 /)
+end if
+
+end function st2ho_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2cu
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to cubochoric vector
+!
+!> @param c stereographic vector (single precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2cu(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2cu
+
+use local 
+
+real(kind=sgl), INTENT(IN)              :: c(3)         !< input 
+real(kind=sgl)                          :: res(3)
+
+real(kind=sgl)                          :: l, tmp(3), angle
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   angle = 4.0*atan(l)
+   res = ho2cu(tmp * (3.0 * ( angle - sin(angle) ) / 4.0) ** (1.0/3.0))
+else ! return the identity orientation
+   res = (/ 0.0, 0.0, 0.0 /)
+end if
+
+end function st2cu
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: st2cu_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert stereographic to cubochoric vector
+!
+!> @param c stereographic vector (double precision)
+!>  
+!
+!> @date 10/07/17   MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function st2cu_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2cu_d
+
+use local 
+
+real(kind=dbl), INTENT(IN)              :: c(3)         !< input 
+real(kind=dbl)                          :: res(3)
+
+real(kind=dbl)                          :: l, tmp(3), angle
+
+l = sqrt(sum(c*c))
+
+if (l.gt.0.0) then ! not the identity rotation
+   tmp = c/l
+   angle = 4.D0*datan(l)
+   res = ho2cu_d(tmp * (3.D0 * ( angle - dsin(angle) ) / 4.D0) ** (1.D0/3.D0))
+else ! return the identity orientation
+   res = (/ 0.D0, 0.D0, 0.D0 /)
+end if
+
+end function st2cu_d
+
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
 ! routines for rotating a vector, tensor, ...
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -5079,7 +6232,7 @@ if (present(outtype)) then
           call WriteValue(trim(pret)//'Axis angle pair [n; angle]       : ', ioreal, 4, "(3(F8.4,' '),'; ',F8.4)")
 
         case ('ro')
-          if (o%rodrigues(4).lt.infty) then
+          if (o%rodrigues(4).lt.infty()) then
             ioreal(1:3) = o%rodrigues(1:3)*o%rodrigues(4)
             call WriteValue(trim(pret)//'Rodrigues vector                 : ', ioreal, 3, "(3(F12.4,' '))")
           else
@@ -5099,13 +6252,17 @@ if (present(outtype)) then
           ioreal(1:4) = o%quat
           call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F8.4,' '))")
 
+        case ('st')
+          ioreal(1:3) = o%stereographic
+          call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+
         case ('om')
           ioreal(1:3) = o%om(1,1:3)
-          call WriteValue('                                       /', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
+          call WriteValue('                                       / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
           ioreal(1:3) = o%om(2,1:3)
-          call WriteValue(trim(pret)//'Orientation Matrix               : |', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
+          call WriteValue(trim(pret)//'Orientation Matrix               :  |', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
           ioreal(1:3) = o%om(3,1:3)
-          call WriteValue('                                       \', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
+          call WriteValue('                                       \ ', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
                                 
   end select
 else
@@ -5115,7 +6272,7 @@ else
   ioreal(1:4) = o%axang(1:4)
   ioreal(4) = ioreal(4)*180.0/sngl(cPi)
   call WriteValue(trim(pret)//'Axis angle pair [n; angle]       : ', ioreal, 4, "(3(F8.4,' '),'; ',F8.4)")
-  if (o%rodrigues(4).lt.infty) then
+  if (o%rodrigues(4).lt.infty()) then
    ioreal(1:3) = o%rodrigues(1:3)*o%rodrigues(4)
    call WriteValue(trim(pret)//'Rodrigues vector                 : ', ioreal, 3, "(3(F12.4,' '))")
   else
@@ -5128,12 +6285,14 @@ else
   call WriteValue(trim(pret)//'Cubochoric representation        : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:4) = o%quat
   call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F8.4,' '))")
+  ioreal(1:3) = o%stereographic
+  call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%om(1,1:3)
-  call WriteValue('                                   /', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
+  call WriteValue('                                   / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
   ioreal(1:3) = o%om(2,1:3)
-  call WriteValue(trim(pret)//'Orientation Matrix               : |', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
+  call WriteValue(trim(pret)//'Orientation Matrix               :  |', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
   ioreal(1:3) = o%om(3,1:3)
-  call WriteValue('                                   \', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
+  call WriteValue('                                   \ ', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
 end if
 
 call Message(' ', frm = "(A/)")
@@ -5185,7 +6344,7 @@ if (present(outtype)) then
           call WriteValue(trim(pret)//'Axis angle pair [n; angle]       : ', ioreal, 4, "(3(F12.7,' '),'; ',F12.7)")
 
         case ('ro')
-          if (o%rodrigues(4).lt.infty) then 
+          if (o%rodrigues(4).lt.inftyd()) then 
            ioreal(1:3) = o%rodrigues(1:3)*o%rodrigues(4)
            call WriteValue(trim(pret)//'Rodrigues vector                 : ', ioreal, 3, "(3(F16.7,' '))")
           else
@@ -5205,13 +6364,17 @@ if (present(outtype)) then
           ioreal(1:4) = o%quat
           call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F12.7,' '))")
 
+        case ('st')
+          ioreal(1:3) = o%stereographic
+          call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+
         case ('om')
           ioreal(1:3) = o%om(1,1:3)
-          call WriteValue('                                       /', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
+          call WriteValue('                                       / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
           ioreal(1:3) = o%om(2,1:3)
-          call WriteValue(trim(pret)//'Orientation Matrix               : |', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
+          call WriteValue(trim(pret)//'Orientation Matrix               :  |', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
           ioreal(1:3) = o%om(3,1:3)
-          call WriteValue('                                       \', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
+          call WriteValue('                                       \ ', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
                                 
   end select
 else
@@ -5221,7 +6384,7 @@ else
   ioreal(1:4) = o%axang(1:4)
   ioreal(4) = ioreal(4)*180.D0/cPi
   call WriteValue(trim(pret)//'Axis angle pair [n; angle]       : ', ioreal, 4, "(3(F12.7,' '),'; ',F12.7)")
-  if (o%rodrigues(4).lt.infty) then 
+  if (o%rodrigues(4).lt.inftyd()) then 
    ioreal(1:3) = o%rodrigues(1:3)*o%rodrigues(4)
    call WriteValue(trim(pret)//'Rodrigues vector                 : ', ioreal, 3, "(3(F16.7,' '))")
   else
@@ -5234,12 +6397,14 @@ else
   call WriteValue(trim(pret)//'Cubochoric representation        : ', ioreal, 3, "(3(F12.7,' '))")
   ioreal(1:4) = o%quat
   call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F12.7,' '))")
+  ioreal(1:3) = o%stereographic
+  call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%om(1,1:3)
-  call WriteValue('                                   /', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
+  call WriteValue('                                   / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
   ioreal(1:3) = o%om(2,1:3)
-  call WriteValue(trim(pret)//'Orientation Matrix               : |', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
+  call WriteValue(trim(pret)//'Orientation Matrix               : | ', ioreal, 3, "(2(F8.4,' '),F8.4,' |')")
   ioreal(1:3) = o%om(3,1:3)
-  call WriteValue('                                   \', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
+  call WriteValue('                                   \ ', ioreal, 3, "(2(F8.4,' '),F8.4,' /')")
 end if
 
 call Message(' ', frm = "(A/)")

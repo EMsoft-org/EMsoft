@@ -38,11 +38,14 @@
 !
 !> @date 01/30/17 MDG 1.0 original
 !> @date 02/05/17 MDG 1.1 added 3D Density File (DF3) option
+!> @date 06/13/17 MDG 1.2 added 3D .mrc output file option as alternative to .pov
+!> @date 06/20/17 MDG 1.3 added trilinear "splatting" to volume output
 !--------------------------------------------------------------------------
 program EMOrientationViz
 ! 
 ! this program draws a data set of orientations in the selected Fundamental Zone
-! the output is in .pov format for rendering with PoVRay.
+! the output is in .pov format for rendering with PoVRay, or as a data volume in
+! an .mrc file for rendering with Chimera or Fiji.
 
 use io
 use local
@@ -54,6 +57,7 @@ use quaternions
 use povray
 use so3
 use dictmod
+use MRCmod
 use math
 use NameListTypedefs
 use NameListHandlers
@@ -69,10 +73,10 @@ real(kind=dbl)          :: rod(4), cu(3), ho(3), qu(4), eu(3), sh(3), xyz(3), ey
                            rodrot(3), newrod(3), rodcor(3), quri(4), Mu(4)
 type(orientationtype)   :: ot
 type(orientationtyped)  :: otd
-integer(kind=irg)       :: i,j,k, icnt, imax, nt, npx, ngroups, groups(10), dataunit4=25, dataunit5=40, ierr, ig, ix, iy, num
+integer(kind=irg)       :: i,j,k, icnt, imax, nt, npx, ngroups, groups(10), dataunit4=25, dataunit5=40, ierr, ig, ix, iy, iz, num
 
 real(kind=dbl)          :: delta, eps = 1.0D-2
-character(fnlen)        :: locationline, fname, dataname, outname, lightline, skyline, rgbstring, colorstring, df3name
+character(fnlen)        :: locationline, fname, dataname, outname, lightline, skyline, rgbstring, colorstring, df3name, mrcname
 character(11)           :: p0
 character(21)           :: p1, p2
 character(5)            :: px, py, pz, pd
@@ -86,8 +90,13 @@ real(kind=dbl),allocatable :: samples(:,:)
 real(kind=dbl)          :: muhat(4), kappahat
 ! rendering volumes
 real(kind=sgl),allocatable :: rovol(:,:,:), spvol(:,:,:), euvol(:,:,:), cuvol(:,:,:), hovol(:,:,:)
+type(MRCstruct)         :: MRCheader
+type(FEIstruct)         :: FEIheaders(1024)
+real(kind=dbl),allocatable :: psum(:)
+real(kind=dbl),allocatable :: volume(:,:,:)  ! you'll need to fill this array with values ... 
+integer(kind=irg)       :: numx, numy, numz       ! set these to the size of the volume array
 real(kind=sgl)          :: maxRFZdis(5), rodx, rody, rodz, eudx, eudy, eudz, spdx, spdy, spdz, cudx, cudy, cudz, &
-                           hodx, hody, hodz, scalefactors(3,5), acubo, ahomo
+                           hodx, hody, hodz, scalefactors(3,5), acubo, ahomo, grid3(3,3,3)
 
 nmldeffile = 'EMOrientationViz.nml'
 progname = 'EMOrientationViz.f90'
@@ -101,6 +110,8 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 86 /), progname)
 
 ! deal with the namelist stuff
 call GetOrientationVizNameList(nmldeffile,enl)
+
+grid3 = trilinear_splat( (/ 0.0, 0.0, 0.0/), (/ 0.0, 0.0, 0.0/), init=.TRUE.)
 
 drawMK = .FALSE.
 if (enl%MacKenzieCell.eq.1) drawMK = .TRUE.
@@ -179,6 +190,7 @@ outname = EMsoft_toNativePath(outname)
 
 ! first we open all the requested .pov files and initalize the scenes
 if (enl%cubochoric.ne.0) then
+ if (enl%mrcmode.eq.'off') then
   fname = trim(outname)//'-cu.pov'
   call Message('opening '//trim(fname))
 
@@ -223,20 +235,22 @@ if (enl%cubochoric.ne.0) then
         call PoVRay_drawFZ(dataunit, 1, 0.005D0, FZtype_override, FZorder_override)
       end if
     end if
+  end if
+ end if
 ! create the rendering volume
-    allocate(cuvol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
-    cuvol = 0.0
+  allocate(cuvol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
+  cuvol = 0.0
 ! generate the x/y/z scaling factors
 ! these should be set so that the render box has the outer dimensions of the cubochoric cube,
-    acubo = sngl(cPi)**0.6666666 * 0.5
-    cudx = float(enl%nx) / acubo
-    cudy = float(enl%nx) / acubo
-    cudz = float(enl%nz) / acubo
+  acubo = sngl(cPi)**0.6666666 * 0.5
+  cudx = float(enl%nx) / acubo
+  cudy = float(enl%nx) / acubo
+  cudz = float(enl%nz) / acubo
 !   write (*,*) 'scaling factors ', cudx, cudy, cudz
-  end if
 end if
 
 if (enl%homochoric.ne.0) then
+ if (enl%mrcmode.eq.'off') then
   fname = trim(outname)//'-ho.pov'
   call Message('opening '//trim(fname))
 
@@ -281,20 +295,22 @@ if (enl%homochoric.ne.0) then
         call PoVRay_drawFZ(dataunit2, 2, 0.005D0, FZtype_override, FZorder_override)
       end if
     end if
+   end if
+  end if
 ! create the rendering volume
-    allocate(hovol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
-    hovol = 0.0
+  allocate(hovol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
+  hovol = 0.0
 ! generate the x/y/z scaling factors
 ! these should be set so that the render box has the outer dimensions of the cubochoric cube,
-    ahomo = (3.0*sngl(cPi)/4.0)**0.3333333
-    hodx = float(enl%nx) / ahomo
-    hody = float(enl%nx) / ahomo
-    hodz = float(enl%nz) / ahomo
+  ahomo = (3.0*sngl(cPi)/4.0)**0.3333333
+  hodx = float(enl%nx) / ahomo
+  hody = float(enl%nx) / ahomo
+  hodz = float(enl%nz) / ahomo
 !   write (*,*) 'scaling factors ', hodx, hody, hodz
-  end if
 end if
 
 if (enl%rodrigues.ne.0) then
+ if (enl%mrcmode.eq.'off') then
   fname = trim(outname)//'-ro.pov'
   call Message('opening '//trim(fname))
 
@@ -348,35 +364,37 @@ if (enl%rodrigues.ne.0) then
         call PoVRay_drawFZ(dataunit3, 4, 0.005D0, FZtype_override, FZorder_override)
       end if
     end if
+   end if
+  end if
 ! create the rendering volume
-    allocate(rovol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
-    rovol = 0.0
+  allocate(rovol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
+  rovol = 0.0
 ! generate the x/y/z scaling factors
 ! these should be set so that the render box has the outer dimensions of the RFZ,
 ! with the exception of the cyclic groups for which we pick some value that is 
 ! reasonable.  For the dihedral groups the box should have an edge length of 2,
 ! for tetrahedral 1/3, and for octahedral sqrt(2)-1.
-    if (enl%overridepgnum.eq.0) then
-      rodx = float(enl%nx) / maxRFZdis(FZtype+1)
-      rody = float(enl%nx) / maxRFZdis(FZtype+1)
-      if ((FZtype.eq.1).or.(FZtype.eq.2)) then
-        rodz = float(enl%nz) / tan(cPi*0.5/float(FZorder))
-      else
-        rodz = float(enl%nz) / maxRFZdis(FZtype+1) 
-      end if
+  if (enl%overridepgnum.eq.0) then
+    rodx = float(enl%nx) / maxRFZdis(FZtype+1)
+    rody = float(enl%nx) / maxRFZdis(FZtype+1)
+    if ((FZtype.eq.1).or.(FZtype.eq.2)) then
+      rodz = float(enl%nz) / tan(cPi*0.5/float(FZorder))
     else
-      rodx = float(enl%nx) / maxRFZdis(FZtype_override+1)
-      rody = float(enl%nx) / maxRFZdis(FZtype_override+1)
-      if ((FZtype_override.eq.1).or.(FZtype_override.eq.2)) then
-        rodz = float(enl%nz) / tan(cPi*0.5/float(FZorder_override))
-      else
-        rodz = float(enl%nz) / maxRFZdis(FZtype_override+1) 
-      end if
+      rodz = float(enl%nz) / maxRFZdis(FZtype+1) 
+    end if
+  else
+    rodx = float(enl%nx) / maxRFZdis(FZtype_override+1)
+    rody = float(enl%nx) / maxRFZdis(FZtype_override+1)
+    if ((FZtype_override.eq.1).or.(FZtype_override.eq.2)) then
+      rodz = float(enl%nz) / tan(cPi*0.5/float(FZorder_override))
+    else
+      rodz = float(enl%nz) / maxRFZdis(FZtype_override+1) 
     end if
   end if
 end if
 
 if (enl%stereographic.ne.0) then
+ if (enl%mrcmode.eq.'off') then
   fname = trim(outname)//'-sp.pov'
   call Message('opening '//trim(fname))
 
@@ -421,20 +439,21 @@ if (enl%stereographic.ne.0) then
         call PoVRay_drawFZ(dataunit4, 3, 0.005D0, FZtype_override, FZorder_override)
       end if
     end if
+   end if
+  end if
 ! create the rendering volume
-    allocate(spvol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
-    spvol = 0.0
+  allocate(spvol(-enl%nx:enl%nx,-enl%ny:enl%ny,-enl%nz:enl%nz),stat=istat)
+  spvol = 0.0
 ! generate the x/y/z scaling factors
 ! these should be set so that the render box has the outer dimensions of the stereographic sphere,
 ! which has unit radius.
-    spdx = float(enl%nx)
-    spdy = float(enl%nx)
-    spdz = float(enl%nz)
-  end if
-
+  spdx = float(enl%nx)
+  spdy = float(enl%nx)
+  spdz = float(enl%nz)
 end if
 
 if (enl%eulerspace.ne.0) then
+ if (enl%mrcmode.eq.'off') then
   fname = trim(outname)//'-eu.pov'
   call Message('opening '//trim(fname))
 
@@ -494,17 +513,17 @@ if (enl%eulerspace.ne.0) then
         call PoVRay_drawFZ(dataunit5, 5, 0.005D0, FZtype_override, FZorder_override)
       end if
     end if
+   end if
+  end if
 ! create the rendering volume
-    allocate(euvol(1:2*enl%nx+1,1:2*enl%ny+1,1:2*enl%nz+1),stat=istat)
-    euvol = 0.0
+  allocate(euvol(1:2*enl%nx+1,1:2*enl%ny+1,1:2*enl%nz+1),stat=istat)
+  euvol = 0.0
 ! generate the x/y/z scaling factors
 ! these should be set so that the render box has the outer dimensions of the primary Euler cell
 ! which has unit radius.
-    eudx = float(2*enl%nx+1) / (2.0*cPi)
-    eudy = float(2*enl%ny+1) / cPi
-    eudz = float(2*enl%nz+1) / (2.0*cPi)
-  end if
- 
+  eudx = float(2*enl%nx+1) / (2.0*cPi)
+  eudy = float(2*enl%ny+1) / cPi
+  eudz = float(2*enl%nz+1) / (2.0*cPi)
 end if
 
 ! open the input data file and read the orientation format and the number of orientations
@@ -571,7 +590,7 @@ do ix = 1,numpoints
 
 ! are we drawing spheres ?
   if (skipthis.eqv..FALSE.) then
-   if (trim(enl%df3file).eq.'undefined') then 
+   if ((trim(enl%df3file).eq.'undefined').and.(enl%mrcmode.eq.'off')) then 
 
 ! we have the point, so now transform it to all alternative representations and draw the 
 ! corresponding spheres and their opposites
@@ -608,27 +627,33 @@ do ix = 1,numpoints
 ! cubochoric rendering volume
       if (enl%cubochoric.ne.0) then
         cu = eu2cu(eu)
+        grid3 = trilinear_splat( sngl(cu(1:3)), (/ cudx, cudy, cudz /), init=.FALSE.)
         ro(1:3) = nint(cu(1:3) * (/ cudx, cudy, cudz /))
-        if ((abs(ro(1)).le.enl%nx).and.(abs(ro(2)).le.enl%ny).and.(abs(ro(3)).le.enl%nz) ) then
-          cuvol(ro(1),ro(2),ro(3)) = cuvol(ro(1),ro(2),ro(3)) + 1.0
+        if ((abs(ro(1)).lt.enl%nx).and.(abs(ro(2)).lt.enl%ny).and.(abs(ro(3)).lt.enl%nz) ) then
+          cuvol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) = &
+            cuvol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) + grid3
         end if
       end if
 
 ! homochoric rendering volume
       if (enl%homochoric.ne.0) then
         ho = eu2ho(eu)
+        grid3 = trilinear_splat( sngl(ho(1:3)), (/ hodx, hody, hodz /), init=.FALSE.)
         ro(1:3) = nint(ho(1:3) * (/ hodx, hody, hodz /))
-        if ((abs(ro(1)).le.enl%nx).and.(abs(ro(2)).le.enl%ny).and.(abs(ro(3)).le.enl%nz) ) then
-          hovol(ro(1),ro(2),ro(3)) = hovol(ro(1),ro(2),ro(3)) + 1.0
+        if ((abs(ro(1)).lt.enl%nx).and.(abs(ro(2)).lt.enl%ny).and.(abs(ro(3)).lt.enl%nz) ) then
+          hovol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) = &
+            hovol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) + grid3
         end if
       end if
 
 ! rodrigues rendering volume
       if (enl%rodrigues.ne.0) then
         rod = eu2ro(eu)
+        grid3 = trilinear_splat( sngl(rod(1:3)*rod(4)), (/ rodx, rody, rodz /), init=.FALSE.)
         ro(1:3) = nint((rod(1:3)*rod(4)) * (/ rodx, rody, rodz /))
-        if ((abs(ro(1)).le.enl%nx).and.(abs(ro(2)).le.enl%ny).and.(abs(ro(3)).le.enl%nz) ) then
-          rovol(ro(1),ro(2),ro(3)) = rovol(ro(1),ro(2),ro(3)) + 1.0
+        if ((abs(ro(1)).lt.enl%nx).and.(abs(ro(2)).lt.enl%ny).and.(abs(ro(3)).lt.enl%nz) ) then
+          rovol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) = &
+            rovol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) + grid3
         end if
       end if
 
@@ -636,13 +661,17 @@ do ix = 1,numpoints
       if (enl%stereographic.ne.0) then
         qu = eu2qu(eu)
         xyz = qu(2:4)/(1.D0+qu(1))
+        grid3 = trilinear_splat( sngl(xyz), (/ spdx, spdy, spdz /), init=.FALSE.)
         ro(1:3) = nint(xyz(1:3) * (/ spdx, spdy, spdz /))
-        if ((abs(ro(1)).le.enl%nx).and.(abs(ro(2)).le.enl%ny).and.(abs(ro(3)).le.enl%nz) ) then
-          spvol(ro(1),ro(2),ro(3)) = spvol(ro(1),ro(2),ro(3)) + 1.0
+        ! in the following test, we are potentially eliminating a few points that lie on
+        ! the surface of the volume array...
+        if ((abs(ro(1)).lt.enl%nx).and.(abs(ro(2)).lt.enl%ny).and.(abs(ro(3)).lt.enl%nz) ) then
+          spvol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) = &
+            spvol(ro(1)-1:ro(1)+1,ro(2)-1:ro(2)+1,ro(3)-1:ro(3)+1) + grid3
         end if
       end if
 
-! Euler primary cell rendering volume
+! Euler primary cell rendering volume  [needs to be updated with trilinear splatting]
       if (enl%eulerspace.ne.0) then
         eu(1) = mod(eu(1)+10.0*cPi,2.0*cPi)
         eu(2) = mod(eu(2)+5.0*cPi,cPi)
@@ -657,7 +686,8 @@ do ix = 1,numpoints
   end do ! loop over equivalent points
 end do
 
-if (trim(enl%df3file).eq.'undefined') then ! we're drawing spheres, so close the union and add color information
+if (enl%mrcmode.eq.'off') then 
+ if (trim(enl%df3file).eq.'undefined') then ! we're drawing spheres, so close the union and add color information
   write(rgbstring,"(F8.6,',',F8.6,',',F8.6)") enl%rgb(1:3)
   colorstring = 'material { texture { pigment { rgb <'//trim(rgbstring)//'> filter 0.95 }'
   if (enl%cubochoric.ne.0) then
@@ -699,7 +729,7 @@ if (trim(enl%df3file).eq.'undefined') then ! we're drawing spheres, so close the
     close(UNIT=dataunit5,STATUS='keep')
     call Message('PoVray rendering script stored in '//trim(outname)//'-eu.pov')
   end if
-else ! we're writing the rendering volume to a DF3 file and closing the povray file
+ else ! we're writing the rendering volume to a DF3 file and closing the povray file
 
   if (enl%cubochoric.ne.0) then
 ! output the final rendering commands
@@ -772,7 +802,155 @@ else ! we're writing the rendering volume to a DF3 file and closing the povray f
     df3name = EMsoft_toNativePath(df3name)
     call PoVRay_write_DF3file(dataunit5, df3name, euvol, (/ enl%nx, enl%ny, enl%nz /), enl%scalingmode)
   end if
+ end if
+else  ! we're creating an .mrc file, so we do not need any of the povray commands...
+ !write(*,*) 'starting creation of .mrc file'
+! parameters that are generic to all the volumes
+  numx = 2*enl%nx+1
+  numy = 2*enl%ny+1
+  numz = 2*enl%nz+1
+  allocate(volume(numx,numy,numz))
+  MRCheader%nx = numx
+  MRCheader%ny = numy
+  MRCheader%nz = numz
+  MRCheader%mode = 2    ! for floating point output
+  MRCheader%mx = numx
+  MRCheader%my = numy
+  MRCheader%mz = numz
+  MRCheader%xlen = numx
+  MRCheader%ylen = numy
+  MRCheader%zlen = numz
+  do i=1,numz
+    FEIheaders(i)%b_tilt = 0.0
+    FEIheaders(i)%defocus = 0.0
+    FEIheaders(i)%pixelsize = 1.0e-9
+    FEIheaders(i)%magnification = 1000.0
+    FEIheaders(i)%voltage = 0.0
+  end do
+  allocate(psum(numz))
+! write (*,*) 'dimensions :',numx, numy, numz
 
+  if (enl%cubochoric.ne.0) then
+! copy the cubochoric array into the volume array
+    do ix = -enl%nx,enl%nx
+     do iy = -enl%ny,enl%ny
+      do iz = -enl%nz,enl%nz
+        volume(ix+enl%nx+1, iy+enl%ny+1, iz+enl%nz+1) = dble(cuvol(ix,iy,iz))
+      end do
+     end do 
+    end do    
+! parameters specific to this volume
+    psum = sum(sum(volume,1),1)
+    do iz=1,numz
+      FEIheaders(iz)%mean_int = psum(iz)/float(numx)/float(numy)
+    end do
+    MRCheader%amin = minval(volume)
+    MRCheader%amax = maxval(volume)
+    MRCheader%amean = sum(volume)/float(numx)/float(numy)/float(numz)
+! set the filename
+    mrcname = trim(EMsoft_getEMdatapathname())//trim(enl%mrcfile)//'-cu.mrc'
+    mrcname = EMsoft_toNativePath(mrcname)
+! and write the volume to file
+    call MRC_write_3Dvolume(MRCheader,FEIheaders,mrcname,numx,numy,numz,volume,verbose=.TRUE.) 
+  end if
+
+
+  if (enl%homochoric.ne.0) then
+! copy the homochoric array into the volume array
+    do ix = -enl%nx,enl%nx
+     do iy = -enl%ny,enl%ny
+      do iz = -enl%nz,enl%nz
+        volume(ix+enl%nx+1, iy+enl%ny+1, iz+enl%nz+1) = dble(hovol(ix,iy,iz))
+      end do
+     end do 
+    end do    
+! parameters specific to this volume
+    psum = sum(sum(volume,1),1)
+    do iz=0,numz-1
+      FEIheaders(iz)%mean_int = psum(iz)/float(numx)/float(numy)
+    end do
+    MRCheader%amin = minval(volume)
+    MRCheader%amax = maxval(volume)
+    MRCheader%amean = sum(volume)/float(numx)/float(numy)/float(numz)
+! set the filename
+    mrcname = trim(EMsoft_getEMdatapathname())//trim(enl%mrcfile)//'-ho.mrc'
+    mrcname = EMsoft_toNativePath(mrcname)
+! and write the volume to file
+    call MRC_write_3Dvolume(MRCheader,FEIheaders,mrcname,numx,numy,numz,volume,verbose=.TRUE.) 
+  end if
+
+
+  if (enl%rodrigues.ne.0) then
+! copy the rodrigues array into the volume array
+    do ix = -enl%nx,enl%nx
+     do iy = -enl%ny,enl%ny
+      do iz = -enl%nz,enl%nz
+        volume(ix+enl%nx+1, iy+enl%ny+1, iz+enl%nz+1) = dble(rovol(ix,iy,iz))
+      end do
+     end do 
+    end do    
+! parameters specific to this volume
+    psum = sum(sum(volume,1),1)
+    do iz=1,numz
+      FEIheaders(iz)%mean_int = psum(iz)/float(numx)/float(numy)
+    end do
+    MRCheader%amin = minval(volume)
+    MRCheader%amax = maxval(volume)
+    MRCheader%amean = sum(volume)/float(numx)/float(numy)/float(numz)
+! set the filename
+    mrcname = trim(EMsoft_getEMdatapathname())//trim(enl%mrcfile)//'-ro.mrc'
+    mrcname = EMsoft_toNativePath(mrcname)
+! and write the volume to file
+    call MRC_write_3Dvolume(MRCheader,FEIheaders,mrcname,numx,numy,numz,volume,verbose=.TRUE.) 
+  end if
+
+
+  if (enl%stereographic.ne.0) then
+  ! write (*,*) 'starting volume array copy'
+! copy the stereographic array into the volume array
+    do ix = -enl%nx,enl%nx
+     do iy = -enl%ny,enl%ny
+      do iz = -enl%nz,enl%nz
+        volume(ix+enl%nx+1, iy+enl%ny+1, iz+enl%nz+1) = dble(spvol(ix,iy,iz))
+      end do
+     end do 
+    end do    
+  ! write (*,*) '  --> done'
+! parameters specific to this volume
+    psum = sum(sum(volume,1),1)
+    do iz=1,numz
+      FEIheaders(iz)%mean_int = psum(iz)/float(numx)/float(numy)
+    end do
+    MRCheader%amin = minval(volume)
+    MRCheader%amax = maxval(volume)
+    MRCheader%amean = sum(volume)/float(numx)/float(numy)/float(numz)
+  ! write(*,*) MRCheader%amin, MRCheader%amax, MRCheader%amean
+! set the filename
+    mrcname = trim(EMsoft_getEMdatapathname())//trim(enl%mrcfile)//'-sp.mrc'
+    mrcname = EMsoft_toNativePath(mrcname)
+  ! write (*,*) 'mrcfile : ',trim(mrcname)
+! and write the volume to file
+    call MRC_write_3Dvolume(MRCheader,FEIheaders,mrcname,numx,numy,numz,volume,verbose=.TRUE.) 
+  end if
+
+
+  if (enl%eulerspace.ne.0) then
+! copy the eulerspace array into the volume array
+    volume = dble(euvol)
+! parameters specific to this volume
+    psum = sum(sum(volume,1),1)
+    do iz=1,numz
+      FEIheaders(iz)%mean_int = psum(iz)/float(numx)/float(numy)
+    end do
+    MRCheader%amin = minval(volume)
+    MRCheader%amax = maxval(volume)
+    MRCheader%amean = sum(volume)/float(numx)/float(numy)/float(numz)
+! set the filename
+    mrcname = trim(EMsoft_getEMdatapathname())//trim(enl%mrcfile)//'-eu.mrc'
+    mrcname = EMsoft_toNativePath(mrcname)
+! and write the volume to file
+    call MRC_write_3Dvolume(MRCheader,FEIheaders,mrcname,numx,numy,numz,volume,verbose=.TRUE.) 
+  end if
 
 end if
 

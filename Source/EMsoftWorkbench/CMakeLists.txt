@@ -1,5 +1,5 @@
 
-PROJECT( EMsoftWorkbench VERSION 0.1.1)
+PROJECT( EMsoftWorkbench VERSION ${EMsoft_VERSION})
 
 set(ProjectBinaryDir ${EMsoftWorkbench_BINARY_DIR})
 
@@ -17,6 +17,24 @@ set(CMP_GENERATE_VERSION_STRING 1)
 set(PROJECT_INSTALL_HEADERS "0")
 set(PROJECT_RESOURCES_DIR "${EMsoftWorkbench_SOURCE_DIR}/Resources")
 set(EXE_DEBUG_EXTENSION "_debug")
+
+
+#Enable use of Solution Folders
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(PROJECT_INSTALL_HEADERS "0")
+set(PROJECT_INSTALL_EXECUTABLES "1")
+
+#------------------------------------------------------------------------------
+# Find the Git Package for Versioning. It should be ok if Git is NOT found
+Find_package(Git)
+# -----------------------------------------------------------------------
+# Generate a set of Version Cpp/H files that will be used by SIMPLView to
+# get and display the proper version numbers.
+cmpRevisionString( GENERATED_HEADER_FILE_PATH "${EMsoftWorkbench_VERSION_HDR_FILE}"
+                        GENERATED_SOURCE_FILE_PATH "${EMsoftWorkbench_VERSION_SRC_FILE}"
+                        NAMESPACE "EMsoftWorkbench"
+                        PROJECT_NAME "${PROJECT_NAME}"
+                        EXPORT_MACRO "EMsoftWorkbench_EXPORT")
 
 include(${CMP_SOURCE_DIR}/cmpProject.cmake)
 
@@ -61,116 +79,82 @@ if(NOT OPENGL_FOUND)
     message(FATAL_ERROR "OpenGL is Needed for this project")
 endif()
 
-set(EMsoftWorkbench_SRCS
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftApplication.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftController.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftMenuItems.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftWorkbench.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/GLImageDisplayWidget.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/GLImageViewer.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidget.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidgetListItem.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidgetListItemDelegate.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidgetListModel.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/main.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/MPMCDisplayWidget.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternDisplayWidget.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternListItem.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternListItemDelegate.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternListModel.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/QtSRecentFileList.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/QtSSettings.cpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/StandardEMsoftApplication.cpp
-  )
-
-
-set(EMsoftWorkbench_HDRS
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/Constants.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidgetListItem.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternListItem.h
-  )
-
-set(EMsoftWorkbench_MOC_HDRS
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftApplication.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftController.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftMenuItems.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/EMsoftWorkbench.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/GLImageDisplayWidget.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/GLImageViewer.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidget.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidgetListItemDelegate.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/LandingWidgetListModel.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/MPMCDisplayWidget.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternDisplayWidget.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternListItemDelegate.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/PatternListModel.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/ProjectionConversions.hpp
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/QtSRecentFileList.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/QtSSettings.h
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/StandardEMsoftApplication.h
-  )
-
-
-if(APPLE)
-  set(EMsoftWorkbench_SRCS 
-    ${EMsoftWorkbench_SRCS}
-    ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/MacEMsoftApplication.cpp
-    )
-  set(EMsoftWorkbench_MOC_HDRS
-      ${EMsoftWorkbench_MOC_HDRS}
-      ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/MacEMsoftApplication.h
-    )
-endif()
-
-
-cmp_IDE_SOURCE_PROPERTIES( "EMsoftWorkbench" "${EMsoftWorkbench_HDRS};${EMsoftWorkbench_MOC_HDRS}" "${EMsoftWorkbench_SRCS}" "${PROJECT_INSTALL_HEADERS}")
-
-# The UI files As generated by Qt Designer
-set(EMsoftWorkbench_UIS
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/UI_Files/EMsoftWorkbench.ui
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/UI_Files/LandingWidget.ui
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/UI_Files/MPMCDisplayWidget.ui
-  ${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/UI_Files/PatternDisplayWidget.ui
-)
-
-cmp_IDE_GENERATED_PROPERTIES("EMsoftWorkbench/UI_Files" "${EMsoftWorkbench_UIS}" "")
-
 # and finally any resource files
 set(EMsoftWorkbench_RCS
     ${PROJECT_RESOURCES_DIR}/icons/images/Icons.qrc
     ${PROJECT_RESOURCES_DIR}/icons/splash/splash.qrc
     ${PROJECT_RESOURCES_DIR}/icons/gifs/gifs.qrc
+    ${PROJECT_RESOURCES_DIR}/StyleSheets/StyleSheets.qrc
+    ${PROJECT_RESOURCES_DIR}/Images/Images.qrc
+    ${PROJECT_RESOURCES_DIR}/Fonts/Fonts.qrc
 )
+cmp_IDE_SOURCE_PROPERTIES( "EMsoftWorkbench/Qrc" "${EMsoftWorkbench_RCS}" "" "${PROJECT_INSTALL_HEADERS}")
 
 # -- Run MOC and UIC on the necessary files
-QT5_ADD_RESOURCES( EMsoftWorkbench_Generated_RC_SRCS ${EMsoftWorkbench_RCS} ${QRC_LICENSE_FILES})
+QT5_ADD_RESOURCES( EMsoftWorkbench_Generated_RC_SRCS 
+    ${EMsoftWorkbench_RCS} ${QRC_LICENSE_FILES}
+    )
+cmp_IDE_GENERATED_PROPERTIES( "Generated/Qt_Rc" "" "${EMsoftWorkbench_Generated_RC_SRCS}" "0")
 
-# this will run uic on .ui files:
-QT5_WRAP_UI( EMsoftWorkbench_Generated_UI_HDRS ${EMsoftWorkbench_UIS} )
-
-# and finally this will run moc:
-QT5_WRAP_CPP( EMsoftWorkbench_Generated_MOC_SRCS ${EMsoftWorkbench_MOC_HDRS} )
-
-#-- Put the generated files into their own group for IDEs
-cmp_IDE_GENERATED_PROPERTIES("Generated/ui" "${EMsoftWorkbench_Generated_UI_HDRS}" "")
-cmp_IDE_GENERATED_PROPERTIES("Generated/moc" "${EMsoftWorkbench_Generated_MOC_SRCS}" "")
-cmp_IDE_GENERATED_PROPERTIES("Generated/qrc" "${QRC_LICENSE_FILES}" "${EMsoftWorkbench_Generated_RC_SRCS}")
-
-include(${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/AngleWidgets/SourceList.cmake)
+include(${EMsoftWorkbench_SOURCE_DIR}/Source/Common/SourceList.cmake)
+include(${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/SourceList.cmake)
+include(${EMsoftWorkbench_SOURCE_DIR}/Source/Modules/SourceList.cmake)
 
 # -- Finally set the Project Sources to include all the sources
 set(${PROJECT_NAME}_PROJECT_SRCS
-  ${EMsoftWorkbench_SRCS}
-  ${EMsoftWorkbench_HDRS}
-  ${EMsoftWorkbench_MOC_HDRS}
-  ${EMsoftWorkbench_Generated_MOC_SRCS}
   ${EMsoftWorkbench_Generated_RC_SRCS}
-  ${EMsoftWorkbench_Generated_UI_HDRS}
-  ${Angle_Widgets_HDRS}
-  ${Angle_Widgets_MOC_HDRS}
-  ${Angle_Widgets_SRCS}
-  ${Angle_Widgets_Generated_MOC_SRCS}
-  ${Angle_Widgets_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_Common_Moc_HDRS}
+  ${EMsoftWorkbench_Common_HDRS}
+  ${EMsoftWorkbench_Common_SRCS}
+  ${EMsoftWorkbench_Common_Generated_MOC_SRCS}
+
+  ${EMsoftWorkbench_EMsoftWorkbench_Moc_HDRS}
+  ${EMsoftWorkbench_EMsoftWorkbench_HDRS}
+  ${EMsoftWorkbench_EMsoftWorkbench_SRCS}
+  ${EMsoftWorkbench_EMsoftWorkbench_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_EMsoftWorkbench_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_Modules_Moc_HDRS}
+  ${EMsoftWorkbench_Modules_HDRS}
+  ${EMsoftWorkbench_Modules_SRCS}
+  ${EMsoftWorkbench_Modules_Generated_MOC_SRCS}
+
+  ${EMsoftWorkbench_PatternDisplayModule_Moc_HDRS}
+  ${EMsoftWorkbench_PatternDisplayModule_HDRS}
+  ${EMsoftWorkbench_PatternDisplayModule_SRCS}
+  ${EMsoftWorkbench_PatternDisplayModule_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_PatternDisplayModule_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_Moc_HDRS}
+  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_HDRS}
+  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_SRCS}
+  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_PatternFitModule_Moc_HDRS}
+  ${EMsoftWorkbench_PatternFitModule_HDRS}
+  ${EMsoftWorkbench_PatternFitModule_SRCS}
+  ${EMsoftWorkbench_PatternFitModule_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_PatternFitModule_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_CrystalStructureCreationModule_Moc_HDRS}
+  ${EMsoftWorkbench_CrystalStructureCreationModule_HDRS}
+  ${EMsoftWorkbench_CrystalStructureCreationModule_SRCS}
+  ${EMsoftWorkbench_CrystalStructureCreationModule_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_CrystalStructureCreationModule_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_MonteCarloSimulationModule_Moc_HDRS}
+  ${EMsoftWorkbench_MonteCarloSimulationModule_HDRS}
+  ${EMsoftWorkbench_MonteCarloSimulationModule_SRCS}
+  ${EMsoftWorkbench_MonteCarloSimulationModule_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_MonteCarloSimulationModule_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_MasterPatternSimulationModule_Moc_HDRS}
+  ${EMsoftWorkbench_MasterPatternSimulationModule_HDRS}
+  ${EMsoftWorkbench_MasterPatternSimulationModule_SRCS}
+  ${EMsoftWorkbench_MasterPatternSimulationModule_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_MasterPatternSimulationModule_Generated_UI_HDRS}
   )
 
 include_directories(${HDF5_INCLUDE_DIR})
@@ -192,25 +176,17 @@ if(WIN32)
 ENDif(WIN32)
 
 set(DEST_DIR ".")
-if(UNIX AND NOT APPLE)
+if(NOT APPLE)
     set(DEST_DIR "bin")
 endif()
 
   
-string(TOLOWER ${LIB_TYPE} lib_type)
-set(hdf5LinkLibs hdf5)
-set(comps ${hdf5LinkLibs})
-if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
-  set(hdf5LinkLibs "")
-  foreach(comp ${comps})
-    if(TARGET ${comp}-${lib_type})
-      set(hdf5LinkLibs ${hdf5LinkLibs} ${comp}-${lib_type})
-    endif()
-  endforeach()
-endif()
+GetHDF5LinkLibraries(EMSOFT)
+set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib)
+
 
 if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  set(FORTRAN_LIBRARIES gomp gcc_eh)
+  set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} gomp gcc_eh)
 endif()
 
 
@@ -223,20 +199,21 @@ BuildQtAppBundle(
     VERSION_MINOR ${EMsoftWorkbench_VER_MINOR}
     VERSION_PATCH ${EMsoftWorkbench_VER_PATCH}
     BINARY_DIR    ${${PROJECT_NAME}_BINARY_DIR}
-    LINK_LIBRARIES ${OPENGL_LIBRARIES} ${hdf5LinkLibs} ${FORTRAN_LIBRARIES} H5Support OrientationLib EMsoftLib
+    LINK_LIBRARIES ${OPENGL_LIBRARIES} ${EXE_LINK_LIBRARIES} H5Support OrientationLib EMsoftLib
     LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    QT5_MODULES   Core Gui Widgets OpenGL
+    QT_PLUGINS    ${QT_PLUGINS}
+    QT5_MODULES   Core Gui Widgets OpenGL Network
     COMPONENT     Applications
     INSTALL_DEST  ${DEST_DIR}
 )
 set_target_properties (${PROJECT_NAME} PROPERTIES
-  FOLDER Source/${PROJECT_NAME}
+  FOLDER ${PROJECT_NAME}
 )
 
 
-#- This installs all the help files. Note that we assume a flat directory structure
-#- in the "Help" folder, ie, all html files, images, etc are all in the "Help"
-#- folder and NOT in any subfolders beyond that.
-install(DIRECTORY ${EMsoftWorkbench_SOURCE_DIR}/Template
-        DESTINATION .
-        COMPONENT Applications )
+# #- This installs all the help files. Note that we assume a flat directory structure
+# #- in the "Help" folder, ie, all html files, images, etc are all in the "Help"
+# #- folder and NOT in any subfolders beyond that.
+# install(DIRECTORY ${EMsoftWorkbench_SOURCE_DIR}/Documentation
+#         DESTINATION .
+#         COMPONENT Applications )

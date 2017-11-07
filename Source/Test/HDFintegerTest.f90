@@ -41,6 +41,8 @@
 
 module HDFintegerTest
 
+use stringconstants
+
 contains 
 
 subroutine HDFintegerExecuteTest(res) &
@@ -132,35 +134,35 @@ if (hdferr.ne.0) then
 end if
 
 ! write the integer and integer arrays to the file
-dataset = 'integer'
+dataset = SC_integer
 hdferr = HDF_writeDatasetInteger(dataset, ival, HDF_head)
 if (hdferr.ne.0) then
   res = 2
   return
 end if
 
-dataset = 'integer1D'
+dataset = SC_integer1D
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, iarr1, dim1, HDF_head)
 if (hdferr.ne.0) then
   res = 3
   return
 end if
 
-dataset = 'integer2D'
+dataset = SC_integer2D
 hdferr = HDF_writeDatasetIntegerArray2D(dataset, iarr2, dim1, dim2, HDF_head)
 if (hdferr.ne.0) then
   res = 4
   return
 end if
 
-dataset = 'integer3D'
+dataset = SC_integer3D
 hdferr = HDF_writeDatasetIntegerArray3D(dataset, iarr3, dim1, dim2, dim3, HDF_head)
 if (hdferr.ne.0) then
   res = 5
   return
 end if
 
-dataset = 'integer4D'
+dataset = SC_integer4D
 hdferr = HDF_writeDatasetIntegerArray4D(dataset, iarr4, dim1, dim2, dim3, dim4, HDF_head)
 if (hdferr.ne.0) then
   res = 6
@@ -201,35 +203,35 @@ if (hdferr.ne.0) then
 end if
 
 ! read the integer and arrays
-dataset = 'integer'
+dataset = SC_integer
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ival)
 if (hdferr.ne.0) then
   res = 8
   return
 end if
 
-dataset = 'integer1D'
+dataset = SC_integer1D
 call HDF_readDatasetIntegerArray1D(dataset, dims1, HDF_head, hdferr, iarr1)
 if (hdferr.ne.0) then
   res = 9
   return
 end if
 
-dataset = 'integer2D'
+dataset = SC_integer2D
 call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, iarr2)
 if (hdferr.ne.0) then
   res = 10 
   return
 end if
 
-dataset = 'integer3D'
+dataset = SC_integer3D
 call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, iarr3)
 if (hdferr.ne.0) then
   res = 11
   return
 end if
 
-dataset = 'integer4D'
+dataset = SC_integer4D
 call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, iarr4)
 if (hdferr.ne.0) then
   res = 12

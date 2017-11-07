@@ -40,6 +40,7 @@
 !> @date 05/06/15  SS 1.1 added OpenMP and made master pattern site specific
 !> @date 09/10/15 MDG 1.2 updated Lambert and symmetry stuff
 !> @date 05/21/16 MDG 1.3 changes for HDF internal file reorganization
+!> @date 08/16/17 MDG 1.4 added option to reuse the Monte Carlo results from a different input file
 !--------------------------------------------------------------------------
 
 program EMECPmaster
@@ -48,13 +49,15 @@ use local
 use typedefs
 use NameListTypedefs
 use NameListHandlers
+use EBSDmod
 use files
 use io
+use stringconstants
 
 IMPLICIT NONE
 
 character(fnlen)                        :: nmldeffile, progname, progdesc
-type(ECPMasterNameListType)                   :: ecpnl
+type(ECPMasterNameListType)             :: ecpnl
 
 nmldeffile = 'EMECPmaster.nml'
 progname = 'EMECPmaster.f90'
@@ -68,6 +71,13 @@ call Interpret_Program_Arguments(nmldeffile,2,(/ 39, 0 /), progname)
 
 ! deal with the namelist stuff
 call GetECPMasterNameList(nmldeffile,ecpnl)
+
+! if copyfromenergyfile is different from 'undefined', then we need to 
+! copy all the Monte Carlo data from that file into a new file, which 
+! will then be read from and written to by the ECmasterpattern routine.
+if (ecpnl%copyfromenergyfile.ne.'undefined') then
+  call EBSDcopyMCdata(ecpnl%copyfromenergyfile, ecpnl%energyfile)
+end if
 
 ! perform the zone axis computations
 call ECmasterpattern(ecpnl, progname, nmldeffile)
@@ -112,6 +122,8 @@ use HDF5
 use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
+use notifications
+use stringconstants
 
 IMPLICIT NONE
 
@@ -122,7 +134,7 @@ character(fnlen),INTENT(IN)                      :: nmldeffile
 real(kind=dbl)          :: frac
 integer(kind=irg)       :: gzero, istat
 
-integer(kind=irg)       :: numEbins, numzbins, nx, ny, totnum_el ! reading from MC file
+integer(kind=irg)       :: numEbins, numzbins, nx, ny, totnum_el, numsites ! reading from MC file
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, sig, omega  ! reading from MC file
 integer(kind=irg), allocatable :: acc_z(:,:,:,:),accum_z(:,:,:,:) ! reading from MC file
 
@@ -175,6 +187,11 @@ type(HDFobjectStackType),pointer    :: HDF_head
 character(fnlen)                    :: dataset, instring
 character(fnlen)                    :: mode
 integer(HSIZE_T)                    :: dims4(4), cnt4(4), offset4(4), dims3(3), cnt3(3), offset3(3)
+
+character(fnlen),ALLOCATABLE        :: MessageLines(:)
+integer(kind=irg)                  :: NumLines
+character(fnlen)                   :: SlackUsername, exectime
+character(100)                     :: c
 
 interface
   function InterpolateLambert(dc, master, npx, nf) result(res)
@@ -241,39 +258,39 @@ end if
 
 
 ! open the namelist group
-groupname = 'NMLparameters'
+groupname = SC_NMLparameters
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-dataset = 'xtalname'
+dataset = SC_xtalname
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 xtalname = trim(stringarray(1))
 if (xtaldataread.eqv..TRUE.) cell%fname = trim(xtalname)
 
-dataset = 'numsx'
+dataset = SC_numsx
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, nsx)
 nsx = (nsx - 1)/2
 nsy = nsx
 
-dataset = 'EkeV'
+dataset = SC_EkeV
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, EkeV)
 
-dataset = 'Ehistmin'
+dataset = SC_Ehistmin
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ehistmin)
 
-dataset = 'Ebinsize'
+dataset = SC_Ebinsize
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ebinsize)
 
-dataset = 'depthmax'
+dataset = SC_depthmax
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthmax)
 
-dataset = 'depthstep'
+dataset = SC_depthstep
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthstep)
 
-dataset = 'mode'
+dataset = SC_mode
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 mode = trim(stringarray(1))
 
@@ -301,23 +318,23 @@ else
 end if
 
 ! open the Data group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 datagroupname = 'MCOpenCL'
 hdferr = HDF_openGroup(datagroupname, HDF_head)
 
 ! read data items
-dataset = 'numangle'
+dataset = SC_numangle
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numEbins)
 
-dataset = 'numzbins'
+dataset = SC_numzbins
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numzbins)
 
-dataset = 'totnum_el'
+dataset = SC_totnumel
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, num_el)
 
-dataset = 'accum_z'
+dataset = SC_accumz
 ! dims4 =  (/ numEbins, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
 call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
 allocate(accum_z(numEbins,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
@@ -457,14 +474,22 @@ nat = 0
 fnat = 1.0/float(sum(cell%numat(1:numset)))
 intthick = dble(depthmax)
 
-outname = trim(EMsoft_getEMdatapathname())//trim(ecpnl%outname)
-outname = EMsoft_toNativePath(outname)
 datagroupname = 'ECPmaster'
 
-allocate(mLPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numset),stat=istat)
-allocate(mLPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numset),stat=istat)
-allocate(masterSPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numset))
-allocate(masterSPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numset))
+! if the combinesites parameter is .TRUE., then we only need to 
+! allocate a dimension of 1 in the master pattern array since we are adding 
+! together the master patterns for all sites in the asymmetric unit.
+if (ecpnl%combinesites.eqv..TRUE.) then
+  numsites = 1
+else
+  numsites = numset
+end if
+
+
+allocate(mLPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numsites),stat=istat)
+allocate(mLPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numsites),stat=istat)
+allocate(masterSPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numsites))
+allocate(masterSPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,numsites))
 
 mLPNH = 0.0
 mLPSH = 0.0
@@ -475,38 +500,35 @@ nullify(HDF_head)
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
-! Open an existing file or create a new file using the default properties.
-if (trim(energyfile).eq.trim(outname)) then
-  hdferr =  HDF_openFile(outname, HDF_head)
-else
-  hdferr =  HDF_createFile(outname, HDF_head)
-end if
+! Open output file 
+hdferr =  HDF_openFile(energyfile, HDF_head)
 
 ! if this file already contains an ECPmaster dataset, then we let the user
 ! know and gracefully abort the program.
-dataset = 'EMData/ECPmaster'
+dataset = trim(SC_EMData)//trim(SC_ECPmaster)
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-  call FatalError('ECmasterpattern','This file already contains an ECPmaster dataset') 
+  call Message('ECmasterpattern: this output file already contains an ECPmaster dataset') 
+  call FatalError('ECmasterpattern','Set the copyfromenergyfile parameter to copy existing MC data into a new EC master file') 
 end if
 
 ! write the EMheader to the file
-groupname = 'ECPmaster'
+groupname = SC_ECPmaster
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-dataset = 'ECPmasterNML'
+dataset = SC_ECPmasterNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! leave this group
 call HDF_pop(HDF_head)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLparameters"
+groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
 call HDFwriteECPMasterNameList(HDF_head, ecpnl)
 call HDFwriteBetheparameterNameList(HDF_head, BetheParameters)
@@ -515,11 +537,11 @@ call HDFwriteBetheparameterNameList(HDF_head, BetheParameters)
 call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 stringarray(1)= trim(xtalname)
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -528,7 +550,7 @@ else
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 end if
 
-dataset = 'numset'
+dataset = SC_numset
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head, overwrite)
@@ -536,7 +558,7 @@ else
   hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head)
 end if
 
-dataset = 'EkeV'
+dataset = SC_EkeV
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetDouble(dataset, EkeV, HDF_head, overwrite)
@@ -557,9 +579,9 @@ end if
 ! end if
 
 ! create the hyperslab and write zeroes to it for now
-dataset = 'mLPNH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
+dataset = SC_mLPNH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -568,9 +590,9 @@ else
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 end if
 
-dataset = 'mLPSH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
+dataset = SC_mLPSH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -579,9 +601,9 @@ else
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 end if
 
-dataset = 'masterSPNH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
+dataset = SC_masterSPNH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -590,9 +612,9 @@ else
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 end if
 
-dataset = 'masterSPSH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
+dataset = SC_masterSPSH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -685,10 +707,17 @@ beamloop: do i = 1, numk
       end if
     end if
     
-    do ix=1,nequiv
+  if (ecpnl%combinesites.eqv..FALSE.) then
+     do ix=1,nequiv
       if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1:numset) = svals(1:numset)
       if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1:numset) = svals(1:numset)
     end do
+  else
+     do ix=1,nequiv
+      if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1) = sum(svals)
+      if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1) = sum(svals)
+    end do
+  end if
 
     totw = totw + nnw
     tots = tots + nns
@@ -713,10 +742,10 @@ call WriteValue(' -> Average number of weak reflections   = ',io_int, 1, "(I5)")
 
 ! make sure that the outer pixel rim of the mLPSH patterns is identical to
 ! that of the mLPNH array.o
-mLPSH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numset) = mLPNH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numset)
-mLPSH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numset) = mLPNH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numset)
-mLPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numset) = mLPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numset)
-mLPSH(-ecpnl%npx:ecpnl%npx, ecpnl%npx,1:numset) = mLPNH(-ecpnl%npx:ecpnl%npx, ecpnl%npx,1:numset)
+mLPSH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites)
+mLPSH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites) = mLPNH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites)
+mLPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numsites)
+mLPSH(-ecpnl%npx:ecpnl%npx, ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx:ecpnl%npx, ecpnl%npx,1:numsites)
 
 ! get stereographic projections
   Radius = 1.0
@@ -726,17 +755,19 @@ mLPSH(-ecpnl%npx:ecpnl%npx, ecpnl%npx,1:numset) = mLPNH(-ecpnl%npx:ecpnl%npx, ec
       xyz = StereoGraphicInverse( xy, ierr, Radius )
       xyz = xyz/NORM2(xyz)
       if (ierr.ne.0) then 
-        masterSPNH(i,j,1:numset) = 0.0
-        masterSPSH(i,j,1:numset) = 0.0
+        masterSPNH(i,j,1:numsites) = 0.0
+        masterSPSH(i,j,1:numsites) = 0.0
       else
-        masterSPNH(i,j,1:numset) = InterpolateLambert(xyz, mLPNH, ecpnl%npx, numset)
-        masterSPSH(i,j,1:numset) = InterpolateLambert(xyz, mLPSH, ecpnl%npx, numset)
+        masterSPNH(i,j,1:numsites) = InterpolateLambert(xyz, mLPNH, ecpnl%npx, numsites)
+        masterSPSH(i,j,1:numsites) = InterpolateLambert(xyz, mLPSH, ecpnl%npx, numsites)
       end if
     end do
   end do
 
 ! and here is where the major changes are for this version 5.0: all output now in HDF5 format
 call timestamp(datestring=dstr, timestring=tstre)
+
+call CPU_TIME(tstop)
 
 datagroupname = 'ECPmaster'
 
@@ -745,46 +776,59 @@ nullify(HDF_head)
 call h5open_EMsoft(hdferr)
 
 ! open the existing file using the default properties.
-hdferr =  HDF_openFile(outname, HDF_head)
+hdferr =  HDF_openFile(energyfile, HDF_head)
 
 ! update the time string
-groupname = 'EMheader'
+groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
 hdferr = HDF_openGroup(datagroupname, HDF_head)
 
-dataset = 'StopTime'
+dataset = SC_StopTime
 line2(1) = dstr//', '//tstre
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
+!dataset = SC_Duration
+!tstop = tstop - tstart
+!if (iE.eq.numEbins) then 
+!  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+!  if (g_exists) then     
+!    hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head, overwrite)
+!  else
+!    hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
+!  end if
+!else
+!  hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head, overwrite)
+!end if
+
 call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 hdferr = HDF_openGroup(datagroupname, HDF_head)
 
 ! add data to the hyperslab
-dataset = 'mLPNH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset/)
+dataset = SC_mLPNH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites/)
 offset3 = (/ 0, 0, 0 /)
 hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 
-dataset = 'mLPSH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset/)
+dataset = SC_mLPSH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites/)
 offset3 = (/ 0, 0, 0 /)
 hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 
-dataset = 'masterSPNH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
+dataset = SC_masterSPNH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
 offset3 = (/ 0, 0, 0/)
 hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 
-dataset = 'masterSPSH'
-dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
-cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
+dataset = SC_masterSPSH
+dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
+cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numsites /)
 offset3 = (/ 0, 0, 0/)
 hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 
@@ -793,10 +837,24 @@ call HDF_pop(HDF_head,.TRUE.)
 ! and close the fortran hdf interface
 call h5close_EMsoft(hdferr)
 
-if ((ecpnl%Esel.eq.-1).and.(ix.eq.1)) then
-    call Message('Final data stored in file '//trim(ecpnl%outname), frm = "(A/)")
-end if
+call Message('Final data stored in file '//trim(energyfile), frm = "(A/)")
 
+! if requested, we notify the user that this program has completed its run
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(ecpnl%Notify).eq.'On') then 
+    NumLines = 3
+    allocate(MessageLines(NumLines))
+
+    call hostnm(c)
+ 
+    MessageLines(1) = 'EMECPmaster program has ended successfully'
+    MessageLines(2) = 'Master pattern data stored in '//trim(energyfile)
+    write (exectime,"(I10)") tstop  
+    MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
+    SlackUsername = 'EMsoft on '//trim(c)
+    i = PostMessage(MessageLines, NumLines, SlackUsername)
+  end if
+end if
 
 end subroutine ECmasterpattern
 

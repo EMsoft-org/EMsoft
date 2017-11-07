@@ -170,6 +170,8 @@ call CLerror_check('InnerProdGPU:clReleaseProgram', ierr)
 cl_result = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_result, C_NULL_PTR, ierr)
 call CLerror_check('InnerProdGPU:clCreateBuffer', ierr)
 
+! ---- 
+
 ! set kernel arguments
 ierr =  clSetKernelArg(kernel, 0, sizeof(cl_expt), C_LOC(cl_expt))
 call CLerror_check('InnerProdGPU:clSetKernelArg:cl_expt', ierr)
@@ -199,6 +201,9 @@ call CLerror_check('InnerProdGPU:clFinish', ierr)
 ierr = clEnqueueReadBuffer(command_queue,cl_result,CL_TRUE,0_8,size_in_bytes_result,C_LOC(results(1)),0,C_NULL_PTR,C_NULL_PTR)
 call CLerror_check('InnerProdGPU:clEnqueueReadBuffer', ierr)
 
+! ---
+
+
 ierr = clReleaseKernel(kernel)
 call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
 ierr = clReleaseMemObject(cl_result)
@@ -207,7 +212,8 @@ call CLerror_check('InnerProdGPU:clReleaseMemObject:cl_result', ierr)
 end subroutine InnerProdGPU
 !--------------------------------------------------------------------------
 
-recursive function Jaccard_Distance(img1,img2,nn) result(JD)
+recursive function Jaccard_Distance(img1,img2,nn,mutualinformation) result(JD)
+!DEC$ ATTRIBUTES DLLEXPORT :: Jaccard_Distance
 
 use local
 
@@ -216,6 +222,7 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(IN)      :: img1(nn)
 integer(kind=irg),INTENT(IN)      :: img2(nn)
 integer(kind=irg),INTENT(IN)      :: nn
+logical,INTENT(IN),OPTIONAL       :: mutualinformation
 
 real(kind=dbl)                    :: JD
 real(kind=sgl)                    :: hist1(256), hist2(256), jhist(256,256), H1, H2, H12
@@ -260,8 +267,15 @@ do ii = 0,255
     !write(13,*)''
 end do
 
-!JD = -H12 + (H1 + H2)
-JD = 2.D0 - (H1 + H2)/H12  
+if (present(mutualinformation)) then
+  if (mutualinformation.eqv..TRUE.) then 
+    JD = (H1 + H2) - H12
+  else
+    JD = 2.D0 - (H1 + H2)/H12  
+  end if
+else
+    JD = 2.D0 - (H1 + H2)/H12  
+end if
 
 end function Jaccard_Distance
 

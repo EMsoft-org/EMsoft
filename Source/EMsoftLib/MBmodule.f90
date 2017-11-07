@@ -1135,7 +1135,7 @@ else ! AorD = 'A' so we need to compute the structure matrix using LUTqg ...
           rlr => rlr%nexts
           ir = ir+1
         end do
-        DynMat = DynMat * ccpi ! complex(0.D0, cPi)
+        DynMat = DynMat * ccpi ! complex(cPi, 0.D0)
 end if 
 
 

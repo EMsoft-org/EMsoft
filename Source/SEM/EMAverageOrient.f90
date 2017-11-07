@@ -59,6 +59,7 @@ use HDFsupport
 use rotations
 use Lambert
 use quaternions
+use stringconstants
 
 IMPLICIT NONE
 
@@ -116,16 +117,16 @@ if (stat) then
 
   if (enl%oldformat.eqv..TRUE.) then
 
-    dataset = 'FZcnt'
+dataset = SC_FZcnt
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, FZcnt)
 
-    dataset = 'NumExptPatterns'
+dataset = SC_NumExptPatterns
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, Nexp)
 
-    dataset = 'PointGroupNumber'
+dataset = SC_PointGroupNumber
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, pgnum)
 
-    dataset = 'EulerAngles'
+dataset = SC_EulerAngles
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, Eulerstmp)
     allocate(Eulers(3,FZcnt))
     do i=1,FZcnt
@@ -134,7 +135,7 @@ if (stat) then
     deallocate(Eulerstmp)
     Eulers = Eulers * sngl(cPi)/180.0
 
-    dataset = 'DotProducts'
+dataset = SC_DotProducts
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, dplisttmp)
 
     !allocate(dplist(dims2(1),Nexp))
@@ -145,7 +146,7 @@ if (stat) then
     deallocate(dplisttmp)
     nnm = enl%nmuse
   
-    dataset = 'Indices'
+dataset = SC_Indices
     call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, tmitmp)
     allocate(tmi(nnm,Nexp))
     do i=1,Nexp
@@ -155,27 +156,27 @@ if (stat) then
 
   else ! this file has the new internal format (after ~ April 2016)
 ! get the energyfile and masterfile parameters from NMLParameters
-    groupname = 'NMLparameters'
+groupname = SC_NMLparameters
     hdferr = HDF_openGroup(groupname, HDF_head)
-    groupname = 'EBSDIndexingNameListType'
+groupname = SC_EBSDIndexingNameListType
     hdferr = HDF_openGroup(groupname, HDF_head)
 
-    dataset = 'energyfile'
+dataset = SC_energyfile
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     energyfile = trim(stringarray(1))
     deallocate(stringarray)
 
-    dataset = 'masterfile'
+dataset = SC_masterfile
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     masterfile = trim(stringarray(1))
     deallocate(stringarray)
 
-    dataset = 'nnk'
+dataset = SC_nnk
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, nnk)
 
-    dataset = 'ipf_wd'
+dataset = SC_ipfwd
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_wd)
-    dataset = 'ipf_ht'
+dataset = SC_ipfht
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_ht)
 
 !   dataset = 'StepX'
@@ -189,22 +190,22 @@ if (stat) then
     call HDF_pop(HDF_head)
 
 ! open the Scan 1/EBSD/Data group
-    groupname = 'Scan 1'
+    groupname = SC_Scan1
     hdferr = HDF_openGroup(groupname, HDF_head)
-    groupname = 'EBSD'
+groupname = SC_EBSD
     hdferr = HDF_openGroup(groupname, HDF_head)
-    groupname = 'Data'
+groupname = SC_Data
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! integers
-    dataset = 'FZcnt'
+dataset = SC_FZcnt
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, FZcnt)
 
-    dataset = 'NumExptPatterns'
+dataset = SC_NumExptPatterns
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, Nexp)
 
 ! arrays
-    dataset = 'EulerAngles'
+dataset = SC_EulerAngles
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, Eulerstmp)
     allocate(Eulers(3,FZcnt))
     do i=1,FZcnt
@@ -214,7 +215,7 @@ if (stat) then
     Eulers = Eulers * sngl(cPi)/180.0
 
 
-    dataset = 'TopDotProductList'
+dataset = SC_TopDotProductList
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, dplisttmp)
     allocate(dplist(dims2(1),Nexp))
     do i=1,Nexp
@@ -223,7 +224,7 @@ if (stat) then
     deallocate(dplisttmp)
     nnm = dims2(1)
   
-    dataset = 'TopMatchIndices'
+dataset = SC_TopMatchIndices
     call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, tmitmp)
     allocate(tmi(nnm,Nexp))
     do i=1,Nexp
@@ -266,21 +267,21 @@ if (enl%oldformat.eqv..FALSE.) then
     hdferr =  HDF_openFile(efile, HDF_head, readonly)
 
 ! open the namelist group
-    groupname = 'NMLparameters'
+groupname = SC_NMLparameters
     hdferr = HDF_openGroup(groupname, HDF_head)
-    groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-    dataset = 'xtalname'
+dataset = SC_xtalname
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     ebsdnl%MCxtalname = trim(stringarray(1))
     deallocate(stringarray)
 
-    dataset = 'EkeV'
+dataset = SC_EkeV
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%EkeV)
 
-    dataset = 'sig'
+dataset = SC_sig
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%MCsig)
 
     call HDF_pop(HDF_head,.TRUE.)

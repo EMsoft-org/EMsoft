@@ -33,6 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#include <QtCore/QDir>
 #include <QtGui/QSurfaceFormat>
 
 #include <QtWidgets/QApplication>
@@ -60,6 +61,9 @@ int main(int argc, char* argv[])
 #if defined (Q_OS_MAC)
   emSoftApp->setQuitOnLastWindowClosed(false);
 #endif
+
+  QDir aPluginDir = QDir(qApp->applicationDirPath());
+  qDebug() << aPluginDir;
 
   if (!app.initialize(argc, argv))
   {

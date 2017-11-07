@@ -35,6 +35,7 @@ use NameListHandlers
 use JSONsupport
 use json_module
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -116,6 +117,8 @@ use HDF5
 use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
+use notifications
+use stringconstants
 
 IMPLICIT NONE
 
@@ -193,6 +196,11 @@ character(fnlen)        :: groupname, dataset, instring, dataname, fname, source
 integer(kind=irg)       :: numangle, iang
 
 type(HDFobjectStackType),pointer  :: HDF_head
+
+character(fnlen),ALLOCATABLE      :: MessageLines(:)
+integer(kind=irg)                 :: NumLines
+character(fnlen)                  :: SlackUsername, exectime
+character(100)                    :: c
 
 nullify(HDF_head)
 
@@ -714,11 +722,11 @@ call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
 call SaveDataHDF(cell, HDF_head)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-dataset = 'MCOpenCLNML'
+dataset = SC_MCOpenCLNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! leave this group
@@ -726,7 +734,7 @@ call HDF_pop(HDF_head)
 !call HDF_pop(HDF_head)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLparameters"
+groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
 call HDFwriteMCCLNameList(HDF_head, mcnl)
 
@@ -734,47 +742,47 @@ call HDFwriteMCCLNameList(HDF_head, mcnl)
 call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 
-dataset = 'numzbins'
+dataset = SC_numzbins
 hdferr = HDF_writeDatasetInteger(dataset, numzbins, HDF_head)
 
 ! modified using multiplier
-dataset = 'totnum_el'
+dataset = SC_totnumel
 hdferr = HDF_writeDatasetInteger(dataset, mcnl%totnum_el, HDF_head)
 
-dataset = 'multiplier'
+dataset = SC_multiplier
 hdferr = HDF_writeDatasetInteger(dataset, mcnl%multiplier, HDF_head)
 
 if (mode .eq. 'full') then
 
-    dataset = 'numEbins'
+dataset = SC_numEbins
     hdferr = HDF_writeDatasetInteger(dataset, numEbins, HDF_head)
 
 !allocate(accum_e(numEbins,-nx:nx,-nx:nx),accum_z(numEbins,numzbins,-nx/10:nx/10,-nx/10:nx/10),stat=istat)
-    dataset = 'accum_e'
+dataset = SC_accume
     hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_e, numEbins, 2*nx+1, 2*nx+1, HDF_head)
 
-    dataset = 'accum_z'
+dataset = SC_accumz
     hdferr = HDF_writeDatasetIntegerArray4D(dataset, accum_z, numEbins, numzbins, 2*(nx/10)+1, 2*(nx/10)+1, HDF_head)
 
 else if (mode .eq. 'bse1') then
 
-    dataset = 'numangle'
+dataset = SC_numangle
     hdferr = HDF_writeDatasetInteger(dataset, numangle, HDF_head)
 
 !allocate(accum_e(numangle,-nx:nx,-nx:nx),accum_z(numangle,numzbins,-nx/10:nx/10,-nx/10:nx/10),stat=istat)
-    dataset = 'accum_e'
+dataset = SC_accume
     hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_e, numangle, 2*nx+1, 2*nx+1, HDF_head)
 
-    dataset = 'accum_z'
+dataset = SC_accumz
     hdferr = HDF_writeDatasetIntegerArray4D(dataset, accum_z, numangle, numzbins, 2*(nx/10)+1, 2*(nx/10)+1, HDF_head)
 
 else if (mode .eq. 'Ivol') then
 
-    dataset = 'accum_xyz'
+dataset = SC_accumxyz
     hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_xyz, 2*nx+1, 2*nx+1, numzbins, HDF_head)
 
 end if
@@ -811,6 +819,23 @@ end if
 ierr = clReleaseMemObject(seeds)
 call CLerror_check('DoMCsimulation:clReleaseMemObject:seeds', ierr)
 
+
+! if requested, we notify the user that this program has completed its run
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(mcnl%Notify).eq.'On') then 
+    NumLines = 3
+    allocate(MessageLines(NumLines))
+
+    call hostnm(c)
+
+    MessageLines(1) = 'EMMCOpenCL program has ended successfully'
+    MessageLines(2) = 'Monte Carlo data stored in '//trim(dataname)
+    write (exectime,"(I10)") tstop  
+    MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
+    SlackUsername = 'EMsoft on '//trim(c)
+    i = PostMessage(MessageLines, NumLines, SlackUsername)
+  end if
+end if
 
 end subroutine DoMCsimulation
 

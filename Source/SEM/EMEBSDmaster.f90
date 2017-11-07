@@ -62,6 +62,7 @@
 !> @date  10/07/15  MDG 5.3 minor cleanup in preparation for release 3.0
 !> @date  06/30/16  MDG 5.4 added option to create uniform master patterns for study of background intensities
 !> @date  09/29/16  MDG 5.5 added option to read structure data from master file instead of external .xtal file
+!> @date  08/16/17  MDG 5.6 added option to reuse the Monte Carlo results from a different input file
 !--------------------------------------------------------------------------
 program EMEBSDmaster
 
@@ -69,9 +70,11 @@ use local
 use NameListTypedefs
 use NameListHandlers
 use JSONsupport
+use EBSDmod
 use json_module
 use files
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -95,6 +98,13 @@ if (res.eq.0) then
   call JSONreadEBSDmasterNameList(emnl, nmldeffile, error_cnt)
 else
   call GetEBSDMasterNameList(nmldeffile,emnl)
+end if
+
+! if copyfromenergyfile is different from 'undefined', then we need to 
+! copy all the Monte Carlo data from that file into a new file, which 
+! will then be read from and written to by the ComputeMasterPattern routine.
+if (emnl%copyfromenergyfile.ne.'undefined') then
+  call EBSDcopyMCdata(emnl%copyfromenergyfile, emnl%energyfile)
 end if
 
 ! generate a set of master EBSD patterns
@@ -161,6 +171,8 @@ use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
 use omp_lib
+use notifications
+use stringconstants
  
 IMPLICIT NONE
 
@@ -172,7 +184,7 @@ real(kind=dbl)          :: ctmp(192,3), arg, Radius, xyz(3)
 integer(HSIZE_T)        :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
-                           numk, & ! number of independent incident beam directions
+                           numk, timestart, timestop, numsites, & ! number of independent incident beam directions
                            ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
@@ -211,6 +223,11 @@ complex(kind=dbl),allocatable   :: DynMat(:,:)
 character(fnlen)                :: dataset, instring
 
 type(HDFobjectStackType),pointer  :: HDF_head
+
+character(fnlen),ALLOCATABLE      :: MessageLines(:)
+integer(kind=irg)                 :: NumLines
+character(fnlen)                  :: SlackUsername, exectime
+character(100)                    :: c
 
 !$OMP THREADPRIVATE(rlp) 
 
@@ -284,9 +301,9 @@ if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
 end if
 
-groupname = 'EMheader'
+groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
 hdferr = HDF_openGroup(groupname, HDF_head)
 FL = .FALSE.
 datagroupname = 'FixedLength'
@@ -298,36 +315,36 @@ call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
 ! open the namelist group
-groupname = 'NMLparameters'
+groupname = SC_NMLparameters
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-dataset = 'xtalname'
+dataset = SC_xtalname
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 xtalname = trim(stringarray(1))
 if (xtaldataread.eqv..TRUE.) cell%fname = trim(xtalname)
 
-dataset = 'numsx'
+dataset = SC_numsx
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, nsx)
 nsx = (nsx - 1)/2
 nsy = nsx
 
-dataset = 'EkeV'
+dataset = SC_EkeV
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, EkeV)
 
-dataset = 'Ehistmin'
+dataset = SC_Ehistmin
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ehistmin)
 
-dataset = 'Ebinsize'
+dataset = SC_Ebinsize
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ebinsize)
 
-dataset = 'depthmax'
+dataset = SC_depthmax
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthmax)
 
-dataset = 'depthstep'
+dataset = SC_depthstep
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthstep)
 
 ! close the name list group
@@ -352,23 +369,23 @@ else
 end if
 
 ! open the Data group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 datagroupname = 'MCOpenCL'
 hdferr = HDF_openGroup(datagroupname, HDF_head)
 
 ! read data items 
-dataset = 'numEbins'
+dataset = SC_numEbins
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numEbins)
 
-dataset = 'numzbins'
+dataset = SC_numzbins
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numzbins)
 
-dataset = 'totnum_el'
+dataset = SC_totnumel
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, num_el)
 
-dataset = 'accum_z'
+dataset = SC_accumz
 ! dims4 =  (/ numEbins, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
 call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
 !write (*,*) numEbins, numzbins, nsx, nsy, dims4
@@ -508,9 +525,18 @@ deallocate(accum_z)
 
 !=============================================
 !=============================================
+! if the combinesites parameter is .TRUE., then we only need to 
+! allocate a dimension of 1 in the master pattern array since we are adding 
+! together the master patterns for all sites in the asymmetric unit.
+  if (emnl%combinesites.eqv..TRUE.) then
+    numsites = 1
+  else
+    numsites = numset
+  end if
+
 ! ---------- allocate memory for the master patterns
-  allocate(mLPNH(-emnl%npx:emnl%npx,-npy:npy,1,1:numset),stat=istat)
-  allocate(mLPSH(-emnl%npx:emnl%npx,-npy:npy,1,1:numset),stat=istat)
+  allocate(mLPNH(-emnl%npx:emnl%npx,-npy:npy,1,1:numsites),stat=istat)
+  allocate(mLPSH(-emnl%npx:emnl%npx,-npy:npy,1,1:numsites),stat=istat)
   allocate(masterSPNH(-emnl%npx:emnl%npx,-npy:npy,1))
   allocate(masterSPSH(-emnl%npx:emnl%npx,-npy:npy,1))
 
@@ -566,11 +592,11 @@ if (emnl%restart.eqv..TRUE.) then
   hdferr =  HDF_openFile(outname, HDF_head, readonly)
 
 ! all we need to get from the file is the lastEnergy parameter
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
   hdferr = HDF_openGroup(datagroupname, HDF_head)
 
-  dataset = 'lastEnergy'
+dataset = SC_lastEnergy
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, lastEnergy)
 
   call HDF_pop(HDF_head,.TRUE.)
@@ -600,18 +626,18 @@ else
   call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
 
 ! open or create a namelist group to write all the namelist files into
-  groupname = "NMLfiles"
+groupname = SC_NMLfiles
   hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-  dataset = 'EBSDmasterNML'
+dataset = SC_EBSDmasterNML
   hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! leave this group
   call HDF_pop(HDF_head)
   
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLparameters"
+groupname = SC_NMLparameters
   hdferr = HDF_createGroup(groupname, HDF_head)
 
   call HDFwriteEBSDMasterNameList(HDF_head, emnl)
@@ -621,11 +647,11 @@ else
   call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_createGroup(groupname, HDF_head)
   hdferr = HDF_createGroup(datagroupname, HDF_head)
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   stringarray(1)= trim(xtalname)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
@@ -634,7 +660,7 @@ else
     hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
   end if
 
-  dataset = 'numset'
+dataset = SC_numset
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head, overwrite)
@@ -642,7 +668,7 @@ else
     hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head)
   end if
 
-  dataset = 'BetheParameters'
+dataset = SC_BetheParameters
   bp = (/ BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff /)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
@@ -651,7 +677,7 @@ else
     hdferr = HDF_writeDatasetFloatArray1D(dataset, bp, 4, HDF_head)
   end if
 
-  dataset = 'lastEnergy'
+dataset = SC_lastEnergy
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetInteger(dataset, lastEnergy, HDF_head, overwrite)
@@ -660,7 +686,7 @@ else
   end if
   
   if (emnl%Esel.eq.-1) then
-    dataset = 'numEbins'
+dataset = SC_numEbins
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetInteger(dataset, numEbins, HDF_head, overwrite)
@@ -668,7 +694,7 @@ else
       hdferr = HDF_writeDatasetInteger(dataset, numEbins, HDF_head)
     end if
   
-    dataset = 'EkeVs'
+dataset = SC_EkeVs
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloatArray1D(dataset, EkeVs, numEbins, HDF_head, overwrite)
@@ -676,7 +702,7 @@ else
       hdferr = HDF_writeDatasetFloatArray1D(dataset, EkeVs, numEbins, HDF_head)
     end if
   else
-    dataset = 'numEbins'
+dataset = SC_numEbins
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetInteger(dataset, one, HDF_head, overwrite)
@@ -684,7 +710,7 @@ else
       hdferr = HDF_writeDatasetInteger(dataset, one, HDF_head)
     end if
   
-    dataset = 'selE'
+dataset = SC_selE
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloat(dataset, selE, HDF_head, overwrite)
@@ -694,9 +720,9 @@ else
   end if  
 
 ! create the hyperslabs and write zeroes to them for now
-  dataset = 'mLPNH'
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numset /)
-  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numset /)
+dataset = SC_mLPNH
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, 0, 0 /)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
@@ -705,9 +731,9 @@ else
     hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
   end if
 
-  dataset = 'mLPSH'
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numset /)
-  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numset /)
+dataset = SC_mLPSH
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, 0, 0 /)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
@@ -716,7 +742,7 @@ else
     hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
   end if
 
-  dataset = 'masterSPNH'
+dataset = SC_masterSPNH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, 0 /)
@@ -727,7 +753,7 @@ else
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
   end if
 
-  dataset = 'masterSPSH'
+dataset = SC_masterSPSH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, 0 /)
@@ -766,6 +792,8 @@ end if
 ! so this is where we could in principle implement an OpenMP approach; alternatively, 
 ! we could do the inner loop over the incident beam directions in OpenMP (probably simpler)
 
+call Time_tick(timestart)
+
 energyloop: do iE=Estart,1,-1
  if (emnl%uniform.eqv..FALSE.) then
 ! is this a single-energy run ?
@@ -775,8 +803,9 @@ energyloop: do iE=Estart,1,-1
    
 ! print a message to indicate where we are in the computation
    io_int(1)=iE
-   call Message('Starting computation for energy bin', frm = "(/A$)")
-   call WriteValue(' ',io_int,1,"(I4$)")
+   io_int(2)=Estart
+   call Message('Starting computation for energy bin (in reverse order)', frm = "(/A$)")
+   call WriteValue(' ',io_int,2,"(I4,' of ',I4$)")
    io_real(1) = EkeVs(iE)
    call WriteValue('; energy [keV] = ',io_real,1,"(F6.2/)")
    selE = EkeVs(iE)
@@ -911,17 +940,25 @@ energyloop: do iE=Estart,1,-1
        end if
      end if
 !$OMP CRITICAL
+  if (emnl%combinesites.eqv..FALSE.) then
      do ix=1,nequiv
        if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1,1:numset) = svals(1:numset)
        if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1,1:numset) = svals(1:numset)
      end do
+  else
+     do ix=1,nequiv
+       if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),1,1) = sum(svals)
+       if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),1,1) = sum(svals)
+     end do
+  end if
 !$OMP END CRITICAL
   
 ! if (TID.eq.0) write (*,*) maxval(abs(mLPNH))
 
      if (mod(ik,5000).eq.0) then
        io_int(1) = ik
-       call WriteValue('  completed beam direction ',io_int, 1, "(I8)")
+       io_int(2) = numk
+       call WriteValue('  completed beam direction ',io_int, 2, "(I8,' of ',I8)")
      end if
 
      call Delete_gvectorlist(reflist)
@@ -933,55 +970,55 @@ energyloop: do iE=Estart,1,-1
 
   deallocate(karray, kij)
 
-if (usehex) then
+  if (usehex) then
 ! and finally, we convert the hexagonally sampled array to a square Lambert projection which will be used 
 ! for all EBSD pattern interpolations;  we need to do this for both the Northern and Southern hemispheres
 
 ! we begin by allocating auxiliary arrays to hold copies of the hexagonal data; the original arrays will
 ! then be overwritten with the newly interpolated data.
-  allocate(auxNH(-emnl%npx:emnl%npx,-npy:npy,1,1:numset),stat=istat)
-  allocate(auxSH(-emnl%npx:emnl%npx,-npy:npy,1,1:numset),stat=istat)
-  auxNH = mLPNH
-  auxSH = mLPSH
+    allocate(auxNH(-emnl%npx:emnl%npx,-npy:npy,1,1:numsites),stat=istat)
+    allocate(auxSH(-emnl%npx:emnl%npx,-npy:npy,1,1:numsites),stat=istat)
+    auxNH = mLPNH
+    auxSH = mLPSH
 
 ! 
-  edge = 1.D0 / dble(emnl%npx)
-  scl = float(emnl%npx) 
-  do i=-emnl%npx,emnl%npx
-    do j=-npy,npy
+    edge = 1.D0 / dble(emnl%npx)
+    scl = float(emnl%npx) 
+    do i=-emnl%npx,emnl%npx
+      do j=-npy,npy
 ! determine the spherical direction for this point
-      xy = (/ dble(i), dble(j) /) * edge
-      dc = LambertSquareToSphere(xy, ierr)
+        xy = (/ dble(i), dble(j) /) * edge
+        dc = LambertSquareToSphere(xy, ierr)
 ! convert direction cosines to hexagonal Lambert projections
-      xy = scl * LambertSphereToHex( dc, ierr )
+        xy = scl * LambertSphereToHex( dc, ierr )
 ! interpolate intensity from the neighboring points
-      if (ierr.eq.0) then 
-        nix = floor(xy(1))
-        niy = floor(xy(2))
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.emnl%npx) nixp = nix
-        if (niyp.gt.emnl%npx) niyp = niy
-        dx = xy(1) - nix
-        dy = xy(2) - niy
-        dxm = 1.D0 - dx
-        dym = 1.D0 - dy
-        mLPNH(i,j,1,1:numset) = auxNH(nix,niy,1,1:numset)*dxm*dym + auxNH(nixp,niy,1,1:numset)*dx*dym + &
-                             auxNH(nix,niyp,1,1:numset)*dxm*dy + auxNH(nixp,niyp,1,1:numset)*dx*dy
-        mLPSH(i,j,1,1:numset) = auxSH(nix,niy,1,1:numset)*dxm*dym + auxSH(nixp,niy,1,1:numset)*dx*dym + &
-                             auxSH(nix,niyp,1,1:numset)*dxm*dy + auxSH(nixp,niyp,1,1:numset)*dx*dy
-      end if
+        if (ierr.eq.0) then 
+          nix = floor(xy(1))
+          niy = floor(xy(2))
+          nixp = nix+1
+          niyp = niy+1
+          if (nixp.gt.emnl%npx) nixp = nix
+          if (niyp.gt.emnl%npx) niyp = niy
+          dx = xy(1) - nix
+          dy = xy(2) - niy
+          dxm = 1.D0 - dx
+          dym = 1.D0 - dy
+          mLPNH(i,j,1,1:numsites) = auxNH(nix,niy,1,1:numsites)*dxm*dym + auxNH(nixp,niy,1,1:numsites)*dx*dym + &
+                               auxNH(nix,niyp,1,1:numsites)*dxm*dy + auxNH(nixp,niyp,1,1:numsites)*dx*dy
+          mLPSH(i,j,1,1:numsites) = auxSH(nix,niy,1,1:numsites)*dxm*dym + auxSH(nixp,niy,1,1:numsites)*dx*dym + &
+                               auxSH(nix,niyp,1,1:numsites)*dxm*dy + auxSH(nixp,niyp,1,1:numsites)*dx*dy
+        end if
+      end do
     end do
-  end do
-  deallocate(auxNH, auxSH)
-end if
+    deallocate(auxNH, auxSH)
+  end if
 
 ! make sure that the outer pixel rim of the mLPSH patterns is identical to
 ! that of the mLPNH array.
-mLPSH(-emnl%npx,-emnl%npx:emnl%npx,1,1:numset) = mLPNH(-emnl%npx,-emnl%npx:emnl%npx,1,1:numset)
-mLPSH( emnl%npx,-emnl%npx:emnl%npx,1,1:numset) = mLPNH( emnl%npx,-emnl%npx:emnl%npx,1,1:numset)
-mLPSH(-emnl%npx:emnl%npx,-emnl%npx,1,1:numset) = mLPNH(-emnl%npx:emnl%npx,-emnl%npx,1,1:numset)
-mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numset) = mLPNH(-emnl%npx:emnl%npx, emnl%npx,1,1:numset)
+  mLPSH(-emnl%npx,-emnl%npx:emnl%npx,1,1:numsites) = mLPNH(-emnl%npx,-emnl%npx:emnl%npx,1,1:numsites)
+  mLPSH( emnl%npx,-emnl%npx:emnl%npx,1,1:numsites) = mLPNH( emnl%npx,-emnl%npx:emnl%npx,1,1:numsites)
+  mLPSH(-emnl%npx:emnl%npx,-emnl%npx,1,1:numsites) = mLPNH(-emnl%npx:emnl%npx,-emnl%npx,1,1:numsites)
+  mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numsites) = mLPNH(-emnl%npx:emnl%npx, emnl%npx,1,1:numsites)
 
 
 ! get stereographic projections (summed over the atomic positions)
@@ -995,8 +1032,8 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numset) = mLPNH(-emnl%npx:emnl%npx, emnl%
         masterSPNH(i,j,1) = 0.0
         masterSPSH(i,j,1) = 0.0
       else
-        masterSPNH(i,j,1) = InterpolateLambert(xyz, mLPNH, emnl%npx, numset)
-        masterSPSH(i,j,1) = InterpolateLambert(xyz, mLPSH, emnl%npx, numset)
+        masterSPNH(i,j,1) = InterpolateLambert(xyz, mLPNH, emnl%npx, numsites)
+        masterSPSH(i,j,1) = InterpolateLambert(xyz, mLPSH, emnl%npx, numsites)
       end if
     end do
   end do
@@ -1011,7 +1048,7 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numset) = mLPNH(-emnl%npx:emnl%npx, emnl%
 
 ! and here is where the major changes are for version 5.0: all output now in HDF5 format
   call timestamp(datestring=dstr, timestring=tstre)
- end if
+ end if  ! (emnl%uniform.eqv..FALSE.) 
 
   datagroupname = 'EBSDmaster'
 
@@ -1023,17 +1060,20 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numset) = mLPNH(-emnl%npx:emnl%npx, emnl%
   hdferr =  HDF_openFile(outname, HDF_head)
 
 ! update the time string
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
   hdferr = HDF_openGroup(datagroupname, HDF_head)
 
-  dataset = 'StopTime'
+dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
   call CPU_TIME(tstop)
-  dataset = 'Duration'
   tstop = tstop - tstart
+  io_int(1) = tstop
+  call WriteValue('Execution time [s]: ',io_int,1)
+
+dataset = SC_Duration
   if (iE.eq.numEbins) then 
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then     
@@ -1048,34 +1088,34 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numset) = mLPNH(-emnl%npx:emnl%npx, emnl%
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
   
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
   hdferr = HDF_openGroup(datagroupname, HDF_head)
 
 ! update the current energy level counter, so that the restart option will function
-  dataset = 'lastEnergy'
+dataset = SC_lastEnergy
   hdferr = HDF_writeDataSetInteger(dataset, iE, HDF_head, overwrite)
 
 ! add data to the hyperslab
-  dataset = 'mLPNH'
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numset /)
-  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numset /)
+dataset = SC_mLPNH
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, iE-1, 0 /)
   hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
 
-  dataset = 'mLPSH'
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numset /)
-  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numset /)
+dataset = SC_mLPSH
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, iE-1, 0 /)
   hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
 
-  dataset = 'masterSPNH'
+dataset = SC_masterSPNH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, iE-1 /)
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 
-  dataset = 'masterSPSH'
+dataset = SC_masterSPSH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, iE-1 /)
@@ -1096,9 +1136,33 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numset) = mLPNH(-emnl%npx:emnl%npx, emnl%
 
 end do energyloop
 
+timestop = Time_tock(timestart)
+io_int(1) = timestop
+call WriteValue('Total execution time [s] ',io_int,1)
+
 if (emnl%Esel.ne.-1) then
   call Message('Final data stored in file '//trim(emnl%outname), frm = "(A/)")
 end if
+
+! if requested, we notify the user that this program has completed its run
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(emnl%Notify).eq.'On') then 
+    NumLines = 3
+    allocate(MessageLines(NumLines))
+
+    call hostnm(c)
+ 
+    MessageLines(1) = 'EMEBSDmaster program has ended successfully'
+    MessageLines(2) = 'Master pattern data stored in '//trim(outname)
+    write (exectime,"(F10.4)") tstop  
+    MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
+    SlackUsername = 'EMsoft on '//trim(c)
+    i = PostMessage(MessageLines, NumLines, SlackUsername)
+  end if
+end if
+
+
+
 
 end subroutine ComputeMasterPattern
 

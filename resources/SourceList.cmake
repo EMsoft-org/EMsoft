@@ -18,9 +18,23 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/rotations.txt
 )
 
+if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources")
+  file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources")
+endif()
+
+foreach(file ${EMSoft_RESOURCE_FILES})
+  file(COPY "${file}" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources")
+endforeach()
+
+
+#---------------------------------------------------------------------
+# This sets up the two variables install_dir and lib_install_dir
+EMsoft_SetupInstallDirs()
+
 #---------------------------------------------------------------------
 # Create the Installation Rules
 INSTALL(FILES ${EMSoft_RESOURCE_FILES}
   COMPONENT Applications
-  DESTINATION "resources"
+  DESTINATION ${extra_install_dir}/resources
 )
+

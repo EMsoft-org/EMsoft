@@ -268,6 +268,87 @@ end subroutine Denoise_PED
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:Denoise_Pattern
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief Denoise an arbitrary pattern
+!
+!> @param pednl namelist file for PED
+!
+!> @date 11/23/15  SS 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine Denoise_Pattern(flx, fly, fpf, fpowp, fsigma_w, fprinf, fnoisinf, ficd, img_in, &
+                     img_out) bind(C, name = 'Denoise_Pattern')
+!DEC$ ATTRIBUTES DLLEXPORT :: Denoise_Pattern
+
+use local
+use,INTRINSIC :: ISO_C_BINDING
+
+interface
+    type(C_PTR) recursive function denoise (lx, ly, pf, powp, sigma_w, prinf, noisinf, &
+    icd, mbike) bind(C, name = 'denoise')
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+ 
+        integer(C_INT)                      :: lx
+        integer(C_INT)                      :: ly
+        real(C_FLOAT)                       :: pf
+        real(C_FLOAT)                       :: powp
+        real(C_FLOAT)                       :: sigma_w
+        real(C_FLOAT)                       :: prinf
+        real(C_FLOAT)                       :: noisinf
+        integer(C_INT)                      :: icd
+        real(C_DOUBLE)                      :: mbike
+    end function denoise
+end interface
+
+integer(kind=irg),INTENT(IN)               :: flx
+integer(kind=irg),INTENT(IN)               :: fly
+real(kind=sgl),INTENT(IN)                  :: fpf, fpowp, fsigma_w, fprinf, fnoisinf
+integer(kind=irg),INTENT(IN)               :: ficd
+real(kind=sgl), INTENT(IN), target         :: img_in(1:flx*fly)
+real(kind=sgl), INTENT(OUT)                :: img_out(1:flx*fly)
+
+
+integer(C_INT)                             :: retval
+real(C_FLOAT),target                       :: pf, powp, sigma_w, prinf, noisinf
+integer(C_INT),target                      :: lx, ly, icd, length
+integer(kind=irg)                          :: istat
+real(C_DOUBLE), pointer                    :: output(:)
+type(C_PTR)                                :: out_ptr
+real(C_DOUBLE), allocatable, target        :: aux_img(:)
+
+lx = flx
+ly = fly
+
+! these values will remain fixed
+pf = fpf ! = 1.0
+powp = fpowp ! = 1.2
+sigma_w = fsigma_w ! = 15.0
+prinf = fprinf ! = 1.0
+noisinf =fnoisinf ! = 0.2
+icd =ficd ! = 15
+
+allocate(aux_img(1:lx*ly),stat=istat)
+
+aux_img(1:lx*ly) = img_in(1:lx*ly)
+
+out_ptr = denoise(lx, ly, pf, powp, sigma_w, prinf, noisinf, icd, aux_img(1))
+
+call C_F_POINTER(out_ptr, output, (/lx*ly/))
+
+img_out(1:lx*ly) = output(1:lx*ly)
+
+deallocate(aux_img)
+deallocate(output)
+
+end subroutine Denoise_Pattern
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:ctfped_writeFile
 !
 !> @author Saransh Singh, Carnegie Mellon University
@@ -308,27 +389,27 @@ ctfname = trim(EMsoft_getEMdatapathname())//trim(pednl%ctffile)
 ctfname = EMsoft_toNativePath(ctfname)
 open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ierr)
 
-write(dataunit2,'(A)'),'Channel Text File'
-write(dataunit2,'(A)'),'Prj Test'
-write(dataunit2,'(A)'),'Author	'//trim(EMsoft_getUsername())
-write(dataunit2,'(A)'),'JobMode	Grid'
-write(dataunit2,'(2A,I5)'),'XCells',TAB, pednl%ipf_wd
-write(dataunit2,'(2A,I5)'),'YCells',TAB, pednl%ipf_ht
-write(dataunit2,'(3A)'),'XStep',TAB,'1.0' 
-write(dataunit2,'(3A)'),'YStep',TAB,'1.0'
-write(dataunit2,'(A)'),'AcqE1	0'
-write(dataunit2,'(A)'),'AcqE2	0'
-write(dataunit2,'(A)'),'AcqE3	0'
-write(dataunit2,'(A,A,$)'),'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A)') 'Channel Text File'
+write(dataunit2,'(A)') 'Prj Test'
+write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
+write(dataunit2,'(A)') 'JobMode	Grid'
+write(dataunit2,'(2A,I5)') 'XCells',TAB, pednl%ipf_wd
+write(dataunit2,'(2A,I5)') 'YCells',TAB, pednl%ipf_ht
+write(dataunit2,'(3A)') 'XStep',TAB,'1.0' 
+write(dataunit2,'(3A)') 'YStep',TAB,'1.0'
+write(dataunit2,'(A)') 'AcqE1	0'
+write(dataunit2,'(A)') 'AcqE2	0'
+write(dataunit2,'(A)') 'AcqE3	0'
+write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 ! the following line would need some work to do it properly...
-write(dataunit2,'(A)')'Mag	30	Coverage	100	Device	0	KV	288.9	TiltAngle	-1	TiltAxis	0'
-write(dataunit2,'(A)'),'Phases	1'
+write(dataunit2,'(A)') 'Mag	30	Coverage	100	Device	0	KV	288.9	TiltAngle	-1	TiltAxis	0'
+write(dataunit2,'(A)') 'Phases	1'
 
 ! here we need to read the .xtal file and extract the lattice parameters, Laue group and space group numbers
-write(dataunit2,'(A)'),'3.524;3.524;3.524	90;90;90	Nickel	11	225'
+write(dataunit2,'(A)') '3.524;3.524;3.524	90;90;90	Nickel	11	225'
 
 ! this is the table header
-write(dataunit2,'(A)'),'Phase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS'
+write(dataunit2,'(A)') 'Phase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS'
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)
@@ -338,7 +419,7 @@ do ii = 1,ipar(3)
     write(str2,'(F12.3)') float(floor(float(ii-1)/float(pednl%ipf_wd)))
     write(str3,'(I2)') 10
     write(str4,'(F12.6)') resultmain(1,ii)
-    write(str5,'(F12.3)') euler(1)
+    write(str5,'(F12.3)') euler(1) - 90.0 ! TSL to HKL convention
     write(str6,'(F12.3)') euler(2)
     write(str7,'(F12.3)') euler(3)
     write(str8,'(I8)') indx

@@ -1,5 +1,3 @@
-Release 3.1: This document is incomplete and some parts may be out of date; use with caution.  The EMsoft Google users group would be a good place to send your installation and configuration questions to...
-
 # EMSoft SDK Setup #
 
 ## EMSoft\_SDK Location ##

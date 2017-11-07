@@ -49,6 +49,6 @@ character(fnlen)        :: progdesc, progname
 
 progname = 'EMsoftinit'
 progdesc = 'Initialize the EMsoft configuration file'
-call EMsoft(progname, progdesc, config=.TRUE.)
+call EMsoft(progname, progdesc, makeconfig=.TRUE.)
 
 end program EMsoftinit

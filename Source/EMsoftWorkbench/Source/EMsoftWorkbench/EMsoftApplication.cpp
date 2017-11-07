@@ -38,19 +38,33 @@
 
 #include <QtCore/QPluginLoader>
 #include <QtCore/QProcess>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
 
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QSplashScreen>
+#include <QtWidgets/QMessageBox>
+
 #include <QtGui/QIcon>
 #include <QtGui/QBitmap>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QBitmap>
 #include <QtGui/QClipboard>
 
-#include "EMsoftWorkbench/EMsoftWorkbench.h"
-#include "EMsoftWorkbench/EMsoftMenuItems.h"
-#include "EMsoftWorkbench/LandingWidget.h"
-#include "EMsoftWorkbench/QtSRecentFileList.h"
+#include "Modules/ModuleManager.h"
+
+#include "Common/Constants.h"
+#include "Common/EMsoftMenuItems.h"
+#include "Common/FileIOTools.h"
+#include "Common/QtSSettings.h"
+#include "Common/QtSRecentFileList.h"
+#include "Common/QtSFileUtils.h"
+
+#include "EMsoftLib/EMsoftStringConstants.h"
+
+#include "EMsoftWorkbench/StyleSheetEditor.h"
+#include "EMsoftWorkbench/InitDialog.h"
+#include "EMsoftWorkbench/EMsoftWorkbench_UI.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -62,16 +76,22 @@ EMsoftApplication::EMsoftApplication(int& argc, char** argv) :
 {
   EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
 
-  // Menu Items Connections
+  connect(menuItems->getActionNew(), SIGNAL(triggered()), this, SLOT(on_actionNew_triggered()));
   connect(menuItems->getActionOpen(), SIGNAL(triggered()), this, SLOT(on_actionOpen_triggered()));
   connect(menuItems->getActionSave(), SIGNAL(triggered()), this, SLOT(on_actionSave_triggered()));
   connect(menuItems->getActionSaveAs(), SIGNAL(triggered()), this, SLOT(on_actionSaveAs_triggered()));
   connect(menuItems->getActionExit(), SIGNAL(triggered()), this, SLOT(on_actionExit_triggered()));
   connect(menuItems->getActionClearRecentFiles(), SIGNAL(triggered()), this, SLOT(on_actionClearRecentFiles_triggered()));
   connect(menuItems->getActionAboutEMsoftWorkbench(), SIGNAL(triggered()), this, SLOT(on_actionAboutEMsoftWorkbench_triggered()));
+  connect(menuItems->getActionEditStyle(), SIGNAL(triggered()), this, SLOT(on_actionEditStyle_triggered()));
+  connect(menuItems->getActionEditConfig(), SIGNAL(triggered()), this, SLOT(on_actionEditConfig_triggered()));
 
-  m_LandingWidget = new LandingWidget;
-  connect(m_LandingWidget, SIGNAL(landingWidgetWindowChangedState()), this, SLOT(landingWidgetWindowChanged()));
+  // Connection to update the recent files list on all windows when it changes
+  QtSRecentFileList* recentsList = QtSRecentFileList::instance();
+  connect(recentsList, &QtSRecentFileList::fileListChanged, this, [=] { updateRecentFileList(); });
+
+  QSharedPointer<QtSSettings> prefs = QSharedPointer<QtSSettings>(new QtSSettings());
+  recentsList->readList(prefs.data());
 }
 
 // -----------------------------------------------------------------------------
@@ -79,7 +99,10 @@ EMsoftApplication::EMsoftApplication(int& argc, char** argv) :
 // -----------------------------------------------------------------------------
 EMsoftApplication::~EMsoftApplication()
 {
+  QSharedPointer<QtSSettings> prefs = QSharedPointer<QtSSettings>(new QtSSettings());
 
+  QtSRecentFileList* recentsList = QtSRecentFileList::instance();
+  recentsList->writeList(prefs.data());
 }
 
 // -----------------------------------------------------------------------------
@@ -90,20 +113,32 @@ bool EMsoftApplication::initialize(int argc, char* argv[])
   Q_UNUSED(argc)
   Q_UNUSED(argv)
 
-  // Open pipeline if SIMPLView was opened from a compatible file
+  // Initialize the EMsoft config
+  initializeEMsoftConfig();
+
   if (argc == 2)
   {
+    // Open EMsoftWorkbench from a compatible file
     char* two = argv[1];
     QString filePath = QString::fromLatin1(two);
     if (!filePath.isEmpty())
     {
-      newInstanceFromFile(filePath, true, true);
+      EMsoftWorkbench_UI* instance = newInstanceFromFile(filePath);
+      if (instance != nullptr)
+      {
+        instance->show();
+      }
     }
   }
   else
   {
-    m_LandingWidget->show();
+    // Open blank EMsoftWorkbench
+    EMsoftWorkbench_UI* workbench = getNewWorkbenchInstance();
+    workbench->show();
   }
+
+  // Create the style sheet editor and apply the style sheet
+  styleSheetEditor = new StyleSheetEditor();
 
   return true;
 }
@@ -111,10 +146,78 @@ bool EMsoftApplication::initialize(int argc, char* argv[])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionClearRecentFiles_triggered()
+void EMsoftApplication::initializeEMsoftConfig()
 {
-  // This should never be executed
-  return;
+  QFileInfo fi(QString("%1/.config/EMsoft/EMsoftConfig.json").arg(QDir::homePath()));
+  if(!fi.exists())
+  {
+    QDir dir;
+    QString emPlayPath = QString("%1/%2").arg(QDir::homePath()) .arg("EMPlay");
+    emPlayPath = QDir::toNativeSeparators(emPlayPath);
+    dir.mkpath(emPlayPath);
+
+    QString emTmpPath = QString("%1/%2").arg(QDir::homePath()) .arg("EMPlay/Temp");
+    emTmpPath = QDir::toNativeSeparators(emTmpPath);
+    dir.mkpath(emTmpPath);
+
+    QString xtalFolderPath = QString("%1/%2").arg(emPlayPath) .arg("XtalFolder");
+    xtalFolderPath = QDir::toNativeSeparators(xtalFolderPath);
+    dir.mkpath(xtalFolderPath);
+
+    QString userName = qgetenv("USER");
+    if (userName.isEmpty()) {
+      userName = qgetenv("USERNAME");
+    }
+
+    QJsonObject s;
+    s[EMsoft::Constants::EMsoftpathname] = "";
+    s[EMsoft::Constants::EMdatapathname] = "";
+    s[EMsoft::Constants::EMtmppathname] = emTmpPath;
+    s[EMsoft::Constants::EMXtalFolderpathname] = xtalFolderPath;
+    s[EMsoft::Constants::EMsoftLibraryLocation] = "";
+    s[EMsoft::Constants::Release] = "";
+    s[EMsoft::Constants::Develop] = "";
+    s[EMsoft::Constants::UserName] = userName;
+    s[EMsoft::Constants::UserEmail] = "";
+    s[EMsoft::Constants::UserLocation] = "";
+
+    QJsonDocument jsonDoc(s);
+    QByteArray bytes = jsonDoc.toJson();
+
+    dir.mkpath(fi.absolutePath());
+
+    QFile envFile(fi.absoluteFilePath());
+    envFile.open(QIODevice::WriteOnly);
+    if(envFile.isOpen())
+    {
+      envFile.write(bytes);
+      envFile.close();
+
+      int initRet = QMessageBox::information(nullptr, tr("EMsoft Initialization"),
+                                     tr("EMsoftWorkbench was not able to find an initialization of EMsoft, so one has been generated automatically.\n\n"
+                                        "Would you like to edit the initialization variables?"),
+                                     QMessageBox::No | QMessageBox::Yes,
+                                     QMessageBox::Yes);
+
+      if (initRet == QMessageBox::Yes)
+      {
+        InitDialog* dialog = new InitDialog();    // This dialog is cleaned up within one of its own slots
+        dialog->exec();
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::on_actionNew_triggered()
+{
+  EMsoftWorkbench_UI* ui = getNewWorkbenchInstance();
+  if (ui != nullptr)
+  {
+    ui->show();
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -123,37 +226,102 @@ void EMsoftApplication::on_actionClearRecentFiles_triggered()
 void EMsoftApplication::on_actionOpen_triggered()
 {
   QString proposedDir = m_OpenDialogLastDirectory;
-  QString filePath = QFileDialog::getOpenFileName(nullptr, tr("Open Master File"),
-    proposedDir, tr("HDF5 File (*.h5);;All Files (*.*)"));
+  QString filePath = QFileDialog::getOpenFileName(nullptr, tr("Open Module From File"),
+    proposedDir, tr("JSON File (*.json);;All Files (*.*)"));
   if (filePath.isEmpty()) { return; }
 
-  if (m_ActiveWindow != nullptr)
+  filePath = QDir::toNativeSeparators(filePath);
+
+  EMsoftWorkbench_UI* instance = newInstanceFromFile(filePath);
+  if (instance != nullptr)
   {
-    // Write the active window's settings so that the newly opened instance can read them
-    m_ActiveWindow->writeSettings();
+    instance->show();
   }
-
-  // Cache the last directory on old instance
-  m_OpenDialogLastDirectory = filePath;
-
-  openMasterFile(filePath);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::openMasterFile(const QString &path)
+EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString &filePath)
 {
-  newInstanceFromFile(path, true, true);
-
-  // Add file path to the recent files list for both instances
-  QtSRecentFileList* list = QtSRecentFileList::instance();
-  list->addFile(path);
-
-  if (m_LandingWidget->isVisible())
+  QFileInfo fi(filePath);
+  QFile inputFile(filePath);
+  if(inputFile.open(QIODevice::ReadOnly) == false)
   {
-    m_LandingWidget->hide();
+    QMessageBox::critical(nullptr, "JSON Read Error", tr("The JSON file\n\n\"%1\"\n\ncould not be opened.").arg(filePath), QMessageBox::Ok);
+    return nullptr;
   }
+
+  QJsonParseError parseError;
+  QByteArray byteArray = inputFile.readAll();
+  QJsonDocument doc = QJsonDocument::fromJson(byteArray, &parseError);
+  if(parseError.error != QJsonParseError::NoError)
+  {
+    QMessageBox::critical(nullptr, "JSON Read Error", tr("The contents of the JSON file\n\n\"%1\"\n\nis not valid JSON.").arg(filePath), QMessageBox::Ok);
+    return nullptr;
+  }
+
+  QJsonObject root = doc.object();
+
+  if (root.contains(EMsoftWorkbenchConstants::StringConstants::Modules) == false)
+  {
+    QMessageBox::critical(nullptr, "JSON Read Error", tr("The contents of the JSON file\n\n\"%1\"\n\nis not formatted correctly for %2.").arg(filePath).arg(QCoreApplication::applicationName()), QMessageBox::Ok);
+    return nullptr;
+  }
+
+  QJsonObject modulesObj = root[EMsoftWorkbenchConstants::StringConstants::Modules].toObject();
+
+  if (modulesObj.size() <= 0)
+  {
+    QMessageBox::warning(nullptr, "JSON Read Warning", tr("The JSON file\n\n\"%1\"\n\ndoes not contain any modules.").arg(filePath), QMessageBox::Ok);
+    return nullptr;
+  }
+
+  EMsoftWorkbench_UI* instance = getNewWorkbenchInstance();
+
+  instance->openSession(modulesObj);
+  instance->setOpenedFilePath(filePath);
+  instance->setWindowModified(false);
+  instance->setWindowTitle(QObject::tr("[*]%1 - %2").arg(fi.baseName()).arg(QCoreApplication::applicationName()));
+
+  QtSRecentFileList* list = QtSRecentFileList::instance();
+  list->addFile(filePath);
+
+  registerWorkbenchInstance(instance);
+
+  // Cache the last directory on old instance
+  m_OpenDialogLastDirectory = filePath;
+
+  return instance;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::updateRecentFileList()
+{
+  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
+  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
+  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
+
+  // Clear the Recent Items Menu
+  recentFilesMenu->clear();
+
+  // Get the list from the static object
+  QStringList files = QtSRecentFileList::instance()->fileList();
+  foreach(QString file, files)
+  {
+    QAction* action = recentFilesMenu->addAction(QtSRecentFileList::instance()->parentAndFileName(file));
+    action->setData(file);
+    action->setVisible(true);
+    connect(action, &QAction::triggered, this, [=] {
+      EMsoftWorkbench_UI* ui = newInstanceFromFile(file);
+      ui->show();
+    });
+  }
+
+  recentFilesMenu->addSeparator();
+  recentFilesMenu->addAction(clearRecentFilesAction);
 }
 
 // -----------------------------------------------------------------------------
@@ -163,7 +331,7 @@ void EMsoftApplication::on_actionSave_triggered()
 {
   if (nullptr != m_ActiveWindow)
   {
-//    m_ActiveWindow->savePipeline();
+    m_ActiveWindow->saveSession();
   }
 }
 
@@ -174,7 +342,7 @@ void EMsoftApplication::on_actionSaveAs_triggered()
 {
   if (nullptr != m_ActiveWindow)
   {
-//    m_ActiveWindow->savePipelineAs();
+    m_ActiveWindow->saveSessionAs();
   }
 }
 
@@ -198,22 +366,66 @@ void EMsoftApplication::on_actionCloseWindow_triggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+void EMsoftApplication::on_actionEditStyle_triggered()
+{
+  styleSheetEditor->setGeometry(40, 40, 500, 800);
+  styleSheetEditor->show();
+  styleSheetEditor->activateWindow();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::on_actionEditConfig_triggered()
+{
+  InitDialog* dialog = new InitDialog();    // This dialog is cleaned up within one of its own slots
+  connect(dialog, &InitDialog::emSoftConfigurationChanged, this, &EMsoftApplication::emSoftConfigurationChanged);
+  dialog->exec();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::on_actionClearRecentFiles_triggered()
+{
+  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
+
+  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
+  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
+
+  // Clear the Recent Items Menu
+  recentFilesMenu->clear();
+  recentFilesMenu->addSeparator();
+  recentFilesMenu->addAction(clearRecentFilesAction);
+
+  // Clear the actual list
+  QtSRecentFileList* recentsList = QtSRecentFileList::instance();
+  recentsList->clear();
+
+  // Write out the empty list
+  QSharedPointer<QtSSettings> prefs = QSharedPointer<QtSSettings>(new QtSSettings());
+  recentsList->writeList(prefs.data());
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void EMsoftApplication::on_actionExit_triggered()
 {
   bool shouldReallyClose = true;
-  for (int i = 0; i<m_EMsoftWorkbenchInstances.size(); i++)
+  for(int i = 0; i < m_WorkbenchInstances.size(); i++)
   {
-    EMsoftWorkbench* dream3dWindow = m_EMsoftWorkbenchInstances[i];
-    if (nullptr != dream3dWindow)
+    EMsoftWorkbench_UI* workbench = m_WorkbenchInstances[i];
+    if(nullptr != workbench)
     {
-      if (dream3dWindow->close() == false)
+      if(workbench->close() == false)
       {
         shouldReallyClose = false;
       }
     }
   }
 
-  if (shouldReallyClose == true)
+  if(shouldReallyClose == true)
   {
     quit();
   }
@@ -222,25 +434,7 @@ void EMsoftApplication::on_actionExit_triggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::emSoftWindowChanged(EMsoftWorkbench* instance)
-{
-  // This should never be executed
-  return;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::landingWidgetWindowChanged()
-{
-  // This should never be executed
-  return;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-EMsoftWorkbench *EMsoftApplication::getActiveWindow()
+EMsoftWorkbench_UI* EMsoftApplication::getActiveWindow()
 {
   return m_ActiveWindow;
 }
@@ -248,75 +442,38 @@ EMsoftWorkbench *EMsoftApplication::getActiveWindow()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QList<EMsoftWorkbench*> EMsoftApplication::getEMsoftWorkbenchInstances()
+void EMsoftApplication::registerWorkbenchInstance(EMsoftWorkbench_UI *instance)
 {
-  return m_EMsoftWorkbenchInstances;
+  m_WorkbenchInstances.push_back(instance);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::registerEMsoftWorkbenchWindow(EMsoftWorkbench* window)
-{
-  m_EMsoftWorkbenchInstances.push_back(window);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::unregisterEMsoftWorkbenchWindow(EMsoftWorkbench* window)
-{
-  // This should never be executed
-  return;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::newInstanceFromFile(const QString& filePath, const bool& setOpenedFilePath, const bool& addToRecentFiles)
-{
-  QString nativeFilePath = QDir::toNativeSeparators(filePath);
-  EMsoftWorkbench* ui = getNewEMsoftWorkbenchInstance(nativeFilePath);
-
-  QtSRecentFileList* list = QtSRecentFileList::instance();
-  if (addToRecentFiles == true)
-  {
-    // Add file to the recent files list
-    list->addFile(filePath);
-  }
-  ui->show();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-EMsoftWorkbench* EMsoftApplication::getNewEMsoftWorkbenchInstance(QString filePath)
+EMsoftWorkbench_UI* EMsoftApplication::getNewWorkbenchInstance()
 {
   // Create new EMsoftWorkbench instance
-  EMsoftWorkbench* newInstance = new EMsoftWorkbench(filePath, nullptr);
-  newInstance->setAttribute(Qt::WA_DeleteOnClose);
-  newInstance->setWindowTitle("[*]Untitled - EBSD, ECP, and Kossel Pattern Display Program");
+  EMsoftWorkbench_UI* workbench = new EMsoftWorkbench_UI();
+  workbench->setAttribute(Qt::WA_DeleteOnClose);
+  workbench->setWindowTitle(QObject::tr("[*]%1 - %2").arg("Untitled").arg(QCoreApplication::applicationName()));
 
-  registerEMsoftWorkbenchWindow(newInstance);
+  connect(workbench, &EMsoftWorkbench_UI::workbenchWindowChangedState, this, &EMsoftApplication::emSoftWindowChanged);
 
-  if (nullptr != m_ActiveWindow)
+  if (m_ActiveWindow)
   {
-    newInstance->move(m_ActiveWindow->x() + 45, m_ActiveWindow->y() + 45);
+    workbench->move(m_ActiveWindow->x() + 25, m_ActiveWindow->y() + 25);
   }
 
-  m_ActiveWindow = newInstance;
-
-  connect(newInstance, SIGNAL(emSoftWindowChangedState(EMsoftWorkbench*)), this, SLOT(emSoftWindowChanged(EMsoftWorkbench*)));
-
-  return newInstance;
+  registerWorkbenchInstance(workbench);
+  return workbench;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::setActiveWindow(EMsoftWorkbench* instance)
+void EMsoftApplication::setActiveWindow(EMsoftWorkbench_UI* workbench)
 {
-  m_ActiveWindow = instance;
+  m_ActiveWindow = workbench;
 }
 
 

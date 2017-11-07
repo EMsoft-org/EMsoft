@@ -160,8 +160,9 @@ end subroutine DumpXtalInfo
 !> @date   10/06/14 MDG 2.1 corrected off-by-one error in templatelist
 !> @date   05/05/15 MDG 2.2 removed getenv() call; replaced by global path string
 !> @date   08/19/16 MDG 2.3 added handling of separate NameListTemplate folders for developers
+!> @date   05/11/17 MDG 3.0 added support for json template files
 !--------------------------------------------------------------------------
-recursive subroutine CopyTemplateFiles(nt,templatelist,stdout)
+recursive subroutine CopyTemplateFiles(nt,templatelist,stdout,json)
 !DEC$ ATTRIBUTES DLLEXPORT :: CopyTemplateFiles
 
 use io
@@ -172,10 +173,11 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(IN)            :: nt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 integer(kind=irg),INTENT(IN),OPTIONAL   :: stdout
+logical,INTENT(IN),OPTIONAL             :: json
 
 integer(kind=irg),parameter     :: maxnumtemplates = 256
 character(fnlen)                :: templates(maxnumtemplates)
-character(fnlen)                :: input_name, output_name, tcf, tppath1, tppath2, tpl
+character(fnlen)                :: input_name, output_name, tcf, tppath1, tppath2, tpl, tplextension
 integer(kind=irg)               :: ios, i, j, std, ipos
 character(255)                  :: line
 logical                         :: fexist, develop
@@ -204,7 +206,17 @@ do
 end do
 CLOSE(UNIT=dataunit, STATUS='keep')
 
-tppath1 = trim(EMsoft_getTemplatepathname())
+tplextension = '.template'
+if (present(json)) then
+  if (json.eqv..TRUE.) then 
+    tppath1 = trim(EMsoft_getTemplatepathname(json))
+    tplextension = '.jtemplate'
+  else
+    tppath1 = trim(EMsoft_getTemplatepathname())
+  end if
+else
+  tppath1 = trim(EMsoft_getTemplatepathname())
+end if
 
 ! then, determine whether or not the user is working in develop mode by checking for the 
 ! Develop keyword in the EMsoftconfig.json file... Regular users will only have a single
@@ -217,7 +229,15 @@ if (develop.eqv..TRUE.) then
   do i=1,ipos-1
     tppath2(i:i) = tppath1(i:i)
   end do
-  tcf = 'Private/NamelistTemplates/'
+  if (present(json)) then
+    if (json.eqv..TRUE.) then 
+      tcf = 'Private/JSONTemplates/'
+    else
+      tcf = 'Private/NamelistTemplates/'
+    end if
+  else
+    tcf = 'Private/NamelistTemplates/'
+  endif
   do i=ipos,ipos+26
     j = i-ipos+1
     tppath2(i:i) = tcf(j:j)
@@ -226,23 +246,25 @@ end if
 
 do i=1,nt
  tpl = trim(templates(templatelist(i)+1))
- input_name = trim(tppath1)//trim(tpl)
+ input_name = trim(tppath1)//trim(tpl)//trim(tplextension)
  input_name = EMsoft_toNativePath(input_name)
 
  inquire(file=trim(input_name),exist=fexist)
  if (.not.fexist) then 
   if (develop.eqv..TRUE.) then
-   input_name = trim(tppath2)//trim(tpl)
+   input_name = trim(tppath2)//trim(tpl)//trim(tplextension)
    input_name = EMsoft_toNativePath(input_name)
    inquire(file=trim(input_name),exist=fexist)
    if (.not.fexist) then 
-     call FatalError('CopyTemplateFiles','template file '//trim(input_name)//' not found in either template folder')
+     call FatalError('CopyTemplateFiles','template file '//trim(templates(templatelist(i)+1))//trim(tplextension)// &
+                    ' not found in either template folder')
    end if
   else
-   call FatalError('CopyTemplateFiles','template file '//trim(input_name)//' not found')
+   call FatalError('CopyTemplateFiles','template file '//trim(templates(templatelist(i)+1))//trim(tplextension)//' not found')
   end if
  end if
- output_name = EMsoft_toNativePath(templates(templatelist(i)+1))
+ output_name = trim(templates(templatelist(i)+1))//trim(tplextension)
+ output_name = EMsoft_toNativePath(output_name)
  open(UNIT=dataunit,FILE=trim(input_name), STATUS='old', FORM='formatted',ACCESS='sequential')
  open(UNIT=dataunit2,FILE=trim(output_name), STATUS='unknown', FORM='formatted',ACCESS='sequential')
  do
@@ -254,11 +276,10 @@ do i=1,nt
   end do
  close(UNIT=dataunit, STATUS='keep')
  close(UNIT=dataunit2, STATUS='keep')
- call Message('  -> created template file '//trim(templates(templatelist(i)+1)), frm = "(A)", stdout = std)
+ call Message('  -> created template file '//trim(templates(templatelist(i)+1))//trim(tplextension), frm = "(A)", stdout = std)
 end do
  
 end subroutine CopyTemplateFiles
-
 
 !--------------------------------------------------------------------------
 !
@@ -280,6 +301,7 @@ end subroutine CopyTemplateFiles
 !> @date   06/26/13 MDG 1.0 first attempt (this might belong elsewhere...)
 !> @date   09/04/13 MDG 1.1 minor modifications to arguments
 !> @date   06/08/14 MDG 2.0 added stdout argument
+!> @date   05/11/17 MDG 3.0 added support for JSON-formatted template files
 !--------------------------------------------------------------------------
 recursive subroutine Interpret_Program_Arguments(nmldefault,numt,templatelist,progname,stdout)
 !DEC$ ATTRIBUTES DLLEXPORT :: Interpret_Program_Arguments
@@ -299,8 +321,9 @@ integer(kind=irg)                       :: iargc        !< external function for
 character(fnlen)                        :: arg          !< to be read from the command line
 character(fnlen)                        :: nmlfile      !< nml file name
 integer(kind=irg)                       :: i, std, io_int(1)
-logical                                 :: haltprogram
+logical                                 :: haltprogram, json
 
+json = .FALSE.
 std = 6
 if (PRESENT(stdout)) std = stdout
 
@@ -325,7 +348,7 @@ if (numarg.gt.0) then ! there is at least one argument
     if (arg(1:1).eq.'-') then
         if (trim(arg).eq.'-h') then
          call Message(' Program should be called as follows: ', frm = "(/A)", stdout = std)
-         call Message('        '//trim(progname)//' -h -t [nmlfile]', frm = "(A)", stdout = std)
+         call Message('        '//trim(progname)//' -h -t -j [nmlfile]', frm = "(A)", stdout = std)
          call Message(' where nmlfile is an optional file name for the namelist file;', frm = "(A/)", stdout = std)
          call Message(' If absent, the default name '''//trim(nmldefault)//''' will be used.', frm = "(A)", stdout = std)
          call Message(' To create templates of all possible input files, type '//trim(progname)//' -t', frm = "(A)", stdout = std)
@@ -336,8 +359,19 @@ if (numarg.gt.0) then ! there is at least one argument
         if (trim(arg).eq.'-t') then
 ! with this option the program creates template namelist files in the current folder so that the 
 ! user can edit them (file extension will be .template; should be changed by user to .nml)
-                call Message('Creating program template files:', frm = "(/A)", stdout = std)
+                call Message('Creating program name list template files:', frm = "(/A)", stdout = std)
                 call CopyTemplateFiles(numt,templatelist)
+        end if
+        if (trim(arg).eq.'-j') then
+          json = .TRUE.
+! with this option the program creates template JSON files in the current folder so that the 
+! user can edit them (file extension will be .jsontemplate; should be changed by user to .json)
+!
+! It should be noted that the template files contain comment lines starting with the "!" character;
+! this is not standard JSON (which does not allow for comment lines).  The EMsoft JSON files will 
+! first be filtered to remove all the comment lines before being passed to the json parser routine.
+                call Message('Creating program JSON template files:', frm = "(/A)", stdout = std)
+                call CopyTemplateFiles(numt,templatelist,json=json)
         end if
     else
 ! no, the first character is not '-', so this argument must be the filename
@@ -350,7 +384,7 @@ if (numarg.gt.0) then ! there is at least one argument
 end if
 
 if (haltprogram) then
-  call Message('To execute program, remove all flags except for nml input file name', frm = "(/A/)", stdout = std)
+  call Message('To execute program, remove all flags except for nml/json input file name', frm = "(/A/)", stdout = std)
   stop
 end if
 

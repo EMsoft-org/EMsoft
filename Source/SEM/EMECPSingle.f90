@@ -51,6 +51,7 @@ use NameListTypedefs
 use NameListHandlers
 use files
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -113,6 +114,7 @@ use HDFsupport
 use ECPmod
 use rotations, only:eu2om
 use ISO_C_BINDING
+use stringconstants
 
 IMPLICIT NONE
 
@@ -240,38 +242,38 @@ readonly = .TRUE.
 hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
 ! open the namelist group
-groupname = 'NMLparameters'
+groupname = SC_NMLparameters
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-dataset = 'xtalname'
+dataset = SC_xtalname
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 xtalname = trim(stringarray(1))
 
-dataset = 'numsx'
+dataset = SC_numsx
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, nsx)
 nsx = (nsx - 1)/2
 nsy = nsx
 
-dataset = 'EkeV'
+dataset = SC_EkeV
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, EkeV)
 
-dataset = 'Ehistmin'
+dataset = SC_Ehistmin
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ehistmin)
 
-dataset = 'Ebinsize'
+dataset = SC_Ebinsize
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ebinsize)
 
-dataset = 'depthmax'
+dataset = SC_depthmax
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthmax)
 
-dataset = 'depthstep'
+dataset = SC_depthstep
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthstep)
 
-dataset = 'mode'
+dataset = SC_mode
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 mode = trim(stringarray(1))
 
@@ -284,20 +286,20 @@ call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
 ! open the Data group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read data items
-dataset = 'numangle'
+dataset = SC_numangle
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numEbins)
 
-dataset = 'numzbins'
+dataset = SC_numzbins
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numzbins)
 
-dataset = 'totnum_el'
+dataset = SC_totnumel
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, num_el)
 
-dataset = 'accum_z'
+dataset = SC_accumz
 ! dims4 =  (/ numEbins, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
 call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
 allocate(accum_z(numEbins,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
@@ -431,22 +433,22 @@ call h5open_EMsoft(hdferr)
 hdferr =  HDF_createFile(outname, HDF_head)
 
 ! write the EMheader to the file
-groupname = 'ECPsingle'
+groupname = SC_ECPsingle
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-dataset = 'ECPmasterNML'
+dataset = SC_ECPmasterNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! leave this group
 call HDF_pop(HDF_head)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLparameters"
+groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
 call HDFwriteECPSingleNameList(HDF_head, ecpnl)
 
@@ -454,23 +456,23 @@ call HDFwriteECPSingleNameList(HDF_head, ecpnl)
 call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 stringarray(1)= trim(xtalname)
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
-dataset = 'numset'
+dataset = SC_numset
 hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head)
 
-dataset = 'EkeV'
+dataset = SC_EkeV
 hdferr = HDF_writeDatasetDouble(dataset, EkeV, HDF_head)
 
-dataset = 'cell%ATOM_type'
+dataset = SC_cellATOMtype
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, cell%ATOM_type(1:numset), numset, HDF_head)
 
-dataset = 'squhex'
+dataset = SC_squhex
 if (usehex) then
 stringarray(1)= 'hexago'
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
@@ -480,7 +482,7 @@ hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 end if
 
 ! create the hyperslab and write zeroes to it for now
-dataset = 'ECP'
+dataset = SC_ECP
 dims2 = (/  ecpnl%npix, ecpnl%npix /)
 cnt2 = (/ ecpnl%npix, ecpnl%npix /)
 offset2 = (/ 0, 0/)
@@ -594,17 +596,17 @@ call h5open_EMsoft(hdferr)
 hdferr =  HDF_openFile(outname, HDF_head)
 
 ! update the time string
-groupname = 'EMheader'
+groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = 'ECPsingle'
+groupname = SC_ECPsingle
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'StopTime'
+dataset = SC_StopTime
 line2(1) = dstr//', '//tstre
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-dataset = 'Duration'
+dataset = SC_Duration
 call CPU_TIME(tstop)
 tstop = tstop - tstart
 hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
@@ -612,11 +614,11 @@ hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! add data to the hyperslab
-dataset = 'ECP'
+dataset = SC_ECP
 dims2 = (/  ecpnl%npix, ecpnl%npix /)
 cnt2 = (/ ecpnl%npix, ecpnl%npix/)
 offset2 = (/ 0, 0 /)

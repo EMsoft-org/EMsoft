@@ -41,6 +41,8 @@
 
 module HDFhyperslabTest
 
+use stringconstants
+
 contains 
 
 subroutine HDFhyperslabExecuteTest(res) &
@@ -146,7 +148,7 @@ if (hdferr.ne.0) then
 end if
 
 ! char
-dataset = 'hypercarr2'
+dataset = SC_hypercarr2
 dims2 = (/ dim1, dim2 /)
 olddims2 = dims2
 cnt2 = dims2
@@ -157,7 +159,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hypercarr3'
+dataset = SC_hypercarr3
 dims3 = (/ dim1, dim2, dim3 /)
 olddims3 = dims3
 cnt3 = dims3
@@ -168,7 +170,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hypercarr4'
+dataset = SC_hypercarr4
 dims4 = (/ dim1, dim2, dim3, dim4 /)
 olddims4 = dims4
 cnt4 = dims4
@@ -180,21 +182,21 @@ if (hdferr.ne.0) then
 end if
 
 ! integer
-dataset = 'hyperiarr2'
+dataset = SC_hyperiarr2
 hdferr = HDF_writeHyperslabIntegerArray2D(dataset, iarr2, dims2, offset2, cnt2(1), cnt2(2), HDF_head)
 if (hdferr.ne.0) then
   res = 5
   return
 end if
 
-dataset = 'hyperiarr3'
+dataset = SC_hyperiarr3
 hdferr = HDF_writeHyperslabIntegerArray3D(dataset, iarr3, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 if (hdferr.ne.0) then
   res = 6
   return
 end if
 
-dataset = 'hyperiarr4'
+dataset = SC_hyperiarr4
 hdferr = HDF_writeHyperslabIntegerArray4D(dataset, iarr4, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
 if (hdferr.ne.0) then
   res = 7
@@ -202,21 +204,21 @@ if (hdferr.ne.0) then
 end if
 
 ! float
-dataset = 'hyperfarr2'
+dataset = SC_hyperfarr2
 hdferr = HDF_writeHyperslabFloatArray2D(dataset, farr2, dims2, offset2, cnt2(1), cnt2(2), HDF_head)
 if (hdferr.ne.0) then
   res = 8
   return
 end if
 
-dataset = 'hyperfarr3'
+dataset = SC_hyperfarr3
 hdferr = HDF_writeHyperslabFloatArray3D(dataset, farr3, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 if (hdferr.ne.0) then
   res = 9
   return
 end if
 
-dataset = 'hyperfarr4'
+dataset = SC_hyperfarr4
 hdferr = HDF_writeHyperslabFloatArray4D(dataset, farr4, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
 if (hdferr.ne.0) then
   res = 10
@@ -224,21 +226,21 @@ if (hdferr.ne.0) then
 end if
 
 ! double
-dataset = 'hyperdarr2'
+dataset = SC_hyperdarr2
 hdferr = HDF_writeHyperslabDoubleArray2D(dataset, darr2, dims2, offset2, cnt2(1), cnt2(2), HDF_head)
 if (hdferr.ne.0) then
   res = 11
   return
 end if
 
-dataset = 'hyperdarr3'
+dataset = SC_hyperdarr3
 hdferr = HDF_writeHyperslabDoubleArray3D(dataset, darr3, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 if (hdferr.ne.0) then
   res = 12
   return
 end if
 
-dataset = 'hyperdarr4'
+dataset = SC_hyperdarr4
 hdferr = HDF_writeHyperslabDoubleArray4D(dataset, darr4, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
 if (hdferr.ne.0) then
   res = 13
@@ -357,7 +359,7 @@ write (*,*) rn2,'; ',rn3,'; ',rn4
 overwrite = .TRUE.
 
 ! char
-dataset = 'hypercarr2'
+dataset = SC_hypercarr2
 hdferr = HDF_writeHyperslabCharArray2D(dataset, carr2(rm2(1):rn2(1),rm2(2):rn2(2)), &
                                        olddims2, offset2, cnt2(1), cnt2(2), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -365,7 +367,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hypercarr3'
+dataset = SC_hypercarr3
 hdferr = HDF_writeHyperslabCharArray3D(dataset, carr3(rm3(1):rn3(1),rm3(2):rn3(2),rm3(3):rn3(3)), &
                                        olddims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -373,7 +375,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hypercarr4'
+dataset = SC_hypercarr4
 hdferr = HDF_writeHyperslabCharArray4D(dataset, carr4(rm4(1):rn4(1),rm4(2):rn4(2),rm4(3):rn4(3),rm4(4):rn4(4)), &
                                        olddims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -382,7 +384,7 @@ if (hdferr.ne.0) then
 end if
 
 ! integer
-dataset = 'hyperiarr2'
+dataset = SC_hyperiarr2
 hdferr = HDF_writeHyperslabIntegerArray2D(dataset, iarr2(rm2(1):rn2(1),rm2(2):rn2(2)), &
                                        olddims2, offset2, cnt2(1), cnt2(2), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -390,7 +392,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hyperiarr3'
+dataset = SC_hyperiarr3
 hdferr = HDF_writeHyperslabIntegerArray3D(dataset, iarr3(rm3(1):rn3(1),rm3(2):rn3(2),rm3(3):rn3(3)), &
                                        olddims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -398,7 +400,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hyperiarr4'
+dataset = SC_hyperiarr4
 hdferr = HDF_writeHyperslabIntegerArray4D(dataset, iarr4(rm4(1):rn4(1),rm4(2):rn4(2),rm4(3):rn4(3),rm4(4):rn4(4)), &
                                        olddims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -407,7 +409,7 @@ if (hdferr.ne.0) then
 end if
 
 ! float
-dataset = 'hyperfarr2'
+dataset = SC_hyperfarr2
 hdferr = HDF_writeHyperslabFloatArray2D(dataset, farr2(rm2(1):rn2(1),rm2(2):rn2(2)), &
                                        olddims2, offset2, cnt2(1), cnt2(2), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -415,7 +417,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hyperfarr3'
+dataset = SC_hyperfarr3
 hdferr = HDF_writeHyperslabFloatArray3D(dataset, farr3(rm3(1):rn3(1),rm3(2):rn3(2),rm3(3):rn3(3)), &
                                        olddims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -423,7 +425,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hyperfarr4'
+dataset = SC_hyperfarr4
 hdferr = HDF_writeHyperslabFloatArray4D(dataset, farr4(rm4(1):rn4(1),rm4(2):rn4(2),rm4(3):rn4(3),rm4(4):rn4(4)), &
                                        olddims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -432,7 +434,7 @@ if (hdferr.ne.0) then
 end if
 
 ! double
-dataset = 'hyperdarr2'
+dataset = SC_hyperdarr2
 hdferr = HDF_writeHyperslabDoubleArray2D(dataset, darr2(rm2(1):rn2(1),rm2(2):rn2(2)), &
                                        olddims2, offset2, cnt2(1), cnt2(2), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -440,7 +442,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hyperdarr3'
+dataset = SC_hyperdarr3
 hdferr = HDF_writeHyperslabDoubleArray3D(dataset, darr3(rm3(1):rn3(1),rm3(2):rn3(2),rm3(3):rn3(3)), &
                                        olddims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -448,7 +450,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hyperdarr4'
+dataset = SC_hyperdarr4
 hdferr = HDF_writeHyperslabDoubleArray4D(dataset, darr4(rm4(1):rn4(1),rm4(2):rn4(2),rm4(3):rn4(3),rm4(4):rn4(4)), &
                                        olddims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, overwrite)
 if (hdferr.ne.0) then
@@ -490,7 +492,7 @@ end if
 
 
 ! char
-dataset = 'hypercarr2'
+dataset = SC_hypercarr2
 dims2 = (/ dim1, dim2 /)
 offset2 = (/ 2, 4 /)
 carr2 = HDF_readHyperslabCharArray2D(dataset, offset2, dims2, HDF_head)
@@ -499,7 +501,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hypercarr3'
+dataset = SC_hypercarr3
 dims3 = (/ dim1, dim2, dim3 /)
 offset3 = (/ 2, 4, 6 /)
 carr3 = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, HDF_head)
@@ -508,7 +510,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-dataset = 'hypercarr4'
+dataset = SC_hypercarr4
 dims4 = (/ dim1, dim2, dim3, dim4 /)
 offset4 = (/ 2, 4, 6, 8 /)
 carr4 = HDF_readHyperslabCharArray4D(dataset, offset4, dims4, HDF_head)
@@ -518,21 +520,21 @@ if (hdferr.ne.0) then
 end if
 
 ! integer
-dataset = 'hyperiarr2'
+dataset = SC_hyperiarr2
 iarr2 = HDF_readHyperslabIntegerArray2D(dataset, offset2, dims2, HDF_head)
 if (hdferr.ne.0) then
   res = 29
   return
 end if
 
-dataset = 'hyperiarr3'
+dataset = SC_hyperiarr3
 iarr3 = HDF_readHyperslabIntegerArray3D(dataset, offset3, dims3, HDF_head)
 if (hdferr.ne.0) then
   res = 30
   return
 end if
 
-dataset = 'hyperiarr4'
+dataset = SC_hyperiarr4
 iarr4 = HDF_readHyperslabIntegerArray4D(dataset, offset4, dims4, HDF_head)
 if (hdferr.ne.0) then
   res = 31
@@ -540,21 +542,21 @@ if (hdferr.ne.0) then
 end if
 
 ! float
-dataset = 'hyperfarr2'
+dataset = SC_hyperfarr2
 farr2 = HDF_readHyperslabFloatArray2D(dataset, offset2, dims2, HDF_head)
 if (hdferr.ne.0) then
   res = 32
   return
 end if
 
-dataset = 'hyperfarr3'
+dataset = SC_hyperfarr3
 farr3 = HDF_readHyperslabFloatArray3D(dataset, offset3, dims3, HDF_head)
 if (hdferr.ne.0) then
   res = 33
   return
 end if
 
-dataset = 'hyperfarr4'
+dataset = SC_hyperfarr4
 farr4 = HDF_readHyperslabFloatArray4D(dataset, offset4, dims4, HDF_head)
 if (hdferr.ne.0) then
   res = 34
@@ -562,21 +564,21 @@ if (hdferr.ne.0) then
 end if
 
 ! double
-dataset = 'hyperdarr2'
+dataset = SC_hyperdarr2
 darr2 = HDF_readHyperslabDoubleArray2D(dataset, offset2, dims2, HDF_head)
 if (hdferr.ne.0) then
   res = 35
   return
 end if
 
-dataset = 'hyperdarr3'
+dataset = SC_hyperdarr3
 darr3 = HDF_readHyperslabDoubleArray3D(dataset, offset3, dims3, HDF_head)
 if (hdferr.ne.0) then
   res = 36
   return
 end if
 
-dataset = 'hyperdarr4'
+dataset = SC_hyperdarr4
 darr4 = HDF_readHyperslabDoubleArray4D(dataset, offset4, dims4, HDF_head)
 if (hdferr.ne.0) then
   res = 37

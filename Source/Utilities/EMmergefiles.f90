@@ -51,6 +51,7 @@ use io
 use HDFsupport
 use ISO_C_BINDING
 use error
+use stringconstants
 
 integer(kind=irg)                       :: numarg       !< number of command line arguments
 integer(kind=irg)                       :: iargc        !< external function for command line
@@ -149,14 +150,14 @@ else
       readonly = .TRUE.
       hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 ! open the namelist group
-      groupname = 'NMLparameters'
+groupname = SC_NMLparameters
       hdferr = HDF_openGroup(groupname, HDF_head)
 
-      groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
       hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read the xtalname data set from the Monte Carlo file and close the file
-      dataset = 'xtalname'
+dataset = SC_xtalname
       call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
       xtalname = trim(stringarray(1))
       call HDF_pop(HDF_head,.TRUE.)
@@ -171,7 +172,7 @@ else
       end if
 
 
-! start copuing data sets from the Monte Carlo file
+! start copying data sets from the Monte Carlo file
       h5copypath = trim(EMsoft_geth5copypath())//' -p -v '
       cmd = trim(h5copypath)//' -i "'//trim(infile1)
       cmd = trim(cmd)//'" -o "'//trim(outfile)

@@ -51,6 +51,7 @@ use io
 use error
 use initializers
 use EBSDmod
+use stringconstants
 
 IMPLICIT NONE
 
@@ -144,6 +145,7 @@ use NameListHDFwriters
 use ECPmod, only: GetPointGroup
 use Indexingmod
 use ISO_C_BINDING
+use stringconstants
 
 IMPLICIT NONE
 
@@ -274,7 +276,7 @@ hdferr =  HDF_openFile(dictfile, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
    
 ! then read some more data from the EMData group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EMData')
 
@@ -283,12 +285,12 @@ hdferr = HDF_openGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EBSD')
 
 ! number of Eulerangles numangles
-dataset = 'numangles'
+dataset = SC_numangles
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, FZcnt)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetInteger:numangles')
 
 ! euler angle list Eulerangles
-dataset = 'Eulerangles'
+dataset = SC_Eulerangles
 call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, eulerarray2)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetFloatArray2D:Eulerangles')
 
@@ -803,7 +805,7 @@ dictionaryloop: do ii = 1,cratio+1
 
    if (TID .ne. 0) then
 ! read data from the hyperslab
-     dataset = 'EBSDpatterns'
+dataset = SC_EBSDpatterns
      dims3 = (/ binx, biny, ppend(ii) /)
      offset3 = (/ 0, 0, (ii-1)*Nd /)
 

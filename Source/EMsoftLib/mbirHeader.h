@@ -6,8 +6,15 @@
 //
 //
 
-#ifndef _Header_h
-#define _Header_h
+#ifndef _mbir_Header_h
+#define _mbir_Header_h
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 
 void as2dArray(double inputArray1[], double inputArray2[], double outputArray[], double AS, int Nx, int Ny);
 void barbsr(double inputArray[], double outputArray[], double g[3][3], double p, double q, double T, double sigma_px, int i, int j, int N);
@@ -24,5 +31,11 @@ double *multiplysinglefactor(double factor, double inputArray[], int Nx, int Ny)
 void pad1d (double inputArray[], double outputArray[], int Nx, int Ny);
 void pad2d (double inputArray[], double outputArray[], int Nx, int Ny);
 double *sumgx(double g[3][3], double inputArray[], int Nx, int Ny);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

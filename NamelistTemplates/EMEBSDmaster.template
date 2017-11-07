@@ -3,11 +3,17 @@
  dmin = 0.05,
 ! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
  npx = 500,
-! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname
+! name of EMMCOpenCL output file to be used to copy the MC data from for this master pattern run;
+! This can be used to perform multiple master pattern runs starting from the same MC data set without
+! having to rerun the MC computation.  Leave this variable set to 'undefined' if not needed.
+ copyfromenergyfile = 'undefined',
+! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
 ! this file will also contain the output data of the master program
  energyfile = 'MCoutput.h5',
 ! number of OpenMP threads
  nthreads = 1,
+! do you wish to receive a notification (Email or Slack) when the program completes ?
+ Notify = 'Off', 
 ! restart computation ?
  restart = .FALSE.,
 ! create output file with uniform master patterns set to 1.0 (used to study background only)

@@ -76,6 +76,7 @@
 !> @date    ?/??/96 RAV 1.0 original
 !> @date    8/28/01 MDG 2.0 adapted for grayscale images
 !> @date   11/28/01 MDG 2.1 added kind support
+!> @date   09/15/17 MDG 3.0 added RGB output routine
 !--------------------------------------------------------------------------
 module TIFF_f90
 
@@ -89,14 +90,15 @@ PRIVATE  :: Rekord, Rec_No, L, TIFFRecordLength, TIFF_Write_Byte_Into_Buffer, TI
  integer(kind=irg)                    :: Rec_No=0, L=0
  integer(kind=irg),parameter          :: TIFFRecordLength = 256
 
-PUBLIC :: TIFF_nx, TIFF_ny, TIFF_Image, TIFF_filename, TIFF_Write_File
+PUBLIC :: TIFF_nx, TIFF_ny, TIFF_Image, TIFF_filename, TIFF_Write_File, TIFF_Write_RGB_File
 
  integer(kind=irg)                    :: TIFF_nx,TIFF_ny
- integer(kind=irg),allocatable        :: TIFF_Image(:,:)
+ integer(kind=irg),allocatable        :: TIFF_Image(:,:), TIFF_RGBImage(:,:,:)
  character(fnlen)                     :: TIFF_filename
 !DEC$ ATTRIBUTES DLLEXPORT :: TIFF_nx
 !DEC$ ATTRIBUTES DLLEXPORT :: TIFF_ny
 !DEC$ ATTRIBUTES DLLEXPORT :: TIFF_Image
+!DEC$ ATTRIBUTES DLLEXPORT :: TIFF_RGBImage
 !DEC$ ATTRIBUTES DLLEXPORT :: TIFF_filename
 
 contains
@@ -226,7 +228,7 @@ end subroutine TIFF_Make_Tag
 !> @date   01/08/10  MDG 3.0 conversion to Intel byte ordering and addition of all required tags
 !
 !> @note  <b>WARNING</b>: Do not modify this routine at all unless you REALLY understand the TIFF
-!>  format!  The file format specification for TIFF can be found at the following URL\n
+!>  format!  The file format specification for TIFF can be found at the following URL
 !>
 !>        http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
 !
@@ -247,11 +249,11 @@ integer(kind=irg)    :: I, Row, Col
       FORM="UNFORMATTED", RECL=TIFFRecordLength)
  
 ! 10 byte header
- call TIFF_Write_Byte_Into_Buffer('I')      ! little endian header
+ call TIFF_Write_Byte_Into_Buffer('I')       ! little endian header
  call TIFF_Write_Byte_Into_Buffer('I')
  call TIFF_Write_Word(42,2)                  ! version number
  call TIFF_Write_Word(10,4)                  ! address of IFD
- call TIFF_Write_Word(0,2)                    ! two empty bytes
+ call TIFF_Write_Word(0,2)                   ! two empty bytes
 
 ! number of entries in IFD (2 bytes)
  call TIFF_Write_Byte_Into_Buffer(char(14)) 
@@ -259,19 +261,19 @@ integer(kind=irg)    :: I, Row, Col
 
 ! image tags (14 of them, 12 bytes each)
  call TIFF_Make_Tag(1,254,4,1,0)                     ! new subfile type
- call TIFF_Make_Tag(2,256,3,1,TIFF_nx)           ! ImageWidth
- call TIFF_Make_Tag(3,257,3,1,TIFF_ny)           ! ImageLength
+ call TIFF_Make_Tag(2,256,3,1,TIFF_nx)               ! ImageWidth
+ call TIFF_Make_Tag(3,257,3,1,TIFF_ny)               ! ImageLength
  call TIFF_Make_Tag(4,258,3,1,8)                     ! BitsPerSample
  call TIFF_Make_Tag(5,259,3,1,1)                     ! Compression
  call TIFF_Make_Tag(6,262,3,1,1)                     ! PhotometricInterpretation
- call TIFF_Make_Tag(7,273,4,TIFF_ny,256)       ! StripOffsets
+ call TIFF_Make_Tag(7,273,4,TIFF_ny,256)             ! StripOffsets
  call TIFF_Make_Tag(8,277,3,1,1)                     ! Samples per pixel
  call TIFF_Make_Tag(9,278,3,1,1)                     ! RowsPerStrip
  call TIFF_Make_Tag(10,279,4,TIFF_ny,256+TIFF_ny*4)  ! StripByteCounts
- call TIFF_Make_Tag(11,282,5,1,184)               ! Xresolution
- call TIFF_Make_Tag(12,283,5,1,192)               ! Yresolution
- call TIFF_Make_Tag(13,284,3,1,1)                   ! planar configuration
- call TIFF_Make_Tag(14,296,3,1,1)                   ! ResolutionUnit
+ call TIFF_Make_Tag(11,282,5,1,184)                  ! Xresolution
+ call TIFF_Make_Tag(12,283,5,1,192)                  ! Yresolution
+ call TIFF_Make_Tag(13,284,3,1,1)                    ! planar configuration
+ call TIFF_Make_Tag(14,296,3,1,1)                    ! ResolutionUnit
 
 ! end of IFD (4 bytes)
  call TIFF_Write_Word(0,4)                 
@@ -313,5 +315,114 @@ integer(kind=irg)    :: I, Row, Col
  close(9,status="KEEP")
 
 end subroutine TIFF_Write_File
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:TIFF_Write_RGB_File
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write the TIFF file to unit 9
+! 
+!> @date  09/15/17  MDG 1.0 first attempt to write an RGB image to file
+!
+!> @note  <b>WARNING</b>: Do not modify this routine at all unless you REALLY understand the TIFF
+!>  format!  The file format specification for TIFF can be found at the following URL
+!>
+!>        http://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf
+!
+!--------------------------------------------------------------------------
+recursive subroutine TIFF_Write_RGB_File
+!DEC$ ATTRIBUTES DLLEXPORT :: TIFF_Write_RGB_File
+
+IMPLICIT NONE
+
+integer(kind=irg)    :: I, Row, Col, RGB
+
+ Rec_No = 0
+ L = 0
+
+! RECL is measured in units of words, not bytes !!!
+! This may depend on the platform, and may need to be changed
+ open(9,file=trim(EMsoft_toNativePath(TIFF_filename)),access="DIRECT",action="WRITE", &
+      FORM="UNFORMATTED", RECL=TIFFRecordLength)
+ 
+! 10 byte header
+ call TIFF_Write_Byte_Into_Buffer('I')       ! little endian header
+ call TIFF_Write_Byte_Into_Buffer('I')
+ call TIFF_Write_Word(42,2)                  ! version number
+ call TIFF_Write_Word(10,4)                  ! address of IFD
+ call TIFF_Write_Word(0,2)                   ! two empty bytes
+
+! number of entries in IFD (2 bytes)
+ call TIFF_Write_Byte_Into_Buffer(char(14)) 
+ call TIFF_Write_Byte_Into_Buffer(char(0))
+
+! RGB image tags (14 of them, 12 bytes each)
+ call TIFF_Make_Tag(1,254,4,1,0)                     ! new subfile type
+ call TIFF_Make_Tag(2,256,3,1,TIFF_nx)               ! ImageWidth
+ call TIFF_Make_Tag(3,257,3,1,TIFF_ny)               ! ImageLength
+ call TIFF_Make_Tag(4,258,3,3,184)                   ! BitsPerSample (8,8,8 for RGB image)
+ call TIFF_Make_Tag(5,259,3,1,1)                     ! Compression
+ call TIFF_Make_Tag(6,262,3,1,2)                     ! PhotometricInterpretation
+ call TIFF_Make_Tag(7,273,4,TIFF_ny,256)             ! StripOffsets
+ call TIFF_Make_Tag(8,277,3,1,3)                     ! Samples per pixel
+ call TIFF_Make_Tag(9,278,3,1,1)                     ! RowsPerStrip
+ call TIFF_Make_Tag(10,279,4,TIFF_ny,256+TIFF_ny*4)  ! StripByteCounts
+ call TIFF_Make_Tag(11,282,5,1,190)                  ! Xresolution
+ call TIFF_Make_Tag(12,283,5,1,198)                  ! Yresolution
+ call TIFF_Make_Tag(13,284,3,1,1)                    ! planar configuration
+ call TIFF_Make_Tag(14,296,3,1,1)                    ! ResolutionUnit
+
+! end of IFD (4 bytes)
+ call TIFF_Write_Word(0,4)                 
+ 
+! extra values 
+! starts at offset 184
+ call TIFF_Write_Word(8,2)               ! bits per sample for red channel
+ call TIFF_Write_Word(8,2)               ! bits per sample for green channel
+ call TIFF_Write_Word(8,2)               ! bits per sample for blue channel
+
+! (X and Y resolution, 8 bytes each; default for screen resolution)
+! starts at offset 190
+ call TIFF_Write_Word(72,4)               ! x-resolution
+ call TIFF_Write_Word(1,4)
+! and offset 198
+ call TIFF_Write_Word(72,4)               ! y-resolution
+ call TIFF_Write_Word(1,4)
+
+! pad with zeroes to fill first 256 bytes of file
+ do I=L+1,256
+  call TIFF_Write_Byte_Into_Buffer(char(0))
+ end do
+
+! write strip offsets
+! offset = 256 + number of offset entries + number of count entries + stripnumber
+ do Row=0,TIFF_ny-1
+  call TIFF_Write_Word(256+TIFF_ny*8+Row*TIFF_nx*3,4)
+ end do
+
+! write stripcounts (number of bytes in each strip)
+ do Row=0,TIFF_ny-1
+  call TIFF_Write_Word(TIFF_nx*3,4)
+ end do
+
+! write the actual image, one strip at a time (start with the top row)
+ do Row=TIFF_ny-1,0,-1
+  do Col=0,TIFF_nx-1
+   do RGB=0,2
+     call TIFF_Write_Byte_Into_Buffer(char(TIFF_RGBImage(RGB,Col,Row)))
+   end do
+  end do
+ end do
+ 
+! make sure the last record is actually written to the file
+  L=len(Rekord)
+  call TIFF_Write_Byte_Into_Buffer(char(0))
+ 
+! close and save file
+ close(9,status="KEEP")
+
+end subroutine TIFF_Write_RGB_File
 
 end module TIFF_f90

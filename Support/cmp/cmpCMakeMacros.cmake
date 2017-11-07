@@ -88,14 +88,14 @@ macro(ConfigureMacOSXBundlePlist TARGET_NAME DEBUG_EXTENSION ICON_FILE_PATH VERS
   get_filename_component(ICON_FILE_NAME "${ICON_FILE_PATH}" NAME)
 
   set_target_properties(${TARGET_NAME} PROPERTIES
-    MACOSX_BUNDLE_INFO_STRING "${TARGET_NAME}${DBG_EXTENSION} Version ${VERSION_STRING}, Copyright 2016 BlueQuartz Software."
+    MACOSX_BUNDLE_INFO_STRING "${TARGET_NAME}${DBG_EXTENSION} Version ${VERSION_STRING}, Copyright 2017 Carnegie Mellon University"
     MACOSX_BUNDLE_ICON_FILE ${ICON_FILE_NAME}
     MACOSX_BUNDLE_GUI_IDENTIFIER "${TARGET_NAME}"
     MACOSX_BUNDLE_LONG_VERSION_STRING "${TARGET_NAME}${DBG_EXTENSION} Version ${VERSION_STRING}"
     MACOSX_BUNDLE_BUNDLE_NAME ${TARGET_NAME}${DBG_EXTENSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${VERSION_STRING}
     MACOSX_BUNDLE_BUNDLE_VERSION ${VERSION_STRING}
-    MACOSX_BUNDLE_COPYRIGHT "Copyright 2016, BlueQuartz Software, LLC All Rights Reserved."
+    MACOSX_BUNDLE_COPYRIGHT "Copyright 2017 Carnegie Mellon University All Rights Reserved."
     MACOSX_BUNDLE_INFO_PLIST ${CMP_OSX_TOOLS_SOURCE_DIR}/MacOSXBundleInfo.plist.in
   )
 
@@ -161,7 +161,7 @@ function(BuildQtAppBundle)
         endif(QT_MAC_USE_COCOA)
         list(APPEND QAB_SOURCES ${qt_menu_nib_sources})
     elseif(WIN32)
-        SET(GUI_TYPE WIN32)
+        SET(GUI_TYPE "")
         FILE (WRITE "${CMAKE_CURRENT_BINARY_DIR}/Icon.rc"
           "// Icon with lowest ID value placed first to ensure application icon\n"
           "// remains consistent on all systems.\n"
@@ -769,7 +769,7 @@ endfunction()
 #
 function(cmpConfigureFileWithMD5Check)
     set(options)
-    set(oneValueArgs CONFIGURED_TEMPLATE_PATH GENERATED_FILE_PATH )
+    set(oneValueArgs CONFIGURED_TEMPLATE_PATH GENERATED_FILE_PATH VERBOSE)
     cmake_parse_arguments(GVS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
  #   message(STATUS "   GVS_CONFIGURED_TEMPLATE_PATH: ${GVS_CONFIGURED_TEMPLATE_PATH}")
@@ -787,7 +787,9 @@ function(cmpConfigureFileWithMD5Check)
         if(NOT "${VERSION_HDR_MD5}" STREQUAL "${VERSION_GEN_HDR_MD5}")
             #message(STATUS "   ${VERSION_GEN_HDR_MD5}")
             #message(STATUS "   ${VERSION_HDR_MD5}")
-            #message(STATUS "  Files differ: Replacing with newly generated file")
+            if("${GVS_VERBOSE}" STREQUAL "TRUE")
+              message(STATUS "Generating new file: ${GVS_GENERATED_FILE_PATH}")
+            endif()
             configure_file(${GVS_CONFIGURED_TEMPLATE_PATH}  ${GVS_GENERATED_FILE_PATH} )
         else()
             #message(STATUS "  NO Difference in Files")
@@ -809,30 +811,29 @@ function(cmpReplaceFileIfDifferent)
     set(options)
     set(oneValueArgs NEW_FILE_PATH OLD_FILE_PATH )
     cmake_parse_arguments(GVS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-   # message(STATUS "GVS_NEW_FILE_PATH: ${GVS_NEW_FILE_PATH}")
-   # message(STATUS "GVS_OLD_FILE_PATH: ${GVS_OLD_FILE_PATH}")
+    #message(STATUS "GVS_NEW_FILE_PATH: ${GVS_NEW_FILE_PATH}")
+    #message(STATUS "GVS_OLD_FILE_PATH: ${GVS_OLD_FILE_PATH}")
 
     # Only Generate a file if it is different than what is already there.
 
     if(EXISTS ${GVS_OLD_FILE_PATH} )
-      #  message(STATUS "  File Exists, doing MD5 Comparison")
+        #message(STATUS "  File Exists, doing MD5 Comparison")
         file(MD5 ${GVS_OLD_FILE_PATH} VERSION_HDR_MD5)
         file(MD5 ${GVS_NEW_FILE_PATH} VERSION_GEN_HDR_MD5)
 
         # Compare the MD5 checksums. If they are different then configure the file into the proper location
         if(NOT "${VERSION_HDR_MD5}" STREQUAL "${VERSION_GEN_HDR_MD5}")
-        #    message(STATUS "  Files differ: Replacing with newly generated file")
+            #message(STATUS "  Files differ: Replacing with newly generated file")
             file(REMOVE ${GVS_OLD_FILE_PATH})
             file(RENAME ${GVS_NEW_FILE_PATH} ${GVS_OLD_FILE_PATH})
 
         else()
-         #   message(STATUS "  NO Difference in Files")
+            #message(STATUS "  NO Difference in Files")
             file(REMOVE ${GVS_NEW_FILE_PATH})
         endif()
 
     else()
-       # message(STATUS "  File does NOT Exist, Generating one...")
+        #message(STATUS "  File does NOT Exist, Generating one...")
         file(RENAME ${GVS_NEW_FILE_PATH} ${GVS_OLD_FILE_PATH})
     endif()
 

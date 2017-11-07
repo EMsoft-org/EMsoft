@@ -41,6 +41,8 @@
 
 module HDFdoubleTest
 
+use stringconstants
+
 contains 
 
 subroutine HDFdoubleExecuteTest(res) &
@@ -133,35 +135,35 @@ if (hdferr.ne.0) then
 end if
 
 ! write the double and double arrays to the file
-dataset = 'double'
+dataset = SC_doubleType
 hdferr = HDF_writeDatasetDouble(dataset, dval, HDF_head)
 if (hdferr.ne.0) then
   res = 2
   return
 end if
 
-dataset = 'double1D'
+dataset = SC_double1D
 hdferr = HDF_writeDatasetDoubleArray1D(dataset, darr1, dim1, HDF_head)
 if (hdferr.ne.0) then
   res = 3
   return
 end if
 
-dataset = 'double2D'
+dataset = SC_double2D
 hdferr = HDF_writeDatasetDoubleArray2D(dataset, darr2, dim1, dim2, HDF_head)
 if (hdferr.ne.0) then
   res = 4
   return
 end if
 
-dataset = 'double3D'
+dataset = SC_double3D
 hdferr = HDF_writeDatasetDoubleArray3D(dataset, darr3, dim1, dim2, dim3, HDF_head)
 if (hdferr.ne.0) then
   res = 5
   return
 end if
 
-dataset = 'double4D'
+dataset = SC_double4D
 hdferr = HDF_writeDatasetDoubleArray4D(dataset, darr4, dim1, dim2, dim3, dim4, HDF_head)
 if (hdferr.ne.0) then
   res = 6
@@ -202,35 +204,35 @@ if (hdferr.ne.0) then
 end if
 
 ! read the integer and arrays
-dataset = 'double'
+dataset = SC_doubleType
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, dval)
 if (hdferr.ne.0) then
   res = 8
   return
 end if
 
-dataset = 'double1D'
+dataset = SC_double1D
 call HDF_readDatasetDoubleArray1D(dataset, dims1, HDF_head, hdferr, darr1)
 if (hdferr.ne.0) then
   res = 9
   return
 end if
 
-dataset = 'double2D'
+dataset = SC_double2D
 call HDF_readDatasetDoubleArray2D(dataset, dims2, HDF_head, hdferr, darr2)
 if (hdferr.ne.0) then
   res = 10 
   return
 end if
 
-dataset = 'double3D'
+dataset = SC_double3D
 call HDF_readDatasetDoubleArray3D(dataset, dims3, HDF_head, hdferr, darr3)
 if (hdferr.ne.0) then
   res = 11
   return
 end if
 
-dataset = 'double4D'
+dataset = SC_double4D
 call HDF_readDatasetDoubleArray4D(dataset, dims4, HDF_head, hdferr, darr4)
 if (hdferr.ne.0) then
   res = 12

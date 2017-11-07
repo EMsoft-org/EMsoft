@@ -43,6 +43,7 @@
 #define macApp (static_cast<MacEMsoftApplication*>(qApp))
 
 class EMsoftWorkbench;
+class EMsoftWorkbench_UI;
 
 class MacEMsoftApplication : public EMsoftApplication
 {
@@ -52,7 +53,7 @@ class MacEMsoftApplication : public EMsoftApplication
     MacEMsoftApplication(int& argc, char** argv);
     virtual ~MacEMsoftApplication();
 
-    virtual void unregisterEMsoftWorkbenchWindow(EMsoftWorkbench* window);
+    virtual void unregisterWorkbenchInstance(EMsoftWorkbench_UI *instance);
 
     void toWorkbenchMenuState();
     void toEmptyMenuState();
@@ -60,32 +61,16 @@ class MacEMsoftApplication : public EMsoftApplication
 protected slots:
 
     /**
-  * @brief Updates the QMenu 'Recent Files' with the latest list of files. This
-  * should be connected to the Signal QtSRecentFileList->fileListChanged
-  * @param file The newly added file.
-  */
-    void updateRecentFileList(const QString& file);
-
-    /**
   * @brief activeWindowChanged
   */
-    virtual void emSoftWindowChanged(EMsoftWorkbench* instance);
-
-    /**
-   * @brief landingWidgetWindowChanged
-   */
-    virtual void landingWidgetWindowChanged();
-
-    // EMsoftWorkbench slots
-    virtual void on_actionClearRecentFiles_triggered();
+    virtual void emSoftWindowChanged(EMsoftWorkbench_UI *instance);
 
 private:
   // The global menu
   QSharedPointer<QMenuBar>              m_GlobalMenu;
-  QSharedPointer<QMenu>                 m_DockMenu;
-  QMenu*                                m_MenuEdit;
-  QAction*                              m_EditSeparator;
-  QSignalMapper*                        m_Mapper;
+  QSharedPointer<QMenu>                   m_DockMenu;
+  QMenu*                                              m_MenuEdit;
+  QAction*                                            m_EditSeparator;
 
   void createGlobalMenu();
 

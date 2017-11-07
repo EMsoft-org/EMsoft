@@ -1,5 +1,4 @@
 
-
 # -------------------------------------------------------------
 # This function adds the necessary cmake code to find the HDF5
 # shared libraries and setup custom copy commands and/or install
@@ -9,7 +8,7 @@ function(AddHDF5CopyInstallRules)
   set(oneValueArgs LIBNAME LIBVAR)
   set(multiValueArgs TYPES)
   cmake_parse_arguments(Z "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
-  set(INTER_DIR ".")
+  set(INTER_DIR "")
 
   #message(STATUS "Z_LIBNAME: ${Z_LIBNAME}")
   #message(STATUS "Z_LIBVAR: ${Z_LIBVAR}")
@@ -17,7 +16,7 @@ function(AddHDF5CopyInstallRules)
 
   set(h5LibName ${Z_LIBNAME})
   if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
-    if(WIN32)
+    if(${HDF5_BUILD_SHARED_LIBS})
       set(h5LibName hdf5::${Z_LIBNAME}-shared)
     elseif(APPLE)
       set(h5LibName hdf5::${Z_LIBNAME}-static)
@@ -31,37 +30,41 @@ function(AddHDF5CopyInstallRules)
   endif()
 
   FOREACH(BTYPE ${Z_TYPES} )
-    #message(STATUS "BTYPE: ${BTYPE}")
+    #message(STATUS "  BTYPE: ${BTYPE}")
     STRING(TOUPPER ${BTYPE} TYPE)
     if(MSVC_IDE)
-      set(INTER_DIR "${BTYPE}")
+      set(INTER_DIR "${BTYPE}/")
     endif()
 
     # Get the Actual Library Path and create Install and copy rules
     GET_TARGET_PROPERTY(LibPath ${h5LibName} IMPORTED_LOCATION_${TYPE})
-    #message(STATUS "LibPath: ${LibPath}")
+    #message(STATUS "  LibPath: ${LibPath}")
     if(NOT "${LibPath}" STREQUAL "LibPath-NOTFOUND")
-      #message(STATUS "Creating Install Rule for ${LibPath}")
       if(NOT TARGET ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy)
+        #message(STATUS "Creating Install And Copy Rule for ${LibPath}")
         install(FILES ${LibPath}
           DESTINATION "${Z_INSTALL_DIR}"
           CONFIGURATIONS ${BTYPE}
           COMPONENT Applications)
 
-      
+        if(NOT EXISTS "${LibPath}")
+          message(STATUS "DOES NOT EXIST: ${LibPath}")
+        endif()
+        #message(STATUS "    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}")
         ADD_CUSTOM_TARGET(ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy ALL
                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LibPath}
-                          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}/
-                          # COMMENT "  Copy: ${LibPath} To: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}/"
+                          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}
+                          COMMENT "  Copy: ${LibPath} To: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}"
                           )
         set_target_properties(ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/${BTYPE}/${Z_LIBVAR})
 
       endif()
     endif()
 
+if(0)
     # Now get the path that the library is in
     GET_FILENAME_COMPONENT(${Z_LIBVAR}_DIR ${LibPath} PATH)
-    #message(STATUS "${Z_LIBVAR}_DIR: ${${Z_LIBVAR}_DIR}")
+    #message(STATUS "  ${Z_LIBVAR}_DIR: ${${Z_LIBVAR}_DIR}")
 
     # Now piece together a complete path for the symlink that Linux Needs to have
     if(WIN32)
@@ -70,11 +73,11 @@ function(AddHDF5CopyInstallRules)
       GET_TARGET_PROPERTY(${Z_LIBVAR}_${TYPE} ${h5LibName} IMPORTED_SONAME_${TYPE})
     endif()
 
-    #message(STATUS "${Z_LIBVAR}_${TYPE}: ${${Z_LIBVAR}_${TYPE}}")
+    #message(STATUS "  ${Z_LIBVAR}_${TYPE}: ${${Z_LIBVAR}_${TYPE}}")
     if(NOT "${${Z_LIBVAR}_${TYPE}}" STREQUAL "${Z_LIBVAR}_${TYPE}-NOTFOUND" AND NOT WIN32)
       set(SYMLINK_PATH "${${Z_LIBVAR}_DIR}/${${Z_LIBVAR}_${TYPE}}")
       if(NOT TARGET ZZ_${Z_LIBVAR}_SYMLINK_${TYPE}-Copy)
-        #message(STATUS "Creating Install Rule for ${SYMLINK_PATH}")
+        #message(STATUS "    Creating Install and Copy Rule for ${SYMLINK_PATH}")
         install(FILES ${SYMLINK_PATH}
           DESTINATION "${Z_INSTALL_DIR}"
           CONFIGURATIONS ${BTYPE}
@@ -83,12 +86,13 @@ function(AddHDF5CopyInstallRules)
         ADD_CUSTOM_TARGET(ZZ_${Z_LIBVAR}_SYMLINK_${TYPE}-Copy ALL
                             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SYMLINK_PATH}
                             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}/
-                            # COMMENT "  Copy: ${SYMLINK_PATH} To: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}/"
+                            COMMENT "  Copy: ${SYMLINK_PATH} To: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}/"
                             )
         set_target_properties(ZZ_${Z_LIBVAR}_SYMLINK_${TYPE}-Copy PROPERTIES FOLDER ZZ_COPY_FILES)
         set_target_properties(ZZ_${Z_LIBVAR}_SYMLINK_${TYPE}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/${BTYPE}/${Z_LIBVAR})        
       endif()
     endif()
+endif()
 
   endforeach()
 endfunction()
@@ -124,7 +128,9 @@ if(HDF5_FOUND)
   endif()
   # Add the library directory to the file that has all the search directories stored in it.
 
-  include_directories(${HDF5_INCLUDE_DIRS})
+  include_directories(${HDF5_INCLUDE_DIRS}) #HDF5 1.8.15 and below
+  include_directories(${HDF5_INCLUDE_DIR}) #HDF5 1.8.16 and above
+
   #include_directories(${${HDF5_PACKAGE_NAME}_INCLUDE_DIR_FORTRAN})
   if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
     if(${HDF5_BUILD_FORTRAN})
@@ -137,6 +143,7 @@ if(HDF5_FOUND)
   endif()
   message(STATUS "HDF5 Location: ${HDF5_INSTALL}")
   message(STATUS "HDF5 Version: ${HDF5_VERSION_STRING}")
+  message(STATUS "HDF5 SHARED_LIBS: ${HDF5_BUILD_SHARED_LIBS}")
   #message(STATUS "HDF5 LIBRARY DIR: ${HDF5_LIBRARY_DIRS}")
   #message(STATUS "HDF5 INCLUDE DIR: ${HDF5_INCLUDE_DIRS}")
   #message(STATUS "${HDF5_PACKAGE_NAME}_INCLUDE_DIR_FORTRAN: ${${HDF5_PACKAGE_NAME}_INCLUDE_DIR_FORTRAN}")
@@ -149,7 +156,29 @@ if(HDF5_FOUND)
         set(BUILD_TYPES "Debug")
     endif()
   endif()
-  if(NOT APPLE)
+
+  # if(TARGET hdf5) # Up through 1.8.14
+  #   set(HDF5_C_TARGET_NAME hdf5)
+  # elseif(TARGET hdf5-shared) # 1.8.15 & 1.8.16
+  #   set(HDF5_C_TARGET_NAME hdf5-shared)
+  # elseif(TARGET hdf5::hdf5-shared) # 1.8.17 and above
+  #   set(HDF5_C_TARGET_NAME hdf5::hdf5-shared)
+  # else()
+  #   message(FATAL_ERROR "Neither target hdf5, hdf5-shared nor hdf5::hdf5-shared was found.")
+  # endif()
+
+  # if(TARGET hdf5_cpp)# Up through 1.8.14
+  #   set(HDF5_CXX_TARGET_NAME hdf5_cpp)
+  # elseif(TARGET hdf5_cpp-shared) # 1.8.15 & 1.8.16
+  #   set(HDF5_CXX_TARGET_NAME hdf5_cpp-shared)
+  # elseif(TARGET hdf5::hdf5_cpp-shared) # 1.8.17 and above
+  #   set(HDF5_CXX_TARGET_NAME hdf5::hdf5_cpp-shared)
+  # else()
+  #   message(FATAL_ERROR "Neither target hdf5_cpp, hdf5_cpp-shared nor hdf5::hdf5_cpp-shared was found.")
+  # endif()
+
+
+  if(WIN32)
     #hdf5 hdf5_f90cstub hdf5_fortran hdf5_hl_fortran
     AddHDF5CopyInstallRules(LIBVAR HDF5_LIB
                         LIBNAME hdf5
@@ -174,7 +203,7 @@ if(HDF5_FOUND)
                         TYPES ${BUILD_TYPES})
   endif()
 
-  set(HDF5_COMPONENTS hdf5)
+  set(HDF5_COMPONENTS hdf5 hdf5_hl hdf5_cpp hdf5_f90cstub hdf5_fortran hdf5_hl_fortran hdf5_hl_f90cstub)
 
 
 ELSE(HDF5_FOUND)

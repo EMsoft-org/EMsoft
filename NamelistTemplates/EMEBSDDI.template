@@ -14,6 +14,8 @@
 ! DICTIONARY PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################
 !
+! do you want Email or Slack notification when the run has completed?
+ Notify = 'Off',
 ! height of inverse pole figure in pixels
  ipf_ht = 100,
 ! width of inverse pole figure in pixels
@@ -27,14 +29,18 @@
  nnav =  20,
 ! number of top matches to use for Orientation Similarity Map computation
  nosm = 20,
+! to use a custom mask, enter the mask filename here; leave undefined for standard mask option
+ maskfile = 'undefined',
 ! mask or not
  maskpattern = 'n',
-! mask radius
+! mask radius (in pixels, AFTER application of the binning operation)
  maskradius = 240,
 ! hi pass filter w parameter; 0.05 is a reasonable value
  hipassw = 0.05,
 ! number of regions for adaptive histogram equalization
  nregions = 10,
+! number of horizontal scan lines to be used for EBSDFastDI indexing...
+ nlines = 3,
 
 !###################################################################
 ! ONLY SPECIFY WHEN INDEXINGMODE IS 'DYNAMIC'

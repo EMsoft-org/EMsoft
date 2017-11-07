@@ -221,18 +221,15 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
         E_new = E;
         c_new = c0;
         escape_depth = 0.0f;
-        alpha = (3.4E-3f)*powr(z,0.67f)/E_new;
-        //sig_eNA = (5.21f * 602.3f)*((z*z)/(E_new*E_new))*((4.0f*PI)/(alpha*(1+alpha)))*((E_new + 511.0f)*(E_new + 511.0f)/((E_new + 1024.0f)*(E_new + 1024.0f)));
-        sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4*PI/alpha/(1+alpha)*pow(E_new+511,2.0f)/pow(E+1024,2.0f);
+        alpha = (3.4E-3f)*powr(z,0.66667f)/E_new;
+        sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4.0f*PI/alpha/(1.0f+alpha)*pow(E_new+511.0f,2.0f)/pow(E+1022.0f,2.0f);
 
-        //mfp = A/(rho*sig_eNA);
         mfp = A * 1.0e7f/(rho*sig_eNA);
-        //mfp = 10.0f*A/(rho*sig_eNA);
         step = -mfp * log(rand);
-        r_new = r0 + step*c_new*1.0e7f;
         r_new = r0 + step*c_new;
-        //r_new = (float4)(r0.x + step*c_new.x, r0.y + step*c_new.y, r0.z + step*c_new.z, 0.0f);
         r0 = r_new;
+        de_ds = -0.00785f*(z/(A*E_new)) * log(1.166f*E_new/J + 0.9911f);
+        E_new += step*rho*de_ds;
 
         counter1 = 0;   // This is used as a counter for the number of monte carlo steps to carry out for each electron. This is due to the lock step nature of the GPU code. We have arbitly set this to a 1000, though this is material dependent
         
@@ -242,11 +239,9 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
 // inline code rather than function call
 // Taken from book Monte Carlo simulation for Electron Microscopy and Microanalysis, David C. Joy
 
-            alpha = (3.4e-3f)*powr(z,0.67f)/E_new;
-            //sig_eNA = (5.21f * 602.3f)*((z*z)/(E_new*E_new))*((4*PI)/(alpha*(1+alpha)))*((E_new + 511.0f)*(E_new + 511.0f)/((E_new + 1024.0f)*(E_new + 1024.0f)));
-            sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4*PI/alpha/(1+alpha)*pow(E_new+511,2.0f)/pow(E+1024,2.0f);
-            //mfp = A/(rho*sig_eNA);
-	    mfp = A *  1.0e7f/(rho*sig_eNA);
+            alpha = (3.4e-3f)*powr(z,0.66667f)/E_new;
+            sig_eNA = (5.21f * 602.2f)*z*z/E_new/E_new*4.0f*PI/alpha/(1.0f+alpha)*pow(E_new+511.0f,2.0f)/pow(E+1022.0f,2.0f);
+   	        mfp = A * 1.0e7f/(rho*sig_eNA);
 
             z11 = seeds[4*id];
             z22 = seeds[4*id + 1];
@@ -262,8 +257,7 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
 
 // This is the Continuous Slowing Down approximation that we want to get rid of
 
-            //de_ds = -78500.0f*(z/(A*E_new)) * log(1.166f*E_new/J + 0.9911f);
-            de_ds = -0.00758f*(z/(A*E_new)) * log(1.166f*E_new/J + 0.9911f);
+            de_ds = -0.00785f*(z/(A*E_new)) * log(1.166f*E_new/J + 0.9911f);
 
             z11 = seeds[4*id];
             z22 = seeds[4*id + 1];
@@ -275,9 +269,7 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
             seeds[4*id + 2] = retrnd.z3;
             seeds[4*id + 3] = retrnd.z4;
             rand = fabs(retrnd.rand/RAND_MAX);
-            //if (fabs(1 - ((2*alpha*rand)/(1 + alpha - rand))) < 1.0f){
-            phi = acos(1 - ((2*alpha*rand)/(1 + alpha - rand)));
-            //}
+            phi = acos(1.0f - ((2.0f*alpha*rand)/(1.0f + alpha - rand)));
 
             z11 = seeds[4*id];
             z22 = seeds[4*id + 1];
@@ -289,7 +281,7 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
             seeds[4*id + 2] = retrnd.z3;
             seeds[4*id + 3] = retrnd.z4;
             rand = fabs(retrnd.rand/RAND_MAX);
-            psi = 2*PI*rand;
+            psi = 2.0f*PI*rand;
             
             
 // new direction cosines of the electrons after scattering event
@@ -307,8 +299,7 @@ __kernel void MC(__global float* Lamx, __global float* Lamy, const float E, cons
                 escape_depth = r_new.z/c_new.z;
             }
 
-	    //r_new = r0 + step*c_new*1.0e7f;
-	    r_new = r0 + step*c_new;
+	        r_new = r0 + step*c_new;
 
             r0 = r_new;
             c0 = c_new;

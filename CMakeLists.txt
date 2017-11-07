@@ -14,15 +14,16 @@ if(${CMAKE_MAJOR_VERSION} STREQUAL "3")
   cmake_policy(SET CMP0042 OLD)
 endif()
 
+set(EMsoft_VER_MAJOR "3")
+set(EMsoft_VER_MINOR "2")
+set(EMsoft_VER_PATCH "0")
 
 cmake_minimum_required (VERSION 3.2.0)
-project (EMsoft LANGUAGES C CXX Fortran  VERSION 3.0.0.0)
+project (EMsoft LANGUAGES C CXX Fortran  VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
 
 include(CMakeParseArguments)
 
-set(EMsoft_VER_MAJOR "3")
-set(EMsoft_VER_MINOR "1")
-set(EMsoft_VER_PATCH "0")
+
 set(EMsoft_TEST_DIR "EMsofttmp")
 
 # ---------- Setup output Directories -------------------------
@@ -57,7 +58,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
-# changed to SHARED on 10/23/15, MDG
+if(WIN32)
+  set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+endif()
 set(LIB_TYPE STATIC)
 if(BUILD_SHARED_LIBS)
     set(LIB_TYPE SHARED)
@@ -75,11 +78,58 @@ if("${EMsoftBinaryDir}" STREQUAL "")
   set_property(GLOBAL PROPERTY EMsoftBinaryDir "${EMsoftPublic_BINARY_DIR}")
 endif()
 
+get_property(EMsoftSearchDirs GLOBAL PROPERTY EMsoftSearchDirs)
+if("${EMsoftSearchDirs}" STREQUAL "")
+  set_property(GLOBAL PROPERTY EMsoftSearchDirs "${EMsoft_BINARY_DIR}/LibSearchDirs.txt")
+  get_property(EMsoftSearchDirs GLOBAL PROPERTY EMsoftSearchDirs)
+  file(WRITE "${EMsoftSearchDirs}" "${CMAKE_LIBRARY_OUTPUT_DIRECTORY};")
+  file(APPEND "${EMsoftSearchDirs}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY};")
+  if(MSVC)
+    file(APPEND "${EMsoftSearchDirs}"  "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug;${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release;")
+  endif()
+
+endif()
+
 
 if (NOT DEFINED CMP_SOURCE_DIR)
   set(CMP_SOURCE_DIR ${EMsoft_SOURCE_DIR}/Support/cmp)
 endif()
+
+# Set the Application Name to with the correct icons and badges
+set(CMP_HEADER_DIR ${EMsoft_BINARY_DIR})
+set(PROJECT_RESOURCES_DIR "${EMsoft_SOURCE_DIR}/resources")
+
+set(EMsoft_APPLICATION_NAME "EMsoft")
+set(EMsoft_VERSION_HDR_FILE "EMsoftVersion.h")
+set(EMsoft_VERSION_SRC_FILE "EMsoftVersion.cpp")
+set(EXE_DEBUG_EXTENSION "_debug")
+
+include(${CMP_SOURCE_DIR}/cmpProject.cmake)
 include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
+
+#------------------------------------------------------------------------------
+# There are several different Release Types that we are going to use.
+# Official: This is an official release from BlueQuartz Software
+# Beta: This is a Beta release that has is getting ready to be officially released.
+# Development: This is currently in development and probably has bugs.
+get_property(EMsoft_RELEASE_TYPE GLOBAL PROPERTY PACKAGE_RELEASE_TYPE)
+if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
+  set(EMsoft_RELEASE_TYPE "Development")
+  set_property(GLOBAL PROPERTY PACKAGE_RELEASE_TYPE "${EMsoft_RELEASE_TYPE}")
+endif()
+
+#------------------------------------------------------------------------------
+# Find the Git Package for Versioning. It should be ok if Git is NOT found
+Find_package(Git)
+# -----------------------------------------------------------------------
+# Generate a set of Version Cpp/H files that will be used by SIMPLView to
+# get and display the proper version numbers.
+cmpRevisionString( GENERATED_HEADER_FILE_PATH "${EMsoft_VERSION_HDR_FILE}"
+                        GENERATED_SOURCE_FILE_PATH "${EMsoft_VERSION_SRC_FILE}"
+                        NAMESPACE "EMsoft"
+                        PROJECT_NAME "${PROJECT_NAME}"
+                        EXPORT_MACRO "EMsoft_EXPORT")
+
 include (${CMP_SOURCE_DIR}/cmpProject.cmake)
 
 # --------------------------------------------------------------------
@@ -146,28 +196,28 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 
 include (${PROJECT_SOURCE_DIR}/Support/ExtLib/ExtLibraries.cmake)
 
-# --------------------------------------------------------------------
-# Generate our ReadMe and License Files
-configure_file(${PROJECT_SOURCE_DIR}/License.txt
-                ${PROJECT_BINARY_DIR}/License.txt )
-configure_file(${PROJECT_SOURCE_DIR}/ReadMe.md
-                ${PROJECT_BINARY_DIR}/ReadMe.md )
-install(FILES ${PROJECT_SOURCE_DIR}/ReadMe.md ${PROJECT_SOURCE_DIR}/License.txt
-        DESTINATION .
-        COMPONENT Applications)
-
 OPTION(EMsoft_ENABLE_TESTING "Compile the test programs" ON)
 set(EMsoft_TESTING_DIR "${EMsoft_BINARY_DIR}/Testing")
+
+
+
+# -----------------------------------------------------------------------
+# Set a Global Prefix where everthing is going to get intalled. For OS X we are
+# going to try to install everything into the .app package
+# -----------------------------------------------------------------------
+set_property(GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX ".")
 
 include(${PROJECT_SOURCE_DIR}/Source/Source.cmake)
 
 # --------------------------------------------------------------------
 # Package the needed examples
-# include(${PROJECT_SOURCE_DIR}/manuals/examples/SourceList.cmake)
+include(${PROJECT_SOURCE_DIR}/manuals/examples/SourceList.cmake)
 
-# --------------------------------------------------------------------
-# Package the needed IDL Files
-include(${PROJECT_SOURCE_DIR}/IDL/SourceList.cmake)
+# # --------------------------------------------------------------------
+# # Package the needed IDL Files
+# if(APPLE)
+#   include(${PROJECT_SOURCE_DIR}/IDL/SourceList.cmake)
+# endif()
 
 # --------------------------------------------------------------------
 # Package the needed PDF Manuals
@@ -185,19 +235,32 @@ include(${PROJECT_SOURCE_DIR}/resources/SourceList.cmake)
 # Package the needed template files
 include(${PROJECT_SOURCE_DIR}/NamelistTemplates/SourceList.cmake)
 
+
+# --------------------------------------------------------------------
+# Generate our ReadMe and License Files
+configure_file(${PROJECT_SOURCE_DIR}/License.txt
+                ${PROJECT_BINARY_DIR}/License.txt )
+configure_file(${PROJECT_SOURCE_DIR}/ReadMe.md
+                ${PROJECT_BINARY_DIR}/ReadMe.md )
+
+#---------------------------------------------------------------------
+# This sets up the two variables install_dir and lib_install_dir
+EMsoft_SetupInstallDirs()
+
+install(FILES ${PROJECT_SOURCE_DIR}/ReadMe.md ${PROJECT_SOURCE_DIR}/License.txt
+        DESTINATION ${install_dir}/Documentation
+        COMPONENT Applications)
+
 # --------------------------------------------------------------------
 # Include the CPack specific code
 include(${EMsoft_SOURCE_DIR}/Support/CPack/PackageProject.cmake)
-
-
 
 # --------------------------------------------------------------------
 # This should be the last line in this file as it includes CTest for
 # nightly testing.
 if(EMsoft_ENABLE_TESTING)
+  ENABLE_TESTING()
   include(CTest)
-  #include(${EMsoft_SOURCE_DIR}/Source/Test/SourceList.cmake)
   add_subdirectory(${EMsoft_SOURCE_DIR}/Source/Test ${PROJECT_BINARY_DIR}/Test)
-
 endif()
 

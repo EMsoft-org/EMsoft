@@ -72,6 +72,7 @@ use NameListTypedefs
 use NameListHandlers
 use files
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -140,6 +141,7 @@ use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
 use omp_lib
+use stringconstants
 
 IMPLICIT NONE
 
@@ -306,25 +308,25 @@ end if
   hdferr =  HDF_createFile(outname, HDF_head)
 
 ! write the EMheader to the file
-  groupname = 'Kosselmaster'
+groupname = SC_Kosselmaster
   call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 
 ! add the CrystalData group at the top level of the file
   call SaveDataHDF(cell, HDF_head)
 
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLfiles"
+groupname = SC_NMLfiles
   hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-  dataset = 'Kosselmasterlist'
+dataset = SC_Kosselmasterlist
   hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! leave this group
   call HDF_pop(HDF_head)
   
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLparameters"
+groupname = SC_NMLparameters
   hdferr = HDF_createGroup(groupname, HDF_head)
   call HDFwriteKosselMasterNameList(HDF_head, kmnl)
   call HDFwriteBetheparameterNameList(HDF_head, BetheParameters)
@@ -333,51 +335,51 @@ end if
   call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_createGroup(groupname, HDF_head)
 
-  groupname = 'Kosselmaster'
+groupname = SC_Kosselmaster
   hdferr = HDF_createGroup(groupname, HDF_head)
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   stringarray(1)= trim(kmnl%xtalname)
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
-  dataset = 'npx'
+dataset = SC_npx
   hdferr = HDF_writeDatasetInteger(dataset, kmnl%npx, HDF_head)
 
-  dataset = 'BetheParameters'
+dataset = SC_BetheParameters
   bp = (/ BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff /)
   hdferr = HDF_writeDatasetFloatArray1D(dataset, bp, 4, HDF_head)
 
-  dataset = 'numthick'
+dataset = SC_numthick
   hdferr = HDF_writeDatasetInteger(dataset, numthick, HDF_head)
 
-  dataset = 'startthick'
+dataset = SC_startthick
   hdferr = HDF_writeDatasetFloat(dataset, kmnl%startthick, HDF_head)
 
-  dataset = 'thickinc'
+dataset = SC_thickinc
   hdferr = HDF_writeDatasetFloat(dataset, kmnl%thickinc, HDF_head)
 
-  dataset = 'Kosselmode'
+dataset = SC_Kosselmode
   stringarray(1)= trim(kmnl%Kosselmode)
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 ! create the hyperslabs and write zeroes to them for now
   if (kmnl%Kosselmode.eq.'normal') then
-    dataset = 'mLPNH'
+dataset = SC_mLPNH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 
-    dataset = 'mLPSH'
+dataset = SC_mLPSH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
   else
-    dataset = 'trange'
+dataset = SC_trange
     dims2 = (/  2*kmnl%npx+1, 2*kmnl%npx+1 /)
     cnt2 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1 /)
     offset2 = (/ 0, 0 /)
@@ -593,45 +595,45 @@ end if
   hdferr =  HDF_openFile(outname, HDF_head)
 
 ! update the time string
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'Kosselmaster'
+groupname = SC_Kosselmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'StopTime'
+dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
   call CPU_TIME(tstop)
-  dataset = 'Duration'
+dataset = SC_Duration
   tstop = tstop - tstart
   hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'Kosselmaster'
+groupname = SC_Kosselmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! add data to the hyperslab
   if (kmnl%Kosselmode.eq.'normal') then
-    dataset = 'mLPNH'
+dataset = SC_mLPNH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 
-    dataset = 'mLPSH'
+dataset = SC_mLPSH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
   else
-    dataset = 'trange'
+dataset = SC_trange
     dims2 = (/  2*kmnl%npx+1, 2*kmnl%npx+1 /)
     cnt2 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1 /)
     offset2 = (/ 0, 0 /)

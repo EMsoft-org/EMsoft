@@ -86,6 +86,47 @@ end do
 
 end function image_histogram
 
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: image_jointhistogram 
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute the joint histogram of two images 
+!
+!> @param nx x dimension
+!> @param ny y dimension
+!> @param im1 image array; must have values in range [1..256]
+!> @param im2 image array; must have values in range [1..256]
+! 
+!> @date 04/23/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function image_jointhistogram( nx, ny, im1, im2 ) result(h)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_jointhistogram
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)    :: nx
+integer(kind=irg),INTENT(IN)    :: ny
+integer(kind=irg),INTENT(IN)    :: im1(nx, ny)
+integer(kind=irg),INTENT(IN)    :: im2(nx, ny)
+integer(kind=irg)               :: h(256,256)
+
+integer(kind=irg),parameter     :: nh = 256
+integer(kind=irg)               :: i, j
+
+! initialize parameters 
+h = 0
+
+do i=1,nx
+  do j=1,ny
+    h(im1(i,j),im2(i,j)) = h(im1(i,j),im2(i,j))+1
+  end do
+end do
+
+end function image_jointhistogram
+
 !--------------------------------------------------------------------------
 !
 ! FUNCTION: cumul_histogram 
@@ -148,6 +189,123 @@ else
 end if
 
 end function cumul_histogram
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: image_entropy
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute the Shannon entropy of an image 
+!
+!> @param h a 256 element intensity histogram
+! 
+!> @date 04/23/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function image_entropy( h ) result(e)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_entropy
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)    :: h(256)
+real(kind=sgl)                  :: e
+
+integer(kind=irg),parameter     :: nh = 256
+integer(kind=irg)               :: i, j
+real(kind=sgl)                  :: hnorm(256)
+
+! initialize parameters 
+hnorm = float(h)
+
+! normalize the histogram
+hnorm = hnorm / sum(hnorm)
+
+! add up the natural logarithm factors for the non-zero bins
+e = 0.0
+
+do i=1,nh
+  if (h(i).ne.0) e = e - hnorm(i) * log(hnorm(i))
+end do
+
+end function image_entropy
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: image_jointentropy
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute the Shannon joint entropy of two images 
+!
+!> @param h a 256x256 element intensity joint histogram
+! 
+!> @date 04/23/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function image_jointentropy( h ) result(e)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_jointentropy
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)    :: h(256,256)
+real(kind=sgl)                  :: e
+
+integer(kind=irg),parameter     :: nh = 256
+integer(kind=irg)               :: i, j
+real(kind=sgl)                  :: hnorm(256,256)
+
+! initialize parameters 
+hnorm = float(h)
+
+! normalize the histogram
+hnorm = hnorm / sum(hnorm)
+
+! add up the natural logarithm factors for the non-zero bins
+e = 0.0
+
+do i=1,nh
+ do j=1,nh
+  if (h(i,j).ne.0) e = e - hnorm(i,j) * log(hnorm(i,j))
+ end do
+end do
+
+end function image_jointentropy
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: image_mutualinformation
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute the mutual information of two images 
+!
+!> @param nx x dimension
+!> @param ny y dimension
+!> @param im image array; must have values in range [1..256] 
+! 
+!> @date 04/23/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function image_mutualinformation( nx, ny, im1, im2 ) result(mi)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_mutualinformation
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)    :: nx
+integer(kind=irg),INTENT(IN)    :: ny
+integer(kind=irg),INTENT(IN)    :: im1(nx, ny)
+integer(kind=irg),INTENT(IN)    :: im2(nx, ny)
+real(kind=sgl)                  :: mi
+
+real(kind=sgl)                  :: e1, e2, je
+
+! get the individual and joint histograms
+e1 = image_entropy(image_histogram( nx, ny, im1))
+e2 = image_entropy(image_histogram( nx, ny, im2))
+je = image_jointentropy(image_jointhistogram( nx, ny, im1, im2))
+
+! compute the mutual information
+mi = e1 + e2 - je
+
+end function image_mutualinformation
 
 !--------------------------------------------------------------------------
 !
@@ -494,6 +652,98 @@ call fftw_execute_dft(planb, inp, outp)
 fdata(1:dims(1),1:dims(2)) = real(outp)
 
 end function HiPassFilter
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: HiPassFilterC
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  Perform a high pass filter, callable from C
+!
+!> @param rdata real data to be transformed
+!> @param dims dimensions of rdata array
+!> @param w width of Gaussian profile
+!> @param init initialize without computing anything
+!> @param destroy destroy fft plans
+!> @param fdata output data
+! 
+!> @date 05/17/17 MDG 1.0 original, taken from regular routine above
+!--------------------------------------------------------------------------
+recursive subroutine HiPassFilterC(rdata,dims,w,init,destroy,fdata) bind(c, name='HiPassFilterC')
+!DEC$ ATTRIBUTES DLLEXPORT :: HiPassFilterC
+
+use FFTW3mod
+use,INTRINSIC :: ISO_C_BINDING
+
+IMPLICIT NONE
+
+integer(c_int32_t),INTENT(IN)           :: dims(2)
+real(C_DOUBLE),INTENT(IN)               :: w
+real(C_DOUBLE),INTENT(IN)               :: rdata(dims(1),dims(2))
+logical(C_BOOL),INTENT(IN)              :: init
+logical(C_BOOL),INTENT(IN)              :: destroy
+real(C_DOUBLE)                          :: fdata(dims(1),dims(2))
+
+complex(C_DOUBLE_COMPLEX),SAVE,allocatable      :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX)                       :: cone = cmplx(1.D0,0.D0), czero = cmplx(0.D0,0.D0)
+integer(c_int32_t)                      :: i, j, k, ii, jj
+real(C_DOUBLE)                          :: x, y, val
+
+! fftw variables
+type(C_PTR),SAVE                        :: planf, planb
+complex(C_DOUBLE_COMPLEX),SAVE,allocatable :: inp(:,:), outp(:,:)
+
+! are we just destroying the fftw plans ?
+if (destroy.eqv..TRUE.) then
+    deallocate(hpmask, inp, outp)
+    call fftw_destroy_plan(planf)
+    call fftw_destroy_plan(planb)
+    fdata = 0.D0
+end if
+
+! if init=.TRUE. then initialize the hpmask variable and the fftw plans
+if (init.eqv..TRUE.) then
+! allocate arrays
+    allocate(hpmask(dims(1),dims(2)), inp(dims(1),dims(2)), outp(dims(1),dims(2)))
+
+! generate the complex inverted Gaussian mask; w = 0.05 produces good results (usually)
+    do i=1,dims(1)/2 
+      x = float(i)
+      do j=1,dims(2)/2
+        y = float(j)
+        val = 1.D0-dexp(-w*(x*x+y*y))
+        hpmask(i,j) = cmplx(val, 0.D0)
+        hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
+        hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
+        hpmask(dims(1)+1-i,dims(2)+1-j) = cmplx(val, 0.D0)
+        fdata(i,j) = val
+        fdata(dims(1)+1-i,j) = val
+        fdata(i,dims(2)+1-j) = val
+        fdata(dims(1)+1-i,dims(2)+1-j) = val
+      end do
+   end do
+
+! then we set up the fftw plans for forward and reverse transforms
+    planf = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_FORWARD, FFTW_ESTIMATE)
+    planb = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_BACKWARD, FFTW_ESTIMATE)
+end if
+
+! apply the hi-pass mask to rdata
+if ((destroy.eqv..FALSE.).and.(init.eqv..FALSE.)) then
+  do j=1,dims(1)
+   do k=1,dims(2)
+    inp(j,k) = cmplx(rdata(j,k),0.D0)    
+   end do
+  end do
+  call fftw_execute_dft(planf, inp, outp)
+  inp = outp * hpmask
+  call fftw_execute_dft(planb, inp, outp) 
+  fdata(1:dims(1),1:dims(2)) = real(outp)
+endif
+
+end subroutine HiPassFilterC
 
 !--------------------------------------------------------------------------
 !

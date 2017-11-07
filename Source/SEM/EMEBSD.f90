@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2017, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -49,6 +49,7 @@
 !> @date  09/26/15  MDG 5.2 added json support for nml file
 !> @date  10/07/15  MDG 5.3 minor clean up in preparation for release 3.0
 !> @date  05/21/16  MDG 5.4 updated for new HDF file organization
+!> @date  10/13/17  MDG 5.5 added code to compute "hybrid" deformed EBSD patterns...
 ! ###################################################################
 
 program EMEBSD
@@ -60,6 +61,7 @@ use NameListHandlers
 use JSONsupport
 use io
 use EBSDmod
+use stringconstants
 
 IMPLICIT NONE
 
@@ -127,9 +129,9 @@ else
 end if
 
 ! this program needs a lot of data, and it also should be integrated 
-! with Dream.3D, so we need to make sure that all data is loaded outside
+! with EMsoftWorkBench, so we need to make sure that all data is loaded outside
 ! of the main computational routine, and passed in as pointers/arguments
-! either by the fortran program or by Dream.3D calls.  
+! either by the fortran program or by EMsoftWorkBench calls.  
 
 ! 1. read the angle array from file
 verbose = .TRUE.
@@ -144,16 +146,12 @@ call EBSDreadMCfile(enl, acc, verbose=.TRUE.)
 allocate(master)
 call EBSDreadMasterfile(enl, master, verbose=.TRUE.)
 
-! 3.1 twin the master pattern with equal weight (FZ == pg 622)
-!call TwinCubicMasterPattern(enl,master)
-
 ! 4. generate detector arrays
 allocate(master%rgx(enl%numsx,enl%numsy), master%rgy(enl%numsx,enl%numsy), master%rgz(enl%numsx,enl%numsy), stat=istat)
 allocate(acc%accum_e_detector(enl%numEbins,enl%numsx,enl%numsy), stat=istat)
 call EBSDGenerateDetector(enl, acc, master, verbose)
 deallocate(acc%accum_e)
 
-! call TwinCubicMasterPattern(enl, master)
 ! perform the zone axis computations for the knl input parameters
 call ComputeEBSDpatterns(enl, angles, acc, master, progname, nmldeffile)
 deallocate(master, acc, angles)
@@ -199,7 +197,8 @@ end program EMEBSD
 !> @date 04/18/16  SS  6.6 removed outputformat .eq. bin check while writing hyperslab
 !> @date 11/15/16  MDG 6.7 added CrystalData output to HDF file and removed unused entries.
 !> @date 02/07/17  MDG 6.8 corrected bug when number of Euler angle triplets was smaller than requested number of threads
-!> @date 08/25/17  MDG 6.9 added 16-bit integer and 32-bit float output option for EBSD patterns [requested by Tijmen Vermeij]
+!> @date 09/26/17  MDG 7.0 added ability to incorporate a deformation tensor in the pattern computation
+!> @date 10/13/17  MDG 7.1 correction of deformation tensor code; tested for tetragonal, monoclinic and anorthic deformations
 !--------------------------------------------------------------------------
 subroutine ComputeEBSDPatterns(enl, angles, acc, master, progname, nmldeffile)
 
@@ -223,6 +222,7 @@ use HDFsupport
 use ISO_C_BINDING
 use omp_lib
 use timing
+use stringconstants
 use math
 
 IMPLICIT NONE
@@ -261,7 +261,7 @@ integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocat
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
 integer(kind=irg),allocatable           :: istart(:,:), istop(:,:), patinbatch(:)
 
-real(kind=sgl)                          :: bindx, sig, ma, mi, tstart, tstop, io_real(1)
+real(kind=sgl)                          :: bindx, sig, ma, mi, tstart, tstop, io_real(3)
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
 integer(kind=irg),parameter             :: storemax = 20        ! number of EBSD patterns stored in one output block
@@ -291,11 +291,17 @@ character(fnlen)                        :: groupname, dataset, datagroupname
 character(11)                           :: dstr
 character(15)                           :: tstrb
 character(15)                           :: tstre
+character(10)                           :: char10
 character(fnlen)                        :: datafile
 logical                                 :: overwrite = .TRUE., insert = .TRUE., singlebatch
 character(5)                            :: bitmode
 integer(kind=irg)                       :: numbits
 real(kind=sgl)                          :: bitrange
+
+! new stuff: deformation tensor
+real(kind=dbl)                          :: Umatrix(3,3), Fmatrix(3,3), Smatrix(3,3), quF(4), Fmatrix_inverse(3,3), &
+                                           Gmatrix(3,3)
+logical                                 :: includeFmatrix=.FALSE.
 
 !====================================
 ! max number of OpenMP threads on this platform
@@ -355,10 +361,12 @@ deallocate(wf)
 allocate(cell)
 cell%fname = trim(enl%MCxtalname)
 call ReadDataHDF(cell)
+call CalcMatrices(cell)
 
 !====================================
-! ------ and open the output file 
+! ------ and open the output file for IDL visualization (only thread 0 can write to this file)
 !====================================
+! we need to write the image dimensions, and also how many of those there are...
 
 ! Initialize FORTRAN interface.
 !
@@ -382,19 +390,19 @@ call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
 call SaveDataHDF(cell, HDF_head)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup NMLfiles')
 
 ! read the text file and write the array to the file
-dataset = 'EMEBSDNML'
+dataset = SC_EMEBSDNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetTextFile EMEBSDNML')
 
 call HDF_pop(HDF_head)
 
 ! create a NMLparameters group to write all the namelist entries into
-groupname = "NMLparameters"
+groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup NMLparameters')
 
@@ -404,13 +412,13 @@ call HDFwriteEBSDNameList(HDF_head, enl)
 call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EMData')
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
 
-dataset = 'numangles'
+dataset = SC_numangles
 hdferr = HDF_writeDatasetInteger(dataset, enl%numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetInteger numangles')
 
@@ -419,11 +427,55 @@ allocate(eulerangles(3,enl%numangles))
 do i=1,enl%numangles
   eulerangles(1:3,i) = qu2eu(angles%quatang(1:4,i))
 end do
-dataset = 'Eulerangles'
+dataset = SC_Eulerangles
 hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, enl%numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
 
 ! and we leave this group open for further data output from the main program loop ... 
+
+!====================================
+! generate the deformation matrix and its polar decomposition
+!====================================
+includeFmatrix = .FALSE.
+if (enl%applyDeformation.eq.'y') then
+  includeFmatrix = .TRUE.
+! importantly, we need to transpose the input deformation tensor for the 
+! computations to be performed correctly
+  Fmatrix = transpose(enl%Ftensor)
+  
+! perform the polar decomposition on the deformation tensor
+  call getPolarDecomposition(Fmatrix, Umatrix, Smatrix)
+  call Message('')
+
+! and convert the unitary matrix to a quaternion
+  quF = conjg(om2qu(Umatrix))
+
+  call Message('Polar Decomposition')
+  call Message('  --> Unitary Matrix')
+  call PrintMatrixd('U = ',Umatrix) 
+  char10 = ''
+  call print_orientation(init_orientation(quF,'qu'),'qu',char10)
+  write(*,*) 'rotation angle = ',2.0*acos(quF(1))*180.D0/cPi
+  call Message('  --> Stretch Matrix')
+  call PrintMatrixd('S = ',Smatrix) 
+
+! compute the effective lattice parameters for the given deformation, based on the 
+! undeformed unit cell
+  Gmatrix = matmul(matmul(transpose(Fmatrix),cell%dsm), transpose(matmul(transpose(Fmatrix),cell%dsm)) )
+  call Message('Metric tensor for distorted cell:')
+  call PrintMatrixd('Gdis=',Gmatrix)
+  io_real(1:3) = (/ sqrt(Gmatrix(1,1)), sqrt(Gmatrix(2,2)), sqrt(Gmatrix(3,3)) /)
+  call WriteValue('(a, b, c) = ',io_real,3)
+  
+  io_real(1:3) = (/ acos(Gmatrix(2,3)/sqrt(Gmatrix(2,2))/sqrt(Gmatrix(3,3)))*180.D0/cPi  , &
+                    acos(Gmatrix(1,3)/sqrt(Gmatrix(1,1))/sqrt(Gmatrix(3,3)))*180.D0/cPi  , &
+                    acos(Gmatrix(1,2)/sqrt(Gmatrix(1,1))/sqrt(Gmatrix(2,2)))*180.D0/cPi  /)
+  call WriteValue('(alpha, beta, gamma) = ',io_real,3)
+  call Message('')
+
+! invert the deformation tensor and pass it on to the pattern computation routine
+  call mInvert(Fmatrix, Fmatrix_inverse, .FALSE.)
+end if
 
 !====================================
 ! ------ start the actual image computation loop
@@ -433,6 +485,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Euler
 ! to speed things up, we'll split the computation into batches of 1,024 patterns per thread; once those 
 ! are computed, we leave the OpenMP part to write them to a file 
 !====================================
+
 
 ! and allocate space to store each batch; this requires some careful analysis
 ! since we are doing things in multiple threads
@@ -628,7 +681,7 @@ do ibatch=1,totnumbatches
 
 ! this array requires some care in terms of its size parameters...
   if ((singlebatch.eqv..TRUE.).AND.(ibatch.eq.totnumbatches)) then 
-    if (TID.eq.nthreads-1) then
+     if (TID.eq.nthreads-1) then
       if (trim(bitmode).eq.'char') then 
         allocate(threadbatchpatterns(binx,biny,nlastremainder),stat=istat)
       end if
@@ -676,9 +729,14 @@ do ibatch=1,totnumbatches
 ! sample quaternion orientation, and then back to direction cosines...
 ! then convert these individually to the correct EBSD pattern location
     binned = 0.0
-
-    call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                   Emin,Emax,mask,prefactor)
+    
+    if (includeFmatrix.eqv..TRUE.) then 
+      call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
+                                     Emin,Emax,mask,prefactor,Fmatrix_inverse)
+    else
+      call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
+                                     Emin,Emax,mask,prefactor)
+    end if
 
     if (enl%scalingmode .eq. 'gam') then
         binned = binned**enl%gammavalue
@@ -713,7 +771,6 @@ do ibatch=1,totnumbatches
 !$OMP CRITICAL
   if ((singlebatch.eqv..TRUE.).AND.(ibatch.eq.totnumbatches)) then 
     if (TID.eq.nthreads-1) then
-
       if (trim(bitmode).eq.'char') then 
         batchpatterns(1:binx,1:biny,TID*ninlastbatch+1:TID*ninlastbatch+nlastremainder)=&
           threadbatchpatterns(1:binx,1:biny, 1:nlastremainder)
@@ -763,7 +820,7 @@ do ibatch=1,totnumbatches
 !$OMP END PARALLEL
 
 ! here we write all the entries in the batchpatterns array to the HDF file as a hyperslab
- dataset = 'EBSDpatterns'
+dataset = SC_EBSDpatterns
  !if (outputformat.eq.'bin') then
    offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
    hdims = (/ binx, biny, enl%numangles /)
@@ -828,7 +885,7 @@ call HDF_pop(HDF_head)
 
 ! and update the end time
 call timestamp(datestring=dstr, timestring=tstre)
-groupname = "EMheader"
+groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup EMheader')
 
@@ -837,12 +894,12 @@ hdferr = HDF_openGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup EBSD')
 
 ! stop time /EMheader/StopTime 'character'
-dataset = 'StopTime'
+dataset = SC_StopTime
 line2(1) = dstr//', '//tstre
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray StopTime')
 
-dataset = 'Duration'
+dataset = SC_Duration
 hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloat Duration')
 

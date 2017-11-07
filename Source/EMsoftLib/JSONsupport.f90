@@ -48,6 +48,7 @@ use typedefs
 use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
 use NameListTypedefs
 use json_module
+use stringconstants
 
 IMPLICIT NONE
 
@@ -81,6 +82,45 @@ contains
 !    public :: json_traverse              ! to traverse all elements of a JSON structure
 !    public :: json_print_error_message   !
 !    public :: to_unicode                 ! Function to convert from 'DEFAULT' to 'ISO_10646' strings
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION:JSON_minify
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief remove all fortran comment lines from a JSON input file and store file in tmp folder
+!
+!> @param jsonname json file name
+!> @param jsonreturn filename of stripped down JSON input file (in EMsoft tmp folder)
+!
+!> @date 05/11/17  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive function JSON_minify(jsonname) result(jsonreturn)
+!DEC$ ATTRIBUTES DLLEXPORT :: JSON_minify
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)          :: jsonname
+character(fnlen)                     :: jsonreturn
+
+! the JSON syntax standard does not allow for comment lines/statements of any kind.
+! In the XXX.jtemplate files, comment lines starting with the f90 ! comment character
+! are interspersed with the name-value pairs.  Those are present to make it easier for 
+! the user to figure out what each variable means.  They need to be removed before the 
+! file is sent to the json parser routine, and this is done here.  The stripped down
+! file is stored in the EMsoft tmp folder with the same name and must be deleted after 
+! the parsing has been completed.
+
+! with the 5.3 version of json-fortran, it is possible to convert a json file to a namelist
+! file, so since we are already set up to handle namelist files, this will signficantly 
+! simplify the implementation of the JSON format...
+
+! jsonname is 
+
+jsonreturn = ''
+
+end function JSON_minify
 
 !--------------------------------------------------------------------------
 !
@@ -357,10 +397,10 @@ intlist(5) = 'nthreads'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! integer vectors
-dataset = 'k'
+dataset = SC_k
 call json_add(inp, dataset, knl%k); call JSON_failtest(error_cnt)
 
-dataset = 'fn'
+dataset = SC_fn
 call json_add(inp, dataset, knl%fn); call JSON_failtest(error_cnt)
 
 ! write all the single reals
@@ -374,10 +414,10 @@ reallist(6) = 'minten'
 call JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cnt)
 
 ! write all the strings
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, knl%xtalname); call JSON_failtest(error_cnt)
 
-dataset = 'outname'
+dataset = SC_outname
 call json_add(inp, dataset, knl%outname); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -443,13 +483,13 @@ reallist(5) = 'tfraction'
 call JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cnt)
 
 ! write all the strings
-dataset = 'Kosselmode'
+dataset = SC_Kosselmode
 call json_add(inp, dataset, knl%Kosselmode); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, knl%xtalname); call JSON_failtest(error_cnt)
 
-dataset = 'outname'
+dataset = SC_outname
 call json_add(inp, dataset, knl%outname); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -516,13 +556,13 @@ reallist(7) = 'depthstep'
 call JSON_writeNMLdoubles(inp, io_real, reallist, n_real, error_cnt)
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 call json_add(inp, dataset, mcnl%MCmode); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, mcnl%xtalname); call JSON_failtest(error_cnt)
 
-dataset = 'dataname'
+dataset = SC_dataname
 call json_add(inp, dataset, mcnl%dataname); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -609,16 +649,16 @@ else if (mcnl%mode .eq. 'full') then
    call JSON_writeNMLdoubles(inp, io_real_full, reallist_full, n_real_full, error_cnt)
 end if
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 call json_add(inp, dataset, mcnl%MCmode); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, mcnl%xtalname); call JSON_failtest(error_cnt)
 
-dataset = 'dataname'
+dataset = SC_dataname
 call json_add(inp, dataset, mcnl%dataname); call JSON_failtest(error_cnt)
 
-dataset = 'mode'
+dataset = SC_mode
 call json_add(inp, dataset, mcnl%mode); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -688,19 +728,19 @@ reallist(9) = 'filmstep'
 call JSON_writeNMLdoubles(inp, io_real, reallist, n_real, error_cnt)
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 call json_add(inp, dataset, mcnl%MCmode); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname_film'
+dataset = SC_xtalnamefilm
 call json_add(inp, dataset, mcnl%xtalname_film); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname_subs'
+dataset = SC_xtalnamesubs
 call json_add(inp, dataset, mcnl%xtalname_subs); call JSON_failtest(error_cnt)
 
-dataset = 'dataname'
+dataset = SC_dataname
 call json_add(inp, dataset, mcnl%dataname); call JSON_failtest(error_cnt)
 
-dataset = 'mode'
+dataset = SC_mode
 call json_add(inp, dataset, mcnl%mode); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -768,14 +808,14 @@ intlist(6) = 'uniform'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! write a single real
-dataset = 'dmin'
+dataset = SC_dmin
 call json_add(inp, dataset, dble(emnl%dmin)); call JSON_failtest(error_cnt)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 call json_add(inp, dataset, emnl%outname); call JSON_failtest(error_cnt)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 call json_add(inp, dataset, emnl%energyfile); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -829,13 +869,13 @@ intlist(3) = 'binfactor'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! write all the strings
-dataset = 'inputfilename'
+dataset = SC_inputfilename
 call json_add(inp, dataset, emnl%inputfilename); call JSON_failtest(error_cnt)
 
-dataset = 'groupname'
+dataset = SC_groupname
 call json_add(inp, dataset, emnl%groupname); call JSON_failtest(error_cnt)
 
-dataset = 'datasetname'
+dataset = SC_datasetname
 call json_add(inp, dataset, emnl%datasetname); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -911,13 +951,10 @@ call JSON_writeNMLdoubles(inp, io_real, reallist, n_real, error_cnt)
 !call json_add(inp, dataset, dble(ecpnl%albegadist)); call JSON_failtest(error_cnt)
 
 ! write all the strings
-dataset = 'outname'
-call json_add(inp, dataset, ecpnl%outname); call JSON_failtest(error_cnt)
-
-dataset = 'energyfile'
+dataset = SC_energyfile
 call json_add(inp, dataset, ecpnl%energyfile); call JSON_failtest(error_cnt)
 
-dataset = 'compmode'
+dataset = SC_compmode
 call json_add(inp, dataset, ecpnl%compmode); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -989,39 +1026,39 @@ reallist(9) = 'alphaBD'
 call JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cnt)
 
 ! a 4-vector
-dataset = 'axisangle'
+dataset = SC_axisangle
 call json_add(inp, dataset, dble(enl%axisangle)); call JSON_failtest(error_cnt)
 
 ! a few doubles
-dataset = 'beamcurrent'
+dataset = SC_beamcurrent
 call json_add(inp, dataset, enl%beamcurrent); call JSON_failtest(error_cnt)
 
-dataset = 'dwelltime'
+dataset = SC_dwelltime
 call json_add(inp, dataset, enl%dwelltime); call JSON_failtest(error_cnt)
 
 ! write all the strings
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 call json_add(inp, dataset, enl%maskpattern); call JSON_failtest(error_cnt)
 
-dataset = 'scalingmode'
+dataset = SC_scalingmode
 call json_add(inp, dataset, enl%scalingmode); call JSON_failtest(error_cnt)
 
-dataset = 'eulerconvention'
+dataset = SC_eulerconvention
 call json_add(inp, dataset, enl%eulerconvention); call JSON_failtest(error_cnt)
 
-dataset = 'outputformat'
+dataset = SC_outputformat
 call json_add(inp, dataset, enl%outputformat); call JSON_failtest(error_cnt)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 call json_add(inp, dataset, enl%energyfile); call JSON_failtest(error_cnt)
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 call json_add(inp, dataset, enl%masterfile); call JSON_failtest(error_cnt)
 
-dataset = 'anglefile'
+dataset = SC_anglefile
 call json_add(inp, dataset, enl%anglefile); call JSON_failtest(error_cnt)
 
-dataset = 'datafile'
+dataset = SC_datafile
 call json_add(inp, dataset, enl%datafile); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -1081,22 +1118,22 @@ call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 if (twolayerflag) then
 ! integer vectors
-    dataset = 'fn_f'
+dataset = SC_fnf
     call json_add(inp, dataset, ecpnl%fn_f); call JSON_failtest(error_cnt)
 
-    dataset = 'fn_s'
+dataset = SC_fns
     call json_add(inp, dataset, ecpnl%fn_s); call JSON_failtest(error_cnt)
 
-    dataset = 'gF'
+dataset = SC_gF
     call json_add(inp, dataset, ecpnl%gF); call JSON_failtest(error_cnt)
 
-    dataset = 'gS'
+dataset = SC_gS
     call json_add(inp, dataset, ecpnl%gS); call JSON_failtest(error_cnt)
 
-    dataset = 'tF'
+dataset = SC_tF
     call json_add(inp, dataset, ecpnl%tF); call JSON_failtest(error_cnt)
 
-    dataset = 'tS'
+dataset = SC_tS
     call json_add(inp, dataset, ecpnl%tS); call JSON_failtest(error_cnt)
 
    n_real = 8
@@ -1140,36 +1177,36 @@ else
 end if
 ! write all the strings
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 call json_add(inp, dataset, ecpnl%energyfile); call JSON_failtest(error_cnt)
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 call json_add(inp, dataset, ecpnl%masterfile); call JSON_failtest(error_cnt)
 
-dataset = 'datafile'
+dataset = SC_datafile
 call json_add(inp, dataset, ecpnl%datafile); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, ecpnl%xtalname); call JSON_failtest(error_cnt)
 
 if (twolayerflag) then
-    dataset = 'xtalname2'
+dataset = SC_xtalname2
     call json_add(inp, dataset, ecpnl%xtalname2); call JSON_failtest(error_cnt)
 
-    dataset = 'filmfile'
+dataset = SC_filmfile
     call json_add(inp, dataset, ecpnl%filmfile); call JSON_failtest(error_cnt)
 
-    dataset = 'subsfile'
+dataset = SC_subsfile
     call json_add(inp, dataset, ecpnl%subsfile); call JSON_failtest(error_cnt)
 end if
 
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 call json_add(inp, dataset, ecpnl%maskpattern); call JSON_failtest(error_cnt)
 
-dataset = 'anglefile'
+dataset = SC_anglefile
 call json_add(inp, dataset, ecpnl%anglefile); call JSON_failtest(error_cnt)
 
-dataset = 'outputformat'
+dataset = SC_outputformat
 call json_add(inp, dataset, ecpnl%outputformat); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -1225,10 +1262,10 @@ intlist(5) = 'nthreads'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! vectors
-dataset = 'k'
+dataset = SC_k
 call json_add(inp, dataset, lacbednl%k); call JSON_failtest(error_cnt)
 
-dataset = 'fn'
+dataset = SC_fn
 call json_add(inp, dataset, lacbednl%fn); call JSON_failtest(error_cnt)
 
 ! write all the single reals
@@ -1242,10 +1279,10 @@ reallist(6) = 'minten'
 call JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cnt)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 call json_add(inp, dataset, lacbednl%outname); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, lacbednl%xtalname); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -1298,18 +1335,18 @@ intlist(2) = 'npix'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! single real
-dataset = 'thetac'
+dataset = SC_thetac
 call json_add(inp, dataset, dble(ecpnl%thetac)); call JSON_failtest(error_cnt)
 
 ! real vector
-dataset = 'k'
+dataset = SC_k
 call json_add(inp, dataset, dble(ecpnl%k)); call JSON_failtest(error_cnt)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 call json_add(inp, dataset, ecpnl%outname); call JSON_failtest(error_cnt)
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 call json_add(inp, dataset, ecpnl%masterfile); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -1344,7 +1381,7 @@ integer(kind=irg),INTENT(INOUT)                       :: error_cnt
 
 type(json_value),pointer                              :: p, inp
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 4
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 4
 integer(kind=irg)                                     :: io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1356,11 +1393,10 @@ namelistname = 'PEDkinNameList'
 call JSON_initpointers(p, inp, jsonname, namelistname, error_cnt)
 
 ! write all the single integers
-io_int = (/ pednl%stdout, pednl%npix, pednl%ncubochoric, pednl%nthreads /)
-intlist(1) = 'stdout'
-intlist(2) = 'npix'
-intlist(3) = 'ncubochoric'
-intlist(4) = 'nthreads'
+io_int = (/pednl%npix, pednl%ncubochoric, pednl%nthreads /)
+intlist(1) = 'npix'
+intlist(2) = 'ncubochoric'
+intlist(3) = 'nthreads'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! write all the single reals
@@ -1372,11 +1408,17 @@ reallist(4) = 'rnmpp'
 call JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cnt)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 call json_add(inp, dataset, pednl%outname); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, pednl%xtalname); call JSON_failtest(error_cnt)
+
+dataset = SC_eulerfile
+call json_add(inp, dataset, pednl%eulerfile); call JSON_failtest(error_cnt)
+
+dataset = SC_sampling
+call json_add(inp, dataset, pednl%sampling); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
 call JSON_cleanuppointers(p, inp, jsonname, error_cnt)
@@ -1431,10 +1473,10 @@ intlist(5) = 'nthreads'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! vectors
-dataset = 'k'
+dataset = SC_k
 call json_add(inp, dataset, pednl%k); call JSON_failtest(error_cnt)
 
-dataset = 'fn'
+dataset = SC_fn
 call json_add(inp, dataset, pednl%fn); call JSON_failtest(error_cnt)
 
 ! single reals
@@ -1449,13 +1491,13 @@ call JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cnt)
 
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 call json_add(inp, dataset, pednl%outname); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, pednl%xtalname); call JSON_failtest(error_cnt)
 
-dataset = 'filemode'
+dataset = SC_filemode
 call json_add(inp, dataset, pednl%filemode); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -1512,7 +1554,7 @@ intlist(5) = 'DF_npiy'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! vectors
-dataset = 'k'
+dataset = SC_k
 call json_add(inp, dataset, eccinl%k); call JSON_failtest(error_cnt)
 
 ! single reals
@@ -1527,35 +1569,35 @@ call JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cnt)
 
 
 ! 2-vectors
-dataset = 'lauec'
+dataset = SC_lauec
 call json_add(inp, dataset, dble(eccinl%lauec)); call JSON_failtest(error_cnt)
 
-dataset = 'lauec2'
+dataset = SC_lauec2
 call json_add(inp, dataset, dble(eccinl%lauec2)); call JSON_failtest(error_cnt)
 
 ! write all the strings
-dataset = 'dispmode'
+dataset = SC_dispmode
 call json_add(inp, dataset, eccinl%dispmode); call JSON_failtest(error_cnt)
 
-dataset = 'summode'
+dataset = SC_summode
 call json_add(inp, dataset, eccinl%summode); call JSON_failtest(error_cnt)
 
-dataset = 'progmode'
+dataset = SC_progmode
 call json_add(inp, dataset, eccinl%progmode); call JSON_failtest(error_cnt)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call json_add(inp, dataset, eccinl%xtalname); call JSON_failtest(error_cnt)
 
-dataset = 'defectfilename'
+dataset = SC_defectfilename
 call json_add(inp, dataset, eccinl%defectfilename); call JSON_failtest(error_cnt)
 
-dataset = 'dispfile'
+dataset = SC_dispfile
 call json_add(inp, dataset, eccinl%dispfile); call JSON_failtest(error_cnt)
 
-dataset = 'dataname'
+dataset = SC_dataname
 call json_add(inp, dataset, eccinl%dataname); call JSON_failtest(error_cnt)
 
-dataset = 'ECPname'
+dataset = SC_ECPname
 call json_add(inp, dataset, eccinl%ECPname); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -1611,25 +1653,25 @@ intlist(3) = 'gridtype'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! strings
-dataset = 'euoutname'
+dataset = SC_euoutname
 call json_add(inp, dataset, rfznl%euoutname); call JSON_failtest(error_cnt)
 
-dataset = 'cuoutname'
+dataset = SC_cuoutname
 call json_add(inp, dataset, rfznl%cuoutname); call JSON_failtest(error_cnt)
 
-dataset = 'hooutname'
+dataset = SC_hooutname
 call json_add(inp, dataset, rfznl%hooutname); call JSON_failtest(error_cnt)
 
-dataset = 'quoutname'
+dataset = SC_quoutname
 call json_add(inp, dataset, rfznl%quoutname); call JSON_failtest(error_cnt)
 
-dataset = 'rooutname'
+dataset = SC_rooutname
 call json_add(inp, dataset, rfznl%rooutname); call JSON_failtest(error_cnt)
 
-dataset = 'omoutname'
+dataset = SC_omoutname
 call json_add(inp, dataset, rfznl%omoutname); call JSON_failtest(error_cnt)
 
-dataset = 'axoutname'
+dataset = SC_axoutname
 call json_add(inp, dataset, rfznl%axoutname); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -1690,17 +1732,17 @@ intlist(6) = 'imgwd'
 intlist(7) = 'nnk'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
-dataset = 'MeanSubtraction'
+dataset = SC_MeanSubtraction
 call json_add(inp, dataset, dictindxnl%MeanSubtraction); call JSON_failtest(error_cnt)
 
 ! strings
-dataset = 'exptfile'
+dataset = SC_exptfile
 call json_add(inp, dataset, dictindxnl%exptfile); call JSON_failtest(error_cnt)
 
-dataset = 'dictfile'
+dataset = SC_dictfile
 call json_add(inp, dataset, dictindxnl%dictfile); call JSON_failtest(error_cnt)
 
-dataset = 'eulerfile'
+dataset = SC_eulerfile
 call json_add(inp, dataset, dictindxnl%eulerfile); call JSON_failtest(error_cnt)
 
 ! and then we write the file and clean up
@@ -3441,8 +3483,6 @@ else
   call JSONreadString(json, ep, ecpnl%compmode, defecpnl%compmode)
   ep = 'ECPmastervars.energyfile'
   call JSONreadString(json, ep, ecpnl%energyfile, defecpnl%energyfile)
-  ep = 'ECPmastervars.outname'
-  call JSONreadString(json, ep, ecpnl%outname, defecpnl%outname)
 
   !ep = 'ECPmastervars.distort'
   !call JSONreadLogical(json, ep, ecpnl%distort, defecpnl%distort)

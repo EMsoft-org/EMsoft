@@ -2900,4 +2900,55 @@ end do
 
 end subroutine extractWyckoffposition
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getLaueGroupNumber
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief get the Laue point group number for a given space group number
+!
+!> @param SGnum space group number
+!
+!> @date   10/18/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function getLaueGroupNumber(SGnum) result(LGN)
+!DEC$ ATTRIBUTES DLLEXPORT :: getLaueGroupNumber
+
+use constants
+use typedefs
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)    :: SGnum
+integer(kind=irg)               :: LGN, i
+
+! Oxford software uses the following symmetry conversion table:
+! LG_Triclinic = 1,
+! LG_Monoclinic = 2,
+! LG_Orthorhombic = 3,
+! LG_Tetragonal_Low = 4,
+! LG_Tetragonal_High = 5,
+! LG_Trigonal_Low = 6,
+! LG_Trigonal_High = 7,
+! LG_Hexagonal_Low = 8,
+! LG_Hexagonal_High = 9,
+! LG_Cubic_Low = 10,
+! LG_Cubic_High = 11,
+! UnknownSymmetry = 12    -> this value is not used in EMsoft
+! this function returns one of the above numbers for a given space group number
+
+! find the rotational symmetry group number
+if (SGnum.ge.221) then
+  i = 32
+else
+  i=0
+  do while (SGPG(i+1).le.SGnum) 
+    i = i+1
+  end do
+end if
+LGN = PGLaueinv(i)
+
+end function getLaueGroupNumber 
+
 end module

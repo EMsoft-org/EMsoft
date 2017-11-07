@@ -36,6 +36,7 @@
 ;> @brief returns a structure with all the fields necessary to describe a sample
 ;
 ;> @date 02/15/17 MDG 1.0 first attempt at a user-friendly interface
+;> @date 10/21/17 MDG 1.1 start to add output from forward model to sample widget
 ;--------------------------------------------------------------------------
 function OMETinitSample, oenumber
 

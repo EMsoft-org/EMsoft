@@ -8,7 +8,6 @@ set(APP_DIR ${EMsoft_SOURCE_DIR}/NamelistTemplates)
 set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/BetheParameters.template
   ${APP_DIR}/EMAverageOrient.template
-  ${APP_DIR}/EMDisorientations.template
   ${APP_DIR}/EMConvertOrientations.template
   ${APP_DIR}/EMDPFit.template
   ${APP_DIR}/EMEBSD.template
@@ -35,14 +34,28 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMdefects.template
   ${APP_DIR}/EMfoil.template
   ${APP_DIR}/EMsampleRFZ.template
+  ${APP_DIR}/EMRefineOrientation.template
+  ${APP_DIR}/MDElectronProp.template
+  ${APP_DIR}/EMTKDmaster.template
+  ${APP_DIR}/EMTKD.template
+  ${APP_DIR}/EMTKDDI.template
 )
 
-file(COPY "${EMsoft_SOURCE_DIR}/NamelistTemplates" DESTINATION "${PROJECT_BINARY_DIR}/")
+if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")
+  file(MAKE_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")
+endif()
 
+foreach(file ${EMSoft_RESOURCE_FILES})
+  file(COPY "${file}" DESTINATION "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")
+endforeach()
+
+#---------------------------------------------------------------------
+# This sets up the two variables install_dir and lib_install_dir
+EMsoft_SetupInstallDirs()
 
 #---------------------------------------------------------------------
 # Create the Installation Rules
 INSTALL(FILES ${EMSoft_RESOURCE_FILES}
   COMPONENT Applications
-  DESTINATION "NamelistTemplates"
+  DESTINATION ${extra_install_dir}/NamelistTemplates
 )

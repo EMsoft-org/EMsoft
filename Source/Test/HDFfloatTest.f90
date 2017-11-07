@@ -41,6 +41,8 @@
 
 module HDFfloatTest
 
+use stringconstants
+
 contains 
 
 subroutine HDFfloatExecuteTest(res) &
@@ -133,35 +135,35 @@ if (hdferr.ne.0) then
 end if
 
 ! write the float and float arrays to the file
-dataset = 'float'
+dataset = SC_floatType
 hdferr = HDF_writeDatasetFloat(dataset, fval, HDF_head)
 if (hdferr.ne.0) then
   res = 2
   return
 end if
 
-dataset = 'float1D'
+dataset = SC_float1D
 hdferr = HDF_writeDatasetFloatArray1D(dataset, farr1, dim1, HDF_head)
 if (hdferr.ne.0) then
   res = 3
   return
 end if
 
-dataset = 'float2D'
+dataset = SC_float2D
 hdferr = HDF_writeDatasetFloatArray2D(dataset, farr2, dim1, dim2, HDF_head)
 if (hdferr.ne.0) then
   res = 4
   return
 end if
 
-dataset = 'float3D'
+dataset = SC_float3D
 hdferr = HDF_writeDatasetFloatArray3D(dataset, farr3, dim1, dim2, dim3, HDF_head)
 if (hdferr.ne.0) then
   res = 5
   return
 end if
 
-dataset = 'float4D'
+dataset = SC_float4D
 hdferr = HDF_writeDatasetFloatArray4D(dataset, farr4, dim1, dim2, dim3, dim4, HDF_head)
 if (hdferr.ne.0) then
   res = 6
@@ -202,35 +204,35 @@ if (hdferr.ne.0) then
 end if
 
 ! read the integer and arrays
-dataset = 'float'
+dataset = SC_floatType
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, fval)
 if (hdferr.ne.0) then
   res = 8
   return
 end if
 
-dataset = 'float1D'
+dataset = SC_float1D
 call HDF_readDatasetFloatArray1D(dataset, dims1, HDF_head, hdferr, farr1)
 if (hdferr.ne.0) then
   res = 9
   return
 end if
 
-dataset = 'float2D'
+dataset = SC_float2D
 call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, farr2)
 if (hdferr.ne.0) then
   res = 10 
   return
 end if
 
-dataset = 'float3D'
+dataset = SC_float3D
 call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, farr3)
 if (hdferr.ne.0) then
   res = 11
   return
 end if
 
-dataset = 'float4D'
+dataset = SC_float4D
 call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, farr4)
 if (hdferr.ne.0) then
   res = 12

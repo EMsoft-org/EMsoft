@@ -59,6 +59,10 @@ if (curchainID eq -1) then begin
   WIDGET_CONTROL, event.id, GET_UVALUE = eventval         ;find the user value
 
   CASE eventval OF
+  'MASTERFILE': begin 
+; ask the user to select the data file
+        OMETgetfilename,validfile
+  end
 
 	else: MESSAGE, "OMETsampleWidget_event: Event User Value"+eventval+" Not Found "
   endcase

@@ -40,6 +40,8 @@
 !--------------------------------------------------------------------------
 module HDFtest_textfile
 
+use stringconstants
+
 contains
 
 subroutine HDFtestTextfile_ExecuteTest(result) &
@@ -122,16 +124,16 @@ HDFfilename = trim(tmppath)//EMsoftnativedelimiter//'HDFtest_integer.h5'//CHAR(0
 hdferr =  HDF_createFile(trim(HDFfilename), HDF_head)
 write (*,*) 'HDFfilename>',HDFfilename,'<'
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! write the single integer ival
-dataset = 'integer'
+dataset = SC_integer
 ival = 123
 hdferr = HDF_writeDatasetInteger(dataset, ival, HDF_head)
 
 ! read the text file and write the array to the file
-dataset = 'testNML'
+dataset = SC_testNML
 hdferr = HDF_writeDatasetTextFile(dataset, trim(nmlname), HDF_head)
 
 call HDF_pop(HDF_head,.TRUE.)
@@ -163,7 +165,7 @@ groupname = "NMLfiles"//CHAR(0)
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read the dataset
-dataset = 'testNML'
+dataset = SC_testNML
 textfile = trim(tmppath)//EMsoftnativedelimiter//'testread.nml'//CHAR(0)
 hdferr = HDF_extractDatasetTextfile(dataset, textfile, HDF_head)
 

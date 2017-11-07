@@ -1,15 +1,57 @@
 
 # #---------------------------------------------------------------------
 # # Set some variables to shorten up the call to the function below
-# set(APP_DIR "${EMsoft_SOURCE_DIR}/src_programs")
-# set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
-
-
-#set(EXE_LINK_LIBRARIES EMsoftLib EMsoftHDFLib)
-
-
 include_directories(${EMsoft_BINARY_DIR}/EMsoftLib)
 include_directories(${EMsoftLib_BINARY_DIR})
+
+macro (EMsoft_SetupInstallDirs)
+  set(install_dir "bin")
+  set(lib_install_dir "lib")
+  set(extra_install_dir "bin")
+  set(include_install_dir "include")
+  set(top_install_dir "")
+
+  if(APPLE)
+    get_property(EMsoft_PACKAGE_DEST_PREFIX GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX)
+    set(install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/")
+    set(lib_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/lib")
+    set(extra_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/bin")
+    set(include_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/include")
+    set(top_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/")
+
+  elseif(WIN32)
+    set(install_dir "bin")
+    set(lib_install_dir "lib")
+    set(extra_install_dir "bin")
+    set(include_install_dir "include")
+    set(top_install_dir "")
+  endif()
+endmacro()
+
+macro(GetHDF5LinkLibraries PREFIX)
+  
+  set(lib_type "static")
+  if(HDF5_BUILD_SHARED_LIBS)
+    set(lib_type "shared")
+  endif()
+  
+  if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
+    set(${PREFIX}_hdf5LinkLibs "")
+    foreach(comp ${HDF5_COMPONENTS})
+      #message(STATUS "Checking ${comp}")
+      if(TARGET ${comp}-${lib_type})
+        #message(STATUS "Found ${comp}-${lib_type} ")
+        set(${PREFIX}_hdf5LinkLibs ${${PREFIX}_hdf5LinkLibs} ${comp}-${lib_type})
+      endif()
+      # HDF5 1.8.17 started namespacing the libraries, so try that style
+      if(TARGET hdf5::${comp}-${lib_type})
+        #message(STATUS "Found hdf5::${comp}-${lib_type} ")
+        set(${PREFIX}_hdf5LinkLibs ${${PREFIX}_hdf5LinkLibs} hdf5::${comp}-${lib_type})
+      endif()    
+    endforeach()
+  endif()
+endmacro()
+
 
 #---------------------------------------------------------------------
 # This function creates an executable that is to be compiled. The valid
@@ -38,15 +80,14 @@ function(Add_EMsoft_Executable)
     if("${Z_INSTALL_PROGRAM}" STREQUAL "")
       set(install_dir "")
       set(lib_install_dir "")
+    elseif(APPLE)
+      get_property(EMsoft_PACKAGE_DEST_PREFIX GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX)
+      set(install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/bin")
+      set(lib_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/lib")
     elseif(WIN32)
       set(install_dir "bin")
-      set(lib_install_dir "")
-    elseif(APPLE)
-      set(install_dir "bin")
-      set(lib_install_dir "bin")
+      set(lib_install_dir "lib")
     endif()
-
-
     BuildToolBundle(TARGET ${Z_TARGET}
                   DEBUG_EXTENSION ${EXE_DEBUG_EXTENSION}
                   VERSION_MAJOR ${EMsoft_VER_MAJOR}
@@ -68,11 +109,11 @@ function(Add_EMsoft_Executable)
   if(NOT "${Z_TEMPLATE}" STREQUAL "" AND NOT EXISTS ${Z_TEMPLATE})
     message(STATUS "Missing Template File for Executable ${Z_TARGET}")
     message(STATUS "  ${Z_TEMPLATE}")
-  else()
-    install(FILES ${Z_TEMPLATE}
-      DESTINATION "NamelistTemplates"
-      COMPONENT Applications
-    )
+  # else()
+  #   install(FILES ${Z_TEMPLATE}
+  #     DESTINATION "NamelistTemplates"
+  #     COMPONENT Applications
+  #   )
   endif()
 
 endfunction()

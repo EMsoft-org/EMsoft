@@ -114,6 +114,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                         SOLUTION_FOLDER EMsoftPublic/Test)
 
+      AddEMsoftUnitTest(TARGET MODRotationsTest
+                        SOURCES ${EMsoftTestDir}/MODRotationsTest.f90
+                        TEST_NAME MODRotationsTest
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                        SOLUTION_FOLDER EMsoftPublic/Test)
+
 
 
 endif()

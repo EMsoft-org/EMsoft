@@ -37,13 +37,14 @@
 !
 !> @date  06/24/14  MDG 1.0 original, lifted from EMEBSD.f90 to simplify code
 !> @date  09/01/15  MDG 1.1 modified EBSDMasterDIType definition to accommodate multiple Lambert maps
-!> @date  09/15/15  SS  added accum_z to EBSDLargeAccumDIType
+!> @date  09/15/15  SS  1.2 added accum_z to EBSDLargeAccumDIType
 !--------------------------------------------------------------------------
 module EBSDDImod
 
 
 use local
 use typedefs
+use stringconstants
 
 IMPLICIT NONE
 
@@ -124,10 +125,10 @@ groupname = trim(enl%groupname)//'/EBSD/Header'
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! open the correct dataset and read the data
-dataset = 'nColumns'
+dataset = SC_nColumns
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%NScanColumns)
 
-dataset = 'nRows'
+dataset = SC_nRows
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%NScanRows)
 
 ! close the datafile
@@ -350,48 +351,48 @@ if (stat) then
   hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCxtalname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'mode'
+dataset = SC_mode
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCmode = trim(stringarray(1))
   deallocate(stringarray)
   if (enl%MCmode .ne. 'full') call FatalError('EBSDreadMCfile','This file is not in full mode. Please input correct HDF5 file')
-  dataset = 'numsx'
+dataset = SC_numsx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
   enl%nsx = (enl%nsx - 1)/2
   enl%nsy = enl%nsx
 
-  dataset = 'EkeV'
+dataset = SC_EkeV
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
 
-  dataset = 'Ehistmin'
+dataset = SC_Ehistmin
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
 
-  dataset = 'Ebinsize'
+dataset = SC_Ebinsize
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
 
-  dataset = 'depthmax'
+dataset = SC_depthmax
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
 
-  dataset = 'depthstep'
+dataset = SC_depthstep
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthstep)
 
-  dataset = 'sig'
+dataset = SC_sig
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsig)
 
-  dataset = 'omega'
+dataset = SC_omega
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
 
 ! close the name list group
@@ -399,18 +400,18 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! read from the EMheader
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCprogname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -419,20 +420,20 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! open the Data group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read data items 
-  dataset = 'numEbins'
+dataset = SC_numEbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numEbins)
 
-  dataset = 'numzbins'
+dataset = SC_numzbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numzbins)
 
-  dataset = 'accum_e'
+dataset = SC_accume
   call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
   enl%num_el = sum(acc_e)
   nx = (dims3(2)-1)/2
@@ -440,7 +441,7 @@ if (stat) then
   acc%accum_e = acc_e
   deallocate(acc_e)
 
-  dataset = 'accum_z'
+dataset = SC_accumz
   call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
   allocate(acc%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
   acc%accum_z = acc_z
@@ -543,32 +544,32 @@ if (stat) then
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EBSDMasterNameList'
+groupname = SC_EBSDMasterNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'energyfile'
+dataset = SC_energyfile
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterenergyfile = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'npx'
+dataset = SC_npx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%npx)
   enl%npy = enl%npx
 
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EBSDmaster'
+groupname = SC_EBSDmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'numEbins'
+dataset = SC_numEbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nE)
 ! make sure that MC and Master results are compatible
   if ((enl%numEbins.ne.enl%nE).and.(.not.PRESENT(mfile))) then
@@ -577,7 +578,7 @@ if (stat) then
     stop
   end if
 
-  dataset = 'numset'
+dataset = SC_numset
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
 
 ! dataset = 'squhex'
@@ -585,19 +586,19 @@ if (stat) then
 ! enl%sqorhe = trim(stringarray(1))
 ! deallocate(stringarray)
 
-  dataset = 'mLPNH'
+dataset = SC_mLPNH
   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
   allocate(master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
   master%mLPNH = sum(srtmp,4)
   deallocate(srtmp)
 
-  dataset = 'mLPSH'
+dataset = SC_mLPSH
   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
   allocate(master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
   master%mLPSH = sum(srtmp,4)
   deallocate(srtmp)
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterxtalname = trim(stringarray(1))
   deallocate(stringarray)
@@ -605,18 +606,18 @@ if (stat) then
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EBSDmaster'
+groupname = SC_EBSDmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
   
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -628,7 +629,7 @@ if (HDFopen.eqv..TRUE.)  call h5close_EMsoft(hdferr)
 
 else
   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'
-  call FatalError('EBSDreadMasterfile',masterfile)
+  call FatalError('EBSDIndexingreadMasterfile',masterfile)
 end if
 !====================================
 
@@ -639,7 +640,7 @@ end subroutine EBSDIndexingreadMasterfile
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:EBSDGenerateDetector
+! SUBROUTINE:EBSDIndexingGenerateDetector
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
@@ -766,6 +767,10 @@ deallocate(z)
   ipx = enl%numsx/2+nint(enl%xpc)
   ipy = enl%numsy/2+nint(enl%ypc)
   pcvec = (/ master%rgx(ipx,ipy), master%rgy(ipx,ipy), master%rgz(ipx,ipy) /)
+  !pcvec = (/enl%ypc*enl%delta*ca + enl%xpc*enl%delta*sa*sw + enl%L*cw*sa, &
+  !         enl%L*sw - enl%xpc*enl%delta*cw,&
+  !         enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
+  !pcvec = pcvec/NORM2(pcvec)
 
   do i=1,enl%numsx
     do j=1,enl%numsy
@@ -810,6 +815,191 @@ deallocate(z)
 
 !====================================
 end subroutine EBSDIndexingGenerateDetector
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDFastIndexingGenerateDetector
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief generate the detector arrays
+!
+!> @param enl EBSD name list structure
+!
+!> @date 06/24/14  MDG  1.0 original
+!> @date 07/01/15   SS  1.1 added omega as the second tilt angle
+!> @date 07/07/15   SS  1.2 correction to the omega tilt parameter; old version in the comments
+!> @date 01/26/16   SS  1.3 adjusted for EBSDIndexing
+!> @date 06/12/16  MDG  1.4 added correction for effetive detector pixel size w.r.t. equal area mapping
+!> @date 07/06/17  MDG  2.0 split from regular routine for an N-line detector
+!--------------------------------------------------------------------------
+recursive subroutine EBSDFastIndexingGenerateDetector(enl, acc, master, nlines, verbose)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDFastIndexingGenerateDetector
+
+use local
+use typedefs
+use NameListTypedefs
+use files
+use constants
+use io
+use Lambert
+
+IMPLICIT NONE
+
+type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+type(EBSDLargeAccumDIType),pointer              :: acc
+type(EBSDMasterDIType),pointer                  :: master
+integer(kind=irg),INTENT(IN)                    :: nlines
+logical,INTENT(IN),OPTIONAL                     :: verbose
+
+real(kind=sgl),allocatable                      :: scin_x(:), scin_y(:)                 ! scintillator coordinate ararays [microns]
+real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert from degrees to radians
+real(kind=sgl)                                  :: alp, ca, sa, cw, sw
+real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
+real(kind=sgl),allocatable                      :: z(:,:)           
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, ystep      ! various parameters
+real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp ! direction cosine array
+real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
+real(kind=sgl)                                  :: ixy(2)
+
+
+!====================================
+! ------ generate the detector arrays
+!====================================
+! This needs to be done only once for a given detector geometry
+allocate(scin_x(enl%numsx),scin_y(nlines),stat=istat)
+! if (istat.ne.0) then ...
+! we use nlines horizontal lines on the detector, equidistant from each other;
+! the scin_x array remains unchanged from the regular detector definition
+scin_x = - ( enl%xpc - ( 1.0 - enl%numsx ) * 0.5 - (/ (i-1, i=1,enl%numsx) /) ) * enl%delta
+
+! this requires a change of the scin_y array definition to a larger vertical step size 
+ystep = floor(float(enl%numsy)/float(nlines+1))
+scin_y = ( enl%ypc - ( 1.0 - enl%numsy ) * 0.5 - (/ (i*ystep, i=1,nlines) /) ) * enl%delta
+
+! auxiliary angle to rotate between reference frames
+alp = 0.5 * cPi - (enl%MCsig - enl%thetac) * dtor
+ca = cos(alp)
+sa = sin(alp)
+
+cw = cos(enl%omega * dtor)
+sw = sin(enl%omega * dtor)
+
+! we will need to incorporate a series of possible distortions 
+! here as well, as described in Gert nolze's paper; for now we 
+! just leave this place holder comment instead
+
+! compute auxilliary interpolation arrays
+! if (istat.ne.0) then ...
+
+L2 = enl%L * enl%L
+do j=1,enl%numsx
+  sx = L2 + scin_x(j) * scin_x(j)
+  Ls = -sw * scin_x(j) + enl%L*cw
+  Lc = cw * scin_x(j) + enl%L*sw
+  do i=1,nlines
+   rhos = 1.0/sqrt(sx + scin_y(i)**2)
+   master%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   master%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   master%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+  end do
+end do
+deallocate(scin_x, scin_y)
+
+! normalize the direction cosines.
+allocate(z(enl%numsx,nlines))
+  z = 1.0/sqrt(master%rgx*master%rgx+master%rgy*master%rgy+master%rgz*master%rgz)
+  master%rgx = master%rgx*z
+  master%rgy = master%rgy*z
+  master%rgz = master%rgz*z
+deallocate(z)
+!====================================
+
+!====================================
+! ------ create the equivalent detector energy array
+!====================================
+! from the Monte Carlo energy data, we need to extract the relevant
+! entries for the detector geometry defined above.  Once that is 
+! done, we can get rid of the larger energy array
+!
+! in the old version, we either computed the background model here, or 
+! we would load a background pattern from file.  In this version, we are
+! using the background that was computed by the MC program, and has 
+! an energy histogram embedded in it, so we need to interpolate this 
+! histogram to the pixels of the scintillator.  In other words, we need
+! to initialize a new accum_e array for the detector by interpolating
+! from the Lambert projection of the MC results.
+!
+
+! determine the scale factor for the Lambert interpolation; the square has
+! an edge length of 2 x sqrt(pi/2)
+  scl = float(enl%nsx) !  / LPs%sPio2  [removed on 09/01/15 by MDG for new Lambert routines]
+
+! get the indices of the minimum and maximum energy
+  Emin = nint((enl%energymin - enl%Ehistmin)/enl%Ebinsize) +1
+  if (Emin.lt.1)  Emin=1
+  if (Emin.gt.enl%numEbins)  Emin=enl%numEbins
+
+  Emax = nint((enl%energymax - enl%Ehistmin)/enl%Ebinsize) +1
+  if (Emax.lt.1)  Emax=1
+  if (Emax.gt.enl%numEbins)  Emax=enl%numEbins
+
+! get an estimate of the cone opening angle for which the projected area at the pattern
+! center is the same as delta**2
+  alpha = atan(enl%delta/enl%L/sqrt(sngl(cPi)))
+
+! then get the direction cosines for the pattern center
+  ipx = enl%numsx/2+nint(enl%xpc)
+  ipy = enl%numsy/2+nint(enl%ypc)
+  !pcvec = (/ master%rgx(ipx,ipy), master%rgy(ipx,ipy), master%rgz(ipx,ipy) /)
+  pcvec = (/enl%ypc*enl%delta*ca + enl%xpc*enl%delta*sa*sw + enl%L*cw*sa, &
+           enl%L*sw - enl%xpc*enl%delta*cw,&
+           enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
+  pcvec = pcvec/NORM2(pcvec)
+
+  do i=1,enl%numsx
+    do j=1,nlines
+! do the coordinate transformation for this detector pixel
+       dc = (/ master%rgx(i,j),master%rgy(i,j),master%rgz(i,j) /)
+! make sure the third one is positive; if not, switch all 
+       if (dc(3).lt.0.0) dc = -dc
+! convert these direction cosines to coordinates in the Rosca-Lambert projection
+        ixy = scl * LambertSphereToSquare( dc, istat )
+        x = ixy(1)
+        ixy(1) = ixy(2)
+        ixy(2) = -x
+! four-point interpolation (bi-quadratic)
+        nix = int(enl%nsx+ixy(1))-enl%nsx
+        niy = int(enl%nsy+ixy(2))-enl%nsy
+        dx = ixy(1)-nix
+        dy = ixy(2)-niy
+        dxm = 1.0-dx
+        dym = 1.0-dy
+! do the area correction for this detector pixel
+        dp = dot_product(pcvec,dc)
+        theta = acos(dp)
+        if ((i.eq.ipx).and.(j.eq.ipy)) then
+          gam = 0.25 
+        else
+          gam = 2.0 * tan(alpha) * dp / ( tan(theta+alpha) - tan(theta-alpha) ) * 0.25
+        end if
+! interpolate the intensity 
+        do k=Emin,Emax 
+          acc%accum_e_detector(k,i,j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
+                                        acc%accum_e(k,nix+1,niy) * dx * dym + &
+                                        acc%accum_e(k,nix,niy+1) * dxm * dy + &
+                                        acc%accum_e(k,nix+1,niy+1) * dx * dy )
+        end do
+    end do
+  end do 
+
+
+! and finally, get rid of the original accum_e array which is no longer needed
+! [we'll do that in the calling program ]
+!  deallocate(accum_e)
+
+!====================================
+end subroutine EBSDFastIndexingGenerateDetector
 
 !--------------------------------------------------------------------------
 !
@@ -1134,73 +1324,73 @@ nullify(HDF_head)
 readonly = .TRUE.
 hdferr =  HDF_openFile(dictfile, HDF_head, readonly)
 
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = 'EBSD'
+groupname = SC_EBSD
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'numangles'
+dataset = SC_numangles
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numangles)
 
 ! close the EMData namelist
 call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
-groupname = 'NMLparameters'
+groupname = SC_NMLparameters
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = 'EBSDNameList'
+groupname = SC_EBSDNameList
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'binning'
+dataset = SC_binning
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%binning)
 
-dataset = 'energyaverage'
+dataset = SC_energyaverage
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%energyaverage)
 
-dataset = 'numsx'
+dataset = SC_numsx
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numsx)
 
-dataset = 'numsy'
+dataset = SC_numsy
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numsy)
 
-dataset = 'beamcurrent'
+dataset = SC_beamcurrent
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%beamcurrent)
 
-dataset = 'dwelltime'
+dataset = SC_dwelltime
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%dwelltime)
 
-dataset = 'L'
+dataset = SC_L
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%L)
 
-dataset = 'delta'
+dataset = SC_delta
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%delta)
 
-dataset = 'energymax'
+dataset = SC_energymax
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%energymax)
 
-dataset = 'energymin'
+dataset = SC_energymin
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%energymin)
 
-dataset = 'gammavalue'
+dataset = SC_gammavalue
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%gammavalue)
 
-dataset = 'thetac'
+dataset = SC_thetac
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%thetac)
 
-dataset = 'xpc'
+dataset = SC_xpc
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%xpc)
 
-dataset = 'ypc'
+dataset = SC_ypc
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%ypc)
 
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%maskpattern = trim(stringarray(1))
 deallocate(stringarray)
 
-dataset = 'scalingmode'
+dataset = SC_scalingmode
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%scalingmode = trim(stringarray(1))
 deallocate(stringarray)
@@ -1210,12 +1400,12 @@ deallocate(stringarray)
 !enl%outputformat = trim(stringarray(1))
 !deallocate(stringarray)
 
-dataset = 'anglefile'
+dataset = SC_anglefile
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%anglefile = trim(stringarray(1))
 deallocate(stringarray)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%energyfile = trim(stringarray(1))
 deallocate(stringarray)
@@ -1235,60 +1425,60 @@ call Message('Opening HDF5 MC/Master file '//trim(enl%energyfile))
 readonly = .TRUE.
 hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
-groupname = 'NMLparameters'
+groupname = SC_NMLparameters
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%MCxtalname = trim(stringarray(1))
 deallocate(stringarray)
   
-dataset = 'mode'
+dataset = SC_mode
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%MCmode = trim(stringarray(1))
 deallocate(stringarray)
   
 if (enl%MCmode .ne. 'full') call FatalError('EBSDreadMCfile','This file is not in full mode. Please input correct HDF5 file')
-dataset = 'numsx'
+dataset = SC_numsx
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
 enl%nsx = (enl%nsx - 1)/2
 enl%nsy = enl%nsx
 
-dataset = 'EkeV'
+dataset = SC_EkeV
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
 
-dataset = 'Ehistmin'
+dataset = SC_Ehistmin
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
 
-dataset = 'Ebinsize'
+dataset = SC_Ebinsize
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
 
-dataset = 'depthmax'
+dataset = SC_depthmax
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
 
-dataset = 'depthstep'
+dataset = SC_depthstep
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthstep)
 
-dataset = 'sig'
+dataset = SC_sig
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsig)
 
-dataset = 'omega'
+dataset = SC_omega
 call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
 
 ! close the MCCL name list group
 call HDF_pop(HDF_head)
 
 ! open EBSDmaster name list group
-groupname = 'EBSDMasterNameList'
+groupname = SC_EBSDMasterNameList
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'dmin'
+dataset = SC_dmin
 call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%dmin)
 
-dataset = 'npx'
+dataset = SC_npx
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%npx)
 enl%npy = enl%npx
 
@@ -1297,19 +1487,19 @@ call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
 ! open EMheader name list group
-groupname = 'EMheader'
+groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! open EMheader name list group
-groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'ProgramName'
+dataset = SC_ProgramName
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%MCprogname = trim(stringarray(1))
 deallocate(stringarray)
 
-dataset = 'Version'
+dataset = SC_Version
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%MCscversion = trim(stringarray(1))
 deallocate(stringarray)
@@ -1317,10 +1507,10 @@ deallocate(stringarray)
 call HDF_pop(HDF_head)
 
 ! open EMheader name list group
-groupname = 'EBSDmaster'
+groupname = SC_EBSDmaster
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-dataset = 'ProgramName'
+dataset = SC_ProgramName
 call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
 enl%Masterprogname = trim(stringarray(1))
 deallocate(stringarray)

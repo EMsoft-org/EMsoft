@@ -45,6 +45,7 @@ use NameListTypedefs
 use NameListHandlers
 use io
 use files
+use stringconstants
 
 IMPLICIT NONE
 
@@ -97,6 +98,7 @@ use error
 use EMdymod
 use bobyqa_module
 use io, only:WriteValue
+use stringconstants
 
 IMPLICIT NONE
 
@@ -241,16 +243,16 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
         
         hdferr =  HDF_openFile(filename, HDF_head, readonly)
         
-        groupname = 'EMData'
+groupname = SC_EMData
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        groupname = 'EBSDmaster'
+groupname = SC_EBSDmaster
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        dataset = 'mLPNH'
+dataset = SC_mLPNH
         call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNHtmp)
 
-        dataset = 'mLPSH'
+dataset = SC_mLPSH
         call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPSHtmp)
 
         nnx = (dims4(1)-1)/2
@@ -263,21 +265,21 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
 
         deallocate(mLPNHtmp, mLPSHtmp) 
 
-        dataset = 'numEbins'
+dataset = SC_numEbins
         call HDF_readDatasetInteger(dataset, HDF_head, hdferr, iread)
         IPAR(4) = iread
 
-        dataset = 'numset'
+dataset = SC_numset
         call HDF_readDatasetInteger(dataset, HDF_head, hdferr, iread)
         IPAR(7) = iread
 
         call HDF_pop(HDF_head)
 
 ! open the Data group
-        groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        dataset = 'accum_e'
+dataset = SC_accume
         call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, accum_e_int)
         nnx = (dims3(2)-1)/2
         IPAR(5) = nnx
@@ -289,16 +291,16 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
         call HDF_pop(HDF_head)
 
 ! open the namelist group
-        groupname = 'NMLparameters'
+groupname = SC_NMLparameters
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        dataset = 'sig'
+dataset = SC_sig
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, fpar(4))
 
-        dataset = 'omega'
+dataset = SC_omega
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, fpar(5))
 
         call HDF_pop(HDF_head,.TRUE.)
@@ -478,16 +480,16 @@ else if(trim(enl%modalityname) .eq. 'ECP') then
         filename = trim(EMsoft_getEMdatapathname())//trim(enl%masterfile) 
         hdferr =  HDF_openFile(filename, HDF_head, readonly)
 
-        groupname = 'EMData'
+groupname = SC_EMData
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        groupname = 'ECPmaster'
+groupname = SC_ECPmaster
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        dataset = 'mLPNH'
+dataset = SC_mLPNH
         call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPNH3)
 
-        dataset = 'mLPSH'
+dataset = SC_mLPSH
         call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPSH3)
 
         nnx = (dims3(1)-1)/2
@@ -500,17 +502,17 @@ else if(trim(enl%modalityname) .eq. 'ECP') then
 
         deallocate(mLPNH3, mLPSH3)
 
-        dataset = 'numset'
+dataset = SC_numset
         call HDF_readDatasetInteger(dataset, HDF_head, hdferr, iread)
         IPAR(6) = iread
 
         call HDF_pop(HDF_head)
  
 ! open the Data group
-        groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        dataset = 'accum_e'
+dataset = SC_accume
         call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, accum_e_int)
         nnx = (dims3(2)-1)/2
         IPAR(5) = nnx
@@ -526,19 +528,19 @@ else if(trim(enl%modalityname) .eq. 'ECP') then
         call HDF_pop(HDF_head)
 
 ! open the namelist group
-        groupname = 'NMLparameters'
+groupname = SC_NMLparameters
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
         hdferr = HDF_openGroup(groupname, HDF_head)
 
-        dataset = 'sigstart'
+dataset = SC_sigstart
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, FPAR(6))
 
-        dataset = 'sigend'
+dataset = SC_sigend
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, FPAR(7))
 
-        dataset = 'sigstep'
+dataset = SC_sigstep
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, FPAR(8))
 
         call HDF_pop(HDF_head,.TRUE.)

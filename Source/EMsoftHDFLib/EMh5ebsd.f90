@@ -36,6 +36,7 @@
 !
 !> @date 2/11/16 MDG 1.0 original
 !> @date 3/10/16 MDG 1.1 completion of complete module; needs to be tested.
+!> @date 5/07/17 MDG 1.2 added TKD output routines
 !--------------------------------------------------------------------------
 module EMh5ebsd
 
@@ -44,10 +45,11 @@ use HDF5
 use h5im
 use h5lt
 use HDFsupport
+use stringconstants
 
 IMPLICIT NONE
 
-public :: h5ebsd_writeFile 
+public :: h5ebsd_writeFile, h5tkd_writeFile 
 
 private :: h5ebsd_writeInfo, h5ebsd_write2DImageFromVector, h5ebsd_writeCoordinateSystemGroup, &
            h5ebsd_writePatternCenterGroup, h5ebsd_writePhaseGroup
@@ -103,21 +105,21 @@ end if
 allocate(stringarray(1))
 
 ! set the Manufacturer and Version data sets
-  dataset = 'Manufacturer'
+dataset = SC_Manufacturer
   stringarray(1)= trim(manufacturer)
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
-  dataset = 'Version'
+dataset = SC_Version
   stringarray(1)= 'EMsoft '//EMsoft_getEMsoftversion()
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 ! add the EMsoft header group
 ! write the EMheader to the file
-  groupname = 'h5EBSD'
+groupname = SC_h5EBSD
   call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname)
 
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLfiles"
+groupname = SC_NMLfiles
   hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! and write the nml file for this program to the HDF5 file
@@ -129,7 +131,7 @@ allocate(stringarray(1))
   call HDF_pop(HDF_head)
   
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLparameters"
+groupname = SC_NMLparameters
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (filetype.eq.1) then 
     call HDFwriteEBSDDictionaryIndexingNameList(HDF_head, ebsdnl)
@@ -140,6 +142,91 @@ allocate(stringarray(1))
 
 end subroutine h5ebsd_writeInfo
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:h5tkd_writeInfo
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write general information fields to the h5tkd file, including EMsoft specific fields
+!
+!> @param filetype integer to indicate EBSD, ECP, etc filetypes
+!> @param dstr date string
+!> @param tstrb begin time string
+!> @param tstre end time string
+!> @param progname name of the calling program
+!
+!> @date 02/11/16 MDG 1.0 original
+!--------------------------------------------------------------------------
+subroutine h5tkd_writeInfo(filetype, dstr, tstrb, tstre, progname, tkdnl, nmldeffile, HDF_head)
+!DEC$ ATTRIBUTES DLLEXPORT :: h5tkd_writeInfo
+
+use NameListTypedefs
+use NameListHandlers
+use NameListHDFwriters
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                        :: filetype
+character(11),INTENT(IN)                            :: dstr
+character(15),INTENT(IN)                            :: tstrb
+character(15),INTENT(IN)                            :: tstre
+character(fnlen),INTENT(IN)                         :: progname
+type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+character(fnlen),INTENT(IN)                         :: nmldeffile
+type(HDFobjectStackType),pointer                    :: HDF_head
+
+character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+character(fnlen)                                    :: groupname, dataset, nmlname, manufacturer
+integer(kind=irg)                                   :: hdferr
+
+if (filetype.eq.1) then ! EBSDDictionarIndexing file
+  manufacturer = 'EMTKDDI.f90'
+  nmlname = 'TKDDictionaryIndexingNML'
+else
+  manufacturer = ''
+  nmlname = ''
+end if
+
+allocate(stringarray(1))
+
+! set the Manufacturer and Version data sets
+dataset = SC_Manufacturer
+  stringarray(1)= trim(manufacturer)
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+
+dataset = SC_Version
+  stringarray(1)= 'EMsoft '//EMsoft_getEMsoftversion()
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+
+! add the EMsoft header group
+! write the EMheader to the file
+groupname = SC_h5EBSD
+  call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname)
+
+! create a namelist group to write all the namelist files into
+groupname = SC_NMLfiles
+  hdferr = HDF_createGroup(groupname, HDF_head)
+
+! and write the nml file for this program to the HDF5 file
+! read the text file and write the array to the file
+  dataset = trim(nmlname)
+  hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
+
+! leave this group
+  call HDF_pop(HDF_head)
+  
+! create a namelist group to write all the namelist files into
+groupname = SC_NMLparameters
+  hdferr = HDF_createGroup(groupname, HDF_head)
+  if (filetype.eq.1) then 
+    call HDFwriteTKDDictionaryIndexingNameList(HDF_head, tkdnl)
+  end if
+
+! leave this group
+  call HDF_pop(HDF_head)
+
+end subroutine h5tkd_writeInfo
 
 !--------------------------------------------------------------------------
 !
@@ -198,6 +285,65 @@ call h5immake_image_8bit_f(HDF_head%objectID,dataset,width,height,image,hdferr)
 deallocate(image, newvec)
 
 end subroutine h5ebsd_write2DImageFromVector
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:h5tkd_write2DImageFromVector
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write a gray scale image to the HDF5 file starting from a 1D vector
+!
+!> @param filetype integer to indicate EBSD, ECP, etc filetypes
+!> @param dstr date string
+!> @param tstrb begin time string
+!> @param tstre end time string
+!> @param progname name of the calling program
+!
+!> @date 02/11/16 MDG 1.0 original
+!--------------------------------------------------------------------------
+subroutine h5tkd_write2DImageFromVector(dataset, inpvec, nump, tkdnl, HDF_head)
+!DEC$ ATTRIBUTES DLLEXPORT :: h5tkd_write2DImageFromVector
+
+use error
+use NameListTypedefs
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                         :: dataset
+integer(kind=irg),INTENT(IN)                        :: nump
+real(kind=sgl),INTENT(IN)                           :: inpvec(nump)
+type(TKDIndexingNameListType),INTENT(IN)            :: tkdnl
+type(HDFobjectStackType),pointer                    :: HDF_head
+
+real(kind=sgl)                                      :: mi, ma
+integer(kind=irg)                                   :: istat, jj, hdferr
+real(kind=sgl),allocatable                          :: newvec(:)
+integer(kind=irg),allocatable                       :: image(:,:)
+integer(HSIZE_T)                                    :: width, height
+
+allocate(newvec(nump),stat=istat)
+if (istat.ne.0) call FatalError('h5tkd_write2DImageFromVector','Could not allocate array for copy of input image')
+
+newvec = inpvec
+
+mi = minval(newvec)
+newvec = newvec - mi
+ma = maxval(newvec)
+width = tkdnl%ipf_wd
+height = tkdnl%ipf_ht
+allocate(image(width,height),stat=istat)
+if (istat.ne.0) call FatalError('h5tkd_write2DImageFromVector','Could not allocate array for output image')
+
+do jj = 1,height
+  image(1:width,jj) = int(255.0*newvec((jj-1)*width+1:jj*width)/ma)
+end do
+
+call h5immake_image_8bit_f(HDF_head%objectID,dataset,width,height,image,hdferr)
+deallocate(image, newvec)
+
+end subroutine h5tkd_write2DImageFromVector
+
 
 !--------------------------------------------------------------------------
 !
@@ -315,7 +461,7 @@ call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PI
 deallocate(schematic,chararr)
 !=====================================================
 ! and finally the selected type
-dataset = 'ID'
+dataset = SC_ID
 hdferr = HDF_writeDatasetInteger(dataset, 2, HDF_head)
  
 call HDF_pop(HDF_head)
@@ -368,13 +514,13 @@ xstar = ( float(scdim(1))*0.5 + xpc ) / float(scdim(1))
 ystar = ( float(scdim(2))*0.5 + ypc ) / float(scdim(2)) 
 zstar = L / ( delta * float(scdim(1)) )
 
-dataset = 'x-star'
+dataset = SC_xstar
 hdferr = HDF_writeDatasetFloat(dataset, xstar, HDF_head)
 
-dataset = 'y-star'
+dataset = SC_ystar
 hdferr = HDF_writeDatasetFloat(dataset, ystar, HDF_head)
 
-dataset = 'z-star'
+dataset = SC_zstar
 hdferr = HDF_writeDatasetFloat(dataset, zstar, HDF_head)
 
 call HDF_pop(HDF_head)
@@ -465,11 +611,11 @@ if (stat) then
   hdferr = HDF_openGroup(grname, HDF_head_local)
 
 ! get the lattice parameters
-  dataset = 'LatticeParameters'
+dataset = SC_LatticeParameters
   call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head_local, hdferr, cellparams) 
 
 ! get the spacegroupnumber
-  dataset = 'SpaceGroupNumber'
+dataset = SC_SpaceGroupNumber
   call HDF_readDatasetInteger(dataset, HDF_head_local, hdferr, SGnum)
 
 ! and close the xtal file
@@ -517,24 +663,24 @@ stringarray(1)= trim(TSLpgname(PGrot(pgnum)))
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 ! Symmetry
-dataset = 'Symmetry'
+dataset = SC_Symmetry
 hdferr = HDF_writeDatasetInteger(dataset, TSLoldID(pgnum), HDF_head)
 
 ! various other strings
 
 ! Formula [extract this from the first part of xtalname]
-dataset = 'Formula'
+dataset = SC_Formula
 i = scan(trim(xtalname),'.')
 stringarray(1) = xtalname(1:i-1)
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 ! Material name [same as Formula; this would require adding a field to the .xtal files]
-dataset = 'MaterialName'
+dataset = SC_MaterialName
 stringarray(1) = xtalname(1:i-1)
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 ! Info [empty string most of the time]
-dataset = 'Info'
+dataset = SC_Info
 stringarray(1) = ''
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
@@ -543,7 +689,7 @@ hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 ! families of unique planes, and compute structure factors ... 
 
 ! in this version of the software [EMsoft 3.1], we leave these datasets empty
-dataset = 'NumberFamilies'
+dataset = SC_NumberFamilies
 i = 0
 hdferr = HDF_writeDatasetInteger(dataset, i, HDF_head)
 ! call Message('h5ebsd_writePhaseGroup: writing of ->NumberFamilies<- data not yet implemented.')
@@ -647,13 +793,13 @@ allocate(stringarray(1))
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Scan 1')
 
-  groupname = 'EBSD'
+groupname = SC_EBSD
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group EBSD')
 
 !=====================================================
 !=====================================================
-  groupname = 'Data'
+groupname = SC_Data
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
 
@@ -664,21 +810,21 @@ allocate(stringarray(1))
 !=====================================================
 ! CI Confidence Index: real(kind=sgl), one for each pattern... we take this
 ! to be the largest dot product
-  dataset = 'CI'
+dataset = SC_CI
   allocate(exptCI(ipar(3)))
   exptCI = resultmain(1,1:ipar(3))
   hdferr = HDF_writeDatasetFloatArray1D(dataset, exptCI, ipar(3), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset CI')
 
 ! we also insert a visual map of the Confidence Index, resampled on a rectangular array
-  dataset = 'CIMap'
+dataset = SC_CIMap
   call h5ebsd_write2DImageFromVector(dataset, exptCI, ipar(3), ebsdnl, HDF_head)
   deallocate(exptCI)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset CImap')
 
 !=====================================================
 ! Fit (to be completed with Farangis' code)
-  dataset = 'Fit'
+dataset = SC_Fit
   allocate(eangle(ipar(3)),stat=istat)
   eangle = 1.0
   hdferr = HDF_writeDatasetFloatArray1D(dataset, eangle, ipar(3), HDF_head)
@@ -702,7 +848,7 @@ allocate(stringarray(1))
   eulerarray = eulerarray * 180.0/sngl(cPi)
 
 ! and write it to the HDF file
-  dataset = 'AverageOrientations'
+dataset = SC_AverageOrientations
   hdferr = HDF_writeDatasetFloatArray2D(dataset, avEuler, 3, ipar(3), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset AverageOrientations')
 
@@ -716,7 +862,7 @@ allocate(stringarray(1))
   dict%Num_of_iterations = 30
   dict%pgnum = ipar2(1)
   call DI_Init(dict,'nil') 
-  dataset = 'KAM'
+dataset = SC_KAM
   call EBSDgetKAMMap(ipar(3), eulers, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dict, kam)
   kam = kam*180.0/sngl(cPi)
   hdferr = HDF_writeDatasetFloatArray2D(dataset, kam, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
@@ -725,7 +871,7 @@ allocate(stringarray(1))
 
 ! get the Orientation Similarity Map (OSM)
   allocate(osm(ebsdnl%ipf_wd,ebsdnl%ipf_ht))
-  dataset = 'OSM'
+dataset = SC_OSM
   call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, ebsdnl%nosm, ebsdnl%ipf_wd, ebsdnl%ipf_ht, osm)
   hdferr = HDF_writeDatasetFloatArray2D(dataset, osm, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset OSM')
@@ -759,12 +905,12 @@ allocate(stringarray(1))
 
 !=====================================================
 ! IQ Image Quality; computed using the second moment of the pattern power spectrum
-  dataset = 'IQ'
+dataset = SC_IQ
   hdferr = HDF_writeDatasetFloatArray1D(dataset, exptIQ, ipar(3), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset IQ')
   
 ! we also insert a visual map of the Image Quality, resampled on a rectangular array
-  dataset = 'IQMap'
+dataset = SC_IQMap
   call h5ebsd_write2DImageFromVector(dataset, exptIQ, ipar(3), ebsdnl, HDF_head)
 
 !=====================================================
@@ -787,7 +933,7 @@ allocate(stringarray(1))
 
 !=====================================================
 ! Phase: Phase identifier (all zero for now)
-  dataset = 'Phase'
+dataset = SC_Phase
   allocate(iPhase(ipar(3)),stat=istat)
   iPhase = 0
   hdferr = HDF_writeDatasetInteger1byteArray1D(dataset, iPhase, ipar(3), HDF_head)
@@ -805,7 +951,7 @@ allocate(stringarray(1))
 
 !=====================================================
 ! Valid : all 0 for now
-  dataset = 'Valid'
+dataset = SC_Valid
   allocate(valid(ipar(3)),stat=istat)
   valid = 0
   hdferr = HDF_writeDatasetInteger1byteArray1D(dataset, valid, ipar(3), HDF_head)
@@ -814,7 +960,7 @@ allocate(stringarray(1))
 
 !=====================================================
 ! Euler angles: Phi 
-  dataset = 'Phi'
+dataset = SC_Phi
   allocate(eangle(ipar(3)),stat=istat)
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)
@@ -826,7 +972,7 @@ allocate(stringarray(1))
 
 !=====================================================
 ! Euler angles: Phi1
-  dataset = 'Phi1'
+dataset = SC_Phi1
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)
     eangle(ii) = eulerarray(1,indx)
@@ -837,7 +983,7 @@ allocate(stringarray(1))
 
 !=====================================================
 ! Euler angles: Phi2 
-  dataset = 'Phi2'
+dataset = SC_Phi2
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)
     eangle(ii) = eulerarray(3,indx)
@@ -882,41 +1028,41 @@ allocate(stringarray(1))
 ! TSL h5ebsd file format.
 !=====================================================
 ! EBSD average dot product map 
-  dataset = 'AvDotProductMap'
+dataset = SC_AvDotProductMap
   call h5ebsd_write2DImageFromVector(dataset, dpmap, ipar(3), ebsdnl, HDF_head)
 
 ! number of samples in dictionary
-  dataset = 'FZcnt'
+dataset = SC_FZcnt
   hdferr = HDF_writeDatasetInteger(dataset, ipar(5), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset FZcnt')
 
 ! point group number
-  dataset = 'PointGroupNumber'
+dataset = SC_PointGroupNumber
   hdferr = HDF_writeDatasetInteger(dataset, ipar(6), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset PointGroupNumber')
 
 ! Ncubochoric
-  dataset = 'Ncubochoric'
+dataset = SC_Ncubochoric
   hdferr = HDF_writeDatasetInteger(dataset, ebsdnl%ncubochoric, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Ncubochoric')
 
 ! write the list of sampled Euler angles
-  dataset = 'EulerAngles'
+dataset = SC_EulerAngles
   hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerarray, 3, ipar(4), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset EulerAngles')
 
 ! number of experimental patterns 
-  dataset = 'NumExptPatterns'
+dataset = SC_NumExptPatterns
   hdferr = HDF_writeDatasetInteger(dataset, ipar(3), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset NumExptPatterns')
 
 ! list of top nnk dot product values
-  dataset = 'TopDotProductList'
+dataset = SC_TopDotProductList
   hdferr = HDF_writeDatasetFloatArray2D(dataset, resultmain, ipar(1), ipar(2), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopDotProductList')
 
 ! indices of top matches into Euler angle list
-  dataset = 'TopMatchIndices'
+dataset = SC_TopMatchIndices
   hdferr = HDF_writeDatasetIntegerArray2D(dataset, indexmain, ipar(1), ipar(2), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopMatchIndices')
 
@@ -928,7 +1074,7 @@ allocate(stringarray(1))
 !=====================================================
 !=====================================================
 ! create the Header group
-  groupname = 'Header'
+groupname = SC_Header
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error creating group Header')
 
@@ -963,14 +1109,14 @@ allocate(stringarray(1))
 
 !=====================================================
 ! Notes
-  dataset = 'Notes'
+dataset = SC_Notes
   stringarray(1) = ''
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Notes')
 
 !=====================================================
 ! Operator
-  dataset = 'Operator'
+dataset = SC_Operator
   stringarray(1) = trim(EMsoft_getUsername())//' ['//trim(EMsoft_getUseremail())//']'
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Operator')
@@ -993,9 +1139,9 @@ allocate(stringarray(1))
 
 !=====================================================
 ! Phase group
-  groupname = 'Phase'
+groupname = SC_Phase
   hdferr = HDF_createGroup(groupname, HDF_head)
-  groupname = '1' 
+groupname = "1"
   call h5ebsd_writePhaseGroup(groupname, ebsdnl%MCxtalname, HDF_head)
 
 ! close the Phase group
@@ -1036,12 +1182,12 @@ allocate(stringarray(1))
 
 !=====================================================
 ! nColumns
-  dataset = 'nColumns'
+dataset = SC_nColumns
   hdferr = HDF_writeDatasetInteger(dataset, ebsdnl%ipf_wd, HDF_head)
 
 !=====================================================
 ! nRows
-  dataset = 'nRows'
+dataset = SC_nRows
   hdferr = HDF_writeDatasetInteger(dataset, ebsdnl%ipf_ht, HDF_head)
 
 !=====================================================
@@ -1051,5 +1197,502 @@ allocate(stringarray(1))
   call HDF_pop(HDF_head,.TRUE.)
 
 end subroutine h5ebsd_writeFile
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: h5tkd_writeFile
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write an .h5ebsd file
+!
+!> @param vendor vendor string 'TSL', 'HKL', 'BRU'; only 'TSL' implemented for now
+!> @param ebsdnl input name list
+!
+!> @date 05/07/17 MDG 1.0 original, based on original EBSD routine
+!--------------------------------------------------------------------------
+subroutine h5tkd_writeFile(vendor, tkdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, dpmap, &
+                            progname, nmldeffile)
+!DEC$ ATTRIBUTES DLLEXPORT :: h5tkd_writeFile
+
+use NameListTypedefs
+use io
+use constants
+use ebsdiomod
+use ebsdmod
+use ebsddimod
+use dictmod
+
+IMPLICIT NONE
+
+character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
+type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+character(11),INTENT(IN)                            :: dstr
+character(15),INTENT(IN)                            :: tstrb
+integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
+real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
+real(kind=sgl),INTENT(IN)                           :: exptIQ(ipar(3))
+integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
+real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
+real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
+character(fnlen),INTENT(IN)                         :: progname
+character(fnlen),INTENT(IN)                         :: nmldeffile
+
+character(15)                                       :: tstre
+character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+integer(kind=irg)                                   :: hdferr, filetype, i, ii, jj,indx, istat, ipar2(6), L
+character(fnlen)                                    :: groupname, dataset, h5ebsdfile, savefile
+logical                                             :: noindex
+type(dicttype)                                      :: dict
+
+real(kind=sgl),allocatable                          :: osm(:,:), kam(:,:)
+
+real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), results(:), avEuler(:,:), &
+                                                       lresultmain(:,:), eulers(:,:) 
+integer(kind=1),allocatable                         :: iPhase(:), valid(:)
+integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
+
+type(HDFobjectStackType),pointer                    :: HDF_head
+
+
+
+!=====================================================
+! write the output in the format of an h5ebsd file
+!!!! THIS PART IS STILL UNDER DEVELOPMENT !!!!
+! we use the TSL hrebsd file as a template for now; this 
+! can be extended later other vendor formats
+!=====================================================
+
+if (vendor.ne.'TSL') then
+  call Message('Only TSL h5tkd file format is implemented in this version.')
+  call Message('Program results will be saved in this format.')
+end if
+
+allocate(stringarray(1))
+
+  nullify(HDF_head)
+  call timestamp(timestring=tstre)
+
+! Create a new file using the default properties.
+  h5ebsdfile = trim(EMsoft_getEMdatapathname())//trim(tkdnl%datafile)
+  h5ebsdfile = EMsoft_toNativePath(h5ebsdfile)
+  hdferr =  HDF_createFile(h5ebsdfile, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening file')
+  filetype = 1
+
+  call h5tkd_writeInfo(filetype, dstr, tstrb, tstre, progname, tkdnl, nmldeffile, HDF_head)
+
+! here we start with the h5ebsd-specific stuff
+  groupname = 'Scan 1'
+  hdferr = HDF_createGroup(groupname, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Scan 1')
+
+groupname = SC_EBSD
+  hdferr = HDF_createGroup(groupname, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group EBSD')
+
+!=====================================================
+!=====================================================
+groupname = SC_Data
+  hdferr = HDF_createGroup(groupname, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
+
+! there are 15 datasets in this Data group: CI, Fit, IQ, PRIAS Bottom Strip,
+! PRIAS Center Square, PRIAS Top Strip, Pattern, Phase, Phi, Phi1, Phi2,
+! SEM Signal, Valid, X Position, Y Position
+
+!=====================================================
+! CI Confidence Index: real(kind=sgl), one for each pattern... we take this
+! to be the largest dot product
+dataset = SC_CI
+  allocate(exptCI(ipar(3)))
+  exptCI = resultmain(1,1:ipar(3))
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, exptCI, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset CI')
+
+! we also insert a visual map of the Confidence Index, resampled on a rectangular array
+dataset = SC_CIMap
+  call h5tkd_write2DImageFromVector(dataset, exptCI, ipar(3), tkdnl, HDF_head)
+  deallocate(exptCI)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset CImap')
+
+!=====================================================
+! Fit (to be completed with Farangis' code)
+dataset = SC_Fit
+  allocate(eangle(ipar(3)),stat=istat)
+  eangle = 1.0
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, eangle, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Fit')
+  deallocate(eangle)
+
+!=====================================================
+! Averaged Orientation Map (using near-match list and quaternion logarithm averaging)
+! define the ipar2 entries
+  allocate(avEuler(3,ipar(3)))
+  ipar2(1) = ipar(6)
+  ipar2(2) = ipar(5)
+  ipar2(3) = ipar(3)
+  ipar2(4) = ipar(1)
+  ipar2(5) = ipar(2)
+  ipar2(6) = tkdnl%nnav
+! get the avEuler array
+  eulerarray = eulerarray * sngl(cPi)/180.0
+  call EBSDgetAverageOrientations(ipar2, eulerarray, indexmain(1:ipar2(4),1:ipar2(5)), resultmain(1:ipar2(4),1:ipar2(5)), &
+                                  avEuler)
+  eulerarray = eulerarray * 180.0/sngl(cPi)
+
+! and write it to the HDF file
+dataset = SC_AverageOrientations
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, avEuler, 3, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset AverageOrientations')
+
+! get the nearest neighbor Kernel Average Misorientation Map (KAM)
+  allocate(kam(tkdnl%ipf_wd,tkdnl%ipf_ht),eulers(3,ipar(3)))
+  do i=1,ipar(3)
+    eulers(1:3,i) = eulerarray(1:3,indexmain(1,i))
+  end do
+  eulers = eulers*sngl(cPi)/180.0
+  dict%Num_of_init = 3
+  dict%Num_of_iterations = 30
+  dict%pgnum = ipar2(1)
+  call DI_Init(dict,'nil') 
+dataset = SC_KAM
+  call EBSDgetKAMMap(ipar(3), eulers, tkdnl%ipf_wd, tkdnl%ipf_ht, dict, kam)
+  kam = kam*180.0/sngl(cPi)
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, kam, tkdnl%ipf_wd, tkdnl%ipf_ht, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset KAM')
+  deallocate(kam, eulers)
+
+! get the Orientation Similarity Map (OSM)
+  allocate(osm(tkdnl%ipf_wd,tkdnl%ipf_ht))
+dataset = SC_OSM
+  call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, tkdnl%nosm, tkdnl%ipf_wd, tkdnl%ipf_ht, osm)
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, osm, tkdnl%ipf_wd, tkdnl%ipf_ht, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset OSM')
+  deallocate(osm)
+
+! also create a second ctf file, if requested
+  if (trim(tkdnl%avctffile).ne.'undefined') then
+    savefile = tkdnl%ctffile
+    tkdnl%ctffile = tkdnl%avctffile
+    ipar2(1:6) = ipar(1:6)
+    ipar(1) = 1
+    ipar(2) = ipar2(3)
+    ipar(3) = ipar2(3)
+    ipar(4) = ipar2(3)
+  
+    allocate(lindexmain(1,ipar2(3)), lresultmain(1,ipar2(3)))
+    lindexmain = 0
+    lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
+    noindex = .TRUE.
+
+    call ctftkd_writeFile(tkdnl,ipar,lindexmain,avEuler,lresultmain,noindex)
+    call Message('Average orientation data stored in ctf file : '//trim(tkdnl%avctffile))
+    tkdnl%ctffile = savefile
+    ipar(1:6) = ipar2(1:6)
+    deallocate(lindexmain, lresultmain)
+  end if
+
+! we also insert a visual map of the Confidence Index, resampled on a rectangular array
+! dataset = 'FitMap'
+! call h5ebsd_write2DImageFromVector(dataset, totnumexpt, exptCI, tkdnl, HDF_head)
+
+!=====================================================
+! IQ Image Quality; computed using the second moment of the pattern power spectrum
+dataset = SC_IQ
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, exptIQ, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset IQ')
+  
+! we also insert a visual map of the Image Quality, resampled on a rectangular array
+dataset = SC_IQMap
+  call h5tkd_write2DImageFromVector(dataset, exptIQ, ipar(3), tkdnl, HDF_head)
+
+!=====================================================
+! PRIAS Bottom Strip: to be implemented
+!   call Message('h5ebsd_writeFile: writing of ->PRIAS Bottom Strip<- data not yet implemented.')
+
+!=====================================================
+! PRIAS Center Square: to be implemented
+!   call Message('h5ebsd_writeFile: writing of ->PRIAS Center Strip<- data not yet implemented.')
+
+!=====================================================
+! PRIAS Top Strip: to be implemented
+!   call Message('h5ebsd_writeFile: writing of ->PRIAS Top Strip<- data not yet implemented.')
+
+!=====================================================
+! Pattern: in principle, this is where the fitted patterns could be stored
+! This will require re-computing them for the best match orientations; we 
+! could leave this as an option for the user, to be implemented.
+!   call Message('h5ebsd_writeFile: writing of ->Pattern<- data not yet implemented.')
+
+!=====================================================
+! Phase: Phase identifier (all zero for now)
+dataset = SC_Phase
+  allocate(iPhase(ipar(3)),stat=istat)
+  iPhase = 0
+  hdferr = HDF_writeDatasetInteger1byteArray1D(dataset, iPhase, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Phase')
+  deallocate(iPhase)
+
+!=====================================================
+! SEM Signal: all 0 for now
+  dataset = 'SEM Signal'
+  allocate(SEMsignal(ipar(3)),stat=istat)
+  SEMsignal = 10000
+  hdferr = HDF_writeDatasetIntegerArray1D(dataset, SEMsignal, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset SEM Signal')
+  deallocate(SEMsignal)
+
+!=====================================================
+! Valid : all 0 for now
+dataset = SC_Valid
+  allocate(valid(ipar(3)),stat=istat)
+  valid = 0
+  hdferr = HDF_writeDatasetInteger1byteArray1D(dataset, valid, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Valid')
+  deallocate(valid)
+
+!=====================================================
+! Euler angles: Phi 
+dataset = SC_Phi
+  allocate(eangle(ipar(3)),stat=istat)
+  do ii = 1,ipar(3)
+    indx = indexmain(1,ii)
+    eangle(ii) = eulerarray(2,indx)
+  end do
+  eangle = eangle * sngl(cPi)/180.0
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, eangle, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Phi')
+
+!=====================================================
+! Euler angles: Phi1
+dataset = SC_Phi1
+  do ii = 1,ipar(3)
+    indx = indexmain(1,ii)
+    eangle(ii) = eulerarray(1,indx)
+  end do
+  eangle = eangle * sngl(cPi)/180.0
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, eangle, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Phi1')
+
+!=====================================================
+! Euler angles: Phi2 
+dataset = SC_Phi2
+  do ii = 1,ipar(3)
+    indx = indexmain(1,ii)
+    eangle(ii) = eulerarray(3,indx)
+  end do
+  eangle = eangle * sngl(cPi)/180.0
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, eangle, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Phi2')
+  deallocate(eangle)
+ 
+!=====================================================
+! X Position: list of x positions for sampling points; requires knowledge of step size
+! from Header
+  dataset = 'X Position'
+  allocate(results(ipar(3)),stat=istat)
+  do jj=1,tkdnl%ipf_ht
+    do ii=1,tkdnl%ipf_wd
+      results(tkdnl%ipf_wd*(jj-1)+ii) = (ii-1)*tkdnl%StepX 
+    end do
+  end do
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, results, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset X Position')
+
+ 
+!=====================================================
+! Y Position: list of y positions for sampling points; requires knowledge of step size
+! from Header
+  dataset = 'Y Position'
+  do jj=1,tkdnl%ipf_ht
+    do ii=1,tkdnl%ipf_wd
+      results(tkdnl%ipf_wd*(jj-1)+ii) = (jj-1)*tkdnl%StepY 
+    end do
+  end do
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, results, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Y position')
+  deallocate(results)
+ 
+!=====================================================
+!=====================================================
+! this concludes the standard data sets in the Data group
+! here, we have additional data sets based on results from the 
+! dictionary indexing program; these are not part of the standard
+! TSL h5ebsd file format.
+!=====================================================
+! EBSD average dot product map 
+dataset = SC_AvDotProductMap
+  call h5tkd_write2DImageFromVector(dataset, dpmap, ipar(3), tkdnl, HDF_head)
+
+! number of samples in dictionary
+dataset = SC_FZcnt
+  hdferr = HDF_writeDatasetInteger(dataset, ipar(5), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset FZcnt')
+
+! point group number
+dataset = SC_PointGroupNumber
+  hdferr = HDF_writeDatasetInteger(dataset, ipar(6), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset PointGroupNumber')
+
+! Ncubochoric
+dataset = SC_Ncubochoric
+  hdferr = HDF_writeDatasetInteger(dataset, tkdnl%ncubochoric, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Ncubochoric')
+
+! write the list of sampled Euler angles
+dataset = SC_EulerAngles
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerarray, 3, ipar(4), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset EulerAngles')
+
+! number of experimental patterns 
+dataset = SC_NumExptPatterns
+  hdferr = HDF_writeDatasetInteger(dataset, ipar(3), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset NumExptPatterns')
+
+! list of top nnk dot product values
+dataset = SC_TopDotProductList
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, resultmain, ipar(1), ipar(2), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopDotProductList')
+
+! indices of top matches into Euler angle list
+dataset = SC_TopMatchIndices
+  hdferr = HDF_writeDatasetIntegerArray2D(dataset, indexmain, ipar(1), ipar(2), HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopMatchIndices')
+
+! leave this group
+  call HDF_pop(HDF_head)
+!=====================================================
+!=====================================================
+
+!=====================================================
+!=====================================================
+! create the Header group
+groupname = SC_Header
+  hdferr = HDF_createGroup(groupname, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error creating group Header')
+
+! there are 15 datasets in this group: Camera Azimuth Angle, Camera Elevation Angle,
+! Grid Type, Notes, Operator, Pattern Height, Pattern Width, Sample ID, Sample Tilt,
+! Scan ID, Step X, Step Y, Working Distance, nColumns, nRows
+! there are also 3 groups: Coordinate System, Pattern Center Calibration, and Phase
+
+!=====================================================
+! Camera Azimuthal Angle
+  dataset = 'Camera Azimuthal Angle'
+  hdferr = HDF_writeDatasetFloat(dataset, 0.0, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Camera Azimuthal Angle')
+ 
+!=====================================================
+! Camera Elevation Angle
+  dataset = 'Camera Elevation Angle'
+  hdferr = HDF_writeDatasetFloat(dataset, tkdnl%thetac, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopMatchIndices')
+ 
+
+!=====================================================
+! Coordinate System group
+  call h5ebsd_writeCoordinateSystemGroup(HDF_head)
+
+!=====================================================
+! Grid Type
+  dataset = 'Grid Type'
+  stringarray(1) = 'SqrGrid'
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Grid Type')
+
+!=====================================================
+! Notes
+dataset = SC_Notes
+  stringarray(1) = ''
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Notes')
+
+!=====================================================
+! Operator
+dataset = SC_Operator
+  stringarray(1) = trim(EMsoft_getUsername())//' ['//trim(EMsoft_getUseremail())//']'
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Operator')
+
+!=====================================================
+! Pattern Center Calibration group
+  call h5ebsd_writePatternCenterGroup(tkdnl%xpc, tkdnl%ypc, tkdnl%L, tkdnl%delta, (/tkdnl%numsx, tkdnl%numsy/), HDF_head)
+
+!=====================================================
+! Pattern height
+  dataset = 'Pattern Height'
+  hdferr = HDF_writeDatasetInteger(dataset, tkdnl%numsx/tkdnl%binning, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Pattern Height')
+
+!=====================================================
+! Pattern width
+  dataset = 'Pattern Width'
+  hdferr = HDF_writeDatasetInteger(dataset, tkdnl%numsy/tkdnl%binning, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Pattern Width')
+
+!=====================================================
+! Phase group
+groupname = SC_Phase
+  hdferr = HDF_createGroup(groupname, HDF_head)
+groupname = "1"
+  call h5ebsd_writePhaseGroup(groupname, tkdnl%MCxtalname, HDF_head)
+
+! close the Phase group
+  call HDF_pop(HDF_head)
+
+
+!=====================================================
+! Sample ID
+  dataset = 'Sample ID'
+  stringarray(1) = ''
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+
+!=====================================================
+! Sample Tilt
+  dataset = 'Sample Tilt'
+  hdferr = HDF_writeDatasetFloat(dataset, sngl(tkdnl%MCsig), HDF_head)
+ 
+!=====================================================
+! Scan ID
+  dataset = 'Scan ID'
+  stringarray(1) = ''
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+
+!=====================================================
+! Step X
+  dataset = 'Step X'
+  hdferr = HDF_writeDatasetFloat(dataset, tkdnl%StepX, HDF_head)
+ 
+!=====================================================
+! Step Y
+  dataset = 'Step Y'
+  hdferr = HDF_writeDatasetFloat(dataset, tkdnl%StepY, HDF_head)
+
+!=====================================================
+! Working Distance
+  dataset = 'Working Distance'
+  hdferr = HDF_writeDatasetFloat(dataset, tkdnl%WD, HDF_head)
+
+!=====================================================
+! nColumns
+dataset = SC_nColumns
+  hdferr = HDF_writeDatasetInteger(dataset, tkdnl%ipf_wd, HDF_head)
+
+!=====================================================
+! nRows
+dataset = SC_nRows
+  hdferr = HDF_writeDatasetInteger(dataset, tkdnl%ipf_ht, HDF_head)
+
+!=====================================================
+!=====================================================
+
+! once all these have been written, we simply pop all the way to the top and close the file
+  call HDF_pop(HDF_head,.TRUE.)
+
+end subroutine h5tkd_writeFile
+
+
 
 end module EMh5ebsd

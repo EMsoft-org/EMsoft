@@ -1,5 +1,20 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    echo "This script requires 2 arguments: Path where you want the SDK Installed and the "
+    echo "the number of build threads to use when building. For example if you pass "
+    echo "'Build_SDK.sh /opt/EMsoft_SDK 8' then /opt/EMsoft_SDK will be the folder"
+    echo "that has all the dependent library folders in it."
+    exit 
+fi
+
+SDK_INSTALL=${1}
+PARALLEL_BUILD=${2}
+HOST_SYSTEM=`uname`
+echo "SDK_INSTALL=$SDK_INSTALL"
+echo "PARALLEL_BUILD=$PARALLEL_BUILD"
+echo "Host System: $HOST_SYSTEM"
+
 #------------------------------------------------------------------------------
 # Read the configuration file for the SDK Build. All important variables are 
 # stored in the .conf file. DO NOT CHANGE variables in this file.
@@ -45,23 +60,20 @@ fi
 if [ ! -e "$SDK_INSTALL/${HDF5_FOLDER_NAME}" ];
 then
   tar -xvzf ${HDF5_ARCHIVE_NAME}
-# mv hdf5-1.8.15 hdf5-1.8.15_source
 fi
 
 
-# We assume we already have downloaded the source for HDF5 HDF5_VERSION 1.8.18 and have it in a folder
-# called hdf5-1.8.18
-# SHARED Fortran Libraries are NOT supported on macOS as of HDF 1.8.16
+# We assume we already have downloaded the source for HDF5
 cd ${HDF5_FOLDER_NAME}
 mkdir Debug
 cd Debug
-cmake  -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DHDF5_BUILD_TOOLS=ON -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_WITH_INSTALL_NAME=ON -DHDF5_BUILD_CPP_LIB=ON -DHDF5_BUILD_HL_LIB=ON -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/hdf5-${HDF5_VERSION}-Debug ../
+$SDK_INSTALL/$CMAKE_FOLDER_NAME/${CMAKE_EXE_PATH}/bin/cmake  -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Debug -DHDF5_BUILD_TOOLS=ON -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_WITH_INSTALL_NAME=ON -DHDF5_BUILD_CPP_LIB=ON -DHDF5_BUILD_HL_LIB=ON -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/hdf5-${HDF5_VERSION}-Debug ../
 make -j${PARALLEL_BUILD}
 make install
 cd ../
 mkdir Release
 cd Release
-cmake  -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DHDF5_BUILD_TOOLS=ON -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_WITH_INSTALL_NAME=ON -DHDF5_BUILD_CPP_LIB=ON -DHDF5_BUILD_HL_LIB=ON -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/hdf5-${HDF5_VERSION}-Release ../
+$SDK_INSTALL/$CMAKE_FOLDER_NAME/${CMAKE_EXE_PATH}/bin/cmake  -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release -DHDF5_BUILD_TOOLS=ON -DHDF5_BUILD_FORTRAN=ON -DHDF5_BUILD_WITH_INSTALL_NAME=ON -DHDF5_BUILD_CPP_LIB=ON -DHDF5_BUILD_HL_LIB=ON -DCMAKE_INSTALL_PREFIX=$SDK_INSTALL/hdf5-${HDF5_VERSION}-Release ../
 make -j${PARALLEL_BUILD}
 make install
 

@@ -63,8 +63,18 @@ OMETwidget_s.chainIDs[inum] = WIDGET_BASE(TITLE='SAMPLE', $
 file1 = WIDGET_BASE(OMETwidget_s.chainIDs[inum], /FRAME, /COLUMN, XSIZE=95, /ALIGN_CENTER)
 file2 = WIDGET_LABEL(file1, VALUE='SAMPLE', font=fontstr, /ALIGN_CENTER)
 
+; add a field to select an EMOMmaster file
 
-; there are currently no options for the sample widget
+file3 = WIDGET_BASE(file1, XSIZE=140, /ROW)
+
+Efitwidget_s.loadEMOMmasterfile = WIDGET_BUTTON(file3, $
+                                UVALUE='MASTERFILE', $
+                                VALUE='Load Master', $
+                                EVENT_PRO='OMETsampleWidget_event', $
+                                SENSITIVE=1, $
+                                /FRAME)
+
+
 
 ; we always need a sample, so there is no delete button here...
 

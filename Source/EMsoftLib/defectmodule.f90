@@ -107,7 +107,8 @@ defects%numEinc = 0
 ! first of all, we need to read all the defect data from the jsonname file, including the foil data
 call JSONreadDefectFile(cell, jsonname, defects, error_cnt, verbose)
 
-call Message('The following defects were initialized : ')
+if (v.eq.1) then
+  call Message('The following defects were initialized : ')
   io_int(1) = defects%numdisl
   call WriteValue('  Number of dislocations       : ',io_int,1)
   io_int(1) = defects%numYdisl
@@ -120,34 +121,52 @@ call Message('The following defects were initialized : ')
   call WriteValue('  Number of Eshelby inclusions : ',io_int,1)
   io_int(1) = defects%numvoids
   call WriteValue('  Number of voids              : ',io_int,1)
+end if
 
 ! once we have this data, we need to initialize all other defect related parameters, including
 ! things like displacement field parameters etc...
 
 ! we begin with the foil itself
 call init_foil_data(cell,defects,npix,npiy,L,v)
+if (v.eq.1) call Message('========> completed foil generation')
 
 ! then we add the defects, starting with all the regular dislocations, if any
-if (defects%numdisl.ne.0) call init_dislocation_data(cell,defects,npix,npiy,gf,L,v)
+if (defects%numdisl.ne.0) then
+  call init_dislocation_data(cell,defects,npix,npiy,gf,L,v)
+  call Message('========> completed dislocation generation')
+end if
 
 ! then Ydislocations
-if (defects%numYdisl.ne.0) call init_YSH_dislocation_data(cell,defects,npix,npiy,gf,L,v)
+if (defects%numYdisl.ne.0) then
+  call init_YSH_dislocation_data(cell,defects,npix,npiy,gf,L,v)
+  if (v.eq.1) call Message('========> completed Ydislocation generation')
+end if
 
 ! stacking faults
-if (defects%numsf.ne.0) call init_stacking_fault_data(cell,defects,L,npix,npiy,gf,v)
+if (defects%numsf.ne.0) then
+  call init_stacking_fault_data(cell,defects,L,npix,npiy,gf,v)
+  if (v.eq.1) call Message('========> completed SF generation')
+end if
 
 ! inclusions
-if (defects%numinc.ne.0) call init_inclusion_data(defects,L,npix,npiy,v)
+if (defects%numinc.ne.0) then
+  call init_inclusion_data(defects,L,npix,npiy,v)
+  if (v.eq.1) call Message('========> completed inclusion generation')
+end if
 
 ! Eshelby inclusions
 if (defects%numEinc.ne.0) then 
   do i=1,defects%numEinc 
     call InitializeEshelbyInclusion(cell,defects,i,v,L,npix,npiy) 
   end do
+  if (v.eq.1) call Message('========> completed E-inclusion generation')
 end if
 
 ! voids
-if (defects%numvoids.ne.0) call init_void_data(defects,L,npix,npiy,v)
+if (defects%numvoids.ne.0) then
+  call init_void_data(defects,L,npix,npiy,v)
+  if (v.eq.1) call Message('========> completed void generation')
+end if
 
 
 end subroutine InitializeDefects

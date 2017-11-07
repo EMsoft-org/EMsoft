@@ -108,7 +108,7 @@ character, allocatable, target :: platform_extensions(:)
 ! String array for holding device name.
 character, allocatable, target :: device_name(:)
 ! Maximum compute units for device.
-integer(c_size_t), target      :: device_mwgs, device_mwis(3)
+integer(c_size_t), target      :: device_mwgs, device_mwis(3), device_maxalloc
 integer(c_int32_t), target     :: device_cu
 
 integer(c_int64_t), target     :: device_gms, device_mmas
@@ -206,7 +206,6 @@ else
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_GROUP_SIZE, temp_size, C_LOC(device_mwgs), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
-
 ! CL_DEVICE_MAX_WORK_ITEM_SIZES
     temp_size = 8 * 3
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_WORK_ITEM_SIZES, temp_size, C_LOC(device_mwis), temp_size)
@@ -290,10 +289,16 @@ else
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_NAME, temp_size, C_LOC(device_name), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
 
+! CL_DEVICE_MAX_MEM_ALLOC_SIZE
+    temp_size = 8 
+    err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_MEM_ALLOC_SIZE, temp_size, C_LOC(device_maxalloc), temp_size)
+    call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
+    device_maxalloc = device_maxalloc/1024/1024
+
 ! Print brief device details. Since this routine can be used by the user to determine GPU device IDs,
 ! we subtract 1 from the device ID to make sure that the CPU gets number 0...
-    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A,$)') ' Device (#', i, ', CU/MWGS/MWIS/GMS: ',device_cu,'/',device_mwgs,'/',&
-                                                   device_mwis(1),',',device_mwis(2),',',device_mwis(3),'/',device_gms,') - '
+    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A,I4,A,$)') ' Device (#', i, ', CU/MWGS/MWIS/GMS/MAS: ',device_cu,'/',&
+          device_mwgs,'/',device_mwis(1),',',device_mwis(2),',',device_mwis(3),'/',device_gms,',',device_maxalloc,') - '
     print *, device_name
     deallocate(device_name)
   end do
@@ -301,7 +306,7 @@ end if
 
 print *,' '
 write (*,*) '[CU = Compute Units; MWGS = Maximum Work Group Size; MWIS = Maximum Work Item Sizes (3D); '// &
-            'GMS = Global Memory Size (Gb)]'
+            'GMS = Global Memory Size (Gb); MAS = Maximum Allocatable Memory Size (Mb)]'
 
 end subroutine CLquery_platform_info
 
@@ -341,6 +346,9 @@ character(len=source_length),target     :: source
 character(fnlen)                        :: fname, clpath, clpath2, tcf
 integer(kind=irg)                       :: irec, ierr, ipos, i, j
 logical                                 :: develop, fexist
+character(1)                            :: EMsoftnativedelimiter
+integer(kind=irg)                       :: idx
+
 
 ! find the cl file in the main opencl folder or the private folder if the Develop mode equals Yes...
 clpath = trim(EMsoft_getOpenCLpathname())
@@ -363,7 +371,19 @@ if (develop.eqv..TRUE.) then
   end do
 end if
 
+if (trim(EMsoft_getEMsoftplatform()).eq.SC_Windows) then
+  EMsoftnativedelimiter = ':'
+  idx = 2
+else
+  EMsoftnativedelimiter = '/'
+  idx = 1
+end if
+
+if (sourcefile(idx:idx).ne.EMsoftnativedelimiter) then
 fname = trim(clpath)//trim(sourcefile)
+else
+fname = trim(sourcefile)
+endif
 fname = EMsoft_toNativePath(fname)
 inquire(file=trim(fname),exist=fexist)
 if (.not.fexist) then 

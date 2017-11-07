@@ -6,7 +6,7 @@
 ! sample tilt angle around RD axis [degrees]
  omega = 0.0,
 ! number of pixels along x-direction of square projection [odd number!]
- numsx = 1501,
+ numsx = 501,
 ! seed for Monte Carlo random number generator [should be a prime number]
  primeseed = 932117,
 ! number of incident electrons per thread

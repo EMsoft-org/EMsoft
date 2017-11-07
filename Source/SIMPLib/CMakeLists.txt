@@ -188,16 +188,12 @@ add_library(${PROJECT_NAME} ${LIB_TYPE} ${Project_SRCS} )
 target_link_libraries(${PROJECT_NAME} ${${PROJECT_NAME}_LINK_LIBS})
 LibraryProperties( ${PROJECT_NAME} ${EXE_DEBUG_EXTENSION} )
 set_target_properties (${PROJECT_NAME} PROPERTIES
-  FOLDER Source/${PROJECT_NAME}
+  FOLDER EMsoftPublic/${PROJECT_NAME}
 )
 
-set(install_dir "tools")
-set(lib_install_dir "lib")
-if(WIN32)
-    set(install_dir ".")
-    set(lib_install_dir "")
-endif()
-
+#---------------------------------------------------------------------
+# This sets up the two variables install_dir and lib_install_dir
+EMsoft_SetupInstallDirs()
 
 #if(BUILD_SHARED_LIBS  AND NOT APPLE)
     INSTALL(TARGETS ${PROJECT_NAME}

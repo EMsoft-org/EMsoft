@@ -1458,7 +1458,8 @@ FZloop: do j=1,Pmdims
   qu = quat_mult(dict%Pm(1:4,j),Mu)
   if (qu(1).lt.0.D0) qu = -qu
   rod = qu2ro(qu)
-  if(rod(4) .gt. 1000000.0) rod(4) = inftyd
+  if(abs(rod(4)) .gt. 1.0D10) rod(4) = inftyd()
+  
   if (useMFZ.eqv..TRUE.) then
     if (IsinsideMFZ(rod,FZtype,FZorder)) EXIT FZloop
   else
@@ -1720,7 +1721,7 @@ type(dicttype),INTENT(IN)               :: dict1
 type(dicttype),INTENT(IN)               :: dict2
 real(kind=dbl),INTENT(OUT)              :: disax(4)
 
-real(kind=dbl)                          :: Mu(4), qu(4), Mus(4), qus(4), p(4), ac, a, ax(3)
+real(kind=dbl)                          :: Mu(4), qu(4), Mus(4), qus(4), p(4), ac, a, ax(3), axax(4)
 integer(kind=irg)                       :: j, k, Pmdims1, Pmdims2
 
 disax = 0.D0

@@ -58,6 +58,7 @@ use NameListTypedefs
 use NameListHandlers
 use files
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -120,6 +121,7 @@ use HDF5
 use HDFsupport
 use ISO_C_BINDING
 use omp_lib
+use stringconstants
 
 IMPLICIT NONE
 
@@ -266,21 +268,21 @@ call Initialize_Cell(cell,Dyn,rlp,pednl%xtalname, pednl%dmin, pednl%voltage, ver
   hdferr =  HDF_createFile(datafile, HDF_head)
 
 ! write the EMheader to the file
-  groupname = 'PEDZA'
+groupname = SC_PEDZA
   call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLfiles"
+groupname = SC_NMLfiles
   hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-  dataset = 'EMPEDZA'
+dataset = SC_EMPEDZA
   hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
   call HDF_pop(HDF_head)
 
 ! create a NMLparameters group to write all the namelist entries into
-  groupname = "NMLparameters"
+groupname = SC_NMLparameters
   hdferr = HDF_createGroup(groupname, HDF_head)
 
   call HDFwritePEDZANameList(HDF_head, pednl)
@@ -289,26 +291,26 @@ call Initialize_Cell(cell,Dyn,rlp,pednl%xtalname, pednl%dmin, pednl%voltage, ver
   call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! we need to write the image dimensions
-  dataset = 'numk'
+dataset = SC_numk
   hdferr = HDF_writeDatasetInteger(dataset, numk, HDF_head) 
 
-  dataset = 'ga'
+dataset = SC_ga
   hdferr = HDF_writeDatasetIntegerArray1D(dataset, ga, 3, HDF_head) 
 
-  dataset = 'gb'
+dataset = SC_gb
   hdferr = HDF_writeDatasetIntegerArray1D(dataset, gb, 3, HDF_head) 
 
-  dataset = 'lenga'
+dataset = SC_lenga
   hdferr = HDF_writeDatasetFloat(dataset, CalcLength(cell,float(ga),'r'), HDF_head) 
 
-  dataset = 'lengb'
+dataset = SC_lengb
   hdferr = HDF_writeDatasetFloat(dataset, CalcLength(cell,float(gb),'r'), HDF_head) 
 
-  dataset = 'angab'
+dataset = SC_angab
   hdferr = HDF_writeDatasetFloat(dataset, CalcAngle(cell,float(ga),float(gb),'r'), HDF_head) 
 
 ! we leave the file open until the program is done.
@@ -483,7 +485,7 @@ if (pednl%filemode.eq.'total') then
   end do
 
 ! write refcnt
-  dataset = 'refcnt'
+dataset = SC_refcnt
   hdferr = HDF_writeDatasetInteger(dataset, refcnt, HDF_head) 
 
 ! allocate arrays for output
@@ -506,13 +508,13 @@ if (pednl%filemode.eq.'total') then
   end do
 
 ! and write these arrays to the HDF5 file
-  dataset = 'hklarray'
+dataset = SC_hklarray
   hdferr = HDF_writeDatasetIntegerArray2D(dataset, hklarray, 3, refcnt, HDF_head) 
 
-  dataset = 'intarray'
+dataset = SC_intarray
   hdferr = HDF_writeDatasetFloatArray1D(dataset, intarray, refcnt, HDF_head) 
 
-  dataset = 'positions'
+dataset = SC_positions
   hdferr = HDF_writeDatasetFloatArray2D(dataset, positions, 2, refcnt, HDF_head) 
 
 !=============================================
@@ -565,26 +567,26 @@ if (pednl%filemode.eq.'total') then
 ! save the pedpattern to the ped array
   ped(1:pednl%npix,1:pednl%npix) = pedpat(-nsize+ww+1:nsize-ww,-nsize+ww+1:nsize-ww)
 
-  dataset = 'pedpattern'
+dataset = SC_pedpattern
   hdferr = HDF_writeDatasetCharArray2D(dataset, ped, pednl%npix, pednl%npix, HDF_head) 
 
   call HDF_pop(HDF_head)
 
 ! and update the end time
   call timestamp(datestring=dstr, timestring=tstre)
-  groupname = "EMheader"
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = "PEDZA"
+groupname = SC_PEDZA
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! stop time /EMheader/StopTime 'character'
-  dataset = 'StopTime'
+dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
   call CPU_TIME(tstop)
-  dataset = 'Duration'
+dataset = SC_Duration
   tstop = tstop - tstart
   hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 

@@ -13,8 +13,12 @@ set(EMSoft_DefectSim_FILES
 )
 
 #---------------------------------------------------------------------
+# This sets up the two variables install_dir and lib_install_dir
+EMsoft_SetupInstallDirs()
+
+#---------------------------------------------------------------------
 # Create the Installation Rules
 INSTALL(FILES ${EMSoft_DefectSim_FILES}
   COMPONENT Applications
-  DESTINATION "examples/EBSDPatterns"
+  DESTINATION "${top_install_dir}examples/EBSDPatterns"
 )

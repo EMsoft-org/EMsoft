@@ -52,7 +52,7 @@
 \rhead{}
 
 % Footers
-\lfoot{\textsf{EBSD/ECP} manual, v3.1, \today}
+\lfoot{\textsf{EBSD/ECP} manual, v3.2, \today}
 \cfoot{}
 \rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
 
@@ -82,10 +82,11 @@
 \postauthor{\footnotesize \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
 
 \par\end{center}\HorRule} % Horizontal rule after the title
-\date{Program Manual, v3.1, \today\protect\footnote{This set of programs was developed with financial support from two agencies. 
+\date{Program Manual, v3.2, \today\protect\footnote{This set of programs was developed with financial support from two agencies. 
 The Office of Naval Research sponsored the development of the original version 2.0 f90 source code for computation of EBSD patterns in research 
 grant N00014-12-1-0075.  The IDL visualization interface, and the complete version 3.0 (including ECP) and beyond were developed with financial 
-support from an AFOSR/MURI grant FA9550-12-1-0458.}}
+support from an AFOSR/MURI grant FA9550-12-1-0458. All modifications in version 3.2 were carried out under a DoD Vannevar Bush Faculty Fellowship
+grant ONR \# N00014-16-1-2821.}}
 
 \newcommand{\ctp}{\textsf{EMsoft}}
 %
@@ -144,7 +145,20 @@ of the code.  For selected programs, more extensive manual pages are available. 
 The visualization part of the code consists of a series of IDL routines that are available as source code or in the form of a Virtual Machine application. 
 If you have an IDL license, then you can compile and run the IDL source code; alternatively, if you do not have a license,
 then you can use one of the VM apps to perform the same task.  Note that in the VM environment, you will not be able to alter/compile the source code.
-%
+
+\newpage
+\section{Version 3.2 features}
+The version 3.2 release does not have many changes in terms of the capabilities of the EBSD and related modalities series of programs.  The most important changes are:
+\begin{enumerate} 
+	\item The \ctp\ package now has an improved ability to compute Transmission Kikuchi Diffraction (TKD) patterns via a new series of Monte Carlo, master pattern, pattern simulation
+	and dictionary indexing programs (the latter is described in a separate manual).  Details are described in section~\ref{sec:f90TKD}.
+	\item Since some of these programs can take quite a while to run, in particular the master pattern simulations, we have added an option to have the program send the user an email 
+	message once execution is complete.  Alternatively, a Slack notification can be sent. This is described in section~\ref{sec:notification}.  
+	\item The EMEBSD program has a new option to apply a deformation tensor to the crystal lattice before the EBSD pattern is interpolated from the master pattern.  
+	In other words, one can now compute approximate EBSD patterns when a small deformation is applied to the crystal lattice.  Details are described in section~\ref{sec:f90EBSD}.
+	\item The EMEBSD program has a new option for the user to specify the output format of the patterns.  In previous versions, 8-bit grayscale patterns were the only ppossible
+	format; in the present version, bytes, 32-bit floats, and 32-bit integers with various dynamical ranges are introduced.
+\end{enumerate}
 
 \newpage
 \section{Version 3.1 features}
@@ -846,6 +860,94 @@ increasing $c_1$ and $c_2$ will increase the computation time, but will also inc
 to be released at a later point in time, the values of $c_1$ and $c_2$ will likely need to be increased.  Note that this name list file will
 also be copied into the master output file.
 
+\section{Sending program completion notifications\label{sec:notification}}
+Some of the programs in the \ctp\ package can take quite a while to run.  In version 3.2, we have added an option to have those programs automatically notify
+the user when the run has completed.  The notification can be either in the form of an email message, or via a message push to a slack.com channel.  Access
+to this new feature only requires a few additional lines in the \textsf{EMsoftConfig.json} configuration file.
+
+\subsection{Email notifications}
+Email notification is very easy to set up and only requires one additional configuration parameter:
+\begin{verse}
+	{\color{blue} ``EMNotify'': ``Email''},
+\end{verse}
+In addition, you must make sure that the \textsf{UserEmail} parameter has the correct email address to which the notifications should be sent.  The computer that you
+execute the program on must be configured to send email messages.
+
+\subsection{Slack notifications}
+Slack notifications require that the user set up a slack.com message channel.  To do so, first obtain a team Slack URL of the form \textsf{your-team-url.slack.com};
+even if you are just working by yourself, you will still need to set up a team.  You could, for instance, name your team in the following form: \textsf{institution-EMsoft.slack.com},
+where \textsf{institution} is the abbreviation for your university or research entity.   Then you provide your email address and a password to complete the set up
+of your slack account (this is the free account). 
+
+Once you have a team URL, you will find that you have two default message channels, \textsf{\#general} and \textsf{\#random}; we suggest that you create an \textsf{\#EMsoft}
+channel as well.  At this point, you may want to also install the desktop and/or mobile slack app which you can download from the slack.com site or via the Apple Store for Mac OS X
+users.  You can access your slack.com account via a web browser or via the app.  You will also need to allow slack to push notifications to your desktop/mobile.
+
+Next, you will need to set up \textsf{incoming webhook integration}. Point your browser to 
+\begin{verse}
+	\textsf{https://api.slack.com/custom-integrations}
+\end{verse} 
+Select the \textsf{Incoming Webhooks} menu item. In the first section titled \textit{Send data into Slack in real-time}, click on the \textsf{incoming webhook integration} link in the paragraph starting with \textit{Start by setting up $\ldots$}.  You will get a page titled \textsf{Incoming Webhooks}; select the name of the channel that you wish to use for messaging from the pull down menu in the \textit{Post to Channel} form.
+Then click the green button, which will get you to an integration settings page.  From this page you will need to copy the \textsf{Webhook URL} entry into you \textsf{EMsoftConfig.json} configuration file; this is a long entry with several code strings in it that uniquely define your message channel, so you should not share this URL with anyone else (unless you want that person to be able to post messages to your channel).
+
+In the \textsf{EMsoftConfig.json} file, add the following three lines:
+\begin{verse}
+	{\color{blue} ``EMNotify'': ``Slack'',\\
+	``EMSlackWebHookURL'': ``https://hooks.slack.com/services/T6$\ldots$/B6$\ldots$'',\\
+        ``EMSlackChannel'': ``channelname'',}
+\end{verse}
+where channelname must be replaced by the name of the channel you want messages to be posted to (without the \# character).  
+On the \textit{Integration Settings} page, check the other items and customize as needed, then Save
+the Settings.  You should now have a functioning \ctp\ message channel!  Try it by running the \text{EMsoftSlackTest} program from the command line$\ldots$
+
+\subsection{Adding notifications to your own f90 programs}
+If you are developing \ctp\ code, you can easily add notification support to your code.  Here is a simple example of code that you could insert into your own subroutine or main program:
+\begin{verbatim}
+! at the top of your subroutine
+use notifications
+
+! in the variable declaration section
+character(fnlen),ALLOCATABLE      :: MessageLines(:)
+integer(kind=irg)                 :: NumLines
+character(fnlen)                  :: MessageTitle
+character(100)                    :: c
+
+! at the end of your program
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(namelist%Notify).eq.'On') then 
+! allocate the message string array  
+    NumLines = 2
+    allocate(MessageLines(NumLines))
+! get the hostname
+    call hostnm(c)
+! initialize the message strings 
+    MessageLines(1) = 'ProgramName program has ended successfully'
+    MessageLines(2) = 'Data stored in '//trim(outname)
+! define the title of the message (will appear in bold face at the top of your message)
+    MessageTitle = 'EMsoft on '//trim(c)
+! and post the message to Slack    
+    i = PostMessage(MessageLines, NumLines, MessageTitle)
+  end if
+end if
+\end{verbatim}
+In this code, the variable ``outname'' is a full path file name.  The variable \textit{namelist\%Notify} is part of a namelist that was read
+from a namelist parameter file;  see the \textsf{EMMCOpenCL.template} file for an example.  Obviously, you can add more output lines
+by increasing the \textit{NumLines} parameter and entering appropriate text in the \textit{MessageLines} string array.  You could print out the 
+values of certain program variables, for instance the execution time, or the final results of the calculation.
+
+When executed from a workstation with IP name \textsf{mycomputer.edu}, this code will produce a Slack message of the following form:
+\begin{verbatim}
+EMsoft on MYCOMPUTER.EDU APP [1:50 PM] 
+ProgramName program has ended successfully
+Data stored in /Users/.../Files/.../testfile.h5
+\end{verbatim}
+
+Finally, we should note that a free slack.com account entitles you to a maximum of $10,000$ messages; you can manually delete messages one by one, but
+to remove that restriction you will have to register with a paid account.  Slack makes it nearly impossible to perform bulk deletes of messages by limiting how 
+many individual delete commands can be requested per second.
+
+
+
 \section{The \protect\textsf{EMEBSD.f90} program\label{sec:f90EBSD}}
 The final program takes as input a series of detector characteristics as well as orientations, and uses the output from both \textsf{EMMCOpenCL} and
 \textsf{EMEBSDmaster} to compute one or more actual EBSD patterns.  
@@ -865,14 +967,53 @@ as binning and brightness/contrast scaling. See section~\ref{sec:idl} for detail
 
 Note that this program can also be used to create so-called EBSD dictionaries.  This is a much more advanced functionality 
 that we will not fully detail in the present manual, since it is still under development. Dictionary-type 
-computations are first introduce with this release (3.1), and will be described in a separate manual.
+computations were first introduced with release 3.1, and are described in a separate manual.
 
 The \textsf{outputformat} variable should be kept at the value \textsf{'bin'} for manual program runs; it will take on 
-the value \textsf{'gui'} for runs that are controlled by the IDL routine described in section~\ref{sec:idl}.  We recommend
-that the \textsf{energyaverage} and \textsf{spatialaverage} variables are kept at their default values; they were introduced for testing purposes and will be removed 
-from the input options in a later release.
+the value \textsf{'gui'} for runs that are controlled by the IDL routine described in section~\ref{sec:idl}.  
 
-For TKD pattern simulations, the same program can be used provided the proper detector parameters are used.  
+The \textsf{EMEBSD} program has three new options in version 3.2:
+\begin{enumerate}
+	\item \textsf{bitdepth}: Before this release, the only output format for the EBSD patterns was 8-bit grayscale with intensities between $0$ and $255$.  The
+	new \textsf{bitdepth} parameter is a character string that can take on the following values:
+	\begin{itemize}
+		\item \textsf{'8bit'}: this is the default and corresponds to the original output format.
+		\item \textsf{'float'}: this produces output in $32$-bit floating point format.
+		\item \textsf{'\#\#int'}: this produces output in $32$-bit integer format; the characters \#\# stand for a number between $1$ and $32$ and indicate 
+		the dynamic range to which the output numbers will be scaled.  For instance, a bit depth of \textsf{'9int'} will produce integer output with the 
+		intensities scaled between $0$ and $2^9-1$; \textsf{'12int'} will produce the intensity range $[0\ldots 2^{12}-1]$, and so on.
+	\end{itemize}
+	Note that these latter options will produce an output file that is significantly larger (by about a factor of four) than the \textsf{8bit} output format.
+	\item \textsf{applyDeformation}:  The default value is \textsf{'n'} (no deformation is applied to the unit cell); when deformation is desired, then this parameter 
+	should be set to \textsf{'y'}, and the \textsf{Ftensor} parameter should be present in the name list file.
+	\item \textsf{Ftensor}: This is a $3\times 3$ deformation tensor (double precision) that should be entered in column-major format as a series of $9$ numbers.
+	The default value is the identity matrix.  \textit{{\color{blue}This option has only been tested on cubic crystal structures and needs further analysis to make sure the results
+	are correct for all lattice types.}}
+	
+	The deformation tensor is defined as the transformation matrix from the undistorted crystallographic basis vectors $\{\mathbf{a},\mathbf{b},\mathbf{c}\}$ 
+	to the new basis vectors $\{\mathbf{a}',\mathbf{b}',\mathbf{c}'\}$:
+	\[
+		\left(\begin{array}{c}
+		\mathbf{a}'\\
+		\mathbf{b}'\\
+		\mathbf{c}'\end{array}\right) = \left(\begin{array}{ccc}
+		F_{11} & F_{12} & F_{13}\\
+		F_{21} & F_{22} & F_{23}\\
+		F_{31} & F_{32} & F_{33}\end{array}\right) \left(\begin{array}{c}
+		\mathbf{a}\\
+		\mathbf{b}\\
+		\mathbf{c}\end{array}\right) 
+	\]
+	The numbers needs to be entered in column-major order, i.e., in the order $F_{11}, F_{21}, F_{31}, F_{12}, \ldots$.  The program performs a polar decomposition
+	of this tensor and applies both the unitary (rotation) and symmetric stretch parts of the decomposition to the master pattern interpolation process.  As a result,
+	the EBSD patterns for the distorted unit cell will have all bands and zone axes in the correct location, but the band widths will continue to be those for the undistorted
+	structure, i.e., changes in the lattice spacing do not result in changes of the Kikuchi band widths.  The error is relatively small for small deformations.
+	
+	The deformation tensor can also be used to achieve a change of the reference frame by entering a unitary (rotation) matrix for the components of \textsf{Ftensor}. In that
+	case, the stretch part of the decomposition will be the identity matrix.
+\end{enumerate}
+
+
 
 \section{The \protect\textsf{EMECP.f90} program\label{sec:f90ECP}}
 The \textsf{EMECP} program uses the following template file:
@@ -882,6 +1023,13 @@ Note that the bottom set of parameters can be completely ignored in this version
 are similar to the ones in the EBSD case, except for several of the detector parameters.  The \textsf{EMECP} program
 can be called from the command line with an input file of this form, or it can be called directly from within the IDL GUI
 described in section~\ref{sec:idl}.  
+
+\section{The \protect\textsf{EMTKD} program\label{sec:f90TKD}}
+The \textsf{EMTKD} program can be used to generate a dictionary of TKD patterns and has options that are basically identical to 
+those of the \textsf{EMEBSD} program.  It is the user's responsibility to enter the correct detector parameters; all other options
+function in exactly the same way.  The new options regarding bit depth and unit cell deformation described in section~\ref{sec:f90EBSD}
+have not yet been implemented in the TKD program; this will happen in the next release (3.3).
+
 
 \section{The \protect\textsf{EMKosselMaster} program\label{sec:f90Kossel}}
 The \textsf{EMKosselMaster} program does not require any Monte Carlo simulations, and is controlled via
@@ -1070,7 +1218,7 @@ can be found in the \textsf{include/EMsoftLib/EMsoftLib.h} file of the installed
 file of the development version.  This file reads as follows:
 
 \fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
-\VerbatimInput{includefiles/EMsoftLib.h}
+\VerbatimInput{../Source/EMsoftLib/EMsoftLib.h}
 
 The first three declarations are for progress callback functions, which allow the C/C++ side to receive updates on the progress of the fortran-90 computation.
 The other four routines are: \textsf{EMsoftCgetEBSDpatterns}, \textsf{EMsoftCgetECPpatterns},\footnote{Note that \textsf{EMsoftCgetECPpatterns} is a 

@@ -42,6 +42,7 @@
 !> @date  01/14/16 MDG 2.3 added EMsoftCgetECPatterns routine
 !> @date  01/25/16 MDG 2.4 several routine name changes
 !> @date  04/28/16 MDG 2.5 unified the ipar and fpar arrays for all C-callable routines
+!> @date  11/07/17 MDG 3.0 added spar string array for passing on EMsoft configuration strings
 !--------------------------------------------------------------------------
 !
 ! general information: the ipar and fpar arrays for all the routines that are C-callable
@@ -78,7 +79,6 @@
 ! ipar(25): anglemode  (0 for quaternions, 1 for Euler angles)
 ! ipar(26:40) : 0 (unused for now)
 
-
 ! real(kind=dbl) :: fpar(40)  components
 ! fpar(1) : sig
 ! fpar(2) : omega
@@ -106,7 +106,37 @@
 ! fpar(22): gamma value
 ! fpar(23:40): 0 (unused for now)
 
-
+! newly added in version 3.2, to facilitate passing EMsoft configuration
+! strings back and forth to C/C++ programs that call EMdymod routines...
+! character(fnlen)  :: spar(40)   configuration string components
+! spar(1): EMsoftpathname
+! spar(2): EMXtalFolderpathname
+! spar(3): EMdatapathname
+! spar(4): EMtmppathname
+! spar(5): EMsoftLibraryLocation
+! spar(6): EMSlackWebHookURL
+! spar(7): EMSlackChannel
+! spar(8): UserName
+! spar(9): UserLocation
+! spar(10): UserEmail
+! spar(11): EMNotify
+! spar(12): Develop
+! spar(13): Release
+! spar(14): h5copypath
+! spar(15): EMsoftplatform
+! spar(16): EMsofttestpath
+! spar(17): EMsoftTestingPath
+! spar(18): EMsoftversion
+! spar(19): Configpath
+! spar(20): Templatepathname
+! spar(21): Resourcepathname
+! spar(22): Homepathname
+! spar(23): OpenCLpathname
+! spar(24): Templatecodefilename
+! spar(25): WyckoffPositionsfilename
+! spar(26): Randomseedfilename
+! spar(27): EMsoftnativedelimiter
+! spar(28:40): '' (unused for now)
 
 
 !
@@ -121,7 +151,7 @@ module EMdymod
 !  patternCompleted: integer indicating the current pattern ID number
 !
 ABSTRACT INTERFACE
-   SUBROUTINE ProgressCallBack(objAddress, patternCompleted)
+   SUBROUTINE ProgressCallBack(objAddress, patternCompleted) bind(C)
     USE, INTRINSIC :: ISO_C_BINDING
     INTEGER(c_size_t),INTENT(IN), VALUE          :: objAddress
     INTEGER(KIND=4), INTENT(IN), VALUE           :: patternCompleted
@@ -131,7 +161,7 @@ END INTERFACE
 
 ! similar callback routine, with two integer arguments
 ABSTRACT INTERFACE
-   SUBROUTINE ProgressCallBack2(objAddress, loopCompleted, totalLoops, bseYield)
+   SUBROUTINE ProgressCallBack2(objAddress, loopCompleted, totalLoops, bseYield) bind(C)
     USE, INTRINSIC :: ISO_C_BINDING
     INTEGER(c_size_t),INTENT(IN), VALUE          :: objAddress
     INTEGER(KIND=4), INTENT(IN), VALUE           :: loopCompleted
@@ -142,7 +172,7 @@ END INTERFACE
 
 ! similar callback routine, with two integer arguments
 ABSTRACT INTERFACE
-   SUBROUTINE ProgressCallBack3(objAddress, loopCompleted, totalLoops, EloopCompleted, totalEloops)
+   SUBROUTINE ProgressCallBack3(objAddress, loopCompleted, totalLoops, EloopCompleted, totalEloops) bind(C)
     USE, INTRINSIC :: ISO_C_BINDING
     INTEGER(c_size_t),INTENT(IN), VALUE          :: objAddress
     INTEGER(KIND=4), INTENT(IN), VALUE           :: loopCompleted
@@ -811,8 +841,8 @@ end subroutine EMsoftCgetECPatterns
 !> @date 04/18/16 MDG 1.3 increased number of entries in ipar, fpar for compatibility with EMsoftCgetEBSDmaster routine
 !> @date 04/28/16 MDG 1.4 corrected error in indexing of init_seeds array; caused DREAM.3D to crash randomly
 !--------------------------------------------------------------------------
-recursive subroutine EMsoftCgetMCOpenCL(ipar, fpar, atompos, atomtypes, latparm, accum_e, accum_z, cproc, objAddress, cancel) &
-           bind(c, name='EMsoftCgetMCOpenCL')    ! this routine is callable from a C/C++ program
+recursive subroutine EMsoftCgetMCOpenCL(ipar, fpar, atompos, atomtypes, latparm, accum_e, accum_z, cproc, &
+objAddress, inputCLPath, cancel) bind(c, name='EMsoftCgetMCOpenCL')    ! this routine is callable from a C/C++ program
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCgetMCOpenCL
 
 ! ipar components
@@ -873,56 +903,67 @@ integer(kind=irg),INTENT(OUT)           :: accum_e(ipar(12),-ipar(1):ipar(1),-ip
 integer(kind=irg),INTENT(OUT)           :: accum_z(ipar(12),ipar(13),-ipar(16):ipar(16),-ipar(16):ipar(16))
 TYPE(C_FUNPTR), INTENT(IN), VALUE       :: cproc
 integer(c_size_t),INTENT(IN), VALUE     :: objAddress
+character(kind=c_char, len=1), dimension(512), INTENT(IN) :: inputCLPath
+character(fnlen)                        :: clPath=''
 character(len=1),INTENT(IN)             :: cancel
 
 ! local variables and parameters
 type(unitcell),pointer                  :: cell
 character(4)                            :: mode
-integer(kind=ill)                       :: i, j, k, io_int(1), num_max, totnum_el, ipg, isave, istat
-integer(kind=irg)                       :: nx, numEbins, numzbins, numangle, iang, cn, dn, totn 
-integer(kind=irg),target                :: globalworkgrpsz, num_el, steps
-integer(kind=8),target                  :: globalsize(2), localsize(2) 
-integer(kind=8)                         :: size_in_bytes,size_in_bytes_seeds 
+integer(kind=ill)                       :: i=0, j=0, k=0, io_int(1)=0, num_max=0, totnum_el=0, ipg=0, isave=0, istat=0
+integer(kind=irg)                       :: nx=0, numEbins=0, numzbins=0, numangle=0, iang=0, cn=0, dn=0, totn=0
+integer(kind=irg),target                :: globalworkgrpsz=0, num_el=0, steps=0
+integer(kind=8),target                  :: globalsize(2)=0, localsize(2)=0
+integer(kind=8)                         :: size_in_bytes=0,size_in_bytes_seeds=0
 
-real(kind=sgl),target                   :: dens, avA, avZ, omega, EkeV, sig, bseyield, io_real(3)
-real(kind=4),target                     :: density, Ze, at_wt, delta
+real(kind=sgl),target                   :: dens=0, avA=0, avZ=0, omega=0, EkeV=0, sig=0, bseyield=0, io_real(3)
+real(kind=4),target                     :: density=0, Ze=0, at_wt=0, delta=0
 real(kind=8),parameter                  :: dtoR = 0.01745329251D0  ! pi/180
 real(kind=4),allocatable, target        :: Lamresx(:), Lamresy(:), depthres(:), energyres(:)
 
 integer(kind=4),allocatable             :: rnseeds(:)
 integer(kind=4),allocatable,target      :: init_seeds(:)
-integer(kind=4)                         :: idxy(2), iE, px, py, iz, nseeds, hdferr, tstart ! auxiliary variables
-real(kind=4)                            :: cxyz(3), edis, bse, xy(2), xs, ys, zs, sclf ! auxiliary variables
-real(kind=8)                            :: rand
-logical                                 :: f_exists
+integer(kind=4)                         :: idxy(2), iE=0, px=0, py=0, iz=0, nseeds=0, hdferr=0, tstart=0, trimSpace=0 ! auxiliary variables
+real(kind=4)                            :: cxyz(3), edis=0, bse=0, xy(2), xs=0, ys=0, zs=0, sclf=0 ! auxiliary variables
+real(kind=8)                            :: rand=0
+logical                                 :: f_exists=.FALSE.
 
 
 ! OpenCL variables
 integer(c_intptr_t),allocatable, target :: platform(:)
 integer(c_intptr_t),allocatable, target :: device(:)
-integer(c_intptr_t),target              :: context
-integer(c_intptr_t),target              :: command_queue
-integer(c_intptr_t),target              :: prog
-integer(c_intptr_t),target              :: kernel
-integer(c_intptr_t),target              :: LamX, LamY, LamZ, depth, energy, seeds
+integer(c_intptr_t),target              :: context=0
+integer(c_intptr_t),target              :: command_queue=0
+integer(c_intptr_t),target              :: prog=0
+integer(c_intptr_t),target              :: kernel=0
+integer(c_intptr_t),target              :: LamX=0, LamY=0, LamZ=0, depth=0, energy=0, seeds=0
 type(c_ptr)                             :: event
-integer(c_int32_t)                      :: ierr, pcnt
-integer(c_size_t),target                :: slength
+integer(c_int32_t)                      :: ierr=0, pcnt=0
+integer(c_size_t),target                :: slength=0
 integer(c_intptr_t),target              :: ctx_props(3)
-character(2),target                     :: kernelname
-character(19),target                    :: progoptions
-character(fnlen),target                 :: info ! info about the GPU
-integer(c_int64_t)                      :: cmd_queue_props
+character(2),target                     :: kernelname=''
+character(19),target                    :: progoptions=''
+character(fnlen),target                 :: info='' ! info about the GPU
+integer(c_int64_t)                      :: cmd_queue_props=0
 
 integer, parameter                      :: iunit = 10
 integer, parameter                      :: source_length = 50000
-character(len=source_length),target     :: source
-character(len=source_length, KIND=c_char),TARGET :: csource
+character(len=source_length),target     :: source=''
+character(len=source_length, KIND=c_char),TARGET :: csource=''
 type(c_ptr), target                     :: psource
-integer(c_int)                          :: nump, numd, irec, val,val1 ! auxiliary variables
-integer(c_size_t)                       :: cnum, cnuminfo
-character(fnlen)                        :: instring, dataname, fname, sourcefile
+integer(c_int)                          :: nump=0, numd=0, irec=0, val=0,val1=0 ! auxiliary variables
+integer(c_size_t)                       :: cnum=0, cnuminfo=0
+character(fnlen)                        :: instring='', dataname='', fname='', sourcefile=''
 PROCEDURE(ProgressCallBack2), POINTER   :: proc
+character(250),target                   :: currentDir=''
+character(fnlen)                        :: emmcPath=''
+character(fnlen)                        :: randomSeedPath=''
+integer(c_int32_t),target               :: filestat=0
+INTEGER*4                             getcwd, status
+character*256                          dirname
+CHARACTER(LEN=30)                     :: Format=''
+
+nullify(proc)
 
 ! link the proc procedure to the cproc argument
 CALL C_F_PROCPOINTER (cproc, proc)
@@ -931,6 +972,12 @@ CALL C_F_PROCPOINTER (cproc, proc)
 ! properly set...
 call EMsoft_path_init
 
+! This is a handy bit of code to have since it helps figure out where the application
+! that is calling this code is being run from. When the opencl or resources directories
+! can not be found this bit can help
+! status = getcwd( dirname )
+! write(*,*) dirname
+       
 ! the following is necessitated by the fact that none of this code may 
 ! depend on HDF5 routines, so we need to cut-and-paste from various 
 ! other library routines to set things up so that we can compute the 
@@ -1038,8 +1085,21 @@ call CLinit_PDCCQ(platform, nump, int(ipar(7)), device, numd, int(ipar(6)), info
 ! BUILD THE KERNEL
 !=====================
 ! read the source file
-sourcefile = 'EMMC.cl'
-call CLread_source_file(sourcefile, csource, slength)
+clPath = " "
+loop_string: do i=1, fnlen
+  if ( inputCLPath (i) == c_null_char ) then
+     exit loop_string
+  else
+     clPath (i:i) = inputCLPath (i)
+  end if
+end do loop_string
+
+sourcefile='/opencl/EMMC.cl'
+emmcPath=trim(clPath)//trim(sourcefile)
+emmcPath=EMsoft_toNativePath(emmcPath)
+
+! sourcefile = 'EMMC.cl'
+call CLread_source_file(emmcPath, csource, slength)
 
 ! we disable all screen output; perhaps we can feed error messages back to the calling program...
 
@@ -1050,8 +1110,11 @@ prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(slength), 
 ! if(ierr /= CL_SUCCESS) call FatalError("clCreateProgramWithSource: ",'Error: cannot create program from source.')
 
 ! build the program
-progoptions = '-cl-no-signed-zeros'
-ierr = clBuildProgram(prog, numd, C_LOC(device), C_LOC(progoptions), C_NULL_FUNPTR, C_NULL_PTR)
+ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
+if (ierr.le.0) then
+  ierr = clGetProgramBuildInfo(prog, device(ipar(6)), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
+  if(len(trim(source)) > 0) call Message(trim(source(1:cnum)),frm='(A)')
+endif
 ! if(ierr /= CL_SUCCESS) call FatalError("clBuildProgram: ",'Error: cannot build program.')
 
 ! get the compilation log
@@ -1063,14 +1126,16 @@ ierr = clGetProgramBuildInfo(prog, device(ipar(6)), CL_PROGRAM_BUILD_LOG, sizeof
 ! call Message('Program Build Successful... Creating kernel')
 
 ! finally get the kernel and release the program
-kernelname = 'MC'
+kernelname = 'MC'//CHAR(0)
 kernel = clCreateKernel(prog, C_LOC(kernelname), ierr)
 ! if(ierr /= CL_SUCCESS) call FatalError("clCreateKernel: ",'Error creating kernel MC.')
 
 ierr = clReleaseProgram(prog)
 ! if(ierr /= CL_SUCCESS) call FatalError("clReleaseProgram: ",'Error releasing program.')
+sourcefile='/'//EMsoft_getRandomseedfilename()
+randomSeedPath=trim(clPath)//trim(sourcefile)
 
-open(unit = iunit, file = trim(EMsoft_toNativePath(EMsoft_getRandomseedfilename())), form='unformatted', status='old')
+open(unit = iunit, file = trim(EMsoft_toNativePath(randomSeedPath)), form='unformatted', status='old')
 read(iunit) nseeds
 allocate(rnseeds(nseeds))
 read(iunit) rnseeds
@@ -1258,16 +1323,18 @@ angleloop: do iang = 1,numangle
 
 ! update the progress counter and report it to the calling program via the proc callback routine
   if(objAddress.ne.0) then
-    cn = cn+dn
     bseyield = 100.0*float(sum(accum_e))/float(i*num_max)
-    write(*,*)cn, totn, bseyield
+   ! Format = "(3I6, 2F12.2)"
+   ! write(*,Format)objAddress, cn, totn, bseyield, sum(accum_e)
+   ! write(*,*)"sum(accum_e):",sum(accum_e),"i:",i,"num_max:",num_max
     call proc(objAddress, cn, totn, bseyield)
+    cn = cn+dn
   end if
 
   end do mainloop
 end do angleloop 
 
-write(*,*)'Total GPU time [s] = ',Time_tock(tstart)
+!write(*,*)'Total GPU time [s] = ',Time_tock(tstart)
 
 !=====================
 ! RELEASE EVERYTHING
@@ -2041,7 +2108,7 @@ real(kind=dbl),parameter                :: nAmpere = 6.241D+18
 !====================================
 if (ipar(1).ge.1) then
 
-  if ((ipar(1).eq.2).or.(.not.allocated(mLPNHsum))) then ! complete reset, including the mLPNHsum and mLPSHsum arrays
+ if ((ipar(1).eq.2).or.(.not.allocated(mLPNHsum))) then ! complete reset, including the mLPNHsum and mLPSHsum arrays
     if (allocated(mLPNHsum)) deallocate(mLPNHsum)
     if (allocated(mLPSHsum)) deallocate(mLPSHsum)
 
@@ -2050,7 +2117,7 @@ if (ipar(1).ge.1) then
     mLPNHsum = sum(mLPNH,4)
     mLPSHsum = sum(mLPSH,4)
 
-  end if
+ end if
 
 ! This needs to be done only once for a given detector geometry (i.e., when ipar(1)=1 or larger)
   allocate(scin_x(ipar(2)),scin_y(ipar(3)),stat=istat)
@@ -2140,13 +2207,15 @@ if (ipar(1).ge.1) then
   ipx = ipar(2)/2 + nint(fpar(1))
   ipy = ipar(3)/2 + nint(fpar(2))
   
-  if (ipx .gt. ipar(2)) ipx = ipar(2)
-  if (ipx .lt. 1) ipx = 1
-  
-  if (ipy .gt. ipar(3)) ipy = ipar(3)
-  if (ipy .lt. 1) ipy = 1
-  
-  pcvec = (/ rgx(ipx,ipy), rgy(ipx,ipy), rgz(ipx,ipy) /)
+  if ((abs(ipy).gt.ipar(3)).or.(abs(ipx).gt.ipar(2))) then 
+    pcvec = (/pcyd*ca + pcxd*sa*sw + fpar(7)*cw*sa, &
+             fpar(7)*sw - pcxd*cw,&
+             fpar(7)*ca*cw + pcxd*ca*sw - pcyd*sa/)
+    pcvec = pcvec/NORM2(pcvec)
+  else
+    pcvec = (/ rgx(ipx,ipy), rgy(ipx,ipy), rgz(ipx,ipy) /)
+  end if
+
   calpha = cos(alpha)
   do i=1,ipar(2)
     do j=1,ipar(3)
@@ -2196,6 +2265,10 @@ if (ipar(1).ge.1) then
   end do 
   prefactor = 0.25D0 * nAmpere * fpar(8) * fpar(9)  * 1.0D-15 / sum(accum_e_detector)
 end if   ! end of ipar(1)=1 test
+
+!open(unit=dataunit,file='TKDdetectorarray_dymod.data',status='unknown',form='unformatted')
+!write(dataunit) accum_e_detector
+!close(unit=dataunit,status='keep')
 
 ! from here on, we simply compute the EBSD patterns by interpolation, using the saved arrays from above
 ! no intensity scaling or anything else...other than multiplication by pre-factor
@@ -2259,6 +2332,308 @@ EBSDpattern = prefactor * EBSDpattern
 
 end subroutine getEBSDPatterns
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:getEBSDPatterns2
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief This function can be called as a standalone function to compute an EBSD pattern
+!
+!> @etails The main purpose of this routine and its accompanying wrapper routine is to
+!> provide a way for an external program to compute a channeling pattern.  The idea is that 
+!> all the necessary arrays and variables are passed in by reference as arguments, without
+!> the need for the routine to fetch any other data from files etc...  The initial goal is
+!> to have a function that can be called with the CALL_EXTERNAL mechanism in IDL or MatLab.
+!> This routine should be called via the getEBSDPatternsWrapper routine!  For calls from
+!> a C/C++ program, use the EMsoftCgetEBSDPatterns routine instead.  This routine is a slightly
+!> modified version of the regular getEBSDPatterns routine and does not SAVE any variables.
+!
+!> @param ipar array with integer input parameters
+!> @param fpar array with float input parameters
+!> @param EBSDpattern output array
+!> @param quats quaternion input array
+!> @param accum_e array with Monte Carlo histogram
+!> @param mLPNH Northern hemisphere master pattern
+!> @param mLPSH Southern hemisphere master pattern
+!
+!> @date 10/16/15 MDG 1.0 original
+!> @date 11/02/15 MDG 1.1 simplification of the input variables
+!> @date 11/04/15 MDG 1.2 added array of quaternions as input parameter; used complete mLPNH/SH arrays with local sum
+!> @date 01/12/15 MDG 1.3 added arguments and functionality for interface with DREAM.3D and other calling programs
+!> @date 01/13/15 MDG 1.4 after split with EMsoftCgetEBSDPatterns subroutine, removed DREAM.3D interfacing stuff
+!> @date 07/10/16 MDG 1.5 added energy min/max parameters
+!> @date 08/03/16 MDG 1.6 corrected normalizing issue in rgx,y,z arrays that causes NANs to be returned from Lambert projection routines
+!> @date 08/25/16 MDG 1.7 added transfer optics barrel distortion to rgx,y,z arrays.
+!> @date 04/24/17 MDG 1.8 forked from original routine without SAVEd variables
+!--------------------------------------------------------------------------
+recursive subroutine getEBSDPatterns2(ipar, fpar, EBSDpattern, quats, accum_e, mLPNHsum, mLPSHsum)
+!DEC$ ATTRIBUTES DLLEXPORT :: getEBSDPatterns2
+
+! the input parameters are all part of a ipar and fpar input arrays instead of the usual namelist structure to
+! make this routine callable by external programs; for calls from  C/C++, use the EsoftCgetEBSDPatterns routine instead.  
+
+! The following is the mapping for the ipar and fpar arrays:
+!
+! ipar(1) = 2 if rgx, rgy, rgz detector arrays need to be computed, 1 if not (arrays will have save status)
+! ipar(2) = detnumsx
+! ipar(3) = detnumsy
+! ipar(4) = detnumEbins
+! ipar(5) = mcnsx
+! ipar(6) = mpnpx
+! ipar(7) = numset
+! ipar(8) = numquats
+! ipar(9) = Eminsel
+! ipar(10) = Emaxsel
+
+! fpar(1) = enl%xpc
+! fpar(2) = enl%ypc
+! fpar(3) = enl%delta
+! fpar(4) = enl%MCsig
+! fpar(5) = enl%omega
+! fpar(6) = enl%thetac
+! fpar(7) = enl%L
+! fpar(8) = enl%beamcurrent
+! fpar(9) = enl%dwelltime
+! fpar(10) = enl%alphaBD
+
+use local
+use constants
+use Lambert
+use quaternions
+use,INTRINSIC :: ISO_C_BINDING
+
+IMPLICIT NONE
+
+integer(c_size_t),PARAMETER             :: nipar=10
+integer(c_size_t),PARAMETER             :: nfpar=10
+integer(c_size_t),PARAMETER             :: nq=4
+integer(c_size_t),INTENT(IN)            :: ipar(nipar)
+real(kind=sgl),INTENT(IN)               :: fpar(nfpar)
+real(kind=sgl),INTENT(IN)               :: quats(nq,ipar(8))
+real(kind=sgl),INTENT(IN)               :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
+real(kind=sgl),INTENT(IN)               :: mLPNHsum(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(4))
+real(kind=sgl),INTENT(IN)               :: mLPSHsum(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(4))
+real(kind=sgl),INTENT(OUT)              :: EBSDpattern(ipar(2),ipar(3),ipar(8))
+
+! allocatable variables
+real(kind=sgl),allocatable              :: accum_e_detector(:,:,:)
+real(kind=sgl),allocatable              :: rgx(:,:), rgy(:,:), rgz(:,:)
+real(kind=sgl),save                     :: prefactor
+
+! other variables
+real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 ! scintillator coordinate arrays [microns]
+real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
+real(kind=sgl)                          :: alp, ca, sa, cw, sw
+real(kind=sgl)                          :: L2, Ls, Lc, pcxd, pcyd, xx, yy     ! distances
+integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy ! various parameters
+real(kind=sgl)                          :: dc(3), scl, alpha, theta, gam, pcvec(3), dp, calpha           ! direction cosine array
+real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
+real(kind=sgl)                          :: ixy(2)
+real(kind=dbl),parameter                :: nAmpere = 6.241D+18 
+
+!====================================
+! ------ generate the detector rgx, rgy, rgz arrays 
+!====================================
+
+! This needs to be done only once for a given detector geometry (i.e., when ipar(1)=1 or larger)
+  allocate(scin_x(ipar(2)),scin_y(ipar(3)),stat=istat)
+  
+  pcxd = fpar(1) * fpar(3)
+  pcyd = fpar(2) * fpar(3)
+
+  scin_x = - ( fpar(1) - ( 1.0 - float(ipar(2)) ) * 0.5 - (/ (i-1, i=1,ipar(2)) /) ) * fpar(3)
+  scin_y = ( fpar(2) - ( 1.0 - float(ipar(3)) ) * 0.5 - (/ (i-1, i=1,ipar(3)) /) ) * fpar(3)
+
+! auxiliary angle to rotate between reference frames
+  alp = 0.5 * cPi - (fpar(4) - fpar(6)) * dtor
+  ca = cos(alp)
+  sa = sin(alp)
+
+  cw = cos(fpar(5) * dtor)
+  sw = sin(fpar(5) * dtor)
+
+! compute auxilliary interpolation arrays
+  allocate(rgx(ipar(2),ipar(3)), rgy(ipar(2),ipar(3)), rgz(ipar(2),ipar(3)))
+
+! do we need to perform a Barrel Distortion?
+! we will do this here by expanding/contracting the radial component of the 
+! (rgx, rgy) to (rgx,rgy) * (1+alphaBD * (rgx^2+rgy^2))
+! in other words, we pre-distort the sampling grid with the barrel distortion.
+
+  L2 = fpar(7) * fpar(7)
+  do j=1,ipar(2)
+    Ls = -sw * scin_x(j) + fpar(7) * cw
+    Lc = cw * scin_x(j) + fpar(7) * sw
+    do i=1,ipar(3)
+!    rhos = 1.0/sqrt(sx + scin_y(i)**2)
+     rgx(j,i) = (scin_y(i) * ca + sa * Ls) ! * rhos
+     rgy(j,i) = Lc ! * rhos
+     rgz(j,i) = (-sa * scin_y(i) + ca * Ls) ! * rhos
+! apply Barrel Distortion ?
+     if (fpar(10).ne.0.0) then
+! shift the components to the detector center coordinate frame
+       xx = rgx(j,i)-pcyd
+       yy = rgy(j,i)+pcxd
+! compute the distortion amount; the factor of 10^(-10) is inserted here...
+       sx = 1.0 + 1.E-10 * fpar(10) * (xx**2+yy**2) 
+! and shift them back to the pattern center reference frame
+       rgx(j,i) = xx*sx+pcyd
+       rgy(j,i) = yy*sx-pcxd
+     end if
+! make sure that these vectors are normalized !
+     x = sqrt(rgx(j,i)**2+rgy(j,i)**2+rgz(j,i)**2)
+     rgx(j,i) = rgx(j,i) / x
+     rgy(j,i) = rgy(j,i) / x
+     rgz(j,i) = rgz(j,i) / x
+    end do
+  end do
+
+! remove the auxiliary arrays scin_x and scin_y
+  deallocate(scin_x, scin_y)
+
+!====================================
+! ------ create the equivalent detector energy array
+!====================================
+! from the Monte Carlo energy data, we need to extract the relevant
+! entries for the detector geometry defined above.  
+
+! determine the scale factor for the Lambert interpolation; the square has
+! an edge length of 2 x sqrt(pi/2)
+  scl = float(ipar(5)) 
+
+! energy summation will go over all energy bins
+  Emin = ipar(9)
+  Emax = ipar(10)
+
+  allocate(accum_e_detector(ipar(4),ipar(2),ipar(3)))
+
+! correction of change in effective pixel area compared to equal-area Lambert projection
+  alpha = atan(fpar(3)/fpar(7)/sqrt(sngl(cPi)))
+  ipx = ipar(2)/2 + nint(fpar(1))
+  ipy = ipar(3)/2 + nint(fpar(2))
+  
+  if (ipx .gt. ipar(2)) ipx = ipar(2)
+  if (ipx .lt. 1) ipx = 1
+  
+  if (ipy .gt. ipar(3)) ipy = ipar(3)
+  if (ipy .lt. 1) ipy = 1
+  
+  pcvec = (/ rgx(ipx,ipy), rgy(ipx,ipy), rgz(ipx,ipy) /)
+  calpha = cos(alpha)
+  do i=1,ipar(2)
+    do j=1,ipar(3)
+! do the coordinate transformation for this detector pixel
+       dc = (/ rgx(i,j), rgy(i,j), rgz(i,j) /)
+! make sure the third one is positive; if not, switch all 
+       if (dc(3).lt.0.0) dc = -dc
+! convert these direction cosines to coordinates in the Rosca-Lambert projection
+        ixy = scl * LambertSphereToSquare( dc, istat )
+        x = ixy(1)
+        ixy(1) = ixy(2)
+        ixy(2) = -x
+! four-point interpolation (bi-quadratic)
+        nix = int(ipar(5)+ixy(1))-ipar(5)
+        niy = int(ipar(5)+ixy(2))-ipar(5)
+        nixp = nix+1
+        niyp = niy+1
+        if (nix .gt. ipar(5)) nix = ipar(5)
+        if (niy .gt. ipar(5)) niy = ipar(5)
+        if (nix .lt. -ipar(5)) nix = -ipar(5)
+        if (niy .lt. -ipar(5)) niy = -ipar(5)
+
+        if (nixp .gt. ipar(5)) nixp = ipar(5)
+        if (niyp .gt. ipar(5)) niyp = ipar(5)
+        if (nixp .lt. -ipar(5)) nixp = -ipar(5)
+        if (niyp .lt. -ipar(5)) niyp = -ipar(5)
+
+        dx = ixy(1)-nix
+        dy = ixy(2)-niy
+        dxm = 1.0-dx
+        dym = 1.0-dy
+! do the area correction for this detector pixel
+        dp = dot_product(pcvec,dc)
+        if ((i.eq.ipx).and.(j.eq.ipy)) then
+          gam = 0.25 
+        else
+          gam = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3) * 0.25
+        end if
+! interpolate the intensity 
+        do k= Emin, Emax
+          accum_e_detector(k,i,j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
+                                    accum_e(k,nixp,niy) * dx * dym + &
+                                    accum_e(k,nix,niyp) * dxm * dy + &
+                                    accum_e(k,nixp,niyp) * dx * dy)
+        end do
+    end do
+  end do 
+  prefactor = 0.25D0 * nAmpere * fpar(8) * fpar(9)  * 1.0D-15 / sum(accum_e_detector)
+
+! from here on, we simply compute the EBSD patterns by interpolation, 
+! no intensity scaling or anything else...other than multiplication by pre-factor
+! intensity scaling is left to the user of the calling program.
+
+! define some parameters and initialize EBSDpattern
+scl = dble(ipar(6)) 
+EBSDpattern = 0.0
+
+! here is the main loop over all quaternions
+quatloop: do ip=1,ipar(8)
+  do i=1,ipar(2)
+    do j=1,ipar(3)
+! do the active coordinate transformation for this euler angle
+      dc = quat_Lp(quats(1:4,ip),  (/ rgx(i,j), rgy(i,j), rgz(i,j) /) )
+! normalize dc
+      dc = dc/sqrt(sum(dc*dc))
+! convert these direction cosines to coordinates in the Rosca-Lambert projection (always square projection !!!)
+      ixy = scl * LambertSphereToSquare( dc, istat )
+
+      if (istat.eq.0) then 
+! four-point interpolation (bi-quadratic)
+        nix = int(ipar(6)+ixy(1))-ipar(6)
+        niy = int(ipar(6)+ixy(2))-ipar(6)
+        nixp = nix+1
+        niyp = niy+1
+        if (nix .gt. ipar(6)) nix = ipar(6)
+        if (niy .gt. ipar(6)) niy = ipar(6)
+        if (nix .lt. -ipar(6)) nix = -ipar(6)
+        if (niy .lt. -ipar(6)) niy = -ipar(6)
+
+        if (nixp .gt. ipar(6)) nixp = ipar(6)
+        if (niyp .gt. ipar(6)) niyp = ipar(6)
+        if (nixp .lt. -ipar(6)) nixp = -ipar(6)
+        if (niyp .lt. -ipar(6)) niyp = -ipar(6)
+
+        dx = ixy(1)-nix
+        dy = ixy(2)-niy
+        dxm = 1.0-dx
+        dym = 1.0-dy
+
+        if (dc(3).gt.0.0) then ! we're in the Northern hemisphere
+          do k=Emin,Emax
+            EBSDpattern(i,j,ip) = EBSDpattern(i,j,ip) + accum_e_detector(k,i,j) * ( mLPNHsum(nix,niy,k) * dxm * dym +&
+                                        mLPNHsum(nixp,niy,k) * dx * dym + mLPNHsum(nix,niyp,k) * dxm * dy + &
+                                        mLPNHsum(nixp,niyp,k) * dx * dy )
+          end do
+        else                   ! we're in the Southern hemisphere
+          do k=Emin,Emax 
+            EBSDpattern(i,j,ip) = EBSDpattern(i,j,ip) + accum_e_detector(k,i,j) * ( mLPSHsum(nix,niy,k) * dxm * dym +&
+                                        mLPSHsum(nixp,niy,k) * dx * dym + mLPSHsum(nix,niyp,k) * dxm * dy + &
+                                        mLPSHsum(nixp,niyp,k) * dx * dy )
+          end do
+        end if
+      end if
+    end do
+  end do
+end do quatloop
+
+deallocate(accum_e_detector)
+
+! finally, scale the patterns by the appropriate factor and return to the calling program
+EBSDpattern = prefactor * EBSDpattern
+
+end subroutine getEBSDPatterns2
 
 
 !--------------------------------------------------------------------------

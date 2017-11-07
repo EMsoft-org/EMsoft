@@ -6,7 +6,7 @@
 #//
 #///////////////////////////////////////////////////////////////////////////////
 
-
+message(FATAL_ERROR "THIS FILE IS DEPRECATED. THE FILE AT THE TOP LEVEL OF EMSOFT IS USED.")
 # ------------------------------------------------------------------------------
 # This CMake code sets up for CPack to be used to generate native installers
 # ------------------------------------------------------------------------------
@@ -44,13 +44,13 @@ if(APPLE)
     install(FILES ${PROJECT_RESOURCES_DIR}/CPack/OS_X_ReadMe.txt DESTINATION .)
 endif()
 
-message(STATUS "EMsoftWorkbenchProj_RELEASE_TYPE: ${EMsoftWorkbenchProj_RELEASE_TYPE}")
-if("${EMsoftWorkbenchProj_RELEASE_TYPE}" STREQUAL "Official")
-  set(EMsoftWorkbench_VERSION_SHORT "${EMsoftWorkbenchProj_VERSION_MAJOR}.${EMsoftWorkbenchProj_VERSION_MINOR}.${EMsoftWorkbenchProj_VERSION_PATCH}")
-elseif("${EMsoftWorkbenchProj_RELEASE_TYPE}" STREQUAL "Beta")
-  set(EMsoftWorkbench_VERSION_SHORT "${EMsoftWorkbenchProj_VERSION_MAJOR}.${EMsoftWorkbenchProj_VERSION_MINOR}-${EMsoftWorkbenchProj_RELEASE_TYPE}-${EMsoftWorkbenchProj_VERSION_TWEAK}")
-elseif("${EMsoftWorkbenchProj_RELEASE_TYPE}" STREQUAL "Development")
-  set(EMsoftWorkbench_VERSION_SHORT "${EMsoftWorkbenchProj_VERSION_MAJOR}.${EMsoftWorkbenchProj_VERSION_MINOR}.${EMsoftWorkbenchProj_VERSION_PATCH}.${EMsoftWorkbenchProj_VERSION_TWEAK}")
+message(STATUS "EMsoft_RELEASE_TYPE: ${EMsoft_RELEASE_TYPE}")
+if("${EMsoft_RELEASE_TYPE}" STREQUAL "Official")
+  set(EMsoftWorkbench_VERSION_SHORT "${EMsoftWorkbench_VERSION_MAJOR}.${EMsoftWorkbench_VERSION_MINOR}.${EMsoftWorkbench_VERSION_PATCH}")
+elseif("${EMsoft_RELEASE_TYPE}" STREQUAL "Beta")
+  set(EMsoftWorkbench_VERSION_SHORT "${EMsoftWorkbench_VERSION_MAJOR}.${EMsoftWorkbench_VERSION_MINOR}-${EMsoft_RELEASE_TYPE}-${EMsoftWorkbench_VERSION_TWEAK}")
+elseif("${EMsoft_RELEASE_TYPE}" STREQUAL "Development")
+  set(EMsoftWorkbench_VERSION_SHORT "${EMsoftWorkbench_VERSION_MAJOR}.${EMsoftWorkbench_VERSION_MINOR}.${EMsoftWorkbench_VERSION_PATCH}.${EMsoftWorkbench_VERSION_TWEAK}")
 else()
   set(EMsoftWorkbench_VERSION_SHORT "0.0.0")
 endif()
@@ -59,7 +59,7 @@ endif()
 message(STATUS "EMsoftWorkbench_VERSION_SHORT: ${EMsoftWorkbench_VERSION_SHORT}")
 
 
-SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "CDAF Tools")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "EMsoft Tools")
 SET(CPACK_PACKAGE_VENDOR "BlueQuartz Software, LLC")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_BINARY_DIR}/ReadMe.md")
 #SET(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_RESOURCES_DIR}/")
@@ -106,12 +106,12 @@ endif()
 if(WIN32 AND NOT UNIX)
   # There is a bug in NSIS that does not handle full unix paths properly. Make
   # sure there is at least one set of four (4) backlasshes.
-  SET(CPACK_NSIS_DISPLAY_NAME "CDAF Software Tools")
+  SET(CPACK_NSIS_DISPLAY_NAME "EMsoft Tools")
   SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.bluequartz.net")
   SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.bluequartz.net")
-  SET(CPACK_NSIS_CONTACT "cdaf@bluequartz.net")
+  SET(CPACK_NSIS_CONTACT "EMsoft@bluequartz.net")
   SET(CPACK_NSIS_MODIFY_PATH ON)
-  SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "CDAF Software Tools")
+  SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "EMsoft Tools")
 ENDif(WIN32 AND NOT UNIX)
 
 if(NOT CPACK_GENERATOR)
@@ -141,7 +141,7 @@ endif(NOT CPACK_GENERATOR)
 
 
 SET(CPACK_SOURCE_GENERATOR "TGZ")
-SET(CPACK_SOURCE_PACKAGE_FILE_NAME "CDAF-${EMsoftWorkbench_VERSION_SHORT}-Source")
+SET(CPACK_SOURCE_PACKAGE_FILE_NAME "EMsoft-${EMsoftWorkbench_VERSION_SHORT}-Source")
 
 
 SET(CPACK_SOURCE_TOPLEVEL_TAG "Source")

@@ -38,69 +38,75 @@
 
 #include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QJsonObject>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMenuBar>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
+#include "Modules/IModuleUI.h"
+
 #define emSoftApp (static_cast<EMsoftApplication*>(qApp))
 
-class EMsoftWorkbench;
-class LandingWidget;
+class EMsoftWorkbench_UI;
+class StyleSheetEditor;
 
 class EMsoftApplication : public QApplication
 {
   Q_OBJECT
 
 public:
-  EMsoftApplication(int& argc, char** argv);
   ~EMsoftApplication();
 
-  SIMPL_INSTANCE_PROPERTY(LandingWidget*, LandingWidget)
   SIMPL_INSTANCE_PROPERTY(QString, OpenDialogLastDirectory)
 
   bool initialize(int argc, char* argv[]);
 
-  QList<EMsoftWorkbench*> getEMsoftWorkbenchInstances();
+  void registerWorkbenchInstance(EMsoftWorkbench_UI *instance);
 
-  void registerEMsoftWorkbenchWindow(EMsoftWorkbench *window);
+  virtual void unregisterWorkbenchInstance(EMsoftWorkbench_UI* instance) = 0;
 
-  virtual void unregisterEMsoftWorkbenchWindow(EMsoftWorkbench* window);
+  EMsoftWorkbench_UI* getNewWorkbenchInstance();
 
-  EMsoftWorkbench* getNewEMsoftWorkbenchInstance(QString filePath);
-
-  EMsoftWorkbench* getActiveWindow();
-  void setActiveWindow(EMsoftWorkbench* instance);
-
-public slots:
-  void newInstanceFromFile(const QString& filePath, const bool& setOpenedFilePath, const bool& addToRecentFiles);
+  EMsoftWorkbench_UI* getActiveWindow();
+  void setActiveWindow(EMsoftWorkbench_UI* workbench);
 
 protected:
-  // This is a set of all SIMPLView instances currently available
-  QList<EMsoftWorkbench*> m_EMsoftWorkbenchInstances;
+  EMsoftApplication(int& argc, char** argv);
 
-  // The currently active SIMPLView instance
-  EMsoftWorkbench* m_ActiveWindow;
+  EMsoftWorkbench_UI*                   m_ActiveWindow;
+
+  // This is a set of all EMsoftWorkbench_UI instances currently available
+  QList<EMsoftWorkbench_UI*>      m_WorkbenchInstances;
 
 protected slots:
+  void on_actionNew_triggered();
   void on_actionOpen_triggered();
   void on_actionSave_triggered();
   void on_actionSaveAs_triggered();
 
+  void on_actionEditStyle_triggered();
+  void on_actionEditConfig_triggered();
+
+  void on_actionClearRecentFiles_triggered();
   void on_actionCloseWindow_triggered();
   void on_actionExit_triggered();
   void on_actionAboutEMsoftWorkbench_triggered();
 
-  virtual void emSoftWindowChanged(EMsoftWorkbench* instance);
+  void updateRecentFileList();
 
-  virtual void landingWidgetWindowChanged();
+  virtual void emSoftWindowChanged(EMsoftWorkbench_UI *instance) = 0;
 
-  virtual void on_actionClearRecentFiles_triggered();
-
-  void openMasterFile(const QString &path);
+signals:
+  void emSoftConfigurationChanged();
 
 private:
+  StyleSheetEditor* styleSheetEditor;
+
+  EMsoftWorkbench_UI* newInstanceFromFile(const QString &filePath);
+
+  void initializeEMsoftConfig();
 
   EMsoftApplication(const EMsoftApplication&); // Copy Constructor Not Implemented
   void operator=(const EMsoftApplication&);       // Operator '=' Not Implemented

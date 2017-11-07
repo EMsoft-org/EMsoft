@@ -8,6 +8,10 @@
  energyfile = 'MCoutput.h5',
 ! number of OpenMP threads
  nthreads = 2,
+! setting this parameter to .TRUE. forces the program to add all atom contributions together
+! instead of keeping them separate, which is the default; this option can be used to keep the
+! master file for structures with many atoms in the asymmetric unit to a manageable size.
+ combinesites = .FALSE.
 ! restart computation ?
  restart = .FALSE.,
 ! create output file with uniform master patterns set to 1.0 (used to study background only)

@@ -51,7 +51,7 @@
 \rhead{}
 
 % Footers
-\lfoot{Dictionary Indexing Manual, v3.1, \today}
+\lfoot{\textsf{EBSD/ECP} manual, v3.1, \today}
 \cfoot{}
 \rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
 
@@ -93,10 +93,7 @@ support from an AFOSR/MURI grant FA9550-12-1-0458.}}
 \begin{document}
 \maketitle
 
-\noindent{\color{blue}{\large\textbf{ This manual is under development; several sections still need to be written.\\ 
-updated versions will be made available as soon as they are completed.}}}
-
-\begin{figure*}[h]
+\vspace*{-0.5in}\begin{figure*}[h]
 \leavevmode\centering
 \epsfxsize=4.0in\epsffile{figs/EMsoftlogo.eps}
 \end{figure*}
@@ -114,10 +111,10 @@ can be analyzed by the DREAM.3D package.
 In this manual, we hope to accomplish the following tasks:
 \begin{enumerate}
 	\item Explain briefly the underlying approach behind the dictionary indexing programs (section~\ref{sec:theory});
-	\item Document the input files for the f90 programs; % (sections~\ref{sec:f90Fit}, \ref{sec:f90EBSDdict}, \ref{sec:f90ECPdict});
+	\item Document the input files for the f90 programs (sections~\ref{sec:f90Fit}, \ref{sec:f90EBSDdict}, \ref{sec:f90ECPdict});
 %	\item Document how to call the EBSD and ECP routines from other programming languages (section~\ref{sec:external});
-	\item Document the program output; % (section~\ref{sec:output});
-	\item Explain the use of these programs by means of a few basic examples. % (section~\ref{sec:examples}).
+	\item Document the program output (section~\ref{sec:output});
+	\item Explain the use of these programs by means of a few basic examples (section~\ref{sec:examples}).
 \end{enumerate}
 
 \newpage
@@ -305,7 +302,7 @@ due to the lattice symmetry, those arrays are equal.  The results from these two
 As is the case for all other \ctp\ programs, the \textsf{EMEBSDDI} program expects a namelist (or json) input file, defining the following variables:\footnote{Note
 the space in front of each entry and the comma at the end of each non-comment line; these are present so that the forthcoming Windows version, compiled with the \textit{ifort} compiler, will function properly.}
 \fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
-\VerbatimInput{includefiles/EMEBSDDI.template}
+\VerbatimInput{../../EMsoftPrivate/NamelistTemplates/EMEBSDDI.template}
 Here are the meanings of all variables in the order they appear above; note however, that the order is not important.  The values in the list above are the default values
 for all variables.
 \newcommand{\entry}[1]{\item \textsf{\color{blue}#1:}}
@@ -593,7 +590,7 @@ Consider a function $F(x), x \in \mathbb{R}^{n}$, subject to the bounds $a \le x
 This section lists an example input name list file for the \textsf{EMDPFit} program and explains what each of the input parameters does.
 
 \fvset{frame=lines,formatcom=\color{blue},fontsize=\footnotesize}
-\VerbatimInput{includefiles/EMDPFit.template}
+\VerbatimInput{../../EMsoftPrivate/NamelistTemplates/EMDPFit.template}
 
 %\newcommand{\entry}[1]{\item \textsf{\color{blue}#1:}}
 %\newcommand{\entryd}[1]{\item \textsf{{\color{blue}#1} {\color{red}[to be removed in later \ctp\ version]:}}}

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2017, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -42,6 +42,7 @@
 !> @date 03/19/13 MDG 3.0 updated all routines
 !> @date 11/13/13 MDG 4.0 added MatrixExponential routine
 !> @date 11/23/15 MDG 4.1 moved several routines from other mods into this one
+!> @date 10/24/17 MDG 4.2 added infty()/inftyd() functions to return the IEEE infinity value
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -50,13 +51,125 @@ module math
 
 use local
 
-public :: cross3
+public :: mInvert, cross3, infty, inftyd
+
+interface mInvert
+        module procedure mInvert
+        module procedure mInvert_d
+end interface
+
 interface cross3
         module procedure cross3
         module procedure cross3_d
 end interface 
 
 contains
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: infty
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the single precision IEEE value for infinity
+!
+!> @date  10/24/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function infty() result(infinity)
+!DEC$ ATTRIBUTES DLLEXPORT :: infty
+
+real(kind=sgl)      :: infinity
+real(kind=sgl)      :: big 
+
+big = HUGE(1.0)
+infinity = big + HUGE(1.0)
+
+end function infty
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: inftyd
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the double precision IEEE value for infinity
+!
+!> @date  10/24/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function inftyd() result(infinity)
+!DEC$ ATTRIBUTES DLLEXPORT :: inftyd
+
+real(kind=dbl)      :: infinity
+real(kind=dbl)      :: big 
+
+big = HUGE(1.D0)
+infinity = big + HUGE(1.D0)
+
+end function inftyd
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getPolarDecomposition
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief Use LAPACK routines to compute the polar decomposition of a real 3x3 matrix
+!
+!> @param F input matrix
+!> @param Rmatrix (output) unitary matrix
+!> @param Smatrix (output) symmetric stretch matrix
+!
+!> @date  09/29/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getPolarDecomposition(F, Rmatrix, Smatrix)
+!DEC$ ATTRIBUTES DLLEXPORT :: getPolarDecomposition
+
+use local
+use error
+use io
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)     :: F(3,3)           !< input matrix
+real(kind=dbl),INTENT(OUT)    :: Rmatrix(3,3)     !< output unitary matrix
+real(kind=dbl),INTENT(OUT)    :: Smatrix(3,3)     !< output symmetric stretch matrix
+
+! various parameters needed by the LAPACK routine
+integer(kind=irg)               :: INFO, LDA, LDU, LDVT, LWORK, M, N, i
+integer(kind=irg),parameter     :: LWMAX = 100 
+real(kind=dbl)                  :: A(3,3), WORK(LWMAX), S(3), U(3,3), VT(3,3), Sm(3,3)
+character                       :: JOBU, JOBVT
+
+! set initial LAPACK variables
+JOBU = 'A'
+JOBVT = 'A'
+M = 3
+N = 3
+LDA = 3
+A = F
+LDU = 3
+LDVT = 3
+
+S = 0.D0
+U = 0.D0
+VT = 0.D0
+
+LWORK = LWMAX
+
+call dgesvd(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, INFO)
+if (INFO.ne.0) call FatalError('Error in getPolarDecomposition: ','DGESVD return not zero')
+Sm = 0.D0
+Sm(1,1) = S(1)
+Sm(2,2) = S(2)
+Sm(3,3) = S(3)
+
+! next use these matrices to compute the polar decomposition
+Rmatrix = matmul(U, VT)
+Smatrix = matmul(transpose(VT),matmul(Sm, VT))
+
+end subroutine getPolarDecomposition
 
 !--------------------------------------------------------------------------
 !
@@ -121,6 +234,66 @@ end subroutine get_bit_parameters
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:mInvert_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief Invert a 3x3 matrix
+!
+!> @details  Invert a 3x3 matrix; if unitary, simply transpose
+!
+!> @param a input matrix
+!> @param b output matrix
+!> @param uni .TRUE. if unitary matrix, .FALSE. otherwise
+!
+!> @todo this should really be replaced by a BLAS call
+! 
+!> @date   10/13/98 MDG 1.0 original
+!> @date    4/ 5/00 MDG 1.1 added inverse of unitary matrix
+!> @date    5/19/01 MDG 2.0 f90
+!> @date   11/27/01 MDG 2.1 added kind support
+!
+!--------------------------------------------------------------------------
+recursive subroutine mInvert_d(a,b,uni)
+!DEC$ ATTRIBUTES DLLEXPORT :: mInvert_d
+
+use error
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)               :: a(3,3)               !< input matrix
+real(kind=dbl),INTENT(OUT)              :: b(3,3)               !< output matrix
+logical,INTENT(IN)                      :: uni                  !< unitary logical
+real(kind=dbl)                          :: d                    !< auxiliary variable
+
+! it is a regular (non-unitary) matrix
+ if (.not.uni) then 
+  d = a(1,1)*a(2,2)*a(3,3)+a(1,2)*a(2,3)*a(3,1)+ &
+         a(1,3)*a(2,1)*a(3,2)-a(1,3)*a(2,2)*a(3,1)- &
+         a(1,2)*a(2,1)*a(3,3)-a(1,1)*a(2,3)*a(3,2)
+  if (d.ne.0.D0) then
+   b(1,1)=a(2,2)*a(3,3)-a(2,3)*a(3,2)
+   b(1,2)=a(1,3)*a(3,2)-a(1,2)*a(3,3)
+   b(1,3)=a(1,2)*a(2,3)-a(1,3)*a(2,2)
+   b(2,1)=a(2,3)*a(3,1)-a(2,1)*a(3,3)
+   b(2,2)=a(1,1)*a(3,3)-a(1,3)*a(3,1)
+   b(2,3)=a(1,3)*a(2,1)-a(1,1)*a(2,3)
+   b(3,1)=a(2,1)*a(3,2)-a(2,2)*a(3,1)
+   b(3,2)=a(1,2)*a(3,1)-a(1,1)*a(3,2)
+   b(3,3)=a(1,1)*a(2,2)-a(1,2)*a(2,1)
+   b = b/d
+  else
+   call FatalError('mInvert','matrix has zero determinant')
+  end if
+ else
+! it is a unitary matrix, so simply get the transpose
+  b = transpose(a)
+ endif
+
+end subroutine mInvert_d
+      
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:mInvert
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -148,10 +321,10 @@ use error
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)               :: a(3,3)               !< input matrix
-real(kind=dbl),INTENT(OUT)              :: b(3,3)               !< output matrix
-logical,INTENT(IN)                              :: uni          !< unitary logical
-real(kind=dbl)                                  :: d                    !< auxiliary variable
+real(kind=sgl),INTENT(IN)               :: a(3,3)               !< input matrix
+real(kind=sgl),INTENT(OUT)              :: b(3,3)               !< output matrix
+logical,INTENT(IN)                      :: uni                  !< unitary logical
+real(kind=sgl)                          :: d                    !< auxiliary variable
 
 ! it is a regular (non-unitary) matrix
  if (.not.uni) then 
@@ -178,7 +351,7 @@ real(kind=dbl)                                  :: d                    !< auxil
  endif
 
 end subroutine mInvert
-      
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:cInvert
@@ -3024,6 +3197,69 @@ end do
 
 end function vectormatch
 
+
+
+!--------------------------------------------------------------------------
+!
+! function: trilinear_splat
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief distributes a function value onto a cubic grid of 3x3x3 nodes (used for 3D histograms)
+!
+!> @details This function takes a volume array and a point coordinate, and adds the value
+!> of 1 to the array, but distributed ("splatted") over a group of 27 grid points using a 
+!> relatively sharp Gaussian function.  The function takes the remainder part of the coordinates
+!> and computes Gaussian values for each grid point with the peak at the position r mod dr. The
+!> 3x3x3 array is then returned to the calling program with the extrapolated values on the grid nodes.
+!> Routine verified against a similar IDL script on 6/20/2017.
+!
+!> @param r the point to be splatted
+!> @param dr the step sizes in the current array
+!> @param init initalize the coordinate arrays
+! 
+!> @date  06/20/17 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function trilinear_splat(r, dr, init) result(grid3)
+!DEC$ ATTRIBUTES DLLEXPORT :: trilinear_splat
+
+IMPLICIT NONE
+
+real(kind=sgl),INTENT(IN)   :: r(3)
+real(kind=sgl),INTENT(IN)   :: dr(3)
+logical,INTENT(IN),OPTIONAL :: init
+real(kind=sgl)              :: grid3(3,3,3)
+
+real(kind=sgl),SAVE         :: grx(3,3,3), gry(3,3,3), grz(3,3,3)
+real(kind=sgl)              :: alpha = 2.0, rx, ry, rz, drx, dry, drz
+
+if (present(init)) then 
+ if (init.eqv..TRUE.) then
+  grx = 0.0 
+  gry = 0.0 
+  grz = 0.0 
+  grx(1,:,:) = -1.0
+  grx(3,:,:) =  1.0
+  gry(:,1,:) = -1.0
+  gry(:,3,:) =  1.0
+  grz(:,:,1) = -1.0
+  grz(:,:,3) =  1.0
+  grid3 = 0.0
+ else
+  rx = r(1)/dr(1)
+  ry = r(2)/dr(2)
+  rz = r(3)/dr(3)
+
+  drx = rx - nint(rx)
+  dry = ry - nint(ry)
+  drz = rz - nint(rz)
+
+  grid3 = exp( -alpha * ( (grx-drx)**2 + (gry-dry)**2 + (grz-drz)**2 ) )
+  grid3 = grid3/sum(grid3)
+ end if
+end if
+
+end function trilinear_splat
 
 
 end module math

@@ -64,6 +64,7 @@ module HDFsupport
 use local
 use typedefs
 use HDF5
+use stringconstants
 
 !--------------------------------------------------------------------------
 !- declared here to allow for a split of the EMSoftLib into 2 dylibs-------
@@ -251,7 +252,7 @@ character(fnlen,kind=c_char)                          :: line2(1)
 logical                                               :: g_exists, overwrite=.TRUE.
 
 ! create and open the EMheader group
-groupname = 'EMheader'
+groupname = SC_EMheader
 hdferr = HDF_createGroup(groupname, HDF_head)
 call HDFerror_check('HDF_writeEMheader:HDF_createGroup:'//trim(groupname), hdferr)
 
@@ -2845,6 +2846,97 @@ call HDFerror_check('HDF_writeDatasetFloatArray4D:h5sclose_f:'//trim(dataname), 
 
 end function HDF_writeDatasetFloatArray4D
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION:HDF_writeDatasetFloatArray6D
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write a 6D single precision float array data set to the current file or group ID 
+!
+!> @note Note that this routine uses fortran-2003 options
+!
+!> @param dataname dataset name (string)
+!> @param fltarr 6D real array
+!> @param HDF_head
+!
+!> @date 03/26/15  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function HDF_writeDatasetFloatArray6D(dataname, fltarr, dim0, dim1, dim2, dim3, dim4, dim5, &
+                                                HDF_head, overwrite) result(success)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetFloatArray6D
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                             :: dataname
+integer(kind=irg),INTENT(IN)                            :: dim0
+integer(kind=irg),INTENT(IN)                            :: dim1
+integer(kind=irg),INTENT(IN)                            :: dim2
+integer(kind=irg),INTENT(IN)                            :: dim3
+integer(kind=irg),INTENT(IN)                            :: dim4
+integer(kind=irg),INTENT(IN)                            :: dim5
+real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, dim2, dim3, dim4, dim5)
+type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+logical,INTENT(IN),OPTIONAL                             :: overwrite
+integer(kind=irg)                                       :: success
+
+integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer(HID_T)                                          :: space, dset ! Handles
+integer                                                 :: hdferr, rnk
+integer(HSIZE_T), DIMENSION(1:6)                        :: dims
+
+real(real_kind), dimension(1:dim0,1:dim1,1:dim2,1:dim3,1:dim4,1:dim5), TARGET :: wdata
+TYPE(C_PTR)                                             :: f_ptr
+
+success = 0
+
+dims(1:6) = (/ dim0, dim1, dim2, dim3, dim4, dim5 /)
+wdata = fltarr
+
+ ! get a C pointer to the float array
+f_ptr = C_LOC(wdata(1,1,1,1,1,1))
+
+! Create dataspace.
+!
+rnk = 6
+call h5screate_simple_f(rnk, dims, space, hdferr)
+call HDFerror_check('HDF_writeDatasetFloatArray6D:h5screate_simple_f:'//trim(dataname), hdferr)
+
+!
+! Create the dataset and write the 6D float data to it.
+!
+if (present(overwrite)) then
+  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dopen_f:'//trim(dataname), hdferr)
+else
+  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dcreate_f:'//trim(dataname), hdferr)
+end if
+
+if (hdferr.lt.0) then
+  success = -1
+end if
+
+call h5dwrite_f(dset, H5T_NATIVE_REAL, f_ptr, hdferr )
+call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dwrite_f:'//trim(dataname), hdferr)
+
+if (hdferr.lt.0) then
+  success = -1
+end if
+!
+! Close and release resources.
+!
+call h5dclose_f(dset , hdferr)
+call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dclose_f:'//trim(dataname), hdferr)
+
+call h5sclose_f(space, hdferr)
+call HDFerror_check('HDF_writeDatasetFloatArray6D:h5sclose_f:'//trim(dataname), hdferr)
+
+! that's it
+
+end function HDF_writeDatasetFloatArray6D
 !--------------------------------------------------------------------------
 !
 ! FUNCTION:HDF_writeDatasetDoubleArray1D
@@ -6368,59 +6460,59 @@ if (openHDFfile) then
   call HDFerror_check('SaveDataHDF:HDF_createFile:'//trim(fname), hdferr)
 end if
 
-groupname = 'CrystalData'
+groupname = SC_CrystalData
 hdferr = HDF_createGroup(groupname, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_createGroup:'//trim(groupname), hdferr)
 
-dataset = 'ProgramName'
+dataset = SC_ProgramName
 hdferr = HDF_writeDatasetStringArray(dataset, progname, 1, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
 
-dataset = 'CreationDate'
+dataset = SC_CreationDate
 hdferr = HDF_writeDatasetStringArray(dataset, dstr, 1, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
 
-dataset = 'CreationTime'
+dataset = SC_CreationTime
 hdferr = HDF_writeDatasetStringArray(dataset, tstr, 1, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
 
-dataset = 'Creator'
+dataset = SC_Creator
 hdferr = HDF_writeDatasetStringArray(dataset, EMsoft_getUsername(), 1, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
 
-dataset = 'CrystalSystem'
+dataset = SC_CrystalSystem
 hdferr = HDF_writeDatasetInteger(dataset, cell%xtal_system, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
 
-dataset = 'LatticeParameters'
+dataset = SC_LatticeParameters
 cellparams = (/ cell%a, cell%b, cell%c, cell%alpha, cell%beta, cell%gamma /)
 hdferr = HDF_writeDatasetDoubleArray1D(dataset, cellparams, 6, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetDoubleArray1D:'//trim(dataset), hdferr)
 
-dataset = 'SpaceGroupNumber'
+dataset = SC_SpaceGroupNumber
 hdferr = HDF_writeDatasetInteger(dataset, cell%SYM_SGnum, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetInteger:'//trim(dataset), hdferr)
 
 ! make sure we do not write a '0' for the SGset variable; it must be either 1 or 2
 if (cell%SYM_SGset.eq.0) cell%SYM_SGset = 1
-dataset = 'SpaceGroupSetting'
+dataset = SC_SpaceGroupSetting
 hdferr = HDF_writeDatasetInteger(dataset, cell%SYM_SGset, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetInteger:'//trim(dataset), hdferr)
 
-dataset = 'Natomtypes'
+dataset = SC_Natomtypes
 hdferr = HDF_writeDatasetInteger(dataset, cell%ATOM_ntype, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetInteger:'//trim(dataset), hdferr)
 
 allocate(atomtypes(cell%ATOM_ntype))
 atomtypes(1:cell%ATOM_ntype) = cell%ATOM_type(1:cell%ATOM_ntype)
-dataset = 'Atomtypes'
+dataset = SC_Atomtypes
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, atomtypes, cell%ATOM_ntype, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetIntegerArray1D:'//trim(dataset), hdferr)
 deallocate(atomtypes)
 
 allocate(atompos(cell%ATOM_ntype,5))
 atompos(1:cell%ATOM_ntype,1:5) = cell%ATOM_pos(1:cell%ATOM_ntype,1:5)
-dataset = 'AtomData'
+dataset = SC_AtomData
 hdferr = HDF_writeDatasetFloatArray2D(dataset, atompos, cell%ATOM_ntype, 5, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetFloatArray2D:'//trim(dataset), hdferr)
 deallocate(atompos)
@@ -6501,16 +6593,16 @@ if (openHDFfile) then
   call HDFerror_check('ReadDataHDF:HDF_openFile:'//trim(fname), hdferr)
 end if
 
-groupname = 'CrystalData'
+groupname = SC_CrystalData
 hdferr = HDF_openGroup(groupname, HDF_head)
 call HDFerror_check('ReadDataHDF:HDF_openGroup:'//trim(groupname), hdferr)
 
-dataset = 'CrystalSystem'
+dataset = SC_CrystalSystem
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%xtal_system)
 call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
 
-dataset = 'LatticeParameters'
+dataset = SC_LatticeParameters
 call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head, hdferr, cellparams)
 call HDFerror_check('ReadDataHDF:HDF_readDatasetDoubleArray1D:'//trim(dataset), hdferr)
 
@@ -6521,11 +6613,11 @@ cell%alpha = cellparams(4)
 cell%beta = cellparams(5)
 cell%gamma = cellparams(6)
 
-dataset = 'SpaceGroupNumber'
+dataset = SC_SpaceGroupNumber
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%SYM_SGnum) 
 call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
-dataset = 'SpaceGroupSetting'
+dataset = SC_SpaceGroupSetting
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%SYM_SGset)
 call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
@@ -6533,19 +6625,19 @@ call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr
 ! some older .xtal files may still have 0 in them, so we correct this here
 if (cell%SYM_SGset.eq.0) cell%SYM_SGset = 1
 
-dataset = 'Natomtypes'
+dataset = SC_Natomtypes
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%ATOM_ntype)
 call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
 
-dataset = 'Atomtypes'
+dataset = SC_Atomtypes
 call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, atomtypes)
 call HDFerror_check('ReadDataHDF:HDF_readDatasetIntegerArray1D:'//trim(dataset), hdferr)
 
 cell%ATOM_type(1:cell%ATOM_ntype) = atomtypes(1:cell%ATOM_ntype) 
 deallocate(atomtypes)
 
-dataset = 'AtomData'
+dataset = SC_AtomData
 call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, atompos)
 call HDFerror_check('ReadDataHDF:HDF_readDatasetFloatArray2D:'//trim(dataset), hdferr)
 

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2017, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -55,6 +55,8 @@
 !> @date 02/25/16 MDG 4.6 added automatic generation of .config/EMsoft/EMsoftConfig.json file
 !> @date 07/02/16 MDG 5.0 replaced all remaining globals by function calls to please the intel compiler
 !> @date 10/25/16 MDG 5.1 added functionality for initializing EMsoftConfig.json on Windows
+!> @date 08/16/17 MDG 5.2 replaced all string constants by string constants declared in stringconstants.f90
+!> @date 10/28/17 MDG 6.0 changed handling of config parameters to a single structure read in at program start
 !--------------------------------------------------------------------------
 
 !---------------------------
@@ -62,11 +64,14 @@
 ! LOCATED AT @CTEMSoftLib_SOURCE_DIR@/local.f90.in
 ! YOU NEED TO MAKE CHANGES TO THAT FILE. ANY CHANGES MADE TO THIS FILE WILL
 ! BE OVER WRITTEN THE NEXT TIME CMAKE IS EXECUTED.
-
+!---------------------------
 
 module local
 
-!> @note This module must be "use"d by every program, subroutine, and function!
+use stringconstants
+use,intrinsic :: ISO_C_BINDING
+
+!> @note This module must be "use"d by every program, subroutine, and function.
 !> These are the only global variables used by the EMsoft package.
 
 ! The entire EMsoft package should be processor independent.  This can
@@ -96,7 +101,7 @@ module local
 !DEC$ ATTRIBUTES DLLEXPORT :: jsonCK
 
 !> standard string length for filenames
-  integer(kind=irg),parameter           :: fnlen = 132
+  integer(kind=irg),parameter           :: fnlen = 512
 !DEC$ ATTRIBUTES DLLEXPORT :: fnlen
 
 !> reserved IO unit identifiers for postscript (20) and data (21-23)
@@ -106,7 +111,147 @@ module local
 !DEC$ ATTRIBUTES DLLEXPORT :: dataunit2
 !DEC$ ATTRIBUTES DLLEXPORT :: dataunit3
 
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+! Configuration parameters structure  [new in Release 3.2]
+! since this structure can also be generated external to EMsoft, we opt to make it a 
+! list of NULL-terminated strings 
+type ConfigStructureType
+! configuration parameters read from the EMsoftConfig.json file
+ character(fnlen)  :: EMsoftpathname
+ character(fnlen)  :: EMXtalFolderpathname
+ character(fnlen)  :: EMdatapathname
+ character(fnlen)  :: EMtmppathname
+ character(fnlen)  :: EMsoftLibraryLocation
+ character(fnlen)  :: EMSlackWebHookURL
+ character(fnlen)  :: EMSlackChannel
+ character(fnlen)  :: UserName
+ character(fnlen)  :: UserLocation
+ character(fnlen)  :: UserEmail
+ character(5)      :: EMNotify
+ character(3)      :: Develop
+ character(3)      :: Release
+! other configuration parameters that may be needed in various program but are not in the EMsoftConfig.json file
+ character(fnlen)  :: h5copypath
+ character(fnlen)  :: EMsoftplatform
+ character(fnlen)  :: EMsofttestpath
+ character(fnlen)  :: EMsoftTestingPath
+ character(fnlen)  :: EMsoftversion
+ character(fnlen)  :: Configpath
+ character(fnlen)  :: Templatepathname
+ character(fnlen)  :: Resourcepathname
+ character(fnlen)  :: Homepathname
+ character(fnlen)  :: OpenCLpathname
+ character(fnlen)  :: Templatecodefilename
+ character(fnlen)  :: WyckoffPositionsfilename
+ character(fnlen)  :: Randomseedfilename
+ character(1)      :: EMsoftnativedelimiter
+end type ConfigStructureType
+
+character(30)      :: ConfigStructureNames(27) = (/ "EMsoftpathname                ", &
+                                                    "EMXtalFolderpathname          ", &
+                                                    "EMdatapathname                ", &
+                                                    "EMtmppathname                 ", &
+                                                    "EMsoftLibraryLocation         ", &
+                                                    "EMSlackWebHookURL             ", &
+                                                    "EMSlackChannel                ", &
+                                                    "UserName                      ", &
+                                                    "UserLocation                  ", &
+                                                    "UserEmail                     ", &
+                                                    "EMNotify                      ", &
+                                                    "Develop                       ", &
+                                                    "Release                       ", &
+                                                    "h5copypath                    ", &
+                                                    "EMsoftplatform                ", &
+                                                    "EMsofttestpath                ", &
+                                                    "EMsoftTestingPath             ", &
+                                                    "EMsoftversion                 ", &
+                                                    "Configpath                    ", &
+                                                    "Templatepathname              ", &
+                                                    "Resourcepathname              ", &
+                                                    "Homepathname                  ",&
+                                                    "OpenCLpathname                ", &
+                                                    "Templatecodefilename          ",&
+                                                    "WyckoffPositionsfilename      ", &
+                                                    "Randomseedfilename            ", &
+                                                    "EMsoftnativedelimiter         " /)
+
+!
 contains
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getNotify
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the EMNotify parameter
+!
+!> @param no input parameters
+!
+!> @date  08/18/17 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getNotify() result(Notify)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getNotify
+
+IMPLICIT NONE
+
+character(fnlen) :: Notify, ep
+
+ep = SC_EMNotify
+Notify = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+end function EMsoft_getNotify
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getSlackWebHookURL
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the URL for the Slack Webhook to send message to the user
+!
+!> @param no input parameters
+!
+!> @date  08/18/17 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getSlackWebHookURL() result(SlackWebHookURL)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getSlackWebHookURL
+
+IMPLICIT NONE
+
+character(fnlen) :: SlackWebHookURL, ep
+
+ep = SC_EMSlackWebHookURL
+SlackWebHookURL = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+end function EMsoft_getSlackWebHookURL
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getSlackChannel
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the URL for the Slack Webhook to send message to the user
+!
+!> @param no input parameters
+!
+!> @date  08/18/17 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getSlackChannel() result(SlackChannel)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getSlackChannel
+
+IMPLICIT NONE
+
+character(fnlen) :: SlackChannel, ep
+
+ep = SC_EMSlackChannel
+SlackChannel = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+end function EMsoft_getSlackChannel
 
 !--------------------------------------------------------------------------
 !
@@ -127,11 +272,9 @@ IMPLICIT NONE
 
 character(fnlen) :: h5copypath
 
-h5copypath = "@HDF5_INSTALL@"//"/bin/h5copy"
+h5copypath = "@HDF5_INSTALL@"//SC_h5copy
 
 end function EMsoft_geth5copypath
-
-
 
 !--------------------------------------------------------------------------
 !
@@ -181,10 +324,8 @@ EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 binarypath = "@EMsoft_BINARY_DIR@"
 
 testpath = trim(EMsoft_toNativePath(binarypath))&
-//EMsoftnativedelimiter&
-//'Testing'&
-//EMsoftnativedelimiter&
-//'Temporary'
+           //EMsoftnativedelimiter//SC_Testing&
+           //EMsoftnativedelimiter//SC_Temporary
 
 end function EMsoft_getEMsofttestpath
 
@@ -250,7 +391,7 @@ IMPLICIT NONE
 
 character(1)  :: EMsoftnativedelimiter
 
-if (trim(EMsoft_getEMsoftplatform()).eq.'Windows') then
+if (trim(EMsoft_getEMsoftplatform()).eq.SC_Windows) then
   EMsoftnativedelimiter = '\'
 else
   EMsoftnativedelimiter = '/'
@@ -278,12 +419,8 @@ IMPLICIT NONE
 
 character(fnlen)  :: configpath
 
-character(fnlen)  :: confname, emsoftname, dirstring
+character(fnlen)  :: dirstring
 character(1)      :: EMsoftnativedelimiter
-character(9)      :: Home
-
-confname = '.config'
-emsoftname = 'EMsoft'
 
 ! determine the pathname delimiter character
 EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
@@ -291,8 +428,7 @@ EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 ! get the user's home directory to prepend to the config file name
 dirstring = EMsoft_getUserHomePath()
 
-configpath = trim(dirstring)//EMsoftnativedelimiter//trim(confname)//EMsoftnativedelimiter// &
-           trim(emsoftname)
+configpath = trim(dirstring)//EMsoftnativedelimiter//SC_config//EMsoftnativedelimiter//SC_EMsoft
 
 end function EMsoft_getConfigpath
 
@@ -316,7 +452,7 @@ IMPLICIT NONE
 
 character(fnlen)                        :: EMsoftpathname, ep
 
-ep = 'EMsoftpathname'
+ep = SC_EMsoftpathname
 EMsoftpathname = EMsoft_getJSONparameter(ep)
 
 end function EMsoft_getEMsoftpathname
@@ -341,10 +477,34 @@ IMPLICIT NONE
 
 character(fnlen)                        :: EMdatapathname, ep
 
-ep = 'EMdatapathname'
+ep = SC_EMdatapathname
 EMdatapathname = EMsoft_getJSONparameter(ep)
 
 end function EMsoft_getEMdatapathname
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getEMXtalFolderpathname
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the EMXtalFolderpathname variable from the EMsoftconfig.json file
+!
+!> @param no input parameters
+!
+!> @date  08/15/17 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getEMXtalFolderpathname() result(EMXtalFolderpathname)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMdatapathname
+
+IMPLICIT NONE
+
+character(fnlen)                        :: EMXtalFolderpathname, ep
+
+ep = SC_EMXtalFolderpathname
+EMXtalFolderpathname = EMsoft_getJSONparameter(ep)
+
+end function EMsoft_getEMXtalFolderpathname
 
 
 !--------------------------------------------------------------------------
@@ -366,7 +526,7 @@ IMPLICIT NONE
 
 character(fnlen)                        :: EMtmppathname, ep
 
-ep = 'EMtmppathname'
+ep = SC_EMtmppathname
 EMtmppathname = EMsoft_getJSONparameter(ep)
 
 end function EMsoft_getEMtmppathname
@@ -390,8 +550,8 @@ IMPLICIT NONE
 
 character(fnlen)                        :: username, ep
 
-ep = 'UserName'
-username = EMsoft_getJSONparameter(ep)
+ep = SC_UserName
+username = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
 
 end function EMsoft_getUsername
 
@@ -414,8 +574,8 @@ IMPLICIT NONE
 
 character(fnlen)                        :: userlocation, ep
 
-ep = 'UserLocation'
-userlocation = EMsoft_getJSONparameter(ep)
+ep = SC_UserLocation
+userlocation = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
 
 end function EMsoft_getUserlocation
 
@@ -440,8 +600,8 @@ IMPLICIT NONE
 
 character(fnlen)                        :: useremail, ep
 
-ep = 'UserEmail'
-useremail = EMsoft_getJSONparameter(ep)
+ep = SC_UserEmail
+useremail = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
 
 end function EMsoft_getUseremail
 
@@ -466,14 +626,41 @@ IMPLICIT NONE
 character(fnlen)                        :: EMstring, ep
 logical                                 :: EMdevelop
 
-ep = 'Develop'
-EMstring = EMsoft_getJSONparameter(ep)
+ep = SC_Develop
+EMstring = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
 
 EMdevelop = .FALSE.
-if (trim(EMstring).eq.'Yes/') EMdevelop = .TRUE.
+if (trim(EMstring).eq.'Yes') EMdevelop = .TRUE.
 
 end function EMsoft_getEMdevelop
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getRelease
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief check whether or not the Release keyword is present in the config file
+!
+!> @param no input parameters
+!
+!> @date  10/28/17 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getRelease() result(Release)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getRelease
+
+IMPLICIT NONE
+
+character(fnlen)                        :: EMstring, ep
+logical                                 :: Release
+
+ep = SC_Release
+EMstring = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+Release = .FALSE.
+if (trim(EMstring).eq.'Yes') Release = .TRUE.
+
+end function EMsoft_getRelease
 
 !--------------------------------------------------------------------------
 !
@@ -488,29 +675,37 @@ end function EMsoft_getEMdevelop
 !> @date  07/02/16 MDG 1.0 new function
 !> @date  08/19/16 MDG 1.1 modification for Develop check
 !> @date  12/03/16 MDG 1.2 added check for final delimiter
+!> @date  08/15/17 MDG 1.3 changed default behavior for empty JSON parameter strings
 !--------------------------------------------------------------------------
-recursive function EMsoft_getJSONparameter(ep) result(param)
+recursive function EMsoft_getJSONparameter(ep, nobackslash) result(param)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getJSONparameter
 
 use json_module
+
 use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
 
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: ep
 character(fnlen)                        :: param
+logical,INTENT(IN),optional             :: nobackslash
 
 type(json_file)                         :: json
 integer(kind=irg)                       :: error_cnt, slen
 character(kind=jsonCK,len=:),allocatable:: cval
 character(fnlen)                        :: jsonfilename, jsonname
-logical                                 :: found, jexists
+logical                                 :: found, jexists, bs
 character(1)                            :: EMsoftnativedelimiter
+
+bs = .TRUE.
+if (present(nobackslash)) then
+  if (nobackslash.eqv..TRUE.) bs = .FALSE.
+end if 
 
 ! determine the pathname delimiter character
 EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 
-jsonfilename = 'EMsoftConfig.json'
+jsonfilename = SC_jsonfilename
 jsonname =  trim(EMsoft_getConfigpath())//EMsoftnativedelimiter//trim(jsonfilename)
 
 ! test whether or not this file actually exists
@@ -520,7 +715,7 @@ if (jexists) then
 ! initialize the json state variables
   error_cnt = 0
   call json_initialize()
-  if (json_failed().eqv..TRUE.) then
+  if (json_failed()) then
     call json_print_error_message(error_unit)
     stop
   end if
@@ -534,20 +729,27 @@ if (jexists) then
 
   call json%get(trim(ep), cval, found)
   if (.not. found) then
-   if (trim(ep).eq.'Develop') then
+   if (trim(ep).eq.SC_Develop) then
     param = trim(ep)
    else
     write(error_unit,'(A)') 'WARNING: field '//trim(ep)//' not found in json file'
-    stop
+    write(error_unit,'(A)') 'WARNING: continuing with empty parameter value for '//trim(ep)
+    param = ''
    end if
   else
     param = trim(cval)
   end if
 
-! and make sure there is a terminating EMsoftnativedeliter character
+! and make sure there is a terminating EMsoftnativedeliter character, except when the 
+! field has zero length, in which case some other default behavior will be assumed; this 
+! last case was added on 08/15/17 to offer an alternative file location mechanism to the user, namely
+! either a full path declaration or the current working folder, to complement the default
+! behavior which is to prepend the contents of the datapathname configuration variable.
   slen = len(trim(cval))
-  if (cval(slen:slen).ne.EMsoftnativedelimiter) then
-    param = trim(cval)//EMsoftnativedelimiter
+  if ((slen.ne.0).and.(bs.eqv..TRUE.)) then 
+    if (cval(slen:slen).ne.EMsoftnativedelimiter) then
+      param = trim(cval)//EMsoftnativedelimiter
+    end if
   end if
 else
     write(error_unit,'(A)') 'WARNING: file '//trim(jsonname)//' not found '
@@ -570,13 +772,24 @@ end function EMsoft_getJSONparameter
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  05/11/17 MDG 1.1 added support for JSON template files
 !--------------------------------------------------------------------------
-recursive function EMsoft_getTemplatepathname() result(templatepathname)
+recursive function EMsoft_getTemplatepathname(json) result(templatepathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getTemplatepathname
+
+logical,INTENT(IN),OPTIONAL             :: json
 
 character(fnlen)                        :: templatepathname
 
-templatepathname = trim(EMsoft_getEMsoftpathname())//'NamelistTemplates/'
+if (present(json)) then
+  if (json.eqv..TRUE.) then
+    templatepathname = trim(EMsoft_getEMsoftpathname())//SC_JSONTemplates//'/'
+  else
+    templatepathname = trim(EMsoft_getEMsoftpathname())//SC_NamelistTemplates//'/'
+  end if
+else
+  templatepathname = trim(EMsoft_getEMsoftpathname())//SC_NamelistTemplates//'/'
+end if
 
 end function EMsoft_getTemplatepathname
 
@@ -598,7 +811,7 @@ recursive function EMsoft_getResourcepathname() result(resourcepathname)
 
 character(fnlen)                        :: resourcepathname
 
-resourcepathname = trim(EMsoft_getEMsoftpathname())//'resources/'
+resourcepathname = trim(EMsoft_getEMsoftpathname())//SC_resources//'/'
 
 end function EMsoft_getResourcepathname
 
@@ -617,14 +830,14 @@ end function EMsoft_getResourcepathname
 recursive function EMsoft_getUserHomePath() result(userHomePathName)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUserHomePath
 
-character(fnlen)         :: userHomePathName
+character(fnlen)  :: userHomePathName
 character(9)      :: Home
 character(2)      :: HomeDrive
 
 HomeDrive = ''
-if (trim(EMsoft_getEMsoftplatform()).eq."Windows") then
- Home = 'HOMEPATH'
- call getenv("HOMEDRIVE",HomeDrive)
+if (trim(EMsoft_getEMsoftplatform()).eq.SC_Windows) then
+  Home = 'HOMEPATH'
+  call getenv("HOMEDRIVE",HomeDrive)
 else
   Home = 'HOME'
 end if
@@ -652,7 +865,7 @@ recursive function EMsoft_getOpenCLpathname() result(openclpathname)
 
 character(fnlen)                        :: openclpathname
 
-openclpathname = trim(EMsoft_getEMsoftpathname())//'opencl/'
+openclpathname = trim(EMsoft_getEMsoftpathname())//SC_opencl//'/'
 
 end function EMsoft_getOpenCLpathname
 
@@ -668,13 +881,14 @@ end function EMsoft_getOpenCLpathname
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  08/15/17 MDG 1.1 removed need for xtal folder to be named XtalFolder
 !--------------------------------------------------------------------------
 recursive function EMsoft_getXtalpathname() result(xtalpathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getXtalpathname
 
 character(fnlen)                        :: xtalpathname, p
 
-xtalpathname = trim(EMsoft_getEMdatapathname())//'XtalFolder/'
+xtalpathname = trim(EMsoft_getEMXtalFolderpathname())
 
 end function EMsoft_getXtalpathname
 
@@ -696,7 +910,7 @@ recursive function EMsoft_getTemplatecodefilename() result(templatecodefilename)
 
 character(fnlen)                        :: templatecodefilename
 
-templatecodefilename = trim(EMsoft_getResourcepathname())//'templatecodes.txt'
+templatecodefilename = trim(EMsoft_getResourcepathname())//SC_templatecodestxt
 
 end function EMsoft_getTemplatecodefilename
 
@@ -718,7 +932,7 @@ recursive function EMsoft_getWyckoffPositionsfilename() result(WPfilename)
 
 character(fnlen)                        :: WPfilename
 
-WPfilename = trim(EMsoft_getResourcepathname())//'WyckoffPositions.txt'
+WPfilename = trim(EMsoft_getResourcepathname())//SC_WyckoffPositionstxt
 
 end function EMsoft_getWyckoffPositionsfilename
 
@@ -740,7 +954,7 @@ recursive function EMsoft_getRandomseedfilename() result(randomseedfilename)
 
 character(fnlen)                        :: randomseedfilename
 
-randomseedfilename = trim(EMsoft_getResourcepathname())//'RandomSeeds.data'
+randomseedfilename = trim(EMsoft_getResourcepathname())//SC_RandomSeedsdata
 
 end function EMsoft_getRandomseedfilename
 
@@ -758,8 +972,9 @@ end function EMsoft_getRandomseedfilename
 !
 !> @param progname program name string
 !> @param progdesc program descriptor string
+!> @param EMconfig configuration structure 
 !> @param stdout optional output unit identifier
-!> @param config optional passed on to EMsoft_path_init
+!> @param makeconfig optional passed on to EMsoft_path_init
 !
 !> @date  12/08/01 MDG 1.0 original
 !> @date  03/19/13 MDG 2.0 minor modifications
@@ -767,39 +982,79 @@ end function EMsoft_getRandomseedfilename
 !> @date  01/10/14 MDG 3.0 new version
 !> @date  06/05/14 MDG 4.0 progname and progdesc are now subroutine arguments; made stdout optional
 !> @date  02/25/16 MDG 4.1 added config optional parameter
+!> @date  10/28/17 MDG 5.0 added config structure parameter + initialization of its fields
 !--------------------------------------------------------------------------
 
-subroutine EMsoft(progname,progdesc,stdout,config)
+subroutine EMsoft(progname,progdesc,EMconfig,stdout,makeconfig)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft
 
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)           :: progname
 character(fnlen),INTENT(IN)           :: progdesc
+type(ConfigStructureType),INTENT(OUT),OPTIONAL :: EMconfig
 integer(kind=irg),INTENT(IN),OPTIONAL :: stdout
-logical,INTENT(IN),OPTIONAL           :: config
+logical,INTENT(IN),OPTIONAL           :: makeconfig
 
 integer(kind=irg)                     :: std
 
  std = 6
  if (PRESENT(stdout)) std=stdout
 
- write (std,"(//1x,'EMsoft version ',A,', Copyright (C) 2001-2016 Marc De Graef Research Group/CMU')") &
-        trim(EMsoft_getEMsoftversion())
+! initialize all the fields of the EMconfig structure
+ EMconfig%EMsoftpathname = trim(EMsoft_getEMsoftpathname())
+ EMconfig%EMXtalFolderpathname = trim(EMsoft_getEMXtalFolderpathname())
+ EMconfig%EMdatapathname = trim(EMsoft_getEMdatapathname())
+ EMconfig%EMtmppathname = trim(EMsoft_getEMtmppathname())
+ EMconfig%EMsoftLibraryLocation = ''     ! this needs special handling for IDL and WorkBench
+ EMconfig%EMSlackWebHookURL = trim(EMsoft_getSlackWebHookURL())
+ EMconfig%EMSlackChannel = trim(EMsoft_getSlackChannel())
+ EMconfig%UserName = trim(EMsoft_getUsername())
+ EMconfig%UserLocation = trim(EMsoft_getUserlocation())
+ EMconfig%UserEmail = trim(EMsoft_getUseremail())
+ EMconfig%EMNotify = trim(EMsoft_getNotify())
+ if (EMsoft_getEMdevelop().eqv..TRUE.) then 
+    EMconfig%Develop = 'Yes' 
+  else 
+    EMconfig%Develop = 'No'
+  end if
+  if (EMsoft_getRelease().eqv..TRUE.) then 
+    EMconfig%Release = 'Yes' 
+  else 
+    EMconfig%Release = 'No'
+  end if
+! other configuration parameters that may be needed in various program but are not in the EMsoftConfig.json file
+ EMconfig%h5copypath = "@HDF5_INSTALL@"//SC_h5copy
+ EMconfig%EMsoftplatform = "@CMAKE_SYSTEM_NAME@"
+ EMconfig%EMsofttestpath = trim(EMsoft_getEMsofttestpath())
+ EMconfig%EMsoftTestingPath = "@EMsoft_TESTING_DIR@"
+ EMconfig%EMsoftversion = trim(EMsoft_getEMsoftversion())
+ EMconfig%Configpath = trim(EMsoft_getConfigpath())
+ EMconfig%Templatepathname = trim(EMsoft_getTemplatepathname())
+ EMconfig%Resourcepathname = trim(EMsoft_getResourcepathname())
+ EMconfig%Homepathname = trim(EMsoft_getUserHomePath())
+ EMconfig%OpenCLpathname = trim(EMsoft_getOpenCLpathname())
+ EMconfig%Templatecodefilename = trim(EMsoft_getTemplatecodefilename())
+ EMconfig%WyckoffPositionsfilename = trim(EMsoft_getWyckoffPositionsfilename())
+ EMconfig%Randomseedfilename = trim(EMsoft_getRandomseedfilename())
+ EMconfig%EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
+
+ write (std,"(//1x,'EMsoft version ',A,', Copyright (C) 2001-2017 Marc De Graef Research Group/CMU')") &
+      trim(EMconfig%EMsoftversion) 
  write (std,"(1x,'EMsoft comes with ABSOLUTELY NO WARRANTY.')")
  write (std,"(1x,'This is free software, and you are welcome to redistribute it')")
  write (std,"(1x,'under certain conditions; see License.txt file for details.'//)")
 
  write (std,"(1x,'Program name : ',A)") trim(progname)
  write (std,"(1x,'Purpose      : ',A)") trim(progdesc)
- write (std,"(1x,'Platform     : ',A/)") trim(EMsoft_getEMsoftplatform())
+ write (std,"(1x,'Platform     : ',A/)") trim(EMconfig%EMsoftplatform)
 
  call timestamp(std)
  write (std,"(1x,/)")
 
- if (present(config)) then ! we need to (re-)create the EMsoftConfig.json file...
-    if (config.eqv..TRUE.) then
-      call EMsoft_path_init(config)
+ if (present(makeconfig)) then ! we need to (re-)create the EMsoftConfig.json file...
+    if (makeconfig.eqv..TRUE.) then
+      call EMsoft_path_init(makeconfig)
     end if
  end if
 
@@ -825,8 +1080,8 @@ function EMsoft_toNativePath(inpath) result(outpath)
 
 IMPLICIT NONE
 
-character(fnlen),INTENT(IN)          :: inpath
-character(fnlen)                     :: outpath
+character(fnlen),INTENT(IN)        :: inpath
+character(fnlen)                   :: outpath
 
 integer(kind=irg)                    :: i, slen
 character(1)                         :: todelim, fromdelim, c
@@ -943,18 +1198,15 @@ EMsoftpathname = ''
 EMdatapathname = ''
 
 ! default names for the json configuration file
-confname = '.config'
-emsoftname = 'EMsoft'
-jsonfilename = 'EMsoftConfig.json'
+confname = SC_config
+emsoftname = SC_EMsoft
+jsonfilename = SC_jsonfilename
 
 ! determine the pathname delimiter character
 EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 
 ! get the config file name
 jsonname = trim(EMsoft_getConfigpath())//EMsoftnativedelimiter//trim(jsonfilename)
-
-write (*,*) 'jsonname = ',trim(jsonname)
-
 
 ! test whether or not this file actually exists
 inquire(file=trim(jsonname),exist=jexists)
@@ -964,18 +1216,7 @@ inquire(file=trim(jsonname),exist=jexists)
 ! the user if it does exist, and rename the existing file
 if (present(config)) then
   if (config.eqv..TRUE.) then
-!   call getcwd(cwd)
-!   if (trim(EMsoft_getEMsoftplatform()).eq."Windows") then
-!     fname = trim(cwd)//EMsoftnativedelimiter//'EMsoftinit.exe'
-!   else
-!     fname = trim(cwd)//EMsoftnativedelimiter//'EMsoftinit'
-!   end if
 
-!   inquire(file=trim(fname),exist=fexists)
-!   if (.not.(fexists)) then
-!     write (*,*) 'Please execute the EMsoftinit program from inside the EMsoftBuild/Bin or EMsoft/bin folder'
-!     stop
-!   end if
     if (jexists) then
       write (*,*) '-------'
       write (*,*) 'WARNING: An older configuration file already exists in the .config/EMsoft folder'
@@ -1005,7 +1246,7 @@ if (present(config)) then
     call chdir(trim(dirname))
 
 ! check for the EMsoft folder
-    dirname = trim(dirname)//EMsoftnativedelimiter//'EMsoft'
+    dirname = trim(dirname)//EMsoftnativedelimiter//SC_EMsoft
     inquire(file=trim(dirname),exist=fexists)
     if (.not.(fexists)) then
       call system('mkdir '//trim(dirname))
@@ -1014,7 +1255,7 @@ if (present(config)) then
     call chdir(trim(dirname))
 
 ! check whether or not the tmp folder exists...
-    fname = trim(dirname)//EMsoftnativedelimiter//'tmp'
+    fname = trim(dirname)//EMsoftnativedelimiter//SC_tmp
     inquire(file=trim(fname),exist=fexists)
     if (.not.(fexists)) then
       call system('mkdir '//trim(fname))
@@ -1031,6 +1272,8 @@ if (present(config)) then
     open(unit=dataunit,file=trim(jsonname),status='new',form='formatted')
     write (dataunit,"('{')")
     write (dataunit,"(A,A,'EMsoftpathname',A,': ',A,A,A,',')") tab, edp, edp, edp, &
+       trim(EMsoft_getUserHomePath())//EMsoftnativedelimiter,edp
+    write (dataunit,"(A,A,'EMXtalFolderpathname',A,': ',A,A,A,',')") tab, edp, edp, edp, &
        trim(EMsoft_getUserHomePath())//EMsoftnativedelimiter,edp
     write (dataunit,"(A,A,'EMdatapathname',A,': ',A,A,A,',')") tab, edp, edp, edp, &
        trim(EMsoft_getUserHomePath())//EMsoftnativedelimiter,edp
@@ -1062,42 +1305,24 @@ if (present(config)) then
     write (*,"(' You will need to edit this file to change the parameters from their default values.')")
     write (*,"(' ')")
     write (*,"(' - EMsoftpathname should point to the top folder of your EMsoft installation.')")
+    write (*,"(' - EMXtalFolderpathname should point to the folder that will contain the *.xtal files.')")
     write (*,"(' - EMdatapathname should point to where you want to keep all EMsoft output files.')")
     write (*,"('   Note that this folder should NOT be inside the EMsoftpathname folder!')")
+    write (*,"('   You may leave this variable undefined (empty string) to force programs to')")
+    write (*,"('   generate all files in the current working folder or to use full path file names.')")
     write (*,"(' - EMtmppathname should point to the tmp folder where the EMsoftConfig.json file is located.')")
     write (*,"(' - EMsoftLibraryLocation is needed only if you have a fully functional IDL installation; this')")
     write (*,"('   variable should then point to the location of the EMsoftLib.dylib or EMsoftLib.dll file.')")
     write (*,"(' - One of the variables Develop and Release should be set to Yes, the other to No; if you are')")
-    write (*,"('   compiling EMsoft from scratch, then set Develop to Yes and Release to No.')")
+    write (*,"('   developing new EMsoft code using the EMsoftPrivate folder, then set Develop to Yes')")
+    write (*,"('   and Release to No to indicate Debug mode.')")
     write (*,"(' ')")
-    write (*,"(' Make sure that each pathname ends with / or \ ! ')")
+    write (*,"(' Make sure that each non-empty pathname ends with / or \ ! ')")
     write (*,"(' ')")
     write (*,"(' Every EMsoft program will read this configuration file to figure out where things are located.'/)")
 
   end if
 end if
-
-! if EMdata does not exist, create it and also create an XtalFolder inside of it.
-! dataname = trim(EMdatapathname)
-! inquire(file=trim(dataname),exist=fexists)
-! if (.not.(fexists)) then
-!   call system('mkdir '//trim(dataname))
-!   write (*,*) trim(dataname),' folder did not exist and has been created'
-! end if
-! xtalname = trim(dataname)//EMsoftnativedelimiter//'XtalFolder'
-! inquire(file=trim(xtalname),exist=fexists)
-! if (.not.(fexists)) then
-!   call system('mkdir '//trim(xtalname))
-!   write (*,*) trim(xtalname),' folder did not exist and has been created'
-! end if
-
-! library location
-! library = ''
-! if (trim(develop).eq.'No') then
-!   library = trim(EMsoftpathname)//EMsoftnativedelimiter//'lib'
-! else
-!   library = trim(EMsoftpathname)//EMsoftnativedelimiter//'Bin'
-! end if
 
 end subroutine EMsoft_path_init
 

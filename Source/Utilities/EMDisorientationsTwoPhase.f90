@@ -67,7 +67,7 @@ real(kind=dbl)                  :: qu(4), s, Mu(4), DD, cuc(3), quc(4), cu(3), r
                                    diag(3,3), om(3,3), Mscale(4,4), Mrotate(4,4), Mtranslate(4,4), Mtrans(4,4), vx(3), vy(3), &
                                    vz(3), vv(4), misangr, x, y, z, x0, vx1(3), vx2(3), vx3(3), vx4(3), vx5(3), vx6(3), Tmat(4,4), &
                                    omegad, misang1, misang2, rvec(4), MO(200,200), disor, val,eu1(3),eu2(3),eu3(3),eu4(3),eu5(3),&
-                                   eu6(3)
+                                   eu6(3), rodr(3)
 character(10)                   :: fnames(11)
 real(kind=sgl)                  :: mi, ma, rhox, rhoy, rhoz, rho, omega, mumu, s1, s3, prev, alpha, beta, rad,e1,e2,e3
 real(kind=dbl),allocatable      :: iminput(:,:), imoutput(:,:), LUT(:,:) 
@@ -119,7 +119,7 @@ fname = EMsoft_toNativePath(fname)
 
 open(unit=10,file=trim(fname),status='unknown',form='formatted')
 read(10,"(I10)") nump
-write (*,*) 'number of patterns detected : ',nump, Pmdims
+write (*,*) 'number of patterns detected : ',nump
 
 allocate(LUT(10,nump))
 do i=1,nump
@@ -129,9 +129,42 @@ close(10,status='keep')
 
 LUT = LUT*cPi/180.0
 
+! temporary code
+! generate a file with just the g_beta (g_alpha)^(-1) misorientations, no symmetry reduction
+open(unit=10,file=trim('rawmisorientations2.txt'),status='unknown',form='formatted')
+write(10,"(A2)") 'ro'
+write(10,"(I6)") nump
+
+do i=1,nump
+  qu = eu2qu(LUT(1:3,i))
+  Mu = eu2qu(LUT(4:6,i))
+  qu = quat_mult(qu,conjg(Mu))
+  if (qu(1).lt.0.0) qu = -qu
+  rod = qu2ro(qu)
+
+! sign check, to make sure we end up in the correct FZ portion (1/4th of the full cell)
+    if (product(rod(1:3)).ge.0.D0) then
+      rod(1:3) = abs(rod(1:3))
+    else
+      rod(1:3) = abs(rod(1:3))
+      rod(1) = -rod(1)
+    end if
+    write (10,"('sphere { <',F10.6,',',F10.6,',',F10.6,'>,0.002 pigment { Red }}')") rod(1:3)*rod(4)
+end do
+close(10,status='keep')
+
 ! and here we compute the disorientation angle from a quaternion product...
 do i=1,nump
   call getDisorientationAngleAxisTwoPhases(LUT(1:3,i), LUT(4:6,i), dict1, dict2, LUT(7:10,i))
+    rod = ax2ro(LUT(7:10,i))
+! sign check, to make sure we end up in the correct FZ portion (1/4th of the full cell)
+    if (product(rod(1:3)).ge.0.D0) then
+      rod(1:3) = abs(rod(1:3))
+    else
+      rod(1:3) = abs(rod(1:3))
+      rod(1) = -rod(1)
+    end if
+    LUT(7:10,i) = ro2ax(rod)
 end do
 
 fname = trim(EMsoft_getEMdatapathname())//trim(enl%outputfile)

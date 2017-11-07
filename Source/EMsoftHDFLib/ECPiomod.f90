@@ -30,6 +30,7 @@
 module ECPiomod
 
 use local
+use stringconstants
 
 IMPLICIT NONE
 
@@ -97,18 +98,18 @@ ctfname = trim(EMsoft_getEMdatapathname())//trim(ecpnl%ctffile)
 ctfname = EMsoft_toNativePath(ctfname)
 open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ierr)
 
-write(dataunit2,'(A)'),'Channel Text File'
-write(dataunit2,'(A)'),'Prj Test'
-write(dataunit2,'(A)'),'Author	'//trim(EMsoft_getUsername())
-write(dataunit2,'(A)'),'JobMode	Grid'
-write(dataunit2,'(2A,I5)'),'XCells',TAB, ecpnl%totnumexpt
-write(dataunit2,'(2A,I5)'),'YCells',TAB, 1
-write(dataunit2,'(2A,F6.2)'),'XStep',TAB, 1.0
-write(dataunit2,'(2A,F6.2)'),'YStep',TAB, 1.0
-write(dataunit2,'(A)'),'AcqE1	0'
-write(dataunit2,'(A)'),'AcqE2	0'
-write(dataunit2,'(A)'),'AcqE3	0'
-write(dataunit2,'(A,A,$)'),'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A)') 'Channel Text File'
+write(dataunit2,'(A)') 'Prj Test'
+write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
+write(dataunit2,'(A)') 'JobMode	Grid'
+write(dataunit2,'(2A,I5)') 'XCells',TAB, ecpnl%totnumexpt
+write(dataunit2,'(2A,I5)') 'YCells',TAB, 1
+write(dataunit2,'(2A,F6.2)') 'XStep',TAB, 1.0
+write(dataunit2,'(2A,F6.2)') 'YStep',TAB, 1.0
+write(dataunit2,'(A)') 'AcqE1	0'
+write(dataunit2,'(A)') 'AcqE2	0'
+write(dataunit2,'(A)') 'AcqE3	0'
+write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag	30	Coverage	100	Device	0	KV'
 write(str2,'(F4.1)') ecpnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'
@@ -117,7 +118,7 @@ str2 = adjustl(str2)
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAxis	0'
 write(dataunit2,'(A)') trim(str1)
 !write(dataunit2,'(A)')'Mag	30	Coverage	100	Device	0	KV	288.9	TiltAngle	-1	TiltAxis	0'
-write(dataunit2,'(A)'),'Phases	1'
+write(dataunit2,'(A)') 'Phases	1'
 
 ! here we need to read the .xtal file and extract the lattice parameters, Laue group and space group numbers
 ! test to make sure the input file exists and is HDF5 format
@@ -141,11 +142,11 @@ if (stat) then
   hdferr = HDF_openGroup(grname, HDF_head_local)
 
 ! get the spacegroupnumber
-  dataset = 'SpaceGroupNumber'
+dataset = SC_SpaceGroupNumber
   call HDF_readDatasetInteger(dataset, HDF_head_local, hdferr, SGnum)
 
 ! get the lattice parameters
-  dataset = 'LatticeParameters'
+dataset = SC_LatticeParameters
   call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head_local, hdferr, cellparams) 
 
 ! and close the xtal file
@@ -206,7 +207,7 @@ write(dataunit2,'(A)') str1
 ! write(dataunit2,'(A)'),'3.524;3.524;3.524	90;90;90	Nickel	11	225'
 
 ! this is the table header
-write(dataunit2,'(A)'),'Phase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS'
+write(dataunit2,'(A)') 'Phase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS'
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)
@@ -331,19 +332,19 @@ groupname = 'Scan 1'
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Scan 1')
 
-groupname = 'ECP'
+groupname = SC_ECP
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group EBSD')
 
 !=====================================================
 !=====================================================
-groupname = 'Data'
+groupname = SC_Data
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
 !=====================================================
 ! CI Confidence Index: real(kind=sgl), one for each pattern... we take this
 ! to be the largest dot product
-  dataset = 'CI'
+dataset = SC_CI
   allocate(exptCI(ipar(3)))
   exptCI = resultmain(1,1:ipar(3))
   hdferr = HDF_writeDatasetFloatArray1D(dataset, exptCI, ipar(3), HDF_head)
@@ -351,7 +352,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
 
 !=====================================================
 ! Phase: Phase identifier (all zero for now)
-  dataset = 'Phase'
+dataset = SC_Phase
   allocate(iPhase(ipar(3)),stat=istat)
   iPhase = 0
   hdferr = HDF_writeDatasetInteger1byteArray1D(dataset, iPhase, ipar(3), HDF_head)
@@ -360,7 +361,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
 
 !=====================================================
 ! Euler angles: Phi 
-  dataset = 'Phi'
+dataset = SC_Phi
   allocate(eangle(ipar(3)),stat=istat)
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)
@@ -372,7 +373,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
 
 !=====================================================
 ! Euler angles: Phi1
-  dataset = 'Phi1'
+dataset = SC_Phi1
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)
     eangle(ii) = eulerarray(1,indx)
@@ -383,7 +384,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
 
 !=====================================================
 ! Euler angles: Phi2 
-  dataset = 'Phi2'
+dataset = SC_Phi2
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)
     eangle(ii) = eulerarray(3,indx)
@@ -394,37 +395,37 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Data')
   deallocate(eangle)
 
 ! number of samples in dictionary
-  dataset = 'FZcnt'
+dataset = SC_FZcnt
   hdferr = HDF_writeDatasetInteger(dataset, ipar(5), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset FZcnt')
 
 ! point group number
-  dataset = 'PointGroupNumber'
+dataset = SC_PointGroupNumber
   hdferr = HDF_writeDatasetInteger(dataset, ipar(6), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset PointGroupNumber')
 
 ! Ncubochoric
-  dataset = 'Ncubochoric'
+dataset = SC_Ncubochoric
   hdferr = HDF_writeDatasetInteger(dataset, ecpnl%ncubochoric, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Ncubochoric')
 
 ! write the list of sampled Euler angles
-  dataset = 'EulerAngles'
+dataset = SC_EulerAngles
   hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerarray, 3, ipar(4), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset EulerAngles')
 
 ! number of experimental patterns 
-  dataset = 'NumExptPatterns'
+dataset = SC_NumExptPatterns
   hdferr = HDF_writeDatasetInteger(dataset, ipar(3), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset NumExptPatterns')
 
 ! list of top nnk dot product values
-  dataset = 'TopDotProductList'
+dataset = SC_TopDotProductList
   hdferr = HDF_writeDatasetFloatArray2D(dataset, resultmain, ipar(1), ipar(2), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopDotProductList')
 
 ! indices of top matches into Euler angle list
-  dataset = 'TopMatchIndices'
+dataset = SC_TopMatchIndices
   hdferr = HDF_writeDatasetIntegerArray2D(dataset, indexmain, ipar(1), ipar(2), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopMatchIndices')
 
@@ -498,21 +499,21 @@ nmlname = 'EMECPDictionaryIndexingNML'
 allocate(stringarray(1))
 
 ! set the Manufacturer and Version data sets
-dataset = 'Manufacturer'
+dataset = SC_Manufacturer
 stringarray(1)= trim(manufacturer)
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
-dataset = 'Version'
+dataset = SC_Version
 stringarray(1)= 'EMsoft '//EMsoft_getEMsoftversion()
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 ! add the EMsoft header group
 ! write the EMheader to the file
-groupname = 'h5EBSD'
+groupname = SC_h5EBSD
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! and write the nml file for this program to the HDF5 file
@@ -524,7 +525,7 @@ hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 call HDF_pop(HDF_head)
   
 ! create a namelist group to write all the namelist files into
-groupname = "NMLparameters"
+groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
 call HDFwriteECPDictionaryIndexingNameList(HDF_head, ecpnl)
 

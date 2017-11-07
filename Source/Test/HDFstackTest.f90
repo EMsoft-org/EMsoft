@@ -41,6 +41,8 @@
 
 module HDFstackTest
 
+use stringconstants
+
 contains 
 
 subroutine HDFstackExecuteTest(res) &
@@ -106,7 +108,7 @@ if (HDF_head%objectType.ne.'f') then
 end if
 
 ! create a group
-groupname = 'testgroup'
+groupname = SC_testgroup
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 if (HDF_head%objectType.ne.'g') then
@@ -114,7 +116,7 @@ if (HDF_head%objectType.ne.'g') then
   return
 end if
 
-groupname = 'test2group'
+groupname = SC_test2group
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 if (HDF_head%objectType.ne.'g') then
@@ -122,7 +124,7 @@ if (HDF_head%objectType.ne.'g') then
   return
 end if
 
-dataset = 'integer'
+dataset = SC_integer
 ival = 123
 hdferr = HDF_writeDatasetInteger(dataset, ival, HDF_head)
 

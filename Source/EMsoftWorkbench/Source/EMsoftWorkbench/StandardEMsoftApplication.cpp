@@ -32,12 +32,16 @@
 *    United States Prime Contract Navy N00173-07-C-2068
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 #include "StandardEMsoftApplication.h"
 
-#include "EMsoftWorkbench/QtSRecentFileList.h"
-#include "EMsoftWorkbench/EMsoftWorkbench.h"
-#include "EMsoftWorkbench/EMsoftMenuItems.h"
-#include "EMsoftWorkbench/LandingWidget.h"
+#include "Common/EMsoftMenuItems.h"
+#include "Common/QtSSettings.h"
+#include "Common/QtSRecentFileList.h"
+
+#include "Modules/ModuleManager.h"
+
+#include "EMsoftWorkbench/EMsoftWorkbench_UI.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -45,13 +49,7 @@
 StandardEMsoftApplication::StandardEMsoftApplication(int& argc, char** argv) :
   EMsoftApplication(argc, argv)
 {
-  // Connection to update the recent files list on all windows when it changes
-  QtSRecentFileList* recents = QtSRecentFileList::instance();
-  connect(recents, SIGNAL(fileListChanged(const QString&)),
-          this, SLOT(updateRecentFileList(const QString&)));
 
-  QSharedPointer<QtSSettings> prefs = QSharedPointer<QtSSettings>(new QtSSettings());
-  recents->readList(prefs.data());
 }
 
 // -----------------------------------------------------------------------------
@@ -65,59 +63,7 @@ StandardEMsoftApplication::~StandardEMsoftApplication()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void StandardEMsoftApplication::updateRecentFileList(const QString& file)
-{
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
-
-  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
-  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
-
-  // Clear the Recent Items Menu
-  recentFilesMenu->clear();
-
-  // Get the list from the static object
-  QStringList files = QtSRecentFileList::instance()->fileList();
-  foreach(QString file, files)
-  {
-    QAction* action = recentFilesMenu->addAction(QtSRecentFileList::instance()->parentAndFileName(file));
-    action->setData(file);
-    action->setVisible(true);
-    connect(action, SIGNAL(triggered()), this, SLOT(openRecentFile()));
-  }
-
-  recentFilesMenu->addSeparator();
-  recentFilesMenu->addAction(clearRecentFilesAction);
-
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void StandardEMsoftApplication::on_actionClearRecentFiles_triggered()
-{
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
-
-  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
-  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
-
-  // Clear the Recent Items Menu
-  recentFilesMenu->clear();
-  recentFilesMenu->addSeparator();
-  recentFilesMenu->addAction(clearRecentFilesAction);
-
-  // Clear the actual list
-  QtSRecentFileList* recents = QtSRecentFileList::instance();
-  recents->clear();
-
-  // Write out the empty list
-  QSharedPointer<QtSSettings> prefs = QSharedPointer<QtSSettings>(new QtSSettings());
-  recents->writeList(prefs.data());
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void StandardEMsoftApplication::emSoftWindowChanged(EMsoftWorkbench* instance)
+void StandardEMsoftApplication::emSoftWindowChanged(EMsoftWorkbench_UI* instance)
 {
   if (instance->isActiveWindow())
   {
@@ -128,22 +74,11 @@ void StandardEMsoftApplication::emSoftWindowChanged(EMsoftWorkbench* instance)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void StandardEMsoftApplication::landingWidgetWindowChanged()
+void StandardEMsoftApplication::unregisterWorkbenchInstance(EMsoftWorkbench_UI *instance)
 {
-  if (getLandingWidget()->isActiveWindow())
-  {
-    m_ActiveWindow = nullptr;
-  }
-}
+  m_WorkbenchInstances.removeAll(instance);
 
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void StandardEMsoftApplication::unregisterEMsoftWorkbenchWindow(EMsoftWorkbench* window)
-{
-  m_EMsoftWorkbenchInstances.removeAll(window);
-
-  if (m_EMsoftWorkbenchInstances.size() <= 0)
+  if (m_WorkbenchInstances.size() <= 0)
   {
     quit();
   }
@@ -152,7 +87,7 @@ void StandardEMsoftApplication::unregisterEMsoftWorkbenchWindow(EMsoftWorkbench*
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QMenuBar* StandardEMsoftApplication::getSIMPLViewMenuBar(EMsoftWorkbench* instance)
+QMenuBar* StandardEMsoftApplication::getSIMPLViewMenuBar()
 {
   EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
 
@@ -160,15 +95,19 @@ QMenuBar* StandardEMsoftApplication::getSIMPLViewMenuBar(EMsoftWorkbench* instan
   QMenu* menuFile = new QMenu("File", menuBar);
   QMenu* menuEdit = new QMenu("Edit", menuBar);
   QMenu* menuView = new QMenu("View", menuBar);
+  QAction* menuNew = menuItems->getActionNew();
   QAction* actionOpen = menuItems->getActionOpen();
   QAction* actionSave = menuItems->getActionSave();
   QAction* actionSaveAs = menuItems->getActionSaveAs();
   QMenu* menuRecentFiles = menuItems->getMenuRecentFiles();
   QAction* actionClearRecentFiles = menuItems->getActionClearRecentFiles();
   QAction* actionExit = menuItems->getActionExit();
+  QAction* actionEditConfig = menuItems->getActionEditConfig();
+  QAction* actionEditStyle = menuItems->getActionEditStyle();
 
   // Create File Menu
   menuBar->addMenu(menuFile);
+  menuFile->addAction(menuNew);
   menuFile->addAction(actionOpen);
   menuFile->addSeparator();
   menuFile->addAction(actionSave);
@@ -182,7 +121,8 @@ QMenuBar* StandardEMsoftApplication::getSIMPLViewMenuBar(EMsoftWorkbench* instan
 
   // Create Edit Menu
   menuBar->addMenu(menuEdit);
-  menuEdit->addSeparator();
+  menuEdit->addAction(actionEditConfig);
+  menuBar->addAction(actionEditStyle);
 
   // Create View Menu
   menuBar->addMenu(menuView);

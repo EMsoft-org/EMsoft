@@ -49,6 +49,7 @@ use typedefs
 use NameListTypedefs
 use HDF5
 use HDFsupport
+use stringconstants
 
 contains
 
@@ -197,6 +198,129 @@ end subroutine HDF_writeNMLdbles
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteLorentzNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist file into HDF file
+!
+!> @param HDF_head top of push stack
+!> @param knl Kossel name list structure
+!
+!> @date 03/20/15  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteLorentzNameList(HDF_head, knl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteLorentzNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(LorentzNameListType),INTENT(IN)                  :: knl
+
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 8
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_LorentzNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ knl%nthreads, knl%numappos, knl%numdefocus, knl%numtilts /)
+intlist(1) = 'nthreads'
+intlist(2) = 'numappos'
+intlist(3) = 'numdefocus'
+intlist(4) = 'numtilts'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real = (/ knl%voltage, knl%apertureradius, knl%defocusstart, knl%defocusstep, knl%defocusspread, knl%thetac, &
+             knl%tiltstart, knl%tiltstepsize /)
+reallist(1) = 'voltage'
+reallist(2) = 'apertureradius'
+reallist(2) = 'defocusstart'
+reallist(2) = 'defocusstep'
+reallist(2) = 'defocusspread'
+reallist(2) = 'thetac'
+reallist(2) = 'tiltstart'
+reallist(2) = 'tiltstepsize'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! real vectors
+dataset = SC_apertureposition
+hdferr = HDF_writeDatasetFloatArray1D(dataset, knl%apertureposition, 2, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create apertureposition dataset',.TRUE.)
+
+dataset = SC_astigmatism
+hdferr = HDF_writeDatasetFloatArray1D(dataset, knl%astigmatism, 2, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create astigmatism dataset',.TRUE.)
+
+dataset = SC_beamdc
+hdferr = HDF_writeDatasetFloatArray1D(dataset, knl%beamdc, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create beamdc dataset',.TRUE.)
+
+dataset = SC_tiltaxis
+hdferr = HDF_writeDatasetFloatArray1D(dataset, knl%tiltaxis, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create tiltaxis dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_Magfile
+line2(1) = knl%Magfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create Magfile dataset',.TRUE.)
+
+dataset = SC_phasemethod
+line2(1) = knl%phasemethod
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create phasemethod dataset',.TRUE.)
+
+dataset = SC_frfo
+line2(1) = knl%frfo
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create frfo dataset',.TRUE.)
+
+dataset = SC_outputfile
+line2(1) = knl%outputfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create outputfile dataset',.TRUE.)
+
+dataset = SC_phiefile
+line2(1) = knl%phiefile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create phiefile dataset',.TRUE.)
+
+dataset = SC_phimfile
+line2(1) = knl%phimfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create phimfile dataset',.TRUE.)
+
+dataset = SC_intBxfile
+line2(1) = knl%intBxfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create intBxfile dataset',.TRUE.)
+
+dataset = SC_intByfile
+line2(1) = knl%intByfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create intByfile dataset',.TRUE.)
+
+dataset = SC_colormapfile
+line2(1) = knl%colormapfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLorentzNameList: unable to create colormapfile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteLorentzNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteKosselNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -226,7 +350,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'KosselNameList'
+groupname = SC_KosselNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -239,11 +363,11 @@ intlist(5) = 'nthreads'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! integer vectors
-dataset = 'k'
+dataset = SC_k
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, knl%k, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteKosselNameList: unable to create k dataset',.TRUE.)
 
-dataset = 'fn'
+dataset = SC_fn
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, knl%fn, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteKosselNameList: unable to create fn dataset',.TRUE.)
 
@@ -258,12 +382,12 @@ reallist(6) = 'minten'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = knl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteKosselNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'outname'
+dataset = SC_outname
 line2(1) = knl%outname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteKosselNameList: unable to create outname dataset',.TRUE.)
@@ -304,7 +428,7 @@ character(fnlen)                                      :: dataset,groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'KosselMasterNameList'
+groupname = SC_KosselMasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -325,17 +449,17 @@ reallist(5) = 'tfraction'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'Kosselmode'
+dataset = SC_Kosselmode
 line2(1) = knl%Kosselmode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteKosselMasterNameList: unable to create Kosselmode dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = knl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteKosselMasterNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'outname'
+dataset = SC_outname
 line2(1) = knl%outname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteKosselMasterNameList: unable to create outname dataset',.TRUE.)
@@ -345,6 +469,148 @@ call HDF_pop(HDF_head)
 
 end subroutine HDFwriteKosselMasterNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteOMmasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist file into HDF file
+!
+!> @param HDF_head top of push stack
+!> @param knl name list structure
+!
+!> @date 09/06/17  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteOMmasterNameList(HDF_head, knl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteOMmasterNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(OMmasterNameListType),INTENT(IN)                 :: knl
+
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset,groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_OMmasterNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! convert normalize parameter to integer
+nm = 0
+if (knl%normalize.eqv..TRUE.) nm = 1
+
+! write all the single integers
+io_int = (/ knl%npx, knl%nthreads, nm /)
+intlist(1) = 'npx'
+intlist(2) = 'nthreads' 
+intlist(3) = 'normalize'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real = (/ knl%eps1Re, knl%eps1Im, knl%eps2Re, knl%eps2Im, knl%wl, knl%theta /)
+reallist(1) = 'eps1Re'
+reallist(2) = 'eps1Im'
+reallist(3) = 'eps2Re'
+reallist(4) = 'eps2Im'
+reallist(5) = 'wl' 
+reallist(6) = 'theta' 
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! write all the strings
+!dataset = SC_Notify
+!line2(1) = knl%Notify
+!hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+!if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create Notify dataset',.TRUE.)
+
+dataset = SC_xtalname
+line2(1) = knl%xtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = SC_masterfile
+line2(1) = knl%masterfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create masterfile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteOMmasterNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteOMNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist file into HDF file
+!
+!> @param HDF_head top of push stack
+!> @param knl name list structure
+!
+!> @date 09/06/17  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteOMNameList(HDF_head, knl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteOMNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(OMNameListType),INTENT(IN)                       :: knl
+
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset,groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_OMNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ knl%phinum, knl%numpx, knl%numpy /)
+intlist(1) = 'phinum'
+intlist(2) = 'numpx'
+intlist(3) = 'numpy'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the strings
+dataset = SC_masterfile
+line2(1) = knl%masterfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create masterfile dataset',.TRUE.)
+
+dataset = SC_outputfile
+line2(1) = knl%outputfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create outputfile dataset',.TRUE.)
+
+dataset = SC_anglefile
+line2(1) = knl%anglefile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create anglefile dataset',.TRUE.)
+
+dataset = SC_tiffprefix
+line2(1) = knl%tiffprefix
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create tiffprefix dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteOMNameList
 
 !--------------------------------------------------------------------------
 !
@@ -369,24 +635,26 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(MCNameListType),INTENT(INOUT)                    :: mcnl
 
-integer(kind=irg),parameter                           :: n_int = 5, n_real = 7
+integer(kind=irg),parameter                           :: n_int = 6, n_real = 7
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=dbl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, sval(1), groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
-! create the group for this namelist
-groupname = 'MCNameList'
+! create the group for this namelist   [we're writing this to the same group name as the MCOpenCL program
+! to make sure that the EMEBSDmaster program can read the data ...]
+groupname = SC_MCCLNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%primeseed, mcnl%num_el, mcnl%nthreads /)
+io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%primeseed, mcnl%num_el, mcnl%nthreads, mcnl%totnum_el /)
 intlist(1) = 'stdout'
 intlist(2) = 'numsx'
 intlist(3) = 'primeseed'
 intlist(4) = 'num_el'
 intlist(5) = 'nthreads'
+intlist(6) = 'totnum_el'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single doubles
@@ -401,20 +669,26 @@ reallist(7) = 'depthstep'
 call HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 sval(1) = mcnl%MCmode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create MCmode dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = mcnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'dataname'
+dataset = SC_dataname
 line2(1) = mcnl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create dataname dataset',.TRUE.)
+
+dataset = SC_mode
+sval(1) = mcnl%mode
+hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create mode dataset',.TRUE.)
+
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
@@ -452,7 +726,7 @@ character(fnlen)                                      :: dataset, sval(1), group
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'MCLIPSSNameList'
+groupname = SC_MCLIPSSNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -481,17 +755,17 @@ reallist(10) = 'scaled'
 call HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 sval(1) = mcnl%MCmode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCLIPSSNameList: unable to create MCmode dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = mcnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCLIPSSNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'dataname'
+dataset = SC_dataname
 line2(1) = mcnl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCLIPSSNameList: unable to create dataname dataset',.TRUE.)
@@ -536,7 +810,7 @@ character(fnlen)                                      :: dataset, sval(1),groupn
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -579,22 +853,22 @@ else if (mcnl%mode .eq. 'full') then
 end if
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 sval(1) = mcnl%MCmode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create MCmode dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = mcnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'dataname'
+dataset = SC_dataname
 line2(1) = mcnl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create dataname dataset',.TRUE.)
 
-dataset = 'mode'
+dataset = SC_mode
 sval(1) = mcnl%mode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create mode dataset',.TRUE.)
@@ -635,7 +909,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'MCCLMultiLayerNameList'
+groupname = SC_MCCLMultiLayerNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -662,27 +936,27 @@ reallist(9) = 'filmstep'
 call HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 line2(1) = mcnl%MCmode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLMultiLayerNameList: unable to create MCmode dataset',.TRUE.)
 
-dataset = 'xtalname_film'
+dataset = SC_xtalnamefilm
 line2(1) = mcnl%xtalname_film
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLMultiLayerNameList: unable to create xtalname_film dataset',.TRUE.)
 
-dataset = 'xtalname_subs'
+dataset = SC_xtalnamesubs
 line2(1) = mcnl%xtalname_subs
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLMultiLayerNameList: unable to create xtalname_subs dataset',.TRUE.)
 
-dataset = 'dataname'
+dataset = SC_dataname
 line2(1) = mcnl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLMultiLayerNameList: unable to create dataname dataset',.TRUE.)
 
-dataset = 'mode'
+dataset = SC_mode
 line2(1) = mcnl%mode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLMultiLayerNameList: unable to create mode dataset',.TRUE.)
@@ -715,8 +989,8 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
 
-integer(kind=irg),parameter                           :: n_int = 6, n_real = 1
-integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform
+integer(kind=irg),parameter                           :: n_int = 7, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, groupname
@@ -724,10 +998,15 @@ character(fnlen,kind=c_char)                          :: line2(1)
 logical                                               :: g_exists, overwrite=.TRUE.
 
 ! create the group for this namelist
-groupname = 'EBSDMasterNameList'
+groupname = SC_EBSDMasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
+if (emnl%combinesites) then 
+  combinesites = 1
+else 
+  combinesites = 0
+end if
 if (emnl%restart) then 
   restart = 1
 else 
@@ -738,17 +1017,18 @@ if (emnl%uniform) then
 else 
   uniform = 0
 end if
-io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, restart, uniform /)
+io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, combinesites, restart, uniform /)
 intlist(1) = 'stdout'
 intlist(2) = 'npx'
 intlist(3) = 'Esel'
 intlist(4) = 'nthreads'
-intlist(5) = 'restart'
-intlist(6) = 'uniform'
+intlist(5) = 'combinesites'
+intlist(6) = 'restart'
+intlist(7) = 'uniform'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
-dataset = 'dmin'
+dataset = SC_dmin
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%dmin, HDF_head, overwrite)
@@ -757,7 +1037,17 @@ else
 end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create dmin dataset',.TRUE.)
 
-dataset = 'energyfile'
+dataset = SC_copyfromenergyfile
+line2(1) = emnl%copyfromenergyfile
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create copyfromenergyfile dataset',.TRUE.)
+
+dataset = SC_energyfile
 line2(1) = emnl%energyfile
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -795,8 +1085,8 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(TKDMasterNameListType),INTENT(INOUT)            :: emnl
 
-integer(kind=irg),parameter                           :: n_int = 6, n_real = 1
-integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform
+integer(kind=irg),parameter                           :: n_int = 7, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, groupname
@@ -804,7 +1094,7 @@ character(fnlen,kind=c_char)                          :: line2(1)
 logical                                               :: g_exists, overwrite=.TRUE.
 
 ! create the group for this namelist
-groupname = 'TKDMasterNameList'
+groupname = SC_TKDMasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -818,17 +1108,23 @@ if (emnl%uniform) then
 else 
   uniform = 0
 end if
-io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, restart, uniform /)
+if (emnl%combinesites) then 
+  combinesites = 1
+else 
+  combinesites = 0
+end if
+io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, restart, uniform, combinesites /)
 intlist(1) = 'stdout'
 intlist(2) = 'npx'
 intlist(3) = 'Esel'
 intlist(4) = 'nthreads'
 intlist(5) = 'restart'
 intlist(6) = 'uniform'
+intlist(7) = 'combinesites'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
-dataset = 'dmin'
+dataset = SC_dmin
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%dmin, HDF_head, overwrite)
@@ -837,7 +1133,7 @@ else
 end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDMasterNameList: unable to create dmin dataset',.TRUE.)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = emnl%energyfile
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -885,7 +1181,7 @@ character(fnlen,kind=c_char)                          :: line2(1)
 logical                                               :: g_exists, overwrite=.TRUE.
 
 ! create the group for this namelist
-groupname = 'EBSDMasterOpenCLNameList'
+groupname = SC_EBSDMasterOpenCLNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -913,7 +1209,7 @@ intlist(9) = 'globalworkgrpsz'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
-dataset = 'dmin'
+dataset = SC_dmin
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%dmin, HDF_head, overwrite)
@@ -922,7 +1218,7 @@ else
 end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create dmin dataset',.TRUE.)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = emnl%energyfile
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
@@ -973,7 +1269,7 @@ logical                                               :: g_exists, overwrite=.TR
 ! the parameters of importance for the dynamical simulations ... 
 
 ! create the group for this namelist
-groupname = 'BetheList'
+groupname = SC_BetheList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single doubles
@@ -1021,7 +1317,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'EBSDclusterNameList'
+groupname = SC_EBSDclusterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 io_int = (/ emnl%NClusters, emnl%NIterations, emnl%binfactor /)
@@ -1031,17 +1327,17 @@ intlist(3) = 'binfactor'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the strings
-dataset = 'inputfilename'
+dataset = SC_inputfilename
 line2(1) = emnl%inputfilename
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDclusterNameList: unable to create inputfilename dataset',.TRUE.)
 
-dataset = 'groupname'
+dataset = SC_groupname
 line2(1) = emnl%groupname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDclusterNameList: unable to create groupname dataset',.TRUE.)
 
-dataset = 'datasetname'
+dataset = SC_datasetname
 line2(1) = emnl%datasetname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDclusterNameList: unable to create datasetname dataset',.TRUE.)
@@ -1075,31 +1371,31 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(ECPMasterNameListType),INTENT(INOUT)             :: ecpnl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 1
-integer(kind=irg)                                     :: hdferr, io_int(n_int), distort
+integer(kind=irg),parameter                           :: n_int = 5, n_real = 1
+integer(kind=irg)                                     :: hdferr, io_int(n_int), distort, combinesites
 real(kind=dbl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECPMasterNameList'
+groupname = SC_ECPMasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
 ! distort is a logical, for which there is no real HDF_NATIVE_anything conversion, so we'll store it as a 1 or 0
-!if (ecpnl%distort) then 
-!  distort = 1
-!else 
-!  distort = 0
-!end if
+if (ecpnl%combinesites) then 
+  combinesites = 1
+else 
+  combinesites = 0
+end if
 
-io_int = (/ ecpnl%stdout, ecpnl%Esel, ecpnl%npx, ecpnl%nthreads /)
+io_int = (/ ecpnl%stdout, ecpnl%Esel, ecpnl%npx, ecpnl%nthreads, combinesites /)
 intlist(1) = 'stdout'
 intlist(2) = 'Esel'
 intlist(3) = 'npx'
 intlist(4) = 'nthreads'
-!intlist(5) = 'distort'
+intlist(5) = 'combinesites'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 
@@ -1109,17 +1405,12 @@ reallist(1) = 'dmin'
 call HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'outname'
-line2(1) = ecpnl%outname
-hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPMasterNameList: unable to create outname dataset',.TRUE.)
-
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = ecpnl%energyfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPMasterNameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'compmode'
+dataset = SC_compmode
 line2(1) = ecpnl%compmode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPMasterNameList: unable to create compmode dataset',.TRUE.)
@@ -1160,7 +1451,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECPZANameList'
+groupname = SC_ECPZANameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -1176,26 +1467,26 @@ reallist(2) = 'ktmax'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! 3-vectors
-dataset = 'k'
+dataset = SC_k
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%k, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPZANameList: unable to create k dataset',.TRUE.)
 
-dataset = 'fn'
+dataset = SC_fn
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%fn, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPZANameList: unable to create fn dataset',.TRUE.)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 line2(1) = ecpnl%outname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPZANameList: unable to create outname dataset',.TRUE.)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = ecpnl%energyfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPZANameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 line2(1) = ecpnl%maskpattern
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPZANameList: unable to create maskpattern dataset',.TRUE.)
@@ -1239,7 +1530,7 @@ character(fnlen,kind=c_char)                          :: line2(1)
 
 
 ! create the group for this namelist
-groupname = 'EBSDNameList'
+groupname = SC_EBSDNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -1266,61 +1557,71 @@ reallist(9) = 'alphaBD'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! a 4-vector
-dataset = 'axisangle'
+dataset = SC_axisangle
 hdferr = HDF_writeDatasetFloatArray1D(dataset, enl%axisangle, 4, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create axisangle dataset',.TRUE.)
 
+! a 3x3 matrix 
+dataset = SC_Ftensor
+hdferr = HDF_writeDatasetDoubleArray2D(dataset, enl%Ftensor, 3, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create Ftensor dataset',.TRUE.)
+
 ! a few doubles
-dataset = 'beamcurrent'
+dataset = SC_beamcurrent
 hdferr = HDF_writeDatasetDouble(dataset, enl%beamcurrent, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create beamcurrent dataset',.TRUE.)
 
-dataset = 'dwelltime'
+dataset = SC_dwelltime
 hdferr = HDF_writeDatasetDouble(dataset, enl%dwelltime, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create dwelltime dataset',.TRUE.)
 
 ! write all the strings
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 line2(1) = trim(enl%maskpattern)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create maskpattern dataset',.TRUE.)
 
-dataset = 'scalingmode'
+dataset = SC_applyDeformation
+line2(1) = trim(enl%applyDeformation)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create applyDeformation dataset',.TRUE.)
+
+dataset = SC_scalingmode
 line2(1) = trim(enl%scalingmode)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create scalingmode dataset',.TRUE.)
 
-dataset = 'eulerconvention'
+dataset = SC_eulerconvention
 line2(1) = trim(enl%eulerconvention)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create eulerconvention dataset',.TRUE.)
 
-dataset = 'outputformat'
+dataset = SC_outputformat
 line2(1) = trim(enl%outputformat)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create outputformat dataset',.TRUE.)
 
-dataset = 'bitdepth'
+dataset = SC_bitdepth
 line2(1) = trim(enl%bitdepth)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create bitdepth dataset',.TRUE.)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = trim(enl%energyfile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 line2(1) = trim(enl%masterfile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create masterfile dataset',.TRUE.)
 
-dataset = 'anglefile'
+dataset = SC_anglefile
 line2(1) = trim(enl%anglefile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create anglefile dataset',.TRUE.)
 
-dataset = 'datafile'
+dataset = SC_datafile
 line2(1) = trim(enl%datafile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create datafile dataset',.TRUE.)
@@ -1329,6 +1630,189 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to cr
 call HDF_pop(HDF_head)
 
 end subroutine HDFwriteEBSDNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteTKDNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param enl TKD name list structure
+!
+!> @date 03/22/15 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteTKDNameList(HDF_head, enl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteTKDNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(TKDNameListType),INTENT(INOUT)                   :: enl
+
+integer(kind=irg),parameter                           :: n_int = 6, n_real = 9
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: t(1)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+
+! create the group for this namelist
+groupname = SC_TKDNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%binning, enl%nthreads, enl%energyaverage /)
+intlist(1) = 'stdout'
+intlist(2) = 'numsx'
+intlist(3) = 'numsy'
+intlist(4) = 'binning'
+intlist(5) = 'nthreads'
+intlist(6) = 'energyaverage'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals 
+io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, enl%alphaBD /)
+reallist(1) = 'L'
+reallist(2) = 'thetac'
+reallist(3) = 'delta'
+reallist(4) = 'xpc'
+reallist(5) = 'ypc'
+reallist(6) = 'energymin'
+reallist(7) = 'energymax'
+reallist(8) = 'gammavalue'
+reallist(9) = 'alphaBD'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! a 4-vector
+dataset = SC_axisangle
+hdferr = HDF_writeDatasetFloatArray1D(dataset, enl%axisangle, 4, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create axisangle dataset',.TRUE.)
+
+! a few doubles
+dataset = SC_beamcurrent
+hdferr = HDF_writeDatasetDouble(dataset, enl%beamcurrent, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create beamcurrent dataset',.TRUE.)
+
+dataset = SC_dwelltime
+hdferr = HDF_writeDatasetDouble(dataset, enl%dwelltime, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create dwelltime dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_maskpattern
+line2(1) = trim(enl%maskpattern)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create maskpattern dataset',.TRUE.)
+
+dataset = SC_scalingmode
+line2(1) = trim(enl%scalingmode)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create scalingmode dataset',.TRUE.)
+
+dataset = SC_eulerconvention
+line2(1) = trim(enl%eulerconvention)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create eulerconvention dataset',.TRUE.)
+
+dataset = SC_outputformat
+line2(1) = trim(enl%outputformat)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create outputformat dataset',.TRUE.)
+
+dataset = SC_energyfile
+line2(1) = trim(enl%energyfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create energyfile dataset',.TRUE.)
+
+dataset = SC_masterfile
+line2(1) = trim(enl%masterfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create masterfile dataset',.TRUE.)
+
+dataset = SC_anglefile
+line2(1) = trim(enl%anglefile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create anglefile dataset',.TRUE.)
+
+dataset = SC_datafile
+line2(1) = trim(enl%datafile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDNameList: unable to create datafile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteTKDNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteEBSDdetparmscanNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param enl EBSD name list structure
+!
+!> @date 03/22/15 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEBSDdetparmscanNameList(HDF_head, enl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEBSDdetparmscanNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(EBSDdetparmscanNameListType),INTENT(INOUT)       :: enl
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: t(1)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+
+! create the group for this namelist
+groupname = SC_EBSDscanNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ enl%numdetparm, enl%numeuler /)
+intlist(1) = 'numdetparm'
+intlist(2) = 'numeuler'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! a few 3-vectors
+dataset = SC_DetParms
+hdferr = HDF_writeDatasetFloatArray1D(dataset, enl%DetParms, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create DetParms dataset',.TRUE.)
+
+dataset = SC_Eulertriplet
+hdferr = HDF_writeDatasetFloatArray1D(dataset, enl%Eulertriplet, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create Eulertriplet dataset',.TRUE.)
+
+dataset = SC_DetParmstepsize
+hdferr = HDF_writeDatasetFloatArray1D(dataset, enl%DetParmstepsize, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create DetParmstepsize dataset',.TRUE.)
+
+dataset = SC_Cubochoricstepsize
+hdferr = HDF_writeDatasetFloatArray1D(dataset, enl%Cubochoricstepsize, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create Cubochoricstepsize dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEBSDdetparmscanNameList
 
 !--------------------------------------------------------------------------
 !
@@ -1367,7 +1851,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECPNameList'
+groupname = SC_ECPNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -1378,27 +1862,27 @@ intlist(2) = 'npix'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 if (twolayerflag) then
 ! integer vectors
-    dataset = 'fn_f'
+dataset = SC_fnf
     hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%fn_f, 3, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create k dataset',.TRUE.)
 
-    dataset = 'fn_s'
+dataset = SC_fns
     hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%fn_s, 3, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create fn dataset',.TRUE.)
 
-    dataset = 'gF'
+dataset = SC_gF
     hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%gF, 3, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create gF dataset',.TRUE.)
 
-    dataset = 'gS'
+dataset = SC_gS
     hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%gS, 3, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create gS dataset',.TRUE.)
 
-    dataset = 'tF'
+dataset = SC_tF
     hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%tF, 3, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create tF dataset',.TRUE.)
 
-    dataset = 'tS'
+dataset = SC_tS
     hdferr = HDF_writeDatasetIntegerArray1D(dataset, ecpnl%tS, 3, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create tS dataset',.TRUE.)
     
@@ -1444,60 +1928,60 @@ end if
 
 ! write all the strings
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = ecpnl%energyfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'datafile'
+dataset = SC_datafile
 line2(1) = ecpnl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create datafile dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = ecpnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create xtalname dataset',.TRUE.)
 
 if (twolayerflag) then
 
-    dataset = 'xtalname2'
+dataset = SC_xtalname2
     line2(1) = ecpnl%xtalname2
     hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create xtalname2 dataset',.TRUE.)
 
 end if
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 line2(1) = ecpnl%masterfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create masterfile dataset',.TRUE.)
 
 if (twolayerflag) then
 
-    dataset = 'filmfile'
+dataset = SC_filmfile
     line2(1) = ecpnl%filmfile
     hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create filmfile dataset',.TRUE.)
 
-    dataset = 'subsfile'
+dataset = SC_subsfile
     line2(1) = ecpnl%subsfile
     hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create subsfile dataset',.TRUE.)
 
 end if
 
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 line2(1) = ecpnl%maskpattern
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create mask dataset',.TRUE.)
 
-dataset = 'anglefile'
+dataset = SC_anglefile
 line2(1) = ecpnl%anglefile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create anglefile dataset',.TRUE.)
 
-dataset = 'outputformat'
+dataset = SC_outputformat
 line2(1) = trim(ecpnl%outputformat)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create outputformat dataset',.TRUE.)
@@ -1543,7 +2027,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECPNameList'
+groupname = SC_ECPNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -1576,27 +2060,27 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = ecpnl%energyfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'datafile'
+dataset = SC_datafile
 line2(1) = ecpnl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create datafile dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = ecpnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 line2(1) = ecpnl%maskpattern
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create mask dataset',.TRUE.)
 
-dataset = 'eulerconvention'
+dataset = SC_eulerconvention
 line2(1) = ecpnl%eulerconvention
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create eulerconvention dataset',.TRUE.)
@@ -1640,13 +2124,13 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECPIndexingNameListType'
+groupname = SC_ECPIndexingNameListType
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
 io_int = (/ ecpnl%ncubochoric, ecpnl%totnumexpt, ecpnl%nnk, ecpnl%npix, ecpnl%maskradius, ecpnl%nregions,&
           ecpnl%numdictsingle, ecpnl%numexptsingle,ecpnl%nthreads, ecpnl%platid, ecpnl%devid /)
-intlist(1) = 'ncubochoric'
+intlist(1) = 'Ncubochoric'
 intlist(2) = 'totnumexpt'
 intlist(3) = 'nnk'
 intlist(4) = 'npix'
@@ -1678,42 +2162,42 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = ecpnl%energyfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'exptfile'
+dataset = SC_exptfile
 line2(1) = ecpnl%exptfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'datafile'
+dataset = SC_datafile
 line2(1) = ecpnl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create datafile dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = ecpnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 line2(1) = ecpnl%maskpattern
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create mask dataset',.TRUE.)
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 line2(1) = ecpnl%masterfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create masterfile dataset',.TRUE.)
 
-dataset = 'tmpfile'
+dataset = SC_tmpfile
 line2(1) = ecpnl%tmpfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create tmpfile dataset',.TRUE.)
 
-dataset = 'ctffile'
+dataset = SC_ctffile
 line2(1) = ecpnl%ctffile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPNameList: unable to create ctffile dataset',.TRUE.)
@@ -1754,7 +2238,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'LACBEDNameList'
+groupname = SC_LACBEDNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -1767,11 +2251,11 @@ intlist(5) = 'nthreads'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! vectors
-dataset = 'k'
+dataset = SC_k
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, lacbednl%k, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLACBEDNameList: unable to create k dataset',.TRUE.)
 
-dataset = 'fn'
+dataset = SC_fn
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, lacbednl%fn, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLACBEDNameList: unable to create fn dataset',.TRUE.)
 
@@ -1786,12 +2270,12 @@ reallist(6) = 'minten'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 line2(1) = lacbednl%outname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLACBEDNameList: unable to create outname dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = lacbednl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLACBEDNameList: unable to create xtalname dataset',.TRUE.)
@@ -1833,7 +2317,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECPpatternNameList'
+groupname = SC_ECPpatternNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -1843,22 +2327,22 @@ intlist(2) = 'npix'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! single real
-dataset = 'thetac'
+dataset = SC_thetac
 hdferr = HDF_writeDatasetFloat(dataset, ecpnl%thetac, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPpatternNameList: unable to create thetac dataset',.TRUE.)
 
 ! real vector
-dataset = 'k'
+dataset = SC_k
 hdferr = HDF_writeDatasetFloatArray1D(dataset, ecpnl%k, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPpatternNameList: unable to create k dataset',.TRUE.)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 line2(1) = ecpnl%outname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPpatternNameList: unable to create outname dataset',.TRUE.)
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 line2(1) = ecpnl%masterfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPpatternNameList: unable to create masterfile dataset',.TRUE.)
@@ -1891,7 +2375,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(PEDkinNameListType),INTENT(INOUT)                :: pednl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 4
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 4
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1899,15 +2383,14 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'PEDkinNameList'
+groupname = SC_PEDkinNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ pednl%stdout, pednl%npix, pednl%ncubochoric, pednl%nthreads /)
-intlist(1) = 'stdout'
-intlist(2) = 'npix'
-intlist(3) = 'ncubochoric'
-intlist(4) = 'nthreads'
+io_int = (/ pednl%npix, pednl%ncubochoric, pednl%nthreads /)
+intlist(1) = 'npix'
+intlist(2) = 'Ncubochoric'
+intlist(3) = 'nthreads'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals
@@ -1919,15 +2402,25 @@ reallist(4) = 'rnmpp'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 line2(1) = pednl%outname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDkinNameList: unable to create outname dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = pednl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDkinNameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = SC_eulerfile
+line2(1) = pednl%eulerfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDkinNameList: unable to create eulerfile dataset',.TRUE.)
+
+dataset = SC_sampling
+line2(1) = pednl%sampling
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDkinNameList: unable to create sampling dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
@@ -1965,7 +2458,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'EMkinematicalNameList'
+groupname = SC_EMkinematicalNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single reals
@@ -1976,12 +2469,12 @@ reallist(3) = 'thr'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = knl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritekinematicalNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'datafile'
+dataset = SC_datafile
 line2(1) = knl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritekinematicalNameList: unable to create datafile dataset',.TRUE.)
@@ -2023,7 +2516,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'PEDZANameList'
+groupname = SC_PEDZANameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -2036,11 +2529,11 @@ intlist(5) = 'nthreads'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! vectors
-dataset = 'k'
+dataset = SC_k
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, pednl%k, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDZANameList: unable to create k dataset',.TRUE.)
 
-dataset = 'fn'
+dataset = SC_fn
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, pednl%fn, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDZANameList: unable to create fn dataset',.TRUE.)
 
@@ -2055,17 +2548,17 @@ reallist(6) = 'camlen'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'outname'
+dataset = SC_outname
 line2(1) = pednl%outname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDZANameList: unable to create outname dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = pednl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDZANameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'filemode'
+dataset = SC_filemode
 line2(1) = pednl%filemode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePEDZANameList: unable to create filemode dataset',.TRUE.)
@@ -2108,7 +2601,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECCINameList'
+groupname = SC_ECCINameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -2121,7 +2614,7 @@ intlist(5) = 'DF_npiy'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! vectors
-dataset = 'k'
+dataset = SC_k
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, eccinl%k, 3, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create k dataset',.TRUE.)
 
@@ -2136,56 +2629,56 @@ reallist(6) = 'DF_slice'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! 2-vectors
-dataset = 'lauec'
+dataset = SC_lauec
 hdferr = HDF_writeDatasetFloatArray1D(dataset, eccinl%lauec, 2, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create lauec dataset',.TRUE.)
 
-dataset = 'lauec2'
+dataset = SC_lauec2
 hdferr = HDF_writeDatasetFloatArray1D(dataset, eccinl%lauec2, 2, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create lauec2 dataset',.TRUE.)
 
 ! write all the strings
-dataset = 'dispmode'
+dataset = SC_dispmode
 line2(1) = eccinl%dispmode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create dispmode dataset',.TRUE.)
 
-dataset = 'summode'
+dataset = SC_summode
 line2(1) = eccinl%summode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create summode dataset',.TRUE.)
 
-dataset = 'progmode'
+dataset = SC_progmode
 line2(1) = eccinl%progmode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create progmode dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = eccinl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'defectfilename'
+dataset = SC_defectfilename
 line2(1) = eccinl%defectfilename
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create defectfilename dataset',.TRUE.)
 
-dataset = 'dispfile'
+dataset = SC_dispfile
 line2(1) = eccinl%dispfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create dispfile dataset',.TRUE.)
 
-dataset = 'dataname'
+dataset = SC_dataname
 line2(1) = eccinl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create dataname dataset',.TRUE.)
 
-dataset = 'ECPname'
+dataset = SC_ECPname
 line2(1) = eccinl%ECPname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create ECPname dataset',.TRUE.)
 
-dataset = 'sgname'
+dataset = SC_sgname
 line2(1) = eccinl%sgname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create sgname dataset',.TRUE.)
@@ -2229,7 +2722,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'RFZNameList'
+groupname = SC_RFZNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -2240,37 +2733,37 @@ intlist(3) = 'gridtype'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! strings
-dataset = 'euoutname'
+dataset = SC_euoutname
 line2(1) = rfznl%euoutname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRFZNameList: unable to create euler outname dataset',.TRUE.)
 
-dataset = 'cuoutname'
+dataset = SC_cuoutname
 line2(1) = rfznl%cuoutname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRFZNameList: unable to create cubochoric outname dataset',.TRUE.)
 
-dataset = 'hooutname'
+dataset = SC_hooutname
 line2(1) = rfznl%hooutname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRFZNameList: unable to create homochoric outname dataset',.TRUE.)
 
-dataset = 'rooutname'
+dataset = SC_rooutname
 line2(1) = rfznl%rooutname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRFZNameList: unable to create rodrigues outname dataset',.TRUE.)
 
-dataset = 'quoutname'
+dataset = SC_quoutname
 line2(1) = rfznl%quoutname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRFZNameList: unable to create quaternion outname dataset',.TRUE.)
 
-dataset = 'omoutname'
+dataset = SC_omoutname
 line2(1) = rfznl%omoutname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRFZNameList: unable to create orientation matrix outname dataset',.TRUE.)
 
-dataset = 'axoutname'
+dataset = SC_axoutname
 line2(1) = rfznl%axoutname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRFZNameList: unable to create axis angle pair outname dataset',.TRUE.)
@@ -2314,7 +2807,7 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'DictIndxOpenCLNameList'
+groupname = SC_DictIndxOpenCLNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! logical will be written as an integer 1 or 0
@@ -2337,17 +2830,17 @@ intlist(8) = 'MeanSubtraction'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! strings
-dataset = 'exptfile'
+dataset = SC_exptfile
 line2(1) = dictindxnl%exptfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteDictIndxOpenCLNameList: unable to create exptfile dataset',.TRUE.)
 
-dataset = 'dictfile'
+dataset = SC_dictfile
 line2(1) = dictindxnl%dictfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteDictIndxOpenCLNameList: unable to create dictfile dataset',.TRUE.)
 
-dataset = 'eulerfile'
+dataset = SC_eulerfile
 line2(1) = dictindxnl%eulerfile 
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteDictIndxOpenCLNameList: unable to create eulerfile dataset',.TRUE.)
@@ -2382,7 +2875,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSDIndexingNameListType),INTENT(INOUT)          :: ebsdnl
 
-integer(kind=irg),parameter                           :: n_int = 17, n_real = 11, n_reald = 3
+integer(kind=irg),parameter                           :: n_int = 18, n_real = 11, n_reald = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_reald(n_reald)
@@ -2392,15 +2885,15 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'EBSDIndexingNameListType'
+groupname = SC_EBSDIndexingNameListType
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
 io_int = (/ ebsdnl%ncubochoric, ebsdnl%numexptsingle, ebsdnl%numdictsingle, ebsdnl%ipf_ht, &
             ebsdnl%ipf_wd, ebsdnl%nnk, ebsdnl%maskradius, ebsdnl%numsx, ebsdnl%numsy, ebsdnl%binning, &
             ebsdnl%nthreads, ebsdnl%energyaverage, ebsdnl%devid, ebsdnl%platid, ebsdnl%nregions, ebsdnl%nnav, &
-            ebsdnl%nosm /)
-intlist(1) = 'ncubochoric'
+            ebsdnl%nosm, ebsdnl%nlines /)
+intlist(1) = 'Ncubochoric'
 intlist(2) = 'numexptsingle'
 intlist(3) = 'numdictsingle'
 intlist(4) = 'ipf_ht'
@@ -2417,6 +2910,7 @@ intlist(14) = 'platid'
 intlist(15) = 'nregions'
 intlist(16) = 'nnav'
 intlist(17) = 'nosm'
+intlist(18) = 'nlines'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 io_real = (/ ebsdnl%L, ebsdnl%thetac, ebsdnl%delta, ebsdnl%omega, ebsdnl%xpc, &
@@ -2441,18 +2935,18 @@ realdlist(3) = 'hipassw'
 call HDF_writeNMLdbles(HDF_head, io_reald, realdlist, n_reald)
 
 ! a 4-vector
-dataset = 'axisangle'
+dataset = SC_axisangle
 hdferr = HDF_writeDatasetFloatArray1D(dataset, ebsdnl%axisangle, 4, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create axisangle dataset',.TRUE.)
 
 
 ! strings
-dataset = 'maskpattern'
+dataset = SC_maskpattern
 line2(1) = ebsdnl%maskpattern
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create maskpattern dataset',.TRUE.)
 
-dataset = 'scalingmode'
+dataset = SC_scalingmode
 line2(1) = ebsdnl%scalingmode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create scalingmode dataset',.TRUE.)
@@ -2469,61 +2963,235 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingName
 !if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create outputformat dataset', &
 !                                      .TRUE.)
 
-dataset = 'spatialaverage'
+dataset = SC_spatialaverage
 line2(1) = ebsdnl%spatialaverage
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create spatialaverage dataset', &
                                       .TRUE.)
 
-dataset = 'exptfile'
+dataset = SC_exptfile
 line2(1) = ebsdnl%exptfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create exptfile dataset',.TRUE.)
 
-dataset = 'masterfile'
+dataset = SC_masterfile
 line2(1) = ebsdnl%masterfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create masterfile dataset',.TRUE.)
 
-dataset = 'energyfile'
+dataset = SC_energyfile
 line2(1) = ebsdnl%energyfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create energyfile dataset',.TRUE.)
 
-dataset = 'datafile'
+dataset = SC_datafile
 line2(1) = ebsdnl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create datafile dataset',.TRUE.)
 
-dataset = 'tmpfile'
+dataset = SC_tmpfile
 line2(1) = ebsdnl%tmpfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create tmpfile dataset',.TRUE.)
 
-dataset = 'ctffile'
+dataset = SC_ctffile
 line2(1) = ebsdnl%ctffile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create ctffile dataset',.TRUE.)
 
-dataset = 'angfile'
+dataset = SC_angfile
 line2(1) = ebsdnl%angfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create angfile dataset',.TRUE.)
 
-dataset = 'anglefile'
+dataset = SC_anglefile
 line2(1) = ebsdnl%anglefile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create anglefile dataset',.TRUE.)
 
-dataset = 'eulerfile'
+dataset = SC_eulerfile
 line2(1) = ebsdnl%eulerfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create eulerfile dataset',.TRUE.)
+
+dataset = SC_maskfile
+line2(1) = ebsdnl%maskfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create maskfile dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 
 end subroutine HDFwriteEBSDDictionaryIndexingNameList
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteTKDDictionaryIndexingNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param rfznl RFZ name list structure
+!
+!> @date 05/07/17 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteTKDDictionaryIndexingNameList(HDF_head,tkdnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteTKDDictionaryIndexingNameList
+
+use ISO_C_BINDING
+
+use local
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(TKDIndexingNameListType),INTENT(INOUT)           :: tkdnl
+
+integer(kind=irg),parameter                           :: n_int = 17, n_real = 11, n_reald = 3
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: io_reald(n_reald)
+character(20)                                         :: intlist(n_int), reallist(n_real), realdlist(n_reald)
+integer(kind=irg)                                     :: i
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_TKDIndexingNameListType
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ tkdnl%ncubochoric, tkdnl%numexptsingle, tkdnl%numdictsingle, tkdnl%ipf_ht, &
+            tkdnl%ipf_wd, tkdnl%nnk, tkdnl%maskradius, tkdnl%numsx, tkdnl%numsy, tkdnl%binning, &
+            tkdnl%nthreads, tkdnl%energyaverage, tkdnl%devid, tkdnl%platid, tkdnl%nregions, tkdnl%nnav, &
+            tkdnl%nosm /)
+intlist(1) = 'Ncubochoric'
+intlist(2) = 'numexptsingle'
+intlist(3) = 'numdictsingle'
+intlist(4) = 'ipf_ht'
+intlist(5) = 'ipf_wd '
+intlist(6) = 'nnk'
+intlist(7) = 'maskradius'
+intlist(8) = 'numsx'
+intlist(9) = 'numsy'
+intlist(10) = 'binning'
+intlist(11) = 'nthreads'
+intlist(12) = 'energyaverage'
+intlist(13) = 'devid'
+intlist(14) = 'platid'
+intlist(15) = 'nregions'
+intlist(16) = 'nnav'
+intlist(17) = 'nosm'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+io_real = (/ tkdnl%L, tkdnl%thetac, tkdnl%delta, tkdnl%omega, tkdnl%xpc, &
+             tkdnl%ypc, tkdnl%energymin, tkdnl%energymax, tkdnl%gammavalue, tkdnl%StepX, tkdnl%StepY /)
+reallist(1) = 'L'
+reallist(2) = 'thetac'
+reallist(3) = 'delta'
+reallist(4) = 'omega'
+reallist(5) = 'xpc'
+reallist(6) = 'ypc'
+reallist(7) = 'energymin'
+reallist(8) = 'energymax'
+reallist(9) = 'gammavalue'
+reallist(10) = 'StepX'
+reallist(11) = 'StepY'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+io_reald = (/ tkdnl%beamcurrent, tkdnl%dwelltime, tkdnl%hipassw /)
+realdlist(1) = 'beamcurrent'
+realdlist(2) = 'dwelltime'
+realdlist(3) = 'hipassw'
+call HDF_writeNMLdbles(HDF_head, io_reald, realdlist, n_reald)
+
+! a 4-vector
+dataset = SC_axisangle
+hdferr = HDF_writeDatasetFloatArray1D(dataset, tkdnl%axisangle, 4, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create axisangle dataset',.TRUE.)
+
+
+! strings
+dataset = SC_maskpattern
+line2(1) = tkdnl%maskpattern
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create maskpattern dataset',.TRUE.)
+
+dataset = SC_scalingmode
+line2(1) = tkdnl%scalingmode
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create scalingmode dataset',.TRUE.)
+
+!dataset = 'eulerconvention'
+!line2(1) = tkdnl%eulerconvention
+!hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+!if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create eulerconvention dataset', &
+!                                      .TRUE.)
+
+!dataset = 'outputformat'
+!line2(1) = tkdnl%outputformat
+!hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+!if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create outputformat dataset', &
+!                                      .TRUE.)
+
+dataset = SC_spatialaverage
+line2(1) = tkdnl%spatialaverage
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create spatialaverage dataset', &
+                                      .TRUE.)
+
+dataset = SC_exptfile
+line2(1) = tkdnl%exptfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create exptfile dataset',.TRUE.)
+
+dataset = SC_masterfile
+line2(1) = tkdnl%masterfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create masterfile dataset',.TRUE.)
+
+dataset = SC_energyfile
+line2(1) = tkdnl%energyfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create energyfile dataset',.TRUE.)
+
+dataset = SC_datafile
+line2(1) = tkdnl%datafile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create datafile dataset',.TRUE.)
+
+dataset = SC_tmpfile
+line2(1) = tkdnl%tmpfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create tmpfile dataset',.TRUE.)
+
+dataset = SC_ctffile
+line2(1) = tkdnl%ctffile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create ctffile dataset',.TRUE.)
+
+dataset = SC_angfile
+line2(1) = tkdnl%angfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create angfile dataset',.TRUE.)
+
+dataset = SC_anglefile
+line2(1) = tkdnl%anglefile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create anglefile dataset',.TRUE.)
+
+dataset = SC_eulerfile
+line2(1) = tkdnl%eulerfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create eulerfile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteTKDDictionaryIndexingNameList
 
 !--------------------------------------------------------------------------
 !
@@ -2557,7 +3225,7 @@ character(fnlen)                                      :: dataset, sval(1),groupn
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -2604,22 +3272,22 @@ else if (mcnl%mode .eq. 'full') then
 end if
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 sval(1) = mcnl%MCmode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create MCmode dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = mcnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'dataname'
+dataset = SC_dataname
 line2(1) = mcnl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create dataname dataset',.TRUE.)
 
-dataset = 'mode'
+dataset = SC_mode
 sval(1) = mcnl%mode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create mode dataset',.TRUE.)
@@ -2662,7 +3330,7 @@ character(fnlen)                                      :: dataset, sval(1),groupn
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'MCCLfoilNameList'
+groupname = SC_MCCLfoilNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -2691,17 +3359,17 @@ reallist(8) = 'depthmax'
 call HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
-dataset = 'MCmode'
+dataset = SC_MCmode
 sval(1) = mcnl%MCmode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create MCmode dataset',.TRUE.)
 
-dataset = 'xtalname'
+dataset = SC_xtalname
 line2(1) = mcnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create xtalname dataset',.TRUE.)
 
-dataset = 'dataname'
+dataset = SC_dataname
 line2(1) = mcnl%dataname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to create dataname dataset',.TRUE.)
@@ -2710,6 +3378,250 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCCLNameList: unable to cr
 call HDF_pop(HDF_head)
 
 end subroutine HDFwriteMCCLfoilNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwritePFInversionNameList
+!
+!> @author saransh singh, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param epf PF name list structure
+!
+!> @date 04/02/17 SS 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwritePFInversionNameList(HDF_head,epf)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwritePFInversionNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(PFInversionNameListType),INTENT(IN)              :: epf
+
+
+integer(kind=irg),parameter                           :: n_int = 3
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), ii
+character(20)                                         :: intlist(n_int)
+character(fnlen)                                      :: dataset, groupname, str
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_PFInversionNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ epf%nLam, epf%ncub, epf%nfiles/)
+intlist(1) = 'nLam'
+intlist(2) = 'ncub'
+intlist(3) = 'nfiles'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the strings
+dataset = SC_xtalname
+line2(1) = trim(epf%xtalname)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePFInversionNameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = SC_datafile
+line2(1) = trim(epf%datafile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePFInversionNameList: unable to create datafile dataset',.TRUE.)
+
+dataset = SC_mrcfile
+line2(1) = trim(epf%mrcfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePFInversionNameList: unable to create mrcfile dataset',.TRUE.)
+
+
+do ii = 1,epf%nfiles
+    write(str,'(A,I1)')'PFfile',ii
+    dataset = str
+    line2(1) = trim(epf%flist(ii))
+    hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritePFInversionNameList: unable to create PFfile dataset',.TRUE.)
+end do
+    
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwritePFInversionNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteSTEMDCINameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param epf STEMDCI name list structure
+!
+!> @date 07/02/17 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteSTEMDCINameList(HDF_head,epf)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteSTEMDCINameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(STEMDCINameListType),INTENT(IN)                  :: epf
+
+
+integer(kind=irg),parameter                           :: n_int = 6, n_real = 4
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), ii
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname, str
+character(fnlen,kind=c_char)                          :: line2(1)
+
+
+! create the group for this namelist
+groupname = SC_STEMDCINameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ epf%nthreads, epf%output, epf%dinfo, epf%t_interval, epf%DF_npix, epf%DF_npiy /)
+intlist(1) = 'nthreads'
+intlist(2) = 'output'
+intlist(3) = 'dinfo'
+intlist(4) = 't_interval'
+intlist(5) = 'DF_npix'
+intlist(6) = 'DF_npiy'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+io_real = (/ epf%voltage, epf%DF_L, epf%DF_slice, epf%dmin /)
+reallist(1) = 'voltage'
+reallist(2) = 'DF_L'
+reallist(3) = 'DF_slice'
+reallist(4) = 'dmin'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! vectors
+dataset = SC_kk
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, epf%kk, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create kk dataset',.TRUE.)
+
+! a 2-vector
+dataset = SC_lauec
+hdferr = HDF_writeDatasetFloatArray1D(dataset, epf%lauec, 2, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create lauec dataset',.TRUE.)
+
+! short strings
+dataset = SC_progmode
+line2(1) = trim(epf%progmode)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create progmode dataset',.TRUE.)
+
+dataset = SC_dispmode
+line2(1) = trim(epf%dispmode)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create dispmode dataset',.TRUE.)
+
+! write all the full length strings
+dataset = SC_xtalname
+line2(1) = trim(epf%xtalname)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = SC_dataname
+line2(1) = trim(epf%dataname)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create dataname dataset',.TRUE.)
+
+dataset = SC_dispfile
+line2(1) = trim(epf%dispfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create dispfile dataset',.TRUE.)
+
+dataset = SC_defectfilename
+line2(1) = trim(epf%defectfilename)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create defectfilename dataset',.TRUE.)
+
+dataset = SC_STEMnmlfile
+line2(1) = trim(epf%STEMnmlfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMDCINameList: unable to create STEMnmlfile dataset',.TRUE.)
+    
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteSTEMDCINameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteSTEMGeometryNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param epf STEMDCI name list structure
+!
+!> @date 07/02/17 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteSTEMGeometryNameList(HDF_head,epf)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteSTEMGeometryNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(STEMGeometryNameListType),INTENT(IN)             :: epf
+
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 7
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), ii
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname, str
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_STEMGeometryNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ epf%numberofsvalues, epf%numCL /)
+intlist(1) = 'numberofsvalues'
+intlist(2) = 'numCL'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+io_real = (/ epf%BFradius, epf%ADFinnerradius, epf%ADFouterradius, epf%kt, epf%beamconvergence, epf%diffaprad, epf%diffapcenter /)
+reallist(1) = 'BFradius'
+reallist(2) = 'ADFinnerradius'
+reallist(3) = 'ADFouterradius'
+reallist(4) = 'kt'
+reallist(5) = 'beamconvergence'
+reallist(6) = 'diffaprad'
+reallist(7) = 'diffapcenter'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! a 20-vector
+dataset = SC_CLarray
+hdferr = HDF_writeDatasetFloatArray1D(dataset, epf%CLarray, 20, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMGeometryNameList: unable to create CLarray dataset',.TRUE.)
+
+! short strings
+dataset = SC_geometry
+line2(1) = trim(epf%geometry)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteSTEMGeometryNameList: unable to create geometry dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteSTEMGeometryNameList
+
 
 
 

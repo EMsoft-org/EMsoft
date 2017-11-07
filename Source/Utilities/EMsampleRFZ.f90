@@ -89,14 +89,21 @@ end program EMsampleRFZ
 !> @date 08/19/15 MDG 2.1 added all rotation representations as output options
 !> @date 12/22/16 MDG 2.2 added option to generate reduced sampling inside constant misorientation ball
 !> @date 02/01/17 MDG 2.3 added option to generate sampling inside a conical volume in Rodrigues space
+!> @date 08/16/17 MDG 2.4 added option to generate uniform fiber texture sampling in Rodrigues space
 !--------------------------------------------------------------------------
 subroutine CreateSampling(rfznl, progname)
 
 use local
 use typedefs
+use crystal
+use HDFsupport
+use io
+use files
+use symmetry
 use NameListTypedefs
 use constants
 use rotations
+use error
 use io
 use so3
 
@@ -105,13 +112,16 @@ IMPLICIT NONE
 type(RFZNameListType),INTENT(IN)        :: rfznl
 character(fnlen),INTENT(IN)             :: progname
 
-integer(kind=irg)                       :: i, FZcnt, io_int(1), FZtype, FZorder
-real(kind=dbl)                          :: eud(3), rtod, cud(3), qud(4), hod(3), ax(4), calpha, conevector(3)
+integer(kind=irg)                       :: i, j, num, m, FZcnt, io_int(1), FZtype, FZorder
+real(kind=dbl)                          :: eud(3), rtod, cud(3), qud(4), hod(3), ax(4), calpha, conevector(3), &
+                                           h, k, l, ih, ik, il, itmp(48,3), idiff, eps
 type(FZpointd),pointer                  :: FZlist, FZtmp
 logical                                 :: doeu = .FALSE., docu = .FALSE., doho = .FALSE., doqu = .FALSE., &
-                                           doom = .FALSE., doax = .FALSE., doro = .FALSE.
+                                           doom = .FALSE., doax = .FALSE., doro = .FALSE., newpoint
+type(unitcell),pointer                  :: cell
 
 rtod = 180.D0/cPi
+eps = 0.0001D0
 
 ! determine which files to create
 if (trim(rfznl%euoutname).ne.'undefined') doeu = .TRUE.
@@ -124,6 +134,53 @@ if (trim(rfznl%axoutname).ne.'undefined') doax = .TRUE.
 
 ! a bit of output
 call Message('Starting computation for point group '//PGTHD(rfznl%pgnum))
+
+! if samplemode is set to FIB, a fiber texture will be generated, so we 
+! need to properly initialize the symmetry operations...
+if (trim(rfznl%samplemode).eq.'FIB') then
+  if (rfznl%xtalname.eq.'undefined') then 
+    call FatalError('CreateSampling','Routine requires an .xtal filename for fiber texture mode')
+  endif
+  allocate(cell)
+! initialize crystal
+  cell % SG % SYM_reduce=.FALSE.
+  cell%fname = rfznl%xtalname
+  call CrystalData(cell,.TRUE.)
+  write (*,*) 'number of point group operators ',cell%SG%SYM_NUMpt
+  conevector = rfznl%conevector/sqrt(sum(rfznl%conevector**2))
+
+! first take the identity
+  itmp = 0.0D0
+  j=1
+  h=conevector(1)
+  k=conevector(2)
+  l=conevector(3)
+  itmp(j,1:3)=conevector(1:3)
+  write (*,*) 'fiber vector : ',itmp(j,1:3)
+
+! multiply with all point group elements
+  do i=2,cell%SG%SYM_NUMpt 
+     ih=cell%SG%SYM_direc(i,1,1)*h+cell%SG%SYM_direc(i,1,2)*k+cell%SG%SYM_direc(i,1,3)*l
+     ik=cell%SG%SYM_direc(i,2,1)*h+cell%SG%SYM_direc(i,2,2)*k+cell%SG%SYM_direc(i,2,3)*l
+     il=cell%SG%SYM_direc(i,3,1)*h+cell%SG%SYM_direc(i,3,2)*k+cell%SG%SYM_direc(i,3,3)*l
+
+! is this a new point ?
+     newpoint=.TRUE.
+     do m=1,j+1
+       idiff=(itmp(m,1)-ih)**2+(itmp(m,2)-ik)**2+(itmp(m,3)-il)**2
+       if (idiff.lt.eps) newpoint=.FALSE.
+     end do
+
+     if (newpoint) then 
+       j=j+1
+       itmp(j,1:3)=(/ ih, ik, il /)
+     endif
+
+  end do 
+  num=j
+  write (*,*) 'total number of equivalent fiber axes ',num
+endif
+
 
 ! determine which function we should call for this point group symmetry
 FZtype = FZtarray(rfznl%pgnum)
@@ -148,6 +205,14 @@ if (trim(rfznl%samplemode).eq.'CON') then
   write (*,*) 'minimum dot product    = ', calpha
   call sample_Cone(conevector, calpha, rfznl%nsteps, FZtype, FZorder, FZcnt, FZlist)
 end if
+if (trim(rfznl%samplemode).eq.'FIB') then
+  conevector = rfznl%conevector/sqrt(sum(rfznl%conevector**2))
+  write(*,*) 'fiber axis unit vector   = ', conevector
+  write(*,*) 'fiber cone semi opening angle = ', rfznl%semiconeangle
+  calpha = cos(rfznl%semiconeangle/rtod)
+  call sample_Fiber(itmp, num, calpha, rfznl%nsteps, FZtype, FZorder, FZcnt, FZlist)
+end if
+
 
 io_int(1) = FZcnt
 call WriteValue('Total number of unique orientations generated = ',io_int,1,"(I10)")

@@ -1,16 +1,41 @@
-#ifndef _EMSOFTLIB_H_
-#define _EMSOFTLIB_H_
+#ifndef _emsoft_lib_H_
+#define _emsoft_lib_H_
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
+/**
+* @brief This is the typedef for a call back function that is
+* used in the EMsoft library.
+* @param size_t Unique integer that designates which C++ object
+* did the call into EMsoft
+* @param int
+*/
 typedef void (*ProgCallBackType)(size_t, int);
 
+/**
+* @brief This is the typedef for a call back function that is
+* used in the EMsoft library.
+* @param size_t Unique integer that designates which C++ object
+* did the call into EMsoft
+* @param int
+* @param int
+* @param float
+*/
 typedef void (*ProgCallBackType2)(size_t, int, int, float);
 
+/**
+* @brief This is the typedef for a call back function that is
+* used in the EMsoft library.
+* @param size_t Unique integer that designates which C++ object
+* did the call into EMsoft
+* @param int
+* @param int
+* @param int
+* @param int
+*/
 typedef void (*ProgCallBackType3)(size_t, int, int, int, int);
 
 
@@ -27,7 +52,6 @@ typedef void (*ProgCallBackType3)(size_t, int, int, int, int);
 * @param object unique identifier for calling class instantiation
 * @param cancel boolean to trigger cancellation of computation
 */
-
 void EMsoftCgetEBSDPatterns
 	(int32_t* ipar, float* fpar, float* EBSDpattern, 
 	 float* quats, int32_t* accum_e, float* mLPNH, float* mLPSH,
@@ -47,7 +71,6 @@ void EMsoftCgetEBSDPatterns
 * @param object unique identifier for calling class instantiation
 * @param cancel boolean to trigger cancellation of computation
 */
-
 void EMsoftCgetECPatterns
 	(size_t* ipar, float* fpar, float* ECpattern, 
 	 float* quats, float* accum_e, float* mLPNH, float* mLPSH,
@@ -66,12 +89,10 @@ void EMsoftCgetECPatterns
 * @param object unique identifier for calling class instantiation
 * @param cancel boolean to trigger cancellation of computation
 */
-
-
 void EMsoftCgetMCOpenCL
         (int32_t* ipar, float* fpar, float* atompos, int32_t* atomtypes, 
         float* latparm, int32_t* accum_e, int32_t* accum_z, 
-        ProgCallBackType2 callback, size_t object, bool* cancel);
+        ProgCallBackType2 callback, size_t object, char* resourceLoc, bool* cancel);
 
 /**
 * EBSD master pattern calculations:
@@ -87,15 +108,22 @@ void EMsoftCgetMCOpenCL
 * @param object unique identifier for calling class instantiation
 * @param cancel boolean to trigger cancellation of computation
 */
-
-
 void EMsoftCgetEBSDmaster
         (int32_t* ipar, float* fpar, float* atompos, int32_t* atomtypes, 
         float* latparm, int32_t* accum_z,  float* mLPNH, float* mLPSH,
         ProgCallBackType3 callback, size_t object, bool* cancel);
 
 
-
+/**
+ * @brief HiPassFilterC
+ * @param rdata real data to be transformed
+ * @param dims dimensions of rdata array
+ * @param w width of Gaussian profile
+ * @param init (optional) initialize without computing anything
+ * @param destroy (optional) destroy fft plans
+ * @param fdata
+ */
+void HiPassFilterC(double* rdata, int32_t* dims, double* w, bool* init, bool* destroy, double* fdata);
 
 #ifdef __cplusplus
 }

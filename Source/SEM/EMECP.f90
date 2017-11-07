@@ -49,6 +49,7 @@ use NameListTypedefs
 use NameListHandlers
 use files
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -108,6 +109,7 @@ use ISO_C_BINDING
 use omp_lib
 use distortion
 use filters 
+use stringconstants
 
 IMPLICIT NONE
 
@@ -244,25 +246,25 @@ datafile = EMsoft_toNativePath(datafile)
 hdferr =  HDF_createFile(datafile, HDF_head)
 
 ! write the EMheader to the file
-groupname = 'ECP'
+groupname = SC_ECP
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-groupname = "EMECP"
+groupname = SC_EMECP
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-dataset = 'EMECPNML'
+dataset = SC_EMECPNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
 ! create a NMLparameters group to write all the namelist entries into
-groupname = "NMLparameters"
+groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 call HDFwriteECPNameList(HDF_head, ecpnl, .FALSE.)
@@ -271,17 +273,17 @@ call HDFwriteECPNameList(HDF_head, ecpnl, .FALSE.)
 call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-groupname = 'ECP'
+groupname = SC_ECP
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! we need to write the image dimensions
-dataset = 'npix'
+dataset = SC_npix
 hdferr = HDF_writeDatasetInteger(dataset, ecpnl%npix, HDF_head) 
 
-dataset = 'numangle_dictionary'
+dataset = SC_numangledictionary
 hdferr = HDF_writeDatasetInteger(dataset, ecpnl%numangle_anglefile, HDF_head) 
 
 ! and we leave this group open for further data output ... 
@@ -338,7 +340,7 @@ ECPpatternintd = 0.0
 ECPpatterninteger = 0
 ECPpatternad = 0
 
-dataset = 'ECpatterns'
+dataset = SC_ECpatterns
 
 if (ecpnl%outputformat .eq. 'bin') then
     allocate(bpat(1:ecpnl%npix,1:ecpnl%npix),stat=istat)
@@ -516,19 +518,19 @@ call HDF_pop(HDF_head)
 
 ! and update the end time
 call timestamp(datestring=dstr, timestring=tstre)
-groupname = "EMheader"
+groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
 
-groupname = "ECP"
+groupname = SC_ECP
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! stop time /EMheader/StopTime 'character'
-dataset = 'StopTime'
+dataset = SC_StopTime
 line2(1) = dstr//', '//tstre
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
 call CPU_TIME(time_end)
-dataset = 'Duration'
+dataset = SC_Duration
 time_end = time_end - time_start
 hdferr = HDF_writeDatasetFloat(dataset, time_end, HDF_head)
 

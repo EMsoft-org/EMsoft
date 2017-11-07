@@ -3,9 +3,19 @@
  npx = 500,
 ! smallest d-spacing to take into account [nm]
  dmin = 0.05,
+! name of EMMCOpenCL output file to be used to copy the MC data from for this master pattern run;
+! This can be used to perform multiple master pattern runs starting from the same MC data set without
+! having to rerun the MC computation.  Leave this variable set to 'undefined' if not needed.
+ copyfromenergyfile = 'undefined',
 ! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname
 ! this file will also contain the output of the master program
- energyfile = 'MCoutput.data',
+ energyfile = 'undefined',
+! set combinesites to .TRUE. if you want the program to add all atomic site contributions 
+! together in the master pattern; this will make the output file smaller, especially for 
+! crystal structures with lots of atoms in the asymmetric unit.
+ combinesites = .FALSE.,
+! set to 'On' if you want Slack or Email notification at the end of program run
+ Notify = 'Off',
 ! number of threads to run the master pattern
  nthreads = 1
  /

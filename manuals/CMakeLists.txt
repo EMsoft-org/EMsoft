@@ -4,7 +4,7 @@
 
 function(ADD_EMSOFT_LATEX_TARGETS)
   set(options )
-  set(oneValueArgs PDF_FILENAME PROJECT_NAME PROJECT_BINARY_DIR OUTPUT_DIR FIGURES_DIR SOURCE_FILE CITATIONS_FILE INCLUDE_DIR)
+  set(oneValueArgs PDF_FILENAME PROJECT_NAME PROJECT_BINARY_DIR OUTPUT_DIR FIGURES_DIR SOURCE_FILE CITATIONS_FILE)
   set(multiValueArgs EPS_FILES )
   cmake_parse_arguments(LTX "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
   if("${LTX_OUTPUT_DIR}" STREQUAL "")
@@ -31,11 +31,9 @@ function(ADD_EMSOFT_LATEX_TARGETS)
   get_filename_component(IMAGE_DIR_NAME "${LTX_FIGURES_DIR}" NAME)
   get_filename_component(TEX_FILE_NAME "${LTX_SOURCE_FILE}" NAME_WE)
   get_filename_component(BIB_FILE_NAME "${LTX_CITATIONS_FILE}" NAME_WE)
-  get_filename_component(INCLUDE_DIR_NAME "${LTX_INCLUDE_DIR}" NAME_WE)
   file(COPY "${LTX_SOURCE_FILE}" DESTINATION "${LTX_PROJECT_BINARY_DIR}/")
   file(COPY "${LTX_CITATIONS_FILE}" DESTINATION "${LTX_PROJECT_BINARY_DIR}/")
   file(COPY "${LTX_FIGURES_DIR}/" DESTINATION "${LTX_PROJECT_BINARY_DIR}/${IMAGE_DIR_NAME}")
-  file(COPY "${LTX_INCLUDE_DIR}/" DESTINATION "${LTX_PROJECT_BINARY_DIR}/${INCLUDE_DIR_NAME}")
 
   add_custom_target(${LTX_PROJECT_NAME})
 
@@ -71,10 +69,14 @@ function(ADD_EMSOFT_LATEX_TARGETS)
   endif()
 
   #---------------------------------------------------------------------
+  # This sets up the two variables install_dir and lib_install_dir
+  EMsoft_SetupInstallDirs()
+
+  #---------------------------------------------------------------------
   # Create the Installation Rules
   INSTALL(FILES "${LTX_PROJECT_BINARY_DIR}/${TEX_FILE_NAME}.pdf"
     COMPONENT Applications
-    DESTINATION "manuals"
+    DESTINATION "${top_install_dir}manuals"
   )
 
 endfunction()
@@ -91,7 +93,6 @@ if (BUILD_EMSOFT_DOCS)
     PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}/manuals"
     SOURCE_FILE "${PROJECT_SOURCE_DIR}/manuals/EMEBSD.tex"
     FIGURES_DIR "${PROJECT_SOURCE_DIR}/manuals/figs"
-    INCLUDE_DIR "${PROJECT_SOURCE_DIR}/manuals/includefiles"
     OUTPUT_DIR "${PROJECT_BINARY_DIR}/manuals/EMEBSD"
     CITATIONS_FILE "${PROJECT_SOURCE_DIR}/manuals/citations.bib"
   )
@@ -101,7 +102,6 @@ if (BUILD_EMSOFT_DOCS)
     PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}/manuals"
     SOURCE_FILE "${PROJECT_SOURCE_DIR}/manuals/EMIndexing.tex"
     FIGURES_DIR "${PROJECT_SOURCE_DIR}/manuals/figs"
-    INCLUDE_DIR "${PROJECT_SOURCE_DIR}/manuals/includefiles"
     OUTPUT_DIR "${PROJECT_BINARY_DIR}/manuals/EMIndexing"
     CITATIONS_FILE "${PROJECT_SOURCE_DIR}/manuals/citations.bib"
   )
@@ -111,7 +111,6 @@ if (BUILD_EMSOFT_DOCS)
     PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}/manuals"
     SOURCE_FILE "${PROJECT_SOURCE_DIR}/manuals/HDFsupport.tex"
     FIGURES_DIR "${PROJECT_SOURCE_DIR}/manuals/figs"
-    INCLUDE_DIR "${PROJECT_SOURCE_DIR}/manuals/includefiles"
     OUTPUT_DIR "${PROJECT_BINARY_DIR}/manuals/HDFsupport"
     CITATIONS_FILE "${PROJECT_SOURCE_DIR}/manuals/citations.bib"
   )
@@ -121,7 +120,6 @@ if (BUILD_EMSOFT_DOCS)
     PROJECT_BINARY_DIR "${PROJECT_BINARY_DIR}/manuals"
     SOURCE_FILE "${PROJECT_SOURCE_DIR}/manuals/EMsoft.tex"
     FIGURES_DIR "${PROJECT_SOURCE_DIR}/manuals/figs"
-    INCLUDE_DIR "${PROJECT_SOURCE_DIR}/manuals/includefiles"
     OUTPUT_DIR "${PROJECT_BINARY_DIR}/manuals/EMsoft"
     CITATIONS_FILE "${PROJECT_SOURCE_DIR}/manuals/citations.bib"
   )

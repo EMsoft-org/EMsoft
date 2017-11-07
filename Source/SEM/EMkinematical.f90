@@ -35,6 +35,7 @@ use NameListHandlers
 use JSONsupport
 use json_module
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -106,6 +107,7 @@ use HDF5
 use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
+use stringconstants
 
 IMPLICIT NONE
 
@@ -411,22 +413,22 @@ datafile = EMsoft_toNativePath(datafile)
 hdferr =  HDF_createFile(datafile, HDF_head)
 
 ! write the EMheader to the file
-groupname = 'EMkinematical'
+groupname = SC_EMkinematical
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 
 ! open or create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-dataset = 'EMkinematical'
+dataset = SC_EMkinematical
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! leave this group
 call HDF_pop(HDF_head)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLparameters"
+groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 call HDFwritekinematicalNameList(HDF_head, knl)
@@ -435,40 +437,40 @@ call HDFwritekinematicalNameList(HDF_head, knl)
 call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-groupname = 'EMkinematical'
+groupname = SC_EMkinematical
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-dataset = 'numg'
+dataset = SC_numg
 hdferr = HDF_writeDatasetInteger(dataset, icnt, HDF_head)
 
-dataset = 'hklmax'
+dataset = SC_hklmax
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, (/ imh, imk, iml /), 3, HDF_head)
 
-dataset = 'hklarray'
+dataset = SC_hklarray
 hdferr = HDF_writeDatasetIntegerArray2D(dataset, gvec(1:icnt,1:3), icnt, 3, HDF_head)
 
-dataset = 'modFsquared'
+dataset = SC_modFsquared
 hdferr = HDF_writeDatasetFloatArray1D(dataset, Vgg(1:icnt), icnt, HDF_head)
 
-dataset = 'unitGvectors'
+dataset = SC_unitGvectors
 hdferr = HDF_writeDatasetFloatArray2D(dataset, unitvec(1:icnt, 1:3), icnt, 3, HDF_head)
 
-dataset = 'BraggAngle'
+dataset = SC_BraggAngle
 hdferr = HDF_writeDatasetFloatArray1D(dataset, th(1:icnt), icnt, HDF_head)
 
-dataset = 'masterNH'
+dataset = SC_masterNH
 hdferr = HDF_writeDatasetFloatArray2D(dataset, masterNH, 2*nx+1, 2*nx+1, HDF_head)
 
-dataset = 'masterSH'
+dataset = SC_masterSH
 hdferr = HDF_writeDatasetFloatArray2D(dataset, masterSH, 2*nx+1, 2*nx+1, HDF_head)
 
-dataset = 'stereoNH'
+dataset = SC_stereoNH
 hdferr = HDF_writeDatasetFloatArray2D(dataset, stereoNH, 2*nx+1, 2*nx+1, HDF_head)
 
-dataset = 'stereoSH'
+dataset = SC_stereoSH
 hdferr = HDF_writeDatasetFloatArray2D(dataset, stereoSH, 2*nx+1, 2*nx+1, HDF_head)
 
 ! and close everything

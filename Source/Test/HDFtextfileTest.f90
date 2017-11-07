@@ -41,6 +41,8 @@
 
 module HDFtextfileTest
 
+use stringconstants
+
 contains 
 
 subroutine HDFtextfileExecuteTest(res) &
@@ -120,7 +122,7 @@ if (hdferr.ne.0) then
 end if
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) then
   res = 2
@@ -128,7 +130,7 @@ if (hdferr.ne.0) then
 end if
 
 ! read the text file and write the array to the file
-dataset = 'testNML'
+dataset = SC_testNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmlname, HDF_head)
 if (hdferr.ne.0) then
   res = 3
@@ -165,7 +167,7 @@ end if
 
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_openGroup(groupname, HDF_head)
 if (hdferr.ne.0) then
   res = 5
@@ -174,7 +176,7 @@ end if
 
 
 ! read the dataset
-dataset = 'testNML'
+dataset = SC_testNML
 textfile = trim(tmppath)//EMsoftnativedelimiter//'testread.nml'
 hdferr = HDF_extractDatasetTextfile(dataset, textfile, HDF_head)
 if (hdferr.ne.0) then

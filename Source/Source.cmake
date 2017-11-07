@@ -1,8 +1,26 @@
 
+
+set_property(GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX ".")
+set(EMsoftWorkbench_APPLICATION_NAME "")
+# -----------------------------------------------------------------------
+# 
+# -----------------------------------------------------------------------
+option(EMsoft_ENABLE_EMsoftWorkbench "Build_EMsoftWorkbench" OFF)
+if( EMsoft_ENABLE_EMsoftWorkbench AND APPLE)
+  set(EMsoftWorkbench_APPLICATION_NAME "EMsoftWorkbench")
+  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set_property(GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX "${EMsoftWorkbench_APPLICATION_NAME}${EXE_DEBUG_EXTENSION}.app/Contents")
+  else()
+    set_property(GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX "${EMsoftWorkbench_APPLICATION_NAME}.app/Contents")
+  endif()
+endif()
+
+get_property(EMsoft_PACKAGE_DEST_PREFIX GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX)
+
+include("${EMsoft_SOURCE_DIR}/Source/EMsoft_Functions.cmake")
+
 option(EMsoft_ENABLE_HDF5_SUPPORT "Enable HDF5 based I/O" ON)
-
 add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftLib ${PROJECT_BINARY_DIR}/EMsoftLib)
-
 
 if( ${EMsoft_ENABLE_HDF5_SUPPORT} )
   add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftHDFLib ${PROJECT_BINARY_DIR}/EMsoftHDFLib)
@@ -30,10 +48,7 @@ endforeach()
 
 
 
-# -----------------------------------------------------------------------
-# 
-# -----------------------------------------------------------------------
-option(EMsoft_ENABLE_EMsoftWorkbench "Build_EMsoftWorkbench" OFF)
+
 if( EMsoft_ENABLE_EMsoftWorkbench )
 
   INCLUDE (${EMsoft_SOURCE_DIR}/Support/cmp/cmpCMakeMacros.cmake )

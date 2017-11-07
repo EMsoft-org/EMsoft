@@ -1,9 +1,20 @@
 project(EMsoftLib)
 
+configure_file(${EMsoftLib_SOURCE_DIR}/StringConstants.cmake
+               ${EMsoftLib_BINARY_DIR}/StringConstants.cmake @ONLY)
+
+add_custom_target(EMsoftLib_Generate_StringConstants ALL 
+                  "${CMAKE_COMMAND}" -P "${EMsoftLib_BINARY_DIR}/StringConstants.cmake" 
+                  COMMENT "Generating StringConstants files...."
+                  )
+
+
+#------------------------------------------------------------------------------
+# Setup all the source files
 
 set(EMsoftLib_SRCS
-  #${EMsoftLib_SOURCE_DIR}/apb.f90
   ${EMsoftLib_SOURCE_DIR}/constants.f90
+  ${EMsoftLib_SOURCE_DIR}/configmod.f90
   ${EMsoftLib_SOURCE_DIR}/crystal.f90
   ${EMsoftLib_SOURCE_DIR}/defectmodule.f90
   ${EMsoftLib_SOURCE_DIR}/diffraction.f90
@@ -48,8 +59,10 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/dictmod.f90
   ${EMsoftLib_SOURCE_DIR}/distortion.f90
   ${EMsoftLib_SOURCE_DIR}/PEDmod.f90
+  ${EMsoftLib_SOURCE_DIR}/MRCmod.f90
   ${EMsoftLib_SOURCE_DIR}/MuellerCalculus.f90
   ${EMsoftLib_SOURCE_DIR}/simulated_annealing.f90
+  ${EMsoftLib_SOURCE_DIR}/notifications.f90
 
   ${EMsoftLib_Additional_SRCS}
 )
@@ -58,6 +71,7 @@ set(EMsoftLib_C_SRCS
   ${EMsoftLib_SOURCE_DIR}/mbir.c
   ${EMsoftLib_SOURCE_DIR}/mbirHeader.h
   ${EMsoftLib_SOURCE_DIR}/denoise.c
+  ${EMsoftLib_Additional_C_SRCS}
 )
 if(NOT WIN32 AND BUILD_SHARED_LIBS)
   set_source_files_properties(${EMsoftLib_C_SRCS} PROPERTIES COMPILE_FLAGS -fPIC)
@@ -71,21 +85,12 @@ endif()
 configure_file(${EMsoftLib_SOURCE_DIR}/local.f90.in 
          ${EMsoftLib_BINARY_DIR}/local.f90 @ONLY)
 
+ # Add files GENERATED DURING CMAKE TIME
 set(EMsoftLib_SRCS
   ${EMsoftLib_SRCS}
-  ${EMsoftLib_BINARY_DIR}/local.f90  # NOTE THIS FILE IS GENERATED DURING CMAKE TIME
+  ${EMsoftLib_BINARY_DIR}/local.f90  
+  ${EMsoftLib_BINARY_DIR}/stringconstants.f90 
 )
-
-
-set(install_dir "bin")
-set(lib_install_dir "lib")
-if(WIN32)
-  set(install_dir "bin")
-  set(lib_install_dir "lib")
-elseif(APPLE)
-  set(install_dir "bin")
-  set(lib_install_dir "lib")
-endif()
 
 
 include_directories(${FFTW3_INCLUDE_DIR})
@@ -98,14 +103,26 @@ set_target_properties (EMsoftLib_C PROPERTIES
   FOLDER EMsoftPublic
 )
 
+
+
 ADD_LIBRARY(EMsoftLib ${LIB_TYPE} ${EMsoftLib_SRCS})
-TARGET_LINK_LIBRARIES(EMsoftLib EMsoftLib_C jsonfortran ${FFTW3_LIBRARY} ${OpenCL_LIBRARY} ${EMsoft_BLAS_LAPACK_LIBS})
+TARGET_LINK_LIBRARIES(EMsoftLib
+                EMsoftLib_C 
+                jsonfortran 
+                ${FFTW3_LIBRARY} 
+                ${OpenCL_LIBRARY}
+                bcls::bcls 
+                ${EMsoft_BLAS_LAPACK_LIBS}
+                ${IFORT_COMPILER_LIBRARIES}
+          )
 
 set_target_properties (EMsoftLib PROPERTIES
   LINKER_LANGUAGE Fortran
    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
   FOLDER EMsoftPublic
 )
+set_source_files_properties(${EMsoftLib_BINARY_DIR}/stringconstants.f90 PROPERTIES GENERATED TRUE)
+add_dependencies(EMsoftLib EMsoftLib_Generate_StringConstants )
 
 if(APPLE AND BUILD_SHARED_LIBS)
   # set_target_properties(EMsoftLib PROPERTIES MACOSX_RPATH TRUE)
@@ -113,6 +130,10 @@ if(APPLE AND BUILD_SHARED_LIBS)
   # set_target_properties(EMsoftLib PROPERTIES BUILD_WITH_INSTALL_RPATH ON)
 endif()
 
+
+#---------------------------------------------------------------------
+# This sets up the two variables install_dir and lib_install_dir
+EMsoft_SetupInstallDirs()
 
 #if(BUILD_SHARED_LIBS)
   INSTALL(TARGETS EMsoftLib EMsoftLib_C
@@ -125,10 +146,12 @@ endif()
   )
 #endif()
 
+
 install(FILES ${EMsoftLib_SOURCE_DIR}/EMsoftLib.h
-  DESTINATION include/EMsoftLib
-  COMPONENT Applications
-  )
+          ${EMsoftLib_BINARY_DIR}/EMsoftStringConstants.h
+      DESTINATION ${include_install_dir}/EMsoftLib
+      COMPONENT Applications
+)
 
 if(APPLE AND BUILD_SHARED_LIBS)
   set(QAB_INSTALL_DEST "lib")
@@ -165,7 +188,7 @@ configure_file(cmake/EMsoftConfig.cmake
   @ONLY
 )
 
-set(ConfigPackageLocation lib/cmake/EMsoft)
+set(ConfigPackageLocation ${lib_install_dir}/cmake/EMsoft)
 
 #if(BUILD_SHARED_LIBS)
   install(EXPORT EMsoftLibTargets

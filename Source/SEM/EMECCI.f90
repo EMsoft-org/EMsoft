@@ -57,6 +57,7 @@ use files
 use NameListTypedefs
 use NameListHandlers
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -135,6 +136,7 @@ use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
 use omp_lib
+use stringconstants
 
 
 IMPLICIT NONE
@@ -514,25 +516,25 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
   hdferr =  HDF_createFile(outname, HDF_head)
 
 ! write the EMheader to the file
-  groupname = 'ECCI'
+groupname = SC_ECCI
   call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLfiles"
+groupname = SC_NMLfiles
   hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-  dataset = 'ECCImasterNML'
+dataset = SC_ECCImasterNML
   hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! in this case, we also put the defect json file inside the HDF file
-  dataset = 'ECCIdefectJSON'
+dataset = SC_ECCIdefectJSON
   outname = trim(EMsoft_getEMdatapathname())//trim(eccinl%defectfilename)
   outname = EMsoft_toNativePath(outname)
   hdferr = HDF_writeDatasetTextFile(dataset, outname, HDF_head)
 
 ! and also the foil descriptor file
-  dataset = 'ECCIfoilJSON'
+dataset = SC_ECCIfoilJSON
   outname = trim(EMsoft_getEMdatapathname())//trim(defects%foilname)
   outname = EMsoft_toNativePath(outname)
   hdferr = HDF_writeDatasetTextFile(dataset, outname, HDF_head)
@@ -541,7 +543,7 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
   call HDF_pop(HDF_head)
   
 ! create a namelist group to write all the namelist files into
-  groupname = "NMLparameters"
+groupname = SC_NMLparameters
   hdferr = HDF_createGroup(groupname, HDF_head)
   call HDFwriteECCINameList(HDF_head, eccinl)
 ! we do not need to parse the defect information, since the defect and foil JSON files
@@ -552,10 +554,10 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
   call HDF_pop(HDF_head)
 
 ! then the remainder of the data in a EMData group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_createGroup(groupname, HDF_head)
 
-  dataset = 'Bragg_ga'
+dataset = SC_Braggga
   hdferr = HDF_writeDatasetFloat(dataset, CalcDiffAngle(cell,ga(1),ga(2),ga(3))*0.5 , HDF_head)
 
 ! if (eccinl%progmode.eq.'array') then 
@@ -564,19 +566,19 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
 !   write (dataunit) 1.0                                       ! max beam convergence in units of |g_a|
 ! end if
 
-  dataset = 'thetac'
+dataset = SC_thetac
   hdferr = HDF_writeDatasetFloat(dataset, thetac , HDF_head)
 
-  dataset = 'nref'
+dataset = SC_nref
   hdferr = HDF_writeDatasetInteger(dataset, nn, HDF_head)
 
-  dataset = 'numk'
+dataset = SC_numk
   hdferr = HDF_writeDatasetInteger(dataset, numk, HDF_head)
 
-  dataset = 'npix'
+dataset = SC_npix
   hdferr = HDF_writeDatasetInteger(dataset, eccinl%DF_npix, HDF_head)
 
-  dataset = 'npiy'
+dataset = SC_npiy
   hdferr = HDF_writeDatasetInteger(dataset, eccinl%DF_npiy, HDF_head)
 
 ! number of reflections, and associated information (hkl, ...)
@@ -611,7 +613,7 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
       ktmp => ktmp%next
   end do
 
-  dataset = 'XYarray'
+dataset = SC_XYarray
   hdferr = HDF_writeDatasetFloatArray2D(dataset, XYarray, 2, numk, HDF_head)
   deallocate(XYarray)
 
@@ -621,12 +623,12 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
     rltmpa=>rltmpa%next
   end do
 
-  dataset = 'hklarray'
+dataset = SC_hklarray
   hdferr = HDF_writeDatasetIntegerArray2D(dataset, hklarray, 3, nn, HDF_head)
   deallocate(hklarray)
 
 ! create the ECCIimage hyperslab and write zeroes to them for now
-  dataset = 'ECCIimages'
+dataset = SC_ECCIimages
   dims3 = (/  npix, npiy, numk /)
   cnt3 = (/ npix, npiy, 1 /)
   offset3 = (/ 0, 0, 0 /)
@@ -815,18 +817,18 @@ call Message('  done',"(A)")
   hdferr =  HDF_openFile(outname, HDF_head)
 
 ! update the time string
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'ECCI'
+groupname = SC_ECCI
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'StopTime'
+dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
   call CPU_TIME(tstop)
-  dataset = 'Duration'
+dataset = SC_Duration
   tstop = tstop - tstart
   if (isg.eq.numstart) then 
     hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
@@ -837,7 +839,7 @@ call Message('  done',"(A)")
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
   
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! update the current energy level counter, so that the restart option will function
@@ -845,7 +847,7 @@ call Message('  done',"(A)")
 ! hdferr = HDF_writeDataSetInteger(dataset, iE, HDF_head, overwrite)
 
 ! add data to the hyperslab
-  dataset = 'ECCIimages'
+dataset = SC_ECCIimages
   dims3 = (/  npix, npiy, numk /)
   cnt3 = (/ npix, npiy, 1 /)
   offset3 = (/ 0, 0, isg-1 /)           ! offsets start at 0

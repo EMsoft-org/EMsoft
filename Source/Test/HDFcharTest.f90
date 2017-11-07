@@ -41,6 +41,8 @@
 
 module HDFcharTest
 
+use stringconstants
+
 contains 
 
 subroutine HDFcharExecuteTest(res) &
@@ -130,28 +132,28 @@ if (hdferr.ne.0) then
 end if
 
 ! write the char arrays to the file
-dataset = 'char1D'
+dataset = SC_char1D
 hdferr = HDF_writeDatasetCharArray1D(dataset, carr1, dim1, HDF_head)
 if (hdferr.ne.0) then
   res = 3
   return
 end if
 
-dataset = 'char2D'
+dataset = SC_char2D
 hdferr = HDF_writeDatasetCharArray2D(dataset, carr2, dim1, dim2, HDF_head)
 if (hdferr.ne.0) then
   res = 4
   return
 end if
 
-dataset = 'char3D'
+dataset = SC_char3D
 hdferr = HDF_writeDatasetCharArray3D(dataset, carr3, dim1, dim2, dim3, HDF_head)
 if (hdferr.ne.0) then
   res = 5
   return
 end if
 
-dataset = 'char4D'
+dataset = SC_char4D
 hdferr = HDF_writeDatasetCharArray4D(dataset, carr4, dim1, dim2, dim3, dim4, HDF_head)
 if (hdferr.ne.0) then
   res = 6
@@ -191,28 +193,28 @@ if (hdferr.ne.0) then
 end if
 
 ! read the char arrays
-dataset = 'char1D'
+dataset = SC_char1D
 call HDF_readDatasetCharArray1D(dataset, dims1, HDF_head, hdferr, carr1)
 if (hdferr.ne.0) then
   res = 9
   return
 end if
 
-dataset = 'char2D'
+dataset = SC_char2D
 call HDF_readDatasetCharArray2D(dataset, dims2, HDF_head, hdferr, carr2)
 if (hdferr.ne.0) then
   res = 10 
   return
 end if
 
-dataset = 'char3D'
+dataset = SC_char3D
 call HDF_readDatasetCharArray3D(dataset, dims3, HDF_head, hdferr, carr3)
 if (hdferr.ne.0) then
   res = 11
   return
 end if
 
-dataset = 'char4D'
+dataset = SC_char4D
 call HDF_readDatasetCharArray4D(dataset, dims4, HDF_head, hdferr, carr4)
 if (hdferr.ne.0) then
   res = 12

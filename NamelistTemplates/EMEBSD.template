@@ -34,12 +34,20 @@
 ! e.g., '9int' will get you 32-bit integers with intensities scaled to the range [ 0 .. 2^(9)-1 ]; 
 ! '17int' results in the intensity range [ 0 .. 2^(17)-1 ]
  bitdepth = '8bit',
-! incident beam current [nA]
+ ! incident beam current [nA]
  beamcurrent = 150.0,
 ! beam dwell time [micro s]
  dwelltime = 100.0,
 ! binning mode (1, 2, 4, or 8)
  binning = 1,
+! should we perform an approximate computation that includes a lattice distortion? ('y' or 'n')
+! This uses a polar decomposition of the deformation tensor Fmatrix which results in
+! an approcimation of the pattern for the distorted lattice; the bands will be very close
+! to the correct position in each pattern, but the band widths will likely be incorrect.
+ applyDeformation = 'n'
+! if applyDeformation='y' then enter the 3x3 deformation tensor in column-major form
+! the default is the identity tensor, i.e., no deformation
+ Ftensor = 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0,
 ! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
  scalingmode = 'not',
 ! gamma correction factor
@@ -48,8 +56,4 @@
  maskpattern = 'n',
 ! number of threads (default = 1)
  nthreads = 1,
-! energy averaging method (0 for full, 1 for approximate)
- energyaverage = 0,
-! spatial averaging method ('y' or 'n';can't be used with approximate energy average)
- spatialaverage = 'n'
  /

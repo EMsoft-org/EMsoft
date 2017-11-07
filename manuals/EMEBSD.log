@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  29 JAN 2017 09:53
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015) (preloaded format=pdflatex 2015.5.24)  29 SEP 2017 10:33
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -721,22 +721,22 @@ LaTeX Warning: Label `eq:prob2' multiply defined.
 )
 \openout1 = `EMEBSD.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 106.
-LaTeX Font Info:    ... okay on input line 106.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 107.
+LaTeX Font Info:    ... okay on input line 107.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -772,7 +772,7 @@ LaTeX Font Info:    ... okay on input line 106.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Info: Redefining \microtypecontext on input line 106.
+LaTeX Info: Redefining \microtypecontext on input line 107.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -820,9 +820,9 @@ e
 ))
 Package lastpage Info: Please have a look at the pageslts package at
 (lastpage)             https://www.ctan.org/pkg/pageslts
-(lastpage)             ! on input line 106.
+(lastpage)             ! on input line 107.
 \AtBeginShipoutBox=\box33
-Package hyperref Info: Link coloring OFF on input line 106.
+Package hyperref Info: Link coloring OFF on input line 107.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -832,9 +832,9 @@ Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
 \c@section@level=\count284
 )
-LaTeX Info: Redefining \ref on input line 106.
-LaTeX Info: Redefining \pageref on input line 106.
-LaTeX Info: Redefining \nameref on input line 106.
+LaTeX Info: Redefining \ref on input line 107.
+LaTeX Info: Redefining \pageref on input line 107.
+LaTeX Info: Redefining \nameref on input line 107.
 
 (./EMEBSD.out) (./EMEBSD.out)
 \@outlinefile=\write5
@@ -849,9 +849,9 @@ Package biblatex Info: Automatic encoding selection.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'EMEBSD.bbl' found.
  (./EMEBSD.bbl)
-Package biblatex Info: Reference section=0 on input line 106.
-Package biblatex Info: Reference segment=0 on input line 106.
-LaTeX Font Info:    Try loading font information for OT1+phv on input line 107.
+Package biblatex Info: Reference section=0 on input line 107.
+Package biblatex Info: Reference segment=0 on input line 107.
+LaTeX Font Info:    Try loading font information for OT1+phv on input line 108.
 
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/psnfss/ot1phv.fd
@@ -861,7 +861,7 @@ Package microtype Info: Loading generic settings for font family
 (microtype)             `phv' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-LaTeX Font Info:    Try loading font information for U+msa on input line 107.
+LaTeX Font Info:    Try loading font information for U+msa on input line 108.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
@@ -869,7 +869,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (/usr/local/texlive/2015/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 107.
+LaTeX Font Info:    Try loading font information for U+msb on input line 108.
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -877,16 +877,16 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 (/usr/local/texlive/2015/texmf-dist/tex/latex/microtype/mt-msb.cfg
 File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 )
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 107.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 108.
 
 
 (/usr/local/texlive/2015/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <8> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 107.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 108.
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <6> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 107.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 108.
 Package epstopdf Info: Source file: <figs/EMsoftlogo.eps>
 (epstopdf)                    date: 2016-08-15 17:45:36
 (epstopdf)                    size: 1223334 bytes
@@ -895,22 +895,22 @@ Package epstopdf Info: Source file: <figs/EMsoftlogo.eps>
 (epstopdf)                    size: 109785 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/EMsoftlogo-eps-convert
 ed-to.pdf figs/EMsoftlogo.eps>
-(epstopdf)             \includegraphics on input line 111.
+(epstopdf)             \includegraphics on input line 112.
 Package epstopdf Info: Output file is already uptodate.
 
-<figs/EMsoftlogo-eps-converted-to.pdf, id=149, 144.54pt x 48.18pt>
+<figs/EMsoftlogo-eps-converted-to.pdf, id=173, 144.54pt x 48.18pt>
 File: figs/EMsoftlogo-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/EMsoftlogo-eps-converted-to.pdf>
 Package pdftex.def Info: figs/EMsoftlogo-eps-converted-to.pdf used on input lin
-e 111.
+e 112.
 (pdftex.def)             Requested size: 289.07999pt x 96.36485pt.
 Package microtype Info: Loading generic settings for font family
 (microtype)             `cmss' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 Package tocbasic Info: character protrusion at toc deactivated on input line 11
-5.
+6.
  (./EMEBSD.toc [1
 
 {/usr/local/texlive/2015/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./figs/
@@ -918,10 +918,10 @@ EMsoftlogo-eps-converted-to.pdf>])
 \tf@toc=\write6
 \openout6 = `EMEBSD.toc'.
 
- [2] [3]
+ [2] [3] [4]
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 155.
- [4] [5] [6]
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 169.
+ [5] [6] [7]
 Package epstopdf Info: Source file: <figs/hextest.eps>
 (epstopdf)                    date: 2016-08-15 17:45:36
 (epstopdf)                    size: 1376322 bytes
@@ -930,21 +930,21 @@ Package epstopdf Info: Source file: <figs/hextest.eps>
 (epstopdf)                    size: 72111 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/hextest-eps-converted-
 to.pdf figs/hextest.eps>
-(epstopdf)             \includegraphics on input line 273.
+(epstopdf)             \includegraphics on input line 287.
 Package epstopdf Info: Output file is already uptodate.
 
-<figs/hextest-eps-converted-to.pdf, id=265, 590.205pt x 208.78pt>
+<figs/hextest-eps-converted-to.pdf, id=308, 590.205pt x 208.78pt>
 File: figs/hextest-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/hextest-eps-converted-to.pdf>
 Package pdftex.def Info: figs/hextest-eps-converted-to.pdf used on input line 2
-73.
+87.
 (pdftex.def)             Requested size: 361.34999pt x 127.82709pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[7] [8 <./figs/hextest-eps-converted-to.pdf>]
+[8] [9 <./figs/hextest-eps-converted-to.pdf>]
 Package epstopdf Info: Source file: <figs/hemispheres.eps>
 (epstopdf)                    date: 2016-08-15 17:45:36
 (epstopdf)                    size: 1716742 bytes
@@ -953,19 +953,19 @@ Package epstopdf Info: Source file: <figs/hemispheres.eps>
 (epstopdf)                    size: 52211 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/hemispheres-eps-conver
 ted-to.pdf figs/hemispheres.eps>
-(epstopdf)             \includegraphics on input line 378.
+(epstopdf)             \includegraphics on input line 392.
 Package epstopdf Info: Output file is already uptodate.
 
-<figs/hemispheres-eps-converted-to.pdf, id=316, 742.775pt x 600.2425pt>
+<figs/hemispheres-eps-converted-to.pdf, id=358, 742.775pt x 600.2425pt>
 File: figs/hemispheres-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/hemispheres-eps-converted-to.pdf>
 Package pdftex.def Info: figs/hemispheres-eps-converted-to.pdf used on input li
-ne 378.
+ne 392.
 (pdftex.def)             Requested size: 469.75499pt x 379.62021pt.
- [9] [10 <./figs/hemispheres-eps-converted-to.pdf>] [11] [12]
+ [10] [11 <./figs/hemispheres-eps-converted-to.pdf>] [12] [13]
 
-LaTeX Warning: Citation 'moler2003a' on page 13 undefined on input line 596.
+LaTeX Warning: Citation 'moler2003a' on page 14 undefined on input line 610.
 
 Package epstopdf Info: Source file: <figs/geometry.eps>
 (epstopdf)                    date: 2016-08-15 17:45:36
@@ -975,77 +975,83 @@ Package epstopdf Info: Source file: <figs/geometry.eps>
 (epstopdf)                    size: 34887 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/geometry-eps-converted
 -to.pdf figs/geometry.eps>
-(epstopdf)             \includegraphics on input line 637.
+(epstopdf)             \includegraphics on input line 651.
 Package epstopdf Info: Output file is already uptodate.
-<figs/geometry-eps-converted-to.pdf, id=378, 191.71625pt x 217.81375pt>
+<figs/geometry-eps-converted-to.pdf, id=421, 191.71625pt x 217.81375pt>
 File: figs/geometry-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/geometry-eps-converted-to.pdf>
 Package pdftex.def Info: figs/geometry-eps-converted-to.pdf used on input line 
-637.
+651.
 (pdftex.def)             Requested size: 216.81pt x 246.33936pt.
- [13] [14 <./figs/geometry-eps-converted-to.pdf>] [15]
+ [14] [15 <./figs/geometry-eps-converted-to.pdf>] [16]
 
 LaTeX Font Warning: Font shape `OT1/cmss/b/n' undefined
-(Font)              using `OT1/cmss/m/n' instead on input line 734.
+(Font)              using `OT1/cmss/m/n' instead on input line 748.
 
 Package microtype Info: Loading generic settings for font family
 (microtype)             `cmtt' (encoding: OT1).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-[16] [17] [18] [19] [20] [21] [22] [23] [24]
-Overfull \hbox (1.6909pt too wide) in paragraph at lines 947--947
+[17] [18] [19] [20] [21] [22] [23]
+Overfull \hbox (29.23111pt too wide) in paragraph at lines 932--932
+[]\OT1/cmtt/m/n/10.95 ! define the title of the message (will appear in bold fa
+ce at the top of your message)[] 
+ []
+
+[24] [25] [26] [27] [28] [29]
+Overfull \hbox (1.6909pt too wide) in paragraph at lines 1095--1095
 []\OT1/cmtt/m/n/10 function SingleKosselPatternWrapper(argc, argv) bind(c, name
 ='SingleKosselPatternWrapper')[] 
  []
 
-[25] [26] [27] [28] [29] [30] [31]
-Overfull \hbox (26.12799pt too wide) in paragraph at lines 1166--1166
+[30] [31] [32] [33] [34] [35] [36]
+Overfull \hbox (26.12799pt too wide) in paragraph at lines 1314--1314
 []\OT1/cmtt/m/n/9 integer(kind=irg),INTENT(OUT) :: accum_e(ipar(12),-ipar(1):ip
 ar(1),-ipar(1):ipar(1)) - energy accumulator[] 
  []
 
 
-Overfull \hbox (82.82733pt too wide) in paragraph at lines 1166--1166
+Overfull \hbox (82.82733pt too wide) in paragraph at lines 1314--1314
 []\OT1/cmtt/m/n/9 integer(kind=irg),INTENT(OUT) :: accum_z(ipar(12),ipar(13),-i
 par(16):ipar(16),-ipar(16):ipar(16)) - depth accumulator[] 
  []
 
-[32]
-Overfull \hbox (78.10239pt too wide) in paragraph at lines 1189--1189
+
+Overfull \hbox (78.10239pt too wide) in paragraph at lines 1337--1337
 []\OT1/cmtt/m/n/9 integer(kind=irg),INTENT(IN) :: accum_z(ipar(12),ipar(13),-ip
 ar(16):ipar(16),-ipar(16):ipar(16)) - depth accumulator[] 
  []
 
 
-Overfull \hbox (21.40305pt too wide) in paragraph at lines 1210--1210
+Overfull \hbox (21.40305pt too wide) in paragraph at lines 1358--1358
 []\OT1/cmtt/m/n/9 integer(c_int32_t),INTENT(IN) :: accum_e(ipar(12),-ipar(1):ip
 ar(1),-ipar(1):ipar(1)) -energy accumulator[] 
  []
 
-
-Overfull \hbox (21.40305pt too wide) in paragraph at lines 1236--1236
+[37]
+Overfull \hbox (21.40305pt too wide) in paragraph at lines 1384--1384
 []\OT1/cmtt/m/n/9 integer(c_int32_t),INTENT(IN) :: accum_e(ipar(12),-ipar(1):ip
 ar(1),-ipar(1):ipar(1)) -energy accumulator[] 
  []
 
-[33]
+[38]
 Package epstopdf Info: Source file: <figs/EBSDmain.eps>
-(epstopdf)                    date: 2017-01-29 09:43:20
+(epstopdf)                    date: 2017-03-25 08:07:03
 (epstopdf)                    size: 1454574 bytes
 (epstopdf)             Output file: <figs/EBSDmain-eps-converted-to.pdf>
-(epstopdf)                    date: 2017-01-29 09:43:25
+(epstopdf)                    date: 2017-03-25 08:07:03
 (epstopdf)                    size: 223706 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/EBSDmain-eps-converted
 -to.pdf figs/EBSDmain.eps>
-(epstopdf)             \includegraphics on input line 1258.
+(epstopdf)             \includegraphics on input line 1406.
 Package epstopdf Info: Output file is already uptodate.
- <figs/EBSDmain-eps-converted-to.pdf, id=559, 216.81pt x 223.83624pt>
+ <figs/EBSDmain-eps-converted-to.pdf, id=628, 216.81pt x 223.83624pt>
 File: figs/EBSDmain-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/EBSDmain-eps-converted-to.pdf>
 Package pdftex.def Info: figs/EBSDmain-eps-converted-to.pdf used on input line 
-1258.
+1406.
 (pdftex.def)             Requested size: 216.81pt x 223.84593pt.
 Package epstopdf Info: Source file: <figs/EBSDMCMP.eps>
 (epstopdf)                    date: 2016-08-15 17:45:36
@@ -1055,17 +1061,17 @@ Package epstopdf Info: Source file: <figs/EBSDMCMP.eps>
 (epstopdf)                    size: 1338027 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/EBSDMCMP-eps-converted
 -to.pdf figs/EBSDMCMP.eps>
-(epstopdf)             \includegraphics on input line 1269.
+(epstopdf)             \includegraphics on input line 1417.
 Package epstopdf Info: Output file is already uptodate.
 
-<figs/EBSDMCMP-eps-converted-to.pdf, id=560, 433.62pt x 280.04625pt>
+<figs/EBSDMCMP-eps-converted-to.pdf, id=629, 433.62pt x 280.04625pt>
 File: figs/EBSDMCMP-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/EBSDMCMP-eps-converted-to.pdf>
 Package pdftex.def Info: figs/EBSDMCMP-eps-converted-to.pdf used on input line 
-1269.
+1417.
 (pdftex.def)             Requested size: 433.62pt x 280.05836pt.
- [34 <./figs/EBSDmain-eps-converted-to.pdf>] [35 <./figs/EBSDMCMP-eps-converted
+ [39 <./figs/EBSDmain-eps-converted-to.pdf>] [40 <./figs/EBSDMCMP-eps-converted
 -to.pdf>]
 Package epstopdf Info: Source file: <figs/EBSDdetector.eps>
 (epstopdf)                    date: 2016-08-15 17:45:36
@@ -1075,15 +1081,15 @@ Package epstopdf Info: Source file: <figs/EBSDdetector.eps>
 (epstopdf)                    size: 937701 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/EBSDdetector-eps-conve
 rted-to.pdf figs/EBSDdetector.eps>
-(epstopdf)             \includegraphics on input line 1326.
+(epstopdf)             \includegraphics on input line 1474.
 Package epstopdf Info: Output file is already uptodate.
 
-<figs/EBSDdetector-eps-converted-to.pdf, id=595, 722.7pt x 211.79124pt>
+<figs/EBSDdetector-eps-converted-to.pdf, id=663, 722.7pt x 211.79124pt>
 File: figs/EBSDdetector-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/EBSDdetector-eps-converted-to.pdf>
 Package pdftex.def Info: figs/EBSDdetector-eps-converted-to.pdf used on input l
-ine 1326.
+ine 1474.
 (pdftex.def)             Requested size: 433.62pt x 127.07571pt.
 Package epstopdf Info: Source file: <figs/EBSDEBSP.eps>
 (epstopdf)                    date: 2016-08-15 17:45:35
@@ -1093,18 +1099,17 @@ Package epstopdf Info: Source file: <figs/EBSDEBSP.eps>
 (epstopdf)                    size: 796197 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/EBSDEBSP-eps-converted
 -to.pdf figs/EBSDEBSP.eps>
-(epstopdf)             \includegraphics on input line 1332.
+(epstopdf)             \includegraphics on input line 1480.
 Package epstopdf Info: Output file is already uptodate.
 
-<figs/EBSDEBSP-eps-converted-to.pdf, id=596, 451.6875pt x 332.24126pt>
+<figs/EBSDEBSP-eps-converted-to.pdf, id=664, 451.6875pt x 332.24126pt>
 File: figs/EBSDEBSP-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/EBSDEBSP-eps-converted-to.pdf>
 Package pdftex.def Info: figs/EBSDEBSP-eps-converted-to.pdf used on input line 
-1332.
+1480.
 (pdftex.def)             Requested size: 361.34999pt x 265.80856pt.
- [36 <./figs/EBSDdetector-eps-converted-to.pdf>] [37 <./figs/EBSDEBSP-eps-conve
-rted-to.pdf>]
+ [41 <./figs/EBSDdetector-eps-converted-to.pdf>]
 Package epstopdf Info: Source file: <figs/EBSDEBSP2.eps>
 (epstopdf)                    date: 2016-08-15 17:45:35
 (epstopdf)                    size: 3696146 bytes
@@ -1113,61 +1118,137 @@ Package epstopdf Info: Source file: <figs/EBSDEBSP2.eps>
 (epstopdf)                    size: 474894 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/EBSDEBSP2-eps-converte
 d-to.pdf figs/EBSDEBSP2.eps>
-(epstopdf)             \includegraphics on input line 1369.
+(epstopdf)             \includegraphics on input line 1517.
 Package epstopdf Info: Output file is already uptodate.
-
-<figs/EBSDEBSP2-eps-converted-to.pdf, id=625, 216.81pt x 273.02pt>
+ <figs/EBSDEBSP2-eps-converted-to.pdf, id=681, 216.81pt x 273.02pt>
 File: figs/EBSDEBSP2-eps-converted-to.pdf Graphic file (type pdf)
 
 <use figs/EBSDEBSP2-eps-converted-to.pdf>
 Package pdftex.def Info: figs/EBSDEBSP2-eps-converted-to.pdf used on input line
- 1369.
+ 1517.
 (pdftex.def)             Requested size: 216.81pt x 273.03183pt.
- [38 <./figs/EBSDEBSP2-eps-converted-to.pdf>] [39
 
-]
-Overfull \hbox (1.6374pt too wide) in paragraph at lines 1481--1481
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[42 <./figs/EBSDEBSP-eps-converted-to.pdf>] [43 <./figs/EBSDEBSP2-eps-converted
+-to.pdf>]
+./EMEBSD.tex:1550: FancyVerb Error:
+  No verbatim file ../Examples/EBSDPatterns/EMMCexample.nml
+.
+\FV@Error ... {FancyVerb Error:
+\space \space #1
+}
+                                                  
+l.1550 ..../Examples/EBSDPatterns/EMMCexample.nml}
+                                                  
+? q
+OK, entering \batchmode...
+./EMEBSD.tex:1550: FancyVerb Error:
+  Empty verbatim environment
+.
+\FV@Error ... {FancyVerb Error:
+\space \space #1
+}
+                                                  
+l.1550 ..../Examples/EBSDPatterns/EMMCexample.nml}
+                                                  
+This error message was generated by an \errmessage
+command, so I can't give any explicit help.
+Pretend that you're Hercule Poirot: Examine all clues,
+and deduce the truth by order and method.
+
+
+Overfull \hbox (1.6374pt too wide) in paragraph at lines 1629--1629
 [] \OT1/cmtt/m/n/10.95 EMsoft version 3_1_beta, Copyright (C) 2001-2016 Marc De
  Graef Research Group/CMU[] 
  []
 
-[40] [41]
-Overfull \hbox (1.6374pt too wide) in paragraph at lines 1566--1566
+ [44
+
+] [45]
+./EMEBSD.tex:1639: FancyVerb Error:
+  No verbatim file ../Examples/EBSDPatterns/EMEBSDMexample.nml
+.
+\FV@Error ... {FancyVerb Error:
+\space \space #1
+}
+                                                  
+l.1639 ...xamples/EBSDPatterns/EMEBSDMexample.nml}
+                                                  
+Your command was ignored. Type <return> to continue.
+
+./EMEBSD.tex:1639: FancyVerb Error:
+  Empty verbatim environment
+.
+\FV@Error ... {FancyVerb Error:
+\space \space #1
+}
+                                                  
+l.1639 ...xamples/EBSDPatterns/EMEBSDMexample.nml}
+                                                  
+(That was another \errmessage.)
+
+
+Overfull \hbox (1.6374pt too wide) in paragraph at lines 1714--1714
 [] \OT1/cmtt/m/n/10.95 EMsoft version 3_1_beta, Copyright (C) 2001-2016 Marc De
  Graef Research Group/CMU[] 
  []
 
-[42] [43] [44]
+ [46] [47]
+./EMEBSD.tex:1728: FancyVerb Error:
+  No verbatim file ../Examples/EBSDPatterns/EMEBSDexample.nml
+.
+\FV@Error ... {FancyVerb Error:
+\space \space #1
+}
+                                                  
+l.1728 ...Examples/EBSDPatterns/EMEBSDexample.nml}
+                                                  
+Your command was ignored. Type <return> to continue.
+
+./EMEBSD.tex:1728: FancyVerb Error:
+  Empty verbatim environment
+.
+\FV@Error ... {FancyVerb Error:
+\space \space #1
+}
+                                                  
+l.1728 ...Examples/EBSDPatterns/EMEBSDexample.nml}
+                                                  
+(That was another \errmessage.)
+
 Package epstopdf Info: Source file: <figs/hdfview2.eps>
-(epstopdf)                    date: 2017-01-29 09:53:03
+(epstopdf)                    date: 2017-03-25 08:07:03
 (epstopdf)                    size: 894822 bytes
 (epstopdf)             Output file: <figs/hdfview2-eps-converted-to.pdf>
-(epstopdf)                    date: 2017-01-29 09:53:07
+(epstopdf)                    date: 2017-03-25 08:07:03
 (epstopdf)                    size: 58922 bytes
 (epstopdf)             Command: <epstopdf --outfile=figs/hdfview2-eps-converted
 -to.pdf figs/hdfview2.eps>
-(epstopdf)             \includegraphics on input line 1613.
+(epstopdf)             \includegraphics on input line 1761.
 Package epstopdf Info: Output file is already uptodate.
 
-<figs/hdfview2-eps-converted-to.pdf, id=673, 335.2525pt x 348.30125pt>
+<figs/hdfview2-eps-converted-to.pdf, id=729, 335.2525pt x 348.30125pt>
 File: figs/hdfview2-eps-converted-to.pdf Graphic file (type pdf)
-
-<use figs/hdfview2-eps-converted-to.pdf>
+ <use figs/hdfview2-eps-converted-to.pdf>
 Package pdftex.def Info: figs/hdfview2-eps-converted-to.pdf used on input line 
-1613.
+1761.
 (pdftex.def)             Requested size: 216.81pt x 225.24516pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
  
 AED: lastpage setting LastPage
-[45 <./figs/hdfview2-eps-converted-to.pdf>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1619.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1619.
+ [48] [49 <./figs/hdfview2-eps-converted-to.pdf>]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1767.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1767.
  (./EMEBSD.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1619.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1619.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1767.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1767.
 
 Package rerunfilecheck Info: File `EMEBSD.out' has not changed.
-(rerunfilecheck)             Checksum: 29B8B0752F9CBD801DAF9A2C2D36841C;2832.
-
+(rerunfilecheck)             Checksum: 9C72C60AF0F07671F96A323D6E53F56A;3253.
 
 LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
@@ -1185,14 +1266,14 @@ Package biblatex Warning: Please (re)run BibTeX on the file(s):
 Package logreq Info: Writing requests to 'EMEBSD.run.xml'.
 \openout1 = `EMEBSD.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1619.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1767.
  ) 
 Here is how much of TeX's memory you used:
- 18218 strings out of 493089
- 293660 string characters out of 6134842
- 592593 words of memory out of 5000000
- 21009 multiletter control sequences out of 15000+600000
- 35472 words of font info for 203 fonts, out of 8000000 for 9000
+ 18255 strings out of 493089
+ 294027 string characters out of 6134842
+ 592845 words of memory out of 5000000
+ 21017 multiletter control sequences out of 15000+600000
+ 35991 words of font info for 209 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  41i,12n,47p,933b,1898s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2015/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
@@ -1232,10 +1313,10 @@ i9.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt1
 pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/public/amsfonts/symbols/msb
 m10.pfb></usr/local/texlive/2015/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb
 >
-Output written on EMEBSD.pdf (45 pages, 4616092 bytes).
+Output written on EMEBSD.pdf (49 pages, 4632769 bytes).
 PDF statistics:
- 837 PDF objects out of 1000 (max. 8388607)
- 704 compressed objects within 8 object streams
- 168 named destinations out of 1000 (max. 500000)
- 36691 words of extra memory for PDF output out of 42996 (max. 10000000)
+ 903 PDF objects out of 1000 (max. 8388607)
+ 766 compressed objects within 8 object streams
+ 185 named destinations out of 1000 (max. 500000)
+ 36739 words of extra memory for PDF output out of 42996 (max. 10000000)
 

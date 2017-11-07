@@ -752,7 +752,7 @@ dictionaryloop: do ii = 1,cratio+1      ! +1 is needed to make sure that the fin
                 end do
             end do
 
-            imagedict = imagedict * masklin
+            imagedict(1:L) = imagedict(1:L) * masklin(1:L)
 
 ! normalize pattern vector
             dict((pp-1)*correctsize+1:pp*correctsize) = imagedict(1:correctsize)/NORM2(imagedict(1:correctsize))

@@ -5,6 +5,7 @@
 include(${CMP_SOURCE_DIR}/ExtLib/HDF5Support.cmake)
 
 
+
 # ---------- Find Json Fortran Headers/Libraries -----------------------
 # Json-Fortran comes with everything that cmake needs to determine the
 # include directories, libraries and other items. One only needs to put
@@ -19,6 +20,10 @@ if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
 endif()
 
 if (Fortran_COMPILER_NAME MATCHES "ifort.*")
+
+  # Find specific IFort libraries.
+  include(${CMP_SOURCE_DIR}/ExtLib/IFortSupport.cmake)
+  
   find_package(jsonfortran-intel REQUIRED)
   if( NOT jsonfortran-intel_FOUND)
     message(STATUS "jsonfortran is REQUIRED for this project.")
@@ -89,6 +94,8 @@ else()
 endif()
 
 include_directories( ${OpenCL_INCLUDE_DIRS} )
+set(OPENCL_LIBRARY_DEBUG "${OpenCL_LIBRARY}")
+set(OPENCL_LIBRARY_RELEASE "${OpenCL_LIBRARY}")
 
 # Figure out if the OpenCL Package has CPP bindings
 if( OPENCL_HAS_CPP_BINDINGS )
@@ -112,3 +119,84 @@ endif()
 include(${CMP_SOURCE_DIR}/Modules/FindFFTW3.cmake)
 CMP_COPY_DEPENDENT_LIBRARIES(fftw3)
 CMP_LIBRARIES_INSTALL_RULES(fftw3 bin)
+
+
+
+
+
+
+#----------------------------------------------------------------
+# 
+#
+function(AddBCLSCopyInstallRules)
+  set(options )
+  set(oneValueArgs LIBNAME LIBVAR)
+  set(multiValueArgs TYPES)
+  cmake_parse_arguments(Z "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+  set(INTER_DIR "")
+
+  # message(STATUS "Z_LIBNAME: ${Z_LIBNAME}")
+  # message(STATUS "Z_LIBVAR: ${Z_LIBVAR}")
+  # message(STATUS "Z_TYPES: ${Z_TYPES}")
+
+  set(bclsLibName ${Z_LIBNAME})
+
+  set(Z_INSTALL_DIR "lib")
+  if(WIN32)
+    set(Z_INSTALL_DIR "bin")
+  endif()
+
+  FOREACH(BTYPE ${Z_TYPES} )
+    # message(STATUS "  BTYPE: ${BTYPE}")
+    STRING(TOUPPER ${BTYPE} TYPE)
+    if(MSVC_IDE)
+      set(INTER_DIR "${BTYPE}/")
+    endif()
+
+    # Get the Actual Library Path and create Install and copy rules
+    GET_TARGET_PROPERTY(LibPath ${bclsLibName} IMPORTED_LOCATION_${TYPE})
+    # message(STATUS "  LibPath: ${LibPath}")
+    if(NOT "${LibPath}" STREQUAL "LibPath-NOTFOUND")
+      if(NOT TARGET ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy)
+        # message(STATUS "Creating Install And Copy Rule for ${LibPath}")
+        install(FILES ${LibPath}
+          DESTINATION "${Z_INSTALL_DIR}"
+          CONFIGURATIONS ${BTYPE}
+          COMPONENT Applications)
+
+        if(NOT EXISTS "${LibPath}")
+          message(STATUS "DOES NOT EXIST: ${LibPath}")
+        endif()
+        # message(STATUS "    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}")
+        ADD_CUSTOM_TARGET(ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy ALL
+                          COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LibPath}
+                          ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}
+                          COMMENT "  Copy: ${LibPath} To: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}"
+                          )
+        set_target_properties(ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/${BTYPE}/${Z_LIBVAR})
+
+      endif()
+    endif()
+  endforeach()
+endfunction()
+
+
+#------------------------------------------------------------------------------
+# Find the BCLS package (Bound-Constrained Least Squares)
+find_package(bcls)
+include_directories(${bcls_INCLUDE_DIRS})
+if(bcls_BUILD_SHARED_LIBS STREQUAL "ON" AND WIN32)
+
+  if(MSVC_IDE)
+    set(BUILD_TYPES Debug Release)
+  else()
+    set(BUILD_TYPES "${CMAKE_BUILD_TYPE}")
+    if("${BUILD_TYPES}" STREQUAL "")
+        set(BUILD_TYPES "Debug")
+    endif()
+  endif()
+
+  AddBCLSCopyInstallRules(LIBVAR bcls
+                          LIBNAME bcls::bcls
+                          TYPES ${BUILD_TYPES})
+endif()

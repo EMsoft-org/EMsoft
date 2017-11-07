@@ -1,36 +1,42 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section.2}{Version 3.1 features}{}% 2
-\BOOKMARK [1][-]{section.3}{Version 3.0 features}{}% 3
-\BOOKMARK [1][-]{section.4}{Electron back-scatter diffraction patterns and electron channeling patterns: the underlying theory}{}% 4
-\BOOKMARK [2][-]{subsection.4.1}{Modified Lambert Projections }{section.4}% 5
-\BOOKMARK [2][-]{subsection.4.2}{Master Pattern Symmetry }{section.4}% 6
-\BOOKMARK [2][-]{subsection.4.3}{Hexagonal Lambert patterns }{section.4}% 7
-\BOOKMARK [2][-]{subsection.4.4}{Monte Carlo Simulations }{section.4}% 8
-\BOOKMARK [2][-]{subsection.4.5}{Master EBSD and ECP Pattern Simulations }{section.4}% 9
-\BOOKMARK [2][-]{subsection.4.6}{Final EBSD Pattern Simulations }{section.4}% 10
-\BOOKMARK [2][-]{subsection.4.7}{Final ECP Pattern Simulations }{section.4}% 11
-\BOOKMARK [2][-]{subsection.4.8}{Final TKD Pattern Simulations }{section.4}% 12
-\BOOKMARK [2][-]{subsection.4.9}{Kossel Pattern Simulations}{section.4}% 13
-\BOOKMARK [1][-]{section.5}{The EMMCOpenCL.f90 and EMMCfoil.f90 programs}{}% 14
-\BOOKMARK [1][-]{section.6}{The EMEBSDmaster.f90, EMECPmaster.f90, and EMTKDmaster.f90 programs}{}% 15
-\BOOKMARK [1][-]{section.7}{The EMEBSD.f90 program}{}% 16
-\BOOKMARK [1][-]{section.8}{The EMECP.f90 program}{}% 17
-\BOOKMARK [1][-]{section.9}{The EMKosselMaster program}{}% 18
-\BOOKMARK [1][-]{section.10}{Calling pattern generation routines from another program}{}% 19
-\BOOKMARK [2][-]{subsection.10.1}{Release 3.0 externally callable routines \(IDL\)}{section.10}% 20
-\BOOKMARK [3][-]{subsubsection.10.1.1}{EBSD pattern calculation}{subsection.10.1}% 21
-\BOOKMARK [3][-]{subsubsection.10.1.2}{ECP pattern calculation}{subsection.10.1}% 22
-\BOOKMARK [3][-]{subsubsection.10.1.3}{Kossel pattern calculation}{subsection.10.1}% 23
-\BOOKMARK [2][-]{subsection.10.2}{Release 3.1 C/C++ callable routines}{section.10}% 24
-\BOOKMARK [3][-]{subsubsection.10.2.1}{EMsoftCgetMCOpenCL}{subsection.10.2}% 25
-\BOOKMARK [3][-]{subsubsection.10.2.2}{EMsoftCgetEBSDmaster}{subsection.10.2}% 26
-\BOOKMARK [3][-]{subsubsection.10.2.3}{EMsoftCgetEBSDpatterns}{subsection.10.2}% 27
-\BOOKMARK [3][-]{subsubsection.10.2.4}{EMsoftCgetECPpatterns}{subsection.10.2}% 28
-\BOOKMARK [1][-]{section.11}{The IDL SEMDisplay.pro program}{}% 29
-\BOOKMARK [2][-]{subsection.11.1}{Monte Carlo and Master Pattern visualization interface}{section.11}% 30
-\BOOKMARK [2][-]{subsection.11.2}{Detector interface}{section.11}% 31
-\BOOKMARK [1][-]{section.12}{A worked example}{}% 32
-\BOOKMARK [2][-]{subsection.12.1}{Monte Carlo simulation}{section.12}% 33
-\BOOKMARK [2][-]{subsection.12.2}{EBSD master pattern simulation}{section.12}% 34
-\BOOKMARK [2][-]{subsection.12.3}{EBSD pattern simulation}{section.12}% 35
-\BOOKMARK [2][-]{subsection.12.4}{Accessing the HDF5 data files}{section.12}% 36
+\BOOKMARK [1][-]{section.2}{Version 3.2 features}{}% 2
+\BOOKMARK [1][-]{section.3}{Version 3.1 features}{}% 3
+\BOOKMARK [1][-]{section.4}{Version 3.0 features}{}% 4
+\BOOKMARK [1][-]{section.5}{Electron back-scatter diffraction patterns and electron channeling patterns: the underlying theory}{}% 5
+\BOOKMARK [2][-]{subsection.5.1}{Modified Lambert Projections }{section.5}% 6
+\BOOKMARK [2][-]{subsection.5.2}{Master Pattern Symmetry }{section.5}% 7
+\BOOKMARK [2][-]{subsection.5.3}{Hexagonal Lambert patterns }{section.5}% 8
+\BOOKMARK [2][-]{subsection.5.4}{Monte Carlo Simulations }{section.5}% 9
+\BOOKMARK [2][-]{subsection.5.5}{Master EBSD and ECP Pattern Simulations }{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.6}{Final EBSD Pattern Simulations }{section.5}% 11
+\BOOKMARK [2][-]{subsection.5.7}{Final ECP Pattern Simulations }{section.5}% 12
+\BOOKMARK [2][-]{subsection.5.8}{Final TKD Pattern Simulations }{section.5}% 13
+\BOOKMARK [2][-]{subsection.5.9}{Kossel Pattern Simulations}{section.5}% 14
+\BOOKMARK [1][-]{section.6}{The EMMCOpenCL.f90 and EMMCfoil.f90 programs}{}% 15
+\BOOKMARK [1][-]{section.7}{The EMEBSDmaster.f90, EMECPmaster.f90, and EMTKDmaster.f90 programs}{}% 16
+\BOOKMARK [1][-]{section.8}{Sending program completion notifications}{}% 17
+\BOOKMARK [2][-]{subsection.8.1}{Email notifications}{section.8}% 18
+\BOOKMARK [2][-]{subsection.8.2}{Slack notifications}{section.8}% 19
+\BOOKMARK [2][-]{subsection.8.3}{Adding notifications to your own f90 programs}{section.8}% 20
+\BOOKMARK [1][-]{section.9}{The EMEBSD.f90 program}{}% 21
+\BOOKMARK [1][-]{section.10}{The EMECP.f90 program}{}% 22
+\BOOKMARK [1][-]{section.11}{The EMTKD program}{}% 23
+\BOOKMARK [1][-]{section.12}{The EMKosselMaster program}{}% 24
+\BOOKMARK [1][-]{section.13}{Calling pattern generation routines from another program}{}% 25
+\BOOKMARK [2][-]{subsection.13.1}{Release 3.0 externally callable routines \(IDL\)}{section.13}% 26
+\BOOKMARK [3][-]{subsubsection.13.1.1}{EBSD pattern calculation}{subsection.13.1}% 27
+\BOOKMARK [3][-]{subsubsection.13.1.2}{ECP pattern calculation}{subsection.13.1}% 28
+\BOOKMARK [3][-]{subsubsection.13.1.3}{Kossel pattern calculation}{subsection.13.1}% 29
+\BOOKMARK [2][-]{subsection.13.2}{Release 3.1 C/C++ callable routines}{section.13}% 30
+\BOOKMARK [3][-]{subsubsection.13.2.1}{EMsoftCgetMCOpenCL}{subsection.13.2}% 31
+\BOOKMARK [3][-]{subsubsection.13.2.2}{EMsoftCgetEBSDmaster}{subsection.13.2}% 32
+\BOOKMARK [3][-]{subsubsection.13.2.3}{EMsoftCgetEBSDpatterns}{subsection.13.2}% 33
+\BOOKMARK [3][-]{subsubsection.13.2.4}{EMsoftCgetECPpatterns}{subsection.13.2}% 34
+\BOOKMARK [1][-]{section.14}{The IDL SEMDisplay.pro program}{}% 35
+\BOOKMARK [2][-]{subsection.14.1}{Monte Carlo and Master Pattern visualization interface}{section.14}% 36
+\BOOKMARK [2][-]{subsection.14.2}{Detector interface}{section.14}% 37
+\BOOKMARK [1][-]{section.15}{A worked example}{}% 38
+\BOOKMARK [2][-]{subsection.15.1}{Monte Carlo simulation}{section.15}% 39
+\BOOKMARK [2][-]{subsection.15.2}{EBSD master pattern simulation}{section.15}% 40
+\BOOKMARK [2][-]{subsection.15.3}{EBSD pattern simulation}{section.15}% 41
+\BOOKMARK [2][-]{subsection.15.4}{Accessing the HDF5 data files}{section.15}% 42

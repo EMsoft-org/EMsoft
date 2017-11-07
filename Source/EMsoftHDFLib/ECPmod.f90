@@ -42,6 +42,7 @@ module ECPmod
 
 use local 
 use typedefs
+use stringconstants
 
 IMPLICIT NONE
 
@@ -141,19 +142,19 @@ if (stat) then
   hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCxtalname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'mode'
+dataset = SC_mode
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCmode = trim(stringarray(1))
   deallocate(stringarray)
@@ -162,36 +163,36 @@ if (stat) then
      call FatalError('ECPreadMCfile','This file is not bse1 mode. Please input correct HDF5 file')
   end if
 
-  dataset = 'numsx'
+dataset = SC_numsx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
   enl%nsx = (enl%nsx - 1)/2
   enl%nsy = enl%nsx
 
-  dataset = 'EkeV'
+dataset = SC_EkeV
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
 
-  dataset = 'Ehistmin'
+dataset = SC_Ehistmin
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
 
-  dataset = 'Ebinsize'
+dataset = SC_Ebinsize
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
 
-  dataset = 'depthmax'
+dataset = SC_depthmax
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
 
-  dataset = 'depthstep'
+dataset = SC_depthstep
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthstep)
 
-  dataset = 'sigstart'
+dataset = SC_sigstart
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigstart)
 
-  dataset = 'sigend'
+dataset = SC_sigend
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigend)
 
-  dataset = 'sigstep'
+dataset = SC_sigstep
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigstep)
 
-  dataset = 'omega'
+dataset = SC_omega
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
 
 ! close the name list group
@@ -199,18 +200,18 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! read from the EMheader
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCprogname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -219,26 +220,26 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! open the Data group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read data items 
-  dataset = 'numangle'
+dataset = SC_numangle
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numangle)
 
-  dataset = 'numzbins'
+dataset = SC_numzbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numzbins)
 
-  dataset = 'accum_z'
+dataset = SC_accumz
   call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
   allocate(acc%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
   acc%accum_z = acc_z
   deallocate(acc_z)
 
-  dataset = 'accum_e'
+dataset = SC_accume
   call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
   allocate(acc%accum_e(1:dims3(1),1:dims3(2),1:dims3(3)))
   acc%accum_e = acc_e
@@ -343,50 +344,50 @@ if (stat) then
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'ECPMasterNameList'
+groupname = SC_ECPMasterNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'energyfile'
+dataset = SC_energyfile
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterenergyfile = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'npx'
+dataset = SC_npx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%npx)
   enl%npy = enl%npx
 
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'ECPmaster'
+groupname = SC_ECPmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'EkeV'
+dataset = SC_EkeV
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV) 
   
-  dataset = 'numset'
+dataset = SC_numset
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
 
-  dataset = 'mLPNH'
+dataset = SC_mLPNH
   call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, srtmp)
   allocate(master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy),stat=istat)
   master%mLPNH = sum(srtmp,3)
   deallocate(srtmp)
 
-  dataset = 'mLPSH'
+dataset = SC_mLPSH
   call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, srtmp)
   allocate(master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy),stat=istat)
   master%mLPSH = sum(srtmp,3)
   deallocate(srtmp)
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterxtalname = trim(stringarray(1))
   deallocate(stringarray)
@@ -394,18 +395,18 @@ if (stat) then
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'ECPmaster'
+groupname = SC_ECPmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
   
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -911,8 +912,8 @@ do isig = 1,nsig
 ! convert to Rosca-lambert projection
             ixy = scl *  LambertSphereToSquare( dc, istat )
             if (istat .ne. 0) call FatalError('ECPGetWeightFactors','Cannot convert to square Lambert projection')
-            nix = int(ecpnl%nsx+ixy(1))-ecpnl%nsx
-            niy = int(ecpnl%nsy+ixy(2))-ecpnl%nsy
+            nix = int(ecpnl%nsx+ixy(1)) - ecpnl%nsx
+            niy = int(ecpnl%nsy+ixy(2)) - ecpnl%nsy
             nixp = nix+1
             niyp = niy+1
             if (nixp.gt.ecpnl%nsx) nixp = nix
@@ -1024,19 +1025,19 @@ if (stat) then
   hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCxtalname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'mode'
+dataset = SC_mode
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCmode = trim(stringarray(1))
   deallocate(stringarray)
@@ -1045,36 +1046,36 @@ if (stat) then
      call FatalError('ECPreadMCfile','This file is not bse1 mode. Please input correct HDF5 file')
   end if
 
-  dataset = 'numsx'
+dataset = SC_numsx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
   enl%nsx = (enl%nsx - 1)/2
   enl%nsy = enl%nsx
 
-  dataset = 'EkeV'
+dataset = SC_EkeV
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
 
-  dataset = 'Ehistmin'
+dataset = SC_Ehistmin
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
 
-  dataset = 'Ebinsize'
+dataset = SC_Ebinsize
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
 
-  dataset = 'depthmax'
+dataset = SC_depthmax
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
 
-  dataset = 'depthstep'
+dataset = SC_depthstep
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthstep)
 
-  dataset = 'sigstart'
+dataset = SC_sigstart
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigstart)
 
-  dataset = 'sigend'
+dataset = SC_sigend
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigend)
 
-  dataset = 'sigstep'
+dataset = SC_sigstep
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigstep)
 
-  dataset = 'omega'
+dataset = SC_omega
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
 
 ! close the name list group
@@ -1082,18 +1083,18 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! read from the EMheader
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCprogname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -1102,26 +1103,26 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! open the Data group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCOpenCL'
+groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read data items 
-  dataset = 'numangle'
+dataset = SC_numangle
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numangle)
 
-  dataset = 'numzbins'
+dataset = SC_numzbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numzbins)
 
-  dataset = 'accum_z'
+dataset = SC_accumz
   call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
   allocate(acc%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
   acc%accum_z = acc_z
   deallocate(acc_z)
 
-  dataset = 'accum_e'
+dataset = SC_accume
   call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
   allocate(acc%accum_e(1:dims3(1),1:dims3(2),1:dims3(3)))
   acc%accum_e = acc_e
@@ -1227,50 +1228,50 @@ if (stat) then
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'ECPMasterNameList'
+groupname = SC_ECPMasterNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'energyfile'
+dataset = SC_energyfile
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterenergyfile = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'npx'
+dataset = SC_npx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%npx)
   enl%npy = enl%npx
 
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'ECPmaster'
+groupname = SC_ECPmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'EkeV'
+dataset = SC_EkeV
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
   
-  dataset = 'numset'
+dataset = SC_numset
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
 
-  dataset = 'mLPNH'
+dataset = SC_mLPNH
   call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, srtmp)
   allocate(master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy),stat=istat)
   master%mLPNH = sum(srtmp,3)
   deallocate(srtmp)
 
-  dataset = 'mLPSH'
+dataset = SC_mLPSH
   call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, srtmp)
   allocate(master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy),stat=istat)
   master%mLPSH = sum(srtmp,3)
   deallocate(srtmp)
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterxtalname = trim(stringarray(1))
   deallocate(stringarray)
@@ -1278,18 +1279,18 @@ if (stat) then
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'ECPmaster'
+groupname = SC_ECPmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
   
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -1644,11 +1645,11 @@ if (stat) then
   hdferr =  HDF_openFile(filename, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'CrystalData'
+groupname = SC_CrystalData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read the space group number from the file
-  dataset = 'SpaceGroupNumber'
+dataset = SC_SpaceGroupNumber
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, sgnum)
 
 ! and close everything
@@ -1739,38 +1740,38 @@ if (stat) then
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EMkinematicalNameList'
+groupname = SC_EMkinematicalNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'voltage'
+dataset = SC_voltage
   call HDF_readDatasetfloat(dataset, HDF_head, hdferr, voltage)
   enl%Ekev = dble(voltage) 
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterxtalname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'dmin'
+dataset = SC_dmin
   call HDF_readDatasetfloat(dataset, HDF_head, hdferr, enl%dmin)
 
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EMkinematical'
+groupname = SC_EMkinematical
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'masterNH'
+dataset = SC_masterNH
   call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, master%mLPNH)
   !allocate(master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy),stat=istat)
 
-  dataset = 'masterSH'
+dataset = SC_masterSH
   call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, master%mLPSH)
   !allocate(master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy),stat=istat)
 
@@ -1780,18 +1781,18 @@ if (stat) then
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EMkinematical'
+groupname = SC_EMkinematical
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
   
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)

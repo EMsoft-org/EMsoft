@@ -56,6 +56,7 @@ use EBSDDImod
 use HDF5
 use HDFsupport
 use TIFF_f90
+use stringconstants
 
 
 IMPLICIT NONE
@@ -107,17 +108,17 @@ if (stat) then
   hdferr =  HDF_openFile(dpfile, HDF_head, readonly)
 
 ! get the energyfile and masterfile parameters from NMLParameters
-    groupname = 'NMLparameters'
+groupname = SC_NMLparameters
     hdferr = HDF_openGroup(groupname, HDF_head)
-    groupname = 'EBSDIndexingNameListType'
+groupname = SC_EBSDIndexingNameListType
     hdferr = HDF_openGroup(groupname, HDF_head)
 
-    dataset = 'nnk'
+dataset = SC_nnk
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, nnk)
 
-    dataset = 'ipf_wd'
+dataset = SC_ipfwd
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ipf_wd)
-    dataset = 'ipf_ht'
+dataset = SC_ipfht
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ipf_ht)
 
 ! and close the NMLparameters group
@@ -125,19 +126,19 @@ if (stat) then
     call HDF_pop(HDF_head)
 
 ! open the Scan 1/EBSD/Data group
-    groupname = 'Scan 1'
+    groupname = SC_Scan1
     hdferr = HDF_openGroup(groupname, HDF_head)
-    groupname = 'EBSD'
+groupname = SC_EBSD
     hdferr = HDF_openGroup(groupname, HDF_head)
-    groupname = 'Data'
+groupname = SC_Data
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! integers
-    dataset = 'NumExptPatterns'
+dataset = SC_NumExptPatterns
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, Nexp)
 
 ! arrays
-    dataset = 'TopMatchIndices'
+dataset = SC_TopMatchIndices
     call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, tmitmp)
     allocate(tmi(nnk,Nexp))
     do i=1,Nexp

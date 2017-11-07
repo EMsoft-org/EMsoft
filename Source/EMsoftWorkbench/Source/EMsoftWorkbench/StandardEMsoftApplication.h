@@ -40,8 +40,6 @@
 
 #define standardApp (static_cast<StandardEMsoftApplication *>(qApp))
 
-class EMsoftWorkbench;
-
 class StandardEMsoftApplication : public EMsoftApplication
 {
     Q_OBJECT
@@ -50,7 +48,7 @@ class StandardEMsoftApplication : public EMsoftApplication
     StandardEMsoftApplication(int& argc, char** argv);
     virtual ~StandardEMsoftApplication();
 
-    virtual void unregisterEMsoftWorkbenchWindow(EMsoftWorkbench* window);
+    virtual void unregisterWorkbenchInstance(EMsoftWorkbench_UI *instance);
 
     /**
      * @brief getSIMPLViewMenuBar Creates the QMenuBar that should be used for
@@ -59,29 +57,14 @@ class StandardEMsoftApplication : public EMsoftApplication
      * @param instance
      * @return
      */
-    QMenuBar* getSIMPLViewMenuBar(EMsoftWorkbench* instance);
+    QMenuBar* getSIMPLViewMenuBar();
 
   protected slots:
 
     /**
-    * @brief Updates the QMenu 'Recent Files' with the latest list of files. This
-    * should be connected to the Signal QtSRecentFileList->fileListChanged
-    * @param file The newly added file.
-    */
-    void updateRecentFileList(const QString& file);
-
-    /**
     * @brief activeWindowChanged
     */
-    virtual void emSoftWindowChanged(EMsoftWorkbench* instance);
-
-    /**
-     * @brief StandardEMsoftApplication::landingWidgetWindowChanged
-     */
-    virtual void landingWidgetWindowChanged();
-
-    // EMsoftWorkbench slots
-    virtual void on_actionClearRecentFiles_triggered();
+    virtual void emSoftWindowChanged(EMsoftWorkbench_UI *instance);
 
   private:
 

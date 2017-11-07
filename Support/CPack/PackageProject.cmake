@@ -6,7 +6,6 @@
 #//
 #///////////////////////////////////////////////////////////////////////////////
 
-
 # ------------------------------------------------------------------------------
 # This CMake code sets up for CPack to be used to generate native installers
 # ------------------------------------------------------------------------------
@@ -42,6 +41,19 @@ endif()
 
 # Get a shorter version number:
 set(EMsoft_VERSION_SHORT "${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}")
+message(STATUS "EMsoft_RELEASE_TYPE: ${EMsoft_RELEASE_TYPE}")
+if("${EMsoft_RELEASE_TYPE}" STREQUAL "Official")
+  set(EMsoft_VERSION_SHORT "${EMsoft_VERSION_MAJOR}.${EMsoft_VERSION_MINOR}.${EMsoft_VERSION_PATCH}")
+elseif("${EMsoft_RELEASE_TYPE}" STREQUAL "Beta")
+  set(EMsoft_VERSION_SHORT "${EMsoft_VERSION_MAJOR}.${EMsoft_VERSION_MINOR}-${EMsoft_RELEASE_TYPE}-${EMsoft_VERSION_TWEAK}")
+elseif("${EMsoft_RELEASE_TYPE}" STREQUAL "Development")
+  set(EMsoft_VERSION_SHORT "${EMsoft_VERSION_MAJOR}.${EMsoft_VERSION_MINOR}.${EMsoft_VERSION_PATCH}.${EMsoft_VERSION_TWEAK}")
+else()
+  set(EMsoft_VERSION_SHORT "0.0.0")
+endif()
+
+
+message(STATUS "EMsoft_VERSION_SHORT: ${EMsoft_VERSION_SHORT}")
 
 
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "EMsoft Tools")
@@ -100,8 +112,12 @@ endif()
 #set(EMsoft_WEBSITE_SERVER_PATH "/var/www/EMsoft.bluequartz.net")
 #set(EMsoft_WEBSITE_SCP_USERNAME "mjackson")
 #-- Create a bash script file that will upload the latest version to the web server
-#configure_file(${PROJECT_RESOURCES_DIR}/upload.sh.in
-#            ${PROJECT_BINARY_DIR}/upload.sh)
+if(WIN32)
+  message(STATUS "${PROJECT_SOURCE_DIR}/Support/copy_nightly.bat.in")
+  message(STATUS "${PROJECT_BINARY_DIR}/copy_nightly.bat")
+    configure_file(${PROJECT_SOURCE_DIR}/Support/copy_nightly.bat.in
+                  ${EMsoft_BINARY_DIR}/copy_nightly.bat)
+endif()
 
 # Create an NSIS based installer for Windows Systems
 if(WIN32 AND NOT UNIX)

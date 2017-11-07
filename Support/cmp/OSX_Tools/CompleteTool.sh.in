@@ -61,9 +61,9 @@ BUNDLE_LIBRARIES="@OSX_BUNDLE_LIBRARIES@"
 printStatus "Removing Previous Installation at ${ApplicationExe}"
 rm -rf "${ApplicationExe}"
 
-printStatus "Copying  ${BuildDir}/${ApplicationName} to ${InstallPrefix}/${ProjectInstallDir}/"
+echo "Copying  ${BuildDir}/${ApplicationName} to ${InstallPrefix}/${ProjectInstallDir}/."
 mkdir -p "${InstallPrefix}/${ProjectInstallDir}/"
-cp "${BuildDir}/${ApplicationName}" "${InstallPrefix}/${ProjectInstallDir}/."
+cp "${BuildDir}/${ApplicationName}" "${InstallPrefix}/${ProjectInstallDir}/${ApplicationName}"
 
 #-- Be sure the Resources, lib, frameworks and plugins directories are created
 mkdir -p "${LibPath}"

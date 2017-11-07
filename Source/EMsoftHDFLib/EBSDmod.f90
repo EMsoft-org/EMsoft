@@ -45,6 +45,7 @@ module EBSDmod
 
 use local
 use typedefs
+use stringconstants
 
 IMPLICIT NONE
 
@@ -259,48 +260,48 @@ if (stat) then
   hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'MCCLNameList'
+groupname = SC_MCCLNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCxtalname = trim(stringarray(1))
   deallocate(stringarray)
   
-  dataset = 'mode'
+dataset = SC_mode
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCmode = trim(stringarray(1))
   deallocate(stringarray)
   
   if (enl%MCmode .ne. 'full') call FatalError('EBSDreadMCfile','This file is not in full mode. Please input correct HDF5 file')
-  dataset = 'numsx'
+dataset = SC_numsx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
   enl%nsx = (enl%nsx - 1)/2
   enl%nsy = enl%nsx
 
-  dataset = 'EkeV'
+dataset = SC_EkeV
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
 
-  dataset = 'Ehistmin'
+dataset = SC_Ehistmin
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
 
-  dataset = 'Ebinsize'
+dataset = SC_Ebinsize
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
 
-  dataset = 'depthmax'
+dataset = SC_depthmax
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
 
-  dataset = 'depthstep'
+dataset = SC_depthstep
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthstep)
 
-  dataset = 'sig'
+dataset = SC_sig
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsig)
 
-  dataset = 'omega'
+dataset = SC_omega
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
 
 ! close the name list group
@@ -308,7 +309,7 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! read from the EMheader
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! next we need to make sure that this file has Monte Carlo data in it...
@@ -323,12 +324,12 @@ if (stat) then
   end if
   hdferr = HDF_openGroup(datagroupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCprogname = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%MCscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -337,18 +338,18 @@ if (stat) then
   call HDF_pop(HDF_head)
 
 ! open the Data group
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
   hdferr = HDF_openGroup(datagroupname, HDF_head)
 
 ! read data items 
-  dataset = 'numEbins'
+dataset = SC_numEbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numEbins)
 
-  dataset = 'numzbins'
+dataset = SC_numzbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numzbins)
 
-  dataset = 'accum_e'
+dataset = SC_accume
   call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
   enl%num_el = sum(acc_e)
   nx = (dims3(2)-1)/2
@@ -356,7 +357,7 @@ if (stat) then
   acc%accum_e = acc_e
   deallocate(acc_e)
   
-  dataset = 'accum_z'
+dataset = SC_accumz
   call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
   allocate(acc%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
   acc%accum_z = acc_z
@@ -452,26 +453,26 @@ if (stat) then
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EBSDMasterNameList'
+groupname = SC_EBSDMasterNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'energyfile'
+dataset = SC_energyfile
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterenergyfile = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'npx'
+dataset = SC_npx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%npx)
   enl%npy = enl%npx
 
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
   datagroupname = 'EBSDmaster'
@@ -485,7 +486,7 @@ if (stat) then
   end if
    hdferr = HDF_openGroup(datagroupname, HDF_head)
 
-  dataset = 'numEbins'
+dataset = SC_numEbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nE)
 ! make sure that MC and Master results are compatible
   if ((enl%numEbins.ne.enl%nE).and.(.not.PRESENT(mfile))) then
@@ -494,7 +495,7 @@ if (stat) then
     stop
   end if
 
-  dataset = 'numset'
+dataset = SC_numset
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
 
 ! dataset = 'squhex'
@@ -502,19 +503,19 @@ if (stat) then
 ! enl%sqorhe = trim(stringarray(1))
 ! deallocate(stringarray)
 
-  dataset = 'mLPNH'
+dataset = SC_mLPNH
   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
   allocate(master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
   master%mLPNH = sum(srtmp,4)
   deallocate(srtmp)
 
-  dataset = 'mLPSH'
+dataset = SC_mLPSH
   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
   allocate(master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
   master%mLPSH = sum(srtmp,4)
   deallocate(srtmp)
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterxtalname = trim(stringarray(1))
   deallocate(stringarray)
@@ -522,16 +523,16 @@ if (stat) then
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
   hdferr = HDF_openGroup(datagroupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
   
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -623,32 +624,32 @@ if (stat) then
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
 ! open the namelist group
-  groupname = 'NMLparameters'
+groupname = SC_NMLparameters
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  groupname = 'EBSDMasterNameList'
+groupname = SC_EBSDMasterNameList
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! read all the necessary variables from the namelist group
-  dataset = 'energyfile'
+dataset = SC_energyfile
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterenergyfile = trim(stringarray(1))
   deallocate(stringarray)
 
-  dataset = 'npx'
+dataset = SC_npx
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%npx)
   enl%npy = enl%npx
 
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 
-  groupname = 'EMData'
+groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'numEbins'
+dataset = SC_numEbins
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nE)
 
-  dataset = 'numset'
+dataset = SC_numset
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
 
 ! dataset = 'squhex'
@@ -656,34 +657,34 @@ if (stat) then
 ! enl%sqorhe = trim(stringarray(1))
 ! deallocate(stringarray)
 
-  dataset = 'mLPNH'
+dataset = SC_mLPNH
   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
   allocate(master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
   master%mLPNH = sum(srtmp,4)
   deallocate(srtmp)
 
-  dataset = 'mLPSH'
+dataset = SC_mLPSH
   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
   allocate(master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
   master%mLPSH = sum(srtmp,4)
   deallocate(srtmp)
 
-  dataset = 'xtalname'
+dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterxtalname = trim(stringarray(1))
   deallocate(stringarray)
 
   call HDF_pop(HDF_head)
 
-  groupname = 'EMheader'
+groupname = SC_EMheader
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'ProgramName'
+dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
   
-  dataset = 'Version'
+dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
@@ -1167,8 +1168,10 @@ end subroutine GenerateBackground
 !> @param holddict logical
 !
 !> @date 03/17/16 MDG 1.0 original
+!> @date 09/26/17 MDG 1.1 added Umatrix argument to try out inclusion of lattice strains
 !--------------------------------------------------------------------------
-recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,mask,prefactor)
+recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,mask, &
+                                               prefactor, Fmatrix)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFull
 
 use local
@@ -1199,11 +1202,12 @@ real(kind=sgl),INTENT(IN)                       :: rgy(ipar(2),ipar(3))
 real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(3))
 real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2)/ipar(1),ipar(3)/ipar(1))
 real(kind=sgl),INTENT(IN)                       :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
+real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3)
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
 real(kind=sgl),allocatable                      :: wf(:)
-real(kind=sgl)                                  :: dc(3),ixy(2),scl,bindx
-real(kind=sgl)                                  :: dx,dy,dxm,dym
+real(kind=sgl)                                  :: dc(3),ixy(2),scl,bindx, tmp
+real(kind=sgl)                                  :: dx,dy,dxm,dym, x, y, z
 integer(kind=irg)                               :: ii,jj,kk,istat
 integer(kind=irg)                               :: nix,niy,nixp,niyp
 
@@ -1228,9 +1232,16 @@ scl = float(ipar(4))
 
 do ii = 1,ipar(2)
     do jj = 1,ipar(3)
+        dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
+ ! apply the grain rotation 
+        dc = quat_Lp(qu(1:4),  dc)
 
-        dc = sngl(quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) ))
-
+        if (present(Fmatrix)) then
+! apply the deformation if present
+          dc = matmul(sngl(Fmatrix), dc)
+        end if
+ 
+! and normalize the direction cosines (to remove any rounding errors)
         dc = dc/sqrt(sum(dc**2))
 
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
@@ -1288,6 +1299,128 @@ end if
 binned = binned * mask
 
 end subroutine CalcEBSDPatternSingleFull
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: CalcEBSDPatternSingleFullFast
+!
+!> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute a single EBSD pattern, used in many programs
+!
+!> @param ebsdnl EBSD namelist
+!> @param holdexpt logical
+!> @param holddict logical
+!
+!> @date 07/06/16 MDG 1.0 original, based on CalcEBSDPatternSingleFull
+!--------------------------------------------------------------------------
+recursive subroutine CalcEBSDPatternSingleFullFast(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,prefactor)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFullFast
+
+use local
+use typedefs
+use NameListTypedefs
+use NameListHDFwriters
+use symmetry
+use crystal
+use constants
+use io
+use files
+use diffraction
+use Lambert
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                    :: ipar(8)
+real(kind=sgl),INTENT(IN)                       :: qu(4) 
+real(kind=dbl),INTENT(IN)                       :: prefactor
+integer(kind=irg),INTENT(IN)                    :: Emin, Emax
+real(kind=sgl),INTENT(IN)                       :: accum(ipar(6),ipar(2),ipar(8))
+real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: rgx(ipar(2),ipar(8))
+real(kind=sgl),INTENT(IN)                       :: rgy(ipar(2),ipar(8))
+real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(8))
+real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2),ipar(8))
+
+real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
+real(kind=sgl),allocatable                      :: wf(:)
+real(kind=sgl)                                  :: dc(3),ixy(2),scl,bindx
+real(kind=sgl)                                  :: dx,dy,dxm,dym
+integer(kind=irg)                               :: ii,jj,kk,istat, ystep
+integer(kind=irg)                               :: nix,niy,nixp,niyp
+
+
+! ipar(1) = ebsdnl%binning
+! ipar(2) = ebsdnl%numsx
+! ipar(3) = ebsdnl%numsy
+! ipar(4) = ebsdnl%npx
+! ipar(5) = ebsdnl%npy
+! ipar(6) = ebsdnl%numEbins
+! ipar(7) = ebsdnl%nE
+! ipar(8) = ebsdnl%nlines
+
+
+ystep = floor(float(ipar(3))/float(ipar(8)+1))
+
+bindx = 1.0/float(ipar(1))**2
+
+allocate(EBSDpattern(ipar(2),ipar(8)),stat=istat)
+
+binned = 0.0
+EBSDpattern = 0.0
+
+scl = float(ipar(4)) 
+
+do ii = 1,ipar(2)
+    do jj = 1,ipar(8)
+
+        dc = sngl(quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) ))
+
+        dc = dc/sqrt(sum(dc**2))
+
+! convert these direction cosines to coordinates in the Rosca-Lambert projection
+        ixy = scl * LambertSphereToSquare( dc, istat )
+        if (istat .ne. 0) stop 'Something went wrong during interpolation...'
+! four-point interpolation (bi-quadratic)
+        nix = int(ipar(4)+ixy(1))-ipar(4)
+        niy = int(ipar(5)+ixy(2))-ipar(5)
+        nixp = nix+1
+        niyp = niy+1
+        if (nixp.gt.ipar(4)) nixp = nix
+        if (niyp.gt.ipar(5)) niyp = niy
+        if (nix.lt.-ipar(4)) nix = nixp
+        if (niy.lt.-ipar(5)) niy = niyp
+        dx = ixy(1)-nix
+        dy = ixy(2)-niy
+        dxm = 1.0-dx
+        dym = 1.0-dy
+! interpolate the intensity
+        if (dc(3) .ge. 0.0) then
+            do kk = Emin, Emax
+                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + accum(kk,ii,jj) * ( mLPNH(nix,niy,kk) * dxm * dym + &
+                                               mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
+                                               mLPNH(nixp,niyp,kk) * dx * dy )
+
+            end do
+        else
+            do kk = Emin, Emax
+                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + accum(kk,ii,jj) * ( mLPSH(nix,niy,kk) * dxm * dym + &
+                                               mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
+                                               mLPSH(nixp,niyp,kk) * dx * dy )
+
+            end do
+
+        end if
+    end do
+end do
+
+binned = prefactor * EBSDpattern
+
+end subroutine CalcEBSDPatternSingleFullFast
 
 !--------------------------------------------------------------------------
 !
@@ -1408,5 +1541,103 @@ if (present(verbose)) call Message(' -> completed detector generation', frm = "(
 
 !====================================
 end subroutine EBSDFullGenerateDetector
+
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDcopyMCdata
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief copy Monte Carlo data from one file to a new file using h5copy
+!
+!> @param inputfile name of file with MC data in it
+!> @param outputfile name of new file
+!
+!> @date 08/24/17  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine EBSDcopyMCdata(inputfile, outputfile)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDcopyMCdata
+
+use local
+use error
+use HDFsupport
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)       :: inputfile
+character(fnlen),INTENT(IN)       :: outputfile
+
+character(fnlen)                  :: infile, outfile, h5copypath, groupname
+character(512)                    :: cmd, cmd2
+logical                           :: f_exists, readonly
+type(HDFobjectStackType),pointer  :: HDF_head
+integer(kind=irg)                 :: hdferr
+
+! first make sure that the input file exists and has MC data in it
+infile = trim(EMsoft_getEMdatapathname())//trim(inputfile)
+infile = EMsoft_toNativePath(infile)
+inquire(file=infile, exist=f_exists)
+
+outfile = trim(EMsoft_getEMdatapathname())//trim(outputfile)
+outfile = EMsoft_toNativePath(outfile)
+
+! if the file does not exist, abort the program with an error message
+if (f_exists.eqv..FALSE.) then 
+  call FatalError('EBSDcopyMCdata','Monte Carlo copyfromenergyfile does not exist: '//trim(infile))
+end if
+
+! make sure it has MCopenCL data in it
+nullify(HDF_head)
+call h5open_EMsoft(hdferr)
+readonly = .TRUE.
+hdferr =  HDF_openFile(infile, HDF_head, readonly)
+
+groupname = SC_EMData
+hdferr = HDF_openGroup(groupname, HDF_head)
+if (hdferr.eq.-1) then 
+  call FatalError('EBSDcopyMCdata','EMData group does not exist in '//trim(infile))
+end if
+
+groupname = SC_MCOpenCL
+hdferr = HDF_openGroup(groupname, HDF_head)
+if (hdferr.eq.-1) then 
+  call FatalError('EBSDcopyMCdata','MCOpenCL group does not exist in '//trim(infile))
+end if
+
+call HDF_pop(HDF_head,.TRUE.)
+call h5close_EMsoft(hdferr)
+
+! OK, if we get here, then the file does exist and it contains Monte Carlo data, so we let
+! the user know
+call Message('--> Input file contains Monte Carlo data')
+
+! next, we copy the necessary groups into the new Monte Carlo file
+h5copypath = trim(EMsoft_geth5copypath())//' -p -v '
+h5copypath = EMsoft_toNativePath(h5copypath)
+cmd = trim(h5copypath)//' -i "'//trim(infile)
+cmd = trim(cmd)//'" -o "'//trim(outfile)
+
+cmd2 = trim(cmd)//'" -s "/CrystalData" -d "/CrystalData"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/EMData/MCOpenCL" -d "/EMData/MCOpenCL"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/EMheader/MCOpenCL" -d "/EMheader/MCOpenCL"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/NMLfiles/MCOpenCLNML" -d "/NMLfiles/MCOpenCLNML"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/NMLparameters/MCCLNameList" -d "/NMLparameters/MCCLNameList"'
+call system(trim(cmd2))
+
+call Message('--> Output file generated with Monte Carlo data copied from '//trim(infile))
+
+end subroutine EBSDcopyMCdata 
+
 
 end module EBSDmod

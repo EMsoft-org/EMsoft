@@ -1,5 +1,19 @@
 #!/bin/bash
 
+if [ "$#" -ne 2 ]; then
+    echo "This script requires 2 arguments: Path where you want the SDK Installed and the "
+    echo "the number of build threads to use when building. For example if you pass "
+    echo "'Build_SDK.sh /opt/EMsoft_SDK 8' then /opt/EMsoft_SDK will be the folder"
+    echo "that has all the dependent library folders in it."
+    exit 
+fi
+
+SDK_INSTALL=${1}
+PARALLEL_BUILD=${2}
+HOST_SYSTEM=`uname`
+echo "SDK_INSTALL=$SDK_INSTALL"
+echo "PARALLEL_BUILD=$PARALLEL_BUILD"
+echo "Host System: $HOST_SYSTEM"
 
 #------------------------------------------------------------------------------
 # Read the configuration file for the SDK Build. All important variables are 
@@ -50,12 +64,12 @@ then
 fi
 
 # We assume we already have downloaded the source for json-fortran and have it in a folder
-# called json-fortran-5.0.2
+# called json-fortran
 chmod 0777 ${JSONFORTRAN_ARCHIVE_NAME}
 cd ${JSONFORTRAN_ARCHIVE_NAME}
 mkdir Build
 cd Build
-cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DSKIP_DOC_GEN=TRUE -DCMAKE_INSTALL_PREFIX=${SDK_INSTALL} ../
+$SDK_INSTALL/$CMAKE_FOLDER_NAME/${CMAKE_EXE_PATH}/bin/cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release -DSKIP_DOC_GEN=TRUE -DCMAKE_INSTALL_PREFIX=${SDK_INSTALL} ../
 make -j${PARALLEL_BUILD}
 make install
 cd ../

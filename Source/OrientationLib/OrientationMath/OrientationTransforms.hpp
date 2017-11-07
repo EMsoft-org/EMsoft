@@ -36,6 +36,14 @@
 #ifndef _OrientationTransforms_H_
 #define _OrientationTransforms_H_
 
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullability-completeness-on-arrays"
+#pragma clang diagnostic ignored "-Wnullability-inferred-on-nested-type"
+#endif
+
+
 #include <assert.h>     /* assert */
 
 #include <string>
@@ -2149,6 +2157,10 @@ class OrientationTransforms
 
 typedef OrientationTransforms<FOrientArrayType, float>     FOrientTransformsType;
 typedef OrientationTransforms<DOrientArrayType, double>     DOrientTransformsType;
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 
 #endif /* _OrientationTransforms_H_ */

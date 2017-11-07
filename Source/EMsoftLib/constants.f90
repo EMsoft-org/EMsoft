@@ -53,6 +53,8 @@
 !> @date 09/30/14 MDG 4.5 added some additional comments about epsijk
 !> @date 10/02/14 MDG 4.6 removed omegamax again, since we now have properly dealt with 180 degree rotations
 !> @date 03/11/15 MDG 4.7 added some additional comments about epsijk 
+!> @date 04/02/17 MDG 4.8 modified definition of fundamental zones types and orders to accomodate two-phase disorientations
+!> @date 10/24/17 MDG 4.9 removed definition of infty and inftyd to be replaced by functions in math.f90 module
 !--------------------------------------------------------------------------
 
 module constants
@@ -95,26 +97,6 @@ real(kind=dbl), parameter :: epsijkd = 1.D0
 ! ****************************************************
 ! ****************************************************
 ! ****************************************************
-
-! the rotations.f90 routines need to have access to the value +Infinity
-! which is defined here (using the LaTeX name infty)
-!INTEGER,private :: inf
-!REAL,public :: infty
-!EQUIVALENCE (inf,infty) ! stores two variable at the same address
-!DATA inf/z'7f800000'/ !Hex for +Infinity
-
-!INTEGER(kind=8),private :: infd
-!REAL(kind=dbl),public :: inftyd
-!EQUIVALENCE (infd,inftyd) ! stores two variable at the same address
-!DATA infd/z'7FF0000000000000'/ !Hex for +Infinity
-
-! solution to Intel fortran compiler not liking the above definitions for infty and inftyd
-REAL(kind=sgl),public :: infty = HUGE(0.0_sgl)
-REAL(kind=dbl),public :: inftyd = HUGE(0.0_dbl)
-!DEC$ ATTRIBUTES DLLEXPORT :: infty
-!DEC$ ATTRIBUTES DLLEXPORT :: inftyd
-
-
 
 
 ! various physical constants

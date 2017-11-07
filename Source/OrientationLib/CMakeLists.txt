@@ -212,16 +212,11 @@ target_link_libraries(${PROJECT_NAME} H5Support ${OrientationLib_LINK_LIBRARIES}
 LibraryProperties( ${PROJECT_NAME} ${EXE_DEBUG_EXTENSION} )
 
 set_target_properties (${PROJECT_NAME} PROPERTIES
-  FOLDER Source/${PROJECT_NAME}
+  FOLDER EMsoftPublic/${PROJECT_NAME}
 )
 
-set(install_dir "tools")
-set(lib_install_dir "lib")
-if(WIN32)
-  set(install_dir ".")
-  set(lib_install_dir "")
-endif()
 
+EMsoft_SetupInstallDirs()
 
 if(BUILD_SHARED_LIBS AND NOT APPLE)
   INSTALL(TARGETS ${PROJECT_NAME}

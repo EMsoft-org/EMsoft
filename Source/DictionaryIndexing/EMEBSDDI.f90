@@ -182,6 +182,8 @@ end program EBSDIndexing
 !> @date 02/23/16 MDG 1.5 converted program to CLFortran instead of fortrancl.
 !> @date 06/07/16 MDG 1.6 added tmpfile for variable temporary data file name
 !> @date 11/14/16 MDG 1.7 added code to read h5 file instead of compute on-the-fly (static mode)
+!> @date 07/24/17 MDG 1.8 temporary code to change the mask layout for fast DI tests
+!> @date 08/30/17 MDG 1.9 added option to read custom mask from file
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
@@ -222,6 +224,7 @@ use NameListHDFwriters
 use ECPmod, only: GetPointGroup
 use Indexingmod
 use ISO_C_BINDING
+use notifications
 
 IMPLICIT NONE
 
@@ -306,6 +309,11 @@ logical                                             :: f_exists, init
 
 integer(kind=irg)                                   :: ipar(10)
 
+character(fnlen),ALLOCATABLE                        :: MessageLines(:)
+integer(kind=irg)                                   :: NumLines
+character(fnlen)                                    :: TitleMessage, exectime
+character(100)                                      :: c
+character(1000)                                     :: charline
 
 type(HDFobjectStackType),pointer                    :: HDF_head
 
@@ -597,16 +605,46 @@ end if
 !=====================================================
 ! define the circular mask if necessary and convert to 1D vector
 !=====================================================
-if (ebsdnl%maskpattern.eq.'y') then
-  do ii = 1,biny
-      do jj = 1,binx
-          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. ebsdnl%maskradius**2) then
-              mask(jj,ii) = 0.0
-          end if
+
+write (*,*) 'maskfile = ', trim(ebsdnl%maskfile)
+
+if (trim(ebsdnl%maskfile).ne.'undefined') then
+! read the mask from file; the mask can be defined by a 2D array of 0 and 1 values
+! that is stored in row form as strings, e.g.    
+!    0000001110000000
+!    0000011111000000
+! ... etc
+!
+    f_exists = .FALSE.
+    fname = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%maskfile)
+    fname = EMsoft_toNativePath(fname)
+    inquire(file=trim(fname), exist=f_exists)
+    if (f_exists.eqv..TRUE.) then
+      mask = 0.0
+      open(unit=dataunit,file=trim(fname),status='old',form='formatted')
+      do jj=biny,1,-1
+        read(dataunit,"(A)") charline
+        do ii=1,binx
+          if (charline(ii:ii).eq.'1') mask(ii,jj) = 1.0
+        end do
       end do
-  end do
+      close(unit=dataunit,status='keep')
+    else
+      call FatalError('MasterSubroutine','maskfile '//trim(fname)//' does not exist')
+    end if
+else
+    if (ebsdnl%maskpattern.eq.'y') then
+      do ii = 1,biny
+          do jj = 1,binx
+              if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. ebsdnl%maskradius**2) then
+                  mask(jj,ii) = 0.0
+              end if
+          end do
+      end do
+    end if
 end if
-  
+
+! convert the mask to a linear (1D) array
 do ii = 1,biny
     do jj = 1,binx
         masklin((ii-1)*binx+jj) = mask(jj,ii)
@@ -999,7 +1037,7 @@ dictionaryloop: do ii = 1,cratio+1
        end do
 
 ! normalize and apply circular mask 
-       imagedictflt = imagedictflt * masklin
+       imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
        vlen = NORM2(imagedictflt(1:correctsize))
        if (vlen.ne.0.0) then
          imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/vlen
@@ -1076,5 +1114,23 @@ end if
 
 ! close the fortran HDF5 interface
 call h5close_EMsoft(hdferr)
+
+! if requested, we notify the user that this program has completed its run
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(ebsdnl%Notify).eq.'On') then 
+    NumLines = 3
+    allocate(MessageLines(NumLines))
+
+    call hostnm(c)
+ 
+    MessageLines(1) = 'EMEBSDDI program has ended successfully'
+    MessageLines(2) = 'Indexed data stored in '//trim(ebsdnl%datafile)
+    write (exectime,"(F15.0)") tstop  
+    MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
+    TitleMessage = 'EMsoft on '//trim(c)
+    i = PostMessage(MessageLines, NumLines, TitleMessage)
+  end if
+end if
+
 
 end subroutine MasterSubroutine

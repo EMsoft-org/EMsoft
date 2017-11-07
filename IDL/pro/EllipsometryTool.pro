@@ -131,6 +131,7 @@ OMETwidget_s = {widgetstruct, $
     createpolarizer:long(0), $
     createretarder:long(0), $
     createrotator:long(0), $
+    loadEMOMmasterfile:long(0), $
     numleft:long(0), $
     inputSV0:long(0), $           ; widgets for the input Stokes vector
     inputSV1:long(0), $
@@ -164,6 +165,14 @@ OMETdata = {OMETdatastruct, $
     inputpolarization:float(0), $
     outputpolarization:float(0), $
     PEdrawsize:fix(451), $
+    masterfilename:'', $
+    homefolder:'', $
+    masterpathname:'', $
+    HDFsuffix:'', $
+    OMETroot:'undefined', $
+    MPx:long(0), $
+    MPy:long(0), $
+
 
 	; widget location parameters
 	  xlocation: float(0.0), $		; main widget x-location (can be modified and stored in preferences file)
@@ -409,7 +418,7 @@ OMETwidget_s.PEdrawID = PEdrawID
 WIDGET_CONTROL, OMETwidget_s.logodraw, GET_VALUE=drawID
 OMETwidget_s.logodrawID = drawID
 ;
-read_jpeg,'../Resources/EMsoftlogo.jpg',logo
+read_jpeg,'../Resources/EMsoftVBFFlogo.jpg',logo
 ;read_jpeg,'Resources/EMsoftlogo.jpg',logo
 wset,OMETwidget_s.logodrawID
 tvscl,logo,true=1

@@ -1,6 +1,14 @@
  &EMOrientationViz
 ! name of crystal structure file
  xtalname = 'undefined',
+! first define the mrcmode parameter; if 'off' then the output mode is PoVray
+! if 'reg' the output is a regular .mrc file; if 'frm' then the output is 
+! an .mrc file containing only the outline of the projection volume
+ mrcmode = 'off',
+! if mrcmode .ne. 'off', then define the mrc output file name WITHOUT .mrc EXTENSION !!!
+ mrcfile = 'undefined', 		! if mrcmode .eq. 'reg'
+!framemrcfile = 'undefined',    ! if mrcmode .eq. 'frm' [THIS HAS NOT BEEN IMPLEMENTED YET]
+!
 ! name of part of PoVray output file name WITHOUT THE .pov EXTENSION (i.e., no '.' character allowed)
 ! (note that the partial path should be included)
 ! The program will compose the output file name as follows:
@@ -21,6 +29,7 @@
  reducetoRFZ = 1,
 ! override the point group number read from the xtal file ?  0 for no, new pgnum for yes
  overridepgnum = 0,
+!==================== the following parameters are needed for PoVray output only
 ! RGB color triplet for the spheres
  rgb = 0.0, 0.0, 1.0,
 ! sphere radius  (0.015 or smaller produces reasonable results) 
@@ -35,6 +44,7 @@
  nx = 64,
  ny = 64,
  nz = 64,
+!=====================
 !
 ! the angle file,  a simple text file with the following format
 ! ##      ! two characters denoting the representation (eu, ro, ho, cu, ax, qu)

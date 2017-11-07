@@ -1,7 +1,8 @@
  &RFZlist
 ! template file for the EMsampleRFZ program
 !
-! sampling mode; 'RFZ' standard Rodrigues FZ; 'MIS' misorientation ball sampling; 'CON' conical sampling
+! sampling mode; 'RFZ' standard Rodrigues FZ; 'MIS' misorientation ball sampling; 'CON' conical sampling;
+! 'FIB' for uniform fiber texture sampling
 samplemode = 'RFZ'
 ! maximum misorientation [degrees], for 'MIS' samplemode only
 maxmisor = 5.D0,
@@ -13,6 +14,8 @@ rodrigues = 0.D0, 0.D0, 0.D0, 0.D0,
  semiconeangle = 2.D0,
 ! point group number
  pgnum = 32,
+! crystal structure file name (used for FIB samplemode only)
+ xtalname = 'undefined' 
 ! number of sampling points along cube semi-edge
  nsteps = 100,
 ! grid type: 0 contains origin, 1 is has origin at center of grid box

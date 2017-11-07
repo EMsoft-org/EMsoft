@@ -51,6 +51,7 @@ use NameListHandlers
 use EBSDmod
 use JSONsupport
 use io
+use stringconstants
 
 IMPLICIT NONE
 
@@ -151,6 +152,7 @@ use Lambert
 use rotations
 use omp_lib
 use, INTRINSIC :: ISO_C_BINDING
+use stringconstants
 
 IMPLICIT NONE
 
@@ -312,24 +314,24 @@ call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
 call SaveDataHDF(cell, HDF_head)
 
 ! create a namelist group to write all the namelist files into
-groupname = "NMLfiles"
+groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup NMLfiles')
 
 ! read the text file and write the array to the file
-dataset = 'EMEBSDFullNML'
+dataset = SC_EMEBSDFullNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetTextFile EMEBSDNML')
 
 call HDF_pop(HDF_head)
 
-groupname = 'EMData'
+groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EMData')
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
 
-dataset = 'numangles'
+dataset = SC_numangles
 hdferr = HDF_writeDatasetInteger(dataset, enl%numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetInteger numangles')
 
@@ -338,7 +340,7 @@ allocate(eulerangles(3,enl%numangles))
 do i=1,enl%numangles
   eulerangles(1:3,i) = qu2eu(angles%quatang(1:4,i))
 end do
-dataset = 'Eulerangles'
+dataset = SC_Eulerangles
 hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, enl%numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
 
@@ -838,12 +840,12 @@ io_int(1) = tock
 call WriteValue('Execution time [system_clock()] = ',io_int,1,"(I8,' [s]')")
 
 ! add data to the hyperslab
-dataset = 'EBSDPatterns'
+dataset = SC_EBSDPatterns
 dims4 = (/  enl%numsx, enl%numsy, enl%numEbins, enl%numangles /)
 hdferr = HDF_writeDatasetFloatArray4D(dataset, EBSDPatterns, dims4(1), dims4(2), dims4(3),&
 dims4(4), HDF_head)
 
-dataset = 'Lambdas'
+dataset = SC_Lambdas
 dims4 = (/  enl%numsx, enl%numsy, enl%numEbins, enl%numzbins /)
 hdferr = HDF_writeDatasetFloatArray4D(dataset, lambdas, dims4(1), dims4(2), dims4(3),&
 dims4(4), HDF_head)
@@ -852,7 +854,7 @@ call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
 call timestamp(datestring=dstr, timestring=tstre)
-groupname = "EMheader"
+groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup EMheader')
 
@@ -861,12 +863,12 @@ hdferr = HDF_openGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup EBSD')
 
 ! stop time /EMheader/StopTime 'character'
-dataset = 'StopTime'
+dataset = SC_StopTime
 line2(1) = dstr//', '//tstre
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray StopTime')
 
-dataset = 'Duration'
+dataset = SC_Duration
 hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloat Duration')
 

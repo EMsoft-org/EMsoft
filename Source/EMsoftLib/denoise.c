@@ -58,6 +58,19 @@ double cost2(double g[3][3], double inputArray[], double sigma_px, double p, int
 /*=====================================================================================================================*/
 
 
+/*=====================================================================================================================*/
+// here is a brief description of the meaning of the input parameters to the denoise routine:
+//
+// lx and ly are the image dimensions
+// pf is the pre-factor of variance of gibbs distribution (sigma_px). Its value is in the range (0, 1]. Typically, it is set to 1.
+// Powp is the usual “p” with value ranging from (1, 2.0] (L1 to L2 norm). For de-noising, it is usually set it to 1.2.
+// sigma_w is the square root of variance of noise. Typical, its value falls in the range [10, 36]. 
+// prinf is the prior influence. It is the pre-factor term to prior model to scale how much you want the prior model to have influence while de-noising. Its value range is (0, 1]. I, mostly, set it to 1.0.
+// noisinf is the pre-factor for the noise model. Again its value falls in the range (0,1]. Typically, using 0.2 to 0.5 yields pretty good result.
+// icd number of iterations. Usually, setting its value from 15 to 25 works.
+/*=====================================================================================================================*/
+
+
 double* denoise (int *lx, int *ly, float *pf, float *powp, float *sigma_w, float *prinf, float *noisinf, int *icd, double* mbike)
 {
         Nx=*lx; Ny=*ly;
