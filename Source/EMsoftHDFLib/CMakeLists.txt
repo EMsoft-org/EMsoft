@@ -43,7 +43,9 @@ set(EMsoftHDFLib_SRCS
   ${EMsoftHDFLib_SOURCE_DIR}/EBSDiomod.f90
  	${EMsoftHDFLib_SOURCE_DIR}/HDFsupport.f90
  	${EMsoftHDFLib_SOURCE_DIR}/EBSDDImod.f90
- 	${EMsoftHDFLib_SOURCE_DIR}/EMh5ebsd.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/EMh5ebsd.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/FitOrientations.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/TKDmod.f90
 
   ${EMsoftHDFLib_Additional_SRCS}
 )
