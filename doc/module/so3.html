@@ -1,0 +1,2765 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	 <meta name="description" content="EMsoft main library">
+    
+    <meta name="author" content="Marc De Graef Research Group/Carnegie Mellon University" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>so3 &ndash; Fortran Program</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Fortran Program </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+				
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+		 aria-expanded="false">Contents <span class="caret"></span></a>
+	      <ul class="dropdown-menu">
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+				
+				
+            <li><a href="../lists/modules.html">Modules</a></li>
+				
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+				
+				
+            <li><a href="../lists/absint.html">Abstract Interfaces</a></li>
+								
+            <li><a href="../lists/types.html">Derived Types</a></li>
+				
+				
+            <li><a href="../lists/programs.html">Programs</a></li>
+				
+            </ul>
+            </li>
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>so3 
+    <small>Module</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+	  data-placement="bottom" data-html="true"
+	  title=" 3.6% of total for modules and submodules.">790 statements</a>
+     </li> 
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/so3.f90"> Source File</a></li>
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+     <li><a href='../sourcefile/so3.f90.html'>so3.f90</a></li>
+  
+     <li class="active">so3</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
+  <div id="funcs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/so3.html#proc-isinsidefz">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecyclicfz">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidedihedralfz">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecubicfz">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecubehexfz">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-isinsidemfz">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecubicmfz">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidedihedralmfz">insideDihedralMFZ</a>
+      
+    </div>
+  </div>
+</div>
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-0" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/so3.html#proc-getfztypeandorder">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-delete_fzlist">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-samplerfz">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-cubochoricneighbors">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-samplefcctwinrfz">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-samplerfztwin">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sample_isocube">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sample_isocubefilled">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sample_cone">sample_Cone</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sampleisomisorientation">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-geteulersfromfile">getEulersfromFile</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+  <hr>
+  
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allmods-0">All Modules</a></h3></div>
+  <div id="allmods-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/apb.html">apb</a>
+      
+      <a class="list-group-item" href="../module/bobyqa_module.html">bobyqa_module</a>
+      
+      <a class="list-group-item" href="../module/bobyqa_refinement.html">bobyqa_refinement</a>
+      
+      <a class="list-group-item" href="../module/clsupport.html">CLsupport</a>
+      
+      <a class="list-group-item" href="../module/constants.html">constants</a>
+      
+      <a class="list-group-item" href="../module/defectmodule.html">defectmodule</a>
+      
+      <a class="list-group-item" href="../module/dictmod.html">dictmod</a>
+      
+      <a class="list-group-item" href="../module/distortion.html">distortion</a>
+      
+      <a class="list-group-item" href="../module/eccimod.html">ECCImod</a>
+      
+      <a class="list-group-item" href="../module/emdymod.html">EMdymod</a>
+      
+      <a class="list-group-item" href="../module/filters.html">filters</a>
+      
+      <a class="list-group-item" href="../module/indexingmod.html">Indexingmod</a>
+      
+      <a class="list-group-item" href="../module/initializers.html">initializers</a>
+      
+      <a class="list-group-item" href="../module/jsonsupport.html">JSONsupport</a>
+      
+      <a class="list-group-item" href="../module/muellercalculus.html">MuellerCalculus</a>
+      
+      <a class="list-group-item" href="../module/multibeams.html">multibeams</a>
+      
+      <a class="list-group-item" href="../module/namelisthandlers.html">NameListHandlers</a>
+      
+      <a class="list-group-item" href="../module/namelisttypedefs.html">NameListTypedefs</a>
+      
+      <a class="list-group-item" href="../module/noise.html">noise</a>
+      
+      <a class="list-group-item" href="../module/others.html">others</a>
+      
+      <a class="list-group-item" href="../module/pedmod.html">PEDmod</a>
+      
+      <a class="list-group-item" href="../module/pfinversion.html">PFInversion</a>
+      
+      <a class="list-group-item" href="../module/pgm.html">pgm</a>
+      
+      <a class="list-group-item" href="../module/povray.html">povray</a>
+      
+      <a class="list-group-item" href="../module/rng.html">rng</a>
+      
+      <a class="list-group-item" href="../module/simann.html">SimAnn</a>
+      
+      <a class="list-group-item" href="../module/so3.html">so3</a>
+      
+      <a class="list-group-item" href="../module/stemmodule.html">STEMmodule</a>
+      
+      <a class="list-group-item" href="../module/timing.html">timing</a>
+      
+      <a class="list-group-item" href="../module/yshmodule.html">YSHModule</a>
+      
+    </div>
+  </div>
+</div>
+
+
+</div>  
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      
+    
+  
+    <ul class="list-inline">
+      <li><h4>Uses:</h4></li>
+      
+      <li>local</li>
+      
+    </ul>
+    
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: module~~so3~~UsesGraph Pages: 1 -->
+<svg id="moduleso3UsesGraph" width="152pt" height="32pt"
+ viewBox="0.00 0.00 152.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~so3~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>module~~so3~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 148,-28 148,4 -4,4"/>
+<!-- module~so3 -->
+<g id="module~~so3~~UsesGraph_node1" class="node"><title>module~so3</title>
+<polygon fill="none" stroke="black" points="144,-24 90,-24 90,-0 144,-0 144,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">so3</text>
+</g>
+<!-- local -->
+<g id="module~~so3~~UsesGraph_node2" class="node"><title>local</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,-0 54,-0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">local</text>
+</g>
+<!-- local&#45;&gt;module~so3 -->
+<g id="module~~so3~~UsesGraph_edge1" class="edge"><title>local&#45;&gt;module~so3</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M54.4029,-12C62.3932,-12 71.3106,-12 79.8241,-12"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="79.919,-15.5001 89.919,-12 79.919,-8.5001 79.919,-15.5001"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="486pt" height="32pt"
+ viewBox="0.00 0.00 486.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 482,-28 482,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node"><title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,-0 54,-0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node"><title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="138,-24 72,-24 72,-0 138,-0 138,-24"/>
+<text text-anchor="middle" x="105" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="219.5,-24 156.5,-24 156.5,-0 219.5,-0 219.5,-24"/>
+<text text-anchor="middle" x="188" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="292,-24 238,-24 238,-0 292,-0 292,-24"/>
+<text text-anchor="middle" x="265" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="364,-24 310,-24 310,-0 364,-0 364,-24"/>
+<text text-anchor="middle" x="337" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="478,-24 382,-24 382,-0 478,-0 478,-24"/>
+<text text-anchor="middle" x="430" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a parent (sub)module to the submodule which is
+    descended from it. Dashed arrows point from a module being used to the
+    module or program unit using it. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+    
+
+    
+    <p>@author Marc De Graef, Carnegie Mellon University
+ @brief everything that has to do with sampling of rotation space SO(3)
+ </p><div class="alert alert-success" role="alert"><h4>Todo</h4><p>verify that this is correct for point groups with multiple settings, eg, 3m, 32, ...
+ @date 05/29/14 MDG 1.0 original
+ @date 10/02/14 MDG 2.0 removed globals + rewrite
+ @date 01/01/15 MDG 2.1 added IsinsideFZ function, also used in dictionary indexing approach
+ @date 01/17/15 MDG 2.2 added gridtype option to SampleRFZ
+ @date 03/03/16 MDG 2.3 added uniform sampling for constant misorientations
+ @date 04/01/17 MDG 3.0 start to add FZs for two-phase systems (e.g., cubic-hexagonal, etc.)</p></div>
+    
+    
+    <h3>Used By</h3>
+    
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: module~~so3~~UsedByGraph Pages: 1 -->
+<svg id="moduleso3UsedByGraph" width="253pt" height="158pt"
+ viewBox="0.00 0.00 253.00 158.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~so3~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 154)">
+<title>module~~so3~~UsedByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-154 249,-154 249,4 -4,4"/>
+<!-- module~so3 -->
+<g id="module~~so3~~UsedByGraph_node1" class="node"><title>module~so3</title>
+<polygon fill="none" stroke="black" points="54,-87 0,-87 0,-63 54,-63 54,-87"/>
+<text text-anchor="middle" x="27" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50">so3</text>
+</g>
+<!-- proc~di_emfordd -->
+<g id="module~~so3~~UsedByGraph_node2" class="node"><title>proc~di_emfordd</title>
+<g id="a_module~~so3~~UsedByGraph_node2"><a xlink:href="../proc/di_emfordd.html" xlink:title="DI_EMforDD">
+<polygon fill="#d9534f" stroke="#d9534f" points="203.5,-150 131.5,-150 131.5,-126 203.5,-126 203.5,-150"/>
+<text text-anchor="middle" x="167.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">DI_EMforDD</text>
+</a>
+</g>
+</g>
+<!-- module~so3&#45;&gt;proc~di_emfordd -->
+<g id="module~~so3~~UsedByGraph_edge1" class="edge"><title>module~so3&#45;&gt;proc~di_emfordd</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M42.9546,-87.2007C55.018,-96.5145 72.7595,-109.058 90,-117 99.8588,-121.541 110.898,-125.277 121.456,-128.272"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="120.813,-131.723 131.377,-130.919 122.618,-124.96 120.813,-131.723"/>
+</g>
+<!-- proc~reduceorientationtorfz -->
+<g id="module~~so3~~UsedByGraph_node3" class="node"><title>proc~reduceorientationtorfz</title>
+<g id="a_module~~so3~~UsedByGraph_node3"><a xlink:href="../proc/reduceorientationtorfz.html" xlink:title="ReduceOrientationtoRFZ">
+<polygon fill="#d9534f" stroke="#d9534f" points="232,-108 103,-108 103,-84 232,-84 232,-108"/>
+<text text-anchor="middle" x="167.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReduceOrientationtoRFZ</text>
+</a>
+</g>
+</g>
+<!-- module~so3&#45;&gt;proc~reduceorientationtorfz -->
+<g id="module~~so3~~UsedByGraph_edge2" class="edge"><title>module~so3&#45;&gt;proc~reduceorientationtorfz</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M54.0508,-78.9499C65.2115,-80.6422 78.8648,-82.7123 92.7601,-84.8192"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="92.4769,-88.3162 102.889,-86.355 93.5264,-81.3953 92.4769,-88.3162"/>
+</g>
+<!-- proc~reducedisorientationtomfz -->
+<g id="module~~so3~~UsedByGraph_node4" class="node"><title>proc~reducedisorientationtomfz</title>
+<g id="a_module~~so3~~UsedByGraph_node4"><a xlink:href="../proc/reducedisorientationtomfz.html" xlink:title="ReduceDisorientationtoMFZ">
+<polygon fill="#d9534f" stroke="#d9534f" points="239,-66 96,-66 96,-42 239,-42 239,-66"/>
+<text text-anchor="middle" x="167.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReduceDisorientationtoMFZ</text>
+</a>
+</g>
+</g>
+<!-- module~so3&#45;&gt;proc~reducedisorientationtomfz -->
+<g id="module~~so3~~UsedByGraph_edge3" class="edge"><title>module~so3&#45;&gt;proc~reducedisorientationtomfz</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M54.0508,-71.0501C63.3235,-69.6441 74.3168,-67.9772 85.7401,-66.2452"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="86.4946,-69.6709 95.8569,-64.7112 85.4451,-62.75 86.4946,-69.6709"/>
+</g>
+<!-- proc~reduceorientationtocubicefz -->
+<g id="module~~so3~~UsedByGraph_node5" class="node"><title>proc~reduceorientationtocubicefz</title>
+<g id="a_module~~so3~~UsedByGraph_node5"><a xlink:href="../proc/reduceorientationtocubicefz.html" xlink:title="ReduceOrientationtoCubicEFZ">
+<polygon fill="#d9534f" stroke="#d9534f" points="245,-24 90,-24 90,-0 245,-0 245,-24"/>
+<text text-anchor="middle" x="167.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">ReduceOrientationtoCubicEFZ</text>
+</a>
+</g>
+</g>
+<!-- module~so3&#45;&gt;proc~reduceorientationtocubicefz -->
+<g id="module~~so3~~UsedByGraph_edge4" class="edge"><title>module~so3&#45;&gt;proc~reduceorientationtocubicefz</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M42.9546,-62.7993C55.018,-53.4855 72.7595,-40.9415 90,-33 94.5737,-30.8932 99.4014,-28.9599 104.317,-27.1934"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="105.468,-30.499 113.836,-24.0002 103.242,-23.8625 105.468,-30.499"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="486pt" height="32pt"
+ viewBox="0.00 0.00 486.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 482,-28 482,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node"><title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,-0 54,-0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node"><title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="138,-24 72,-24 72,-0 138,-0 138,-24"/>
+<text text-anchor="middle" x="105" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="219.5,-24 156.5,-24 156.5,-0 219.5,-0 219.5,-24"/>
+<text text-anchor="middle" x="188" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="292,-24 238,-24 238,-0 292,-0 292,-24"/>
+<text text-anchor="middle" x="265" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="364,-24 310,-24 310,-0 364,-0 364,-24"/>
+<text text-anchor="middle" x="337" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="478,-24 382,-24 382,-0 478,-0 478,-24"/>
+<text text-anchor="middle" x="430" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a parent (sub)module to the submodule which is
+    descended from it. Dashed arrows point from a module being used to the
+    module or program unit using it. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+    <br>
+    
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
+  <div id="funcs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/so3.html#proc-isinsidefz">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecyclicfz">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidedihedralfz">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecubicfz">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecubehexfz">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-isinsidemfz">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidecubicmfz">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-insidedihedralmfz">insideDihedralMFZ</a>
+      
+    </div>
+  </div>
+</div>
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-1" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/so3.html#proc-getfztypeandorder">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-delete_fzlist">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-samplerfz">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-cubochoricneighbors">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-samplefcctwinrfz">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-samplerfztwin">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sample_isocube">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sample_isocubefilled">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sample_cone">sample_Cone</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-sampleisomisorientation">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../module/so3.html#proc-geteulersfromfile">getEulersfromFile</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+     
+    <section>
+    <h2>Functions</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-isinsidefz"></span><h3>
+public recursive function <a href='../proc/isinsidefz.html'>IsinsideFZ</a>(rod, FZtype, FZorder) result(insideFZ)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside the relevant FZ
+ @param rod Rodrigues coordinates  (double precision)
+ @param FZtype FZ type
+ @param FZorder FZ order
+ @date 01/01/15 MDG 1.0 new routine, needed for dictionary indexing approach
+ @date 06/04/15 MDG 1.1 corrected infty to inftyd (double precision infinity)
+ @date 04/02/17 MDG 1.2 expanded FZ types to include misorientation FZs and icosahedral</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZtype</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZorder</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-insidecyclicfz"></span><h3>
+public recursive function <a href='../proc/insidecyclicfz.html'>insideCyclicFZ</a>(rod, FZtype, FZorder) result(res)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside cyclic FZ (for 2, 3, 4, and 6-fold)?
+ @param rod Rodrigues coordinates  (double precision)
+ @param FZtype symmetry type
+ @param FZorder depending on main symmetry axis
+ @date 05/12/14 MDG 1.0 original
+ @date 10/02/14 MDG 2.0 rewrite
+ @date 06/04/15 MDG 2.1 corrected infty to inftyd (double precision infinity)</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZtype</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZorder</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-insidedihedralfz"></span><h3>
+public recursive function <a href='../proc/insidedihedralfz.html'>insideDihedralFZ</a>(rod, order) result(res)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside dihedral FZ (for 2, 3, 4, and 6-fold)?
+ @param rod Rodrigues coordinates (double precision)
+ @param order depending on main symmetry axis
+ </p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>order</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-insidecubicfz"></span><h3>
+public recursive function <a href='../proc/insidecubicfz.html'>insideCubicFZ</a>(rod, ot) result(res)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside cubic FZ (octahedral or tetrahedral)?
+ @param rod Rodrigues coordinates  (double precision)
+ @param ot 'oct' or 'tet', depending on symmetry
+ @date 05/12/14 MDG 1.0 original
+ @date 10/02/14 MDG 2.0 rewrite
+ @date 01/03/15 MDG 2.1 correction of boundary error; simplification of octahedral planes
+ @date 06/04/15 MDG 2.2 simplified handling of components of r</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=3),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ot</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-insidecubehexfz"></span><h3>
+public recursive function <a href='../proc/insidecubehexfz.html'>insideCubeHexFZ</a>(rod) result(res)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside combined cubic-hexagonal FZ?
+ </p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-isinsidemfz"></span><h3>
+public recursive function <a href='../proc/isinsidemfz.html'>IsinsideMFZ</a>(rod, MFZtype, MFZorder) result(insideMFZ)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside the relevant Mackenzie (disorientation) FZ
+ @param rod Rodrigues coordinates  (double precision)
+ @param MFZtype MFZ type
+ @param MFZorder MFZ order
+ @date 09/09/16 MDG 1.0 new routine</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>MFZtype</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>MFZorder</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-insidecubicmfz"></span><h3>
+public recursive function <a href='../proc/insidecubicmfz.html'>insideCubicMFZ</a>(rod, ot) result(res)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside cubic MacKenzie FZ (octahedral or tetrahedral)?
+ @param rod Rodrigues coordinates  (double precision)
+ @param ot 'oct' or 'tet', depending on symmetry
+ @date 09/09/16 MDG 1.0 original</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=3),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ot</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-insidedihedralmfz"></span><h3>
+public recursive function <a href='../proc/insidedihedralmfz.html'>insideDihedralMFZ</a>(rod, MFZorder) result(res)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside cubic MacKenzie FZ (octahedral or tetrahedral)?
+ @param rod Rodrigues coordinates  (double precision)
+ @param ot 'oct' or 'tet', depending on symmetry
+ @date 09/09/16 MDG 1.0 original
+ @date 09/15/16 MDG 1.0 completed all orders</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rod</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>MFZorder</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    </section>
+    <br>
+    
+
+    
+    <section>
+    <h2>Subroutines</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-getfztypeandorder"></span><h3>
+public recursive subroutine <a href='../proc/getfztypeandorder.html'>getFZtypeandorder</a>(pgnum1, FZtype, FZorder, pgnum2)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief does Rodrigues point lie inside the relevant FZ
+ @param pgnum1 point group number for phase 1
+ @param FZtype FZ type
+ @param FZorder FZ order
+ @param pgnum2 point group number for phase 2 (optional)
+ @date 04/02/17 MDG 1.0 new routine, needed for two-phase disorientations</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>pgnum1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZtype</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZorder</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>pgnum2</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-delete_fzlist"></span><h3>
+public recursive subroutine <a href='../proc/delete_fzlist.html'>delete_FZlist</a>(top)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief delete a linked list of rodrigues vectors
+ @param FZlist linked list
+ @date 02/20/16 MDG 1.0 original</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td>intent(inout),</td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>top</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-samplerfz"></span><h3>
+public recursive subroutine <a href='../proc/samplerfz.html'>SampleRFZ</a>(nsteps, pgnum, gridtype, FZcnt, FZlist)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief Generate a uniform sampling of a Rodriguess FZ
+ </p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nsteps</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>pgnum</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>gridtype</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZcnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>FZlist</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-cubochoricneighbors"></span><h3>
+public recursive subroutine <a href='../proc/cubochoricneighbors.html'>CubochoricNeighbors</a>(cubneighbor, nn, cub, stepsize)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Saransh Singh, Carnegie Mellon University
+ @brief find the nearest neighbors of a point in s03 space, given the point
+ and the step size used in the previous meshing. to be used in multi resolution
+ indexing programs, specifically the PED, ECP and EBSD indexing. we're not worrying
+ about keeping the neighbors in the FZ. that can just be done later.
+ @param cub cubochoric coordinates  (double precision)
+ @param stepsize stepsize of last mesh. the mesh will be stepsize/2
+ @date 04/07/15 SS 1.0 original</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>cubneighbor</strong>(3,(2*nn+1)**3)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nn</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>cub</strong>(3)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>stepsize</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-samplefcctwinrfz"></span><h3>
+public recursive subroutine <a href='../proc/samplefcctwinrfz.html'>SamplefcctwinRFZ</a>(nsteps, FZcnt, FZlist)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief uniformly sample the 32-based FZ for an fcc twin.
+ @param nsteps number of steps along semi-edge in cubochoric grid
+ @param FZcnt (output) number of points inside fundamental zone
+ @param FZlist (output) linked list of points inside fundamental zone
+ @date 09/17/16 MDG 1.0 fcc twin FZ for 60@[111] (also MacKenzie cell)</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nsteps</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZcnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>FZlist</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-samplerfztwin"></span><h3>
+public recursive subroutine <a href='../proc/samplerfztwin.html'>SampleRFZtwin</a>(nsteps, pgnum, qt, FZcnt, FZlist)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief use a quaternion to rotate the fundamental zone, then sample it 
+ this is useful for twins etc, hence the name of the routine...
+ @param nsteps number of steps along semi-edge in cubochoric grid
+ @param pgnum point group number to determine the appropriate Rodrigues fundamental zone
+ @param qt rotation quaternion
+ @param FZcnt (output) number of points inside fundamental zone
+ @param FZlist (output) linked list of points inside fundamental zone
+ @date 04/07/15 SS  1.0 original</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nsteps</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>pgnum</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=sgl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>qt</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZcnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>FZlist</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-sample_isocube"></span><h3>
+public recursive subroutine <a href='../proc/sample_isocube.html'>sample_isoCube</a>(misang, N, CMcnt, CMlist)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief sample a centered cube surface inside the Cubochoric cube for a given misorientation angle
+ @details linked list wil have a length of 6(N-1)^2+2 entries
+ @param misang the misorientation angle [degrees]
+ @param N number of points along cube semi-edge
+ @param CMcnt the number of components in the returned linked list
+ @param CMlist (output) linked list of Rodrigues vectors
+ @date 03/03/16 MDG 1.0 original
+ @date 04/19/16 MDG 1.1 changed value of N to be along the semi-edge instead of the edge</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>misang</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>N</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>CMcnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td></td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>CMlist</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-sample_isocubefilled"></span><h3>
+public recursive subroutine <a href='../proc/sample_isocubefilled.html'>sample_isoCubeFilled</a>(misang, N, CMcnt, CMlist)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief sample a centered cube inside the Cubochoric cube for a given misorientation angle
+ @details This routine is different from the sample_isoCube routine in that it 
+ generates ALL the points inside the centered cube instead of just the points on
+ the outer surface.  This can be useful to uniformly sample a small volume of orientation
+ space around some point out to a given misorientation angle.  Since the sampling has concentric
+ cubes, all the samples can be subdivided into discrete misorientation classes.
+ The linked list wil have a length of N^3
+ @param misang the misorientation angle [degrees]
+ @param N number of points along cube edge
+ @param CMcnt the number of components in the returned linked list
+ @param CMlist (output) linked list of Rodrigues vectors
+ @date 04/08/16 MDG 1.0 original
+ @date 04/19/16 MDG 1.1 changed value of N to be along the semi-edge instead of the edge</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>misang</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>N</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>CMcnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td></td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>CMlist</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-sample_cone"></span><h3>
+public recursive subroutine <a href='../proc/sample_cone.html'>sample_Cone</a>(unitvector, dpmax, N, FZtype, FZorder, cnt, list)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief sample a cone centered on a unit vector with apex in the origin and given opening angle
+ @param unitvector  unit vector describing the cone axis
+ @param dpmax = cosine of half the cone angle
+ @param N number of points along cube edge
+ @param CMcnt the number of components in the returned linked list
+ @param CMlist (output) linked list of Rodrigues vectors
+ @date 02/01/17 MDG 1.0 original</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>unitvector</strong>(3)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dpmax</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>N</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZtype</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZorder</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>cnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td></td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>list</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-sampleisomisorientation"></span><h3>
+public recursive subroutine <a href='../proc/sampleisomisorientation.html'>SampleIsoMisorientation</a>(rhozero, misang, CMcnt, CMlist)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief Constant Misorientation sampling routine; input list must be generated by sampleCubeSurface
+ @param rhozero central Rodrigues point around which constant misorientation sample is requested
+ @param misang the misorientation angle [degrees]
+ @param CMcnt the number of components in the returned linked list
+ @param CMlist (output) linked list of Rodrigues vectors, with transformed vectors in trod(4) entries
+ @date 03/03/16 SS/MDG 1.0 original (merged from two separate implementations)</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rhozero</strong>(4)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=dbl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>misang</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>CMcnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td></td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>CMlist</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-geteulersfromfile"></span><h3>
+public recursive subroutine <a href='../proc/geteulersfromfile.html'>getEulersfromFile</a>(eulerfile, FZcnt, FZlist)
+    
+    
+	 
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>@author Marc De Graef, Carnegie Mellon University
+ @brief read a list of Euler angles from a text file and insert them in a linked list
+ @param eulerfile name of the Euler angle file (with usual path handling)
+ @param FZcnt the number of components in the returned linked list
+ @param FZlist (output) linked list of Rodrigues vectors, with transformed vectors in trod(4) entries
+ @date 12/22/16 MDG 1.0 original</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=fnlen),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>eulerfile</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=irg),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>FZcnt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(FZpointd),</td>
+  <td></td>
+  <td></td>
+  
+  <td>pointer</td><td>::</td>
+  <td><strong>FZlist</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    </section>    
+    <br>
+    
+    
+    
+    </div>
+  </div>
+
+  <section class="visible-xs visible-sm hidden-md">
+    <hr>
+    
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allmods-1">All Modules</a></h3></div>
+  <div id="allmods-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/apb.html">apb</a>
+      
+      <a class="list-group-item" href="../module/bobyqa_module.html">bobyqa_module</a>
+      
+      <a class="list-group-item" href="../module/bobyqa_refinement.html">bobyqa_refinement</a>
+      
+      <a class="list-group-item" href="../module/clsupport.html">CLsupport</a>
+      
+      <a class="list-group-item" href="../module/constants.html">constants</a>
+      
+      <a class="list-group-item" href="../module/defectmodule.html">defectmodule</a>
+      
+      <a class="list-group-item" href="../module/dictmod.html">dictmod</a>
+      
+      <a class="list-group-item" href="../module/distortion.html">distortion</a>
+      
+      <a class="list-group-item" href="../module/eccimod.html">ECCImod</a>
+      
+      <a class="list-group-item" href="../module/emdymod.html">EMdymod</a>
+      
+      <a class="list-group-item" href="../module/filters.html">filters</a>
+      
+      <a class="list-group-item" href="../module/indexingmod.html">Indexingmod</a>
+      
+      <a class="list-group-item" href="../module/initializers.html">initializers</a>
+      
+      <a class="list-group-item" href="../module/jsonsupport.html">JSONsupport</a>
+      
+      <a class="list-group-item" href="../module/muellercalculus.html">MuellerCalculus</a>
+      
+      <a class="list-group-item" href="../module/multibeams.html">multibeams</a>
+      
+      <a class="list-group-item" href="../module/namelisthandlers.html">NameListHandlers</a>
+      
+      <a class="list-group-item" href="../module/namelisttypedefs.html">NameListTypedefs</a>
+      
+      <a class="list-group-item" href="../module/noise.html">noise</a>
+      
+      <a class="list-group-item" href="../module/others.html">others</a>
+      
+      <a class="list-group-item" href="../module/pedmod.html">PEDmod</a>
+      
+      <a class="list-group-item" href="../module/pfinversion.html">PFInversion</a>
+      
+      <a class="list-group-item" href="../module/pgm.html">pgm</a>
+      
+      <a class="list-group-item" href="../module/povray.html">povray</a>
+      
+      <a class="list-group-item" href="../module/rng.html">rng</a>
+      
+      <a class="list-group-item" href="../module/simann.html">SimAnn</a>
+      
+      <a class="list-group-item" href="../module/so3.html">so3</a>
+      
+      <a class="list-group-item" href="../module/stemmodule.html">STEMmodule</a>
+      
+      <a class="list-group-item" href="../module/timing.html">timing</a>
+      
+      <a class="list-group-item" href="../module/yshmodule.html">YSHModule</a>
+      
+    </div>
+  </div>
+</div>
+
+
+  </section>
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2017 <a rel="license" href="http://www.freebsd.org/copyright/freebsd-doc-license.html">FreeBSD Documentation License</a></p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran Program was developed by Marc De Graef Research Group/Carnegie Mellon University</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js'],
+        'HTML-CSS': { 
+           styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: '#000000 ! important'} }
+        }
+      });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  </body>
+</html>

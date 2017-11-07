@@ -1,0 +1,3011 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	 <meta name="description" content="EMsoft main library">
+    
+    <meta name="author" content="Marc De Graef Research Group/Carnegie Mellon University" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>EBSD4calfun &ndash; Fortran Program</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Fortran Program </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+				
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+		 aria-expanded="false">Contents <span class="caret"></span></a>
+	      <ul class="dropdown-menu">
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+				
+				
+            <li><a href="../lists/modules.html">Modules</a></li>
+				
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+				
+				
+            <li><a href="../lists/absint.html">Abstract Interfaces</a></li>
+								
+            <li><a href="../lists/types.html">Derived Types</a></li>
+				
+				
+            <li><a href="../lists/programs.html">Programs</a></li>
+				
+            </ul>
+            </li>
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>EBSD4calfun
+      <small>Subroutine</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+	  data-placement="bottom" data-html="true"
+	  title=" 0.7% of total for procedures.">206 statements</a>
+     </li> 
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/EMdymod.f90"> Source File</a></li>
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+     <li><a href='../sourcefile/emdymod.f90.html'>EMdymod.f90</a></li>
+  
+     <li><a href='../module/emdymod.html'>EMdymod</a></li>
+  
+     <li class="active">EBSD4calfun</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/ebsd4calfun.html#src">EBSD4calfun</a>
+  </div>
+</div>
+
+
+  <hr>
+  
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprocs-0">All Procedures</a></h3></div>
+  <div id="allprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../proc/adhisteq.html">adhisteq</a>
+      
+      <a class="list-group-item" href="../proc/aggiorno_ottimo.html">AGGIORNO_OTTIMO</a>
+      
+      <a class="list-group-item" href="../proc/alogam.html">alogam</a>
+      
+      <a class="list-group-item" href="../proc/altmov.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/altmov%7E2.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/backprojection.html">BackProjection</a>
+      
+      <a class="list-group-item" href="../proc/bakvec.html">bakvec</a>
+      
+      <a class="list-group-item" href="../proc/balanc.html">balanc</a>
+      
+      <a class="list-group-item" href="../proc/balbak.html">balbak</a>
+      
+      <a class="list-group-item" href="../proc/bandr.html">bandr</a>
+      
+      <a class="list-group-item" href="../proc/bandv.html">bandv</a>
+      
+      <a class="list-group-item" href="../proc/barreldistortion.html">BarrelDistortion</a>
+      
+      <a class="list-group-item" href="../proc/bisect.html">bisect</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa%7E2.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb%7E2.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bqr.html">bqr</a>
+      
+      <a class="list-group-item" href="../proc/butterflymask9x9.html">ButterflyMask9x9</a>
+      
+      <a class="list-group-item" href="../proc/calchoughlut.html">CalcHoughLUT</a>
+      
+      <a class="list-group-item" href="../proc/calckinpedpatternsingle.html">CalcKINPEDPatternSingle</a>
+      
+      <a class="list-group-item" href="../proc/calckvectorcone.html">Calckvectorcone</a>
+      
+      <a class="list-group-item" href="../proc/calckvectortrace.html">Calckvectortrace</a>
+      
+      <a class="list-group-item" href="../proc/calcr.html">CalcR</a>
+      
+      <a class="list-group-item" href="../proc/calcrlocal.html">CalcRLocal</a>
+      
+      <a class="list-group-item" href="../proc/cardintersection.html">CardIntersection</a>
+      
+      <a class="list-group-item" href="../proc/cbabk2.html">cbabk2</a>
+      
+      <a class="list-group-item" href="../proc/cbal.html">cbal</a>
+      
+      <a class="list-group-item" href="../proc/cdiv.html">cdiv</a>
+      
+      <a class="list-group-item" href="../proc/cg.html">cg</a>
+      
+      <a class="list-group-item" href="../proc/ch.html">ch</a>
+      
+      <a class="list-group-item" href="../proc/cinvit.html">cinvit</a>
+      
+      <a class="list-group-item" href="../proc/clerror_check.html">CLerror_check</a>
+      
+      <a class="list-group-item" href="../proc/clinit_pdccq.html">CLinit_PDCCQ</a>
+      
+      <a class="list-group-item" href="../proc/clquery_platform_info.html">CLquery_platform_info</a>
+      
+      <a class="list-group-item" href="../proc/clread_source_file.html">CLread_source_file</a>
+      
+      <a class="list-group-item" href="../proc/combak.html">combak</a>
+      
+      <a class="list-group-item" href="../proc/comhes.html">comhes</a>
+      
+      <a class="list-group-item" href="../proc/comlr.html">comlr</a>
+      
+      <a class="list-group-item" href="../proc/comlr2.html">comlr2</a>
+      
+      <a class="list-group-item" href="../proc/comqr.html">comqr</a>
+      
+      <a class="list-group-item" href="../proc/comqr2.html">comqr2</a>
+      
+      <a class="list-group-item" href="../proc/cortb.html">cortb</a>
+      
+      <a class="list-group-item" href="../proc/corth.html">corth</a>
+      
+      <a class="list-group-item" href="../proc/csroot.html">csroot</a>
+      
+      <a class="list-group-item" href="../proc/ctfped_writefile.html">ctfped_writeFile</a>
+      
+      <a class="list-group-item" href="../proc/cubochoricneighbors.html">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../proc/cumul_histogram.html">cumul_histogram</a>
+      
+      <a class="list-group-item" href="../proc/dd_density.html">DD_Density</a>
+      
+      <a class="list-group-item" href="../proc/dd_estep.html">DD_Estep</a>
+      
+      <a class="list-group-item" href="../proc/dd_getqandl.html">DD_getQandL</a>
+      
+      <a class="list-group-item" href="../proc/dd_mstep.html">DD_Mstep</a>
+      
+      <a class="list-group-item" href="../proc/delete_fzlist.html">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../proc/denoise_pattern.html">Denoise_Pattern</a>
+      
+      <a class="list-group-item" href="../proc/denoise_ped.html">Denoise_PED</a>
+      
+      <a class="list-group-item" href="../proc/di_emfordd.html">DI_EMforDD</a>
+      
+      <a class="list-group-item" href="../proc/di_init.html">DI_Init</a>
+      
+      <a class="list-group-item" href="../proc/di_rotatetomu.html">DI_RotateToMu</a>
+      
+      <a class="list-group-item" href="../proc/di_sampledd.html">DI_SampleDD</a>
+      
+      <a class="list-group-item" href="../proc/di_similarity_classifier.html">DI_Similarity_Classifier</a>
+      
+      <a class="list-group-item" href="../proc/ebsd4calfun.html">EBSD4calfun</a>
+      
+      <a class="list-group-item" href="../proc/ebsdcalfun.html">EBSDcalfun</a>
+      
+      <a class="list-group-item" href="../proc/eccicalcsgh.html">ECCICalcSgh</a>
+      
+      <a class="list-group-item" href="../proc/ecpcalfun.html">ECPcalfun</a>
+      
+      <a class="list-group-item" href="../proc/efitebsdwrapper.html">efitEBSDWrapper</a>
+      
+      <a class="list-group-item" href="../proc/efitecpwrapper.html">efitECPWrapper</a>
+      
+      <a class="list-group-item" href="../proc/ei.html">EI</a>
+      
+      <a class="list-group-item" href="../proc/elmbak.html">elmbak</a>
+      
+      <a class="list-group-item" href="../proc/elmhes.html">elmhes</a>
+      
+      <a class="list-group-item" href="../proc/eltran.html">eltran</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdmaster.html">EMsoftCgetEBSDmaster</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdpatterns.html">EMsoftCgetEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetecpatterns.html">EMsoftCgetECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetmcopencl.html">EMsoftCgetMCOpenCL</a>
+      
+      <a class="list-group-item" href="../proc/eshelby_disp.html">Eshelby_disp</a>
+      
+      <a class="list-group-item" href="../proc/fcore.html">FCORE</a>
+      
+      <a class="list-group-item" href="../proc/figi.html">figi</a>
+      
+      <a class="list-group-item" href="../proc/figi2.html">figi2</a>
+      
+      <a class="list-group-item" href="../proc/forwardprojection.html">ForwardProjection</a>
+      
+      <a class="list-group-item" href="../proc/fphon.html">FPHON</a>
+      
+      <a class="list-group-item" href="../proc/fscatt.html">FSCATT</a>
+      
+      <a class="list-group-item" href="../proc/genera_punto_sa.html">GENERA_PUNTO_SA</a>
+      
+      <a class="list-group-item" href="../proc/getaverageorientationnamelist.html">GetAverageOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getconvertorientationsnamelist.html">GetConvertOrientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdddensitylbm.html">getDDDensityLBM</a>
+      
+      <a class="list-group-item" href="../proc/getdictindxopenclnamelist.html">GetDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../interface/getdisorientationangle.html">getDisorientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxis.html">getDisorientationAngleAxis</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxistwophases.html">getDisorientationAngleAxisTwoPhases</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangledouble.html">getDisorientationAngleDouble</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationanglesingle.html">getDisorientationAngleSingle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationsnamelist.html">GetDisorientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdvsdnamelist.html">GetDvsDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdclusternamelist.html">GetEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsddetparmscannamelist.html">GetEBSDdetparmscanNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdfullnamelist.html">GetEBSDFullNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdindexingnamelist.html">GetEBSDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasternamelist.html">GetEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasteropenclnamelist.html">GetEBSDMasterOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdnamelist.html">GetEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdoverlapnamelist.html">GetEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns.html">getEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns2.html">getEBSDPatterns2</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatternswrapper.html">getEBSDPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/geteccinamelist.html">GetECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpatterns.html">getECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getecpatternswrapper.html">getECPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getecpindexingnamelist.html">GetECPIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpmasternamelist.html">GetECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpnamelist.html">GetECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecppatternnamelist.html">GetECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpsinglenamelist.html">GetECPSingleNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpzanamelist.html">GetECPZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfit4namelist.html">GetEMDPFit4NameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfitnamelist.html">GetEMDPFitNameList</a>
+      
+      <a class="list-group-item" href="../proc/geteulersfromfile.html">getEulersfromFile</a>
+      
+      <a class="list-group-item" href="../proc/getfitorientationpsnamelist.html">GetFitOrientationPSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getfztypeandorder.html">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../proc/getkamnamelist.html">GetKAMNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkinematicalnamelist.html">GetkinematicalNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselmasternamelist.html">GetKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselnamelist.html">GetKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatterns.html">getKosselPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatternswrapper.html">getKosselPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getlacbednamelist.html">GetLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclfoilnamelist.html">GetMCCLfoilNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclmultilayernamelist.html">GetMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclnamelist.html">GetMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclspherenamelist.html">GetMCCLsphereNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmclipssnamelist.html">GetMCLIPSSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcnamelist.html">GetMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmultiphasenamelist.html">GetMultiPhaseNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationsimilaritynamelist.html">GetOrientationSimilarityNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationviznamelist.html">GetOrientationVizNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedindxnamelist.html">GetPEDIndxNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedkinnamelist.html">GetPEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedzanamelist.html">GetPEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getpfinversionnamelist.html">GetPFInversionNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrefineorientationnamelist.html">GetRefineOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getreflectornamelist.html">GetreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrfznamelist.html">GetRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/getsrdefectnamelist.html">GetSRdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/getstemdcinamelist.html">GetSTEMDCINameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdindexingnamelist.html">GetTKDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdmasternamelist.html">GetTKDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdnamelist.html">GetTKDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getwk.html">GETWK</a>
+      
+      <a class="list-group-item" href="../proc/getzadefectnamelist.html">GetZAdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/hipassfilter.html">HiPassFilter</a>
+      
+      <a class="list-group-item" href="../proc/houghtransform.html">HoughTransform</a>
+      
+      <a class="list-group-item" href="../proc/hqr.html">hqr</a>
+      
+      <a class="list-group-item" href="../proc/hqr2.html">hqr2</a>
+      
+      <a class="list-group-item" href="../proc/htrib3.html">htrib3</a>
+      
+      <a class="list-group-item" href="../proc/htribk.html">htribk</a>
+      
+      <a class="list-group-item" href="../proc/htrid3.html">htrid3</a>
+      
+      <a class="list-group-item" href="../proc/htridi.html">htridi</a>
+      
+      <a class="list-group-item" href="../proc/image_entropy.html">image_entropy</a>
+      
+      <a class="list-group-item" href="../proc/image_histogram.html">image_histogram</a>
+      
+      <a class="list-group-item" href="../proc/image_jointentropy.html">image_jointentropy</a>
+      
+      <a class="list-group-item" href="../proc/image_jointhistogram.html">image_jointhistogram</a>
+      
+      <a class="list-group-item" href="../proc/image_mutualinformation.html">image_mutualinformation</a>
+      
+      <a class="list-group-item" href="../proc/imtql1.html">imtql1</a>
+      
+      <a class="list-group-item" href="../proc/imtql2.html">imtql2</a>
+      
+      <a class="list-group-item" href="../proc/imtqlv.html">imtqlv</a>
+      
+      <a class="list-group-item" href="../proc/init_dislocation_data.html">init_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/init_einclusion_data.html">init_Einclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_foil_data.html">init_foil_data</a>
+      
+      <a class="list-group-item" href="../proc/init_inclusion_data.html">init_inclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stacking_fault_data.html">init_stacking_fault_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stem.html">init_STEM</a>
+      
+      <a class="list-group-item" href="../proc/init_stem_za.html">init_STEM_ZA</a>
+      
+      <a class="list-group-item" href="../proc/init_void_data.html">init_void_data</a>
+      
+      <a class="list-group-item" href="../proc/init_ysh_dislocation_data.html">init_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/initialize_foil_geometry.html">initialize_foil_geometry</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../interface/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist_ewaldsweep.html">Initialize_ReflectionList_EwaldSweep</a>
+      
+      <a class="list-group-item" href="../proc/initializedefects.html">InitializeDefects</a>
+      
+      <a class="list-group-item" href="../proc/initializeeshelbyinclusion.html">InitializeEshelbyInclusion</a>
+      
+      <a class="list-group-item" href="../proc/innerprodgpu.html">InnerProdGPU</a>
+      
+      <a class="list-group-item" href="../proc/insidecubehexfz.html">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicfz.html">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicmfz.html">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecyclicfz.html">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralfz.html">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralmfz.html">insideDihedralMFZ</a>
+      
+      <a class="list-group-item" href="../proc/interfaccia.html">INTERFACCIA</a>
+      
+      <a class="list-group-item" href="../proc/inversiondivision.html">InversionDivision</a>
+      
+      <a class="list-group-item" href="../proc/invit.html">invit</a>
+      
+      <a class="list-group-item" href="../proc/isinsidefz.html">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../proc/isinsidemfz.html">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../proc/jaccard_distance.html">Jaccard_Distance</a>
+      
+      <a class="list-group-item" href="../proc/json_cleanuppointers.html">JSON_cleanuppointers</a>
+      
+      <a class="list-group-item" href="../proc/json_failtest.html">JSON_failtest</a>
+      
+      <a class="list-group-item" href="../proc/json_initpointers.html">JSON_initpointers</a>
+      
+      <a class="list-group-item" href="../proc/json_minify.html">JSON_minify</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmldoubles.html">JSON_writeNMLdoubles</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlintegers.html">JSON_writeNMLintegers</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlreals.html">JSON_writeNMLreals</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdouble.html">JSONgetDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdoublevector.html">JSONgetDoubleVector</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddefectfile.html">JSONreadDefectFile</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddouble.html">JSONreadDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddoublevec.html">JSONreadDoubleVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdclusternamelist.html">JSONreadEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdmasternamelist.html">JSONreadEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdnamelist.html">JSONreadEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdoverlapnamelist.html">JSONreadEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadecpmasternamelist.html">JSONreadECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadfoildata.html">JSONreadFoilData</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadinteger.html">JSONreadInteger</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadintegervec.html">JSONreadIntegerVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselmasternamelist.html">JSONreadKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselnamelist.html">JSONreadKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadlogical.html">JSONreadLogical</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclmultilayernamelist.html">JSONreadMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclnamelist.html">JSONreadMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcnamelist.html">JSONreadMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreal.html">JSONreadReal</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadrealvec.html">JSONreadRealVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreflectornamelist.html">JSONreadreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadstring.html">JSONreadString</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritedictindxopenclnamelist.html">JSONwriteDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdclusternamelist.html">JSONwriteEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdmasternamelist.html">JSONwriteEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdnamelist.html">JSONwriteEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteeccinamelist.html">JSONwriteECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpmasternamelist.html">JSONwriteECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpnamelist.html">JSONwriteECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecppatternnamelist.html">JSONwriteECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselmasternamelist.html">JSONwriteKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselnamelist.html">JSONwriteKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritelacbednamelist.html">JSONwriteLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclmultilayernamelist.html">JSONwriteMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclnamelist.html">JSONwriteMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcnamelist.html">JSONwriteMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedkinnamelist.html">JSONwritePEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedzanamelist.html">JSONwritePEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriterfznamelist.html">JSONwriteRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/linesearch_inverti.html">LINESEARCH_INVERTI</a>
+      
+      <a class="list-group-item" href="../proc/linesearchbox_cont.html">linesearchbox_cont</a>
+      
+      <a class="list-group-item" href="../proc/logcp.html">logCp</a>
+      
+      <a class="list-group-item" href="../proc/mainbox1.html">MAINBOX1</a>
+      
+      <a class="list-group-item" href="../proc/mainbox2.html">MAINBOX2</a>
+      
+      <a class="list-group-item" href="../proc/makedislocation.html">makedislocation</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfault.html">makestackingfault</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfaultecci.html">makestackingfaultECCI</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation%7E2.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/mc_concatenatemuellermatrices.html">MC_concatenateMuellerMatrices</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ad_from_eo.html">MC_get_AD_from_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_auxiliaryangle.html">MC_get_AuxiliaryAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_basicmuellermatrix.html">MC_get_basicMuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_diattenuator.html">MC_get_diattenuator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ellipticityangle.html">MC_get_EllipticityAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_eo_from_ad.html">MC_get_EO_from_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_orientationangle.html">MC_get_OrientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_phaseshiftangle.html">MC_get_PhaseShiftAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_polarization.html">MC_get_Polarization</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_retarder.html">MC_get_retarder</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_rotator.html">MC_get_rotator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_ad.html">MC_get_Stokes_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_eo.html">MC_get_Stokes_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_print_muellermatrix.html">MC_print_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_propagatestokesvector.html">MC_propagateStokesVector</a>
+      
+      <a class="list-group-item" href="../proc/mc_rotate_muellermatrix.html">MC_rotate_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/minfit.html">minfit</a>
+      
+      <a class="list-group-item" href="../proc/nanchk.html">NANCHK</a>
+      
+      <a class="list-group-item" href="../proc/ortbak.html">ortbak</a>
+      
+      <a class="list-group-item" href="../proc/orthes.html">orthes</a>
+      
+      <a class="list-group-item" href="../proc/ortran.html">ortran</a>
+      
+      <a class="list-group-item" href="../proc/pgm_write_file.html">PGM_Write_File</a>
+      
+      <a class="list-group-item" href="../proc/poidev.html">POIDEV</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcubochoriccube.html">PoVRay_addCubochoricCube</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcylinder.html">PoVRay_addCylinder</a>
+      
+      <a class="list-group-item" href="../proc/povray_addeulerbox.html">PoVRay_addEulerBox</a>
+      
+      <a class="list-group-item" href="../proc/povray_addreferenceframe.html">PoVRay_addReferenceFrame</a>
+      
+      <a class="list-group-item" href="../proc/povray_addsphere.html">PoVRay_addSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_addwireframesphere.html">PoVRay_addWireFrameSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_declare_df3file.html">PoVRay_declare_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/povray_drawfz.html">PoVRay_drawFZ</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz222.html">PoVRay_getpos_FZ222</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz23.html">PoVRay_getpos_FZ23</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz32.html">PoVRay_getpos_FZ32</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz422.html">PoVRay_getpos_FZ422</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz432.html">PoVRay_getpos_FZ432</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz622.html">PoVRay_getpos_FZ622</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz2.html">PoVRay_initFZ2</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz3.html">PoVRay_initFZ3</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz4.html">PoVRay_initFZ4</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz6.html">PoVRay_initFZ6</a>
+      
+      <a class="list-group-item" href="../proc/povray_openfile.html">PoVRay_openFile</a>
+      
+      <a class="list-group-item" href="../proc/povray_setcamera.html">PoVRay_setCamera</a>
+      
+      <a class="list-group-item" href="../proc/povray_setlightsource.html">PoVRay_setLightSource</a>
+      
+      <a class="list-group-item" href="../proc/povray_write_df3file.html">PoVRay_write_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/prelim.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/prelim%7E2.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/printtime.html">PrintTime</a>
+      
+      <a class="list-group-item" href="../proc/pythag.html">pythag</a>
+      
+      <a class="list-group-item" href="../proc/qsortd.html">qsortd</a>
+      
+      <a class="list-group-item" href="../proc/qzhes.html">qzhes</a>
+      
+      <a class="list-group-item" href="../proc/qzit.html">qzit</a>
+      
+      <a class="list-group-item" href="../proc/qzval.html">qzval</a>
+      
+      <a class="list-group-item" href="../proc/qzvec.html">qzvec</a>
+      
+      <a class="list-group-item" href="../proc/r8_swap.html">r8_swap</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print.html">r8mat_print</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print_some.html">r8mat_print_some</a>
+      
+      <a class="list-group-item" href="../proc/r8vec2_print.html">r8vec2_print</a>
+      
+      <a class="list-group-item" href="../proc/r8vec_print.html">r8vec_print</a>
+      
+      <a class="list-group-item" href="../proc/ran.html">ran</a>
+      
+      <a class="list-group-item" href="../proc/randddmarginal.html">randDDMarginal</a>
+      
+      <a class="list-group-item" href="../proc/randuniformsphere.html">randUniformSphere</a>
+      
+      <a class="list-group-item" href="../proc/ratqr.html">ratqr</a>
+      
+      <a class="list-group-item" href="../proc/read_apb_data.html">read_apb_data</a>
+      
+      <a class="list-group-item" href="../proc/read_stem_data.html">read_STEM_data</a>
+      
+      <a class="list-group-item" href="../proc/read_ysh_dislocation_data.html">read_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/rebak.html">rebak</a>
+      
+      <a class="list-group-item" href="../proc/rebakb.html">rebakb</a>
+      
+      <a class="list-group-item" href="../proc/reduc.html">reduc</a>
+      
+      <a class="list-group-item" href="../proc/reduc2.html">reduc2</a>
+      
+      <a class="list-group-item" href="../proc/reducedisorientationtomfz.html">ReduceDisorientationtoMFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtocubicefz.html">ReduceOrientationtoCubicEFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtorfz.html">ReduceOrientationtoRFZ</a>
+      
+      <a class="list-group-item" href="../proc/rescue.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rescue%7E2.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rg.html">rg</a>
+      
+      <a class="list-group-item" href="../proc/rgg.html">rgg</a>
+      
+      <a class="list-group-item" href="../proc/ri1.html">RI1</a>
+      
+      <a class="list-group-item" href="../proc/ri2.html">RI2</a>
+      
+      <a class="list-group-item" href="../proc/ricerca_lungo_assi.html">RICERCA_LUNGO_ASSI</a>
+      
+      <a class="list-group-item" href="../proc/rih1.html">RIH1</a>
+      
+      <a class="list-group-item" href="../proc/rih2.html">RIH2</a>
+      
+      <a class="list-group-item" href="../proc/rih3.html">RIH3</a>
+      
+      <a class="list-group-item" href="../proc/rng_seed.html">rng_seed</a>
+      
+      <a class="list-group-item" href="../proc/rng_uniform.html">rng_uniform</a>
+      
+      <a class="list-group-item" href="../proc/rs.html">rs</a>
+      
+      <a class="list-group-item" href="../proc/rsb.html">rsb</a>
+      
+      <a class="list-group-item" href="../proc/rsg.html">rsg</a>
+      
+      <a class="list-group-item" href="../proc/rsgab.html">rsgab</a>
+      
+      <a class="list-group-item" href="../proc/rsgba.html">rsgba</a>
+      
+      <a class="list-group-item" href="../proc/rsm.html">rsm</a>
+      
+      <a class="list-group-item" href="../proc/rsp.html">rsp</a>
+      
+      <a class="list-group-item" href="../proc/rspp.html">rspp</a>
+      
+      <a class="list-group-item" href="../proc/rst.html">rst</a>
+      
+      <a class="list-group-item" href="../proc/rt.html">rt</a>
+      
+      <a class="list-group-item" href="../proc/sample_cone.html">sample_Cone</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocube.html">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocubefilled.html">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../proc/samplefcctwinrfz.html">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../proc/sampleisomisorientation.html">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../proc/samplerfz.html">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../proc/samplerfztwin.html">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../proc/senzaderglob.html">SENZADERGLOB</a>
+      
+      <a class="list-group-item" href="../proc/ssort.html">SSORT</a>
+      
+      <a class="list-group-item" href="../proc/stop.html">STOP</a>
+      
+      <a class="list-group-item" href="../proc/svd.html">svd</a>
+      
+      <a class="list-group-item" href="../proc/time_estimate.html">Time_estimate</a>
+      
+      <a class="list-group-item" href="../proc/time_remaining.html">Time_remaining</a>
+      
+      <a class="list-group-item" href="../proc/time_report.html">Time_report</a>
+      
+      <a class="list-group-item" href="../proc/time_reset.html">Time_reset</a>
+      
+      <a class="list-group-item" href="../proc/time_start.html">Time_start</a>
+      
+      <a class="list-group-item" href="../proc/time_stop.html">Time_stop</a>
+      
+      <a class="list-group-item" href="../proc/time_tick.html">Time_tick</a>
+      
+      <a class="list-group-item" href="../proc/time_tock.html">Time_tock</a>
+      
+      <a class="list-group-item" href="../proc/timestamp.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/timestamp%7E2.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/tinvit.html">tinvit</a>
+      
+      <a class="list-group-item" href="../proc/tql1.html">tql1</a>
+      
+      <a class="list-group-item" href="../proc/tql2.html">tql2</a>
+      
+      <a class="list-group-item" href="../proc/tqlrat.html">tqlrat</a>
+      
+      <a class="list-group-item" href="../proc/trbak1.html">trbak1</a>
+      
+      <a class="list-group-item" href="../proc/trbak3.html">trbak3</a>
+      
+      <a class="list-group-item" href="../proc/tred1.html">tred1</a>
+      
+      <a class="list-group-item" href="../proc/tred2.html">tred2</a>
+      
+      <a class="list-group-item" href="../proc/tred3.html">tred3</a>
+      
+      <a class="list-group-item" href="../proc/tridib.html">tridib</a>
+      
+      <a class="list-group-item" href="../proc/trsbox.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/trsbox%7E2.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/tsturm.html">tsturm</a>
+      
+      <a class="list-group-item" href="../proc/update.html">update</a>
+      
+      <a class="list-group-item" href="../proc/update%7E2.html">update</a>
+      
+      <a class="list-group-item" href="../proc/vmfmeandirdensity.html">VMFMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/watsonmeandirdensity.html">WatsonMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/weko.html">WEKO</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp%7E2.html">YSHDisp</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp.html">YSHDisp</a>
+      
+    </div>
+  </div>
+</div>
+
+
+</div>  
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>
+public recursive subroutine EBSD4calfun(nipar, nfpar, ninit, ipar, fpar, initmeanval, expt, accum_e, mLPNH, mLPSH, n, x, f, expt2, expt3, expt4, nstep, stepsize, verbose)
+    
+    
+	 
+</h2>
+    
+  
+    <ul class="list-inline">
+      <li><h4>Uses:</h4></li>
+      
+      <li>local</li>
+      
+      <li>rotations</li>
+      
+      <li><a href='../module/constants.html'>constants</a></li>
+      
+      <li><a href='../module/distortion.html'>distortion</a></li>
+      
+      <li><a href='../module/filters.html'>filters</a></li>
+      
+      <li><a href='../module/indexingmod.html'>Indexingmod</a></li>
+      
+      <li><a href="https://software.intel.com/en-us/node/511038">iso_c_binding</a></li>
+      
+    </ul>
+    
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: proc~~ebsd4calfun~~UsesGraph Pages: 1 -->
+<svg id="procebsd4calfunUsesGraph" width="422pt" height="235pt"
+ viewBox="0.00 0.00 422.00 235.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~ebsd4calfun~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 231)">
+<title>proc~~ebsd4calfun~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-231 418,-231 418,4 -4,4"/>
+<!-- proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node1" class="node"><title>proc~ebsd4calfun</title>
+<polygon fill="none" stroke="black" points="414,-127 339,-127 339,-103 414,-103 414,-127"/>
+<text text-anchor="middle" x="376.5" y="-112.6" font-family="Helvetica,sans-Serif" font-size="10.50">EBSD4calfun</text>
+</g>
+<!-- iso_c_binding -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node2" class="node"><title>iso_c_binding</title>
+<g id="a_proc~~ebsd4calfun~~UsesGraph_node2"><a xlink:href="https://software.intel.com/en-us/node/511038" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="303,-227 226,-227 226,-203 303,-203 303,-227"/>
+<text text-anchor="middle" x="264.5" y="-212.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- iso_c_binding&#45;&gt;proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge7" class="edge"><title>iso_c_binding&#45;&gt;proc~ebsd4calfun</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M284.324,-202.974C290.461,-198.787 297.188,-193.905 303,-189 323.132,-172.01 343.96,-150.238 358.098,-134.717"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="360.75,-137.002 364.841,-127.229 355.548,-132.318 360.75,-137.002"/>
+</g>
+<!-- module~constants -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node3" class="node"><title>module~constants</title>
+<g id="a_proc~~ebsd4calfun~~UsesGraph_node3"><a xlink:href="../module/constants.html" xlink:title="constants">
+<polygon fill="#337ab7" stroke="#337ab7" points="293,-147 236,-147 236,-123 293,-123 293,-147"/>
+<text text-anchor="middle" x="264.5" y="-132.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">constants</text>
+</a>
+</g>
+</g>
+<!-- module~constants&#45;&gt;proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge8" class="edge"><title>module~constants&#45;&gt;proc~ebsd4calfun</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M293.258,-129.953C303.998,-128 316.592,-125.71 328.652,-123.518"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="329.391,-126.941 338.604,-121.708 328.139,-120.054 329.391,-126.941"/>
+</g>
+<!-- module~filters -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node4" class="node"><title>module~filters</title>
+<g id="a_proc~~ebsd4calfun~~UsesGraph_node4"><a xlink:href="../module/filters.html" xlink:title="filters">
+<polygon fill="#337ab7" stroke="#337ab7" points="167,-147 113,-147 113,-123 167,-123 167,-147"/>
+<text text-anchor="middle" x="140" y="-132.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">filters</text>
+</a>
+</g>
+</g>
+<!-- module~filters&#45;&gt;proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge9" class="edge"><title>module~filters&#45;&gt;proc~ebsd4calfun</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M167.012,-124.304C196.985,-112.374 244.541,-94.7605 263.5,-95"/>
+</g>
+<!-- module~distortion -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node5" class="node"><title>module~distortion</title>
+<g id="a_proc~~ebsd4calfun~~UsesGraph_node5"><a xlink:href="../module/distortion.html" xlink:title="distortion">
+<polygon fill="#337ab7" stroke="#337ab7" points="167.5,-105 112.5,-105 112.5,-81 167.5,-81 167.5,-105"/>
+<text text-anchor="middle" x="140" y="-90.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">distortion</text>
+</a>
+</g>
+</g>
+<!-- module~distortion&#45;&gt;proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge10" class="edge"><title>module~distortion&#45;&gt;proc~ebsd4calfun</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M167.764,-93.4938C192.58,-93.9382 230.534,-94.5835 263.5,-95"/>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M265.5,-95C286.573,-95.2662 309.557,-98.9042 329.041,-103.006"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="328.363,-106.44 338.883,-105.178 329.872,-99.6049 328.363,-106.44"/>
+</g>
+<!-- rotations -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node6" class="node"><title>rotations</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="291.5,-24 237.5,-24 237.5,-0 291.5,-0 291.5,-24"/>
+<text text-anchor="middle" x="264.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">rotations</text>
+</g>
+<!-- rotations&#45;&gt;proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge11" class="edge"><title>rotations&#45;&gt;proc~ebsd4calfun</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M290.078,-24.1888C294.553,-26.8401 299.05,-29.8148 303,-33 325.627,-51.2471 347.099,-76.9655 360.718,-94.7115"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="357.932,-96.8309 366.743,-102.715 363.525,-92.6208 357.932,-96.8309"/>
+</g>
+<!-- module~indexingmod -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node7" class="node"><title>module~indexingmod</title>
+<g id="a_proc~~ebsd4calfun~~UsesGraph_node7"><a xlink:href="../module/indexingmod.html" xlink:title="Indexingmod">
+<polygon fill="#337ab7" stroke="#337ab7" points="301,-66 228,-66 228,-42 301,-42 301,-66"/>
+<text text-anchor="middle" x="264.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Indexingmod</text>
+</a>
+</g>
+</g>
+<!-- module~indexingmod&#45;&gt;proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge12" class="edge"><title>module~indexingmod&#45;&gt;proc~ebsd4calfun</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M287.232,-66.0516C303.73,-75.2001 326.623,-87.8957 344.961,-98.0648"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="343.37,-101.185 353.813,-102.973 346.765,-95.0628 343.37,-101.185"/>
+</g>
+<!-- local -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node8" class="node"><title>local</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-105 0,-105 0,-81 54,-81 54,-105"/>
+<text text-anchor="middle" x="27" y="-90.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">local</text>
+</g>
+<!-- local&#45;&gt;proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge13" class="edge"><title>local&#45;&gt;proc~ebsd4calfun</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M141,-175C211.514,-191.825 234.09,-178.509 303,-156 319.529,-150.601 336.526,-141.228 349.905,-132.805"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="352.066,-135.574 358.539,-127.186 348.248,-129.707 352.066,-135.574"/>
+</g>
+<!-- local&#45;&gt;module~constants -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge1" class="edge"><title>local&#45;&gt;module~constants</title>
+<path fill="none" stroke="#ffda00" stroke-dasharray="5,2" d="M141,-175C174.769,-183.058 212.609,-166.65 237.177,-152.476"/>
+<polygon fill="#ffda00" stroke="#ffda00" points="239.153,-155.371 245.907,-147.209 235.537,-149.378 239.153,-155.371"/>
+<path fill="none" stroke="#ffda00" stroke-dasharray="5,2" d="M37.3056,-105.194C48.4892,-119.13 68.4587,-141.836 90,-156 109.517,-168.833 116.28,-169.579 139,-175"/>
+</g>
+<!-- local&#45;&gt;module~filters -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge2" class="edge"><title>local&#45;&gt;module~filters</title>
+<path fill="none" stroke="#48ff00" stroke-dasharray="5,2" d="M54.0246,-102.847C68.6705,-108.389 87.1744,-115.39 103.173,-121.444"/>
+<polygon fill="#48ff00" stroke="#48ff00" points="102.162,-124.804 112.754,-125.069 104.64,-118.257 102.162,-124.804"/>
+</g>
+<!-- local&#45;&gt;module~distortion -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge3" class="edge"><title>local&#45;&gt;module~distortion</title>
+<path fill="none" stroke="#00ff91" stroke-dasharray="5,2" d="M54.0246,-93C68.2901,-93 86.2156,-93 101.921,-93"/>
+<polygon fill="#00ff91" stroke="#00ff91" points="102.368,-96.5001 112.368,-93 102.367,-89.5001 102.368,-96.5001"/>
+</g>
+<!-- local&#45;&gt;module~indexingmod -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge5" class="edge"><title>local&#45;&gt;module~indexingmod</title>
+<path fill="none" stroke="#4800ff" stroke-dasharray="5,2" d="M54.1831,-82.6844C65.1005,-78.765 78.0088,-74.6183 90,-72 132.815,-62.6511 182.667,-58.1199 217.918,-55.9471"/>
+<polygon fill="#4800ff" stroke="#4800ff" points="218.128,-59.4409 227.91,-55.3702 217.725,-52.4526 218.128,-59.4409"/>
+</g>
+<!-- module~namelisttypedefs -->
+<g id="proc~~ebsd4calfun~~UsesGraph_node9" class="node"><title>module~namelisttypedefs</title>
+<g id="a_proc~~ebsd4calfun~~UsesGraph_node9"><a xlink:href="../module/namelisttypedefs.html" xlink:title="NameListTypedefs">
+<polygon fill="#337ab7" stroke="#337ab7" points="190,-25 90,-25 90,-1 190,-1 190,-25"/>
+<text text-anchor="middle" x="140" y="-10.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">NameListTypedefs</text>
+</a>
+</g>
+</g>
+<!-- local&#45;&gt;module~namelisttypedefs -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge4" class="edge"><title>local&#45;&gt;module~namelisttypedefs</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M40.13,-80.9348C52.153,-69.3507 71.414,-51.7752 90,-39 94.613,-35.8292 99.6573,-32.758 104.699,-29.9045"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="106.56,-32.8766 113.678,-25.0289 103.22,-26.7249 106.56,-32.8766"/>
+</g>
+<!-- module~namelisttypedefs&#45;&gt;module~indexingmod -->
+<g id="proc~~ebsd4calfun~~UsesGraph_edge6" class="edge"><title>module~namelisttypedefs&#45;&gt;module~indexingmod</title>
+<path fill="none" stroke="#4800ff" stroke-dasharray="5,2" d="M177.091,-25.0796C189.926,-29.3753 204.545,-34.2681 218.061,-38.7918"/>
+<polygon fill="#4800ff" stroke="#4800ff" points="217.073,-42.1518 227.666,-42.0067 219.294,-35.5137 217.073,-42.1518"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="486pt" height="32pt"
+ viewBox="0.00 0.00 486.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 482,-28 482,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node"><title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,-0 54,-0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node"><title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="138,-24 72,-24 72,-0 138,-0 138,-24"/>
+<text text-anchor="middle" x="105" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="219.5,-24 156.5,-24 156.5,-0 219.5,-0 219.5,-24"/>
+<text text-anchor="middle" x="188" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="292,-24 238,-24 238,-0 292,-0 292,-24"/>
+<text text-anchor="middle" x="265" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="364,-24 310,-24 310,-0 364,-0 364,-24"/>
+<text text-anchor="middle" x="337" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="478,-24 382,-24 382,-0 478,-0 478,-24"/>
+<text text-anchor="middle" x="430" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a parent (sub)module to the submodule which is
+    descended from it. Dashed arrows point from a module being used to the
+    module or program unit using it. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+    
+
+
+    
+    <p>@author Saransh Singh, Carnegie Mellon University
+ @brief This function is used by bobyqa to fit an EBSD pattern
+ @details The main purpose of this routine is to calculte the difference of 1 with the dot
+ product of an experimental pattern with the given set of detector parameters. This is used
+ by bobyqa module to fit an EBSD pattern when 4 patterns are fitted simultaneously</p>
+<p>This routine will first compute the detector arrays rgx etc. if necessary, and then perform
+ the usual interpolation from the square Lambert projection. The pattern will be a basic pattern,
+ without any intensity scaling or binning etc; the calling program should take care of those 
+ operations.
+ @param ipar array with integer input parameters
+ @param fpar array with float input parameters
+ @param initmeanval mean value of search space
+ @param EBSDpattern output array
+ @param quats quaternion input array
+ @param accum_e array with Monte Carlo histogram
+ @param mLPNH Northern hemisphere master pattern
+ @param mLPSH Southern hemisphere master pattern
+ @date 12/12/15 SS 1.0 original
+ @date 03/28/16 SS 1.1 omega is no longer a variable parameter</p>
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nipar%7E7"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nipar</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nfpar%7E7"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nfpar</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ninit%7E7"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ninit</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ipar%7E20"></span>integer(kind=c_size_t),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ipar</strong>(nipar)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fpar%7E15"></span>real(kind=sgl),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>fpar</strong>(nfpar)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-initmeanval%7E12"></span>real(kind=sgl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>initmeanval</strong>(ninit)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-expt%7E4"></span>real(kind=c_float),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>expt</strong>(ipar(2)*ipar(3)/ipar(12)/ipar(12))</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-accum_e%7E13"></span>real(kind=sgl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>accum_e</strong>(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-mlpnh%7E18"></span>real(kind=sgl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>mLPNH</strong>(-ipar(6):ipar(6),-ipar(6):ipar(6),ipar(10),ipar(7))</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-mlpsh%7E18"></span>real(kind=sgl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>mLPSH</strong>(-ipar(6):ipar(6),-ipar(6):ipar(6),ipar(10),ipar(7))</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-n%7E94"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>n</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-x%7E15"></span>real(kind=dbl),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>x</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-f%7E4"></span>real(kind=dbl),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>f</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-expt2"></span>real(kind=c_float),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>expt2</strong>(ipar(2)*ipar(3)/ipar(12)/ipar(12))</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-expt3"></span>real(kind=c_float),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>expt3</strong>(ipar(2)*ipar(3)/ipar(12)/ipar(12))</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-expt4"></span>real(kind=c_float),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>expt4</strong>(ipar(2)*ipar(3)/ipar(12)/ipar(12))</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nstep%7E6"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nstep</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-stepsize%7E11"></span>real(kind=sgl),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>stepsize</strong>(nstep)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-verbose%7E15"></span>logical,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+     <h3>Calls</h3>
+     
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: proc~~ebsd4calfun~~CallsGraph Pages: 1 -->
+<svg id="procebsd4calfunCallsGraph" width="370pt" height="197pt"
+ viewBox="0.00 0.00 370.00 197.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~ebsd4calfun~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 193)">
+<title>proc~~ebsd4calfun~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-193 366,-193 366,4 -4,4"/>
+<!-- proc~ebsd4calfun -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node1" class="node"><title>proc~ebsd4calfun</title>
+<polygon fill="none" stroke="black" points="75,-108 0,-108 0,-84 75,-84 75,-108"/>
+<text text-anchor="middle" x="37.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50">EBSD4calfun</text>
+</g>
+<!-- sngl -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node2" class="node"><title>sngl</title>
+<polygon fill="#777777" stroke="#777777" points="329,-189 275,-189 275,-165 329,-165 329,-189"/>
+<text text-anchor="middle" x="302" y="-174.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">sngl</text>
+</g>
+<!-- proc~ebsd4calfun&#45;&gt;sngl -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge5" class="edge"><title>proc~ebsd4calfun&#45;&gt;sngl</title>
+<path fill="none" stroke="#ff0000" d="M56.2143,-108.073C70.446,-117.255 91.2497,-129.541 111,-137 162.453,-156.431 225.499,-167.342 264.46,-172.7"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="264.408,-176.224 274.78,-174.067 265.326,-169.284 264.408,-176.224"/>
+</g>
+<!-- jaccard_distance -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node3" class="node"><title>jaccard_distance</title>
+<polygon fill="#777777" stroke="#777777" points="204,-66 113,-66 113,-42 204,-42 204,-66"/>
+<text text-anchor="middle" x="158.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">jaccard_distance</text>
+</g>
+<!-- proc~ebsd4calfun&#45;&gt;jaccard_distance -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge6" class="edge"><title>proc~ebsd4calfun&#45;&gt;jaccard_distance</title>
+<path fill="none" stroke="#ff0000" d="M72.6006,-83.9645C85.4224,-79.4392 100.181,-74.2301 113.76,-69.4376"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="115.129,-72.666 123.394,-66.0373 112.8,-66.0651 115.129,-72.666"/>
+</g>
+<!-- eu2qu -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node4" class="node"><title>eu2qu</title>
+<polygon fill="#777777" stroke="#777777" points="185.5,-24 131.5,-24 131.5,-0 185.5,-0 185.5,-24"/>
+<text text-anchor="middle" x="158.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">eu2qu</text>
+</g>
+<!-- proc~ebsd4calfun&#45;&gt;eu2qu -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge7" class="edge"><title>proc~ebsd4calfun&#45;&gt;eu2qu</title>
+<path fill="none" stroke="#ff0000" d="M50.4396,-83.6521C64.1279,-69.9892 87.6927,-47.9326 111,-33 114.524,-30.7421 118.331,-28.6023 122.197,-26.614"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="123.731,-29.7604 131.218,-22.2649 120.691,-23.4549 123.731,-29.7604"/>
+</g>
+<!-- proc~getebsdpatterns -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node5" class="node"><title>proc~getebsdpatterns</title>
+<g id="a_proc~~ebsd4calfun~~CallsGraph_node5"><a xlink:href="../proc/getebsdpatterns.html" xlink:title="getEBSDPatterns">
+<polygon fill="#d9534f" stroke="#d9534f" points="206,-108 111,-108 111,-84 206,-84 206,-108"/>
+<text text-anchor="middle" x="158.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">getEBSDPatterns</text>
+</a>
+</g>
+</g>
+<!-- proc~ebsd4calfun&#45;&gt;proc~getebsdpatterns -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge8" class="edge"><title>proc~ebsd4calfun&#45;&gt;proc~getebsdpatterns</title>
+<path fill="none" stroke="#ff0000" d="M75.1749,-96C83.2247,-96 91.9315,-96 100.566,-96"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="100.626,-99.5001 110.626,-96 100.625,-92.5001 100.626,-99.5001"/>
+</g>
+<!-- float -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node6" class="node"><title>float</title>
+<polygon fill="#777777" stroke="#777777" points="329,-147 275,-147 275,-123 329,-123 329,-147"/>
+<text text-anchor="middle" x="302" y="-132.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">float</text>
+</g>
+<!-- proc~ebsd4calfun&#45;&gt;float -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge9" class="edge"><title>proc~ebsd4calfun&#45;&gt;float</title>
+<path fill="none" stroke="#ff0000" d="M75.0586,-108.036C86.4628,-111.398 99.157,-114.744 111,-117 163.958,-127.086 226.348,-131.622 264.789,-133.589"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="264.812,-137.094 274.968,-134.078 265.148,-130.102 264.812,-137.094"/>
+</g>
+<!-- proc~getebsdpatterns&#45;&gt;sngl -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge4" class="edge"><title>proc~getebsdpatterns&#45;&gt;sngl</title>
+<path fill="none" stroke="#0066ff" d="M173.565,-108.187C189.352,-121.382 216.153,-142.367 242,-156 249.235,-159.816 257.313,-163.203 265.114,-166.083"/>
+<polygon fill="#0066ff" stroke="#0066ff" points="264.168,-169.46 274.763,-169.455 266.477,-162.852 264.168,-169.46"/>
+</g>
+<!-- proc~getebsdpatterns&#45;&gt;float -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge1" class="edge"><title>proc~getebsdpatterns&#45;&gt;float</title>
+<path fill="none" stroke="#0066ff" d="M203.109,-108.02C222.933,-113.483 246.107,-119.871 264.931,-125.059"/>
+<polygon fill="#0066ff" stroke="#0066ff" points="264.043,-128.444 274.613,-127.727 265.903,-121.696 264.043,-128.444"/>
+</g>
+<!-- quat_lp -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node7" class="node"><title>quat_lp</title>
+<polygon fill="#777777" stroke="#777777" points="329,-105 275,-105 275,-81 329,-81 329,-105"/>
+<text text-anchor="middle" x="302" y="-90.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">quat_lp</text>
+</g>
+<!-- proc~getebsdpatterns&#45;&gt;quat_lp -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge2" class="edge"><title>proc~getebsdpatterns&#45;&gt;quat_lp</title>
+<path fill="none" stroke="#0066ff" d="M206.225,-95.0094C225.336,-94.6042 247.101,-94.1427 264.95,-93.7643"/>
+<polygon fill="#0066ff" stroke="#0066ff" points="265.033,-97.2634 274.957,-93.5522 264.885,-90.265 265.033,-97.2634"/>
+</g>
+<!-- lambertspheretosquare -->
+<g id="proc~~ebsd4calfun~~CallsGraph_node8" class="node"><title>lambertspheretosquare</title>
+<polygon fill="#777777" stroke="#777777" points="362,-63 242,-63 242,-39 362,-39 362,-63"/>
+<text text-anchor="middle" x="302" y="-48.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">lambertspheretosquare</text>
+</g>
+<!-- proc~getebsdpatterns&#45;&gt;lambertspheretosquare -->
+<g id="proc~~ebsd4calfun~~CallsGraph_edge3" class="edge"><title>proc~getebsdpatterns&#45;&gt;lambertspheretosquare</title>
+<path fill="none" stroke="#0066ff" d="M197.419,-83.9408C214.629,-78.4679 235.168,-71.9361 253.401,-66.1375"/>
+<polygon fill="#0066ff" stroke="#0066ff" points="254.507,-69.4586 262.976,-63.0925 252.385,-62.7878 254.507,-69.4586"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="554pt" height="32pt"
+ viewBox="0.00 0.00 553.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 549.5,-28 549.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="63,-24 0,-24 0,-0 63,-0 63,-24"/>
+<text text-anchor="middle" x="31.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="135.5,-24 81.5,-24 81.5,-0 135.5,-0 135.5,-24"/>
+<text text-anchor="middle" x="108.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node"><title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="207.5,-24 153.5,-24 153.5,-0 207.5,-0 207.5,-24"/>
+<text text-anchor="middle" x="180.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node"><title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="359.5,-24 225.5,-24 225.5,-0 359.5,-0 359.5,-24"/>
+<text text-anchor="middle" x="292.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="431.5,-24 377.5,-24 377.5,-0 431.5,-0 431.5,-24"/>
+<text text-anchor="middle" x="404.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="545.5,-24 449.5,-24 449.5,-0 545.5,-0 545.5,-24"/>
+<text text-anchor="middle" x="497.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+     
+     
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/ebsd4calfun.html#src">EBSD4calfun</a>
+  </div>
+</div>
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">recursive subroutine </span><span class="n">EBSD4calfun</span><span class="p">(</span><span class="n">nipar</span><span class="p">,</span> <span class="n">nfpar</span><span class="p">,</span> <span class="n">ninit</span><span class="p">,</span> <span class="n">ipar</span><span class="p">,</span> <span class="n">fpar</span><span class="p">,</span> <span class="n">initmeanval</span><span class="p">,</span> <span class="n">expt</span><span class="p">,</span> <span class="n">accum_e</span><span class="p">,</span> <span class="p">&amp;</span>
+                                <span class="n">mLPNH</span><span class="p">,</span> <span class="n">mLPSH</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">expt2</span><span class="p">,</span> <span class="n">expt3</span><span class="p">,</span> <span class="n">expt4</span><span class="p">,</span> <span class="n">nstep</span><span class="p">,</span> <span class="n">stepsize</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+<span class="c">!DEC$ ATTRIBUTES DLLEXPORT :: EBSD4calfun</span>
+
+<span class="c">! the input parameters are all part of a ipar and fpar input arrays instead of the usual namelist structures.</span>
+<span class="c">! The following is the mapping:</span>
+<span class="c">!</span>
+
+<span class="c">! ipar(1) = 2</span>
+<span class="c">! ipar(2) = detnumsx</span>
+<span class="c">! ipar(3) = detnumsy</span>
+<span class="c">! ipar(4) = detnumEbins</span>
+<span class="c">! ipar(5) = mcnsx</span>
+<span class="c">! ipar(6) = mpnpx</span>
+<span class="c">! ipar(7) = numset</span>
+<span class="c">! ipar(8) = numquats</span>
+<span class="c">! ipar(9) = Emin</span>
+<span class="c">! ipar(10) = Emax</span>
+<span class="c">! ipar(11) = 0/1 ;0 for no mask, 1 for mask</span>
+<span class="c">! ipar(12) = binning</span>
+<span class="c">! ipar(13) = pixx_pat1</span>
+<span class="c">! ipar(14) = pixy_pat1</span>
+<span class="c">! ipar(15) = pixx_pat2</span>
+<span class="c">! ipar(16) = pixy_pat2</span>
+<span class="c">! ipar(17) = pixx_pat3</span>
+<span class="c">! ipar(18) = pixy_pat3</span>
+<span class="c">! ipar(19) = pixx_pat4</span>
+<span class="c">! ipar(20) = pixy_pat4</span>
+
+<span class="c">! fpar(1) = enl%xpc</span>
+<span class="c">! fpar(2) = enl%ypc</span>
+<span class="c">! fpar(3) = enl%delta</span>
+<span class="c">! fpar(4) = enl%MCsig</span>
+<span class="c">! fpar(5) = enl%omega</span>
+<span class="c">! fpar(6) = enl%thetac</span>
+<span class="c">! fpar(7) = enl%L</span>
+<span class="c">! fpar(8) = enl%beamcurrent</span>
+<span class="c">! fpar(9) = enl%dwelltime</span>
+<span class="c">! fpar(10) = enl%gammavalue</span>
+<span class="c">! fpar(11) = maskradius</span>
+<span class="c">! fpar(12) = stepx</span>
+<span class="c">! fpar(13) = stepy</span>
+
+<span class="c">! initmeanval(1) = fpar(7)</span>
+<span class="c">! initmeanval(2) = phi1</span>
+<span class="c">! initmeanval(3) = phi</span>
+<span class="c">! initmeanval(4) = phi2</span>
+<span class="c">! initmeanval(5) = xpc</span>
+<span class="c">! initmeanval(6) = ypc</span>
+
+<span class="c">! stepsize(1) = step_xpc</span>
+<span class="c">! stepsize(2) = step_ypc</span>
+<span class="c">! stepsize(3) = step_phi1 ; all 4 patterns</span>
+<span class="c">! stepsize(4) = step_phi ; all 4 patterns</span>
+<span class="c">! stepsize(5) = step_phi2 ; all 4 patterns</span>
+<span class="c">! stepsize(6) = step_L</span>
+
+<span class="c">! X = (/xpc, ypc, omega, L, phi1, phi, phi2/)</span>
+
+            
+<span class="k">use </span><span class="n">local</span>
+<span class="k">use </span><span class="n">rotations</span>
+<span class="k">use </span><span class="n">constants</span>
+<span class="k">use </span><span class="n">distortion</span>
+<span class="k">use </span><span class="n">filters</span>
+<span class="k">use </span><span class="n">Indexingmod</span><span class="p">,</span> <span class="n">ONLY</span><span class="p">:</span><span class="n">Jaccard_Distance</span>
+<span class="k">use</span><span class="p">,</span><span class="k">INTRINSIC</span> <span class="kd">::</span> <span class="nb">ISO_C_BINDING</span>
+<span class="nb">           </span>
+<span class="k">implicit none</span>
+
+<span class="kt">integer</span><span class="p">(</span><span class="n">irg</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                 <span class="kd">::</span> <span class="n">nipar</span>
+<span class="kt">integer</span><span class="p">(</span><span class="n">irg</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                 <span class="kd">::</span> <span class="n">nfpar</span>
+<span class="kt">integer</span><span class="p">(</span><span class="n">irg</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                 <span class="kd">::</span> <span class="n">ninit</span>         
+<span class="kt">integer</span><span class="p">(</span><span class="kt">c_size_t</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>            <span class="kd">::</span> <span class="n">ipar</span><span class="p">(</span><span class="n">nipar</span><span class="p">)</span>
+<span class="kt">real</span><span class="p">(</span><span class="n">sgl</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">inout</span><span class="p">)</span>                 <span class="kd">::</span> <span class="n">fpar</span><span class="p">(</span><span class="n">nfpar</span><span class="p">)</span>
+<span class="kt">real</span><span class="p">(</span><span class="n">sgl</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                    <span class="kd">::</span> <span class="n">initmeanval</span><span class="p">(</span><span class="n">ninit</span><span class="p">)</span>
+<span class="kt">integer</span><span class="p">(</span><span class="n">irg</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                 <span class="kd">::</span> <span class="n">nstep</span>
+<span class="kt">real</span><span class="p">(</span><span class="n">sgl</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                    <span class="kd">::</span> <span class="n">stepsize</span><span class="p">(</span><span class="n">nstep</span><span class="p">)</span>
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                <span class="kd">::</span> <span class="n">expt</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                <span class="kd">::</span> <span class="n">expt2</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                <span class="kd">::</span> <span class="n">expt3</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+<span class="kt">real</span><span class="p">(</span><span class="kt">c_float</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                <span class="kd">::</span> <span class="n">expt4</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">))</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>               <span class="kd">::</span> <span class="n">accum_e</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span><span class="o">-</span><span class="n">ipar</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span><span class="n">ipar</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span><span class="o">-</span><span class="n">ipar</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span><span class="n">ipar</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>               <span class="kd">::</span> <span class="n">mLPNH</span><span class="p">(</span><span class="o">-</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="o">-</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">7</span><span class="p">))</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>               <span class="kd">::</span> <span class="n">mLPSH</span><span class="p">(</span><span class="o">-</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="o">-</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span><span class="n">ipar</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">7</span><span class="p">))</span>
+<span class="kt">integer</span><span class="p">(</span><span class="n">irg</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>                 <span class="kd">::</span> <span class="n">n</span>
+<span class="kt">real</span><span class="p">(</span><span class="n">dbl</span><span class="p">),</span><span class="k">dimension</span><span class="p">(:),</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span>       <span class="kd">::</span> <span class="n">x</span>
+<span class="kt">real</span><span class="p">(</span><span class="n">dbl</span><span class="p">),</span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>                   <span class="kd">::</span> <span class="n">f</span>
+<span class="kt">logical</span><span class="p">,</span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">),</span><span class="k">optional</span>             <span class="kd">::</span> <span class="n">verbose</span>
+
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">)</span>                       <span class="kd">::</span> <span class="n">nnx</span><span class="p">,</span> <span class="n">nny</span><span class="p">,</span> <span class="n">binx</span><span class="p">,</span> <span class="n">biny</span>
+<span class="kt">complex</span><span class="p">(</span><span class="n">dbl</span><span class="p">)</span>                            <span class="kd">::</span> <span class="n">D</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">)</span>                          <span class="kd">::</span> <span class="n">quats</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">bindx</span><span class="p">,</span> <span class="n">ma</span><span class="p">,</span> <span class="n">mi</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span><span class="k">allocatable</span>              <span class="kd">::</span> <span class="n">EBSDpattern</span><span class="p">(:,:,:),</span> <span class="n">binned</span><span class="p">(:,:)</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span><span class="k">allocatable</span>              <span class="kd">::</span> <span class="n">EBSDpatternintd</span><span class="p">(:,:)</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">allocatable</span>           <span class="kd">::</span> <span class="n">EBSDpatterninteger</span><span class="p">(:,:),</span> <span class="n">EBSDpatternad</span><span class="p">(:,:)</span>
+
+<span class="c">! variables that must be saved for the next time this function is called</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">)</span>                          <span class="kd">::</span> <span class="n">prefactor</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">allocatable</span>           <span class="kd">::</span> <span class="n">img1</span><span class="p">(:),</span> <span class="n">img2</span><span class="p">(:),</span> <span class="n">img_fit_cumul</span><span class="p">(:),</span> <span class="n">img_expt_cumul</span><span class="p">(:)</span>
+<span class="c">! other variables</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span><span class="k">parameter</span>                <span class="kd">::</span> <span class="n">dtor</span> <span class="o">=</span> <span class="mf">0.0174533</span>  <span class="c">! convert from degrees to radians</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">)</span>                          <span class="kd">::</span> <span class="n">ixy</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">eu</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">eu2</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">eu3</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">eu4</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span> <span class="k">allocatable</span>             <span class="kd">::</span> <span class="n">EBSDvector</span><span class="p">(:),</span> <span class="n">EBSDflip</span><span class="p">(:,:),</span> <span class="n">mask</span><span class="p">(:,:)</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">)</span>                       <span class="kd">::</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">istat</span>
+
+<span class="kt">logical</span>                                 <span class="kd">::</span> <span class="nb">stat</span><span class="p">,</span> <span class="n">readonly</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">)</span>                       <span class="kd">::</span> <span class="n">hdferr</span><span class="p">,</span> <span class="n">nlines</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">)</span>                          <span class="kd">::</span> <span class="n">fpar2</span><span class="p">(</span><span class="n">nfpar</span><span class="p">)</span>
+
+<span class="c">!fpar(1) = sngl(X(1))*ipar(2) - ipar(2)/2 + initmeanval(5) ! xpc +/- detnumx/2 pixels</span>
+<span class="c">!fpar(2) = sngl(X(2))*ipar(3) - ipar(3)/2 + initmeanval(6) ! ypc +/- detnumy/2 pixels</span>
+
+<span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sngl</span><span class="p">(</span><span class="n">X</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="c">! xpc +/- 5 pixels</span>
+<span class="n">fpar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sngl</span><span class="p">(</span><span class="n">X</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span> <span class="c">! ypc +/- 5 pixels</span>
+
+<span class="c">!fpar(1) = initmeanval(5) ! xpc +/- detnumx/2 pixels</span>
+<span class="c">!fpar(2) = initmeanval(6) ! ypc +/- detnumy/2 pixels</span>
+
+<span class="n">fpar</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sngl</span><span class="p">(</span><span class="n">X</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c">! mean +/- 5 pixels</span>
+<span class="c">!fpar(7) = initmeanval(1) ! mean +/- 2000 microns</span>
+
+<span class="c">! 03/28/16 omega is no longer a variable parameter anymore</span>
+<span class="n">fpar</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sngl</span><span class="p">(</span><span class="n">X</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">*</span><span class="mf">0.0</span> <span class="o">-</span> <span class="mf">0.0</span> <span class="c">! omega 0 +/- 5 degrees</span>
+
+<span class="c">!eu = (/initmeanval(2), initmeanval(3), initmeanval(4)/)*dtor ! don&#39;t change the values for euler angles</span>
+<span class="n">eu</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="n">X</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">X</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>  <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="p">&amp;</span>
+       <span class="n">X</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">/</span><span class="p">)</span><span class="o">*</span><span class="n">dtor</span> <span class="c">! mean +/- 2 degrees</span>
+<span class="n">eu2</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="n">X</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="n">X</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="p">&amp;</span>
+       <span class="n">X</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span><span class="o">/</span><span class="p">)</span><span class="o">*</span><span class="n">dtor</span> <span class="c">! mean +/- 2 degrees</span>
+<span class="n">eu3</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="n">X</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">X</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="p">&amp;</span>
+       <span class="n">X</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="p">)</span><span class="o">*</span><span class="n">dtor</span> <span class="c">! mean +/- 2 degrees</span>
+<span class="n">eu4</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="n">X</span><span class="p">(</span><span class="mi">14</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">13</span><span class="p">),</span> <span class="n">X</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">14</span><span class="p">),</span> <span class="p">&amp;</span>
+       <span class="n">X</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">*</span><span class="mf">2.0</span><span class="o">*</span><span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">+</span> <span class="n">initmeanval</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">/</span><span class="p">)</span><span class="o">*</span><span class="n">dtor</span> <span class="c">! mean +/- 2 degrees</span>
+
+<span class="c">!D = dcmplx(X(8)*0.000002D0 - 0.000001D0 + dble(initmeanval(5)), X(9)*0.000002D0 - 0.000001D0 + dble(initmeanval(6)))</span>
+
+<span class="n">binx</span> <span class="o">=</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">biny</span> <span class="o">=</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">bindx</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">allocate</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">(</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">),</span><span class="n">mask</span><span class="p">(</span><span class="n">binx</span><span class="p">,</span><span class="n">biny</span><span class="p">))</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">EBSDpattern</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">binned</span><span class="p">(</span><span class="n">binx</span><span class="p">,</span><span class="n">biny</span><span class="p">))</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">EBSDpatternintd</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span><span class="n">EBSDpatterninteger</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span> <span class="n">EBSDpatternad</span><span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="n">ipar</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">img1</span><span class="p">(</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">),</span><span class="n">img2</span><span class="p">(</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">))</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">img_fit_cumul</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">),</span><span class="n">img_expt_cumul</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">))</span>
+
+<span class="n">binned</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">EBSDpatternintd</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">EBSDpatterninteger</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">EBSDpatternad</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">img1</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">img2</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">img_fit_cumul</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">img_expt_cumul</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">mask</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nb">present</span><span class="p">(</span><span class="n">verbose</span><span class="p">))</span> <span class="k">then</span>
+<span class="k">    if</span><span class="p">(</span><span class="n">verbose</span><span class="p">)</span> <span class="k">then    </span>
+<span class="k">        print</span><span class="o">*</span><span class="p">,</span><span class="s1">&#39;xpc, ypc, L, eu_pat1, eu_pat2, eu_pat3, eu_pat4 = &#39;</span><span class="p">,</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">7</span><span class="p">),</span><span class="n">eu</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">18</span><span class="mf">0.0</span><span class="o">/</span><span class="n">cPi</span><span class="p">,&amp;</span>
+        <span class="n">eu2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">18</span><span class="mf">0.0</span><span class="o">/</span><span class="n">cPi</span><span class="p">,</span><span class="n">eu3</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">18</span><span class="mf">0.0</span><span class="o">/</span><span class="n">cPi</span><span class="p">,</span><span class="n">eu4</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mi">18</span><span class="mf">0.0</span><span class="o">/</span><span class="n">cPi</span>
+    <span class="k">end if</span>
+<span class="k">end if</span>
+
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span>
+
+<span class="c">!==============================================================================</span>
+<span class="c">!============IMAGE 1===========================================================</span>
+<span class="c">!==============================================================================</span>
+
+<span class="n">quats</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">eu2qu</span><span class="p">(</span><span class="n">eu</span><span class="p">)</span>
+
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">14</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="k">call </span><span class="n">getEBSDPatterns</span><span class="p">(</span><span class="n">ipar</span><span class="p">,</span> <span class="n">fpar2</span><span class="p">,</span> <span class="n">EBSDpattern</span><span class="p">,</span> <span class="n">quats</span><span class="p">,</span> <span class="n">accum_e</span><span class="p">,</span> <span class="n">mLPNH</span><span class="p">,</span> <span class="n">mLPSH</span><span class="p">)</span>
+
+<span class="c">!nnx = ipar(2)</span>
+<span class="c">!nny = ipar(3)</span>
+
+<span class="c">!EBSDpatternintd = ((EBSDPattern(:,:,1) - mi)/ (ma-mi))</span>
+<span class="c">!EBSDpatterninteger = nint(EBSDpatternintd*255.0)</span>
+<span class="c">!EBSDpatternad =  adhisteq(10,nnx,nny,EBSDpatterninteger)</span>
+<span class="c">!EBSDPattern(:,:,1) = float(EBSDpatternad)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">    do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+            <span class="n">binned</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">EBSDpattern</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">end do</span>
+<span class="k">    end do </span>
+<span class="k">    </span><span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span> <span class="o">*</span> <span class="n">bindx</span> 
+<span class="k">else</span>
+<span class="k">    </span><span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">EBSDpattern</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end if</span>
+
+
+<span class="k">if</span> <span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="p">.</span><span class="n">eq</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">    do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="k">do </span><span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+            <span class="k">if</span><span class="p">(((</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">-</span><span class="nb">ceiling</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">binx</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">j</span><span class="p">)</span><span class="o">-</span><span class="nb">ceiling</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">biny</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="p">.</span><span class="n">gt</span><span class="p">.</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">                </span><span class="n">mask</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">end if</span>
+<span class="k">        end do</span>
+<span class="k">    end do</span>
+<span class="k">end if</span>
+
+<span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span><span class="o">*</span><span class="n">mask</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span><span class="o">**</span><span class="n">fpar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+
+<span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+    <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="n">EBSDvector</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">binx</span><span class="o">+</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">end do</span>
+<span class="k">end do</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+
+<span class="n">img1</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">EBSDvector</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">expt</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">expt</span><span class="p">)</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">expt</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">img_fit_cumul</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">img_expt_cumul</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+
+<span class="c">!open(unit=13,file=&#39;/Users/saranshsingh/Desktop/testd.txt&#39;,action=&#39;write&#39;)</span>
+<span class="c">!open(unit=14,file=&#39;/Users/saranshsingh/Desktop/teste.txt&#39;,action=&#39;write&#39;)</span>
+
+<span class="c">!do i = 1,binx</span>
+<span class="c">!    do j = 1,biny</span>
+<span class="c">!        write(13,&#39;(F15.6)&#39;,advance=&#39;no&#39;)EBSDvector((i-1)*biny+j)</span>
+<span class="c">!        write(14,&#39;(F15.6)&#39;,advance=&#39;no&#39;)expt((i-1)*biny+j)</span>
+<span class="c">!    end do</span>
+<span class="c">!    write(13,*)&#39;&#39;</span>
+<span class="c">!    write(14,*)&#39;&#39;</span>
+<span class="c">!end do</span>
+
+<span class="c">!close(13)</span>
+<span class="c">!close(14)</span>
+<span class="c">!stop</span>
+
+
+<span class="c">!==============================================================================</span>
+<span class="c">!============IMAGE 2===========================================================</span>
+<span class="c">!==============================================================================</span>
+
+<span class="n">quats</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">eu2qu</span><span class="p">(</span><span class="n">eu2</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+
+<span class="k">call </span><span class="n">getEBSDPatterns</span><span class="p">(</span><span class="n">ipar</span><span class="p">,</span> <span class="n">fpar2</span><span class="p">,</span> <span class="n">EBSDpattern</span><span class="p">,</span> <span class="n">quats</span><span class="p">,</span> <span class="n">accum_e</span><span class="p">,</span> <span class="n">mLPNH</span><span class="p">,</span> <span class="n">mLPSH</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">    do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+            <span class="n">binned</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">EBSDpattern</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">end do</span>
+<span class="k">    end do </span>
+<span class="k">    </span><span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span> <span class="o">*</span> <span class="n">bindx</span> 
+<span class="k">else</span>
+<span class="k">    </span><span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">EBSDpattern</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end if</span>
+
+<span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span><span class="o">*</span><span class="n">mask</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span><span class="o">**</span><span class="n">fpar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+
+<span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+    <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="n">EBSDvector</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">binx</span><span class="o">+</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">end do</span>
+<span class="k">end do</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+
+<span class="n">img1</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">EBSDvector</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">expt2</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">expt2</span><span class="p">)</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">expt2</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">img_fit_cumul</span><span class="p">(</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">img_expt_cumul</span><span class="p">(</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+
+<span class="c">!==============================================================================</span>
+<span class="c">!============IMAGE 3===========================================================</span>
+<span class="c">!==============================================================================</span>
+
+<span class="n">quats</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">eu2qu</span><span class="p">(</span><span class="n">eu3</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">17</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+
+<span class="k">call </span><span class="n">getEBSDPatterns</span><span class="p">(</span><span class="n">ipar</span><span class="p">,</span> <span class="n">fpar2</span><span class="p">,</span> <span class="n">EBSDpattern</span><span class="p">,</span> <span class="n">quats</span><span class="p">,</span> <span class="n">accum_e</span><span class="p">,</span> <span class="n">mLPNH</span><span class="p">,</span> <span class="n">mLPSH</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">    do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+            <span class="n">binned</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">EBSDpattern</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">end do</span>
+<span class="k">    end do </span>
+<span class="k">    </span><span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span> <span class="o">*</span> <span class="n">bindx</span> 
+<span class="k">else</span>
+<span class="k">    </span><span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">EBSDpattern</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end if</span>
+
+<span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span><span class="o">*</span><span class="n">mask</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span><span class="o">**</span><span class="n">fpar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+
+<span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+    <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="n">EBSDvector</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">binx</span><span class="o">+</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">end do</span>
+<span class="k">end do</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+
+<span class="n">img1</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">EBSDvector</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">expt3</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">expt3</span><span class="p">)</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">expt3</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">img_fit_cumul</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">img_expt_cumul</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+
+<span class="c">!==============================================================================</span>
+<span class="c">!============IMAGE 4===========================================================</span>
+<span class="c">!==============================================================================</span>
+
+<span class="n">quats</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">eu2qu</span><span class="p">(</span><span class="n">eu4</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nfpar</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">19</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">fpar2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">fpar</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="n">ipar</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">*</span><span class="n">fpar</span><span class="p">(</span><span class="mi">13</span><span class="p">)</span><span class="o">/</span><span class="n">fpar</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="k">call </span><span class="n">getEBSDPatterns</span><span class="p">(</span><span class="n">ipar</span><span class="p">,</span> <span class="n">fpar2</span><span class="p">,</span> <span class="n">EBSDpattern</span><span class="p">,</span> <span class="n">quats</span><span class="p">,</span> <span class="n">accum_e</span><span class="p">,</span> <span class="n">mLPNH</span><span class="p">,</span> <span class="n">mLPSH</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="p">.</span><span class="n">ne</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<span class="k">    do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+            <span class="n">binned</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">EBSDpattern</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),(</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">j</span><span class="o">*</span><span class="n">ipar</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">end do</span>
+<span class="k">    end do </span>
+<span class="k">    </span><span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span> <span class="o">*</span> <span class="n">bindx</span> 
+<span class="k">else</span>
+<span class="k">    </span><span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">EBSDpattern</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">end if</span>
+
+<span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span><span class="o">*</span><span class="n">mask</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">binned</span> <span class="o">=</span> <span class="n">binned</span><span class="o">**</span><span class="n">fpar</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+
+<span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">biny</span>
+    <span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">binx</span>
+        <span class="n">EBSDvector</span><span class="p">((</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">binx</span><span class="o">+</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">binned</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">end do</span>
+<span class="k">end do</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">EBSDvector</span><span class="p">)</span>
+
+<span class="n">img1</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">EBSDvector</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">ma</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span><span class="n">expt4</span><span class="p">)</span>
+<span class="n">mi</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span><span class="n">expt4</span><span class="p">)</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="nb">nint</span><span class="p">(</span><span class="mi">25</span><span class="mf">5.0</span><span class="o">*</span><span class="p">(</span><span class="n">expt4</span> <span class="o">-</span> <span class="n">mi</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">ma</span> <span class="o">-</span> <span class="n">mi</span><span class="p">))</span>
+
+<span class="n">img_fit_cumul</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+<span class="n">img_expt_cumul</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span> <span class="o">=</span> <span class="n">img2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+
+<span class="n">F</span> <span class="o">=</span> <span class="n">Jaccard_Distance</span><span class="p">(</span><span class="n">img_fit_cumul</span><span class="p">,</span><span class="n">img_expt_cumul</span><span class="p">,</span><span class="mi">4</span><span class="o">*</span><span class="n">binx</span><span class="o">*</span><span class="n">biny</span><span class="p">)</span>
+
+<span class="c">!F = 1.0 - DOT_PRODUCT(EBSDvector,expt)</span>
+
+<span class="k">end subroutine </span><span class="n">EBSD4calfun</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    
+    </div>
+  </div>
+
+  <section class="visible-xs visible-sm hidden-md">
+    <hr>
+    
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprocs-1">All Procedures</a></h3></div>
+  <div id="allprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../proc/adhisteq.html">adhisteq</a>
+      
+      <a class="list-group-item" href="../proc/aggiorno_ottimo.html">AGGIORNO_OTTIMO</a>
+      
+      <a class="list-group-item" href="../proc/alogam.html">alogam</a>
+      
+      <a class="list-group-item" href="../proc/altmov.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/altmov%7E2.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/backprojection.html">BackProjection</a>
+      
+      <a class="list-group-item" href="../proc/bakvec.html">bakvec</a>
+      
+      <a class="list-group-item" href="../proc/balanc.html">balanc</a>
+      
+      <a class="list-group-item" href="../proc/balbak.html">balbak</a>
+      
+      <a class="list-group-item" href="../proc/bandr.html">bandr</a>
+      
+      <a class="list-group-item" href="../proc/bandv.html">bandv</a>
+      
+      <a class="list-group-item" href="../proc/barreldistortion.html">BarrelDistortion</a>
+      
+      <a class="list-group-item" href="../proc/bisect.html">bisect</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa%7E2.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb%7E2.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bqr.html">bqr</a>
+      
+      <a class="list-group-item" href="../proc/butterflymask9x9.html">ButterflyMask9x9</a>
+      
+      <a class="list-group-item" href="../proc/calchoughlut.html">CalcHoughLUT</a>
+      
+      <a class="list-group-item" href="../proc/calckinpedpatternsingle.html">CalcKINPEDPatternSingle</a>
+      
+      <a class="list-group-item" href="../proc/calckvectorcone.html">Calckvectorcone</a>
+      
+      <a class="list-group-item" href="../proc/calckvectortrace.html">Calckvectortrace</a>
+      
+      <a class="list-group-item" href="../proc/calcr.html">CalcR</a>
+      
+      <a class="list-group-item" href="../proc/calcrlocal.html">CalcRLocal</a>
+      
+      <a class="list-group-item" href="../proc/cardintersection.html">CardIntersection</a>
+      
+      <a class="list-group-item" href="../proc/cbabk2.html">cbabk2</a>
+      
+      <a class="list-group-item" href="../proc/cbal.html">cbal</a>
+      
+      <a class="list-group-item" href="../proc/cdiv.html">cdiv</a>
+      
+      <a class="list-group-item" href="../proc/cg.html">cg</a>
+      
+      <a class="list-group-item" href="../proc/ch.html">ch</a>
+      
+      <a class="list-group-item" href="../proc/cinvit.html">cinvit</a>
+      
+      <a class="list-group-item" href="../proc/clerror_check.html">CLerror_check</a>
+      
+      <a class="list-group-item" href="../proc/clinit_pdccq.html">CLinit_PDCCQ</a>
+      
+      <a class="list-group-item" href="../proc/clquery_platform_info.html">CLquery_platform_info</a>
+      
+      <a class="list-group-item" href="../proc/clread_source_file.html">CLread_source_file</a>
+      
+      <a class="list-group-item" href="../proc/combak.html">combak</a>
+      
+      <a class="list-group-item" href="../proc/comhes.html">comhes</a>
+      
+      <a class="list-group-item" href="../proc/comlr.html">comlr</a>
+      
+      <a class="list-group-item" href="../proc/comlr2.html">comlr2</a>
+      
+      <a class="list-group-item" href="../proc/comqr.html">comqr</a>
+      
+      <a class="list-group-item" href="../proc/comqr2.html">comqr2</a>
+      
+      <a class="list-group-item" href="../proc/cortb.html">cortb</a>
+      
+      <a class="list-group-item" href="../proc/corth.html">corth</a>
+      
+      <a class="list-group-item" href="../proc/csroot.html">csroot</a>
+      
+      <a class="list-group-item" href="../proc/ctfped_writefile.html">ctfped_writeFile</a>
+      
+      <a class="list-group-item" href="../proc/cubochoricneighbors.html">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../proc/cumul_histogram.html">cumul_histogram</a>
+      
+      <a class="list-group-item" href="../proc/dd_density.html">DD_Density</a>
+      
+      <a class="list-group-item" href="../proc/dd_estep.html">DD_Estep</a>
+      
+      <a class="list-group-item" href="../proc/dd_getqandl.html">DD_getQandL</a>
+      
+      <a class="list-group-item" href="../proc/dd_mstep.html">DD_Mstep</a>
+      
+      <a class="list-group-item" href="../proc/delete_fzlist.html">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../proc/denoise_pattern.html">Denoise_Pattern</a>
+      
+      <a class="list-group-item" href="../proc/denoise_ped.html">Denoise_PED</a>
+      
+      <a class="list-group-item" href="../proc/di_emfordd.html">DI_EMforDD</a>
+      
+      <a class="list-group-item" href="../proc/di_init.html">DI_Init</a>
+      
+      <a class="list-group-item" href="../proc/di_rotatetomu.html">DI_RotateToMu</a>
+      
+      <a class="list-group-item" href="../proc/di_sampledd.html">DI_SampleDD</a>
+      
+      <a class="list-group-item" href="../proc/di_similarity_classifier.html">DI_Similarity_Classifier</a>
+      
+      <a class="list-group-item" href="../proc/ebsd4calfun.html">EBSD4calfun</a>
+      
+      <a class="list-group-item" href="../proc/ebsdcalfun.html">EBSDcalfun</a>
+      
+      <a class="list-group-item" href="../proc/eccicalcsgh.html">ECCICalcSgh</a>
+      
+      <a class="list-group-item" href="../proc/ecpcalfun.html">ECPcalfun</a>
+      
+      <a class="list-group-item" href="../proc/efitebsdwrapper.html">efitEBSDWrapper</a>
+      
+      <a class="list-group-item" href="../proc/efitecpwrapper.html">efitECPWrapper</a>
+      
+      <a class="list-group-item" href="../proc/ei.html">EI</a>
+      
+      <a class="list-group-item" href="../proc/elmbak.html">elmbak</a>
+      
+      <a class="list-group-item" href="../proc/elmhes.html">elmhes</a>
+      
+      <a class="list-group-item" href="../proc/eltran.html">eltran</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdmaster.html">EMsoftCgetEBSDmaster</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdpatterns.html">EMsoftCgetEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetecpatterns.html">EMsoftCgetECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetmcopencl.html">EMsoftCgetMCOpenCL</a>
+      
+      <a class="list-group-item" href="../proc/eshelby_disp.html">Eshelby_disp</a>
+      
+      <a class="list-group-item" href="../proc/fcore.html">FCORE</a>
+      
+      <a class="list-group-item" href="../proc/figi.html">figi</a>
+      
+      <a class="list-group-item" href="../proc/figi2.html">figi2</a>
+      
+      <a class="list-group-item" href="../proc/forwardprojection.html">ForwardProjection</a>
+      
+      <a class="list-group-item" href="../proc/fphon.html">FPHON</a>
+      
+      <a class="list-group-item" href="../proc/fscatt.html">FSCATT</a>
+      
+      <a class="list-group-item" href="../proc/genera_punto_sa.html">GENERA_PUNTO_SA</a>
+      
+      <a class="list-group-item" href="../proc/getaverageorientationnamelist.html">GetAverageOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getconvertorientationsnamelist.html">GetConvertOrientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdddensitylbm.html">getDDDensityLBM</a>
+      
+      <a class="list-group-item" href="../proc/getdictindxopenclnamelist.html">GetDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../interface/getdisorientationangle.html">getDisorientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxis.html">getDisorientationAngleAxis</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxistwophases.html">getDisorientationAngleAxisTwoPhases</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangledouble.html">getDisorientationAngleDouble</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationanglesingle.html">getDisorientationAngleSingle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationsnamelist.html">GetDisorientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdvsdnamelist.html">GetDvsDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdclusternamelist.html">GetEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsddetparmscannamelist.html">GetEBSDdetparmscanNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdfullnamelist.html">GetEBSDFullNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdindexingnamelist.html">GetEBSDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasternamelist.html">GetEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasteropenclnamelist.html">GetEBSDMasterOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdnamelist.html">GetEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdoverlapnamelist.html">GetEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns.html">getEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns2.html">getEBSDPatterns2</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatternswrapper.html">getEBSDPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/geteccinamelist.html">GetECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpatterns.html">getECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getecpatternswrapper.html">getECPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getecpindexingnamelist.html">GetECPIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpmasternamelist.html">GetECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpnamelist.html">GetECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecppatternnamelist.html">GetECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpsinglenamelist.html">GetECPSingleNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpzanamelist.html">GetECPZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfit4namelist.html">GetEMDPFit4NameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfitnamelist.html">GetEMDPFitNameList</a>
+      
+      <a class="list-group-item" href="../proc/geteulersfromfile.html">getEulersfromFile</a>
+      
+      <a class="list-group-item" href="../proc/getfitorientationpsnamelist.html">GetFitOrientationPSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getfztypeandorder.html">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../proc/getkamnamelist.html">GetKAMNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkinematicalnamelist.html">GetkinematicalNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselmasternamelist.html">GetKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselnamelist.html">GetKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatterns.html">getKosselPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatternswrapper.html">getKosselPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getlacbednamelist.html">GetLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclfoilnamelist.html">GetMCCLfoilNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclmultilayernamelist.html">GetMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclnamelist.html">GetMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclspherenamelist.html">GetMCCLsphereNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmclipssnamelist.html">GetMCLIPSSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcnamelist.html">GetMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmultiphasenamelist.html">GetMultiPhaseNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationsimilaritynamelist.html">GetOrientationSimilarityNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationviznamelist.html">GetOrientationVizNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedindxnamelist.html">GetPEDIndxNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedkinnamelist.html">GetPEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedzanamelist.html">GetPEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getpfinversionnamelist.html">GetPFInversionNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrefineorientationnamelist.html">GetRefineOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getreflectornamelist.html">GetreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrfznamelist.html">GetRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/getsrdefectnamelist.html">GetSRdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/getstemdcinamelist.html">GetSTEMDCINameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdindexingnamelist.html">GetTKDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdmasternamelist.html">GetTKDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdnamelist.html">GetTKDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getwk.html">GETWK</a>
+      
+      <a class="list-group-item" href="../proc/getzadefectnamelist.html">GetZAdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/hipassfilter.html">HiPassFilter</a>
+      
+      <a class="list-group-item" href="../proc/houghtransform.html">HoughTransform</a>
+      
+      <a class="list-group-item" href="../proc/hqr.html">hqr</a>
+      
+      <a class="list-group-item" href="../proc/hqr2.html">hqr2</a>
+      
+      <a class="list-group-item" href="../proc/htrib3.html">htrib3</a>
+      
+      <a class="list-group-item" href="../proc/htribk.html">htribk</a>
+      
+      <a class="list-group-item" href="../proc/htrid3.html">htrid3</a>
+      
+      <a class="list-group-item" href="../proc/htridi.html">htridi</a>
+      
+      <a class="list-group-item" href="../proc/image_entropy.html">image_entropy</a>
+      
+      <a class="list-group-item" href="../proc/image_histogram.html">image_histogram</a>
+      
+      <a class="list-group-item" href="../proc/image_jointentropy.html">image_jointentropy</a>
+      
+      <a class="list-group-item" href="../proc/image_jointhistogram.html">image_jointhistogram</a>
+      
+      <a class="list-group-item" href="../proc/image_mutualinformation.html">image_mutualinformation</a>
+      
+      <a class="list-group-item" href="../proc/imtql1.html">imtql1</a>
+      
+      <a class="list-group-item" href="../proc/imtql2.html">imtql2</a>
+      
+      <a class="list-group-item" href="../proc/imtqlv.html">imtqlv</a>
+      
+      <a class="list-group-item" href="../proc/init_dislocation_data.html">init_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/init_einclusion_data.html">init_Einclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_foil_data.html">init_foil_data</a>
+      
+      <a class="list-group-item" href="../proc/init_inclusion_data.html">init_inclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stacking_fault_data.html">init_stacking_fault_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stem.html">init_STEM</a>
+      
+      <a class="list-group-item" href="../proc/init_stem_za.html">init_STEM_ZA</a>
+      
+      <a class="list-group-item" href="../proc/init_void_data.html">init_void_data</a>
+      
+      <a class="list-group-item" href="../proc/init_ysh_dislocation_data.html">init_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/initialize_foil_geometry.html">initialize_foil_geometry</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../interface/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist_ewaldsweep.html">Initialize_ReflectionList_EwaldSweep</a>
+      
+      <a class="list-group-item" href="../proc/initializedefects.html">InitializeDefects</a>
+      
+      <a class="list-group-item" href="../proc/initializeeshelbyinclusion.html">InitializeEshelbyInclusion</a>
+      
+      <a class="list-group-item" href="../proc/innerprodgpu.html">InnerProdGPU</a>
+      
+      <a class="list-group-item" href="../proc/insidecubehexfz.html">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicfz.html">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicmfz.html">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecyclicfz.html">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralfz.html">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralmfz.html">insideDihedralMFZ</a>
+      
+      <a class="list-group-item" href="../proc/interfaccia.html">INTERFACCIA</a>
+      
+      <a class="list-group-item" href="../proc/inversiondivision.html">InversionDivision</a>
+      
+      <a class="list-group-item" href="../proc/invit.html">invit</a>
+      
+      <a class="list-group-item" href="../proc/isinsidefz.html">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../proc/isinsidemfz.html">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../proc/jaccard_distance.html">Jaccard_Distance</a>
+      
+      <a class="list-group-item" href="../proc/json_cleanuppointers.html">JSON_cleanuppointers</a>
+      
+      <a class="list-group-item" href="../proc/json_failtest.html">JSON_failtest</a>
+      
+      <a class="list-group-item" href="../proc/json_initpointers.html">JSON_initpointers</a>
+      
+      <a class="list-group-item" href="../proc/json_minify.html">JSON_minify</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmldoubles.html">JSON_writeNMLdoubles</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlintegers.html">JSON_writeNMLintegers</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlreals.html">JSON_writeNMLreals</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdouble.html">JSONgetDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdoublevector.html">JSONgetDoubleVector</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddefectfile.html">JSONreadDefectFile</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddouble.html">JSONreadDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddoublevec.html">JSONreadDoubleVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdclusternamelist.html">JSONreadEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdmasternamelist.html">JSONreadEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdnamelist.html">JSONreadEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdoverlapnamelist.html">JSONreadEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadecpmasternamelist.html">JSONreadECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadfoildata.html">JSONreadFoilData</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadinteger.html">JSONreadInteger</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadintegervec.html">JSONreadIntegerVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselmasternamelist.html">JSONreadKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselnamelist.html">JSONreadKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadlogical.html">JSONreadLogical</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclmultilayernamelist.html">JSONreadMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclnamelist.html">JSONreadMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcnamelist.html">JSONreadMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreal.html">JSONreadReal</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadrealvec.html">JSONreadRealVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreflectornamelist.html">JSONreadreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadstring.html">JSONreadString</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritedictindxopenclnamelist.html">JSONwriteDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdclusternamelist.html">JSONwriteEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdmasternamelist.html">JSONwriteEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdnamelist.html">JSONwriteEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteeccinamelist.html">JSONwriteECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpmasternamelist.html">JSONwriteECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpnamelist.html">JSONwriteECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecppatternnamelist.html">JSONwriteECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselmasternamelist.html">JSONwriteKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselnamelist.html">JSONwriteKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritelacbednamelist.html">JSONwriteLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclmultilayernamelist.html">JSONwriteMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclnamelist.html">JSONwriteMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcnamelist.html">JSONwriteMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedkinnamelist.html">JSONwritePEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedzanamelist.html">JSONwritePEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriterfznamelist.html">JSONwriteRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/linesearch_inverti.html">LINESEARCH_INVERTI</a>
+      
+      <a class="list-group-item" href="../proc/linesearchbox_cont.html">linesearchbox_cont</a>
+      
+      <a class="list-group-item" href="../proc/logcp.html">logCp</a>
+      
+      <a class="list-group-item" href="../proc/mainbox1.html">MAINBOX1</a>
+      
+      <a class="list-group-item" href="../proc/mainbox2.html">MAINBOX2</a>
+      
+      <a class="list-group-item" href="../proc/makedislocation.html">makedislocation</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfault.html">makestackingfault</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfaultecci.html">makestackingfaultECCI</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation%7E2.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/mc_concatenatemuellermatrices.html">MC_concatenateMuellerMatrices</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ad_from_eo.html">MC_get_AD_from_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_auxiliaryangle.html">MC_get_AuxiliaryAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_basicmuellermatrix.html">MC_get_basicMuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_diattenuator.html">MC_get_diattenuator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ellipticityangle.html">MC_get_EllipticityAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_eo_from_ad.html">MC_get_EO_from_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_orientationangle.html">MC_get_OrientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_phaseshiftangle.html">MC_get_PhaseShiftAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_polarization.html">MC_get_Polarization</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_retarder.html">MC_get_retarder</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_rotator.html">MC_get_rotator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_ad.html">MC_get_Stokes_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_eo.html">MC_get_Stokes_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_print_muellermatrix.html">MC_print_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_propagatestokesvector.html">MC_propagateStokesVector</a>
+      
+      <a class="list-group-item" href="../proc/mc_rotate_muellermatrix.html">MC_rotate_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/minfit.html">minfit</a>
+      
+      <a class="list-group-item" href="../proc/nanchk.html">NANCHK</a>
+      
+      <a class="list-group-item" href="../proc/ortbak.html">ortbak</a>
+      
+      <a class="list-group-item" href="../proc/orthes.html">orthes</a>
+      
+      <a class="list-group-item" href="../proc/ortran.html">ortran</a>
+      
+      <a class="list-group-item" href="../proc/pgm_write_file.html">PGM_Write_File</a>
+      
+      <a class="list-group-item" href="../proc/poidev.html">POIDEV</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcubochoriccube.html">PoVRay_addCubochoricCube</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcylinder.html">PoVRay_addCylinder</a>
+      
+      <a class="list-group-item" href="../proc/povray_addeulerbox.html">PoVRay_addEulerBox</a>
+      
+      <a class="list-group-item" href="../proc/povray_addreferenceframe.html">PoVRay_addReferenceFrame</a>
+      
+      <a class="list-group-item" href="../proc/povray_addsphere.html">PoVRay_addSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_addwireframesphere.html">PoVRay_addWireFrameSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_declare_df3file.html">PoVRay_declare_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/povray_drawfz.html">PoVRay_drawFZ</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz222.html">PoVRay_getpos_FZ222</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz23.html">PoVRay_getpos_FZ23</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz32.html">PoVRay_getpos_FZ32</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz422.html">PoVRay_getpos_FZ422</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz432.html">PoVRay_getpos_FZ432</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz622.html">PoVRay_getpos_FZ622</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz2.html">PoVRay_initFZ2</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz3.html">PoVRay_initFZ3</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz4.html">PoVRay_initFZ4</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz6.html">PoVRay_initFZ6</a>
+      
+      <a class="list-group-item" href="../proc/povray_openfile.html">PoVRay_openFile</a>
+      
+      <a class="list-group-item" href="../proc/povray_setcamera.html">PoVRay_setCamera</a>
+      
+      <a class="list-group-item" href="../proc/povray_setlightsource.html">PoVRay_setLightSource</a>
+      
+      <a class="list-group-item" href="../proc/povray_write_df3file.html">PoVRay_write_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/prelim.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/prelim%7E2.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/printtime.html">PrintTime</a>
+      
+      <a class="list-group-item" href="../proc/pythag.html">pythag</a>
+      
+      <a class="list-group-item" href="../proc/qsortd.html">qsortd</a>
+      
+      <a class="list-group-item" href="../proc/qzhes.html">qzhes</a>
+      
+      <a class="list-group-item" href="../proc/qzit.html">qzit</a>
+      
+      <a class="list-group-item" href="../proc/qzval.html">qzval</a>
+      
+      <a class="list-group-item" href="../proc/qzvec.html">qzvec</a>
+      
+      <a class="list-group-item" href="../proc/r8_swap.html">r8_swap</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print.html">r8mat_print</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print_some.html">r8mat_print_some</a>
+      
+      <a class="list-group-item" href="../proc/r8vec2_print.html">r8vec2_print</a>
+      
+      <a class="list-group-item" href="../proc/r8vec_print.html">r8vec_print</a>
+      
+      <a class="list-group-item" href="../proc/ran.html">ran</a>
+      
+      <a class="list-group-item" href="../proc/randddmarginal.html">randDDMarginal</a>
+      
+      <a class="list-group-item" href="../proc/randuniformsphere.html">randUniformSphere</a>
+      
+      <a class="list-group-item" href="../proc/ratqr.html">ratqr</a>
+      
+      <a class="list-group-item" href="../proc/read_apb_data.html">read_apb_data</a>
+      
+      <a class="list-group-item" href="../proc/read_stem_data.html">read_STEM_data</a>
+      
+      <a class="list-group-item" href="../proc/read_ysh_dislocation_data.html">read_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/rebak.html">rebak</a>
+      
+      <a class="list-group-item" href="../proc/rebakb.html">rebakb</a>
+      
+      <a class="list-group-item" href="../proc/reduc.html">reduc</a>
+      
+      <a class="list-group-item" href="../proc/reduc2.html">reduc2</a>
+      
+      <a class="list-group-item" href="../proc/reducedisorientationtomfz.html">ReduceDisorientationtoMFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtocubicefz.html">ReduceOrientationtoCubicEFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtorfz.html">ReduceOrientationtoRFZ</a>
+      
+      <a class="list-group-item" href="../proc/rescue.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rescue%7E2.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rg.html">rg</a>
+      
+      <a class="list-group-item" href="../proc/rgg.html">rgg</a>
+      
+      <a class="list-group-item" href="../proc/ri1.html">RI1</a>
+      
+      <a class="list-group-item" href="../proc/ri2.html">RI2</a>
+      
+      <a class="list-group-item" href="../proc/ricerca_lungo_assi.html">RICERCA_LUNGO_ASSI</a>
+      
+      <a class="list-group-item" href="../proc/rih1.html">RIH1</a>
+      
+      <a class="list-group-item" href="../proc/rih2.html">RIH2</a>
+      
+      <a class="list-group-item" href="../proc/rih3.html">RIH3</a>
+      
+      <a class="list-group-item" href="../proc/rng_seed.html">rng_seed</a>
+      
+      <a class="list-group-item" href="../proc/rng_uniform.html">rng_uniform</a>
+      
+      <a class="list-group-item" href="../proc/rs.html">rs</a>
+      
+      <a class="list-group-item" href="../proc/rsb.html">rsb</a>
+      
+      <a class="list-group-item" href="../proc/rsg.html">rsg</a>
+      
+      <a class="list-group-item" href="../proc/rsgab.html">rsgab</a>
+      
+      <a class="list-group-item" href="../proc/rsgba.html">rsgba</a>
+      
+      <a class="list-group-item" href="../proc/rsm.html">rsm</a>
+      
+      <a class="list-group-item" href="../proc/rsp.html">rsp</a>
+      
+      <a class="list-group-item" href="../proc/rspp.html">rspp</a>
+      
+      <a class="list-group-item" href="../proc/rst.html">rst</a>
+      
+      <a class="list-group-item" href="../proc/rt.html">rt</a>
+      
+      <a class="list-group-item" href="../proc/sample_cone.html">sample_Cone</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocube.html">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocubefilled.html">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../proc/samplefcctwinrfz.html">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../proc/sampleisomisorientation.html">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../proc/samplerfz.html">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../proc/samplerfztwin.html">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../proc/senzaderglob.html">SENZADERGLOB</a>
+      
+      <a class="list-group-item" href="../proc/ssort.html">SSORT</a>
+      
+      <a class="list-group-item" href="../proc/stop.html">STOP</a>
+      
+      <a class="list-group-item" href="../proc/svd.html">svd</a>
+      
+      <a class="list-group-item" href="../proc/time_estimate.html">Time_estimate</a>
+      
+      <a class="list-group-item" href="../proc/time_remaining.html">Time_remaining</a>
+      
+      <a class="list-group-item" href="../proc/time_report.html">Time_report</a>
+      
+      <a class="list-group-item" href="../proc/time_reset.html">Time_reset</a>
+      
+      <a class="list-group-item" href="../proc/time_start.html">Time_start</a>
+      
+      <a class="list-group-item" href="../proc/time_stop.html">Time_stop</a>
+      
+      <a class="list-group-item" href="../proc/time_tick.html">Time_tick</a>
+      
+      <a class="list-group-item" href="../proc/time_tock.html">Time_tock</a>
+      
+      <a class="list-group-item" href="../proc/timestamp.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/timestamp%7E2.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/tinvit.html">tinvit</a>
+      
+      <a class="list-group-item" href="../proc/tql1.html">tql1</a>
+      
+      <a class="list-group-item" href="../proc/tql2.html">tql2</a>
+      
+      <a class="list-group-item" href="../proc/tqlrat.html">tqlrat</a>
+      
+      <a class="list-group-item" href="../proc/trbak1.html">trbak1</a>
+      
+      <a class="list-group-item" href="../proc/trbak3.html">trbak3</a>
+      
+      <a class="list-group-item" href="../proc/tred1.html">tred1</a>
+      
+      <a class="list-group-item" href="../proc/tred2.html">tred2</a>
+      
+      <a class="list-group-item" href="../proc/tred3.html">tred3</a>
+      
+      <a class="list-group-item" href="../proc/tridib.html">tridib</a>
+      
+      <a class="list-group-item" href="../proc/trsbox.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/trsbox%7E2.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/tsturm.html">tsturm</a>
+      
+      <a class="list-group-item" href="../proc/update.html">update</a>
+      
+      <a class="list-group-item" href="../proc/update%7E2.html">update</a>
+      
+      <a class="list-group-item" href="../proc/vmfmeandirdensity.html">VMFMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/watsonmeandirdensity.html">WatsonMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/weko.html">WEKO</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp%7E2.html">YSHDisp</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp.html">YSHDisp</a>
+      
+    </div>
+  </div>
+</div>
+
+
+  </section>
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2017 <a rel="license" href="http://www.freebsd.org/copyright/freebsd-doc-license.html">FreeBSD Documentation License</a></p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran Program was developed by Marc De Graef Research Group/Carnegie Mellon University</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js'],
+        'HTML-CSS': { 
+           styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: '#000000 ! important'} }
+        }
+      });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  </body>
+</html>

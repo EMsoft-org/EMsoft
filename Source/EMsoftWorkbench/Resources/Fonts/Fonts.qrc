@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/">
+        <file>FiraSans-Regular.ttf</file>
+        <file>Lato-Black.ttf</file>
+        <file>Lato-BlackItalic.ttf</file>
+        <file>Lato-Bold.ttf</file>
+        <file>Lato-BoldItalic.ttf</file>
+        <file>Lato-Hairline.ttf</file>
+        <file>Lato-HairlineItalic.ttf</file>
+        <file>Lato-Italic.ttf</file>
+        <file>Lato-Light.ttf</file>
+        <file>Lato-LightItalic.ttf</file>
+        <file>Lato-Regular.ttf</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,28 @@
+
+.r ECPDisplay
+resolve_all                                                                                                                                                                            
+
+;define a few variables
+appname = 'ECPDisplay'
+saveappname = appname+'.sav'
+VMappdir = '/Users/mdg/Files/OSU/Software/CTEMsoft2013/IDL/VMapps'
+Resdir = '/Users/mdg/Files/OSU/Software/CTEMsoft2013/IDL/VMapps/ECPDisplay/Resources'
+manifestfile = '/Users/mdg/Files/OSU/IDL/Phasemaps/manifest_rt.txt'
+
+cd,CURRENT=cdir
+
+; create the .sav file
+save,/routines,filename=saveappname
+
+; create the Virtual Machine app for Mac OS X 64bit
+make_rt,appname,VMappdir,savefile=cdir+'/'+saveappname,manifest=manifestfile,/VM,/MACINT64,/OVERWRITE
+
+; add whatever resource folder is needed
+cmd = '/bin/mkdir '+Resdir
+spawn,cmd
+
+; and add the logo file to it
+cmd = '/bin/cp /Users/mdg/Files/OSU/Software/CTEMsoft2013/IDL/Resources/SEMlogo.jpg '+ResDir
+spawn,cmd
+
+exit

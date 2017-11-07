@@ -689,7 +689,6 @@ sval(1) = mcnl%mode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create mode dataset',.TRUE.)
 
-
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 

@@ -185,7 +185,6 @@ character(100)                    :: c
  nullify(HDF_head)
  call timestamp(datestring=dstr, timestring=tstrb)
 
-
  numsy = mcnl%numsx
 
  nullify(cell)
@@ -254,7 +253,6 @@ character(100)                    :: c
 !$OMP END DO
 
 !$OMP END PARALLEL
-
 
 ! output in .h5 format.
 
@@ -332,9 +330,7 @@ call HDF_pop(HDF_head,.TRUE.)
 ! and close the fortran hdf interface
 call h5close_EMsoft(hdferr)
 
-
-
-! and here we create the output file
+! and some finale messages...
  call Message(' ',"(A)")
  call Message(' All threads complete; saving data to file '//trim(mcnl%dataname), frm = "(A)")
 
@@ -426,7 +422,6 @@ real(kind=dbl)          :: Ze                   ! average atomic number
 real(kind=dbl)          :: density              ! density in g/cm^3
 real(kind=dbl)          :: at_wt                ! average atomic weight in g/mole
 
-! variable passing arrays
 integer(kind=irg)               :: TID
 
 ! parallel random number variable 

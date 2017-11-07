@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>StatusBarWidget</class>
+ <widget class="QFrame" name="StatusBarWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>375</width>
+    <height>24</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Frame</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame#StatusBarWidget
+{
+
+}
+</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::NoFrame</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Raised</enum>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>3</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Minimum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QPushButton" name="navigatorBtn">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>FiraSans</family>
+       <pointsize>11</pointsize>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(200, 200, 200);
+	color: rgb(50, 50, 50);
+	border: 1px solid rgb(120, 120, 120);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 2 2 2 2px;
+}
+
+QPushButton:hover
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(200, 200, 200);
+	color: rgb(50, 50, 50);
+	border: 2px solid rgb(120, 120, 120);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 1 1 1 1px;
+}
+
+QPushButton:checked
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(120, 120, 120);
+	color: rgb(240, 240, 240);
+	border: 1px solid rgb(200, 200, 200);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 2 2 2 2px;
+}
+
+QPushButton:checked:hover
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(120, 120, 120);
+	color: rgb(240, 240, 240);
+	border: 2px solid rgb(200, 200, 200);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 1 1 1 1px;
+}
+
+/* Comment */</string>
+     </property>
+     <property name="text">
+      <string>Navigator</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="issuesBtn">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>FiraSans</family>
+       <pointsize>11</pointsize>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(200, 200, 200);
+	color: rgb(50, 50, 50);
+	border: 1px solid rgb(120, 120, 120);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 2 2 2 2px;
+}
+
+QPushButton:hover
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(200, 200, 200);
+	color: rgb(50, 50, 50);
+	border: 2px solid rgb(120, 120, 120);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 1 1 1 1px;
+}
+
+QPushButton:checked
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(120, 120, 120);
+	color: rgb(240, 240, 240);
+	border: 1px solid rgb(200, 200, 200);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 2 2 2 2px;
+}
+
+QPushButton:checked:hover
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(120, 120, 120);
+	color: rgb(240, 240, 240);
+	border: 2px solid rgb(200, 200, 200);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 1 1 1 1px;
+}
+
+/* Comment */</string>
+     </property>
+     <property name="text">
+      <string>Issues</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="stdOutputBtn">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>24</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>FiraSans</family>
+       <pointsize>11</pointsize>
+       <weight>75</weight>
+       <italic>false</italic>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QPushButton
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(200, 200, 200);
+	color: rgb(50, 50, 50);
+	border: 1px solid rgb(120, 120, 120);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 2 2 2 2px;
+}
+
+QPushButton:hover
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(200, 200, 200);
+	color: rgb(50, 50, 50);
+	border: 2px solid rgb(120, 120, 120);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 1 1 1 1px;
+}
+
+QPushButton:checked
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(120, 120, 120);
+	color: rgb(240, 240, 240);
+	border: 1px solid rgb(200, 200, 200);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 2 2 2 2px;
+}
+
+QPushButton:checked:hover
+{
+	font: 75 11pt &quot;FiraSans&quot;;
+	font-weight: bold;
+  	background-color: rgb(120, 120, 120);
+	color: rgb(240, 240, 240);
+	border: 2px solid rgb(200, 200, 200);
+	border-radius: 3px;
+ 	padding: 1 8 1 8px;
+	margin: 1 1 1 1px;
+}
+
+/* Comment */</string>
+     </property>
+     <property name="text">
+      <string>Standard Output</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

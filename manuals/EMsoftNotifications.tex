@@ -1,0 +1,186 @@
+
+\documentclass[DIV=calc, paper=letter, fontsize=11pt]{scrartcl}	 % A4 paper and 11pt font size
+
+\usepackage[body={6.5in,9.0in},
+  top=1.0in, left=1.0in]{geometry}
+  
+\usepackage[english]{babel} % English language/hyphenation
+\usepackage[protrusion=true,expansion=true]{microtype} % Better typography
+\usepackage{amsmath,amsfonts,amsthm} % Math packages
+\usepackage[svgnames]{xcolor} % Enabling colors by their 'svgnames'
+\usepackage[hang, small,labelfont=bf,up,textfont=it,up]{caption} % Custom captions under/above floats in tables or figures
+\usepackage{booktabs} % Horizontal rules in tables
+\usepackage{fix-cm}	 % Custom font sizes - used for the initial letter in the document
+\usepackage{soul}
+
+\usepackage{sectsty} % Enables custom section titles
+\allsectionsfont{\usefont{OT1}{phv}{b}{n}} % Change the font of all section commands
+
+\usepackage{fancyhdr} % Needed to define custom headers/footers
+\pagestyle{fancy} % Enables the custom headers/footers
+\usepackage{lastpage} % Used to determine the number of pages in the document (for "Page X of Total")
+
+\usepackage{fancyvrb}% used to include files verbatim
+%\usepackage{chemsym}
+
+\usepackage{hyperref}
+
+\usepackage[backend=bibtex,style=numeric,sorting=ydnt,maxnames=15]{biblatex}
+\renewbibmacro{in:}{}
+
+% Count total number of entries in each refsection
+\AtDataInput{%
+  \csnumgdef{entrycount:\therefsection}{%
+    \csuse{entrycount:\therefsection}+1}}
+
+% Print the labelnumber as the total number of entries in the
+% current refsection, minus the actual labelnumber, plus one
+\DeclareFieldFormat{labelnumber}{\mkbibdesc{#1}}    
+\newrobustcmd*{\mkbibdesc}[1]{%
+  \number\numexpr\csuse{entrycount:\therefsection}+1-#1\relax}
+
+
+%\addbibresource[label=papers]{mypubs.bib}
+%\addbibresource[label=books]{mypubs.bib}
+%\addbibresource[label=edited]{mypubs.bib}
+%\addbibresource[label=chapters]{mypubs.bib}
+
+
+% Headers - all currently empty
+\lhead{}
+\chead{}
+\rhead{}
+
+% Footers
+\lfoot{\textsf{EMsoft--2017} , Release 3.2, \today}
+\cfoot{}
+\rfoot{\footnotesize Page \thepage\ of \pageref{LastPage}} % "Page 1 of 2"
+
+\renewcommand{\headrulewidth}{0.0pt} % No header rule
+\renewcommand{\footrulewidth}{0.4pt} % Thin footer rule
+
+\usepackage{lettrine} % Package to accentuate the first letter of the text
+\newcommand{\initial}[1]{ % Defines the command and style for the first letter
+\lettrine[lines=3,lhang=0.3,nindent=0em]{
+\color{DarkGoldenrod}
+{\textsf{#1}}}{}}
+
+\usepackage{titling} % Allows custom title configuration
+
+\newcommand{\HorRule}{\color{DarkGoldenrod} \rule{\linewidth}{1pt}} % Defines the gold horizontal rule around the title
+
+\pretitle{\vspace{-1.5in} \begin{center} \HorRule \fontsize{25}{25} \usefont{OT1}{phv}{b}{n} \color{DarkRed} \selectfont} % Horizontal rule before the title
+
+\title{EMsoft:\\ Setting Up User Notifications} % Your article title
+
+\posttitle{\par\end{center}\vskip 0.5em} % Whitespace under the title
+
+\preauthor{\begin{center}\large \lineskip 0.5em \usefont{OT1}{phv}{b}{sl} \color{DarkRed}} % Author font configuration
+
+\author{\vspace*{-0.7in}} % Your name
+
+\postauthor{\footnotesize \usefont{OT1}{phv}{m}{sl} \color{Black} % Configuration for the institution name
+
+\par\end{center}\HorRule} % Horizontal rule after the title
+%\date{Program Manual, Release 3.0, \today}
+\date{Release 3.2, \today}
+
+\newcommand{\ctp}{\textsf{EMsoft}}
+\newcommand{\ctpb}{\textbf{\textsf{EMsoft}}}
+%
+\begin{document}
+\maketitle
+
+\renewcommand{\contentsname}{Table of Contents}
+{\small\tableofcontents}
+
+\newpage
+\section{User Notifications in \ctp}
+Some of the programs in the \ctp\ package can take quite a while to run.  In version 3.2, we have added an option to have those programs automatically notify
+the user when the run has completed.  The notification can be either in the form of an email message, or via a message push to a slack.com channel.  Access
+to this new feature only requires a few additional lines in the \textsf{EMsoftConfig.json} configuration file.
+
+\subsection{Email notifications}
+Email notification is very easy to set up and only requires one additional configuration parameter:
+\begin{verse}
+	{\color{blue} ``EMNotify'': ``Email''},
+\end{verse}
+In addition, you must make sure that the \textsf{UserEmail} parameter has the correct email address to which the notifications should be sent.
+
+\subsection{Slack notifications}
+Slack notifications require that the user set up a slack.com message channel.  To do so, first obtain a team Slack URL of the form \textsf{your-team-url.slack.com};
+even if you are just working by yourself, you will still need to set up a team.  You could, for instance, name your team in the following form: \textsf{institution-EMsoft.slack.com},
+where \textsf{institution} is the abbreviation for your university or research entity.   Then you provide your email address and a password to complete the set up
+of your slack account (this is the free account). 
+
+Once you have a team URL, you will find that you have two default message channels, \textsf{\#general} and \textsf{\#random}; we suggest that you create an \textsf{\#EMsoft}
+channel as well.  At this point, you may want to also install the desktop and/or mobile slack app which you can download from the slack.com site or via the Apple Store for Mac OS X
+users.  You can access your slack.com account via a web browser or via the app.  You will also need to allow slack to push notifications to your desktop/mobile.
+
+Next, you will need to set up \textsf{incoming webhook integration}. Point your browser to 
+\begin{verse}
+	\textsf{https://api.slack.com/custom-integrations}
+\end{verse} 
+Select the \textsf{Incoming Webhooks} menu item. In the first section titled \textit{Send data into Slack in real-time}, click on the \textsf{incoming webhook integration} link in the paragraph starting with \textit{Start by setting up $\ldots$}.  You will get a page titled \textsf{Incoming Webhooks}; select the name of the channel that you wish to use for messaging from the pull down menu in the \textit{Post to Channel} form.
+Then click the green button, which will get you to an integration settings page.  From this page you will need to copy the \textsf{Webhook URL} entry into you \textsf{EMsoftConfig.json} configuration file; this is a long entry with several code strings in it that uniquely define your message channel, so you should not share this URL with anyone else (unless you want that person to be able to post messages to your channel).
+
+In the \textsf{EMsoftConfig.json} file, add the following three lines:
+\begin{verse}
+	{\color{blue} ``EMNotify'': ``Slack'',\\
+	``EMSlackWebHookURL'': ``https://hooks.slack.com/services/T6$\ldots$/B6$\ldots$'',\\
+        ``EMSlackChannel'': ``channelname'',}
+\end{verse}
+where channelname must be replaced by the name of the channel you want messages to be posted to (without the \# character).  
+On the \textit{Integration Settings} page, check the other items and customize as needed, then Save
+the Settings.  You should now have a functioning \ctp\ message channel!  Try it by running the \text{EMsoftSlackTest} program from the command line$\ldots$
+
+\section{Adding notifications to your own f90 programs}
+If you are developing \ctp\ code, you can easily add notification support to your code.  Here is a simple example of code that you could insert into your own subroutine or main program:
+\begin{verbatim}
+! at the top of your subroutine
+use notifications
+
+! in the variable declaration section
+character(fnlen),ALLOCATABLE      :: MessageLines(:)
+integer(kind=irg)                 :: NumLines
+character(fnlen)                  :: MessageTitle
+character(100)                    :: c
+
+! at the end of your program
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(namelist%Notify).eq.'On') then 
+! allocate the message string array  
+    NumLines = 2
+    allocate(MessageLines(NumLines))
+! get the hostname
+    call hostnm(c)
+! initialize the message stings 
+    MessageLines(1) = 'ProgramName program has ended successfully'
+    MessageLines(2) = 'Data stored in '//trim(outname)
+! define the title of the message (will appear in bold face at the top of your message)
+    MessageTitle = 'EMsoft on '//trim(c)
+! and post the message to Slack    
+    i = PostMessage(MessageLines, NumLines, MessageTitle)
+  end if
+end if
+\end{verbatim}
+In this code the variable ``outname'' is a full path file name.  The variable \textit{namelist\%Notify} is part of a namelist that was read
+from a namelist parameter file;  see the \textsf{EMMCOpenCL.template} file for an example.  Obviously, you can add more output lines
+by increasing the \textit{NumLines} parameter and entering appropriate text in the \textit{MessageLines} string array.  You could print out the 
+values of certain program variables, for instance the execution time, or the final results of the calculation.
+
+When executed from a workstation with IP name \textsf{mycomputer.cmu.edu}, this code will produce a Slack message of the following form:
+\begin{verbatim}
+EMsoft on MYCOMPUTER.CMU.EDU APP [1:50 PM] 
+ProgramName program has ended successfully
+Data stored in /Users/.../Files/.../testfile.h5
+\end{verbatim}
+
+Finally, we should note that a free slack.com account entitles you to a maximum of $10,000$ messages; you can manually delete messages one by one, but
+to remove that restriction you will have to register with a paid account.  Slack makes it nearly impossible to perform bulk deletes of messages by limiting how 
+many individual delete commands can be requested per second.
+
+\end{document}
+
+
+

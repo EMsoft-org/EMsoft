@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	 <meta name="description" content="EMsoft main library">
+    
+    <meta name="author" content="Marc De Graef Research Group/Carnegie Mellon University" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>hdftest &ndash; Fortran Program</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Fortran Program </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+				
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+		 aria-expanded="false">Contents <span class="caret"></span></a>
+	      <ul class="dropdown-menu">
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+				
+				
+            <li><a href="../lists/modules.html">Modules</a></li>
+				
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+				
+				
+            <li><a href="../lists/absint.html">Abstract Interfaces</a></li>
+								
+            <li><a href="../lists/types.html">Derived Types</a></li>
+				
+				
+            <li><a href="../lists/programs.html">Programs</a></li>
+				
+            </ul>
+            </li>
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>hdftest
+    <small>Program</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+	  data-placement="bottom" data-html="true"
+	  title="56.3% of total for programs.">125 statements</a>
+     </li> 
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/hdftest.f90"> Source File</a></li>
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+     <li><a href='../sourcefile/hdftest.f90.html'>hdftest.f90</a></li>
+  
+     <li class="active">hdftest</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-filename">filename</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-fix_filename">fix_filename</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dsetname">dsetname</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname">aname</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname2">aname2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname3">aname3</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname4">aname4</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname5">aname5</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname6">aname6</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-rank">RANK</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-nx">NX</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-ny">NY</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-file_id">file_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dset_id">dset_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dataspace">dataspace</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_id">attr_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr2_id">attr2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr3_id">attr3_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr4_id">attr4_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr5_id">attr5_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr6_id">attr6_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aspace_id">aspace_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aspace2_id">aspace2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aspace6_id">aspace6_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dtype_id">dtype_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype_id">atype_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype2_id">atype2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype3_id">atype3_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype4_id">atype4_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype5_id">atype5_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-adims">adims</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-adims2">adims2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-arank">arank</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attrlen">attrlen</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_space">attr_space</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr2_space">attr2_space</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_type">attr_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr2_type">attr2_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr3_type">attr3_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr4_type">attr4_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr5_type">attr5_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr6_type">attr6_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-num_attrs">num_attrs</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_storage">attr_storage</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_name">attr_name</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-name_size">name_size</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_data">attr_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_data">aread_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_character_data">attr_character_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_double_data">attr_double_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_real_data">attr_real_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_integer_data">attr_integer_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_character_data">aread_character_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_integer_data">aread_integer_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_null_data">aread_null_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_double_data">aread_double_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_real_data">aread_real_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-fname%7E3">fname</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-datapath">datapath</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-g1">g1</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-g2">g2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-g3">g3</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-s%7E3">s</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-error">error</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-total_error">total_error</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-i%7E7">i</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-data_dims">data_dims</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-npoints">npoints</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-rnk">rnk</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-type_class">type_class</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-type_size">type_size</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-grp1_id">grp1_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-grp2_id">grp2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-grp3_id">grp3_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_dbl1">buf_dbl1</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_dbl2">buf_dbl2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_dbl3">buf_dbl3</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_flt1">buf_flt1</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-scversion">scversion</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dstring">dstring</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-tstring">tstring</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../program/hdftest.html#src">hdftest</a>
+  </div>
+</div>
+
+
+  <hr>
+  
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprogs-0">All Programs</a></h3></div>
+  <div id="allprogs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/dispfield.html">dispfield</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html">hdftest</a>
+      
+    </div>
+  </div>
+</div>
+
+
+</div>  
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    
+  
+    <ul class="list-inline">
+      <li><h4>Uses:</h4></li>
+      
+      <li>hdf5</li>
+      
+      <li>h5lt</li>
+      
+    </ul>
+    
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: program~~hdftest~~UsesGraph Pages: 1 -->
+<svg id="programhdftestUsesGraph" width="152pt" height="74pt"
+ viewBox="0.00 0.00 152.00 74.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="program~~hdftest~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 70)">
+<title>program~~hdftest~~UsesGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-70 148,-70 148,4 -4,4"/>
+<!-- program~hdftest -->
+<g id="program~~hdftest~~UsesGraph_node1" class="node"><title>program~hdftest</title>
+<polygon fill="none" stroke="black" points="144,-45 90,-45 90,-21 144,-21 144,-45"/>
+<text text-anchor="middle" x="117" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50">hdftest</text>
+</g>
+<!-- h5lt -->
+<g id="program~~hdftest~~UsesGraph_node2" class="node"><title>h5lt</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-66 0,-66 0,-42 54,-42 54,-66"/>
+<text text-anchor="middle" x="27" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5lt</text>
+</g>
+<!-- h5lt&#45;&gt;program~hdftest -->
+<g id="program~~hdftest~~UsesGraph_edge1" class="edge"><title>h5lt&#45;&gt;program~hdftest</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M54.4029,-47.6993C62.481,-45.7716 71.5067,-43.6177 80.1046,-41.5659"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="81.0046,-44.9495 89.919,-39.2239 79.3797,-38.1407 81.0046,-44.9495"/>
+</g>
+<!-- hdf5 -->
+<g id="program~~hdftest~~UsesGraph_node3" class="node"><title>hdf5</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,-0 54,-0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">hdf5</text>
+</g>
+<!-- hdf5&#45;&gt;program~hdftest -->
+<g id="program~~hdftest~~UsesGraph_edge2" class="edge"><title>hdf5&#45;&gt;program~hdftest</title>
+<path fill="none" stroke="#ff0000" stroke-dasharray="5,2" d="M54.4029,-18.3007C62.481,-20.2284 71.5067,-22.3823 80.1046,-24.4341"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="79.3797,-27.8593 89.919,-26.7761 81.0046,-21.0505 79.3797,-27.8593"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="486pt" height="32pt"
+ viewBox="0.00 0.00 486.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 482,-28 482,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node"><title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,-0 54,-0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node"><title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="138,-24 72,-24 72,-0 138,-0 138,-24"/>
+<text text-anchor="middle" x="105" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="219.5,-24 156.5,-24 156.5,-0 219.5,-0 219.5,-24"/>
+<text text-anchor="middle" x="188" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="292,-24 238,-24 238,-0 292,-0 292,-24"/>
+<text text-anchor="middle" x="265" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="364,-24 310,-24 310,-0 364,-0 364,-24"/>
+<text text-anchor="middle" x="337" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="478,-24 382,-24 382,-0 478,-0 478,-24"/>
+<text text-anchor="middle" x="430" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a parent (sub)module to the submodule which is
+    descended from it. Dashed arrows point from a module being used to the
+    module or program unit using it. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+    
+
+    <br><br>
+    
+    
+     <h3>Calls</h3>
+     
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: program~~hdftest~~CallsGraph Pages: 1 -->
+<svg id="programhdftestCallsGraph" width="234pt" height="536pt"
+ viewBox="0.00 0.00 234.00 536.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="program~~hdftest~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 532)">
+<title>program~~hdftest~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-532 230,-532 230,4 -4,4"/>
+<!-- program~hdftest -->
+<g id="program~~hdftest~~CallsGraph_node1" class="node"><title>program~hdftest</title>
+<polygon fill="none" stroke="black" points="54,-276 0,-276 0,-252 54,-252 54,-276"/>
+<text text-anchor="middle" x="27" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50">hdftest</text>
+</g>
+<!-- h5fclose_f -->
+<g id="program~~hdftest~~CallsGraph_node2" class="node"><title>h5fclose_f</title>
+<polygon fill="#777777" stroke="#777777" points="188,-528 128,-528 128,-504 188,-504 188,-528"/>
+<text text-anchor="middle" x="158" y="-513.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5fclose_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5fclose_f -->
+<g id="program~~hdftest~~CallsGraph_edge1" class="edge"><title>program~hdftest&#45;&gt;h5fclose_f</title>
+<path fill="none" stroke="#ff0000" d="M27.4709,-276.227C26.5209,-314.195 28.9151,-431.325 90,-495 97.4822,-502.799 107.818,-507.715 118.134,-510.81"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="117.375,-514.227 127.925,-513.253 119.07,-507.436 117.375,-514.227"/>
+</g>
+<!-- proc~timestamp~2 -->
+<g id="program~~hdftest~~CallsGraph_node3" class="node"><title>proc~timestamp~2</title>
+<g id="a_program~~hdftest~~CallsGraph_node3"><a xlink:href="../proc/timestamp%7E2.html" xlink:title="timestamp">
+<polygon fill="#d9534f" stroke="#d9534f" points="188.5,-486 127.5,-486 127.5,-462 188.5,-462 188.5,-486"/>
+<text text-anchor="middle" x="158" y="-471.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">timestamp</text>
+</a>
+</g>
+</g>
+<!-- program~hdftest&#45;&gt;proc~timestamp~2 -->
+<g id="program~~hdftest~~CallsGraph_edge2" class="edge"><title>program~hdftest&#45;&gt;proc~timestamp~2</title>
+<path fill="none" stroke="#ff0000" d="M28.3295,-276.121C29.8982,-309.311 38.8743,-402.547 90,-453 97.4835,-460.385 107.53,-465.177 117.562,-468.286"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="116.936,-471.74 127.495,-470.867 118.696,-464.965 116.936,-471.74"/>
+</g>
+<!-- h5ltmake_dataset_f -->
+<g id="program~~hdftest~~CallsGraph_node4" class="node"><title>h5ltmake_dataset_f</title>
+<polygon fill="#777777" stroke="#777777" points="210,-444 106,-444 106,-420 210,-420 210,-444"/>
+<text text-anchor="middle" x="158" y="-429.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5ltmake_dataset_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5ltmake_dataset_f -->
+<g id="program~~hdftest~~CallsGraph_edge3" class="edge"><title>program~hdftest&#45;&gt;h5ltmake_dataset_f</title>
+<path fill="none" stroke="#ff0000" d="M29.6507,-276.255C34.0762,-304.289 48.8012,-373.555 90,-411 92.1565,-412.96 94.4946,-414.737 96.9614,-416.348"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="95.3224,-419.441 105.768,-421.212 98.7066,-413.314 95.3224,-419.441"/>
+</g>
+<!-- h5gclose_f -->
+<g id="program~~hdftest~~CallsGraph_node5" class="node"><title>h5gclose_f</title>
+<polygon fill="#777777" stroke="#777777" points="189.5,-402 126.5,-402 126.5,-378 189.5,-378 189.5,-402"/>
+<text text-anchor="middle" x="158" y="-387.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5gclose_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5gclose_f -->
+<g id="program~~hdftest~~CallsGraph_edge4" class="edge"><title>program~hdftest&#45;&gt;h5gclose_f</title>
+<path fill="none" stroke="#ff0000" d="M31.8345,-276.01C39.4003,-297.791 58.3209,-343.873 90,-369 97.7261,-375.128 107.26,-379.48 116.687,-382.567"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="115.816,-385.958 126.393,-385.347 117.743,-379.229 115.816,-385.958"/>
+</g>
+<!-- h5gcreate_f -->
+<g id="program~~hdftest~~CallsGraph_node6" class="node"><title>h5gcreate_f</title>
+<polygon fill="#777777" stroke="#777777" points="192,-360 124,-360 124,-336 192,-336 192,-360"/>
+<text text-anchor="middle" x="158" y="-345.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5gcreate_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5gcreate_f -->
+<g id="program~~hdftest~~CallsGraph_edge5" class="edge"><title>program~hdftest&#45;&gt;h5gcreate_f</title>
+<path fill="none" stroke="#ff0000" d="M37.1436,-276.449C48.1752,-290.626 68.002,-313.556 90,-327 97.4012,-331.523 105.864,-335.154 114.227,-338.04"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="113.339,-341.43 123.929,-341.093 115.441,-334.752 113.339,-341.43"/>
+</g>
+<!-- h5close_emsoft -->
+<g id="program~~hdftest~~CallsGraph_node7" class="node"><title>h5close_emsoft</title>
+<polygon fill="#777777" stroke="#777777" points="201,-318 115,-318 115,-294 201,-294 201,-318"/>
+<text text-anchor="middle" x="158" y="-303.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5close_emsoft</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5close_emsoft -->
+<g id="program~~hdftest~~CallsGraph_edge6" class="edge"><title>program~hdftest&#45;&gt;h5close_emsoft</title>
+<path fill="none" stroke="#ff0000" d="M54.2018,-273.023C65.2346,-276.783 78.2227,-281.16 90,-285 95.9324,-286.934 102.171,-288.934 108.356,-290.897"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="107.391,-294.262 117.981,-293.935 109.498,-287.587 107.391,-294.262"/>
+</g>
+<!-- h5open_emsoft -->
+<g id="program~~hdftest~~CallsGraph_node8" class="node"><title>h5open_emsoft</title>
+<polygon fill="#777777" stroke="#777777" points="200.5,-276 115.5,-276 115.5,-252 200.5,-252 200.5,-276"/>
+<text text-anchor="middle" x="158" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5open_emsoft</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5open_emsoft -->
+<g id="program~~hdftest~~CallsGraph_edge7" class="edge"><title>program~hdftest&#45;&gt;h5open_emsoft</title>
+<path fill="none" stroke="#ff0000" d="M54.1051,-264C68.8138,-264 87.7109,-264 105.288,-264"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="105.443,-267.5 115.443,-264 105.443,-260.5 105.443,-267.5"/>
+</g>
+<!-- h5ltmake_dataset_string_f -->
+<g id="program~~hdftest~~CallsGraph_node9" class="node"><title>h5ltmake_dataset_string_f</title>
+<polygon fill="#777777" stroke="#777777" points="226,-234 90,-234 90,-210 226,-210 226,-234"/>
+<text text-anchor="middle" x="158" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5ltmake_dataset_string_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5ltmake_dataset_string_f -->
+<g id="program~~hdftest~~CallsGraph_edge8" class="edge"><title>program~hdftest&#45;&gt;h5ltmake_dataset_string_f</title>
+<path fill="none" stroke="#ff0000" d="M54.2018,-254.977C65.2346,-251.217 78.2227,-246.84 90,-243 95.9324,-241.066 102.171,-239.066 108.356,-237.103"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="109.498,-240.413 117.981,-234.065 107.391,-233.738 109.498,-240.413"/>
+</g>
+<!-- h5fopen_f -->
+<g id="program~~hdftest~~CallsGraph_node10" class="node"><title>h5fopen_f</title>
+<polygon fill="#777777" stroke="#777777" points="187.5,-192 128.5,-192 128.5,-168 187.5,-168 187.5,-192"/>
+<text text-anchor="middle" x="158" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5fopen_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5fopen_f -->
+<g id="program~~hdftest~~CallsGraph_edge9" class="edge"><title>program~hdftest&#45;&gt;h5fopen_f</title>
+<path fill="none" stroke="#ff0000" d="M37.1436,-251.551C48.1752,-237.374 68.002,-214.444 90,-201 98.6461,-195.716 108.741,-191.649 118.433,-188.567"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="119.681,-191.849 128.309,-185.701 117.73,-185.126 119.681,-191.849"/>
+</g>
+<!-- h5ltget_dataset_ndims_f -->
+<g id="program~~hdftest~~CallsGraph_node11" class="node"><title>h5ltget_dataset_ndims_f</title>
+<polygon fill="#777777" stroke="#777777" points="221.5,-150 94.5,-150 94.5,-126 221.5,-126 221.5,-150"/>
+<text text-anchor="middle" x="158" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5ltget_dataset_ndims_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5ltget_dataset_ndims_f -->
+<g id="program~~hdftest~~CallsGraph_edge10" class="edge"><title>program~hdftest&#45;&gt;h5ltget_dataset_ndims_f</title>
+<path fill="none" stroke="#ff0000" d="M31.8345,-251.99C39.4003,-230.209 58.3209,-184.127 90,-159 91.8235,-157.554 93.7478,-156.206 95.7475,-154.951"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="97.7719,-157.836 104.921,-150.017 94.4563,-151.671 97.7719,-157.836"/>
+</g>
+<!-- h5ltget_dataset_info_f -->
+<g id="program~~hdftest~~CallsGraph_node12" class="node"><title>h5ltget_dataset_info_f</title>
+<polygon fill="#777777" stroke="#777777" points="216,-108 100,-108 100,-84 216,-84 216,-108"/>
+<text text-anchor="middle" x="158" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5ltget_dataset_info_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5ltget_dataset_info_f -->
+<g id="program~~hdftest~~CallsGraph_edge11" class="edge"><title>program~hdftest&#45;&gt;h5ltget_dataset_info_f</title>
+<path fill="none" stroke="#ff0000" d="M29.6507,-251.745C34.0762,-223.711 48.8012,-154.445 90,-117 91.3334,-115.788 92.7362,-114.646 94.1959,-113.57"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="96.4068,-116.319 103.092,-108.1 92.74,-110.357 96.4068,-116.319"/>
+</g>
+<!-- h5ltread_dataset_f -->
+<g id="program~~hdftest~~CallsGraph_node13" class="node"><title>h5ltread_dataset_f</title>
+<polygon fill="#777777" stroke="#777777" points="207.5,-66 108.5,-66 108.5,-42 207.5,-42 207.5,-66"/>
+<text text-anchor="middle" x="158" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5ltread_dataset_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5ltread_dataset_f -->
+<g id="program~~hdftest~~CallsGraph_edge12" class="edge"><title>program~hdftest&#45;&gt;h5ltread_dataset_f</title>
+<path fill="none" stroke="#ff0000" d="M28.3295,-251.879C29.8982,-218.689 38.8743,-125.453 90,-75 92.847,-72.1905 96.0648,-69.7562 99.5118,-67.6471"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="101.175,-70.7278 108.471,-63.0457 97.9764,-64.501 101.175,-70.7278"/>
+</g>
+<!-- h5fcreate_f -->
+<g id="program~~hdftest~~CallsGraph_node14" class="node"><title>h5fcreate_f</title>
+<polygon fill="#777777" stroke="#777777" points="190.5,-24 125.5,-24 125.5,-0 190.5,-0 190.5,-24"/>
+<text text-anchor="middle" x="158" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">h5fcreate_f</text>
+</g>
+<!-- program~hdftest&#45;&gt;h5fcreate_f -->
+<g id="program~~hdftest~~CallsGraph_edge13" class="edge"><title>program~hdftest&#45;&gt;h5fcreate_f</title>
+<path fill="none" stroke="#ff0000" d="M27.4709,-251.773C26.5209,-213.805 28.9151,-96.675 90,-33 96.8269,-25.8837 106.03,-21.1679 115.425,-18.0461"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="116.494,-21.3819 125.195,-15.3361 114.623,-14.6366 116.494,-21.3819"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="554pt" height="32pt"
+ viewBox="0.00 0.00 553.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 549.5,-28 549.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="63,-24 0,-24 0,-0 63,-0 63,-24"/>
+<text text-anchor="middle" x="31.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="135.5,-24 81.5,-24 81.5,-0 135.5,-0 135.5,-24"/>
+<text text-anchor="middle" x="108.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node"><title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="207.5,-24 153.5,-24 153.5,-0 207.5,-0 207.5,-24"/>
+<text text-anchor="middle" x="180.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node"><title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="359.5,-24 225.5,-24 225.5,-0 359.5,-0 359.5,-24"/>
+<text text-anchor="middle" x="292.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="431.5,-24 377.5,-24 377.5,-0 431.5,-0 431.5,-24"/>
+<text text-anchor="middle" x="404.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="545.5,-24 449.5,-24 449.5,-0 545.5,-0 545.5,-24"/>
+<text text-anchor="middle" x="497.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+     
+    <br>
+
+     <section class="visible-xs visible-sm hidden-md">
+       
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-filename">filename</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-fix_filename">fix_filename</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dsetname">dsetname</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname">aname</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname2">aname2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname3">aname3</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname4">aname4</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname5">aname5</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aname6">aname6</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-rank">RANK</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-nx">NX</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-ny">NY</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-file_id">file_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dset_id">dset_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dataspace">dataspace</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_id">attr_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr2_id">attr2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr3_id">attr3_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr4_id">attr4_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr5_id">attr5_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr6_id">attr6_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aspace_id">aspace_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aspace2_id">aspace2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aspace6_id">aspace6_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dtype_id">dtype_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype_id">atype_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype2_id">atype2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype3_id">atype3_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype4_id">atype4_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-atype5_id">atype5_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-adims">adims</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-adims2">adims2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-arank">arank</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attrlen">attrlen</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_space">attr_space</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr2_space">attr2_space</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_type">attr_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr2_type">attr2_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr3_type">attr3_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr4_type">attr4_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr5_type">attr5_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr6_type">attr6_type</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-num_attrs">num_attrs</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_storage">attr_storage</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_name">attr_name</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-name_size">name_size</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_data">attr_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_data">aread_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_character_data">attr_character_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_double_data">attr_double_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_real_data">attr_real_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-attr_integer_data">attr_integer_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_character_data">aread_character_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_integer_data">aread_integer_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_null_data">aread_null_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_double_data">aread_double_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-aread_real_data">aread_real_data</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-fname%7E3">fname</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-datapath">datapath</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-g1">g1</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-g2">g2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-g3">g3</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-s%7E3">s</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-error">error</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-total_error">total_error</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-i%7E7">i</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-data_dims">data_dims</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-npoints">npoints</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-rnk">rnk</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-type_class">type_class</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-type_size">type_size</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-grp1_id">grp1_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-grp2_id">grp2_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-grp3_id">grp3_id</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_dbl1">buf_dbl1</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_dbl2">buf_dbl2</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_dbl3">buf_dbl3</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-buf_flt1">buf_flt1</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-scversion">scversion</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-dstring">dstring</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html#variable-tstring">tstring</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../program/hdftest.html#src">hdftest</a>
+  </div>
+</div>
+
+
+     </section>
+     <br class="visible-xs visible-sm hidden-md">
+
+     
+
+    
+    <section>
+    <h2>Variables</h2>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-filename"></span>character(len=5),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>filename</strong></td><td> =</td><td>"atest"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fix_filename"></span>character(len=80)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>fix_filename</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dsetname"></span>character(len=9),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>dsetname</strong></td><td> =</td><td>"atestdset"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aname"></span>character(len=11),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>aname</strong></td><td> =</td><td>"attr_string"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aname2"></span>character(len=14),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>aname2</strong></td><td> =</td><td>"attr_character"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aname3"></span>character(len=11),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>aname3</strong></td><td> =</td><td>"attr_double"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aname4"></span>character(len=9),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>aname4</strong></td><td> =</td><td>"attr_real"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aname5"></span>character(len=12),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>aname5</strong></td><td> =</td><td>"attr_integer"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aname6"></span>character(len=9),</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>aname6</strong></td><td> =</td><td>"attr_null"</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rank"></span>integer,</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>RANK</strong></td><td> =</td><td>2</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nx"></span>integer,</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>NX</strong></td><td> =</td><td>4</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ny"></span>integer,</td>
+  
+  
+  <td>parameter</td><td>::</td>
+  <td><strong>NY</strong></td><td> =</td><td>5</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-file_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>file_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dset_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dset_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dataspace"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dataspace</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr2_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr2_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr3_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr3_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr4_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr4_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr5_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr5_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr6_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr6_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aspace_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>aspace_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aspace2_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>aspace2_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aspace6_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>aspace6_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dtype_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dtype_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-atype_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>atype_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-atype2_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>atype2_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-atype3_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>atype3_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-atype4_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>atype4_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-atype5_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>atype5_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-adims"></span>integer(kind=HSIZE_T),</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>adims</strong></td><td> =</td><td>(/2/)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-adims2"></span>integer(kind=HSIZE_T),</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>adims2</strong></td><td> =</td><td>(/1/)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-arank"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>arank</strong></td><td> =</td><td>1</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attrlen"></span>integer(kind=SIZE_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attrlen</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_space"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr_space</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr2_space"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr2_space</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_type"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr_type</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr2_type"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr2_type</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr3_type"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr3_type</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr4_type"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr4_type</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr5_type"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr5_type</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr6_type"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr6_type</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-num_attrs"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>num_attrs</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_storage"></span>integer(kind=HSIZE_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr_storage</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_name"></span>character(len=256)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr_name</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-name_size"></span>integer(kind=SIZE_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>name_size</strong></td><td> =</td><td>80</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_data"></span>character(len=35),</td>
+  
+  
+  <td>DIMENSION(2)</td><td>::</td>
+  <td><strong>attr_data</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aread_data"></span>character(len=35),</td>
+  
+  
+  <td>DIMENSION(2)</td><td>::</td>
+  <td><strong>aread_data</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_character_data"></span>character</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>attr_character_data</strong></td><td> =</td><td>'A'</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_double_data"></span>double precision,</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>attr_double_data</strong></td><td> =</td><td>3.459</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_real_data"></span>real,</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>attr_real_data</strong></td><td> =</td><td>4.0</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-attr_integer_data"></span>integer,</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>attr_integer_data</strong></td><td> =</td><td>5</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aread_character_data"></span>character</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>aread_character_data</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aread_integer_data"></span>integer,</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>aread_integer_data</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aread_null_data"></span>integer,</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>aread_null_data</strong></td><td> =</td><td>7</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aread_double_data"></span>double precision,</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>aread_double_data</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-aread_real_data"></span>real,</td>
+  
+  
+  <td>DIMENSION(1)</td><td>::</td>
+  <td><strong>aread_real_data</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fname%7E3"></span>character(len=80)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>fname</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-datapath"></span>character(len=80)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>datapath</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-g1"></span>character(len=80)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>g1</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-g2"></span>character(len=80)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>g2</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-g3"></span>character(len=80)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>g3</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-s%7E3"></span>character(len=80)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>s</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-error"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>error</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-total_error"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>total_error</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-i%7E7"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>i</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-data_dims"></span>integer(kind=HSIZE_T),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>data_dims</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-npoints"></span>integer(kind=HSIZE_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>npoints</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rnk"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>rnk</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-type_class"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>type_class</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-type_size"></span>integer(kind=SIZE_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>type_size</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-grp1_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>grp1_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-grp2_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>grp2_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-grp3_id"></span>integer(kind=HID_T)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>grp3_id</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-buf_dbl1"></span>real(kind=8),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>buf_dbl1</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-buf_dbl2"></span>real(kind=8),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>buf_dbl2</strong>(:,:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-buf_dbl3"></span>real(kind=8),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>buf_dbl3</strong>(:,:,:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-buf_flt1"></span>real(kind=4),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>buf_flt1</strong>(:)</td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-scversion"></span>character(len=8)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>scversion</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dstring"></span>character(len=11)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dstring</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tstring"></span>character(len=15)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>tstring</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    </section>
+    <br>
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+    
+    
+    
+    <section>
+    <h2 id="src">Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">program </span><span class="n">hdftest</span>
+
+<span class="k">use </span><span class="n">hdf5</span>
+<span class="k">use </span><span class="n">h5lt</span>
+
+<span class="k">IMPLICIT NONE</span>
+
+<span class="k">     </span><span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;atest&quot;</span>    <span class="c">!File name</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span> <span class="kd">::</span> <span class="n">fix_filename</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">dsetname</span> <span class="o">=</span> <span class="s2">&quot;atestdset&quot;</span>        <span class="c">!Dataset name</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">11</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">aname</span> <span class="o">=</span> <span class="s2">&quot;attr_string&quot;</span>   <span class="c">!String Attribute name</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">14</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">aname2</span> <span class="o">=</span> <span class="s2">&quot;attr_character&quot;</span><span class="c">!Character Attribute name</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">11</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">aname3</span> <span class="o">=</span> <span class="s2">&quot;attr_double&quot;</span>   <span class="c">!DOuble Attribute name</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">aname4</span> <span class="o">=</span> <span class="s2">&quot;attr_real&quot;</span>      <span class="c">!Real Attribute name</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">12</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">aname5</span> <span class="o">=</span> <span class="s2">&quot;attr_integer&quot;</span>  <span class="c">!Integer Attribute name</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">aname6</span> <span class="o">=</span> <span class="s2">&quot;attr_null&quot;</span>     <span class="c">!Null Attribute name</span>
+
+     <span class="c">!</span>
+     <span class="c">!data space rank and dimensions</span>
+     <span class="c">!</span>
+     <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">RANK</span> <span class="o">=</span> <span class="mi">2</span>
+     <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">NX</span> <span class="o">=</span> <span class="mi">4</span>
+     <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">PARAMETER</span> <span class="kd">::</span> <span class="n">NY</span> <span class="o">=</span> <span class="mi">5</span>
+
+
+
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">file_id</span>       <span class="c">! File identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dset_id</span>       <span class="c">! Dataset identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dataspace</span>     <span class="c">! Dataspace identifier for dataset</span>
+
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr_id</span>        <span class="c">!String Attribute identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr2_id</span>       <span class="c">!Character Attribute identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr3_id</span>       <span class="c">!Double Attribute identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr4_id</span>       <span class="c">!Real Attribute identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr5_id</span>       <span class="c">!Integer Attribute identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr6_id</span>       <span class="c">!Null Attribute identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">aspace_id</span>      <span class="c">!String Attribute Dataspace identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">aspace2_id</span>     <span class="c">!Character Attribute Dataspace identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">aspace6_id</span>     <span class="c">!Null Attribute Dataspace identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dtype_id</span>       <span class="c">!</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">atype_id</span>       <span class="c">!String Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">atype2_id</span>      <span class="c">!Character Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">atype3_id</span>      <span class="c">!Double Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">atype4_id</span>      <span class="c">!Real Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">atype5_id</span>      <span class="c">!Integer Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HSIZE_T</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">adims</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="mi">2</span><span class="o">/</span><span class="p">)</span> <span class="c">! Attribute dimension</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HSIZE_T</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">adims2</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span><span class="mi">1</span><span class="o">/</span><span class="p">)</span> <span class="c">! Attribute dimension</span>
+     <span class="kt">INTEGER</span>     <span class="kd">::</span>   <span class="n">arank</span> <span class="o">=</span> <span class="mi">1</span>                      <span class="c">! Attribure rank</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">SIZE_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attrlen</span>    <span class="c">! Length of the attribute string</span>
+
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr_space</span>     <span class="c">!Returned String Attribute Space identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr2_space</span>    <span class="c">!Returned other Attribute Space identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr_type</span>      <span class="c">!Returned Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr2_type</span>      <span class="c">!Returned CHARACTER Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr3_type</span>      <span class="c">!Returned DOUBLE Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr4_type</span>      <span class="c">!Returned REAL Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr5_type</span>      <span class="c">!Returned INTEGER Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr6_type</span>      <span class="c">!Returned NULL Attribute Datatype identifier</span>
+     <span class="kt">INTEGER</span>        <span class="kd">::</span> <span class="n">num_attrs</span>      <span class="c">!number of attributes</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HSIZE_T</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr_storage</span>   <span class="c">! attributes storage requirements .MSB.</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span> <span class="kd">::</span> <span class="n">attr_name</span>    <span class="c">!buffer to put attr_name</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">SIZE_T</span><span class="p">)</span>    <span class="kd">::</span>  <span class="n">name_size</span> <span class="o">=</span> <span class="mi">80</span> <span class="c">!attribute name length</span>
+
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">35</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="kd">::</span>  <span class="n">attr_data</span>  <span class="c">! String attribute data</span>
+     <span class="kt">CHARACTER</span><span class="p">(</span><span class="nb">LEN</span><span class="o">=</span><span class="mi">35</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="kd">::</span>  <span class="n">aread_data</span> <span class="c">! Buffer to put read back</span>
+                                               <span class="c">! string attr data</span>
+     <span class="kt">CHARACTER</span> <span class="kd">::</span>  <span class="n">attr_character_data</span> <span class="o">=</span> <span class="s1">&#39;A&#39;</span>
+     <span class="kt">DOUBLE PRECISION</span><span class="p">,</span>  <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span>  <span class="n">attr_double_data</span> <span class="o">=</span> <span class="mf">3.459</span>
+     <span class="kt">REAL</span><span class="p">,</span>         <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span>  <span class="n">attr_real_data</span> <span class="o">=</span> <span class="mf">4.0</span>
+     <span class="kt">INTEGER</span><span class="p">,</span>      <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span>  <span class="n">attr_integer_data</span> <span class="o">=</span> <span class="mi">5</span>
+
+
+     <span class="kt">CHARACTER</span> <span class="kd">::</span> <span class="n">aread_character_data</span> <span class="c">! variable to put read back Character attr data</span>
+     <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">aread_integer_data</span> <span class="c">! variable to put read back integer attr data</span>
+     <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">aread_null_data</span> <span class="o">=</span> <span class="mi">7</span> <span class="c">! variable to put read back null attr data</span>
+     <span class="kt">DOUBLE PRECISION</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>   <span class="kd">::</span> <span class="n">aread_double_data</span> <span class="c">! variable to put read back double attr data</span>
+     <span class="kt">REAL</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">aread_real_data</span> <span class="c">! variable to put read back real attr data</span>
+
+     <span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>          <span class="kd">::</span> <span class="n">fname</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span><span class="n">g1</span><span class="p">,</span><span class="n">g2</span><span class="p">,</span><span class="n">g3</span><span class="p">,</span><span class="n">s</span>
+     <span class="kt">integer</span>                    <span class="kd">::</span> <span class="n">error</span><span class="p">,</span> <span class="n">total_error</span><span class="p">,</span> <span class="n">i</span> <span class="c">! Error flag</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HSIZE_T</span><span class="p">),</span><span class="k">allocatable</span> <span class="kd">::</span> <span class="n">data_dims</span><span class="p">(:)</span>
+     <span class="kt">INTEGER</span><span class="p">(</span><span class="n">HSIZE_T</span><span class="p">)</span>           <span class="kd">::</span> <span class="n">npoints</span>
+     <span class="kt">integer</span>                    <span class="kd">::</span> <span class="n">rnk</span><span class="p">,</span> <span class="n">type_class</span>
+     <span class="kt">integer</span><span class="p">(</span><span class="n">SIZE_T</span><span class="p">)</span>            <span class="kd">::</span> <span class="n">type_size</span>
+     <span class="kt">integer</span><span class="p">(</span><span class="n">HID_T</span><span class="p">)</span>             <span class="kd">::</span> <span class="n">grp1_id</span><span class="p">,</span> <span class="n">grp2_id</span><span class="p">,</span> <span class="n">grp3_id</span>
+     <span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="mi">8</span><span class="p">),</span><span class="k">allocatable</span>   <span class="kd">::</span> <span class="n">buf_dbl1</span><span class="p">(:),</span> <span class="n">buf_dbl2</span><span class="p">(:,:),</span> <span class="n">buf_dbl3</span><span class="p">(:,:,:)</span>
+     <span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span><span class="k">allocatable</span>   <span class="kd">::</span> <span class="n">buf_flt1</span><span class="p">(:)</span>
+
+     <span class="kt">character</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>               <span class="kd">::</span> <span class="n">scversion</span>
+     <span class="kt">character</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>              <span class="kd">::</span> <span class="n">dstring</span>
+     <span class="kt">character</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>              <span class="kd">::</span> <span class="n">tstring</span>
+
+<span class="k">call </span><span class="n">timestamp</span><span class="p">(</span><span class="n">datestring</span><span class="o">=</span><span class="n">dstring</span><span class="p">,</span> <span class="n">timestring</span><span class="o">=</span><span class="n">tstring</span><span class="p">)</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;Nidata.h5&#39;</span>
+
+<span class="n">scversion</span> <span class="o">=</span> <span class="s1">&#39;3.x.x&#39;</span>
+
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Date = &#39;</span><span class="o">//</span><span class="n">dstring</span> 
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Time = &#39;</span><span class="o">//</span><span class="n">tstring</span> 
+
+<span class="c">!</span>
+<span class="c">! Initialize FORTRAN interface.</span>
+<span class="c">!</span>
+<span class="k">CALL </span><span class="n">h5open_EMsoft</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Initialize Fortran interface error   = &#39;</span><span class="p">,</span><span class="n">error</span>
+
+
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;calling h5fopen_f to open file &#39;</span><span class="o">//</span><span class="n">fname</span>
+     <span class="k">CALL </span><span class="n">h5fopen_f</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">H5F_ACC_RDWR_F</span><span class="p">,</span> <span class="n">file_id</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+ 
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;file_id = &#39;</span><span class="p">,</span><span class="n">file_id</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;error   = &#39;</span><span class="p">,</span><span class="n">error</span>
+
+<span class="c">! </span>
+<span class="n">datapath</span> <span class="o">=</span> <span class="s2">&quot;/Scan 1/EBSD/Data/CI&quot;</span>
+
+<span class="k">call </span><span class="n">h5ltget_dataset_ndims_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">rnk</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39; data dimensionality = &#39;</span><span class="p">,</span><span class="n">rnk</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">data_dims</span><span class="p">(</span><span class="n">rnk</span><span class="p">))</span>
+
+<span class="k">call </span><span class="n">h5ltget_dataset_info_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">data_dims</span><span class="p">,</span> <span class="n">type_class</span><span class="p">,</span> <span class="n">type_size</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39; data set info : &#39;</span><span class="p">,</span><span class="n">data_dims</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">type_class</span><span class="p">,</span> <span class="n">type_size</span><span class="p">,</span> <span class="n">error</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">buf_flt1</span><span class="p">(</span><span class="n">data_dims</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+
+<span class="k">call </span><span class="n">h5ltread_dataset_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">H5T_NATIVE_REAL</span><span class="p">,</span> <span class="n">buf_flt1</span><span class="p">,</span> <span class="n">data_dims</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+<span class="k">do </span><span class="n">i</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span>
+  <span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="n">i</span><span class="p">,</span> <span class="n">buf_flt1</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="k">end do</span>
+
+
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;calling h5fclose_f to close file &#39;</span>
+     <span class="k">CALL </span><span class="n">h5fclose_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;error   = &#39;</span><span class="p">,</span><span class="n">error</span>
+
+<span class="c">! now let&#39;s do a test an create a new file with this dataset written to it in a different location</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;test.h5&#39;</span>
+<span class="k">call </span><span class="n">h5fcreate_f</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">H5F_ACC_TRUNC_F</span><span class="p">,</span> <span class="n">file_id</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+<span class="n">g1</span> <span class="o">=</span> <span class="s1">&#39;EMheader&#39;</span>
+<span class="k">call </span><span class="n">h5gcreate_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span><span class="n">g1</span><span class="p">,</span><span class="n">grp1_id</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;open group &#39;</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">g1</span><span class="p">),</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="n">error</span>
+
+<span class="c">! version number /EMheader/Version &#39;character&#39;</span>
+<span class="k">call </span><span class="n">h5ltmake_dataset_string_f</span><span class="p">(</span><span class="n">grp1_id</span><span class="p">,</span> <span class="s1">&#39;Version&#39;</span><span class="p">,</span> <span class="n">scversion</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+<span class="c">! execution data /EMheader/Date &#39;character&#39;</span>
+<span class="k">call </span><span class="n">h5ltmake_dataset_string_f</span><span class="p">(</span><span class="n">grp1_id</span><span class="p">,</span> <span class="s1">&#39;Date&#39;</span><span class="p">,</span> <span class="n">dstring</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+<span class="c">! start time /EMheader/StartTime &#39;character&#39;</span>
+<span class="k">call </span><span class="n">h5ltmake_dataset_string_f</span><span class="p">(</span><span class="n">grp1_id</span><span class="p">,</span> <span class="s1">&#39;StartTime&#39;</span><span class="p">,</span> <span class="n">tstring</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+<span class="c">! stop time /EMheader/StopTime &#39;character&#39;</span>
+<span class="k">call </span><span class="n">h5ltmake_dataset_string_f</span><span class="p">(</span><span class="n">grp1_id</span><span class="p">,</span> <span class="s1">&#39;StopTime&#39;</span><span class="p">,</span> <span class="n">tstring</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+<span class="k">call </span><span class="n">h5gclose_f</span><span class="p">(</span><span class="n">grp1_id</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+
+
+<span class="n">g1</span> <span class="o">=</span> <span class="s1">&#39;level1&#39;</span>
+<span class="n">g2</span> <span class="o">=</span> <span class="s1">&#39;level2&#39;</span>
+<span class="n">g3</span> <span class="o">=</span> <span class="s1">&#39;CI&#39;</span>
+<span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;/&#39;</span>
+
+
+<span class="k">call </span><span class="n">h5gcreate_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span><span class="n">g1</span><span class="p">,</span><span class="n">grp1_id</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;open group &#39;</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">g1</span><span class="p">),</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="n">error</span>
+
+<span class="k">call </span><span class="n">h5gcreate_f</span><span class="p">(</span><span class="n">grp1_id</span><span class="p">,</span><span class="n">g2</span><span class="p">,</span><span class="n">grp2_id</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;open group &#39;</span><span class="p">,</span><span class="nb">trim</span><span class="p">(</span><span class="n">g2</span><span class="p">),</span><span class="s1">&#39; &#39;</span><span class="p">,</span><span class="n">error</span>
+
+<span class="n">datapath</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">g1</span><span class="p">)</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">g2</span><span class="p">)</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">//</span><span class="nb">trim</span><span class="p">(</span><span class="n">g3</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;datapath = &#39;</span><span class="p">,</span><span class="n">datapath</span>
+
+<span class="k">call </span><span class="n">h5ltmake_dataset_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span> <span class="n">datapath</span><span class="p">,</span> <span class="n">rnk</span><span class="p">,</span> <span class="n">data_dims</span><span class="p">,</span> <span class="n">H5T_NATIVE_REAL</span><span class="p">,</span> <span class="n">buf_flt1</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+
+<span class="k">call </span><span class="n">h5gclose_f</span><span class="p">(</span><span class="n">grp2_id</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+<span class="k">call </span><span class="n">h5gclose_f</span><span class="p">(</span><span class="n">grp1_id</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+
+<span class="k">call </span><span class="n">h5fclose_f</span><span class="p">(</span><span class="n">file_id</span><span class="p">,</span><span class="n">error</span><span class="p">)</span>
+
+
+<span class="c">!</span>
+<span class="c">! Close FORTRAN interface.</span>
+<span class="c">!</span>
+<span class="k">CALL </span><span class="n">h5close_EMsoft</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+<span class="k">write</span> <span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;close fortran interface error   = &#39;</span><span class="p">,</span><span class="n">error</span>
+
+
+<span class="k">end program </span><span class="n">hdftest</span>
+</pre></div>
+
+    </section>
+    
+    
+    </div>
+  </div>
+
+  <section class="visible-xs visible-sm hidden-md">
+    <hr>
+    
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprogs-1">All Programs</a></h3></div>
+  <div id="allprogs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/dispfield.html">dispfield</a>
+      
+      <a class="list-group-item" href="../program/hdftest.html">hdftest</a>
+      
+    </div>
+  </div>
+</div>
+
+
+  </section>
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2017 <a rel="license" href="http://www.freebsd.org/copyright/freebsd-doc-license.html">FreeBSD Documentation License</a></p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran Program was developed by Marc De Graef Research Group/Carnegie Mellon University</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js'],
+        'HTML-CSS': { 
+           styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: '#000000 ! important'} }
+        }
+      });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  </body>
+</html>

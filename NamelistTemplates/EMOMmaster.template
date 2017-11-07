@@ -1,0 +1,27 @@
+ &OMMasterData
+! this file provides the input parameters for the computation of the master Mueller Matrix
+! for a given uni-axial crystal.
+!
+! name of the crystal structure file
+ xtalname = 'undefined',
+! incident light tilt angle from normal [degrees]
+ theta = 0.0, 
+! wave length of illumination [nm]
+ wl = 750.0,
+! in-plane complex dielectric constant for this wave length (split in real and imaginary components)
+ eps1Re =  1.0,
+ eps1Im =  0.0,
+! axial complex dielectric constant for this wave length (split in real and imaginary components)
+ eps2Re =  1.0,
+ eps2Im =  0.0,
+! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
+ npx = 360,
+! normalize Mueller matrix by the element M(1,1)?
+ normalize = .FALSE.
+! number of parallel threads to use
+ nthreads = 1,
+! name of the h5 output file produced; relative to EMdatapathname;
+ masterfile = 'undefined',
+! do you wish to receive a notification (Email or Slack) when the program completes ?
+ Notify = 'Off', 
+ /

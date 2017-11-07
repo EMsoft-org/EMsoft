@@ -1,0 +1,2366 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	 <meta name="description" content="EMsoft main library">
+    
+    <meta name="author" content="Marc De Graef Research Group/Carnegie Mellon University" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>adhisteq &ndash; Fortran Program</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Fortran Program </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+				
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+		 aria-expanded="false">Contents <span class="caret"></span></a>
+	      <ul class="dropdown-menu">
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+				
+				
+            <li><a href="../lists/modules.html">Modules</a></li>
+				
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+				
+				
+            <li><a href="../lists/absint.html">Abstract Interfaces</a></li>
+								
+            <li><a href="../lists/types.html">Derived Types</a></li>
+				
+				
+            <li><a href="../lists/programs.html">Programs</a></li>
+				
+            </ul>
+            </li>
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>adhisteq
+      <small>Function</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+	  data-placement="bottom" data-html="true"
+	  title=" 0.3% of total for procedures.">83 statements</a>
+     </li> 
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/filters.f90"> Source File</a></li>
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+     <li><a href='../sourcefile/filters.f90.html'>filters.f90</a></li>
+  
+     <li><a href='../module/filters.html'>filters</a></li>
+  
+     <li class="active">adhisteq</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/adhisteq.html#src">adhisteq</a>
+  </div>
+</div>
+
+
+  <hr>
+  
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprocs-0">All Procedures</a></h3></div>
+  <div id="allprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../proc/adhisteq.html">adhisteq</a>
+      
+      <a class="list-group-item" href="../proc/aggiorno_ottimo.html">AGGIORNO_OTTIMO</a>
+      
+      <a class="list-group-item" href="../proc/alogam.html">alogam</a>
+      
+      <a class="list-group-item" href="../proc/altmov.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/altmov%7E2.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/backprojection.html">BackProjection</a>
+      
+      <a class="list-group-item" href="../proc/bakvec.html">bakvec</a>
+      
+      <a class="list-group-item" href="../proc/balanc.html">balanc</a>
+      
+      <a class="list-group-item" href="../proc/balbak.html">balbak</a>
+      
+      <a class="list-group-item" href="../proc/bandr.html">bandr</a>
+      
+      <a class="list-group-item" href="../proc/bandv.html">bandv</a>
+      
+      <a class="list-group-item" href="../proc/barreldistortion.html">BarrelDistortion</a>
+      
+      <a class="list-group-item" href="../proc/bisect.html">bisect</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa%7E2.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb%7E2.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bqr.html">bqr</a>
+      
+      <a class="list-group-item" href="../proc/butterflymask9x9.html">ButterflyMask9x9</a>
+      
+      <a class="list-group-item" href="../proc/calchoughlut.html">CalcHoughLUT</a>
+      
+      <a class="list-group-item" href="../proc/calckinpedpatternsingle.html">CalcKINPEDPatternSingle</a>
+      
+      <a class="list-group-item" href="../proc/calckvectorcone.html">Calckvectorcone</a>
+      
+      <a class="list-group-item" href="../proc/calckvectortrace.html">Calckvectortrace</a>
+      
+      <a class="list-group-item" href="../proc/calcr.html">CalcR</a>
+      
+      <a class="list-group-item" href="../proc/calcrlocal.html">CalcRLocal</a>
+      
+      <a class="list-group-item" href="../proc/cardintersection.html">CardIntersection</a>
+      
+      <a class="list-group-item" href="../proc/cbabk2.html">cbabk2</a>
+      
+      <a class="list-group-item" href="../proc/cbal.html">cbal</a>
+      
+      <a class="list-group-item" href="../proc/cdiv.html">cdiv</a>
+      
+      <a class="list-group-item" href="../proc/cg.html">cg</a>
+      
+      <a class="list-group-item" href="../proc/ch.html">ch</a>
+      
+      <a class="list-group-item" href="../proc/cinvit.html">cinvit</a>
+      
+      <a class="list-group-item" href="../proc/clerror_check.html">CLerror_check</a>
+      
+      <a class="list-group-item" href="../proc/clinit_pdccq.html">CLinit_PDCCQ</a>
+      
+      <a class="list-group-item" href="../proc/clquery_platform_info.html">CLquery_platform_info</a>
+      
+      <a class="list-group-item" href="../proc/clread_source_file.html">CLread_source_file</a>
+      
+      <a class="list-group-item" href="../proc/combak.html">combak</a>
+      
+      <a class="list-group-item" href="../proc/comhes.html">comhes</a>
+      
+      <a class="list-group-item" href="../proc/comlr.html">comlr</a>
+      
+      <a class="list-group-item" href="../proc/comlr2.html">comlr2</a>
+      
+      <a class="list-group-item" href="../proc/comqr.html">comqr</a>
+      
+      <a class="list-group-item" href="../proc/comqr2.html">comqr2</a>
+      
+      <a class="list-group-item" href="../proc/cortb.html">cortb</a>
+      
+      <a class="list-group-item" href="../proc/corth.html">corth</a>
+      
+      <a class="list-group-item" href="../proc/csroot.html">csroot</a>
+      
+      <a class="list-group-item" href="../proc/ctfped_writefile.html">ctfped_writeFile</a>
+      
+      <a class="list-group-item" href="../proc/cubochoricneighbors.html">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../proc/cumul_histogram.html">cumul_histogram</a>
+      
+      <a class="list-group-item" href="../proc/dd_density.html">DD_Density</a>
+      
+      <a class="list-group-item" href="../proc/dd_estep.html">DD_Estep</a>
+      
+      <a class="list-group-item" href="../proc/dd_getqandl.html">DD_getQandL</a>
+      
+      <a class="list-group-item" href="../proc/dd_mstep.html">DD_Mstep</a>
+      
+      <a class="list-group-item" href="../proc/delete_fzlist.html">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../proc/denoise_pattern.html">Denoise_Pattern</a>
+      
+      <a class="list-group-item" href="../proc/denoise_ped.html">Denoise_PED</a>
+      
+      <a class="list-group-item" href="../proc/di_emfordd.html">DI_EMforDD</a>
+      
+      <a class="list-group-item" href="../proc/di_init.html">DI_Init</a>
+      
+      <a class="list-group-item" href="../proc/di_rotatetomu.html">DI_RotateToMu</a>
+      
+      <a class="list-group-item" href="../proc/di_sampledd.html">DI_SampleDD</a>
+      
+      <a class="list-group-item" href="../proc/di_similarity_classifier.html">DI_Similarity_Classifier</a>
+      
+      <a class="list-group-item" href="../proc/ebsd4calfun.html">EBSD4calfun</a>
+      
+      <a class="list-group-item" href="../proc/ebsdcalfun.html">EBSDcalfun</a>
+      
+      <a class="list-group-item" href="../proc/eccicalcsgh.html">ECCICalcSgh</a>
+      
+      <a class="list-group-item" href="../proc/ecpcalfun.html">ECPcalfun</a>
+      
+      <a class="list-group-item" href="../proc/efitebsdwrapper.html">efitEBSDWrapper</a>
+      
+      <a class="list-group-item" href="../proc/efitecpwrapper.html">efitECPWrapper</a>
+      
+      <a class="list-group-item" href="../proc/ei.html">EI</a>
+      
+      <a class="list-group-item" href="../proc/elmbak.html">elmbak</a>
+      
+      <a class="list-group-item" href="../proc/elmhes.html">elmhes</a>
+      
+      <a class="list-group-item" href="../proc/eltran.html">eltran</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdmaster.html">EMsoftCgetEBSDmaster</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdpatterns.html">EMsoftCgetEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetecpatterns.html">EMsoftCgetECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetmcopencl.html">EMsoftCgetMCOpenCL</a>
+      
+      <a class="list-group-item" href="../proc/eshelby_disp.html">Eshelby_disp</a>
+      
+      <a class="list-group-item" href="../proc/fcore.html">FCORE</a>
+      
+      <a class="list-group-item" href="../proc/figi.html">figi</a>
+      
+      <a class="list-group-item" href="../proc/figi2.html">figi2</a>
+      
+      <a class="list-group-item" href="../proc/forwardprojection.html">ForwardProjection</a>
+      
+      <a class="list-group-item" href="../proc/fphon.html">FPHON</a>
+      
+      <a class="list-group-item" href="../proc/fscatt.html">FSCATT</a>
+      
+      <a class="list-group-item" href="../proc/genera_punto_sa.html">GENERA_PUNTO_SA</a>
+      
+      <a class="list-group-item" href="../proc/getaverageorientationnamelist.html">GetAverageOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getconvertorientationsnamelist.html">GetConvertOrientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdddensitylbm.html">getDDDensityLBM</a>
+      
+      <a class="list-group-item" href="../proc/getdictindxopenclnamelist.html">GetDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../interface/getdisorientationangle.html">getDisorientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxis.html">getDisorientationAngleAxis</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxistwophases.html">getDisorientationAngleAxisTwoPhases</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangledouble.html">getDisorientationAngleDouble</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationanglesingle.html">getDisorientationAngleSingle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationsnamelist.html">GetDisorientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdvsdnamelist.html">GetDvsDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdclusternamelist.html">GetEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsddetparmscannamelist.html">GetEBSDdetparmscanNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdfullnamelist.html">GetEBSDFullNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdindexingnamelist.html">GetEBSDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasternamelist.html">GetEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasteropenclnamelist.html">GetEBSDMasterOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdnamelist.html">GetEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdoverlapnamelist.html">GetEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns.html">getEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns2.html">getEBSDPatterns2</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatternswrapper.html">getEBSDPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/geteccinamelist.html">GetECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpatterns.html">getECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getecpatternswrapper.html">getECPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getecpindexingnamelist.html">GetECPIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpmasternamelist.html">GetECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpnamelist.html">GetECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecppatternnamelist.html">GetECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpsinglenamelist.html">GetECPSingleNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpzanamelist.html">GetECPZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfit4namelist.html">GetEMDPFit4NameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfitnamelist.html">GetEMDPFitNameList</a>
+      
+      <a class="list-group-item" href="../proc/geteulersfromfile.html">getEulersfromFile</a>
+      
+      <a class="list-group-item" href="../proc/getfitorientationpsnamelist.html">GetFitOrientationPSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getfztypeandorder.html">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../proc/getkamnamelist.html">GetKAMNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkinematicalnamelist.html">GetkinematicalNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselmasternamelist.html">GetKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselnamelist.html">GetKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatterns.html">getKosselPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatternswrapper.html">getKosselPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getlacbednamelist.html">GetLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclfoilnamelist.html">GetMCCLfoilNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclmultilayernamelist.html">GetMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclnamelist.html">GetMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclspherenamelist.html">GetMCCLsphereNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmclipssnamelist.html">GetMCLIPSSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcnamelist.html">GetMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmultiphasenamelist.html">GetMultiPhaseNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationsimilaritynamelist.html">GetOrientationSimilarityNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationviznamelist.html">GetOrientationVizNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedindxnamelist.html">GetPEDIndxNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedkinnamelist.html">GetPEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedzanamelist.html">GetPEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getpfinversionnamelist.html">GetPFInversionNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrefineorientationnamelist.html">GetRefineOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getreflectornamelist.html">GetreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrfznamelist.html">GetRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/getsrdefectnamelist.html">GetSRdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/getstemdcinamelist.html">GetSTEMDCINameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdindexingnamelist.html">GetTKDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdmasternamelist.html">GetTKDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdnamelist.html">GetTKDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getwk.html">GETWK</a>
+      
+      <a class="list-group-item" href="../proc/getzadefectnamelist.html">GetZAdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/hipassfilter.html">HiPassFilter</a>
+      
+      <a class="list-group-item" href="../proc/houghtransform.html">HoughTransform</a>
+      
+      <a class="list-group-item" href="../proc/hqr.html">hqr</a>
+      
+      <a class="list-group-item" href="../proc/hqr2.html">hqr2</a>
+      
+      <a class="list-group-item" href="../proc/htrib3.html">htrib3</a>
+      
+      <a class="list-group-item" href="../proc/htribk.html">htribk</a>
+      
+      <a class="list-group-item" href="../proc/htrid3.html">htrid3</a>
+      
+      <a class="list-group-item" href="../proc/htridi.html">htridi</a>
+      
+      <a class="list-group-item" href="../proc/image_entropy.html">image_entropy</a>
+      
+      <a class="list-group-item" href="../proc/image_histogram.html">image_histogram</a>
+      
+      <a class="list-group-item" href="../proc/image_jointentropy.html">image_jointentropy</a>
+      
+      <a class="list-group-item" href="../proc/image_jointhistogram.html">image_jointhistogram</a>
+      
+      <a class="list-group-item" href="../proc/image_mutualinformation.html">image_mutualinformation</a>
+      
+      <a class="list-group-item" href="../proc/imtql1.html">imtql1</a>
+      
+      <a class="list-group-item" href="../proc/imtql2.html">imtql2</a>
+      
+      <a class="list-group-item" href="../proc/imtqlv.html">imtqlv</a>
+      
+      <a class="list-group-item" href="../proc/init_dislocation_data.html">init_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/init_einclusion_data.html">init_Einclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_foil_data.html">init_foil_data</a>
+      
+      <a class="list-group-item" href="../proc/init_inclusion_data.html">init_inclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stacking_fault_data.html">init_stacking_fault_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stem.html">init_STEM</a>
+      
+      <a class="list-group-item" href="../proc/init_stem_za.html">init_STEM_ZA</a>
+      
+      <a class="list-group-item" href="../proc/init_void_data.html">init_void_data</a>
+      
+      <a class="list-group-item" href="../proc/init_ysh_dislocation_data.html">init_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/initialize_foil_geometry.html">initialize_foil_geometry</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../interface/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist_ewaldsweep.html">Initialize_ReflectionList_EwaldSweep</a>
+      
+      <a class="list-group-item" href="../proc/initializedefects.html">InitializeDefects</a>
+      
+      <a class="list-group-item" href="../proc/initializeeshelbyinclusion.html">InitializeEshelbyInclusion</a>
+      
+      <a class="list-group-item" href="../proc/innerprodgpu.html">InnerProdGPU</a>
+      
+      <a class="list-group-item" href="../proc/insidecubehexfz.html">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicfz.html">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicmfz.html">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecyclicfz.html">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralfz.html">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralmfz.html">insideDihedralMFZ</a>
+      
+      <a class="list-group-item" href="../proc/interfaccia.html">INTERFACCIA</a>
+      
+      <a class="list-group-item" href="../proc/inversiondivision.html">InversionDivision</a>
+      
+      <a class="list-group-item" href="../proc/invit.html">invit</a>
+      
+      <a class="list-group-item" href="../proc/isinsidefz.html">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../proc/isinsidemfz.html">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../proc/jaccard_distance.html">Jaccard_Distance</a>
+      
+      <a class="list-group-item" href="../proc/json_cleanuppointers.html">JSON_cleanuppointers</a>
+      
+      <a class="list-group-item" href="../proc/json_failtest.html">JSON_failtest</a>
+      
+      <a class="list-group-item" href="../proc/json_initpointers.html">JSON_initpointers</a>
+      
+      <a class="list-group-item" href="../proc/json_minify.html">JSON_minify</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmldoubles.html">JSON_writeNMLdoubles</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlintegers.html">JSON_writeNMLintegers</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlreals.html">JSON_writeNMLreals</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdouble.html">JSONgetDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdoublevector.html">JSONgetDoubleVector</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddefectfile.html">JSONreadDefectFile</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddouble.html">JSONreadDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddoublevec.html">JSONreadDoubleVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdclusternamelist.html">JSONreadEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdmasternamelist.html">JSONreadEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdnamelist.html">JSONreadEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdoverlapnamelist.html">JSONreadEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadecpmasternamelist.html">JSONreadECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadfoildata.html">JSONreadFoilData</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadinteger.html">JSONreadInteger</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadintegervec.html">JSONreadIntegerVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselmasternamelist.html">JSONreadKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselnamelist.html">JSONreadKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadlogical.html">JSONreadLogical</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclmultilayernamelist.html">JSONreadMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclnamelist.html">JSONreadMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcnamelist.html">JSONreadMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreal.html">JSONreadReal</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadrealvec.html">JSONreadRealVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreflectornamelist.html">JSONreadreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadstring.html">JSONreadString</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritedictindxopenclnamelist.html">JSONwriteDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdclusternamelist.html">JSONwriteEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdmasternamelist.html">JSONwriteEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdnamelist.html">JSONwriteEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteeccinamelist.html">JSONwriteECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpmasternamelist.html">JSONwriteECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpnamelist.html">JSONwriteECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecppatternnamelist.html">JSONwriteECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselmasternamelist.html">JSONwriteKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselnamelist.html">JSONwriteKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritelacbednamelist.html">JSONwriteLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclmultilayernamelist.html">JSONwriteMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclnamelist.html">JSONwriteMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcnamelist.html">JSONwriteMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedkinnamelist.html">JSONwritePEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedzanamelist.html">JSONwritePEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriterfznamelist.html">JSONwriteRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/linesearch_inverti.html">LINESEARCH_INVERTI</a>
+      
+      <a class="list-group-item" href="../proc/linesearchbox_cont.html">linesearchbox_cont</a>
+      
+      <a class="list-group-item" href="../proc/logcp.html">logCp</a>
+      
+      <a class="list-group-item" href="../proc/mainbox1.html">MAINBOX1</a>
+      
+      <a class="list-group-item" href="../proc/mainbox2.html">MAINBOX2</a>
+      
+      <a class="list-group-item" href="../proc/makedislocation.html">makedislocation</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfault.html">makestackingfault</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfaultecci.html">makestackingfaultECCI</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation%7E2.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/mc_concatenatemuellermatrices.html">MC_concatenateMuellerMatrices</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ad_from_eo.html">MC_get_AD_from_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_auxiliaryangle.html">MC_get_AuxiliaryAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_basicmuellermatrix.html">MC_get_basicMuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_diattenuator.html">MC_get_diattenuator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ellipticityangle.html">MC_get_EllipticityAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_eo_from_ad.html">MC_get_EO_from_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_orientationangle.html">MC_get_OrientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_phaseshiftangle.html">MC_get_PhaseShiftAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_polarization.html">MC_get_Polarization</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_retarder.html">MC_get_retarder</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_rotator.html">MC_get_rotator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_ad.html">MC_get_Stokes_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_eo.html">MC_get_Stokes_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_print_muellermatrix.html">MC_print_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_propagatestokesvector.html">MC_propagateStokesVector</a>
+      
+      <a class="list-group-item" href="../proc/mc_rotate_muellermatrix.html">MC_rotate_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/minfit.html">minfit</a>
+      
+      <a class="list-group-item" href="../proc/nanchk.html">NANCHK</a>
+      
+      <a class="list-group-item" href="../proc/ortbak.html">ortbak</a>
+      
+      <a class="list-group-item" href="../proc/orthes.html">orthes</a>
+      
+      <a class="list-group-item" href="../proc/ortran.html">ortran</a>
+      
+      <a class="list-group-item" href="../proc/pgm_write_file.html">PGM_Write_File</a>
+      
+      <a class="list-group-item" href="../proc/poidev.html">POIDEV</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcubochoriccube.html">PoVRay_addCubochoricCube</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcylinder.html">PoVRay_addCylinder</a>
+      
+      <a class="list-group-item" href="../proc/povray_addeulerbox.html">PoVRay_addEulerBox</a>
+      
+      <a class="list-group-item" href="../proc/povray_addreferenceframe.html">PoVRay_addReferenceFrame</a>
+      
+      <a class="list-group-item" href="../proc/povray_addsphere.html">PoVRay_addSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_addwireframesphere.html">PoVRay_addWireFrameSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_declare_df3file.html">PoVRay_declare_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/povray_drawfz.html">PoVRay_drawFZ</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz222.html">PoVRay_getpos_FZ222</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz23.html">PoVRay_getpos_FZ23</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz32.html">PoVRay_getpos_FZ32</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz422.html">PoVRay_getpos_FZ422</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz432.html">PoVRay_getpos_FZ432</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz622.html">PoVRay_getpos_FZ622</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz2.html">PoVRay_initFZ2</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz3.html">PoVRay_initFZ3</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz4.html">PoVRay_initFZ4</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz6.html">PoVRay_initFZ6</a>
+      
+      <a class="list-group-item" href="../proc/povray_openfile.html">PoVRay_openFile</a>
+      
+      <a class="list-group-item" href="../proc/povray_setcamera.html">PoVRay_setCamera</a>
+      
+      <a class="list-group-item" href="../proc/povray_setlightsource.html">PoVRay_setLightSource</a>
+      
+      <a class="list-group-item" href="../proc/povray_write_df3file.html">PoVRay_write_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/prelim.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/prelim%7E2.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/printtime.html">PrintTime</a>
+      
+      <a class="list-group-item" href="../proc/pythag.html">pythag</a>
+      
+      <a class="list-group-item" href="../proc/qsortd.html">qsortd</a>
+      
+      <a class="list-group-item" href="../proc/qzhes.html">qzhes</a>
+      
+      <a class="list-group-item" href="../proc/qzit.html">qzit</a>
+      
+      <a class="list-group-item" href="../proc/qzval.html">qzval</a>
+      
+      <a class="list-group-item" href="../proc/qzvec.html">qzvec</a>
+      
+      <a class="list-group-item" href="../proc/r8_swap.html">r8_swap</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print.html">r8mat_print</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print_some.html">r8mat_print_some</a>
+      
+      <a class="list-group-item" href="../proc/r8vec2_print.html">r8vec2_print</a>
+      
+      <a class="list-group-item" href="../proc/r8vec_print.html">r8vec_print</a>
+      
+      <a class="list-group-item" href="../proc/ran.html">ran</a>
+      
+      <a class="list-group-item" href="../proc/randddmarginal.html">randDDMarginal</a>
+      
+      <a class="list-group-item" href="../proc/randuniformsphere.html">randUniformSphere</a>
+      
+      <a class="list-group-item" href="../proc/ratqr.html">ratqr</a>
+      
+      <a class="list-group-item" href="../proc/read_apb_data.html">read_apb_data</a>
+      
+      <a class="list-group-item" href="../proc/read_stem_data.html">read_STEM_data</a>
+      
+      <a class="list-group-item" href="../proc/read_ysh_dislocation_data.html">read_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/rebak.html">rebak</a>
+      
+      <a class="list-group-item" href="../proc/rebakb.html">rebakb</a>
+      
+      <a class="list-group-item" href="../proc/reduc.html">reduc</a>
+      
+      <a class="list-group-item" href="../proc/reduc2.html">reduc2</a>
+      
+      <a class="list-group-item" href="../proc/reducedisorientationtomfz.html">ReduceDisorientationtoMFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtocubicefz.html">ReduceOrientationtoCubicEFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtorfz.html">ReduceOrientationtoRFZ</a>
+      
+      <a class="list-group-item" href="../proc/rescue.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rescue%7E2.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rg.html">rg</a>
+      
+      <a class="list-group-item" href="../proc/rgg.html">rgg</a>
+      
+      <a class="list-group-item" href="../proc/ri1.html">RI1</a>
+      
+      <a class="list-group-item" href="../proc/ri2.html">RI2</a>
+      
+      <a class="list-group-item" href="../proc/ricerca_lungo_assi.html">RICERCA_LUNGO_ASSI</a>
+      
+      <a class="list-group-item" href="../proc/rih1.html">RIH1</a>
+      
+      <a class="list-group-item" href="../proc/rih2.html">RIH2</a>
+      
+      <a class="list-group-item" href="../proc/rih3.html">RIH3</a>
+      
+      <a class="list-group-item" href="../proc/rng_seed.html">rng_seed</a>
+      
+      <a class="list-group-item" href="../proc/rng_uniform.html">rng_uniform</a>
+      
+      <a class="list-group-item" href="../proc/rs.html">rs</a>
+      
+      <a class="list-group-item" href="../proc/rsb.html">rsb</a>
+      
+      <a class="list-group-item" href="../proc/rsg.html">rsg</a>
+      
+      <a class="list-group-item" href="../proc/rsgab.html">rsgab</a>
+      
+      <a class="list-group-item" href="../proc/rsgba.html">rsgba</a>
+      
+      <a class="list-group-item" href="../proc/rsm.html">rsm</a>
+      
+      <a class="list-group-item" href="../proc/rsp.html">rsp</a>
+      
+      <a class="list-group-item" href="../proc/rspp.html">rspp</a>
+      
+      <a class="list-group-item" href="../proc/rst.html">rst</a>
+      
+      <a class="list-group-item" href="../proc/rt.html">rt</a>
+      
+      <a class="list-group-item" href="../proc/sample_cone.html">sample_Cone</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocube.html">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocubefilled.html">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../proc/samplefcctwinrfz.html">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../proc/sampleisomisorientation.html">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../proc/samplerfz.html">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../proc/samplerfztwin.html">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../proc/senzaderglob.html">SENZADERGLOB</a>
+      
+      <a class="list-group-item" href="../proc/ssort.html">SSORT</a>
+      
+      <a class="list-group-item" href="../proc/stop.html">STOP</a>
+      
+      <a class="list-group-item" href="../proc/svd.html">svd</a>
+      
+      <a class="list-group-item" href="../proc/time_estimate.html">Time_estimate</a>
+      
+      <a class="list-group-item" href="../proc/time_remaining.html">Time_remaining</a>
+      
+      <a class="list-group-item" href="../proc/time_report.html">Time_report</a>
+      
+      <a class="list-group-item" href="../proc/time_reset.html">Time_reset</a>
+      
+      <a class="list-group-item" href="../proc/time_start.html">Time_start</a>
+      
+      <a class="list-group-item" href="../proc/time_stop.html">Time_stop</a>
+      
+      <a class="list-group-item" href="../proc/time_tick.html">Time_tick</a>
+      
+      <a class="list-group-item" href="../proc/time_tock.html">Time_tock</a>
+      
+      <a class="list-group-item" href="../proc/timestamp.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/timestamp%7E2.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/tinvit.html">tinvit</a>
+      
+      <a class="list-group-item" href="../proc/tql1.html">tql1</a>
+      
+      <a class="list-group-item" href="../proc/tql2.html">tql2</a>
+      
+      <a class="list-group-item" href="../proc/tqlrat.html">tqlrat</a>
+      
+      <a class="list-group-item" href="../proc/trbak1.html">trbak1</a>
+      
+      <a class="list-group-item" href="../proc/trbak3.html">trbak3</a>
+      
+      <a class="list-group-item" href="../proc/tred1.html">tred1</a>
+      
+      <a class="list-group-item" href="../proc/tred2.html">tred2</a>
+      
+      <a class="list-group-item" href="../proc/tred3.html">tred3</a>
+      
+      <a class="list-group-item" href="../proc/tridib.html">tridib</a>
+      
+      <a class="list-group-item" href="../proc/trsbox.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/trsbox%7E2.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/tsturm.html">tsturm</a>
+      
+      <a class="list-group-item" href="../proc/update.html">update</a>
+      
+      <a class="list-group-item" href="../proc/update%7E2.html">update</a>
+      
+      <a class="list-group-item" href="../proc/vmfmeandirdensity.html">VMFMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/watsonmeandirdensity.html">WatsonMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/weko.html">WEKO</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp%7E2.html">YSHDisp</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp.html">YSHDisp</a>
+      
+    </div>
+  </div>
+</div>
+
+
+</div>  
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>
+public recursive function adhisteq(nr, dimx, dimy, im, verbose) result(output)
+    
+    
+	 
+</h2>
+    
+  
+
+
+    
+    <p>@author Marc De Graef, Carnegie Mellon University
+ @brief  adaptive histogram equalization
+ @details This algorithm is based on the original paper by Pizer et al., 
+ "Adaptive Histogram Equalization and its Variations", Computer Vision, 
+ Graphics, and Image Processing, 39:355-368, 1987.<br>
+ @param nr number of subregions to split the image into [10 works well]
+ @param dimx x dimension
+ @param dimy y dimension
+ @param im image array; must have integer values in range [0..255]
+ @date 01/23/16 MDG 1.0 original
+ @date 01/27/16 MDG 1.1 correction of off-by-one error in final array copy</p>
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nr"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nr</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dimx"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dimx</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dimy"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dimy</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-im%7E3"></span>integer(kind=irg),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>im</strong>(dimx,dimy)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-verbose%7E18"></span>logical,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>verbose</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+    
+    
+    
+    
+	 <h3>Return Value <small><span class="anchor" id="variable-output%7E3"></span>integer(kind=irg)
+  (dimx,dimy)</small></h3>
+    
+    
+    
+     <h3>Calls</h3>
+     
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: proc~~adhisteq~~CallsGraph Pages: 1 -->
+<svg id="procadhisteqCallsGraph" width="319pt" height="74pt"
+ viewBox="0.00 0.00 319.00 74.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~adhisteq~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 70)">
+<title>proc~~adhisteq~~CallsGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-70 315,-70 315,4 -4,4"/>
+<!-- proc~adhisteq -->
+<g id="proc~~adhisteq~~CallsGraph_node1" class="node"><title>proc~adhisteq</title>
+<polygon fill="none" stroke="black" points="54,-46 0,-46 0,-22 54,-22 54,-46"/>
+<text text-anchor="middle" x="27" y="-31.6" font-family="Helvetica,sans-Serif" font-size="10.50">adhisteq</text>
+</g>
+<!-- float -->
+<g id="proc~~adhisteq~~CallsGraph_node2" class="node"><title>float</title>
+<polygon fill="#777777" stroke="#777777" points="291.5,-66 237.5,-66 237.5,-42 291.5,-42 291.5,-66"/>
+<text text-anchor="middle" x="264.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">float</text>
+</g>
+<!-- proc~adhisteq&#45;&gt;float -->
+<g id="proc~~adhisteq~~CallsGraph_edge3" class="edge"><title>proc~adhisteq&#45;&gt;float</title>
+<path fill="none" stroke="#ff0000" d="M54.1024,-36.2168C96.1875,-39.7909 179.149,-46.8364 227.047,-50.9042"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="227.02,-54.4145 237.281,-51.7733 227.613,-47.4396 227.02,-54.4145"/>
+</g>
+<!-- proc~cumul_histogram -->
+<g id="proc~~adhisteq~~CallsGraph_node3" class="node"><title>proc~cumul_histogram</title>
+<g id="a_proc~~adhisteq~~CallsGraph_node3"><a xlink:href="../proc/cumul_histogram.html" xlink:title="cumul_histogram">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="182,-26 90,-26 90,-2 182,-2 182,-26"/>
+<text text-anchor="middle" x="136" y="-11.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">cumul_histogram</text>
+</a>
+</g>
+</g>
+<!-- proc~adhisteq&#45;&gt;proc~cumul_histogram -->
+<g id="proc~~adhisteq~~CallsGraph_edge4" class="edge"><title>proc~adhisteq&#45;&gt;proc~cumul_histogram</title>
+<path fill="none" stroke="#ff0000" d="M54.1751,-29.1074C61.9968,-27.6455 70.8836,-25.9844 79.8327,-24.3116"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="80.7228,-27.706 89.9095,-22.4281 79.4366,-20.8251 80.7228,-27.706"/>
+</g>
+<!-- proc~cumul_histogram&#45;&gt;float -->
+<g id="proc~~adhisteq~~CallsGraph_edge2" class="edge"><title>proc~cumul_histogram&#45;&gt;float</title>
+<path fill="none" stroke="#00ffff" d="M174.954,-26.0013C191.588,-31.261 211.017,-37.4044 227.43,-42.5943"/>
+<polygon fill="#00ffff" stroke="#00ffff" points="226.618,-46.0083 237.208,-45.6862 228.728,-39.334 226.618,-46.0083"/>
+</g>
+<!-- proc~image_histogram -->
+<g id="proc~~adhisteq~~CallsGraph_node4" class="node"><title>proc~image_histogram</title>
+<g id="a_proc~~adhisteq~~CallsGraph_node4"><a xlink:href="../proc/image_histogram.html" xlink:title="image_histogram">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="311,-24 218,-24 218,-0 311,-0 311,-24"/>
+<text text-anchor="middle" x="264.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">image_histogram</text>
+</a>
+</g>
+</g>
+<!-- proc~cumul_histogram&#45;&gt;proc~image_histogram -->
+<g id="proc~~adhisteq~~CallsGraph_edge1" class="edge"><title>proc~cumul_histogram&#45;&gt;proc~image_histogram</title>
+<path fill="none" stroke="#00ffff" d="M182.312,-13.2836C190.477,-13.1545 199.077,-13.0185 207.503,-12.8853"/>
+<polygon fill="#00ffff" stroke="#00ffff" points="207.71,-16.3826 217.653,-12.7249 207.599,-9.38347 207.71,-16.3826"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="554pt" height="32pt"
+ viewBox="0.00 0.00 553.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 549.5,-28 549.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="63,-24 0,-24 0,-0 63,-0 63,-24"/>
+<text text-anchor="middle" x="31.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="135.5,-24 81.5,-24 81.5,-0 135.5,-0 135.5,-24"/>
+<text text-anchor="middle" x="108.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node"><title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="207.5,-24 153.5,-24 153.5,-0 207.5,-0 207.5,-24"/>
+<text text-anchor="middle" x="180.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node"><title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="359.5,-24 225.5,-24 225.5,-0 359.5,-0 359.5,-24"/>
+<text text-anchor="middle" x="292.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="431.5,-24 377.5,-24 377.5,-0 431.5,-0 431.5,-24"/>
+<text text-anchor="middle" x="404.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="545.5,-24 449.5,-24 449.5,-0 545.5,-0 545.5,-24"/>
+<text text-anchor="middle" x="497.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+     
+     
+     <h3>Called By</h3>
+     
+                <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: proc~~adhisteq~~CalledByGraph Pages: 1 -->
+<svg id="procadhisteqCalledByGraph" width="167pt" height="32pt"
+ viewBox="0.00 0.00 167.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~adhisteq~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~adhisteq~~CalledByGraph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 163,-28 163,4 -4,4"/>
+<!-- proc~adhisteq -->
+<g id="proc~~adhisteq~~CalledByGraph_node1" class="node"><title>proc~adhisteq</title>
+<polygon fill="none" stroke="black" points="159,-24 105,-24 105,-0 159,-0 159,-24"/>
+<text text-anchor="middle" x="132" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">adhisteq</text>
+</g>
+<!-- proc~ebsdcalfun -->
+<g id="proc~~adhisteq~~CalledByGraph_node2" class="node"><title>proc~ebsdcalfun</title>
+<g id="a_proc~~adhisteq~~CalledByGraph_node2"><a xlink:href="../proc/ebsdcalfun.html" xlink:title="EBSDcalfun">
+<polygon fill="#d9534f" stroke="#d9534f" points="69,-24 0,-24 0,-0 69,-0 69,-24"/>
+<text text-anchor="middle" x="34.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">EBSDcalfun</text>
+</a>
+</g>
+</g>
+<!-- proc~ebsdcalfun&#45;&gt;proc~adhisteq -->
+<g id="proc~~adhisteq~~CalledByGraph_edge1" class="edge"><title>proc~ebsdcalfun&#45;&gt;proc~adhisteq</title>
+<path fill="none" stroke="#ff0000" d="M69.1697,-12C77.4011,-12 86.2456,-12 94.5983,-12"/>
+<polygon fill="#ff0000" stroke="#ff0000" points="94.8322,-15.5001 104.832,-12 94.8322,-8.5001 94.8322,-15.5001"/>
+</g>
+</g>
+</svg>
+</div>
+                <div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div>
+                <div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog">
+                  <div class="modal-dialog modal-lg" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="-graph-help-label">Graph Key</h4>
+                      </div>
+                      <div class="modal-body">
+                        
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.38.0 (20140413.2041)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="554pt" height="32pt"
+ viewBox="0.00 0.00 553.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-28 549.5,-28 549.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node"><title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="63,-24 0,-24 0,-0 63,-0 63,-24"/>
+<text text-anchor="middle" x="31.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node"><title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="135.5,-24 81.5,-24 81.5,-0 135.5,-0 135.5,-24"/>
+<text text-anchor="middle" x="108.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node"><title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="207.5,-24 153.5,-24 153.5,-0 207.5,-0 207.5,-24"/>
+<text text-anchor="middle" x="180.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node"><title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="359.5,-24 225.5,-24 225.5,-0 359.5,-0 359.5,-24"/>
+<text text-anchor="middle" x="292.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node"><title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="431.5,-24 377.5,-24 377.5,-0 431.5,-0 431.5,-24"/>
+<text text-anchor="middle" x="404.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node"><title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="black" points="545.5,-24 449.5,-24 449.5,-0 545.5,-0 545.5,-24"/>
+<text text-anchor="middle" x="497.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module. Where possible, edges connecting nodes are given different colours to make them easier to distinguish in large graphs.
+    </p>
+    
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+     
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../proc/adhisteq.html#src">adhisteq</a>
+  </div>
+</div>
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    <section>
+    <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="highlight"><pre><span></span><span class="k">recursive function </span><span class="n">adhisteq</span><span class="p">(</span> <span class="n">nr</span><span class="p">,</span> <span class="n">dimx</span><span class="p">,</span> <span class="n">dimy</span><span class="p">,</span> <span class="n">im</span><span class="p">,</span> <span class="n">verbose</span> <span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+<span class="c">!DEC$ ATTRIBUTES DLLEXPORT :: adhisteq</span>
+
+<span class="k">IMPLICIT NONE</span>
+
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">nr</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">dimx</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">dimy</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>    <span class="kd">::</span> <span class="n">im</span><span class="p">(</span><span class="n">dimx</span><span class="p">,</span><span class="n">dimy</span><span class="p">)</span>
+<span class="kt">logical</span><span class="p">,</span><span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span><span class="k">OPTIONAL</span>     <span class="kd">::</span> <span class="n">verbose</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">)</span>               <span class="kd">::</span> <span class="n">output</span><span class="p">(</span><span class="n">dimx</span><span class="p">,</span><span class="n">dimy</span><span class="p">)</span>
+
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">)</span>               <span class="kd">::</span> <span class="n">ts</span><span class="p">,</span> <span class="n">hts</span><span class="p">,</span> <span class="n">ntx</span><span class="p">,</span> <span class="n">nty</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">ir</span><span class="p">,</span> <span class="n">ic</span><span class="p">,</span> <span class="n">istop</span><span class="p">,</span> <span class="n">jstop</span><span class="p">,</span> <span class="n">ix0</span><span class="p">,</span> <span class="n">iy0</span><span class="p">,</span> <span class="n">Tvalx</span><span class="p">,</span> <span class="n">Tvaly</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">parameter</span>     <span class="kd">::</span> <span class="n">nh</span><span class="o">=</span><span class="mi">256</span>
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">allocatable</span>   <span class="kd">::</span> <span class="n">subim</span><span class="p">(:,:)</span>
+<span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">sgl</span><span class="p">),</span><span class="k">allocatable</span>      <span class="kd">::</span> <span class="n">tmp</span><span class="p">(:),</span> <span class="n">tintx</span><span class="p">(:,:),</span> <span class="n">tinty</span><span class="p">(:,:),</span> <span class="n">LL</span><span class="p">(:,:),</span> <span class="n">LR</span><span class="p">(:,:),</span> <span class="n">UL</span><span class="p">(:,:),</span> <span class="n">UR</span><span class="p">(:,:)</span> 
+<span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="n">irg</span><span class="p">),</span><span class="k">allocatable</span>   <span class="kd">::</span> <span class="n">chistarr</span><span class="p">(:,:,:)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">verbose</span><span class="p">))</span> <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="nb">minval</span><span class="p">(</span><span class="n">im</span><span class="p">),</span><span class="nb">maxval</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+
+<span class="n">output</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="c">! determine integer parameters</span>
+<span class="n">ts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">maxval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span> <span class="n">dimx</span><span class="p">,</span> <span class="n">dimy</span> <span class="o">/</span><span class="p">))</span> <span class="o">/</span> <span class="n">nr</span><span class="p">)</span>        <span class="c">! size of a single tile for histogram computation</span>
+<span class="n">hts</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span> <span class="n">ts</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span><span class="p">)</span> <span class="p">)</span>                   <span class="c">! half the tile size</span>
+<span class="n">ntx</span> <span class="o">=</span> <span class="p">(</span><span class="n">dimx</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">hts</span>                              <span class="c">! number of tiles along x</span>
+<span class="n">nty</span> <span class="o">=</span> <span class="p">(</span><span class="n">dimy</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">hts</span>                              <span class="c">! number of tiles along y</span>
+
+<span class="c">! allocate temporary array to create tile interpolation matrices</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">tmp</span><span class="p">(</span><span class="n">hts</span><span class="p">))</span>
+<span class="n">tmp</span> <span class="o">=</span> <span class="p">(</span><span class="o">/</span> <span class="p">(</span><span class="nb">dble</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">hts</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span><span class="p">)</span> <span class="o">/</span> <span class="nb">dble</span><span class="p">(</span><span class="n">hts</span><span class="p">)</span>
+
+<span class="k">allocate</span><span class="p">(</span><span class="n">tintx</span><span class="p">(</span><span class="n">hts</span><span class="p">,</span><span class="n">hts</span><span class="p">),</span> <span class="n">tinty</span><span class="p">(</span><span class="n">hts</span><span class="p">,</span><span class="n">hts</span><span class="p">))</span>
+<span class="k">do </span><span class="n">j</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">hts</span>
+  <span class="n">tintx</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">hts</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">hts</span><span class="p">)</span>
+<span class="k">end do</span>
+<span class="n">tinty</span> <span class="o">=</span> <span class="nb">transpose</span><span class="p">(</span><span class="n">tintx</span><span class="p">)</span>
+<span class="k">deallocate</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+
+<span class="c">! define the array that will hold two rows of cumulative histograms</span>
+<span class="k">allocate</span><span class="p">(</span><span class="n">chistarr</span><span class="p">(</span><span class="n">nh</span><span class="p">,</span><span class="n">ntx</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">chistarr</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">do </span><span class="n">ir</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nty</span><span class="o">+</span><span class="mi">1</span>
+  <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ntx</span>
+    <span class="n">chistarr</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">chistarr</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>  <span class="c">! copy the histograms from the next row</span>
+  <span class="k">end do</span>
+
+<span class="c">! get the cumulative histograms for this row of tiles</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">ir</span><span class="p">.</span><span class="n">lt</span><span class="p">.</span><span class="n">nty</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>  <span class="k">then</span>
+<span class="k">    do </span><span class="n">ic</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ntx</span>
+<span class="c">! set the sub image array limits</span>
+      <span class="n">ix0</span> <span class="o">=</span> <span class="p">(</span><span class="n">ic</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">hts</span><span class="o">+</span><span class="mi">1</span>
+      <span class="n">istop</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span><span class="n">ix0</span><span class="o">+</span><span class="n">ts</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dimx</span> <span class="o">/</span><span class="p">)</span> <span class="p">)</span> 
+      <span class="n">Tvalx</span> <span class="o">=</span> <span class="n">ts</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">istop</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="n">dimx</span><span class="p">)</span> <span class="n">Tvalx</span> <span class="o">=</span> <span class="n">istop</span><span class="o">-</span><span class="n">ix0</span> <span class="o">+</span> <span class="mi">1</span>
+      <span class="n">iy0</span> <span class="o">=</span> <span class="p">(</span><span class="n">ir</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">hts</span><span class="o">+</span><span class="mi">1</span>
+      <span class="n">jstop</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span><span class="n">iy0</span><span class="o">+</span><span class="n">ts</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dimy</span> <span class="o">/</span><span class="p">)</span> <span class="p">)</span>
+      <span class="n">Tvaly</span> <span class="o">=</span> <span class="n">ts</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">jstop</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="n">dimy</span><span class="p">)</span> <span class="n">Tvaly</span> <span class="o">=</span> <span class="n">jstop</span><span class="o">-</span><span class="n">iy0</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="c">!if (PRESENT(verbose)) write(*,*) ix0, istop, iy0, jstop, Tvalx, Tvaly</span>
+
+<span class="c">! extract the sub image and compute its cumulative histogram (histogram starts at bin 1)</span>
+      <span class="k">allocate</span><span class="p">(</span><span class="n">subim</span><span class="p">(</span><span class="n">Tvalx</span><span class="p">,</span><span class="n">Tvaly</span><span class="p">))</span>
+      <span class="n">subim</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="n">subim</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvalx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvaly</span><span class="p">)</span> <span class="o">=</span> <span class="n">im</span><span class="p">(</span><span class="n">ix0</span><span class="p">:</span><span class="n">istop</span><span class="p">,</span> <span class="n">iy0</span><span class="p">:</span><span class="n">jstop</span><span class="p">)</span>  <span class="o">+</span> <span class="mi">1</span>
+<span class="c">!if (PRESENT(verbose)) write (*,*) &#39;subim : &#39;,minval(subim),maxval(subim)</span>
+      <span class="n">chistarr</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">nh</span><span class="p">,</span><span class="n">ic</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">cumul_histogram</span><span class="p">(</span> <span class="n">Tvalx</span><span class="p">,</span> <span class="n">Tvaly</span><span class="p">,</span> <span class="n">subim</span> <span class="p">)</span>
+      <span class="k">deallocate</span><span class="p">(</span><span class="n">subim</span><span class="p">)</span>
+    <span class="k">end do</span>
+<span class="k">  end if</span>
+<span class="c">!if (PRESENT(verbose)) write(*,*) minval(chistarr),maxval(chistarr)</span>
+<span class="c">!stop</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">ir</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>  <span class="c">! this is done only the first time through...</span>
+     <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ntx</span>
+       <span class="n">chistarr</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">chistarr</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">256</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>  <span class="c">! copy the histograms from the next row</span>
+     <span class="k">end do</span>
+<span class="k">  end if</span>
+
+<span class="c">! and here is the actual interpolation part</span>
+  <span class="k">do </span><span class="n">ic</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ntx</span><span class="o">+</span><span class="mi">1</span>
+<span class="c">! set the sub image array limits (different from above!)</span>
+    <span class="n">ix0</span> <span class="o">=</span> <span class="p">(</span><span class="n">ic</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">hts</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">istop</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span><span class="n">ix0</span><span class="o">+</span><span class="n">hts</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dimx</span> <span class="o">/</span><span class="p">)</span> <span class="p">)</span> 
+    <span class="n">Tvalx</span> <span class="o">=</span> <span class="n">hts</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">istop</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="n">dimx</span><span class="p">)</span> <span class="n">Tvalx</span> <span class="o">=</span> <span class="n">istop</span><span class="o">-</span><span class="n">ix0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">iy0</span> <span class="o">=</span> <span class="p">(</span><span class="n">ir</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">hts</span><span class="o">+</span><span class="mi">1</span>
+    <span class="n">jstop</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span><span class="n">iy0</span><span class="o">+</span><span class="n">hts</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dimy</span> <span class="o">/</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">Tvaly</span> <span class="o">=</span> <span class="n">hts</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">jstop</span><span class="p">.</span><span class="n">eq</span><span class="p">.</span><span class="n">dimy</span><span class="p">)</span> <span class="n">Tvaly</span> <span class="o">=</span> <span class="n">jstop</span><span class="o">-</span><span class="n">iy0</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c">! allocate the sub image and the four interpolation arrays</span>
+    <span class="k">allocate</span><span class="p">(</span><span class="n">subim</span><span class="p">(</span><span class="n">Tvalx</span><span class="p">,</span><span class="n">Tvaly</span><span class="p">),</span><span class="n">LL</span><span class="p">(</span><span class="n">Tvalx</span><span class="p">,</span><span class="n">Tvaly</span><span class="p">),</span><span class="n">LR</span><span class="p">(</span><span class="n">Tvalx</span><span class="p">,</span><span class="n">Tvaly</span><span class="p">),</span><span class="n">UL</span><span class="p">(</span><span class="n">Tvalx</span><span class="p">,</span><span class="n">Tvaly</span><span class="p">),</span><span class="n">UR</span><span class="p">(</span><span class="n">Tvalx</span><span class="p">,</span><span class="n">Tvaly</span><span class="p">))</span>
+
+<span class="c">! get the sub image</span>
+    <span class="n">subim</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvalx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvaly</span><span class="p">)</span> <span class="o">=</span> <span class="n">im</span><span class="p">(</span><span class="n">ix0</span><span class="p">:</span><span class="n">istop</span><span class="p">,</span> <span class="n">iy0</span><span class="p">:</span><span class="n">jstop</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c">! set the coordinates to be used in the histogram array</span>
+    <span class="n">i1</span> <span class="o">=</span> <span class="nb">maxval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span> <span class="n">ic</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span><span class="p">)</span> <span class="p">)</span>
+    <span class="n">i2</span> <span class="o">=</span> <span class="nb">minval</span><span class="p">(</span> <span class="p">(</span><span class="o">/</span> <span class="n">ic</span><span class="p">,</span> <span class="n">ntx</span> <span class="o">/</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c">! and extract the cumulative histogram values for the intensities in the sub image,</span>
+<span class="c">! for each of the four interpolation arrays</span>
+    <span class="k">do </span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Tvalx</span>
+      <span class="k">do </span><span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Tvaly</span>
+        <span class="n">LL</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">chistarr</span><span class="p">(</span><span class="n">subim</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="n">i1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">LR</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">chistarr</span><span class="p">(</span><span class="n">subim</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="n">i2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">UL</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">chistarr</span><span class="p">(</span><span class="n">subim</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="n">i1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+        <span class="n">UR</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">chistarr</span><span class="p">(</span><span class="n">subim</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">),</span><span class="n">i2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+      <span class="k">end do</span>
+<span class="k">    end do</span>
+
+<span class="c">! perform the interpolation along x</span>
+    <span class="n">LL</span> <span class="o">=</span> <span class="n">LL</span> <span class="o">+</span> <span class="p">(</span><span class="n">LR</span><span class="o">-</span><span class="n">LL</span><span class="p">)</span> <span class="o">*</span> <span class="n">tintx</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvalx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvaly</span><span class="p">)</span> 
+    <span class="n">UL</span> <span class="o">=</span> <span class="n">UL</span> <span class="o">+</span> <span class="p">(</span><span class="n">UR</span><span class="o">-</span><span class="n">UL</span><span class="p">)</span> <span class="o">*</span> <span class="n">tintx</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvalx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvaly</span><span class="p">)</span>
+<span class="c">! and interpolate along y; store the result in the output array</span>
+    <span class="n">output</span><span class="p">(</span><span class="n">ix0</span><span class="p">:</span><span class="n">istop</span><span class="p">,</span><span class="n">iy0</span><span class="p">:</span><span class="n">jstop</span><span class="p">)</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">LL</span> <span class="o">+</span> <span class="p">(</span><span class="n">UL</span><span class="o">-</span><span class="n">LL</span><span class="p">)</span> <span class="o">*</span> <span class="n">tinty</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvalx</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">Tvaly</span><span class="p">))</span>
+
+<span class="c">! deallocate the arrays </span>
+    <span class="k">deallocate</span><span class="p">(</span><span class="n">subim</span><span class="p">,</span> <span class="n">LL</span><span class="p">,</span> <span class="n">LR</span><span class="p">,</span> <span class="n">UL</span><span class="p">,</span> <span class="n">UR</span><span class="p">)</span>
+  <span class="k">end do</span>
+<span class="k">end do</span>
+
+<span class="k">end function </span><span class="n">adhisteq</span>
+</pre></div>
+
+    </section>
+    <br>
+    
+    
+    </div>
+  </div>
+
+  <section class="visible-xs visible-sm hidden-md">
+    <hr>
+    
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprocs-1">All Procedures</a></h3></div>
+  <div id="allprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../proc/adhisteq.html">adhisteq</a>
+      
+      <a class="list-group-item" href="../proc/aggiorno_ottimo.html">AGGIORNO_OTTIMO</a>
+      
+      <a class="list-group-item" href="../proc/alogam.html">alogam</a>
+      
+      <a class="list-group-item" href="../proc/altmov.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/altmov%7E2.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/backprojection.html">BackProjection</a>
+      
+      <a class="list-group-item" href="../proc/bakvec.html">bakvec</a>
+      
+      <a class="list-group-item" href="../proc/balanc.html">balanc</a>
+      
+      <a class="list-group-item" href="../proc/balbak.html">balbak</a>
+      
+      <a class="list-group-item" href="../proc/bandr.html">bandr</a>
+      
+      <a class="list-group-item" href="../proc/bandv.html">bandv</a>
+      
+      <a class="list-group-item" href="../proc/barreldistortion.html">BarrelDistortion</a>
+      
+      <a class="list-group-item" href="../proc/bisect.html">bisect</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa%7E2.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb%7E2.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bqr.html">bqr</a>
+      
+      <a class="list-group-item" href="../proc/butterflymask9x9.html">ButterflyMask9x9</a>
+      
+      <a class="list-group-item" href="../proc/calchoughlut.html">CalcHoughLUT</a>
+      
+      <a class="list-group-item" href="../proc/calckinpedpatternsingle.html">CalcKINPEDPatternSingle</a>
+      
+      <a class="list-group-item" href="../proc/calckvectorcone.html">Calckvectorcone</a>
+      
+      <a class="list-group-item" href="../proc/calckvectortrace.html">Calckvectortrace</a>
+      
+      <a class="list-group-item" href="../proc/calcr.html">CalcR</a>
+      
+      <a class="list-group-item" href="../proc/calcrlocal.html">CalcRLocal</a>
+      
+      <a class="list-group-item" href="../proc/cardintersection.html">CardIntersection</a>
+      
+      <a class="list-group-item" href="../proc/cbabk2.html">cbabk2</a>
+      
+      <a class="list-group-item" href="../proc/cbal.html">cbal</a>
+      
+      <a class="list-group-item" href="../proc/cdiv.html">cdiv</a>
+      
+      <a class="list-group-item" href="../proc/cg.html">cg</a>
+      
+      <a class="list-group-item" href="../proc/ch.html">ch</a>
+      
+      <a class="list-group-item" href="../proc/cinvit.html">cinvit</a>
+      
+      <a class="list-group-item" href="../proc/clerror_check.html">CLerror_check</a>
+      
+      <a class="list-group-item" href="../proc/clinit_pdccq.html">CLinit_PDCCQ</a>
+      
+      <a class="list-group-item" href="../proc/clquery_platform_info.html">CLquery_platform_info</a>
+      
+      <a class="list-group-item" href="../proc/clread_source_file.html">CLread_source_file</a>
+      
+      <a class="list-group-item" href="../proc/combak.html">combak</a>
+      
+      <a class="list-group-item" href="../proc/comhes.html">comhes</a>
+      
+      <a class="list-group-item" href="../proc/comlr.html">comlr</a>
+      
+      <a class="list-group-item" href="../proc/comlr2.html">comlr2</a>
+      
+      <a class="list-group-item" href="../proc/comqr.html">comqr</a>
+      
+      <a class="list-group-item" href="../proc/comqr2.html">comqr2</a>
+      
+      <a class="list-group-item" href="../proc/cortb.html">cortb</a>
+      
+      <a class="list-group-item" href="../proc/corth.html">corth</a>
+      
+      <a class="list-group-item" href="../proc/csroot.html">csroot</a>
+      
+      <a class="list-group-item" href="../proc/ctfped_writefile.html">ctfped_writeFile</a>
+      
+      <a class="list-group-item" href="../proc/cubochoricneighbors.html">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../proc/cumul_histogram.html">cumul_histogram</a>
+      
+      <a class="list-group-item" href="../proc/dd_density.html">DD_Density</a>
+      
+      <a class="list-group-item" href="../proc/dd_estep.html">DD_Estep</a>
+      
+      <a class="list-group-item" href="../proc/dd_getqandl.html">DD_getQandL</a>
+      
+      <a class="list-group-item" href="../proc/dd_mstep.html">DD_Mstep</a>
+      
+      <a class="list-group-item" href="../proc/delete_fzlist.html">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../proc/denoise_pattern.html">Denoise_Pattern</a>
+      
+      <a class="list-group-item" href="../proc/denoise_ped.html">Denoise_PED</a>
+      
+      <a class="list-group-item" href="../proc/di_emfordd.html">DI_EMforDD</a>
+      
+      <a class="list-group-item" href="../proc/di_init.html">DI_Init</a>
+      
+      <a class="list-group-item" href="../proc/di_rotatetomu.html">DI_RotateToMu</a>
+      
+      <a class="list-group-item" href="../proc/di_sampledd.html">DI_SampleDD</a>
+      
+      <a class="list-group-item" href="../proc/di_similarity_classifier.html">DI_Similarity_Classifier</a>
+      
+      <a class="list-group-item" href="../proc/ebsd4calfun.html">EBSD4calfun</a>
+      
+      <a class="list-group-item" href="../proc/ebsdcalfun.html">EBSDcalfun</a>
+      
+      <a class="list-group-item" href="../proc/eccicalcsgh.html">ECCICalcSgh</a>
+      
+      <a class="list-group-item" href="../proc/ecpcalfun.html">ECPcalfun</a>
+      
+      <a class="list-group-item" href="../proc/efitebsdwrapper.html">efitEBSDWrapper</a>
+      
+      <a class="list-group-item" href="../proc/efitecpwrapper.html">efitECPWrapper</a>
+      
+      <a class="list-group-item" href="../proc/ei.html">EI</a>
+      
+      <a class="list-group-item" href="../proc/elmbak.html">elmbak</a>
+      
+      <a class="list-group-item" href="../proc/elmhes.html">elmhes</a>
+      
+      <a class="list-group-item" href="../proc/eltran.html">eltran</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdmaster.html">EMsoftCgetEBSDmaster</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdpatterns.html">EMsoftCgetEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetecpatterns.html">EMsoftCgetECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetmcopencl.html">EMsoftCgetMCOpenCL</a>
+      
+      <a class="list-group-item" href="../proc/eshelby_disp.html">Eshelby_disp</a>
+      
+      <a class="list-group-item" href="../proc/fcore.html">FCORE</a>
+      
+      <a class="list-group-item" href="../proc/figi.html">figi</a>
+      
+      <a class="list-group-item" href="../proc/figi2.html">figi2</a>
+      
+      <a class="list-group-item" href="../proc/forwardprojection.html">ForwardProjection</a>
+      
+      <a class="list-group-item" href="../proc/fphon.html">FPHON</a>
+      
+      <a class="list-group-item" href="../proc/fscatt.html">FSCATT</a>
+      
+      <a class="list-group-item" href="../proc/genera_punto_sa.html">GENERA_PUNTO_SA</a>
+      
+      <a class="list-group-item" href="../proc/getaverageorientationnamelist.html">GetAverageOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getconvertorientationsnamelist.html">GetConvertOrientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdddensitylbm.html">getDDDensityLBM</a>
+      
+      <a class="list-group-item" href="../proc/getdictindxopenclnamelist.html">GetDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../interface/getdisorientationangle.html">getDisorientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxis.html">getDisorientationAngleAxis</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxistwophases.html">getDisorientationAngleAxisTwoPhases</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangledouble.html">getDisorientationAngleDouble</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationanglesingle.html">getDisorientationAngleSingle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationsnamelist.html">GetDisorientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdvsdnamelist.html">GetDvsDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdclusternamelist.html">GetEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsddetparmscannamelist.html">GetEBSDdetparmscanNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdfullnamelist.html">GetEBSDFullNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdindexingnamelist.html">GetEBSDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasternamelist.html">GetEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasteropenclnamelist.html">GetEBSDMasterOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdnamelist.html">GetEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdoverlapnamelist.html">GetEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns.html">getEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns2.html">getEBSDPatterns2</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatternswrapper.html">getEBSDPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/geteccinamelist.html">GetECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpatterns.html">getECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getecpatternswrapper.html">getECPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getecpindexingnamelist.html">GetECPIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpmasternamelist.html">GetECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpnamelist.html">GetECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecppatternnamelist.html">GetECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpsinglenamelist.html">GetECPSingleNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpzanamelist.html">GetECPZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfit4namelist.html">GetEMDPFit4NameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfitnamelist.html">GetEMDPFitNameList</a>
+      
+      <a class="list-group-item" href="../proc/geteulersfromfile.html">getEulersfromFile</a>
+      
+      <a class="list-group-item" href="../proc/getfitorientationpsnamelist.html">GetFitOrientationPSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getfztypeandorder.html">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../proc/getkamnamelist.html">GetKAMNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkinematicalnamelist.html">GetkinematicalNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselmasternamelist.html">GetKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselnamelist.html">GetKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatterns.html">getKosselPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatternswrapper.html">getKosselPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getlacbednamelist.html">GetLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclfoilnamelist.html">GetMCCLfoilNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclmultilayernamelist.html">GetMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclnamelist.html">GetMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclspherenamelist.html">GetMCCLsphereNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmclipssnamelist.html">GetMCLIPSSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcnamelist.html">GetMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmultiphasenamelist.html">GetMultiPhaseNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationsimilaritynamelist.html">GetOrientationSimilarityNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationviznamelist.html">GetOrientationVizNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedindxnamelist.html">GetPEDIndxNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedkinnamelist.html">GetPEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedzanamelist.html">GetPEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getpfinversionnamelist.html">GetPFInversionNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrefineorientationnamelist.html">GetRefineOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getreflectornamelist.html">GetreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrfznamelist.html">GetRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/getsrdefectnamelist.html">GetSRdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/getstemdcinamelist.html">GetSTEMDCINameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdindexingnamelist.html">GetTKDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdmasternamelist.html">GetTKDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdnamelist.html">GetTKDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getwk.html">GETWK</a>
+      
+      <a class="list-group-item" href="../proc/getzadefectnamelist.html">GetZAdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/hipassfilter.html">HiPassFilter</a>
+      
+      <a class="list-group-item" href="../proc/houghtransform.html">HoughTransform</a>
+      
+      <a class="list-group-item" href="../proc/hqr.html">hqr</a>
+      
+      <a class="list-group-item" href="../proc/hqr2.html">hqr2</a>
+      
+      <a class="list-group-item" href="../proc/htrib3.html">htrib3</a>
+      
+      <a class="list-group-item" href="../proc/htribk.html">htribk</a>
+      
+      <a class="list-group-item" href="../proc/htrid3.html">htrid3</a>
+      
+      <a class="list-group-item" href="../proc/htridi.html">htridi</a>
+      
+      <a class="list-group-item" href="../proc/image_entropy.html">image_entropy</a>
+      
+      <a class="list-group-item" href="../proc/image_histogram.html">image_histogram</a>
+      
+      <a class="list-group-item" href="../proc/image_jointentropy.html">image_jointentropy</a>
+      
+      <a class="list-group-item" href="../proc/image_jointhistogram.html">image_jointhistogram</a>
+      
+      <a class="list-group-item" href="../proc/image_mutualinformation.html">image_mutualinformation</a>
+      
+      <a class="list-group-item" href="../proc/imtql1.html">imtql1</a>
+      
+      <a class="list-group-item" href="../proc/imtql2.html">imtql2</a>
+      
+      <a class="list-group-item" href="../proc/imtqlv.html">imtqlv</a>
+      
+      <a class="list-group-item" href="../proc/init_dislocation_data.html">init_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/init_einclusion_data.html">init_Einclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_foil_data.html">init_foil_data</a>
+      
+      <a class="list-group-item" href="../proc/init_inclusion_data.html">init_inclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stacking_fault_data.html">init_stacking_fault_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stem.html">init_STEM</a>
+      
+      <a class="list-group-item" href="../proc/init_stem_za.html">init_STEM_ZA</a>
+      
+      <a class="list-group-item" href="../proc/init_void_data.html">init_void_data</a>
+      
+      <a class="list-group-item" href="../proc/init_ysh_dislocation_data.html">init_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/initialize_foil_geometry.html">initialize_foil_geometry</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../interface/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist_ewaldsweep.html">Initialize_ReflectionList_EwaldSweep</a>
+      
+      <a class="list-group-item" href="../proc/initializedefects.html">InitializeDefects</a>
+      
+      <a class="list-group-item" href="../proc/initializeeshelbyinclusion.html">InitializeEshelbyInclusion</a>
+      
+      <a class="list-group-item" href="../proc/innerprodgpu.html">InnerProdGPU</a>
+      
+      <a class="list-group-item" href="../proc/insidecubehexfz.html">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicfz.html">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicmfz.html">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecyclicfz.html">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralfz.html">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralmfz.html">insideDihedralMFZ</a>
+      
+      <a class="list-group-item" href="../proc/interfaccia.html">INTERFACCIA</a>
+      
+      <a class="list-group-item" href="../proc/inversiondivision.html">InversionDivision</a>
+      
+      <a class="list-group-item" href="../proc/invit.html">invit</a>
+      
+      <a class="list-group-item" href="../proc/isinsidefz.html">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../proc/isinsidemfz.html">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../proc/jaccard_distance.html">Jaccard_Distance</a>
+      
+      <a class="list-group-item" href="../proc/json_cleanuppointers.html">JSON_cleanuppointers</a>
+      
+      <a class="list-group-item" href="../proc/json_failtest.html">JSON_failtest</a>
+      
+      <a class="list-group-item" href="../proc/json_initpointers.html">JSON_initpointers</a>
+      
+      <a class="list-group-item" href="../proc/json_minify.html">JSON_minify</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmldoubles.html">JSON_writeNMLdoubles</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlintegers.html">JSON_writeNMLintegers</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlreals.html">JSON_writeNMLreals</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdouble.html">JSONgetDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdoublevector.html">JSONgetDoubleVector</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddefectfile.html">JSONreadDefectFile</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddouble.html">JSONreadDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddoublevec.html">JSONreadDoubleVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdclusternamelist.html">JSONreadEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdmasternamelist.html">JSONreadEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdnamelist.html">JSONreadEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdoverlapnamelist.html">JSONreadEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadecpmasternamelist.html">JSONreadECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadfoildata.html">JSONreadFoilData</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadinteger.html">JSONreadInteger</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadintegervec.html">JSONreadIntegerVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselmasternamelist.html">JSONreadKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselnamelist.html">JSONreadKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadlogical.html">JSONreadLogical</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclmultilayernamelist.html">JSONreadMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclnamelist.html">JSONreadMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcnamelist.html">JSONreadMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreal.html">JSONreadReal</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadrealvec.html">JSONreadRealVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreflectornamelist.html">JSONreadreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadstring.html">JSONreadString</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritedictindxopenclnamelist.html">JSONwriteDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdclusternamelist.html">JSONwriteEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdmasternamelist.html">JSONwriteEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdnamelist.html">JSONwriteEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteeccinamelist.html">JSONwriteECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpmasternamelist.html">JSONwriteECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpnamelist.html">JSONwriteECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecppatternnamelist.html">JSONwriteECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselmasternamelist.html">JSONwriteKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselnamelist.html">JSONwriteKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritelacbednamelist.html">JSONwriteLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclmultilayernamelist.html">JSONwriteMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclnamelist.html">JSONwriteMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcnamelist.html">JSONwriteMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedkinnamelist.html">JSONwritePEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedzanamelist.html">JSONwritePEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriterfznamelist.html">JSONwriteRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/linesearch_inverti.html">LINESEARCH_INVERTI</a>
+      
+      <a class="list-group-item" href="../proc/linesearchbox_cont.html">linesearchbox_cont</a>
+      
+      <a class="list-group-item" href="../proc/logcp.html">logCp</a>
+      
+      <a class="list-group-item" href="../proc/mainbox1.html">MAINBOX1</a>
+      
+      <a class="list-group-item" href="../proc/mainbox2.html">MAINBOX2</a>
+      
+      <a class="list-group-item" href="../proc/makedislocation.html">makedislocation</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfault.html">makestackingfault</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfaultecci.html">makestackingfaultECCI</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation%7E2.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/mc_concatenatemuellermatrices.html">MC_concatenateMuellerMatrices</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ad_from_eo.html">MC_get_AD_from_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_auxiliaryangle.html">MC_get_AuxiliaryAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_basicmuellermatrix.html">MC_get_basicMuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_diattenuator.html">MC_get_diattenuator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ellipticityangle.html">MC_get_EllipticityAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_eo_from_ad.html">MC_get_EO_from_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_orientationangle.html">MC_get_OrientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_phaseshiftangle.html">MC_get_PhaseShiftAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_polarization.html">MC_get_Polarization</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_retarder.html">MC_get_retarder</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_rotator.html">MC_get_rotator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_ad.html">MC_get_Stokes_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_eo.html">MC_get_Stokes_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_print_muellermatrix.html">MC_print_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_propagatestokesvector.html">MC_propagateStokesVector</a>
+      
+      <a class="list-group-item" href="../proc/mc_rotate_muellermatrix.html">MC_rotate_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/minfit.html">minfit</a>
+      
+      <a class="list-group-item" href="../proc/nanchk.html">NANCHK</a>
+      
+      <a class="list-group-item" href="../proc/ortbak.html">ortbak</a>
+      
+      <a class="list-group-item" href="../proc/orthes.html">orthes</a>
+      
+      <a class="list-group-item" href="../proc/ortran.html">ortran</a>
+      
+      <a class="list-group-item" href="../proc/pgm_write_file.html">PGM_Write_File</a>
+      
+      <a class="list-group-item" href="../proc/poidev.html">POIDEV</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcubochoriccube.html">PoVRay_addCubochoricCube</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcylinder.html">PoVRay_addCylinder</a>
+      
+      <a class="list-group-item" href="../proc/povray_addeulerbox.html">PoVRay_addEulerBox</a>
+      
+      <a class="list-group-item" href="../proc/povray_addreferenceframe.html">PoVRay_addReferenceFrame</a>
+      
+      <a class="list-group-item" href="../proc/povray_addsphere.html">PoVRay_addSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_addwireframesphere.html">PoVRay_addWireFrameSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_declare_df3file.html">PoVRay_declare_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/povray_drawfz.html">PoVRay_drawFZ</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz222.html">PoVRay_getpos_FZ222</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz23.html">PoVRay_getpos_FZ23</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz32.html">PoVRay_getpos_FZ32</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz422.html">PoVRay_getpos_FZ422</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz432.html">PoVRay_getpos_FZ432</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz622.html">PoVRay_getpos_FZ622</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz2.html">PoVRay_initFZ2</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz3.html">PoVRay_initFZ3</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz4.html">PoVRay_initFZ4</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz6.html">PoVRay_initFZ6</a>
+      
+      <a class="list-group-item" href="../proc/povray_openfile.html">PoVRay_openFile</a>
+      
+      <a class="list-group-item" href="../proc/povray_setcamera.html">PoVRay_setCamera</a>
+      
+      <a class="list-group-item" href="../proc/povray_setlightsource.html">PoVRay_setLightSource</a>
+      
+      <a class="list-group-item" href="../proc/povray_write_df3file.html">PoVRay_write_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/prelim.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/prelim%7E2.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/printtime.html">PrintTime</a>
+      
+      <a class="list-group-item" href="../proc/pythag.html">pythag</a>
+      
+      <a class="list-group-item" href="../proc/qsortd.html">qsortd</a>
+      
+      <a class="list-group-item" href="../proc/qzhes.html">qzhes</a>
+      
+      <a class="list-group-item" href="../proc/qzit.html">qzit</a>
+      
+      <a class="list-group-item" href="../proc/qzval.html">qzval</a>
+      
+      <a class="list-group-item" href="../proc/qzvec.html">qzvec</a>
+      
+      <a class="list-group-item" href="../proc/r8_swap.html">r8_swap</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print.html">r8mat_print</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print_some.html">r8mat_print_some</a>
+      
+      <a class="list-group-item" href="../proc/r8vec2_print.html">r8vec2_print</a>
+      
+      <a class="list-group-item" href="../proc/r8vec_print.html">r8vec_print</a>
+      
+      <a class="list-group-item" href="../proc/ran.html">ran</a>
+      
+      <a class="list-group-item" href="../proc/randddmarginal.html">randDDMarginal</a>
+      
+      <a class="list-group-item" href="../proc/randuniformsphere.html">randUniformSphere</a>
+      
+      <a class="list-group-item" href="../proc/ratqr.html">ratqr</a>
+      
+      <a class="list-group-item" href="../proc/read_apb_data.html">read_apb_data</a>
+      
+      <a class="list-group-item" href="../proc/read_stem_data.html">read_STEM_data</a>
+      
+      <a class="list-group-item" href="../proc/read_ysh_dislocation_data.html">read_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/rebak.html">rebak</a>
+      
+      <a class="list-group-item" href="../proc/rebakb.html">rebakb</a>
+      
+      <a class="list-group-item" href="../proc/reduc.html">reduc</a>
+      
+      <a class="list-group-item" href="../proc/reduc2.html">reduc2</a>
+      
+      <a class="list-group-item" href="../proc/reducedisorientationtomfz.html">ReduceDisorientationtoMFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtocubicefz.html">ReduceOrientationtoCubicEFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtorfz.html">ReduceOrientationtoRFZ</a>
+      
+      <a class="list-group-item" href="../proc/rescue.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rescue%7E2.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rg.html">rg</a>
+      
+      <a class="list-group-item" href="../proc/rgg.html">rgg</a>
+      
+      <a class="list-group-item" href="../proc/ri1.html">RI1</a>
+      
+      <a class="list-group-item" href="../proc/ri2.html">RI2</a>
+      
+      <a class="list-group-item" href="../proc/ricerca_lungo_assi.html">RICERCA_LUNGO_ASSI</a>
+      
+      <a class="list-group-item" href="../proc/rih1.html">RIH1</a>
+      
+      <a class="list-group-item" href="../proc/rih2.html">RIH2</a>
+      
+      <a class="list-group-item" href="../proc/rih3.html">RIH3</a>
+      
+      <a class="list-group-item" href="../proc/rng_seed.html">rng_seed</a>
+      
+      <a class="list-group-item" href="../proc/rng_uniform.html">rng_uniform</a>
+      
+      <a class="list-group-item" href="../proc/rs.html">rs</a>
+      
+      <a class="list-group-item" href="../proc/rsb.html">rsb</a>
+      
+      <a class="list-group-item" href="../proc/rsg.html">rsg</a>
+      
+      <a class="list-group-item" href="../proc/rsgab.html">rsgab</a>
+      
+      <a class="list-group-item" href="../proc/rsgba.html">rsgba</a>
+      
+      <a class="list-group-item" href="../proc/rsm.html">rsm</a>
+      
+      <a class="list-group-item" href="../proc/rsp.html">rsp</a>
+      
+      <a class="list-group-item" href="../proc/rspp.html">rspp</a>
+      
+      <a class="list-group-item" href="../proc/rst.html">rst</a>
+      
+      <a class="list-group-item" href="../proc/rt.html">rt</a>
+      
+      <a class="list-group-item" href="../proc/sample_cone.html">sample_Cone</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocube.html">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocubefilled.html">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../proc/samplefcctwinrfz.html">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../proc/sampleisomisorientation.html">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../proc/samplerfz.html">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../proc/samplerfztwin.html">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../proc/senzaderglob.html">SENZADERGLOB</a>
+      
+      <a class="list-group-item" href="../proc/ssort.html">SSORT</a>
+      
+      <a class="list-group-item" href="../proc/stop.html">STOP</a>
+      
+      <a class="list-group-item" href="../proc/svd.html">svd</a>
+      
+      <a class="list-group-item" href="../proc/time_estimate.html">Time_estimate</a>
+      
+      <a class="list-group-item" href="../proc/time_remaining.html">Time_remaining</a>
+      
+      <a class="list-group-item" href="../proc/time_report.html">Time_report</a>
+      
+      <a class="list-group-item" href="../proc/time_reset.html">Time_reset</a>
+      
+      <a class="list-group-item" href="../proc/time_start.html">Time_start</a>
+      
+      <a class="list-group-item" href="../proc/time_stop.html">Time_stop</a>
+      
+      <a class="list-group-item" href="../proc/time_tick.html">Time_tick</a>
+      
+      <a class="list-group-item" href="../proc/time_tock.html">Time_tock</a>
+      
+      <a class="list-group-item" href="../proc/timestamp.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/timestamp%7E2.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/tinvit.html">tinvit</a>
+      
+      <a class="list-group-item" href="../proc/tql1.html">tql1</a>
+      
+      <a class="list-group-item" href="../proc/tql2.html">tql2</a>
+      
+      <a class="list-group-item" href="../proc/tqlrat.html">tqlrat</a>
+      
+      <a class="list-group-item" href="../proc/trbak1.html">trbak1</a>
+      
+      <a class="list-group-item" href="../proc/trbak3.html">trbak3</a>
+      
+      <a class="list-group-item" href="../proc/tred1.html">tred1</a>
+      
+      <a class="list-group-item" href="../proc/tred2.html">tred2</a>
+      
+      <a class="list-group-item" href="../proc/tred3.html">tred3</a>
+      
+      <a class="list-group-item" href="../proc/tridib.html">tridib</a>
+      
+      <a class="list-group-item" href="../proc/trsbox.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/trsbox%7E2.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/tsturm.html">tsturm</a>
+      
+      <a class="list-group-item" href="../proc/update.html">update</a>
+      
+      <a class="list-group-item" href="../proc/update%7E2.html">update</a>
+      
+      <a class="list-group-item" href="../proc/vmfmeandirdensity.html">VMFMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/watsonmeandirdensity.html">WatsonMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/weko.html">WEKO</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp%7E2.html">YSHDisp</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp.html">YSHDisp</a>
+      
+    </div>
+  </div>
+</div>
+
+
+  </section>
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2017 <a rel="license" href="http://www.freebsd.org/copyright/freebsd-doc-license.html">FreeBSD Documentation License</a></p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran Program was developed by Marc De Graef Research Group/Carnegie Mellon University</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js'],
+        'HTML-CSS': { 
+           styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: '#000000 ! important'} }
+        }
+      });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  </body>
+</html>

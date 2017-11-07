@@ -1,0 +1,10 @@
+ <!DOCTYPE RCC>
+ <RCC version="1.0">
+ <qresource>
+
+  <file>dark.qss</file>
+  <file>default.qss</file>
+  <file>light.qss</file>
+
+ </qresource>
+ </RCC>

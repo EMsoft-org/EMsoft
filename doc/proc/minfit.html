@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	 
+	 <meta name="description" content="EMsoft main library">
+    
+    <meta name="author" content="Marc De Graef Research Group/Carnegie Mellon University" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>minfit &ndash; Fortran Program</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Fortran Program </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+				
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+		 aria-expanded="false">Contents <span class="caret"></span></a>
+	      <ul class="dropdown-menu">
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+				
+				
+            <li><a href="../lists/modules.html">Modules</a></li>
+				
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+				
+				
+            <li><a href="../lists/absint.html">Abstract Interfaces</a></li>
+								
+            <li><a href="../lists/types.html">Derived Types</a></li>
+				
+				
+            <li><a href="../lists/programs.html">Programs</a></li>
+				
+            </ul>
+            </li>
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/absint.html">Abstract Interfaces</a></li>
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>minfit
+      <small>Subroutine</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+	  data-placement="bottom" data-html="true"
+	  title=" 0.7% of total for procedures.">216 statements</a>
+     </li> 
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/eispack.f90"> Source File</a></li>
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+     <li><a href='../sourcefile/eispack.f90.html'>eispack.f90</a></li>
+  
+     <li class="active">minfit</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <hr>
+  
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprocs-0">All Procedures</a></h3></div>
+  <div id="allprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../proc/adhisteq.html">adhisteq</a>
+      
+      <a class="list-group-item" href="../proc/aggiorno_ottimo.html">AGGIORNO_OTTIMO</a>
+      
+      <a class="list-group-item" href="../proc/alogam.html">alogam</a>
+      
+      <a class="list-group-item" href="../proc/altmov.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/altmov%7E2.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/backprojection.html">BackProjection</a>
+      
+      <a class="list-group-item" href="../proc/bakvec.html">bakvec</a>
+      
+      <a class="list-group-item" href="../proc/balanc.html">balanc</a>
+      
+      <a class="list-group-item" href="../proc/balbak.html">balbak</a>
+      
+      <a class="list-group-item" href="../proc/bandr.html">bandr</a>
+      
+      <a class="list-group-item" href="../proc/bandv.html">bandv</a>
+      
+      <a class="list-group-item" href="../proc/barreldistortion.html">BarrelDistortion</a>
+      
+      <a class="list-group-item" href="../proc/bisect.html">bisect</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa%7E2.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb%7E2.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bqr.html">bqr</a>
+      
+      <a class="list-group-item" href="../proc/butterflymask9x9.html">ButterflyMask9x9</a>
+      
+      <a class="list-group-item" href="../proc/calchoughlut.html">CalcHoughLUT</a>
+      
+      <a class="list-group-item" href="../proc/calckinpedpatternsingle.html">CalcKINPEDPatternSingle</a>
+      
+      <a class="list-group-item" href="../proc/calckvectorcone.html">Calckvectorcone</a>
+      
+      <a class="list-group-item" href="../proc/calckvectortrace.html">Calckvectortrace</a>
+      
+      <a class="list-group-item" href="../proc/calcr.html">CalcR</a>
+      
+      <a class="list-group-item" href="../proc/calcrlocal.html">CalcRLocal</a>
+      
+      <a class="list-group-item" href="../proc/cardintersection.html">CardIntersection</a>
+      
+      <a class="list-group-item" href="../proc/cbabk2.html">cbabk2</a>
+      
+      <a class="list-group-item" href="../proc/cbal.html">cbal</a>
+      
+      <a class="list-group-item" href="../proc/cdiv.html">cdiv</a>
+      
+      <a class="list-group-item" href="../proc/cg.html">cg</a>
+      
+      <a class="list-group-item" href="../proc/ch.html">ch</a>
+      
+      <a class="list-group-item" href="../proc/cinvit.html">cinvit</a>
+      
+      <a class="list-group-item" href="../proc/clerror_check.html">CLerror_check</a>
+      
+      <a class="list-group-item" href="../proc/clinit_pdccq.html">CLinit_PDCCQ</a>
+      
+      <a class="list-group-item" href="../proc/clquery_platform_info.html">CLquery_platform_info</a>
+      
+      <a class="list-group-item" href="../proc/clread_source_file.html">CLread_source_file</a>
+      
+      <a class="list-group-item" href="../proc/combak.html">combak</a>
+      
+      <a class="list-group-item" href="../proc/comhes.html">comhes</a>
+      
+      <a class="list-group-item" href="../proc/comlr.html">comlr</a>
+      
+      <a class="list-group-item" href="../proc/comlr2.html">comlr2</a>
+      
+      <a class="list-group-item" href="../proc/comqr.html">comqr</a>
+      
+      <a class="list-group-item" href="../proc/comqr2.html">comqr2</a>
+      
+      <a class="list-group-item" href="../proc/cortb.html">cortb</a>
+      
+      <a class="list-group-item" href="../proc/corth.html">corth</a>
+      
+      <a class="list-group-item" href="../proc/csroot.html">csroot</a>
+      
+      <a class="list-group-item" href="../proc/ctfped_writefile.html">ctfped_writeFile</a>
+      
+      <a class="list-group-item" href="../proc/cubochoricneighbors.html">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../proc/cumul_histogram.html">cumul_histogram</a>
+      
+      <a class="list-group-item" href="../proc/dd_density.html">DD_Density</a>
+      
+      <a class="list-group-item" href="../proc/dd_estep.html">DD_Estep</a>
+      
+      <a class="list-group-item" href="../proc/dd_getqandl.html">DD_getQandL</a>
+      
+      <a class="list-group-item" href="../proc/dd_mstep.html">DD_Mstep</a>
+      
+      <a class="list-group-item" href="../proc/delete_fzlist.html">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../proc/denoise_pattern.html">Denoise_Pattern</a>
+      
+      <a class="list-group-item" href="../proc/denoise_ped.html">Denoise_PED</a>
+      
+      <a class="list-group-item" href="../proc/di_emfordd.html">DI_EMforDD</a>
+      
+      <a class="list-group-item" href="../proc/di_init.html">DI_Init</a>
+      
+      <a class="list-group-item" href="../proc/di_rotatetomu.html">DI_RotateToMu</a>
+      
+      <a class="list-group-item" href="../proc/di_sampledd.html">DI_SampleDD</a>
+      
+      <a class="list-group-item" href="../proc/di_similarity_classifier.html">DI_Similarity_Classifier</a>
+      
+      <a class="list-group-item" href="../proc/ebsd4calfun.html">EBSD4calfun</a>
+      
+      <a class="list-group-item" href="../proc/ebsdcalfun.html">EBSDcalfun</a>
+      
+      <a class="list-group-item" href="../proc/eccicalcsgh.html">ECCICalcSgh</a>
+      
+      <a class="list-group-item" href="../proc/ecpcalfun.html">ECPcalfun</a>
+      
+      <a class="list-group-item" href="../proc/efitebsdwrapper.html">efitEBSDWrapper</a>
+      
+      <a class="list-group-item" href="../proc/efitecpwrapper.html">efitECPWrapper</a>
+      
+      <a class="list-group-item" href="../proc/ei.html">EI</a>
+      
+      <a class="list-group-item" href="../proc/elmbak.html">elmbak</a>
+      
+      <a class="list-group-item" href="../proc/elmhes.html">elmhes</a>
+      
+      <a class="list-group-item" href="../proc/eltran.html">eltran</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdmaster.html">EMsoftCgetEBSDmaster</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdpatterns.html">EMsoftCgetEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetecpatterns.html">EMsoftCgetECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetmcopencl.html">EMsoftCgetMCOpenCL</a>
+      
+      <a class="list-group-item" href="../proc/eshelby_disp.html">Eshelby_disp</a>
+      
+      <a class="list-group-item" href="../proc/fcore.html">FCORE</a>
+      
+      <a class="list-group-item" href="../proc/figi.html">figi</a>
+      
+      <a class="list-group-item" href="../proc/figi2.html">figi2</a>
+      
+      <a class="list-group-item" href="../proc/forwardprojection.html">ForwardProjection</a>
+      
+      <a class="list-group-item" href="../proc/fphon.html">FPHON</a>
+      
+      <a class="list-group-item" href="../proc/fscatt.html">FSCATT</a>
+      
+      <a class="list-group-item" href="../proc/genera_punto_sa.html">GENERA_PUNTO_SA</a>
+      
+      <a class="list-group-item" href="../proc/getaverageorientationnamelist.html">GetAverageOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getconvertorientationsnamelist.html">GetConvertOrientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdddensitylbm.html">getDDDensityLBM</a>
+      
+      <a class="list-group-item" href="../proc/getdictindxopenclnamelist.html">GetDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../interface/getdisorientationangle.html">getDisorientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxis.html">getDisorientationAngleAxis</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxistwophases.html">getDisorientationAngleAxisTwoPhases</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangledouble.html">getDisorientationAngleDouble</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationanglesingle.html">getDisorientationAngleSingle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationsnamelist.html">GetDisorientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdvsdnamelist.html">GetDvsDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdclusternamelist.html">GetEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsddetparmscannamelist.html">GetEBSDdetparmscanNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdfullnamelist.html">GetEBSDFullNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdindexingnamelist.html">GetEBSDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasternamelist.html">GetEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasteropenclnamelist.html">GetEBSDMasterOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdnamelist.html">GetEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdoverlapnamelist.html">GetEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns.html">getEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns2.html">getEBSDPatterns2</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatternswrapper.html">getEBSDPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/geteccinamelist.html">GetECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpatterns.html">getECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getecpatternswrapper.html">getECPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getecpindexingnamelist.html">GetECPIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpmasternamelist.html">GetECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpnamelist.html">GetECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecppatternnamelist.html">GetECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpsinglenamelist.html">GetECPSingleNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpzanamelist.html">GetECPZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfit4namelist.html">GetEMDPFit4NameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfitnamelist.html">GetEMDPFitNameList</a>
+      
+      <a class="list-group-item" href="../proc/geteulersfromfile.html">getEulersfromFile</a>
+      
+      <a class="list-group-item" href="../proc/getfitorientationpsnamelist.html">GetFitOrientationPSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getfztypeandorder.html">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../proc/getkamnamelist.html">GetKAMNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkinematicalnamelist.html">GetkinematicalNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselmasternamelist.html">GetKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselnamelist.html">GetKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatterns.html">getKosselPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatternswrapper.html">getKosselPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getlacbednamelist.html">GetLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclfoilnamelist.html">GetMCCLfoilNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclmultilayernamelist.html">GetMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclnamelist.html">GetMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclspherenamelist.html">GetMCCLsphereNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmclipssnamelist.html">GetMCLIPSSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcnamelist.html">GetMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmultiphasenamelist.html">GetMultiPhaseNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationsimilaritynamelist.html">GetOrientationSimilarityNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationviznamelist.html">GetOrientationVizNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedindxnamelist.html">GetPEDIndxNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedkinnamelist.html">GetPEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedzanamelist.html">GetPEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getpfinversionnamelist.html">GetPFInversionNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrefineorientationnamelist.html">GetRefineOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getreflectornamelist.html">GetreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrfznamelist.html">GetRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/getsrdefectnamelist.html">GetSRdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/getstemdcinamelist.html">GetSTEMDCINameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdindexingnamelist.html">GetTKDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdmasternamelist.html">GetTKDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdnamelist.html">GetTKDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getwk.html">GETWK</a>
+      
+      <a class="list-group-item" href="../proc/getzadefectnamelist.html">GetZAdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/hipassfilter.html">HiPassFilter</a>
+      
+      <a class="list-group-item" href="../proc/houghtransform.html">HoughTransform</a>
+      
+      <a class="list-group-item" href="../proc/hqr.html">hqr</a>
+      
+      <a class="list-group-item" href="../proc/hqr2.html">hqr2</a>
+      
+      <a class="list-group-item" href="../proc/htrib3.html">htrib3</a>
+      
+      <a class="list-group-item" href="../proc/htribk.html">htribk</a>
+      
+      <a class="list-group-item" href="../proc/htrid3.html">htrid3</a>
+      
+      <a class="list-group-item" href="../proc/htridi.html">htridi</a>
+      
+      <a class="list-group-item" href="../proc/image_entropy.html">image_entropy</a>
+      
+      <a class="list-group-item" href="../proc/image_histogram.html">image_histogram</a>
+      
+      <a class="list-group-item" href="../proc/image_jointentropy.html">image_jointentropy</a>
+      
+      <a class="list-group-item" href="../proc/image_jointhistogram.html">image_jointhistogram</a>
+      
+      <a class="list-group-item" href="../proc/image_mutualinformation.html">image_mutualinformation</a>
+      
+      <a class="list-group-item" href="../proc/imtql1.html">imtql1</a>
+      
+      <a class="list-group-item" href="../proc/imtql2.html">imtql2</a>
+      
+      <a class="list-group-item" href="../proc/imtqlv.html">imtqlv</a>
+      
+      <a class="list-group-item" href="../proc/init_dislocation_data.html">init_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/init_einclusion_data.html">init_Einclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_foil_data.html">init_foil_data</a>
+      
+      <a class="list-group-item" href="../proc/init_inclusion_data.html">init_inclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stacking_fault_data.html">init_stacking_fault_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stem.html">init_STEM</a>
+      
+      <a class="list-group-item" href="../proc/init_stem_za.html">init_STEM_ZA</a>
+      
+      <a class="list-group-item" href="../proc/init_void_data.html">init_void_data</a>
+      
+      <a class="list-group-item" href="../proc/init_ysh_dislocation_data.html">init_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/initialize_foil_geometry.html">initialize_foil_geometry</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../interface/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist_ewaldsweep.html">Initialize_ReflectionList_EwaldSweep</a>
+      
+      <a class="list-group-item" href="../proc/initializedefects.html">InitializeDefects</a>
+      
+      <a class="list-group-item" href="../proc/initializeeshelbyinclusion.html">InitializeEshelbyInclusion</a>
+      
+      <a class="list-group-item" href="../proc/innerprodgpu.html">InnerProdGPU</a>
+      
+      <a class="list-group-item" href="../proc/insidecubehexfz.html">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicfz.html">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicmfz.html">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecyclicfz.html">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralfz.html">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralmfz.html">insideDihedralMFZ</a>
+      
+      <a class="list-group-item" href="../proc/interfaccia.html">INTERFACCIA</a>
+      
+      <a class="list-group-item" href="../proc/inversiondivision.html">InversionDivision</a>
+      
+      <a class="list-group-item" href="../proc/invit.html">invit</a>
+      
+      <a class="list-group-item" href="../proc/isinsidefz.html">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../proc/isinsidemfz.html">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../proc/jaccard_distance.html">Jaccard_Distance</a>
+      
+      <a class="list-group-item" href="../proc/json_cleanuppointers.html">JSON_cleanuppointers</a>
+      
+      <a class="list-group-item" href="../proc/json_failtest.html">JSON_failtest</a>
+      
+      <a class="list-group-item" href="../proc/json_initpointers.html">JSON_initpointers</a>
+      
+      <a class="list-group-item" href="../proc/json_minify.html">JSON_minify</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmldoubles.html">JSON_writeNMLdoubles</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlintegers.html">JSON_writeNMLintegers</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlreals.html">JSON_writeNMLreals</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdouble.html">JSONgetDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdoublevector.html">JSONgetDoubleVector</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddefectfile.html">JSONreadDefectFile</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddouble.html">JSONreadDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddoublevec.html">JSONreadDoubleVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdclusternamelist.html">JSONreadEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdmasternamelist.html">JSONreadEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdnamelist.html">JSONreadEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdoverlapnamelist.html">JSONreadEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadecpmasternamelist.html">JSONreadECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadfoildata.html">JSONreadFoilData</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadinteger.html">JSONreadInteger</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadintegervec.html">JSONreadIntegerVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselmasternamelist.html">JSONreadKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselnamelist.html">JSONreadKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadlogical.html">JSONreadLogical</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclmultilayernamelist.html">JSONreadMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclnamelist.html">JSONreadMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcnamelist.html">JSONreadMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreal.html">JSONreadReal</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadrealvec.html">JSONreadRealVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreflectornamelist.html">JSONreadreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadstring.html">JSONreadString</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritedictindxopenclnamelist.html">JSONwriteDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdclusternamelist.html">JSONwriteEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdmasternamelist.html">JSONwriteEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdnamelist.html">JSONwriteEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteeccinamelist.html">JSONwriteECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpmasternamelist.html">JSONwriteECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpnamelist.html">JSONwriteECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecppatternnamelist.html">JSONwriteECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselmasternamelist.html">JSONwriteKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselnamelist.html">JSONwriteKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritelacbednamelist.html">JSONwriteLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclmultilayernamelist.html">JSONwriteMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclnamelist.html">JSONwriteMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcnamelist.html">JSONwriteMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedkinnamelist.html">JSONwritePEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedzanamelist.html">JSONwritePEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriterfznamelist.html">JSONwriteRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/linesearch_inverti.html">LINESEARCH_INVERTI</a>
+      
+      <a class="list-group-item" href="../proc/linesearchbox_cont.html">linesearchbox_cont</a>
+      
+      <a class="list-group-item" href="../proc/logcp.html">logCp</a>
+      
+      <a class="list-group-item" href="../proc/mainbox1.html">MAINBOX1</a>
+      
+      <a class="list-group-item" href="../proc/mainbox2.html">MAINBOX2</a>
+      
+      <a class="list-group-item" href="../proc/makedislocation.html">makedislocation</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfault.html">makestackingfault</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfaultecci.html">makestackingfaultECCI</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation%7E2.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/mc_concatenatemuellermatrices.html">MC_concatenateMuellerMatrices</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ad_from_eo.html">MC_get_AD_from_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_auxiliaryangle.html">MC_get_AuxiliaryAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_basicmuellermatrix.html">MC_get_basicMuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_diattenuator.html">MC_get_diattenuator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ellipticityangle.html">MC_get_EllipticityAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_eo_from_ad.html">MC_get_EO_from_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_orientationangle.html">MC_get_OrientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_phaseshiftangle.html">MC_get_PhaseShiftAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_polarization.html">MC_get_Polarization</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_retarder.html">MC_get_retarder</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_rotator.html">MC_get_rotator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_ad.html">MC_get_Stokes_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_eo.html">MC_get_Stokes_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_print_muellermatrix.html">MC_print_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_propagatestokesvector.html">MC_propagateStokesVector</a>
+      
+      <a class="list-group-item" href="../proc/mc_rotate_muellermatrix.html">MC_rotate_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/minfit.html">minfit</a>
+      
+      <a class="list-group-item" href="../proc/nanchk.html">NANCHK</a>
+      
+      <a class="list-group-item" href="../proc/ortbak.html">ortbak</a>
+      
+      <a class="list-group-item" href="../proc/orthes.html">orthes</a>
+      
+      <a class="list-group-item" href="../proc/ortran.html">ortran</a>
+      
+      <a class="list-group-item" href="../proc/pgm_write_file.html">PGM_Write_File</a>
+      
+      <a class="list-group-item" href="../proc/poidev.html">POIDEV</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcubochoriccube.html">PoVRay_addCubochoricCube</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcylinder.html">PoVRay_addCylinder</a>
+      
+      <a class="list-group-item" href="../proc/povray_addeulerbox.html">PoVRay_addEulerBox</a>
+      
+      <a class="list-group-item" href="../proc/povray_addreferenceframe.html">PoVRay_addReferenceFrame</a>
+      
+      <a class="list-group-item" href="../proc/povray_addsphere.html">PoVRay_addSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_addwireframesphere.html">PoVRay_addWireFrameSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_declare_df3file.html">PoVRay_declare_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/povray_drawfz.html">PoVRay_drawFZ</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz222.html">PoVRay_getpos_FZ222</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz23.html">PoVRay_getpos_FZ23</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz32.html">PoVRay_getpos_FZ32</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz422.html">PoVRay_getpos_FZ422</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz432.html">PoVRay_getpos_FZ432</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz622.html">PoVRay_getpos_FZ622</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz2.html">PoVRay_initFZ2</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz3.html">PoVRay_initFZ3</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz4.html">PoVRay_initFZ4</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz6.html">PoVRay_initFZ6</a>
+      
+      <a class="list-group-item" href="../proc/povray_openfile.html">PoVRay_openFile</a>
+      
+      <a class="list-group-item" href="../proc/povray_setcamera.html">PoVRay_setCamera</a>
+      
+      <a class="list-group-item" href="../proc/povray_setlightsource.html">PoVRay_setLightSource</a>
+      
+      <a class="list-group-item" href="../proc/povray_write_df3file.html">PoVRay_write_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/prelim.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/prelim%7E2.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/printtime.html">PrintTime</a>
+      
+      <a class="list-group-item" href="../proc/pythag.html">pythag</a>
+      
+      <a class="list-group-item" href="../proc/qsortd.html">qsortd</a>
+      
+      <a class="list-group-item" href="../proc/qzhes.html">qzhes</a>
+      
+      <a class="list-group-item" href="../proc/qzit.html">qzit</a>
+      
+      <a class="list-group-item" href="../proc/qzval.html">qzval</a>
+      
+      <a class="list-group-item" href="../proc/qzvec.html">qzvec</a>
+      
+      <a class="list-group-item" href="../proc/r8_swap.html">r8_swap</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print.html">r8mat_print</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print_some.html">r8mat_print_some</a>
+      
+      <a class="list-group-item" href="../proc/r8vec2_print.html">r8vec2_print</a>
+      
+      <a class="list-group-item" href="../proc/r8vec_print.html">r8vec_print</a>
+      
+      <a class="list-group-item" href="../proc/ran.html">ran</a>
+      
+      <a class="list-group-item" href="../proc/randddmarginal.html">randDDMarginal</a>
+      
+      <a class="list-group-item" href="../proc/randuniformsphere.html">randUniformSphere</a>
+      
+      <a class="list-group-item" href="../proc/ratqr.html">ratqr</a>
+      
+      <a class="list-group-item" href="../proc/read_apb_data.html">read_apb_data</a>
+      
+      <a class="list-group-item" href="../proc/read_stem_data.html">read_STEM_data</a>
+      
+      <a class="list-group-item" href="../proc/read_ysh_dislocation_data.html">read_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/rebak.html">rebak</a>
+      
+      <a class="list-group-item" href="../proc/rebakb.html">rebakb</a>
+      
+      <a class="list-group-item" href="../proc/reduc.html">reduc</a>
+      
+      <a class="list-group-item" href="../proc/reduc2.html">reduc2</a>
+      
+      <a class="list-group-item" href="../proc/reducedisorientationtomfz.html">ReduceDisorientationtoMFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtocubicefz.html">ReduceOrientationtoCubicEFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtorfz.html">ReduceOrientationtoRFZ</a>
+      
+      <a class="list-group-item" href="../proc/rescue.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rescue%7E2.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rg.html">rg</a>
+      
+      <a class="list-group-item" href="../proc/rgg.html">rgg</a>
+      
+      <a class="list-group-item" href="../proc/ri1.html">RI1</a>
+      
+      <a class="list-group-item" href="../proc/ri2.html">RI2</a>
+      
+      <a class="list-group-item" href="../proc/ricerca_lungo_assi.html">RICERCA_LUNGO_ASSI</a>
+      
+      <a class="list-group-item" href="../proc/rih1.html">RIH1</a>
+      
+      <a class="list-group-item" href="../proc/rih2.html">RIH2</a>
+      
+      <a class="list-group-item" href="../proc/rih3.html">RIH3</a>
+      
+      <a class="list-group-item" href="../proc/rng_seed.html">rng_seed</a>
+      
+      <a class="list-group-item" href="../proc/rng_uniform.html">rng_uniform</a>
+      
+      <a class="list-group-item" href="../proc/rs.html">rs</a>
+      
+      <a class="list-group-item" href="../proc/rsb.html">rsb</a>
+      
+      <a class="list-group-item" href="../proc/rsg.html">rsg</a>
+      
+      <a class="list-group-item" href="../proc/rsgab.html">rsgab</a>
+      
+      <a class="list-group-item" href="../proc/rsgba.html">rsgba</a>
+      
+      <a class="list-group-item" href="../proc/rsm.html">rsm</a>
+      
+      <a class="list-group-item" href="../proc/rsp.html">rsp</a>
+      
+      <a class="list-group-item" href="../proc/rspp.html">rspp</a>
+      
+      <a class="list-group-item" href="../proc/rst.html">rst</a>
+      
+      <a class="list-group-item" href="../proc/rt.html">rt</a>
+      
+      <a class="list-group-item" href="../proc/sample_cone.html">sample_Cone</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocube.html">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocubefilled.html">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../proc/samplefcctwinrfz.html">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../proc/sampleisomisorientation.html">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../proc/samplerfz.html">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../proc/samplerfztwin.html">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../proc/senzaderglob.html">SENZADERGLOB</a>
+      
+      <a class="list-group-item" href="../proc/ssort.html">SSORT</a>
+      
+      <a class="list-group-item" href="../proc/stop.html">STOP</a>
+      
+      <a class="list-group-item" href="../proc/svd.html">svd</a>
+      
+      <a class="list-group-item" href="../proc/time_estimate.html">Time_estimate</a>
+      
+      <a class="list-group-item" href="../proc/time_remaining.html">Time_remaining</a>
+      
+      <a class="list-group-item" href="../proc/time_report.html">Time_report</a>
+      
+      <a class="list-group-item" href="../proc/time_reset.html">Time_reset</a>
+      
+      <a class="list-group-item" href="../proc/time_start.html">Time_start</a>
+      
+      <a class="list-group-item" href="../proc/time_stop.html">Time_stop</a>
+      
+      <a class="list-group-item" href="../proc/time_tick.html">Time_tick</a>
+      
+      <a class="list-group-item" href="../proc/time_tock.html">Time_tock</a>
+      
+      <a class="list-group-item" href="../proc/timestamp.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/timestamp%7E2.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/tinvit.html">tinvit</a>
+      
+      <a class="list-group-item" href="../proc/tql1.html">tql1</a>
+      
+      <a class="list-group-item" href="../proc/tql2.html">tql2</a>
+      
+      <a class="list-group-item" href="../proc/tqlrat.html">tqlrat</a>
+      
+      <a class="list-group-item" href="../proc/trbak1.html">trbak1</a>
+      
+      <a class="list-group-item" href="../proc/trbak3.html">trbak3</a>
+      
+      <a class="list-group-item" href="../proc/tred1.html">tred1</a>
+      
+      <a class="list-group-item" href="../proc/tred2.html">tred2</a>
+      
+      <a class="list-group-item" href="../proc/tred3.html">tred3</a>
+      
+      <a class="list-group-item" href="../proc/tridib.html">tridib</a>
+      
+      <a class="list-group-item" href="../proc/trsbox.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/trsbox%7E2.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/tsturm.html">tsturm</a>
+      
+      <a class="list-group-item" href="../proc/update.html">update</a>
+      
+      <a class="list-group-item" href="../proc/update%7E2.html">update</a>
+      
+      <a class="list-group-item" href="../proc/vmfmeandirdensity.html">VMFMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/watsonmeandirdensity.html">WatsonMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/weko.html">WEKO</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp%7E2.html">YSHDisp</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp.html">YSHDisp</a>
+      
+    </div>
+  </div>
+</div>
+
+
+</div>  
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>
+subroutine minfit(nm, m, n, a, w, ip, b, ierr)
+    
+    
+	 
+</h2>
+    
+  
+
+
+    
+    <p>MINFIT solves the least squares problem, for a real overdetermined linear system.</p>
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-nm"></span>integer(kind=4)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nm</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-m%7E13"></span>integer(kind=4)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>m</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-n%7E39"></span>integer(kind=4)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>n</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-a%7E13"></span>real(kind=8)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>a</strong>(nm,n)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-w%7E5"></span>real(kind=8)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>w</strong>(n)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ip"></span>integer(kind=4)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ip</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-b%7E2"></span>real(kind=8)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>b</strong>(nm,ip)</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ierr%7E20"></span>integer(kind=4)</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>ierr</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+     
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    </div>
+  </div>
+
+  <section class="visible-xs visible-sm hidden-md">
+    <hr>
+    
+
+<div class="panel panel-default">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#allprocs-1">All Procedures</a></h3></div>
+  <div id="allprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../proc/adhisteq.html">adhisteq</a>
+      
+      <a class="list-group-item" href="../proc/aggiorno_ottimo.html">AGGIORNO_OTTIMO</a>
+      
+      <a class="list-group-item" href="../proc/alogam.html">alogam</a>
+      
+      <a class="list-group-item" href="../proc/altmov.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/altmov%7E2.html">altmov</a>
+      
+      <a class="list-group-item" href="../proc/backprojection.html">BackProjection</a>
+      
+      <a class="list-group-item" href="../proc/bakvec.html">bakvec</a>
+      
+      <a class="list-group-item" href="../proc/balanc.html">balanc</a>
+      
+      <a class="list-group-item" href="../proc/balbak.html">balbak</a>
+      
+      <a class="list-group-item" href="../proc/bandr.html">bandr</a>
+      
+      <a class="list-group-item" href="../proc/bandv.html">bandv</a>
+      
+      <a class="list-group-item" href="../proc/barreldistortion.html">BarrelDistortion</a>
+      
+      <a class="list-group-item" href="../proc/bisect.html">bisect</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqa%7E2.html">bobyqa</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bobyqb%7E2.html">bobyqb</a>
+      
+      <a class="list-group-item" href="../proc/bqr.html">bqr</a>
+      
+      <a class="list-group-item" href="../proc/butterflymask9x9.html">ButterflyMask9x9</a>
+      
+      <a class="list-group-item" href="../proc/calchoughlut.html">CalcHoughLUT</a>
+      
+      <a class="list-group-item" href="../proc/calckinpedpatternsingle.html">CalcKINPEDPatternSingle</a>
+      
+      <a class="list-group-item" href="../proc/calckvectorcone.html">Calckvectorcone</a>
+      
+      <a class="list-group-item" href="../proc/calckvectortrace.html">Calckvectortrace</a>
+      
+      <a class="list-group-item" href="../proc/calcr.html">CalcR</a>
+      
+      <a class="list-group-item" href="../proc/calcrlocal.html">CalcRLocal</a>
+      
+      <a class="list-group-item" href="../proc/cardintersection.html">CardIntersection</a>
+      
+      <a class="list-group-item" href="../proc/cbabk2.html">cbabk2</a>
+      
+      <a class="list-group-item" href="../proc/cbal.html">cbal</a>
+      
+      <a class="list-group-item" href="../proc/cdiv.html">cdiv</a>
+      
+      <a class="list-group-item" href="../proc/cg.html">cg</a>
+      
+      <a class="list-group-item" href="../proc/ch.html">ch</a>
+      
+      <a class="list-group-item" href="../proc/cinvit.html">cinvit</a>
+      
+      <a class="list-group-item" href="../proc/clerror_check.html">CLerror_check</a>
+      
+      <a class="list-group-item" href="../proc/clinit_pdccq.html">CLinit_PDCCQ</a>
+      
+      <a class="list-group-item" href="../proc/clquery_platform_info.html">CLquery_platform_info</a>
+      
+      <a class="list-group-item" href="../proc/clread_source_file.html">CLread_source_file</a>
+      
+      <a class="list-group-item" href="../proc/combak.html">combak</a>
+      
+      <a class="list-group-item" href="../proc/comhes.html">comhes</a>
+      
+      <a class="list-group-item" href="../proc/comlr.html">comlr</a>
+      
+      <a class="list-group-item" href="../proc/comlr2.html">comlr2</a>
+      
+      <a class="list-group-item" href="../proc/comqr.html">comqr</a>
+      
+      <a class="list-group-item" href="../proc/comqr2.html">comqr2</a>
+      
+      <a class="list-group-item" href="../proc/cortb.html">cortb</a>
+      
+      <a class="list-group-item" href="../proc/corth.html">corth</a>
+      
+      <a class="list-group-item" href="../proc/csroot.html">csroot</a>
+      
+      <a class="list-group-item" href="../proc/ctfped_writefile.html">ctfped_writeFile</a>
+      
+      <a class="list-group-item" href="../proc/cubochoricneighbors.html">CubochoricNeighbors</a>
+      
+      <a class="list-group-item" href="../proc/cumul_histogram.html">cumul_histogram</a>
+      
+      <a class="list-group-item" href="../proc/dd_density.html">DD_Density</a>
+      
+      <a class="list-group-item" href="../proc/dd_estep.html">DD_Estep</a>
+      
+      <a class="list-group-item" href="../proc/dd_getqandl.html">DD_getQandL</a>
+      
+      <a class="list-group-item" href="../proc/dd_mstep.html">DD_Mstep</a>
+      
+      <a class="list-group-item" href="../proc/delete_fzlist.html">delete_FZlist</a>
+      
+      <a class="list-group-item" href="../proc/denoise_pattern.html">Denoise_Pattern</a>
+      
+      <a class="list-group-item" href="../proc/denoise_ped.html">Denoise_PED</a>
+      
+      <a class="list-group-item" href="../proc/di_emfordd.html">DI_EMforDD</a>
+      
+      <a class="list-group-item" href="../proc/di_init.html">DI_Init</a>
+      
+      <a class="list-group-item" href="../proc/di_rotatetomu.html">DI_RotateToMu</a>
+      
+      <a class="list-group-item" href="../proc/di_sampledd.html">DI_SampleDD</a>
+      
+      <a class="list-group-item" href="../proc/di_similarity_classifier.html">DI_Similarity_Classifier</a>
+      
+      <a class="list-group-item" href="../proc/ebsd4calfun.html">EBSD4calfun</a>
+      
+      <a class="list-group-item" href="../proc/ebsdcalfun.html">EBSDcalfun</a>
+      
+      <a class="list-group-item" href="../proc/eccicalcsgh.html">ECCICalcSgh</a>
+      
+      <a class="list-group-item" href="../proc/ecpcalfun.html">ECPcalfun</a>
+      
+      <a class="list-group-item" href="../proc/efitebsdwrapper.html">efitEBSDWrapper</a>
+      
+      <a class="list-group-item" href="../proc/efitecpwrapper.html">efitECPWrapper</a>
+      
+      <a class="list-group-item" href="../proc/ei.html">EI</a>
+      
+      <a class="list-group-item" href="../proc/elmbak.html">elmbak</a>
+      
+      <a class="list-group-item" href="../proc/elmhes.html">elmhes</a>
+      
+      <a class="list-group-item" href="../proc/eltran.html">eltran</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdmaster.html">EMsoftCgetEBSDmaster</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetebsdpatterns.html">EMsoftCgetEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetecpatterns.html">EMsoftCgetECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/emsoftcgetmcopencl.html">EMsoftCgetMCOpenCL</a>
+      
+      <a class="list-group-item" href="../proc/eshelby_disp.html">Eshelby_disp</a>
+      
+      <a class="list-group-item" href="../proc/fcore.html">FCORE</a>
+      
+      <a class="list-group-item" href="../proc/figi.html">figi</a>
+      
+      <a class="list-group-item" href="../proc/figi2.html">figi2</a>
+      
+      <a class="list-group-item" href="../proc/forwardprojection.html">ForwardProjection</a>
+      
+      <a class="list-group-item" href="../proc/fphon.html">FPHON</a>
+      
+      <a class="list-group-item" href="../proc/fscatt.html">FSCATT</a>
+      
+      <a class="list-group-item" href="../proc/genera_punto_sa.html">GENERA_PUNTO_SA</a>
+      
+      <a class="list-group-item" href="../proc/getaverageorientationnamelist.html">GetAverageOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getconvertorientationsnamelist.html">GetConvertOrientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdddensitylbm.html">getDDDensityLBM</a>
+      
+      <a class="list-group-item" href="../proc/getdictindxopenclnamelist.html">GetDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../interface/getdisorientationangle.html">getDisorientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxis.html">getDisorientationAngleAxis</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangleaxistwophases.html">getDisorientationAngleAxisTwoPhases</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationangledouble.html">getDisorientationAngleDouble</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationanglesingle.html">getDisorientationAngleSingle</a>
+      
+      <a class="list-group-item" href="../proc/getdisorientationsnamelist.html">GetDisorientationsNameList</a>
+      
+      <a class="list-group-item" href="../proc/getdvsdnamelist.html">GetDvsDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdclusternamelist.html">GetEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsddetparmscannamelist.html">GetEBSDdetparmscanNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdfullnamelist.html">GetEBSDFullNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdindexingnamelist.html">GetEBSDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasternamelist.html">GetEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdmasteropenclnamelist.html">GetEBSDMasterOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdnamelist.html">GetEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdoverlapnamelist.html">GetEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns.html">getEBSDPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatterns2.html">getEBSDPatterns2</a>
+      
+      <a class="list-group-item" href="../proc/getebsdpatternswrapper.html">getEBSDPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/geteccinamelist.html">GetECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpatterns.html">getECPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getecpatternswrapper.html">getECPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getecpindexingnamelist.html">GetECPIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpmasternamelist.html">GetECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpnamelist.html">GetECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecppatternnamelist.html">GetECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpsinglenamelist.html">GetECPSingleNameList</a>
+      
+      <a class="list-group-item" href="../proc/getecpzanamelist.html">GetECPZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfit4namelist.html">GetEMDPFit4NameList</a>
+      
+      <a class="list-group-item" href="../proc/getemdpfitnamelist.html">GetEMDPFitNameList</a>
+      
+      <a class="list-group-item" href="../proc/geteulersfromfile.html">getEulersfromFile</a>
+      
+      <a class="list-group-item" href="../proc/getfitorientationpsnamelist.html">GetFitOrientationPSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getfztypeandorder.html">getFZtypeandorder</a>
+      
+      <a class="list-group-item" href="../proc/getkamnamelist.html">GetKAMNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkinematicalnamelist.html">GetkinematicalNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselmasternamelist.html">GetKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselnamelist.html">GetKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatterns.html">getKosselPatterns</a>
+      
+      <a class="list-group-item" href="../proc/getkosselpatternswrapper.html">getKosselPatternsWrapper</a>
+      
+      <a class="list-group-item" href="../proc/getlacbednamelist.html">GetLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclfoilnamelist.html">GetMCCLfoilNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclmultilayernamelist.html">GetMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclnamelist.html">GetMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcclspherenamelist.html">GetMCCLsphereNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmclipssnamelist.html">GetMCLIPSSNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmcnamelist.html">GetMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/getmultiphasenamelist.html">GetMultiPhaseNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationsimilaritynamelist.html">GetOrientationSimilarityNameList</a>
+      
+      <a class="list-group-item" href="../proc/getorientationviznamelist.html">GetOrientationVizNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedindxnamelist.html">GetPEDIndxNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedkinnamelist.html">GetPEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/getpedzanamelist.html">GetPEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/getpfinversionnamelist.html">GetPFInversionNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrefineorientationnamelist.html">GetRefineOrientationNameList</a>
+      
+      <a class="list-group-item" href="../proc/getreflectornamelist.html">GetreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/getrfznamelist.html">GetRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/getsrdefectnamelist.html">GetSRdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/getstemdcinamelist.html">GetSTEMDCINameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdindexingnamelist.html">GetTKDIndexingNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdmasternamelist.html">GetTKDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/gettkdnamelist.html">GetTKDNameList</a>
+      
+      <a class="list-group-item" href="../proc/getwk.html">GETWK</a>
+      
+      <a class="list-group-item" href="../proc/getzadefectnamelist.html">GetZAdefectNameList</a>
+      
+      <a class="list-group-item" href="../proc/hipassfilter.html">HiPassFilter</a>
+      
+      <a class="list-group-item" href="../proc/houghtransform.html">HoughTransform</a>
+      
+      <a class="list-group-item" href="../proc/hqr.html">hqr</a>
+      
+      <a class="list-group-item" href="../proc/hqr2.html">hqr2</a>
+      
+      <a class="list-group-item" href="../proc/htrib3.html">htrib3</a>
+      
+      <a class="list-group-item" href="../proc/htribk.html">htribk</a>
+      
+      <a class="list-group-item" href="../proc/htrid3.html">htrid3</a>
+      
+      <a class="list-group-item" href="../proc/htridi.html">htridi</a>
+      
+      <a class="list-group-item" href="../proc/image_entropy.html">image_entropy</a>
+      
+      <a class="list-group-item" href="../proc/image_histogram.html">image_histogram</a>
+      
+      <a class="list-group-item" href="../proc/image_jointentropy.html">image_jointentropy</a>
+      
+      <a class="list-group-item" href="../proc/image_jointhistogram.html">image_jointhistogram</a>
+      
+      <a class="list-group-item" href="../proc/image_mutualinformation.html">image_mutualinformation</a>
+      
+      <a class="list-group-item" href="../proc/imtql1.html">imtql1</a>
+      
+      <a class="list-group-item" href="../proc/imtql2.html">imtql2</a>
+      
+      <a class="list-group-item" href="../proc/imtqlv.html">imtqlv</a>
+      
+      <a class="list-group-item" href="../proc/init_dislocation_data.html">init_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/init_einclusion_data.html">init_Einclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_foil_data.html">init_foil_data</a>
+      
+      <a class="list-group-item" href="../proc/init_inclusion_data.html">init_inclusion_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stacking_fault_data.html">init_stacking_fault_data</a>
+      
+      <a class="list-group-item" href="../proc/init_stem.html">init_STEM</a>
+      
+      <a class="list-group-item" href="../proc/init_stem_za.html">init_STEM_ZA</a>
+      
+      <a class="list-group-item" href="../proc/init_void_data.html">init_void_data</a>
+      
+      <a class="list-group-item" href="../proc/init_ysh_dislocation_data.html">init_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/initialize_foil_geometry.html">initialize_foil_geometry</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../interface/initialize_reflectionlist.html">Initialize_ReflectionList</a>
+      
+      <a class="list-group-item" href="../proc/initialize_reflectionlist_ewaldsweep.html">Initialize_ReflectionList_EwaldSweep</a>
+      
+      <a class="list-group-item" href="../proc/initializedefects.html">InitializeDefects</a>
+      
+      <a class="list-group-item" href="../proc/initializeeshelbyinclusion.html">InitializeEshelbyInclusion</a>
+      
+      <a class="list-group-item" href="../proc/innerprodgpu.html">InnerProdGPU</a>
+      
+      <a class="list-group-item" href="../proc/insidecubehexfz.html">insideCubeHexFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicfz.html">insideCubicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecubicmfz.html">insideCubicMFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidecyclicfz.html">insideCyclicFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralfz.html">insideDihedralFZ</a>
+      
+      <a class="list-group-item" href="../proc/insidedihedralmfz.html">insideDihedralMFZ</a>
+      
+      <a class="list-group-item" href="../proc/interfaccia.html">INTERFACCIA</a>
+      
+      <a class="list-group-item" href="../proc/inversiondivision.html">InversionDivision</a>
+      
+      <a class="list-group-item" href="../proc/invit.html">invit</a>
+      
+      <a class="list-group-item" href="../proc/isinsidefz.html">IsinsideFZ</a>
+      
+      <a class="list-group-item" href="../proc/isinsidemfz.html">IsinsideMFZ</a>
+      
+      <a class="list-group-item" href="../proc/jaccard_distance.html">Jaccard_Distance</a>
+      
+      <a class="list-group-item" href="../proc/json_cleanuppointers.html">JSON_cleanuppointers</a>
+      
+      <a class="list-group-item" href="../proc/json_failtest.html">JSON_failtest</a>
+      
+      <a class="list-group-item" href="../proc/json_initpointers.html">JSON_initpointers</a>
+      
+      <a class="list-group-item" href="../proc/json_minify.html">JSON_minify</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmldoubles.html">JSON_writeNMLdoubles</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlintegers.html">JSON_writeNMLintegers</a>
+      
+      <a class="list-group-item" href="../proc/json_writenmlreals.html">JSON_writeNMLreals</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdouble.html">JSONgetDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsongetdoublevector.html">JSONgetDoubleVector</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddefectfile.html">JSONreadDefectFile</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddouble.html">JSONreadDouble</a>
+      
+      <a class="list-group-item" href="../proc/jsonreaddoublevec.html">JSONreadDoubleVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdclusternamelist.html">JSONreadEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdmasternamelist.html">JSONreadEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdnamelist.html">JSONreadEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadebsdoverlapnamelist.html">JSONreadEBSDoverlapNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadecpmasternamelist.html">JSONreadECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadfoildata.html">JSONreadFoilData</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadinteger.html">JSONreadInteger</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadintegervec.html">JSONreadIntegerVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselmasternamelist.html">JSONreadKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadkosselnamelist.html">JSONreadKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadlogical.html">JSONreadLogical</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclmultilayernamelist.html">JSONreadMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcclnamelist.html">JSONreadMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadmcnamelist.html">JSONreadMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreal.html">JSONreadReal</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadrealvec.html">JSONreadRealVec</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadreflectornamelist.html">JSONreadreflectorNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonreadstring.html">JSONreadString</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritedictindxopenclnamelist.html">JSONwriteDictIndxOpenCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdclusternamelist.html">JSONwriteEBSDclusterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdmasternamelist.html">JSONwriteEBSDMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteebsdnamelist.html">JSONwriteEBSDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteeccinamelist.html">JSONwriteECCINameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpmasternamelist.html">JSONwriteECPMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecpnamelist.html">JSONwriteECPNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriteecppatternnamelist.html">JSONwriteECPpatternNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselmasternamelist.html">JSONwriteKosselMasterNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritekosselnamelist.html">JSONwriteKosselNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritelacbednamelist.html">JSONwriteLACBEDNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclmultilayernamelist.html">JSONwriteMCCLMultiLayerNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcclnamelist.html">JSONwriteMCCLNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritemcnamelist.html">JSONwriteMCNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedkinnamelist.html">JSONwritePEDkinNameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwritepedzanamelist.html">JSONwritePEDZANameList</a>
+      
+      <a class="list-group-item" href="../proc/jsonwriterfznamelist.html">JSONwriteRFZNameList</a>
+      
+      <a class="list-group-item" href="../proc/linesearch_inverti.html">LINESEARCH_INVERTI</a>
+      
+      <a class="list-group-item" href="../proc/linesearchbox_cont.html">linesearchbox_cont</a>
+      
+      <a class="list-group-item" href="../proc/logcp.html">logCp</a>
+      
+      <a class="list-group-item" href="../proc/mainbox1.html">MAINBOX1</a>
+      
+      <a class="list-group-item" href="../proc/mainbox2.html">MAINBOX2</a>
+      
+      <a class="list-group-item" href="../proc/makedislocation.html">makedislocation</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfault.html">makestackingfault</a>
+      
+      <a class="list-group-item" href="../proc/makestackingfaultecci.html">makestackingfaultECCI</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/makeyshdislocation%7E2.html">makeYSHdislocation</a>
+      
+      <a class="list-group-item" href="../proc/mc_concatenatemuellermatrices.html">MC_concatenateMuellerMatrices</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ad_from_eo.html">MC_get_AD_from_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_auxiliaryangle.html">MC_get_AuxiliaryAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_basicmuellermatrix.html">MC_get_basicMuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_diattenuator.html">MC_get_diattenuator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_ellipticityangle.html">MC_get_EllipticityAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_eo_from_ad.html">MC_get_EO_from_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_orientationangle.html">MC_get_OrientationAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_phaseshiftangle.html">MC_get_PhaseShiftAngle</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_polarization.html">MC_get_Polarization</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_retarder.html">MC_get_retarder</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_rotator.html">MC_get_rotator</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_ad.html">MC_get_Stokes_AD</a>
+      
+      <a class="list-group-item" href="../proc/mc_get_stokes_eo.html">MC_get_Stokes_EO</a>
+      
+      <a class="list-group-item" href="../proc/mc_print_muellermatrix.html">MC_print_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/mc_propagatestokesvector.html">MC_propagateStokesVector</a>
+      
+      <a class="list-group-item" href="../proc/mc_rotate_muellermatrix.html">MC_rotate_MuellerMatrix</a>
+      
+      <a class="list-group-item" href="../proc/minfit.html">minfit</a>
+      
+      <a class="list-group-item" href="../proc/nanchk.html">NANCHK</a>
+      
+      <a class="list-group-item" href="../proc/ortbak.html">ortbak</a>
+      
+      <a class="list-group-item" href="../proc/orthes.html">orthes</a>
+      
+      <a class="list-group-item" href="../proc/ortran.html">ortran</a>
+      
+      <a class="list-group-item" href="../proc/pgm_write_file.html">PGM_Write_File</a>
+      
+      <a class="list-group-item" href="../proc/poidev.html">POIDEV</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcubochoriccube.html">PoVRay_addCubochoricCube</a>
+      
+      <a class="list-group-item" href="../proc/povray_addcylinder.html">PoVRay_addCylinder</a>
+      
+      <a class="list-group-item" href="../proc/povray_addeulerbox.html">PoVRay_addEulerBox</a>
+      
+      <a class="list-group-item" href="../proc/povray_addreferenceframe.html">PoVRay_addReferenceFrame</a>
+      
+      <a class="list-group-item" href="../proc/povray_addsphere.html">PoVRay_addSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_addwireframesphere.html">PoVRay_addWireFrameSphere</a>
+      
+      <a class="list-group-item" href="../proc/povray_declare_df3file.html">PoVRay_declare_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/povray_drawfz.html">PoVRay_drawFZ</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz222.html">PoVRay_getpos_FZ222</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz23.html">PoVRay_getpos_FZ23</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz32.html">PoVRay_getpos_FZ32</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz422.html">PoVRay_getpos_FZ422</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz432.html">PoVRay_getpos_FZ432</a>
+      
+      <a class="list-group-item" href="../proc/povray_getpos_fz622.html">PoVRay_getpos_FZ622</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz2.html">PoVRay_initFZ2</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz3.html">PoVRay_initFZ3</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz4.html">PoVRay_initFZ4</a>
+      
+      <a class="list-group-item" href="../proc/povray_initfz6.html">PoVRay_initFZ6</a>
+      
+      <a class="list-group-item" href="../proc/povray_openfile.html">PoVRay_openFile</a>
+      
+      <a class="list-group-item" href="../proc/povray_setcamera.html">PoVRay_setCamera</a>
+      
+      <a class="list-group-item" href="../proc/povray_setlightsource.html">PoVRay_setLightSource</a>
+      
+      <a class="list-group-item" href="../proc/povray_write_df3file.html">PoVRay_write_DF3file</a>
+      
+      <a class="list-group-item" href="../proc/prelim.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/prelim%7E2.html">prelim</a>
+      
+      <a class="list-group-item" href="../proc/printtime.html">PrintTime</a>
+      
+      <a class="list-group-item" href="../proc/pythag.html">pythag</a>
+      
+      <a class="list-group-item" href="../proc/qsortd.html">qsortd</a>
+      
+      <a class="list-group-item" href="../proc/qzhes.html">qzhes</a>
+      
+      <a class="list-group-item" href="../proc/qzit.html">qzit</a>
+      
+      <a class="list-group-item" href="../proc/qzval.html">qzval</a>
+      
+      <a class="list-group-item" href="../proc/qzvec.html">qzvec</a>
+      
+      <a class="list-group-item" href="../proc/r8_swap.html">r8_swap</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print.html">r8mat_print</a>
+      
+      <a class="list-group-item" href="../proc/r8mat_print_some.html">r8mat_print_some</a>
+      
+      <a class="list-group-item" href="../proc/r8vec2_print.html">r8vec2_print</a>
+      
+      <a class="list-group-item" href="../proc/r8vec_print.html">r8vec_print</a>
+      
+      <a class="list-group-item" href="../proc/ran.html">ran</a>
+      
+      <a class="list-group-item" href="../proc/randddmarginal.html">randDDMarginal</a>
+      
+      <a class="list-group-item" href="../proc/randuniformsphere.html">randUniformSphere</a>
+      
+      <a class="list-group-item" href="../proc/ratqr.html">ratqr</a>
+      
+      <a class="list-group-item" href="../proc/read_apb_data.html">read_apb_data</a>
+      
+      <a class="list-group-item" href="../proc/read_stem_data.html">read_STEM_data</a>
+      
+      <a class="list-group-item" href="../proc/read_ysh_dislocation_data.html">read_YSH_dislocation_data</a>
+      
+      <a class="list-group-item" href="../proc/rebak.html">rebak</a>
+      
+      <a class="list-group-item" href="../proc/rebakb.html">rebakb</a>
+      
+      <a class="list-group-item" href="../proc/reduc.html">reduc</a>
+      
+      <a class="list-group-item" href="../proc/reduc2.html">reduc2</a>
+      
+      <a class="list-group-item" href="../proc/reducedisorientationtomfz.html">ReduceDisorientationtoMFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtocubicefz.html">ReduceOrientationtoCubicEFZ</a>
+      
+      <a class="list-group-item" href="../proc/reduceorientationtorfz.html">ReduceOrientationtoRFZ</a>
+      
+      <a class="list-group-item" href="../proc/rescue.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rescue%7E2.html">rescue</a>
+      
+      <a class="list-group-item" href="../proc/rg.html">rg</a>
+      
+      <a class="list-group-item" href="../proc/rgg.html">rgg</a>
+      
+      <a class="list-group-item" href="../proc/ri1.html">RI1</a>
+      
+      <a class="list-group-item" href="../proc/ri2.html">RI2</a>
+      
+      <a class="list-group-item" href="../proc/ricerca_lungo_assi.html">RICERCA_LUNGO_ASSI</a>
+      
+      <a class="list-group-item" href="../proc/rih1.html">RIH1</a>
+      
+      <a class="list-group-item" href="../proc/rih2.html">RIH2</a>
+      
+      <a class="list-group-item" href="../proc/rih3.html">RIH3</a>
+      
+      <a class="list-group-item" href="../proc/rng_seed.html">rng_seed</a>
+      
+      <a class="list-group-item" href="../proc/rng_uniform.html">rng_uniform</a>
+      
+      <a class="list-group-item" href="../proc/rs.html">rs</a>
+      
+      <a class="list-group-item" href="../proc/rsb.html">rsb</a>
+      
+      <a class="list-group-item" href="../proc/rsg.html">rsg</a>
+      
+      <a class="list-group-item" href="../proc/rsgab.html">rsgab</a>
+      
+      <a class="list-group-item" href="../proc/rsgba.html">rsgba</a>
+      
+      <a class="list-group-item" href="../proc/rsm.html">rsm</a>
+      
+      <a class="list-group-item" href="../proc/rsp.html">rsp</a>
+      
+      <a class="list-group-item" href="../proc/rspp.html">rspp</a>
+      
+      <a class="list-group-item" href="../proc/rst.html">rst</a>
+      
+      <a class="list-group-item" href="../proc/rt.html">rt</a>
+      
+      <a class="list-group-item" href="../proc/sample_cone.html">sample_Cone</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocube.html">sample_isoCube</a>
+      
+      <a class="list-group-item" href="../proc/sample_isocubefilled.html">sample_isoCubeFilled</a>
+      
+      <a class="list-group-item" href="../proc/samplefcctwinrfz.html">SamplefcctwinRFZ</a>
+      
+      <a class="list-group-item" href="../proc/sampleisomisorientation.html">SampleIsoMisorientation</a>
+      
+      <a class="list-group-item" href="../proc/samplerfz.html">SampleRFZ</a>
+      
+      <a class="list-group-item" href="../proc/samplerfztwin.html">SampleRFZtwin</a>
+      
+      <a class="list-group-item" href="../proc/senzaderglob.html">SENZADERGLOB</a>
+      
+      <a class="list-group-item" href="../proc/ssort.html">SSORT</a>
+      
+      <a class="list-group-item" href="../proc/stop.html">STOP</a>
+      
+      <a class="list-group-item" href="../proc/svd.html">svd</a>
+      
+      <a class="list-group-item" href="../proc/time_estimate.html">Time_estimate</a>
+      
+      <a class="list-group-item" href="../proc/time_remaining.html">Time_remaining</a>
+      
+      <a class="list-group-item" href="../proc/time_report.html">Time_report</a>
+      
+      <a class="list-group-item" href="../proc/time_reset.html">Time_reset</a>
+      
+      <a class="list-group-item" href="../proc/time_start.html">Time_start</a>
+      
+      <a class="list-group-item" href="../proc/time_stop.html">Time_stop</a>
+      
+      <a class="list-group-item" href="../proc/time_tick.html">Time_tick</a>
+      
+      <a class="list-group-item" href="../proc/time_tock.html">Time_tock</a>
+      
+      <a class="list-group-item" href="../proc/timestamp.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/timestamp%7E2.html">timestamp</a>
+      
+      <a class="list-group-item" href="../proc/tinvit.html">tinvit</a>
+      
+      <a class="list-group-item" href="../proc/tql1.html">tql1</a>
+      
+      <a class="list-group-item" href="../proc/tql2.html">tql2</a>
+      
+      <a class="list-group-item" href="../proc/tqlrat.html">tqlrat</a>
+      
+      <a class="list-group-item" href="../proc/trbak1.html">trbak1</a>
+      
+      <a class="list-group-item" href="../proc/trbak3.html">trbak3</a>
+      
+      <a class="list-group-item" href="../proc/tred1.html">tred1</a>
+      
+      <a class="list-group-item" href="../proc/tred2.html">tred2</a>
+      
+      <a class="list-group-item" href="../proc/tred3.html">tred3</a>
+      
+      <a class="list-group-item" href="../proc/tridib.html">tridib</a>
+      
+      <a class="list-group-item" href="../proc/trsbox.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/trsbox%7E2.html">trsbox</a>
+      
+      <a class="list-group-item" href="../proc/tsturm.html">tsturm</a>
+      
+      <a class="list-group-item" href="../proc/update.html">update</a>
+      
+      <a class="list-group-item" href="../proc/update%7E2.html">update</a>
+      
+      <a class="list-group-item" href="../proc/vmfmeandirdensity.html">VMFMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/watsonmeandirdensity.html">WatsonMeanDirDensity</a>
+      
+      <a class="list-group-item" href="../proc/weko.html">WEKO</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp%7E2.html">YSHDisp</a>
+      
+      <a class="list-group-item" href="../proc/yshdisp.html">YSHDisp</a>
+      
+    </div>
+  </div>
+</div>
+
+
+  </section>
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2017 <a rel="license" href="http://www.freebsd.org/copyright/freebsd-doc-license.html">FreeBSD Documentation License</a></p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> Fortran Program was developed by Marc De Graef Research Group/Carnegie Mellon University</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js'],
+        'HTML-CSS': { 
+           styles: { '.MathJax_Display, .MathJax .mo, .MathJax .mi, .MathJax .mn': {color: '#000000 ! important'} }
+        }
+      });
+    </script>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  </body>
+</html>

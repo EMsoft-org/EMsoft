@@ -1,0 +1,27 @@
+ &xtaldata
+! crystal system [1:cubic, 2: Tetragonal, 3: Orthorhombic, 4: Hexagonal, 5: Trigonal, 6: Monoclinic, 7: Triclinic]
+ crystalsystem = 1,
+! lattice parameters [nm and degrees]; uncomment those that are needed for the selected crystal system
+ a = 0.4,
+!b = 0.4,
+!c = 0.4,
+!alpha = 90.0,
+!beta = 90.0,
+!gamma = 90.0,
+! space group number
+ spacegroup = 225,
+! space group setting [1 or 2]
+ spacegroupsetting = 1,
+! number of unique atoms in the asymmetric unit 
+ natomtypes = 1,
+! atom fractional coordinates, comma separated if natomtypes > 1
+ x = 0.0,
+ y = 0.0,
+ z = 0.0,
+! site occupation parameter, comma separated if natomtypes > 1
+ f = 1.0,
+! Debye-Waller factor [nm^2], comma separated if natomtypes > 1
+ dbwf = 0.004,
+! name of the crystal structure file
+ xtalname = 'undefined',
+ /

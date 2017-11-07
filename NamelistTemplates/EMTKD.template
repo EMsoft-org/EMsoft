@@ -1,0 +1,47 @@
+ &TKDdata
+! template file for the EMTKD program
+!
+! distance between scintillator and illumination point [microns]
+ L = 15000.0,
+! tilt angle of the camera (positive below horizontal, [degrees])
+ thetac = 10.0,
+! CCD pixel size on the scintillator surface [microns]
+ delta = 50.0,
+! number of CCD pixels along x and y
+ numsx = 640,
+ numsy = 480,
+! pattern center coordinates in units of pixels
+ xpc = 0.0,
+ ypc = 0.0,
+! angle between normal of sample and detector
+ omega = 0.0,
+! transfer lens barrel distortion parameter
+ alphaBD = 0.0,
+! energy range in the intensity summation [keV]
+ energymin = 5.0,
+ energymax = 20.0,
+! name of angle file (euler angles or quaternions); path relative to EMdatapathname
+ anglefile = 'testeuler.txt',
+! 'tsl' or 'hkl' Euler angle convention parameter
+ eulerconvention = 'tsl',
+! name of EBSD master output file; path relative to EMdatapathname
+ masterfile = 'master.h5',
+! name of Monte Carlo output file; path relative to EMdatapathname
+ energyfile = 'MC.h5',
+! name of output file; path relative to EMdatapathname
+ datafile = 'EBSDout.h5',
+! incident beam current [nA]
+ beamcurrent = 150.0,
+! beam dwell time [micro s]
+ dwelltime = 100.0,
+! binning mode (1, 2, 4, or 8)
+ binning = 1,
+! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
+ scalingmode = 'not',
+! gamma correction factor
+ gammavalue = 1.0,
+! should a circular mask be applied to the data? 'y', 'n'
+ maskpattern = 'n',
+! number of threads (default = 1)
+ nthreads = 1,
+ /
