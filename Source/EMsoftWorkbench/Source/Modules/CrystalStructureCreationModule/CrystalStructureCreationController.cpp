@@ -251,11 +251,12 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   }
 
   // AtomTypes
-  QVector<hsize_t> dims2;
-  dims2.push_back(iv);
   std::vector<std::vector<double>> td = data.atomCoordinates;
-  QVector<int> atps(iv);
-  for (int i=0; i<iv; i++) {
+  size_t numOfAtoms = td.size();
+  QVector<hsize_t> dims2;
+  dims2.push_back(numOfAtoms);
+  QVector<int> atps(numOfAtoms);
+  for (int i=0; i<numOfAtoms; i++) {
       atps[i] = (int)td[i][0];
   }
   if (writer->writeVectorDataset(EMsoft::Constants::Atomtypes, atps, dims2) == false)
@@ -265,22 +266,22 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   }
 
   // write AtomData; also perform checks to make sure the fractional coordinates are in [0,1]
-  QVector<double> apos(iv*5);
+  QVector<double> apos(numOfAtoms*5);
   double tmp;
   double intpart;
-  for (int i=0; i<iv; i++){
+  for (int i=0; i<numOfAtoms; i++){
       tmp = modf(td[i][1]+100.0, &intpart); // make sure the coordinates are in [0,1]
       apos[i] = tmp;
       tmp = modf(td[i][2]+100.0, &intpart); // make sure the coordinates are in [0,1]
-      apos[iv+i] = tmp;
+      apos[numOfAtoms+i] = tmp;
       tmp = modf(td[i][3]+100.0, &intpart); // make sure the coordinates are in [0,1]
-      apos[2*iv+i] = tmp;
-      apos[3*iv+i] = td[i][4];
-      apos[4*iv+i] = td[i][5];
+      apos[2*numOfAtoms+i] = tmp;
+      apos[3*numOfAtoms+i] = td[i][4];
+      apos[4*numOfAtoms+i] = td[i][5];
   }
   QVector<hsize_t> dims3;
   dims3.push_back(5);
-  dims3.push_back(iv);
+  dims3.push_back(numOfAtoms);
   if (writer->writeVectorDataset(EMsoft::Constants::AtomData, apos, dims3) == false)
   {
     QFile::remove(tmpOutputFilePath);
@@ -591,7 +592,7 @@ bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalS
 
   {
     QString xtalPathName = getEMXtalFolderPathName();
-    if (xtalPathName[xtalPathName.size() - 1] != QDir::separator())
+    if (xtalPathName.size() > 0 && xtalPathName[xtalPathName.size() - 1] != QDir::separator())
     {
       xtalPathName.append(QDir::separator());
     }
