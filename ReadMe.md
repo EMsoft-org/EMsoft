@@ -1,14 +1,14 @@
-# EMsoft Version 3.1 #
+# EMsoft Version 4.0 #
 
 This package contains a series of programs along with a library, mostly written in fortran-90 with some OpenCL bits, for the computation and visualization of scanning electron microscopy diffraction patterns, notably EBSD, ECP, TKD, and EKP. The programs can be used as standalone command-line programs, and produce HDF5 output files that can then be visualized using an IDL virtual app (Interactive Data Language) or read and processed from any other package with HDF5 capability.
 
-This is the first release of version 3.1; next release, 3.2, is planned for late 2017.
+This is the first release of version 4.0; there have been substantial changes to how the package is configured, in particular the building of the EMsoft_SDK using the EMsoftSuperbuild repository.
 
 ## Financial Support ##
 Current EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, is supported by an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  More recent development of TKD and related modalities, including the creation of routines that can generate PoVRay visualization script files, was performed with support from an ONR Vannevar Bush Fellowship, N00014-­16-­1-­2821.
 
 ## Source ##
-Source codes are here on GitHub. Some precompiled OS X binaries, manuals, and IDL Virtual Machine apps, as well as additional information about the package are located at [Here](http://muri.materials.cmu.edu/?p=858). 
+Source codes are here on GitHub. Some precompiled OS X binaries, manuals, and IDL Virtual Machine apps, as well as additional information about the package are located at [Here](http://muri.materials.cmu.edu/?p=858).  For nightly builds, please go to [this](http://www.bluequartz.net/binaries/EMsoft/experimental) site and navigate to the most recent date for a compiled version of the entire EMsoft package.
 
 ## Installation ##
 
