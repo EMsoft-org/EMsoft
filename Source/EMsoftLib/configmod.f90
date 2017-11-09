@@ -110,7 +110,7 @@ end subroutine print_EMsoft_configuration_strings
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief Converts C string array to EMsoft ConfigStructureType 
+!> @brief Converts string array to EMsoft ConfigStructureType 
 !
 !> @date 10/28/17 MDG 1.0 original
 !--------------------------------------------------------------------------
@@ -123,8 +123,8 @@ integer(c_int), INTENT(IN), value     :: nstring
 type(c_ptr), INTENT(IN), value        :: cptr
 type(ConfigStructureType),INTENT(OUT) :: CS
 
-character(kind=c_char), pointer :: fptr(:,:)
-integer(kind=irg)               :: ii, lenstr
+character(kind=c_char), pointer 	  :: fptr(:,:)
+integer(kind=irg)               	  :: ii, lenstr
 
 call c_f_pointer(cptr, fptr, [ fnlen, nstring ])
 
