@@ -1002,52 +1002,54 @@ integer(kind=irg)                     :: std
  if (PRESENT(stdout)) std=stdout
 
 ! initialize all the fields of the EMconfig structure
- EMconfig%EMsoftpathname = trim(EMsoft_getEMsoftpathname())
- EMconfig%EMXtalFolderpathname = trim(EMsoft_getEMXtalFolderpathname())
- EMconfig%EMdatapathname = trim(EMsoft_getEMdatapathname())
- EMconfig%EMtmppathname = trim(EMsoft_getEMtmppathname())
- EMconfig%EMsoftLibraryLocation = ''     ! this needs special handling for IDL and WorkBench
- EMconfig%EMSlackWebHookURL = trim(EMsoft_getSlackWebHookURL())
- EMconfig%EMSlackChannel = trim(EMsoft_getSlackChannel())
- EMconfig%UserName = trim(EMsoft_getUsername())
- EMconfig%UserLocation = trim(EMsoft_getUserlocation())
- EMconfig%UserEmail = trim(EMsoft_getUseremail())
- EMconfig%EMNotify = trim(EMsoft_getNotify())
- if (EMsoft_getEMdevelop().eqv..TRUE.) then 
-    EMconfig%Develop = 'Yes' 
-  else 
-    EMconfig%Develop = 'No'
-  end if
-  if (EMsoft_getRelease().eqv..TRUE.) then 
-    EMconfig%Release = 'Yes' 
-  else 
-    EMconfig%Release = 'No'
-  end if
-! other configuration parameters that may be needed in various program but are not in the EMsoftConfig.json file
- EMconfig%h5copypath = "@HDF5_INSTALL@"//SC_h5copy
- EMconfig%EMsoftplatform = "@CMAKE_SYSTEM_NAME@"
- EMconfig%EMsofttestpath = trim(EMsoft_getEMsofttestpath())
- EMconfig%EMsoftTestingPath = "@EMsoft_TESTING_DIR@"
- EMconfig%EMsoftversion = trim(EMsoft_getEMsoftversion())
- EMconfig%Configpath = trim(EMsoft_getConfigpath())
- EMconfig%Templatepathname = trim(EMsoft_getTemplatepathname())
- EMconfig%Resourcepathname = trim(EMsoft_getResourcepathname())
- EMconfig%Homepathname = trim(EMsoft_getUserHomePath())
- EMconfig%OpenCLpathname = trim(EMsoft_getOpenCLpathname())
- EMconfig%Templatecodefilename = trim(EMsoft_getTemplatecodefilename())
- EMconfig%WyckoffPositionsfilename = trim(EMsoft_getWyckoffPositionsfilename())
- EMconfig%Randomseedfilename = trim(EMsoft_getRandomseedfilename())
- EMconfig%EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
+if (present(EMconfig)) then
+   EMconfig%EMsoftpathname = trim(EMsoft_getEMsoftpathname())
+   EMconfig%EMXtalFolderpathname = trim(EMsoft_getEMXtalFolderpathname())
+   EMconfig%EMdatapathname = trim(EMsoft_getEMdatapathname())
+   EMconfig%EMtmppathname = trim(EMsoft_getEMtmppathname())
+   EMconfig%EMsoftLibraryLocation = ''     ! this needs special handling for IDL and WorkBench
+   EMconfig%EMSlackWebHookURL = trim(EMsoft_getSlackWebHookURL())
+   EMconfig%EMSlackChannel = trim(EMsoft_getSlackChannel())
+   EMconfig%UserName = trim(EMsoft_getUsername())
+   EMconfig%UserLocation = trim(EMsoft_getUserlocation())
+   EMconfig%UserEmail = trim(EMsoft_getUseremail())
+   EMconfig%EMNotify = trim(EMsoft_getNotify())
+   if (EMsoft_getEMdevelop().eqv..TRUE.) then 
+      EMconfig%Develop = 'Yes' 
+    else 
+      EMconfig%Develop = 'No'
+    end if
+    if (EMsoft_getRelease().eqv..TRUE.) then 
+      EMconfig%Release = 'Yes' 
+    else 
+      EMconfig%Release = 'No'
+    end if
+  ! other configuration parameters that may be needed in various program but are not in the EMsoftConfig.json file
+   EMconfig%h5copypath = "@HDF5_INSTALL@"//SC_h5copy
+   EMconfig%EMsoftplatform = "@CMAKE_SYSTEM_NAME@"
+   EMconfig%EMsofttestpath = trim(EMsoft_getEMsofttestpath())
+   EMconfig%EMsoftTestingPath = "@EMsoft_TESTING_DIR@"
+   EMconfig%EMsoftversion = trim(EMsoft_getEMsoftversion())
+   EMconfig%Configpath = trim(EMsoft_getConfigpath())
+   EMconfig%Templatepathname = trim(EMsoft_getTemplatepathname())
+   EMconfig%Resourcepathname = trim(EMsoft_getResourcepathname())
+   EMconfig%Homepathname = trim(EMsoft_getUserHomePath())
+   EMconfig%OpenCLpathname = trim(EMsoft_getOpenCLpathname())
+   EMconfig%Templatecodefilename = trim(EMsoft_getTemplatecodefilename())
+   EMconfig%WyckoffPositionsfilename = trim(EMsoft_getWyckoffPositionsfilename())
+   EMconfig%Randomseedfilename = trim(EMsoft_getRandomseedfilename())
+   EMconfig%EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
+end if 
 
  write (std,"(//1x,'EMsoft version ',A,', Copyright (C) 2001-2017 Marc De Graef Research Group/CMU')") &
-      trim(EMconfig%EMsoftversion) 
+      trim(EMsoft_getEMsoftversion()) 
  write (std,"(1x,'EMsoft comes with ABSOLUTELY NO WARRANTY.')")
  write (std,"(1x,'This is free software, and you are welcome to redistribute it')")
  write (std,"(1x,'under certain conditions; see License.txt file for details.'//)")
 
  write (std,"(1x,'Program name : ',A)") trim(progname)
  write (std,"(1x,'Purpose      : ',A)") trim(progdesc)
- write (std,"(1x,'Platform     : ',A/)") trim(EMconfig%EMsoftplatform)
+ write (std,"(1x,'Platform     : ',A/)") "@CMAKE_SYSTEM_NAME@"
 
  call timestamp(std)
  write (std,"(1x,/)")
