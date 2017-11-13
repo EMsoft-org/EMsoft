@@ -179,6 +179,7 @@ end program EMTKDDI
 !> @date 06/07/16 MDG 1.6 added tmpfile for variable temporary data file name
 !> @date 11/14/16 MDG 1.7 added code to read h5 file instead of compute on-the-fly (static mode)
 !> @date 05/07/17 MDG 2.0 forked routine from original EBSD program; modified for TKD indexing
+!> @date 11/13/17 MDG 2.1 moved OpenCL code from InnerProdGPU routine to main code
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(tkdnl,acc,master,progname, nmldeffile)
@@ -240,16 +241,25 @@ integer(c_intptr_t),allocatable, target             :: device(:)
 integer(c_intptr_t),target                          :: context
 integer(c_intptr_t),target                          :: command_queue
 integer(c_intptr_t),target                          :: cl_expt,cl_dict
+character(len = 50000), target                      :: source
+integer(kind=irg), parameter                        :: source_length = 50000
+integer(kind=irg), target                           :: source_l
+character(len=source_length, KIND=c_char),TARGET    :: csource
+type(c_ptr), target                                 :: psource
+integer(c_int32_t)                                  :: ierr2, pcnt
+integer(c_intptr_t),target                          :: prog
+integer(c_intptr_t),target                          :: kernel
+integer(c_size_t)                                   :: cnum
+character(9),target                                 :: kernelname
+character(10, KIND=c_char),target                   :: ckernelname
+integer(c_size_t),target                            :: slength
 
 integer(kind=irg)                                   :: num,ierr,irec,istat, jpar(7)
 integer(kind=irg),parameter                         :: iunit = 40
 integer(kind=irg),parameter                         :: iunitexpt = 41
 integer(kind=irg),parameter                         :: iunitdict = 42
 character(fnlen)                                    :: info ! info about the GPU
-integer, parameter                                  :: source_length = 50000
 real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! Coulomb per second
-
-character(len = 50000)                              :: source
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
@@ -282,8 +292,6 @@ character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, fname, clname, ename, sourcefile
 integer(hsize_t)                                    :: expwidth, expheight
 integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
-character(len=source_length, KIND=c_char),TARGET    :: csource
-integer(c_size_t),target                            :: slength
 integer(c_int)                                      :: numd, nump
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
@@ -325,7 +333,7 @@ recordsize = L*4
 itmpexpt = 43
 dims = (/imght, imgwd/)
 w = tkdnl%hipassw
-
+source_l = source_length
 
 ! these will need to be read from an experimental data file but we''l set
 ! defaults values here.
@@ -477,7 +485,37 @@ call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
 call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
 
+!================================
+! the following lines were originally in the InnerProdGPU routine, but there is no need
+! to execute them each time that routine is called so we move them here...
+!================================
+! create the program
+pcnt = 1
+psource = C_LOC(csource)
+prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
+call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
+
+! build the program
+ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
+
+! get the compilation log
+ierr2 = clGetProgramBuildInfo(prog, device(tkdnl%devid), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
+! if(cnum > 1) call Message(trim(source(1:cnum))//'test',frm='(A)')
+call CLerror_check('InnerProdGPU:clBuildProgram', ierr)
+call CLerror_check('InnerProdGPU:clGetProgramBuildInfo', ierr2)
+
+! finally get the kernel and release the program
+kernelname = 'InnerProd'
+ckernelname = kernelname
+ckernelname(10:10) = C_NULL_CHAR
+kernel = clCreateKernel(prog, C_LOC(ckernelname), ierr)
+call CLerror_check('InnerProdGPU:clCreateKernel', ierr)
+
+ierr = clReleaseProgram(prog)
+call CLerror_check('InnerProdGPU:clReleaseProgram', ierr)
+
 ! the remainder is done in the InnerProdGPU routine
+!=========================================
 
 !=========================================
 ! ALLOCATION AND INITIALIZATION OF ARRAYS
@@ -909,8 +947,7 @@ dictionaryloop: do ii = 1,cratio+1
                                     0, C_NULL_PTR, C_NULL_PTR)
         call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
 
-        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,tkdnl%devid,csource,slength,platform, &
-                          device,context,command_queue)
+        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,tkdnl%devid,kernel,context,command_queue)
 
 ! this might be simplified later for the remainder of the patterns
         do qq = 1,ppendE(jj)
@@ -1029,6 +1066,10 @@ dictionaryloop: do ii = 1,cratio+1
 end do dictionaryloop
 
 close(itmpexpt,status='delete')
+
+! release the OpenCL kernel
+ierr = clReleaseKernel(kernel)
+call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
 
 ! perform some timing stuff
 call CPU_TIME(tstop)

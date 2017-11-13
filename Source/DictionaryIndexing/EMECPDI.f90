@@ -184,6 +184,7 @@ end program ECPIndexing
 !> @date 01/31/16 MDG 1.4 added devid parameter to select the opencl device
 !> @date 03/08/16 MDG 1.5 converted OpenCL calls to clfortran library
 !> @date 03/16/17 SS  1.6 adding tmpfile as argument; adding h5 file as output; improving ctf write routine
+!> @date 11/13/17 MDG 2.0 moved OpenCL code from InnerProdGPU routine to main code
 !----------------------------------------------------------------------------------------------------------
 subroutine MasterSubroutine(ecpnl, acc, master, kij, klist, anglewf, progname, nmldeffile)
 
@@ -236,8 +237,18 @@ integer(c_intptr_t),allocatable, target            :: device(:)
 integer(c_intptr_t),target                         :: context
 integer(c_intptr_t),target                         :: command_queue
 integer(c_intptr_t),target                         :: cl_expt,cl_dict
+character(len = 50000), target                     :: source
+integer(kind=irg), parameter                       :: source_length = 50000
+integer(kind=irg), target                          :: source_l
+character(len=source_length, KIND=c_char),TARGET   :: csource
+type(c_ptr), target                                :: psource
+integer(c_int32_t)                                 :: ierr, ierr2, pcnt
+integer(c_intptr_t),target                         :: prog
+integer(c_intptr_t),target                         :: kernel
+integer(c_size_t)                                  :: cnum
+character(9),target                                :: kernelname
+character(10, KIND=c_char),target                  :: ckernelname
 
-integer(kind=irg),parameter                        :: source_length = 50000
 integer(kind=irg)                                  :: i, j, ii, iii, jj, pp, kk, ll ! loop variables
 integer(kind=irg)                                  :: FZcnt, pgnum, io_int(3), ncubochoric, istat, itmpexpt = 43, cratio, &
                                                       fratio, cratioE, fratioE
@@ -260,15 +271,13 @@ integer(kind=irg),allocatable                      :: indexlist(:), indexarray(:
                                                       ppend(:), ppendE(:)
 real(kind=sgl),allocatable                         :: ECPpattern(:,:), ECPpatternintd(:,:),ECP1D(:)
 integer(kind=irg),allocatable                      :: ECPpatterninteger(:,:), ECPpatternad(:,:)
-character(len=source_length, KIND=c_char),TARGET   :: csource
 integer(c_size_t),target                           :: slength
 integer(c_int)                                     :: numd, nump
 
 complex(kind=dbl)                                  :: D
 
 character(fnlen)                                   :: info ! info about the GPU
-character(len = 50000)                             :: source
-integer(kind=irg)                                  :: ierr, irec, iunit, num
+integer(kind=irg)                                  :: irec, iunit, num
 
 integer,parameter                                  :: iunitexpt = 42
 
@@ -327,6 +336,7 @@ dmin = ecpnl%dmin
 voltage = ecpnl%EkeV
 ncubochoric = ecpnl%ncubochoric
 recordsize = L*4
+source_l = source_length
 
 
 ! nullify the dict  and T0dict pointers
@@ -473,6 +483,38 @@ if(ierr /= CL_SUCCESS) stop 'Error: cannot allocate device memory for experiment
 
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
 if(ierr /= CL_SUCCESS) stop 'Error: cannot allocate device memory for dictionary data.'
+
+!================================
+! the following lines were originally in the InnerProdGPU routine, but there is no need
+! to execute them each time that routine is called so we move them here...
+!================================
+! create the program
+pcnt = 1
+psource = C_LOC(csource)
+prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
+call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
+
+! build the program
+ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
+
+! get the compilation log
+ierr2 = clGetProgramBuildInfo(prog, device(ecpnl%devid), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
+! if(cnum > 1) call Message(trim(source(1:cnum))//'test',frm='(A)')
+call CLerror_check('InnerProdGPU:clBuildProgram', ierr)
+call CLerror_check('InnerProdGPU:clGetProgramBuildInfo', ierr2)
+
+! finally get the kernel and release the program
+kernelname = 'InnerProd'
+ckernelname = kernelname
+ckernelname(10:10) = C_NULL_CHAR
+kernel = clCreateKernel(prog, C_LOC(ckernelname), ierr)
+call CLerror_check('InnerProdGPU:clCreateKernel', ierr)
+
+ierr = clReleaseProgram(prog)
+call CLerror_check('InnerProdGPU:clReleaseProgram', ierr)
+
+! the remainder is done in the InnerProdGPU routine
+!=========================================
 
 !====================================================================================
 ! I/O FOR EXPERIMENTAL DATA SET AND APPLICATION OF MASK IF ANY
@@ -687,8 +729,7 @@ dictionaryloop: do ii = 1,cratio+1      ! +1 is needed to make sure that the fin
                                     0, C_NULL_PTR, C_NULL_PTR)
         if(ierr /= CL_SUCCESS) call FatalError('clEnqueueWriteBuffer','cannot write to expt buffer.')
 
-        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,ecpnl%devid,csource,slength,platform, &
-                          device,context,command_queue)   
+        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,ecpnl%devid,kernel,context,command_queue)
 
         do pp = 1,ppendE(jj)
 
@@ -786,6 +827,11 @@ call timestamp()
 
 ! remove the temporary file
 close(unit=itmpexpt,status='delete')
+
+! release the OpenCL kernel
+ierr = clReleaseKernel(kernel)
+call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
+
 
 ! ===================
 ! MAIN OUTPUT SECTION
