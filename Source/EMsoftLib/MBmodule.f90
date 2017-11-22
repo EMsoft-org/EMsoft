@@ -1222,7 +1222,7 @@ ir = 1
         ir = ir+1
     end do
 
-DynMat = DynMat * cmplx(0.D0,cPi)
+DynMat = DynMat * cmplx(cPi,0.D0)
 
 end subroutine GetDynMatMaster
 
