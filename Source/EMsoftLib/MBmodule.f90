@@ -1211,7 +1211,9 @@ ir = 1
             if (.not.associated(rlc)) EXIT
             if (ic.ne.ir) then  ! not a diagonal entry
                 ll = rlr%hkl - rlc%hkl
-                DynMat(ir,ic) = cell%LUT(ll(1),ll(2),ll(3))
+                DynMat(ir,ic) = cell%LUTqg(ll(1),ll(2),ll(3))
+            else
+                DynMat(ir,ic) = cmplx(2.D0*rlr%sg,0.D0)
             end if
             rlc => rlc%next
             ic = ic + 1
@@ -1219,6 +1221,8 @@ ir = 1
         rlr => rlr%next
         ir = ir+1
     end do
+
+DynMat = DynMat * cmplx(0.D0,cPi)
 
 end subroutine GetDynMatMaster
 

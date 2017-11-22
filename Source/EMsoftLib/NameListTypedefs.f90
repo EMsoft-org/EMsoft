@@ -1424,4 +1424,18 @@ type MDElectronPropNameListType
 
 end type MDElectronPropNameListType
 
+! typedef for special EMgammaSTEM program
+type EMgammaSTEMNameListType
+    real(kind=sgl)      :: voltage
+    real(kind=sgl)      :: dmin
+    real(kind=sgl)      :: eu(3)
+    real(kind=sgl)      :: convergence
+    integer(kind=irg)   :: platid
+    integer(kind=irg)   :: devid
+    character(fnlen)    :: gammaname
+    character(fnlen)    :: gammapname
+    character(fnlen)    :: microstructurefile
+    character(fnlen)    :: datafile
+end type EMgammaSTEMNameListType
+
 end module NameListTypedefs
