@@ -1,5 +1,5 @@
 ;
-; Copyright (c) 2015, Marc De Graef/Carnegie Mellon University
+; Copyright (c) 2017, Marc De Graef/Carnegie Mellon University
 ; All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without modification, are 
@@ -26,53 +26,28 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efit_display_event.pro
-;--------------------------------------------------------------------------
 ;
-; PROGRAM: Efit_display_event.pro
+; Function: Core_ax2qu
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief main event handler for Efit_display.pro routine
+;> @brief Euler angles to quaternion [Morawiec, page 40]
 ;
-;> @date 10/13/15 MDG 1.0 first attempt at a user-friendly interface
+;> @note verified 8/5/13
+;
+;> @param a axis angle pair, angle in radians
+; 
+;> @date 04/14/17 MDG 1.0 IDL version
 ;--------------------------------------------------------------------------
-pro Efit_display_event,event
+function Core_ax2qu,a
 
-common Efit_widget_common, Efitwidget_s
-common Efit_data_common, Efitdata
-
-
-if (event.id eq Efitwidget_s.displaybase) then begin
-  Efitdata.xlocationdisplay = event.x
-  Efitdata.ylocationdisplay = event.y-25
+if (a[3] eq 0.D0) then begin
+        res = [ 1.D0, 0.D0, 0.D0, 0.D0 ]
 end else begin
-
-  WIDGET_CONTROL, event.id, GET_UVALUE = eventval         ;find the user value
-  
-  CASE eventval OF
-        'CLOSEDISPLAY': begin
-                WIDGET_CONTROL, Efitwidget_s.displaybase, /DESTROY
-        endcase
-        'SAVEPATTERN': begin
-                delist = ['jpeg','tiff','bmp']
-                de = delist[Efitdata.imageformat]
-                filename = DIALOG_PICKFILE(/write,default_extension=de,path=Efitdata.pathname,title='enter filename without extension')
-                im = tvrd()
-                case de of
-                    'jpeg': write_jpeg,filename,im,quality=100
-                    'tiff': write_tiff,filename,reverse(im,2)
-                    'bmp': write_bmp,filename,im
-                 else: MESSAGE,'unknown file format option'
-                endcase
-        endcase
-
-  else: MESSAGE, "Efit_display_event: Event "+eventval+" Unknown"
-
-  endcase
-
-endelse
-
+        c = cos(a[3]*0.5D0)
+        s = sin(a[3]*0.5D0)
+        res = [ c, a[0]*s, a[1]*s, a[2]*s ]
 end
 
-
+return,res
+end ;function ax2qu

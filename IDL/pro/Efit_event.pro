@@ -90,6 +90,9 @@ end else begin
                   Efitinit
                   WIDGET_CONTROL, Efitwidget_s.compute, sensitive=1
                   WIDGET_CONTROL, Efitwidget_s.gofit, sensitive=1
+                  WIDGET_CONTROL, Efitwidget_s.goconstrainedfit, sensitive=1
+                  WIDGET_CONTROL, Efitwidget_s.gopowellfit, sensitive=1
+                  WIDGET_CONTROL, Efitwidget_s.goconstrainedpfit, sensitive=1
                 endif
         endcase
 
@@ -103,7 +106,31 @@ end else begin
                   Efitdata.displayoption = 4
                   WIDGET_CONTROL, set_value=Efitdata.displayoption, Efitwidget_s.displayoption
                 endif
-                Efit_fit
+                Efit_fit,'NelderMead'
+        endcase
+
+        'GOPOWELLFIT': begin
+                if (Efitdata.displayoption eq 5) then begin
+                  Efitdata.displayoption = 4
+                  WIDGET_CONTROL, set_value=Efitdata.displayoption, Efitwidget_s.displayoption
+                endif
+                Efit_fit,'Powell'
+        endcase
+
+        'GOCONSTRAINEDFIT': begin
+                if (Efitdata.displayoption eq 5) then begin
+                  Efitdata.displayoption = 4
+                  WIDGET_CONTROL, set_value=Efitdata.displayoption, Efitwidget_s.displayoption
+                endif
+                Efit_constrainedfit,'NelderMead'
+        endcase
+
+       'GOCONSTRAINEDPFIT': begin
+                if (Efitdata.displayoption eq 5) then begin
+                  Efitdata.displayoption = 4
+                  WIDGET_CONTROL, set_value=Efitdata.displayoption, Efitwidget_s.displayoption
+                endif
+                Efit_constrainedfit,'Powell'
         endcase
 
  	'QUIT': begin
@@ -183,6 +210,7 @@ end else begin
 ; define the SEMdata structure that will be written to the JSON file
                 SEMdata = {ebsddatastructure, $
                         L : Efitdata.detL, $ 
+                        alpha: Efitdata.detalpha, $ 
                         thetac : Efitdata.dettheta, $ 
                         delta : Efitdata.detdelta, $
                         numsx : Efitdata.detnumsx, $ 
@@ -230,7 +258,19 @@ end else begin
 ; next are the non-refinable parameter widgets
         'DETTHETA' : begin
                 Efitdata.dettheta = Core_WidgetEvent( Efitwidget_s.dettheta,  'Detector tilt angle set to [degree] ', '(F9.2)', /flt)
-                EfitCalc
+                ; next, update the rotation quaternions for navigation
+                ang = Efitdata.navstepsize * !dtor * 0.5
+                cang = cos(ang)
+                sang = sin(ang)
+                eta = (Efitdata.detMCsig - Efitdata.dettheta) * !dtor
+                delta = !pi*0.5 - eta
+                ceta = cos(eta)
+                seta = sin(eta)
+                cdelta = cos(delta)
+                sdelta = sin(delta)
+                Efitdata.navqx = [ cang, 0.0, sang, 0.0]
+                Efitdata.navqy = [ cang, sang*cdelta, 0.0, -sang*sdelta]
+                Efitdata.navqz = [ cang, sang*ceta, 0.0, sang*seta]
 	endcase
         'DETDELTA' : begin
                 Efitdata.detdelta = Core_WidgetEvent( Efitwidget_s.detdelta,  'Scintillator pixel size set to [micron] ', '(F9.2)', /flt)
@@ -247,7 +287,7 @@ end else begin
 	endcase
 
 
-;fitUserLabel = ['DETL','DETOMEGA','DETXPC','DETYPC','DETGAMMA','DETphi1','DETphi','DETphi2','DETtheta']]
+;fitUserLabel = ['DETL','DETOMEGA','DETXPC','DETYPC','DETGAMMA','DETphi1','DETphi','DETphi2','DETalpha']]
         'DETL' : begin
                 Efitdata.detL = Core_WidgetEvent( Efitwidget_s.fitValue[0],  'Scintillator distance set to [micron] ', '(F9.2)', /flt)
 		Efit_updatePC,/display
@@ -275,24 +315,12 @@ end else begin
         'DETphi2' : begin
                 Efitdata.detphi2 = Core_WidgetEvent( Efitwidget_s.fitValue[7],  'Euler phi2 angle set to [degrees] ', '(F9.2)', /flt)
 	endcase
-        'DETtheta' : begin
-                Efitdata.dettheta = Core_WidgetEvent( Efitwidget_s.fitValue[8],  'Detector tilt angle set to [degrees] ', '(F9.2)', /flt)
-; next, update the rotation quaternions for navigation
-		ang = Efitdata.navstepsize * !dtor * 0.5
-		cang = cos(ang)
-		sang = sin(ang)
-		eta = (Efitdata.detMCsig - Efitdata.dettheta) * !dtor
-		delta = !pi*0.5 - eta
-		ceta = cos(eta)
-		seta = sin(eta)
-		cdelta = cos(delta)
-		sdelta = sin(delta)
-		Efitdata.navqx = [ cang, 0.0, sang, 0.0]
-		Efitdata.navqy = [ cang, sang*cdelta, 0.0, -sang*sdelta]
-		Efitdata.navqz = [ cang, sang*ceta, 0.0, sang*seta]
+        'DETalpha' : begin
+                Efitdata.detalpha = Core_WidgetEvent( Efitwidget_s.fitValue[8],  'Distortion parameter set to  ', '(F9.2)', /flt)
+
 	endcase
 
-;fitStepLabel = ['DETsL','DETsOMEGA','DETsXPC','DETsYPC','DETsGAMMA','DETsphi1','DETsphi','DETsphi2','DETstheta']
+;fitStepLabel = ['DETsL','DETsOMEGA','DETsXPC','DETsYPC','DETsGAMMA','DETsphi1','DETsphi','DETsphi2','DETsalpha']
         'DETsL' : begin
                 Efitdata.detsL = Core_WidgetEvent( Efitwidget_s.fitStep[0],  'Scintillator distance step size set to [micron] ', '(F9.2)', /flt)
 	endcase
@@ -317,14 +345,14 @@ end else begin
         'DETsphi2' : begin
                 Efitdata.detsphi2 = Core_WidgetEvent( Efitwidget_s.fitStep[7],  'Euler phi2 angle step size set to [degrees] ', '(F9.2)', /flt)
 	endcase
-        'DETstheta' : begin
-                Efitdata.detstheta = Core_WidgetEvent( Efitwidget_s.fitStep[8],  'Detector tilt angle step size set to [degrees] ', '(F9.2)', /flt)
+        'DETsalpha' : begin
+                Efitdata.detsalpha = Core_WidgetEvent( Efitwidget_s.fitStep[8],  'Distortion parameter step size set to ', '(F9.2)', /flt)
 	endcase
 
-;fitOnOffLabel = ['DEToL','DEToOMEGA','DEToXPC','DEToYPC','DEToGAMMA','DETophi1','DETophi','DETophi2','DETotheta']
+;fitOnOffLabel = ['DEToL','DEToOMEGA','DEToXPC','DEToYPC','DEToGAMMA','DETophi1','DETophi','DETophi2','DEToalphaa']
 ; these are dealt with in Efitevent.pro
 
-;fitUpLabel = ['DETuL','DETuOMEGA','DETuXPC','DETuYPC','DETuGAMMA','DETuphi1','DETuphi','DETuphi2','DETutheta']
+;fitUpLabel = ['DETuL','DETuOMEGA','DETuXPC','DETuYPC','DETuGAMMA','DETuphi1','DETuphi','DETuphi2','DETualpha']
         'DETuL' : begin
                 Efitdata.detL += float(Efitdata.detmL)
                 WIDGET_CONTROL, SET_VALUE=string(Efitdata.detL,FORMAT='(F9.2)'), Efitwidget_s.fitValue[0]
@@ -376,14 +404,14 @@ end else begin
                 Core_Print, 'Euler angle phi2 set to '+string(Efitdata.detphi2,FORMAT='(F9.2)')
                 EfitCalc
 	endcase
-        'DETutheta' : begin
-                Efitdata.dettheta += float(Efitdata.detmtheta)
-                WIDGET_CONTROL, SET_VALUE=string(Efitdata.dettheta,FORMAT='(F9.2)'), Efitwidget_s.fitValue[8]
-                Core_Print, 'Detector tilt angle set to '+string(Efitdata.dettheta,FORMAT='(F9.2)')
+        'DETualpha' : begin
+                Efitdata.detalpha += float(Efitdata.detmalpha)
+                WIDGET_CONTROL, SET_VALUE=string(Efitdata.detalpha,FORMAT='(F9.2)'), Efitwidget_s.fitValue[8]
+                Core_Print, 'Distortion parameter set to '+string(Efitdata.detalpha,FORMAT='(F9.2)')
                 EfitCalc
 	endcase
 
-;fitDownLabel = ['DETdL','DETdOMEGA','DETdXPC','DETdYPC','DETdGAMMA','DETdphi1','DETdphi','DETdphi2','DETdtheta']
+;fitDownLabel = ['DETdL','DETdOMEGA','DETdXPC','DETdYPC','DETdGAMMA','DETdphi1','DETdphi','DETdphi2','DETdalpha']
         'DETdL' : begin
                 Efitdata.detL -= float(Efitdata.detmL)
                 WIDGET_CONTROL, SET_VALUE=string(Efitdata.detL,FORMAT='(F9.2)'), Efitwidget_s.fitValue[0]
@@ -435,14 +463,14 @@ end else begin
                 Core_Print, 'Euler angle phi2 set to '+string(Efitdata.detphi2,FORMAT='(F9.2)')
                 EfitCalc
 	endcase
-        'DETdtheta' : begin
-                Efitdata.dettheta-= float(Efitdata.detmtheta)
-                WIDGET_CONTROL, SET_VALUE=string(Efitdata.dettheta,FORMAT='(F9.2)'), Efitwidget_s.fitValue[8]
-                Core_Print, 'Detector tilt angle set to '+string(Efitdata.dettheta,FORMAT='(F9.2)')
+        'DETdalpha' : begin
+                Efitdata.detalpha-= float(Efitdata.detmalpha)
+                WIDGET_CONTROL, SET_VALUE=string(Efitdata.detalpha,FORMAT='(F9.2)'), Efitwidget_s.fitValue[8]
+                Core_Print, 'Distortion parameter set to '+string(Efitdata.detalpha,FORMAT='(F9.2)')
                 EfitCalc
 	endcase
 
-;fitManualStepLabel = ['DETmL','DETmOMEGA','DETmXPC','DETmYPC','DETmGAMMA','DETmphi1','DETmphi','DETmphi2','DETmtheta']
+;fitManualStepLabel = ['DETmL','DETmOMEGA','DETmXPC','DETmYPC','DETmGAMMA','DETmphi1','DETmphi','DETmphi2','DETmalpha']
         'DETmL' : begin
                 Efitdata.detmL = Core_WidgetEvent( Efitwidget_s.fitManualStep[0],  'Scintillator distance manual step size set to [micron] ', '(F9.2)', /flt)
 	endcase
@@ -467,8 +495,8 @@ end else begin
         'DETmphi2' : begin
                 Efitdata.detmphi2 = Core_WidgetEvent( Efitwidget_s.fitManualStep[7],  'Euler phi2 angle step manual size set to [degrees] ', '(F9.2)', /flt)
 	endcase
-        'DETmtheta' : begin
-                Efitdata.detmtheta = Core_WidgetEvent( Efitwidget_s.fitManualStep[8],  'Detector tilt angle step manual size set to [degrees] ', '(F9.2)', /flt)
+        'DETmalpha' : begin
+                Efitdata.detmalpha = Core_WidgetEvent( Efitwidget_s.fitManualStep[8],  'Distortion parameter manual steps size set to ', '(F9.2)', /flt)
 	endcase
 
   else: MESSAGE, "Efit_event: Event User Step "+eventval+" Not Found"

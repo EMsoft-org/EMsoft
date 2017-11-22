@@ -209,9 +209,9 @@ CASE eventval OF
                 endelse
 	endcase
 
-       'DETotheta' : begin
-                Efitdata.detotheta= Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[8],  'Fit detector tilt angle? ')
-                if (Efitdata.detotheta eq 0) then fitOnOff[8] = 0 else fitOnOff[8] = 1
+       'DEToalpha' : begin
+                Efitdata.detoalpha= Core_WidgetChoiceEvent( Efitwidget_s.fitOnOff[8],  'Fit distortion parameter? ')
+                if (Efitdata.detoalpha eq 0) then fitOnOff[8] = 0 else fitOnOff[8] = 1
                 if (total(fitOnOff) gt 0) then begin
                   WIDGET_CONTROL, Efitwidget_s.mkjson, sensitive =1
                 end else begin

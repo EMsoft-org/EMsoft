@@ -26,20 +26,20 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efit_update.pro
+; EMsoft:Efit_HookeJeeves.pro
 ;--------------------------------------------------------------------------
 ;
-; PROGRAM: Efit_update.pro
+; PROGRAM: Efit_HookeJeeves.pro
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief called by Efit_amoeba; returns dot product or mutual information
+;> @brief calls EMsoft HJ_refinement routine; returns dot product or mutual information
 ;
 ;> @date 10/20/15 MDG 1.0 first version
 ;> @date 11/04/15 MDG 1.1 modified to accommodate changes in EMdymod.f90
 ;> @date 04/14/17 MDG 1.2 test implementation of constrained fit
 ;--------------------------------------------------------------------------
-function Efit_update, param
+function Efit_HookeJeeves, param
 
 ;------------------------------------------------------------
 ; common blocks
@@ -58,6 +58,9 @@ common cancelcommon, cancel
 common Efitdisplaycommon, mask, maskready, expvector
 common getenv_common, librarylocation
 common inverseGaussian, inverseGaussianMask
+
+common constrainedparameters, c_sv
+
 
 nset = size(param,/dimensions)
 nset = nset[0]
@@ -143,21 +146,26 @@ fpar[7] = Efitdata.detbeamcurrent
 fpar[8] = Efitdata.detdwelltime
 
 ; and finally convert the Euler angle triplet (in degrees) to a quaternion
-; they are either refinable or not
-if (fitOnOff[5] eq 1) then begin
-    phi1 = param[np]
-    np += 1
-end else phi1 = fitValue[5]
-if (fitOnOff[6] eq 1) then begin
-    phi = param[np]
-    np += 1
-end else phi = fitValue[6]
-if (fitOnOff[7] eq 1) then begin
-    phi2 = param[np]
-    np += 1
-end else phi2 = fitValue[7]
-Efitdata.quaternion = Core_eu2qu( [phi1, phi, phi2] )
-quats = reform(Efitdata.quaternion[0:3],4,1)
+; they will be updated along with the pattern center coordinates to keep the pattern motion constrained
+;Efitdata.quaternion = Core_eu2qu( fitValue[5:7] )
+
+; compute the correction quaternion based on the pattern center shifts w.r.t. the original pattern center
+alpha = !pi*0.5+(FitValue[8]-Efitdata.detMCsig)*!dtor
+dx = (fpar[0] - c_sv[0]) * Efitdata.detdelta   ; double(i) * dpcx * delta
+dy = (fpar[1] - c_sv[1]) * Efitdata.detdelta   ; double(j) * dpcy * delta
+quat = Core_eu2qu( c_sv[3:5] )
+if ((dx eq 0.0) and (dy eq 0.0)) then begin
+  quats = quat
+end else begin
+  Lval = fpar[6] 
+  rho = sqrt( dx^2+(dy*cos(2.D0*alpha))^2)
+  n = [-dx*cos(alpha),-dy*cos(2.D0*alpha),dx*sin(alpha)]/rho
+  rho = sqrt(Lval^2 + 2.D0*Lval*dy*sin(2.0*alpha)+dx^2+dy^2)
+  if ((Lval+dy*sin(2.D0*alpha)) gt rho) then omega = 0.0 else omega = acos((Lval+dy*sin(2.D0*alpha))/rho)
+
+  qu = Core_ax2qu( [ n[0], n[1], n[2], omega ] )
+  quats = float(reform(Core_quatmult(quat,qu),4,1))
+endelse
 
 if (fitOnOff[8] eq 1) then begin
   fpar[5] = param[np]
@@ -168,11 +176,15 @@ end else fpar[5] = fitValue[8]
 EBSDpattern = fltarr(Efitdata.detnumsx,Efitdata.detnumsy)
 EBSDpattern = reform(EBSDpattern,Efitdata.detnumsx,Efitdata.detnumsy,1)
 
-callname = 'getEBSDPatternsWrapper'
+callname = 'HJ_refinement'
 faccum_e = float(accum_e)
 
+; HJ_refinement parameters are :
+; ipar, fpar, accum_e, mLPNH, mLPSH, refpattern, mask, MIorDP, nvars, startpt, endpt, rho, eps, itermax
+
 res = call_external(librarylocation+'/libEMsoftLib.dylib', callname, $
-      ipar, fpar, EBSDpattern, quats, faccum_e, mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
+      ipar, fpar, accum_e, mLPNH, mLPSH, refpattern, mask, MIorDP, nvars, startpt, endpt, rho, eps, itermax, $
+      /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 
 if (res ne 1.0) then begin
   Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
@@ -258,6 +270,7 @@ for i=0,nFit-1 do begin
     np += 1
   endif
 endfor
+fitValue[5:7] = Core_qu2eu(quats)
 for i=0,nFit-1 do WIDGET_CONTROL, set_value=string(fitValue[i],format="(F9.2)"), Efitwidget_s.fitValue[i]
 
 

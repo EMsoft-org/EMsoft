@@ -106,7 +106,7 @@ common inverseGaussian, inverseGaussianMask
 	for i=0,sz[0]-1 do ygrid[i,0:*] = line[0:*]
         grid = xgrid^2+ygrid^2
 	grid = grid / float(max(sz)/2)^2
-	inverseGaussianMask = 1.0-0.75*exp(-grid*1.5)
+	inverseGaussianMask = 1.0-0.95*exp(-grid*0.5)
 	inverseGaussianMask = reform(inverseGaussianMask,sz[0]*sz[1])
 ; added 6/18/16
         if ((Efitdata.EBSPsuffix eq 'tif') or (Efitdata.EBSPsuffix eq 'tiff')) then expEBSDpattern = reverse(expEBSDpattern,2)

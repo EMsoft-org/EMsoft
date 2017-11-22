@@ -26,18 +26,19 @@
 ; USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ; ###################################################################
 ;--------------------------------------------------------------------------
-; EMsoft:Efit_fit.pro
+; EMsoft:Efit_constrainedfit.pro
 ;--------------------------------------------------------------------------
 ;
-; PROGRAM: Efit_fit.pro
+; PROGRAM: Efit_constrainedfit.pro
 ;
 ;> @author Marc De Graef, Carnegie Mellon University
 ;
-;> @brief actual fitting routine; sets up the run, then calls Efit_amoeba.
+;> @brief constrained fitting routine; sets up the run, then calls Efit_amoeba.
 ;
 ;> @date 10/20/15 MDG 1.0 first version
+;> @date 04/14/15 MDG 1.1 new option to constrain orientation during detector parameter fitting
 ;--------------------------------------------------------------------------
-pro Efit_fit, fit_type
+pro Efit_constrainedfit, fit_type
 
 ;------------------------------------------------------------
 ; common blocks
@@ -54,6 +55,7 @@ common EBSD_EMsoft, MCxtalname, MCmode, nsx, nsy, EkeV, Ehistmin, Ebinsize, dept
 
 common Efitdisplaycommon, mask, maskready, expvector
 
+common constrainedparameters, constrained_startingvalue
 
 ; start time
 t1 = systime(1)
@@ -86,6 +88,9 @@ fitValue[6] = Efitdata.detphi
 fitValue[7] = Efitdata.detphi2
 fitValue[8] = Efitdata.dettheta
 
+constrained_startingvalue = [Efitdata.detxpc, Efitdata.detypc, Efitdata.detL, Efitdata.detphi1, Efitdata.detphi, Efitdata.detphi2]
+
+
 npos = 0
 for i=0,nFit-1 do begin
   if (fitOnOff[i] ne 0) then begin
@@ -96,13 +101,12 @@ for i=0,nFit-1 do begin
 endfor
 
 ftol=2.0e-7
+
 if (fit_type eq 'Powell') then begin
 ; identity matrix for Powell minimization
   XI = FLTARR(npos, npos)
-  XI[INDGEN(npos) * (npos+1)] = 1
-; Powell minimization; the problem here is that we do not have the original source code (for now) so 
-; we can not have a user interrupt button...
-  powell, pa, XI, ftol, fv, 'Efit_update', iter = iter, itmax = 500, /double
+  XI[INDGEN(npos) * (npos+1)] = 1.0
+  powell, pa, XI, ftol, fv, 'Efit_constrainedupdate', iter = iter, itmax = 500
   t2 = systime(1)
   Core_Print,'Total execution time [s] : '+string(t2-t1,FORMAT="(F9.2)")
   Core_Print,'Number of iterations : '+string(iter,FORMAT="(I4)")
@@ -121,18 +125,18 @@ end else begin
   Widget_Control, Efitwidget_s.cancelwidget, /Realize
 
 ; next we start the modified amoeba routine Efit_amoeba to improve the experimental parameters
-  fmin=Efit_amoeba(ftol,function_name='Efit_update', function_value=fv, ncalls=iter, nmax=500,p0=pa, scale=scl)
+; original amoeba routine, replaced with call to powell minimization
+  fmin=Efit_amoeba(ftol,function_name='Efit_constrainedupdate', function_value=fv, ncalls=iter, nmax=500,p0=pa, scale=scl)
 
   if (n_elements(fmin) ne nset) then begin
-    if (fmin eq -1) then Core_Print,'Efit_amoeba failed to converge after maximum number of steps'
-    if (fmin eq -2) then Core_Print,'Efit_amoeba interrupted by user'
+     if (fmin eq -1) then Core_Print,'Efit_amoeba failed to converge after maximum number of steps'
+     if (fmin eq -2) then Core_Print,'Efit_amoeba interrupted by user'
   end else begin
-   t2 = systime(1)
-   Core_Print,'Total execution time [s] : '+string(t2-t1,FORMAT="(F9.2)")
-   Core_Print,'Number of iterations : '+string(iter,FORMAT="(I4)")
+    t2 = systime(1)
+    Core_Print,'Total execution time [s] : '+string(t2-t1,FORMAT="(F9.2)")
+    Core_Print,'Number of iterations : '+string(iter,FORMAT="(I4)")
   endelse
 endelse
-
 
 ; copy the refined values into the current value set
 Efitdata.detL = fitValue[0]

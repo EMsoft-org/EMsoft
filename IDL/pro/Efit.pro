@@ -29,6 +29,21 @@
 @Efit_navigator
 @Efit_navigator_event
 @Efit_updatePC
+@Core_WidgetEvent
+@Core_WidgetChoiceEvent
+@Core_Wtext
+@Core_WtextE
+@Core_FitLine
+@Core_Print
+@Core_getenv
+@Core_quatmult
+@Core_quat_Lp
+@Core_ax2qu
+@Core_eu2qu
+@Core_qu2eu
+@Core_LambertSphereToSquare
+@Core_histnd
+@Core_mind
 @Efit_showpattern
 
 ;
@@ -124,6 +139,10 @@ Efitwidget_s = {widgetstruct, $
                 exploadfile:long(0), $
                 mainstop:long(0), $
                 gofit:long(0), $
+                goconstrainedfit:long(0), $
+                gopowellfit:long(0), $
+                goconstrainedpfit:long(0), $
+                detalpha:long(0), $
                 dettheta:long(0), $
                 detomega:long(0), $
                 detdelta:long(0), $
@@ -194,6 +213,7 @@ Efitdata = {Efitdatastruct, $
                 detphi:float(0), $
                 detphi2:float(0), $
                 dettheta:float(10), $
+                detalpha:float(10), $
                 detsL:float(100), $
                 detsomega:float(0.5), $
                 detsxpc:float(5.0), $
@@ -202,7 +222,7 @@ Efitdata = {Efitdatastruct, $
                 detsphi1:float(2.0), $
                 detsphi:float(2.0), $
                 detsphi2:float(2.0), $
-                detstheta:float(2.0), $
+                detsalpha:float(2.0), $
                 detoL:float(0), $
                 detoomega:float(0), $
                 detoxpc:float(0), $
@@ -211,7 +231,7 @@ Efitdata = {Efitdatastruct, $
                 detophi1:float(0), $
                 detophi:float(0), $
                 detophi2:float(0), $
-                detotheta:float(0), $
+                detoalpha:float(0), $
                 detmL:float(100), $
                 detmomega:float(0.5), $
                 detmxpc:float(5.0), $
@@ -220,7 +240,7 @@ Efitdata = {Efitdatastruct, $
                 detmphi1:float(2.0), $
                 detmphi:float(2.0), $
                 detmphi2:float(2.0), $
-                detmtheta:float(2.00), $
+                detmalpha:float(2.00), $
                 quaternion:fltarr(4), $
                 detbeamcurrent:float(1000), $
                 detdwelltime:float(1000), $
@@ -302,13 +322,13 @@ fitName = [ ' Scintillator Distance',  $
             '           Euler phi1 ',  $
             '            Euler Phi ',  $
             '           Euler phi2 ',  $
-            '  Detector tilt angle ']
-fitUserLabel = ['DETL','DETOMEGA','DETXPC','DETYPC','DETGAMMA','DETphi1','DETphi','DETphi2','DETtheta']
-fitStepLabel = ['DETsL','DETsOMEGA','DETsXPC','DETsYPC','DETsGAMMA','DETsphi1','DETsphi','DETsphi2','DETstheta']
-fitOnOffLabel = ['DEToL','DEToOMEGA','DEToXPC','DEToYPC','DEToGAMMA','DETophi1','DETophi','DETophi2','DETotheta']
-fitUpLabel = ['DETuL','DETuOMEGA','DETuXPC','DETuYPC','DETuGAMMA','DETuphi1','DETuphi','DETuphi2','DETutheta']
-fitDownLabel = ['DETdL','DETdOMEGA','DETdXPC','DETdYPC','DETdGAMMA','DETdphi1','DETdphi','DETdphi2','DETdtheta']
-fitManualStepLabel = ['DETmL','DETmOMEGA','DETmXPC','DETmYPC','DETmGAMMA','DETmphi1','DETmphi','DETmphi2','DETmtheta']
+            ' Distortion parameter ']
+fitUserLabel = ['DETL','DETOMEGA','DETXPC','DETYPC','DETGAMMA','DETphi1','DETphi','DETphi2','DETalpha']
+fitStepLabel = ['DETsL','DETsOMEGA','DETsXPC','DETsYPC','DETsGAMMA','DETsphi1','DETsphi','DETsphi2','DETsalpha']
+fitOnOffLabel = ['DEToL','DEToOMEGA','DEToXPC','DEToYPC','DEToGAMMA','DETophi1','DETophi','DETophi2','DEToalpha']
+fitUpLabel = ['DETuL','DETuOMEGA','DETuXPC','DETuYPC','DETuGAMMA','DETuphi1','DETuphi','DETuphi2','DETualpha']
+fitDownLabel = ['DETdL','DETdOMEGA','DETdXPC','DETdYPC','DETdGAMMA','DETdphi1','DETdphi','DETdphi2','DETdalpha']
+fitManualStepLabel = ['DETmL','DETmOMEGA','DETmXPC','DETmYPC','DETmGAMMA','DETmphi1','DETmphi','DETmphi2','DETmalpha']
 defValue = fltarr(nFit)
 fitValue = fltarr(nFit)
 fitValue[0] = Efitdata.detL
@@ -319,7 +339,7 @@ fitValue[4] = Efitdata.detgamma
 fitValue[5] = Efitdata.detphi1
 fitValue[6] = Efitdata.detphi
 fitValue[7] = Efitdata.detphi2
-fitValue[8] = Efitdata.dettheta
+fitValue[8] = Efitdata.detalpha
 fitStep = fltarr(nFit)
 fitStep[0] = Efitdata.detsL
 fitStep[1] = Efitdata.detsomega
@@ -329,7 +349,7 @@ fitStep[4] = Efitdata.detsgamma
 fitStep[5] = Efitdata.detsphi1
 fitStep[6] = Efitdata.detsphi
 fitStep[7] = Efitdata.detsphi2
-fitStep[8] = Efitdata.detstheta
+fitStep[8] = Efitdata.detsalpha
 fitOnOff = replicate(0L,nFit)
 fitManualStep = fltarr(nFit)
 fitManualStep[0] = Efitdata.detmL
@@ -340,7 +360,7 @@ fitManualStep[4] = Efitdata.detmgamma
 fitManualStep[5] = Efitdata.detmphi1
 fitManualStep[6] = Efitdata.detmphi
 fitManualStep[7] = Efitdata.detmphi2
-fitManualStep[8] = Efitdata.detmtheta
+fitManualStep[8] = Efitdata.detmalpha
 
 
 ; a few font strings (this will need to be redone for Windows systems)
@@ -456,8 +476,13 @@ line1 = WIDGET_BASE(block2, XSIZE=1200, /ROW)
 ;Efitwidget_s.dettheta = Core_WTextE(item1,'Detector Tilt Angle [deg]', fontstr, 250, 25, 10, 1, string(Efitdata.dettheta,format="(F9.2)"),'DETTHETA','Efit_event')
 
 ;----------  scintillator pixel size
-item2 = WIDGET_BASE(line1, /ROW, XSIZE=350, /ALIGN_LEFT)
-Efitwidget_s.detdelta = Core_WTextE(item2,'Scintillator Pixel Size [micron]', fontstr, 250, 25, 10, 1, string(Efitdata.detdelta,format="(F9.2)"),'DETDELTA','Efit_event')
+item2 = WIDGET_BASE(line1, /ROW, XSIZE=300, /ALIGN_LEFT)
+Efitwidget_s.detdelta = Core_WTextE(item2,'Detector Pixel Size [mu]', fontstr, 200, 25, 10, 1, string(Efitdata.detdelta,format="(F9.2)"),'DETDELTA','Efit_event')
+
+;----------  detector tilt 
+item2 = WIDGET_BASE(line1, /ROW, XSIZE=300, /ALIGN_LEFT)
+Efitwidget_s.dettheta = Core_WTextE(item2,'Detector tilt [degrees]', fontstr, 200, 25, 10, 1, string(Efitdata.dettheta,format="(F9.2)"),'DETTHETA','Efit_event')
+
 
 ;----------  number of pixels on detector
 item3 = WIDGET_BASE(line1, /ROW, XSIZE=560, /ALIGN_LEFT)
@@ -482,23 +507,23 @@ Efitwidget_s.inverseGaussian = CW_BGROUP(item3, $
 line2 = WIDGET_BASE(block2, XSIZE=1200, /ROW)
 
 ;----------  Beam current
-item1 = WIDGET_BASE(line2, /ROW, XSIZE=350, /ALIGN_LEFT)
-Efitwidget_s.detbeamcurrent = Core_WTextE(item1,'Beam current [nA]', fontstr, 250, 25, 10, 1, string(Efitdata.detbeamcurrent,format="(F9.2)"),'DETBEAMCURRENT','Efit_event')
+item1 = WIDGET_BASE(line2, /ROW, XSIZE=300, /ALIGN_LEFT)
+Efitwidget_s.detbeamcurrent = Core_WTextE(item1,'Beam current [nA]', fontstr, 200, 25, 10, 1, string(Efitdata.detbeamcurrent,format="(F9.2)"),'DETBEAMCURRENT','Efit_event')
 
 ;----------  Dwell time
-item2 = WIDGET_BASE(line2, /ROW, XSIZE=350, /ALIGN_LEFT)
-Efitwidget_s.detdwelltime = Core_WTextE(item2,'Dwell Time [mu s] ', fontstr, 250, 25, 10, 1, string(Efitdata.detdwelltime,format="(F9.2)"),'DETDWELLTIME','Efit_event')
+item2 = WIDGET_BASE(line2, /ROW, XSIZE=300, /ALIGN_LEFT)
+Efitwidget_s.detdwelltime = Core_WTextE(item2,'Dwell Time [mu s] ', fontstr, 200, 25, 10, 1, string(Efitdata.detdwelltime,format="(F9.2)"),'DETDWELLTIME','Efit_event')
 
 ;----------  Circular mask
 item3 = WIDGET_BASE(line2, /ROW, XSIZE=350, /ALIGN_LEFT)
-vals = ['Off','On']
+vals = ['Off','On','Inverted']
 Efitwidget_s.circularmask = CW_BGROUP(item3, $
                         vals, $
                         /ROW, $
                         /NO_RELEASE, $
                         /EXCLUSIVE, $
                         FONT=fontstr, $
-			LABEL_LEFT='Circular Mask', $
+			            LABEL_LEFT='Circular Mask', $
                         EVENT_FUNC ='Efitevent', $
                         UVALUE='CIRCULARMASK', $
                         SET_VALUE=Efitdata.showcircularmask)
@@ -700,11 +725,33 @@ Efitwidget_s.compute = WIDGET_BUTTON(line2, $
 line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
 Efitwidget_s.gofit = WIDGET_BUTTON(line2, $
                                 UVALUE='GOFIT', $
-                                VALUE='Start Fit', $
+                                VALUE='Nelder-Mead', $
                                 EVENT_PRO='Efit_event', $
                                 /ALIGN_CENTER, $
                                 SENSITIVE=0)
 
+Efitwidget_s.goconstrainedfit = WIDGET_BUTTON(line2, $
+                                UVALUE='GOCONSTRAINEDFIT', $
+                                VALUE='Constrained N-M', $
+                                EVENT_PRO='Efit_event', $
+                                /ALIGN_CENTER, $
+                                SENSITIVE=0)
+
+Efitwidget_s.gopowellfit = WIDGET_BUTTON(line2, $
+                                UVALUE='GOPOWELLFIT', $
+                                VALUE='Powell', $
+                                EVENT_PRO='Efit_event', $
+                                /ALIGN_CENTER, $
+                                SENSITIVE=0)
+
+Efitwidget_s.goconstrainedpfit = WIDGET_BUTTON(line2, $
+                                UVALUE='GOCONSTRAINEDPFIT', $
+                                VALUE='Constrained P', $
+                                EVENT_PRO='Efit_event', $
+                                /ALIGN_CENTER, $
+                                SENSITIVE=0)
+
+line2 = WIDGET_BASE(block4, XSIZE=410, /ROW, /ALIGN_LEFT)
 Efitwidget_s.progress = Core_WText(line2,'convergence parameter', fontstr, 200, 25, 60, 1, string(0.0,FORMAT="(F12.6)"))
 
 
