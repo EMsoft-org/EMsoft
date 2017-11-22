@@ -6368,5 +6368,92 @@ enl%dmin = dmin
 
 end subroutine GetMDElectronPropNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEMgammaSTEMNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMgammaSTEM.f90)
+!
+!> @param nmlfile namelist file name
+!> @param epf single name list structure
+!
+!> @date 11/20/17 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetEMgammaSTEMNameList(nmlfile, epf, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMgammaSTEMNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(EMgammaSTEMNameListType),INTENT(INOUT)       :: epf
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)   :: platid, devid
+real(kind=sgl)      :: voltage, dmin, eu(3), convergence
+character(fnlen)    :: gammaname, gammapname, microstructurefile, datafile
+
+namelist /GAMMAlist/ gammaname, gammapname, microstructurefile, voltage, dmin, &
+          datafile, eu, platid, devid, convergence
+
+gammaname = 'undefined' ! initial value to check that the keyword is present in the nml file (gamma phase)
+gammapname = 'undefined'  ! initial value to check that the keyword is present in the nml file (gamma' phase)
+microstructurefile = 'undefined' ! microstructure file name
+datafile = 'undefined' ! output filename
+voltage = 200.0    ! acceleration voltage [kV]
+eu = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
+dmin = 0.04     ! smallest d-spacing to include in dynamical matrix [nm]
+platid = 1
+devid = 1
+convergence = 0.0
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=GAMMAlist)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(gammaname).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' gamma xtal file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(gammapname).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' gamma prime xtal file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(microstructurefile).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' microfile name is undefined in '//nmlfile)
+    end if
+
+    if (trim(datafile).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+end if
+
+epf%gammaname            = gammaname 
+epf%gammapname           = gammapname 
+epf%microstructurefile   = microstructurefile
+epf%datafile             = datafile
+epf%voltage              = voltage
+epf%eu                   = eu
+epf%dmin                 = dmin
+epf%platid               = platid
+epf%devid                = devid
+epf%convergence          = convergence
+
+end subroutine GetEMgammaSTEMNameList
 
 end module NameListHandlers
