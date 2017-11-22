@@ -97,11 +97,7 @@ integer(c_intptr_t),target,INTENT(INOUT)            :: kernel
 integer(c_intptr_t),target,INTENT(INOUT)            :: command_queue
 
 integer(c_int32_t)                                  :: ierr, ierr2, pcnt
-!integer(c_intptr_t),target                          :: prog
 integer(c_intptr_t),target                          :: cl_result
-!character(19),target                                :: progoptions
-!integer(c_size_t)                                   :: cnum
-!character(len=source_length),target                 :: source
 
 real(kind=4)                                        :: dicttranspose(Nd*correctsize)
 integer(kind=4),parameter                           :: iunit = 40
