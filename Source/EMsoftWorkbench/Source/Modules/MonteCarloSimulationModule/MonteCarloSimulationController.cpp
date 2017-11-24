@@ -212,7 +212,11 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
 
   QString appDirPath = QCoreApplication::applicationDirPath();
   QDir dir = QDir(appDirPath);
-  QString thePath;
+
+  emit stdOutputMessageGenerated(tr("dir: %1").arg(dir.absolutePath()));
+  std::cout << "dir: " << dir.absolutePath().toStdString() << std::endl;
+
+  QString thePath =  dir.absolutePath(); // Initialize to SOMETHING other than empty.
 
   // Look to see if we are inside an .app package or inside the 'tools' directory
 #if defined(Q_OS_MAC)
@@ -230,14 +234,18 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     }
   }
 #endif
-
-  if(dir.dirName() == "Bin")
+  // We use Bin for development builds and bin for deployments
+  if(dir.dirName() == "Bin" || dir.dirName() == "bin")
   {
     thePath = dir.absolutePath();
   }
 
+  emit stdOutputMessageGenerated(tr("thePath: %1").arg(thePath));
+  std::cout << "thePath: " << thePath.toStdString() << std::endl;
+
   if (!dir.cd("opencl"))
   {
+    std::cout << "Unable to find opencl folder at path" << std::endl;
     // We are not able to find the opencl folder, so throw an error and bail
     errorMessageGenerated(tr("Unable to find opencl folder at path '%1'").arg(thePath));
     return;
