@@ -133,6 +133,25 @@ if(WIN32 AND NOT UNIX)
   SET(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "EMsoft Software Tools")
 ENDif(WIN32 AND NOT UNIX)
 
+
+if(APPLE)
+  set(CPACK_GENERATOR "ZIP")
+  option(CPACK_BINARY_DRAGNDROP    "Enable to build DMG packages"     OFF)
+  option(CPACK_BINARY_TGZ          "Enable to build TGZ packages"     OFF)
+  option(CPACK_BINARY_ZIP          "Enable to build ZIP packages"     ON)
+
+endif(APPLE)
+
+# When the project generates a .dmg file on macOS then this code will be needed.
+# if("${CPACK_GENERATOR}" STREQUAL "DragNDrop")
+#   set(CPACK_DMG_BACKGROUND_IMAGE
+#       "${BrandedSIMPLView_DIR}/packaging/EMsoft_DMGBackground.tif")
+#   set(CPACK_DMG_DS_STORE_SETUP_SCRIPT
+#       "${PROJECT_RESOURCES_DIR}/CPack/EMsoft_DMGSetup.scpt")
+# endif()
+
+
+#set(CPACK_GENERATOR "")
 if(NOT CPACK_GENERATOR)
   if(UNIX)
     if(CYGWIN)
@@ -141,15 +160,17 @@ if(NOT CPACK_GENERATOR)
       if(APPLE)
         option(CPACK_BINARY_PACKAGEMAKER "Enable to build PackageMaker packages" OFF)
         option(CPACK_BINARY_OSXX11       "Enable to build OSX X11 packages"      OFF)
+        option(CPACK_BINARY_DRAGNDROP    "Enable to build DMG packages"     OFF)
       else(APPLE)
         option(CPACK_BINARY_TZ  "Enable to build TZ packages"     OFF)
+        option(CPACK_BINARY_TGZ  "Enable to build TGZ packages"   ON)
       endif(APPLE)
       option(CPACK_BINARY_STGZ "Enable to build STGZ packages"    OFF)
-      option(CPACK_BINARY_TGZ  "Enable to build TGZ packages"     ON)
       option(CPACK_BINARY_TBZ2 "Enable to build TBZ2 packages"    OFF)
       option(CPACK_BINARY_DEB  "Enable to build Debian packages"  OFF)
       option(CPACK_BINARY_RPM  "Enable to build RPM packages"     OFF)
       option(CPACK_BINARY_NSIS "Enable to build NSIS packages"    OFF)
+      option(CPACK_BINARY_ZIP  "Enable to build ZIP packages"     ON)
     endif(CYGWIN)
   else(UNIX)
     option(CPACK_BINARY_NSIS "Enable to build NSIS packages" OFF)
