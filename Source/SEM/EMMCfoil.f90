@@ -162,7 +162,7 @@ type(c_ptr)                    :: event
 integer(c_int32_t)             :: ierr, pcnt, ierr2
 integer(c_size_t),target       :: slength
 integer(c_intptr_t),target     :: ctx_props(3)
-character(2),target            :: kernelname 
+character(3),target            :: kernelname 
 character(5),target            :: kernelname2
 character(19),target           :: progoptions
 character(fnlen),target        :: info ! info about the GPU
