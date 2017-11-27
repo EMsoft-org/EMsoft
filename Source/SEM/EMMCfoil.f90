@@ -291,7 +291,7 @@ call CLerror_check('DoMCsimulation:clGetProgramBuildInfo', ierr2)
 call Message('Program Build Successful... Creating kernel')
 
 ! finally get the kernel and release the program
-kernelname = 'MC'
+kernelname = 'MC'//CHAR(0)
 write (*,*) 'creating kernelname : ',kernelname
 kernel = clCreateKernel(prog, C_LOC(kernelname), ierr)
 call CLerror_check('DoMCsimulation:clCreateKernel:MC', ierr)
