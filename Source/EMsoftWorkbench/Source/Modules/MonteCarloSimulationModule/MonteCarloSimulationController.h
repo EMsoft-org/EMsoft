@@ -86,6 +86,12 @@ class MonteCarloSimulationController : public QObject
         QString outputFileName;
     };
 
+    enum class StringType : EnumType
+    {
+      OpenCLFolder = 22,
+      RandomSeedsFile = 25
+    };
+
     /**
      * @brief createMonteCarlo
      * @param simData
@@ -139,6 +145,9 @@ class MonteCarloSimulationController : public QObject
     void updateMCProgress(int loop, int totalLoops, float bseYield);
     
   private:
+    const int                   m_StringSize = 512;
+    const int                   m_NumberOfStrings = 40;
+
     XtalFileReader*             m_XtalReader = nullptr;
     QString                     m_CurrentFilePath = "";
     QString                     m_StartTime = "";
@@ -151,6 +160,8 @@ class MonteCarloSimulationController : public QObject
     size_t                      m_InstanceKey;
 
     bool                        m_HasErrors = false;
+
+    char*                       m_SPar;
 
     /**
      * @brief initializeData
@@ -219,6 +230,14 @@ class MonteCarloSimulationController : public QObject
      * @return
      */
     FloatArrayType::Pointer getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData);
+
+    /**
+     * @brief setSParValue
+     * @param type
+     * @param value
+     * @return
+     */
+    bool setSParValue(StringType type, const QString &value);
 
     /**
      * @brief convertToFortran
