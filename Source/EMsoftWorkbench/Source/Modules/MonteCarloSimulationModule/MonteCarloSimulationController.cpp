@@ -93,9 +93,11 @@ MonteCarloSimulationController::MonteCarloSimulationController(QObject* parent) 
   QObject(parent),
   m_Cancel(false)
 {
-
   m_XtalReader = new XtalFileReader();
   connect(m_XtalReader, &XtalFileReader::errorMessageGenerated, [=] (const QString &msg) { emit errorMessageGenerated(msg); });
+
+  m_SPar = new char[m_NumberOfStrings*m_StringSize];
+  std::memset(m_SPar, '\0', m_NumberOfStrings*m_StringSize);
 }
 
 // -----------------------------------------------------------------------------
@@ -283,13 +285,27 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
 
 //  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
 
-  QString sPar = "";
-  sPar.fill(' ', 40*512);
-  sPar.replace(23 * 512, openCLPath.size() + 1, openCLPath + "\0");
-  sPar.replace(26 * 512, randomSeedsPath.size() + 1, randomSeedsPath + "\0");
+  if (setSParValue(StringType::OpenCLFolder, openCLPath) == false)
+  {
+    return;
+  }
+
+  if (setSParValue(StringType::RandomSeedsFile, randomSeedsPath) == false)
+  {
+    return;
+  }
+
+//  for (int i = 0; i < 40; i++)
+//  {
+//    for (int j = 0; j < 512; j++)
+//    {
+//      printf("%x ", m_SPar[i*512 + j]);
+//    }
+//    printf("\n");
+//  }
 
   EMsoftCgetMCOpenCL(
-      iParPtr->getPointer(0), fParPtr->getPointer(0), sPar.toLatin1().data(),
+      iParPtr->getPointer(0), fParPtr->getPointer(0), m_SPar,
       atomPos.data(), atomTypes.data(), latParm.data(),
       m_GenericAccumePtr->getPointer(0), m_GenericAccumzPtr->getPointer(0),
       &MonteCarloSimulationControllerProgress, m_InstanceKey, &m_Cancel);
@@ -315,6 +331,24 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     m_CurrentFilePath.clear();
     emit stdOutputMessageGenerated("Monte Carlo File Generation was successfully canceled");
   }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool MonteCarloSimulationController::setSParValue(StringType type, const QString &value)
+{
+  if (value.size() > m_StringSize)
+  {
+    errorMessageGenerated(tr("The string '%1' is longer than 512 characters").arg(value));
+    return false;
+  }
+
+  int index = static_cast<int>(type);
+
+  char* valueArray = value.toLatin1().data();
+  std::memcpy(m_SPar + (index*m_StringSize), valueArray, value.size());
+  return true;
 }
 
 // -----------------------------------------------------------------------------
