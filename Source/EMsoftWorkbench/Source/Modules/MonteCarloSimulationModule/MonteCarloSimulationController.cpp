@@ -216,7 +216,7 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   emit stdOutputMessageGenerated(tr("dir: %1").arg(dir.absolutePath()));
   std::cout << "dir: " << dir.absolutePath().toStdString() << std::endl;
 
-  QString thePath =  dir.absolutePath(); // Initialize to SOMETHING other than empty.
+  QString openCLPath =  dir.absolutePath(); // Initialize to SOMETHING other than empty.
 
   // Look to see if we are inside an .app package or inside the 'tools' directory
 #if defined(Q_OS_MAC)
@@ -225,7 +225,7 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     dir.cdUp();
     if (dir.cd("bin"))
     {
-      thePath = dir.absolutePath();
+      openCLPath = dir.absolutePath();
     }
     else
     {
@@ -237,17 +237,17 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   // We use Bin for development builds and bin for deployments
   if(dir.dirName() == "Bin" || dir.dirName() == "bin")
   {
-    thePath = dir.absolutePath();
+    openCLPath = dir.absolutePath();
   }
 
-  emit stdOutputMessageGenerated(tr("thePath: %1").arg(thePath));
-  std::cout << "thePath: " << thePath.toStdString() << std::endl;
+  emit stdOutputMessageGenerated(tr("thePath: %1").arg(openCLPath));
+  std::cout << "thePath: " << openCLPath.toStdString() << std::endl;
 
   if (!dir.cd("opencl"))
   {
     std::cout << "Unable to find opencl folder at path" << std::endl;
     // We are not able to find the opencl folder, so throw an error and bail
-    errorMessageGenerated(tr("Unable to find opencl folder at path '%1'").arg(thePath));
+    errorMessageGenerated(tr("Unable to find opencl folder at path '%1'").arg(openCLPath));
     return;
   }
   else
@@ -256,10 +256,15 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     dir.cdUp();
   }
 
+  QString randomSeedsPath = openCLPath;
+
+  openCLPath.append(QDir::separator());
+  openCLPath.append("opencl");
+
   if (!dir.cd("resources"))
   {
     // We are not able to find the resources folder, so throw an error and bail
-    errorMessageGenerated(tr("Unable to find resources folder at path '%1'").arg(thePath));
+    errorMessageGenerated(tr("Unable to find resources folder at path '%1'").arg(randomSeedsPath));
     return;
   }
   else
@@ -268,17 +273,26 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     dir.cdUp();
   }
 
-  static const size_t k_BufferSize = 255;
-  char string[k_BufferSize];
+  randomSeedsPath.append(QDir::separator());
+  randomSeedsPath.append("resources");
+  randomSeedsPath.append(QDir::separator());
+  randomSeedsPath.append("RandomSeeds.data");
 
-  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
+//  static const size_t k_BufferSize = 255;
+//  char string[k_BufferSize];
 
+//  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
+
+  QString sPar = "";
+  sPar.fill(' ', 40*512);
+  sPar.replace(23 * 512, openCLPath.size() + 1, openCLPath + "\0");
+  sPar.replace(26 * 512, randomSeedsPath.size() + 1, randomSeedsPath + "\0");
 
   EMsoftCgetMCOpenCL(
-      iParPtr->getPointer(0), fParPtr->getPointer(0),
+      iParPtr->getPointer(0), fParPtr->getPointer(0), sPar.toLatin1().data(),
       atomPos.data(), atomTypes.data(), latParm.data(),
       m_GenericAccumePtr->getPointer(0), m_GenericAccumzPtr->getPointer(0),
-      &MonteCarloSimulationControllerProgress, m_InstanceKey, string, &m_Cancel);
+      &MonteCarloSimulationControllerProgress, m_InstanceKey, &m_Cancel);
 
   s_ControllerInstances.remove(m_InstanceKey);
 
