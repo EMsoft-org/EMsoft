@@ -964,7 +964,7 @@ integer(c_size_t)                       :: cnum=0, cnuminfo=0
 character(fnlen)                        :: instring='', dataname='', fname='', sourcefile=''
 PROCEDURE(ProgressCallBack2), POINTER   :: proc
 character(250),target                   :: currentDir=''
-character(fnlen)                        :: emmcPath=''
+character(fnlen)                        :: emmcPath='', outname=''
 character(fnlen)                        :: randomSeedPath=''
 integer(c_int32_t),target               :: filestat=0
 INTEGER(kind=irg)                       :: getcwd, status
@@ -981,7 +981,11 @@ CALL C_F_PROCPOINTER (cproc, proc)
 ! the calling program passes a c-string array spar that we need to convert to the 
 ! standard EMsoft config structure for use inside this routine
 call C2F_configuration_strings(nspar, C_LOC(spar), CS)
-       
+
+! code used for testing
+!outname = '/Users/mdg/Files/EMPlay/Test/WBMCoutput.txt'
+!call print_EMsoft_configuration_strings(CS, outname)
+
 ! the following is necessitated by the fact that none of this code may 
 ! depend on HDF5 routines, so we need to cut-and-paste from various 
 ! other library routines to set things up so that we can compute the 
@@ -1087,7 +1091,7 @@ call CLinit_PDCCQ(platform, nump, int(ipar(7)), device, numd, int(ipar(6)), info
 ! BUILD THE KERNEL
 !=====================
 ! read the source file
-sourcefile='EMMC.cl'
+sourcefile='/EMMC.cl'
 emmcPath=trim(CS%OpenCLpathname)//trim(sourcefile)
 emmcPath=EMsoft_toNativePath(emmcPath)
 
