@@ -61,10 +61,7 @@ contains
 !> @param Nd number of patterns in the dict vector
 !> @param L size of one single pattern
 !> @param result result of the matrix multiplication
-!> @param source the opencl kernel as a character array
-!> @param length of character array
-!> @param platform opencl platform type
-!> @param device opencl device type
+!> @param kernel opencl kernel pointer
 !> @param context opencl context type
 !> @param command_queue opencl command queue
 !
@@ -73,9 +70,9 @@ contains
 !> @date 02/24/16 MDG 1.2 converted OpenCL calls to clfortran from fortrancl
 !> @date 03/03/16 MDG 1.3 added C_NULL_CHAR to kernelname
 !> @date 06/07/17 MDG 1.4 removed progoptions from Build Program call; caused some issues on Linux in Release mode
+!> @date 11/13/17 MDG 2.0 moved several OpenCL init statements to main calling program
 !--------------------------------------------------------------------------
-recursive subroutine InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,selnumd,csource,source_length, &
-                        platform,device,context,command_queue)
+recursive subroutine InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,selnumd,kernel,context,command_queue)
 !DEC$ ATTRIBUTES DLLEXPORT :: InnerProdGPU
 
 use local
@@ -95,33 +92,20 @@ integer(kind=4),INTENT(IN)                          :: Ne
 integer(kind=4),INTENT(IN)                          :: Nd
 integer(kind=4),INTENT(IN)                          :: correctsize
 integer(kind=irg),INTENT(IN)                        :: numd, selnumd
-integer(c_size_t),INTENT(IN),target                 :: source_length
-character(len=source_length, KIND=c_char),TARGET,INTENT(IN)      :: csource
-integer(c_intptr_t),allocatable,target,INTENT(IN)   :: platform(:)
-integer(c_intptr_t),allocatable,target,INTENT(INOUT):: device(:)
 integer(c_intptr_t),target,INTENT(INOUT)            :: context
+integer(c_intptr_t),target,INTENT(INOUT)            :: kernel
 integer(c_intptr_t),target,INTENT(INOUT)            :: command_queue
 
-type(c_ptr), target                                 :: psource
 integer(c_int32_t)                                  :: ierr, ierr2, pcnt
-integer(c_intptr_t),target                          :: prog
-integer(c_intptr_t),target                          :: kernel
 integer(c_intptr_t),target                          :: cl_result
-character(19),target                                :: progoptions
-integer(c_size_t)                                   :: cnum
-character(len=source_length),target                 :: source
 
 real(kind=4)                                        :: dicttranspose(Nd*correctsize)
 integer(kind=4),parameter                           :: iunit = 40
 character(fnlen)                                    :: info ! info about the GPU
 integer(kind=8),target                              :: globalsize(2),localsize(2)
-integer, parameter                                  :: source_length_build_info = 10000
-character(len = source_length)                      :: source_build_info
 integer(kind=4)                                     :: num,istat,i,j,ii,jj,kk, io_int(1)
 integer(kind=4),target                              :: Wexp,Wdict
 integer(kind=8)                                     :: size_in_bytes_expt,size_in_bytes_dict,size_in_bytes_result
-character(9),target                                 :: kernelname
-character(10, KIND=c_char),target                   :: ckernelname
 integer(kind=irg)                                   :: irec
 
 size_in_bytes_result = Ne*Nd*sizeof(results(1))
@@ -131,40 +115,8 @@ localsize = (/16,16/)
 globalsize = (/Ne,Nd/)
 
 !=====================
-! INITIALIZATION
+! INITIALIZATION [mostly performed in the calling program]
 !=====================
-! was performed in the calling program
-
-!=====================
-! BUILD THE KERNEL
-!=====================
-
-! create the program
-pcnt = 1
-psource = C_LOC(csource)
-prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_length), ierr)
-call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
-
-! build the program
-progoptions = '-cl-no-signed-zeros'
-! ierr = clBuildProgram(prog, numd, C_LOC(device), C_LOC(progoptions), C_NULL_FUNPTR, C_NULL_PTR)
-ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
-
-! get the compilation log
-ierr2 = clGetProgramBuildInfo(prog, device(selnumd), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
-! if(cnum > 1) call Message(trim(source(1:cnum))//'test',frm='(A)')
-call CLerror_check('InnerProdGPU:clBuildProgram', ierr)
-call CLerror_check('InnerProdGPU:clGetProgramBuildInfo', ierr2)
-
-! finally get the kernel and release the program
-kernelname = 'InnerProd'
-ckernelname = kernelname
-ckernelname(10:10) = C_NULL_CHAR
-kernel = clCreateKernel(prog, C_LOC(ckernelname), ierr)
-call CLerror_check('InnerProdGPU:clCreateKernel', ierr)
-
-ierr = clReleaseProgram(prog)
-call CLerror_check('InnerProdGPU:clReleaseProgram', ierr)
 
 ! create buffer
 cl_result = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_result, C_NULL_PTR, ierr)
@@ -201,14 +153,10 @@ call CLerror_check('InnerProdGPU:clFinish', ierr)
 ierr = clEnqueueReadBuffer(command_queue,cl_result,CL_TRUE,0_8,size_in_bytes_result,C_LOC(results(1)),0,C_NULL_PTR,C_NULL_PTR)
 call CLerror_check('InnerProdGPU:clEnqueueReadBuffer', ierr)
 
-! ---
-
-
-ierr = clReleaseKernel(kernel)
-call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
 ierr = clReleaseMemObject(cl_result)
 call CLerror_check('InnerProdGPU:clReleaseMemObject:cl_result', ierr)
 
+! ---
 end subroutine InnerProdGPU
 !--------------------------------------------------------------------------
 

@@ -105,6 +105,7 @@ end program EMEBSDDIstatic
 !> @date 02/10/16 MDG 1.4 added average dot product map to HDF5 file
 !> @date 03/15/16 MDG 1.5 converted from EMEBSDDI.f90 code; removed all pattern calculation parts
 !> @date 11/14/16 MDG 2.0 reworked code to enable multiple GPU indexing
+!> @date 11/13/17 MDG 2.1 moved OpenCL code from InnerProdGPU routine to main code
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(ebsdnl,progname, nmldeffile)
@@ -164,16 +165,24 @@ integer(c_intptr_t),allocatable, target             :: device(:)
 integer(c_intptr_t),target                          :: context
 integer(c_intptr_t),target                          :: command_queue
 integer(c_intptr_t),target                          :: cl_expt,cl_dict
+character(len = 50000), target                      :: source
+integer(kind=irg), parameter                        :: source_length = 50000
+integer(kind=irg), target                           :: source_l
+character(len=source_length, KIND=c_char),TARGET    :: csource
+type(c_ptr), target                                 :: psource
+integer(c_int32_t)                                  :: ierr2, pcnt
+integer(c_intptr_t),target                          :: prog
+integer(c_intptr_t),target                          :: kernel
+integer(c_size_t)                                   :: cnum
+character(9),target                                 :: kernelname
+character(10, KIND=c_char),target                   :: ckernelname
 
 integer(kind=irg)                                   :: num,ierr,irec,istat
 integer(kind=irg),parameter                         :: iunit = 40
 integer(kind=irg),parameter                         :: iunitexpt = 41
 integer(kind=irg),parameter                         :: iunitdict = 42
 character(fnlen)                                    :: info ! info about the GPU
-integer, parameter                                  :: source_length = 50000
 real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! Coulomb per second
-
-character(len = 50000)                              :: source
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
@@ -209,7 +218,6 @@ character(fnlen)                                    :: groupname, dataset, fname
                                                         datagroupname
 integer(hsize_t)                                    :: expwidth, expheight
 integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
-character(len=source_length, KIND=c_char),TARGET    :: csource
 integer(c_size_t),target                            :: slength
 integer(c_int)                                      :: numd, nump
 integer(HSIZE_T)                                    :: dims2(2), dims3(3), offset3(3)
@@ -236,6 +244,7 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call cpu_time(tstart)
+source_l = source_length
 
 !=====================================================
 !=====================================================
@@ -354,7 +363,37 @@ if(ierr /= CL_SUCCESS) stop 'Error: cannot allocate device memory for experiment
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
 if(ierr /= CL_SUCCESS) stop 'Error: cannot allocate device memory for dictionary data.'
 
+!================================
+! the following lines were originally in the InnerProdGPU routine, but there is no need
+! to execute them each time that routine is called so we move them here...
+!================================
+! create the program
+pcnt = 1
+psource = C_LOC(csource)
+prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
+call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
+
+! build the program
+ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
+
+! get the compilation log
+ierr2 = clGetProgramBuildInfo(prog, device(ebsdnl%devid), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
+! if(cnum > 1) call Message(trim(source(1:cnum))//'test',frm='(A)')
+call CLerror_check('InnerProdGPU:clBuildProgram', ierr)
+call CLerror_check('InnerProdGPU:clGetProgramBuildInfo', ierr2)
+
+! finally get the kernel and release the program
+kernelname = 'InnerProd'
+ckernelname = kernelname
+ckernelname(10:10) = C_NULL_CHAR
+kernel = clCreateKernel(prog, C_LOC(ckernelname), ierr)
+call CLerror_check('InnerProdGPU:clCreateKernel', ierr)
+
+ierr = clReleaseProgram(prog)
+call CLerror_check('InnerProdGPU:clReleaseProgram', ierr)
+
 ! the remainder is done in the InnerProdGPU routine
+!=========================================
 
 !=========================================
 ! ALLOCATION AND INITIALIZATION OF ARRAYS
@@ -753,8 +792,7 @@ dictionaryloop: do ii = 1,cratio+1
                                     0, C_NULL_PTR, C_NULL_PTR)
         if(ierr /= CL_SUCCESS) call FatalError('clEnqueueWriteBuffer: ','cannot Enqueue write buffer.')
 
-        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,ebsdnl%devid,csource,slength,platform, &
-                          device,context,command_queue)
+        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,ebsdnl%devid,kernel,context,command_queue)
 
 ! this might be simplified later for the remainder of the patterns
         do qq = 1,ppend(jj)
@@ -864,6 +902,11 @@ dataset = SC_EBSDpatterns
 end do dictionaryloop
 
 close(itmpexpt,status='delete')
+
+! release the OpenCL kernel
+ierr = clReleaseKernel(kernel)
+call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
+
 
 ! close file and nullify pointer
 call HDF_pop(HDF_head,.TRUE.)

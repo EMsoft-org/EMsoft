@@ -21,6 +21,7 @@
 029EMTKDmaster
 030EMgamma
 031EMgammaOpenCL
+032EMgammaSTEM
 038EMECPQCmaster
 039EMECPmaster
 040EMECP

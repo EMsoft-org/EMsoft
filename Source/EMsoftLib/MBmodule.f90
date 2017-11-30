@@ -1188,7 +1188,7 @@ type(reflisttype),pointer        :: listroot
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nref,nref)
 integer(kind=irg),INTENT(IN)     :: nref
 
-complex(kind=dbl)                :: czero, ughp, uhph, weaksum
+complex(kind=dbl)                :: czero, ughp, uhph, weaksum, qg0
 real(kind=dbl)                   :: weaksgsum
 real(kind=sgl)                   :: Upz
 integer(kind=sgl)                :: ir, ic, ll(3), istat, wc
@@ -1201,6 +1201,8 @@ nullify(rlc)
 
 DynMat = czero
 
+qg0 = cell%LUTqg(0,0,0)
+
 rlr => listroot%next
 ir = 1
     do
@@ -1211,7 +1213,9 @@ ir = 1
             if (.not.associated(rlc)) EXIT
             if (ic.ne.ir) then  ! not a diagonal entry
                 ll = rlr%hkl - rlc%hkl
-                DynMat(ir,ic) = cell%LUT(ll(1),ll(2),ll(3))
+                DynMat(ir,ic) = cell%LUTqg(ll(1),ll(2),ll(3))
+            else
+                DynMat(ir,ic) = cmplx(2.D0*rlr%sg,0.D0) + qg0
             end if
             rlc => rlc%next
             ic = ic + 1
@@ -1219,6 +1223,8 @@ ir = 1
         rlr => rlr%next
         ir = ir+1
     end do
+
+DynMat = DynMat * cmplx(cPi,0.D0)
 
 end subroutine GetDynMatMaster
 
