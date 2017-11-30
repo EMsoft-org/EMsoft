@@ -242,9 +242,6 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     openCLPath = dir.absolutePath();
   }
 
-  emit stdOutputMessageGenerated(tr("thePath: %1").arg(openCLPath));
-  std::cout << "thePath: " << openCLPath.toStdString() << std::endl;
-
   if (!dir.cd("opencl"))
   {
     std::cout << "Unable to find opencl folder at path" << std::endl;
