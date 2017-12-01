@@ -62,35 +62,6 @@
 
 namespace ioConstants = EMsoftWorkbenchConstants::IOStrings;
 
-const QString csTooltipStr = "<font>When the <b>Generate</b> button is pressed, the crystal structure file with this file name will be "
-                             "loaded from the folder <b>%1</b>.  This is because the <b>EMXtalFolderpathname</b> variable in your "
-                             "configuration settings is set to that path.  Choose the <b>Edit EMsoft Configuration...</b> option in the "
-                             "menus to change this variable.</font>";
-
-const QString mcSelectBtnDisabledTooltipStr = "<font>The <b>Select</b> button is disabled because the <b>EMdatapathname</b> variable in "
-                                              "your configuration settings is set to <b>%1</b>.  The monte carlo file will be saved to "
-                                              "this path.  If you want to save the monte carlo file to an absolute file path instead, choose the "
-                                              "<b>Edit EMsoft Configuration...</b> option in the menus and set the variable to empty.</font>";
-
-const QString mcSelectBtnEnabledTooltipStr = "<font>Since the <b>EMdatapathname</b> variable in your configuration settings is currently "
-                                             "empty, we are using absolute paths to save the monte carlo file.  If you want to save the "
-                                             "monte carlo file using a prepended directory instead, choose the <b>Edit EMsoft Configuration...</b> "
-                                             "option in the menus and set the <b>EMdatapathname</b> variable to the preferred path.</font>";
-
-const QString mcAbsPathTooltipStr = "<font>When the <b>Generate</b> button is pressed, a monte carlo file will be written out to this "
-                                    "file path.  To write the file using a prepended directory instead, set the <b>EMdatapathname</b> variable in "
-                                    "your configuration settings to the preferred path.  Choose the <b>Edit EMsoft Configuration...</b> "
-                                    "option in the menus to change the <b>EMdatapathname</b> variable.</font>";
-
-const QString mcRelativePathTooltipStr =  "<font>When the <b>Generate</b> button is pressed, a monte carlo file will be written out "
-                                          "to the directory specified by the <b>EMdatapathname</b> variable in your configuration "
-                                          "settings.  To write the file to an absolute file path instead, set the <b>EMdatapathname</b> variable "
-                                          "in your configuration settings to empty.  Choose the <b>Edit EMsoft Configuration...</b> option "
-                                          "in the menus to change the <b>EMdatapathname</b> variable.</font>";
-
-const QString generateTooltipStr = "<font>Press the <b>Generate</b> button to create a monte carlo file "
-                                   "with the specified settings at <b>%1</b>.</font>";
-
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
@@ -126,31 +97,7 @@ void MonteCarloSimulation_UI::setupGui()
   // Create all signal/slot connections that will update the simulated pattern when parameters are changed
   createModificationConnections();
 
-  QString xtalParentPathName = m_Controller->getEMXtalFolderPathName();
-  QString csTooltip = tr(csTooltipStr.toStdString().c_str()).arg(xtalParentPathName);
-  csFilePathLE->setToolTip(csTooltip);
-  csAbsolutePathLabel->setText(xtalParentPathName + QDir::separator() + csFilePathLE->text());
   validateData();
-
-  QString emDataPathName = m_Controller->getEMDataPathName();
-  if (emDataPathName.isEmpty())
-  {
-    mcSelectBtn->setEnabled(true);
-    outputFileNameLabel->setText("Monte Carlo File Path");
-    mcSelectBtn->setToolTip(tr(mcSelectBtnEnabledTooltipStr.toStdString().c_str()));
-    mcFilePathLE->setToolTip(tr(mcAbsPathTooltipStr.toStdString().c_str()));
-    createMonteCarloBtn->setToolTip(tr(generateTooltipStr.toStdString().c_str()).arg(mcFilePathLE->text()));
-    mcAbsolutePathLabel->setText(mcFilePathLE->text());
-  }
-  else
-  {
-    mcSelectBtn->setDisabled(true);
-    outputFileNameLabel->setText("Monte Carlo File Name");
-    mcSelectBtn->setToolTip(tr(mcSelectBtnDisabledTooltipStr.toStdString().c_str()).arg(emDataPathName));
-    mcFilePathLE->setToolTip(tr(mcRelativePathTooltipStr.toStdString().c_str()));
-    createMonteCarloBtn->setToolTip(tr(generateTooltipStr.toStdString().c_str()).arg(emDataPathName + QDir::separator() + mcFilePathLE->text()));
-    mcAbsolutePathLabel->setText(emDataPathName + QDir::separator() + mcFilePathLE->text());
-  }
 
   // Show/Hide the correct widgets
   on_mcModeCB_currentIndexChanged(0);
@@ -201,25 +148,8 @@ void MonteCarloSimulation_UI::createModificationConnections()
   connect(mcModeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged();  });
 
   // Line Edits
-  connect(csFilePathLE, &QLineEdit::textChanged, [=] {
-    QString xtalParentPathName = m_Controller->getEMXtalFolderPathName();
-    csAbsolutePathLabel->setText(xtalParentPathName + QDir::separator() + csFilePathLE->text());
-    parametersChanged();
-  });
-  connect(mcFilePathLE, &QLineEdit::textChanged, [=] {
-    QString emDataPathName = m_Controller->getEMDataPathName();
-    if (emDataPathName.isEmpty())
-    {
-      createMonteCarloBtn->setToolTip(tr(generateTooltipStr.toStdString().c_str()).arg(mcFilePathLE->text()));
-      mcAbsolutePathLabel->setText(mcFilePathLE->text());
-    }
-    else
-    {
-      createMonteCarloBtn->setToolTip(tr(generateTooltipStr.toStdString().c_str()).arg(emDataPathName + QDir::separator() + mcFilePathLE->text()));
-      mcAbsolutePathLabel->setText(emDataPathName + QDir::separator() + mcFilePathLE->text());
-    }
-    parametersChanged();
-  });
+  connect(csFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
+  connect(mcFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -236,36 +166,23 @@ void MonteCarloSimulation_UI::createWidgetConnections()
 
   connect(m_Controller, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
 
-  connect(emSoftApp, &EMsoftApplication::emSoftConfigurationChanged, [=] {
-    QString xtalParentPathName = m_Controller->getEMXtalFolderPathName();
-    QString csTooltip = tr(csTooltipStr.toStdString().c_str()).arg(xtalParentPathName);
-    csFilePathLE->setToolTip(csTooltip);
-    csAbsolutePathLabel->setText(xtalParentPathName + QDir::separator() + csFilePathLE->text());
-    QString emDataPathName = m_Controller->getEMDataPathName();
-    if (emDataPathName.isEmpty())
+  connect(csSelectBtn, &QPushButton::clicked, [=] {
+    QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
+    QString filePath = FileIOTools::GetOpenPathFromDialog("Select Input File", "Crystal Structure File (*.xtal);;All Files (*.*)", proposedFile);
+    if(true == filePath.isEmpty())
     {
-      mcSelectBtn->setEnabled(true);
-      outputFileNameLabel->setText("Monte Carlo File Path");
-      mcSelectBtn->setToolTip(tr(mcSelectBtnEnabledTooltipStr.toStdString().c_str()));
-      mcFilePathLE->setToolTip(tr(mcAbsPathTooltipStr.toStdString().c_str()));
-      createMonteCarloBtn->setToolTip(tr(generateTooltipStr.toStdString().c_str()).arg(mcFilePathLE->text()));
-      mcAbsolutePathLabel->setText(mcFilePathLE->text());
+      return;
     }
-    else
-    {
-      mcSelectBtn->setDisabled(true);
-      outputFileNameLabel->setText("Monte Carlo File Name");
-      mcSelectBtn->setToolTip(tr(mcSelectBtnDisabledTooltipStr.toStdString().c_str()).arg(emDataPathName));
-      mcFilePathLE->setToolTip(tr(mcRelativePathTooltipStr.toStdString().c_str()));
-      createMonteCarloBtn->setToolTip(tr(generateTooltipStr.toStdString().c_str()).arg(emDataPathName + QDir::separator() + mcFilePathLE->text()));
-      mcAbsolutePathLabel->setText(emDataPathName + QDir::separator() + mcFilePathLE->text());
-    }
-    validateData();
+
+    filePath = QDir::toNativeSeparators(filePath);
+    emSoftApp->setOpenDialogLastDirectory(filePath);
+
+    csFilePathLE->setText(filePath);
   });
 
   connect(mcSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";
-    QString filePath = FileIOTools::GetSavePathFromDialog("Select Monte Carlo File", "Monte Carlo File (*.h5);;All Files (*.*)", proposedFile);
+    QString filePath = FileIOTools::GetSavePathFromDialog("Select Output File", "Monte Carlo File (*.h5);;All Files (*.*)", proposedFile);
     if(true == filePath.isEmpty())
     {
       return;
@@ -584,8 +501,8 @@ MonteCarloSimulationController::MonteCarloSimulationData MonteCarloSimulation_UI
   data.gpuPlatformID = gpuPlatformCB->currentIndex();
   data.gpuDeviceID = gpuDeviceCB->currentIndex();
   data.globalWorkGroupSize = globalWorkGroupSizeSB->value();
-  data.inputCrystalFileName = csFilePathLE->text();
-  data.outputFileName = mcFilePathLE->text();
+  data.inputFilePath = csFilePathLE->text();
+  data.outputFilePath = mcFilePathLE->text();
   return data;
 }
 

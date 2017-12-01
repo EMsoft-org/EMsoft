@@ -147,7 +147,6 @@ void MacEMsoftApplication::createGlobalMenu()
   QAction* actionClearRecentFiles = menuItems->getActionClearRecentFiles();
   QAction* actionExit = menuItems->getActionExit();
   QAction* actionEditStyle = menuItems->getActionEditStyle();
-  QAction* actionEditConfig = menuItems->getActionEditConfig();
 
   m_GlobalMenu = QSharedPointer<QMenuBar>(new QMenuBar());
 
@@ -167,7 +166,6 @@ void MacEMsoftApplication::createGlobalMenu()
 
   // Create Edit Menu
   m_GlobalMenu->addMenu(m_MenuEdit);
-  m_MenuEdit->addAction(actionEditConfig);
   m_MenuEdit->addAction(actionEditStyle);
 
   // Create View Menu

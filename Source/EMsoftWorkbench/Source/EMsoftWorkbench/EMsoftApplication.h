@@ -87,7 +87,6 @@ protected slots:
   void on_actionSaveAs_triggered();
 
   void on_actionEditStyle_triggered();
-  void on_actionEditConfig_triggered();
 
   void on_actionClearRecentFiles_triggered();
   void on_actionCloseWindow_triggered();
@@ -105,8 +104,6 @@ private:
   StyleSheetEditor* styleSheetEditor;
 
   EMsoftWorkbench_UI* newInstanceFromFile(const QString &filePath);
-
-  void initializeEMsoftConfig();
 
   EMsoftApplication(const EMsoftApplication&); // Copy Constructor Not Implemented
   void operator=(const EMsoftApplication&);       // Operator '=' Not Implemented
