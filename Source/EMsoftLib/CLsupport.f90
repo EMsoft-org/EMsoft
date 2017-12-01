@@ -499,7 +499,7 @@ ctx_props(3) = 0
 context = clCreateContext(C_LOC(ctx_props), numd, C_LOC(device),C_NULL_FUNPTR, C_NULL_PTR, ierr)
 call CLerror_check('CLinit_PDCCQ:clCreateContext',ierr)
 
-cmd_queue_props = 0
+cmd_queue_props = CL_QUEUE_PROFILING_ENABLE
 command_queue = clCreateCommandQueue(context, device(selnumd), cmd_queue_props, ierr)
 call CLerror_check('CLinit_PDCCQ:clCreateCommandQueue',ierr)
 
