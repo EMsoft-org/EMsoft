@@ -82,8 +82,8 @@ class MonteCarloSimulationController : public QObject
         int gpuPlatformID;
         int gpuDeviceID;
         int globalWorkGroupSize;
-        QString inputCrystalFileName;
-        QString outputFileName;
+        QString inputFilePath;
+        QString outputFilePath;
     };
 
     enum class StringType : EnumType
@@ -126,18 +126,6 @@ class MonteCarloSimulationController : public QObject
      */
     QStringList getDeviceInfo(int platformID);
 
-    /**
-     * @brief getEMXtalFolderPathName
-     * @return
-     */
-    QString getEMXtalFolderPathName();
-
-    /**
-     * @brief getEMDataPathName
-     * @return
-     */
-    QString getEMDataPathName();
-
   signals:
     void warningMessageGenerated(const QString &msg);
     void errorMessageGenerated(const QString &msg);
@@ -149,7 +137,6 @@ class MonteCarloSimulationController : public QObject
     const int                   m_NumberOfStrings = 40;
 
     XtalFileReader*             m_XtalReader = nullptr;
-    QString                     m_CurrentFilePath = "";
     QString                     m_StartTime = "";
 
     Int32ArrayType::Pointer     m_GenericAccumePtr;

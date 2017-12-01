@@ -102,7 +102,6 @@ QMenuBar* StandardEMsoftApplication::getSIMPLViewMenuBar()
   QMenu* menuRecentFiles = menuItems->getMenuRecentFiles();
   QAction* actionClearRecentFiles = menuItems->getActionClearRecentFiles();
   QAction* actionExit = menuItems->getActionExit();
-  QAction* actionEditConfig = menuItems->getActionEditConfig();
   QAction* actionEditStyle = menuItems->getActionEditStyle();
 
   // Create File Menu
@@ -121,7 +120,6 @@ QMenuBar* StandardEMsoftApplication::getSIMPLViewMenuBar()
 
   // Create Edit Menu
   menuBar->addMenu(menuEdit);
-  menuEdit->addAction(actionEditConfig);
   menuBar->addAction(actionEditStyle);
 
   // Create View Menu

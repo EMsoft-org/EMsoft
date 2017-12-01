@@ -54,13 +54,6 @@
 
 namespace ioConstants = EMsoftWorkbenchConstants::IOStrings;
 
-const QString csTooltipStr = "<font>When the <b>Generate</b> button is pressed, a crystal structure file with this file name will be stored in "
-                             "the folder <b>%1</b>.  This is because the <b>EMXtalFolderpathname</b> variable in your configuration settings is set to "
-                             "that path.  Choose the <b>Edit EMsoft Configuration...</b> option in the menus to change this variable.</font>";
-
-const QString generateTooltipStr = "<font>Press the <b>Generate</b> button to create a crystal structure file "
-                                   "with the specified settings at <b>%1</b>.</font>";
-
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
@@ -108,12 +101,6 @@ void CrystalStructureCreation_UI::setupGui()
   gammaLE->hide();
   spaceGrpNumberSB->setRange(195, 230);
 
-  QString xtalParentPathName = m_Controller->getEMXtalFolderPathName();
-  QString csTooltip = tr(csTooltipStr.toStdString().c_str()).arg(xtalParentPathName);
-  QString generateTooltip = tr(generateTooltipStr.toStdString().c_str()).arg(xtalParentPathName + QDir::separator() + csFilePathLE->text());
-  csFilePathLE->setToolTip(csTooltip);
-  createCrystalStructureBtn->setToolTip(generateTooltip);
-  csAbsolutePathLabel->setText(xtalParentPathName + QDir::separator() + csFilePathLE->text());
   validateData();
 }
 
@@ -162,13 +149,7 @@ void CrystalStructureCreation_UI::createModificationConnections()
   connect(spaceGrpSettingCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged(); });
 
   // Line Edits
-  connect(csFilePathLE, &QLineEdit::textChanged, [=] {
-    QString xtalParentPathName = m_Controller->getEMXtalFolderPathName();
-    QString generateTooltip = tr(generateTooltipStr.toStdString().c_str()).arg(xtalParentPathName + QDir::separator() + csFilePathLE->text());
-    createCrystalStructureBtn->setToolTip(generateTooltip);
-    csAbsolutePathLabel->setText(xtalParentPathName + QDir::separator() + csFilePathLE->text());
-    parametersChanged();
-  });
+  connect(csFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -189,14 +170,16 @@ void CrystalStructureCreation_UI::createWidgetConnections()
   connect(m_Controller, &CrystalStructureCreationController::warningMessageGenerated, this, &CrystalStructureCreation_UI::notifyWarningMessage);
   connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(appendToStdOut(const QString &)));
 
-  connect(emSoftApp, &EMsoftApplication::emSoftConfigurationChanged, [=] {
-    QString xtalParentPathName = m_Controller->getEMXtalFolderPathName();
-    QString csTooltip = tr(csTooltipStr.toStdString().c_str()).arg(xtalParentPathName);
-    QString generateTooltip = tr(generateTooltipStr.toStdString().c_str()).arg(xtalParentPathName + QDir::separator() + csFilePathLE->text());
-    csFilePathLE->setToolTip(csTooltip);
-    createCrystalStructureBtn->setToolTip(generateTooltip);
-    csAbsolutePathLabel->setText(xtalParentPathName + QDir::separator() + csFilePathLE->text());
-    validateData();
+  connect(selectOutputFileBtn, &QPushButton::clicked, [=] {
+    QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
+    QString filePath = FileIOTools::GetSavePathFromDialog("Select Output File", "Crystal Structure File (*.xtal);;All Files (*.*)", proposedFile);
+    if(true == filePath.isEmpty())
+    {
+      return;
+    }
+
+    filePath = QDir::toNativeSeparators(filePath);
+    csFilePathLE->setText(filePath);
   });
 }
 
@@ -536,7 +519,7 @@ CrystalStructureCreationController::CrystalStructureCreationData CrystalStructur
   data.c = cLE->text().toDouble();
   data.crystalSystem = static_cast<CrystalStructureCreationController::CrystalSystem>(csCB->currentIndex());
   data.gamma = gammaLE->text().toDouble();
-  data.outputFileName = csFilePathLE->text();
+  data.outputFilePath = csFilePathLE->text();
   data.spaceGroupNumber = spaceGrpNumberSB->value();
   data.spaceGroupSetting = spaceGrpSettingCB->currentText().toInt();
 

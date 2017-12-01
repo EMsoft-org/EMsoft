@@ -65,7 +65,6 @@ EMsoftMenuItems::~EMsoftMenuItems()
   delete m_ActionClearRecentFiles;
   delete m_ActionExit;
   delete m_ActionEditStyle;
-  delete m_ActionEditConfig;
 
   // View Menu
 //  delete m_ActionShowFilterLibrary;
@@ -105,7 +104,6 @@ void EMsoftMenuItems::createActions()
   m_ActionSave = new QAction("Save Workbench", this);
   m_ActionSaveAs = new QAction("Save Workbench As...", this);
   m_ActionEditStyle = new QAction("Edit Style...", this);
-  m_ActionEditConfig = new QAction("Edit EMsoft Configuration...", this);
 
   m_ActionOpen->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_O));
 #if defined(Q_OS_WIN)
@@ -116,6 +114,5 @@ void EMsoftMenuItems::createActions()
   m_ActionSave->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
   m_ActionSaveAs->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_S));
 
-  m_ActionEditConfig->setShortcut(QKeySequence(Qt::ALT + Qt::Key_C));
   m_ActionEditStyle->setShortcut(QKeySequence(Qt::ALT + Qt::Key_S));
 }
