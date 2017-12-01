@@ -71,7 +71,7 @@ class CrystalStructureCreationController : public QObject
         double gamma;
         int spaceGroupNumber;
         int spaceGroupSetting;
-        QString outputFileName;
+        QString outputFilePath;
         std::vector<std::vector<double> > atomCoordinates;
     };
 
@@ -87,12 +87,6 @@ class CrystalStructureCreationController : public QObject
      * @return
      */
     bool validateCrystalStructureValues(CrystalStructureCreationController::CrystalStructureCreationData data);
-
-    /**
-     * @brief getEMXtalFolderPathName
-     * @return
-     */
-    QString getEMXtalFolderPathName();
 
   signals:
     void errorMessageGenerated(const QString &msg);

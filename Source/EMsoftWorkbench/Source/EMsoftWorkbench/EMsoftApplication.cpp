@@ -63,7 +63,6 @@
 #include "EMsoftLib/EMsoftStringConstants.h"
 
 #include "EMsoftWorkbench/StyleSheetEditor.h"
-#include "EMsoftWorkbench/InitDialog.h"
 #include "EMsoftWorkbench/EMsoftWorkbench_UI.h"
 
 // -----------------------------------------------------------------------------
@@ -84,7 +83,6 @@ EMsoftApplication::EMsoftApplication(int& argc, char** argv) :
   connect(menuItems->getActionClearRecentFiles(), SIGNAL(triggered()), this, SLOT(on_actionClearRecentFiles_triggered()));
   connect(menuItems->getActionAboutEMsoftWorkbench(), SIGNAL(triggered()), this, SLOT(on_actionAboutEMsoftWorkbench_triggered()));
   connect(menuItems->getActionEditStyle(), SIGNAL(triggered()), this, SLOT(on_actionEditStyle_triggered()));
-  connect(menuItems->getActionEditConfig(), SIGNAL(triggered()), this, SLOT(on_actionEditConfig_triggered()));
 
   // Connection to update the recent files list on all windows when it changes
   QtSRecentFileList* recentsList = QtSRecentFileList::instance();
@@ -110,12 +108,6 @@ EMsoftApplication::~EMsoftApplication()
 // -----------------------------------------------------------------------------
 bool EMsoftApplication::initialize(int argc, char* argv[])
 {
-  Q_UNUSED(argc)
-  Q_UNUSED(argv)
-
-  // Initialize the EMsoft config
-  initializeEMsoftConfig();
-
   if (argc == 2)
   {
     // Open EMsoftWorkbench from a compatible file
@@ -141,71 +133,6 @@ bool EMsoftApplication::initialize(int argc, char* argv[])
   styleSheetEditor = new StyleSheetEditor();
 
   return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::initializeEMsoftConfig()
-{
-  QFileInfo fi(QString("%1/.config/EMsoft/EMsoftConfig.json").arg(QDir::homePath()));
-  if(!fi.exists())
-  {
-    QDir dir;
-    QString emPlayPath = QString("%1/%2").arg(QDir::homePath()) .arg("EMPlay");
-    emPlayPath = QDir::toNativeSeparators(emPlayPath);
-    dir.mkpath(emPlayPath);
-
-    QString emTmpPath = QString("%1/%2").arg(QDir::homePath()) .arg("EMPlay/Temp");
-    emTmpPath = QDir::toNativeSeparators(emTmpPath);
-    dir.mkpath(emTmpPath);
-
-    QString xtalFolderPath = QString("%1/%2").arg(emPlayPath) .arg("XtalFolder");
-    xtalFolderPath = QDir::toNativeSeparators(xtalFolderPath);
-    dir.mkpath(xtalFolderPath);
-
-    QString userName = qgetenv("USER");
-    if (userName.isEmpty()) {
-      userName = qgetenv("USERNAME");
-    }
-
-    QJsonObject s;
-    s[EMsoft::Constants::EMsoftpathname] = "";
-    s[EMsoft::Constants::EMdatapathname] = "";
-    s[EMsoft::Constants::EMtmppathname] = emTmpPath;
-    s[EMsoft::Constants::EMXtalFolderpathname] = xtalFolderPath;
-    s[EMsoft::Constants::EMsoftLibraryLocation] = "";
-    s[EMsoft::Constants::Release] = "";
-    s[EMsoft::Constants::Develop] = "";
-    s[EMsoft::Constants::UserName] = userName;
-    s[EMsoft::Constants::UserEmail] = "";
-    s[EMsoft::Constants::UserLocation] = "";
-
-    QJsonDocument jsonDoc(s);
-    QByteArray bytes = jsonDoc.toJson();
-
-    dir.mkpath(fi.absolutePath());
-
-    QFile envFile(fi.absoluteFilePath());
-    envFile.open(QIODevice::WriteOnly);
-    if(envFile.isOpen())
-    {
-      envFile.write(bytes);
-      envFile.close();
-
-      int initRet = QMessageBox::information(nullptr, tr("EMsoft Initialization"),
-                                     tr("EMsoftWorkbench was not able to find an initialization of EMsoft, so one has been generated automatically.\n\n"
-                                        "Would you like to edit the initialization variables?"),
-                                     QMessageBox::No | QMessageBox::Yes,
-                                     QMessageBox::Yes);
-
-      if (initRet == QMessageBox::Yes)
-      {
-        InitDialog* dialog = new InitDialog();    // This dialog is cleaned up within one of its own slots
-        dialog->exec();
-      }
-    }
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -371,16 +298,6 @@ void EMsoftApplication::on_actionEditStyle_triggered()
   styleSheetEditor->setGeometry(40, 40, 500, 800);
   styleSheetEditor->show();
   styleSheetEditor->activateWindow();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionEditConfig_triggered()
-{
-  InitDialog* dialog = new InitDialog();    // This dialog is cleaned up within one of its own slots
-  connect(dialog, &InitDialog::emSoftConfigurationChanged, this, &EMsoftApplication::emSoftConfigurationChanged);
-  dialog->exec();
 }
 
 // -----------------------------------------------------------------------------

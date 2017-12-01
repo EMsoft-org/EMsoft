@@ -840,9 +840,10 @@ end subroutine EMsoftCgetECPatterns
 !> @date 04/13/16 MDG 1.2 correction to accum_z array size due to changes in calling DREAM.3D filter
 !> @date 04/18/16 MDG 1.3 increased number of entries in ipar, fpar for compatibility with EMsoftCgetEBSDmaster routine
 !> @date 04/28/16 MDG 1.4 corrected error in indexing of init_seeds array; caused DREAM.3D to crash randomly
+!> @date 11/09/17 MDG 2.0 added spar string array to pass EMsoft configuration strings into the routine
 !--------------------------------------------------------------------------
-recursive subroutine EMsoftCgetMCOpenCL(ipar, fpar, atompos, atomtypes, latparm, accum_e, accum_z, cproc, &
-objAddress, inputCLPath, cancel) bind(c, name='EMsoftCgetMCOpenCL')    ! this routine is callable from a C/C++ program
+recursive subroutine EMsoftCgetMCOpenCL(ipar, fpar, spar, atompos, atomtypes, latparm, accum_e, accum_z, cproc, &
+objAddress, cancel) bind(c, name='EMsoftCgetMCOpenCL')    ! this routine is callable from a C/C++ program
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCgetMCOpenCL
 
 ! ipar components
@@ -877,8 +878,14 @@ objAddress, inputCLPath, cancel) bind(c, name='EMsoftCgetMCOpenCL')    ! this ro
 ! fpar(10): real(kind=dbl)          :: sigstep
 ! other entries are not used
 
+! spar components
+! this routine needs the following parameters to be set:
+! spar(23): OpenCLpathname
+! spar(26): Randomseedfilename
+! 
 
 use local
+use configmod
 use constants
 use crystal
 use constants
@@ -894,8 +901,10 @@ IMPLICIT NONE
 
 integer(c_int32_t),PARAMETER            :: nipar=40
 integer(c_int32_t),PARAMETER            :: nfpar=40
+integer(c_int32_t),PARAMETER            :: nspar=40
 integer(c_int32_t),INTENT(IN)           :: ipar(nipar)
 real(kind=sgl),INTENT(IN)               :: fpar(nfpar)
+character(kind=c_char, len=1), target, INTENT(IN) :: spar(nspar*fnlen)
 real(kind=sgl),INTENT(IN)               :: atompos(ipar(9),5)
 integer(kind=irg),INTENT(IN)            :: atomtypes(ipar(9))
 real(kind=sgl),INTENT(IN)               :: latparm(6)
@@ -903,7 +912,6 @@ integer(kind=irg),INTENT(OUT)           :: accum_e(ipar(12),-ipar(1):ipar(1),-ip
 integer(kind=irg),INTENT(OUT)           :: accum_z(ipar(12),ipar(13),-ipar(16):ipar(16),-ipar(16):ipar(16))
 TYPE(C_FUNPTR), INTENT(IN), VALUE       :: cproc
 integer(c_size_t),INTENT(IN), VALUE     :: objAddress
-character(kind=c_char, len=1), dimension(512), INTENT(IN) :: inputCLPath
 character(fnlen)                        :: clPath=''
 character(len=1),INTENT(IN)             :: cancel
 
@@ -956,28 +964,28 @@ integer(c_size_t)                       :: cnum=0, cnuminfo=0
 character(fnlen)                        :: instring='', dataname='', fname='', sourcefile=''
 PROCEDURE(ProgressCallBack2), POINTER   :: proc
 character(250),target                   :: currentDir=''
-character(fnlen)                        :: emmcPath=''
+character(fnlen)                        :: emmcPath='', outname=''
 character(fnlen)                        :: randomSeedPath=''
 integer(c_int32_t),target               :: filestat=0
-INTEGER*4                             getcwd, status
-character*256                          dirname
-CHARACTER(LEN=30)                     :: Format=''
+INTEGER(kind=irg)                       :: getcwd, status
+CHARACTER(LEN=30)                       :: Format=''
+
+! parameters to deal with the input string array spar
+type(ConfigStructureType)               :: CS
 
 nullify(proc)
 
 ! link the proc procedure to the cproc argument
 CALL C_F_PROCPOINTER (cproc, proc)
 
-! since this routine needs to read a .cl file, we need to make sure that the pathnames are 
-! properly set...
-call EMsoft_path_init
+! the calling program passes a c-string array spar that we need to convert to the 
+! standard EMsoft config structure for use inside this routine
+call C2F_configuration_strings(nspar, C_LOC(spar), CS)
 
-! This is a handy bit of code to have since it helps figure out where the application
-! that is calling this code is being run from. When the opencl or resources directories
-! can not be found this bit can help
-! status = getcwd( dirname )
-! write(*,*) dirname
-       
+! code used for testing
+!outname = '/Users/mdg/Files/EMPlay/Test/WBMCoutput.txt'
+!call print_EMsoft_configuration_strings(CS, outname)
+
 ! the following is necessitated by the fact that none of this code may 
 ! depend on HDF5 routines, so we need to cut-and-paste from various 
 ! other library routines to set things up so that we can compute the 
@@ -1056,8 +1064,6 @@ num_el = int(ipar(3))  ! no. of electron simulation by one work item
 num_max = globalworkgrpsz*globalworkgrpsz*num_el ! total simulation in one loop
 totnum_el = ipar(4) * ipar(5) ! total number of electrons to simulate
 globalsize = (/ globalworkgrpsz, globalworkgrpsz /)
-!localsize = (/ globalworkgrpsz, globalworkgrpsz /)
-!localsize = (/ globalworkgrpsz/10, globalworkgrpsz/10 /)
 numEbins =  int(ipar(12))
 numzbins =  int(ipar(13))
 nx = int(ipar(1))
@@ -1085,17 +1091,8 @@ call CLinit_PDCCQ(platform, nump, int(ipar(7)), device, numd, int(ipar(6)), info
 ! BUILD THE KERNEL
 !=====================
 ! read the source file
-clPath = " "
-loop_string: do i=1, fnlen
-  if ( inputCLPath (i) == c_null_char ) then
-     exit loop_string
-  else
-     clPath (i:i) = inputCLPath (i)
-  end if
-end do loop_string
-
-sourcefile='/opencl/EMMC.cl'
-emmcPath=trim(clPath)//trim(sourcefile)
+sourcefile='/EMMC.cl'
+emmcPath=trim(CS%OpenCLpathname)//trim(sourcefile)
 emmcPath=EMsoft_toNativePath(emmcPath)
 
 ! sourcefile = 'EMMC.cl'
@@ -1132,10 +1129,8 @@ kernel = clCreateKernel(prog, C_LOC(kernelname), ierr)
 
 ierr = clReleaseProgram(prog)
 ! if(ierr /= CL_SUCCESS) call FatalError("clReleaseProgram: ",'Error releasing program.')
-sourcefile='/'//EMsoft_getRandomseedfilename()
-randomSeedPath=trim(clPath)//trim(sourcefile)
 
-open(unit = iunit, file = trim(EMsoft_toNativePath(randomSeedPath)), form='unformatted', status='old')
+open(unit = iunit, file = trim(EMsoft_toNativePath(CS%Randomseedfilename)), form='unformatted', status='old')
 read(iunit) nseeds
 allocate(rnseeds(nseeds))
 read(iunit) rnseeds

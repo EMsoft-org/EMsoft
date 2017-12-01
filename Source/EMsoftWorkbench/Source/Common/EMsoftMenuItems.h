@@ -73,7 +73,6 @@ class EMsoftMenuItems : public QObject
     SIMPL_INSTANCE_PROPERTY(QAction*, ActionExit)
 
     // Edit Menu
-    SIMPL_INSTANCE_PROPERTY(QAction*, ActionEditConfig)
     SIMPL_INSTANCE_PROPERTY(QAction*, ActionEditStyle)
 
     // View Menu

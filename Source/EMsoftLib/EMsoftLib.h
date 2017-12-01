@@ -80,6 +80,7 @@ void EMsoftCgetECPatterns
 * Monte Carlo calculations:
 * @param ipar array with integer input parameters
 * @param fpar array with float input parameters
+* @param spar array with string parameters
 * @param atompos atom position, site occupations and Debye-Waller factors
 * @param atomtypes atom numbers
 * @param latparm lattice parameters
@@ -90,9 +91,9 @@ void EMsoftCgetECPatterns
 * @param cancel boolean to trigger cancellation of computation
 */
 void EMsoftCgetMCOpenCL
-        (int32_t* ipar, float* fpar, float* atompos, int32_t* atomtypes, 
+        (int32_t* ipar, float* fpar, char* spar, float* atompos, int32_t* atomtypes, 
         float* latparm, int32_t* accum_e, int32_t* accum_z, 
-        ProgCallBackType2 callback, size_t object, char* resourceLoc, bool* cancel);
+        ProgCallBackType2 callback, size_t object, bool* cancel);
 
 /**
 * EBSD master pattern calculations:
