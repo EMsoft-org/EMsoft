@@ -1256,4 +1256,11 @@ type MRCstruct
     character(800)          :: labels ! string(' ',format='(A800)') $ ; 10 labels of 80 characters each
 end type MRCstruct
 
+type sggamma
+    real(kind=dbl)          :: sg     ! excitation error for a g vector
+    integer(kind=irg)       :: hkl(3) ! g vector associated with sg
+    complex(kind=dbl)       :: expsg  ! exp(2*cPi*sg + q0)
+    type(sggamma),pointer   :: next   ! pointer to next element
+end type sggamma
+
 end module typedefs

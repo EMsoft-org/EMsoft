@@ -1215,7 +1215,7 @@ ir = 1
                 ll = rlr%hkl - rlc%hkl
                 DynMat(ir,ic) = cell%LUTqg(ll(1),ll(2),ll(3))
             else
-                DynMat(ir,ic) = cmplx(2.D0*rlr%sg,0.D0) + qg0
+                DynMat(ir,ic) = cmplx(2.D0*rlc%sg,0.D0) + qg0
             end if
             rlc => rlc%next
             ic = ic + 1
