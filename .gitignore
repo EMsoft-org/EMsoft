@@ -24,3 +24,93 @@ Support/Scripts/GMT/gmt.history
 .ctags
 .vscode
 /ExternalProjects
+
+
+# ignore object code
+*.o
+
+/project-file.md
+
+# ignore pro.swp files
+*.pro.swp
+*.swp
+
+**/*.*~
+
+/Support/SDK_Build_Scripts/OSX_Build_Scripts/SDK_Configuration.conf
+
+*.sav
+*.psd
+*.save
+*.nb
+*.pl
+
+/MRC/
+/STUFF/
+/testfolder/
+/IFORT/
+/examples/
+
+IDL/**/*.sav
+IDL/pro/template
+IDL/pro_todo
+IDL/various
+
+# ignore OS files
+.DS_Store
+.DS_Store?
+
+*.atools
+
+# libs, makefiles, editor backup files, etc
+*.a
+*.amake
+*.amake.bk
+*.f90.bak
+*.xtal
+
+# DOxygen files
+/doc/
+/dot/
+
+# IDL Virtual Machine
+/IDL/VMapps/
+/IDL/VMappsPC/
+
+# figures for manuals
+*.tiff
+*.jpg
+*.ai
+
+# latex-generated files
+*.dvi
+*.bbl
+*.sty
+*.aux
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.run.xml
+*.synctex.gz
+*.toc
+*.pdf
+*.out
+*.synctex.gz(busy)
+
+# rksuite
+/src/rksuite_90/
+
+# IDL VM
+
+#lib030414 and other temp test folders #PGC
+
+# .mod’s and .o’s
+*.mod
+*.o
+/IDL/README.txt
+/resources/*.pro
+/src/local.f90
+/src_programs/*.c
+/src_programs/go*
+/manuals_todo/Eshelby
