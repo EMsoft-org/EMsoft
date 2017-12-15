@@ -71,8 +71,8 @@ class MasterPatternSimulationController : public QObject
         int betheParametersY;
         int betheParametersZ;
         int numOfOpenMPThreads;
-        QString inputMonteCarloFileName;
-        QString outputFileName;
+        QString inputFilePath;
+        QString outputFilePath;
     };
 
     /**
@@ -102,12 +102,6 @@ class MasterPatternSimulationController : public QObject
      */
     int getNumCPUCores();
 
-    /**
-     * @brief getEMDataPathName
-     * @return
-     */
-    QString getEMDataPathName();
-
 #if 0
     /**
      * @brief getPlatformInfo
@@ -132,7 +126,6 @@ class MasterPatternSimulationController : public QObject
   private:
     MonteCarloFileReader*             m_MonteCarloReader = nullptr;
 
-    QString                           m_CurrentFilePath = "";
     QString                           m_StartTime = "";
 
     Int32ArrayType::Pointer           m_GenericAccumzPtr;

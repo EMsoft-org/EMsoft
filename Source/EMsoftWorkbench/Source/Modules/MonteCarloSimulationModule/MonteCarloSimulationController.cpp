@@ -93,9 +93,11 @@ MonteCarloSimulationController::MonteCarloSimulationController(QObject* parent) 
   QObject(parent),
   m_Cancel(false)
 {
-
   m_XtalReader = new XtalFileReader();
   connect(m_XtalReader, &XtalFileReader::errorMessageGenerated, [=] (const QString &msg) { emit errorMessageGenerated(msg); });
+
+  m_SPar = new char[m_NumberOfStrings*m_StringSize];
+  std::memset(m_SPar, '\0', m_NumberOfStrings*m_StringSize);
 }
 
 // -----------------------------------------------------------------------------
@@ -156,21 +158,18 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   //        saveFile.write(saveDoc.toJson());
   //    }
 
-  QString emXtalFolderPathName = getEMXtalFolderPathName();
-  QString emXtalFilePath = emXtalFolderPathName + QDir::separator() + simData.inputCrystalFileName;
+  QString inputFilePath = simData.inputFilePath;
 
-  QFileInfo fi(emXtalFilePath);
+  QFileInfo fi(inputFilePath);
   if (fi.suffix().compare("") == 0)
   {
-    emXtalFilePath.append(".xtal");
+    inputFilePath.append(".xtal");
   }
 
   // If we couldn't read the crystal structure file, then bail
-  if (!m_XtalReader->openFile(emXtalFilePath)) {
+  if (!m_XtalReader->openFile(inputFilePath)) {
     return;
   }
-
-  m_CurrentFilePath = emXtalFilePath;
 
   Int32ArrayType::Pointer iParPtr = getIParPtr(simData);
   if (iParPtr == Int32ArrayType::NullPointer()) {
@@ -212,7 +211,11 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
 
   QString appDirPath = QCoreApplication::applicationDirPath();
   QDir dir = QDir(appDirPath);
-  QString thePath;
+
+  emit stdOutputMessageGenerated(tr("dir: %1").arg(dir.absolutePath()));
+  std::cout << "dir: " << dir.absolutePath().toStdString() << std::endl;
+
+  QString openCLPath =  dir.absolutePath(); // Initialize to SOMETHING other than empty.
 
   // Look to see if we are inside an .app package or inside the 'tools' directory
 #if defined(Q_OS_MAC)
@@ -221,7 +224,7 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     dir.cdUp();
     if (dir.cd("bin"))
     {
-      thePath = dir.absolutePath();
+      openCLPath = dir.absolutePath();
     }
     else
     {
@@ -230,16 +233,17 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     }
   }
 #endif
-
-  if(dir.dirName() == "Bin")
+  // We use Bin for development builds and bin for deployments
+  if(dir.dirName() == "Bin" || dir.dirName() == "bin")
   {
-    thePath = dir.absolutePath();
+    openCLPath = dir.absolutePath();
   }
 
   if (!dir.cd("opencl"))
   {
+    std::cout << "Unable to find opencl folder at path" << std::endl;
     // We are not able to find the opencl folder, so throw an error and bail
-    errorMessageGenerated(tr("Unable to find opencl folder at path '%1'").arg(thePath));
+    errorMessageGenerated(tr("Unable to find opencl folder at path '%1'").arg(openCLPath));
     return;
   }
   else
@@ -248,10 +252,15 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     dir.cdUp();
   }
 
+  QString randomSeedsPath = openCLPath;
+
+  openCLPath.append(QDir::separator());
+  openCLPath.append("opencl");
+
   if (!dir.cd("resources"))
   {
     // We are not able to find the resources folder, so throw an error and bail
-    errorMessageGenerated(tr("Unable to find resources folder at path '%1'").arg(thePath));
+    errorMessageGenerated(tr("Unable to find resources folder at path '%1'").arg(randomSeedsPath));
     return;
   }
   else
@@ -260,17 +269,40 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     dir.cdUp();
   }
 
-  static const size_t k_BufferSize = 255;
-  char string[k_BufferSize];
+  randomSeedsPath.append(QDir::separator());
+  randomSeedsPath.append("resources");
+  randomSeedsPath.append(QDir::separator());
+  randomSeedsPath.append("RandomSeeds.data");
 
-  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
+//  static const size_t k_BufferSize = 255;
+//  char string[k_BufferSize];
 
+//  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
+
+  if (setSParValue(StringType::OpenCLFolder, openCLPath) == false)
+  {
+    return;
+  }
+
+  if (setSParValue(StringType::RandomSeedsFile, randomSeedsPath) == false)
+  {
+    return;
+  }
+
+//  for (int i = 0; i < 40; i++)
+//  {
+//    for (int j = 0; j < 512; j++)
+//    {
+//      printf("%x ", m_SPar[i*512 + j]);
+//    }
+//    printf("\n");
+//  }
 
   EMsoftCgetMCOpenCL(
-      iParPtr->getPointer(0), fParPtr->getPointer(0),
+      iParPtr->getPointer(0), fParPtr->getPointer(0), m_SPar,
       atomPos.data(), atomTypes.data(), latParm.data(),
       m_GenericAccumePtr->getPointer(0), m_GenericAccumzPtr->getPointer(0),
-      &MonteCarloSimulationControllerProgress, m_InstanceKey, string, &m_Cancel);
+      &MonteCarloSimulationControllerProgress, m_InstanceKey, &m_Cancel);
 
   s_ControllerInstances.remove(m_InstanceKey);
 
@@ -290,9 +322,26 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   else
   {
     m_XtalReader->closeFile();
-    m_CurrentFilePath.clear();
     emit stdOutputMessageGenerated("Monte Carlo File Generation was successfully canceled");
   }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool MonteCarloSimulationController::setSParValue(StringType type, const QString &value)
+{
+  if (value.size() > m_StringSize)
+  {
+    errorMessageGenerated(tr("The string '%1' is longer than 512 characters").arg(value));
+    return false;
+  }
+
+  int index = static_cast<int>(type);
+
+  char* valueArray = value.toLatin1().data();
+  std::memcpy(m_SPar + (index*m_StringSize), valueArray, value.size());
+  return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -348,11 +397,11 @@ void MonteCarloSimulationController::initializeData(MonteCarloSimulationControll
     // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
     cDims.resize(1);
 
-    cDims[0] = data.inputCrystalFileName.length();
+    cDims[0] = data.inputFilePath.length();
     m_GenericXtalPtr = UInt8ArrayType::CreateArray(1, cDims, "genericXtal");
     m_GenericXtalPtr->setInitValue(0);
 
-    cDims[0] = data.outputFileName.length();
+    cDims[0] = data.outputFilePath.length();
     m_GenericMCPtr = UInt8ArrayType::CreateArray(1, cDims, "genericMC");
     m_GenericMCPtr->setInitValue(0);
   }
@@ -363,7 +412,7 @@ void MonteCarloSimulationController::initializeData(MonteCarloSimulationControll
 // -----------------------------------------------------------------------------
 bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulationController::MonteCarloSimulationData data)
 {
-  if (data.inputCrystalFileName.isEmpty())
+  if (data.inputFilePath.isEmpty())
   {
     QString ss = QObject::tr("The crystal structure input file path must be set.");
     emit errorMessageGenerated(ss);
@@ -371,53 +420,31 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
   }
 
   {
-    QString xtalFilePath = getEMXtalFolderPathName();
-    if (xtalFilePath[xtalFilePath.size() - 1] != QDir::separator())
-    {
-      xtalFilePath.append(QDir::separator());
-    }
-    xtalFilePath.append(data.inputCrystalFileName);
+    QString inputFilePath = data.inputFilePath;
 
-    QFileInfo fi(xtalFilePath);
+    QFileInfo fi(inputFilePath);
     if (fi.completeSuffix() != "xtal")
     {
-      QString ss = QObject::tr("The crystal structure input file at path '%1' needs a '.xtal' suffix.").arg(xtalFilePath);
+      QString ss = QObject::tr("The crystal structure input file at path '%1' needs a '.xtal' suffix.").arg(inputFilePath);
       emit errorMessageGenerated(ss);
       return false;
     }
     else if (fi.exists() == false)
     {
-      QString ss = QObject::tr("The crystal structure input file at path '%1' does not exist.").arg(xtalFilePath);
+      QString ss = QObject::tr("The crystal structure input file at path '%1' does not exist.").arg(inputFilePath);
       emit errorMessageGenerated(ss);
       return false;
     }
-
-    QString ss = QObject::tr("The crystal structure input file is located at path '%1'.").arg(xtalFilePath);
-    emit warningMessageGenerated(ss);
   }
 
-  if (data.outputFileName.isEmpty())
+  if (data.outputFilePath.isEmpty())
   {
     QString ss = QObject::tr("The monte carlo output file path must be set.");
     emit errorMessageGenerated(ss);
     return false;
   }
 
-  QString outputFilePath;
-  if (getEMDataPathName().isEmpty() == false)
-  {
-    outputFilePath = getEMDataPathName();
-    if (*outputFilePath.end() != QDir::separator())
-    {
-      outputFilePath.append(QDir::separator());
-    }
-    outputFilePath.append(data.outputFileName);
-  }
-  else
-  {
-    outputFilePath = data.outputFileName;
-  }
-
+  QString outputFilePath = data.outputFilePath;
   QFileInfo fi(outputFilePath);
   if (fi.completeSuffix() != "h5")
   {
@@ -579,16 +606,16 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
 bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationController::MonteCarloSimulationData simData)
 {
   {
-    QFileInfo inputFi(simData.inputCrystalFileName);
+    QFileInfo inputFi(simData.inputFilePath);
     if (inputFi.suffix().compare("") == 0)
     {
-      simData.inputCrystalFileName.append(".xtal");
+      simData.inputFilePath.append(".xtal");
     }
 
-    QFileInfo outputFi(simData.outputFileName);
+    QFileInfo outputFi(simData.outputFilePath);
     if (outputFi.suffix().compare("") == 0)
     {
-      simData.outputFileName.append(".h5");
+      simData.outputFilePath.append(".h5");
     }
   }
 
@@ -626,17 +653,8 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
 
   // open the output HDF5 file
-  QString inputFilePath = getEMXtalFolderPathName() + QDir::separator() + simData.inputCrystalFileName;
-
-  QString outputFilePath;
-  if (getEMDataPathName().isEmpty() == false)
-  {
-    outputFilePath = getEMDataPathName() + QDir::separator() + simData.outputFileName;
-  }
-  else
-  {
-    outputFilePath = simData.outputFileName;
-  }
+  QString inputFilePath = simData.inputFilePath;
+  QString outputFilePath = simData.outputFilePath;
 
   QString tmpOutputFilePath = outputFilePath + ".tmp";
   inputFilePath = QDir::toNativeSeparators(inputFilePath);
@@ -650,19 +668,6 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     if (!QFile::remove(tmpOutputFilePath))
     {
       QString ss = QObject::tr("Error creating temporary output file at path '%1'").arg(tmpOutputFilePath);
-      emit errorMessageGenerated(ss);
-      return false;
-    }
-  }
-
-  QString parentPath = getEMDataPathName();
-
-  QDir dir(parentPath);
-  if (dir.exists() == false)
-  {
-    if(!dir.mkpath(parentPath))
-    {
-      QString ss = QObject::tr("Error creating parent path '%1'").arg(parentPath);
       emit errorMessageGenerated(ss);
       return false;
     }
@@ -916,7 +921,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
       rootObject.insert(EMsoft::Constants::sigstep, simData.sampleTiltAngleSig);
     }
 
-    rootObject.insert(EMsoft::Constants::xtalname, simData.inputCrystalFileName);
+    rootObject.insert(EMsoft::Constants::xtalname, simData.inputFilePath);
     rootObject.insert(EMsoft::Constants::numsx, simData.numOfPixelsN);
     rootObject.insert(EMsoft::Constants::num_el, simData.numOfEPerWorkitem);
     rootObject.insert(EMsoft::Constants::platid, simData.gpuPlatformID);
@@ -929,7 +934,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     rootObject.insert(EMsoft::Constants::Ebinsize, simData.energyBinSize);
     rootObject.insert(EMsoft::Constants::depthmax, simData.maxDepthConsider);
     rootObject.insert(EMsoft::Constants::depthstep, simData.depthStepSize);
-    rootObject.insert(EMsoft::Constants::dataname, simData.outputFileName);
+    rootObject.insert(EMsoft::Constants::dataname, simData.outputFilePath);
     topObject.insert(EMsoft::Constants::MCCLdata, rootObject);
     QJsonDocument doc(topObject);
     QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -986,7 +991,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeStringDataset(EMsoft::Constants::dataname, simData.outputFileName) == false)
+  if (writer->writeStringDataset(EMsoft::Constants::dataname, simData.outputFilePath) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1093,7 +1098,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeStringDataset(EMsoft::Constants::xtalname, simData.inputCrystalFileName) == false)
+  if (writer->writeStringDataset(EMsoft::Constants::xtalname, simData.inputFilePath) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1139,58 +1144,6 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
 
   return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QString MonteCarloSimulationController::getEMXtalFolderPathName()
-{
-  // get the full pathname for the .EMsoft folder
-  QString val;
-
-  QFileInfo fi(QString("%1/.config/EMsoft/EMsoftConfig.json").arg(QDir::homePath()));
-  if(fi.exists())
-  {
-    QFile envFile(fi.absoluteFilePath());
-    envFile.open(QIODevice::ReadOnly);
-    if(envFile.isOpen())
-    {
-      val = envFile.readAll();
-      envFile.close();
-    }
-    QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
-    QJsonObject s = d.object();
-    QJsonValue emXtalFolderPathName = s.value(QString("EMXtalFolderpathname"));
-    val = emXtalFolderPathName.toString();
-  }
-  return val;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QString MonteCarloSimulationController::getEMDataPathName()
-{
-  // get the full pathname for the .EMsoft folder
-  QString val;
-
-  QFileInfo fi(QString("%1/.config/EMsoft/EMsoftConfig.json").arg(QDir::homePath()));
-  if(fi.exists())
-  {
-    QFile envFile(fi.absoluteFilePath());
-    envFile.open(QIODevice::ReadOnly);
-    if(envFile.isOpen())
-    {
-      val = envFile.readAll();
-      envFile.close();
-    }
-    QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
-    QJsonObject s = d.object();
-    QJsonValue emDataPathName = s.value(QString("EMdatapathname"));
-    val = emDataPathName.toString();
-  }
-  return val;
 }
 
 // -----------------------------------------------------------------------------

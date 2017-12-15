@@ -111,17 +111,17 @@ MasterPatternSimulationController::~MasterPatternSimulationController()
 void MasterPatternSimulationController::createMasterPattern(MasterPatternSimulationController::MasterPatternSimulationData simData)
 {
   {
-    QFileInfo fi(simData.inputMonteCarloFileName);
+    QFileInfo fi(simData.inputFilePath);
     if (fi.suffix().compare("") == 0)
     {
-      simData.inputMonteCarloFileName.append(".h5");
+      simData.inputFilePath.append(".h5");
     }
   }
   {
-    QFileInfo fi(simData.outputFileName);
+    QFileInfo fi(simData.outputFilePath);
     if (fi.suffix().compare("") == 0)
     {
-      simData.outputFileName.append(".h5");
+      simData.outputFilePath.append(".h5");
     }
   }
 
@@ -163,13 +163,12 @@ void MasterPatternSimulationController::createMasterPattern(MasterPatternSimulat
   //      saveFile.write(saveDoc.toJson());
   //  }
 
-  QString mcFilePath = getEMDataPathName().append("/").append(simData.inputMonteCarloFileName);
+  QString inputFilePath = simData.inputFilePath;
 
   // If we couldn't open the Monte Carlo file, then bail
-  if (!m_MonteCarloReader->openFile(mcFilePath)) {
+  if (!m_MonteCarloReader->openFile(inputFilePath)) {
     return;
   }
-  m_CurrentFilePath = mcFilePath;
 
   // If we couldn't get these three variables, then bail
   if (!m_MonteCarloReader->getAtomPos(m_Atompos) ||
@@ -250,7 +249,6 @@ void MasterPatternSimulationController::createMasterPattern(MasterPatternSimulat
   else
   {
     m_MonteCarloReader->closeFile();
-    m_CurrentFilePath.clear();
     emit stdOutputMessageGenerated("Master Pattern File Generation was successfully canceled");
   }
 }
@@ -280,7 +278,7 @@ bool MasterPatternSimulationController::validateMasterPatternValues(MasterPatter
 {
   bool valid = true;
 
-  QString inputPath = getEMDataPathName() + "/" + data.inputMonteCarloFileName;
+  QString inputPath = data.inputFilePath;
   QFileInfo inFi(inputPath);
   if (inFi.completeSuffix() != "h5")
   {
@@ -296,7 +294,7 @@ bool MasterPatternSimulationController::validateMasterPatternValues(MasterPatter
     valid = false;
   }
 
-  QString outputPath = getEMDataPathName() + "/" + data.outputFileName;
+  QString outputPath = data.outputFilePath;
 
   QFileInfo dir(outputPath);
   QDir dPath = dir.path();
@@ -349,8 +347,8 @@ bool MasterPatternSimulationController::validateMasterPatternValues(MasterPatter
 // -----------------------------------------------------------------------------
 bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData)
 {
-  QString inputFilePath = getEMDataPathName().append("/").append(simData.inputMonteCarloFileName);
-  QString outputFilePath = getEMDataPathName().append("/").append(simData.outputFileName);
+  QString inputFilePath = simData.inputFilePath;
+  QString outputFilePath = simData.outputFilePath;
   QString tmpOutputFilePath = outputFilePath + ".tmp";
   QFileInfo tmpFi(tmpOutputFilePath);
 
@@ -362,16 +360,6 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
       emit errorMessageGenerated(ss);
       return false;
     }
-  }
-
-  QFileInfo fi(tmpOutputFilePath);
-  QString parentPath = fi.path();
-  QDir dir;
-  if(!dir.mkpath(parentPath))
-  {
-    QString ss = QObject::tr("Error creating parent path '%1'").arg(parentPath);
-    emit errorMessageGenerated(ss);
-    return false;
   }
 
   if (!QFile::copy(inputFilePath, tmpOutputFilePath))
@@ -720,7 +708,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
   rootObject.insert(EMsoft::Constants::npx, simData.numOfMPPixels);
   rootObject.insert(EMsoft::Constants::nthreads, simData.numOfOpenMPThreads);
   rootObject.insert(EMsoft::Constants::dmin, simData.smallestDSpacing);
-  rootObject.insert(EMsoft::Constants::outname, simData.outputFileName);
+  rootObject.insert(EMsoft::Constants::outname, simData.outputFilePath);
   topObject.insert(EMsoft::Constants::EBSDmastervars, rootObject);
   QJsonDocument doc(topObject);
   QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -818,7 +806,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeStringDataset(EMsoft::Constants::outname, simData.outputFileName) == false)
+  if (writer->writeStringDataset(EMsoft::Constants::outname, simData.outputFilePath) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -831,7 +819,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
   }
 
   // and finally the energy (Monte Carlo) file name
-  if (writer->writeStringDataset(EMsoft::Constants::energyfile, simData.inputMonteCarloFileName) == false)
+  if (writer->writeStringDataset(EMsoft::Constants::energyfile, simData.inputFilePath) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -877,32 +865,6 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
   }
 
   return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QString MasterPatternSimulationController::getEMDataPathName()
-{
-  // get the full pathname for the .EMsoft folder
-  QString val;
-
-  QFileInfo fi(QString("%1/.config/EMsoft/EMsoftConfig.json").arg(QDir::homePath()));
-  if(fi.exists())
-  {
-    QFile envFile(fi.absoluteFilePath());
-    envFile.open(QIODevice::ReadOnly);
-    if(envFile.isOpen())
-    {
-      val = envFile.readAll();
-      envFile.close();
-    }
-    QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
-    QJsonObject s = d.object();
-    QJsonValue emDataPathName = s.value(QString("EMdatapathname"));
-    val = emDataPathName.toString();
-  }
-  return val;
 }
 
 

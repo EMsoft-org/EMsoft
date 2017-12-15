@@ -73,9 +73,7 @@ CrystalStructureCreationController::~CrystalStructureCreationController()
 // -----------------------------------------------------------------------------
 void CrystalStructureCreationController::createCrystalStructureFile(CrystalStructureCreationController::CrystalStructureCreationData data)
 {
-  QString emXtalFolderPathName = getEMXtalFolderPathName();
-  QString outputFilePath = emXtalFolderPathName + QDir::separator() + data.outputFileName;
-
+  QString outputFilePath = data.outputFilePath;
   outputFilePath = QDir::toNativeSeparators(outputFilePath);
 
   QString tmpOutputFilePath = outputFilePath + ".tmp";
@@ -328,21 +326,19 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
 // -----------------------------------------------------------------------------
 bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalStructureCreationController::CrystalStructureCreationData data)
 {
-  if (data.outputFileName.isEmpty())
+  if (data.outputFilePath.isEmpty())
   {
-    QString ss = QObject::tr("The crystal structure output file name must be set.");
+    QString ss = QObject::tr("The crystal structure output file path must be set.");
     emit errorMessageGenerated(ss);
     return false;
   }
 
-  QString emXtalFolderPathName = getEMXtalFolderPathName();
-
   // don't allow the user to overwrite an existing structure file
-  QString emXtalFilePath = emXtalFolderPathName + QDir::separator() + data.outputFileName;
-  QFileInfo fi2(emXtalFilePath);
+  QString outputFilePath = data.outputFilePath;
+  QFileInfo fi2(outputFilePath);
   if (fi2.completeSuffix() != "xtal")
   {
-    QString ss = QObject::tr("The crystal structure output file at path '%1' needs a '.xtal' suffix.").arg(emXtalFilePath);
+    QString ss = QObject::tr("The crystal structure output file at path '%1' needs a '.xtal' suffix.").arg(outputFilePath);
     emit errorMessageGenerated(ss);
     return false;
   }
@@ -590,43 +586,5 @@ bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalS
       }
   }
 
-  {
-    QString xtalPathName = getEMXtalFolderPathName();
-    if (xtalPathName.size() > 0 && xtalPathName[xtalPathName.size() - 1] != QDir::separator())
-    {
-      xtalPathName.append(QDir::separator());
-    }
-    xtalPathName.append(data.outputFileName);
-
-    QString ss = QObject::tr("The Crystal Structure output file will be saved at '%1'.").arg(xtalPathName);
-    emit warningMessageGenerated(ss);
-  }
-
   return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QString CrystalStructureCreationController::getEMXtalFolderPathName()
-{
-// get the full pathname for the .EMsoft folder
-  QString val;
-
-  QFileInfo fi(QString("%1/.config/EMsoft/EMsoftConfig.json").arg(QDir::homePath()));
-  if(fi.exists())
-  {
-    QFile envFile(fi.absoluteFilePath());
-    envFile.open(QIODevice::ReadOnly);
-    if(envFile.isOpen())
-    {
-      val = envFile.readAll();
-      envFile.close();
-    }
-    QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
-    QJsonObject s = d.object();
-    QJsonValue emXtalFolderPathName = s.value(QString("EMXtalFolderpathname"));
-    val = emXtalFolderPathName.toString();
-  }
-  return val;
 }
