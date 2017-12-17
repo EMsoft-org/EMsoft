@@ -50,6 +50,8 @@ Support/Scripts/GMT/gmt.history
 /testfolder/
 /IFORT/
 /examples/
+/FORD/
+/DOxygen/
 
 IDL/**/*.sav
 IDL/pro/template
