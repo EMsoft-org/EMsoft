@@ -2349,6 +2349,7 @@ real(kind=sgl)          :: axisangle(4)
 real(kind=dbl)          :: Ftensor(3,3)
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
+character(1)            :: includebackground
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
 character(1)            :: spatialaverage
@@ -2365,7 +2366,7 @@ character(fnlen)        :: datafile
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, bitdepth, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
-                        applyDeformation, Ftensor
+                        applyDeformation, Ftensor, includebackground
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2388,6 +2389,7 @@ axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotat
 Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
+includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -2451,6 +2453,7 @@ enl%axisangle = axisangle
 enl%Ftensor = Ftensor
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
+enl%includebackground = includebackground
 enl%applyDeformation = applyDeformation
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode

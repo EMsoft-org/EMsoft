@@ -373,6 +373,7 @@ type EBSDNameListType
     real(kind=dbl)          :: Ftensor(3,3)
 	real(kind=dbl)          :: beamcurrent
 	real(kind=dbl)          :: dwelltime
+        character(1)            :: includebackground
         character(1)            :: applyDeformation
         character(1)            :: maskpattern
         character(3)            :: scalingmode

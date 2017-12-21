@@ -1580,6 +1580,11 @@ line2(1) = trim(enl%maskpattern)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create maskpattern dataset',.TRUE.)
 
+dataset = SC_includebackground
+line2(1) = trim(enl%includebackground)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create includebackground dataset',.TRUE.)
+
 dataset = SC_applyDeformation
 line2(1) = trim(enl%applyDeformation)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
