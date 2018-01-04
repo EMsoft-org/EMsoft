@@ -689,6 +689,7 @@ sval(1) = mcnl%mode
 hdferr = HDF_writeDatasetStringArray(dataset, sval, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteMCNameList: unable to create mode dataset',.TRUE.)
 
+
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 
@@ -1348,6 +1349,75 @@ end subroutine HDFwriteEBSDclusterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteECPQCMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param ecpnl ECP master name list structure
+!
+!> @date 03/22/15 MDG 1.0 new routine
+!> @date 09/15/15 SS  1.1 changes after clean up of ECPmasterNameList
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteECPQCMasterNameList(HDF_head, ecpnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteECPQCMasterNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(ECPQCMasterNameListType),INTENT(INOUT)           :: ecpnl
+
+integer(kind=irg),parameter                           :: n_int = 5, n_real = 4
+integer(kind=irg)                                     :: hdferr, io_int(n_int), distort
+real(kind=dbl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = 'ECPQCMasterNameList'
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ ecpnl%Esel, ecpnl%npx, ecpnl%nthreads, ecpnl%atno, ecpnl%nsamples /)
+intlist(1) = 'Esel'
+intlist(2) = 'npx'
+intlist(3) = 'nthreads'
+intlist(4) = 'atno'
+intlist(5) = 'nsamples'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+
+! write all the single doubles
+io_real = (/ ecpnl%dmin, ecpnl%gmax_orth, ecpnl%QClatparm, ecpnl%DWF /)
+reallist(1) = 'dmin'
+reallist(2) = 'gmax_orth'
+reallist(3) = 'QClatparm'
+reallist(4) = 'DWF'
+call HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
+
+! write all the strings
+dataset = 'centering'
+line2(1) = ecpnl%centering
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPQCMasterNameList: unable to create centering dataset',.TRUE.)
+
+dataset = 'energyfile'
+line2(1) = ecpnl%energyfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPQCMasterNameList: unable to create energyfile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteECPQCMasterNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteECPMasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -1579,11 +1649,6 @@ dataset = SC_maskpattern
 line2(1) = trim(enl%maskpattern)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create maskpattern dataset',.TRUE.)
-
-dataset = SC_includebackground
-line2(1) = trim(enl%includebackground)
-hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create includebackground dataset',.TRUE.)
 
 dataset = SC_applyDeformation
 line2(1) = trim(enl%applyDeformation)
