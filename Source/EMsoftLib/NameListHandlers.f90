@@ -2656,7 +2656,8 @@ character(fnlen)        :: masterfileB
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, datafile, HorizontalAxisA
+namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
+                              datafile, HorizontalAxisA
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2678,20 +2679,20 @@ end if
 if (.not.skipread) then
 ! read the namelist file
  open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
- read(UNIT=dataunit,NML=EBSDdata)
+ read(UNIT=dataunit,NML=EBSDoverlapdata)
  close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
  if (trim(masterfileA).eq.'undefined') then
-  call FatalError('EMEBSD:',' master pattern file name A is undefined in '//nmlfile)
+  call FatalError('EMEBSDoverlap:',' master pattern file name A is undefined in '//nmlfile)
  end if
 
  if (trim(masterfileB).eq.'undefined') then
-  call FatalError('EMEBSD:',' master pattern file name B is undefined in '//nmlfile)
+  call FatalError('EMEBSDoverlap:',' master pattern file name B is undefined in '//nmlfile)
  end if
 
  if (trim(datafile).eq.'undefined') then
-  call FatalError('EMEBSD:',' output file name is undefined in '//nmlfile)
+  call FatalError('EMEBSDoverlap:',' output file name is undefined in '//nmlfile)
  end if
 end if
 
@@ -2709,6 +2710,105 @@ enl%masterfileB = masterfileB
 enl%datafile = datafile
 
 end subroutine GetEBSDoverlapNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetTKDoverlapNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMTKDoverlap.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl TKD name list structure
+!
+!> @date 01/03/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetTKDoverlapNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetTKDoverlapNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(TKDoverlapNameListType),INTENT(INOUT)     :: enl
+logical,OPTIONAL,INTENT(IN)             :: initonly
+
+logical                                 :: skipread = .FALSE.
+
+integer(kind=irg)       :: stdout
+integer(kind=irg)       :: PatternAxisA(3)
+integer(kind=irg)       :: HorizontalAxisA(3)
+real(kind=sgl)          :: tA(3)
+real(kind=sgl)          :: tB(3)
+real(kind=sgl)          :: gA(3)
+real(kind=sgl)          :: gB(3)
+real(kind=sgl)          :: fracA
+character(fnlen)        :: masterfileA
+character(fnlen)        :: masterfileB
+character(fnlen)        :: datafile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / TKDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
+                              datafile, HorizontalAxisA
+
+! set the input parameters to default values (except for xtalname, which must be present)
+stdout          = 6
+PatternAxisA    = (/ 0, 0, 1 /)                 ! center axis for output pattern
+HorizontalAxisA = (/ 1, 0, 0 /)                 ! horizontal axis for output pattern
+tA              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal A
+tB              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal B
+gA              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal A
+gB              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal B
+fracA           = -1.0                          ! volume fraction of phase A; 
+! if set to -1.0, the output is a simple HDF file with a series of 21 merged patterns for fracA=0..1 
+! in steps of 0.05, formatted in Square Lambert, Circular Lambert, and Stereographic Projection formats;
+! if positive, then we single merged master pattern is computed for all energies,
+! and the datafile will be a copy of the masterfileA file, but with a replaced master
+! pattern array.
+masterfileA     = 'undefined'   ! filename
+masterfileB     = 'undefined'   ! filename
+datafile        = 'undefined'   ! output file name
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=TKDoverlapdata)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(masterfileA).eq.'undefined') then
+  call FatalError('EMTKDoverlap:',' master pattern file name A is undefined in '//nmlfile)
+ end if
+
+ if (trim(masterfileB).eq.'undefined') then
+  call FatalError('EMTKDoverlap:',' master pattern file name B is undefined in '//nmlfile)
+ end if
+
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('EMTKDoverlap:',' output file name is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+enl%stdout = stdout
+enl%PatternAxisA = PatternAxisA
+enl%HorizontalAxisA = HorizontalAxisA
+enl%tA = tA
+enl%tB = tB
+enl%gA = gA
+enl%gB = gB
+enl%fracA = fracA
+enl%masterfileA = masterfileA
+enl%masterfileB = masterfileB
+enl%datafile = datafile
+
+end subroutine GetTKDoverlapNameList
 
 !--------------------------------------------------------------------------
 !

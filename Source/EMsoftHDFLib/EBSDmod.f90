@@ -615,7 +615,7 @@ else
 end if 
 masterfile = EMsoft_toNativePath(masterfile)
 
-! first, we need to check whether or not the input file is of the HDF5 forat type
+! first, we need to check whether or not the input file is of the HDF5 format type
 call h5fis_hdf5_f(trim(masterfile), stat, hdferr)
 
 if (stat) then 

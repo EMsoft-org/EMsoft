@@ -540,6 +540,36 @@ type EBSDoverlapNameListType
         character(fnlen)        :: Masterenergyfile
 end type EBSDoverlapNameListType
 
+! namelist for the EMTKDoverlap program
+! note that not all of these are actually entered via a namelist file
+! some of them are used to facilitate passing of subroutine arguments in EBSDmod.f90
+type TKDoverlapNameListType
+        integer(kind=irg)       :: stdout
+        integer(kind=irg)       :: PatternAxisA(3)
+        integer(kind=irg)       :: HorizontalAxisA(3)
+        real(kind=sgl)          :: tA(3)
+        real(kind=sgl)          :: tB(3)
+        real(kind=sgl)          :: gA(3)
+        real(kind=sgl)          :: gB(3)
+        real(kind=sgl)          :: fracA
+        character(fnlen)        :: masterfileA
+        character(fnlen)        :: masterfileB
+        character(fnlen)        :: datafile
+! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
+        integer(kind=irg)       :: numset
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: npy
+        integer(kind=irg)       :: nE
+        character(6)            :: sqorhe       ! from Master file, square or hexagonal Lambert projection
+        character(8)            :: Masterscversion
+        character(fnlen)        :: Masterprogname
+        character(fnlen)        :: masterfile
+        character(fnlen)        :: Masterxtalname 
+        character(fnlen)        :: xtalnameA
+        character(fnlen)        :: xtalnameB
+        character(fnlen)        :: Masterenergyfile
+end type TKDoverlapNameListType
+
 ! EMEBSDcluster name list
 type EBSDclusterNameListType
         integer(kind=irg)       :: NClusters

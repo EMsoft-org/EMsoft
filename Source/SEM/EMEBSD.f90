@@ -324,6 +324,10 @@ call get_bit_parameters(enl%bitdepth, numbits, bitrange, bitmode)
 etotal = enl%num_el 
 sig = enl%MCsig
 
+! make sure the requested energy range is within the range available from the Monte Carlo computation
+if (enl%energymin.lt.enl%Ehistmin) enl%energymin = enl%Ehistmin
+if (enl%energymax.gt.enl%EkeV) enl%energymax = enl%EkeV
+
 ! get the indices of the minimum and maximum energy
 Emin = nint((enl%energymin - enl%Ehistmin)/enl%Ebinsize) +1
 if (Emin.lt.1)  Emin=1
