@@ -223,7 +223,7 @@ insideFZ = .FALSE.
     case (4)
       if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(rod,'oct')
     case (5) ! icosahedral symmetry
-      if (rod(4).ne.inftyd()) insideFZ = insideIcosahedralFZ(rod)
+!     if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'oct')
     case (6) ! cubic-hexagonal misorientation FZ
       if (rod(4).ne.inftyd()) insideFZ = insideCubeHexFZ(rod)
     case (7)
@@ -234,41 +234,6 @@ insideFZ = .FALSE.
 
 end function IsinsideFZ
 
-
-!--------------------------------------------------------------------------
-!
-! FUNCTION: insideIcosahedralFZ
-!
-!> @author Marc De Graef, Carnegie Mellon University
-!
-!> @brief does Rodrigues point lie inside cosahedral FZ?
-!
-!> @param rod Rodrigues coordinates  (double precision)
-!
-!> @date 03/24/17 MDG 1.0 original
-!--------------------------------------------------------------------------
-recursive function insideIcosahedralFZ(rod) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: insideIcosahedralFZ
-
-use constants
-
-real(kind=dbl), INTENT(IN)        :: rod(4)
-logical                           :: res
-
-real(kind=dbl)                    :: dval, rv(3)
-integer(kind=irg)                 :: i, j
-
-res = .FALSE.
-
-dval=0.32491969623290632616D0  ! sqrt(1-2/sqrt(5)))
-rv(1:3) = rod(1:3)*rod(4)
-j = 0
-do i=1,12
-  if (DOT_PRODUCT(IcoVertices(1:3,i),rv)+dval.ge.0.D0) j = j+1
-end do
-if (j.eq.12) res = .TRUE.
-
-end function insideIcosahedralFZ
 
 !--------------------------------------------------------------------------
 !

@@ -521,7 +521,6 @@ end function WatsonMeanDirDensity
 !> @date 12/31/14 MDG 1.0 original
 !> @date 01/06/15 MDG 1.1 added optional argument full
 !> @date 02/06/15 MDG 1.2 removed full again after extensive testing; no need to use 2M operators
-!> @date 03/18/17 MDG 1.3 added icosahedral symmetry operator to handle quasi-crystal computations.
 !--------------------------------------------------------------------------
 recursive subroutine DI_Init(dict,Dtype) 
 !DEC$ ATTRIBUTES DLLEXPORT :: DI_Init
@@ -533,7 +532,7 @@ use math
 
 IMPLICIT NONE
 
-type(dicttype),INTENT(INOUT)            :: dict
+type(dicttype),INTENT(INOUT)    :: dict
 character(3),INTENT(IN)                 :: Dtype
 
 integer(kind=irg)                       :: i
@@ -545,8 +544,8 @@ real(kind=dbl)                          :: y1, y2
 
 ! first get the number of the rotational point group that corresponds to the crystal point group
 dict%prot = PGrot(dict%pgnum)
-! possible values for dict%prot are: (/1,3,6,9,12,16,18,21,24,28,30,33/)
-! corresponding to the point groups 1, 2, 222, 4, 422, 3, 32, 6, 622, 23, 432, and 532, respectively
+! possible values for dict%prot are: (/1,3,6,9,12,16,18,21,24,28,30/)
+! corresponding to the point groups 1, 2, 222, 4, 422, 3, 32, 6, 622, 23, and 432, respectively
 
 !------------
 ! IMPORTANT NOTE: the original von Mises-Fischer (VMF) approach requires that q and -q are considered to 
@@ -626,12 +625,7 @@ select case (dict%prot)
                 do i=2,24
                   dict%Pm(1:4,i) = SYM_Qsymop(1:4,i)
                 end do
-        case(33)        ! 532
-                dict%Nqsym = 60
-                do i=2,60
-                  dict%Pm(1:4,i) = SYM_Qsymop(1:4,35+i)
-                end do
-                
+
         case default    ! this should never happen ...
                 call FatalError('InitDictionaryIndexing','unknown rotational point group number')
 end select

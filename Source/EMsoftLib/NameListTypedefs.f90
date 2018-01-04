@@ -373,6 +373,7 @@ type EBSDNameListType
     real(kind=dbl)          :: Ftensor(3,3)
 	real(kind=dbl)          :: beamcurrent
 	real(kind=dbl)          :: dwelltime
+        character(1)            :: includebackground
         character(1)            :: applyDeformation
         character(1)            :: maskpattern
         character(3)            :: scalingmode
@@ -539,6 +540,36 @@ type EBSDoverlapNameListType
         character(fnlen)        :: Masterenergyfile
 end type EBSDoverlapNameListType
 
+! namelist for the EMTKDoverlap program
+! note that not all of these are actually entered via a namelist file
+! some of them are used to facilitate passing of subroutine arguments in EBSDmod.f90
+type TKDoverlapNameListType
+        integer(kind=irg)       :: stdout
+        integer(kind=irg)       :: PatternAxisA(3)
+        integer(kind=irg)       :: HorizontalAxisA(3)
+        real(kind=sgl)          :: tA(3)
+        real(kind=sgl)          :: tB(3)
+        real(kind=sgl)          :: gA(3)
+        real(kind=sgl)          :: gB(3)
+        real(kind=sgl)          :: fracA
+        character(fnlen)        :: masterfileA
+        character(fnlen)        :: masterfileB
+        character(fnlen)        :: datafile
+! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
+        integer(kind=irg)       :: numset
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: npy
+        integer(kind=irg)       :: nE
+        character(6)            :: sqorhe       ! from Master file, square or hexagonal Lambert projection
+        character(8)            :: Masterscversion
+        character(fnlen)        :: Masterprogname
+        character(fnlen)        :: masterfile
+        character(fnlen)        :: Masterxtalname 
+        character(fnlen)        :: xtalnameA
+        character(fnlen)        :: xtalnameB
+        character(fnlen)        :: Masterenergyfile
+end type TKDoverlapNameListType
+
 ! EMEBSDcluster name list
 type EBSDclusterNameListType
         integer(kind=irg)       :: NClusters
@@ -651,21 +682,6 @@ type ECPMasterNameListType
     character(fnlen)        :: energyfile
     logical                 :: combinesites
 end type ECPMasterNameListType
-
-! namelist for the EMECPQCmaster program
-type ECPQCMasterNameListType
-    integer(kind=irg)       :: nsamples
-    integer(kind=irg)       :: npx
-    integer(kind=irg)       :: Esel
-    integer(kind=irg)       :: nthreads
-    integer(kind=irg)       :: atno
-    real(kind=sgl)          :: DWF
-    real(kind=sgl)          :: dmin
-    real(kind=sgl)          :: gmax_orth
-    real(kind=sgl)          :: QClatparm
-    character(1)            :: centering
-    character(fnlen)        :: energyfile
-end type ECPQCMasterNameListType
 
 !namelist for the EMECP program
 type ECPpatternNameListType
@@ -1438,5 +1454,19 @@ type MDElectronPropNameListType
         real(kind=sgl)          :: dmin
 
 end type MDElectronPropNameListType
+
+! typedef for special EMgammaSTEM program
+type EMgammaSTEMNameListType
+    real(kind=sgl)      :: voltage
+    real(kind=sgl)      :: dmin
+    real(kind=sgl)      :: eu(3)
+    real(kind=sgl)      :: convergence
+    integer(kind=irg)   :: platid
+    integer(kind=irg)   :: devid
+    character(fnlen)    :: gammaname
+    character(fnlen)    :: gammapname
+    character(fnlen)    :: microstructurefile
+    character(fnlen)    :: datafile
+end type EMgammaSTEMNameListType
 
 end module NameListTypedefs
