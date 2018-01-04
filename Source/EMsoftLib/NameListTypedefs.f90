@@ -683,6 +683,21 @@ type ECPMasterNameListType
     logical                 :: combinesites
 end type ECPMasterNameListType
 
+! namelist for the EMECPQCmaster program
+type ECPQCMasterNameListType
+    integer(kind=irg)       :: nsamples
+    integer(kind=irg)       :: npx
+    integer(kind=irg)       :: Esel
+    integer(kind=irg)       :: nthreads
+    integer(kind=irg)       :: atno
+    real(kind=sgl)          :: DWF
+    real(kind=sgl)          :: dmin
+    real(kind=sgl)          :: gmax_orth
+    real(kind=sgl)          :: QClatparm
+    character(1)            :: centering
+    character(fnlen)        :: energyfile
+end type ECPQCMasterNameListType
+
 !namelist for the EMECP program
 type ECPpatternNameListType
     integer(kind=irg)       :: stdout

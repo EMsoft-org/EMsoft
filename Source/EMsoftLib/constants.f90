@@ -55,6 +55,7 @@
 !> @date 03/11/15 MDG 4.7 added some additional comments about epsijk 
 !> @date 04/02/17 MDG 4.8 modified definition of fundamental zones types and orders to accomodate two-phase disorientations
 !> @date 10/24/17 MDG 4.9 removed definition of infty and inftyd to be replaced by functions in math.f90 module
+!> @date 01/04/18 MDG 5.0 added quasicrystal constant IcoVertices
 !--------------------------------------------------------------------------
 
 module constants
@@ -312,6 +313,21 @@ real(kind=sgl)                  :: Butterfly9x9(81) = (/-10.0, -15.0, -22.0, -22
                                                        -1.0, -6.0, -13.0, -22.0, -22.0, -22.0, -13.0, -6.0, -1.0, &
                                                        -10.0, -15.0, -22.0, -22.0, -22.0, -22.0, -22.0, -15.0, -10.0/)
 !DEC$ ATTRIBUTES DLLEXPORT :: Butterfly9x9
+
+! vertex coordinates of the icosahedron (normalized)
+real(kind=dbl),parameter        :: IcoVertices(3,12) = reshape( (/ 0D0,0.D0,1.D0, &
+                                     0.89442719099991587856D0,0.D0,0.44721359549995793928D0, &
+                                     0.27639320225002103036D0,0.85065080835203993218D0,0.44721359549995793928D0, &
+                                    -0.72360679774997896964D0,0.52573111211913360603D0,0.44721359549995793928D0, &
+                                    -0.72360679774997896964D0,-0.52573111211913360603D0,0.44721359549995793928D0, &
+                                     0.27639320225002103036D0,-0.85065080835203993218D0,0.44721359549995793928D0, &
+                                    -0.89442719099991587856D0,0.D0,-0.44721359549995793928D0, &
+                                    -0.27639320225002103036D0,-0.85065080835203993218D0,-0.44721359549995793928D0, &
+                                     0.72360679774997896964D0,-0.52573111211913360603D0,-0.44721359549995793928D0, &
+                                     0.72360679774997896964D0,0.52573111211913360603D0,-0.44721359549995793928D0, &
+                                    -0.27639320225002103036D0,0.85065080835203993218D0,-0.44721359549995793928D0, &
+                                     0.D0,0.D0,-1.D0 /), (/3,12/))
+!DEC$ ATTRIBUTES DLLEXPORT :: IcoVertices
 
 
 end module

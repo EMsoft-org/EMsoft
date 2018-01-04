@@ -2012,6 +2012,94 @@ emnl%NScanRows = 0
 
 end subroutine GetEBSDclusterNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetECPQCMasterNameList
+!
+!> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mcnl structure (used by EMECPQCmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl ECP master name list structure
+!
+!> @date 06/19/14  SS 1.0 new routine
+!> @date 08/12/15 MDG 1.1 correction of type for startthick and fn(3)
+!> @date 09/15/15  SS 1.2 clean up of the subroutine
+!> @date 01/04/18 MDG 1.3 added to Public repo
+!--------------------------------------------------------------------------
+recursive subroutine GetECPQCMasterNameList(nmlfile, ecpnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetECPQCMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                    :: nmlfile
+type(ECPQCMasterNameListType),INTENT(INOUT)    :: ecpnl
+logical,OPTIONAL,INTENT(IN)                    :: initonly
+
+logical                                        :: skipread = .FALSE.
+
+integer(kind=irg)       :: nsamples
+integer(kind=irg)       :: npx
+integer(kind=irg)       :: Esel
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: atno
+real(kind=sgl)          :: DWF
+real(kind=sgl)          :: dmin
+real(kind=sgl)          :: gmax_orth
+real(kind=sgl)          :: QClatparm
+character(1)            :: centering
+character(fnlen)        :: energyfile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /ECPQCmastervars/ nsamples, DWF, atno, dmin, gmax_orth, energyfile, Esel, npx, nthreads, QClatparm, centering
+
+! set the input parameters to default values (except for xtalname, which must be present)
+Esel = -1                      ! selected energy value for single energy run
+nthreads = 1
+dmin = 0.04                    ! smallest d-spacing to include in dynamical matrix [nm]
+gmax_orth = 2.0                ! smallest d-spacing to include in dynamical matrix [nm]
+QClatparm = 0.46
+atno = 28
+DWF = 0.004
+nsamples = 100
+npx = 256
+centering = 'P'
+energyfile = 'undefined'       ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+read(UNIT=dataunit,NML=ECPQCmastervars)
+close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+if (trim(energyfile).eq.'undefined') then
+call FatalError('EMECPQCmaster:',' energy file name is undefined in '//nmlfile)
+end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+ecpnl%Esel = Esel
+ecpnl%nsamples = nsamples
+ecpnl%npx = npx
+ecpnl%nthreads = nthreads
+ecpnl%dmin = dmin
+ecpnl%atno = atno
+ecpnl%DWF = DWF
+ecpnl%QClatparm = QClatparm
+ecpnl%gmax_orth = gmax_orth
+ecpnl%energyfile = energyfile
+ecpnl%centering = centering
+
+end subroutine GetECPQCMasterNameList
+
 
 !--------------------------------------------------------------------------
 !
