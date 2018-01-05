@@ -521,6 +521,7 @@ end function WatsonMeanDirDensity
 !> @date 12/31/14 MDG 1.0 original
 !> @date 01/06/15 MDG 1.1 added optional argument full
 !> @date 02/06/15 MDG 1.2 removed full again after extensive testing; no need to use 2M operators
+!> @date 01/04/18 MDG 1.3 added icosahedral symmetry operator to handle quasi-crystal computations.
 !--------------------------------------------------------------------------
 recursive subroutine DI_Init(dict,Dtype) 
 !DEC$ ATTRIBUTES DLLEXPORT :: DI_Init
@@ -624,6 +625,11 @@ select case (dict%prot)
                 dict%Nqsym = 24
                 do i=2,24
                   dict%Pm(1:4,i) = SYM_Qsymop(1:4,i)
+                end do
+        case(33)        ! 532
+                dict%Nqsym = 60
+                do i=2,60
+                  dict%Pm(1:4,i) = SYM_Qsymop(1:4,35+i)
                 end do
 
         case default    ! this should never happen ...

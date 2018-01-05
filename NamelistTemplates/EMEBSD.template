@@ -20,6 +20,8 @@
 ! energy range in the intensity summation [keV]
  energymin = 5.0,
  energymax = 20.0,
+! include a realistic intensity background or not ... 
+ includebackground = 'y',
 ! name of angle file (euler angles or quaternions); path relative to EMdatapathname
  anglefile = 'testeuler.txt',
 ! 'tsl' or 'hkl' Euler angle convention parameter

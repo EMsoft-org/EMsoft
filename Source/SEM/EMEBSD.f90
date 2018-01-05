@@ -199,6 +199,7 @@ end program EMEBSD
 !> @date 02/07/17  MDG 6.8 corrected bug when number of Euler angle triplets was smaller than requested number of threads
 !> @date 09/26/17  MDG 7.0 added ability to incorporate a deformation tensor in the pattern computation
 !> @date 10/13/17  MDG 7.1 correction of deformation tensor code; tested for tetragonal, monoclinic and anorthic deformations
+!> @date 12/20/17  MDG 7.2 added switch to turn off realistic background intensity profile
 !--------------------------------------------------------------------------
 subroutine ComputeEBSDPatterns(enl, angles, acc, master, progname, nmldeffile)
 
@@ -322,6 +323,10 @@ call get_bit_parameters(enl%bitdepth, numbits, bitrange, bitmode)
 !====================================
 etotal = enl%num_el 
 sig = enl%MCsig
+
+! make sure the requested energy range is within the range available from the Monte Carlo computation
+if (enl%energymin.lt.enl%Ehistmin) enl%energymin = enl%Ehistmin
+if (enl%energymax.gt.enl%EkeV) enl%energymax = enl%EkeV
 
 ! get the indices of the minimum and maximum energy
 Emin = nint((enl%energymin - enl%Ehistmin)/enl%Ebinsize) +1
@@ -731,11 +736,21 @@ do ibatch=1,totnumbatches
     binned = 0.0
     
     if (includeFmatrix.eqv..TRUE.) then 
+     if (enl%includebackground.eq.'y') then
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
                                      Emin,Emax,mask,prefactor,Fmatrix_inverse)
+     else
+      call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
+                                     Emin,Emax,mask,prefactor,Fmatrix_inverse,removebackground='y')
+     end if
     else
+     if (enl%includebackground.eq.'y') then
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
                                      Emin,Emax,mask,prefactor)
+     else
+      call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
+                                     Emin,Emax,mask,prefactor,removebackground='y')
+     end if
     end if
 
     if (enl%scalingmode .eq. 'gam') then

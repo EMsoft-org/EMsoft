@@ -2012,6 +2012,94 @@ emnl%NScanRows = 0
 
 end subroutine GetEBSDclusterNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetECPQCMasterNameList
+!
+!> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mcnl structure (used by EMECPQCmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl ECP master name list structure
+!
+!> @date 06/19/14  SS 1.0 new routine
+!> @date 08/12/15 MDG 1.1 correction of type for startthick and fn(3)
+!> @date 09/15/15  SS 1.2 clean up of the subroutine
+!> @date 01/04/18 MDG 1.3 added to Public repo
+!--------------------------------------------------------------------------
+recursive subroutine GetECPQCMasterNameList(nmlfile, ecpnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetECPQCMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                    :: nmlfile
+type(ECPQCMasterNameListType),INTENT(INOUT)    :: ecpnl
+logical,OPTIONAL,INTENT(IN)                    :: initonly
+
+logical                                        :: skipread = .FALSE.
+
+integer(kind=irg)       :: nsamples
+integer(kind=irg)       :: npx
+integer(kind=irg)       :: Esel
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: atno
+real(kind=sgl)          :: DWF
+real(kind=sgl)          :: dmin
+real(kind=sgl)          :: gmax_orth
+real(kind=sgl)          :: QClatparm
+character(1)            :: centering
+character(fnlen)        :: energyfile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /ECPQCmastervars/ nsamples, DWF, atno, dmin, gmax_orth, energyfile, Esel, npx, nthreads, QClatparm, centering
+
+! set the input parameters to default values (except for xtalname, which must be present)
+Esel = -1                      ! selected energy value for single energy run
+nthreads = 1
+dmin = 0.04                    ! smallest d-spacing to include in dynamical matrix [nm]
+gmax_orth = 2.0                ! smallest d-spacing to include in dynamical matrix [nm]
+QClatparm = 0.46
+atno = 28
+DWF = 0.004
+nsamples = 100
+npx = 256
+centering = 'P'
+energyfile = 'undefined'       ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+read(UNIT=dataunit,NML=ECPQCmastervars)
+close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+if (trim(energyfile).eq.'undefined') then
+call FatalError('EMECPQCmaster:',' energy file name is undefined in '//nmlfile)
+end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+ecpnl%Esel = Esel
+ecpnl%nsamples = nsamples
+ecpnl%npx = npx
+ecpnl%nthreads = nthreads
+ecpnl%dmin = dmin
+ecpnl%atno = atno
+ecpnl%DWF = DWF
+ecpnl%QClatparm = QClatparm
+ecpnl%gmax_orth = gmax_orth
+ecpnl%energyfile = energyfile
+ecpnl%centering = centering
+
+end subroutine GetECPQCMasterNameList
+
 
 !--------------------------------------------------------------------------
 !
@@ -2349,6 +2437,7 @@ real(kind=sgl)          :: axisangle(4)
 real(kind=dbl)          :: Ftensor(3,3)
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
+character(1)            :: includebackground
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
 character(1)            :: spatialaverage
@@ -2365,7 +2454,7 @@ character(fnlen)        :: datafile
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, bitdepth, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
-                        applyDeformation, Ftensor
+                        applyDeformation, Ftensor, includebackground
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2388,6 +2477,7 @@ axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotat
 Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
+includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -2451,6 +2541,7 @@ enl%axisangle = axisangle
 enl%Ftensor = Ftensor
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
+enl%includebackground = includebackground
 enl%applyDeformation = applyDeformation
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
@@ -2653,7 +2744,8 @@ character(fnlen)        :: masterfileB
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, datafile, HorizontalAxisA
+namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
+                              datafile, HorizontalAxisA
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2675,20 +2767,20 @@ end if
 if (.not.skipread) then
 ! read the namelist file
  open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
- read(UNIT=dataunit,NML=EBSDdata)
+ read(UNIT=dataunit,NML=EBSDoverlapdata)
  close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
  if (trim(masterfileA).eq.'undefined') then
-  call FatalError('EMEBSD:',' master pattern file name A is undefined in '//nmlfile)
+  call FatalError('EMEBSDoverlap:',' master pattern file name A is undefined in '//nmlfile)
  end if
 
  if (trim(masterfileB).eq.'undefined') then
-  call FatalError('EMEBSD:',' master pattern file name B is undefined in '//nmlfile)
+  call FatalError('EMEBSDoverlap:',' master pattern file name B is undefined in '//nmlfile)
  end if
 
  if (trim(datafile).eq.'undefined') then
-  call FatalError('EMEBSD:',' output file name is undefined in '//nmlfile)
+  call FatalError('EMEBSDoverlap:',' output file name is undefined in '//nmlfile)
  end if
 end if
 
@@ -2706,6 +2798,105 @@ enl%masterfileB = masterfileB
 enl%datafile = datafile
 
 end subroutine GetEBSDoverlapNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetTKDoverlapNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMTKDoverlap.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl TKD name list structure
+!
+!> @date 01/03/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetTKDoverlapNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetTKDoverlapNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(TKDoverlapNameListType),INTENT(INOUT)     :: enl
+logical,OPTIONAL,INTENT(IN)             :: initonly
+
+logical                                 :: skipread = .FALSE.
+
+integer(kind=irg)       :: stdout
+integer(kind=irg)       :: PatternAxisA(3)
+integer(kind=irg)       :: HorizontalAxisA(3)
+real(kind=sgl)          :: tA(3)
+real(kind=sgl)          :: tB(3)
+real(kind=sgl)          :: gA(3)
+real(kind=sgl)          :: gB(3)
+real(kind=sgl)          :: fracA
+character(fnlen)        :: masterfileA
+character(fnlen)        :: masterfileB
+character(fnlen)        :: datafile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / TKDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
+                              datafile, HorizontalAxisA
+
+! set the input parameters to default values (except for xtalname, which must be present)
+stdout          = 6
+PatternAxisA    = (/ 0, 0, 1 /)                 ! center axis for output pattern
+HorizontalAxisA = (/ 1, 0, 0 /)                 ! horizontal axis for output pattern
+tA              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal A
+tB              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal B
+gA              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal A
+gB              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal B
+fracA           = -1.0                          ! volume fraction of phase A; 
+! if set to -1.0, the output is a simple HDF file with a series of 21 merged patterns for fracA=0..1 
+! in steps of 0.05, formatted in Square Lambert, Circular Lambert, and Stereographic Projection formats;
+! if positive, then we single merged master pattern is computed for all energies,
+! and the datafile will be a copy of the masterfileA file, but with a replaced master
+! pattern array.
+masterfileA     = 'undefined'   ! filename
+masterfileB     = 'undefined'   ! filename
+datafile        = 'undefined'   ! output file name
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=TKDoverlapdata)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(masterfileA).eq.'undefined') then
+  call FatalError('EMTKDoverlap:',' master pattern file name A is undefined in '//nmlfile)
+ end if
+
+ if (trim(masterfileB).eq.'undefined') then
+  call FatalError('EMTKDoverlap:',' master pattern file name B is undefined in '//nmlfile)
+ end if
+
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('EMTKDoverlap:',' output file name is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+enl%stdout = stdout
+enl%PatternAxisA = PatternAxisA
+enl%HorizontalAxisA = HorizontalAxisA
+enl%tA = tA
+enl%tB = tB
+enl%gA = gA
+enl%gB = gB
+enl%fracA = fracA
+enl%masterfileA = masterfileA
+enl%masterfileB = masterfileB
+enl%datafile = datafile
+
+end subroutine GetTKDoverlapNameList
 
 !--------------------------------------------------------------------------
 !

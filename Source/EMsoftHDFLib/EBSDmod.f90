@@ -615,7 +615,7 @@ else
 end if 
 masterfile = EMsoft_toNativePath(masterfile)
 
-! first, we need to check whether or not the input file is of the HDF5 forat type
+! first, we need to check whether or not the input file is of the HDF5 format type
 call h5fis_hdf5_f(trim(masterfile), stat, hdferr)
 
 if (stat) then 
@@ -1171,7 +1171,7 @@ end subroutine GenerateBackground
 !> @date 09/26/17 MDG 1.1 added Umatrix argument to try out inclusion of lattice strains
 !--------------------------------------------------------------------------
 recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,mask, &
-                                               prefactor, Fmatrix)
+                                               prefactor, Fmatrix, removebackground)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFull
 
 use local
@@ -1203,6 +1203,7 @@ real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(3))
 real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2)/ipar(1),ipar(3)/ipar(1))
 real(kind=sgl),INTENT(IN)                       :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
 real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3)
+character(1),INTENT(IN),OPTIONAL                :: removebackground
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
 real(kind=sgl),allocatable                      :: wf(:)
@@ -1210,7 +1211,7 @@ real(kind=sgl)                                  :: dc(3),ixy(2),scl,bindx, tmp
 real(kind=sgl)                                  :: dx,dy,dxm,dym, x, y, z
 integer(kind=irg)                               :: ii,jj,kk,istat
 integer(kind=irg)                               :: nix,niy,nixp,niyp
-
+logical                                         :: nobg
 
 ! ipar(1) = ebsdnl%binning
 ! ipar(2) = ebsdnl%numsx
@@ -1220,6 +1221,10 @@ integer(kind=irg)                               :: nix,niy,nixp,niyp
 ! ipar(6) = ebsdnl%numEbins
 ! ipar(7) = ebsdnl%nE
 
+nobg = .FALSE.
+if (present(removebackground)) then
+  if (removebackground.eq.'y') nobg = .TRUE.
+end if
 
 bindx = 1.0/float(ipar(1))**2
 
@@ -1261,14 +1266,32 @@ do ii = 1,ipar(2)
         dxm = 1.0-dx
         dym = 1.0-dy
 ! interpolate the intensity
-        if (dc(3) .ge. 0.0) then
+        if (nobg.eqv..TRUE.) then 
+          if (dc(3) .ge. 0.0) then
+            do kk = Emin, Emax
+                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + ( mLPNH(nix,niy,kk) * dxm * dym + &
+                                               mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
+                                               mLPNH(nixp,niyp,kk) * dx * dy )
+
+            end do
+          else
+            do kk = Emin, Emax
+                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + ( mLPSH(nix,niy,kk) * dxm * dym + &
+                                               mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
+                                               mLPSH(nixp,niyp,kk) * dx * dy )
+
+            end do
+
+          end if
+        else
+          if (dc(3) .ge. 0.0) then
             do kk = Emin, Emax
                 EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + accum(kk,ii,jj) * ( mLPNH(nix,niy,kk) * dxm * dym + &
                                                mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
                                                mLPNH(nixp,niyp,kk) * dx * dy )
 
             end do
-        else
+          else
             do kk = Emin, Emax
                 EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + accum(kk,ii,jj) * ( mLPSH(nix,niy,kk) * dxm * dym + &
                                                mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
@@ -1276,7 +1299,8 @@ do ii = 1,ipar(2)
 
             end do
 
-        end if
+          end if
+        end if 
     end do
 end do
 
