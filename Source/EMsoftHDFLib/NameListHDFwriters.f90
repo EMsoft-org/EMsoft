@@ -3634,6 +3634,87 @@ end subroutine HDFwriteSTEMDCINameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteGammaSTEMDCINameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief write gamma-gamma' STEMDCI namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param dcinl STEMDCI name list structure
+!
+!> @date 01/04/18 SS 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteGammaSTEMDCINameList(HDF_head,dcinl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteSTEMDCINameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(EMgammaSTEMNameListType),INTENT(IN)              :: dcinl
+
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 3
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), ii
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname, str
+character(fnlen,kind=c_char)                          :: line2(1)
+
+
+! create the group for this namelist
+groupname = SC_STEMDCINameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ dcinl%platid, dcinl%devid /)
+intlist(1) = 'platid'
+intlist(2) = 'devid'
+
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+io_real = (/ dcinl%voltage, dcinl%convergence, dcinl%dmin /)
+reallist(1) = 'voltage'
+reallist(2) = 'convergence'
+reallist(3) = 'dmin'
+
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! vectors
+dataset = SC_EulerAngles
+hdferr = HDF_writeDatasetfloatArray1D(dataset, dcinl%eu, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteGammaSTEMDCINameList: unable to create EulerAngle dataset',.TRUE.)
+
+! write all the full length strings
+dataset = SC_xtalname_gamma
+line2(1) = trim(dcinl%gammaname)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteGammaSTEMDCINameList: unable to create gammaname dataset',.TRUE.)
+
+dataset = SC_xtalname_gammap
+line2(1) = trim(dcinl%gammapname)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteGammaSTEMDCINameList: unable to create gammapname dataset',.TRUE.)
+
+dataset = SC_datafile
+line2(1) = trim(dcinl%datafile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteGammaSTEMDCINameList: unable to create datafile dataset',.TRUE.)
+
+dataset = SC_microstructurefile
+line2(1) = trim(dcinl%microstructurefile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteGammaSTEMDCINameList: unable to create microstructurefile dataset',.TRUE.)
+    
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteGammaSTEMDCINameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteSTEMGeometryNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
