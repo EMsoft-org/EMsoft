@@ -421,6 +421,74 @@ slength = irec
 
 end subroutine CLread_source_file
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:CLread_source_file_wrapper
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read an OpenCL source file and return the source properly formatted
+!
+!> @param sourcefile filename for the OpenCL source code
+!> @param source c_str containing the source, NULL-terminated
+!> @param slength source string length
+!
+!> @date 02/18/16  MDG 1.0 original
+!> @date 01/15/17  MDG 1.1 added functionality for second opencl folder for developers...
+!--------------------------------------------------------------------------
+recursive subroutine CLread_source_file_wrapper(sourcefile, csource, slength)
+!DEC$ ATTRIBUTES DLLEXPORT :: CLread_source_file_wrapper
+
+use local
+use error
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+integer, parameter                      :: source_length = 50000
+
+character(fnlen), INTENT(IN)            :: sourcefile
+character(len=source_length, KIND=c_char),INTENT(OUT) :: csource
+integer(c_size_t),INTENT(OUT)           :: slength
+
+
+character(len=source_length),target     :: source
+character(fnlen)                        :: fname, clpath, clpath2, tcf
+integer(kind=irg)                       :: irec, ierr, ipos, i, j
+logical                                 :: develop, fexist
+character(1)                            :: EMsoftnativedelimiter
+integer(kind=irg)                       :: idx
+
+
+! find the cl file in the main opencl folder or the private folder if the Develop mode equals Yes...
+fname = trim(sourcefile)
+
+inquire(file=trim(fname),exist=fexist)
+if (.not.fexist) then 
+   call FatalError('CLread_source_file','opencl source  file '//trim(fname)//' not found')
+end if
+
+! read the source file from the opencl folder
+open(unit = dataunit, file = trim(fname), access='direct', status = 'old', &
+     action = 'read', iostat = ierr, recl = 1)
+if (ierr /= 0) call FatalError("CLread_source_file: ",'Cannot open file '//fname)
+
+source = ''
+irec = 1
+do
+  read(unit = dataunit, rec = irec, iostat = ierr) source(irec:irec)
+  if (ierr /= 0) exit
+  if(irec == source_length) call FatalError("CLread_source_file: ",'Error: CL source file is too big')
+  irec = irec + 1
+end do
+close(unit=dataunit)
+
+csource = trim(source)
+csource(irec:irec) = C_NULL_CHAR
+slength = irec
+
+end subroutine CLread_source_file_wrapper
+
 
 !--------------------------------------------------------------------------
 !
