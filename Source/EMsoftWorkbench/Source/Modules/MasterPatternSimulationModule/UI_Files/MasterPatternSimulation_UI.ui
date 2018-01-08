@@ -260,7 +260,7 @@
          <number>237</number>
         </property>
         <property name="value">
-         <number>5</number>
+         <number>4</number>
         </property>
        </widget>
       </item>
@@ -357,6 +357,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>mcFilePathLE</tabstop>
+  <tabstop>smallestDSpacingSB</tabstop>
+  <tabstop>numOfMPPixelsSB</tabstop>
+  <tabstop>betheParametersXSB</tabstop>
+  <tabstop>betheParametersYSB</tabstop>
+  <tabstop>betheParametersZSB</tabstop>
+  <tabstop>numOfOpenMPThreadsSB</tabstop>
+  <tabstop>mpFilePathLE</tabstop>
+  <tabstop>mcSelectBtn</tabstop>
+  <tabstop>mpSelectBtn</tabstop>
+  <tabstop>simulateBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

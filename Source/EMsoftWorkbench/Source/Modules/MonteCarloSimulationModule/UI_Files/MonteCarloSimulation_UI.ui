@@ -699,6 +699,19 @@
  </widget>
  <tabstops>
   <tabstop>csFilePathLE</tabstop>
+  <tabstop>csSelectBtn</tabstop>
+  <tabstop>mcModeCB</tabstop>
+  <tabstop>sampleTiltAngleSigSB</tabstop>
+  <tabstop>sampleRotAngleOmegaSB</tabstop>
+  <tabstop>sampleStartTiltAngleSB</tabstop>
+  <tabstop>sampleEndTiltAngleSB</tabstop>
+  <tabstop>sampleTiltStepSizeSB</tabstop>
+  <tabstop>acceleratingVoltageSB</tabstop>
+  <tabstop>minEnergyConsiderSB</tabstop>
+  <tabstop>energyBinSizeSB</tabstop>
+  <tabstop>maxDepthConsiderSB</tabstop>
+  <tabstop>depthStepSizeSB</tabstop>
+  <tabstop>numOfPixelsNSB</tabstop>
   <tabstop>gpuPlatformCB</tabstop>
   <tabstop>gpuDeviceCB</tabstop>
   <tabstop>totalNumOfEConsideredSB</tabstop>
@@ -706,6 +719,7 @@
   <tabstop>numOfEPerWorkitemSB</tabstop>
   <tabstop>globalWorkGroupSizeSB</tabstop>
   <tabstop>mcFilePathLE</tabstop>
+  <tabstop>mcSelectBtn</tabstop>
   <tabstop>createMonteCarloBtn</tabstop>
  </tabstops>
  <resources/>
