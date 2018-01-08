@@ -921,7 +921,8 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
       rootObject.insert(EMsoft::Constants::sigstep, simData.sampleTiltAngleSig);
     }
 
-    rootObject.insert(EMsoft::Constants::xtalname, simData.inputFilePath);
+    QFileInfo simDataInputFileInfo(simData.inputFilePath);
+    rootObject.insert(EMsoft::Constants::xtalname, simDataInputFileInfo.fileName());
     rootObject.insert(EMsoft::Constants::numsx, simData.numOfPixelsN);
     rootObject.insert(EMsoft::Constants::num_el, simData.numOfEPerWorkitem);
     rootObject.insert(EMsoft::Constants::platid, simData.gpuPlatformID);
@@ -971,17 +972,17 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   float* genericFPar = fParPtr->getPointer(0);
 
-  if (writer->writeScalarDataset(EMsoft::Constants::Ebinsize, genericFPar[4]) == false)
+  if (writer->writeScalarDataset(EMsoft::Constants::Ebinsize, static_cast<double>(genericFPar[4])) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::Ehistmin, genericFPar[3]) == false)
+  if (writer->writeScalarDataset(EMsoft::Constants::Ehistmin, static_cast<double>(genericFPar[3])) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::EkeV, genericFPar[2]) == false)
+  if (writer->writeScalarDataset(EMsoft::Constants::EkeV, static_cast<double>(genericFPar[2])) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -996,12 +997,12 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::depthmax, genericFPar[5]) == false)
+  if (writer->writeScalarDataset(EMsoft::Constants::depthmax, static_cast<double>(genericFPar[5])) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::depthstep, genericFPar[6]) == false)
+  if (writer->writeScalarDataset(EMsoft::Constants::depthstep, static_cast<double>(genericFPar[6])) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1050,7 +1051,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::omega, genericFPar[1]) == false)
+  if (writer->writeScalarDataset(EMsoft::Constants::omega, static_cast<double>(genericFPar[1])) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1063,7 +1064,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   if (simData.mcMode == 1)
   {
-    if (writer->writeScalarDataset(EMsoft::Constants::sig, genericFPar[0]) == false)
+    if (writer->writeScalarDataset(EMsoft::Constants::sig, static_cast<double>(genericFPar[0])) == false)
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -1098,7 +1099,8 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeStringDataset(EMsoft::Constants::xtalname, simData.inputFilePath) == false)
+  QFileInfo simDataInputFileInfo(simData.inputFilePath);
+  if (writer->writeStringDataset(EMsoft::Constants::xtalname, simDataInputFileInfo.fileName()) == false)
   {
     QFile::remove(tmpOutputFilePath);
     return false;
