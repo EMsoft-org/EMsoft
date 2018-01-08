@@ -1081,7 +1081,6 @@ Lamresy = 0.0
 accum_e = 0
 accum_z = 0
 
-
 !======================
 ! OpenCL INITIALIZATION
 !======================
@@ -1096,7 +1095,7 @@ emmcPath=trim(CS%OpenCLpathname)//trim(sourcefile)
 emmcPath=EMsoft_toNativePath(emmcPath)
 
 ! sourcefile = 'EMMC.cl'
-call CLread_source_file(emmcPath, csource, slength)
+call CLread_source_file_wrapper(emmcPath, csource, slength)
 
 ! we disable all screen output; perhaps we can feed error messages back to the calling program...
 
