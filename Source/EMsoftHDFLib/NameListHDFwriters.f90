@@ -3646,7 +3646,7 @@ end subroutine HDFwriteSTEMDCINameList
 !> @date 01/04/18 SS 1.0 new routine
 !--------------------------------------------------------------------------
 recursive subroutine HDFwriteGammaSTEMDCINameList(HDF_head,dcinl)
-!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteSTEMDCINameList
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteGammaSTEMDCINameList
 
 use ISO_C_BINDING
 
