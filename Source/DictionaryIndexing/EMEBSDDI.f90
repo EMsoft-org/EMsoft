@@ -152,10 +152,11 @@ allocate(acc%accum_e_detector(ebsdnl%numEbins,ebsdnl%numsx,ebsdnl%numsy), stat=i
 
 call EBSDIndexingGenerateDetector(ebsdnl, acc, master)
 deallocate(acc%accum_e)
+
 ! perform the dictionary indexing computations
 call MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
 
-!deallocate(master, acc)
+deallocate(master, acc)
 
 end program EBSDIndexing
 
@@ -185,6 +186,7 @@ end program EBSDIndexing
 !> @date 07/24/17 MDG 1.8 temporary code to change the mask layout for fast DI tests
 !> @date 08/30/17 MDG 1.9 added option to read custom mask from file
 !> @date 11/13/17 MDG 2.0 moved OpenCL code from InnerProdGPU routine to main code
+!> @date 01/09/18 MDG 2.1 first attempt at OpenMP for pattern pre-processing
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
@@ -267,25 +269,25 @@ real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! C
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
-                                                       recordsize_correct
+                                                       recordsize_correct, patsz
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 real(kind=sgl),pointer                              :: dict(:), T0dict(:)
 real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
 !integer(kind=1),allocatable                         :: imageexpt(:),imagedict(:)
 real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
-                                                       exptCI(:), exptFit(:)
+                                                       exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
                                                        tmpimageexpt(:)
 real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:),&
                                                        eulerarray(:,:),resultmain(:,:),resulttmp(:,:)
 integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:) 
-integer*4,allocatable                               :: idpmap(:),iexptCI(:,:), iexptIQ(:,:)
+integer*4,allocatable                               :: iexptCI(:,:), iexptIQ(:,:)
 real(kind=sgl),allocatable                          :: meandict(:),meanexpt(:),wf(:),mLPNH(:,:,:),mLPSH(:,:,:),accum_e_MC(:,:,:)
 real(kind=sgl),allocatable                          :: mLPNH_simple(:,:), mLPSH_simple(:,:), eangle(:)
 real(kind=sgl),allocatable                          :: EBSDpattern(:,:), FZarray(:,:), dpmap(:), lstore(:,:), pstore(:,:)
-real(kind=sgl),allocatable                          :: EBSDpatternintd(:,:), lp(:), cp(:)
-integer(kind=irg),allocatable                       :: EBSDpatterninteger(:,:), EBSDpatternad(:,:)
-real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:)
+real(kind=sgl),allocatable                          :: EBSDpatternintd(:,:), lp(:), cp(:), EBSDpat(:,:)
+integer(kind=irg),allocatable                       :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
+real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:)
 real(kind=dbl)                                      :: w
 integer(kind=irg)                                   :: dims(2)
 character(11)                                       :: dstr
@@ -341,6 +343,7 @@ xtalname = ebsdnl%MCxtalname
 ncubochoric = ebsdnl%ncubochoric
 recordsize = L*4
 itmpexpt = 43
+patsz = ebsdnl%numsx*ebsdnl%numsy
 dims = (/imght, imgwd/)
 w = ebsdnl%hipassw
 source_l = source_length
@@ -613,10 +616,11 @@ if (istat .ne. 0) stop 'could not allocate euler array'
 allocate(exptIQ(totnumexpt), exptCI(totnumexpt), exptFit(totnumexpt), stat=istat)
 if (istat .ne. 0) stop 'could not allocate exptIQ array'
 
-allocate(rdata(binx,biny),fdata(binx,biny),stat=istat)
+allocate(rdata(binx,biny),fdata(binx,biny),EBSDPat(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
 rdata = 0.D0
 fdata = 0.D0
+
 
 !=====================================================
 ! determine loop variables to avoid having to duplicate 
@@ -721,167 +725,161 @@ open(unit=iunitexpt,file=trim(ename),&
     status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
 call Message(' opened input file '//trim(ename))
 
-! prepare the fftw plan for this pattern size
-EBSDPattern = 0.0
-tmp = sngl(getEBSDIQ(binx, biny, EBSDPattern, init))
-
-! also, allocate the arrays used to create the dot product map; this will require 
+! also, allocate the arrays used to create the average dot product map; this will require 
 ! reading the actual EBSD HDF5 file to figure out how many rows and columns there
 ! are in the region of interest.  For now we get those from the nml until we actually 
 ! implement the HDF5 reading bit
 ! this portion of code was first tested in IDL.
-allocate(lstore(L,ebsdnl%ipf_wd),pstore(L,ebsdnl%ipf_wd),dpmap(totnumexpt), &
-         idpmap(totnumexpt),lp(L),cp(L))
 
 allocate(EBSDpatterninteger(binx,biny))
 EBSDpatterninteger = 0
 allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
 EBSDpatternad = 0.0
 EBSDpatternintd = 0.0
-dpmap= 0.0
-pstore = 0.0
-lstore = 0.0
-lp = 0.0
-cp = 0.0
-
-! initialize the HiPassFilter routine
-rdata = dble(EBSDPattern)
-fdata = HiPassFilter(rdata,dims,w,init=.TRUE.)
-
-!open(unit=45,file='hipassfilter.data',status='unknown',form='unformatted')
-!write(45) fdata
-!close(unit=45,status='keep')
 
 call Message('Starting processing of experimental patterns')
 call cpu_time(tstart)
 
-pc = totnumexpt/10
+! this next part should be done with OpenMP, with only thread 0 doing the reading and writing,
+! as well as the computation of the ADP map.  Thread 0 should read one line worth of patterns
+! from the input file, then the threads do the work, then thread 0 computes the ADP bit and 
+! writes to the output file; repeat until all patterns have been processed.
 
-prepexperimentalloop: do iii = 1,totnumexpt
+call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
+io_int(1) = ebsdnl%nthreads
+call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
+
+! allocate the arrays that holds the experimental patterns from a single row of the region of interest
+allocate(exppatarray(ebsdnl%numsx * ebsdnl%numsy * ebsdnl%ipf_wd),stat=istat)
+if (istat .ne. 0) stop 'could not allocate exppatarray'
+
+! we do one row at a time
+prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
+
+! start the OpenMP portion
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp)
+
+! set the thread ID
+    TID = OMP_GET_THREAD_NUM()
+! initialize thread private variables
     tmpimageexpt = 0.0
-    read(iunitexpt,rec=iii) imageexpt
+    allocate(rrdata(binx,biny),ffdata(binx,biny),EBSDPat(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+    rrdata = 0.D0
+    ffdata = 0.D0
+    ! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+    EBSDPat = 0.0
+    tmp = sngl(getEBSDIQ(binx, biny, EBSDPat, init))
 
+    ! initialize the HiPassFilter routine (has its own FFTW plan)
+    rrdata = dble(EBSDPat)
+    ffdata = HiPassFilter(rrdata,dims,w,init=.TRUE.)
+    allocate(EBSDpint(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate EBSDpint array'
+
+! thread 0 reads the next row of patterns from the input file
+    if (TID.eq.0) then
+      do jj=1,ebsdnl%ipf_wd
+        read(iunitexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) imageexpt
+        exppatarray((jj-1)*patsz+1:jj*patsz) = imageexpt(1:patsz)
+      end do
+    end if
+! other threads must wait until T0 is ready
+!$OMP BARRIER
+    jj=0
+
+! then loop in parallel over all patterns to perform the preprocessing steps
+!$OMP DO SCHEDULE(DYNAMIC)
+    do jj=1,ebsdnl%ipf_wd
 ! convert imageexpt to 2D EBS Pattern array
-    do kk=1,biny
-      EBSDPattern(1:binx,kk) = imageexpt((kk-1)*binx+1:kk*binx)
-    end do
+        do kk=1,biny
+          EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
+        end do
 
 ! compute the pattern Image Quality 
-    exptIQ(iii) = sngl(getEBSDIQ(binx, biny, EBSDPattern))
+        exptIQ((iii-1)*ebsdnl%ipf_wd + jj) = sngl(getEBSDIQ(binx, biny, EBSDPat))
 
 ! Hi-Pass filter
-    rdata = dble(EBSDPattern)
-    fdata = HiPassFilter(rdata,dims,w)
-    EBSDPattern = sngl(fdata)
+        rrdata = dble(EBSDPat)
+        ffdata = HiPassFilter(rrdata,dims,w)
+        EBSDPat = sngl(ffdata)
 
 ! adaptive histogram equalization
-    ma = maxval(EBSDPattern)
-    mi = minval(EBSDPattern)
+        ma = maxval(EBSDPat)
+        mi = minval(EBSDPat)
     
-    EBSDpatternintd = ((EBSDPattern - mi)/ (ma-mi))
-    EBSDpatterninteger = nint(EBSDpatternintd*255.0)
-    EBSDpatternad =  adhisteq(ebsdnl%nregions,binx,biny,EBSDpatterninteger)
-    EBSDPattern = float(EBSDpatternad)
+        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+        EBSDPat = float(adhisteq(ebsdnl%nregions,binx,biny,EBSDpint))
 
 ! convert back to 1D vector
-    do kk=1,biny
-      imageexpt((kk-1)*binx+1:kk*binx) = EBSDPattern(1:binx,kk)
+        do kk=1,biny
+          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = EBSDPat(1:binx,kk)
+        end do
+
+! apply circular mask and normalize for the dot product computation
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
+        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        if (vlen.ne.0.0) then
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
+        else
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
+        end if
     end do
+!$OMP END DO
 
-! normalize and apply circular mask
-    imageexpt(1:L) = imageexpt(1:L) * masklin(1:L)
-    vlen = NORM2(imageexpt(1:L))
-    if (vlen.ne.0.0) then
-      imageexpt(1:L) = imageexpt(1:L)/vlen
-    else
-      imageexpt(1:L) = 0.0
+! thread 0 writes the row of patterns to the output file
+    if (TID.eq.0) then
+      do jj=1,ebsdnl%ipf_wd
+        write(itmpexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)
+      end do
     end if
-    tmpimageexpt(1:L) = imageexpt(1:L)
 
-! and write this pattern into the temporary file
-    write(itmpexpt,rec=iii) tmpimageexpt
-
-! finally, handle the average dot product map stuff
-    ii = mod(iii,ebsdnl%ipf_wd)
-    if (ii.eq.0) ii = ebsdnl%ipf_wd
-    jj = iii/ebsdnl%ipf_wd+1
-! do we need to copy pstore into lstore ?
-    if ((ii.eq.1).and.(jj.gt.1)) lstore = pstore
-! determine to which dpmap entries we need to add the dot product
-    if (ii.eq.1) then
-      cp(1:L) = imageexpt(1:L)
-      pstore(1:L,ii) = cp(1:L)
-    else
-      lp = cp
-      cp(1:L) = imageexpt(1:L)
-      pstore(1:L,ii) = cp(1:L)
-      dp = sum(lp(1:L)*cp(1:L))
-      dpmap(iii-1) = dpmap(iii-1) + dp
-      dpmap(iii) = dpmap(iii) + dp
-    end if
-    if (jj.gt.1) then
-      dp = sum(lstore(1:L,ii)*cp(1:L))
-      dpmap(iii-ebsdnl%ipf_wd+1) = dpmap(iii-ebsdnl%ipf_wd+1) + dp
-      dpmap(iii) = dpmap(iii) + dp
-    end if
+!$OMP BARRIER
+! deallocate variables that are used by individual threads
+    deallocate(rrdata, ffdata, EBSDpat, EBSDpint)
+!$OMP END PARALLE
 
 ! print an update of progress
-    if (iii.gt.pc) then
-      io_int(1:2) = (/ iii, totnumexpt /)
-      call WriteValue('Completed ',io_int,2,"(I12,' of ',I12,' experimental patterns')")
-      pc = pc + totnumexpt/10
-    end if
+    io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
+    call WriteValue('Completed row ',io_int,2,"(I12,' of ',I12,' rows')")
 end do prepexperimentalloop
 
 call Message(' -> experimental patterns stored in tmp file')
 
 close(unit=iunitexpt,status='keep')
+close(unit=itmpexpt,status='keep')
 
 ! print some timing information
-
 call CPU_TIME(tstop)
 tstop = tstop - tstart
 io_real(1) = float(totnumexpt)/tstop
 call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,//)")
 
-! we keep the temporary file open since we will be reading from it...
+!=====================================================
+call Message(' -> computing Average Dot Product map (ADP)')
+allocate(dpmap(totnumexpt))
+! re-open the temporary file
+open(unit=itmpexpt,file=trim(fname),&
+     status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
+! use the getADPmap routine in the filters module
+call getADPmap(itmpexpt, totnumexpt, L, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dpmap)
 
-! correct the dot product map values depending on inside, edge, or corner pixels
-! divide by 4
-dpmap = dpmap*0.25
-
-! correct the straight segments
-dpmap(2:ebsdnl%ipf_wd-1) = dpmap(2:ebsdnl%ipf_wd-1) * 4.0/3.0
-dpmap(totnumexpt-ebsdnl%ipf_wd+2:totnumexpt-1) = dpmap(totnumexpt-ebsdnl%ipf_wd+2:totnumexpt-1) * 4.0/3.0
-do jj=1,ebsdnl%ipf_ht-2
-  dpmap(ebsdnl%ipf_wd*jj+1) = dpmap(ebsdnl%ipf_wd*jj+1) * 4.0/3.0
-end do
-do jj=2,ebsdnl%ipf_ht-1
-  dpmap(ebsdnl%ipf_wd*jj) = dpmap(ebsdnl%ipf_wd*jj) * 4.0/3.0
-end do
-
-! and the corners
-dpmap(1) = dpmap(1) * 4.0
-dpmap(ebsdnl%ipf_wd) = dpmap(ebsdnl%ipf_wd) * 2.0
-dpmap(totnumexpt) = dpmap(totnumexpt) * 2.0
-dpmap(totnumexpt-ebsdnl%ipf_wd+1) = dpmap(totnumexpt-ebsdnl%ipf_wd+1) * 4.0/3.0
-
-! and we deallocate the auxiliary variables for the average dot product map
-deallocate(lstore,pstore,lp,cp)
+! we will leave the itmpexpt file open, since we'll be reading from it again...
 
 !=====================================================
 ! MAIN COMPUTATIONAL LOOP
 !
 ! Some explanation is necessary here... the bulk of this code is 
 ! executed in OpenMP multithreaded mode, with nthreads threads.
-! Thread 0 has a special role describe below; threads 1 ... nthreads-1
+! Thread 0 has a special role described below; threads 1 ... nthreads-1
 ! share the computation of the dictionary patterns, and wait for 
 ! thread 0 to finish, if necessary.
 !
 ! Thread 0 takes the dictionary patterns computed by the other threads
 ! in the previous step in the dictionaryloop and sends them to the GPU,
 ! along with as many chunks of experimental data are to be handled (experimentalloop
-! inside the thread 0 portion of the code); the ! experimental patterns 
+! inside the thread 0 portion of the code); the experimental patterns 
 ! are then read from the temporary file (unit itmpexpt).  Once all dot
 ! products have been computed by the GPU, thread 0 will rank them largest
 ! to smallest and keep only the top nnk values along with their indices 
@@ -900,13 +898,12 @@ deallocate(lstore,pstore,lp,cp)
 
 call cpu_time(tstart)
 
-
 call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
 io_int(1) = ebsdnl%nthreads
 call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 
 
-! define the ipar array
+! define the jpar array of integer parameters
 jpar(1) = ebsdnl%binning
 jpar(2) = ebsdnl%numsx
 jpar(3) = ebsdnl%numsy
