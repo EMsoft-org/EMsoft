@@ -838,7 +838,7 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 !$OMP BARRIER
 ! deallocate variables that are used by individual threads
     deallocate(rrdata, ffdata, EBSDpat, EBSDpint)
-!$OMP END PARALLE
+!$OMP END PARALLEL
 
 ! print an update of progress
     io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
