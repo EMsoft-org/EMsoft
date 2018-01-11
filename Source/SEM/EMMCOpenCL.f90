@@ -94,6 +94,7 @@ end program EMMCOpenCL
 !> @date 12/04/15  MDG 5.5 added Ivol mode for display of interaction volume
 !> @date 02/23/16  MDG 5.6 converted to CLFortran
 !> @date 05/21/16  MDG 5.7 changes for HDF internal file reorganization
+!> @date 01/11/18  MDG 5.8 added stereographic projection version of accum_e array to output file (EBSD only)
 !--------------------------------------------------------------------------
 subroutine DoMCsimulation(mcnl, progname, nmldeffile)
 
@@ -141,7 +142,7 @@ real(kind=4),target     :: Ze           ! average atomic number
 real(kind=4),target     :: density      ! density in g/cm^3
 real(kind=4),target     :: at_wt        ! average atomic weight in g/mole
 logical                 :: verbose
-real(kind=4)            :: dens, avA, avZ, io_real(3), dmin ! used with CalcDensity routine
+real(kind=4)            :: dens, avA, avZ, io_real(3), dmin, Radius  ! used with CalcDensity routine
 real(kind=8) , parameter:: dtoR = 0.01745329251D0 !auxiliary variables
 real(kind=4),target     :: EkeV, sig, omega ! input values to the kernel. Can only be real kind=4 otherwise values are not properly passed
 integer(kind=ill)       :: totnum_el, bse     ! total number of electrons to simulate and no. of backscattered electrons
@@ -155,11 +156,12 @@ real(kind=4),allocatable, target :: Lamresx(:), Lamresy(:), Lamresz(:), depthres
 
 ! final results stored here
 integer(kind=4),allocatable :: accum_e(:,:,:), accum_z(:,:,:,:), accum_xyz(:,:,:), rnseeds(:)
+real(kind=sgl),allocatable  :: accumSP(:,:,:)
 integer(kind=ill),allocatable :: accum_e_ill(:,:,:)
 integer(kind=4),allocatable,target  :: init_seeds(:)
 integer(kind=4)         :: idxy(2), iE, px, py, iz, nseeds, hdferr, tstart, tstop ! auxiliary variables
 real(kind=4)            :: cxyz(3), edis, xy(2), xs, ys, zs, sclf ! auxiliary variables
-real(kind=8)            :: delta,rand
+real(kind=8)            :: delta,rand, xyz(3)
 character(11)           :: dstr
 character(15)           :: tstrb
 character(15)           :: tstre
@@ -201,6 +203,25 @@ character(fnlen),ALLOCATABLE      :: MessageLines(:)
 integer(kind=irg)                 :: NumLines
 character(fnlen)                  :: SlackUsername, exectime
 character(100)                    :: c
+
+
+interface
+function InterpolateLambert(dc, accume, npx, nn) result(res)
+
+  use local
+  use Lambert
+  use EBSDmod
+  use constants
+
+  IMPLICIT NONE
+
+  real(kind=dbl),INTENT(INOUT)            :: dc(3)
+  integer(kind=irg),INTENT(IN)            :: accume(1:nn,-npx:npx,-npx:npx)
+  integer(kind=irg),INTENT(IN)            :: npx 
+  integer(kind=irg),INTENT(IN)            :: nn
+  real(kind=sgl)                          :: res(nn)
+end function InterpolateLambert
+end interface
 
 nullify(HDF_head)
 
@@ -686,6 +707,24 @@ end if
 
 end do angleloop
 
+if (mode .eq. 'full') then
+! get stereographic projections from the accum_e array
+  allocate(accumSP(numEbins,-nx:nx,-nx:nx))
+  Radius = 1.0
+  do i=-nx,nx 
+    do j=-nx,nx 
+      xy = (/ float(i), float(j) /) / float(nx)
+      xyz = StereoGraphicInverse( xy, ierr, Radius )
+      xyz = xyz/NORM2(xyz)
+      if (ierr.ne.0) then 
+        accumSP(1:numEbins,i,j) = 0.0
+      else
+        accumSP(1:numEbins,i,j) = InterpolateLambert(xyz, accum_e, nx, numEbins)
+      end if
+    end do
+  end do
+end if
+
 tstop = Time_tock(tstart)
 io_int(1) = tstop
 call WriteValue('Total execution time [s] = ',io_int,1)
@@ -768,6 +807,9 @@ dataset = SC_accume
 dataset = SC_accumz
     hdferr = HDF_writeDatasetIntegerArray4D(dataset, accum_z, numEbins, numzbins, 2*(nx/10)+1, 2*(nx/10)+1, HDF_head)
 
+dataset = SC_accumSP
+    hdferr = HDF_writeDatasetFloatArray3D(dataset, accumSP, numEbins, 2*nx+1, 2*nx+1, HDF_head)
+
 else if (mode .eq. 'bse1') then
 
 dataset = SC_numangle
@@ -838,4 +880,56 @@ if (trim(EMsoft_getNotify()).ne.'Off') then
 end if
 
 end subroutine DoMCsimulation
+
+
+
+
+function InterpolateLambert(dc, accume, npx, nn) result(res)
+
+use local
+use Lambert
+use EBSDmod
+use constants
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(INOUT)            :: dc(3)
+integer(kind=irg),INTENT(IN)            :: accume(1:nn,-npx:npx,-npx:npx)
+integer(kind=irg),INTENT(IN)            :: npx 
+integer(kind=irg),INTENT(IN)            :: nn
+real(kind=sgl)                          :: res(nn)
+
+integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
+real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
+
+scl = float(npx) 
+
+if (dc(3).lt.0.0) dc = -dc
+
+! convert direction cosines to lambert projections
+xy = scl * LambertSphereToSquare( dc, istat )
+res = 0.0
+
+if (istat.eq.0) then 
+! interpolate intensity from the neighboring points
+  nix = floor(xy(1))
+  niy = floor(xy(2))
+  nixp = nix+1
+  niyp = niy+1
+  if (nixp.gt.npx) nixp = nix
+  if (niyp.gt.npx) niyp = niy
+  dx = xy(1) - nix
+  dy = xy(2) - niy
+  dxm = 1.0 - dx
+  dym = 1.0 - dy
+  
+  res(1:nn) = accume(1:nn,nix,niy)*dxm*dym + accume(1:nn,nixp,niy)*dx*dym + &
+              accume(1:nn,nix,niyp)*dxm*dy + accume(1:nn,nixp,niyp)*dx*dy
+end if
+
+
+end function InterpolateLambert
+
+
+
 
