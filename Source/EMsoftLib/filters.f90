@@ -738,6 +738,108 @@ fdata(1:dims(1),1:dims(2)) = real(outp)
 
 end function HiPassFilter
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: init_HiPassFilter
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  Perform a high pass filter
+!
+!> @param rdata real data to be transformed
+!> @param dims dimensions of rdata array
+!> @param w width of Gaussian profile
+!> @param init (optional) initialize without computing anything
+!> @param destroy (optional) destroy fft plans
+! 
+!> @date 02/02/16 MDG 1.0 original
+!> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile; added init optional parameter
+!--------------------------------------------------------------------------
+recursive subroutine init_HiPassFilter(w, dims, hpmask, inp, outp, planf, planb) 
+!DEC$ ATTRIBUTES DLLEXPORT :: init_HiPassFilter
+
+use FFTW3mod
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)               :: w
+integer(kind=irg),INTENT(IN)            :: dims(2)
+complex(kind=dbl),INTENT(OUT)           :: hpmask(dims(1),dims(2))
+complex(C_DOUBLE_COMPLEX),INTENT(OUT)   :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
+type(C_PTR),INTENT(OUT)                 :: planf, planb
+
+integer(kind=irg)                       :: i, j
+real(kind=dbl)                          :: x, y, val
+
+! generate the complex inverted Gaussian mask; w = 0.05 produces good results (usually)
+do i=1,dims(1)/2 
+  x = float(i)
+  do j=1,dims(2)/2
+    y = float(j)
+    val = 1.D0-dexp(-w*(x*x+y*y))
+    hpmask(i,j) = cmplx(val, 0.D0)
+    hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
+    hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
+    hpmask(dims(1)+1-i,dims(2)+1-j) = cmplx(val, 0.D0)
+    ! fdata(i,j) = val
+    ! fdata(dims(1)+1-i,j) = val
+    ! fdata(i,dims(2)+1-j) = val
+    ! fdata(dims(1)+1-i,dims(2)+1-j) = val
+  end do
+end do
+
+! then we set up the fftw plans for forward and reverse transforms
+planf = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_FORWARD, FFTW_ESTIMATE)
+planb = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_BACKWARD, FFTW_ESTIMATE)
+
+end subroutine init_HiPassFilter
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: applyHiPassFilter
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  Perform a high pass filter
+!
+!> @param rdata real data to be transformed
+!> @param dims dimensions of rdata array
+!> @param w width of Gaussian profile
+! 
+!> @date 02/02/16 MDG 1.0 original
+!> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile
+!--------------------------------------------------------------------------
+recursive function applyHiPassFilter(rdata, dims, w, hpmask, inp, outp, planf, planb) result(fdata)
+!DEC$ ATTRIBUTES DLLEXPORT :: applyHiPassFilter
+
+use FFTW3mod
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: dims(2)
+real(kind=dbl),INTENT(IN)               :: w
+real(kind=dbl),INTENT(IN)               :: rdata(dims(1),dims(2))
+complex(kind=dbl),INTENT(IN)            :: hpmask(dims(1),dims(2))
+complex(C_DOUBLE_COMPLEX),INTENT(OUT)   :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
+type(C_PTR),INTENT(IN)                  :: planf, planb
+real(kind=dbl)                          :: fdata(dims(1),dims(2))
+
+complex(kind=dbl)                       :: cone = cmplx(1.D0,0.D0), czero = cmplx(0.D0,0.D0)
+integer(kind=irg)                       :: i, j, k, ii, jj
+real(kind=dbl)                          :: x, y, val
+
+! apply the hi-pass mask to rdata
+do j=1,dims(1)
+ do k=1,dims(2)
+  inp(j,k) = cmplx(rdata(j,k),0.D0)    
+ end do
+end do
+call fftw_execute_dft(planf, inp, outp)
+inp = outp * hpmask
+call fftw_execute_dft(planb, inp, outp) 
+fdata(1:dims(1),1:dims(2)) = real(outp)
+
+end function applyHiPassFilter
 
 !--------------------------------------------------------------------------
 !

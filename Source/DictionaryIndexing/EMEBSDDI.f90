@@ -287,8 +287,10 @@ real(kind=sgl),allocatable                          :: mLPNH_simple(:,:), mLPSH_
 real(kind=sgl),allocatable                          :: EBSDpattern(:,:), FZarray(:,:), dpmap(:), lstore(:,:), pstore(:,:)
 real(kind=sgl),allocatable                          :: EBSDpatternintd(:,:), lp(:), cp(:), EBSDpat(:,:)
 integer(kind=irg),allocatable                       :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
-real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:)
-real(kind=dbl)                                      :: w
+real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:), ksqarray(:,:)
+complex(kind=dbl),allocatable                       :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
+real(kind=dbl)                                      :: w, Jres
 integer(kind=irg)                                   :: dims(2)
 character(11)                                       :: dstr
 character(15)                                       :: tstrb
@@ -300,6 +302,7 @@ integer(hsize_t)                                    :: expwidth, expheight
 integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_size_t),target                            :: slength
 integer(c_int)                                      :: numd, nump
+type(C_PTR)                                         :: planf, HPplanf, HPplanb
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc
@@ -485,7 +488,11 @@ call WriteValue(' Number of unique orientations sampled =        : ', io_int, 1,
 !================================
 ! INITIALIZATION OF OpenCL DEVICE
 !================================
+call Message('--> Initializing OpenCL device')
+
 call CLinit_PDCCQ(platform, nump, ebsdnl%platid, device, numd, ebsdnl%devid, info, context, command_queue)
+
+write (*,*) 'CLinit_PDCCQ'
 
 ! read the cl source file
 sourcefile = 'DictIndx.cl'
@@ -497,6 +504,7 @@ call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
 
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
 call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
+write (*,*) 'clCreateBuffer'
 
 !================================
 ! the following lines were originally in the InnerProdGPU routine, but there is no need
@@ -505,10 +513,14 @@ call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
 ! create the program
 pcnt = 1
 psource = C_LOC(csource)
+write (*,*) 'clCreateProgramWithSource : ',pcnt, source_l
 prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
+write (*,*) '--> returned'
 call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
 
+
 ! build the program
+write (*,*) 'clBuildProgram'
 ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
 
 ! get the compilation log
@@ -533,6 +545,7 @@ call CLerror_check('InnerProdGPU:clReleaseProgram', ierr)
 !=========================================
 ! ALLOCATION AND INITIALIZATION OF ARRAYS
 !=========================================
+call Message('--> Allocating various arrays for indexing')
 
 allocate(expt(Ne*correctsize),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for experimental patterns'
@@ -616,7 +629,7 @@ if (istat .ne. 0) stop 'could not allocate euler array'
 allocate(exptIQ(totnumexpt), exptCI(totnumexpt), exptFit(totnumexpt), stat=istat)
 if (istat .ne. 0) stop 'could not allocate exptIQ array'
 
-allocate(rdata(binx,biny),fdata(binx,biny),EBSDPat(binx,biny),stat=istat)
+allocate(rdata(binx,biny),fdata(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
 rdata = 0.D0
 fdata = 0.D0
@@ -753,8 +766,27 @@ call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 allocate(exppatarray(ebsdnl%numsx * ebsdnl%numsy * ebsdnl%ipf_wd),stat=istat)
 if (istat .ne. 0) stop 'could not allocate exppatarray'
 
+allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+
+allocate(EBSDpint(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate EBSDpint array'
+
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+EBSDPat = 0.0
+allocate(ksqarray(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate ksqarray array'
+Jres = 0.0
+call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
+
+! initialize the HiPassFilter routine (has its own FFTW plans)
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate hpmask array'
+call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+
 ! we do one row at a time
 prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
+
 
 ! start the OpenMP portion
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
@@ -764,19 +796,8 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
     TID = OMP_GET_THREAD_NUM()
 ! initialize thread private variables
     tmpimageexpt = 0.0
-    allocate(rrdata(binx,biny),ffdata(binx,biny),EBSDPat(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
     rrdata = 0.D0
     ffdata = 0.D0
-    ! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
-    EBSDPat = 0.0
-    tmp = sngl(getEBSDIQ(binx, biny, EBSDPat, init))
-
-    ! initialize the HiPassFilter routine (has its own FFTW plan)
-    rrdata = dble(EBSDPat)
-    ffdata = HiPassFilter(rrdata,dims,w,init=.TRUE.)
-    allocate(EBSDpint(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate EBSDpint array'
 
 ! thread 0 reads the next row of patterns from the input file
     if (TID.eq.0) then
@@ -798,11 +819,11 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
         end do
 
 ! compute the pattern Image Quality 
-        exptIQ((iii-1)*ebsdnl%ipf_wd + jj) = sngl(getEBSDIQ(binx, biny, EBSDPat))
+        exptIQ((iii-1)*ebsdnl%ipf_wd + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
 
 ! Hi-Pass filter
         rrdata = dble(EBSDPat)
-        ffdata = HiPassFilter(rrdata,dims,w)
+        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
         EBSDPat = sngl(ffdata)
 
 ! adaptive histogram equalization
@@ -836,14 +857,15 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
     end if
 
 !$OMP BARRIER
-! deallocate variables that are used by individual threads
-    deallocate(rrdata, ffdata, EBSDpat, EBSDpint)
 !$OMP END PARALLEL
 
 ! print an update of progress
     io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
     call WriteValue('Completed row ',io_int,2,"(I12,' of ',I12,' rows')")
 end do prepexperimentalloop
+
+! deallocate variables that are used by individual threads
+deallocate(rrdata, ffdata, EBSDpat, EBSDpint)
 
 call Message(' -> experimental patterns stored in tmp file')
 

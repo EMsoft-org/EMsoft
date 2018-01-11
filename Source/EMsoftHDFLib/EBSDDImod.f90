@@ -1101,6 +1101,146 @@ end function getEBSDIQ
 
 !--------------------------------------------------------------------------
 !
+! FUNCTION: init_getEBSDIQ
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief initialize variables for the EBSD Image Quality using the second moment of the power spectrum
+!
+!> @details This is based on Krieger Lassen's pattern sharpness definition: Q = 1 - J / Jres wtot
+!> more details page 93 of thesis of Farangis Ram.
+!
+!> @param dimx x pattern dimension
+!> @param dimy y pattern dimension
+!> @param pattern input EBSD pattern
+!
+!> @date 01/10/18 MDG 1.0 original, based on getEBSDIQ routine, but only init part
+!--------------------------------------------------------------------------
+recursive subroutine init_getEBSDIQ(dimx, dimy, pattern, ksqarray, Jres, planf) 
+!DEC$ ATTRIBUTES DLLEXPORT :: init_getEBSDIQ
+
+use local
+use typedefs
+use FFTW3mod
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: dimx
+integer(kind=irg),INTENT(IN)            :: dimy
+real(kind=sgl),INTENT(IN)               :: pattern(dimx,dimy)
+real(kind=dbl),INTENT(OUT)              :: ksqarray(dimx,dimy)
+real(kind=dbl),INTENT(OUT)              :: Jres
+type(C_PTR),INTENT(OUT)                 :: planf
+
+complex(C_DOUBLE_COMPLEX),pointer       :: inp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer       :: outp(:,:)
+type(C_PTR)                             :: p, o
+real(kind=dbl)                          :: linex(dimx), liney(dimy)
+integer(kind=irg)                       :: i
+
+p = fftw_alloc_complex(int(dimx*dimy,C_SIZE_T))
+call c_f_pointer(p, inp, [dimx,dimy])
+
+o = fftw_alloc_complex(int(dimx*dimy,C_SIZE_T))
+call c_f_pointer(o, outp, [dimx,dimy])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
+! set up the fftw plan for the forward transform
+planf = fftw_plan_dft_2d(dimy,dimx,inp,outp, FFTW_FORWARD,FFTW_ESTIMATE)
+
+! generate the parameter/array needed by the getEBSDIQ function
+ksqarray = 0.D0
+Jres = 0.D0
+
+linex = (/ (dble(i),i=0,dimx-1) /) 
+linex(dimx/2+1:dimx) = linex(dimx/2+1:dimx) - dble(dimx)
+linex = linex**2
+liney = (/ (dble(i),i=0,dimy-1) /) 
+liney(dimy/2+1:dimy) = liney(dimy/2+1:dimy) - dble(dimy)
+liney = liney**2
+
+do i=1,dimx
+    ksqarray(i,1:dimy) = linex(i) + liney(1:dimy)
+end do
+Jres = sum(ksqarray) / dble(dimx) / dble(dimy)
+
+call fftw_free(p)
+call fftw_free(o)
+
+end subroutine init_getEBSDIQ
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: computeEBSDIQ
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the EBSD Image Quality using the second moment of the power spectrum
+!
+!> @details This is based on Krieger Lassen's pattern sharpness definition: Q = 1 - J / Jres wtot
+!> more details page 93 of thesis of Farangis Ram.
+!
+!> @param dimx x pattern dimension
+!> @param dimy y pattern dimension
+!> @param pattern input EBSD pattern
+!
+!> @date 02/07/16 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function computeEBSDIQ(dimx, dimy, pattern, ksqarray, Jres, planf) result(Q)
+!DEC$ ATTRIBUTES DLLEXPORT :: computeEBSDIQ
+
+use local
+use typedefs
+use FFTW3mod
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: dimx
+integer(kind=irg),INTENT(IN)            :: dimy
+real(kind=sgl),INTENT(IN)               :: pattern(dimx,dimy)
+real(kind=dbl),INTENT(IN)               :: ksqarray(dimx,dimy)
+real(kind=dbl),INTENT(IN)               :: Jres
+type(C_PTR),INTENT(IN)                  :: planf
+real(kind=dbl)                          :: Q
+
+
+real(kind=dbl)                          :: J, wtot
+complex(C_DOUBLE_COMPLEX),pointer       :: inp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer       :: outp(:,:)
+type(C_PTR)                             :: p, o
+real(kind=dbl)                          :: w(dimx,dimy), linex(dimx), liney(dimy)
+integer(kind=irg)                       :: i
+
+p = fftw_alloc_complex(int(dimx*dimy,C_SIZE_T))
+call c_f_pointer(p, inp, [dimx,dimy])
+
+o = fftw_alloc_complex(int(dimx*dimy,C_SIZE_T))
+call c_f_pointer(o, outp, [dimx,dimy])
+
+inp = pattern
+outp = cmplx(0.D0,0.D0)
+
+! compute the Fourier transform
+call fftw_execute_dft(planf, inp, outp)
+
+w = sqrt(real(outp)**2 + aimag(outp)**2)
+
+! sum over the arrays
+J = sum(w*ksqarray)
+wtot = sum(w)
+
+! and return the quality parametere
+Q = 1.0 - J/Jres/wtot
+
+call fftw_free(p)
+call fftw_free(o)
+
+end function computeEBSDIQ
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: get_EBSDDI_memory_pattern
 !
 !> @author Marc De Graef, Carnegie Mellon University
