@@ -774,10 +774,6 @@ if (istat .ne. 0) stop 'could not allocate hpmask array'
 call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
 deallocate(inp, outp)
 
-open(unit=10,status='unknown',form='unformatted')
-write (10) hpmask
-close(unit=10,status='keep')
-
 call Message('Starting processing of experimental patterns')
 call cpu_time(tstart)
 
