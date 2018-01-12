@@ -224,6 +224,7 @@ else
    qq = xy2(2)*LPs%Pi*0.25/xy2(1)
    res = (/ q*cos(qq), q*sin(qq), 1.0-2.0*xy2(1)*xy2(1)*sngl(LPs%iPi) /)  
   end if
+  res = res/sqrt(sum(res*res))
  end if
 end if
 
@@ -278,6 +279,7 @@ else
    qq = xy2(2)*LPs%Pi*0.25D0/xy2(1)
    res = (/ q*dcos(qq), q*dsin(qq), 1.D0-2.D0*xy2(1)*xy2(1)*LPs%iPi /)  
   end if
+  res = res/dsqrt(sum(res*res))
  end if
 end if
 

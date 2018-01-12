@@ -98,6 +98,7 @@ end program EMECPmaster
 !> @date 09/15/15  SS  1.3 corrected small bug in writing stereo projection to h5 file
 !> @date 08/17/16  MDG 1.4 modified for new HDF internal format
 !> @date 09/29/16  MDG 2.0 added option to read structure data from master file instead of external .xtal file
+!> @date 01/11/18  MDG 2.1 changed master pattern format for hexagonal symmetry to the square Lambert projection
 !--------------------------------------------------------------------------
 subroutine ECmasterpattern(ecpnl, progname, nmldeffile)
 
@@ -148,13 +149,13 @@ integer(kind=irg)       :: npyhex, ijmax, numk, skip ! parameters for calckvecto
 integer(kind=irg)       :: ga(3), gb(3) ! shortest reciprocal lattice vector for zone axis
 real(kind=sgl), allocatable :: thick(:), mLPNH(:,:,:), mLPSH(:,:,:), svals(:), lambdaZ(:), klist(:,:), knlist(:),&
                                masterSPNH(:,:,:), masterSPSH(:,:,:), auxNH(:,:,:), auxSH(:,:,:) 
-real(kind=dbl)          :: intthick, dc(3), dx, dxm, dy, dym, edge, scl
+real(kind=dbl)          :: intthick, dc(3), dx, dxm, dy, dym, edge, scl, xy(2), Radius
 complex(kind=dbl),allocatable   :: Lgh(:,:),Sgh(:,:),Sghtmp(:,:,:)
 complex(kind=dbl),allocatable   :: DynMat(:,:)
 complex(kind=dbl)       :: czero
 
 integer(kind=irg)       :: nt, nns, nnw, tots, totw ! thickness array and BetheParameters strong and weak beams
-real(kind=sgl)          :: FN(3), kk(3), fnat, kn, Radius, xy(2), tstart, tstop
+real(kind=sgl)          :: FN(3), kk(3), fnat, kn, tstart, tstop
 integer(kind=irg)       :: numset, nref, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one,ierr
 integer(kind=irg),allocatable   :: kij(:,:), nat(:)
 real(kind=dbl)          :: res(2), xyz(3), ind, nabsl
@@ -399,6 +400,7 @@ usehex = .FALSE.
 if ((cell%xtal_system.eq.4).or.(cell%xtal_system.eq.5)) usehex = .TRUE.
 
 !if(usehex)  npyhex = nint(2.0*float(ecpnl%npx)/sqrt(3.0))
+npy = ecpnl%npx
 ijmax = float(ecpnl%npx)**2   ! truncation value for beam directions
 
 ! ---------- end of symmetry and crystallography section
@@ -741,9 +743,9 @@ io_int(1) = nint(float(totw)/float(numk))
 call WriteValue(' -> Average number of weak reflections   = ',io_int, 1, "(I5)")
 
 
- if (usehex) then
+ if (usehex.eqv..TRUE.) then
 ! and finally, we convert the hexagonally sampled array to a square Lambert projection which will be used 
-! for all EBSD pattern interpolations;  we need to do this for both the Northern and Southern hemispheres
+! for all ECP pattern interpolations;  we need to do this for both the Northern and Southern hemispheres
 
 ! we begin by allocating auxiliary arrays to hold copies of the hexagonal data; the original arrays will
 ! then be overwritten with the newly interpolated data.
@@ -784,9 +786,8 @@ call WriteValue(' -> Average number of weak reflections   = ',io_int, 1, "(I5)")
     deallocate(auxNH, auxSH)
   end if
 
-
 ! make sure that the outer pixel rim of the mLPSH patterns is identical to
-! that of the mLPNH array.o
+! that of the mLPNH array.
 mLPSH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites)
 mLPSH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites) = mLPNH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites)
 mLPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numsites)
