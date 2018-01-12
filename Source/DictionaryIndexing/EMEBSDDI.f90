@@ -492,8 +492,6 @@ call Message('--> Initializing OpenCL device')
 
 call CLinit_PDCCQ(platform, nump, ebsdnl%platid, device, numd, ebsdnl%devid, info, context, command_queue)
 
-write (*,*) 'CLinit_PDCCQ'
-
 ! read the cl source file
 sourcefile = 'DictIndx.cl'
 call CLread_source_file(sourcefile, csource, slength)
@@ -504,7 +502,6 @@ call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
 
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
 call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
-write (*,*) 'clCreateBuffer'
 
 !================================
 ! the following lines were originally in the InnerProdGPU routine, but there is no need
@@ -513,14 +510,11 @@ write (*,*) 'clCreateBuffer'
 ! create the program
 pcnt = 1
 psource = C_LOC(csource)
-write (*,*) 'clCreateProgramWithSource : ',pcnt, source_l
 prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
-write (*,*) '--> returned'
 call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
 
 
 ! build the program
-write (*,*) 'clBuildProgram'
 ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
 
 ! get the compilation log
@@ -750,13 +744,10 @@ allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
 EBSDpatternad = 0.0
 EBSDpatternintd = 0.0
 
-call Message('Starting processing of experimental patterns')
-call cpu_time(tstart)
 
-! this next part should be done with OpenMP, with only thread 0 doing the reading and writing,
-! as well as the computation of the ADP map.  Thread 0 should read one line worth of patterns
-! from the input file, then the threads do the work, then thread 0 computes the ADP bit and 
-! writes to the output file; repeat until all patterns have been processed.
+! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
+! Thread 0 reads one line worth of patterns from the input file, then the threads do 
+! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
 
 call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
 io_int(1) = ebsdnl%nthreads
@@ -766,36 +757,50 @@ call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 allocate(exppatarray(ebsdnl%numsx * ebsdnl%numsy * ebsdnl%ipf_wd),stat=istat)
 if (istat .ne. 0) stop 'could not allocate exppatarray'
 
-allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
-
-allocate(EBSDpint(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate EBSDpint array'
 
 ! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+allocate(EBSDPat(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
 EBSDPat = 0.0
 allocate(ksqarray(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate ksqarray array'
 Jres = 0.0
 call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
+deallocate(EBSDPat)
 
 ! initialize the HiPassFilter routine (has its own FFTW plans)
 allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate hpmask array'
 call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+deallocate(inp, outp)
+
+open(unit=10,status='unknown',form='unformatted')
+write (10) hpmask
+close(unit=10,status='keep')
+
+call Message('Starting processing of experimental patterns')
+call cpu_time(tstart)
 
 ! we do one row at a time
 prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
-
 ! start the OpenMP portion
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
-!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp)
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
 
 ! set the thread ID
     TID = OMP_GET_THREAD_NUM()
 ! initialize thread private variables
     tmpimageexpt = 0.0
+    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+
+    allocate(EBSDpint(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate EBSDpint array'
+
+    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+
     rrdata = 0.D0
     ffdata = 0.D0
 
@@ -806,6 +811,7 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
         exppatarray((jj-1)*patsz+1:jj*patsz) = imageexpt(1:patsz)
       end do
     end if
+
 ! other threads must wait until T0 is ready
 !$OMP BARRIER
     jj=0
@@ -820,11 +826,13 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
 ! compute the pattern Image Quality 
         exptIQ((iii-1)*ebsdnl%ipf_wd + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
+!       if (TID.eq.0) write (*,*) 'computeEBSDIQ: ',iii, jj, exptIQ((iii-1)*ebsdnl%ipf_wd + jj)
 
 ! Hi-Pass filter
         rrdata = dble(EBSDPat)
         ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
         EBSDPat = sngl(ffdata)
+!       if (TID.eq.0) write (*,*) 'applyHiPassFilter: ',iii, jj, maxval(EBSDPat)
 
 ! adaptive histogram equalization
         ma = maxval(EBSDPat)
@@ -832,6 +840,7 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
     
         EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
         EBSDPat = float(adhisteq(ebsdnl%nregions,binx,biny,EBSDpint))
+!       if (TID.eq.0) write (*,*) 'adhisteq: ',iii, jj, maxval(EBSDPat)
 
 ! convert back to 1D vector
         do kk=1,biny
@@ -856,16 +865,16 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
       end do
     end if
 
+deallocate(EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
 !$OMP BARRIER
 !$OMP END PARALLEL
 
 ! print an update of progress
-    io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
-    call WriteValue('Completed row ',io_int,2,"(I12,' of ',I12,' rows')")
+    if (mod(iii,5).eq.0) then
+        io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+    end if
 end do prepexperimentalloop
-
-! deallocate variables that are used by individual threads
-deallocate(rrdata, ffdata, EBSDpat, EBSDpint)
 
 call Message(' -> experimental patterns stored in tmp file')
 
@@ -875,11 +884,13 @@ close(unit=itmpexpt,status='keep')
 ! print some timing information
 call CPU_TIME(tstop)
 tstop = tstop - tstart
-io_real(1) = float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,//)")
+io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
+call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
 
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')
+call Message(' ')
+
 allocate(dpmap(totnumexpt))
 ! re-open the temporary file
 open(unit=itmpexpt,file=trim(fname),&

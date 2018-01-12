@@ -700,11 +700,12 @@ if (present(init)) then
     allocate(hpmask(dims(1),dims(2)), inp(dims(1),dims(2)), outp(dims(1),dims(2)))
 
 ! generate the complex inverted Gaussian mask; w = 0.05 produces good results (usually)
-    do i=1,dims(1)/2 
-      x = float(i)
-      do j=1,dims(2)/2
-        y = float(j)
-        val = 1.D0-dexp(-w*(x*x+y*y))
+  do i=1,dims(1)/2 
+    x = dble(i)**2
+    do j=1,dims(2)/2
+      y = dble(j)**2
+      if ((x+y).lt.30.D0) then
+        val = 1.D0-dexp(-w*(x+y))
         hpmask(i,j) = cmplx(val, 0.D0)
         hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
         hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
@@ -713,8 +714,9 @@ if (present(init)) then
         fdata(dims(1)+1-i,j) = val
         fdata(i,dims(2)+1-j) = val
         fdata(dims(1)+1-i,dims(2)+1-j) = val
-      end do
-   end do
+      end if
+    end do
+  end do
 
 ! then we set up the fftw plans for forward and reverse transforms
     planf = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_FORWARD, FFTW_ESTIMATE)
@@ -754,6 +756,7 @@ end function HiPassFilter
 ! 
 !> @date 02/02/16 MDG 1.0 original
 !> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile; added init optional parameter
+!> @date 01/11/18 MDG 1.2 split routine from original to allow for OpenMP access
 !--------------------------------------------------------------------------
 recursive subroutine init_HiPassFilter(w, dims, hpmask, inp, outp, planf, planb) 
 !DEC$ ATTRIBUTES DLLEXPORT :: init_HiPassFilter
@@ -771,20 +774,20 @@ type(C_PTR),INTENT(OUT)                 :: planf, planb
 integer(kind=irg)                       :: i, j
 real(kind=dbl)                          :: x, y, val
 
+hpmask = cmplx(1.D0,0.D0)
+
 ! generate the complex inverted Gaussian mask; w = 0.05 produces good results (usually)
 do i=1,dims(1)/2 
-  x = float(i)
+  x = dble(i)**2
   do j=1,dims(2)/2
-    y = float(j)
-    val = 1.D0-dexp(-w*(x*x+y*y))
-    hpmask(i,j) = cmplx(val, 0.D0)
-    hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
-    hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
-    hpmask(dims(1)+1-i,dims(2)+1-j) = cmplx(val, 0.D0)
-    ! fdata(i,j) = val
-    ! fdata(dims(1)+1-i,j) = val
-    ! fdata(i,dims(2)+1-j) = val
-    ! fdata(dims(1)+1-i,dims(2)+1-j) = val
+    y = dble(j)**2
+    if ((x+y).lt.30.D0) then
+      val = 1.D0-dexp(-w*(x+y))
+      hpmask(i,j) = cmplx(val, 0.D0)
+      hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
+      hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
+      hpmask(dims(1)+1-i,dims(2)+1-j) = cmplx(val, 0.D0)
+    end if
   end do
 end do
 
@@ -808,6 +811,7 @@ end subroutine init_HiPassFilter
 ! 
 !> @date 02/02/16 MDG 1.0 original
 !> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile
+!> @date 01/11/18 MDG 1.2 split routine from original to allow for OpenMP access
 !--------------------------------------------------------------------------
 recursive function applyHiPassFilter(rdata, dims, w, hpmask, inp, outp, planf, planb) result(fdata)
 !DEC$ ATTRIBUTES DLLEXPORT :: applyHiPassFilter
