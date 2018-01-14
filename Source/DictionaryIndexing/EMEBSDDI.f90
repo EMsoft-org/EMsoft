@@ -510,7 +510,8 @@ call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
 ! create the program
 pcnt = 1
 psource = C_LOC(csource)
-prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
+!prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
+prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(slength), ierr)
 call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
 
 
