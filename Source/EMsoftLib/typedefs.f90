@@ -1331,4 +1331,29 @@ type sggamma
     type(sggamma),pointer   :: next   ! pointer to next element
 end type sggamma
 
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+type LTEMstruct
+    real(kind=dbl),allocatable      :: kx(:,:,:)
+    real(kind=dbl),allocatable      :: ky(:,:,:)
+    real(kind=dbl),allocatable      :: kz(:,:,:)
+    real(kind=dbl),allocatable      :: Mx(:,:,:)
+    real(kind=dbl),allocatable      :: My(:,:,:)
+    real(kind=dbl),allocatable      :: Mz(:,:,:)
+    real(kind=dbl),allocatable      :: Ax(:,:,:)
+    real(kind=dbl),allocatable      :: Ay(:,:,:)
+    real(kind=dbl),allocatable      :: Az(:,:,:)
+    real(kind=dbl),allocatable      :: Bx(:,:,:)
+    real(kind=dbl),allocatable      :: By(:,:,:)
+    real(kind=dbl),allocatable      :: Bz(:,:,:)
+    real(kind=dbl),allocatable      :: kmag(:,:,:)
+end type LTEMstruct
+
+
+
+
+
+
 end module typedefs
