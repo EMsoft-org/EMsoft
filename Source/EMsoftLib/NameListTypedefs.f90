@@ -954,6 +954,7 @@ type EBSDIndexingNameListType
         integer(kind=irg)       :: npy
         integer(kind=irg)       :: nE
         integer(kind=irg)       :: numset
+        integer(kind=irg)       :: section
         real(kind=dbl)          :: EkeV
         real(kind=dbl)          :: Ehistmin 
         real(kind=dbl)          :: Ebinsize 
