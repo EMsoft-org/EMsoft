@@ -34,6 +34,11 @@ set(MODALITY_DIRS
   Utilities
 )
 
+
+# --------------------------------------------------------------------
+# Add the wrapper library for EMsoft
+add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftWrapperLib ${PROJECT_BINARY_DIR}/EMsoftWrapperLib)
+
 # --------------------------------------------------------------------
 # Add the executables
 foreach(MODALITY ${MODALITY_DIRS})
