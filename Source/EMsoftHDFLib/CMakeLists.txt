@@ -35,7 +35,7 @@ set(EMsoftHDFLib_SRCS
 	${EMsoftHDFLib_SOURCE_DIR}/initializersHDF.f90
  	${EMsoftHDFLib_SOURCE_DIR}/NameListHDFwriters.f90
 	${EMsoftHDFLib_SOURCE_DIR}/EBSDmod.f90
- 	${EMsoftHDFLib_SOURCE_DIR}/EMdymodHDF.f90
+# 	${EMsoftHDFLib_SOURCE_DIR}/EMdymodHDF.f90
   ${EMsoftHDFLib_SOURCE_DIR}/ECPmod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/EBSDiomod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/ECPiomod.f90

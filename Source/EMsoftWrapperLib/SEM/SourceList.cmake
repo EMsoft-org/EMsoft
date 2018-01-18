@@ -1,5 +1,5 @@
 set(SEM_Wrapper_SRCS
- # ${EMsoftWrapperLib}/SEM/Foo.f03
-
+  ${EMsoftWrapperLib_SOURCE_DIR}/SEM/EMSEMwrappermod.f90
+  
 
 )

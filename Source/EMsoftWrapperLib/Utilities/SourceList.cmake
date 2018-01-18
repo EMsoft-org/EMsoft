@@ -1,3 +1,3 @@
 set(Utilities_Wrapper_SRCS
- # ${EMsoftWrapperLib}/Utilities/Foo.f03
+ # ${EMsoftWrapperLib_SOURCE_DIR}/Utilities/Foo.f03
 )
