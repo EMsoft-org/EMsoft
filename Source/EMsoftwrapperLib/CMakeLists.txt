@@ -1,0 +1,2 @@
+
+message(STATUS "test")
