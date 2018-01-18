@@ -61,6 +61,8 @@
 module typedefs
 
 use local
+use, intrinsic :: iso_c_binding
+
 
 ! following are used to define the quaternion symmetry operators
 real(kind=dbl),private,parameter        :: sq22=0.7071067811865475244D0 ! sqrt(2)/2
@@ -1330,5 +1332,27 @@ type sggamma
     complex(kind=dbl)       :: expsg  ! exp(2*cPi*sg + q0)
     type(sggamma),pointer   :: next   ! pointer to next element
 end type sggamma
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+type LTEMstruct
+    real(kind=dbl),allocatable      :: kx(:,:,:)
+    real(kind=dbl),allocatable      :: ky(:,:,:)
+    real(kind=dbl),allocatable      :: kz(:,:,:)
+    real(C_DOUBLE),pointer          :: Mx(:,:,:)
+    real(C_DOUBLE),pointer          :: My(:,:,:)
+    real(C_DOUBLE),pointer          :: Mz(:,:,:)
+    real(C_DOUBLE),pointer          :: Ax(:,:,:)
+    real(C_DOUBLE),pointer          :: Ay(:,:,:)
+    real(C_DOUBLE),pointer          :: Az(:,:,:)
+    real(kind=dbl),allocatable      :: kmag(:,:,:)
+end type LTEMstruct
+
+
+
+
+
 
 end module typedefs

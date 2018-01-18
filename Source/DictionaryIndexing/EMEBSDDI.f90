@@ -823,13 +823,11 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
 ! compute the pattern Image Quality 
         exptIQ((iii-1)*ebsdnl%ipf_wd + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
-!       if (TID.eq.0) write (*,*) 'computeEBSDIQ: ',iii, jj, exptIQ((iii-1)*ebsdnl%ipf_wd + jj)
 
 ! Hi-Pass filter
         rrdata = dble(EBSDPat)
         ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
         EBSDPat = sngl(ffdata)
-!       if (TID.eq.0) write (*,*) 'applyHiPassFilter: ',iii, jj, maxval(EBSDPat)
 
 ! adaptive histogram equalization
         ma = maxval(EBSDPat)
@@ -837,7 +835,6 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
     
         EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
         EBSDPat = float(adhisteq(ebsdnl%nregions,binx,biny,EBSDpint))
-!       if (TID.eq.0) write (*,*) 'adhisteq: ',iii, jj, maxval(EBSDPat)
 
 ! convert back to 1D vector
         do kk=1,biny

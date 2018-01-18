@@ -105,7 +105,7 @@ real(kind=dbl), parameter :: epsijkd = 1.D0
 !> cLight	= velocity of light [m/s]
 !> cPlanck	= Planck''s constant [Js]
 !> cBoltzmann	= Boltmann constant [J/K]
-!> cPermea	= permeability of vacuum [dimensionless]
+!> cPermea	= permeability of vacuum [4pi 10^7 H/m]
 !> cPermit	= permittivity of vacuum [F/m]
 !> cCharge	= electron charge [C]
 !> cRestmass	= electron rest mass [kg]
@@ -118,7 +118,7 @@ real(kind=dbl), parameter :: cPi=3.141592653589793238D0, cLight = 299792458.D0, 
                              cPermea = 1.2566370614D-6, cPermit = 8.854187817D-12, &
                              cCharge = 1.602176565D-19, cRestmass = 9.10938291D-31, &
                              cMoment = 9.28476430D-24, cJ2eV = 1.602176565D-19, &
-                              cAvogadro = 6.02214129D23
+                             cAvogadro = 6.02214129D23
 !DEC$ ATTRIBUTES DLLEXPORT :: cPi
 !DEC$ ATTRIBUTES DLLEXPORT :: cPlanck
 !DEC$ ATTRIBUTES DLLEXPORT :: cPermea
