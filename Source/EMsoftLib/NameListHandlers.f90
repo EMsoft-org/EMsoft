@@ -4037,6 +4037,7 @@ integer(kind=irg)                                 :: nnk
 integer(kind=irg)                                 :: nnav
 integer(kind=irg)                                 :: nosm
 integer(kind=irg)                                 :: maskradius
+integer(kind=irg)                                 :: section
 character(fnlen)                                  :: exptfile
 character(fnlen)                                  :: dictfile
 character(fnlen)                                  :: maskfile
@@ -4047,7 +4048,8 @@ namelist  / EBSDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile
 beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, nlines, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius,&
-dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile
+dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
+section
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4098,6 +4100,7 @@ tmpfile         = 'EMEBSDDict_tmp.data'
 dictfile        = 'undefined'
 maskfile        = 'undefined'
 indexingmode    = 'dynamic'
+section         = 0
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4136,56 +4139,56 @@ end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the enl fields
 
-enl%devid = devid
-enl%platid = platid
-enl%nregions = nregions
-enl%nlines = nlines
-enl%maskpattern = maskpattern
-enl%exptfile = exptfile
-enl%nnk = nnk
-enl%nnav = nnav
-enl%nosm = nosm
-enl%ipf_ht = ipf_ht
-enl%ipf_wd = ipf_wd
-enl%nthreads = nthreads
-enl%datafile = datafile
-enl%tmpfile = tmpfile
-enl%ctffile = ctffile
-enl%avctffile = avctffile
-enl%angfile = angfile
-enl%eulerfile = eulerfile
-enl%maskradius = maskradius
+enl%devid         = devid
+enl%platid        = platid
+enl%nregions      = nregions
+enl%nlines        = nlines
+enl%maskpattern   = maskpattern
+enl%exptfile      = exptfile
+enl%nnk           = nnk
+enl%nnav          = nnav
+enl%nosm          = nosm
+enl%ipf_ht        = ipf_ht
+enl%ipf_wd        = ipf_wd
+enl%nthreads      = nthreads
+enl%datafile      = datafile
+enl%tmpfile       = tmpfile
+enl%ctffile       = ctffile
+enl%avctffile     = avctffile
+enl%angfile       = angfile
+enl%eulerfile     = eulerfile
+enl%maskradius    = maskradius
 enl%numdictsingle = numdictsingle
 enl%numexptsingle = numexptsingle
-enl%hipassw = hipassw
-enl%masterfile = masterfile
-enl%energyfile = masterfile
-enl%maskfile = maskfile
-enl%StepX = stepX
-enl%StepY = stepY
-enl%indexingmode = trim(indexingmode)
-enl%Notify = Notify
-
+enl%hipassw       = hipassw
+enl%masterfile    = masterfile
+enl%energyfile    = masterfile
+enl%maskfile      = maskfile
+enl%StepX         = stepX
+enl%StepY         = stepY
+enl%indexingmode  = trim(indexingmode)
+enl%Notify        = Notify
+enl%section       = section
 if (trim(indexingmode) .eq. 'dynamic') then
-    enl%L = L
-    enl%numsx = numsx
-    enl%numsy = numsy
-    enl%binning = binning
-    enl%energyaverage = energyaverage
-    enl%thetac = thetac
-    enl%delta = delta
-    enl%xpc = xpc
-    enl%ypc = ypc
-    enl%gammavalue = gammavalue
-    enl%beamcurrent = beamcurrent
-    enl%dwelltime = dwelltime
-    enl%scalingmode = scalingmode
-    enl%ncubochoric = ncubochoric
-    enl%omega = omega
-    enl%energymin = energymin
-    enl%energymax = energymax
-    enl%spatialaverage = spatialaverage
-    enl%dictfile = 'undefined'
+    enl%L               = L
+    enl%numsx           = numsx
+    enl%numsy           = numsy
+    enl%binning         = binning
+    enl%energyaverage   = energyaverage
+    enl%thetac          = thetac
+    enl%delta           = delta
+    enl%xpc             = xpc
+    enl%ypc             = ypc
+    enl%gammavalue      = gammavalue
+    enl%beamcurrent     = beamcurrent
+    enl%dwelltime       = dwelltime
+    enl%scalingmode     = scalingmode
+    enl%ncubochoric     = ncubochoric
+    enl%omega           = omega
+    enl%energymin       = energymin
+    enl%energymax       = energymax
+    enl%spatialaverage  = spatialaverage
+    enl%dictfile        = 'undefined'
 else if (trim(indexingmode) .eq. 'static') then
     enl%dictfile = dictfile
     enl%ncubochoric = 0
