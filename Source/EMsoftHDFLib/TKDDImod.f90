@@ -276,7 +276,7 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy      ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp      ! various parameters
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp           ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -379,20 +379,13 @@ deallocate(z)
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
        dc = (/ master%rgx(i,j),master%rgy(i,j),master%rgz(i,j) /)
+
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
+
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        x = ixy(1)
-        ixy(1) = ixy(2)
-        ixy(2) = -x
-! four-point interpolation (bi-quadratic)
-        nix = int(enl%nsx+ixy(1))-enl%nsx
-        niy = int(enl%nsy+ixy(2))-enl%nsy
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+        call LambertgetInterpolation(dc, scl, enl%nsx, enl%nsy, nix, niy, nixp, niyp, dx, dy, dxm, dym, swap=.TRUE.)
+
 ! do the area correction for this detector pixel
         dp = dot_product(pcvec,dc)
         theta = acos(dp)
@@ -404,16 +397,12 @@ deallocate(z)
 ! interpolate the intensity 
         do k=Emin,Emax 
           acc%accum_e_detector(k,i,j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
-                                        acc%accum_e(k,nix+1,niy) * dx * dym + &
-                                        acc%accum_e(k,nix,niy+1) * dxm * dy + &
-                                        acc%accum_e(k,nix+1,niy+1) * dx * dy )
+                                        acc%accum_e(k,nixp,niy) * dx * dym + &
+                                        acc%accum_e(k,nix,niyp) * dxm * dy + &
+                                        acc%accum_e(k,nixp,niyp) * dx * dy )
         end do
     end do
   end do 
-
-!open(unit=dataunit,file='TKDdetectorarray.data',status='unknown',form='unformatted')
-!write(dataunit) acc%accum_e_detector
-!close(unit=dataunit,status='keep')
 
 ! and finally, get rid of the original accum_e array which is no longer needed
 ! [we'll do that in the calling program ]

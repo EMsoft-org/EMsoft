@@ -774,7 +774,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy     ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp     ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -866,20 +866,13 @@ deallocate(z)
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
        dc = (/ master%rgx(i,j),master%rgy(i,j),master%rgz(i,j) /)
+
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
+
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        x = ixy(1)
-        ixy(1) = ixy(2)
-        ixy(2) = -x
-! four-point interpolation (bi-quadratic)
-        nix = int(enl%nsx+ixy(1))-enl%nsx
-        niy = int(enl%nsy+ixy(2))-enl%nsy
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+       call LambertgetInterpolation(dc, scl, enl%nsx, enl%nsy, nix, niy, nixp, niyp, dx, dy, dxm, dym, swap=.TRUE.)
+
 ! do the area correction for this detector pixel
         dp = dot_product(pcvec,dc)
         theta = acos(dp)
@@ -888,14 +881,13 @@ deallocate(z)
         else
           !g = 2.0 * tan(alpha) * dp / ( tan(theta+alpha) - tan(theta-alpha) ) * 0.25
           g = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3)
-
         end if
 ! interpolate the intensity 
         do k=Emin,Emax 
           s = acc%accum_e(k,nix,niy) * dxm * dym + &
-              acc%accum_e(k,nix+1,niy) * dx * dym + &
-              acc%accum_e(k,nix,niy+1) * dxm * dy + &
-              acc%accum_e(k,nix+1,niy+1) * dx * dy
+              acc%accum_e(k,nixp,niy) * dx * dym + &
+              acc%accum_e(k,nix,niyp) * dxm * dy + &
+              acc%accum_e(k,nixp,niyp) * dx * dy
           acc%accum_e_detector(k,i,j) = g * s
         end do
     end do
@@ -956,40 +948,28 @@ allocate(master_twinSH(-enl%npx:enl%npx,-enl%npy:enl%npy,1:enl%nE),stat=istat)
 
 q = (/ dsqrt(3.D0)/2.D0,1/dsqrt(3.D0)/2.D0,1/dsqrt(3.D0)/2.D0,1/dsqrt(3.D0)/2.D0 /)
 
-scl = float(enl%npx) ! / LPs%sPio2 [removed 09/01/15 by MDG for new Lambert module]
+scl = dble(enl%npx) ! / LPs%sPio2 [removed 09/01/15 by MDG for new Lambert module]
 
-    master_twinNH = 0.0
-    master_twinSH = 0.0
-    do jj = -enl%npx,enl%npx
-        do kk = -enl%npy,enl%npy
+master_twinNH = 0.0
+master_twinSH = 0.0
+do jj = -enl%npx,enl%npx
+    do kk = -enl%npy,enl%npy
 
-            Lamproj = (/ float(jj)/scl,float(kk)/scl /)
-            dc = LambertSquareToSphere(Lamproj,ierr)
-            dc_new = quat_Lp(conjg(q),dc)
-            dc_new = dc_new/sqrt(sum(dc_new**2))
-            if (dc_new(3) .lt. 0.0) dc_new = -dc_new
+        Lamproj = (/ float(jj)/scl,float(kk)/scl /)
+        dc = LambertSquareToSphere(Lamproj,ierr)
+        dc_new = quat_Lp(conjg(q),dc)
+        dc_new = dc_new/sqrt(sum(dc_new**2))
+        if (dc_new(3) .lt. 0.0) dc_new = -dc_new
 
-! convert direction cosines to lambert projections
-            ixy = scl * LambertSphereToSquare( dc_new, istat )
-! interpolate intensity from the neighboring points
+! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
+        call LambertgetInterpolation(dc_new, scl, enl%npx, enl%npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
-            nix = floor(ixy(1))
-            niy = floor(ixy(2))
-            nixp = nix+1
-            niyp = niy+1
-            if (nixp.gt.enl%npx) nixp = nix
-            if (niyp.gt.enl%npy) niyp = niy
-            dx = ixy(1) - nix
-            dy = ixy(2) - niy
-            dxm = 1.0 - dx
-            dym = 1.0 - dy
-
-            master_twinNH(jj,kk,1:enl%nE) = master%mLPNH(nix,niy,1:enl%nE)*dxm*dym + master%mLPNH(nixp,niy,1:enl%nE)*dx*dym + &
-                                    master%mLPNH(nix,niyp,1:enl%nE)*dxm*dy + master%mLPNH(nixp,niyp,1:enl%nE)*dx*dy
-            master_twinSH(jj,kk,1:enl%nE) = master%mLPSH(nix,niy,1:enl%nE)*dxm*dym + master%mLPSH(nixp,niy,1:enl%nE)*dx*dym + &
-                                    master%mLPSH(nix,niyp,1:enl%nE)*dxm*dy + master%mLPSH(nixp,niyp,1:enl%nE)*dx*dy
-        end do
+        master_twinNH(jj,kk,1:enl%nE) = master%mLPNH(nix,niy,1:enl%nE)*dxm*dym + master%mLPNH(nixp,niy,1:enl%nE)*dx*dym + &
+                                master%mLPNH(nix,niyp,1:enl%nE)*dxm*dy + master%mLPNH(nixp,niyp,1:enl%nE)*dx*dy
+        master_twinSH(jj,kk,1:enl%nE) = master%mLPSH(nix,niy,1:enl%nE)*dxm*dym + master%mLPSH(nixp,niy,1:enl%nE)*dx*dym + &
+                                master%mLPSH(nix,niyp,1:enl%nE)*dxm*dy + master%mLPSH(nixp,niyp,1:enl%nE)*dx*dy
     end do
+end do
 master%mLPNH = 0.5D0 * (master_twinNH + master%mLPNH)
 master%mLPSH = 0.5D0 * (master_twinSH + master%mLPSH)
 
@@ -1062,7 +1042,7 @@ allocate(master_out%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy,1:enl%nE),stat=istat
 master_out%mLPNH = 0.0
 master_out%mLPSH = 0.0
 
-scl = float(enl%npx) ! / LPs%sPio2 [ removed on 09/01/15 by MDG for new Lambert module]
+scl = dble(enl%npx) ! / LPs%sPio2 [ removed on 09/01/15 by MDG for new Lambert module]
 
 master_rotatedNH = 0.0
 master_rotatedSH = 0.0
@@ -1075,31 +1055,19 @@ do jj = -enl%npx,enl%npx
         dc_new = dc_new/sqrt(sum(dc_new**2))
         if (dc_new(3) .lt. 0.0) dc_new = -dc_new
 
-! convert direction cosines to lambert projections
-        ixy = scl * LambertSphereToSquare( dc_new, istat )
+! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
+        call LambertgetInterpolation(dc_new, scl, enl%npx, enl%npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
-! interpolate intensity from the neighboring points
-        nix = floor(ixy(1))
-        niy = floor(ixy(2))
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.enl%npx) nixp = nix
-        if (niyp.gt.enl%npy) niyp = niy
-        dx = ixy(1) - nix
-        dy = ixy(2) - niy
-        dxm = 1.0 - dx
-        dym = 1.0 - dy
-
+! and perform the interpolation
         master_rotatedNH(jj,kk,1:enl%nE) = master_in%mLPNH(nix,niy,1:enl%nE)*dxm*dym + master_in%mLPNH(nixp,niy,1:enl%nE)&
-                                    *dx*dym + master_in%mLPNH(nix,niyp,1:enl%nE)*dxm*dy + master_in%mLPNH(nixp,niyp,1:enl%nE)&
-                                    *dx*dy
+                                    *dx*dym + master_in%mLPNH(nix,niyp,1:enl%nE)*dxm*dy + master_in%mLPNH(nixp,niyp,1:enl%nE)*dx*dy
         master_rotatedSH(jj,kk,1:enl%nE) = master_in%mLPSH(nix,niy,1:enl%nE)*dxm*dym + master_in%mLPSH(nixp,niy,1:enl%nE)&
                                     *dx*dym + master_in%mLPSH(nix,niyp,1:enl%nE)*dxm*dy + master_in%mLPSH(nixp,niyp,1:enl%nE)*dx*dy
     end do
 end do
 
-master_out%mLPNH = (1 - alpha) * master_rotatedNH + alpha * master_in%mLPNH
-master_out%mLPSH = (1 - alpha) * master_rotatedSH + alpha * master_in%mLPSH
+master_out%mLPNH = (1.D0 - alpha) * master_rotatedNH + alpha * master_in%mLPNH
+master_out%mLPSH = (1.D0 - alpha) * master_rotatedSH + alpha * master_in%mLPSH
 
 call Message(' -> completed superimposing rotated and regular master patterns', frm = "(A)")
 
@@ -1264,34 +1232,20 @@ scl = float(ipar(4))
 
 do ii = 1,ipar(2)
     do jj = 1,ipar(3)
+! get the pixel direction cosines from the pre-computed array
         dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
- ! apply the grain rotation 
+! apply the grain rotation 
         dc = quat_Lp(qu(1:4),  dc)
-
-        if (present(Fmatrix)) then
 ! apply the deformation if present
+        if (present(Fmatrix)) then
           dc = matmul(sngl(Fmatrix), dc)
         end if
- 
 ! and normalize the direction cosines (to remove any rounding errors)
         dc = dc/sqrt(sum(dc**2))
 
-! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        if (istat .ne. 0) stop 'Something went wrong during interpolation...'
-! four-point interpolation (bi-quadratic)
-        nix = int(ipar(4)+ixy(1))-ipar(4)
-        niy = int(ipar(5)+ixy(2))-ipar(5)
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.ipar(4)) nixp = nix
-        if (niyp.gt.ipar(5)) niyp = niy
-        if (nix.lt.-ipar(4)) nix = nixp
-        if (niy.lt.-ipar(5)) niy = niyp
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
+        call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
 ! interpolate the intensity
         if (nobg.eqv..TRUE.) then 
           if (dc(3) .ge. 0.0) then
@@ -1433,22 +1387,9 @@ do ii = 1,ipar(2)
 
         dc = dc/sqrt(sum(dc**2))
 
-! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        if (istat .ne. 0) stop 'Something went wrong during interpolation...'
-! four-point interpolation (bi-quadratic)
-        nix = int(ipar(4)+ixy(1))-ipar(4)
-        niy = int(ipar(5)+ixy(2))-ipar(5)
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.ipar(4)) nixp = nix
-        if (niyp.gt.ipar(5)) niyp = niy
-        if (nix.lt.-ipar(4)) nix = nixp
-        if (niy.lt.-ipar(5)) niy = niyp
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
+        call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
 ! interpolate the intensity
         if (dc(3) .ge. 0.0) then
             do kk = Emin, Emax

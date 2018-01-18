@@ -175,6 +175,12 @@ interface LambertInverse
         module procedure LambertInverseDouble
 end interface
 
+public :: LambertgetInterpolation
+interface LambertgetInterpolation
+        module procedure LambertgetInterpolationSingle
+        module procedure LambertgetInterpolationDouble
+end interface
+
 contains
 !--------------------------------------------------------------------------
 !
@@ -2272,6 +2278,174 @@ end do
 nequiv = n
 
 end subroutine Apply3DPGSymmetry
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: LambertgetInterpolationSingle
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief take direction cosines and return all parameters for square Lambert interpolation
+!
+!> @details this piece of code replaces code that occurred many times in various programs
+!
+!> @param dc direction cosines
+!> @param scl scale parameter for square Lambert projection
+!> @param npx number of pixels along square semi-edge
+!> @param npy should be the same as npx
+!> @param nix coordinates of point
+!> @param niy
+!> @param nixp and neighboring point
+!> @param niyp
+!> @param dx  interpolation weight factors
+!> @param dy
+!> @param dxm
+!> @param dym
+!> @param swap sometimes we need to swap the x and y coordinates (OPTIONAL)
+! 
+!> @date  01/18/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine LambertgetInterpolationSingle(dc, scl, npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym, swap)
+!DEC$ ATTRIBUTES DLLEXPORT :: LambertgetInterpolationSingle
+
+use local
+use io
+
+real(kind=sgl),INTENT(IN)           :: dc(3)
+real(kind=sgl),INTENT(IN)           :: scl
+integer(kind=irg),INTENT(IN)        :: npx
+integer(kind=irg),INTENT(IN)        :: npy
+integer(kind=irg),INTENT(OUT)       :: nix
+integer(kind=irg),INTENT(OUT)       :: niy
+integer(kind=irg),INTENT(OUT)       :: nixp
+integer(kind=irg),INTENT(OUT)       :: niyp
+real(kind=sgl),INTENT(OUT)          :: dx
+real(kind=sgl),INTENT(OUT)          :: dy
+real(kind=sgl),INTENT(OUT)          :: dxm
+real(kind=sgl),INTENT(OUT)          :: dym
+logical,INTENT(IN),OPTIONAL         :: swap
+
+real(kind=sgl)                      :: ixy(2), x
+integer(kind=irg)                   :: istat
+
+! Lambert sphere to square transformation
+ixy = scl * Lambert2DSquareInverseSingle( dc, istat )
+if (istat .ne. 0) then
+  write (*,*) 'input direction cosines : ', dc
+  write (*,*) 'input scale factor      : ', scl
+  call Message('LambertgetInterpolationSingle: Something went wrong during interpolation...')
+end if
+
+if (present(swap)) then 
+  if (swap.eqv..TRUE.) then
+    x = ixy(1)
+    ixy(1) = ixy(2)
+    ixy(2) = -x
+  end if
+end if
+
+! four-point interpolation (bi-quadratic)
+nix = int(npx+ixy(1))-npx
+niy = int(npy+ixy(2))-npy
+nixp = nix+1
+niyp = niy+1
+if (nixp.gt.npx) nixp = nix
+if (niyp.gt.npy) niyp = niy
+if (nix.lt.-npx) nix = nixp
+if (niy.lt.-npy) niy = niyp
+dx = ixy(1)-nix
+dy = ixy(2)-niy
+dxm = 1.0-dx
+dym = 1.0-dy
+
+end subroutine LambertgetInterpolationSingle
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: LambertgetInterpolationDouble
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief take direction cosines and return all parameters for square Lambert interpolation
+!
+!> @details this piece of code replaces code that occurred many times in various programs
+!
+!> @param dc direction cosines
+!> @param scl scale parameter for square Lambert projection
+!> @param npx number of pixels along square semi-edge
+!> @param npy should be the same as npx
+!> @param nix coordinates of point
+!> @param niy
+!> @param nixp and neighboring point
+!> @param niyp
+!> @param dx  interpolation weight factors
+!> @param dy
+!> @param dxm
+!> @param dym
+!> @param swap sometimes we need to swap the x and y coordinates (OPTIONAL)
+! 
+!> @date  01/18/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine LambertgetInterpolationDouble(dc, scl, npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym, swap)
+!DEC$ ATTRIBUTES DLLEXPORT :: LambertgetInterpolationDouble
+
+use local
+use io
+
+real(kind=dbl),INTENT(IN)           :: dc(3)
+real(kind=dbl),INTENT(IN)           :: scl
+integer(kind=irg),INTENT(IN)        :: npx
+integer(kind=irg),INTENT(IN)        :: npy
+integer(kind=irg),INTENT(OUT)       :: nix
+integer(kind=irg),INTENT(OUT)       :: niy
+integer(kind=irg),INTENT(OUT)       :: nixp
+integer(kind=irg),INTENT(OUT)       :: niyp
+real(kind=dbl),INTENT(OUT)          :: dx
+real(kind=dbl),INTENT(OUT)          :: dy
+real(kind=dbl),INTENT(OUT)          :: dxm
+real(kind=dbl),INTENT(OUT)          :: dym
+logical,INTENT(IN),OPTIONAL         :: swap
+
+real(kind=dbl)                      :: ixy(2), x
+integer(kind=irg)                   :: istat
+
+! Lambert sphere to square transformation
+ixy = scl * Lambert2DSquareInverseDouble( dc, istat )
+if (istat .ne. 0) then
+  write (*,*) 'input direction cosines : ', dc
+  write (*,*) 'input scale factor      : ', scl
+  call Message('LambertgetInterpolationDouble: Something went wrong during interpolation...')
+end if
+
+if (present(swap)) then 
+  if (swap.eqv..TRUE.) then
+    x = ixy(1)
+    ixy(1) = ixy(2)
+    ixy(2) = -x
+  end if
+end if
+
+! four-point interpolation (bi-quadratic)
+nix = int(npx+ixy(1))-npx
+niy = int(npy+ixy(2))-npy
+nixp = nix+1
+niyp = niy+1
+if (nixp.gt.npx) nixp = nix
+if (niyp.gt.npy) niyp = niy
+if (nix.lt.-npx) nix = nixp
+if (niy.lt.-npy) niy = niyp
+dx = ixy(1)-nix
+dy = ixy(2)-niy
+dxm = 1.0-dx
+dym = 1.0-dy
+
+end subroutine LambertgetInterpolationDouble
+
+
+
+
+
 
 end module Lambert
 

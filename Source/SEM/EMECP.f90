@@ -409,22 +409,10 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
         
         dc = quat_LP(qu,dc)
         dc = dc/dsqrt(sum(dc*dc))
-! convert these direction cosines to coordinates in the Rosca-Lambert projection
 
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        if (istat .ne. 0) call FatalError('ECpattern','Cannot convert to square Lambert projection')
-        nix = int(ecpnl%npx+ixy(1))-ecpnl%npx
-        niy = int(ecpnl%npy+ixy(2))-ecpnl%npy
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.ecpnl%npx) nixp = nix
-        if (niyp.gt.ecpnl%npy) niyp = niy
-        if (nix.lt.-ecpnl%npx) nix = nixp
-        if (niy.lt.-ecpnl%npy) niy = niyp
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+! convert these direction cosines to coordinates in the Rosca-Lambert projection
+        call LambertgetInterpolation(dc, scl, ecpnl%npx, ecpnl%npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
 ! interpolate the intensity
         ipx = kij(1,idir)
         ipy = kij(2,idir)

@@ -636,26 +636,10 @@ scl = float(npx)
 if (dc(3).lt.0.0) dc = -dc
 
 ! convert direction cosines to lambert projections
-xy = scl * LambertSphereToSquare( dc, istat )
-res = 0.0
+call LambertgetInterpolation(sngl(dc), scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
-if (istat.eq.0) then 
-! interpolate intensity from the neighboring points
-  nix = floor(xy(1))
-  niy = floor(xy(2))
-  nixp = nix+1
-  niyp = niy+1
-  if (nixp.gt.npx) nixp = nix
-  if (niyp.gt.npx) niyp = niy
-  dx = xy(1) - nix
-  dy = xy(2) - niy
-  dxm = 1.0 - dx
-  dym = 1.0 - dy
-  
-  res(1:nf) = nint(master(1:nf,nix,niy)*dxm*dym + master(1:nf,nixp,niy)*dx*dym + &
-        master(1:nf,nix,niyp)*dxm*dy + master(1:nf,nixp,niyp)*dx*dy)
-end if
-
+res(1:nf) = nint(master(1:nf,nix,niy)*dxm*dym + master(1:nf,nixp,niy)*dx*dym + &
+                 master(1:nf,nix,niyp)*dxm*dy + master(1:nf,nixp,niyp)*dx*dy)
 
 end function InterpolateLambertMC
 
