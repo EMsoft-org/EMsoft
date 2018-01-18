@@ -105,7 +105,7 @@ real(kind=dbl), parameter :: epsijkd = 1.D0
 !> cLight	= velocity of light [m/s]
 !> cPlanck	= Planck''s constant [Js]
 !> cBoltzmann	= Boltmann constant [J/K]
-!> cPermea	= permeability of vacuum [dimensionless]
+!> cPermea	= permeability of vacuum [4pi 10^7 H/m]
 !> cPermit	= permittivity of vacuum [F/m]
 !> cCharge	= electron charge [C]
 !> cRestmass	= electron rest mass [kg]
