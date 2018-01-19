@@ -306,6 +306,8 @@ else
 end if
 
 ! stop time /EMheader/StopTime 'character'; this is often updated at the end of a run
+! since the end date can be different from the start date, especially for long runs, we get a new dstr string
+call timestamp(datestring=dstr)
 line = 'StopTime'
 line2(1) = dstr//', '//tstre
 call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
