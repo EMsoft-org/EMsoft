@@ -204,25 +204,6 @@ integer(kind=irg)                 :: NumLines
 character(fnlen)                  :: SlackUsername, exectime
 character(100)                    :: c
 
-
-interface
-function InterpolateLambert(dc, accume, npx, nn) result(res)
-
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
-
-  IMPLICIT NONE
-
-  real(kind=dbl),INTENT(INOUT)            :: dc(3)
-  integer(kind=irg),INTENT(IN)            :: accume(1:nn,-npx:npx,-npx:npx)
-  integer(kind=irg),INTENT(IN)            :: npx 
-  integer(kind=irg),INTENT(IN)            :: nn
-  real(kind=sgl)                          :: res(nn)
-end function InterpolateLambert
-end interface
-
 nullify(HDF_head)
 
 call timestamp(datestring=dstr, timestring=tstrb)
@@ -880,40 +861,3 @@ if (trim(EMsoft_getNotify()).ne.'Off') then
 end if
 
 end subroutine DoMCsimulation
-
-
-
-
-function InterpolateLambert(dc, accume, npx, nn) result(res)
-
-use local
-use Lambert
-use EBSDmod
-use constants
-
-IMPLICIT NONE
-
-real(kind=dbl),INTENT(INOUT)            :: dc(3)
-integer(kind=irg),INTENT(IN)            :: accume(1:nn,-npx:npx,-npx:npx)
-integer(kind=irg),INTENT(IN)            :: npx 
-integer(kind=irg),INTENT(IN)            :: nn
-real(kind=sgl)                          :: res(nn)
-
-integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
-real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
-
-scl = float(npx) 
-
-if (dc(3).lt.0.0) dc = -dc
-
-! convert direction cosines to lambert projections
-call LambertgetInterpolation(sngl(dc), scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
-
-res(1:nn) = accume(1:nn,nix,niy)*dxm*dym + accume(1:nn,nixp,niy)*dx*dym + &
-            accume(1:nn,nix,niyp)*dxm*dy + accume(1:nn,nixp,niyp)*dx*dy
-
-end function InterpolateLambert
-
-
-
-

@@ -238,7 +238,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
-character(11),INTENT(IN)                              :: dstr
+character(11),INTENT(INOUT)                           :: dstr
 character(15),INTENT(IN)                              :: tstrb
 character(15),INTENT(IN)                              :: tstre
 character(fnlen),INTENT(IN)                           :: prn

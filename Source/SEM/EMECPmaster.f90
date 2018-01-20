@@ -194,28 +194,6 @@ integer(kind=irg)                  :: NumLines
 character(fnlen)                   :: SlackUsername, exectime
 character(100)                     :: c
 
-interface
-  function InterpolateLambert(dc, master, npx, nf) result(res)
-
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
-  
-  IMPLICIT NONE
-  
-  real(kind=dbl),INTENT(INOUT)            :: dc(3)
-  real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx, 1:nf)
-  integer(kind=irg),INTENT(IN)            :: npx 
-  integer(kind=irg),INTENT(IN)            :: nf
-  real(kind=sgl)                          :: res(nf)
-  end function InterpolateLambert
-
-end interface
-
-
-
-
 !$OMP THREADPRIVATE(rlp) 
 
 nullify(HDF_head)
@@ -903,37 +881,3 @@ if (trim(EMsoft_getNotify()).ne.'Off') then
 end if
 
 end subroutine ECmasterpattern
-
-
-function InterpolateLambert(dc, master, npx, nf) result(res)
-
-use local
-use Lambert
-use EBSDmod
-use constants
-
-IMPLICIT NONE
-
-real(kind=dbl),INTENT(INOUT)            :: dc(3)
-real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx, 1:nf)
-integer(kind=irg),INTENT(IN)            :: npx 
-integer(kind=irg),INTENT(IN)            :: nf
-real(kind=sgl)                          :: res(nf)
-
-integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
-real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
-
-scl = float(npx) 
-
-if (dc(3).lt.0.0) dc = -dc
-
-! convert direction cosines to lambert projections
-call LambertgetInterpolation(sngl(dc), scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
-
-res(1:nf) = master(nix,niy,1:nf)*dxm*dym + master(nixp,niy,1:nf)*dx*dym + &
-            master(nix,niyp,1:nf)*dxm*dy + master(nixp,niyp,1:nf)*dx*dy
-
-end function InterpolateLambert
-
-
-

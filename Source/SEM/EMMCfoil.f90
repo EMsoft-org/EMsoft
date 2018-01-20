@@ -179,25 +179,6 @@ character(fnlen)        :: groupname, dataset, instring, dataname, fname, source
 integer(kind=irg)       :: numangle, iang
 type(HDFobjectStackType),pointer  :: HDF_head
 
-interface
-  function InterpolateLambertMC(dc, master, npx, nf) result(res)
-  
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
-
-  IMPLICIT NONE
-
-  integer(kind=irg),INTENT(IN)            :: nf
-  integer(kind=irg),INTENT(IN)            :: npx 
-  real(kind=dbl),INTENT(INOUT)            :: dc(3)
-  integer(kind=irg),INTENT(IN)            :: master(nf,-npx:npx,-npx:npx)
-  integer(kind=irg)                       :: res(nf)
-  end function InterpolateLambertMC
-end interface
-
-
 
 nullify(HDF_head)
 
@@ -572,7 +553,7 @@ do i=-nx,nx
     if (ierr.ne.0) then 
       accum_e_SP(1:numEbins,i,j) = 0.0
     else
-      accum_e_SP(1:numEbins,i,j) = InterpolateLambertMC(xyz, accum_e_SH, nx, numEbins)
+      accum_e_SP(1:numEbins,i,j) = InterpolateLambert(xyz, accum_e_SH, nx, numEbins)
     end if
   end do
 end do
@@ -609,38 +590,3 @@ call CLerror_check('DoMCsimulation:clReleaseMemObject:seeds', ierr)
 
 
 end subroutine DoMCsimulation
-
-
-
-
-function InterpolateLambertMC(dc, master, npx, nf) result(res)
-
-use local
-use Lambert
-use EBSDmod
-use constants
-
-IMPLICIT NONE
-
-integer(kind=irg),INTENT(IN)            :: nf
-integer(kind=irg),INTENT(IN)            :: npx 
-real(kind=dbl),INTENT(INOUT)            :: dc(3)
-integer(kind=irg),INTENT(IN)            :: master(nf,-npx:npx,-npx:npx)
-integer(kind=irg)                       :: res(nf)
-
-integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
-real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
-
-scl = float(npx) 
-
-if (dc(3).lt.0.0) dc = -dc
-
-! convert direction cosines to lambert projections
-call LambertgetInterpolation(sngl(dc), scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
-
-res(1:nf) = nint(master(1:nf,nix,niy)*dxm*dym + master(1:nf,nixp,niy)*dx*dym + &
-                 master(1:nf,nix,niyp)*dxm*dy + master(1:nf,nixp,niyp)*dx*dy)
-
-end function InterpolateLambertMC
-
-

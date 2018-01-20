@@ -154,21 +154,6 @@ type(gnode),save        :: rlp
 type(HDFobjectStackType),pointer  :: HDF_head
 
 interface
-  function InterpolateLambert(dc, master, npx) result(res)
-
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
-  
-  IMPLICIT NONE
-  
-  real(kind=sgl),INTENT(INOUT)            :: dc(3)
-  real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx)
-  integer(kind=irg),INTENT(IN)            :: npx 
-  real(kind=sgl)                          :: res
-  end function InterpolateLambert
-
   subroutine AntiAlias(master,ixy,nix,niy,nx,inten)
 
   use local
@@ -528,38 +513,6 @@ if ((abs(nix).lt.nx).and.(abs(niy).lt.nx)) then
 end if
 
 end subroutine AntiAlias
-
-
-
-
-function InterpolateLambert(dc, master, npx) result(res)
-
-use local
-use Lambert
-use EBSDmod
-use constants
-
-IMPLICIT NONE
-
-real(kind=sgl),INTENT(INOUT)            :: dc(3)
-real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx)
-integer(kind=irg),INTENT(IN)            :: npx 
-real(kind=sgl)                          :: res
-
-integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
-real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
-
-scl = float(npx) 
-
-if (dc(3).lt.0.0) dc = -dc
-
-! convert direction cosines to lambert projections
-call LambertgetInterpolation(dc, scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
-
-res = master(nix,niy)*dxm*dym + master(nixp,niy)*dx*dym + &
-      master(nix,niyp)*dxm*dy + master(nixp,niyp)*dx*dy
-
-end function InterpolateLambert
 
 
 
