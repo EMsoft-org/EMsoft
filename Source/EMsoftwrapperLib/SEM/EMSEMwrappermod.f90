@@ -35,15 +35,7 @@
 !
 !> @brief routines that can be called by external code; all routines requiring HDF are in EMdymodHDF.f90
 !
-!> @date  10/16/15 MDG 1.0 original
-!> @date  01/11/16 MDG 2.0 split into this file and EMdymodHDF.f90
-!> @date  01/12/16 MDG 2.1 added functionality for DREAM.3D progress callback and cancel option
-!> @date  01/13/16 MDG 2.2 name change of SingleEBSDPattern routine and split into two versions (C and other)
-!> @date  01/14/16 MDG 2.3 added EMsoftCgetECPatterns routine
-!> @date  01/25/16 MDG 2.4 several routine name changes
-!> @date  04/28/16 MDG 2.5 unified the ipar and fpar arrays for all C-callable routines
-!> @date  11/07/17 MDG 3.0 added spar string array for passing on EMsoft configuration strings
-!> @date  01/21/18 MDG 4.0 separated C/C++ callable SEM routines out from original EMdymod module
+!> @date  01/21/18 MDG 1.0 separated C/C++ callable SEM routines out from original EMdymod module
 !--------------------------------------------------------------------------
 !
 ! general information: the ipar and fpar arrays for all the routines that are C-callable
@@ -189,7 +181,7 @@ contains
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
-! the first series of routines starting with EMsoftC are callable from C/C++
+! the routines starting with EMsoftC are callable from C/C++
 ! programs and can handle progress callback and a cancel request.
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -395,18 +387,10 @@ CALL C_F_PROCPOINTER (cproc, proc)
        dc = (/ rgx(i,j), rgy(i,j), rgz(i,j) /)
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
+
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        x = ixy(1)
-        ixy(1) = ixy(2)
-        ixy(2) = -x
-! four-point interpolation (bi-quadratic)
-        nix = int(ipar(1)+ixy(1))-ipar(1)
-        niy = int(ipar(1)+ixy(2))-ipar(1)
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+       call LambertgetInterpolation(dc, scl, int(ipar(1)), int(ipar(1)), nix, niy, nixp, niyp, dx, dy, dxm, dym, swap=.TRUE.)
+
 ! do the area correction for this detector pixel
         dp = dot_product(pcvec,dc)
         if ((i.eq.ipx).and.(j.eq.ipy)) then
@@ -433,7 +417,7 @@ CALL C_F_PROCPOINTER (cproc, proc)
 ! intensity scaling is left to the user of the calling program.
 
 ! define some parameters and initialize EBSDpattern
-scl = dble(ipar(17)) 
+scl = float(ipar(17)) 
 EBSDpattern = 0.0
 fullsizepattern = 0.0
 dn = nint(float(ipar(21))*0.01)
@@ -455,35 +439,20 @@ quatloop: do ip=1,ipar(21)
 ! normalize dc
       dc = dc/sqrt(sum(dc*dc))
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection (always square projection !!!)
-      ixy = scl * LambertSphereToSquare( dc, istat )
+      call LambertgetInterpolationDouble(dc, scl, int(ipar(17)), int(ipar(17)), nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
-      if (istat.eq.0) then 
-! four-point interpolation (bi-quadratic)
-        nix = int(ipar(17)+ixy(1))-ipar(17)
-        niy = int(ipar(17)+ixy(2))-ipar(17)
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.ipar(17)) nixp = nix
-        if (niyp.gt.ipar(17)) niyp = niy
-        if (nix.lt.-ipar(17)) nix = nixp
-        if (niy.lt.-ipar(17)) niy = niyp
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
-        if (dc(3).gt.0.0) then ! we're in the Northern hemisphere
-          do k=1,ipar(12) 
-            fullsizepattern(i,j) = fullsizepattern(i,j) + accum_e_detector(k,i,j) * ( mLPNHsum(nix,niy,k) * dxm * dym +&
-                                        mLPNHsum(nixp,niy,k) * dx * dym + mLPNHsum(nix,niyp,k) * dxm * dy + &
-                                        mLPNHsum(nixp,niyp,k) * dx * dy )
-          end do
-        else                   ! we're in the Southern hemisphere
-          do k=1,ipar(12) 
-            fullsizepattern(i,j) = fullsizepattern(i,j) + accum_e_detector(k,i,j) * ( mLPSHsum(nix,niy,k) * dxm * dym +&
-                                        mLPSHsum(nixp,niy,k) * dx * dym + mLPSHsum(nix,niyp,k) * dxm * dy + &
-                                        mLPSHsum(nixp,niyp,k) * dx * dy )
-          end do
-        end if
+      if (dc(3).gt.0.0) then ! we're in the Northern hemisphere
+        do k=1,ipar(12) 
+          fullsizepattern(i,j) = fullsizepattern(i,j) + accum_e_detector(k,i,j) * ( mLPNHsum(nix,niy,k) * dxm * dym +&
+                                      mLPNHsum(nixp,niy,k) * dx * dym + mLPNHsum(nix,niyp,k) * dxm * dy + &
+                                      mLPNHsum(nixp,niyp,k) * dx * dy )
+        end do
+      else                   ! we're in the Southern hemisphere
+        do k=1,ipar(12) 
+          fullsizepattern(i,j) = fullsizepattern(i,j) + accum_e_detector(k,i,j) * ( mLPSHsum(nix,niy,k) * dxm * dym +&
+                                      mLPSHsum(nixp,niy,k) * dx * dym + mLPSHsum(nix,niyp,k) * dxm * dy + &
+                                      mLPSHsum(nixp,niyp,k) * dx * dy )
+        end do
       end if
     end do
   end do
@@ -704,19 +673,7 @@ jmax = ipar(1)
             do iazimuth = 1,nazimuth
                 dc(1:3) = (/rgx(ipolar,iazimuth), rgy(ipolar,iazimuth), rgz(ipolar,iazimuth)/)
 ! convert to Rosca-lambert projection
-                ixy = scl *  LambertSphereToSquare( dc, istat )
-                nix = int(ipar(3)+ixy(1))-ipar(3)
-                niy = int(ipar(3)+ixy(2))-ipar(3)
-                nixp = nix+1
-                niyp = niy+1
-                if (nixp.gt.ipar(3)) nixp = nix
-                if (niyp.gt.ipar(3)) niyp = niy
-                if (nix.lt.-ipar(3)) nix = nixp
-                if (niy.lt.-ipar(3)) niy = niyp
-                dx = ixy(1)-nix
-                dy = ixy(2)-niy
-                dxm = 1.0-dx
-                dym = 1.0-dy
+                call LambertgetInterpolation(dc, scl, int(ipar(3)), int(ipar(3)), nix, niy, nixp, niyp, dx, dy, dxm, dym)
             
                 acc_sum = 0.25*(accum_e(isampletilt,nix,niy) * dxm * dym + &
                                 accum_e(isampletilt,nixp,niy) * dx * dym + &
@@ -762,20 +719,8 @@ quatloop: do ip=1,ipar(6)
         dc = quat_LP(quats(1:4,ip), dc)
         dc = dc/sqrt(sum(dc*dc))
 
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        nix = int(ipar(5)+ixy(1))-ipar(5)
-        niy = int(ipar(5)+ixy(2))-ipar(5)
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.ipar(5)) nixp = nix
-        if (niyp.gt.ipar(5)) niyp = niy
-        if (nix.lt.-ipar(5)) nix = nixp
-        if (niy.lt.-ipar(5)) niy = niyp
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
-        
+        call LambertgetInterpolation(dc, scl, int(ipar(5)), int(ipar(5)), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
         if (dc(3).ge.0.D0) then 
             ECpattern(ii,jj,ip) = wf * ( mLPNHsum(nix,niy) * dxm * dym + &
                          mLPNHsum(nixp,niy) * dx * dym + &

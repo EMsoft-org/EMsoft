@@ -159,7 +159,7 @@ contains
 !> the need for the routine to fetch any other data from files etc...  The initial goal is
 !> to have a function that can be called with the CALL_EXTERNAL mechanism in IDL or MatLab.
 !> This routine should be called via the getEBSDPatternsWrapper routine!  For calls from
-!> a C/C++ program, use the EMsoftCgetEBSDPatterns routine instead.
+!> a C/C++ program, use the EMsoftCgetEBSDPatterns routine in the EMsoftwrapperLib/EMSEMwrappermod instead.
 !
 !> @param ipar array with integer input parameters
 !> @param fpar array with float input parameters
