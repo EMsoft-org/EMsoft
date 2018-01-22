@@ -82,7 +82,7 @@ use NameListHDFwriters
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                        :: filetype
-character(11),INTENT(IN)                            :: dstr
+character(11),INTENT(INOUT)                         :: dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
@@ -168,7 +168,7 @@ use NameListHDFwriters
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                        :: filetype
-character(11),INTENT(IN)                            :: dstr
+character(11),INTENT(INOUT)                         :: dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
@@ -733,7 +733,7 @@ IMPLICIT NONE
 
 character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
-character(11),INTENT(IN)                            :: dstr
+character(11),INTENT(INOUT)                         :: dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
@@ -1228,7 +1228,7 @@ IMPLICIT NONE
 
 character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
-character(11),INTENT(IN)                            :: dstr
+character(11),INTENT(INOUT)                         :: dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
