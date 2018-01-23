@@ -37,11 +37,116 @@
 !
 !> @date  01/22/18 MDG 1.0 new C/C++ callable DI routines 
 !--------------------------------------------------------------------------
+! general information: the ipar and fpar arrays for all the routines that are C-callable
+! are identical, so we document here their component definitions; to allow for future expansion, each
+! array has 40 entries, of which about half are currently (April 2016) used.
+!
+! integer(kind=irg) :: ipar(40)  components 
+! ipar(1) : nx  = (numsx-1)/2
+! ipar(2) : globalworkgrpsz
+! ipar(3) : num_el
+! ipar(4) : totnum_el
+! ipar(5) : multiplier
+! ipar(6) : devid
+! ipar(7) : platid
+! ipar(8) : CrystalSystem
+! ipar(9) : Natomtypes
+! ipar(10): SpaceGroupNumber
+! ipar(11): SpaceGroupSetting
+! ipar(12): numEbins
+! ipar(13): numzbins
+! ipar(14): mcmode  ( 1 = 'full', 2 = 'bse1' )
+! ipar(15): numangle
+! ipar(16): nxten = nx/10
+! the following are only used in the master routine
+! ipar(17): npx
+! ipar(18): nthreads
+! the following are only used for EBSD patterns 
+! ipar(19): numx of detector pixels
+! ipar(20): numy of detector pixels
+! ipar(21): number of orientation in quaternion set
+! ipar(22): binning factor (0-3)
+! ipar(23): binned x-dimension
+! ipar(24): binned y-dimension
+! ipar(25): anglemode  (0 for quaternions, 1 for Euler angles)
+! ipar(26): ipf_wd
+! ipar(27): ipf_ht
+! ipar(28): nregions
+! ipar(29): maskpattern
+! ipar(30:40) : 0 (unused for now)
+
+! real(kind=dbl) :: fpar(40)  components
+! fpar(1) : sig
+! fpar(2) : omega
+! fpar(3) : EkeV
+! fpar(4) : Ehistmin
+! fpar(5) : Ebinsize
+! fpar(6) : depthmax
+! fpar(7) : depthstep
+! fpar(8) : sigstart
+! fpar(9) : sigend
+! fpar(10): sigstep
+! parameters only used in the master pattern routine
+! fpar(11) : dmin
+! fpar(12) : Bethe  c1
+! fpar(13) : Bethe  c2
+! fpar(14) : Bethe  c3
+! parameters only used in the EBSD pattern routine
+! fpar(15): pattern center x
+! fpar(16): pattern center y
+! fpar(17): scintillator pixel size
+! fpar(18): detector tilt angle
+! fpar(19): sample-scintillator distance
+! fpar(20): beam current
+! fpar(21): dwelltime
+! fpar(22): gamma value
+! fpar(23): maskradius
+! fpar(24:40): 0 (unused for now)
+
+! newly added in version 3.2, to facilitate passing EMsoft configuration
+! strings back and forth to C/C++ programs that call EMdymod routines...
+! character(fnlen)  :: spar(40)   configuration string components
+! spar(1): EMsoftpathname
+! spar(2): EMXtalFolderpathname
+! spar(3): EMdatapathname
+! spar(4): EMtmppathname
+! spar(5): EMsoftLibraryLocation
+! spar(6): EMSlackWebHookURL
+! spar(7): EMSlackChannel
+! spar(8): UserName
+! spar(9): UserLocation
+! spar(10): UserEmail
+! spar(11): EMNotify
+! spar(12): Develop
+! spar(13): Release
+! spar(14): h5copypath
+! spar(15): EMsoftplatform
+! spar(16): EMsofttestpath
+! spar(17): EMsoftTestingPath
+! spar(18): EMsoftversion
+! spar(19): Configpath
+! spar(20): Templatepathname
+! spar(21): Resourcepathname
+! spar(22): Homepathname
+! spar(23): OpenCLpathname
+! spar(24): Templatecodefilename
+! spar(25): WyckoffPositionsfilename
+! spar(26): Randomseedfilename
+! spar(27): EMsoftnativedelimiter
+! spar(28:40): '' (unused for now)
 
 
 module EMDIwrappermod
 
-
+! similar callback routine, with two integer arguments
+ABSTRACT INTERFACE
+   SUBROUTINE ProgressCallBackDI2(objAddress, loopCompleted, totalLoops) bind(C)
+    USE, INTRINSIC :: ISO_C_BINDING
+    INTEGER(c_size_t),INTENT(IN), VALUE          :: objAddress
+    INTEGER(KIND=4), INTENT(IN), VALUE           :: loopCompleted
+    INTEGER(KIND=4), INTENT(IN), VALUE           :: totalLoops
+   END SUBROUTINE ProgressCallBackDI2
+END INTERFACE
 
 contains
 
@@ -75,7 +180,7 @@ contains
 !
 !> @date 01/22/18 MDG 1.0 original extracted from EMEBSDDI program
 !--------------------------------------------------------------------------
-recursive subroutine EMsoftCpreprocessEBSDPatterns(ipar, fpar, spar, EBSDpattern, quats, accum_e, mLPNH, mLPSH, cproc, objAddress, cancel) &
+recursive subroutine EMsoftCpreprocessEBSDPatterns(ipar, fpar, spar, mask, exptIQ, ADPmap, cproc, objAddress, cancel) &
            bind(c, name='EMsoftCpreprocessEBSDPatterns')    ! this routine is callable from a C/C++ program
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCpreprocessEBSDPatterns
 
@@ -84,8 +189,8 @@ use configmod
 use constants
 use typedefs
 use iso_c_binding
-use EBSDDImod
 use filters
+use EBSDDImod
 use omp_lib
 
 IMPLICIT NONE
@@ -96,16 +201,20 @@ integer(c_int32_t),PARAMETER            :: nspar=40
 integer(c_int32_t),INTENT(IN)           :: ipar(nipar)
 real(kind=sgl),INTENT(IN)               :: fpar(nfpar)
 character(kind=c_char, len=1), target, INTENT(IN) :: spar(nspar*fnlen)
-mask
-exptIQ
-ADPmap
+real(kind=sgl),INTENT(INOUT)            :: mask(ipar(19), ipar(20))
+real(kind=sgl),INTENT(INOUT)            :: exptIQ(ipar(26)*ipar(27))
+real(kind=sgl),INTENT(INOUT)            :: ADPmap(ipar(26)*ipar(27))
+TYPE(C_FUNPTR), INTENT(IN), VALUE       :: cproc
+integer(c_size_t),INTENT(IN), VALUE     :: objAddress
+character(len=1),INTENT(IN)             :: cancel
 
-
+PROCEDURE(ProgressCallBackDI2), POINTER :: proc
 character(fnlen)                        :: maskfile, tmpfile, exptname
 logical                                 :: f_exists
-integer(kind=irg)                       :: ii, jj, kk, iii, maskpattern, numsx, numsy, L, binx, biny, binning, ipf_wd, ipf_ht, TID 
-integer(kind=irg)                       :: itmpexpt, iunitexpt, recordsize_correct, ierr, correctsize, recordsize, patsz, nregions
-real(kind=sgl)                          :: mi, ma, vlen, tmp
+integer(kind=irg)                       :: ii, jj, kk, iii, maskpattern, numsx, numsy, L, binx, biny, binning, ipf_wd, ipf_ht, & 
+                                           TID, itmpexpt, iunitexpt, recordsize_correct, ierr, correctsize, recordsize, patsz, &
+                                           nregions, totnumexpt, istat, nthreads
+real(kind=sgl)                          :: mi, ma, vlen, tmp, maskradius
 real(kind=dbl)                          :: Jres, w
 character(1000)                         :: charline
 real(kind=sgl),allocatable              :: imageexpt(:), tmpimageexpt(:), imagedict(:), masklin(:)
@@ -120,6 +229,14 @@ type(C_PTR)                             :: planf, HPplanf, HPplanb
 
 ! parameters to deal with the input string array spar
 type(ConfigStructureType)               :: CS
+
+
+
+nullify(proc)
+
+! link the proc procedure to the cproc argument
+CALL C_F_PROCPOINTER (cproc, proc)
+
 
 ! outputs of this routine: all output arrays must be allocated in the calling program
 !
@@ -148,18 +265,19 @@ call C2F_configuration_strings(nspar, C_LOC(spar), CS)
 ! set up all the necessary variables and auxiliary arrays
 maskfile = trim(CS%strvals(30))    ! calling program must ensure that this file exists if not 'undefined'
 maskpattern = 0
-if (ipar().eq.1) maskpattern = 1 
-maskradius = fpar()**2
-numsx = ipar()
-numsy = ipar()
-binning = ipar()
-nthreads = ipar()
-ipf_wd = ipar()
-ipf_ht = ipar()
-nregions = ipar()
+if (ipar(29).eq.1) maskpattern = 1 
+maskradius = fpar(23)**2
+numsx = ipar(19)
+numsy = ipar(20)
+binning = ipar(22)
+nthreads = ipar(18)
+ipf_wd = ipar(26)
+ipf_ht = ipar(27)
+nregions = ipar(28)
 binx = numsx/binning
 biny = numsy/binning
 patsz = numsx*numsy
+totnumexpt = ipf_wd*ipf_ht
 
 L = numsx*numsy/binning**2
 
@@ -379,47 +497,32 @@ deallocate(EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
 !$OMP BARRIER
 !$OMP END PARALLEL
 
-! use a callback routine to provide some progress feedback
-    if (mod(iii,5).eq.0) then
-        io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
-        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
-    end if
+! has the cancel flag been set by the calling program ?
+  if (cancel.ne.char(0)) EXIT prepexperimentalloop
+
+! update the progress counter and report it to the calling program via the proc callback routine
+  if(objAddress.ne.0) then
+    call proc(objAddress, iii, ipf_ht)
+  end if
+
 end do prepexperimentalloop
 
-call Message(' -> experimental patterns stored in tmp file')
-
+! close all the files
 close(unit=iunitexpt,status='keep')
 close(unit=itmpexpt,status='keep')
 
-! print some timing information
-call CPU_TIME(tstop)
-tstop = tstop - tstart
-io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
-
-!=====================================================
-call Message(' -> computing Average Dot Product map (ADP)')
-call Message(' ')
-
-allocate(dpmap(totnumexpt))
+! and finally, compute the average dot product map from the pre-processed patterns
 ! re-open the temporary file
-open(unit=itmpexpt,file=trim(fname),&
+open(unit=itmpexpt,file=trim(exptname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
 ! use the getADPmap routine in the filters module
-call getADPmap(itmpexpt, totnumexpt, L, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dpmap)
+call getADPmap(itmpexpt, totnumexpt, L, ipf_wd, ipf_ht, ADPmap)
 close(unit=itmpexpt,status='keep')
 
+! deallocate anything that hasn't already been deallocated
+deallocate(EBSDpatterninteger, EBSDpatternad, masklin, EBSDpatternintd, exppatarray, ksqarray, hpmask)
 
-
-
-
-
-
-
-
-
-
-
+! that's it folks...
 end subroutine EMsoftCpreprocessEBSDPatterns
 
 

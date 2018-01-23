@@ -439,7 +439,7 @@ quatloop: do ip=1,ipar(21)
 ! normalize dc
       dc = dc/sqrt(sum(dc*dc))
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection (always square projection !!!)
-      call LambertgetInterpolationDouble(dc, scl, int(ipar(17)), int(ipar(17)), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+      call LambertgetInterpolation(dc, scl, int(ipar(17)), int(ipar(17)), nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
       if (dc(3).gt.0.0) then ! we're in the Northern hemisphere
         do k=1,ipar(12) 

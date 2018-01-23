@@ -21,8 +21,15 @@ set(EMsoftWrapperLib_SOURCES
   ${Utilities_Wrapper_SRCS}
 )
 
+set(EMsoftWrapperLib_HEADERS
+ ${DictionaryIndexing_Wrapper_HEADERS} 
+ ${SEM_Wrapper_HEADERS} 
+ ${TEM_Wrapper_HEADERS} 
+)
+
 include_directories(${FFTW3_INCLUDE_DIR})
 include_directories(${CLFORTRAN_INCLUDE_DIR})
+include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
 
 ADD_LIBRARY(EMsoftWrapperLib ${LIB_TYPE} ${EMsoftWrapperLib_SOURCES})
@@ -60,6 +67,7 @@ EMsoft_SetupInstallDirs()
 
 
 install(FILES ${EMsoftWrapperLib_SOURCE_DIR}/EMsoftWrapperLib.h
+          ${EMsoftWrapperLib_HEADERS}
           ${EMsoftWrapperLib_BINARY_DIR}/EMsoftStringConstants.h
       DESTINATION ${include_install_dir}/EMsoftWrapperLib
       COMPONENT Applications
