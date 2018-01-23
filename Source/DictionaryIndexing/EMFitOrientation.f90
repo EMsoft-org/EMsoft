@@ -1027,7 +1027,7 @@ do iii = 1,cratioE
             call bobyqa (IPAR2, INITMEANVAL, tmpimageexpt, N, NPT, X, XL,&
                      XU, RHOBEG, RHOEND, IPRINT, MAXFUN, EMFitOrientationcalfunEBSD, acc%accum_e_detector,&
                      master%mLPNH, master%mLPSH, mask, prefactor, master%rgx, master%rgy, master%rgz, &
-                     STEPSIZE, verbose) 
+                     STEPSIZE, ebsdnl%gammavalue, verbose) 
        
             if (mod(ii,100) .eq. 0) then
                 io_int(1) = eindex
@@ -1038,7 +1038,7 @@ do iii = 1,cratioE
             call bobyqa (IPAR2, INITMEANVAL, tmpimageexpt, N, NPT, X, XL,&
                      XU, RHOBEG, RHOEND, IPRINT, MAXFUN, EMFitOrientationcalfunECP, accum_e_detector,&
                      mLPNHECP, mLPSHECP, mask, prefactor, masterECP%rgx, masterECP%rgy, masterECP%rgz, &
-                     STEPSIZE, verbose) 
+                     STEPSIZE, ecpnl%gammavalue, verbose) 
        
             if (mod(ii,25) .eq. 0) then
                 io_int(1) = eindex
@@ -1053,11 +1053,11 @@ do iii = 1,cratioE
        if(trim(modalityname) .eq. 'EBSD') then
            call EMFitOrientationcalfunEBSD(IPAR2, INITMEANVAL, tmpimageexpt, acc%accum_e_detector, &
                                 master%mLPNH, master%mLPSH, N, X, F, mask, prefactor, &
-                                master%rgx, master%rgy, master%rgz, STEPSIZE, verbose)
+                                master%rgx, master%rgy, master%rgz, STEPSIZE, ebsdnl%gammavalue, verbose)
        else if(trim(modalityname) .eq. 'ECP') then
            call EMFitOrientationcalfunECP(IPAR2, INITMEANVAL, tmpimageexpt, accum_e_detector, &
                                 mLPNHECP, mLPSHECP, N, X, F, mask, prefactor, &
-                                masterECP%rgx, masterECP%rgy, masterECP%rgz, STEPSIZE, verbose)
+                                masterECP%rgx, masterECP%rgy, masterECP%rgz, STEPSIZE, ecpnl%gammavalue, verbose)
        end if
 
        CIlist(eindex) = 1.D0 - F

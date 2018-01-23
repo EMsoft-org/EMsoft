@@ -61,7 +61,7 @@ contains
 
 recursive subroutine EMFitOrientationcalfunEBSD(ipar, initmeanval, expt, accum, &
                                 mLPNH, mLPSH, n, x, f, mask, prefactor, rgx, rgy, rgz,&
-                                stepsize, verbose)
+                                stepsize, gammaval, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMFitOrientationcalfunEBSD
 
 ! the input parameters are all part of a ipar and fpar input arrays instead of the usual namelist structures.
@@ -116,6 +116,7 @@ real(kind=dbl),INTENT(IN)               :: prefactor
 integer(irg),intent(in)                 :: n
 real(dbl),dimension(:),intent(in)       :: x
 real(dbl),intent(out)                   :: f
+real(kind=sgl),intent(IN)               :: gammaval
 logical,intent(in),optional             :: verbose
 
 integer(kind=irg)                       :: nnx, nny, binx, biny, Emin, Emax
@@ -169,7 +170,7 @@ Emax = ipar(9)
 call CalcEBSDPatternSingleFull(jpar,quat,accum,mLPNH,mLPSH,rgx,&
                                rgy,rgz,binned,Emin,Emax,mask,prefactor)
 
-!binned = binned**0.33
+binned = binned**gammaval
 
 mi = minval(binned)
 ma = maxval(binned)
@@ -276,7 +277,7 @@ end subroutine EMFitOrientationcalfunEBSD
 
 recursive subroutine EMFitOrientationcalfunECP(ipar, initmeanval, expt, accum, &
                                 mLPNH, mLPSH, n, x, f, mask, prefactor, rgx, rgy, rgz,&
-                                stepsize, verbose)
+                                stepsize, gammaval, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMFitOrientationcalfunECP
 
 ! the input parameters are all part of a ipar and fpar input arrays instead of the usual namelist structures.
@@ -329,6 +330,7 @@ real(kind=dbl),INTENT(IN)               :: prefactor
 integer(irg),intent(in)                 :: n
 real(dbl),dimension(:),intent(in)       :: x
 real(dbl),intent(out)                   :: f
+real(kind=sgl),intent(IN)               :: gammaval
 logical,intent(in),optional             :: verbose
 
 
@@ -384,6 +386,8 @@ jpar(1:7) = ipar(1:7)
 
 call CalcECPatternSingleFull(jpar,quat,accum,mLPNH,mLPSH,rgx,&
                                rgy,rgz,binned,mask)
+
+binned = binned**gammaval
 
 mi = minval(binned)
 ma = maxval(binned)
