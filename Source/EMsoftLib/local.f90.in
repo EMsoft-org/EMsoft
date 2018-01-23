@@ -148,6 +148,7 @@ type ConfigStructureType
  character(fnlen)  :: WyckoffPositionsfilename
  character(fnlen)  :: Randomseedfilename
  character(1)      :: EMsoftnativedelimiter
+ character(fnlen)  :: strvals(40)
 end type ConfigStructureType
 
 character(30)      :: ConfigStructureNames(27) = (/ "EMsoftpathname                ", &

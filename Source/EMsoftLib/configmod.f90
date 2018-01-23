@@ -125,6 +125,7 @@ end subroutine print_EMsoft_configuration_strings
 !> @brief Converts string array to EMsoft ConfigStructureType 
 !
 !> @date 10/28/17 MDG 1.0 original
+!> @date 01/22/18 MDG 1.1 added strvals array
 !--------------------------------------------------------------------------
 subroutine C2F_configuration_strings(nstring, cptr, CS) ! bind(C)
 !DEC$ ATTRIBUTES DLLEXPORT :: C2F_configuration_strings
@@ -168,6 +169,14 @@ CS%Templatecodefilename = cstrf(fptr(1:fnlen,24))
 CS%WyckoffPositionsfilename = cstrf(fptr(1:fnlen,25))
 CS%Randomseedfilename = cstrf(fptr(1:fnlen,26))
 CS%EMsoftnativedelimiter = cstrf(fptr(1:fnlen,27))
+
+! also copy all the strings into a regular array of strings; this is useful
+! if we want to extract strings that do not correspond to any of the predefined
+! strings in the list above.
+
+do ii=1,40
+  CS%strvals(ii) = cstrf(fptr(1:fnlen,ii))
+end do 
 
 end subroutine C2F_configuration_strings
 
