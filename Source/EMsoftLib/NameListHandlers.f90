@@ -4276,7 +4276,7 @@ namelist  / TKDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile,
 beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius,&
-dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile
+dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, maskfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
