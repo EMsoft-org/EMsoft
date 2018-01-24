@@ -4251,6 +4251,7 @@ character(fnlen)                                  :: masterfile
 real(kind=sgl)                                    :: energymin
 real(kind=sgl)                                    :: energymax
 character(1)                                      :: spatialaverage
+character(fnlen)                                  :: maskfile
 character(fnlen)                                  :: tmpfile
 character(fnlen)                                  :: datafile
 character(fnlen)                                  :: ctffile
@@ -4304,6 +4305,7 @@ dwelltime       = 100.0D0       ! in microseconds
 hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
 stepX           = 1.0           ! sampling step size along X
 stepY           = 1.0           ! sampling step size along Y
+maskfile        = 'undefined'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 masterfile      = 'undefined'   ! filename
@@ -4374,6 +4376,7 @@ enl%ipf_wd = ipf_wd
 enl%nthreads = nthreads
 enl%datafile = datafile
 enl%tmpfile = tmpfile
+enl%maskfile = maskfile
 enl%ctffile = ctffile
 enl%avctffile = avctffile
 enl%angfile = angfile

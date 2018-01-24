@@ -27,6 +27,8 @@
  nnav =  20,
 ! number of top matches to use for Orientation Similarity Map computation
  nosm = 20,
+ ! to use a custom mask, enter the mask filename here; leave undefined for standard mask option
+ maskfile = 'undefined',
 ! mask or not
  maskpattern = 'n',
 ! mask radius

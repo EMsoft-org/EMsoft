@@ -310,6 +310,7 @@ real(kind=sgl)                                      :: euler(3)
 integer(kind=irg)                                   :: indx
 integer(kind=irg)                                   :: correctsize
 logical                                             :: f_exists, init
+character(1000)                                     :: charline
 
 integer(kind=irg)                                   :: ipar(10)
 
@@ -634,16 +635,56 @@ end if
 !=====================================================
 ! define the circular mask if necessary and convert to 1D vector
 !=====================================================
-if (tkdnl%maskpattern.eq.'y') then
-  do ii = 1,biny
-      do jj = 1,binx
-          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. tkdnl%maskradius**2) then
-              mask(jj,ii) = 0.0
-          end if
-      end do
-  end do
-end if
+! if (tkdnl%maskpattern.eq.'y') then
+!   do ii = 1,biny
+!       do jj = 1,binx
+!           if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. tkdnl%maskradius**2) then
+!               mask(jj,ii) = 0.0
+!           end if
+!       end do
+!   end do
+! end if
   
+if (trim(tkdnl%maskfile).ne.'undefined') then
+! read the mask from file; the mask can be defined by a 2D array of 0 and 1 values
+! that is stored in row form as strings, e.g.    
+!    0000001110000000
+!    0000011111000000
+! ... etc
+!
+    f_exists = .FALSE.
+    fname = trim(EMsoft_getEMdatapathname())//trim(tkdnl%maskfile)
+    fname = EMsoft_toNativePath(fname)
+    inquire(file=trim(fname), exist=f_exists)
+    if (f_exists.eqv..TRUE.) then
+      mask = 0.0
+      open(unit=dataunit,file=trim(fname),status='old',form='formatted')
+      do jj=biny,1,-1
+        read(dataunit,"(A)") charline
+        do ii=1,binx
+          if (charline(ii:ii).eq.'1') mask(ii,jj) = 1.0
+        end do
+      end do
+      close(unit=dataunit,status='keep')
+    else
+      call FatalError('MasterSubroutine','maskfile '//trim(fname)//' does not exist')
+    end if
+else
+    if (tkdnl%maskpattern.eq.'y') then
+      do ii = 1,biny
+          do jj = 1,binx
+              if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. tkdnl%maskradius**2) then
+                  mask(jj,ii) = 0.0
+              end if
+          end do
+      end do
+    end if
+end if
+
+
+
+
+
 do ii = 1,biny
     do jj = 1,binx
         masklin((ii-1)*binx+jj) = mask(jj,ii)

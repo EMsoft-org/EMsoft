@@ -1017,6 +1017,7 @@ type TKDIndexingNameListType
         character(1)            :: spatialaverage
         character(fnlen)        :: anglefile
         !character(fnlen)        :: dotproductfile
+        character(fnlen)        :: maskfile
         character(fnlen)        :: masterfile
         character(fnlen)        :: energyfile 
         character(fnlen)        :: datafile

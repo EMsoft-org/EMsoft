@@ -3220,6 +3220,11 @@ hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create spatialaverage dataset', &
                                       .TRUE.)
 
+dataset = SC_maskfile
+line2(1) = tkdnl%maskfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create maskfile dataset',.TRUE.)
+
 dataset = SC_exptfile
 line2(1) = tkdnl%exptfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
