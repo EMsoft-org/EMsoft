@@ -263,13 +263,13 @@ real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! C
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
-                                                       recordsize_correct
+                                                       recordsize_correct, patsz
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 real(kind=sgl),pointer                              :: dict(:), T0dict(:)
 real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
 !integer(kind=1),allocatable                         :: imageexpt(:),imagedict(:)
 real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
-                                                       exptCI(:), exptFit(:)
+                                                       exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
                                                        tmpimageexpt(:)
 real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:),&
@@ -279,10 +279,12 @@ integer*4,allocatable                               :: idpmap(:),iexptCI(:,:), i
 real(kind=sgl),allocatable                          :: meandict(:),meanexpt(:),wf(:),mLPNH(:,:,:),mLPSH(:,:,:),accum_e_MC(:,:,:)
 real(kind=sgl),allocatable                          :: mLPNH_simple(:,:), mLPSH_simple(:,:), eangle(:)
 real(kind=sgl),allocatable                          :: TKDpattern(:,:), FZarray(:,:), dpmap(:), lstore(:,:), pstore(:,:)
-real(kind=sgl),allocatable                          :: TKDpatternintd(:,:), lp(:), cp(:)
-integer(kind=irg),allocatable                       :: TKDpatterninteger(:,:), TKDpatternad(:,:)
-real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:)
-real(kind=dbl)                                      :: w
+real(kind=sgl),allocatable                          :: TKDpatternintd(:,:), lp(:), cp(:), TKDpat(:,:)
+integer(kind=irg),allocatable                       :: TKDpatterninteger(:,:), TKDpatternad(:,:), TKDpint(:,:)
+real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:), ksqarray(:,:)
+complex(kind=dbl),allocatable                       :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
+real(kind=dbl)                                      :: w, Jres
 integer(kind=irg)                                   :: dims(2)
 character(11)                                       :: dstr
 character(15)                                       :: tstrb
@@ -293,6 +295,7 @@ character(fnlen)                                    :: groupname, dataset, fname
 integer(hsize_t)                                    :: expwidth, expheight
 integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_int)                                      :: numd, nump
+type(C_PTR)                                         :: planf, HPplanf, HPplanb
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc
@@ -354,7 +357,7 @@ end if
 size_in_bytes_dict = Nd*correctsize*sizeof(correctsize)
 size_in_bytes_expt = Ne*correctsize*sizeof(correctsize)
 recordsize_correct = correctsize*4
-
+patsz              = correctsize
 
 ! get the total number of electrons on the detector
 totnum_el = sum(acc%accum_e_detector)
@@ -733,144 +736,158 @@ tmp = sngl(getEBSDIQ(binx, biny, TKDpattern, init))
 ! are in the region of interest.  For now we get those from the nml until we actually 
 ! implement the HDF5 reading bit
 ! this portion of code was first tested in IDL.
-allocate(lstore(L,tkdnl%ipf_wd),pstore(L,tkdnl%ipf_wd),dpmap(totnumexpt), &
-         idpmap(totnumexpt),lp(L),cp(L))
-
 allocate(TKDpatterninteger(binx,biny))
 TKDpatterninteger = 0
 allocate(TKDpatternad(binx,biny),TKDpatternintd(binx,biny))
 TKDpatternad = 0.0
 TKDpatternintd = 0.0
-dpmap= 0.0
-pstore = 0.0
-lstore = 0.0
-lp = 0.0
-cp = 0.0
 
-! initialize the HiPassFilter routine
-rdata = dble(TKDpattern)
-fdata = HiPassFilter(rdata,dims,w,init=.TRUE.)
+! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
+! Thread 0 reads one line worth of patterns from the input file, then the threads do 
+! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
 
-!open(unit=45,file='hipassfilter.data',status='unknown',form='unformatted')
-!write(45) fdata
-!close(unit=45,status='keep')
+call OMP_SET_NUM_THREADS(tkdnl%nthreads)
+io_int(1) = tkdnl%nthreads
+call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
+
+! allocate the arrays that holds the experimental patterns from a single row of the region of interest
+allocate(exppatarray(patsz * tkdnl%ipf_wd),stat=istat)
+if (istat .ne. 0) stop 'could not allocate exppatarray'
+
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+allocate(TKDPat(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate arrays for TKDPat filter'
+TKDPat = 0.0
+allocate(ksqarray(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate ksqarray array'
+Jres = 0.0
+call init_getEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf)
+deallocate(TKDPat)
+
+! initialize the HiPassFilter routine (has its own FFTW plans)
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate hpmask array'
+call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+deallocate(inp, outp)
 
 call Message('Starting processing of experimental patterns')
 call cpu_time(tstart)
 
-pc = totnumexpt/10
+! we do one row at a time
+prepexperimentalloop: do iii = 1,tkdnl%ipf_ht
 
-prepexperimentalloop: do iii = 1,totnumexpt
+! start the OpenMP portion
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, vlen, tmp, inp, outp)
+
+! set the thread ID
+    TID = OMP_GET_THREAD_NUM()
+! initialize thread private variables
     tmpimageexpt = 0.0
-    read(iunitexpt,rec=iii) imageexpt
+    allocate(TKDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
 
-! convert imageexpt to 2D EBS Pattern array
-    do kk=1,biny
-      TKDpattern(1:binx,kk) = imageexpt((kk-1)*binx+1:kk*binx)
-    end do
+    allocate(TKDpint(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate TKDpint array'
+
+    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+
+    rrdata = 0.D0
+    ffdata = 0.D0
+
+! thread 0 reads the next row of patterns from the input file
+    if (TID.eq.0) then
+      do jj=1,tkdnl%ipf_wd
+        read(iunitexpt,rec=(iii-1)*tkdnl%ipf_wd + jj) imageexpt
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
+      end do
+    end if
+
+! other threads must wait until T0 is ready
+!$OMP BARRIER
+    jj=0
+
+! then loop in parallel over all patterns to perform the preprocessing steps
+!$OMP DO SCHEDULE(DYNAMIC)
+    do jj=1,tkdnl%ipf_wd
+! convert imageexpt to 2D Pattern array
+        do kk=1,biny
+          TKDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
+        end do
 
 ! compute the pattern Image Quality 
-    exptIQ(iii) = sngl(getEBSDIQ(binx, biny, TKDpattern))
+        exptIQ((iii-1)*tkdnl%ipf_wd + jj) = sngl(computeEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf))
 
 ! Hi-Pass filter
-    rdata = dble(TKDpattern)
-    fdata = HiPassFilter(rdata,dims,w)
-    TKDpattern = sngl(fdata)
+        rrdata = dble(TKDPat)
+        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
+        TKDPat = sngl(ffdata)
 
 ! adaptive histogram equalization
-    ma = maxval(TKDpattern)
-    mi = minval(TKDpattern)
+        ma = maxval(TKDPat)
+        mi = minval(TKDPat)
     
-    TKDpatternintd = ((TKDpattern - mi)/ (ma-mi))
-    TKDpatterninteger = nint(TKDpatternintd*255.0)
-    TKDpatternad =  adhisteq(tkdnl%nregions,binx,biny,TKDpatterninteger)
-    TKDpattern = float(TKDpatternad)
+        TKDpint = nint(((TKDPat - mi) / (ma-mi))*255.0)
+        TKDPat = float(adhisteq(tkdnl%nregions,binx,biny,TKDpint))
 
 ! convert back to 1D vector
-    do kk=1,biny
-      imageexpt((kk-1)*binx+1:kk*binx) = TKDpattern(1:binx,kk)
+        do kk=1,biny
+          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = TKDPat(1:binx,kk)
+        end do
+
+! apply circular mask and normalize for the dot product computation
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
+        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        if (vlen.ne.0.0) then
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
+        else
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
+        end if
     end do
+!$OMP END DO
 
-! normalize and apply circular mask
-    imageexpt(1:L) = imageexpt(1:L) * masklin(1:L)
-    vlen = NORM2(imageexpt(1:L))
-    if (vlen.ne.0.0) then
-      imageexpt(1:L) = imageexpt(1:L)/vlen
-    else
-      imageexpt(1:L) = 0.0
+! thread 0 writes the row of patterns to the output file
+    if (TID.eq.0) then
+      do jj=1,tkdnl%ipf_wd
+        write(itmpexpt,rec=(iii-1)*tkdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
+      end do
     end if
-    tmpimageexpt(1:L) = imageexpt(1:L)
 
-! and write this pattern into the temporary file
-    write(itmpexpt,rec=iii) tmpimageexpt
-
-! finally, handle the average dot product map stuff
-    ii = mod(iii,tkdnl%ipf_wd)
-    if (ii.eq.0) ii = tkdnl%ipf_wd
-    jj = iii/tkdnl%ipf_wd+1
-! do we need to copy pstore into lstore ?
-    if ((ii.eq.1).and.(jj.gt.1)) lstore = pstore
-! determine to which dpmap entries we need to add the dot product
-    if (ii.eq.1) then
-      cp(1:L) = imageexpt(1:L)
-      pstore(1:L,ii) = cp(1:L)
-    else
-      lp = cp
-      cp(1:L) = imageexpt(1:L)
-      pstore(1:L,ii) = cp(1:L)
-      dp = sum(lp(1:L)*cp(1:L))
-      dpmap(iii-1) = dpmap(iii-1) + dp
-      dpmap(iii) = dpmap(iii) + dp
-    end if
-    if (jj.gt.1) then
-      dp = sum(lstore(1:L,ii)*cp(1:L))
-      dpmap(iii-tkdnl%ipf_wd+1) = dpmap(iii-tkdnl%ipf_wd+1) + dp
-      dpmap(iii) = dpmap(iii) + dp
-    end if
+deallocate(TKDPat, rrdata, ffdata, TKDpint, inp, outp)
+!$OMP BARRIER
+!$OMP END PARALLEL
 
 ! print an update of progress
-    if (iii.gt.pc) then
-      io_int(1:2) = (/ iii, totnumexpt /)
-      call WriteValue('Completed ',io_int,2,"(I12,' of ',I12,' experimental patterns')")
-      pc = pc + totnumexpt/10
+    if (mod(iii,5).eq.0) then
+        io_int(1:2) = (/ iii, tkdnl%ipf_ht /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
     end if
 end do prepexperimentalloop
 
 call Message(' -> experimental patterns stored in tmp file')
 
 close(unit=iunitexpt,status='keep')
+close(unit=itmpexpt,status='keep')
 
 ! print some timing information
-
 call CPU_TIME(tstop)
 tstop = tstop - tstart
-io_real(1) = float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,//)")
+io_real(1) = float(tkdnl%nthreads) * float(totnumexpt)/tstop
+call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+
+!=====================================================
+call Message(' -> computing Average Dot Product map (ADP)')
+call Message(' ')
+
+allocate(dpmap(totnumexpt))
+! re-open the temporary file
+open(unit=itmpexpt,file=trim(fname),&
+     status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
+! use the getADPmap routine in the filters module
+call getADPmap(itmpexpt, totnumexpt, L, tkdnl%ipf_wd, tkdnl%ipf_ht, dpmap)
 
 ! we keep the temporary file open since we will be reading from it...
-
-! correct the dot product map values depending on inside, edge, or corner pixels
-! divide by 4
-dpmap = dpmap*0.25
-
-! correct the straight segments
-dpmap(2:tkdnl%ipf_wd-1) = dpmap(2:tkdnl%ipf_wd-1) * 4.0/3.0
-dpmap(totnumexpt-tkdnl%ipf_wd+2:totnumexpt-1) = dpmap(totnumexpt-tkdnl%ipf_wd+2:totnumexpt-1) * 4.0/3.0
-do jj=1,tkdnl%ipf_ht-2
-  dpmap(tkdnl%ipf_wd*jj+1) = dpmap(tkdnl%ipf_wd*jj+1) * 4.0/3.0
-end do
-do jj=2,tkdnl%ipf_ht-1
-  dpmap(tkdnl%ipf_wd*jj) = dpmap(tkdnl%ipf_wd*jj) * 4.0/3.0
-end do
-
-! and the corners
-dpmap(1) = dpmap(1) * 4.0
-dpmap(tkdnl%ipf_wd) = dpmap(tkdnl%ipf_wd) * 2.0
-dpmap(totnumexpt) = dpmap(totnumexpt) * 2.0
-dpmap(totnumexpt-tkdnl%ipf_wd+1) = dpmap(totnumexpt-tkdnl%ipf_wd+1) * 4.0/3.0
-
-! and we deallocate the auxiliary variables for the average dot product map
-deallocate(lstore,pstore,lp,cp)
 
 !=====================================================
 ! MAIN COMPUTATIONAL LOOP
