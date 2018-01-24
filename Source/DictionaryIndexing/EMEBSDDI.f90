@@ -346,7 +346,6 @@ xtalname = ebsdnl%MCxtalname
 ncubochoric = ebsdnl%ncubochoric
 recordsize = L*4
 itmpexpt = 43
-patsz = ebsdnl%numsx*ebsdnl%numsy
 dims = (/imght, imgwd/)
 w = ebsdnl%hipassw
 source_l = source_length
@@ -369,7 +368,7 @@ end if
 size_in_bytes_dict = Nd*correctsize*sizeof(correctsize)
 size_in_bytes_expt = Ne*correctsize*sizeof(correctsize)
 recordsize_correct = correctsize*4
-
+patsz              = correctsize
 
 ! get the total number of electrons on the detector
 totnum_el = sum(acc%accum_e_detector)
@@ -755,7 +754,7 @@ io_int(1) = ebsdnl%nthreads
 call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 
 ! allocate the arrays that holds the experimental patterns from a single row of the region of interest
-allocate(exppatarray(ebsdnl%numsx * ebsdnl%numsy * ebsdnl%ipf_wd),stat=istat)
+allocate(exppatarray(patsz * ebsdnl%ipf_wd),stat=istat)
 if (istat .ne. 0) stop 'could not allocate exppatarray'
 
 
@@ -805,7 +804,7 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
     if (TID.eq.0) then
       do jj=1,ebsdnl%ipf_wd
         read(iunitexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) imageexpt
-        exppatarray((jj-1)*patsz+1:jj*patsz) = imageexpt(1:patsz)
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
     end if
 
@@ -855,7 +854,7 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 ! thread 0 writes the row of patterns to the output file
     if (TID.eq.0) then
       do jj=1,ebsdnl%ipf_wd
-        write(itmpexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)
+        write(itmpexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
       end do
     end if
 
