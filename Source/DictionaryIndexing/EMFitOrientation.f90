@@ -573,7 +573,7 @@ if (trim(modalityname) .eq. 'EBSD') then
     numdictsingle = ebsdnl%numdictsingle
     numexptsingle = ebsdnl%numexptsingle
  
-    allocate(IPAR2(9))
+    allocate(IPAR2(10))
     IPAR2 = 0
 
 ! define the jpar array
@@ -588,6 +588,7 @@ if (trim(modalityname) .eq. 'EBSD') then
     IPAR2(1:7) = jpar(1:7)
     IPAR2(8) = Emin
     IPAR2(9) = Emax
+    IPAR2(10)= ebsdnl%nregions
 
     dims2 = (/binx, biny/)
 
@@ -799,7 +800,7 @@ else if (trim(modalityname) .eq. 'ECP') then
     numdictsingle = ecpnl%numdictsingle
     numexptsingle = ecpnl%numexptsingle
     
-    allocate(IPAR2(9))
+    allocate(IPAR2(10))
     IPAR2 = 0
 
 ! define the jpar array
@@ -813,6 +814,8 @@ else if (trim(modalityname) .eq. 'ECP') then
 
     IPAR2(1:7) = jpar(1:7)
     IPAR2(8) = ecpnl%nregions
+
+    IPAR2(9:10) = 0
 
     dims2 = (/binx, biny/)
 

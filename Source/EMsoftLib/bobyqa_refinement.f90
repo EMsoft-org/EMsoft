@@ -39,7 +39,7 @@ module bobyqa_refinement
             use,INTRINSIC :: ISO_C_BINDING
             implicit none
   
-            integer(c_size_t),INTENT(IN)         :: ipar(9)
+            integer(c_size_t),INTENT(IN)         :: ipar(10)
             real(sgl),INTENT(IN)                 :: stepsize(3)
             real(sgl),INTENT(IN)                 :: initmeanval(3)
             real(c_float),INTENT(IN)             :: expt(ipar(2)*ipar(3)/ipar(1)**2)
@@ -105,7 +105,7 @@ contains
 
         implicit none
                 
-        integer(c_size_t),intent(in)        :: ipar(9)
+        integer(c_size_t),intent(in)        :: ipar(10)
         real(sgl),intent(in)                :: initmeanval(3)
         real(sgl),intent(in)                :: stepsize(3)
         real(kind=sgl),intent(in)           :: expt(ipar(2)*ipar(3)/ipar(1)**2)
@@ -270,7 +270,7 @@ contains
         
         implicit real (dbl) (a-h, o-z)
         
-        integer(c_size_t),intent(in):: ipar(9)
+        integer(c_size_t),intent(in):: ipar(10)
         real(sgl),intent(in)        :: initmeanval(3)
         real(sgl),intent(in)        :: stepsize(3)
         real(sgl),intent(in)        :: expt1(ipar(2)*ipar(3)/ipar(1)**2)
@@ -1353,7 +1353,7 @@ contains
    
         implicit real (dbl) (a-h, o-z)
 
-        integer(8),intent(in)       :: ipar(9)
+        integer(8),intent(in)       :: ipar(10)
         real(sgl),intent(in)        :: initmeanval(3)
         real(sgl),intent(in)        :: stepsize(3)
         real(sgl),intent(in)        :: expt1(ipar(2)*ipar(3)/ipar(1)**2)
@@ -1550,7 +1550,7 @@ contains
    
         implicit real (dbl) (a-h, o-z)
 
-        integer(8),intent(in)       :: ipar(9)
+        integer(8),intent(in)       :: ipar(10)
         real(sgl),intent(in)        :: initmeanval(3)
         real(sgl),intent(in)        :: stepsize(3)
         real(sgl),intent(in)        :: expt1(ipar(2)*ipar(3)/ipar(1)**2)
