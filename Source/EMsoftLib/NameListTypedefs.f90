@@ -890,6 +890,19 @@ type DvsDNameListType
         character(fnlen)        :: xtalfile
 end type DvsDNameListType
 
+type EBSDDIpreviewNameListType
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        integer(kind=irg)       :: hipasswnsteps
+        integer(kind=irg)       :: nregionsmin
+        integer(kind=irg)       :: nregionsmax
+        integer(kind=irg)       :: nregionsstepsize
+        integer(kind=irg)       :: patnum
+        real(kind=sgl)          :: hipasswmax
+        character(fnlen)        :: tifffile
+        character(fnlen)        :: exptfile
+end type EBSDDIpreviewNameListType 
+
 type EBSDIndexingNameListType
         integer(kind=irg)       :: ncubochoric
         integer(kind=irg)       :: numexptsingle

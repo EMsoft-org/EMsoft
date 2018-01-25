@@ -772,7 +772,7 @@ complex(C_DOUBLE_COMPLEX),INTENT(OUT)   :: inp(dims(1),dims(2)), outp(dims(1),di
 type(C_PTR),INTENT(OUT)                 :: planf, planb
 
 integer(kind=irg)                       :: i, j
-real(kind=dbl)                          :: x, y, val
+real(kind=dbl)                          :: x, y, val, v2
 
 hpmask = cmplx(1.D0,0.D0)
 
@@ -781,8 +781,9 @@ do i=1,dims(1)/2
   x = dble(i)**2
   do j=1,dims(2)/2
     y = dble(j)**2
-    if ((x+y).lt.30.D0) then
-      val = 1.D0-dexp(-w*(x+y))
+    v2 = w * ( x+y )
+    if (v2.lt.30.D0) then
+      val = 1.D0-dexp(-v2)
       hpmask(i,j) = cmplx(val, 0.D0)
       hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
       hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)

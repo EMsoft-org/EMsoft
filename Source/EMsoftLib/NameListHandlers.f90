@@ -3967,7 +3967,93 @@ end subroutine GetPEDIndxNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:GetEBSDIndxNameList
+! SUBROUTINE:GetEBSDDIpreviewNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDDIpreview.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl name list structure
+!
+!> @date 01/24/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDDIpreviewNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDDIpreviewNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(EBSDDIpreviewNameListType),INTENT(INOUT)     :: enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: hipasswnsteps
+integer(kind=irg)       :: nregionsmin
+integer(kind=irg)       :: nregionsmax
+integer(kind=irg)       :: nregionsstepsize
+integer(kind=irg)       :: patnum
+real(kind=sgl)          :: hipasswmax
+character(fnlen)        :: tifffile
+character(fnlen)        :: exptfile
+
+namelist / EBSDDIpreviewdata / numsx, numsy, hipasswmax, hipasswnsteps, nregionsstepsize, &
+          nregionsmax, nregionsmin, patnum, tifffile, exptfile
+
+! set the input parameters to default values
+numsx = 640
+numsy = 480
+hipasswmax = 0.5
+hipasswnsteps = 10
+nregionsmin = 1
+nregionsmax = 10
+nregionsstepsize = 1
+patnum = 1
+tifffile = 'undefined'
+exptfile = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=EBSDDIpreviewdata)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+        
+    if (trim(exptfile).eq.'undefined') then
+        call FatalError('GetEBSDDIpreviewNameList:',' experimental file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tifffile).eq.'undefined') then
+        call FatalError('GetEBSDDIpreviewNameList:',' TIFF file name is undefined in '//nmlfile)
+    end if
+end if
+
+enl%numsx = numsx
+enl%numsy = numsy
+enl%hipasswnsteps = hipasswnsteps
+enl%nregionsmin = nregionsmin
+enl%nregionsmax = nregionsmax
+enl%nregionsstepsize = nregionsstepsize
+enl%patnum = patnum
+enl%hipasswmax = hipasswmax
+enl%tifffile = tifffile
+enl%exptfile = exptfile
+
+end subroutine GetEBSDDIpreviewNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetBSDIndxNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
