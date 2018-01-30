@@ -570,6 +570,27 @@ type TKDoverlapNameListType
         character(fnlen)        :: Masterenergyfile
 end type TKDoverlapNameListType
 
+! TKDspots name list type
+type TKDspotsNameListType
+        integer(kind=irg)       :: ncubochoric
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        real(kind=sgl)          :: voltage
+        real(kind=sgl)          :: dmin
+        real(kind=sgl)          :: thickness
+        real(kind=sgl)          :: L
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
+        real(kind=sgl)          :: sig
+        real(kind=sgl)          :: omega
+        real(kind=sgl)          :: xpc
+        real(kind=sgl)          :: ypc
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: outname
+        character(fnlen)        :: eulerfile 
+end type 
+
 ! EMEBSDcluster name list
 type EBSDclusterNameListType
         integer(kind=irg)       :: NClusters

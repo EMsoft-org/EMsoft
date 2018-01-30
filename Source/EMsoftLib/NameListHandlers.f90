@@ -2900,6 +2900,115 @@ end subroutine GetTKDoverlapNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetTKDspotsNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMTKDspots.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl TKD name list structure
+!
+!> @date 01/03/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetTKDspotsNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetTKDspotsNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)             :: nmlfile
+type(TKDspotsNameListType),INTENT(INOUT):: enl
+logical,OPTIONAL,INTENT(IN)             :: initonly
+
+logical                                 :: skipread = .FALSE.
+
+integer(kind=irg)       :: ncubochoric
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+real(kind=sgl)          :: voltage
+real(kind=sgl)          :: dmin
+real(kind=sgl)          :: thickness
+real(kind=sgl)          :: L
+real(kind=sgl)          :: thetac
+real(kind=sgl)          :: delta
+real(kind=sgl)          :: omega
+real(kind=sgl)          :: sig
+real(kind=sgl)          :: xpc
+real(kind=sgl)          :: ypc
+character(fnlen)        :: xtalname
+character(fnlen)        :: outname
+character(fnlen)        :: eulerfile 
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / TKDspots / ncubochoric, nthreads, numsx, numsy, voltage, dmin, thickness, L, &
+                       thetac, delta, omega, sig, xpc, ypc, xtalname, outname, eulerfile
+
+! set the input parameters to default values (except for xtalname, which must be present)
+ncubochoric     = 100
+nthreads        = 1
+numsx           = 640
+numsy           = 480
+voltage         = 20.0
+dmin            = 0.05
+thickness       = 50.0
+L               = 15000.0
+thetac          = 10.0
+delta           = 50.0
+omega           = 0.0
+sig             = 70.0
+xpc             = 0.0
+ypc             = 0.0
+xtalname        = 'undefined'
+outname         = 'undefined'
+eulerfile       = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=TKDspots)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('EMTKDspots:',' xtal input file is undefined in '//nmlfile)
+ end if
+
+ if (trim(outname).eq.'undefined') then
+  call FatalError('EMTKDspots:',' output file name B is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+enl%ncubochoric = ncubochoric
+enl%nthreads = nthreads
+enl%numsx = numsx 
+enl%numsy = numsy
+enl%voltage = voltage
+enl%dmin = dmin 
+enl%thickness = thickness
+enl%L = L 
+enl%thetac = thetac
+enl%delta = delta
+enl%omega = omega
+enl%sig = sig
+enl%xpc = xpc 
+enl%ypc = ypc 
+enl%xtalname = xtalname 
+enl%outname = outname 
+enl%eulerfile = eulerfile
+
+end subroutine GetTKDspotsNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetECPZANameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
