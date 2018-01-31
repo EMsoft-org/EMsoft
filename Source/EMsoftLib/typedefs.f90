@@ -340,8 +340,8 @@ character(5),parameter  :: PGTHD(32) =(/'    1','   -1','    2','    m','  2/m',
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHD
 
 !> 3D point groups : purely rotational point groups corresponding to each point group
-integer(kind=irg),parameter       :: PGrot(32) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
-                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30/)
+integer(kind=irg),parameter       :: PGrot(33) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
+                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGrot
 
 !> 3D point groups : Laue group number
