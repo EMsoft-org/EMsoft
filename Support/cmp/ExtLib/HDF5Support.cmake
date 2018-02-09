@@ -113,12 +113,9 @@ find_package(HDF5 NAMES hdf5 COMPONENTS C HL Fortran Fortran_HL)
 
 if(HDF5_FOUND)
   
-  # message(STATUS "HDF5_BUILD_FORTRAN: ${HDF5_BUILD_FORTRAN}")
-  # message(STATUS "HDF5_BUILD_SHARED_LIBS : ${HDF5_BUILD_SHARED_LIBS}")
-  # message(STATUS "HDF5_INCLUDE_DIR_FORTRAN: ${HDF5_INCLUDE_DIR_FORTRAN}")
+  GET_FILENAME_COMPONENT (HDF5_ROOT_DIR "${HDF5_INCLUDE_DIR}" PATH)
 
-  GET_FILENAME_COMPONENT (HDF5_LIBRARY_DIRS "${HDF5_INCLUDE_DIR}" PATH)
-  set(HDF5_LIBRARY_DIRS ${HDF5_LIBRARY_DIRS}/lib)
+  set(HDF5_LIBRARY_DIRS ${HDF5_ROOT_DIR}/lib)
   if(NOT "${CMP_PLUGIN_SEARCHDIR_FILE}" STREQUAL "")
     file(APPEND ${CMP_PLUGIN_SEARCHDIR_FILE} "${HDF5_LIBRARY_DIRS};")
   endif()
@@ -131,18 +128,17 @@ if(HDF5_FOUND)
   if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
     if(${HDF5_BUILD_FORTRAN})
       if(${HDF5_BUILD_SHARED_LIBS})
-        include_directories("${HDF5_INSTALL}/include/shared")
+        set(HDF5_INCLUDE_DIR_FORTRAN "${HDF5_ROOT_DIR}/include/shared")
       else()
-        include_directories("${HDF5_INSTALL}/include/static")
+        set(HDF5_INCLUDE_DIR_FORTRAN "${HDF5_ROOT_DIR}/include/static")
       endif()
     endif()
   endif()
-  message(STATUS "HDF5 Location: ${HDF5_INSTALL}")
+  message(STATUS "HDF5 Location: ${HDF5_DIR}")
   message(STATUS "HDF5 Version: ${HDF5_VERSION_STRING}")
-  message(STATUS "HDF5 SHARED_LIBS: ${HDF5_BUILD_SHARED_LIBS}")
-  #message(STATUS "HDF5 LIBRARY DIR: ${HDF5_LIBRARY_DIRS}")
-  #message(STATUS "HDF5 INCLUDE DIR: ${HDF5_INCLUDE_DIRS}")
-  #message(STATUS "${HDF5_PACKAGE_NAME}_INCLUDE_DIR_FORTRAN: ${${HDF5_PACKAGE_NAME}_INCLUDE_DIR_FORTRAN}")
+  message(STATUS "HDF5_BUILD_FORTRAN: ${HDF5_BUILD_FORTRAN}")
+  message(STATUS "HDF5_BUILD_SHARED_LIBS : ${HDF5_BUILD_SHARED_LIBS}")
+  message(STATUS "HDF5_INCLUDE_DIR_FORTRAN: ${HDF5_INCLUDE_DIR_FORTRAN}")
 
   if(MSVC_IDE)
     set(BUILD_TYPES Debug Release)
@@ -152,26 +148,6 @@ if(HDF5_FOUND)
         set(BUILD_TYPES "Debug")
     endif()
   endif()
-
-  # if(TARGET hdf5) # Up through 1.8.14
-  #   set(HDF5_C_TARGET_NAME hdf5)
-  # elseif(TARGET hdf5-shared) # 1.8.15 & 1.8.16
-  #   set(HDF5_C_TARGET_NAME hdf5-shared)
-  # elseif(TARGET hdf5::hdf5-shared) # 1.8.17 and above
-  #   set(HDF5_C_TARGET_NAME hdf5::hdf5-shared)
-  # else()
-  #   message(FATAL_ERROR "Neither target hdf5, hdf5-shared nor hdf5::hdf5-shared was found.")
-  # endif()
-
-  # if(TARGET hdf5_cpp)# Up through 1.8.14
-  #   set(HDF5_CXX_TARGET_NAME hdf5_cpp)
-  # elseif(TARGET hdf5_cpp-shared) # 1.8.15 & 1.8.16
-  #   set(HDF5_CXX_TARGET_NAME hdf5_cpp-shared)
-  # elseif(TARGET hdf5::hdf5_cpp-shared) # 1.8.17 and above
-  #   set(HDF5_CXX_TARGET_NAME hdf5::hdf5_cpp-shared)
-  # else()
-  #   message(FATAL_ERROR "Neither target hdf5_cpp, hdf5_cpp-shared nor hdf5::hdf5_cpp-shared was found.")
-  # endif()
 
 
   if(WIN32)

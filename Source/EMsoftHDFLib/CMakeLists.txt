@@ -16,19 +16,7 @@ elseif(WIN32)
   set(lib_install_dir ".")
 endif()
 
-include_directories("${EMsoftLib_BINARY_DIR}")
-include_directories("${EMsoft_SOURCE_DIR}/Source")
 
-include_directories(${HDF5_INCLUDE_DIR})
-if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
-  if(${HDF5_BUILD_FORTRAN})
-    if(${HDF5_BUILD_SHARED_LIBS})
-      include_directories("${HDF5_INCLUDE_DIR}/shared")
-    else()
-      include_directories("${HDF5_INCLUDE_DIR}/static")
-    endif()
-  endif()
-endif()
 
 set(EMsoftHDFLib_SRCS
 	${EMsoftHDFLib_SOURCE_DIR}/initializersHDF.f90
@@ -51,8 +39,35 @@ set(EMsoftHDFLib_SRCS
 )
 
 GetHDF5LinkLibraries(EMSOFT)
+
 add_library(EMsoftHDFLib ${LIB_TYPE} ${EMsoftHDFLib_SRCS})
-target_include_directories(EMsoftHDFLib PUBLIC ${HDF5_INCLUDE_DIR_FORTRAN})
+
+target_include_directories(EMsoftHDFLib 
+                          PUBLIC 
+                            ${HDF5_INCLUDE_DIR}
+                          PRIVATE
+                            "${EMsoft_SOURCE_DIR}/Source"
+                            "${EMsoftLib_BINARY_DIR}"
+                    )
+if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
+  if(${HDF5_BUILD_FORTRAN})
+    if(${HDF5_BUILD_SHARED_LIBS})
+      target_include_directories(EMsoftHDFLib 
+                          PUBLIC 
+                          ${HDF5_INCLUDE_DIR_FORTRAN}
+                          )
+      #include_directories("${HDF5_INCLUDE_DIR}/shared")
+    else()
+
+      target_include_directories(EMsoftHDFLib 
+                          PUBLIC 
+                          ${HDF5_INCLUDE_DIR_FORTRAN}
+                          )
+
+      #include_directories("${HDF5_INCLUDE_DIR}/static")
+    endif()
+  endif()
+endif()
 
 target_link_libraries(EMsoftHDFLib ${EMSOFT_hdf5LinkLibs} EMsoftLib)
 
