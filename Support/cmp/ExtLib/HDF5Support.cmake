@@ -102,13 +102,9 @@ endfunction()
 # HDF5 now comes with everything that is needed for CMake to load
 # up the targets (Exported) that it needs. We just need to find where HDF5 is installed.
 #------------------------------------------------------------------------------
-if("${HDF5_INSTALL}" STREQUAL "")
-    set(HDF5_INSTALL  $ENV{HDF5_INSTALL})
-endif()
-
-if( "${HDF5_INSTALL}" STREQUAL "")
-  message(FATAL_ERROR "The HDF5_INSTALL variable was not set. In order to find HDF5 you need to either\
-                      pass in the -DHDF5_INSTALL=.... or set the HDF5_INSTALL environment variable.")
+if( "${HDF5_DIR}" STREQUAL "")
+  message(FATAL_ERROR "The HDF5_DIR variable was not set. In order to find HDF5 you need to set or\
+                      pass in the -DHDF5_DIR=  setting")
 endif()
 
 #message(STATUS "LIB_TYPE: ${LIB_TYPE}")

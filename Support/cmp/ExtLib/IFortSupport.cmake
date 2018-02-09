@@ -129,19 +129,22 @@ set(IFORT_COMPILER_LIB_SEARCHPATH
 set(IFORT_COMPILER_RDIST_LIBRARIES "")
 set(IFORT_COMPILER_LIBRARIES "")
 
-AddIFortCopyInstallRules(LIBNAME iomp5md
-                        LIBPREFIX lib
-                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
-                        TYPES ${BUILD_TYPES})
 AddIFortCopyInstallRules(LIBNAME ifcoremd
                         LIBPREFIX lib
                         LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
                         TYPES ${BUILD_TYPES})
+AddIFortCopyInstallRules(LIBNAME mmd
+                        LIBPREFIX lib
+                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
+                        TYPES ${BUILD_TYPES})
+
+# These next libraries do not seem to have a debug version....
+set(BUILD_TYPES Release)
 AddIFortCopyInstallRules(LIBNAME ifportmd
                         LIBPREFIX lib
                         LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
                         TYPES ${BUILD_TYPES})
-AddIFortCopyInstallRules(LIBNAME mmd
+AddIFortCopyInstallRules(LIBNAME iomp5md
                         LIBPREFIX lib
                         LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
                         TYPES ${BUILD_TYPES})
