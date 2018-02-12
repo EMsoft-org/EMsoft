@@ -98,10 +98,12 @@ set(IFORT_COMPILER_POSSIBLE_LOCATIONS
     "C:/Program Files/Intel/Composer XE 2015/IFORT_COMPILER/"
     "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2016/windows/compiler"
     "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/compiler"
+    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2018/windows/compiler"
 )
 
 set(IFORT_COMPILER_RDIST_DIR
-  "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/redist"
+  #"C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/redist"
+  "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2018/windows/redist"
   )
 
 

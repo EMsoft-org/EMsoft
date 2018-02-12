@@ -101,6 +101,8 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
 
     void updateMCProgress(int loopCompleted, int totalLoops, float bseYield);
 
+    void on_gpuPlatformCB_currentIndexChanged(int index);
+
   private slots:
     void threadFinished();
 

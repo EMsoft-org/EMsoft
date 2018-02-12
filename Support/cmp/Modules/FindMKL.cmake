@@ -49,6 +49,7 @@ set(MKL_POSSIBLE_LOCATIONS
     "C:/Program Files/Intel/Composer XE 2015/mkl/"
     "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2016/windows/mkl"
     "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/mkl"
+    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2018/windows/mkl"
 )
 
 foreach (i ${MKL_POSSIBLE_LOCATIONS})
@@ -109,6 +110,12 @@ if (USE_MKL)
                 SET(MKL_LIBS mkl_intel_c mkl_core mkl_intel_thread mkl_lapack95 mkl_blas95 )
             endif()
         elseif(MKL_ROOT_DIR MATCHES "2017") # With Intel 2017 it would seem that MKL_INCLUDE_DIR does not have the year in it.
+            if(CMAKE_CL_64)
+                SET(MKL_LIBS mkl_intel_lp64 mkl_core mkl_intel_thread mkl_lapack95_lp64 mkl_blas95_lp64 )
+            else()
+                SET(MKL_LIBS mkl_intel_c mkl_core mkl_intel_thread mkl_lapack95 mkl_blas95 )
+            endif()
+        elseif(MKL_ROOT_DIR MATCHES "2018") # With Intel 2017 it would seem that MKL_INCLUDE_DIR does not have the year in it.
             if(CMAKE_CL_64)
                 SET(MKL_LIBS mkl_intel_lp64 mkl_core mkl_intel_thread mkl_lapack95_lp64 mkl_blas95_lp64 )
             else()
