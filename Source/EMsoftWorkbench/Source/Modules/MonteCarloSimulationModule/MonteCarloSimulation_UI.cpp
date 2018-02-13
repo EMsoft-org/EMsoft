@@ -108,14 +108,15 @@ void MonteCarloSimulation_UI::setupGui()
   {
      gpuPlatformCB->setCurrentIndex(0); 
   }
-#if 1
-  choices = m_Controller->getDeviceInfo(1); // Force the first Platform. This really only works on macOS
+
+  // Grab the first device as a default
+  choices = m_Controller->getDeviceInfo(1);
   gpuDeviceCB->insertItems(0, choices);
   if (gpuDeviceCB->count() > 0)
   {
     gpuDeviceCB->setCurrentIndex(0);
   }
-  #endif
+
 }
 
 
@@ -124,12 +125,13 @@ void MonteCarloSimulation_UI::setupGui()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::on_gpuPlatformCB_currentIndexChanged(int index)
 {
-  #if 1
   QStringList choices = m_Controller->getDeviceInfo(index + 1);
   gpuDeviceCB->clear();
   gpuDeviceCB->insertItems(0, choices);
-  if (gpuDeviceCB->count() > 0) { gpuDeviceCB->setCurrentIndex(0); }
-  #endif
+  if (gpuDeviceCB->count() > 0) 
+  {
+    gpuDeviceCB->setCurrentIndex(0);
+  }
 }
 
 // -----------------------------------------------------------------------------
