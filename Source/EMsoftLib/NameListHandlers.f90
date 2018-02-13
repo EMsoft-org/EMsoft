@@ -4224,6 +4224,7 @@ character(fnlen)                                  :: avctffile
 character(fnlen)                                  :: angfile
 character(fnlen)                                  :: eulerfile
 character(fnlen)                                  :: inputtype
+character(fnlen)                                  :: HDFstrings
 integer(kind=irg)                                 :: ncubochoric
 integer(kind=irg)                                 :: numexptsingle
 integer(kind=irg)                                 :: numdictsingle
@@ -4245,7 +4246,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section
+section, HDFstrings
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4298,6 +4299,7 @@ maskfile        = 'undefined'
 indexingmode    = 'dynamic'
 section         = 0
 inputtype       = 'Binary'    ! Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF 
+HDFstrings      = ''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4367,6 +4369,8 @@ enl%indexingmode  = trim(indexingmode)
 enl%Notify        = Notify
 enl%section       = section
 enl%inputtype     = inputtype
+enl%HDFstrings    = HDFstrings
+
 if (trim(indexingmode) .eq. 'dynamic') then
     enl%L               = L
     enl%numsx           = numsx

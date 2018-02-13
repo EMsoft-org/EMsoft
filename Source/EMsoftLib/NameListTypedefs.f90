@@ -977,6 +977,7 @@ type EBSDIndexingNameListType
         character(fnlen)        :: maskfile
         character(fnlen)        :: indexingmode
         character(fnlen)        :: inputtype
+        character(fnlen)        :: HDFstrings(10)
 ! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
         integer(kind=irg)       :: numangles
         integer(kind=irg)       :: numEbins

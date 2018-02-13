@@ -47,7 +47,10 @@ use HDFsupport
 
 IMPLICIT NONE
 
-private :: get_input_type
+
+private :: get_input_type, get_num_HDFgroups
+
+type(HDFobjectStackType),pointer,save,private       :: pmHDF_head 
 
 contains
 
@@ -70,7 +73,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg)                       :: itype
 
-itype = 0
+itype = -1
 
 if (trim(inputtype).eq."Binary") itype = 1
 if (trim(inputtype).eq."TSLup2") itype = 2
@@ -81,6 +84,35 @@ if (trim(inputtype).eq."EMEBSD") itype = 6
 if (trim(inputtype).eq."BrukerHDF") itype = 7
 
 end function get_input_type
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: get_num_HDFgroups
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief extract the number of HDF groups from the HDFstrings array
+!
+!> @param HDFstrings
+!
+!> @date 02/13/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function get_num_HDFgroups(HDFstrings) result(numg)
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)             :: HDFstrings(10)
+integer(kind=irg)                       :: numg
+
+integer(kind=irg)                       :: i 
+
+numg = 0
+do i=1,10 
+  if (len(trim(HDFstrings(i))).gt.0) numg = numg+1
+end do
+numg = numg-1   ! the last one should be a data set name
+
+end function get_num_HDFgroups
 
 !--------------------------------------------------------------------------
 !
@@ -95,10 +127,11 @@ end function get_input_type
 !> @param inputtype 
 !> @param recsize  some formats need a record size
 !> @param funit logical unit for reading
+!> @param HDFstrings string array with group and datset names for HDF5 input
 !
 !> @date 02/13/18 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function openExpPatternFile(filename, npat, inputtype, recsize, funit) result(istat)
+recursive function openExpPatternFile(filename, npat, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
 
 use io
@@ -111,16 +144,21 @@ character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: recsize
 integer(kind=irg),INTENT(IN)            :: funit
 integer(kind=irg)                       :: istat
+character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
-integer(kind=irg)                       :: ierr, io_int(1), itype
+integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg
+character(fnlen)                        :: groupname, dataset
 
-! depending on the inputtype, we open the input file in the appropriate way
+
+! first determine how many HDFgroups there are; the last entry in HDFstrings should be the data set name
+hdfnumg = get_num_HDFgroups(HDFstrings)
+itype = get_input_type(inputtype)
+
 ename = trim(EMsoft_getEMdatapathname())//trim(filename)
 ename = EMsoft_toNativePath(ename)
 
-itype = get_input_type(inputtype)
-
+! depending on the inputtype, we open the input file in the appropriate way
 select case (itype)
     case(1)  ! "Binary"
         open(unit=funit,file=trim(ename),&
@@ -133,17 +171,26 @@ select case (itype)
 
     case(2)  ! "TSLup2"
 
-    case(3)  ! "TSLHDF"
-
     case(4)  ! "OxfordBinary"
 
-    case(5)  ! "OxfordHDF"
-
-    case(6)  ! "EMEBSD"
-
-    case(7)  ! "BrukerHDF"
+    case(3, 5:7)  ! "TSLHDF", "OxfordHDF", "EMEBSD", "BrukerHDF"
+        nullify(pmHDF_head)
+        call h5open_EMsoft(hdferr)
+        ! open the file
+        hdferr =  HDF_openFile(ename, pmHDF_head)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+        ! open all the groups to the correct level of the data set
+        do i=1,hdfnumg
+            groupname = trim(HDFstrings(i))
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+            if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
+        end do
+        ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism
+        ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
     case default 
+        istat = -1
+
 end select
 
 end function openExpPatternFile
@@ -155,7 +202,7 @@ end function openExpPatternFile
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief read a single row of patterns from the input file
+!> @brief read a single row of patterns from the input file(s)
 !
 !> @param iii row number
 !> @param wd number of patterns in row
@@ -163,11 +210,12 @@ end function openExpPatternFile
 !> @param L array size
 !> @param funit logical unit for reading
 !> @param inputtype input file type identifier
+!> @param HDFstrings string array with group and datset names for HDF5 input
 !> @param exppatarray output array
 !
 !> @date 02/13/18 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine getExpPatternRow(iii, wd, patsz, L, funit, inputtype, exppatarray) 
+recursive subroutine getExpPatternRow(iii, wd, patsz, L, funit, inputtype, HDFstrings, exppatarray) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
 
 IMPLICIT NONE
@@ -178,12 +226,16 @@ integer(kind=irg),INTENT(IN)            :: patsz
 integer(kind=irg),INTENT(IN)            :: L
 integer(kind=irg),INTENT(IN)            :: funit
 character(fnlen),INTENT(IN)             :: inputtype
+character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
 
-integer(kind=irg)                       :: jj, itype
+integer(kind=irg)                       :: jj, itype, hdfnumg
 real(kind=sgl)                          :: imageexpt(L)
+character(fnlen)                        :: dataset
 
 itype = get_input_type(inputtype)
+hdfnumg = get_num_HDFgroups(HDFstrings)
+if (hdfnumg.gt.0) dataset = trim(HDFstrings(hdfnumg+1))
 
 select case (itype)
     case(1)  ! "Binary"
@@ -219,7 +271,7 @@ end subroutine getExpPatternRow
 !> @brief close a file with experimental patterns for a given input file type
 !
 !> @param inputtype 
-!> @param recsize  some formats need a record size
+!> @param funit some formats need a logical unit number
 !
 !> @date 02/13/18 MDG 1.0 original
 !--------------------------------------------------------------------------
@@ -231,7 +283,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: funit
 
-integer(kind=irg)                       :: itype
+integer(kind=irg)                       :: itype, hdferr
 
 itype = get_input_type(inputtype)
 
@@ -242,20 +294,13 @@ select case (itype)
     case(2)  ! "TSLup2"
         call FatalError("closeExpPatternFile","input format not yet implemented")
 
-    case(3)  ! "TSLHDF"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
-
     case(4)  ! "OxfordBinary"
         call FatalError("closeExpPatternFile","input format not yet implemented")
 
-    case(5)  ! "OxfordHDF"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
-
-    case(6)  ! "EMEBSD"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
-
-    case(7)  ! "BrukerHDF"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
+    case(3, 5:7)  ! "TSLHDF", "OxfordHDF", "EMEBSD", "BrukerHDF"
+        call HDF_pop(pmHDF_head,.TRUE.)
+        call h5close_EMsoft(hdferr)
+        nullify(pmHDF_head)
 
     case default 
         call FatalError("closeExpPatternFile","unknown input format")
@@ -289,7 +334,7 @@ integer(kind=irg)                   :: io_int(1)
 
 select case (istat)
     case(-1)
-        call Message("Error code -1: ")
+        call Message("Error code -1: unknown input format")
     case default
         io_int(1) = istat
         call WriteValue("unknown error code ",io_int,1)

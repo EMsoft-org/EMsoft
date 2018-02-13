@@ -81,13 +81,23 @@
  gammavalue = 1.0,
 !
 !###################################################################
-! FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+! INPUT FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################
 !
 ! name of datafile where the patterns are stored; path relative to EMdatapathname
  exptfile = 'undefined',
 ! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
  inputtype = 'Binary',
+! here we enter the HDF group names and data set names as individual strings (up to 10)
+! enter the full path of a data set in individual strings for each group, in the correct order,
+! and with the data set name as the last name; leave the remaining strings empty (they should all
+! be empty for the Binary and TSLup2 formats)
+ HDFstrings = '' '' '' '' '' '' '' '' '' '',
+!
+!###################################################################
+! OTHER FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+!###################################################################
+!
 ! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp
  tmpfile = 'EMEBSDDict_tmp.data',
 ! output file ; path relative to EMdatapathname
