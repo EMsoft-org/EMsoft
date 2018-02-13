@@ -4223,6 +4223,7 @@ character(fnlen)                                  :: ctffile
 character(fnlen)                                  :: avctffile
 character(fnlen)                                  :: angfile
 character(fnlen)                                  :: eulerfile
+character(fnlen)                                  :: inputtype
 integer(kind=irg)                                 :: ncubochoric
 integer(kind=irg)                                 :: numexptsingle
 integer(kind=irg)                                 :: numdictsingle
@@ -4242,7 +4243,7 @@ character(fnlen)                                  :: indexingmode
 namelist  / EBSDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile, devid, platid, &
 beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, nlines, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
-ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius,&
+ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
 section
 
@@ -4296,6 +4297,7 @@ dictfile        = 'undefined'
 maskfile        = 'undefined'
 indexingmode    = 'dynamic'
 section         = 0
+inputtype       = 'Binary'    ! Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF 
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4364,6 +4366,7 @@ enl%StepY         = stepY
 enl%indexingmode  = trim(indexingmode)
 enl%Notify        = Notify
 enl%section       = section
+enl%inputtype     = inputtype
 if (trim(indexingmode) .eq. 'dynamic') then
     enl%L               = L
     enl%numsx           = numsx

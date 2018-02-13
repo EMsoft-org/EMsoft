@@ -86,6 +86,8 @@
 !
 ! name of datafile where the patterns are stored; path relative to EMdatapathname
  exptfile = 'undefined',
+! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
+ inputtype = 'Binary',
 ! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp
  tmpfile = 'EMEBSDDict_tmp.data',
 ! output file ; path relative to EMdatapathname

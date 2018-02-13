@@ -187,6 +187,7 @@ end program EBSDIndexing
 !> @date 08/30/17 MDG 1.9 added option to read custom mask from file
 !> @date 11/13/17 MDG 2.0 moved OpenCL code from InnerProdGPU routine to main code
 !> @date 01/09/18 MDG 2.1 first attempt at OpenMP for pattern pre-processing
+!> @date 02/13/18 MDG 2.2 added support for multiple input formats for experimental patterns
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
@@ -197,6 +198,7 @@ use NameListTypedefs
 use NameListHandlers
 use files
 use dictmod
+use patternmod
 use Lambert
 use others
 use crystal
@@ -726,18 +728,23 @@ end if
 open(unit=itmpexpt,file=trim(fname),&
      status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
 
-ename = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%exptfile)
-ename = EMsoft_toNativePath(ename)
-open(unit=iunitexpt,file=trim(ename),&
-    status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
-call Message(' opened input file '//trim(ename))
+! open the file with experimental patterns; depending on the inputtype parameter, this
+! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
+! pattern file produced by EMEBSD.f90; or a vendor binary or HDF5 file... in each case we need to 
+! open the file and leave it open, then use the getExpPatternRow() routine to read a row
+! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
+! properly close the experimental pattern file
+istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, ebsdnl%inputtype, recordsize, iunitexpt)
+if (istat.ne.0) then
+    call patternmod_errormessage(istat)
+    call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
+end if
 
 ! also, allocate the arrays used to create the average dot product map; this will require 
 ! reading the actual EBSD HDF5 file to figure out how many rows and columns there
 ! are in the region of interest.  For now we get those from the nml until we actually 
 ! implement the HDF5 reading bit
 ! this portion of code was first tested in IDL.
-
 allocate(EBSDpatterninteger(binx,biny))
 EBSDpatterninteger = 0
 allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
@@ -746,7 +753,7 @@ EBSDpatternintd = 0.0
 
 
 ! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
-! Thread 0 reads one line worth of patterns from the input file, then the threads do 
+! Thread 0 reads one line worth of patterns from the input file, then all threads do 
 ! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
 
 call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
@@ -802,10 +809,7 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
 ! thread 0 reads the next row of patterns from the input file
     if (TID.eq.0) then
-      do jj=1,ebsdnl%ipf_wd
-        read(iunitexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) imageexpt
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
-      end do
+        call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, iunitexpt, ebsdnl%inputtype, exppatarray)
     end if
 
 ! other threads must wait until T0 is ready
@@ -871,7 +875,8 @@ end do prepexperimentalloop
 
 call Message(' -> experimental patterns stored in tmp file')
 
-close(unit=iunitexpt,status='keep')
+call closeExpPatternFile(ebsdnl%inputtype, iunitexpt)
+
 close(unit=itmpexpt,status='keep')
 
 ! print some timing information
