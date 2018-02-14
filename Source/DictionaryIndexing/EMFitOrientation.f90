@@ -144,7 +144,7 @@ real(kind=dbl)                          :: w, Jres
 real(kind=sgl),allocatable              :: STEPSIZE(:)
 character(fnlen)                        :: modalityname, Manufacturer
 character(1)                            :: rchar    
-
+integer(HSIZE_T)                        :: dims3(3), offset3(3)
 type(HDFobjectStackType),pointer        :: HDF_head
 
 
@@ -674,6 +674,8 @@ if (trim(modalityname) .eq. 'EBSD') then
       ppendE(cratioE) = MODULO(Nexp,ebsdnl%numexptsingle)
     end if
 
+    dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
+
 !=====================================================
 ! Preprocess all the experimental patterns and store
 ! them in a temporary file as vectors; also, create 
@@ -770,7 +772,9 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
 ! thread 0 reads the next row of patterns from the input file
     if (TID.eq.0) then
-        call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, iunitexpt, ebsdnl%inputtype, exppatarray)
+        offset3 = (/ 0, 0, (iii-1)*ebsdnl%ipf_wd /)
+        call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                              ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray)
     end if
 
 ! other threads must wait until T0 is ready
