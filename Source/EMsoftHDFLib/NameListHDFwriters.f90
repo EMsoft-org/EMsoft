@@ -3187,6 +3187,11 @@ line2(1) = ebsdnl%maskfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create maskfile dataset',.TRUE.)
 
+dataset = SC_inputtype
+line2(1) = ebsdnl%inputtype
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create inputtype dataset',.TRUE.)
+
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 

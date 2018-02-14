@@ -138,21 +138,26 @@ function(AddEMsoftUnitTest)
     set(multiValueArgs SOURCES LINK_LIBRARIES)
     cmake_parse_arguments(Z "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
+    if("${Z_SOLUTION_FOLDER}" STREQUAL "")
+        set(Z_SOLUTION_FOLDER "Test")
+    endif()
+
     set(TEST_NAME ${Z_TEST_NAME})
-    set(TEST_SOURCE_FILE "${EMsoft_BINARY_DIR}/Source/Test/${Z_TEST_NAME}Test.cpp")
+    set(TEST_SOURCE_FILE "${EMsoft_BINARY_DIR}/${Z_SOLUTION_FOLDER}/${Z_TEST_NAME}Test.cpp")
     configure_file("${EMsoft_SOURCE_DIR}/Source/Test/UnitTestMain.cpp.in"
                     "${TEST_SOURCE_FILE}" @ONLY)
 
     set(TEST_SOURCS
       "${Z_SOURCES}"
-      "${TEST_SOURCE_FILE}"
-      )
+    )
 
-    add_executable( ${Z_TARGET} ${TEST_SOURCS})
-    target_link_libraries( ${Z_TARGET} ${Z_LINK_LIBRARIES})
-    if("${Z_SOLUTION_FOLDER}" STREQUAL "")
-        set(Z_SOLUTION_FOLDER "Test")
-    endif()
+    add_library(${Z_TARGET}Lib STATIC "${Z_SOURCES}")
+    set_target_properties (${Z_TARGET}Lib PROPERTIES LINKER_LANGUAGE Fortran)
+    target_link_libraries(${Z_TARGET}Lib ${Z_LINK_LIBRARIES})
+    set_target_properties( ${Z_TARGET}Lib PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
+
+    add_executable( ${Z_TARGET} "${TEST_SOURCE_FILE}")
+    target_link_libraries( ${Z_TARGET} ${Z_TARGET}Lib)
     set_target_properties( ${Z_TARGET} PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
 
     if(WIN32)

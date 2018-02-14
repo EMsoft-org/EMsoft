@@ -35,38 +35,31 @@ set(MKL_MPI_VARIANTS NOMPI INTELMPI OPENMPI SGIMPT)
 
 set(CMAKE_FIND_DEBUG_MODE 1)
 
+#-------------------------------------------------------------------------------
+# We only support Intel Visual Fortran 2016 and newer since those have a sane
+# folder structure scheme. These next lines make sense on Windows Intel installs,
+# let's hope that their installations on Linux and macOS are about the same
+get_filename_component(IFORT_COMPILER_ROOT_DIR ${CMAKE_Fortran_COMPILER} DIRECTORY)
+get_filename_component(IFORT_COMPILER_ROOT_DIR ${IFORT_COMPILER_ROOT_DIR} DIRECTORY)
+get_filename_component(IFORT_COMPILER_ROOT_DIR ${IFORT_COMPILER_ROOT_DIR} DIRECTORY)
+
 set(MKL_POSSIBLE_LOCATIONS
     $ENV{MKLDIR}
     /opt/intel/mkl
     /opt/intel/cmkl
     /Library/Frameworks/Intel_MKL.framework/Versions/Current/lib/universal
-    "C:/Program Files (x86)/Intel/ComposerXE-2011/mkl"
-    "C:/Program Files (x86)/Intel/Composer XE 2013/mkl"
-    "C:/Program Files/Intel/MKL/*/"
-    "C:/Program Files/Intel/ComposerXE-2011/mkl"
-    "C:/Program Files/Intel/Composer XE 2013/mkl"
-    "C:/Program Files (x86)/Intel/Composer XE 2015/mkl/"
-    "C:/Program Files/Intel/Composer XE 2015/mkl/"
-    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2016/windows/mkl"
-    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/mkl"
+    "${IFORT_COMPILER_ROOT_DIR}/mkl"
+    # "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2016/windows/mkl"
+    # "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/mkl"
+    # "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2018/windows/mkl"
 )
 
-foreach (i ${MKL_POSSIBLE_LOCATIONS})
-    if (EXISTS ${i}/include/mkl_cblas.h)
-        set(MKL_ROOT_DIR ${i})
-        break()
-    endif()
-    # Also check for the FORTRAN only files in case we don't need the C/C++ headers
-    #message(STATUS "Checking for FORTRAN BLAS header... ${i}")
-    if (EXISTS ${i}/include/blas.f90)
-        set(MKL_ROOT_DIR ${i})
-        break()
-    endif()
-endforeach()
+#-------------------------------------------------------------------------------
+# Find the MKL_ROOT_DIR by finding known header files that MUST be present
+find_path(MKL_ROOT_DIR 
+        NAMES include/mkl_cblas.h include/blas.f90 
+        PATHS ${MKL_POSSIBLE_LOCATIONS})
 message(STATUS "MKL_ROOT_DIR: ${MKL_ROOT_DIR}")
-message(STATUS "MKL_ARCH_DIR: ${MKL_ARCH_DIR}")
-#   Does This work at all ?
-find_path(MKL_ROOT_DIR NAMES include/mkl_cblas.h include/blas.f90 PATHS ${MKL_POSSIBLE_LOCATIONS})
 
 IF (NOT MKL_ROOT_DIR)
   MESSAGE(WARNING "Could not find MKL: disabling it")
@@ -84,25 +77,13 @@ if (USE_MKL)
                 NO_DEFAULT_PATH)
     message(STATUS "MKL_FFTW_INCLUDE_DIR: ${MKL_FFTW_INCLUDE_DIR}")
     if (WIN32)
-        set(MKL_LIB_SEARCHPATH $ENV{ICC_LIB_DIR} $ENV{MKL_LIB_DIR} "${MKL_ROOT_DIR}/lib/${MKL_ARCH_DIR}" "${MKL_ROOT_DIR}/../compiler" "${MKL_ROOT_DIR}/../compiler/lib/${MKL_ARCH_DIR}")
+        set(MKL_LIB_SEARCHPATH  $ENV{ICC_LIB_DIR} 
+                                $ENV{MKL_LIB_DIR} 
+                                "${MKL_ROOT_DIR}/lib/${MKL_ARCH_DIR}" 
+                                "${IFORT_COMPILER_ROOT_DIR}/compiler" 
+                                "${IFORT_COMPILER_ROOT_DIR}/compiler/lib/${MKL_ARCH_DIR}")
         
-        if (MKL_INCLUDE_DIR MATCHES "10.")
-            set(MKL_LIBS mkl_solver mkl_core mkl_intel_c mkl_intel_s mkl_intel_thread libguide mkl_lapack95 mkl_blas95)
-            if (CMAKE_CL_64)
-                set(MKL_LIBS mkl_solver_lp64 mkl_core mkl_intel_lp64 mkl_intel_thread libguide mkl_lapack95_lp64 mkl_blas95_lp64)
-            endif()
-        elseif(MKL_INCLUDE_DIR MATCHES "2013") # version 11 ...
-            set(MKL_LIBS mkl_core mkl_intel_c mkl_intel_s mkl_intel_thread libiomp5md mkl_lapack95 mkl_blas95)
-            if (CMAKE_CL_64)
-                set(MKL_LIBS mkl_core mkl_intel_lp64 mkl_intel_thread libiomp5md mkl_lapack95_lp64 mkl_blas95_lp64)
-            endif()
-        elseif(MKL_INCLUDE_DIR MATCHES "2015")
-            if(CMAKE_CL_64)
-                SET(MKL_LIBS mkl_intel_lp64 mkl_core mkl_intel_thread mkl_lapack95_lp64 mkl_blas95_lp64 )
-            else()
-                SET(MKL_LIBS mkl_intel_c mkl_core mkl_intel_thread mkl_lapack95 mkl_blas95 )
-            endif()
-        elseif(MKL_INCLUDE_DIR MATCHES "2016")
+        if(MKL_INCLUDE_DIR MATCHES "2016")
             if(CMAKE_CL_64)
                 SET(MKL_LIBS mkl_intel_lp64 mkl_core mkl_intel_thread mkl_lapack95_lp64 mkl_blas95_lp64 )
             else()
@@ -114,12 +95,18 @@ if (USE_MKL)
             else()
                 SET(MKL_LIBS mkl_intel_c mkl_core mkl_intel_thread mkl_lapack95 mkl_blas95 )
             endif()
-        else() # old MKL 9
-            set(MKL_LIBS mkl_solver mkl_c libguide mkl_lapack mkl_ia32)
-        endif()
-
-        if (MKL_INCLUDE_DIR MATCHES "10.3")
-            set(MKL_LIBS ${MKL_LIBS} libiomp5md)
+        elseif(MKL_ROOT_DIR MATCHES "2018") # With Intel 2017 it would seem that MKL_INCLUDE_DIR does not have the year in it.
+            if(CMAKE_CL_64)
+                SET(MKL_LIBS mkl_intel_lp64 mkl_core mkl_intel_thread mkl_lapack95_lp64 mkl_blas95_lp64 )
+            else()
+                SET(MKL_LIBS mkl_intel_c mkl_core mkl_intel_thread mkl_lapack95 mkl_blas95 )
+            endif()
+        else() # we found a compiler in the symlinked dir which does not have a year stamp on it. Let's assume it is one of the years we support
+            if(CMAKE_CL_64)
+                SET(MKL_LIBS mkl_intel_lp64 mkl_core mkl_intel_thread mkl_lapack95_lp64 mkl_blas95_lp64 )
+            else()
+                SET(MKL_LIBS mkl_intel_c mkl_core mkl_intel_thread mkl_lapack95 mkl_blas95 )
+            endif()
         endif()
         
         foreach (LIB ${MKL_LIBS})
