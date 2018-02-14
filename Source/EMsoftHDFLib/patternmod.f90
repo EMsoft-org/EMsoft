@@ -174,6 +174,13 @@ select case (itype)
         end if
 
     case(2)  ! "TSLup2"
+        open(unit=funit,file=trim(ename), &
+            status='old',form='unformatted',access='direct',recl=4,iostat=ierr)
+        if (ierr.ne.0) then
+            io_int(1) = ierr
+            call WriteValue("File open error; error type ",io_int,1)
+            call FatalError("openExpPatternFile","Cannot continue program")
+        end if
 
     case(4)  ! "OxfordBinary"
 
@@ -237,10 +244,13 @@ character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
 
-integer(kind=irg)                       :: ii, jj, kk, itype, hdfnumg
+integer(kind=irg)                       :: ii, jj, kk, itype, hdfnumg, offset
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+integer(kind=irg)                       :: sng 
+integer(kind=ish)                       :: pair(2)
+
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -254,6 +264,19 @@ select case (itype)
       end do
 
     case(2)  ! "TSLup2"
+      offset = 4 + (iii-1) * wd * patsz / 2
+      do kk=1,dims3(3)
+        do jj=1,dims3(2)
+          do ii=1,dims3(1)/2
+            read(unit=funit,rec=offset + (kk-1)*patsz/2 + (jj-1)*dims3(1)/2 + ii) sng
+            pair = transfer(sng,pair)  ! transform from 4-byte value to two short integers
+            exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+2*ii-1) = float(pair(1))
+            exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+2*ii) = float(pair(2))
+          end do 
+        end do 
+      end do 
+      ! correct for the fact that the original values were unsigned integers
+      where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
 
     case(3)  ! "TSLHDF"
 
@@ -261,7 +284,7 @@ select case (itype)
 
     case(5)  ! "OxfordHDF"
 
-    case(6)  ! "EMEBSD"
+    case(6)  ! "EMEBSD"   passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
@@ -313,7 +336,7 @@ select case (itype)
         close(unit=funit,status='keep')
 
     case(2)  ! "TSLup2"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
+        close(unit=funit,status='keep')
 
     case(4)  ! "OxfordBinary"
         call FatalError("closeExpPatternFile","input format not yet implemented")
