@@ -183,7 +183,7 @@ EBSDpatternad =  adhisteq(nregions,binx,biny,EBSDpatterninteger)
 binned = float(EBSDpatternad)
 
 binned = binned*mask
-
+    
 do i=1,biny
     do j=1,binx
         EBSDvector((i-1)*binx+j) = binned(j,i)
