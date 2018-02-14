@@ -305,6 +305,7 @@ integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_size_t),target                            :: slength
 integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
+integer(HSIZE_T)                                    :: dims3(3), offset3(3)
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc
@@ -784,6 +785,8 @@ deallocate(inp, outp)
 call Message('Starting processing of experimental patterns')
 call cpu_time(tstart)
 
+dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
+
 ! we do one row at a time
 prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
@@ -808,8 +811,11 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
     ffdata = 0.D0
 
 ! thread 0 reads the next row of patterns from the input file
+! we have to allow for all the different types of input files here...
     if (TID.eq.0) then
-        call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, iunitexpt, ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray)
+        offset3 = (/ 0, 0, (iii-1)*ebsdnl%ipf_wd /)
+        call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                              ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray)
     end if
 
 ! other threads must wait until T0 is ready
@@ -819,7 +825,7 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 ! then loop in parallel over all patterns to perform the preprocessing steps
 !$OMP DO SCHEDULE(DYNAMIC)
     do jj=1,ebsdnl%ipf_wd
-! convert imageexpt to 2D EBS Pattern array
+! convert imageexpt to 2D EBSD Pattern array
         do kk=1,biny
           EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
         end do

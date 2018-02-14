@@ -150,13 +150,17 @@ character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg
 character(fnlen)                        :: groupname, dataset
 
+istat = 0
 
 ! first determine how many HDFgroups there are; the last entry in HDFstrings should be the data set name
 hdfnumg = get_num_HDFgroups(HDFstrings)
+!write (*,*) 'number of HDF groups ',hdfnumg
 itype = get_input_type(inputtype)
+!write (*,*) 'input file type ',itype
 
 ename = trim(EMsoft_getEMdatapathname())//trim(filename)
 ename = EMsoft_toNativePath(ename)
+!write (*,*) 'input file name ',trim(ename)
 
 ! depending on the inputtype, we open the input file in the appropriate way
 select case (itype)
@@ -185,7 +189,7 @@ select case (itype)
             hdferr = HDF_openGroup(groupname, pmHDF_head)
             if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
         end do
-        ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism
+        ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
     case default 
@@ -208,6 +212,8 @@ end function openExpPatternFile
 !> @param wd number of patterns in row
 !> @param patsz pattern dimension
 !> @param L array size
+!> @param dims3 array size for hyperslab reading
+!> @param offset3 array offset for hyperslab reading
 !> @param funit logical unit for reading
 !> @param inputtype input file type identifier
 !> @param HDFstrings string array with group and datset names for HDF5 input
@@ -215,7 +221,7 @@ end function openExpPatternFile
 !
 !> @date 02/13/18 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine getExpPatternRow(iii, wd, patsz, L, funit, inputtype, HDFstrings, exppatarray) 
+recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
 
 IMPLICIT NONE
@@ -224,14 +230,17 @@ integer(kind=irg),INTENT(IN)            :: iii
 integer(kind=irg),INTENT(IN)            :: wd
 integer(kind=irg),INTENT(IN)            :: patsz
 integer(kind=irg),INTENT(IN)            :: L
+integer(HSIZE_T),INTENT(IN)             :: dims3(3)
+integer(HSIZE_T),INTENT(IN)             :: offset3(3)
 integer(kind=irg),INTENT(IN)            :: funit
 character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
 
-integer(kind=irg)                       :: jj, itype, hdfnumg
+integer(kind=irg)                       :: ii, jj, kk, itype, hdfnumg
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
+character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -253,10 +262,22 @@ select case (itype)
     case(5)  ! "OxfordHDF"
 
     case(6)  ! "EMEBSD"
+! read a hyperslab section from the HDF5 input file
+        EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
+        exppatarray = 0.0
+        do kk=1,dims3(3)
+            do jj=1,dims3(2)
+                do ii=1,dims3(1)
+                    exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
+                end do 
+            end do 
+        end do 
 
     case(7)  ! "BrukerHDF"
+        ! we will read a row of patterns using the HDF5 hyperslab mechanism
 
     case default 
+
 end select
 
 end subroutine getExpPatternRow

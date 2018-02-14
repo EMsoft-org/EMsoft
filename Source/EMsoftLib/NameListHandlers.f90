@@ -4224,7 +4224,7 @@ character(fnlen)                                  :: avctffile
 character(fnlen)                                  :: angfile
 character(fnlen)                                  :: eulerfile
 character(fnlen)                                  :: inputtype
-character(fnlen)                                  :: HDFstrings
+character(fnlen)                                  :: HDFstrings(10)
 integer(kind=irg)                                 :: ncubochoric
 integer(kind=irg)                                 :: numexptsingle
 integer(kind=irg)                                 :: numdictsingle
