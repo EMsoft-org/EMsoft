@@ -278,13 +278,11 @@ select case (itype)
       ! correct for the fact that the original values were unsigned integers
       where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
 
-    case(3)  ! "TSLHDF"
-
     case(4)  ! "OxfordBinary"
 
     case(5)  ! "OxfordHDF"
 
-    case(6)  ! "EMEBSD"   passed tests on 2/14/18 by MDG
+    case(3,6)  ! "TSLHDF" "EMEBSD"   passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
