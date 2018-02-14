@@ -709,7 +709,6 @@ if (trim(modalityname) .eq. 'EBSD') then
           EBSDPattern(1:binx,kk) = imageexpt((kk-1)*binx+1:kk*binx)
         end do
 
-
 ! Hi-Pass filter
         rdata = dble(EBSDPattern)
         fdata = HiPassFilter(rdata,dims2,hipassw)

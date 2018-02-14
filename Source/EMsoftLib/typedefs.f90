@@ -1143,7 +1143,7 @@ end type substrateBW
 ! type definition for dictionary-based indexing of EBSD patterns
 type dicttype
         integer(kind=irg)               :: Nqsym        ! number of quaternion symmetry operators for current crystal system 
-        real(kind=dbl)                  :: Pm(4,24)     ! array for quaternion symmetry operators
+        real(kind=dbl)                  :: Pm(4,60)     ! array for quaternion symmetry operators
         integer(kind=irg)               :: pgnum        ! point group number
         integer(kind=irg)               :: prot         ! rotational point group number
         real(kind=dbl),allocatable      :: xAp(:)       ! kappa array
@@ -1218,10 +1218,11 @@ type QCStructureType
   integer(kind=irg)                     :: numindices
   integer(kind=irg),allocatable         :: facts(:,:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
-  real(kind=dbl)                        :: epvec(3,6)
-  real(kind=dbl)                        :: eovec(3,6)
-  real(kind=dbl)                        :: Mp(6,6)
-  real(kind=dbl)                        :: Mo(6,6)
+  real(kind=dbl)                        :: epvec(3,6), epar(6,3)
+  real(kind=dbl)                        :: eovec(3,6), eperp(6,3)
+  real(kind=dbl)                        :: Mp(6,6), Picos(6,6)
+  real(kind=dbl)                        :: Mo(6,6), Qicos(6,6)
+  real(kind=dbl)                        :: SYM_icos(6,6,60)              ! 532 rotational group in matrix representation
   real(kind=dbl)                        :: QClatparm
   real(kind=dbl)                        :: dmin
   real(kind=dbl)                        :: vol

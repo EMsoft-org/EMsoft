@@ -546,7 +546,7 @@ real(kind=dbl)                          :: y1, y2
 ! first get the number of the rotational point group that corresponds to the crystal point group
 dict%prot = PGrot(dict%pgnum)
 ! possible values for dict%prot are: (/1,3,6,9,12,16,18,21,24,28,30/)
-! corresponding to the point groups 1, 2, 222, 4, 422, 3, 32, 6, 622, 23, and 432, respectively
+! corresponding to the point groups 1, 2, 222, 4, 422, 3, 32, 6, 622, 23, 432 and 532 respectively
 
 !------------
 ! IMPORTANT NOTE: the original von Mises-Fischer (VMF) approach requires that q and -q are considered to 
