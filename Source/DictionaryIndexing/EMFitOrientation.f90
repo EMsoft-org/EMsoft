@@ -70,6 +70,7 @@ use files
 use bobyqa_refinement,only:bobyqa
 use FitOrientations
 use stringconstants
+use patternmod
 
 use ISO_C_BINDING
 
@@ -119,15 +120,16 @@ logical                                 :: verbose
 
 logical                                 :: f_exists, init, overwrite =.TRUE.
 integer(kind=irg),parameter             :: iunitexpt = 41, itmpexpt = 42
-integer(kind=irg)                       :: binx, biny, recordsize
-real(kind=sgl),allocatable              :: tmpimageexpt(:), EBSDPattern(:,:), imageexpt(:), mask(:,:), masklin(:)
-real(kind=sgl),allocatable              :: imagedictflt(:)
-real(kind=dbl),allocatable              :: fdata(:,:), rdata(:,:)
+integer(kind=irg)                       :: binx, biny, recordsize, patsz, totnumexpt
+real(kind=sgl),allocatable              :: tmpimageexpt(:), EBSDPattern(:,:), imageexpt(:), mask(:,:), masklin(:), EBSDpat(:,:)
+real(kind=sgl),allocatable              :: imagedictflt(:), exppatarray(:)
+real(kind=dbl),allocatable              :: fdata(:,:), rdata(:,:), rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 real(kind=sgl),allocatable              :: EBSDpatternintd(:,:), binned(:,:), euler_best(:,:), ECPattern(:,:),  ECpatternintd(:,:)
 integer(kind=irg),allocatable           :: EBSDpatterninteger(:,:), EBSDpatternad(:,:)
-integer(kind=irg),allocatable           :: ECpatterninteger(:,:), ECpatternad(:,:) 
-
-real(kind=sgl)                          :: quat(4), ma, mi, dp, tstart, tstop, io_real(1), tmp, totnum_el, genfloat
+integer(kind=irg),allocatable           :: ECpatterninteger(:,:), ECpatternad(:,:), EBSDpint(:,:)
+complex(kind=dbl),allocatable           :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
+real(kind=sgl)                          :: quat(4), ma, mi, dp, tstart, tstop, io_real(1), tmp, totnum_el, genfloat, vlen
 integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tick, tock, ierr, L 
 integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2)
 real(kind=dbl)                          :: prefactor, F
@@ -137,6 +139,8 @@ integer(kind=irg)                       :: cratioE, fratioE, eindex, niter
 integer(kind=irg),allocatable           :: ppendE(:)
 real(kind=sgl),allocatable              :: exptpatterns(:,:)
 
+type(C_PTR)                             :: planf, HPplanf, HPplanb
+real(kind=dbl)                          :: w, Jres
 real(kind=sgl),allocatable              :: STEPSIZE(:)
 character(fnlen)                        :: modalityname, Manufacturer
 character(1)                            :: rchar    
@@ -212,7 +216,12 @@ dataset = SC_masterfile
         call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
         ebsdnl%masterfile = trim(stringarray(1))
         deallocate(stringarray)
- 
+        
+dataset = SC_inputtype
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        ebsdnl%inputtype = trim(stringarray(1))
+        deallocate(stringarray)  
+
 dataset = SC_ipfwd
         call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_wd)
 
@@ -259,6 +268,7 @@ dataset = SC_gammavalue
 
 dataset = SC_hipassw
         call HDF_readDatasetDouble(dataset, HDF_head, hdferr, hipassw)
+w       = hipassw
 
 dataset = SC_maskpattern
         call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
@@ -317,8 +327,8 @@ dataset = SC_thetac
 dataset = SC_tmpfile
         call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
         ebsdnl%tmpfile = trim(stringarray(1))
-        deallocate(stringarray)
-    
+        deallocate(stringarray)  
+
 dataset = SC_xpc
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%xpc)
 
@@ -566,13 +576,13 @@ if (trim(modalityname) .eq. 'EBSD') then
 !==========fill important parameters in namelist======
 !=====================================================
 
-    binx = ebsdnl%numsx/ebsdnl%binning
-    biny = ebsdnl%numsy/ebsdnl%binning
-    recordsize = binx*biny*4
-    L = binx*biny
+    binx          = ebsdnl%numsx/ebsdnl%binning
+    biny          = ebsdnl%numsy/ebsdnl%binning
+    recordsize    = binx*biny*4
+    L             = binx*biny
     numdictsingle = ebsdnl%numdictsingle
     numexptsingle = ebsdnl%numexptsingle
- 
+    patsz         = L 
     allocate(IPAR2(10))
     IPAR2 = 0
 
@@ -651,6 +661,27 @@ if (trim(modalityname) .eq. 'EBSD') then
         end do
     end do
 
+!=================================
+!========LOOP VARIABLES===========
+!=================================
+
+    ratioE = float(Nexp)/float(ebsdnl%numexptsingle)
+    cratioE = ceiling(ratioE)
+    fratioE = floor(ratioE)
+
+    ppendE = (/ (ebsdnl%numexptsingle, ii=1,cratioE) /)
+    if (fratioE.lt.cratioE) then
+      ppendE(cratioE) = MODULO(Nexp,ebsdnl%numexptsingle)
+    end if
+
+!=====================================================
+! Preprocess all the experimental patterns and store
+! them in a temporary file as vectors; also, create 
+! an average dot product map to be stored in the h5ebsd output file
+!
+! this could become a separate routine in the EMEBSDmod module ...
+!=====================================================
+
 ! first, make sure that this file does not already exist
     f_exists = .FALSE.
     fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
@@ -676,74 +707,141 @@ if (trim(modalityname) .eq. 'EBSD') then
     open(unit=iunitexpt,file=trim(ename),&
         status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
 
-! prepare the fftw plan for this pattern size
-    EBSDPattern = 0.0
-    fdata = HiPassFilter(rdata,dims2,hipassw,init)
-
-!=================================
-!========LOOP VARIABLES===========
-!=================================
-
-    ratioE = float(Nexp)/float(ebsdnl%numexptsingle)
-    cratioE = ceiling(ratioE)
-    fratioE = floor(ratioE)
-
-    ppendE = (/ (ebsdnl%numexptsingle, ii=1,cratioE) /)
-    if (fratioE.lt.cratioE) then
-      ppendE(cratioE) = MODULO(Nexp,ebsdnl%numexptsingle)
-    end if
-
     allocate(exptpatterns(binx*biny,ebsdnl%numexptsingle),stat=istat)
     if(istat .ne. 0) then
         call FatalError('EMFitOrientation:','could not allocate exptpatterns array')
     end if
     exptpatterns = 0.0
 
-    prepexperimentalloop: do iii = 1,Nexp
+! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
+! Thread 0 reads one line worth of patterns from the input file, then all threads do 
+! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
 
-        tmpimageexpt = 0.0
-        read(iunitexpt,rec=iii) imageexpt
+    call OMP_SET_NUM_THREADS(enl%nthreads)
+    io_int(1) = enl%nthreads
+    call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 
+! allocate the arrays that holds the experimental patterns from a single row of the region of interest
+    allocate(exppatarray(patsz * ebsdnl%ipf_wd),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate exppatarray'
+
+
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+    allocate(EBSDPat(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
+    EBSDPat = 0.0
+    allocate(ksqarray(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate ksqarray array'
+    Jres = 0.0
+    call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
+    deallocate(EBSDPat)
+
+! initialize the HiPassFilter routine (has its own FFTW plans)
+    allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate hpmask array'
+    call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+    deallocate(inp, outp)
+
+    call Message('Starting processing of experimental patterns')
+    call cpu_time(tstart)
+
+! we do one row at a time
+prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
+
+! start the OpenMP portion
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
+
+! set the thread ID
+    TID = OMP_GET_THREAD_NUM()
+! initialize thread private variables
+    tmpimageexpt = 0.0
+    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+
+    allocate(EBSDpint(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate EBSDpint array'
+
+    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+
+    rrdata = 0.D0
+    ffdata = 0.D0
+
+! thread 0 reads the next row of patterns from the input file
+    if (TID.eq.0) then
+        call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, iunitexpt, ebsdnl%inputtype, exppatarray)
+    end if
+
+! other threads must wait until T0 is ready
+!$OMP BARRIER
+    jj=0
+
+! then loop in parallel over all patterns to perform the preprocessing steps
+!$OMP DO SCHEDULE(DYNAMIC)
+    do jj=1,ebsdnl%ipf_wd
 ! convert imageexpt to 2D EBS Pattern array
         do kk=1,biny
-          EBSDPattern(1:binx,kk) = imageexpt((kk-1)*binx+1:kk*binx)
+          EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
         end do
 
 ! Hi-Pass filter
-        rdata = dble(EBSDPattern)
-        fdata = HiPassFilter(rdata,dims2,hipassw)
-        EBSDPattern = sngl(fdata)
-     
+        rrdata = dble(EBSDPat)
+        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
+        EBSDPat = sngl(ffdata)
+
 ! adaptive histogram equalization
-        ma = maxval(EBSDPattern)
-        mi = minval(EBSDPattern)
+        ma = maxval(EBSDPat)
+        mi = minval(EBSDPat)
     
-        EBSDpatternintd = ((EBSDPattern - mi)/ (ma-mi))
-        EBSDpatterninteger = nint(EBSDpatternintd*255.0)
-        EBSDpatternad =  adhisteq(ebsdnl%nregions,binx,biny,EBSDpatterninteger)
-        EBSDPattern = float(EBSDpatternad)
+        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+        EBSDPat = float(adhisteq(ebsdnl%nregions,binx,biny,EBSDpint))
 
 ! convert back to 1D vector
         do kk=1,biny
-          imageexpt((kk-1)*binx+1:kk*binx) = EBSDPattern(1:binx,kk)
+          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = EBSDPat(1:binx,kk)
         end do
 
-! normalize and apply circular mask
-        imageexpt(1:L) = imageexpt(1:L) * masklin(1:L)
-        imageexpt(1:L) = imageexpt(1:L)/NORM2(imageexpt(1:L))
-        tmpimageexpt(1:L) = imageexpt(1:L)
+! apply circular mask and normalize for the dot product computation
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
+        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        if (vlen.ne.0.0) then
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
+        else
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
+        end if
+    end do
+!$OMP END DO
 
-! and write this pattern into the temporary file
-        write(itmpexpt,rec=iii) tmpimageexpt
+! thread 0 writes the row of patterns to the output file
+    if (TID.eq.0) then
+      do jj=1,ebsdnl%ipf_wd
+        write(itmpexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
+      end do
+    end if
 
-        if (mod(iii,10000) .eq. 0) then
-            io_int(1) = iii
-            call Writevalue('completed pre-processing pattern #',io_int,1,'(I8)')
-        end if 
+deallocate(EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
+!$OMP BARRIER
+!$OMP END PARALLEL
 
-    end do prepexperimentalloop
+! print an update of progress
+    if (mod(iii,5).eq.0) then
+        io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+    end if
+end do prepexperimentalloop
 
-    call Message('experimental patterns stored in tmp file','(A)')
+call Message(' -> experimental patterns stored in tmp file')
+
+call closeExpPatternFile(ebsdnl%inputtype, iunitexpt)
+
+close(unit=itmpexpt,status='keep')
+
+! print some timing information
+call CPU_TIME(tstop)
+tstop = tstop - tstart
+io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
+call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
 
 !=====================================================
 ! ELECTRON CHANNELING PATTERNS
