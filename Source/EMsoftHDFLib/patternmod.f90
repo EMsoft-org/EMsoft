@@ -362,8 +362,8 @@ select case (itype)
         exppatarray = 0.0
         dims3new = (/ dims3(1), dims3(2), 1_HSIZE_T /)
         do kk=1,dims3(3)  ! loop over all spots in the row
-            ispot = iii*wd + kk
-            newspot = transfer(semiy(ispot) * wd + semix(ispot), newspot )
+            ispot = (iii-1)*wd + kk
+            newspot = semiy(ispot) * wd + semix(ispot)
             offset3new = (/ offset3(1), offset3(2),  newspot /)
             EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
             do jj=1,dims3(2)
@@ -372,7 +372,6 @@ select case (itype)
                 end do 
             end do 
         end do 
-
     case default 
 
 end select
