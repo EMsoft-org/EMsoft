@@ -37,6 +37,8 @@
 !> @brief a variety of routines to read various experimental diffaction pattern file formats
 !
 !> @date 02/13/18 MDG 1.0 original
+!> @date 02/14/18 MDG 1.1 added old Binary, TSL .up2, and EMEBSD HDF5 formats
+!> @date 02/15/18 MDG 1.2 added TSL and Bruker HDF formatted files
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -154,13 +156,12 @@ istat = 0
 
 ! first determine how many HDFgroups there are; the last entry in HDFstrings should be the data set name
 hdfnumg = get_num_HDFgroups(HDFstrings)
-!write (*,*) 'number of HDF groups ',hdfnumg
 itype = get_input_type(inputtype)
-!write (*,*) 'input file type ',itype
 
 ename = trim(EMsoft_getEMdatapathname())//trim(filename)
 ename = EMsoft_toNativePath(ename)
-!write (*,*) 'input file name ',trim(ename)
+call Message('Pattern input file '//trim(ename))
+call Message('  input file type '//trim(inputtype))
 
 ! depending on the inputtype, we open the input file in the appropriate way
 select case (itype)
@@ -282,7 +283,7 @@ select case (itype)
 
     case(5)  ! "OxfordHDF"
 
-    case(3,6)  ! "TSLHDF" "EMEBSD"   passed tests on 2/14/18 by MDG
+    case(3,6,7)  ! "TSLHDF" "EMEBSD" "BrukerHDF"  passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
@@ -293,9 +294,6 @@ select case (itype)
                 end do 
             end do 
         end do 
-
-    case(7)  ! "BrukerHDF"
-        ! we will read a row of patterns using the HDF5 hyperslab mechanism
 
     case default 
 
