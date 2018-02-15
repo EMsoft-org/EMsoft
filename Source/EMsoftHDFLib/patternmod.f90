@@ -56,6 +56,13 @@ IMPLICIT NONE
 
 private :: get_input_type, get_num_HDFgroups
 
+! the following two arrays are only used for the Bruker HDF5 format, since the order of the 
+! EBSD patterns in the RawPatterns array is not necessarily the correct order !  We use these
+! two index arrays to obtain the correct order ...
+integer(kind=irg),allocatable,save,private          :: semix(:)
+integer(kind=irg),allocatable,save,private          :: semiy(:)
+integer(HSIZE_T),save,private                       :: semixydims(1)
+
 type(HDFobjectStackType),pointer,save,private       :: pmHDF_head 
 
 contains
@@ -133,10 +140,11 @@ end function get_num_HDFgroups
 !> @param inputtype 
 !> @param recsize  some formats need a record size
 !> @param funit logical unit for reading
-!> @param HDFstrings string array with group and datset names for HDF5 input
+!> @param HDFstrings string array with group and dataset names for HDF5 input
 !
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/15/18 MDG 1.1 added record length correction for windows platform
+!> @date 02/15/18 MDG 1.2 added special handling for out-of-order patterns in the Bruker HDF5 format
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -203,7 +211,7 @@ select case (itype)
     case(4)  ! "OxfordBinary"
         call FatalError("openExpPatternFile","input format not yet implemented")
 
-    case(3, 5:7)  ! "TSLHDF", "OxfordHDF", "EMEBSD", "BrukerHDF"
+    case(3, 5:6)  ! "TSLHDF", "OxfordHDF", "EMEBSD"
         nullify(pmHDF_head)
         call h5open_EMsoft(hdferr)
         ! open the file
@@ -214,6 +222,38 @@ select case (itype)
             groupname = trim(HDFstrings(i))
             hdferr = HDF_openGroup(groupname, pmHDF_head)
             if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
+        end do
+        ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
+        ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
+
+    case(7)  !  "BrukerHDF"
+        nullify(pmHDF_head)
+        call h5open_EMsoft(hdferr)
+        ! open the file
+        hdferr =  HDF_openFile(ename, pmHDF_head)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+
+        ! open all the groups to the correct level of the data set
+        do i=1,hdfnumg
+            groupname = trim(HDFstrings(i))
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+            if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
+            !  this part is different from the other vendors: the patterns are not necessarily in the correct order (why not???)
+            !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
+            !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
+            if (i.eq.1) then 
+               groupname = 'SEM'
+               hdferr = HDF_openGroup(groupname, pmHDF_head)
+               dataset = 'SEM IX'
+               call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
+               if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
+               dataset = 'SEM IY'
+               call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
+               if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
+               call Message('  found pattern reordering arrays')
+               ! and leave this group
+               call HDF_pop(pmHDF_head)
+            end if
         end do
         ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
@@ -263,12 +303,13 @@ character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
 
-integer(kind=irg)                       :: ii, jj, kk, itype, hdfnumg, offset
+integer(kind=irg)                       :: ii, jj, kk, itype, hdfnumg, offset, ispot
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
 integer(kind=irg)                       :: sng 
 integer(kind=ish)                       :: pair(2)
+integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 
 
 itype = get_input_type(inputtype)
@@ -301,7 +342,7 @@ select case (itype)
 
     case(5)  ! "OxfordHDF"
 
-    case(3,6,7)  ! "TSLHDF" "EMEBSD" "BrukerHDF"  passed tests on 2/14/18 by MDG
+    case(3,6)  ! "TSLHDF" "EMEBSD" passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
@@ -309,6 +350,25 @@ select case (itype)
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
                     exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
+                end do 
+            end do 
+        end do 
+
+    case(7)  ! "BrukerHDF"  passed tests on 2/15/18 by MDG
+! since the pattern order in the Bruker data file is not necessarily the correct order in which the patterns
+! were acquired, we need to read each patttern separately from the file using the appropriate offset, which 
+! is calculated using the semix and semiy arrays.  That means that we have to redefine both dims3 and offset3
+! and loop over an entire row using the original pattern coordinate (ispot) as an index into the reordering arrays.
+        exppatarray = 0.0
+        dims3new = (/ dims3(1), dims3(2), 1_HSIZE_T /)
+        do kk=1,dims3(3)  ! loop over all spots in the row
+            ispot = iii*wd + kk
+            newspot = transfer(semiy(ispot) * wd + semix(ispot), newspot )
+            offset3new = (/ offset3(1), offset3(2),  newspot /)
+            EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
+            do jj=1,dims3(2)
+                do ii=1,dims3(1)
+                    exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
                 end do 
             end do 
         end do 
@@ -352,13 +412,22 @@ select case (itype)
     case(2)  ! "TSLup2"
         close(unit=funit,status='keep')
 
-    case(4)  ! "OxfordBinary"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
-
-    case(3, 5:7)  ! "TSLHDF", "OxfordHDF", "EMEBSD", "BrukerHDF"
+    case(3, 6)  ! "TSLHDF" "EMEBSD"
         call HDF_pop(pmHDF_head,.TRUE.)
         call h5close_EMsoft(hdferr)
         nullify(pmHDF_head)
+
+    case(4)  ! "OxfordBinary"
+        call FatalError("closeExpPatternFile","input format not yet implemented")
+
+    case(5)  ! "OxfordHDF"
+        call FatalError("closeExpPatternFile","input format not yet implemented")
+
+    case(7)  !  "BrukerHDF"
+        call HDF_pop(pmHDF_head,.TRUE.)
+        call h5close_EMsoft(hdferr)
+        nullify(pmHDF_head)
+        deallocate(semix, semiy)
 
     case default 
         call FatalError("closeExpPatternFile","unknown input format")
