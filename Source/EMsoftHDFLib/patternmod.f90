@@ -36,6 +36,10 @@
 !
 !> @brief a variety of routines to read various experimental diffaction pattern file formats
 !
+!> @todo add options for TSL and Oxford individual pattern files (tiff, jpeg, bmp) to convert
+!> folders of those pattern files into the same format; this will remove the need to externally
+!> convert hundreds of thousands of pattern files into a single binary data file.
+!
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/14/18 MDG 1.1 added old Binary, TSL .up2, and EMEBSD HDF5 formats
 !> @date 02/15/18 MDG 1.2 added TSL and Bruker HDF formatted files
@@ -197,6 +201,7 @@ select case (itype)
         end if
 
     case(4)  ! "OxfordBinary"
+        call FatalError("openExpPatternFile","input format not yet implemented")
 
     case(3, 5:7)  ! "TSLHDF", "OxfordHDF", "EMEBSD", "BrukerHDF"
         nullify(pmHDF_head)
