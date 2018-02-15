@@ -132,6 +132,7 @@ end function get_num_HDFgroups
 !> @param HDFstrings string array with group and datset names for HDF5 input
 !
 !> @date 02/13/18 MDG 1.0 original
+!> @date 02/15/18 MDG 1.1 added record length correction for windows platform
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -149,8 +150,8 @@ integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
-integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg
-character(fnlen)                        :: groupname, dataset
+integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize
+character(fnlen)                        :: groupname, dataset, platform
 
 istat = 0
 
@@ -163,11 +164,18 @@ ename = EMsoft_toNativePath(ename)
 call Message('Pattern input file '//trim(ename))
 call Message('  input file type '//trim(inputtype))
 
+platform = EMsoft_getEMsoftplatform()
+
 ! depending on the inputtype, we open the input file in the appropriate way
 select case (itype)
     case(1)  ! "Binary"
+        if (trim(platform).eq.'Windows') then
+            recordsize = recsize/4  ! windows record length is in units of 4 bytes
+        else
+            recordsize = recsize    ! all other platforms use record length in units of bytes
+        end if
         open(unit=funit,file=trim(ename),&
-            status='old',form='unformatted',access='direct',recl=recsize,iostat=ierr)
+            status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
         if (ierr.ne.0) then
             io_int(1) = ierr
             call WriteValue("File open error; error type ",io_int,1)
@@ -175,8 +183,13 @@ select case (itype)
         end if
 
     case(2)  ! "TSLup2"
+        if (trim(platform).eq.'Windows') then
+            recordsize = 1    ! windows record length is in units of 4 bytes
+        else
+            recordsize = 4    ! all other platforms use record length in units of bytes
+        end if
         open(unit=funit,file=trim(ename), &
-            status='old',form='unformatted',access='direct',recl=4,iostat=ierr)
+            status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
         if (ierr.ne.0) then
             io_int(1) = ierr
             call WriteValue("File open error; error type ",io_int,1)
