@@ -549,6 +549,9 @@ else
     call FatalError('EMFitOrientation:',dpfile)
 end if
 
+call h5close_EMsoft(hdferr)
+
+
 !===================================================================================
 ! ELECTRON BACKSCATTER DIFFRACTION PATTERNS
 !===================================================================================
@@ -1192,6 +1195,8 @@ do iii = 1,cratioE
 end do
 
 ! add fitted dot product values to HDF5 file
+! open the fortran HDF interface
+call h5open_EMsoft(hdferr)
 nullify(HDF_head)
 hdferr =  HDF_openFile(dpfile, HDF_head)
 
