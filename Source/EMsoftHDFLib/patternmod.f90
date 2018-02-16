@@ -394,12 +394,16 @@ select case (itype)
         do kk=1,dims3(3)
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
-                    exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
+                    if (itype.eq.6) then
+                      exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
+                    else  ! TSL patterns are upside down compared to the EMsoft convention...
+                      exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,kk)))
+                    end if 
                 end do 
             end do 
         end do 
 
-    case(7)  ! "BrukerHDF"  passed tests on 2/15/18 by MDG
+    case(7)  ! "BrukerHDF"  passed tests on 2/16/18 by MDG
 ! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
 ! were acquired, we need to read each patttern separately from the file using the appropriate offset, which 
 ! is calculated using the semix and semiy arrays.  That means that we have to redefine both dims3 and offset3
@@ -412,7 +416,8 @@ select case (itype)
             offset3new = (/ offset3(1), offset3(2),  newspot /)
             EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
             do jj=1,dims3(2)
-                do ii=1,dims3(1)
+                do ii=1,dims3(1) 
+                    ! Bruker patterns are stored upside down compared to the EMsoft convention...
                     exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
                 end do 
             end do 
