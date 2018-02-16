@@ -1101,6 +1101,9 @@ verbose = .FALSE.
 !===================================================================================
 !===============MAIN COMPUTATION LOOP===============================================
 !===================================================================================
+open(unit=itmpexpt,file=trim(fname),&
+     status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+
 
 io_int(1) = nthreads
 call WriteValue(' Attempting to set number of threads to ',io_int,1,"(I4)")
