@@ -129,6 +129,50 @@ end function get_num_HDFgroups
 
 !--------------------------------------------------------------------------
 !
+! subroutine: invert_ordering_arrays
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief invert the pattern reordering arrays
+!
+!> @param npat number of patterns in a single row of the ROI
+!
+!> @date 02/16/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine invert_ordering_arrays(npat) 
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)       :: npat
+
+integer(kind=irg),allocatable      :: semixnew(:), semiynew(:)
+integer(kind=irg)                  :: i, ix, iy, ipos
+
+! allocate the new reordering arrays
+allocate(semixnew(semixydims(1)), semiynew(semixydims(1)))
+
+! invert the coordinate arrays  [tested on 2/16/18, MDG]
+do i=1,semixydims(1)
+  ix = mod(i, npat)-1
+  iy = i/npat
+  if (ix.lt.0) then
+    ix = npat-1
+    iy = iy-1
+  end if
+  ipos = semiy(i) * npat + semix(i) + 1
+  semixnew(ipos) = ix
+  semiynew(ipos) = iy
+end do 
+
+! copy the new arrays over the old ones
+semix = semixnew
+semiy = semiynew
+deallocate(semixnew, semiynew)
+
+end subroutine invert_ordering_arrays
+
+!--------------------------------------------------------------------------
+!
 ! FUNCTION: openExpPatternFile
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -250,6 +294,7 @@ select case (itype)
                dataset = 'SEM IY'
                call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
                if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
+               call invert_ordering_arrays(npat)
                call Message('  found pattern reordering arrays')
                ! and leave this group
                call HDF_pop(pmHDF_head)

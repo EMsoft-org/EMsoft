@@ -230,6 +230,7 @@ use ECPmod, only: GetPointGroup
 use Indexingmod
 use ISO_C_BINDING
 use notifications
+use TIFF_f90
 
 IMPLICIT NONE
 
@@ -901,6 +902,31 @@ open(unit=itmpexpt,file=trim(fname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
 ! use the getADPmap routine in the filters module
 call getADPmap(itmpexpt, totnumexpt, L, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dpmap)
+
+! output the ADP map as a tiff file (for debugging purposes only)
+if (1.eq.0) then
+    TIFF_nx = ebsdnl%ipf_wd
+    TIFF_ny = ebsdnl%ipf_ht
+    TIFF_filename = "ADPmap.tiff"
+
+    ! allocate memory for image
+    allocate(TIFF_image(0:TIFF_nx-1,0:TIFF_ny-1))
+
+    ! fill the image with whatever data you have (between 0 and 255)
+    ma = maxval(dpmap)
+    mi = minval(dpmap)
+
+    do j=0,TIFF_ny-1
+     do i=0,TIFF_nx-1
+      ii = j * TIFF_nx + i + 1
+      TIFF_image(i,j) = int(255 * (dpmap(ii)-mi)/(ma-mi))
+     end do
+    end do
+
+    ! create the file
+    call TIFF_Write_File
+    deallocate(TIFF_image)
+end if
 
 ! we will leave the itmpexpt file open, since we'll be reading from it again...
 
