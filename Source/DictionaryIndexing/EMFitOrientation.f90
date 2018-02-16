@@ -549,7 +549,6 @@ else
     call FatalError('EMFitOrientation:',dpfile)
 end if
 
-call h5close_EMsoft(hdferr)
 
 
 !===================================================================================
@@ -687,6 +686,9 @@ if (trim(modalityname) .eq. 'EBSD') then
     end if
 
     dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
+
+
+call h5close_EMsoft(hdferr)
 
 !=====================================================
 ! Preprocess all the experimental patterns and store
