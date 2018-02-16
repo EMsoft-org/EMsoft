@@ -135,7 +135,7 @@ integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, 
 real(kind=dbl)                          :: prefactor, F
 
 real(kind=dbl)                          :: ratioE
-integer(kind=irg)                       :: cratioE, fratioE, eindex, niter
+integer(kind=irg)                       :: cratioE, fratioE, eindex, niter, i
 integer(kind=irg),allocatable           :: ppendE(:)
 real(kind=sgl),allocatable              :: exptpatterns(:,:)
 
@@ -217,10 +217,19 @@ dataset = SC_masterfile
         ebsdnl%masterfile = trim(stringarray(1))
         deallocate(stringarray)
         
+! here we read the datasets that are associated with the raw data input file type...
 dataset = SC_inputtype
         call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
         ebsdnl%inputtype = trim(stringarray(1))
         deallocate(stringarray)  
+
+dataset = SC_HDFstrings
+        call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+        do i=1,nlines 
+            ebsdnl%HDFstrings(i) = trim(stringarray(i))
+        end do
+        deallocate(stringarray)  
+!----
 
 dataset = SC_ipfwd
         call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_wd)
@@ -704,10 +713,17 @@ if (trim(modalityname) .eq. 'EBSD') then
 
     write (*,*) 'input file ',trim(EMsoft_getEMdatapathname())//trim(ebsdnl%exptfile)
 
-    ename = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%exptfile)
-    ename = EMsoft_toNativePath(ename)
-    open(unit=iunitexpt,file=trim(ename),&
-        status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+    istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
+    if (istat.ne.0) then
+        call patternmod_errormessage(istat)
+        call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
+    end if
+
+    ! ename = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%exptfile)
+    ! ename = EMsoft_toNativePath(ename)
+
+    ! open(unit=iunitexpt,file=trim(ename),&
+    !     status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
 
     allocate(exptpatterns(binx*biny,ebsdnl%numexptsingle),stat=istat)
     if(istat .ne. 0) then
