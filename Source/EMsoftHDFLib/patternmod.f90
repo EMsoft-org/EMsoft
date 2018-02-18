@@ -348,14 +348,14 @@ character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
 
-integer(kind=irg)                       :: ii, jj, kk, itype, hdfnumg, offset, ispot
+integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
 integer(kind=irg)                       :: sng 
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
-
+integer(kind=ill)                       :: recpos, offset, ii, jj, kk, ispot, liii, lpatsz, lwd, lL
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -368,15 +368,29 @@ select case (itype)
         exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 
-    case(2)  ! "TSLup2"
-      offset = 4 + (iii-1) * wd * patsz / 2
+    case(2)  ! "TSLup2"   WE MAY NEED TO TURN THESE PATTERNS UPSIDE DOWN ...
+    ! we need to use ill-type integers since the numbers can get pretty large...
+      liii = iii
+      lwd = wd
+      lpatsz = patsz
+      lL = L
+!       offset = 4_ill + (liii-1_ill) * lwd * lpatsz / 2_ill
+      offset = 4_ill + (liii-1_ill) * lwd * lL / 2_ill
+      recpos = offset 
       do kk=1,dims3(3)
         do jj=1,dims3(2)
           do ii=1,dims3(1)/2
-            read(unit=funit,rec=offset + (kk-1)*patsz/2 + (jj-1)*dims3(1)/2 + ii) sng
-            pair = transfer(sng,pair)  ! transform from 4-byte value to two short integers
-            exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+2*ii-1) = float(pair(1))
-            exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+2*ii) = float(pair(2))
+!           recpos = offset + (kk-1_ill)*lpatsz/2_ill + (jj-1_ill)*dims3(1)/2_ill + ii - 1_ill
+            recpos = offset + (kk-1_ill)*lL/2_ill + (jj-1_ill)*dims3(1)/2_ill + ii - 1_ill
+            if (recpos.lt.0) write(*,*) offset, (kk-1)*lL/2 , (jj-1)*dims3(1)/2 , ii, patsz, dims3
+            read(unit=funit,rec=recpos, iostat=ios) sng
+            if (ios.eq.0) then
+                pair = transfer(sng,pair)  ! transform from 4-byte value to two short integers
+                exppatarray((kk-1)*patsz+(dims3(2)-jj)*dims3(1)+2*ii-1) = float(pair(1))
+                exppatarray((kk-1)*patsz+(dims3(2)-jj)*dims3(1)+2*ii) = float(pair(2))
+            else
+                write(*,*) 'direct access error code ', ios
+            end if
           end do 
         end do 
       end do 

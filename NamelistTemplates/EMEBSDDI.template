@@ -39,8 +39,6 @@
  hipassw = 0.05,
 ! number of regions for adaptive histogram equalization
  nregions = 10,
-! number of horizontal scan lines to be used for EBSDFastDI indexing...
- nlines = 3,
 
 !###################################################################
 ! ONLY SPECIFY WHEN INDEXINGMODE IS 'DYNAMIC'

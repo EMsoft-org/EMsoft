@@ -4402,6 +4402,111 @@ end subroutine GetEBSDIndexingNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetADPNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill adpnl structure (used by EMgetADP.f90)
+!
+!> @param nmlfile namelist file name
+!> @param adpnl name list structure
+!
+!> @date 02/17/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetADPNameList(nmlfile, adpnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetADPNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(ADPNameListType),INTENT(INOUT)               :: adpnl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: ipf_ht
+integer(kind=irg)       :: ipf_wd 
+integer(kind=irg)       :: maskradius
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: nregions
+real(kind=dbl)          :: hipassw
+character(1)            :: maskpattern
+character(1)            :: filterpattern
+character(fnlen)        :: exptfile 
+character(fnlen)        :: tmpfile
+character(fnlen)        :: tiffname
+character(fnlen)        :: maskfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: HDFstrings(10)
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_wd, exptfile, maskradius, inputtype, &
+                     tmpfile, maskfile, HDFstrings, hipassw, tiffname, filterpattern
+
+! set the input parameters to default values
+ ipf_ht = 100
+ ipf_wd = 100
+ maskfile = 'undefined'
+ filterpattern = 'y'
+ maskpattern = 'n'
+ maskradius = 240
+ hipassw = 0.05
+ nregions = 10
+ numsx = 640
+ numsy = 480
+ exptfile = 'undefined'
+ inputtype = 'Binary'
+ HDFstrings = ''
+ tmpfile = 'EMEBSDDict_tmp.data'
+ tiffname = 'undefined'
+ nthreads = 1
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=getADP)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(exptfile).eq.'undefined') then
+        call FatalError('GetADPNameList:',' experimental file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tiffname).eq.'undefined') then
+        call FatalError('GetADPNameList:',' output tiff file name is undefined in '//nmlfile)
+    end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the enl fields
+adpnl%ipf_ht = ipf_ht
+adpnl%ipf_wd = ipf_wd
+adpnl%maskradius = maskradius
+adpnl%numsx = numsx
+adpnl%numsy = numsy
+adpnl%nthreads = nthreads
+adpnl%nregions = nregions
+adpnl%hipassw = hipassw
+adpnl%maskpattern = maskpattern
+adpnl%filterpattern = filterpattern
+adpnl%exptfile = exptfile
+adpnl%tmpfile = tmpfile
+adpnl%tiffname = tiffname
+adpnl%maskfile = maskfile
+adpnl%inputtype = inputtype
+adpnl%HDFstrings = HDFstrings
+
+end subroutine GetADPNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetTKDIndexingNameList
 !
 !> @author Marc De Graef , Carnegie Mellon University

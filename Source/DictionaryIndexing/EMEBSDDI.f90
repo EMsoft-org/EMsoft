@@ -62,8 +62,8 @@ IMPLICIT NONE
 
 character(fnlen)                            :: nmldeffile, progname, progdesc
 type(EBSDIndexingNameListType)              :: ebsdnl
-type(EBSDLargeAccumDIType),pointer            :: acc
-type(EBSDMasterDIType),pointer                :: master
+type(EBSDLargeAccumDIType),pointer          :: acc
+type(EBSDMasterDIType),pointer              :: master
 logical                                     :: verbose
 integer(kind=irg)                           :: istat, res
 

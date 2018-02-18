@@ -1014,6 +1014,25 @@ type EBSDIndexingNameListType
         character(fnlen)        :: MCxtalname
 end type EBSDIndexingNameListType
 
+type ADPNameListType
+        integer(kind=irg)       :: ipf_ht
+        integer(kind=irg)       :: ipf_wd 
+        integer(kind=irg)       :: maskradius
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: nregions
+        real(kind=dbl)          :: hipassw
+        character(1)            :: maskpattern
+        character(1)            :: filterpattern
+        character(fnlen)        :: exptfile 
+        character(fnlen)        :: tmpfile
+        character(fnlen)        :: tiffname
+        character(fnlen)        :: maskfile
+        character(fnlen)        :: inputtype
+        character(fnlen)        :: HDFstrings(10)
+end type ADPNameListType
+
 type TKDIndexingNameListType
         integer(kind=irg)       :: ncubochoric
         integer(kind=irg)       :: numexptsingle
