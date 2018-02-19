@@ -397,24 +397,22 @@ select case (itype)
 ! multiples of 4 bytes (recl), that means that alternating patterns will begin at the start of the 
 ! 4-byte blocks or in the middle... Hence the somewhat convoluted code below which attempts to keep 
 ! track of where the current pattern starts (byte 1 or 3).
-      buffersize = lwd * lL / 2_ill + 1_ill
+      buffersize = (lwd * lL) / 2_ill + 1_ill   ! +1 to allow for half record at the end.
       allocate(buffer(buffersize))
 ! first we read the entire buffer as 4-byte integers
       do ii=1_ill,buffersize
-        read(unit=funit,rec=offset+ii-1_ill, iostat=ios) buffer(ii)
+        read(unit=funit,rec=offset+ii, iostat=ios) buffer(ii)
       end do
 
 ! we convert the 4-byte integers into pairs of 2-byte integers
       allocate(pairs(2_ill*buffersize))
       pairs = transfer(buffer,pairs)
-      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.1)) then  ! shift the array by one entry to the left 
+      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then  ! shift the array by one entry to the left 
         pairs = cshift(pairs,1_ill)
       end if
       deallocate(buffer)
 
 ! then we need to place them in the exppatarray array with the proper offsets if patsz ne L 
-! also, if wd*L is odd, then we need to alternatingly ignore the first or the last
-! short integer in the pairs array.
       exppatarray = 0.0
       pixcnt = 1
       do kk=1,dims3(3)   ! loop over all the patterns in this row; remember to flip the patterns upside down !
@@ -429,9 +427,9 @@ select case (itype)
       end do 
 
 ! increment the row offset parameter, taking into account any necessary shifts due to an odd value of wd*L
-      offset = offset + buffersize
-      if (up2wdLeven.eqv..FALSE.) then
-        offset = offset - 1_ill
+      offset = offset + (lwd * lL) / 2_ill 
+      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then
+        offset = offset + 1_ill
       end if
       deallocate(pairs)
 
