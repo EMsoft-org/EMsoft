@@ -1025,6 +1025,8 @@ type ADPNameListType
         real(kind=dbl)          :: hipassw
         character(1)            :: maskpattern
         character(1)            :: filterpattern
+        character(1)            :: keeptmpfile
+        character(1)            :: usetmpfile
         character(fnlen)        :: exptfile 
         character(fnlen)        :: tmpfile
         character(fnlen)        :: tiffname

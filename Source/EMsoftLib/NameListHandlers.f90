@@ -4436,6 +4436,8 @@ integer(kind=irg)       :: nregions
 real(kind=dbl)          :: hipassw
 character(1)            :: maskpattern
 character(1)            :: filterpattern
+character(1)            :: keeptmpfile
+character(1)            :: usetmpfile
 character(fnlen)        :: exptfile 
 character(fnlen)        :: tmpfile
 character(fnlen)        :: tiffname
@@ -4445,7 +4447,7 @@ character(fnlen)        :: HDFstrings(10)
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_wd, exptfile, maskradius, inputtype, &
-                     tmpfile, maskfile, HDFstrings, hipassw, tiffname, filterpattern
+                     tmpfile, maskfile, HDFstrings, hipassw, tiffname, filterpattern, keeptmpfile, usetmpfile
 
 ! set the input parameters to default values
  ipf_ht = 100
@@ -4453,6 +4455,8 @@ namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_
  maskfile = 'undefined'
  filterpattern = 'y'
  maskpattern = 'n'
+ keeptmpfile = 'n'
+ usetmpfile = 'n'
  maskradius = 240
  hipassw = 0.05
  nregions = 10
@@ -4496,6 +4500,8 @@ adpnl%nregions = nregions
 adpnl%hipassw = hipassw
 adpnl%maskpattern = maskpattern
 adpnl%filterpattern = filterpattern
+adpnl%keeptmpfile = keeptmpfile
+adpnl%usetmpfile = usetmpfile
 adpnl%exptfile = exptfile
 adpnl%tmpfile = tmpfile
 adpnl%tiffname = tiffname
