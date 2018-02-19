@@ -105,12 +105,13 @@ interface
         use ECPmod, only: GetPointGroup
         use Indexingmod
         use ISO_C_BINDING
+        use timing
 
         IMPLICIT NONE
 
         type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
-        type(EBSDLargeAccumDIType),pointer,INTENT(IN)         :: acc
-        type(EBSDMasterDIType),pointer,INTENT(IN)             :: master
+        type(EBSDLargeAccumDIType),pointer,INTENT(IN)       :: acc
+        type(EBSDMasterDIType),pointer,INTENT(IN)           :: master
         character(fnlen),INTENT(IN)                         :: progname
         character(fnlen),INTENT(IN)                         :: nmldeffile
 
@@ -231,6 +232,7 @@ use Indexingmod
 use ISO_C_BINDING
 use notifications
 use TIFF_f90
+use timing
 
 IMPLICIT NONE
 
@@ -272,7 +274,7 @@ real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! C
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
-                                                       recordsize_correct, patsz
+                                                       recordsize_correct, patsz, tickstart, tock
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 real(kind=sgl),pointer                              :: dict(:), T0dict(:)
 real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
@@ -309,11 +311,11 @@ type(C_PTR)                                         :: planf, HPplanf, HPplanb
 integer(HSIZE_T)                                    :: dims3(3), offset3(3)
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
-integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc
+integer(kind=irg)                                   :: FZcnt, pgnum, io_int(4), ncubochoric, pc
 type(FZpointd),pointer                              :: FZlist, FZtmp
 integer(kind=irg),allocatable                       :: indexlist(:),indexarray(:),indexmain(:,:),indextmp(:,:)
 real(kind=sgl)                                      :: dmin,voltage,scl,ratio, mi, ma, ratioE, io_real(2), tstart, tmp, &
-                                                       totnum_el, vlen, tstop
+                                                       totnum_el, vlen, tstop, ttime
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
 integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax
@@ -960,6 +962,7 @@ end if
 !=====================================================
 
 call cpu_time(tstart)
+call Time_tick(tickstart)
 
 call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
 io_int(1) = ebsdnl%nthreads
@@ -999,7 +1002,7 @@ dictionaryloop: do ii = 1,cratio+1
       call WriteValue('Dictionaryloop index = ',io_int,1)
     end if
 
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int) &
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, tock, ttime) &
 !$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt,imagedictfltflip)
 
         TID = OMP_GET_THREAD_NUM()
@@ -1069,8 +1072,21 @@ dictionaryloop: do ii = 1,cratio+1
 
 
       if (mod(iii,10) .eq. 0) then
-        io_int(1:2) = (/iii,cratio/)
-        call WriteValue('',io_int,2,"(' -> Completed cycle ',I5,' out of ',I5)")
+! do a remaining time estimate
+! and print information
+        if (iii.eq.10) then
+            tock = Time_tock(tickstart)
+            ttime = float(tock) * float(cratio) / float(iii)
+            tstop = ttime
+            io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
+            call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. total time ', &
+                           I4,' hrs',I3,' min')")
+        else
+            ttime = tstop * float(cratio-iii) / float(cratio)
+            io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
+            call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. remaining time ', &
+                           I4,' hrs',I3,' min')")
+        end if
       end if
     else
        if (verbose.eqv..TRUE.) call WriteValue('','        GPU thread is idling')
