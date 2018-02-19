@@ -65,6 +65,7 @@ contains
 !> @date 06/05/16 MDG 1.3 added sampling step sizes
 !> @date 06/25/16 MDG 1.4 added noindex optional keyword
 !> @date 07/10/16 MDG 1.5 swapped Error, MAD, and BC columns
+!> @date 02/18/18 MDG 1.6 made sure that Euler angles are ALWAYS positive
 !--------------------------------------------------------------------------
 recursive subroutine ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain,noindex)
 !DEC$ ATTRIBUTES DLLEXPORT :: ctfebsd_writeFile
@@ -89,7 +90,7 @@ integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr
 character(fnlen)                                    :: ctfname
 character                                           :: TAB = CHAR(9)
 character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,filename,grname,dataset
-real(kind=sgl)                                      :: euler(3)
+real(kind=sgl)                                      :: euler(3), eu
 logical                                             :: stat, readonly, donotuseindexarray
 integer(HSIZE_T)                                    :: dims(1)
 real(kind=dbl),allocatable                          :: cellparams(:)
@@ -224,11 +225,17 @@ do ii = 1,ipar(3)
     write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%stepY
     write(str3,'(I2)') 10
     write(str8,'(I8)') 0 ! integer zero error; was indx, which is now moved to BC
-    write(str5,'(F12.3)') euler(1) - 90.0  ! conversion from TSL to Oxford convention
-    write(str6,'(F12.3)') euler(2)
+    eu = euler(1) - 90.0 ! conversion from TSL to Oxford convention
+    if (eu.lt.0) eu = eu + 360.0
+    write(str5,'(F12.3)') eu  
+    eu = euler(2)
+    if (eu.lt.0) eu = eu + 360.0
+    write(str6,'(F12.3)') eu
 ! intercept the hexagonal case, for which we need to subtract 30° from the third Euler angle
     if ((LaueGroup.eq.8).or.(LaueGroup.eq.9)) euler(3) = euler(3) - 30.0
-    write(str7,'(F12.3)') euler(3)
+    eu = euler(3)
+    if (eu.lt.0) eu = eu + 360.0
+    write(str7,'(F12.3)') eu
     write(str4,'(F12.6)') resultmain(1,ii)   ! this replaces MAD
 ! the following two parameters need to be modified to contain more meaningful information
     write(str9,'(I8)') indx   ! index into the dictionary list
