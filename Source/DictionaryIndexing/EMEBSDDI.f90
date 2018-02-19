@@ -736,7 +736,7 @@ open(unit=itmpexpt,file=trim(fname),&
 ! open the file and leave it open, then use the getExpPatternRow() routine to read a row
 ! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
-istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
+istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
     call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")

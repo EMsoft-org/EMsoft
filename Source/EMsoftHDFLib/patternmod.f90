@@ -63,6 +63,10 @@ integer(kind=irg),allocatable,save,private          :: semix(:)
 integer(kind=irg),allocatable,save,private          :: semiy(:)
 integer(HSIZE_T),save,private                       :: semixydims(1)
 
+! this one is used to keep track of the even/odd patterns start locations in the .up2 input format
+logical,save,private                                :: up2wdLeven
+integer(kind=ill),save,private                      :: offset
+
 type(HDFobjectStackType),pointer,save,private       :: pmHDF_head 
 
 contains
@@ -181,6 +185,7 @@ end subroutine invert_ordering_arrays
 !
 !> @param filename 
 !> @param npat number of patterns per row to extract
+!> @param L number of pixels in pattern; needed to initialize parameters for .up2 formatted input.
 !> @param inputtype 
 !> @param recsize  some formats need a record size
 !> @param funit logical unit for reading
@@ -189,8 +194,9 @@ end subroutine invert_ordering_arrays
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/15/18 MDG 1.1 added record length correction for windows platform
 !> @date 02/15/18 MDG 1.2 added special handling for out-of-order patterns in the Bruker HDF5 format
+!> @date 02/18/18 MDG 1.3 added special handling for patterns with odd number of pixels in .up2 format
 !--------------------------------------------------------------------------
-recursive function openExpPatternFile(filename, npat, inputtype, recsize, funit, HDFstrings) result(istat)
+recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
 
 use io
@@ -199,6 +205,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: filename
 integer(kind=irg),INTENT(IN)            :: npat
+integer(kind=irg),INTENT(IN)            :: L
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: recsize
 integer(kind=irg),INTENT(IN)            :: funit
@@ -244,6 +251,13 @@ select case (itype)
         else
             recordsize = 4    ! all other platforms use record length in units of bytes
         end if
+        ! for wd * L odd, we need to take care of the proper starting bytes for each pattern
+        ! so we check for wd * L odd here and initialize a flag
+        if (mod(npat * L,2).eq.0) then
+          up2wdLeven = .TRUE.
+        else
+          up2wdLeven = .FALSE.
+        end if 
         open(unit=funit,file=trim(ename), &
             status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
         if (ierr.ne.0) then
@@ -251,6 +265,7 @@ select case (itype)
             call WriteValue("File open error; error type ",io_int,1)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
+        offset = 4_ill
 
     case(4)  ! "OxfordBinary"
         call FatalError("openExpPatternFile","input format not yet implemented")
@@ -352,10 +367,12 @@ integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
-integer(kind=irg)                       :: sng 
+integer(kind=irg),allocatable           :: buffer(:)
+integer(kind=ish),allocatable           :: pairs(:)
+integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
-integer(kind=ill)                       :: recpos, offset, ii, jj, kk, ispot, liii, lpatsz, lwd, lL
+integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -368,33 +385,57 @@ select case (itype)
         exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 
-    case(2)  ! "TSLup2"   WE MAY NEED TO TURN THESE PATTERNS UPSIDE DOWN ...
+    case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
     ! we need to use ill-type integers since the numbers can get pretty large...
       liii = iii
       lwd = wd
       lpatsz = patsz
       lL = L
-!       offset = 4_ill + (liii-1_ill) * lwd * lpatsz / 2_ill
-      offset = 4_ill + (liii-1_ill) * lwd * lL / 2_ill
-      recpos = offset 
-      do kk=1,dims3(3)
+! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
+! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
+! then the next pattern will start in the middle of a 4-byte block... since we are reading things in
+! multiples of 4 bytes (recl), that means that alternating patterns will begin at the start of the 
+! 4-byte blocks or in the middle... Hence the somewhat convoluted code below which attempts to keep 
+! track of where the current pattern starts (byte 1 or 3).
+      buffersize = lwd * lL / 2_ill + 1_ill
+      allocate(buffer(buffersize))
+! first we read the entire buffer as 4-byte integers
+      do ii=1_ill,buffersize
+        read(unit=funit,rec=offset+ii-1_ill, iostat=ios) buffer(ii)
+      end do
+
+! we convert the 4-byte integers into pairs of 2-byte integers
+      allocate(pairs(2_ill*buffersize))
+      pairs = transfer(buffer,pairs)
+      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.1)) then  ! shift the array by one entry to the left 
+        pairs = cshift(pairs,1_ill)
+      end if
+      deallocate(buffer)
+
+! then we need to place them in the exppatarray array with the proper offsets if patsz ne L 
+! also, if wd*L is odd, then we need to alternatingly ignore the first or the last
+! short integer in the pairs array.
+      exppatarray = 0.0
+      pixcnt = 1
+      do kk=1,dims3(3)   ! loop over all the patterns in this row; remember to flip the patterns upside down !
+        kspot = (kk-1)*patsz
         do jj=1,dims3(2)
-          do ii=1,dims3(1)/2
-!           recpos = offset + (kk-1_ill)*lpatsz/2_ill + (jj-1_ill)*dims3(1)/2_ill + ii - 1_ill
-            recpos = offset + (kk-1_ill)*lL/2_ill + (jj-1_ill)*dims3(1)/2_ill + ii - 1_ill
-            if (recpos.lt.0) write(*,*) offset, (kk-1)*lL/2 , (jj-1)*dims3(1)/2 , ii, patsz, dims3
-            read(unit=funit,rec=recpos, iostat=ios) sng
-            if (ios.eq.0) then
-                pair = transfer(sng,pair)  ! transform from 4-byte value to two short integers
-                exppatarray((kk-1)*patsz+(dims3(2)-jj)*dims3(1)+2*ii-1) = float(pair(1))
-                exppatarray((kk-1)*patsz+(dims3(2)-jj)*dims3(1)+2*ii) = float(pair(2))
-            else
-                write(*,*) 'direct access error code ', ios
-            end if
+          jspot = (dims3(2)-jj)*dims3(1) 
+          do ii=1,dims3(1)
+            exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
+            pixcnt = pixcnt + 1
           end do 
         end do 
       end do 
-      ! correct for the fact that the original values were unsigned integers
+
+! increment the row offset parameter, taking into account any necessary shifts due to an odd value of wd*L
+      offset = offset + buffersize
+      if (up2wdLeven.eqv..FALSE.) then
+        offset = offset - 1_ill
+      end if
+      deallocate(pairs)
+
+! finally, correct for the fact that the original values were unsigned integers
       where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
 
     case(4)  ! "OxfordBinary"

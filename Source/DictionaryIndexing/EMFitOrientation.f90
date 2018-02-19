@@ -716,7 +716,7 @@ call h5close_EMsoft(hdferr)
     open(unit=itmpexpt,file=trim(fname),&
          status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
 
-    istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
+    istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
     if (istat.ne.0) then
         call patternmod_errormessage(istat)
         call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
