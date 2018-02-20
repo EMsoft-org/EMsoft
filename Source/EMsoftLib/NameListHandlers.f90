@@ -4106,13 +4106,18 @@ integer(kind=irg)       :: hipasswnsteps
 integer(kind=irg)       :: nregionsmin
 integer(kind=irg)       :: nregionsmax
 integer(kind=irg)       :: nregionsstepsize
-integer(kind=irg)       :: patnum
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
 real(kind=sgl)          :: hipasswmax
 character(fnlen)        :: tifffile
 character(fnlen)        :: exptfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: hDFstrings(10)
 
 namelist / EBSDDIpreviewdata / numsx, numsy, hipasswmax, hipasswnsteps, nregionsstepsize, &
-          nregionsmax, nregionsmin, patnum, tifffile, exptfile
+          nregionsmax, nregionsmin, patx, paty, tifffile, exptfile, inputtype, HDFstrings, ipf_wd, ipf_ht
 
 ! set the input parameters to default values
 numsx = 640
@@ -4122,9 +4127,14 @@ hipasswnsteps = 10
 nregionsmin = 1
 nregionsmax = 10
 nregionsstepsize = 1
-patnum = 1
+patx = 1
+paty = 1
+ipf_wd = 100
+ipf_ht = 100
 tifffile = 'undefined'
 exptfile = 'undefined'
+inputtype = 'Binary'
+HDFstrings = ''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4153,10 +4163,15 @@ enl%hipasswnsteps = hipasswnsteps
 enl%nregionsmin = nregionsmin
 enl%nregionsmax = nregionsmax
 enl%nregionsstepsize = nregionsstepsize
-enl%patnum = patnum
+enl%patx = patx
+enl%paty = paty
+enl%ipf_wd = ipf_wd
+enl%ipf_ht = ipf_ht
 enl%hipasswmax = hipasswmax
 enl%tifffile = tifffile
 enl%exptfile = exptfile
+enl%inputtype = inputtype
+enl%HDFstrings = HDFstrings
 
 end subroutine GetEBSDDIpreviewNameList
 

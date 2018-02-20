@@ -40,9 +40,12 @@
 !> folders of those pattern files into the same format; this will remove the need to externally
 !> convert hundreds of thousands of pattern files into a single binary data file.
 !
+!> @todo add option to extract a rectangular sub-region of patterns from the input file
+!
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/14/18 MDG 1.1 added old Binary, TSL .up2, and EMEBSD HDF5 formats
 !> @date 02/15/18 MDG 1.2 added TSL and Bruker HDF formatted files
+!> @date 02/20/18 MDG 1.3 added option to extract a single pattern from the input file
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -270,7 +273,12 @@ select case (itype)
     case(4)  ! "OxfordBinary"
         call FatalError("openExpPatternFile","input format not yet implemented")
 
-    case(3, 5:6)  ! "TSLHDF", "OxfordHDF", "EMEBSD"
+
+    case(5)  ! "OxfordHDF"
+! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
+! patterns stored in it... Hence this option is currently non-existent.
+
+    case(3, 6)  ! "TSLHDF", "EMEBSD"
         nullify(pmHDF_head)
         call h5open_EMsoft(hdferr)
         ! open the file
@@ -379,14 +387,21 @@ hdfnumg = get_num_HDFgroups(HDFstrings)
 if (hdfnumg.gt.0) dataset = trim(HDFstrings(hdfnumg+1))
 
 select case (itype)
-    case(1)  ! "Binary"
+    case(1)  ! "Binary"  
+! This is the original EMsoft binary format that we used initially for indexing runs 
+! when the experimental patterns were only available in individual image file format. 
+! This file would have been created using a Matlab or IDL routine.  We anticipate that 
+! this format will not be used for much longer.
       do jj=1,wd
         read(funit,rec=(iii-1)*wd + jj) imageexpt
         exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 
+
     case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
-    ! we need to use ill-type integers since the numbers can get pretty large...
+! for the first row, we need to skip the first pattern completely...
+      if (iii.eq.1) offset = offset + lL / 2_ill
+! we need to use ill-type integers since the numbers can get pretty large...
       liii = iii
       lwd = wd
       lpatsz = patsz
@@ -428,6 +443,7 @@ select case (itype)
 
 ! increment the row offset parameter, taking into account any necessary shifts due to an odd value of wd*L
       offset = offset + (lwd * lL) / 2_ill 
+
       if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then
         offset = offset + 1_ill
       end if
@@ -439,6 +455,8 @@ select case (itype)
     case(4)  ! "OxfordBinary"
 
     case(5)  ! "OxfordHDF"
+! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
+! patterns stored in it... Hence this option is currently non-existent.
 
     case(3,6)  ! "TSLHDF" "EMEBSD" passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
@@ -480,6 +498,172 @@ select case (itype)
 end select
 
 end subroutine getExpPatternRow
+
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getSingleExpPattern
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read a single experimental pattern from the input file
+!
+!> @param iii row number
+!> @param wd number of patterns in row
+!> @param patsz pattern dimension
+!> @param L array size
+!> @param dims3 array size for hyperslab reading
+!> @param offset3 array offset for hyperslab reading
+!> @param funit logical unit for reading
+!> @param inputtype input file type identifier
+!> @param HDFstrings string array with group and datset names for HDF5 input
+!> @param exppat output array
+!
+!> @date 02/20/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getSingleExpPattern(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppat) 
+!DEC$ ATTRIBUTES DLLEXPORT :: getSingleExpPattern
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: iii
+integer(kind=irg),INTENT(IN)            :: wd
+integer(kind=irg),INTENT(IN)            :: patsz
+integer(kind=irg),INTENT(IN)            :: L
+integer(HSIZE_T),INTENT(IN)             :: dims3(3)
+integer(HSIZE_T),INTENT(IN)             :: offset3(3)
+integer(kind=irg),INTENT(IN)            :: funit
+character(fnlen),INTENT(IN)             :: inputtype
+character(fnlen),INTENT(IN)             :: HDFstrings(10)
+real(kind=sgl),INTENT(INOUT)            :: exppat(patsz)
+
+integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
+real(kind=sgl)                          :: imageexpt(L)
+character(fnlen)                        :: dataset
+character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+integer(kind=irg),allocatable           :: buffer(:)
+integer(kind=ish),allocatable           :: pairs(:)
+integer(kind=irg)                       :: sng, pixcnt
+integer(kind=ish)                       :: pair(2)
+integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
+integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, l1, l2
+
+itype = get_input_type(inputtype)
+hdfnumg = get_num_HDFgroups(HDFstrings)
+if (hdfnumg.gt.0) dataset = trim(HDFstrings(hdfnumg+1))
+
+select case (itype)
+    case(1)  ! "Binary"  
+! This is the original EMsoft binary format that we used initially for indexing runs 
+! when the experimental patterns were only available in individual image file format. 
+! This file would have been created using a Matlab or IDL routine.  We anticipate that 
+! this format will not be used for much longer.  To call the routine for a single pattern,
+! simply place y*wd+x in the third entry of the offset3 array.
+        read(funit,rec=offset3(3)) imageexpt
+        exppat(1:L) = imageexpt(1:L)
+
+    case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
+! tested and compared to IDL version of read_up2 routine on 2/20/18, MDG.
+! the requested pattern should be in the encoded in the third entry of the offset3 array.
+! we need to use ill-type integers since the numbers can get pretty large...
+       lwd = wd
+       lpatsz = patsz
+       lL = L
+       l1 = mod(offset3(3),wd) + 1_ill
+       l2 = offset3(3)/wd + 1_ill
+! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
+! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
+! then the next pattern will start in the middle of a 4-byte block... since we are reading things in
+! multiples of 4 bytes (recl), that means that alternating patterns will begin at the start of the 
+! 4-byte blocks or in the middle... Hence the somewhat convoluted code below which attempts to keep 
+! track of where the current pattern starts (byte 1 or 3).  Also, we are skipping the very first pattern
+! in the file, so the initial offset parameter is 4 + first-pattern-size/2; special care is needed
+! when pattern size and number of patterns in each row are both odd integers.
+
+        offset = 4_ill + lL / 2_ill  ! initial offset
+        offset = offset + ( (l2 * lwd + l1) * lL ) / 2_ill 
+        buffersize = lL / 2_ill + 1_ill   ! +1 to allow for half record at the end.
+        allocate(buffer(buffersize))
+! ! first we read the entire buffer as 4-byte integers
+        do ii=1_ill,buffersize
+          read(unit=funit,rec=offset+ii, iostat=ios) buffer(ii)
+        end do
+
+! ! we convert the 4-byte integers into pairs of 2-byte integers
+        allocate(pairs(2_ill*buffersize))
+        pairs = transfer(buffer,pairs)
+        if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then  ! shift the array by one entry to the left 
+          pairs = cshift(pairs,1_ill)
+        end if
+        deallocate(buffer)
+
+! ! then we need to place them in the exppatarray array with the proper offsets if patsz ne L 
+        exppat = 0.0
+        pixcnt = 1
+        do jj=1,dims3(2)
+          jspot = (dims3(2)-jj)*dims3(1) 
+          do ii=1,dims3(1)
+            exppat(jspot+ii) = float(pairs(pixcnt))
+            pixcnt = pixcnt + 1
+          end do 
+        end do 
+        deallocate(pairs)
+
+! finally, correct for the fact that the original values were unsigned integers
+        where(exppat.lt.0.0) exppat = exppat + 65536.0
+
+    case(4)  ! "OxfordBinary"
+
+    case(5)  ! "OxfordHDF"
+! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
+! patterns stored in it... Hence this option is currently non-existent.
+
+    case(3,6)  ! "TSLHDF" "EMEBSD" passed tests on 2/20/18 by MDG
+! read a hyperslab single pattern section from the HDF5 input file
+! dims3 should have the pattern dimensions and then 1_HSIZE_T for the third dimension
+! offset3 should have (0,0) and then the offset of the pattern (0-based)
+        EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
+        exppat = 0.0
+        do jj=1,dims3(2)
+            do ii=1,dims3(1)
+                if (itype.eq.6) then
+                  exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
+                else  ! TSL patterns are stored upside down compared to the EMsoft convention...
+                  exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+                end if 
+            end do 
+        end do 
+
+    case(7)  ! "BrukerHDF"  to be tested
+! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
+! were acquired, we need to read each patttern separately from the file using the appropriate offset, which 
+! is calculated using the semix and semiy arrays.  That means that we have to redefine both dims3 and offset3
+! and use the original pattern coordinate (ispot) as an index into the reordering arrays.
+        exppat = 0.0
+        dims3new = (/ dims3(1), dims3(2), 1_HSIZE_T /)
+        ispot = offset3(3)
+        newspot = semiy(ispot) * wd + semix(ispot)
+        offset3new = (/ offset3(1), offset3(2),  newspot /)
+        EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
+        do jj=1,dims3(2)
+            do ii=1,dims3(1) 
+                ! Bruker patterns are stored upside down compared to the EMsoft convention...
+                exppat((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+            end do 
+        end do 
+
+    case default 
+
+end select
+
+end subroutine getSingleExpPattern
+
+
+
+
+
+
 
 
 !--------------------------------------------------------------------------

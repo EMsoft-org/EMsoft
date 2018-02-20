@@ -918,10 +918,15 @@ type EBSDDIpreviewNameListType
         integer(kind=irg)       :: nregionsmin
         integer(kind=irg)       :: nregionsmax
         integer(kind=irg)       :: nregionsstepsize
-        integer(kind=irg)       :: patnum
+        integer(kind=irg)       :: patx
+        integer(kind=irg)       :: paty
+        integer(kind=irg)       :: ipf_wd
+        integer(kind=irg)       :: ipf_ht
         real(kind=sgl)          :: hipasswmax
         character(fnlen)        :: tifffile
         character(fnlen)        :: exptfile
+        character(fnlen)        :: inputtype
+        character(fnlen)        :: HDFstrings(10)
 end type EBSDDIpreviewNameListType 
 
 type EBSDIndexingNameListType
