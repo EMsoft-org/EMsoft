@@ -2423,6 +2423,8 @@ integer(kind=irg)       :: numsy
 integer(kind=irg)       :: binning
 integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: energyaverage
+integer(kind=irg)       :: maskradius
+integer(kind=irg)       :: nregions
 real(kind=sgl)          :: L
 real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
@@ -2434,10 +2436,12 @@ real(kind=sgl)          :: energymax
 real(kind=sgl)          :: gammavalue
 real(kind=sgl)          :: alphaBD
 real(kind=sgl)          :: axisangle(4)
+real(kind=sgl)          :: hipassw
 real(kind=dbl)          :: Ftensor(3,3)
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
 character(1)            :: includebackground
+character(1)            :: makedictionary
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
 character(1)            :: spatialaverage
@@ -2455,7 +2459,8 @@ character(fnlen)        :: datafile
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, bitdepth, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
-                        applyDeformation, Ftensor, includebackground, anglefiletype
+                        applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
+                        maskradius
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2464,6 +2469,7 @@ numsy           = 480           ! [dimensionless]
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
 nthreads        = 1             ! number of OpenMP threads
+nregions        = 10            ! number of regions in adaptive histogram equalization
 energyaverage   = 0             ! apply energy averaging (1) or not (0); useful for dictionary computations
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
@@ -2474,10 +2480,13 @@ energymin       = 15.0          ! minimum energy to consider
 energymax       = 30.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
 alphaBD         = 0.0           ! transfer lens barrel distortion parameter
+maskradius      = 240           ! mask radius
+hipassw         = 0.05          ! hi-pass filter radius
 axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotation
 Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
+makedictionary  = 'y'
 includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
@@ -2528,6 +2537,8 @@ enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
 enl%binning = binning
+enl%nregions = nregions
+enl%maskradius = maskradius
 enl%L = L
 enl%nthreads = nthreads
 enl%energyaverage = energyaverage
@@ -2539,11 +2550,13 @@ enl%energymin = energymin
 enl%energymax = energymax
 enl%gammavalue = gammavalue
 enl%alphaBD = alphaBD
+enl%hipassw = hipassw
 enl%axisangle = axisangle
 enl%Ftensor = Ftensor
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%includebackground = includebackground
+enl%makedictionary = makedictionary
 enl%applyDeformation = applyDeformation
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
@@ -4229,6 +4242,7 @@ real(kind=sgl)                                    :: stepX
 real(kind=sgl)                                    :: stepY
 integer(kind=irg)                                 :: nthreads
 character(1)                                      :: maskpattern
+character(1)                                      :: keeptmpfile
 character(3)                                      :: scalingmode
 character(3)                                      :: Notify
 character(fnlen)                                  :: dotproductfile
@@ -4265,7 +4279,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section, HDFstrings, ROI
+section, HDFstrings, ROI, keeptmpfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4296,6 +4310,7 @@ dwelltime       = 100.0D0       ! in microseconds
 hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
 stepX           = 1.0           ! sampling step size along X
 stepY           = 1.0           ! sampling step size along Y
+keeptmpfile     = 'n'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 Notify          = 'Off'
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -4363,6 +4378,7 @@ enl%platid        = platid
 enl%nregions      = nregions
 enl%nlines        = nlines
 enl%maskpattern   = maskpattern
+enl%keeptmpfile   = keeptmpfile
 enl%exptfile      = exptfile
 enl%nnk           = nnk
 enl%nnav          = nnav

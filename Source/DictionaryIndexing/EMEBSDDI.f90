@@ -302,6 +302,7 @@ real(kind=sgl),allocatable                          :: EBSDpattern(:,:), FZarray
 real(kind=sgl),allocatable                          :: EBSDpatternintd(:,:), lp(:), cp(:), EBSDpat(:,:)
 integer(kind=irg),allocatable                       :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
 character(kind=c_char),allocatable                  :: EBSDdictpat(:,:,:)
+real(kind=sgl),allocatable                          :: EBSDdictpatflt(:,:)
 real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 complex(kind=dbl),allocatable                       :: hpmask(:,:)
 complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
@@ -319,7 +320,7 @@ integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_size_t),target                            :: slength
 integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
-integer(HSIZE_T)                                    :: dims2(2), dims3(3), offset3(3)
+integer(HSIZE_T)                                    :: dims2(2), offset2(2), dims3(3), offset3(3)
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(4), ncubochoric, pc
@@ -1290,53 +1291,20 @@ if (trim(ebsdnl%indexingmode).eq.'dynamic') then
 
 else  ! we are doing static indexing, so only 2 threads in total
 
-! get a set of patterns from the precomputed dictionary file... then perform the 
-! standard image processing steps on them before passing them on to thread 0.
-! we'll use a hyperslab to read a block from file and then process them one at a timestamp
-! in the following loop
+! get a set of patterns from the precomputed dictionary file... 
+! we'll use a hyperslab to read a block of preprocessed patterns from file 
 
    if (TID .ne. 0) then
 ! read data from the hyperslab
      dataset = SC_EBSDpatterns
-     dims3 = (/ binx, biny, ppend(ii) /)
-     offset3 = (/ 0, 0, (ii-1)*Nd /)
+     dims2 = (/ correctsize, ppend(ii) /)
+     offset2 = (/ 0, (ii-1)*Nd /)
 
-     if(allocated(EBSDdictpat)) deallocate(EBSDdictpat)
-     EBSDdictpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, HDF_head)
+     if(allocated(EBSDdictpatflt)) deallocate(EBSDdictpatflt)
+     EBSDdictpatflt = HDF_readHyperslabFloatArray2D(dataset, offset2, dims2, HDF_head)
       
      do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
-
-       do ll = 1,biny
-           do mm = 1,binx
-               binned(mm,ll) = float(ichar(EBSDdictpat(mm,ll,pp)))
-           end do
-       end do
-
-       !binned(:,:) = float(EBSDdictpat(:,:,pp))
-
-! adaptive histogram equalization
-       ma = maxval(binned)
-       mi = minval(binned)
-
-       EBSDpatternintd = ((binned - mi)/ (ma-mi))
-       EBSDpatterninteger = nint(EBSDpatternintd*255.0)
-       EBSDpatternad =  adhisteq(ebsdnl%nregions,binx,biny,EBSDpatterninteger)
-       binned = float(EBSDpatternad)
-
-       imagedictflt = 0.0
-       imagedictfltflip = 0.0
-
-       do ll = 1,biny
-         do mm = 1,binx
-           imagedictflt((ll-1)*binx+mm) = binned(mm,ll)
-         end do
-       end do
-
-! normalize and apply circular mask
-       imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
-
-       imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/NORM2(imagedictflt(1:correctsize))
-       dict((pp-1)*correctsize+1:pp*correctsize) = imagedictflt(1:correctsize)
+       dict((pp-1)*correctsize+1:pp*correctsize) = EBSDdictpatflt(1:correctsize,pp)
      end do
    end if   
 
@@ -1358,7 +1326,11 @@ end if
 
 end do dictionaryloop
 
-close(itmpexpt,status='delete')
+if (ebsdnl%keeptmpfile.eq.'n') then
+    close(itmpexpt,status='delete')
+else
+    close(itmpexpt,status='keep')
+end if
 
 ! release the OpenCL kernel
 ierr = clReleaseKernel(kernel)

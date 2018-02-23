@@ -258,6 +258,7 @@ use crystal
 use constants
 use io
 use files
+use filters
 use diffraction
 use EBSDmod
 use Lambert
@@ -301,7 +302,7 @@ integer(kind=irg)                       :: dims2(2),dims3(3)
 real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
-integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), etotal, hdferr          ! various counters
+integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), etotal, hdferr, L, correctsize          ! various counters
 integer(kind=irg)                       :: istat, ipar(7), tick, tock
 integer(kind=irg)                       :: nix, niy, binx, biny,num_el, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
@@ -317,10 +318,11 @@ real(kind=dbl)                          :: dc(3), scl, nel           ! direction
 real(kind=dbl)                          :: sx, dx, dxm, dy, dym, rhos, x         ! various parameters
 real(kind=dbl)                          :: ixy(2), tmp
 
-real(kind=sgl),allocatable              :: mask(:,:), lx(:), ly(:)
+real(kind=sgl),allocatable              :: mask(:,:), lx(:), ly(:), masklin(:), binnedvec(:)
 character(kind=c_char),allocatable      :: batchpatterns(:,:,:), bpat(:,:), threadbatchpatterns(:,:,:) 
 integer(kind=irg),allocatable           :: batchpatternsint(:,:,:), bpatint(:,:), threadbatchpatternsint(:,:,:) 
-real(kind=sgl),allocatable              :: batchpatterns32(:,:,:), threadbatchpatterns32(:,:,:) 
+real(kind=sgl),allocatable              :: batchpatterns32(:,:,:), threadbatchpatterns32(:,:,:), threadbatchpatterns32lin(:,:) 
+real(kind=sgl),allocatable              :: batchpatterns32lin(:,:)
 integer(kind=irg),allocatable           :: acc_array(:,:)
 real(kind=sgl),allocatable              :: master_arrayNH(:,:), master_arraySH(:,:), wf(:) 
 character(len=3)                        :: outputformat
@@ -333,6 +335,7 @@ integer(K4B)                            :: idum
 type(HDFobjectStackType),pointer        :: HDF_head
 type(unitcell),pointer                  :: cell
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
+integer(HSIZE_T), dimension(1:2)        :: hdims2, offset2 
 integer(HSIZE_T)                        :: dim0, dim1, dim2
 character(fnlen,kind=c_char)            :: line2(1)
 character(fnlen)                        :: groupname, dataset, datagroupname
@@ -365,6 +368,11 @@ outputformat = enl%outputformat
 !====================================
 ! bit depth and format of output
 call get_bit_parameters(enl%bitdepth, numbits, bitrange, bitmode)
+
+if (enl%makedictionary.eq.'y') then
+  bitmode = 'dict'
+  call Message('Program will work in dictionary generation mode')
+end if
 
 ! define some energy-related parameters derived from MC input parameters
 !====================================
@@ -416,7 +424,7 @@ call ReadDataHDF(cell)
 call CalcMatrices(cell)
 
 !====================================
-! ------ and open the output file for IDL visualization (only thread 0 can write to this file)
+! ------ and open the output file (only thread 0 can write to this file)
 !====================================
 ! we need to write the image dimensions, and also how many of those there are...
 
@@ -621,6 +629,14 @@ end if
   patinbatch = sum(istop-istart,1) + nthreads
 
 ! and allocate the batchpatterns array for hyperslab writing [modified 8/25/17 for different output formats]
+L = binx*biny
+! make sure that correctsize is a multiple of 16; if not, make it so
+if (mod(L,16) .ne. 0) then
+    correctsize = 16*ceiling(float(L)/16.0)
+else
+    correctsize = L
+end if
+
 if (trim(bitmode).eq.'char') then 
   allocate(batchpatterns(binx,biny,ninbatch*nthreads),stat=istat)
 end if
@@ -629,6 +645,9 @@ if (trim(bitmode).eq.'int') then
 end if
 if (trim(bitmode).eq.'float') then 
   allocate(batchpatterns32(binx,biny,ninbatch*nthreads),stat=istat)
+end if
+if (trim(bitmode).eq.'dict') then 
+  allocate(batchpatterns32lin(correctsize,ninbatch*nthreads),stat=istat)
 end if
 
 !====================================
@@ -647,6 +666,14 @@ end if
       end do
     end do
     deallocate(lx, ly)
+    if (trim(bitmode).eq.'dict') then
+      allocate(masklin(binx*biny))
+      do j = 1,biny
+        do i = 1,binx
+          masklin((j-1)*binx+i) = mask(i,j)
+        end do
+      end do 
+    end if
   end if
 
 !====================================
@@ -704,7 +731,8 @@ do ibatch=1,totnumbatches
 
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL default(shared)  PRIVATE(TID,iang,i,j,istat,EBSDpattern,binned,idum,bpat,ma,mi,threadbatchpatterns,bpatint)&
-!$OMP& PRIVATE(tmLPNH, tmLPSH, trgx, trgy, trgz, taccum, dims2, dims3, threadbatchpatternsint, threadbatchpatterns32)
+!$OMP& PRIVATE(tmLPNH, tmLPSH, trgx, trgy, trgz, taccum, dims2, dims3, threadbatchpatternsint, threadbatchpatterns32)&
+!$OMP& PRIVATE(binnedvec, threadbatchpatterns32lin)
 
   NUMTHREADS = OMP_GET_NUM_THREADS()
   TID = OMP_GET_THREAD_NUM()
@@ -736,6 +764,10 @@ do ibatch=1,totnumbatches
   if (trim(bitmode).eq.'int') then 
     allocate(bpatint(binx,biny),stat=istat)
   end if
+  if (trim(bitmode).eq.'dict') then 
+    allocate(bpatint(binx,biny),stat=istat)
+    allocate(binnedvec(correctsize),stat=istat)
+  end if
 
 ! this array requires some care in terms of its size parameters...
   if ((singlebatch.eqv..TRUE.).AND.(ibatch.eq.totnumbatches)) then 
@@ -749,6 +781,9 @@ do ibatch=1,totnumbatches
       if (trim(bitmode).eq.'float') then 
         allocate(threadbatchpatterns32(binx,biny,nlastremainder),stat=istat)
       end if
+      if (trim(bitmode).eq.'dict') then 
+        allocate(threadbatchpatterns32lin(correctsize,nlastremainder),stat=istat)
+      end if
     else
       if (trim(bitmode).eq.'char') then 
         allocate(threadbatchpatterns(binx,biny,ninlastbatch),stat=istat)
@@ -759,27 +794,36 @@ do ibatch=1,totnumbatches
       if (trim(bitmode).eq.'float') then 
         allocate(threadbatchpatterns32(binx,biny,ninlastbatch),stat=istat)
       end if
+      if (trim(bitmode).eq.'dict') then 
+        allocate(threadbatchpatterns32lin(correctsize,ninlastbatch),stat=istat)
+      end if
     end if
   else
     if (trim(bitmode).eq.'char') then 
       allocate(threadbatchpatterns(binx,biny,ninbatch),stat=istat)
     end if
-    if (trim(bitmode).eq.'16bit') then 
+    if (trim(bitmode).eq.'int') then 
       allocate(threadbatchpatternsint(binx,biny,ninbatch),stat=istat)
     end if
     if (trim(bitmode).eq.'float') then 
       allocate(threadbatchpatterns32(binx,biny,ninbatch),stat=istat)
     end if
+    if (trim(bitmode).eq.'dict') then 
+      allocate(threadbatchpatterns32lin(correctsize,ninbatch),stat=istat)
+    end if
   end if
 
-  if (trim(enl%bitdepth).eq.'char') then 
+  if (trim(bitmode).eq.'char') then 
     threadbatchpatterns = ' '
   end if
-  if (trim(enl%bitdepth).eq.'int') then 
+  if (trim(bitmode).eq.'int') then 
     threadbatchpatternsint = 0_irg
   end if
-  if (trim(enl%bitdepth).eq.'float') then 
+  if (trim(bitmode).eq.'float') then 
     threadbatchpatterns32 = 0.0
+  end if
+  if (trim(bitmode).eq.'dict') then 
+    threadbatchpatterns32lin = 0.0
   end if
 
   do iang=istart(TID,ibatch),istop(TID,ibatch)
@@ -810,26 +854,52 @@ do ibatch=1,totnumbatches
         binned = binned**enl%gammavalue
     end if
 
-    if (trim(bitmode).eq.'char') then 
-      ma = maxval(binned)
-      mi = minval(binned)
-      binned = mask * ((binned - mi)/ (ma-mi))
-      bpat = char(nint(bitrange*binned))
+    if (trim(bitmode).eq.'dict') then  ! pre-process the patterns for dictionary indexing
+! this step includes adaptive histogram equalization, masking, and normalization
 
-      threadbatchpatterns(1:binx,1:biny, iang-istart(TID,ibatch)+1) = bpat
-    end if
+! adaptive histogram equalization
+        ma = maxval(binned)
+        mi = minval(binned)
+        bpatint = nint(((binned - mi)/ (ma-mi))*255.0)
+        binned =  float(adhisteq(enl%nregions,binx,biny,bpatint))
 
-    if (trim(bitmode).eq.'int') then 
-      ma = maxval(binned)
-      mi = minval(binned)
-      binned = mask * ((binned - mi)/ (ma-mi))
-      bpatint = nint(bitrange*binned)
+! linearize the array and apply the mask
+        binnedvec = 0.0
+        do j= 1,biny
+          do i = 1,binx
+            binnedvec((j-1)*binx+i) = binned(i,j)
+          end do
+        end do
 
-      threadbatchpatternsint(1:binx,1:biny, iang-istart(TID,ibatch)+1) = bpatint
-    end if
-    
-    if (trim(bitmode).eq.'float') then 
-      threadbatchpatterns32(1:binx,1:biny, iang-istart(TID,ibatch)+1) = binned
+! apply circular mask and normalize
+        binnedvec(1:L) = binnedvec(1:L) * masklin(1:L)
+        binnedvec(1:correctsize) = binnedvec(1:correctsize)/NORM2(binnedvec(1:correctsize))
+
+! store in array for hyperslab writing
+        threadbatchpatterns32lin(1:correctsize, iang-istart(TID,ibatch)+1) = binnedvec
+
+    else  ! don't make a dictionary so no preprocessing of patterns... just intensity scaling to the correct range
+      if (trim(bitmode).eq.'char') then 
+        ma = maxval(binned)
+        mi = minval(binned)
+        binned = mask * ((binned - mi)/ (ma-mi))
+        bpat = char(nint(bitrange*binned))
+
+        threadbatchpatterns(1:binx,1:biny, iang-istart(TID,ibatch)+1) = bpat
+      end if
+
+      if (trim(bitmode).eq.'int') then 
+        ma = maxval(binned)
+        mi = minval(binned)
+        binned = mask * ((binned - mi)/ (ma-mi))
+        bpatint = nint(bitrange*binned)
+
+        threadbatchpatternsint(1:binx,1:biny, iang-istart(TID,ibatch)+1) = bpatint
+      end if
+      
+      if (trim(bitmode).eq.'float') then 
+        threadbatchpatterns32(1:binx,1:biny, iang-istart(TID,ibatch)+1) = binned
+      end if
     end if
 
   end do ! end of iang loop
@@ -854,6 +924,11 @@ do ibatch=1,totnumbatches
           threadbatchpatterns32(1:binx,1:biny, 1:nlastremainder)
       end if
       
+      if (trim(bitmode).eq.'dict') then 
+        batchpatterns32lin(1:correctsize,TID*ninlastbatch+1:TID*ninlastbatch+nlastremainder)=&
+          threadbatchpatterns32lin(1:correctsize, 1:nlastremainder)
+      end if
+
     else
       if (trim(bitmode).eq.'char') then 
         batchpatterns(1:binx,1:biny, TID*ninlastbatch+1:(TID+1)*ninlastbatch) = &
@@ -869,6 +944,11 @@ do ibatch=1,totnumbatches
         batchpatterns32(1:binx,1:biny, TID*ninlastbatch+1:(TID+1)*ninlastbatch) = &
           threadbatchpatterns32(1:binx,1:biny, 1:ninlastbatch)
       end if
+
+      if (trim(bitmode).eq.'dict') then 
+        batchpatterns32lin(1:correctsize,TID*ninlastbatch+1:(TID+1)*ninlastbatch)=&
+          threadbatchpatterns32lin(1:correctsize, 1:ninlastbatch)
+      end if
     end if
   else
     if (trim(bitmode).eq.'char') then 
@@ -882,6 +962,12 @@ do ibatch=1,totnumbatches
     if (trim(bitmode).eq.'float') then 
       batchpatterns32(1:binx,1:biny, TID*ninbatch+1:(TID+1)*ninbatch) = threadbatchpatterns32(1:binx,1:biny, 1:ninbatch)
     end if
+
+    if (trim(bitmode).eq.'dict') then 
+      batchpatterns32lin(1:correctsize, TID*ninbatch+1:(TID+1)*ninbatch) = &
+         threadbatchpatterns32lin(1:correctsize, 1:ninbatch)
+    end if
+
   end if
 !$OMP END CRITICAL
 
@@ -890,11 +976,18 @@ do ibatch=1,totnumbatches
 ! here we write all the entries in the batchpatterns array to the HDF file as a hyperslab
 dataset = SC_EBSDpatterns
  !if (outputformat.eq.'bin') then
-   offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
-   hdims = (/ binx, biny, enl%numangles /)
-   dim0 = binx
-   dim1 = biny
-   dim2 = patinbatch(ibatch)
+   if (trim(bitmode).eq.'dict') then 
+     offset2 = (/ 0, (ibatch-1)*ninbatch*enl%nthreads /)
+     hdims2 = (/ correctsize, enl%numangles /)
+     dim0 = correctsize
+     dim1 = patinbatch(ibatch)
+   else
+     offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
+     hdims = (/ binx, biny, enl%numangles /)
+     dim0 = binx
+     dim1 = biny
+     dim2 = patinbatch(ibatch)
+   end if
    if (ibatch.eq.1) then
      if (trim(bitmode).eq.'char') then 
        hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
@@ -911,6 +1004,11 @@ dataset = SC_EBSDpatterns
                                               dim0, dim1, dim2, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
      end if
+     if (trim(bitmode).eq.'dict') then 
+       hdferr = HDF_writeHyperslabFloatArray2D(dataset, batchpatterns32lin(1:correctsize,1:dim1), hdims2, offset2, &
+                                              dim0, dim1, HDF_head)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray2D EBSDpatterns')
+     end if
    else
      if (trim(bitmode).eq.'char') then 
        hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
@@ -925,6 +1023,11 @@ dataset = SC_EBSDpatterns
      if (trim(bitmode).eq.'float') then 
        hdferr = HDF_writeHyperslabFloatArray3D(dataset, batchpatterns32(1:binx,1:biny,1:dim2), hdims, offset, &
                                               dim0, dim1, dim2, HDF_head, insert)
+       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
+     end if
+     if (trim(bitmode).eq.'dict') then 
+       hdferr = HDF_writeHyperslabFloatArray2D(dataset, batchpatterns32lin(1:correctsize,1:dim1), hdims2, offset2, &
+                                              dim0, dim1, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
      end if
    end if

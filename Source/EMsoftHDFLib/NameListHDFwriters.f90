@@ -1683,7 +1683,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
 
-integer(kind=irg),parameter                           :: n_int = 6, n_real = 9
+integer(kind=irg),parameter                           :: n_int = 8, n_real = 10
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: t(1)
@@ -1697,17 +1697,20 @@ groupname = SC_EBSDNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%binning, enl%nthreads, enl%energyaverage /)
+io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%binning, enl%nthreads, enl%energyaverage, enl%nregions, enl%maskradius /)
 intlist(1) = 'stdout'
 intlist(2) = 'numsx'
 intlist(3) = 'numsy'
 intlist(4) = 'binning'
 intlist(5) = 'nthreads'
 intlist(6) = 'energyaverage'
+intlist(7) = 'nregions'
+intlist(8) = 'maskradius'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals 
-io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, enl%alphaBD /)
+io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, &
+             enl%alphaBD, enl%hipassw /)
 reallist(1) = 'L'
 reallist(2) = 'thetac'
 reallist(3) = 'delta'
@@ -1717,6 +1720,7 @@ reallist(6) = 'energymin'
 reallist(7) = 'energymax'
 reallist(8) = 'gammavalue'
 reallist(9) = 'alphaBD'
+reallist(10)= 'hipassw'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! a 4-vector
@@ -1743,6 +1747,11 @@ dataset = SC_maskpattern
 line2(1) = trim(enl%maskpattern)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create maskpattern dataset',.TRUE.)
+
+dataset = SC_makedictionary
+line2(1) = trim(enl%makedictionary)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create makedictionary dataset',.TRUE.)
 
 dataset = SC_includebackground
 line2(1) = trim(enl%includebackground)

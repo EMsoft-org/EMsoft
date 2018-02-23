@@ -60,8 +60,22 @@
  scalingmode = 'not',
 ! gamma correction factor
  gammavalue = 1.0,
+!=======================
+! if the 'makedictionary' parameter is 'n', then we have the normal execution of the program
+! if set to 'y', then all patterns are pre-processed using the other parameters below, so that
+! the resulting dictionary can be used for static indexing in the EMEBSDDI program...
+! these parameters must be taken identical to the ones in the EMEBSDDI.nml input file to have 
+! optimal indexing...
+ makedictionary = 'n',
 ! should a circular mask be applied to the data? 'y', 'n'
  maskpattern = 'n',
+ ! mask radius (in pixels, AFTER application of the binning operation)
+ maskradius = 240,
+! hi pass filter w parameter; 0.05 is a reasonable value
+ hipassw = 0.05,
+! number of regions for adaptive histogram equalization
+ nregions = 10,
+!=======================
 ! number of threads (default = 1)
  nthreads = 1,
  /

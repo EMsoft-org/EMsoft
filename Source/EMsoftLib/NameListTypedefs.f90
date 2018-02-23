@@ -359,20 +359,24 @@ type EBSDNameListType
         integer(kind=irg)       :: binning
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: energyaverage
-	real(kind=sgl)          :: L
-	real(kind=sgl)          :: thetac
-	real(kind=sgl)          :: delta
+        integer(kind=irg)       :: maskradius
+        integer(kind=irg)       :: nregions
+        real(kind=sgl)          :: L
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
         real(kind=sgl)          :: omega
-	real(kind=sgl)          :: xpc
-	real(kind=sgl)          :: ypc
-	real(kind=sgl)          :: energymin
-	real(kind=sgl)          :: energymax
-	real(kind=sgl)          :: gammavalue
-	real(kind=sgl)          :: axisangle(4)
-	real(kind=sgl)          :: alphaBD
-    real(kind=dbl)          :: Ftensor(3,3)
-	real(kind=dbl)          :: beamcurrent
-	real(kind=dbl)          :: dwelltime
+        real(kind=sgl)          :: xpc
+        real(kind=sgl)          :: ypc
+        real(kind=sgl)          :: energymin
+        real(kind=sgl)          :: energymax
+        real(kind=sgl)          :: gammavalue
+        real(kind=sgl)          :: axisangle(4)
+        real(kind=sgl)          :: alphaBD
+        real(kind=sgl)          :: hipassw
+        real(kind=dbl)          :: Ftensor(3,3)
+        real(kind=dbl)          :: beamcurrent
+        real(kind=dbl)          :: dwelltime
+        character(1)            :: makedictionary
         character(1)            :: includebackground
         character(1)            :: applyDeformation
         character(1)            :: maskpattern
@@ -969,6 +973,7 @@ type EBSDIndexingNameListType
         character(3)            :: Notify
         !character(3)            :: eulerconvention
         !character(3)            :: outputformat
+        character(1)            :: keeptmpfile
         character(1)            :: spatialaverage
         character(fnlen)        :: anglefile
         !character(fnlen)        :: dotproductfile
