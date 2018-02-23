@@ -104,6 +104,7 @@ if (present(noindex)) then
   end if
 end if
 
+
 ! open the file (overwrite old one if it exists)
 ctfname = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%ctffile)
 ctfname = EMsoft_toNativePath(ctfname)
@@ -113,8 +114,13 @@ write(dataunit2,'(A)') 'Channel Text File'
 write(dataunit2,'(A)') 'Prj Test'
 write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode	Grid'
-write(dataunit2,'(2A,I5)') 'XCells',TAB, ebsdnl%ipf_wd
-write(dataunit2,'(2A,I5)') 'YCells',TAB, ebsdnl%ipf_ht
+if (sum(ebsdnl%ROI).ne.0) then
+  write(dataunit2,'(2A,I5)') 'XCells',TAB, ebsdnl%ROI(3)
+  write(dataunit2,'(2A,I5)') 'YCells',TAB, ebsdnl%ROI(4)
+else
+  write(dataunit2,'(2A,I5)') 'XCells',TAB, ebsdnl%ipf_wd
+  write(dataunit2,'(2A,I5)') 'YCells',TAB, ebsdnl%ipf_ht
+end if
 write(dataunit2,'(2A,F6.2)') 'XStep',TAB, ebsdnl%StepX
 write(dataunit2,'(2A,F6.2)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
@@ -221,8 +227,13 @@ do ii = 1,ipar(3)
       euler = eulerarray(1:3,indx)
     end if
 ! changed order of coordinates to conform with ctf standard
-    write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%stepX
-    write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%stepY
+    if (sum(ebsdnl%ROI).ne.0) then
+      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%stepX
+      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%stepY
+    else
+      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%stepX
+      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%stepY
+    end if 
     write(str3,'(I2)') 10
     write(str8,'(I8)') 0 ! integer zero error; was indx, which is now moved to BC
     eu = euler(1) - 90.0 ! conversion from TSL to Oxford convention

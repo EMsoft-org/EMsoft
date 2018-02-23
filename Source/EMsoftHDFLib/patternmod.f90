@@ -343,7 +343,7 @@ end function openExpPatternFile
 !> @brief read a single row of patterns from the input file(s)
 !
 !> @param iii row number
-!> @param wd number of patterns in row
+!> @param wd number of patterns in row in input file (may be different from requested number of patterns in ROI !)
 !> @param patsz pattern dimension
 !> @param L array size
 !> @param dims3 array size for hyperslab reading
@@ -352,10 +352,12 @@ end function openExpPatternFile
 !> @param inputtype input file type identifier
 !> @param HDFstrings string array with group and datset names for HDF5 input
 !> @param exppatarray output array
+!> @param ROI (OPTIONAL) region of interest parameters (lower left x,y; hor. and vert. dimensions)
 !
 !> @date 02/13/18 MDG 1.0 original
+!> @date 02/21/18 MDG 1.1 added optional Region-of-Interest capability
 !--------------------------------------------------------------------------
-recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray) 
+recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
 
 IMPLICIT NONE
@@ -370,6 +372,7 @@ integer(kind=irg),INTENT(IN)            :: funit
 character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
+integer(kind=irg),OPTIONAL,INTENT(IN)   :: ROI(4)
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
@@ -380,11 +383,40 @@ integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
-integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot
+integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
+                                           kkstart, kkend
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
 if (hdfnumg.gt.0) dataset = trim(HDFstrings(hdfnumg+1))
+
+! are we dealing with a smaller ROI or the full field view ?
+! we need to use ill-type integers since the numbers can get pretty large...
+liii = iii
+lwd = wd
+lpatsz = patsz
+lL = L
+if (present(ROI)) then 
+ kkstart = ROI(1)
+ kkend = kkstart + ROI(3) - 1_ill 
+ if ((itype.eq.2).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
+! we need to skip the first ROI(2)-1 rows (and potentially the first pattern as well)
+   do ii=1,ROI(2)-1
+      offset = offset + (lwd * lL) / 2_ill 
+      if ((up2wdLeven.eqv..FALSE.).and.(mod(ii,2).eq.0)) then
+        offset = offset + 1_ill
+      end if
+   end do
+   offset = offset + lL / 2_ill
+ end if
+else
+ kkstart = 1_ill
+ kkend = dims3(3)
+ if (itype.eq.2) then
+! for the first row, we need to skip the first pattern completely...  needs to be verified
+   if (iii.eq.1) offset = offset + lL / 2_ill
+ end if
+end if
 
 select case (itype)
     case(1)  ! "Binary"  
@@ -392,20 +424,13 @@ select case (itype)
 ! when the experimental patterns were only available in individual image file format. 
 ! This file would have been created using a Matlab or IDL routine.  We anticipate that 
 ! this format will not be used for much longer.
-      do jj=1,wd
+      do jj=kkstart,kkend
         read(funit,rec=(iii-1)*wd + jj) imageexpt
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
+        exppatarray((jj-kkstart)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 
-
     case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
-! for the first row, we need to skip the first pattern completely...
-      if (iii.eq.1) offset = offset + lL / 2_ill
-! we need to use ill-type integers since the numbers can get pretty large...
-      liii = iii
-      lwd = wd
-      lpatsz = patsz
-      lL = L
+
 ! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
 ! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
 ! then the next pattern will start in the middle of a 4-byte block... since we are reading things in
@@ -429,9 +454,9 @@ select case (itype)
 
 ! then we need to place them in the exppatarray array with the proper offsets if patsz ne L 
       exppatarray = 0.0
-      pixcnt = 1
-      do kk=1,dims3(3)   ! loop over all the patterns in this row; remember to flip the patterns upside down !
-        kspot = (kk-1)*patsz
+      pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
+      do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI; remember to flip the patterns upside down !
+        kspot = (kk-kkstart)*patsz
         do jj=1,dims3(2)
           jspot = (dims3(2)-jj)*dims3(1) 
           do ii=1,dims3(1)
@@ -462,13 +487,13 @@ select case (itype)
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
-        do kk=1,dims3(3)
+        do kk=kkstart,kkend
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
                     if (itype.eq.6) then
-                      exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
+                      exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
                     else  ! TSL patterns are upside down compared to the EMsoft convention...
-                      exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,kk)))
+                      exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,kk)))
                     end if 
                 end do 
             end do 
@@ -481,7 +506,7 @@ select case (itype)
 ! and loop over an entire row using the original pattern coordinate (ispot) as an index into the reordering arrays.
         exppatarray = 0.0
         dims3new = (/ dims3(1), dims3(2), 1_HSIZE_T /)
-        do kk=1,dims3(3)  ! loop over all spots in the row
+        do kk=kkstart,kkend  ! loop over all spots in the row/ROI
             ispot = (iii-1)*wd + kk
             newspot = semiy(ispot) * wd + semix(ispot)
             offset3new = (/ offset3(1), offset3(2),  newspot /)
@@ -489,17 +514,14 @@ select case (itype)
             do jj=1,dims3(2)
                 do ii=1,dims3(1) 
                     ! Bruker patterns are stored upside down compared to the EMsoft convention...
-                    exppatarray((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+                    exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
                 end do 
             end do 
         end do 
     case default 
-
 end select
 
 end subroutine getExpPatternRow
-
-
 
 !--------------------------------------------------------------------------
 !
@@ -658,12 +680,6 @@ select case (itype)
 end select
 
 end subroutine getSingleExpPattern
-
-
-
-
-
-
 
 
 !--------------------------------------------------------------------------

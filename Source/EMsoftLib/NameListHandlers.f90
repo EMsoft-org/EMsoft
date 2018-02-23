@@ -2446,6 +2446,7 @@ character(3)            :: eulerconvention
 character(3)            :: outputformat
 character(5)            :: bitdepth
 character(fnlen)        :: anglefile
+character(fnlen)        :: anglefiletype
 character(fnlen)        :: masterfile
 character(fnlen)        :: energyfile 
 character(fnlen)        :: datafile
@@ -2454,7 +2455,7 @@ character(fnlen)        :: datafile
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, bitdepth, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
-                        applyDeformation, Ftensor, includebackground
+                        applyDeformation, Ftensor, includebackground, anglefiletype
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2488,6 +2489,7 @@ bitdepth        = '8bit'        ! format for output; '8char' for [0..255], '##in
 ! from the float values to a maximum that is given by the first two digits, which indicate the bit depth; so, valid
 ! values would be '10int' for a 10-bit integer scale, '16int' for a 16-bit integer scale, and so on.
 anglefile       = 'undefined'   ! filename
+anglefiletype   = 'orientations'! 'orientations' or 'orpcdef'
 masterfile      = 'undefined'   ! filename
 energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
 datafile        = 'undefined'   ! output file name
@@ -2549,6 +2551,7 @@ enl%eulerconvention = eulerconvention
 enl%outputformat = outputformat
 enl%bitdepth = bitdepth
 enl%anglefile = anglefile
+enl%anglefiletype = anglefiletype
 enl%masterfile = masterfile
 enl%energyfile = energyfile
 enl%datafile = datafile
@@ -4205,6 +4208,7 @@ logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)                                 :: numsx
 integer(kind=irg)                                 :: numsy
+integer(kind=irg)                                 :: ROI(4)
 integer(kind=irg)                                 :: binning
 integer(kind=irg)                                 :: energyaverage
 integer(kind=irg)                                 :: devid
@@ -4261,7 +4265,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section, HDFstrings
+section, HDFstrings, ROI
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4277,6 +4281,7 @@ nosm            = 20
 exptfile        = 'undefined'
 numsx           = 640           ! [dimensionless]
 numsy           = 480           ! [dimensionless]
+ROI             = (/ 0, 0, 0, 0 /)  ! Region of interest (/ x0, y0, w, h /)
 maskradius      = 240
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
@@ -4390,6 +4395,7 @@ if (trim(indexingmode) .eq. 'dynamic') then
     enl%L               = L
     enl%numsx           = numsx
     enl%numsy           = numsy
+    enl%ROI             = ROI
     enl%binning         = binning
     enl%energyaverage   = energyaverage
     enl%thetac          = thetac
@@ -4448,6 +4454,7 @@ integer(kind=irg)       :: numsx
 integer(kind=irg)       :: numsy
 integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: nregions
+integer(kind=irg)       :: ROI(4)
 real(kind=dbl)          :: hipassw
 character(1)            :: maskpattern
 character(1)            :: filterpattern
@@ -4462,7 +4469,7 @@ character(fnlen)        :: HDFstrings(10)
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_wd, exptfile, maskradius, inputtype, &
-                     tmpfile, maskfile, HDFstrings, hipassw, tiffname, filterpattern, keeptmpfile, usetmpfile
+                     tmpfile, maskfile, HDFstrings, hipassw, tiffname, filterpattern, keeptmpfile, usetmpfile, ROI
 
 ! set the input parameters to default values
  ipf_ht = 100
@@ -4477,6 +4484,7 @@ namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_
  nregions = 10
  numsx = 640
  numsy = 480
+ ROI = (/ 0, 0, 0, 0 /)
  exptfile = 'undefined'
  inputtype = 'Binary'
  HDFstrings = ''
@@ -4512,6 +4520,7 @@ adpnl%numsx = numsx
 adpnl%numsy = numsy
 adpnl%nthreads = nthreads
 adpnl%nregions = nregions
+adpnl%ROI = ROI
 adpnl%hipassw = hipassw
 adpnl%maskpattern = maskpattern
 adpnl%filterpattern = filterpattern

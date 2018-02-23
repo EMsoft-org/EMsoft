@@ -382,6 +382,7 @@ type EBSDNameListType
         character(1)            :: spatialaverage
         character(5)            :: bitdepth
         character(fnlen)        :: anglefile
+        character(fnlen)        :: anglefiletype
         character(fnlen)        :: masterfile
         character(fnlen)        :: energyfile 
         character(fnlen)        :: datafile
@@ -935,6 +936,7 @@ type EBSDIndexingNameListType
         integer(kind=irg)       :: numdictsingle
         integer(kind=irg)       :: ipf_ht
         integer(kind=irg)       :: ipf_wd 
+        integer(kind=irg)       :: ROI(4)
         integer(kind=irg)       :: nnk
         integer(kind=irg)       :: nnav
         integer(kind=irg)       :: nosm
@@ -1027,6 +1029,7 @@ type ADPNameListType
         integer(kind=irg)       :: numsy
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: nregions
+        integer(kind=irg)       :: ROI(4)
         real(kind=dbl)          :: hipassw
         character(1)            :: maskpattern
         character(1)            :: filterpattern

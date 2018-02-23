@@ -189,6 +189,7 @@ end program EBSDIndexing
 !> @date 11/13/17 MDG 2.0 moved OpenCL code from InnerProdGPU routine to main code
 !> @date 01/09/18 MDG 2.1 first attempt at OpenMP for pattern pre-processing
 !> @date 02/13/18 MDG 2.2 added support for multiple input formats for experimental patterns
+!> @date 02/22/18 MDG 2.3 added support for Region-of-Interest (ROI) selection
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
@@ -318,14 +319,14 @@ real(kind=sgl)                                      :: dmin,voltage,scl,ratio, m
                                                        totnum_el, vlen, tstop, ttime
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
-integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax
+integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax, iiistart, iiiend, jjend
 real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp
 real(kind=sgl)                                      :: dc(3),quat(4),ixy(2),bindx
 integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
 integer(kind=irg)                                   :: indx
 integer(kind=irg)                                   :: correctsize
-logical                                             :: f_exists, init
+logical                                             :: f_exists, init, ROIselected 
 
 integer(kind=irg)                                   :: ipar(10)
 
@@ -339,20 +340,36 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
+if (sum(ebsdnl%ROI).ne.0) then
+  ROIselected = .TRUE.
+  iiistart = ebsdnl%ROI(2)
+  iiiend = ebsdnl%ROI(2)+ebsdnl%ROI(4)-1
+  jjend = ebsdnl%ROI(3)
+else
+  ROIselected = .FALSE.
+  iiistart = 1
+  iiiend = ebsdnl%ipf_ht
+  jjend = ebsdnl%ipf_wd
+end if
+
 verbose = .FALSE.
 init = .TRUE.
 Ne = ebsdnl%numexptsingle
 Nd = ebsdnl%numdictsingle
 L = ebsdnl%numsx*ebsdnl%numsy/ebsdnl%binning**2
-totnumexpt = ebsdnl%ipf_wd*ebsdnl%ipf_ht
+if (ROIselected.eqv..TRUE.) then 
+    totnumexpt = ebsdnl%ROI(3)*ebsdnl%ROI(4)
+else
+    totnumexpt = ebsdnl%ipf_wd*ebsdnl%ipf_ht
+end if
 imght = ebsdnl%numsx/ebsdnl%binning
 imgwd = ebsdnl%numsy/ebsdnl%binning
+dims = (/imght, imgwd/)
 nnk = ebsdnl%nnk
 xtalname = ebsdnl%MCxtalname
 ncubochoric = ebsdnl%ncubochoric
 recordsize = L*4
 itmpexpt = 43
-dims = (/imght, imgwd/)
 w = ebsdnl%hipassw
 source_l = source_length
 
@@ -519,7 +536,6 @@ psource = C_LOC(csource)
 prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(slength), ierr)
 call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
 
-
 ! build the program
 ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
 
@@ -633,7 +649,6 @@ allocate(rdata(binx,biny),fdata(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
 rdata = 0.D0
 fdata = 0.D0
-
 
 !=====================================================
 ! determine loop variables to avoid having to duplicate 
@@ -791,7 +806,7 @@ call cpu_time(tstart)
 dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
 
 ! we do one row at a time
-prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
+prepexperimentalloop: do iii = iiistart,iiiend
 
 ! start the OpenMP portion
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
@@ -817,8 +832,13 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 ! we have to allow for all the different types of input files here...
     if (TID.eq.0) then
         offset3 = (/ 0, 0, (iii-1)*ebsdnl%ipf_wd /)
-        call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
-                              ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray)
+        if (ROIselected.eqv..TRUE.) then
+            call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray, ebsdnl%ROI)
+        else
+            call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray)
+        end if
     end if
 
 ! other threads must wait until T0 is ready
@@ -827,14 +847,14 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
 ! then loop in parallel over all patterns to perform the preprocessing steps
 !$OMP DO SCHEDULE(DYNAMIC)
-    do jj=1,ebsdnl%ipf_wd
+    do jj=1,jjend
 ! convert imageexpt to 2D EBSD Pattern array
         do kk=1,biny
           EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
         end do
 
 ! compute the pattern Image Quality 
-        exptIQ((iii-1)*ebsdnl%ipf_wd + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
+        exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
 
 ! Hi-Pass filter
         rrdata = dble(EBSDPat)
@@ -866,8 +886,8 @@ prepexperimentalloop: do iii = 1,ebsdnl%ipf_ht
 
 ! thread 0 writes the row of patterns to the output file
     if (TID.eq.0) then
-      do jj=1,ebsdnl%ipf_wd
-        write(itmpexpt,rec=(iii-1)*ebsdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
+      do jj=1,jjend
+        write(itmpexpt,rec=(iii-iiistart)*jjend + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
       end do
     end if
 
@@ -876,9 +896,14 @@ deallocate(EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
 !$OMP END PARALLEL
 
 ! print an update of progress
-    if (mod(iii,5).eq.0) then
-        io_int(1:2) = (/ iii, ebsdnl%ipf_ht /)
+    if (mod(iii-iiistart+1,5).eq.0) then
+      if (ROIselected.eqv..TRUE.) then
+        io_int(1:2) = (/ iii-iiistart+1, ebsdnl%ROI(4) /)
         call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      else
+        io_int(1:2) = (/ iii-iiistart+1, ebsdnl%ipf_ht /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      end if
     end if
 end do prepexperimentalloop
 
@@ -898,18 +923,26 @@ call WriteValue('Number of experimental patterns processed per second : ',io_rea
 call Message(' -> computing Average Dot Product map (ADP)')
 call Message(' ')
 
-allocate(dpmap(totnumexpt))
 ! re-open the temporary file
 open(unit=itmpexpt,file=trim(fname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
+
 ! use the getADPmap routine in the filters module
-call getADPmap(itmpexpt, totnumexpt, L, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dpmap)
+if (ROIselected.eqv..TRUE.) then
+  allocate(dpmap(ebsdnl%ROI(3)*ebsdnl%ROI(4)))
+  call getADPmap(itmpexpt, ebsdnl%ROI(3)*ebsdnl%ROI(4), L, ebsdnl%ROI(3), ebsdnl%ROI(4), dpmap)
+  TIFF_nx = ebsdnl%ROI(3)
+  TIFF_ny = ebsdnl%ROI(4)
+else
+  allocate(dpmap(totnumexpt))
+  call getADPmap(itmpexpt, totnumexpt, L, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dpmap)
+  TIFF_nx = ebsdnl%ipf_wd
+  TIFF_ny = ebsdnl%ipf_ht
+end if
 
 ! output the ADP map as a tiff file (for debugging purposes only)
 if (1.eq.0) then
-    TIFF_nx = ebsdnl%ipf_wd
-    TIFF_ny = ebsdnl%ipf_ht
-    TIFF_filename = "ADPmap.tiff"
+        TIFF_filename = "ADPmap.tiff"
 
     ! allocate memory for image
     allocate(TIFF_image(0:TIFF_nx-1,0:TIFF_ny-1))

@@ -24,6 +24,12 @@
  includebackground = 'y',
 ! name of angle file (euler angles or quaternions); path relative to EMdatapathname
  anglefile = 'testeuler.txt',
+! does this file have only orientations ('orientations') or does it also have pattern center and deformation tensor ('orpcdef')
+! if anglefiletype = 'orpcdef' then each line in the euler input file should look like this: (i.e., 15 floats)
+!   55.551210  58.856774  325.551210  0.0  0.0  15000.0  1.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 1.00
+!   <-   Euler angles  (degrees)  ->  <- pat. ctr.   ->  <- deformation tensor in column-major form->
+!
+ anglefiletype = 'orientations',
 ! 'tsl' or 'hkl' Euler angle convention parameter
  eulerconvention = 'tsl',
 ! name of EBSD master output file; path relative to EMdatapathname

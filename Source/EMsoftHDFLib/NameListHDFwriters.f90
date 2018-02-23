@@ -1789,6 +1789,11 @@ line2(1) = trim(enl%anglefile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create anglefile dataset',.TRUE.)
 
+dataset = SC_anglefiletype
+line2(1) = trim(enl%anglefiletype)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create anglefiletype dataset',.TRUE.)
+
 dataset = SC_datafile
 line2(1) = trim(enl%datafile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
@@ -3107,6 +3112,10 @@ dataset = SC_axisangle
 hdferr = HDF_writeDatasetFloatArray1D(dataset, ebsdnl%axisangle, 4, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create axisangle dataset',.TRUE.)
 
+! an integer 4-vector
+dataset = SC_ROI
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, ebsdnl%ROI, 4, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create ROI dataset',.TRUE.)
 
 ! strings
 dataset = SC_maskpattern

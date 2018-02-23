@@ -16,10 +16,13 @@
 !
 ! do you want Email or Slack notification when the run has completed?
  Notify = 'Off',
-! height of inverse pole figure in pixels
+! height of data set in pattern input file
  ipf_ht = 100,
-! width of inverse pole figure in pixels
+! width of data set in pattern input file
  ipf_wd = 100,
+! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
+! region of interest has the point (x0,y0) as its lower left corner and is w x h patterns
+ ROI = 0 0 0 0,
 ! X and Y sampling step sizes
  stepX = 1.0,
  stepY = 1.0,
