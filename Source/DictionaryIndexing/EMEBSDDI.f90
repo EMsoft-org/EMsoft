@@ -138,22 +138,30 @@ else
   call GetEBSDIndexingNameList(nmldeffile,ebsdnl)
 end if
 
-! 1. read the Monte Carlo data file
-allocate(acc)
-call EBSDIndexingreadMCfile(ebsdnl, acc)
+! is this a dynamic calculation (i.e., do we actually compute the EBSD patterns)?
+if (trim(ebsdnl%indexingmode).eq.'dynamic') then 
 
-! 2. read EBSD master pattern file
-allocate(master)
-call EBSDIndexingreadMasterfile(ebsdnl, master)
+    ! 1. read the Monte Carlo data file
+    allocate(acc)
+    call EBSDIndexingreadMCfile(ebsdnl, acc)
 
-! 3. generate detector arrays
-allocate(master%rgx(ebsdnl%numsx,ebsdnl%numsy), master%rgy(ebsdnl%numsx,ebsdnl%numsy), &
-         master%rgz(ebsdnl%numsx,ebsdnl%numsy), stat=istat)
-allocate(acc%accum_e_detector(ebsdnl%numEbins,ebsdnl%numsx,ebsdnl%numsy), stat=istat)
+    ! 2. read EBSD master pattern file
+    allocate(master)
+    call EBSDIndexingreadMasterfile(ebsdnl, master)
 
-call EBSDIndexingGenerateDetector(ebsdnl, acc, master)
-deallocate(acc%accum_e)
+    ! 3. generate detector arrays
+    allocate(master%rgx(ebsdnl%numsx,ebsdnl%numsy), master%rgy(ebsdnl%numsx,ebsdnl%numsy), &
+             master%rgz(ebsdnl%numsx,ebsdnl%numsy), stat=istat)
+    allocate(acc%accum_e_detector(ebsdnl%numEbins,ebsdnl%numsx,ebsdnl%numsy), stat=istat)
 
+    call EBSDIndexingGenerateDetector(ebsdnl, acc, master)
+    deallocate(acc%accum_e)
+else    ! this is a static run using an existing dictionary
+! we'll use the same MasterSubroutine so we need to at least allocate the input structures
+! even though we will not make use of them in static mode
+   allocate(acc, master) 
+
+end if
 ! perform the dictionary indexing computations
 call MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
 
@@ -265,7 +273,7 @@ integer(c_size_t)                                   :: cnum
 character(9),target                                 :: kernelname
 character(10, KIND=c_char),target                   :: ckernelname
 
-integer(kind=irg)                                   :: num,ierr,irec,istat, jpar(7)
+integer(kind=irg)                                   :: num,ierr,irec,istat, jpar(7), SGnum, nlines
 integer(kind=irg),parameter                         :: iunit = 40
 integer(kind=irg),parameter                         :: iunitexpt = 41
 integer(kind=irg),parameter                         :: iunitdict = 42
@@ -285,7 +293,7 @@ real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
                                                        tmpimageexpt(:)
 real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:),&
-                                                       eulerarray(:,:),resultmain(:,:),resulttmp(:,:)
+                                                       eulerarray(:,:),eulerarray2(:,:),resultmain(:,:),resulttmp(:,:)
 integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:) 
 integer*4,allocatable                               :: iexptCI(:,:), iexptIQ(:,:)
 real(kind=sgl),allocatable                          :: meandict(:),meanexpt(:),wf(:),mLPNH(:,:,:),mLPSH(:,:,:),accum_e_MC(:,:,:)
@@ -293,6 +301,7 @@ real(kind=sgl),allocatable                          :: mLPNH_simple(:,:), mLPSH_
 real(kind=sgl),allocatable                          :: EBSDpattern(:,:), FZarray(:,:), dpmap(:), lstore(:,:), pstore(:,:)
 real(kind=sgl),allocatable                          :: EBSDpatternintd(:,:), lp(:), cp(:), EBSDpat(:,:)
 integer(kind=irg),allocatable                       :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
+character(kind=c_char),allocatable                  :: EBSDdictpat(:,:,:)
 real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 complex(kind=dbl),allocatable                       :: hpmask(:,:)
 complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
@@ -303,13 +312,14 @@ character(15)                                       :: tstrb
 character(15)                                       :: tstre
 character(3)                                        :: vendor
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
-character(fnlen)                                    :: groupname, dataset, fname, clname, ename, sourcefile
+character(fnlen)                                    :: groupname, dataset, fname, clname, ename, sourcefile, &
+                                                       datagroupname, dictfile
 integer(hsize_t)                                    :: expwidth, expheight
 integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_size_t),target                            :: slength
 integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
-integer(HSIZE_T)                                    :: dims3(3), offset3(3)
+integer(HSIZE_T)                                    :: dims2(2), dims3(3), offset3(3)
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(4), ncubochoric, pc
@@ -340,6 +350,72 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
+if (trim(ebsdnl%indexingmode).eq.'static') then
+    !
+    ! Initialize FORTRAN interface.
+    CALL h5open_EMsoft(hdferr)
+
+    ! get the full filename
+    dictfile = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%dictfile)
+    dictfile = EMsoft_toNativePath(dictfile)
+
+    call Message('-->  '//'Opening HDF5 dictionary file '//trim(ebsdnl%dictfile))
+    nullify(HDF_head)
+
+    hdferr =  HDF_openFile(dictfile, HDF_head)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+
+    ! we need the point group number (derived from the space group number)
+    groupname = SC_CrystalData
+    hdferr = HDF_openGroup(groupname, HDF_head)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:CrystalData')
+
+    dataset = SC_SpaceGroupNumber
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, SGnum)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetInteger:SpaceGroupNumber')
+    call HDF_pop(HDF_head)
+! get the point group number    
+    if (SGnum.ge.221) then
+      pgnum = 32
+    else
+      i=0
+      do while (SGPG(i+1).le.SGnum) 
+        i = i+1
+      end do
+      pgnum = i
+    end if
+
+    ! then read some more data from the EMData group
+    groupname = SC_EMData
+    hdferr = HDF_openGroup(groupname, HDF_head)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EMData')
+
+    datagroupname = 'EBSD'
+    hdferr = HDF_openGroup(datagroupname, HDF_head)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EBSD')
+
+    dataset = SC_xtalname
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    xtalname = trim(stringarray(1))
+    ebsdnl%MCxtalname = trim(xtalname)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetInteger:numangles')
+
+    ! number of Eulerangles numangles
+    dataset = SC_numangles
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, FZcnt)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetInteger:numangles')
+
+    ! euler angle list Eulerangles
+    dataset = SC_Eulerangles
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, eulerarray2)
+    eulerarray2 = eulerarray2 * 180.0/sngl(cPi)
+    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetFloatArray2D:Eulerangles')
+
+    ! we leave this file open since we still need to read all the patterns...
+    !=====================================================
+    call Message('-->  completed initial reading of dictionary file ')
+end if
+
 if (sum(ebsdnl%ROI).ne.0) then
   ROIselected = .TRUE.
   iiistart = ebsdnl%ROI(2)
@@ -366,7 +442,6 @@ imght = ebsdnl%numsx/ebsdnl%binning
 imgwd = ebsdnl%numsy/ebsdnl%binning
 dims = (/imght, imgwd/)
 nnk = ebsdnl%nnk
-xtalname = ebsdnl%MCxtalname
 ncubochoric = ebsdnl%ncubochoric
 recordsize = L*4
 itmpexpt = 43
@@ -393,31 +468,38 @@ size_in_bytes_expt = Ne*correctsize*sizeof(correctsize)
 recordsize_correct = correctsize*4
 patsz              = correctsize
 
-! get the total number of electrons on the detector
-totnum_el = sum(acc%accum_e_detector)
 
-!=====================================================
-! EXTRACT POINT GROUP NUMBER FROM CRYSTAL STRUCTURE FILE 
-!=====================================================
-pgnum = GetPointGroup(ebsdnl%MCxtalname)
+if (trim(ebsdnl%indexingmode).eq.'dynamic') then 
+    ! get the total number of electrons on the detector
+    totnum_el = sum(acc%accum_e_detector)
 
-!=====================================================
-! make sure the minimum energy is set smaller than the maximum
-!=====================================================
-if (ebsdnl%energymin.gt.ebsdnl%energymax) then
-    call Message('Minimum energy is larger than maximum energy; please correct input file')
-    stop
+    !=====================================================
+    ! EXTRACT POINT GROUP NUMBER FROM CRYSTAL STRUCTURE FILE 
+    !=====================================================
+    write (*,*) 'reading from xtalfile '//trim(ebsdnl%MCxtalname)
+    pgnum = GetPointGroup(ebsdnl%MCxtalname)
+
+    !=====================================================
+    ! make sure the minimum energy is set smaller than the maximum
+    !=====================================================
+    if (ebsdnl%energymin.gt.ebsdnl%energymax) then
+        call Message('Minimum energy is larger than maximum energy; please correct input file')
+        stop
+    end if
+    !=====================================================
+    ! get the indices of the minimum and maximum energy
+    !=====================================================
+    Emin = nint((ebsdnl%energymin - ebsdnl%Ehistmin)/ebsdnl%Ebinsize) +1
+    if (Emin.lt.1)  Emin=1
+    if (Emin.gt.ebsdnl%numEbins)  Emin=ebsdnl%numEbins
+
+    Emax = nint((ebsdnl%energymax - ebsdnl%Ehistmin)/ebsdnl%Ebinsize) + 1
+    if (Emax .lt. 1) Emax = 1
+    if (Emax .gt. ebsdnl%numEbins) Emax = ebsdnl%numEbins
+
+! intensity prefactor
+    prefactor = 0.25D0 * nAmpere * ebsdnl%beamcurrent * ebsdnl%dwelltime * 1.0D-15/ totnum_el
 end if
-!=====================================================
-! get the indices of the minimum and maximum energy
-!=====================================================
-Emin = nint((ebsdnl%energymin - ebsdnl%Ehistmin)/ebsdnl%Ebinsize) +1
-if (Emin.lt.1)  Emin=1
-if (Emin.gt.ebsdnl%numEbins)  Emin=ebsdnl%numEbins
-
-Emax = nint((ebsdnl%energymax - ebsdnl%Ehistmin)/ebsdnl%Ebinsize) + 1
-if (Emax .lt. 1) Emax = 1
-if (Emax .gt. ebsdnl%numEbins) Emax = ebsdnl%numEbins
 
 !====================================
 ! init a bunch of parameters
@@ -427,46 +509,44 @@ binx = ebsdnl%numsx/ebsdnl%binning
 biny = ebsdnl%numsy/ebsdnl%binning
 bindx = 1.0/float(ebsdnl%binning)**2
 
-! intensity prefactor
-prefactor = 0.25D0 * nAmpere * ebsdnl%beamcurrent * ebsdnl%dwelltime * 1.0D-15/ totnum_el
-
 ! for dictionary computations, the patterns are usually rather small, so perhaps the explicit
 ! energy sums can be replaced by an averaged approximate approach, in which all the energy bins
 ! are added together from the start, and all the master patterns are totaled as well...
 ! this is a straightforward sum; we should probably do a weighted sum instead
 
 ! this code will be removed in a later version [post 3.1]
-if (ebsdnl%energyaverage .eq. 0) then
-        allocate(mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ebsdnl%nE))
-        allocate(mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ebsdnl%nE))
-        allocate(accum_e_MC(ebsdnl%numEbins,ebsdnl%numsx,ebsdnl%numsy),stat=istat)
-        accum_e_MC = acc%accum_e_detector
-        mLPNH = master%mLPNH
-        mLPSH = master%mLPSH
-else if (ebsdnl%energyaverage .eq. 1) then
-        allocate(mLPNH_simple(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy))
-        allocate(mLPSH_simple(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy))
-        allocate(wf(ebsdnl%numEbins))
-        allocate(acc_array(ebsdnl%numsx,ebsdnl%numsy))
-        acc_array = sum(acc%accum_e_detector,1)
-        wf = sum(sum(acc%accum_e_detector,2),2)
-        wf = wf/sum(wf)
-        do ii=Emin,Emax
-            master%mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) = &
-            master%mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) * wf(ii)
+if (trim(ebsdnl%indexingmode).eq.'dynamic') then
+    if (ebsdnl%energyaverage .eq. 0) then
+            allocate(mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ebsdnl%nE))
+            allocate(mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ebsdnl%nE))
+            allocate(accum_e_MC(ebsdnl%numEbins,ebsdnl%numsx,ebsdnl%numsy),stat=istat)
+            accum_e_MC = acc%accum_e_detector
+            mLPNH = master%mLPNH
+            mLPSH = master%mLPSH
+    else if (ebsdnl%energyaverage .eq. 1) then
+            allocate(mLPNH_simple(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy))
+            allocate(mLPSH_simple(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy))
+            allocate(wf(ebsdnl%numEbins))
+            allocate(acc_array(ebsdnl%numsx,ebsdnl%numsy))
+            acc_array = sum(acc%accum_e_detector,1)
+            wf = sum(sum(acc%accum_e_detector,2),2)
+            wf = wf/sum(wf)
+            do ii=Emin,Emax
+                master%mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) = &
+                master%mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) * wf(ii)
 
-            master%mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) = &
-            master%mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) * wf(ii)
+                master%mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) = &
+                master%mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) * wf(ii)
 
-        end do
+            end do
 
-        mLPNH_simple = sum(master%mLPNH,3)
-        mLPSH_simple = sum(master%mLPNH,3)
+            mLPNH_simple = sum(master%mLPNH,3)
+            mLPSH_simple = sum(master%mLPNH,3)
 
-else
-        stop 'Invalid value of energyaverage parameter'
+    else
+            stop 'Invalid value of energyaverage parameter'
+    end if
 end if
-
 
 !=====================================================
 ! SAMPLING OF RODRIGUES FUNDAMENTAL ZONE
@@ -476,36 +556,38 @@ end if
 ! and generate the FZlist here... this can be useful to index patterns that
 ! have only a small misorientation range with respect to a known orientation,
 ! so that it is not necessary to scan all of orientation space.
+if (trim(ebsdnl%indexingmode).eq.'dynamic') then
+    nullify(FZlist)
+    FZcnt = 0
+    if (trim(ebsdnl%eulerfile).eq.'undefined') then
+      call Message('Orientation space sampling mode set to RFZ')
+      io_int(1) = pgnum
+      io_int(2) = ncubochoric
+      call WriteValue('Point group number and number of cubochoric sampling points : ',io_int,2,"(I4,',',I5)")
 
-nullify(FZlist)
-FZcnt = 0
-if (trim(ebsdnl%eulerfile).eq.'undefined') then
-  call Message('Orientation space sampling mode set to RFZ')
-  io_int(1) = pgnum
-  io_int(2) = ncubochoric
-  call WriteValue('Point group number and number of cubochoric sampling points : ',io_int,2,"(I4,',',I5)")
+      call sampleRFZ(ncubochoric, pgnum, 0, FZcnt, FZlist)
+    else
+    ! read the euler angle file and create the linked list
+      call getEulersfromFile(ebsdnl%eulerfile, FZcnt, FZlist) 
+      call Message('Orientation space sampling mode set to MIS')
+      io_int(1) = pgnum
+      io_int(2) = FZcnt
+      call WriteValue('Point group number and number of sampling points : ',io_int,2,"(I4,',',I5)")
+    end if
 
-  call sampleRFZ(ncubochoric, pgnum, 0, FZcnt, FZlist)
-else
-! read the euler angle file and create the linked list
-  call getEulersfromFile(ebsdnl%eulerfile, FZcnt, FZlist) 
-  call Message('Orientation space sampling mode set to MIS')
-  io_int(1) = pgnum
-  io_int(2) = FZcnt
-  call WriteValue('Point group number and number of sampling points : ',io_int,2,"(I4,',',I5)")
-end if
+    ! allocate and fill FZarray for OpenMP parallelization
+    allocate(FZarray(4,FZcnt),stat=istat)
+    FZarray = 0.0
 
-! allocate and fill FZarray for OpenMP parallelization
-allocate(FZarray(4,FZcnt),stat=istat)
-FZarray = 0.0
+    FZtmp => FZlist
+    do ii = 1,FZcnt
+        FZarray(1:4,ii) = FZtmp%rod(1:4)
+        FZtmp => FZtmp%next
+    end do
+    io_int(1) = FZcnt
+    call WriteValue(' Number of unique orientations sampled =        : ', io_int, 1, "(I8)")
+end if 
 
-FZtmp => FZlist
-do ii = 1,FZcnt
-    FZarray(1:4,ii) = FZtmp%rod(1:4)
-    FZtmp => FZtmp%next
-end do
-io_int(1) = FZcnt
-call WriteValue(' Number of unique orientations sampled =        : ', io_int, 1, "(I8)")
 
 !================================
 ! INITIALIZATION OF OpenCL DEVICE
@@ -641,6 +723,11 @@ indextmp = 0
 
 allocate(eulerarray(1:3,Nd*ceiling(float(FZcnt)/float(Nd))),stat=istat)
 if (istat .ne. 0) stop 'could not allocate euler array'
+eulerarray = 0.0
+if (trim(ebsdnl%indexingmode).eq.'static') then
+    eulerarray(1:3,1:FZcnt) = eulerarray2(1:3,1:FZcnt)
+    deallocate(eulerarray2)
+end if
 
 allocate(exptIQ(totnumexpt), exptCI(totnumexpt), exptFit(totnumexpt), stat=istat)
 if (istat .ne. 0) stop 'could not allocate exptIQ array'
@@ -997,10 +1084,14 @@ end if
 call cpu_time(tstart)
 call Time_tick(tickstart)
 
-call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
-io_int(1) = ebsdnl%nthreads
+if (trim(ebsdnl%indexingmode).eq.'dynamic') then
+    call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
+    io_int(1) = ebsdnl%nthreads
+else
+    call OMP_SET_NUM_THREADS(2)
+    io_int(1) = 2
+end if
 call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
-
 
 ! define the jpar array of integer parameters
 jpar(1) = ebsdnl%binning
@@ -1041,7 +1132,7 @@ dictionaryloop: do ii = 1,cratio+1
         TID = OMP_GET_THREAD_NUM()
 
       if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' actual number of OpenMP threads  = ',OMP_GET_NUM_THREADS()
-      if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' maximum number of OpenMP threads = ',OMP_GET_MAX_THREADS()
+!     if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' maximum number of OpenMP threads = ',OMP_GET_MAX_THREADS()
 
 
 ! the master thread should be the one working on the GPU computation
@@ -1138,6 +1229,7 @@ dictionaryloop: do ii = 1,cratio+1
        end if
      end if
 
+if (trim(ebsdnl%indexingmode).eq.'dynamic') then
 !$OMP DO SCHEDULE(DYNAMIC)
 
      do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
@@ -1196,6 +1288,60 @@ dictionaryloop: do ii = 1,cratio+1
      end do
 !$OMP END DO
 
+else  ! we are doing static indexing, so only 2 threads in total
+
+! get a set of patterns from the precomputed dictionary file... then perform the 
+! standard image processing steps on them before passing them on to thread 0.
+! we'll use a hyperslab to read a block from file and then process them one at a timestamp
+! in the following loop
+
+   if (TID .ne. 0) then
+! read data from the hyperslab
+     dataset = SC_EBSDpatterns
+     dims3 = (/ binx, biny, ppend(ii) /)
+     offset3 = (/ 0, 0, (ii-1)*Nd /)
+
+     if(allocated(EBSDdictpat)) deallocate(EBSDdictpat)
+     EBSDdictpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, HDF_head)
+      
+     do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
+
+       do ll = 1,biny
+           do mm = 1,binx
+               binned(mm,ll) = float(ichar(EBSDdictpat(mm,ll,pp)))
+           end do
+       end do
+
+       !binned(:,:) = float(EBSDdictpat(:,:,pp))
+
+! adaptive histogram equalization
+       ma = maxval(binned)
+       mi = minval(binned)
+
+       EBSDpatternintd = ((binned - mi)/ (ma-mi))
+       EBSDpatterninteger = nint(EBSDpatternintd*255.0)
+       EBSDpatternad =  adhisteq(ebsdnl%nregions,binx,biny,EBSDpatterninteger)
+       binned = float(EBSDpatternad)
+
+       imagedictflt = 0.0
+       imagedictfltflip = 0.0
+
+       do ll = 1,biny
+         do mm = 1,binx
+           imagedictflt((ll-1)*binx+mm) = binned(mm,ll)
+         end do
+       end do
+
+! normalize and apply circular mask
+       imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
+
+       imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/NORM2(imagedictflt(1:correctsize))
+       dict((pp-1)*correctsize+1:pp*correctsize) = imagedictflt(1:correctsize)
+     end do
+   end if   
+
+end if
+
      if (verbose.eqv..TRUE.) then
        io_int(1) = TID
        call WriteValue('',io_int,1,"('       Thread ',I2,' is done')")
@@ -1217,6 +1363,12 @@ close(itmpexpt,status='delete')
 ! release the OpenCL kernel
 ierr = clReleaseKernel(kernel)
 call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
+
+if (trim(ebsdnl%indexingmode).eq.'static') then
+! close file and nullify pointer
+    call HDF_pop(HDF_head,.TRUE.)
+    call h5close_EMsoft(hdferr)
+end if
 
 ! perform some timing stuff
 call CPU_TIME(tstop)

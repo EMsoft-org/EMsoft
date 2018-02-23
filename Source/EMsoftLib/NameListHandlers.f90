@@ -4390,34 +4390,26 @@ enl%Notify        = Notify
 enl%section       = section
 enl%inputtype     = inputtype
 enl%HDFstrings    = HDFstrings
-
-if (trim(indexingmode) .eq. 'dynamic') then
-    enl%L               = L
-    enl%numsx           = numsx
-    enl%numsy           = numsy
-    enl%ROI             = ROI
-    enl%binning         = binning
-    enl%energyaverage   = energyaverage
-    enl%thetac          = thetac
-    enl%delta           = delta
-    enl%xpc             = xpc
-    enl%ypc             = ypc
-    enl%gammavalue      = gammavalue
-    enl%beamcurrent     = beamcurrent
-    enl%dwelltime       = dwelltime
-    enl%scalingmode     = scalingmode
-    enl%ncubochoric     = ncubochoric
-    enl%omega           = omega
-    enl%energymin       = energymin
-    enl%energymax       = energymax
-    enl%spatialaverage  = spatialaverage
-    enl%dictfile        = 'undefined'
-else if (trim(indexingmode) .eq. 'static') then
-    enl%dictfile = dictfile
-    enl%ncubochoric = 0
-else
-    call FatalError('EMEBSDIndexing:',' indexingmode is not known in '//nmlfile)
-end if
+enl%L             = L
+enl%numsx         = numsx
+enl%numsy         = numsy
+enl%ROI           = ROI
+enl%binning       = binning
+enl%energyaverage = energyaverage
+enl%thetac        = thetac
+enl%delta         = delta
+enl%xpc           = xpc
+enl%ypc           = ypc
+enl%gammavalue    = gammavalue
+enl%beamcurrent   = beamcurrent
+enl%dwelltime     = dwelltime
+enl%scalingmode   = scalingmode
+enl%ncubochoric   = ncubochoric
+enl%omega         = omega
+enl%energymin     = energymin
+enl%energymax     = energymax
+enl%spatialaverage= spatialaverage
+enl%dictfile      = dictfile 
 
 end subroutine GetEBSDIndexingNameList
 

@@ -324,6 +324,7 @@ real(kind=sgl),allocatable              :: batchpatterns32(:,:,:), threadbatchpa
 integer(kind=irg),allocatable           :: acc_array(:,:)
 real(kind=sgl),allocatable              :: master_arrayNH(:,:), master_arraySH(:,:), wf(:) 
 character(len=3)                        :: outputformat
+character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
 ! parameter for random number generator
 integer, parameter                      :: K4B=selected_int_kind(9)      ! used by ran function in math.f90
@@ -468,6 +469,12 @@ hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EMData')
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
+
+dataset = SC_xtalname
+allocate(stringarray(1))
+stringarray(1)= trim(enl%MCxtalname)
+hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head) 
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray xtalname')
 
 dataset = SC_numangles
 hdferr = HDF_writeDatasetInteger(dataset, enl%numangles, HDF_head) 
@@ -1095,6 +1102,7 @@ real(kind=sgl),allocatable              :: batchpatterns32(:,:,:), threadbatchpa
 integer(kind=irg),allocatable           :: acc_array(:,:)
 real(kind=sgl),allocatable              :: master_arrayNH(:,:), master_arraySH(:,:), wf(:) 
 character(len=3)                        :: outputformat
+character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
 ! parameter for random number generator
 integer, parameter                      :: K4B=selected_int_kind(9)      ! used by ran function in math.f90
@@ -1225,9 +1233,16 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EMData')
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
 
+dataset = SC_xtalname
+allocate(stringarray(1))
+stringarray(1)= trim(enl%MCxtalname)
+hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head) 
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray xtalname')
+
 dataset = SC_numangles
 hdferr = HDF_writeDatasetInteger(dataset, enl%numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetInteger numangles')
+
 
 ! and add the Euler angles to the output file
 allocate(eulerangles(3,enl%numangles))
