@@ -331,7 +331,7 @@ real(kind=sgl)                                      :: dmin,voltage,scl,ratio, m
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
 integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax, iiistart, iiiend, jjend
-real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp
+real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp, mvres
 real(kind=sgl)                                      :: dc(3),quat(4),ixy(2),bindx
 integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
@@ -1160,6 +1160,8 @@ dictionaryloop: do ii = 1,cratio+1
                                   0, C_NULL_PTR, C_NULL_PTR)
       call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
 
+      mvres = 0.0
+
       experimentalloop: do jj = 1,cratioE
 
         expt = 0.0
@@ -1174,6 +1176,9 @@ dictionaryloop: do ii = 1,cratio+1
         call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
 
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,ebsdnl%devid,kernel,context,command_queue)
+
+        dp =  maxval(results)
+        if (dp.gt.mvres) mvres = dp
 
 ! this might be simplified later for the remainder of the patterns
         do qq = 1,ppendE(jj)
@@ -1191,7 +1196,7 @@ dictionaryloop: do ii = 1,cratio+1
         end do
       end do experimentalloop
 
-      io_real(1) = maxval(results)
+      io_real(1) = mvres
       io_real(2) = float(iii)/float(cratio)*100.0
       call WriteValue('',io_real,2,"(' max. dot product = ',F10.6,';',F6.1,'% complete')")
 
