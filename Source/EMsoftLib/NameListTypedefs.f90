@@ -1522,4 +1522,19 @@ type EMgammaSTEMNameListType
     character(fnlen)    :: datafile
 end type EMgammaSTEMNameListType
 
+type EMCBEDQCNameListType
+    real(kind=sgl)      :: dmin
+    real(kind=sgl)      :: QClatparm
+    integer(kind=irg)   :: atno
+    real(kind=sgl)      :: DWF
+    real(kind=sgl)      :: voltage
+    real(kind=sgl)      :: convergence
+    real(kind=sgl)      :: eu(3)
+    real(kind=sgl)      :: thickness
+    character(fnlen)    :: datafile
+    integer(kind=irg)   :: nthreads
+    integer(kind=irg)   :: npix
+    character(1)        :: centering
+end type EMCBEDQCNameListType
+
 end module NameListTypedefs

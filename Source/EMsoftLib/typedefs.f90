@@ -1217,12 +1217,14 @@ type QCStructureType
   integer(kind=irg)                     :: imax
   integer(kind=irg)                     :: numindices
   integer(kind=irg),allocatable         :: facts(:,:)
+  integer(kind=irg),allocatable         :: Ucgindex(:)
+  logical,allocatable                   :: Ucgcalc(:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
   real(kind=dbl)                        :: epvec(3,6), epar(6,3)
   real(kind=dbl)                        :: eovec(3,6), eperp(6,3)
   real(kind=dbl)                        :: Mp(6,6), Picos(6,6)
   real(kind=dbl)                        :: Mo(6,6), Qicos(6,6)
-  real(kind=dbl)                        :: SYM_icos(6,6,60)              ! 532 rotational group in matrix representation
+  real(kind=dbl)                        :: SYM_icos(6,6,120)              ! 532 rotational group in matrix representation
   real(kind=dbl)                        :: QClatparm
   real(kind=dbl)                        :: dmin
   real(kind=dbl)                        :: vol
