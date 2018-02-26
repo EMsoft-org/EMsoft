@@ -67,7 +67,7 @@ recursive subroutine Time_tick(t)
 
 IMPLICIT NONE
 
-integer, intent(OUT) :: t
+integer(kind=irg), intent(OUT) :: t
 
 call system_clock(t)
 

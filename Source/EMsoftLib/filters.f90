@@ -540,6 +540,92 @@ end subroutine getADPmap
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: getADPmapRAM
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute Average Dot Product map, reading patterns from file unit iunit
+!
+!> @param epatterns experimental patterns after preprocessing (held in RAM!)
+!> @param nexpt number of experimental patterns
+!> @param L number of pixels per pattern
+!> @param wd ROI-width
+!> @param ht ROI-ht
+!> @param dpmap output ADP map
+!
+!> @date 01/09/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getADPmapRAM(epatterns, nexpt, cs, L, wd, ht, dpmap)
+!DEC$ ATTRIBUTES DLLEXPORT :: getADPmapRAM
+
+integer(kind=irg),INTENT(IN)        :: nexpt
+integer(kind=irg),INTENT(IN)        :: cs
+real(kind=sgl),INTENT(IN)           :: epatterns(cs,nexpt)
+integer(kind=irg),INTENT(IN)        :: L
+integer(kind=irg),INTENT(IN)        :: wd
+integer(kind=irg),INTENT(IN)        :: ht
+real(kind=sgl),INTENT(OUT)          :: dpmap(nexpt)
+
+integer(kind=irg)                   :: ii, iii, jj
+real(kind=sgl)                      :: lstore(L,wd), pstore(L,wd), lp(L), cp(L), imageexpt(L), dp
+
+dpmap= 0.0
+pstore = 0.0
+lstore = 0.0
+lp = 0.0
+cp = 0.0
+
+do iii = 1,nexpt
+    imageexpt = epatterns(1:L,iii)
+    ii = mod(iii,wd)
+    if (ii.eq.0) ii = wd
+    jj = iii/wd+1
+! do we need to copy pstore into lstore ?
+    if ((ii.eq.1).and.(jj.gt.1)) lstore = pstore
+! determine to which dpmap entries we need to add the dot product
+    if (ii.eq.1) then
+      cp(1:L) = imageexpt(1:L)
+      pstore(1:L,ii) = cp(1:L)
+    else
+      lp = cp
+      cp(1:L) = imageexpt(1:L)
+      pstore(1:L,ii) = cp(1:L)
+      dp = sum(lp(1:L)*cp(1:L))
+      dpmap(iii-1) = dpmap(iii-1) + dp
+      dpmap(iii) = dpmap(iii) + dp
+    end if
+    if (jj.gt.1) then
+      dp = sum(lstore(1:L,ii)*cp(1:L))
+      dpmap(iii-wd+1) = dpmap(iii-wd+1) + dp
+      dpmap(iii) = dpmap(iii) + dp
+    end if
+end do
+
+! correct the dot product map values depending on inside, edge, or corner pixels
+! divide by 4
+dpmap = dpmap*0.25
+
+! correct the straight segments
+dpmap(2:wd-1) = dpmap(2:wd-1) * 4.0/3.0
+dpmap(nexpt-wd+2:nexpt-1) = dpmap(nexpt-wd+2:nexpt-1) * 4.0/3.0
+do jj=1,ht-2
+  dpmap(wd*jj+1) = dpmap(wd*jj+1) * 4.0/3.0
+end do
+do jj=2,ht-1
+  dpmap(wd*jj) = dpmap(wd*jj) * 4.0/3.0
+end do
+
+! and the corners
+dpmap(1) = dpmap(1) * 4.0
+dpmap(wd) = dpmap(wd) * 2.0
+dpmap(nexpt) = dpmap(nexpt) * 2.0
+dpmap(nexpt-wd+1) = dpmap(nexpt-wd+1) * 4.0/3.0
+
+end subroutine getADPmapRAM
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: CalcHoughLUT
 !
 !> @author Marc De Graef, Carnegie Mellon University

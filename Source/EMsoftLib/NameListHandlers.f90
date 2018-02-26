@@ -2423,6 +2423,8 @@ integer(kind=irg)       :: numsy
 integer(kind=irg)       :: binning
 integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: energyaverage
+integer(kind=irg)       :: maskradius
+integer(kind=irg)       :: nregions
 real(kind=sgl)          :: L
 real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
@@ -2434,10 +2436,12 @@ real(kind=sgl)          :: energymax
 real(kind=sgl)          :: gammavalue
 real(kind=sgl)          :: alphaBD
 real(kind=sgl)          :: axisangle(4)
+real(kind=sgl)          :: hipassw
 real(kind=dbl)          :: Ftensor(3,3)
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
 character(1)            :: includebackground
+character(1)            :: makedictionary
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
 character(1)            :: spatialaverage
@@ -2446,6 +2450,7 @@ character(3)            :: eulerconvention
 character(3)            :: outputformat
 character(5)            :: bitdepth
 character(fnlen)        :: anglefile
+character(fnlen)        :: anglefiletype
 character(fnlen)        :: masterfile
 character(fnlen)        :: energyfile 
 character(fnlen)        :: datafile
@@ -2454,7 +2459,8 @@ character(fnlen)        :: datafile
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, bitdepth, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
-                        applyDeformation, Ftensor, includebackground
+                        applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
+                        maskradius
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2463,6 +2469,7 @@ numsy           = 480           ! [dimensionless]
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
 nthreads        = 1             ! number of OpenMP threads
+nregions        = 10            ! number of regions in adaptive histogram equalization
 energyaverage   = 0             ! apply energy averaging (1) or not (0); useful for dictionary computations
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
@@ -2473,10 +2480,13 @@ energymin       = 15.0          ! minimum energy to consider
 energymax       = 30.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
 alphaBD         = 0.0           ! transfer lens barrel distortion parameter
+maskradius      = 240           ! mask radius
+hipassw         = 0.05          ! hi-pass filter radius
 axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotation
 Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
+makedictionary  = 'y'
 includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
@@ -2488,6 +2498,7 @@ bitdepth        = '8bit'        ! format for output; '8char' for [0..255], '##in
 ! from the float values to a maximum that is given by the first two digits, which indicate the bit depth; so, valid
 ! values would be '10int' for a 10-bit integer scale, '16int' for a 16-bit integer scale, and so on.
 anglefile       = 'undefined'   ! filename
+anglefiletype   = 'orientations'! 'orientations' or 'orpcdef'
 masterfile      = 'undefined'   ! filename
 energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
 datafile        = 'undefined'   ! output file name
@@ -2526,6 +2537,8 @@ enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
 enl%binning = binning
+enl%nregions = nregions
+enl%maskradius = maskradius
 enl%L = L
 enl%nthreads = nthreads
 enl%energyaverage = energyaverage
@@ -2537,11 +2550,13 @@ enl%energymin = energymin
 enl%energymax = energymax
 enl%gammavalue = gammavalue
 enl%alphaBD = alphaBD
+enl%hipassw = hipassw
 enl%axisangle = axisangle
 enl%Ftensor = Ftensor
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%includebackground = includebackground
+enl%makedictionary = makedictionary
 enl%applyDeformation = applyDeformation
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
@@ -2549,6 +2564,7 @@ enl%eulerconvention = eulerconvention
 enl%outputformat = outputformat
 enl%bitdepth = bitdepth
 enl%anglefile = anglefile
+enl%anglefiletype = anglefiletype
 enl%masterfile = masterfile
 enl%energyfile = energyfile
 enl%datafile = datafile
@@ -4106,13 +4122,18 @@ integer(kind=irg)       :: hipasswnsteps
 integer(kind=irg)       :: nregionsmin
 integer(kind=irg)       :: nregionsmax
 integer(kind=irg)       :: nregionsstepsize
-integer(kind=irg)       :: patnum
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
 real(kind=sgl)          :: hipasswmax
 character(fnlen)        :: tifffile
 character(fnlen)        :: exptfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: hDFstrings(10)
 
 namelist / EBSDDIpreviewdata / numsx, numsy, hipasswmax, hipasswnsteps, nregionsstepsize, &
-          nregionsmax, nregionsmin, patnum, tifffile, exptfile
+          nregionsmax, nregionsmin, patx, paty, tifffile, exptfile, inputtype, HDFstrings, ipf_wd, ipf_ht
 
 ! set the input parameters to default values
 numsx = 640
@@ -4122,9 +4143,14 @@ hipasswnsteps = 10
 nregionsmin = 1
 nregionsmax = 10
 nregionsstepsize = 1
-patnum = 1
+patx = 1
+paty = 1
+ipf_wd = 100
+ipf_ht = 100
 tifffile = 'undefined'
 exptfile = 'undefined'
+inputtype = 'Binary'
+HDFstrings = ''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4153,10 +4179,15 @@ enl%hipasswnsteps = hipasswnsteps
 enl%nregionsmin = nregionsmin
 enl%nregionsmax = nregionsmax
 enl%nregionsstepsize = nregionsstepsize
-enl%patnum = patnum
+enl%patx = patx
+enl%paty = paty
+enl%ipf_wd = ipf_wd
+enl%ipf_ht = ipf_ht
 enl%hipasswmax = hipasswmax
 enl%tifffile = tifffile
 enl%exptfile = exptfile
+enl%inputtype = inputtype
+enl%HDFstrings = HDFstrings
 
 end subroutine GetEBSDDIpreviewNameList
 
@@ -4190,6 +4221,7 @@ logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)                                 :: numsx
 integer(kind=irg)                                 :: numsy
+integer(kind=irg)                                 :: ROI(4)
 integer(kind=irg)                                 :: binning
 integer(kind=irg)                                 :: energyaverage
 integer(kind=irg)                                 :: devid
@@ -4210,6 +4242,7 @@ real(kind=sgl)                                    :: stepX
 real(kind=sgl)                                    :: stepY
 integer(kind=irg)                                 :: nthreads
 character(1)                                      :: maskpattern
+character(1)                                      :: keeptmpfile
 character(3)                                      :: scalingmode
 character(3)                                      :: Notify
 character(fnlen)                                  :: dotproductfile
@@ -4246,7 +4279,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section, HDFstrings
+section, HDFstrings, ROI, keeptmpfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4262,6 +4295,7 @@ nosm            = 20
 exptfile        = 'undefined'
 numsx           = 640           ! [dimensionless]
 numsy           = 480           ! [dimensionless]
+ROI             = (/ 0, 0, 0, 0 /)  ! Region of interest (/ x0, y0, w, h /)
 maskradius      = 240
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
@@ -4276,6 +4310,7 @@ dwelltime       = 100.0D0       ! in microseconds
 hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
 stepX           = 1.0           ! sampling step size along X
 stepY           = 1.0           ! sampling step size along Y
+keeptmpfile     = 'n'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 Notify          = 'Off'
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -4343,6 +4378,7 @@ enl%platid        = platid
 enl%nregions      = nregions
 enl%nlines        = nlines
 enl%maskpattern   = maskpattern
+enl%keeptmpfile   = keeptmpfile
 enl%exptfile      = exptfile
 enl%nnk           = nnk
 enl%nnav          = nnav
@@ -4370,35 +4406,142 @@ enl%Notify        = Notify
 enl%section       = section
 enl%inputtype     = inputtype
 enl%HDFstrings    = HDFstrings
-
-if (trim(indexingmode) .eq. 'dynamic') then
-    enl%L               = L
-    enl%numsx           = numsx
-    enl%numsy           = numsy
-    enl%binning         = binning
-    enl%energyaverage   = energyaverage
-    enl%thetac          = thetac
-    enl%delta           = delta
-    enl%xpc             = xpc
-    enl%ypc             = ypc
-    enl%gammavalue      = gammavalue
-    enl%beamcurrent     = beamcurrent
-    enl%dwelltime       = dwelltime
-    enl%scalingmode     = scalingmode
-    enl%ncubochoric     = ncubochoric
-    enl%omega           = omega
-    enl%energymin       = energymin
-    enl%energymax       = energymax
-    enl%spatialaverage  = spatialaverage
-    enl%dictfile        = 'undefined'
-else if (trim(indexingmode) .eq. 'static') then
-    enl%dictfile = dictfile
-    enl%ncubochoric = 0
-else
-    call FatalError('EMEBSDIndexing:',' indexingmode is not known in '//nmlfile)
-end if
+enl%L             = L
+enl%numsx         = numsx
+enl%numsy         = numsy
+enl%ROI           = ROI
+enl%binning       = binning
+enl%energyaverage = energyaverage
+enl%thetac        = thetac
+enl%delta         = delta
+enl%xpc           = xpc
+enl%ypc           = ypc
+enl%gammavalue    = gammavalue
+enl%beamcurrent   = beamcurrent
+enl%dwelltime     = dwelltime
+enl%scalingmode   = scalingmode
+enl%ncubochoric   = ncubochoric
+enl%omega         = omega
+enl%energymin     = energymin
+enl%energymax     = energymax
+enl%spatialaverage= spatialaverage
+enl%dictfile      = dictfile 
 
 end subroutine GetEBSDIndexingNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetADPNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill adpnl structure (used by EMgetADP.f90)
+!
+!> @param nmlfile namelist file name
+!> @param adpnl name list structure
+!
+!> @date 02/17/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetADPNameList(nmlfile, adpnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetADPNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(ADPNameListType),INTENT(INOUT)               :: adpnl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: ipf_ht
+integer(kind=irg)       :: ipf_wd 
+integer(kind=irg)       :: maskradius
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: nregions
+integer(kind=irg)       :: ROI(4)
+real(kind=dbl)          :: hipassw
+character(1)            :: maskpattern
+character(1)            :: filterpattern
+character(1)            :: keeptmpfile
+character(1)            :: usetmpfile
+character(fnlen)        :: exptfile 
+character(fnlen)        :: tmpfile
+character(fnlen)        :: tiffname
+character(fnlen)        :: maskfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: HDFstrings(10)
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_wd, exptfile, maskradius, inputtype, &
+                     tmpfile, maskfile, HDFstrings, hipassw, tiffname, filterpattern, keeptmpfile, usetmpfile, ROI
+
+! set the input parameters to default values
+ ipf_ht = 100
+ ipf_wd = 100
+ maskfile = 'undefined'
+ filterpattern = 'y'
+ maskpattern = 'n'
+ keeptmpfile = 'n'
+ usetmpfile = 'n'
+ maskradius = 240
+ hipassw = 0.05
+ nregions = 10
+ numsx = 640
+ numsy = 480
+ ROI = (/ 0, 0, 0, 0 /)
+ exptfile = 'undefined'
+ inputtype = 'Binary'
+ HDFstrings = ''
+ tmpfile = 'EMEBSDDict_tmp.data'
+ tiffname = 'undefined'
+ nthreads = 1
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=getADP)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(exptfile).eq.'undefined') then
+        call FatalError('GetADPNameList:',' experimental file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tiffname).eq.'undefined') then
+        call FatalError('GetADPNameList:',' output tiff file name is undefined in '//nmlfile)
+    end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the enl fields
+adpnl%ipf_ht = ipf_ht
+adpnl%ipf_wd = ipf_wd
+adpnl%maskradius = maskradius
+adpnl%numsx = numsx
+adpnl%numsy = numsy
+adpnl%nthreads = nthreads
+adpnl%nregions = nregions
+adpnl%ROI = ROI
+adpnl%hipassw = hipassw
+adpnl%maskpattern = maskpattern
+adpnl%filterpattern = filterpattern
+adpnl%keeptmpfile = keeptmpfile
+adpnl%usetmpfile = usetmpfile
+adpnl%exptfile = exptfile
+adpnl%tmpfile = tmpfile
+adpnl%tiffname = tiffname
+adpnl%maskfile = maskfile
+adpnl%inputtype = inputtype
+adpnl%HDFstrings = HDFstrings
+
+end subroutine GetADPNameList
 
 !--------------------------------------------------------------------------
 !

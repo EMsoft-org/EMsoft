@@ -39,9 +39,9 @@
 !> @date  09/01/15  MDG 1.1 modified EBSDMasterType definition to accommodate multiple Lambert maps
 !> @date  09/15/15  SS  1.2 added accum_z to EBSDLargeAccumType
 !> @date  08/18/16  MDG 1.3 modified HDF file format 
+!> @date  02/22/18  MDG 1.4 added orientation/pattern center/deformation tensor format for angle input file
 !--------------------------------------------------------------------------
 module EBSDmod
-
 
 use local
 use typedefs
@@ -52,6 +52,12 @@ IMPLICIT NONE
 type EBSDAngleType
         real(kind=sgl),allocatable      :: quatang(:,:)
 end type EBSDAngleType
+
+type EBSDAnglePCDefType
+        real(kind=sgl),allocatable      :: quatang(:,:)
+        real(kind=sgl),allocatable      :: pcs(:,:)
+        real(kind=sgl),allocatable      :: deftensors(:,:,:)
+end type EBSDAnglePCDefType
 
 type EBSDLargeAccumType
         integer(kind=irg),allocatable   :: accum_e(:,:,:),accum_z(:,:,:,:)
@@ -187,6 +193,128 @@ end if
 write (*,*) 'completed reading Euler angles'
 
 end subroutine EBSDreadangles
+
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDreadorpcdef
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read angles, pattern centers, and deformation tensors from an angle file
+!
+!> @param enl EBSD name list structure
+!> @param orpcdef array of unit quaternions, pattern centers, and deformation tensors (output)
+!
+!> @date 02/22/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine EBSDreadorpcdef(enl,orpcdef,verbose)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDreadorpcdef
+
+use local
+use typedefs
+use NameListTypedefs
+use io
+use error
+use files
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+
+type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(EBSDAnglePCDefType),pointer        :: orpcdef
+logical,INTENT(IN),OPTIONAL             :: verbose
+
+integer(kind=irg)                       :: io_int(1), i
+character(2)                            :: angletype
+real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
+real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
+
+real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
+integer(kind=irg)                       :: istat
+character(fnlen)                        :: anglefile
+
+!====================================
+! get the angular information, either in Euler angles or in quaternions, from a text file
+!====================================
+! open the angle file 
+anglefile = trim(EMsoft_getEMdatapathname())//trim(enl%anglefile)
+anglefile = EMsoft_toNativePath(anglefile)
+open(unit=dataunit,file=trim(anglefile),status='old',action='read')
+
+! get the type of angle first [ 'eu' or 'qu' ]
+read(dataunit,*) angletype
+if (angletype.eq.'eu') then 
+  enl%anglemode = 'euler'
+else
+!  enl%anglemode = 'quats'
+  call FatalError("EBSDreadorpcdef","Other orientation formats to be implemented; only Euler for now")
+end if
+
+! then the number of angles in the file
+read(dataunit,*) enl%numangles
+
+if (present(verbose)) then 
+  io_int(1) = enl%numangles
+  call WriteValue('Number of angle entries = ',io_int,1)
+end if
+
+!if (enl%anglemode.eq.'euler') then
+! allocate the euler angle, pattern center, and deformation tensor arrays
+  allocate(eulang(3,enl%numangles),stat=istat)
+  allocate(orpcdef%pcs(3,enl%numangles),stat=istat)
+  allocate(orpcdef%deftensors(3,3,enl%numangles),stat=istat)
+
+! if istat.ne.0 then do some error handling ... 
+  do i=1,enl%numangles
+    read(dataunit,*) eulang(1:3,i), orpcdef%pcs(1:3,i), orpcdef%deftensors(1:3,1:3,i)
+  end do
+  close(unit=dataunit,status='keep')
+
+  if (enl%eulerconvention.eq.'hkl') then
+    if (present(verbose)) call Message('  -> converting Euler angles to TSL representation', frm = "(A/)")
+    eulang(1,1:enl%numangles) = eulang(1,1:enl%numangles) + 90.0
+  end if
+
+! convert the euler angle triplets to quaternions
+  allocate(orpcdef%quatang(4,enl%numangles),stat=istat)
+! if (istat.ne.0) then ...
+
+  if (present(verbose)) call Message('  -> converting Euler angles to quaternions', frm = "(A/)")
+  
+  do i=1,enl%numangles
+    orpcdef%quatang(1:4,i) = eu2qu(eulang(1:3,i)*dtor)
+  end do
+
+!else
+! the input file has quaternions, not Euler triplets
+!  allocate(angles%quatang(4,enl%numangles),stat=istat)
+!  do i=1,enl%numangles
+!    read(dataunit,*) angles%quatang(1:4,i)
+!  end do
+!end if
+
+close(unit=dataunit,status='keep')
+
+!====================================
+! Do we need to apply an additional axis-angle pair rotation to all the quaternions ?
+!
+!if (enl%axisangle(4).ne.0.0) then
+!  enl%axisangle(4) = enl%axisangle(4) * dtor
+!  qax = ax2qu( enl%axisangle )
+!  do i=1,enl%numangles
+!    angles%quatang(1:4,i) = quat_mult(qax,angles%quatang(1:4,i))
+!  end do 
+!end if
+
+write (*,*) 'completed reading Euler angles, pattern centers, and deformation tensors'
+
+end subroutine EBSDreadorpcdef
+
+
 
 !--------------------------------------------------------------------------
 !
@@ -747,9 +875,8 @@ end subroutine EBSDreadMasterfile_overlap
 !> @param enl EBSD name list structure
 !
 !> @date 06/24/14  MDG 1.0 original
-!> @date 07/01/15   SS  1.1 added omega as the second tilt angle
-!> @date 07/07/15   SS  1.2 correction to the omega tilt parameter; old version in the comments
-
+!> @date 07/01/15   SS 1.1 added omega as the second tilt angle
+!> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
 !--------------------------------------------------------------------------
 recursive subroutine EBSDGenerateDetector(enl, acc, master, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDGenerateDetector
@@ -910,6 +1037,190 @@ if (present(verbose)) call Message(' -> completed detector generation', frm = "(
 
 !====================================
 end subroutine EBSDGenerateDetector
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDGeneratemyDetector
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief generate the detector arrays for the case where each pattern has a (slightly) different detector configuration
+!
+!> @param enl EBSD name list structure
+!
+!> @date 06/24/14  MDG 1.0 original
+!> @date 07/01/15   SS 1.1 added omega as the second tilt angle
+!> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
+!> @date 02/22/18  MDG 1.3 forked from EBSDGenerateDetector; uses separate pattern center coordinates patcntr
+!--------------------------------------------------------------------------
+recursive subroutine EBSDGeneratemyDetector(enl, acc, nsx, nsy, numE, tgx, tgy, tgz, accum_e_detector, patcntr, bg)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDGeneratemyDetector
+
+use local
+use typedefs
+use NameListTypedefs
+use files
+use constants
+use io
+use Lambert
+
+IMPLICIT NONE
+
+type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(EBSDLargeAccumType),pointer        :: acc
+integer(kind=irg),INTENT(IN)            :: nsx
+integer(kind=irg),INTENT(IN)            :: nsy
+integer(kind=irg),INTENT(IN)            :: numE
+real(kind=sgl),INTENT(INOUT)            :: tgx(nsx,nsy)
+real(kind=sgl),INTENT(INOUT)            :: tgy(nsx,nsy)
+real(kind=sgl),INTENT(INOUT)            :: tgz(nsx,nsy)
+real(kind=sgl),INTENT(INOUT)            :: accum_e_detector(numE,nsx,nsy)
+real(kind=sgl),INTENT(IN)               :: patcntr(3)
+logical,INTENT(IN),OPTIONAL             :: bg
+
+real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
+real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
+real(kind=sgl)                          :: alp, ca, sa, cw, sw
+real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
+real(kind=sgl),allocatable              :: z(:,:)           
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy     ! various parameters
+real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
+real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
+real(kind=sgl)                          :: ixy(2)
+
+!====================================
+! ------ generate the detector arrays
+!====================================
+xpc = patcntr(1)
+ypc = patcntr(2)
+L = patcntr(3)
+
+allocate(scin_x(nsx),scin_y(nsy),stat=istat)
+! if (istat.ne.0) then ...
+scin_x = - ( xpc - ( 1.0 - nsx ) * 0.5 - (/ (i-1, i=1,nsx) /) ) * enl%delta
+scin_y = ( ypc - ( 1.0 - nsy ) * 0.5 - (/ (i-1, i=1,nsy) /) ) * enl%delta
+
+! auxiliary angle to rotate between reference frames
+alp = 0.5 * cPi - (enl%MCsig - enl%thetac) * dtor
+ca = cos(alp)
+sa = sin(alp)
+
+cw = cos(enl%omega * dtor)
+sw = sin(enl%omega * dtor)
+
+! we will need to incorporate a series of possible distortions 
+! here as well, as described in Gert nolze's paper; for now we 
+! just leave this place holder comment instead
+
+! compute auxilliary interpolation arrays
+! if (istat.ne.0) then ...
+
+L2 = L * L
+do j=1,nsx
+  sx = L2 + scin_x(j) * scin_x(j)
+  Ls = -sw * scin_x(j) + L*cw
+  Lc = cw * scin_x(j) + L*sw
+  do i=1,nsy
+   rhos = 1.0/sqrt(sx + scin_y(i)**2)
+   tgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   tgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   tgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+  end do
+end do
+deallocate(scin_x, scin_y)
+
+! normalize the direction cosines.
+allocate(z(enl%numsx,enl%numsy))
+  z = 1.0/sqrt(tgx*tgx+tgy*tgy+tgz*tgz)
+  tgx = tgx*z
+  tgy = tgy*z
+  tgz = tgz*z
+deallocate(z)
+!====================================
+
+!====================================
+! ------ create the equivalent detector energy array
+!====================================
+! from the Monte Carlo energy data, we need to extract the relevant
+! entries for the detector geometry defined above.  Once that is 
+! done, we can get rid of the larger energy array
+!
+! in the old version, we either computed the background model here, or 
+! we would load a background pattern from file.  In this version, we are
+! using the background that was computed by the MC program, and has 
+! an energy histogram embedded in it, so we need to interpolate this 
+! histogram to the pixels of the scintillator.  In other words, we need
+! to initialize a new accum_e array for the detector by interpolating
+! from the Lambert projection of the MC results.
+!
+
+if (present(bg)) then
+ if (bg.eqv..TRUE.) then 
+! determine the scale factor for the Lambert interpolation; the square has
+! an edge length of 2 x sqrt(pi/2)
+  scl = float(enl%nsx) !  / LPs%sPio2  [removed on 09/01/15 by MDG for new Lambert routines]
+
+! get the indices of the minimum and maximum energy
+  Emin = nint((enl%energymin - enl%Ehistmin)/enl%Ebinsize) +1
+  if (Emin.lt.1)  Emin=1
+  if (Emin.gt.enl%numEbins)  Emin=enl%numEbins
+
+  Emax = nint((enl%energymax - enl%Ehistmin)/enl%Ebinsize) +1
+  if (Emax.lt.1)  Emax=1
+  if (Emax.gt.enl%numEbins)  Emax=enl%numEbins
+
+! correction of change in effective pixel area compared to equal-area Lambert projection
+  alpha = atan(enl%delta/L/sqrt(sngl(cPi)))
+  ipx = nsx/2 + nint(xpc)
+  ipy = nsy/2 + nint(ypc)
+  pcvec = (/ tgx(ipx,ipy), tgy(ipx,ipy), tgz(ipx,ipy) /)
+  calpha = cos(alpha)
+  do i=1,nsx
+    do j=1,nsy
+! do the coordinate transformation for this detector pixel
+       dc = (/ tgx(i,j),tgy(i,j),tgz(i,j) /)
+! make sure the third one is positive; if not, switch all 
+       if (dc(3).lt.0.0) dc = -dc
+! convert these direction cosines to coordinates in the Rosca-Lambert projection
+        ixy = scl * LambertSphereToSquare( dc, istat )
+        x = ixy(1)
+        ixy(1) = ixy(2)
+        ixy(2) = -x
+! four-point interpolation (bi-quadratic)
+        nix = int(enl%nsx+ixy(1))-enl%nsx
+        niy = int(enl%nsy+ixy(2))-enl%nsy
+        dx = ixy(1)-nix
+        dy = ixy(2)-niy
+        dxm = 1.0-dx
+        dym = 1.0-dy
+! do the area correction for this detector pixel
+        dp = dot_product(pcvec,dc)
+        theta = acos(dp)
+        if ((i.eq.ipx).and.(j.eq.ipy)) then
+          g = 0.25 
+        else
+          !g = 2.0 * tan(alpha) * dp / ( tan(theta+alpha) - tan(theta-alpha) ) * 0.25
+          g = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3)
+
+        end if
+! interpolate the intensity 
+        do k=Emin,Emax 
+          s = acc%accum_e(k,nix,niy) * dxm * dym + &
+              acc%accum_e(k,nix+1,niy) * dx * dym + &
+              acc%accum_e(k,nix,niy+1) * dxm * dy + &
+              acc%accum_e(k,nix+1,niy+1) * dx * dy
+          accum_e_detector(k,i,j) = g * s
+        end do
+    end do
+  end do 
+ else
+   accum_e_detector = 1.0
+ end if 
+end if
+
+end subroutine EBSDGeneratemyDetector
+
 
 !--------------------------------------------------------------------------
 !
