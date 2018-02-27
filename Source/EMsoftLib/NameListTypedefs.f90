@@ -724,6 +724,25 @@ type ECPQCMasterNameListType
     character(fnlen)        :: energyfile
 end type ECPQCMasterNameListType
 
+! namelist for the EMECPQCmaster program
+type EBSDQCMasterNameListType
+    integer(kind=irg)       :: nsamples
+    integer(kind=irg)       :: npx
+    integer(kind=irg)       :: nthreads
+    integer(kind=irg)       :: atno
+    real(kind=sgl)          :: DWF
+    real(kind=sgl)          :: dmin
+    real(kind=sgl)          :: QClatparm 
+    character(1)            :: centering
+    character(fnlen)        :: energyfile
+! parameters from MC simulation
+    real(kind=sgl)          :: depthstep 
+    real(kind=sgl)          :: Ehistmin
+    real(kind=sgl)          :: Ebinsize
+    integer(kind=irg)       :: numsx
+    real(kind=sgl)          :: sig
+end type EBSDQCMasterNameListType
+
 !namelist for the EMECP program
 type ECPpatternNameListType
     integer(kind=irg)       :: stdout
