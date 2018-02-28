@@ -739,8 +739,15 @@ type EBSDQCMasterNameListType
     real(kind=sgl)          :: depthstep 
     real(kind=sgl)          :: Ehistmin
     real(kind=sgl)          :: Ebinsize
+    real(kind=sgl)          :: Ekev
+    real(kind=sgl)          :: depthmax
     integer(kind=irg)       :: numsx
+    integer(kind=irg)       :: num_el
+    integer(kind=irg)       :: numEbins
+    integer(kind=irg)       :: numzbins
+    integer(kind=irg)       :: multiplier
     real(kind=sgl)          :: sig
+    character(4)            :: mode
 end type EBSDQCMasterNameListType
 
 !namelist for the EMECP program

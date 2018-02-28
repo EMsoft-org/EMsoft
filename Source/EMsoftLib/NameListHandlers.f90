@@ -7113,7 +7113,7 @@ real(kind=sgl)                                        :: dmin, DWF, QClatparm
 character(fnlen)                                      :: energyfile
 character(1)                                          :: centering
 
-namelist /EBSDQCmaster/ dmin, nthreads, DWF, atno, &
+namelist /EBSDQCmastervars/ dmin, nthreads, DWF, atno, &
           energyfile, QClatparm,centering, npx, nsamples
 
 energyfile  = 'undefined'           ! output filename
@@ -7133,7 +7133,7 @@ end if
 if (.not.skipread) then
 ! read the namelist file
     open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
-    read(UNIT=dataunit,NML=EBSDQCmaster)
+    read(UNIT=dataunit,NML=EBSDQCmastervars)
     close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
