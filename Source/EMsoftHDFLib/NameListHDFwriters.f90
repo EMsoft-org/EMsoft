@@ -3904,8 +3904,72 @@ call HDF_pop(HDF_head)
 
 end subroutine HDFwriteSTEMGeometryNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteCBEDNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param pednl CBEDQC name list structure
+!
+!> @date 02/22/18 SS 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteCBEDNameList(HDF_head, cbednl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteCBEDNameList
 
+use ISO_C_BINDING
 
+IMPLICIT NONE
 
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(EMCBEDQCNameListType),INTENT(INOUT)              :: cbednl
+
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_CBEDQCNameList
+hdferr    = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int      = (/ cbednl%atno, cbednl%nthreads, cbednl%npix /)
+intlist(1)  = 'atomic number'
+intlist(2)  = 'nthreads'
+intlist(3)  = 'npix'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real     = (/ cbednl%voltage, cbednl%thickness, cbednl%dmin, cbednl%DWF, cbednl%convergence, &
+               cbednl%QClatparm /)
+reallist(1) = 'voltage'
+reallist(2) = 'thickness'
+reallist(3) = 'dmin'
+reallist(4) = 'DWF'
+reallist(5) = 'convergence'
+reallist(6) = 'QClatparm'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! euler vectors
+dataset = SC_Eulertriplet
+hdferr = HDF_writeDatasetFloatArray1D(dataset, cbednl%eu, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create euler dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_datafile
+line2(1) = cbednl%datafile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create datafile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteCBEDNameList
 
 end module NameListHDFwriters
