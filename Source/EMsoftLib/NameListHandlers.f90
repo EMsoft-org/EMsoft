@@ -4225,6 +4225,8 @@ integer(kind=irg)                                 :: ROI(4)
 integer(kind=irg)                                 :: binning
 integer(kind=irg)                                 :: energyaverage
 integer(kind=irg)                                 :: devid
+integer(kind=irg)                                 :: multidevid(8)
+integer(kind=irg)                                 :: usenumd
 integer(kind=irg)                                 :: platid
 integer(kind=irg)                                 :: nregions
 integer(kind=irg)                                 :: nlines
@@ -4279,7 +4281,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section, HDFstrings, ROI, keeptmpfile
+section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4287,6 +4289,8 @@ numexptsingle   = 1024
 numdictsingle   = 1024
 platid          = 1
 devid           = 1
+usenumd         = 1
+multidevid      = (/ 0, 0, 0, 0, 0, 0, 0, 0 /)
 nregions        = 10
 nlines          = 3
 nnk             = 50
@@ -4366,7 +4370,6 @@ if (.not.skipread) then
         call FatalError('EMEBSDIndexing:',' experimental file name is undefined in '//nmlfile)
     end if
 
-
 end if
 
 
@@ -4374,6 +4377,8 @@ end if
 ! if we get here, then all appears to be ok, and we need to fill in the enl fields
 
 enl%devid         = devid
+enl%multidevid    = multidevid
+enl%usenumd       = usenumd
 enl%platid        = platid
 enl%nregions      = nregions
 enl%nlines        = nlines

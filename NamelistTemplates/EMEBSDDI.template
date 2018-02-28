@@ -136,7 +136,12 @@
  numexptsingle = 1024,
 ! number of threads for parallel execution
  nthreads = 1,
-! platform and device IDs for OpenCL portion of program
- platid = 1
- devid = 1
+! platform ID for OpenCL portion of program
+ platid = 1,
+! if you are running EMEBSDDI, EMECPDI, EMTKDDI, then define the device you wish to use 
+ devid = 1,
+! if you are running EMEBSDDImem on multiple GPUs, enter their device ids (up to eight) here; leave others at zero
+ multidevid = 0 0 0 0 0 0 0 0,
+! how many GPU devices do you want to use?
+ usenumd = 0,
  /

@@ -971,6 +971,8 @@ type EBSDIndexingNameListType
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: energyaverage
         integer(kind=irg)       :: devid
+        integer(kind=irg)       :: usenumd
+        integer(kind=irg)       :: multidevid(8)
         integer(kind=irg)       :: platid
         integer(kind=irg)       :: nregions
         integer(kind=irg)       :: nlines
