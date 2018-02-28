@@ -114,6 +114,7 @@ Pmdims = dict%Nqsym
 
 fname = trim(EMsoft_getEMdatapathname())//trim(enl%inputfile)
 fname = EMsoft_toNativePath(fname)
+write (*,*) 'opening file '//trim(fname)
 
 open(unit=10,file=trim(fname),status='unknown',form='formatted')
 read(10,"(I10)") nump
@@ -131,10 +132,10 @@ LUT = LUT*cPi/180.0
 write (*,*) 'FZ : ',FZtype, FZorder
 
 ! for each point, make sure it lies in the fundamental zone
-!do i=1,nump
-!  call ReduceOrientationtoRFZ(dble(LUT(4:6,i)), dict, FZtype, FZorder, eu)
-!  LUT(4:6,i) = eu(1:3)
-!end do
+do i=1,nump
+  call ReduceOrientationtoRFZ(dble(LUT(4:6,i)), dict, FZtype, FZorder, eu)
+  LUT(4:6,i) = eu(1:3)
+end do
 
 ! and here we compute the disorientation angle from a quaternion product...
 do i=1,nump
