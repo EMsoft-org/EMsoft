@@ -3057,7 +3057,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSDIndexingNameListType),INTENT(INOUT)          :: ebsdnl
 
-integer(kind=irg),parameter                           :: n_int = 18, n_real = 11, n_reald = 3
+integer(kind=irg),parameter                           :: n_int = 19, n_real = 11, n_reald = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_reald(n_reald)
@@ -3074,7 +3074,7 @@ hdferr = HDF_createGroup(groupname,HDF_head)
 io_int = (/ ebsdnl%ncubochoric, ebsdnl%numexptsingle, ebsdnl%numdictsingle, ebsdnl%ipf_ht, &
             ebsdnl%ipf_wd, ebsdnl%nnk, ebsdnl%maskradius, ebsdnl%numsx, ebsdnl%numsy, ebsdnl%binning, &
             ebsdnl%nthreads, ebsdnl%energyaverage, ebsdnl%devid, ebsdnl%platid, ebsdnl%nregions, ebsdnl%nnav, &
-            ebsdnl%nosm, ebsdnl%nlines /)
+            ebsdnl%nosm, ebsdnl%nlines, ebsdnl%usenumd /)
 intlist(1) = 'Ncubochoric'
 intlist(2) = 'numexptsingle'
 intlist(3) = 'numdictsingle'
@@ -3093,6 +3093,7 @@ intlist(15) = 'nregions'
 intlist(16) = 'nnav'
 intlist(17) = 'nosm'
 intlist(18) = 'nlines'
+intlist(18) = 'usenumd'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 io_real = (/ ebsdnl%L, ebsdnl%thetac, ebsdnl%delta, ebsdnl%omega, ebsdnl%xpc, &
@@ -3125,6 +3126,11 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingName
 dataset = SC_ROI
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, ebsdnl%ROI, 4, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create ROI dataset',.TRUE.)
+
+! an integer 8-vector
+dataset = 'multidevid'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, ebsdnl%multidevid, 8, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDDictionaryIndexingNameList: unable to create multidevid dataset',.TRUE.)
 
 ! strings
 dataset = SC_maskpattern
