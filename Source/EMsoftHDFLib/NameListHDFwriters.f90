@@ -1063,6 +1063,80 @@ end subroutine HDFwriteEBSDMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteEBSDQCMasterNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param emnl EBSDQC master name list structure
+!
+!> @date 03/21/15  SS 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEBSDQCMasterNameList(HDF_head, emnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEBSDQCMasterNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(EBSDQCMasterNameListType),INTENT(INOUT)          :: emnl
+
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 3
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+logical                                               :: g_exists, overwrite=.TRUE.
+
+! create the group for this namelist
+groupname = SC_EBSDMasterNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+io_int = (/emnl%npx, emnl%nsamples, emnl%nthreads, emnl%atno /)
+intlist(1) = 'npx'
+intlist(2) = 'nsamples'
+intlist(3) = 'nthreads'
+intlist(4) = 'atno'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single floats
+io_real = (/emnl%dmin, emnl%QClatparm, emnl%DWF/)
+reallist(1) = 'dmin'
+reallist(2) = 'QClatparm'
+reallist(3) = 'DWF'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+dataset = SC_energyfile
+line2(1) = emnl%energyfile
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDQCMasterNameList: unable to create energyfile dataset',.TRUE.)
+
+dataset = SC_centering
+line2(1) = emnl%centering
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDQCMasterNameList: unable to create centering dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEBSDQCMasterNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteTKDMasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
