@@ -3093,7 +3093,7 @@ intlist(15) = 'nregions'
 intlist(16) = 'nnav'
 intlist(17) = 'nosm'
 intlist(18) = 'nlines'
-intlist(18) = 'usenumd'
+intlist(19) = 'usenumd'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 io_real = (/ ebsdnl%L, ebsdnl%thetac, ebsdnl%delta, ebsdnl%omega, ebsdnl%xpc, &
