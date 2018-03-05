@@ -141,10 +141,10 @@ real(kind=sgl),allocatable              :: exptpatterns(:,:)
 
 type(C_PTR)                             :: planf, HPplanf, HPplanb
 real(kind=dbl)                          :: w, Jres
-real(kind=sgl),allocatable              :: STEPSIZE(:)
+real(kind=sgl),allocatable              :: STEPSIZE(:), OSMmap(:,:), IQmap(:)
 character(fnlen)                        :: modalityname, Manufacturer
 character(1)                            :: rchar    
-integer(HSIZE_T)                        :: dims3(3), offset3(3)
+integer(HSIZE_T)                        :: dims3(3), offset3(3), dims1D(1), dims2D(2)
 type(HDFobjectStackType),pointer        :: HDF_head
 
 
@@ -372,6 +372,12 @@ dataset = SC_NumExptPatterns
         CIlist_new = 0.0
 
 ! arrays
+dataset = SC_OSM
+    call HDF_readDatasetFloatArray2D(dataset, dims2D, HDF_head, hdferr, OSMmap)
+
+dataset = SC_IQ
+    call HDF_readDatasetFloatArray1D(dataset, dims1D, HDF_head, hdferr, IQmap)
+
 dataset = SC_Phi1
         call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, angles)
     
@@ -1241,13 +1247,15 @@ if(modalityname .eq. 'EBSD') then
     ipar(4) = FZcnt 
     ipar(5) = FZcnt
     ipar(6) = pgnum
+    ipar(7) = ebsdnl%numsx
+    ipar(8) = ebsdnl%numsy
 
     allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
     indexmain = 0
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
     if (ebsdnl%ctffile.ne.'undefined') then 
-      call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,noindex=.TRUE.)
+      call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,OSMmap,IQmap,noindex=.TRUE.)
       call Message('Data stored in ctf file : '//trim(enl%ctffile))
     end if
 

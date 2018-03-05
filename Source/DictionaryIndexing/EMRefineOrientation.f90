@@ -86,7 +86,7 @@ real(kind=dbl)                          :: rhozero(4), hipassw
 real(kind=sgl),allocatable              :: angles(:), euler_bestmatch(:,:), CIlist(:), CIlist_new(:), CMarray(:,:,:)
 integer(kind=irg),allocatable           :: indexmain(:,:) 
 real(kind=sgl),allocatable              :: resultmain(:,:)                                         
-integer(HSIZE_T)                        :: dims(1)
+integer(HSIZE_T)                        :: dims(1), dims2D(2)
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                        :: dataset, groupname  
@@ -112,7 +112,7 @@ real(kind=dbl)                          :: prefactor
 real(kind=dbl)                          :: ratioE
 integer(kind=irg)                       :: cratioE, fratioE, eindex, niter
 integer(kind=irg),allocatable           :: ppendE(:)
-real(kind=sgl),allocatable              :: exptpatterns(:,:)
+real(kind=sgl),allocatable              :: exptpatterns(:,:), OSMmap(:,:), IQmap(:)
 
 real(kind=dbl)                          :: stepsize, cu0(3)
 real(kind=dbl),allocatable              :: cubneighbor(:,:)
@@ -321,6 +321,12 @@ dataset = SC_NumExptPatterns
     CIlist_new = 0.0
 
 ! arrays
+dataset = SC_OSM
+    call HDF_readDatasetFloatArray2D(dataset, dims2D, HDF_head, hdferr, OSMmap)
+
+dataset = SC_IQ
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, IQmap)
+
 dataset = SC_Phi1
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, angles)
     
@@ -732,13 +738,15 @@ ipar(3) = Nexp
 ipar(4) = FZcnt 
 ipar(5) = FZcnt
 ipar(6) = pgnum
+ipar(7) = ebsdnl%numsx
+ipar(8) = ebsdnl%numsy
 
 allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
 indexmain = 0
 resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
 if (ebsdnl%ctffile.ne.'undefined') then 
-  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,noindex=.TRUE.)
+  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,OSMmap,IQmap,noindex=.TRUE.)
   call Message('Data stored in ctf file : '//trim(enl%ctffile))
 end if
 

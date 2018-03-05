@@ -66,8 +66,9 @@ contains
 !> @date 06/25/16 MDG 1.4 added noindex optional keyword
 !> @date 07/10/16 MDG 1.5 swapped Error, MAD, and BC columns
 !> @date 02/18/18 MDG 1.6 made sure that Euler angles are ALWAYS positive
+!> @date 03/05/18 MDG 1.7 replaced BC=OSMmap, BC=IQmap, BANDS=pattern index columns
 !--------------------------------------------------------------------------
-recursive subroutine ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain,noindex)
+recursive subroutine ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain,OSMmap,IQmap,noindex)
 !DEC$ ATTRIBUTES DLLEXPORT :: ctfebsd_writeFile
 
 use NameListTypedefs
@@ -84,16 +85,19 @@ integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
+real(kind=sgl),INTENT(IN)                           :: OSMmap(ipar(7),ipar(8))
+real(kind=sgl),INTENT(IN)                           :: IQmap(ipar(3))
 logical,INTENT(IN),OPTIONAL                         :: noindex
 
-integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr, SGnum, LaueGroup
+integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr, SGnum, LaueGroup, BCval, BSval
 character(fnlen)                                    :: ctfname
 character                                           :: TAB = CHAR(9)
 character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,filename,grname,dataset
-real(kind=sgl)                                      :: euler(3), eu
+real(kind=sgl)                                      :: euler(3), eu, mi, ma
 logical                                             :: stat, readonly, donotuseindexarray
 integer(HSIZE_T)                                    :: dims(1)
 real(kind=dbl),allocatable                          :: cellparams(:)
+integer(kind=irg),allocatable                       :: osm(:), iq(:)
 
 type(HDFobjectStackType),pointer                    :: HDF_head_local
 
@@ -104,6 +108,25 @@ if (present(noindex)) then
   end if
 end if
 
+! get the OSMmap into 1D format and scale to the range [0..255]
+allocate(osm(ipar(3)))
+mi = minval(OSMmap)
+ma = maxval(OSMmap)
+if (mi.eq.ma) then
+  osm = 0
+else
+  indx = 1
+  do i=1,ipar(8)
+    do ii=1,ipar(7)
+      osm(indx) = nint(255.0 * (OSMmap(ii,i)-mi)/(ma-mi))
+      indx = indx+1
+    end do 
+  end do
+end if
+  
+! scale the IQmap to the range [0..255]
+allocate(iq(ipar(3)))
+iq = nint(255.0 * IQmap)
 
 ! open the file (overwrite old one if it exists)
 ctfname = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%ctffile)
@@ -111,16 +134,11 @@ ctfname = EMsoft_toNativePath(ctfname)
 open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ierr)
 
 write(dataunit2,'(A)') 'Channel Text File'
-write(dataunit2,'(A)') 'Prj Test'
+write(dataunit2,'(A)') 'EMsoft v. '//trim(EMsoft_getEMsoftversion())//'; BANDS=pattern index, MAD=CI, BC=OSM, BS=IQ'
 write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode	Grid'
-if (sum(ebsdnl%ROI).ne.0) then
-  write(dataunit2,'(2A,I5)') 'XCells',TAB, ebsdnl%ROI(3)
-  write(dataunit2,'(2A,I5)') 'YCells',TAB, ebsdnl%ROI(4)
-else
-  write(dataunit2,'(2A,I5)') 'XCells',TAB, ebsdnl%ipf_wd
-  write(dataunit2,'(2A,I5)') 'YCells',TAB, ebsdnl%ipf_ht
-end if
+write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
+write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(8)
 write(dataunit2,'(2A,F6.2)') 'XStep',TAB, ebsdnl%StepX
 write(dataunit2,'(2A,F6.2)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
@@ -219,6 +237,8 @@ write(dataunit2,'(A)') 'Phase'//TAB//'X'//TAB//'Y'//TAB//'Bands'//TAB//'Error'//
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)
+    BCval = osm(ii)
+    BSval = iq(ii)
     if (donotuseindexarray.eqv..TRUE.) then
       indx = 0
       euler = eulerarray(1:3,ii)
@@ -234,8 +254,8 @@ do ii = 1,ipar(3)
       write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%stepX
       write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%stepY
     end if 
-    write(str3,'(I2)') 10
-    write(str8,'(I8)') 0 ! integer zero error; was indx, which is now moved to BC
+    write(str3,'(I8)') indx  ! pattern index into dictionary list of discrete orientations
+    write(str8,'(I8)') 0 ! integer zero error; was indx, which is now moved to BANDS
     eu = euler(1) - 90.0 ! conversion from TSL to Oxford convention
     if (eu.lt.0) eu = eu + 360.0
     write(str5,'(F12.3)') eu  
@@ -243,14 +263,18 @@ do ii = 1,ipar(3)
     if (eu.lt.0) eu = eu + 360.0
     write(str6,'(F12.3)') eu
 ! intercept the hexagonal case, for which we need to subtract 30° from the third Euler angle
-    if ((LaueGroup.eq.8).or.(LaueGroup.eq.9)) euler(3) = euler(3) - 30.0
+! Note: after working with Lionel Germain, we concluded that we do not need to subtract 30° 
+! in the ctf file, because the fundamental zone is already oriented according to the Oxford
+! convention... That means that we need to subtract the angle for the .ang file (to be implemented)
+! [modified by MDG on 3/5/18]
+!   if ((LaueGroup.eq.8).or.(LaueGroup.eq.9)) euler(3) = euler(3) - 30.0
     eu = euler(3)
     if (eu.lt.0) eu = eu + 360.0
     write(str7,'(F12.3)') eu
     write(str4,'(F12.6)') resultmain(1,ii)   ! this replaces MAD
 ! the following two parameters need to be modified to contain more meaningful information
-    write(str9,'(I8)') indx   ! index into the dictionary list
-    write(str10,'(I8)') 255
+    write(str9,'(I8)') BCval   ! OSM value in range [0..255]
+    write(str10,'(I8)') BSval  !  IQ value in range [0..255]
 ! Oxford 3D files have four additional integer columns;
 ! GrainIndex
 ! GrainRandomColourR

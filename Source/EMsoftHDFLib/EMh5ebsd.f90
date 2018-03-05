@@ -724,7 +724,7 @@ end subroutine h5ebsd_writePhaseGroup
 !> @date 03/10/16 MDG 1.0 original
 !--------------------------------------------------------------------------
 subroutine h5ebsd_writeFile(vendor, ebsdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, dpmap, &
-                            progname, nmldeffile)
+                            progname, nmldeffile, OSMmap)
 !DEC$ ATTRIBUTES DLLEXPORT :: h5ebsd_writeFile
 
 use NameListTypedefs
@@ -749,6 +749,7 @@ real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
+real(kind=sgl),INTENT(OUT)                          :: OSMmap(ipar(7),ipar(8))
 
 character(15)                                       :: tstre
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
@@ -757,7 +758,7 @@ character(fnlen)                                    :: groupname, dataset, h5ebs
 logical                                             :: noindex
 type(dicttype)                                      :: dict
 
-real(kind=sgl),allocatable                          :: osm(:,:), kam(:,:)
+real(kind=sgl),allocatable                          :: kam(:,:)
 
 real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), results(:), avEuler(:,:), &
                                                        lresultmain(:,:), eulers(:,:) 
@@ -883,19 +884,18 @@ dataset = SC_KAM
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset KAM')
   deallocate(kam, eulers)
 
-! get the Orientation Similarity Map (OSM)
+! get the Orientation Similarity Map (OSM); map is now returned to calling routine [MDG, 3/5/18]
 dataset = SC_OSM
   if (sum(ebsdnl%ROI).ne.0) then
-    allocate(osm(ebsdnl%ROI(3),ebsdnl%ROI(4)))
-    call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, ebsdnl%nosm, ebsdnl%ROI(3), ebsdnl%ROI(4), osm)
-    hdferr = HDF_writeDatasetFloatArray2D(dataset, osm, ebsdnl%ROI(3), ebsdnl%ROI(4), HDF_head)
+!   allocate(osm(ebsdnl%ROI(3),ebsdnl%ROI(4)))
+    call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, ebsdnl%nosm, ebsdnl%ROI(3), ebsdnl%ROI(4), OSMmap)
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, OSMmap, ebsdnl%ROI(3), ebsdnl%ROI(4), HDF_head)
   else
-    allocate(osm(ebsdnl%ipf_wd,ebsdnl%ipf_ht))
-    call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, ebsdnl%nosm, ebsdnl%ipf_wd, ebsdnl%ipf_ht, osm)
-    hdferr = HDF_writeDatasetFloatArray2D(dataset, osm, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
+!   allocate(osm(ebsdnl%ipf_wd,ebsdnl%ipf_ht))
+    call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, ebsdnl%nosm, ebsdnl%ipf_wd, ebsdnl%ipf_ht, OSMmap)
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, OSMmap, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
   end if
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset OSM')
-  deallocate(osm)
 
 ! also create a second ctf file, if requested
   if (trim(ebsdnl%avctffile).ne.'undefined') then
@@ -912,7 +912,7 @@ dataset = SC_OSM
     lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
     noindex = .TRUE.
 
-    call ctfebsd_writeFile(ebsdnl,ipar,lindexmain,avEuler,lresultmain,noindex)
+    call ctfebsd_writeFile(ebsdnl,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
     call Message('Average orientation data stored in ctf file : '//trim(ebsdnl%avctffile))
     ebsdnl%ctffile = savefile
     ipar(1:6) = ipar2(1:6)

@@ -71,13 +71,13 @@ logical                                 :: stat, readonly, noindex
 integer(kind=irg)                       :: hdferr, nlines, FZcnt, Nexp, nnm, nnk, Pmdims, i, j, k, olabel, Nd, Ne, ipar(10), &
                                            ipar2(6), pgnum, ipat
 character(fnlen)                        :: groupname, dataset, dpfile, energyfile, masterfile, efile, fname
-integer(HSIZE_T)                        :: dims2(2)
+integer(HSIZE_T)                        :: dims2(2),dims(1),dims2D(2)
 real(kind=sgl)                          :: q1(4), q2(4), qus(4), a, oldmo, p(4), qsmall(4), theta, vec(3)
 type(dicttype)                          :: dict
 
 character(fnlen),allocatable            :: stringarray(:)
 real(kind=sgl),allocatable              :: Eulers(:,:), dplist(:,:), Eulerstmp(:,:), dplisttmp(:,:), avEuler(:,:), & 
-                                           resultmain(:,:), disor(:), disorient(:,:)
+                                           resultmain(:,:), disor(:), disorient(:,:), OSMmap(:,:), IQmap(:)
 integer(kind=irg),allocatable           :: tmi(:,:), tmitmp(:,:), indexmain(:,:)
 
 type(HDFobjectStackType),pointer        :: HDF_head
@@ -205,6 +205,12 @@ dataset = SC_NumExptPatterns
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, Nexp)
 
 ! arrays
+dataset = SC_OSM
+    call HDF_readDatasetFloatArray2D(dataset, dims2D, HDF_head, hdferr, OSMmap)
+
+dataset = SC_IQ
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, IQmap)
+
 dataset = SC_EulerAngles
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, Eulerstmp)
     allocate(Eulers(3,FZcnt))
@@ -330,6 +336,8 @@ if (enl%oldformat.eqv..FALSE.) then
   ipar(4) = Nexp
   ipar(5) = FZcnt
   ipar(6) = pgnum
+  ipar(7) = ebsdnl%numsx
+  ipar(8) = ebsdnl%numsy
   ebsdnl%ctffile = enl%averagectffile
   
   allocate(indexmain(1,Nexp), resultmain(1,Nexp))
@@ -337,7 +345,7 @@ if (enl%oldformat.eqv..FALSE.) then
   resultmain(1,1:Nexp) = dplist(1,1:Nexp)
   noindex = .TRUE.
   call h5open_EMsoft(hdferr)
-  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,avEuler,resultmain,noindex)
+  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,avEuler,resultmain,OSMmap,IQmap,noindex)
   call h5close_EMsoft(hdferr)
   call Message('Data stored in ctf file : '//trim(enl%averagectffile))
 else

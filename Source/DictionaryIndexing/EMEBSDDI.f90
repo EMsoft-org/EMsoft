@@ -291,7 +291,7 @@ real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
 real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
                                                        exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
-                                                       tmpimageexpt(:)
+                                                       tmpimageexpt(:), OSMmap(:,:)
 real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:),&
                                                        eulerarray(:,:),eulerarray2(:,:),resultmain(:,:),resulttmp(:,:)
 integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:) 
@@ -1368,6 +1368,15 @@ ipar(3) = totnumexpt
 ipar(4) = Nd*ceiling(float(FZcnt)/float(Nd))
 ipar(5) = FZcnt
 ipar(6) = pgnum
+if (ROIselected.eqv..TRUE.) then
+  ipar(7) = ebsdnl%ROI(3)
+  ipar(8) = ebsdnl%ROI(4)
+else
+  ipar(7) = ebsdnl%ipf_wd
+  ipar(8) = ebsdnl%ipf_ht
+end if 
+
+allocate(OSMmap(jjend, iiiend))
 
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
@@ -1375,12 +1384,12 @@ call h5open_EMsoft(hdferr)
 if (ebsdnl%datafile.ne.'undefined') then 
   vendor = 'TSL'
   call h5ebsd_writeFile(vendor, ebsdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
-                        dpmap, progname, nmldeffile)
+                        dpmap, progname, nmldeffile, OSMmap)
   call Message('Data stored in h5ebsd file : '//trim(ebsdnl%datafile))
 end if
 
 if (ebsdnl%ctffile.ne.'undefined') then 
-  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain)
+  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
   call Message('Data stored in ctf file : '//trim(ebsdnl%ctffile))
 end if
 
