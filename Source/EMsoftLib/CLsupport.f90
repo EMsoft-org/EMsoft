@@ -421,6 +421,74 @@ slength = irec
 
 end subroutine CLread_source_file
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:CLread_source_file_wrapper
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read an OpenCL source file and return the source properly formatted
+!
+!> @param sourcefile filename for the OpenCL source code
+!> @param source c_str containing the source, NULL-terminated
+!> @param slength source string length
+!
+!> @date 02/18/16  MDG 1.0 original
+!> @date 01/15/17  MDG 1.1 added functionality for second opencl folder for developers...
+!--------------------------------------------------------------------------
+recursive subroutine CLread_source_file_wrapper(sourcefile, csource, slength)
+!DEC$ ATTRIBUTES DLLEXPORT :: CLread_source_file_wrapper
+
+use local
+use error
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+integer, parameter                      :: source_length = 50000
+
+character(fnlen), INTENT(IN)            :: sourcefile
+character(len=source_length, KIND=c_char),INTENT(OUT) :: csource
+integer(c_size_t),INTENT(OUT)           :: slength
+
+
+character(len=source_length),target     :: source
+character(fnlen)                        :: fname, clpath, clpath2, tcf
+integer(kind=irg)                       :: irec, ierr, ipos, i, j
+logical                                 :: develop, fexist
+character(1)                            :: EMsoftnativedelimiter
+integer(kind=irg)                       :: idx
+
+
+! find the cl file in the main opencl folder or the private folder if the Develop mode equals Yes...
+fname = trim(sourcefile)
+
+inquire(file=trim(fname),exist=fexist)
+if (.not.fexist) then 
+   call FatalError('CLread_source_file','opencl source  file '//trim(fname)//' not found')
+end if
+
+! read the source file from the opencl folder
+open(unit = dataunit, file = trim(fname), access='direct', status = 'old', &
+     action = 'read', iostat = ierr, recl = 1)
+if (ierr /= 0) call FatalError("CLread_source_file: ",'Cannot open file '//fname)
+
+source = ''
+irec = 1
+do
+  read(unit = dataunit, rec = irec, iostat = ierr) source(irec:irec)
+  if (ierr /= 0) exit
+  if(irec == source_length) call FatalError("CLread_source_file: ",'Error: CL source file is too big')
+  irec = irec + 1
+end do
+close(unit=dataunit)
+
+csource = trim(source)
+csource(irec:irec) = C_NULL_CHAR
+slength = irec
+
+end subroutine CLread_source_file_wrapper
+
 
 !--------------------------------------------------------------------------
 !
@@ -428,9 +496,17 @@ end subroutine CLread_source_file
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief initalize a CL platform, device, context, and command queue
+!> @brief initialize a CL platform, device, context, and command queue
 !
-!> @param 
+!> @param platform
+!> @param nump number of platforms available
+!> @param selnump selected platform number
+!> @param device
+!> @param numd number of devices available in selected platform 
+!> @param selnumd selected device number
+!> @param devinfo
+!> @param context
+!> @param command_queue
 !
 !> @date 02/23/16  MDG 1.0 original
 !--------------------------------------------------------------------------
@@ -505,6 +581,105 @@ call CLerror_check('CLinit_PDCCQ:clCreateCommandQueue',ierr)
 
 end subroutine CLinit_PDCCQ
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:CLinit_multiPDCCQ
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief initialize a CL platform, multiple devices, a context, and command queues for multi-GPU runs
+!
+!> @param platform
+!> @param nump number of platforms available
+!> @param selnump selected platform number
+!> @param device
+!> @param numd number of devices available in selected platform 
+!> @param usenumd how many of these do we want to use?
+!> @param selnumd array of selected device numbers
+!> @param devinfo
+!> @param context
+!> @param command_queue
+!
+!> @date 02/28/18  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine CLinit_multiPDCCQ(platform, nump, selnump, device, numd, usenumd, selnumd, devinfo, context, command_queue)
+!DEC$ ATTRIBUTES DLLEXPORT :: CLinit_multiPDCCQ
+
+use ISO_C_BINDING
+use error
+use io
+
+IMPLICIT NONE
+
+integer(c_intptr_t),allocatable, target  :: platform(:)
+integer(kind=irg), INTENT(OUT)           :: nump
+integer(kind=irg), INTENT(IN)            :: selnump
+integer(c_intptr_t),allocatable, target  :: device(:)
+integer(kind=irg), INTENT(OUT)           :: numd
+integer(kind=irg), INTENT(IN)            :: usenumd
+integer(kind=irg), INTENT(IN)            :: selnumd(usenumd)
+character(fnlen),INTENT(OUT)             :: devinfo(usenumd)
+integer(c_intptr_t),target               :: context
+integer(c_intptr_t),target               :: command_queue(usenumd)
+
+integer(c_int32_t)                       :: ierr
+integer(c_size_t)                        :: cnuminfo
+character(fnlen),target                  :: info 
+integer(c_intptr_t),target               :: ctx_props(3)
+integer(c_int64_t)                       :: cmd_queue_props
+integer(kind=irg)                        :: i
+
+! get the platform ID
+ierr = clGetPlatformIDs(0, C_NULL_PTR, nump)
+call CLerror_check('CLinit_PDCCQ:clGetPlatformIDs',ierr)
+allocate(platform(nump))
+ierr = clGetPlatformIDs(nump, C_LOC(platform), nump)
+call CLerror_check('CLinit_PDCCQ:clGetPlatformIDs',ierr)
+
+if (selnump.gt.nump) then
+  call FatalError("CLinit_PDCCQ","non-existing platform id requested")
+end if
+
+! get the device ID
+ierr =  clGetDeviceIDs(platform(selnump), CL_DEVICE_TYPE_GPU, 0, C_NULL_PTR, numd)
+call CLerror_check('CLinit_PDCCQ:clGetDeviceIDs',ierr)
+allocate(device(numd))
+ierr =  clGetDeviceIDs(platform(selnump), CL_DEVICE_TYPE_GPU, numd, C_LOC(device), numd)
+call CLerror_check('CLinit_PDCCQ:clGetDeviceIDs',ierr)
+
+do i=1,usenumd
+  if (selnumd(i).gt.numd) then
+    call FatalError("CLinit_PDCCQ","non-existing device id requested")
+  end if
+end do
+
+! get the device name and return it as devinfo
+do i=1,usenumd
+  ierr = clGetDeviceInfo(device(selnumd(i)), CL_DEVICE_NAME, sizeof(info), C_LOC(info), cnuminfo)
+  call CLerror_check('CLinit_PDCCQ:clGetDeviceInfo',ierr)
+
+  if (cnuminfo.gt.fnlen) then 
+    call WriteValue("CLinit_PDCCQ","device info string truncated")
+    devinfo = trim(info(1:fnlen))
+  else
+    devinfo = trim(info(1:cnuminfo))
+  end if
+end do
+
+! create the context and the command queue
+ctx_props(1) = CL_CONTEXT_PLATFORM
+ctx_props(2) = platform(selnump)
+ctx_props(3) = 0
+context = clCreateContext(C_LOC(ctx_props), numd, C_LOC(device),C_NULL_FUNPTR, C_NULL_PTR, ierr)
+call CLerror_check('CLinit_PDCCQ:clCreateContext',ierr)
+
+cmd_queue_props = CL_QUEUE_PROFILING_ENABLE
+do i=1,usenumd
+  command_queue(i) = clCreateCommandQueue(context, device(selnumd(i)), cmd_queue_props, ierr)
+  call CLerror_check('CLinit_PDCCQ:clCreateCommandQueue',ierr)
+end do
+end subroutine CLinit_multiPDCCQ
 
 !--------------------------------------------------------------------------
 !

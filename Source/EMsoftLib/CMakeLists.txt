@@ -13,56 +13,56 @@ add_custom_target(EMsoftLib_Generate_StringConstants ALL
 # Setup all the source files
 
 set(EMsoftLib_SRCS
-  ${EMsoftLib_SOURCE_DIR}/constants.f90
+  ${EMsoftLib_SOURCE_DIR}/bobyqa.f90
+  ${EMsoftLib_SOURCE_DIR}/bobyqa_refinement.f90
+  ${EMsoftLib_SOURCE_DIR}/CLsupport.f90
   ${EMsoftLib_SOURCE_DIR}/configmod.f90
+  ${EMsoftLib_SOURCE_DIR}/constants.f90
   ${EMsoftLib_SOURCE_DIR}/crystal.f90
   ${EMsoftLib_SOURCE_DIR}/defectmodule.f90
+  ${EMsoftLib_SOURCE_DIR}/dictmod.f90
   ${EMsoftLib_SOURCE_DIR}/diffraction.f90
+  ${EMsoftLib_SOURCE_DIR}/distortion.f90
+  ${EMsoftLib_SOURCE_DIR}/ECCImod.f90
   ${EMsoftLib_SOURCE_DIR}/eispack.f90
+  ${EMsoftLib_SOURCE_DIR}/EMdymod.f90
   ${EMsoftLib_SOURCE_DIR}/error.f90
+  ${EMsoftLib_SOURCE_DIR}/fftw3mod.f90
   ${EMsoftLib_SOURCE_DIR}/files.f90
+  ${EMsoftLib_SOURCE_DIR}/filters.f90
   ${EMsoftLib_SOURCE_DIR}/graphics.f90
   ${EMsoftLib_SOURCE_DIR}/gvectors.f90
-  ${EMsoftLib_SOURCE_DIR}/io.f90
-  ${EMsoftLib_SOURCE_DIR}/kvectors.f90
-  ${EMsoftLib_SOURCE_DIR}/initializers.f90
-  ${EMsoftLib_SOURCE_DIR}/Lambert.f90
-  ${EMsoftLib_SOURCE_DIR}/fftw3mod.f90
-  ${EMsoftLib_SOURCE_DIR}/filters.f90
-  ${EMsoftLib_SOURCE_DIR}/math.f90
-  ${EMsoftLib_SOURCE_DIR}/multibeams.f90
-  ${EMsoftLib_SOURCE_DIR}/ECCImod.f90
-  ${EMsoftLib_SOURCE_DIR}/MBmodule.f90
-  ${EMsoftLib_SOURCE_DIR}/EMdymod.f90
-  ${EMsoftLib_SOURCE_DIR}/NameListTypedefs.f90
-  ${EMsoftLib_SOURCE_DIR}/NameListHandlers.f90
-  ${EMsoftLib_SOURCE_DIR}/JSONsupport.f90
-  ${EMsoftLib_SOURCE_DIR}/CLsupport.f90
   ${EMsoftLib_SOURCE_DIR}/Indexingmod.f90
+  ${EMsoftLib_SOURCE_DIR}/initializers.f90
+  ${EMsoftLib_SOURCE_DIR}/io.f90
+  ${EMsoftLib_SOURCE_DIR}/JSONsupport.f90
+  ${EMsoftLib_SOURCE_DIR}/kvectors.f90
+  ${EMsoftLib_SOURCE_DIR}/Lambert.f90
+  ${EMsoftLib_SOURCE_DIR}/math.f90
+  ${EMsoftLib_SOURCE_DIR}/MBmodule.f90
+  ${EMsoftLib_SOURCE_DIR}/MRCmod.f90
+  ${EMsoftLib_SOURCE_DIR}/MuellerCalculus.f90
+  ${EMsoftLib_SOURCE_DIR}/multibeams.f90
+  ${EMsoftLib_SOURCE_DIR}/NameListHandlers.f90
+  ${EMsoftLib_SOURCE_DIR}/NameListTypedefs.f90
   ${EMsoftLib_SOURCE_DIR}/noise.f90
+  ${EMsoftLib_SOURCE_DIR}/notifications.f90
   ${EMsoftLib_SOURCE_DIR}/others.f90
+  ${EMsoftLib_SOURCE_DIR}/PEDmod.f90
   ${EMsoftLib_SOURCE_DIR}/pgm.f90
   ${EMsoftLib_SOURCE_DIR}/postscript.f90
+  ${EMsoftLib_SOURCE_DIR}/povray.f90
   ${EMsoftLib_SOURCE_DIR}/quaternions.f90
   ${EMsoftLib_SOURCE_DIR}/rng.f90
   ${EMsoftLib_SOURCE_DIR}/rotations.f90
-  ${EMsoftLib_SOURCE_DIR}/spsort.f
+  ${EMsoftLib_SOURCE_DIR}/simulated_annealing.f90
   ${EMsoftLib_SOURCE_DIR}/so3.f90
-  ${EMsoftLib_SOURCE_DIR}/povray.f90
+  ${EMsoftLib_SOURCE_DIR}/spsort.f
   ${EMsoftLib_SOURCE_DIR}/STEMmodule.f90
   ${EMsoftLib_SOURCE_DIR}/symmetry.f90
   ${EMsoftLib_SOURCE_DIR}/tiff.f90
   ${EMsoftLib_SOURCE_DIR}/timing.f90
   ${EMsoftLib_SOURCE_DIR}/typedefs.f90
-  ${EMsoftLib_SOURCE_DIR}/bobyqa.f90
-  ${EMsoftLib_SOURCE_DIR}/bobyqa_refinement.f90
-  ${EMsoftLib_SOURCE_DIR}/dictmod.f90
-  ${EMsoftLib_SOURCE_DIR}/distortion.f90
-  ${EMsoftLib_SOURCE_DIR}/PEDmod.f90
-  ${EMsoftLib_SOURCE_DIR}/MRCmod.f90
-  ${EMsoftLib_SOURCE_DIR}/MuellerCalculus.f90
-  ${EMsoftLib_SOURCE_DIR}/simulated_annealing.f90
-  ${EMsoftLib_SOURCE_DIR}/notifications.f90
 
   ${EMsoftLib_Additional_SRCS}
 )
@@ -84,18 +84,17 @@ endif()
 
 configure_file(${EMsoftLib_SOURCE_DIR}/local.f90.in 
          ${EMsoftLib_BINARY_DIR}/local.f90 @ONLY)
-
- # Add files GENERATED DURING CMAKE TIME
+#-------------------------------------------------------------------------------
+# Add files GENERATED DURING CMAKE TIME
 set(EMsoftLib_SRCS
   ${EMsoftLib_SRCS}
   ${EMsoftLib_BINARY_DIR}/local.f90  
   ${EMsoftLib_BINARY_DIR}/stringconstants.f90 
 )
 
-
-include_directories(${FFTW3_INCLUDE_DIR})
-include_directories(${CLFORTRAN_INCLUDE_DIR})
-
+#-------------------------------------------------------------------------------
+# Put just the *.c files into their own library so Visual Studio will compile
+# everything correctly. VS can NOT have both fortran and C files in the same target
 add_library(EMsoftLib_C STATIC ${EMsoftLib_C_SRCS})
 set_target_properties (EMsoftLib_C PROPERTIES
   LINKER_LANGUAGE Fortran
@@ -103,7 +102,12 @@ set_target_properties (EMsoftLib_C PROPERTIES
   FOLDER EMsoftPublic
 )
 
-
+#-------------------------------------------------------------------------------
+# On Windows we are NOT going to use FFTW (due to licensing) and instead use MKL
+if(WIN32)
+  set(FFTW3_LIBRARY ${MKL_LIBRARIES} )
+  set(FFTW3_INCLUDE_DIR ${MKL_FFTW_INCLUDE_DIR})
+endif()
 
 ADD_LIBRARY(EMsoftLib ${LIB_TYPE} ${EMsoftLib_SRCS})
 TARGET_LINK_LIBRARIES(EMsoftLib
@@ -115,11 +119,11 @@ TARGET_LINK_LIBRARIES(EMsoftLib
                 ${EMsoft_BLAS_LAPACK_LIBS}
                 ${IFORT_COMPILER_LIBRARIES}
           )
-
+target_include_directories(EMsoftLib PUBLIC ${CLFORTRAN_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR})
 set_target_properties (EMsoftLib PROPERTIES
-  LINKER_LANGUAGE Fortran
-   # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
-  FOLDER EMsoftPublic
+                  LINKER_LANGUAGE Fortran
+                   # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
+                  FOLDER EMsoftPublic
 )
 set_source_files_properties(${EMsoftLib_BINARY_DIR}/stringconstants.f90 PROPERTIES GENERATED TRUE)
 add_dependencies(EMsoftLib EMsoftLib_Generate_StringConstants )
@@ -131,7 +135,7 @@ if(APPLE AND BUILD_SHARED_LIBS)
 endif()
 
 
-#---------------------------------------------------------------------
+#-------------------------------------------------------------------------------
 # This sets up the two variables install_dir and lib_install_dir
 EMsoft_SetupInstallDirs()
 

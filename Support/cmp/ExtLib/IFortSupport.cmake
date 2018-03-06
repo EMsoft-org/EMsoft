@@ -84,64 +84,45 @@ endif()
 
 set(CMAKE_FIND_DEBUG_MODE 1)
 
-set(IFORT_COMPILER_POSSIBLE_LOCATIONS
-    $ENV{IFORT_COMPILERDIR}
-    /opt/intel/IFORT_COMPILER
-    /opt/intel/cIFORT_COMPILER
-    /Library/Frameworks/Intel_IFORT_COMPILER.framework/Versions/Current/lib/universal
-    "C:/Program Files (x86)/Intel/ComposerXE-2011/IFORT_COMPILER"
-    "C:/Program Files (x86)/Intel/Composer XE 2013/IFORT_COMPILER"
-    "C:/Program Files/Intel/IFORT_COMPILER/*/"
-    "C:/Program Files/Intel/ComposerXE-2011/IFORT_COMPILER"
-    "C:/Program Files/Intel/Composer XE 2013/IFORT_COMPILER"
-    "C:/Program Files (x86)/Intel/Composer XE 2015/IFORT_COMPILER/"
-    "C:/Program Files/Intel/Composer XE 2015/IFORT_COMPILER/"
-    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2016/windows/compiler"
-    "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/compiler"
-)
 
-set(IFORT_COMPILER_RDIST_DIR
-  "C:/Program Files (x86)/IntelSWTools/compilers_and_libraries_2017/windows/redist"
-  )
+#-------------------------------------------------------------------------------
+# This bit of code finds the "compiler" and "redist" directories based on the 
+# current fortran compiler (which should be IFORT). This setup allows for 
+# multiple versions of IFort to be used on the same system.
+#
+get_filename_component(IFORT_COMPILER_ROOT_DIR ${CMAKE_Fortran_COMPILER} DIRECTORY)
+get_filename_component(IFORT_COMPILER_ROOT_DIR ${IFORT_COMPILER_ROOT_DIR} DIRECTORY)
+get_filename_component(IFORT_COMPILER_ROOT_DIR ${IFORT_COMPILER_ROOT_DIR} DIRECTORY)
 
+set(IFORT_COMPILER_RDIST_DIR "${IFORT_COMPILER_ROOT_DIR}/redist")
+set(IFORT_COMPILER_ROOT_DIR "${IFORT_COMPILER_ROOT_DIR}/compiler")
 
-
-# Look for a .f90 file that is included in the IFort distribution
-foreach (i ${IFORT_COMPILER_POSSIBLE_LOCATIONS})
-    if (EXISTS ${i}/include/ifcore.f90)
-        set(IFORT_COMPILER_ROOT_DIR ${i})
-        break()
-    endif()
-endforeach()
-
-message(STATUS "IFORT_COMPILER_ROOT_DIR: ${IFORT_COMPILER_ROOT_DIR}")
-message(STATUS "IFORT_COMPILER_ARCH_DIR: ${IFORT_COMPILER_ARCH_DIR}")
-
-set(IFORT_COMPILER_LIB_SEARCHPATH 
-    $ENV{ICC_LIB_DIR} 
-    $ENV{IFORT_COMPILER_LIB_DIR} 
-    "${IFORT_COMPILER_ROOT_DIR}/lib/${IFORT_COMPILER_ARCH_DIR}"
-    "${IFORT_COMPILER_RDIST_DIR}"
-    #"${IFORT_COMPILER_ROOT_DIR}/../compiler" 
-    #"${IFORT_COMPILER_ROOT_DIR}/../compiler/lib/${IFORT_COMPILER_ARCH_DIR}"
-    )
+if(CMAKE_FIND_DEBUG_MODE)
+  message(STATUS "CMAKE_Fortran_COMPILER:  ${CMAKE_Fortran_COMPILER}")
+  message(STATUS "IFORT_COMPILER_ROOT_DIR: ${IFORT_COMPILER_ROOT_DIR}")
+  message(STATUS "IFORT_COMPILER_ARCH_DIR: ${IFORT_COMPILER_ARCH_DIR}")
+  message(STATUS "IFORT_COMPILER_RDIST_DIR: ${IFORT_COMPILER_RDIST_DIR}")
+endif()
 
 set(IFORT_COMPILER_RDIST_LIBRARIES "")
 set(IFORT_COMPILER_LIBRARIES "")
 
-AddIFortCopyInstallRules(LIBNAME iomp5md
-                        LIBPREFIX lib
-                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
-                        TYPES ${BUILD_TYPES})
 AddIFortCopyInstallRules(LIBNAME ifcoremd
                         LIBPREFIX lib
                         LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
                         TYPES ${BUILD_TYPES})
+AddIFortCopyInstallRules(LIBNAME mmd
+                        LIBPREFIX lib
+                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
+                        TYPES ${BUILD_TYPES})
+
+# These next libraries do not seem to have a debug version....
+set(BUILD_TYPES Release)
 AddIFortCopyInstallRules(LIBNAME ifportmd
                         LIBPREFIX lib
                         LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
                         TYPES ${BUILD_TYPES})
-AddIFortCopyInstallRules(LIBNAME mmd
+AddIFortCopyInstallRules(LIBNAME iomp5md
                         LIBPREFIX lib
                         LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
                         TYPES ${BUILD_TYPES})

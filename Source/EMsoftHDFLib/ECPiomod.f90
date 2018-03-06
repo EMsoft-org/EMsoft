@@ -284,7 +284,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
-character(11),INTENT(IN)                            :: dstr
+character(11),INTENT(INOUT)                         :: dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
@@ -482,7 +482,7 @@ use NameListHDFwriters
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
-character(11),INTENT(IN)                            :: dstr
+character(11),INTENT(INOUT)                         :: dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2017, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2018, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -1041,7 +1041,7 @@ if (present(EMconfig)) then
    EMconfig%EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 end if 
 
- write (std,"(//1x,'EMsoft version ',A,', Copyright (C) 2001-2017 Marc De Graef Research Group/CMU')") &
+ write (std,"(//1x,'EMsoft version ',A,', Copyright (C) 2001-2018 Marc De Graef Research Group/CMU')") &
       trim(EMsoft_getEMsoftversion()) 
  write (std,"(1x,'EMsoft comes with ABSOLUTELY NO WARRANTY.')")
  write (std,"(1x,'This is free software, and you are welcome to redistribute it')")

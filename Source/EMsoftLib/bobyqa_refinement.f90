@@ -33,13 +33,13 @@ module bobyqa_refinement
     abstract interface
         recursive subroutine func2 (ipar, initmeanval, expt, accum, &
                                    mLPNH, mLPSH, n, x, f, mask, prefactor, rgx, rgy, rgz, &
-                                   stepsize, verbose)  !! calfun interface
+                                   stepsize, gammavalue, verbose)  !! calfun interface
 
             use local
             use,INTRINSIC :: ISO_C_BINDING
             implicit none
   
-            integer(c_size_t),INTENT(IN)         :: ipar(9)
+            integer(c_size_t),INTENT(IN)         :: ipar(10)
             real(sgl),INTENT(IN)                 :: stepsize(3)
             real(sgl),INTENT(IN)                 :: initmeanval(3)
             real(c_float),INTENT(IN)             :: expt(ipar(2)*ipar(3)/ipar(1)**2)
@@ -54,6 +54,7 @@ module bobyqa_refinement
             integer(irg),intent(in)              :: n
             real(dbl),dimension(:),intent(in)    :: x
             real(dbl),intent(out)                :: f
+            real(kind=sgl),intent(in)            :: gammavalue
             logical,intent(in),optional          :: verbose
         end subroutine func2
     end interface
@@ -97,14 +98,14 @@ contains
 
     recursive subroutine bobyqa (ipar, initmeanval, expt, n, npt, x, xl,&
                          xu, rhobeg, rhoend, iprint, maxfun, calfun, accum, mLPNH, mLPSH,&
-                         mask, prefactor, rgx, rgy, rgz, stepsize, verbose)
+                         mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: bobyqa
 
         use,INTRINSIC :: ISO_C_BINDING
 
         implicit none
                 
-        integer(c_size_t),intent(in)        :: ipar(9)
+        integer(c_size_t),intent(in)        :: ipar(10)
         real(sgl),intent(in)                :: initmeanval(3)
         real(sgl),intent(in)                :: stepsize(3)
         real(kind=sgl),intent(in)           :: expt(ipar(2)*ipar(3)/ipar(1)**2)
@@ -116,6 +117,7 @@ contains
         real(kind=sgl),INTENT(IN)           :: rgz(ipar(2),ipar(3))
         real(kind=sgl),INTENT(IN)           :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
         real(kind=dbl)                      :: prefactor
+        real(kind=sgl),intent(in)           :: gammavalue
 
         logical,intent(in),optional         :: verbose
  
@@ -245,12 +247,12 @@ contains
           call bobyqb (ipar, initmeanval, expt, n, npt, x, xl, xu, rhobeg, rhoend, iprint,&
            maxfun, w(ixb), w(ixp), w(ifv), w(ixo), w(igo), w(ihq), w(ipq), w(ibmat), w(izmat), ndim, w(isl), &
            w(isu), w(ixn), w(ixa), w(id), w(ivl), w(iw), calfun, accum, mLPNH, mLPSH, mask, prefactor, &
-           rgx, rgy, rgz, stepsize, verbose)
+           rgx, rgy, rgz, stepsize, gammavalue, verbose)
         else 
           call bobyqb (ipar, initmeanval, expt, n, npt, x, xl, xu, rhobeg, rhoend, iprint,&
            maxfun, w(ixb), w(ixp), w(ifv), w(ixo), w(igo), w(ihq), w(ipq), w(ibmat), w(izmat), ndim, w(isl), &
            w(isu), w(ixn), w(ixa), w(id), w(ivl), w(iw), calfun, accum, mLPNH, mLPSH, mask, prefactor, &
-           rgx, rgy, rgz, stepsize)
+           rgx, rgy, rgz, stepsize, gammavalue)
         end if
 
          
@@ -262,13 +264,13 @@ contains
     recursive subroutine bobyqb (ipar, initmeanval, expt1, n, npt, x, xl, xu,&
                        rhobeg, rhoend, iprint,maxfun, xbase, xpt, fval, xopt, gopt, hq,&
                        pq, bmat, zmat, ndim, sl, su, xnew, xalt, d, vlag, w, calfun, accum,&
-                       mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, verbose)
+                       mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: bobyqb
    
         
         implicit real (dbl) (a-h, o-z)
         
-        integer(c_size_t),intent(in):: ipar(9)
+        integer(c_size_t),intent(in):: ipar(10)
         real(sgl),intent(in)        :: initmeanval(3)
         real(sgl),intent(in)        :: stepsize(3)
         real(sgl),intent(in)        :: expt1(ipar(2)*ipar(3)/ipar(1)**2)
@@ -280,6 +282,8 @@ contains
         real(kind=sgl),INTENT(IN)   :: rgz(ipar(2),ipar(3))
         real(kind=sgl),INTENT(IN)   :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
         real(kind=dbl)              :: prefactor
+        real(kind=sgl),intent(in)   :: gammavalue
+
 
         logical,intent(in),optional :: verbose
         dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), xopt (*), &
@@ -341,11 +345,11 @@ contains
         if(present(verbose)) then
           call prelim (ipar, initmeanval, expt1, n, npt, x, xl, xu, rhobeg,&
           iprint, maxfun, xbase, xpt, fval, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, kopt, calfun, accum, &
-          mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, verbose)
+          mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose)
         else 
           call prelim (ipar, initmeanval, expt1, n, npt, x, xl, xu, rhobeg,&
           iprint, maxfun, xbase, xpt, fval, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, kopt, calfun, accum, &
-          mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize)
+          mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue)
         end if
 
         xoptsq = zero
@@ -539,11 +543,11 @@ contains
         if(present(verbose)) then
           call rescue (ipar, initmeanval, expt1, n, npt, xl, xu, iprint, maxfun, xbase,&
           xpt, fval, xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, delta, kopt, vlag, w, w(n+np), w(ndim+np), &
-          calfun, accum, mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, verbose)
+          calfun, accum, mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose)
          else
           call rescue (ipar, initmeanval, expt1, n, npt, xl, xu, iprint, maxfun, xbase,&
           xpt, fval, xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, delta, kopt, vlag, w, w(n+np), w(ndim+np), &
-          calfun, accum, mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize)
+          calfun, accum, mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue)
          end if
 
 !
@@ -720,10 +724,10 @@ contains
 
         if (present(verbose)) then
             call calfun (ipar, initmeanval, expt1, accum, mLPNH, mLPSH, &
-            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, verbose=verbose)
+            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose=verbose)
         else 
             call calfun (ipar, initmeanval, expt1, accum, mLPNH, mLPSH, &
-            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize)
+            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue)
         end if
 
         if (iprint == 3) then
@@ -1344,12 +1348,12 @@ contains
  
     recursive subroutine prelim (ipar, initmeanval, expt1, n, npt, x, xl, xu, rhobeg,&
     iprint, maxfun, xbase, xpt, fval, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, kopt, calfun, accum, mLPNH, mLPSH,&
-    mask, prefactor, rgx, rgy, rgz, stepsize, verbose)
+    mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: prelim
    
         implicit real (dbl) (a-h, o-z)
 
-        integer(8),intent(in)       :: ipar(9)
+        integer(8),intent(in)       :: ipar(10)
         real(sgl),intent(in)        :: initmeanval(3)
         real(sgl),intent(in)        :: stepsize(3)
         real(sgl),intent(in)        :: expt1(ipar(2)*ipar(3)/ipar(1)**2)
@@ -1361,6 +1365,7 @@ contains
         real(kind=sgl),INTENT(IN)   :: rgz(ipar(2),ipar(3))
         real(kind=sgl),INTENT(IN)   :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
         real(kind=dbl)              :: prefactor
+        real(kind=sgl),intent(in)   :: gammavalue
 
         logical,intent(in),optional :: verbose   
         dimension x (*), xl (*), xu (*), xbase (*), xpt (npt,*), fval (*), gopt (*), hq &
@@ -1464,10 +1469,10 @@ contains
 
         if(present(verbose)) then
             call calfun (ipar, initmeanval, expt1, accum, mLPNH, mLPSH, &
-            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, verbose=verbose)
+            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose=verbose)
         else
             call calfun (ipar, initmeanval, expt1, accum, mLPNH, mLPSH, &
-            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize)
+            n, x(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue)
         end if
 
         if (iprint == 3) then
@@ -1540,12 +1545,12 @@ contains
  
     recursive subroutine rescue (ipar, initmeanval, expt1, n, npt, xl, xu, iprint,&
      maxfun, xbase, xpt, fval, xopt, gopt, hq, pq, bmat, zmat, ndim, sl, su, nf, delta, kopt, vlag,&
-     ptsaux, ptsid, w, calfun, accum, mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, verbose)
+     ptsaux, ptsid, w, calfun, accum, mLPNH, mLPSH, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: rescue
    
         implicit real (dbl) (a-h, o-z)
 
-        integer(8),intent(in)       :: ipar(9)
+        integer(8),intent(in)       :: ipar(10)
         real(sgl),intent(in)        :: initmeanval(3)
         real(sgl),intent(in)        :: stepsize(3)
         real(sgl),intent(in)        :: expt1(ipar(2)*ipar(3)/ipar(1)**2)
@@ -1557,6 +1562,7 @@ contains
         real(kind=sgl),INTENT(IN)   :: rgz(ipar(2),ipar(3))
         real(kind=sgl),INTENT(IN)   :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
         real(kind=dbl)              :: prefactor
+        real(kind=sgl),intent(in)   :: gammavalue
 
         logical,intent(in),optional :: verbose   
       
@@ -1935,10 +1941,10 @@ contains
  
             if(present(verbose)) then
                call calfun (ipar, initmeanval, expt1, accum, mLPNH, mLPSH, &
-               n, w(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, verbose=verbose)
+               n, w(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue, verbose=verbose)
             else
                call calfun (ipar, initmeanval, expt1, accum, mLPNH, mLPSH, &
-               n, w(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize)
+               n, w(1:n), f, mask, prefactor, rgx, rgy, rgz, stepsize, gammavalue)
             end if
 
             if (iprint == 3) then

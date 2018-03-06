@@ -521,6 +521,7 @@ end function WatsonMeanDirDensity
 !> @date 12/31/14 MDG 1.0 original
 !> @date 01/06/15 MDG 1.1 added optional argument full
 !> @date 02/06/15 MDG 1.2 removed full again after extensive testing; no need to use 2M operators
+!> @date 01/04/18 MDG 1.3 added icosahedral symmetry operator to handle quasi-crystal computations.
 !--------------------------------------------------------------------------
 recursive subroutine DI_Init(dict,Dtype) 
 !DEC$ ATTRIBUTES DLLEXPORT :: DI_Init
@@ -545,7 +546,7 @@ real(kind=dbl)                          :: y1, y2
 ! first get the number of the rotational point group that corresponds to the crystal point group
 dict%prot = PGrot(dict%pgnum)
 ! possible values for dict%prot are: (/1,3,6,9,12,16,18,21,24,28,30/)
-! corresponding to the point groups 1, 2, 222, 4, 422, 3, 32, 6, 622, 23, and 432, respectively
+! corresponding to the point groups 1, 2, 222, 4, 422, 3, 32, 6, 622, 23, 432 and 532 respectively
 
 !------------
 ! IMPORTANT NOTE: the original von Mises-Fischer (VMF) approach requires that q and -q are considered to 
@@ -592,12 +593,19 @@ select case (dict%prot)
                 dict%Pm(1:4,8) = SYM_Qsymop(1:4,12)
 
         case(16)        ! 3
-                dict%Nqsym = 2
-                call FatalError('InitDictionaryIndexing','this symmetry has not yet been implemented (pg 3)')
+                dict%Nqsym = 3
+                dict%Pm(1:4,2) = SYM_Qsymop(1:4,26)
+                dict%Pm(1:4,3) = SYM_Qsymop(1:4,28)
+                !call FatalError('InitDictionaryIndexing','this symmetry has not yet been implemented (pg 3)')
 
         case(18)        ! 32 (needs special handling)
-                dict%Nqsym = 2
-                call FatalError('InitDictionaryIndexing','this symmetry has not yet been implemented (pg 32)')
+                dict%Nqsym = 6
+                dict%Pm(1:4,2) = SYM_Qsymop(1:4,26)
+                dict%Pm(1:4,3) = SYM_Qsymop(1:4,28)
+                dict%Pm(1:4,4) = SYM_Qsymop(1:4,30)
+                dict%Pm(1:4,5) = SYM_Qsymop(1:4,32)
+                dict%Pm(1:4,6) = SYM_Qsymop(1:4,34)
+                !call FatalError('InitDictionaryIndexing','this symmetry has not yet been implemented (pg 32)')
 
         case(21)        ! 6
                 dict%Nqsym = 6
@@ -624,6 +632,11 @@ select case (dict%prot)
                 dict%Nqsym = 24
                 do i=2,24
                   dict%Pm(1:4,i) = SYM_Qsymop(1:4,i)
+                end do
+        case(33)        ! 532
+                dict%Nqsym = 60
+                do i=2,60
+                  dict%Pm(1:4,i) = SYM_Qsymop(1:4,35+i)
                 end do
 
         case default    ! this should never happen ...

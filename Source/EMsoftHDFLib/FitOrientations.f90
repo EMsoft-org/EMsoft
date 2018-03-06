@@ -61,21 +61,22 @@ contains
 
 recursive subroutine EMFitOrientationcalfunEBSD(ipar, initmeanval, expt, accum, &
                                 mLPNH, mLPSH, n, x, f, mask, prefactor, rgx, rgy, rgz,&
-                                stepsize, verbose)
+                                stepsize, gammaval, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMFitOrientationcalfunEBSD
 
 ! the input parameters are all part of a ipar and fpar input arrays instead of the usual namelist structures.
 ! The following is the mapping:
 
-! ipar(1) = binning
-! ipar(2) = numsx
-! ipar(3) = numsy
-! ipar(4) = npx
-! ipar(5) = npy
-! ipar(6) = numEbins
-! ipar(7) = nE
-! ipar(8) = Emin
-! ipar(9) = Emax
+! ipar(1)  = binning
+! ipar(2)  = numsx
+! ipar(3)  = numsy
+! ipar(4)  = npx
+! ipar(5)  = npy
+! ipar(6)  = numEbins
+! ipar(7)  = nE
+! ipar(8)  = Emin
+! ipar(9)  = Emax
+! ipar(10) = nregions
 
 ! initmeanval(2) = phi1
 ! initmeanval(3) = phi
@@ -100,7 +101,7 @@ use,INTRINSIC :: ISO_C_BINDING
            
 implicit none
 
-integer(c_size_t),intent(in)            :: ipar(9)
+integer(c_size_t),intent(in)            :: ipar(10)
 real(sgl),intent(in)                    :: initmeanval(3)
 real(sgl),intent(in)                    :: stepsize(3)
 
@@ -116,9 +117,10 @@ real(kind=dbl),INTENT(IN)               :: prefactor
 integer(irg),intent(in)                 :: n
 real(dbl),dimension(:),intent(in)       :: x
 real(dbl),intent(out)                   :: f
+real(kind=sgl),intent(IN)               :: gammaval
 logical,intent(in),optional             :: verbose
 
-integer(kind=irg)                       :: nnx, nny, binx, biny, Emin, Emax
+integer(kind=irg)                       :: nnx, nny, binx, biny, Emin, Emax, nregions
 complex(dbl)                            :: D
 real(kind=sgl)                          :: quat(4), bindx, ma, mi, eu(3)
 real(kind=sgl)                          :: binned(ipar(2)/ipar(1),ipar(3)/ipar(1))
@@ -165,22 +167,23 @@ quat(1:4) = eu2qu(eu)
 jpar(1:7) = ipar(1:7)
 Emin = ipar(8)
 Emax = ipar(9)
+nregions = ipar(10)
 
 call CalcEBSDPatternSingleFull(jpar,quat,accum,mLPNH,mLPSH,rgx,&
                                rgy,rgz,binned,Emin,Emax,mask,prefactor)
 
-!binned = binned**0.33
+binned = binned**gammaval
 
 mi = minval(binned)
 ma = maxval(binned)
 
-EBSDpatternintd = (binned - mi)/ (ma-mi)
+EBSDpatternintd = ((binned - mi)/ (ma-mi))
 EBSDpatterninteger = nint(EBSDpatternintd*255.0)
-EBSDpatternad =  adhisteq(10,binx,biny,EBSDpatterninteger)
+EBSDpatternad =  adhisteq(nregions,binx,biny,EBSDpatterninteger)
 binned = float(EBSDpatternad)
 
 binned = binned*mask
-
+    
 do i=1,biny
     do j=1,binx
         EBSDvector((i-1)*binx+j) = binned(j,i)
@@ -276,20 +279,22 @@ end subroutine EMFitOrientationcalfunEBSD
 
 recursive subroutine EMFitOrientationcalfunECP(ipar, initmeanval, expt, accum, &
                                 mLPNH, mLPSH, n, x, f, mask, prefactor, rgx, rgy, rgz,&
-                                stepsize, verbose)
+                                stepsize, gammaval, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMFitOrientationcalfunECP
 
 ! the input parameters are all part of a ipar and fpar input arrays instead of the usual namelist structures.
 ! The following is the mapping:
 
-! ipar(1) = binning always set to 1
-! ipar(2) = npix
-! ipar(3) = npix
-! ipar(4) = npx
-! ipar(5) = npy
-! ipar(6) = 1
-! ipar(7) = 1
-! ipar(8) = nregions
+! ipar(1)  = binning always set to 1
+! ipar(2)  = npix
+! ipar(3)  = npix
+! ipar(4)  = npx
+! ipar(5)  = npy
+! ipar(6)  = 1
+! ipar(7)  = 1
+! ipar(8)  = nregions
+! ipar(9)  = not initialized (for maintaining same interface as EBSD)
+! ipar(10) = not initialized (for maintaining same interface as EBSD)
 
 ! initmeanval(2) = phi1
 ! initmeanval(3) = phi
@@ -313,7 +318,7 @@ use,INTRINSIC :: ISO_C_BINDING
            
 implicit none
 
-integer(c_size_t),intent(in)            :: ipar(9)
+integer(c_size_t),intent(in)            :: ipar(10)
 real(sgl),intent(in)                    :: initmeanval(3)
 real(sgl),intent(in)                    :: stepsize(3)
 
@@ -329,6 +334,7 @@ real(kind=dbl),INTENT(IN)               :: prefactor
 integer(irg),intent(in)                 :: n
 real(dbl),dimension(:),intent(in)       :: x
 real(dbl),intent(out)                   :: f
+real(kind=sgl),intent(IN)               :: gammaval
 logical,intent(in),optional             :: verbose
 
 
@@ -384,6 +390,8 @@ jpar(1:7) = ipar(1:7)
 
 call CalcECPatternSingleFull(jpar,quat,accum,mLPNH,mLPSH,rgx,&
                                rgy,rgz,binned,mask)
+
+binned = binned**gammaval
 
 mi = minval(binned)
 ma = maxval(binned)

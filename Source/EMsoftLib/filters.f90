@@ -38,6 +38,7 @@
 ! 
 !> @date 01/21/16 MDG 1.0 original
 !> @date 02/02/16 MDG 1.1 added Hough Transform
+!> @date 01/09/18 MDG 1.2 added getADPmap
 !--------------------------------------------------------------------------
 
 module filters
@@ -455,6 +456,176 @@ end function adhisteq
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: getADPmap
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute Average Dot Product map, reading patterns from file unit iunit
+!
+!> @param iunit input file unit
+!> @param nexpt number of experimental patterns
+!> @param L number of pixels per pattern
+!> @param wd ROI-width
+!> @param ht ROI-ht
+!> @param dpmap output ADP map
+!
+!> @date 01/09/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getADPmap(iunit, nexpt, L, wd, ht, dpmap)
+!DEC$ ATTRIBUTES DLLEXPORT :: getADPmap
+
+integer(kind=irg),INTENT(IN)        :: iunit
+integer(kind=irg),INTENT(IN)        :: nexpt
+integer(kind=irg),INTENT(IN)        :: L
+integer(kind=irg),INTENT(IN)        :: wd
+integer(kind=irg),INTENT(IN)        :: ht
+real(kind=sgl),INTENT(OUT)          :: dpmap(nexpt)
+
+integer(kind=irg)                   :: ii, iii, jj
+real(kind=sgl)                      :: lstore(L,wd), pstore(L,wd), lp(L), cp(L), imageexpt(L), dp
+
+dpmap= 0.0
+pstore = 0.0
+lstore = 0.0
+lp = 0.0
+cp = 0.0
+
+do iii = 1,nexpt
+    read(iunit,rec=iii) imageexpt
+    ii = mod(iii,wd)
+    if (ii.eq.0) ii = wd
+    jj = iii/wd+1
+! do we need to copy pstore into lstore ?
+    if ((ii.eq.1).and.(jj.gt.1)) lstore = pstore
+! determine to which dpmap entries we need to add the dot product
+    if (ii.eq.1) then
+      cp(1:L) = imageexpt(1:L)
+      pstore(1:L,ii) = cp(1:L)
+    else
+      lp = cp
+      cp(1:L) = imageexpt(1:L)
+      pstore(1:L,ii) = cp(1:L)
+      dp = sum(lp(1:L)*cp(1:L))
+      dpmap(iii-1) = dpmap(iii-1) + dp
+      dpmap(iii) = dpmap(iii) + dp
+    end if
+    if (jj.gt.1) then
+      dp = sum(lstore(1:L,ii)*cp(1:L))
+      dpmap(iii-wd+1) = dpmap(iii-wd+1) + dp
+      dpmap(iii) = dpmap(iii) + dp
+    end if
+end do
+
+! correct the dot product map values depending on inside, edge, or corner pixels
+! divide by 4
+dpmap = dpmap*0.25
+
+! correct the straight segments
+dpmap(2:wd-1) = dpmap(2:wd-1) * 4.0/3.0
+dpmap(nexpt-wd+2:nexpt-1) = dpmap(nexpt-wd+2:nexpt-1) * 4.0/3.0
+do jj=1,ht-2
+  dpmap(wd*jj+1) = dpmap(wd*jj+1) * 4.0/3.0
+end do
+do jj=2,ht-1
+  dpmap(wd*jj) = dpmap(wd*jj) * 4.0/3.0
+end do
+
+! and the corners
+dpmap(1) = dpmap(1) * 4.0
+dpmap(wd) = dpmap(wd) * 2.0
+dpmap(nexpt) = dpmap(nexpt) * 2.0
+dpmap(nexpt-wd+1) = dpmap(nexpt-wd+1) * 4.0/3.0
+
+end subroutine getADPmap
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getADPmapRAM
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute Average Dot Product map, reading patterns from file unit iunit
+!
+!> @param epatterns experimental patterns after preprocessing (held in RAM!)
+!> @param nexpt number of experimental patterns
+!> @param L number of pixels per pattern
+!> @param wd ROI-width
+!> @param ht ROI-ht
+!> @param dpmap output ADP map
+!
+!> @date 01/09/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getADPmapRAM(epatterns, nexpt, cs, L, wd, ht, dpmap)
+!DEC$ ATTRIBUTES DLLEXPORT :: getADPmapRAM
+
+integer(kind=irg),INTENT(IN)        :: nexpt
+integer(kind=irg),INTENT(IN)        :: cs
+real(kind=sgl),INTENT(IN)           :: epatterns(cs,nexpt)
+integer(kind=irg),INTENT(IN)        :: L
+integer(kind=irg),INTENT(IN)        :: wd
+integer(kind=irg),INTENT(IN)        :: ht
+real(kind=sgl),INTENT(OUT)          :: dpmap(nexpt)
+
+integer(kind=irg)                   :: ii, iii, jj
+real(kind=sgl)                      :: lstore(L,wd), pstore(L,wd), lp(L), cp(L), imageexpt(L), dp
+
+dpmap= 0.0
+pstore = 0.0
+lstore = 0.0
+lp = 0.0
+cp = 0.0
+
+do iii = 1,nexpt
+    imageexpt = epatterns(1:L,iii)
+    ii = mod(iii,wd)
+    if (ii.eq.0) ii = wd
+    jj = iii/wd+1
+! do we need to copy pstore into lstore ?
+    if ((ii.eq.1).and.(jj.gt.1)) lstore = pstore
+! determine to which dpmap entries we need to add the dot product
+    if (ii.eq.1) then
+      cp(1:L) = imageexpt(1:L)
+      pstore(1:L,ii) = cp(1:L)
+    else
+      lp = cp
+      cp(1:L) = imageexpt(1:L)
+      pstore(1:L,ii) = cp(1:L)
+      dp = sum(lp(1:L)*cp(1:L))
+      dpmap(iii-1) = dpmap(iii-1) + dp
+      dpmap(iii) = dpmap(iii) + dp
+    end if
+    if (jj.gt.1) then
+      dp = sum(lstore(1:L,ii)*cp(1:L))
+      dpmap(iii-wd+1) = dpmap(iii-wd+1) + dp
+      dpmap(iii) = dpmap(iii) + dp
+    end if
+end do
+
+! correct the dot product map values depending on inside, edge, or corner pixels
+! divide by 4
+dpmap = dpmap*0.25
+
+! correct the straight segments
+dpmap(2:wd-1) = dpmap(2:wd-1) * 4.0/3.0
+dpmap(nexpt-wd+2:nexpt-1) = dpmap(nexpt-wd+2:nexpt-1) * 4.0/3.0
+do jj=1,ht-2
+  dpmap(wd*jj+1) = dpmap(wd*jj+1) * 4.0/3.0
+end do
+do jj=2,ht-1
+  dpmap(wd*jj) = dpmap(wd*jj) * 4.0/3.0
+end do
+
+! and the corners
+dpmap(1) = dpmap(1) * 4.0
+dpmap(wd) = dpmap(wd) * 2.0
+dpmap(nexpt) = dpmap(nexpt) * 2.0
+dpmap(nexpt-wd+1) = dpmap(nexpt-wd+1) * 4.0/3.0
+
+end subroutine getADPmapRAM
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: CalcHoughLUT
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -615,11 +786,12 @@ if (present(init)) then
     allocate(hpmask(dims(1),dims(2)), inp(dims(1),dims(2)), outp(dims(1),dims(2)))
 
 ! generate the complex inverted Gaussian mask; w = 0.05 produces good results (usually)
-    do i=1,dims(1)/2 
-      x = float(i)
-      do j=1,dims(2)/2
-        y = float(j)
-        val = 1.D0-dexp(-w*(x*x+y*y))
+  do i=1,dims(1)/2 
+    x = dble(i)**2
+    do j=1,dims(2)/2
+      y = dble(j)**2
+      if ((x+y).lt.30.D0) then
+        val = 1.D0-dexp(-w*(x+y))
         hpmask(i,j) = cmplx(val, 0.D0)
         hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
         hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
@@ -628,8 +800,9 @@ if (present(init)) then
         fdata(dims(1)+1-i,j) = val
         fdata(i,dims(2)+1-j) = val
         fdata(dims(1)+1-i,dims(2)+1-j) = val
-      end do
-   end do
+      end if
+    end do
+  end do
 
 ! then we set up the fftw plans for forward and reverse transforms
     planf = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_FORWARD, FFTW_ESTIMATE)
@@ -653,6 +826,111 @@ fdata(1:dims(1),1:dims(2)) = real(outp)
 
 end function HiPassFilter
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: init_HiPassFilter
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  Perform a high pass filter
+!
+!> @param rdata real data to be transformed
+!> @param dims dimensions of rdata array
+!> @param w width of Gaussian profile
+!> @param init (optional) initialize without computing anything
+!> @param destroy (optional) destroy fft plans
+! 
+!> @date 02/02/16 MDG 1.0 original
+!> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile; added init optional parameter
+!> @date 01/11/18 MDG 1.2 split routine from original to allow for OpenMP access
+!--------------------------------------------------------------------------
+recursive subroutine init_HiPassFilter(w, dims, hpmask, inp, outp, planf, planb) 
+!DEC$ ATTRIBUTES DLLEXPORT :: init_HiPassFilter
+
+use FFTW3mod
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)               :: w
+integer(kind=irg),INTENT(IN)            :: dims(2)
+complex(kind=dbl),INTENT(OUT)           :: hpmask(dims(1),dims(2))
+complex(C_DOUBLE_COMPLEX),INTENT(OUT)   :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
+type(C_PTR),INTENT(OUT)                 :: planf, planb
+
+integer(kind=irg)                       :: i, j
+real(kind=dbl)                          :: x, y, val, v2
+
+hpmask = cmplx(1.D0,0.D0)
+
+! generate the complex inverted Gaussian mask; w = 0.05 produces good results (usually)
+do i=1,dims(1)/2 
+  x = dble(i)**2
+  do j=1,dims(2)/2
+    y = dble(j)**2
+    v2 = w * ( x+y )
+    if (v2.lt.30.D0) then
+      val = 1.D0-dexp(-v2)
+      hpmask(i,j) = cmplx(val, 0.D0)
+      hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
+      hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
+      hpmask(dims(1)+1-i,dims(2)+1-j) = cmplx(val, 0.D0)
+    end if
+  end do
+end do
+
+! then we set up the fftw plans for forward and reverse transforms
+planf = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_FORWARD, FFTW_ESTIMATE)
+planb = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_BACKWARD, FFTW_ESTIMATE)
+
+end subroutine init_HiPassFilter
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: applyHiPassFilter
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  Perform a high pass filter
+!
+!> @param rdata real data to be transformed
+!> @param dims dimensions of rdata array
+!> @param w width of Gaussian profile
+! 
+!> @date 02/02/16 MDG 1.0 original
+!> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile
+!> @date 01/11/18 MDG 1.2 split routine from original to allow for OpenMP access
+!--------------------------------------------------------------------------
+recursive function applyHiPassFilter(rdata, dims, w, hpmask, inp, outp, planf, planb) result(fdata)
+!DEC$ ATTRIBUTES DLLEXPORT :: applyHiPassFilter
+
+use FFTW3mod
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: dims(2)
+real(kind=dbl),INTENT(IN)               :: w
+real(kind=dbl),INTENT(IN)               :: rdata(dims(1),dims(2))
+complex(kind=dbl),INTENT(IN)            :: hpmask(dims(1),dims(2))
+complex(C_DOUBLE_COMPLEX),INTENT(OUT)   :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
+type(C_PTR),INTENT(IN)                  :: planf, planb
+real(kind=dbl)                          :: fdata(dims(1),dims(2))
+
+complex(kind=dbl)                       :: cone = cmplx(1.D0,0.D0), czero = cmplx(0.D0,0.D0)
+integer(kind=irg)                       :: i, j, k, ii, jj
+real(kind=dbl)                          :: x, y, val
+
+! apply the hi-pass mask to rdata
+do j=1,dims(1)
+ do k=1,dims(2)
+  inp(j,k) = cmplx(rdata(j,k),0.D0)    
+ end do
+end do
+call fftw_execute_dft(planf, inp, outp)
+inp = outp * hpmask
+call fftw_execute_dft(planb, inp, outp) 
+fdata(1:dims(1),1:dims(2)) = real(outp)
+
+end function applyHiPassFilter
 
 !--------------------------------------------------------------------------
 !

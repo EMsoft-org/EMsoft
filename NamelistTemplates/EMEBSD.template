@@ -20,8 +20,16 @@
 ! energy range in the intensity summation [keV]
  energymin = 5.0,
  energymax = 20.0,
+! include a realistic intensity background or not ... 
+ includebackground = 'y',
 ! name of angle file (euler angles or quaternions); path relative to EMdatapathname
  anglefile = 'testeuler.txt',
+! does this file have only orientations ('orientations') or does it also have pattern center and deformation tensor ('orpcdef')
+! if anglefiletype = 'orpcdef' then each line in the euler input file should look like this: (i.e., 15 floats)
+!   55.551210  58.856774  325.551210  0.0  0.0  15000.0  1.00 0.00 0.00 0.00 1.00 0.00 0.00 0.00 1.00
+!   <-   Euler angles  (degrees)  ->  <- pat. ctr.   ->  <- deformation tensor in column-major form->
+!
+ anglefiletype = 'orientations',
 ! 'tsl' or 'hkl' Euler angle convention parameter
  eulerconvention = 'tsl',
 ! name of EBSD master output file; path relative to EMdatapathname
@@ -52,8 +60,22 @@
  scalingmode = 'not',
 ! gamma correction factor
  gammavalue = 1.0,
+!=======================
+! if the 'makedictionary' parameter is 'n', then we have the normal execution of the program
+! if set to 'y', then all patterns are pre-processed using the other parameters below, so that
+! the resulting dictionary can be used for static indexing in the EMEBSDDI program...
+! these parameters must be taken identical to the ones in the EMEBSDDI.nml input file to have 
+! optimal indexing...
+ makedictionary = 'n',
 ! should a circular mask be applied to the data? 'y', 'n'
  maskpattern = 'n',
+ ! mask radius (in pixels, AFTER application of the binning operation)
+ maskradius = 240,
+! hi pass filter w parameter; 0.05 is a reasonable value
+ hipassw = 0.05,
+! number of regions for adaptive histogram equalization
+ nregions = 10,
+!=======================
 ! number of threads (default = 1)
  nthreads = 1,
  /

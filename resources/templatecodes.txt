@@ -9,6 +9,8 @@
 013EMPEDZA
 014EMKosselmaster
 015EMPEDkin
+016EMCBEDmaster
+017EMgetADP
 020EMMC
 021EMEBSDmaster
 022EMEBSD
@@ -22,6 +24,7 @@
 030EMgamma
 031EMgammaOpenCL
 032EMgammaSTEM
+037EMEBSDQCmaster
 038EMECPQCmaster
 039EMECPmaster
 040EMECP
@@ -31,6 +34,7 @@
 044EMMCsphere
 045EMMCfoil
 046EMEBSDFull
+047EMEBSDDIpreview
 050EMoverlap
 060EMsampleRFZ
 070EMECPIndexing
@@ -40,6 +44,8 @@
 074EMTKDDI
 075EMTKD
 076EMLorentz
+077EMTKDoverlap
+078EMTKDspots
 080EMEBSDDI
 081EMAverageOrient
 082EMDisorientations
@@ -55,6 +61,8 @@
 093EMFitOrientationPS
 094PFInversion
 095EMTwoPhase
+096EMCBEDQC
+097EMFitalphavariants
 110EMOMmaster
 111EMOM
 200EMdefectdata

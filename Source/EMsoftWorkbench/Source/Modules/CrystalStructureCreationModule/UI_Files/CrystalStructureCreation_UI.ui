@@ -447,6 +447,20 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>csCB</tabstop>
+  <tabstop>aLE</tabstop>
+  <tabstop>bLE</tabstop>
+  <tabstop>cLE</tabstop>
+  <tabstop>alphaLE</tabstop>
+  <tabstop>betaLE</tabstop>
+  <tabstop>gammaLE</tabstop>
+  <tabstop>spaceGrpNumberSB</tabstop>
+  <tabstop>spaceGrpSettingCB</tabstop>
+  <tabstop>csFilePathLE</tabstop>
+  <tabstop>selectOutputFileBtn</tabstop>
+  <tabstop>createCrystalStructureBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

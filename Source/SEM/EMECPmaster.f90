@@ -98,6 +98,7 @@ end program EMECPmaster
 !> @date 09/15/15  SS  1.3 corrected small bug in writing stereo projection to h5 file
 !> @date 08/17/16  MDG 1.4 modified for new HDF internal format
 !> @date 09/29/16  MDG 2.0 added option to read structure data from master file instead of external .xtal file
+!> @date 01/11/18  MDG 2.1 changed master pattern format for hexagonal symmetry to the square Lambert projection
 !--------------------------------------------------------------------------
 subroutine ECmasterpattern(ecpnl, progname, nmldeffile)
 
@@ -134,27 +135,27 @@ character(fnlen),INTENT(IN)                      :: nmldeffile
 real(kind=dbl)          :: frac
 integer(kind=irg)       :: gzero, istat
 
-integer(kind=irg)       :: numEbins, numzbins, nx, ny, totnum_el, numsites ! reading from MC file
+integer(kind=irg)       :: numEbins, numzbins, nx, ny, npy, totnum_el, numsites ! reading from MC file
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, sig, omega  ! reading from MC file
 integer(kind=irg), allocatable :: acc_z(:,:,:,:),accum_z(:,:,:,:) ! reading from MC file
 
 integer(kind=irg)       :: io_int_sgl(1), io_int(6) ! integer output variable
 real(kind=dbl)          :: io_real(5) ! real output variable
 
-integer(kind=irg)       :: i, j, isym, pgnum, SamplingType ! variables for point group and Laue group
+integer(kind=irg)       :: i, j, isym, pgnum, SamplingType, nix, nixp, niy, niyp ! variables for point group and Laue group
 integer(kind=irg),parameter     :: LaueTest(11) = (/ 149, 151, 153, 156, 158, 160, 161, 164, 165, 166, 167 /)  ! space groups with 2 or mirror at 30 degrees
 integer(kind=irg)       :: npyhex, ijmax, numk, skip ! parameters for calckvectors and calcwavelength subroutine
 
 integer(kind=irg)       :: ga(3), gb(3) ! shortest reciprocal lattice vector for zone axis
 real(kind=sgl), allocatable :: thick(:), mLPNH(:,:,:), mLPSH(:,:,:), svals(:), lambdaZ(:), klist(:,:), knlist(:),&
-                               masterSPNH(:,:,:), masterSPSH(:,:,:)
-real(kind=dbl)          :: intthick
+                               masterSPNH(:,:,:), masterSPSH(:,:,:), auxNH(:,:,:), auxSH(:,:,:) 
+real(kind=dbl)          :: intthick, dc(3), dx, dxm, dy, dym, edge, scl, xy(2), Radius
 complex(kind=dbl),allocatable   :: Lgh(:,:),Sgh(:,:),Sghtmp(:,:,:)
 complex(kind=dbl),allocatable   :: DynMat(:,:)
 complex(kind=dbl)       :: czero
 
 integer(kind=irg)       :: nt, nns, nnw, tots, totw ! thickness array and BetheParameters strong and weak beams
-real(kind=sgl)          :: FN(3), kk(3), fnat, kn, Radius, xy(2), tstart, tstop
+real(kind=sgl)          :: FN(3), kk(3), fnat, kn, tstart, tstop
 integer(kind=irg)       :: numset, nref, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one,ierr
 integer(kind=irg),allocatable   :: kij(:,:), nat(:)
 real(kind=dbl)          :: res(2), xyz(3), ind, nabsl
@@ -398,7 +399,8 @@ end if
 usehex = .FALSE.
 if ((cell%xtal_system.eq.4).or.(cell%xtal_system.eq.5)) usehex = .TRUE.
 
-if(usehex)  npyhex = nint(2.0*float(ecpnl%npx)/sqrt(3.0))
+!if(usehex)  npyhex = nint(2.0*float(ecpnl%npx)/sqrt(3.0))
+npy = ecpnl%npx
 ijmax = float(ecpnl%npx)**2   ! truncation value for beam directions
 
 ! ---------- end of symmetry and crystallography section
@@ -414,7 +416,7 @@ ijmax = float(ecpnl%npx)**2   ! truncation value for beam directions
 ! numk is the total number of k-vectors to be included in this computation;
 nullify(khead)
 if (usehex) then
-  call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,ecpnl%npx,npyhex,numk, &
+  call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,ecpnl%npx,npy,numk, &
   SamplingType,ijmax,'RoscaLambert',usehex)
 else
   call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,ecpnl%npx,ecpnl%npx,numk, &
@@ -740,8 +742,52 @@ call WriteValue(' -> Average number of strong reflections = ',io_int, 1, "(I5)")
 io_int(1) = nint(float(totw)/float(numk))
 call WriteValue(' -> Average number of weak reflections   = ',io_int, 1, "(I5)")
 
+
+ if (usehex.eqv..TRUE.) then
+! and finally, we convert the hexagonally sampled array to a square Lambert projection which will be used 
+! for all ECP pattern interpolations;  we need to do this for both the Northern and Southern hemispheres
+
+! we begin by allocating auxiliary arrays to hold copies of the hexagonal data; the original arrays will
+! then be overwritten with the newly interpolated data.
+    allocate(auxNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numset),stat=istat)
+    allocate(auxSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numset),stat=istat)
+    auxNH = mLPNH
+    auxSH = mLPSH
+
+! 
+    edge = 1.D0 / dble(ecpnl%npx)
+    scl = float(ecpnl%npx) 
+    do i=-ecpnl%npx,ecpnl%npx
+      do j=-ecpnl%npx,ecpnl%npx
+! determine the spherical direction for this point
+        xy = (/ dble(i), dble(j) /) * edge
+        dc = LambertSquareToSphere(xy, ierr)
+! convert direction cosines to hexagonal Lambert projections
+        xy = scl * LambertSphereToHex( dc, ierr )
+! interpolate intensity from the neighboring points
+        if (ierr.eq.0) then 
+          nix = floor(xy(1))
+          niy = floor(xy(2))
+          nixp = nix+1
+          niyp = niy+1
+          if (nixp.gt.ecpnl%npx) nixp = nix
+          if (niyp.gt.ecpnl%npx) niyp = niy
+          dx = xy(1) - nix
+          dy = xy(2) - niy
+          dxm = 1.D0 - dx
+          dym = 1.D0 - dy
+          mLPNH(i,j,1:numset) = auxNH(nix,niy,1:numset)*dxm*dym + auxNH(nixp,niy,1:numset)*dx*dym + &
+                               auxNH(nix,niyp,1:numset)*dxm*dy + auxNH(nixp,niyp,1:numset)*dx*dy
+          mLPSH(i,j,1:numset) = auxSH(nix,niy,1:numset)*dxm*dym + auxSH(nixp,niy,1:numset)*dx*dym + &
+                               auxSH(nix,niyp,1:numset)*dxm*dy + auxSH(nixp,niyp,1:numset)*dx*dy
+        end if
+      end do
+    end do
+    deallocate(auxNH, auxSH)
+  end if
+
 ! make sure that the outer pixel rim of the mLPSH patterns is identical to
-! that of the mLPNH array.o
+! that of the mLPNH array.
 mLPSH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites)
 mLPSH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites) = mLPNH( ecpnl%npx,-ecpnl%npx:ecpnl%npx,1:numsites)
 mLPSH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npx,1:numsites)
