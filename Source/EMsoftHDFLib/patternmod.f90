@@ -425,7 +425,7 @@ select case (itype)
 ! This file would have been created using a Matlab or IDL routine.  We anticipate that 
 ! this format will not be used for much longer.
       do jj=kkstart,kkend
-        read(funit,rec=(iii-1)*wd + jj) imageexpt
+        read(funit,rec=(liii-1)*lwd + jj) imageexpt
         exppatarray((jj-kkstart)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 

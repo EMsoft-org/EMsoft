@@ -5838,6 +5838,89 @@ end subroutine GetRefineOrientationNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetFitalphavariantsNameList
+!
+!> @author Marc De Graef , Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMFitalphavariants.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl single name list structure
+!
+!> @date 03/05/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetFitalphavariantsNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetFitalphavariantsNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(Fitalphavarianttype),INTENT(INOUT)           :: enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: nthreads
+character(fnlen)        :: betadotproductfile
+character(fnlen)        :: alphadotproductfile
+character(fnlen)        :: outputfile
+character(fnlen)        :: variantquaternionfile
+real(kind=sgl)          :: step
+
+
+namelist / Fitalphavariants / nthreads, betadotproductfile, alphadotproductfile, outputfile, &
+                              variantquaternionfile, step
+
+nthreads = 1
+betadotproductfile = 'undefined'
+alphadotproductfile = 'undefined'
+outputfile = 'undefined'
+variantquaternionfile = 'undefined'
+step = 1.0
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=Fitalphavariants)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(betadotproductfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' beta phase dotproduct file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(alphadotproductfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' alphaa phase dotproduct file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(variantquaternionfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' variantquaternion file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(outputfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+
+end if
+
+enl%nthreads = nthreads
+enl%betadotproductfile = betadotproductfile
+enl%alphadotproductfile = alphadotproductfile
+enl%outputfile = outputfile
+enl%variantquaternionfile = variantquaternionfile
+enl%step = step
+
+end subroutine GetFitalphavariantsNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetFitOrientationPSNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University

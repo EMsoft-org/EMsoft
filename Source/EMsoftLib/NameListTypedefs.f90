@@ -1510,6 +1510,15 @@ type FitOrientationPStype
         real(kind=sgl)          :: angleaxis(4)
 end type FitOrientationPStype
 
+type Fitalphavarianttype
+        integer(kind=irg)       :: nthreads
+        character(fnlen)        :: betadotproductfile
+        character(fnlen)        :: alphadotproductfile
+        character(fnlen)        :: outputfile
+        character(fnlen)        :: variantquaternionfile
+        real(kind=sgl)          :: step
+end type Fitalphavarianttype
+
 type PFInversionNameListType
         integer(kind=irg)       :: nLam
         integer(kind=irg)       :: ncub
