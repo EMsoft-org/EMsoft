@@ -218,7 +218,8 @@ str1 = trim(str1)//TAB//trim(str3)
 
 ! rotational symmetry group
 str4 = ''
-write(str4,'(I2)') getLaueGroupNumber(SGnum)
+LaueGroup = getLaueGroupNumber(SGnum)
+write(str4,'(I2)') LaueGroup
 str1 = trim(str1)//TAB//trim(adjustl(str4))
 
 ! space group
@@ -228,8 +229,6 @@ str1 = trim(str1)//TAB//trim(adjustl(str2))
 
 ! and now collect them all into a single string
 write(dataunit2,'(A)') trim(str1)
-
-! write(dataunit2,'(A)'),'3.524;3.524;3.524	90;90;90	Nickel	11	225'
 
 ! this is the table header
 write(dataunit2,'(A)') 'Phase'//TAB//'X'//TAB//'Y'//TAB//'Bands'//TAB//'Error'//TAB//'Euler1'//TAB//'Euler2'//TAB//'Euler3' &
@@ -248,12 +247,13 @@ do ii = 1,ipar(3)
     end if
 ! changed order of coordinates to conform with ctf standard
     if (sum(ebsdnl%ROI).ne.0) then
-      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%stepX
-      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%stepY
+      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%StepX
+      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%StepY
     else
-      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%stepX
-      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%stepY
+      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%StepX
+      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%StepY
     end if 
+
     write(str3,'(I8)') indx  ! pattern index into dictionary list of discrete orientations
     write(str8,'(I8)') 0 ! integer zero error; was indx, which is now moved to BANDS
     eu = euler(1) - 90.0 ! conversion from TSL to Oxford convention
@@ -267,7 +267,7 @@ do ii = 1,ipar(3)
 ! in the ctf file, because the fundamental zone is already oriented according to the Oxford
 ! convention... That means that we need to subtract the angle for the .ang file (to be implemented)
 ! [modified by MDG on 3/5/18]
-!   if ((LaueGroup.eq.8).or.(LaueGroup.eq.9)) euler(3) = euler(3) - 30.0
+    if ((LaueGroup.eq.8).or.(LaueGroup.eq.9)) euler(3) = euler(3) - 30.0
     eu = euler(3)
     if (eu.lt.0) eu = eu + 360.0
     write(str7,'(F12.3)') eu
