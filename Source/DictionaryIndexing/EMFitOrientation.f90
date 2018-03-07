@@ -1247,8 +1247,8 @@ if(modalityname .eq. 'EBSD') then
     ipar(4) = FZcnt 
     ipar(5) = FZcnt
     ipar(6) = pgnum
-    ipar(7) = ebsdnl%numsx
-    ipar(8) = ebsdnl%numsy
+    ipar(7) = ebsdnl%ipf_wd
+    ipar(8) = ebsdnl%ipf_ht
 
     allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
     indexmain = 0

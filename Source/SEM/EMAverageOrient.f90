@@ -336,8 +336,8 @@ if (enl%oldformat.eqv..FALSE.) then
   ipar(4) = Nexp
   ipar(5) = FZcnt
   ipar(6) = pgnum
-  ipar(7) = ebsdnl%numsx
-  ipar(8) = ebsdnl%numsy
+  ipar(7) = ebsdnl%ipf_wd
+  ipar(8) = ebsdnl%ipf_ht
   ebsdnl%ctffile = enl%averagectffile
   
   allocate(indexmain(1,Nexp), resultmain(1,Nexp))
