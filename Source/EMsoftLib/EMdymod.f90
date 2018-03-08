@@ -3697,13 +3697,11 @@ end if
 binned(1:binx,1:biny) = binned(1:binx,1:biny)*mask(1:binx,1:biny)
 binned = binned**fpar(12)
 
-
 do i=1,biny
     do j=1,binx
         EBSDvector((i-1)*binx+j) = binned(j,i)
     end do
 end do
-
 EBSDvector = EBSDvector/NORM2(EBSDvector)
 
 if(IPAR(13) .eq. 1) then

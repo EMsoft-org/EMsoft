@@ -102,7 +102,7 @@ use stringconstants
 
 IMPLICIT NONE
 
-type(EMDPFitListType),INTENT(IN)                :: enl
+type(EMDPFitListType),INTENT(INOUT)             :: enl
 character(fnlen),INTENT(IN)                     :: progname
 character(fnlen),INTENT(IN)                     :: nmldeffile
 
@@ -302,6 +302,7 @@ dataset = SC_sig
 
 dataset = SC_omega
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, fpar(5))
+enl%omega = fpar(5)
 
         call HDF_pop(HDF_head,.TRUE.)
 
@@ -462,7 +463,7 @@ else if(trim(enl%modalityname) .eq. 'ECP') then
         call FatalError('EMDPFit','Unknown similarity measure for images')
     end if
 
-    IPAR(12) = 1!enl%nregions
+    IPAR(12) = enl%nregions
 
     if(enl%mask) IPAR(9) = 1
 

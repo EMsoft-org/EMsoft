@@ -652,8 +652,9 @@ end if
 
 !====================================
 ! here we also create a mask if necessary
-  allocate(mask(binx,biny),stat=istat)
+  allocate(mask(binx,biny),masklin(binx*biny),stat=istat)
   mask = 1.0
+  masklin = 1.0
   if (enl%maskpattern.eq.'y') then
 ! create the circular mask in a potentially rectangular array
     maskradius = (minval( (/ binx, biny /) ) / 2 )**2
@@ -667,7 +668,6 @@ end if
     end do
     deallocate(lx, ly)
     if (trim(bitmode).eq.'dict') then
-      allocate(masklin(binx*biny))
       do j = 1,biny
         do i = 1,binx
           masklin((j-1)*binx+i) = mask(i,j)
