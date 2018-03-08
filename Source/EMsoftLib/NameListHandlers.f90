@@ -5325,7 +5325,6 @@ real(kind=sgl)                                    :: phi, phi1, phi2
 real(kind=sgl)                                    :: L
 real(kind=sgl)                                    :: thetac
 real(kind=sgl)                                    :: delta
-real(kind=sgl)                                    :: omega
 integer(kind=irg)                                 :: numsx
 integer(kind=irg)                                 :: numsy
 integer(kind=irg)                                 :: binning
@@ -5353,56 +5352,55 @@ character(2)                                      :: metric
 
 
 
-namelist / DPFitdata / masterfile, modalityname, exptfile, rhobeg, rhoend, verbose, mask, &
-         phi1, phi, phi2, L, thetac, delta, omega, numsx, numsy, binning, xpc, ypc, beamcurrent, &
-         dwelltime, npix, Rin, Rout, thetacone, sampletilt, workingdistance, gammavalue, maskradius, &
-         step_xpc, step_ypc, step_L, step_phi1, step_phi, step_phi2, step_thetacone, nrun, nregions, metric
+namelist / DPFitdata / modalityname, masterfile, metric, exptfile, nrun, rhobeg, rhoend, verbose, mask, &
+                      maskradius, gammavalue, nregions, phi1, phi, phi2, step_phi1, step_phi, step_phi2, &
+                      thetac, delta, numsx, numsy, beamcurrent, dwelltime, binning, L, xpc, ypc, step_L, &
+                      step_xpc, step_ypc, npix, Rin, Rout, thetacone, sampletilt, workingdistance, step_thetacone
 
-masterfile = 'undefined' 
-modalityname = 'undefined' 
+masterfile    = 'undefined1' 
+modalityname  = 'undefined1' 
 
-exptfile = 'undefined'
+exptfile      = 'undefined1'
 
-rhobeg = 1.0D-2
-rhoend = 1.0D-7
-verbose = .TRUE.
-mask = .TRUE.
-phi1 = 0.0
-phi = 0.0
-phi2 = 0.0
+rhobeg        = 1.0D-2
+rhoend        = 1.0D-7
+verbose       = .TRUE.
+mask          = .TRUE.
+phi1          = 0.0
+phi           = 0.0
+phi2          = 0.0
 
-step_phi1 = 2.0
-step_phi = 2.0
-step_phi2 = 2.0
+step_phi1     = 2.0
+step_phi      = 2.0
+step_phi2     = 2.0
 
-L = 15000.0
-thetac = 10.0
-delta = 50.0
-omega = 0.0
-numsx = 640
-numsy = 480
-binning = 1
-xpc = 0.0
-ypc = 0.0
-beamcurrent = 1000.0
-dwelltime = 1000.0
-npix = 512
-Rin = 2.0
-Rout = 5.0
-thetacone = 5.0
-sampletilt = 0.0
+L             = 15000.0
+thetac        = 10.0
+delta         = 50.0
+numsx         = 640
+numsy         = 480
+binning       = 1
+xpc           = 0.0
+ypc           = 0.0
+beamcurrent   = 1000.0
+dwelltime     = 1000.0
+npix          = 512
+Rin           = 2.0
+Rout          = 5.0
+thetacone     = 5.0
+sampletilt    = 0.0
 workingdistance = 7.0
-gammavalue = 1.0
-maskradius = 256.0
+gammavalue    = 1.0
+maskradius    = 256.0
 
-step_xpc = 5.0
-step_ypc = 5.0
-step_L = 5.0
+step_xpc      = 5.0
+step_ypc      = 5.0
+step_L        = 5.0
 step_thetacone = 1.0
 
-nrun = 2
-nregions = 8
-metric = 'DP'
+nrun          = 2
+nregions      = 8
+metric        = 'DP'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5444,7 +5442,6 @@ enl%phi2 = phi2
 
 enl%L = L
 enl%thetac = thetac
-enl%omega = omega
 enl%numsx = numsx
 enl%numsy = numsy
 enl%binning = binning
@@ -5469,7 +5466,6 @@ enl%step_phi1 = step_phi1
 enl%step_phi = step_phi
 enl%step_phi2 = step_phi2
 enl%step_thetacone = step_thetacone
-
 enl%nrun = nrun
 
 end subroutine GetEMDPFitNameList
