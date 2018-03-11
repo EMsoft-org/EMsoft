@@ -1507,7 +1507,7 @@ type FitOrientationPStype
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
         real(kind=sgl)          :: step
-        real(kind=sgl)          :: angleaxis(4)
+        character(fnlen)        :: PSvariantfile
 end type FitOrientationPStype
 
 type Fitalphavarianttype
