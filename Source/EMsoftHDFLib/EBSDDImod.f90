@@ -1432,6 +1432,7 @@ end subroutine CalcEBSDPatternSingleApprox
 !> @param hdferr error code
 !
 !> @date 04/07/16  SS 1.0 original
+!> @date 03/12/18 MDG 2.0 added additional parameters, and data structure
 !--------------------------------------------------------------------------
 recursive subroutine FillEBSDIndexingNameList(enl,hdferr)
 !DEC$ ATTRIBUTES DLLEXPORT :: FillEBSDIndexingNameList
