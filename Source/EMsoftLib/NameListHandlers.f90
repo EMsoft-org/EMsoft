@@ -5946,15 +5946,15 @@ integer(kind=irg)                                 :: nthreads
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
 real(kind=sgl)                                    :: step
-real(kind=sgl)                                    :: angleaxis(4)
+character(fnlen)                                  :: PSvariantfile
 
-namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, step, angleaxis
+namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, step, PSvariantfile
 
 nthreads = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
 step = 1.0
-angleaxis = (/1.0,1.0,1.0,120.0/)
+PSvariantfile = 'undefined'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5975,17 +5975,16 @@ if (.not.skipread) then
         call FatalError('EMRefineOrientation:',' ctf file name is undefined in '//nmlfile)
     end if
 
-    if(NORM2(angleaxis(1:3)) .eq. 0.0) then
-        call FatalError('GetFitOrientationPSNameList:','The angle axis for pseudosymmetric variant has norm 0')
+    if (trim(PSvariantfile).eq.'undefined') then
+        call FatalError('EMRefineOrientation:',' variant file name is undefined in '//nmlfile)
     end if
-
 end if
 
 enl%nthreads = nthreads
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%step = step
-enl%angleaxis = angleaxis
+enl%PSvariantfile = PSvariantfile
 
 end subroutine GetFitOrientationPSNameList
 
