@@ -37,6 +37,7 @@
 !> @brief Extract a .ctf file from a dot product HDF5 file; uses the same template as EMFitOrientation
 !
 !> @date 03/07/18 MDG 1.0 original
+!> @date 03/12/18 MDG 1.1 replaced dot product file reading with call to subroutine
 !--------------------------------------------------------------------------
 program EMgetCTF
 
@@ -50,13 +51,10 @@ use h5im
 use h5lt
 use EMh5ebsd
 use HDFsupport
-use rotations
-use so3
 use constants
 use EBSDmod
 use ECPiomod
 use EBSDDImod
-use omp_lib
 use ECPmod
 use filters
 use timing
@@ -64,7 +62,6 @@ use error
 use io
 use EBSDiomod
 use files
-use bobyqa_refinement,only:bobyqa
 use FitOrientations
 use stringconstants
 use patternmod
@@ -72,10 +69,6 @@ use patternmod
 use ISO_C_BINDING
 
 IMPLICIT NONE
-
-
-! variable list needs to be cleaned up !!!!
-
 
 character(fnlen)                        :: nmldeffile, progname, progdesc
 type(RefineOrientationtype)             :: enl
@@ -88,12 +81,7 @@ logical                                 :: stat, readonly, noindex, g_exists
 character(fnlen)                        :: dpfile, masterfile, energyfile
 integer(kind=irg)                       :: hdferr, ii, jj, kk, iii, istat
 
-real(kind=dbl)                          :: misang       ! desired misorientation angle (degrees)
-integer(kind=irg)                       :: Nmis         ! desired number of sampling points along cube edge
-integer(kind=irg)                       :: CMcnt        ! number of entries in linked list
-type(FZpointd),pointer                  :: CMlist, CMtmp       ! pointer to start of linked list and temporary one
-real(kind=dbl)                          :: rhozero(4), hipassw
-
+type(EBSDLargeAccumDIType),pointer      :: acc
 real(kind=sgl),allocatable              :: euler_best(:,:), CIlist(:)
 integer(kind=irg),allocatable           :: indexmain(:,:) 
 real(kind=sgl),allocatable              :: resultmain(:,:)                                         
@@ -104,45 +92,16 @@ integer(kind=irg)                       :: numk, numdictsingle, numexptsingle
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                        :: dataset, groupname  
 character(fnlen)                        :: ename, fname    
-type(EBSDLargeAccumDIType),pointer      :: acc
-type(EBSDMasterDIType),pointer          :: master
-type(ECPLargeAccumType),pointer         :: accECP
-type(ECPMasterType),pointer             :: masterECP
-real(kind=sgl),allocatable              :: mLPNHECP(:,:,:),mLPSHECP(:,:,:),accum_e_detector(:,:,:)
-type(IncidentListECP),pointer           :: khead, ktmp
 
-real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
-
-integer(c_size_t),allocatable           :: IPAR2(:)
-real(kind=dbl),allocatable              :: X(:), XL(:), XU(:)
-real(kind=sgl),allocatable              :: INITMEANVAL(:)
-real(kind=dbl)                          :: RHOBEG, RHOEND
-integer(kind=irg)                       :: NPT, N, IPRINT, NSTEP, NINIT
-integer(kind=irg),parameter             :: MAXFUN = 10000
 logical                                 :: verbose
 
 logical                                 :: f_exists, init, overwrite =.TRUE.
-integer(kind=irg),parameter             :: iunitexpt = 41, itmpexpt = 42
-integer(kind=irg)                       :: binx, biny, recordsize, patsz, totnumexpt
-complex(kind=dbl),allocatable           :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
 real(kind=sgl)                          :: quat(4), ma, mi, dp, tstart, tstop, io_real(1), tmp, totnum_el, genfloat, vlen
 integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tick, tock, ierr, L 
 integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2)
 real(kind=dbl)                          :: prefactor, F
 
-real(kind=dbl)                          :: ratioE
-integer(kind=irg)                       :: cratioE, fratioE, eindex, niter, i
-integer(kind=irg),allocatable           :: ppendE(:)
-real(kind=sgl),allocatable              :: exptpatterns(:,:)
-
-type(C_PTR)                             :: planf, HPplanf, HPplanb
-real(kind=dbl)                          :: w, Jres
-real(kind=sgl),allocatable              :: STEPSIZE(:)
 character(fnlen)                        :: modalityname
-character(1)                            :: rchar    
-integer(HSIZE_T)                        :: dims3(3), offset3(3), dims1D(1), dims2D(2)
-type(HDFobjectStackType),pointer        :: HDF_head
 
 
 init = .TRUE.
