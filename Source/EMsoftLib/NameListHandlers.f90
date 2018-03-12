@@ -5950,14 +5950,16 @@ character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
 real(kind=sgl)                                    :: step
 character(fnlen)                                  :: PSvariantfile
+character(fnlen)                                  :: modality
 
-namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, step, PSvariantfile
+namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, modality, step, PSvariantfile
 
 nthreads = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
 step = 1.0
 PSvariantfile = 'undefined'
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5988,6 +5990,7 @@ enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%step = step
 enl%PSvariantfile = PSvariantfile
+enl%modality = modality
 
 end subroutine GetFitOrientationPSNameList
 

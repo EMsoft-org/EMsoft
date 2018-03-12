@@ -1509,6 +1509,7 @@ type FitOrientationPStype
         character(fnlen)        :: ctffile
         real(kind=sgl)          :: step
         character(fnlen)        :: PSvariantfile
+        character(fnlen)        :: modality
 end type FitOrientationPStype
 
 type Fitalphavarianttype

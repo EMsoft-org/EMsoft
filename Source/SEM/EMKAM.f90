@@ -34,9 +34,10 @@
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief create a tiff file with an OSM map
+!> @brief create a tiff file with an KAM map
 !
 !> @date 07/29/16 MDG 1.0 original
+!> @date 03/12/18 MDG 1.1 replaced reading of dot product file by new subroutine, and simplified code
 !--------------------------------------------------------------------------
 program EMKAM
 
@@ -65,6 +66,7 @@ IMPLICIT NONE
 character(fnlen)                        :: nmldeffile, progname, progdesc
 type(KAMNameListType)                   :: enl
 type(EBSDIndexingNameListType)          :: ebsdnl
+type(EBSDDIdataType)                    :: EBSDDIdata
 
 logical                                 :: stat, readonly, noindex
 integer(kind=irg)                       :: hdferr, nlines, FZcnt, Nexp, nnm, nnk, Pmdims, i, j, k, olabel, Nd, Ne, ipar(10), &
@@ -103,146 +105,43 @@ call GetKAMNameList(nmldeffile,enl)
 ! open the fortran HDF interface
 call h5open_EMsoft(hdferr)
 
-dpfile = trim(EMsoft_getEMdatapathname())//trim(enl%dotproductfile)
-dpfile = EMsoft_toNativePath(dpfile)
+call readEBSDDotProductFile(enl%dotproductfile, ebsdnl, hdferr, EBSDDIdata, &
+                            getEulerAngles=.TRUE., &
+                            getTopDotProductList=.TRUE., &
+                            getTopMatchIndices=.TRUE.) 
 
-! is this a proper HDF5 file ?
-call h5fis_hdf5_f(trim(dpfile), stat, hdferr)
+Nexp = EBSDDIdata%Nexp
+FZcnt = EBSDDIdata%FZcnt
+dims2(1) = ebsdnl%nnk
+allocate(Eulervals(3,FZcnt))
+do i=1,FZcnt
+  Eulervals(1:3,i) = EBSDDIdata%EulerAngles(1:3,i)
+end do
+deallocate(EBSDDIdata%EulerAngles)
+Eulervals = Eulervals * sngl(cPi)/180.0
 
-if (stat) then 
-! open the dot product file 
-  readonly = .TRUE.
-  hdferr =  HDF_openFile(dpfile, HDF_head, readonly)
+allocate(dplist(dims2(1),Nexp))
+do i=1,Nexp
+  dplist(1:dims2(1),i) = EBSDDIdata%TopDotProductList(1:dims2(1),i)
+end do
+deallocate(EBSDDIdata%TopDotProductList)
+nnm = dims2(1)
 
-! get the energyfile and masterfile parameters from NMLParameters
-groupname = SC_NMLparameters
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_EBSDIndexingNameListType
-    hdferr = HDF_openGroup(groupname, HDF_head)
-
-dataset = SC_energyfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    energyfile = trim(stringarray(1))
-    deallocate(stringarray)
-
-dataset = SC_nnk
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, nnk)
-
-dataset = SC_ipfwd
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ipf_wd)
-dataset = SC_ipfht
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ipf_ht)
-
-! and close the NMLparameters group
-    call HDF_pop(HDF_head)
-    call HDF_pop(HDF_head)
-
-
-! open the Scan 1/EBSD/Data group
-    groupname = SC_Scan1
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_EBSD
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_Data
-    hdferr = HDF_openGroup(groupname, HDF_head)
-
-! integers
-dataset = SC_FZcnt
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, FZcnt)
-
-dataset = SC_NumExptPatterns
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, Nexp)
-
-
-dataset = SC_TopDotProductList
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, dplisttmp)
-    allocate(dplist(dims2(1),Nexp))
-    do i=1,Nexp
-      dplist(1:dims2(1),i) = dplisttmp(1:dims2(1),i)
-    end do
-    deallocate(dplisttmp)
-    nnm = dims2(1)
-
-dataset = SC_EulerAngles
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, Eulerstmp)
-    allocate(Eulervals(3,FZcnt))
-    do i=1,FZcnt
-      Eulervals(1:3,i) = Eulerstmp(1:3,i)
-    end do
-    deallocate(Eulerstmp)
-    Eulervals = Eulervals * sngl(cPi)/180.0
-
-! arrays
-dataset = SC_TopMatchIndices
-    call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, tmitmp)
-    allocate(tmi(nnk,Nexp))
-    do i=1,Nexp
-      tmi(1:nnk,i) = tmitmp(1:nnk,i)
-    end do
-    idims2 = (/ nnk, Nexp /)
-    deallocate(tmitmp)
-  call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
-
-  call Message('dot product HDF5 file read')
-end if
-
-!===================================
-! we will also need some of the crystallographic data, so that requires
-! extracting the xtalname from the energyfile
-  efile = trim(EMsoft_getEMdatapathname())//trim(energyfile)
-  efile = EMsoft_toNativePath(efile)
-
-! first, we need to check whether or not the input file is of the HDF5 format type; if
-! it is, we read it accordingly, otherwise we use the old binary format.
-!
-  call h5fis_hdf5_f(efile, stat, hdferr)
-
-  if (stat) then
-! open the fortran HDF interface
-    call h5open_EMsoft(hdferr)
-
-    nullify(HDF_head)
-
-! open the MC file using the default properties.
-    readonly = .TRUE.
-    hdferr =  HDF_openFile(efile, HDF_head, readonly)
-
-! open the namelist group
-groupname = SC_NMLparameters
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_MCCLNameList
-    hdferr = HDF_openGroup(groupname, HDF_head)
-
-! read all the necessary variables from the namelist group
-dataset = SC_xtalname
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%MCxtalname = trim(stringarray(1))
-    deallocate(stringarray)
-
-    call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-    call h5close_EMsoft(hdferr)
-
-    call Message('energy file read')
-  else
-    efile = 'File '//trim(efile)//' is not an HDF5 file'
-    call FatalError('EMAverageOrient',efile)
-  end if
-  pgnum = GetPointGroup(ebsdnl%MCxtalname)
+allocate(tmi(nnm,Nexp))
+do i=1,Nexp
+  tmi(1:nnm,i) = EBSDDIdata%TopMatchIndices(1:nnm,i)
+end do
+deallocate(EBSDDIdata%TopMatchIndices)
 
 ! and next we compute the KAM map (kam)
-allocate(kam(ipf_wd,ipf_ht),eulers(3,Nexp))
+allocate(kam(ebsdnl%ipf_wd,ebsdnl%ipf_ht),eulers(3,Nexp))
 
 ! do we need to do an orientation average first ?
 if (enl%orav.ne.0) then
-  ipar2(1) = pgnum
+  ipar2(1) = EBSDDIdata%pgnum
   ipar2(2) = FZcnt
   ipar2(3) = Nexp
-  ipar2(4) = nnk
+  ipar2(4) = ebsdnl%nnk
   ipar2(5) = Nexp*ceiling(float(ipf_wd*ipf_ht)/float(Nexp))
   ipar2(6) = enl%orav
   call Message('Computing orientation averages ... ')
@@ -257,11 +156,11 @@ end if
 ! compute the Kernel Average Misorientation map
 dict%Num_of_init = 3
 dict%Num_of_iterations = 30
-dict%pgnum = pgnum
+dict%pgnum = EBSDDIdata%pgnum
 call DI_Init(dict,'nil') 
 
 call Message('Computing KAM map... ')
-call EBSDgetKAMMap(Nexp, eulers, ipf_wd, ipf_ht, dict, kam)
+call EBSDgetKAMMap(Nexp, eulers, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dict, kam)
 kam = kam*180.0/sngl(cPi)
 
 write (*,*) 'KAM range = ',minval(kam), maxval(kam)
@@ -274,14 +173,14 @@ kam = kam*255.0
 TIFF_filename = trim(EMsoft_getEMdatapathname())//trim(enl%kamtiff)
 TIFF_filename = EMsoft_toNativePath(TIFF_filename)
 
-TIFF_nx = ipf_wd
-TIFF_ny = ipf_ht
+TIFF_nx = ebsdnl%ipf_wd
+TIFF_ny = ebsdnl%ipf_ht
 ! allocate memory for image
 allocate(TIFF_image(0:TIFF_nx-1,0:TIFF_ny-1))
 ! fill the image with whatever data you have (between 0 and 255)
  do i=0,TIFF_nx-1
   do j=0,TIFF_ny-1
-   TIFF_image(i,j) = kam(i+1,ipf_ht-j)
+   TIFF_image(i,j) = kam(i+1,ebsdnl%ipf_ht-j)
   end do
  end do
 ! create the file
