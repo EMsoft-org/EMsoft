@@ -1497,6 +1497,7 @@ type RefineOrientationtype
         integer(kind=irg)       :: nthreads
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
+        character(4)            :: modality
         real(kind=sgl)          :: step
         integer(kind=irg)       :: nmis
         integer(kind=irg)       :: niter
@@ -1508,6 +1509,7 @@ type FitOrientationPStype
         character(fnlen)        :: ctffile
         real(kind=sgl)          :: step
         character(fnlen)        :: PSvariantfile
+        character(fnlen)        :: modality
 end type FitOrientationPStype
 
 type Fitalphavarianttype

@@ -5787,12 +5787,13 @@ logical                                           :: skipread = .FALSE.
 integer(kind=irg)                                 :: nthreads
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
+character(4)                                      :: modality
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
 real(kind=sgl)                                    :: step
 
 
-namelist / RefineOrientations / nthreads, dotproductfile, ctffile, nmis, niter, step
+namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step
 
 nthreads = 1
 dotproductfile = 'undefined'
@@ -5800,6 +5801,7 @@ ctffile = 'undefined'
 nmis = 1
 niter = 1
 step = 1.0
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5829,6 +5831,7 @@ enl%ctffile = ctffile
 enl%nmis = nmis
 enl%niter = niter
 enl%step = step
+enl%modality = modality
 
 end subroutine GetRefineOrientationNameList
 
@@ -5947,14 +5950,16 @@ character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
 real(kind=sgl)                                    :: step
 character(fnlen)                                  :: PSvariantfile
+character(fnlen)                                  :: modality
 
-namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, step, PSvariantfile
+namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, modality, step, PSvariantfile
 
 nthreads = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
 step = 1.0
 PSvariantfile = 'undefined'
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5985,6 +5990,7 @@ enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%step = step
 enl%PSvariantfile = PSvariantfile
+enl%modality = modality
 
 end subroutine GetFitOrientationPSNameList
 

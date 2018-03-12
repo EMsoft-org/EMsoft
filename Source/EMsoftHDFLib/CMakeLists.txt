@@ -27,7 +27,6 @@ set(EMsoftHDFLib_SRCS
   ${EMsoftHDFLib_SOURCE_DIR}/EBSDiomod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/ECPiomod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/ECPmod.f90
-  ${EMsoftHDFLib_SOURCE_DIR}/EBSDiomod.f90
  	${EMsoftHDFLib_SOURCE_DIR}/HDFsupport.f90
  	${EMsoftHDFLib_SOURCE_DIR}/EBSDDImod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/EMh5ebsd.f90
