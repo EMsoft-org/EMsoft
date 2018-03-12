@@ -1528,9 +1528,9 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if 
    
 ! open the dot product file 
-    nullify(HDF_head)
-    readonly = .TRUE.
-    hdferr =  HDF_openFile(dpfile, HDF_head, readonly)
+nullify(HDF_head)
+readonly = .TRUE.
+hdferr =  HDF_openFile(dpfile, HDF_head, readonly)
 
 ! make sure this is an EBSD dot product file
 groupname = SC_NMLparameters
@@ -1541,11 +1541,6 @@ if (g_exists.eqv..FALSE.) then
     call FatalError('readEBSDDotProductFile','this is not an EBSD dot product file')
 end if
 call HDF_pop(HDF_head)
-
-
-!====================================
-! read all NMLparameters group datasets
-!====================================
 
 !====================================
 ! read all NMLparameters group datasets
@@ -1600,7 +1595,7 @@ dataset = SC_angfile
 
 dataset = SC_anglefile
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%angfile = trim(stringarray(1))
+    ebsdnl%anglefile = trim(stringarray(1))
     deallocate(stringarray)
 
 dataset = SC_axisangle

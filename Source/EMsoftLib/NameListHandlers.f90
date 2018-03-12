@@ -5787,12 +5787,13 @@ logical                                           :: skipread = .FALSE.
 integer(kind=irg)                                 :: nthreads
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
+character(4)                                      :: modality
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
 real(kind=sgl)                                    :: step
 
 
-namelist / RefineOrientations / nthreads, dotproductfile, ctffile, nmis, niter, step
+namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step
 
 nthreads = 1
 dotproductfile = 'undefined'
@@ -5800,6 +5801,7 @@ ctffile = 'undefined'
 nmis = 1
 niter = 1
 step = 1.0
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5829,6 +5831,7 @@ enl%ctffile = ctffile
 enl%nmis = nmis
 enl%niter = niter
 enl%step = step
+enl%modality = modality
 
 end subroutine GetRefineOrientationNameList
 
