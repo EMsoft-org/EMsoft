@@ -1530,10 +1530,10 @@ end if
 ! open the dot product file 
 nullify(HDF_head)
 readonly = .TRUE.
-hdferr =  HDF_openFile(dpfile, HDF_head, readonly)
+hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
 ! make sure this is an EBSD dot product file
-groupname = SC_NMLparameters
+groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'EBSDDictionaryIndexingNML'
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
