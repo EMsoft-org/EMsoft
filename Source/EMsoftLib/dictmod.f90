@@ -119,6 +119,11 @@ interface getDisorientationAngle
         module procedure getDisorientationAngleDouble
 end interface
 
+interface getAverageDisorientationMap
+        module procedure getAverageDisorientationMapSingle
+        module procedure getAverageDisorientationMapDouble
+end interface
+
 contains
 
 !--------------------------------------------------------------------------
@@ -1769,5 +1774,166 @@ end if
 
 end subroutine getDisorientationAngleAxisTwoPhases
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getAverageDisorientationMapSingle
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief Determine the average disorientation map (in radians, single precision)
+!
+!> @param eulers Euler angle list (3 x Nexp)
+!> @param dict dict structure
+!> @param wd width of map
+!> @param ht height of map
+!> @param ADMap output map
+!
+!> @date 03/13/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getAverageDisorientationMapSingle(eulers, dict, wd, ht, ADMap) 
+!DEC$ ATTRIBUTES DLLEXPORT :: getAverageDisorientationMapSingle
+
+use local
+use constants
+use rotations
+use quaternions
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: wd
+integer(kind=irg),INTENT(IN)            :: ht
+real(kind=sgl),INTENT(IN)               :: eulers(3, wd*ht)
+type(dicttype),INTENT(INOUT)            :: dict
+real(kind=sgl),INTENT(OUT)              :: ADMap(wd,ht)
+
+integer(kind=irg)                       :: i, j, ic, icr, ict
+real(kind=sgl)                          :: misor(4,wd,ht), denom(wd, ht), disang
+
+ADMap = 0.0
+denom = 4.0
+misor = 0.0   ! contains four misorientation angles in the order r, t, l, b 
+
+!edges
+denom(2:wd-1,1) = 3.0
+denom(2:wd-1,ht) = 3.0
+denom(1,2:ht-1) = 3.0
+denom(wd,2:ht-1) = 3.0
+! corners
+denom(1,1) = 2.0
+denom(1,ht) = 2.0
+denom(wd,1) = 2.0
+denom(wd,ht) = 2.0
+
+! we'll do this line by line (horizontally)
+do j=1,ht
+  do i=1,wd
+    ic = wd*(j-1)+i
+    icr = wd*(j-1)+i+1
+    ict = wd*j + i
+
+! right neighbor (also includes left one)
+    if (i.lt.wd) then 
+      call getDisorientationAngleSingle(eulers(1:3,ic), eulers(1:3,icr), dict, disang)
+      misor(1,i,j) = disang
+      misor(3,i+1,j) = disang
+    end if
+
+! top neighbor
+    if (j.lt.ht) then
+      call getDisorientationAngleSingle(eulers(1:3,ic), eulers(1:3,ict), dict, disang)
+      misor(2,i,j) = disang
+      misor(4,i,j+1) = disang
+    end if
+  end do 
+end do 
+
+! then take the average
+ADMap = sum(misor,1)/denom
+
+! and convert to degrees
+ADMap = ADMap * 180.0/sngl(cPi)
+
+end subroutine getAverageDisorientationMapSingle
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getAverageDisorientationMapDouble
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief Determine the average disorientation map (in radians, double precision)
+!
+!> @param eulers Euler angle list (3 x Nexp)
+!> @param dict dict structure
+!> @param wd width of map
+!> @param ht height of map
+!> @param ADMap output map
+!
+!> @date 03/13/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getAverageDisorientationMapDouble(eulers, dict, wd, ht, ADMap) 
+!DEC$ ATTRIBUTES DLLEXPORT :: getAverageDisorientationMapDouble
+
+use local
+use constants
+use rotations
+use quaternions
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: wd
+integer(kind=irg),INTENT(IN)            :: ht
+real(kind=dbl),INTENT(IN)               :: eulers(3, wd*ht)
+type(dicttype),INTENT(INOUT)            :: dict
+real(kind=dbl),INTENT(OUT)              :: ADMap(wd,ht)
+
+integer(kind=irg)                       :: i, j, ic, icr, ict
+real(kind=dbl)                          :: misor(4,wd,ht), denom(wd, ht), disang
+
+ADMap = 0.D0
+denom = 4.D0
+misor = 0.D0   ! contains four misorientation angles in the order r, t, l, b 
+
+!edges
+denom(2:wd-1,1) = 3.D0
+denom(2:wd-1,ht) = 3.D0
+denom(1,2:ht-1) = 3.D0
+denom(wd,2:ht-1) = 3.D0
+! corners
+denom(1,1) = 2.D0
+denom(1,ht) = 2.D0
+denom(wd,1) = 2.D0
+denom(wd,ht) = 2.D0
+
+! we'll do this line by line (horizontally)
+do j=1,ht
+  do i=1,wd
+    ic = wd*(j-1)+i
+    icr = wd*(j-1)+i+1
+    ict = wd*j + i
+
+! right neighbor (also includes left one)
+    if (i.lt.wd) then 
+      call getDisorientationAngleDouble(eulers(1:3,ic), eulers(1:3,icr), dict, disang)
+      misor(1,i,j) = disang
+      misor(3,i+1,j) = disang
+    end if
+
+! top neighbor
+    if (j.lt.ht) then
+      call getDisorientationAngleDouble(eulers(1:3,ic), eulers(1:3,ict), dict, disang)
+      misor(2,i,j) = disang
+      misor(4,i,j+1) = disang
+    end if
+  end do 
+end do 
+
+! then take the average
+ADMap = sum(misor,1)/denom
+
+! and convert to degrees
+ADMap = ADMap * 180.D0/cPi
+
+end subroutine getAverageDisorientationMapDouble
 
 end module dictmod

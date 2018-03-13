@@ -79,7 +79,7 @@ type(dicttype)                          :: dict
 
 character(fnlen),allocatable            :: stringarray(:)
 real(kind=sgl),allocatable              :: Eulers(:,:), dplist(:,:), Eulerstmp(:,:), dplisttmp(:,:), avEuler(:,:), & 
-                                           resultmain(:,:), disor(:), disorient(:,:), OSMmap(:,:), IQmap(:)
+                                           resultmain(:,:), disor(:), disorient(:,:), OSMmap(:,:), IQmap(:), ADMap(:,:)
 integer(kind=irg),allocatable           :: tmi(:,:), tmitmp(:,:), indexmain(:,:)
 
 type(HDFobjectStackType),pointer        :: HDF_head
@@ -106,35 +106,51 @@ call GetAverageOrientationNameList(nmldeffile,enl)
 ! open the fortran HDF interface
 call h5open_EMsoft(hdferr)
 
-call readEBSDDotProductFile(enl%dotproductfile, ebsdnl, hdferr, EBSDDIdata, &
-                            getOSM=.TRUE., & 
-                            getIQ=.TRUE., & 
-                            getEulerAngles=.TRUE., &
-                            getTopDotProductList=.TRUE., &
-                            getTopMatchIndices=.TRUE.) 
+if (enl%refined.eq.'n') then 
+  call readEBSDDotProductFile(enl%dotproductfile, ebsdnl, hdferr, EBSDDIdata, &
+                              getOSM=.TRUE., & 
+                              getIQ=.TRUE., & 
+                              getEulerAngles=.TRUE., &
+                              getTopDotProductList=.TRUE., &
+                              getTopMatchIndices=.TRUE.) 
+else
+  call readEBSDDotProductFile(enl%dotproductfile, ebsdnl, hdferr, EBSDDIdata, &
+                              getOSM=.TRUE., & 
+                              getIQ=.TRUE., & 
+                              getRefinedEulerAngles=.TRUE.)
+end if 
 
 Nexp = EBSDDIdata%Nexp
 FZcnt = EBSDDIdata%FZcnt
 dims2(1) = ebsdnl%nnk
-allocate(Eulers(3,FZcnt))
-do i=1,FZcnt
-  Eulers(1:3,i) = EBSDDIdata%EulerAngles(1:3,i)
-end do
-deallocate(EBSDDIdata%EulerAngles)
-Eulers = Eulers * sngl(cPi)/180.0
+if (enl%refined.eq.'n') then
+  allocate(Eulers(3,FZcnt))
+  do i=1,FZcnt
+    Eulers(1:3,i) = EBSDDIdata%EulerAngles(1:3,i)
+  end do
+  deallocate(EBSDDIdata%EulerAngles)
+  Eulers = Eulers * sngl(cPi)/180.0
 
-allocate(dplist(dims2(1),Nexp))
-do i=1,Nexp
-  dplist(1:dims2(1),i) = EBSDDIdata%TopDotProductList(1:dims2(1),i)
-end do
-deallocate(EBSDDIdata%TopDotProductList)
-nnm = dims2(1)
 
-allocate(tmi(nnm,Nexp))
-do i=1,Nexp
-  tmi(1:nnm,i) = EBSDDIdata%TopMatchIndices(1:nnm,i)
-end do
-deallocate(EBSDDIdata%TopMatchIndices)
+  allocate(dplist(dims2(1),Nexp))
+  do i=1,Nexp
+    dplist(1:dims2(1),i) = EBSDDIdata%TopDotProductList(1:dims2(1),i)
+  end do
+  deallocate(EBSDDIdata%TopDotProductList)
+  nnm = dims2(1)
+
+  allocate(tmi(nnm,Nexp))
+  do i=1,Nexp
+    tmi(1:nnm,i) = EBSDDIdata%TopMatchIndices(1:nnm,i)
+  end do
+  deallocate(EBSDDIdata%TopMatchIndices)
+else
+  allocate(Eulers(3,Nexp))
+  do i=1,Nexp
+    Eulers(1:3,i) = EBSDDIdata%RefinedEulerAngles(1:3,i)
+  end do
+  deallocate(EBSDDIdata%RefinedEulerAngles)
+end if
 
 ! the following arrays are kept in the EBSDDIdata structure
 !   OSMmap = EBSDDIdata%OSM
@@ -142,38 +158,43 @@ deallocate(EBSDDIdata%TopMatchIndices)
 
 call Message('  --> dot product EBSD HDF5 file read')
 
+if (enl%refined.eq.'n') then
 !===================================
 ! we will also need some of the crystallographic data, so that requires
 ! extracting the xtalname from the energyfile
-efile = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%energyfile)
-efile = EMsoft_toNativePath(efile)
+write (*,*) 'energyfile = ', trim(ebsdnl%energyfile)
+  efile = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%energyfile)
+  efile = EMsoft_toNativePath(efile)
+write (*,*) 'efile = ', trim(efile)
 
 ! first, we need to check whether or not the input file is of the HDF5 format type; if
 ! it is, we read it accordingly, otherwise we use the old binary format.
 !
-call h5fis_hdf5_f(efile, stat, hdferr)
+  call h5fis_hdf5_f(efile, stat, hdferr)
 
-if (stat) then
-! open the fortran HDF interface
-  call h5open_EMsoft(hdferr)
+  if (stat) then
+  ! open the fortran HDF interface
+    call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+    nullify(HDF_head)
 
-! open the MC file using the default properties.
-  readonly = .TRUE.
-  hdferr =  HDF_openFile(efile, HDF_head, readonly)
+  ! open the MC file using the default properties.
+    readonly = .TRUE.
+    hdferr =  HDF_openFile(efile, HDF_head, readonly)
 
-! open the namelist group
-groupname = SC_NMLparameters
-  hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_MCCLNameList
-  hdferr = HDF_openGroup(groupname, HDF_head)
+  ! open the namelist group
+    groupname = SC_NMLparameters
+      hdferr = HDF_openGroup(groupname, HDF_head)
+    groupname = SC_MCCLNameList
+      hdferr = HDF_openGroup(groupname, HDF_head)
 
-! read all the necessary variables from the namelist group
-dataset = SC_xtalname
-  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-  ebsdnl%MCxtalname = trim(stringarray(1))
-  deallocate(stringarray)
+  ! read all the necessary variables from the namelist group
+    dataset = SC_xtalname
+      call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+      ebsdnl%MCxtalname = trim(stringarray(1))
+      deallocate(stringarray)
+
+write (*,*) 'xtalname  = ', ebsdnl%MCxtalname
 
 ! dataset = SC_EkeV
 !   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%EkeV)
@@ -181,49 +202,45 @@ dataset = SC_xtalname
 ! dataset = SC_sig
 !   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%MCsig)
 
-  call HDF_pop(HDF_head,.TRUE.)
+    call HDF_pop(HDF_head,.TRUE.)
 
 ! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
-end if
+    call h5close_EMsoft(hdferr)
+  end if
 
 ! do the actual orientational averaging
-allocate(avEuler(3,Nexp),disorient(Nexp,enl%nmuse))
-ipar2(1) = EBSDDIdata%pgnum
-ipar2(2) = FZcnt
-ipar2(3) = Nexp
-if (enl%oldformat) then
-  ipar2(4) = enl%nmuse
-  ipar2(5) = Nexp
-else
+  allocate(avEuler(3,Nexp),disorient(Nexp,enl%nmuse))
+  ipar2(1) = EBSDDIdata%pgnum
+  ipar2(2) = FZcnt
+  ipar2(3) = Nexp
   ipar2(4) = ebsdnl%nnk
   ipar2(5) = Nexp*ceiling(float(ebsdnl%ipf_wd*ebsdnl%ipf_ht)/float(Nexp))
-end if
-ipar2(6) = enl%nmuse
-call EBSDgetAverageOrientations(ipar2, Eulers, tmi, dplist, avEuler, disorient)
+  ipar2(6) = enl%nmuse
+  call EBSDgetAverageOrientations(ipar2, Eulers, tmi, dplist, avEuler, disorient)
 
-! ok, so we have our list; next we need to store this in a ctf file, along with 
-! all the other crystallographic information, so we need to fill in the proper 
-! fields in the ebsdnl structure and ipar array.
-ipar = 0
-ipar(1) = 1
-ipar(2) = Nexp
-ipar(3) = Nexp
-ipar(4) = Nexp
-ipar(5) = FZcnt
-ipar(6) = EBSDDIdata%pgnum
-ipar(7) = ebsdnl%ipf_wd
-ipar(8) = ebsdnl%ipf_ht
-ebsdnl%ctffile = enl%averagectffile
+  ! ok, so we have our list; next we need to store this in a ctf file, along with 
+  ! all the other crystallographic information, so we need to fill in the proper 
+  ! fields in the ebsdnl structure and ipar array.
+  ipar = 0
+  ipar(1) = 1
+  ipar(2) = Nexp
+  ipar(3) = Nexp
+  ipar(4) = Nexp
+  ipar(5) = FZcnt
+  ipar(6) = EBSDDIdata%pgnum
+  ipar(7) = ebsdnl%ipf_wd
+  ipar(8) = ebsdnl%ipf_ht
+  ebsdnl%ctffile = enl%averagectffile
 
-allocate(indexmain(1,Nexp), resultmain(1,Nexp))
-indexmain = 0
-resultmain(1,1:Nexp) = dplist(1,1:Nexp)
-noindex = .TRUE.
-call h5open_EMsoft(hdferr)
-call ctfebsd_writeFile(ebsdnl,ipar,indexmain,avEuler,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex)
-call h5close_EMsoft(hdferr)
-call Message('Data stored in ctf file : '//trim(enl%averagectffile))
+  allocate(indexmain(1,Nexp), resultmain(1,Nexp))
+  indexmain = 0
+  resultmain(1,1:Nexp) = dplist(1,1:Nexp)
+  noindex = .TRUE.
+  call h5open_EMsoft(hdferr)
+  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,avEuler,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex)
+  call h5close_EMsoft(hdferr)
+  call Message('Data stored in ctf file : '//trim(enl%averagectffile))
+end if 
 
 ! do we need to produce a relative disorientation map ?
 if (trim(enl%disorientationmap).ne.'undefined') then
@@ -236,17 +253,38 @@ if (trim(enl%disorientationmap).ne.'undefined') then
 ! initialize the symmetry matrices
   call DI_Init(dict,'nil') 
 
+  if (enl%refined.eq.'n') then 
 ! put the Euler angles back in radians
-  avEuler = avEuler * sngl(cPi)/180.0
+    avEuler = avEuler * sngl(cPi)/180.0
 ! get the 1D point coordinate
-  ipat = ebsdnl%ipf_wd * enl%reldisy + enl%reldisx
-  allocate(disor(Nexp))
+    ipat = ebsdnl%ipf_wd * enl%reldisy + enl%reldisx
+    allocate(disor(Nexp))
 ! and get the disorientations w.r.t. all the others
-  do j=1,Nexp   
-    call getDisorientationAngle(avEuler(1:3,ipat),avEuler(1:3,j),dict,oldmo)
-    disor(j) = oldmo
-  end do
-  disor = disor*180.0/sngl(cPi)
+    do j=1,Nexp   
+      call getDisorientationAngle(avEuler(1:3,ipat),avEuler(1:3,j),dict,oldmo)
+      disor(j) = oldmo
+    end do
+    disor = disor*180.0/sngl(cPi)
+else
+! get the 1D point coordinate
+    ipat = ebsdnl%ipf_wd * enl%reldisy + enl%reldisx
+    allocate(disor(Nexp))
+! and get the disorientations w.r.t. all the others
+    do j=1,Nexp   
+      call getDisorientationAngle(Eulers(1:3,ipat),Eulers(1:3,j),dict,oldmo)
+      disor(j) = oldmo
+    end do
+    disor = disor*180.0/sngl(cPi)
+
+! next, we compute the average disorientation map (ADM) by computing the disorientations between each 
+! point and its four neighbors and averaging them.
+    ! allocate (ADMap(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
+    ! call getAverageDisorientationMap(Eulers, dict, ebsdnl%ipf_wd, ebsdnl%ipf_ht, ADMap)
+    ! open(unit=dataunit,file='ADMap.data',status='unknown',form='unformatted')
+    ! write (dataunit) ebsdnl%ipf_wd, ebsdnl%ipf_ht
+    ! write(dataunit) ADMap
+    ! close(unit=dataunit,status='keep')
+end if
 
 ! for now, we export the data in a simple text file; this needs to be modified in the future.
   open(unit=dataunit,file=trim(EMsoft_getEMdatapathname())//trim(enl%disorientationmap),status='unknown',form='formatted')

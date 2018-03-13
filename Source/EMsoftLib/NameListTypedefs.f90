@@ -911,7 +911,7 @@ type AverageOrientationNameListType
         integer(kind=irg)       :: nmuse
         integer(kind=irg)       :: reldisx
         integer(kind=irg)       :: reldisy
-        logical                 :: oldformat
+        character(1)            :: refined
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: averagectffile
         character(fnlen)        :: averagetxtfile
