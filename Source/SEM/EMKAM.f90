@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2016, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2018, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -38,6 +38,7 @@
 !
 !> @date 07/29/16 MDG 1.0 original
 !> @date 03/12/18 MDG 1.1 replaced reading of dot product file by new subroutine, and simplified code
+!> @date 03/14/18 MDG 1.2 replaced old TIF module by Will Lenthe's new object oriented module
 !--------------------------------------------------------------------------
 program EMKAM
 
@@ -56,9 +57,11 @@ use EBSDmod
 use EBSDDImod
 use HDF5
 use HDFsupport
-use TIFF_f90
+!use TIFF_f90
 use rotations
 use stringconstants
+use image
+use, intrinsic :: iso_fortran_env
 
 
 IMPLICIT NONE
@@ -71,9 +74,8 @@ type(EBSDDIdataType)                    :: EBSDDIdata
 logical                                 :: stat, readonly, noindex
 integer(kind=irg)                       :: hdferr, nlines, FZcnt, Nexp, nnm, nnk, Pmdims, i, j, k, olabel, Nd, Ne, ipar(10), &
                                            ipar2(6), pgnum, ipat, ipf_wd, ipf_ht, idims2(2)
-character(fnlen)                        :: groupname, dataset, dpfile, energyfile, masterfile, efile, fname
+character(fnlen)                        :: groupname, dataset, dpfile, energyfile, masterfile, efile, fname, image_filename
 integer(HSIZE_T)                        :: dims2(2)
-!type(dicttype),pointer                  :: dict
 type(dicttype)                          :: dict
 real(kind=sgl)                          :: testeu(3), eu1(3), eu2(3), ro1(4), ro2(4), s, da
 
@@ -83,6 +85,15 @@ real(kind=sgl),allocatable              :: kam(:,:), eulers(:,:), Eulerstmp(:,:)
                                            dplist(:,:), dplisttmp(:,:)
 
 type(HDFobjectStackType),pointer        :: HDF_head
+
+! declare variables for use in object oriented image module
+integer                                 :: iostat
+character(len=128)                      :: iomsg
+logical                                 :: isInteger
+type(image_t)                           :: im
+integer(int8)                           :: i8 (3,4)
+integer(int8), allocatable              :: TIFF_image(:,:)
+
 
 nullify(HDF_head)
 
@@ -109,6 +120,8 @@ call readEBSDDotProductFile(enl%dotproductfile, ebsdnl, hdferr, EBSDDIdata, &
                             getEulerAngles=.TRUE., &
                             getTopDotProductList=.TRUE., &
                             getTopMatchIndices=.TRUE.) 
+
+write (*,*) 'completed reading data file '
 
 Nexp = EBSDDIdata%Nexp
 FZcnt = EBSDDIdata%FZcnt
@@ -170,22 +183,56 @@ where (kam.lt.0.0) kam = 0.0
 kam = kam/maxval(kam)
 kam = kam*255.0
 
-TIFF_filename = trim(EMsoft_getEMdatapathname())//trim(enl%kamtiff)
-TIFF_filename = EMsoft_toNativePath(TIFF_filename)
 
-TIFF_nx = ebsdnl%ipf_wd
-TIFF_ny = ebsdnl%ipf_ht
+!==============================================
+image_filename = trim(EMsoft_getEMdatapathname())//trim(enl%kamtiff)
+image_filename = EMsoft_toNativePath(image_filename)
+
 ! allocate memory for image
-allocate(TIFF_image(0:TIFF_nx-1,0:TIFF_ny-1))
+allocate(TIFF_image(ebsdnl%ipf_wd,ebsdnl%ipf_ht))
+
 ! fill the image with whatever data you have (between 0 and 255)
- do i=0,TIFF_nx-1
-  do j=0,TIFF_ny-1
-   TIFF_image(i,j) = kam(i+1,ebsdnl%ipf_ht-j)
+ do i=1,ebsdnl%ipf_wd
+  do j=1,ebsdnl%ipf_ht
+   TIFF_image(i,j) = kam(i,ebsdnl%ipf_ht-j+1)
   end do
  end do
-! create the file
- call TIFF_Write_File
 
-call Message('KAM map written to '//trim(TIFF_filename))
+! set up the image_t structure
+im = image_t(TIFF_image)
+if(im%empty()) call Message("EMKAM","failed to convert array to image")
+
+! create the file
+call im%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+write (*,*) 'iostat = ',iostat
+if(0.ne.iostat) then
+  call Message("failed to write image to file : "//iomsg)
+else  
+  call Message('KAM map written to '//trim(image_filename))
+end if 
+
+! print image information
+write(*,*) "rank: "             , size(im%dims)
+write(*,*) "dims: "             , im%dims
+write(*,*) "samples per pixel: ", im%samplesPerPixel
+write(*,*) "total pixels: "     , im%size()
+select case(im%pixelType)
+  case(pix_i8 )
+    write(*,*) "pixel type: 8  bit integer"
+  case(pix_i16)
+    write(*,*) "pixel type: 16 bit integer"
+  case(pix_i32)
+    write(*,*) "pixel type: 32 bit integer"
+  case(pix_i64)
+    write(*,*) "pixel type: 64 bit integer"
+  case(pix_r32)
+    write(*,*) "pixel type: float"
+  case(pix_r64)
+    write(*,*) "pixel type: double"
+  case(pix_unk)
+    write(*,*) "pixel type: unknown"
+end select
+
+
 
 end program EMKAM
