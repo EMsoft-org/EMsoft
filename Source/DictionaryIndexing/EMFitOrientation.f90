@@ -34,7 +34,7 @@
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief Refine the orientation in a dot product file by searching orientaions
+!> @brief Refine the orientation in a dot product file by searching orientations
 !> space around that best indexed point. the search is perforems using the DFO
 !> BOBYQA algorithm. The program can handle both the EBSD and ECP modality.
 !> Future version may include PED and TKD modality as well.
@@ -186,7 +186,7 @@ if (trim(modalityname) .eq. 'EBSD') then
 
     w = ebsdnl%hipassw
     Nexp = EBSDDIdata%Nexp
-    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),stat=istat)
+    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),CIlist(Nexp),stat=istat)
     if (istat .ne. 0) then
         dpfile = 'Failed to allocate CIlist_new and/or euler_bestmatch array'
         call FatalError('EMAverageOrient',dpfile)
@@ -214,7 +214,7 @@ else if (trim(modalityname) .eq. 'ECP') then
                                getPhi2=.TRUE.) 
 
     Nexp = ECPDIdata%Nexp
-    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),stat=istat)
+    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),CIlist(Nexp),stat=istat)
     if (istat .ne. 0) then
         dpfile = 'Failed to allocate CIlist_new and/or euler_bestmatch array'
         call FatalError('EMAverageOrient',dpfile)
