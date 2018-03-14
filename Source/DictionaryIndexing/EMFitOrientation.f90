@@ -884,6 +884,10 @@ end do
 ! open the fortran HDF interface
 call h5open_EMsoft(hdferr)
 nullify(HDF_head)
+
+dpfile = trim(EMsoft_getEMdatapathname())//trim(enl%dotproductfile)
+dpfile = EMsoft_toNativePath(dpfile)
+
 hdferr =  HDF_openFile(dpfile, HDF_head)
 
 ! open the Scan 1/EBSD/Data group
