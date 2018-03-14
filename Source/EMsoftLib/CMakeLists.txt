@@ -63,6 +63,11 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/tiff.f90
   ${EMsoftLib_SOURCE_DIR}/timing.f90
   ${EMsoftLib_SOURCE_DIR}/typedefs.f90
+  ${EMsoftLib_SOURCE_DIR}/image.f90
+  ${EMsoftLib_SOURCE_DIR}/image_io.f90
+  ${EMsoftLib_SOURCE_DIR}/bmp.f90
+  ${EMsoftLib_SOURCE_DIR}/tif.f90
+  ${EMsoftLib_SOURCE_DIR}/lzw.f90
 
   ${EMsoftLib_Additional_SRCS}
 )

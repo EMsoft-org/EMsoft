@@ -120,4 +120,10 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                     SOLUTION_FOLDER EMsoftPublic/Test)
 
+  AddEMsoftUnitTest(TARGET ImageTest
+                    SOURCES ${EMsoftTestDir}/ImageTest.f90
+                    TEST_NAME Image
+                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                    SOLUTION_FOLDER EMsoftPublic/Test)
+
 endif()
