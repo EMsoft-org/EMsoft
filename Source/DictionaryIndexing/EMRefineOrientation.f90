@@ -160,7 +160,7 @@ if (trim(modalityname) .eq. 'EBSD') then
                                 getPhi2=.TRUE.) 
 
     Nexp = EBSDDIdata%Nexp
-    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),stat=istat)
+    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),CIlist(Nexp),stat=istat)
     if (istat .ne. 0) then
         dpfile = 'Failed to allocate CIlist_new and/or euler_bestmatch array'
         call FatalError('EMAverageOrient',dpfile)
