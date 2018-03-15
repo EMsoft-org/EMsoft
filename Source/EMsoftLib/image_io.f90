@@ -182,7 +182,8 @@ contains
     integer            :: ext
     type(tif_t)        :: tif
     stat = 0
-    msg = ""
+    if(present(iostat)) iostat = 0
+    if(present(iomsg)) iomsg = ""
     ext = image_get_extension(filename)
     if(im_ext_unk.eq.ext) then
       if(present(iostat)) iostat = 1
