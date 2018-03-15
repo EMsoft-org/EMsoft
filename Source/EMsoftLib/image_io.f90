@@ -52,6 +52,7 @@ contains
   ! @return: one of the file types enumerated in the image module
   ! @signature: function image_get_extension(filename) result(ext)
   module procedure image_get_extension
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_extension
     integer                      :: i, c
     character(len=32)            :: s
     integer          , parameter :: cA = iachar('A')
@@ -77,7 +78,8 @@ contains
   ! @param this: image_t to flatten
   ! @signature: subroutine image_flatten_rgba(this)
   module procedure image_flatten_rgba
-    integer                     :: i
+!DEC$ ATTRIBUTES DLLEXPORT :: image_flatten_rgba
+   integer                     :: i
     integer(int8) , allocatable :: tempBuff(:)
 
     if(pix_i8.eq.this%pixelType) then ! only flatten 8 bit images
@@ -119,7 +121,8 @@ contains
   ! @return: image_t with file data (empty on failure)
   ! @signature: function image_read(filename, iostat, iomsg) result(im)
   module procedure image_read
-    integer            :: stat
+!DEC$ ATTRIBUTES DLLEXPORT :: image_read
+  integer            :: stat
     character(len=128) :: msg
     integer            :: ext
     type(tif_t)        :: tif
@@ -173,7 +176,8 @@ contains
   ! @param (optional) iomsg: error message (filled if 0.ne.iostat)
   ! @signature: subroutine image_write(this, filename, iostat, iomsg)
   module procedure image_write
-    integer            :: stat
+!DEC$ ATTRIBUTES DLLEXPORT :: image_write
+   integer            :: stat
     character(len=128) :: msg
     integer            :: ext
     type(tif_t)        :: tif

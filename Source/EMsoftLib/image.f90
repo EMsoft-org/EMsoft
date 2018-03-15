@@ -385,6 +385,7 @@ contains
   ! @param this: image_t entry to clean up
   ! @signature: subroutine image_destroy(this)
   module procedure image_destroy
+!DEC$ ATTRIBUTES DLLEXPORT :: image_destroy    
     if(allocated(this%dims)) deallocate(this%dims)
     if(allocated(this%buff)) deallocate(this%buff)
   end procedure image_destroy
@@ -393,6 +394,7 @@ contains
   ! @param this: image_t initialize
   ! @signature: subroutine image_clear(this)
   module procedure image_clear
+!DEC$ ATTRIBUTES DLLEXPORT :: image_clear    
     if(allocated(this%dims)) deallocate(this%dims)
     this%samplesPerPixel = 0
     this%pixelType = pix_unk
@@ -405,6 +407,7 @@ contains
   ! @return: number of pixels
   ! @signature: function image_size(this) result(pixels)
   module procedure image_size
+!DEC$ ATTRIBUTES DLLEXPORT :: image_size    
     integer :: i
     if(allocated(this%buff)) then
       pixels = 1
@@ -421,6 +424,7 @@ contains
   ! @return: true/false if the image doesn't / does contain data
   ! @signature: function image_empty(this) result(empty)
   module procedure image_empty
+!DEC$ ATTRIBUTES DLLEXPORT :: image_empty    
     empty = (.not.allocated(this%dims)).or.(.not.allocated(this%buff))
   end procedure image_empty
 
@@ -431,6 +435,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i8 (data2) result(im)
   module procedure image_build_i8
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i8    
     allocate(im%dims(2))
     allocate(im%buff(1*size(data2)))
     im%dims            = shape(data2)
@@ -445,6 +450,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i16(data2) result(im)
   module procedure image_build_i16
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i16    
     allocate(im%dims(2))
     allocate(im%buff(2*size(data2)))
     im%dims            = shape(data2)
@@ -459,6 +465,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i32(data2) result(im)
   module procedure image_build_i32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i32    
     allocate(im%dims(2))
     allocate(im%buff(4*size(data2)))
     im%dims            = shape(data2)
@@ -473,6 +480,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i64(data2) result(im)
   module procedure image_build_i64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i64    
     allocate(im%dims(2))
     allocate(im%buff(8*size(data2)))
     im%dims            = shape(data2)
@@ -487,6 +495,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_r32(data2) result(im)
   module procedure image_build_r32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r32    
     allocate(im%dims(2))
     allocate(im%buff(4*size(data2)))
     im%dims            = shape(data2)
@@ -501,6 +510,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_r64(data2) result(im)
   module procedure image_build_r64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r64    
     allocate(im%dims(2))
     allocate(im%buff(8*size(data2)))
     im%dims            = shape(data2)
@@ -517,6 +527,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i8_3 (data3) result(im)
   module procedure image_build_i8_3 
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i8_3    
     allocate(im%dims(3))
     allocate(im%buff(1*size(data3)))
     im%dims            = shape(data3)
@@ -531,6 +542,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i16_3(data3) result(im)
   module procedure image_build_i16_3
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i16_3    
     allocate(im%dims(3))
     allocate(im%buff(2*size(data3)))
     im%dims            = shape(data3)
@@ -545,6 +557,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i32_3(data3) result(im)
   module procedure image_build_i32_3
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i32_3    
     allocate(im%dims(3))
     allocate(im%buff(4*size(data3)))
     im%dims            = shape(data3)
@@ -559,6 +572,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_i64_3(data3) result(im)
   module procedure image_build_i64_3
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i64_3    
     allocate(im%dims(3))
     allocate(im%buff(8*size(data3)))
     im%dims            = shape(data3)
@@ -573,6 +587,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_r32_3(data3) result(im)
   module procedure image_build_r32_3
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r32_3    
     allocate(im%dims(3))
     allocate(im%buff(4*size(data3)))
     im%dims            = shape(data3)
@@ -587,6 +602,7 @@ contains
   ! @return: created image
   ! @signature: function image_build_r64_3(data3) result(im)
   module procedure image_build_r64_3
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r64_3    
     allocate(im%dims(3))
     allocate(im%buff(8*size(data3)))
     im%dims            = shape(data3)
@@ -606,6 +622,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: function image_get_i8 (this) result(data)
   module procedure image_get_i8 
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i8    
     select case(this%pixelType)
       case(pix_i8 )
         allocate(data(this%size()))
@@ -623,6 +640,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: function image_get_i16(this) result(data)
   module procedure image_get_i16
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i16    
     select case(this%pixelType)
       case(pix_i8 )
         allocate(data(this%size()))
@@ -644,6 +662,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: function image_get_i32(this) result(data)
   module procedure image_get_i32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i32    
     select case(this%pixelType)
       case(pix_i8 )
         allocate(data(this%size()))
@@ -669,6 +688,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: function image_get_i64(this) result(data)
   module procedure image_get_i64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i64    
     select case(this%pixelType)
       case(pix_i8 )
         allocate(data(this%size()))
@@ -698,6 +718,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: function image_get_r32(this) result(data)
   module procedure image_get_r32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_r32    
     select case(this%pixelType)
       case(pix_i8 )
         allocate(data(this%size()))
@@ -723,6 +744,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: function image_get_r64(this) result(data)
   module procedure image_get_r64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_r64    
     select case(this%pixelType)
       case(pix_i8 )
         allocate(data(this%size()))
@@ -757,6 +779,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get2_i8 (this, data2)
   module procedure image_get2_i8 
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i8    
     integer(int8) , allocatable :: data (:)
     if(allocated(data2)) deallocate(data2)
     if(size(this%dims).eq.2) then
@@ -776,6 +799,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get2_i16(this, data2)
   module procedure image_get2_i16
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i16    
     integer(int16), allocatable :: data (:)
     if(allocated(data2)) deallocate(data2)
     if(size(this%dims).eq.2) then
@@ -795,6 +819,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get2_i32(this, data2)
   module procedure image_get2_i32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i32    
     integer(int32), allocatable :: data (:)
     if(allocated(data2)) deallocate(data2)
     if(size(this%dims).eq.2) then
@@ -814,6 +839,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get2_i64(this, data2)
   module procedure image_get2_i64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i64    
     integer(int64), allocatable :: data (:)
     if(allocated(data2)) deallocate(data2)
     if(size(this%dims).eq.2) then
@@ -833,6 +859,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get2_r32(this, data2)
   module procedure image_get2_r32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_r32    
     real(real32)  , allocatable :: data (:)
     if(allocated(data2)) deallocate(data2)
     if(size(this%dims).eq.2) then
@@ -852,6 +879,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get2_r64(this, data2)
   module procedure image_get2_r64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_r64    
     real(real64)  , allocatable :: data (:)
     if(allocated(data2)) deallocate(data2)
     if(size(this%dims).eq.2) then
@@ -873,6 +901,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get3_i8 (this, data3)
   module procedure image_get3_i8 
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i8    
     integer(int8) , allocatable :: data(:)
     if(size(this%dims).eq.2.or.size(this%dims).eq.3) then
       data = image_get_i8 (this)
@@ -896,6 +925,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get3_i16(this, data3)
   module procedure image_get3_i16
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i16    
     integer(int16), allocatable :: data(:)
     if(size(this%dims).eq.2.or.size(this%dims).eq.3) then
       data = image_get_i16(this)
@@ -919,6 +949,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get3_i32(this, data3)
   module procedure image_get3_i32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i32    
     integer(int32), allocatable :: data(:)
     if(size(this%dims).eq.2.or.size(this%dims).eq.3) then
       data = image_get_i32(this)
@@ -942,6 +973,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get3_i64(this, data3)
   module procedure image_get3_i64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i64    
     integer(int64), allocatable :: data(:)
     if(size(this%dims).eq.2.or.size(this%dims).eq.3) then
       data = image_get_i64(this)
@@ -965,6 +997,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get3_r32(this, data3)
   module procedure image_get3_r32
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_r32    
     real(real32)  , allocatable :: data(:)
     if(size(this%dims).eq.2.or.size(this%dims).eq.3) then
       data = image_get_r32(this)
@@ -988,6 +1021,7 @@ contains
   ! @note: user is responsible for deallocating the created array
   ! @signature: subroutine image_get3_r64(this, data3)
   module procedure image_get3_r64
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_r64    
     real(real64)  , allocatable :: data(:)
     if(size(this%dims).eq.2.or.size(this%dims).eq.3) then
       data = image_get_r64(this)

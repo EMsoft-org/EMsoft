@@ -113,6 +113,7 @@ contains
   ! @param iomsg: error message (only filled if iostat.ne.0)
   ! @return: image contained in file (as image_t)
   function bmp_read(filename, iostat, iomsg) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: bmp_read
     character(len=*), intent(in ) :: filename ! name of bitmap file to read
     integer         , intent(out) :: iostat   ! error flag
     character(len=*), intent(out) :: iomsg    ! error message
@@ -240,6 +241,7 @@ contains
   ! @param iostat: error code (0 on success)
   ! @param iomsg: error message (only filled if iostat.ne.0)
   subroutine bmp_write(filename, im, iostat, iomsg)
+!DEC$ ATTRIBUTES DLLEXPORT :: bmp_write
     character(len=*), intent(in ) :: filename ! name of bitmap file to read
     integer         , intent(out) :: iostat   ! error flag
     character(len=*), intent(out) :: iomsg    ! error message

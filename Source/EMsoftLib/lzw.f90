@@ -82,7 +82,8 @@ contains
   ! @brief: initialize an lzw string table (dictionary)
   ! @param this: dict to initialize
   subroutine dict_init(this)
-    class(dict) , intent(inout) :: this ! dict to initialize
+ !DEC$ ATTRIBUTES DLLEXPORT :: dict_init
+   class(dict) , intent(inout) :: this ! dict to initialize
     integer                     :: i
     this%prevChar(:) = -1
     this%bits = 9
@@ -97,7 +98,8 @@ contains
   ! @param code: index of string to look up
   ! @return: length of string
   function dict_code_string_length(this, code) result(length)
-    class(dict)   , intent(in) :: this
+ !DEC$ ATTRIBUTES DLLEXPORT :: dict_code_string_length
+   class(dict)   , intent(in) :: this
     integer(int16), intent(in) :: code
     integer(int16)             :: length, i
     length = 1
@@ -114,7 +116,8 @@ contains
   ! @param string: array to write string into
   ! @param endindex: index of final character position in string
   subroutine dict_build_code_string(this, code, string, endindex)
-    class(dict)   , intent(in   ) :: this
+ !DEC$ ATTRIBUTES DLLEXPORT :: dict_build_code_string
+   class(dict)   , intent(in   ) :: this
     integer(int16), intent(in   ) :: code
     integer(int8 ), intent(inout) :: string(:)
     integer       , intent(in   ) :: endindex
@@ -136,7 +139,8 @@ contains
   ! @param string: string table value for code
   ! @return: bytes extracted
   function dict_decode(this, code, oldCode, string) result(count)
-    class(dict)   , intent(inout)              :: this
+ !DEC$ ATTRIBUTES DLLEXPORT :: dict_decode
+   class(dict)   , intent(inout)              :: this
     integer(int16), intent(in   )              :: code, oldCode
     integer(int8 ), intent(inout), allocatable :: string(:)
     integer                                    :: count
@@ -190,6 +194,7 @@ contains
   ! @param this: stream to initialize
   ! @param encoded: encoded stream to read from
   subroutine stream_init(this, encoded)
+!DEC$ ATTRIBUTES DLLEXPORT :: stream_init
     class(stream) , intent(inout)         :: this ! stream to initialize
     integer(int8 ), intent(in   ), target :: encoded(:)
     this%index = 1
@@ -202,7 +207,8 @@ contains
   ! @param this: stream to extract bits from
   ! @return: extracted bits padded to 16 bits wide
   function stream_extract(this) result(code)
-    class(stream) , intent(inout) :: this ! stream to extract bits from
+ !DEC$ ATTRIBUTES DLLEXPORT :: image_flatten_rgba
+   class(stream) , intent(inout) :: this ! stream to extract bits from
     integer(int16)                :: code ! extracted bits padded to 16 wide
     integer(int16)                :: b0, b1, b2
     integer, parameter            :: magicBytes (19)  = [   1,  3,  7, 15, 31, 63,127,255,&
@@ -235,6 +241,7 @@ contains
   ! @param decoded: decoded buffer (must already be allocated with enough space to hold the decompressed result)
   ! @result bytesRead: bytes read into the the decoded array
   function lzw_decode(encoded, decoded) result(bytesRead)
+!DEC$ ATTRIBUTES DLLEXPORT :: lzw_decode
     integer(int8 ), intent(in   ), target :: encoded(:)
     integer(int16)                        :: code, oldCode, i
     integer(int64)                        :: bytesRead
