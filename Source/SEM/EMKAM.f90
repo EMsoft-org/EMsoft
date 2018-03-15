@@ -73,7 +73,7 @@ type(EBSDDIdataType)                    :: EBSDDIdata
 
 logical                                 :: stat, readonly, noindex
 integer(kind=irg)                       :: hdferr, nlines, FZcnt, Nexp, nnm, nnk, Pmdims, i, j, k, olabel, Nd, Ne, ipar(10), &
-                                           ipar2(6), pgnum, ipat, ipf_wd, ipf_ht, idims2(2)
+                                           ipar2(6), pgnum, ipat, ipf_wd, ipf_ht, idims2(2), io_int(2)
 character(fnlen)                        :: groupname, dataset, dpfile, energyfile, masterfile, efile, fname, image_filename
 integer(HSIZE_T)                        :: dims2(2)
 type(dicttype)                          :: dict
@@ -156,7 +156,12 @@ if (enl%orav.ne.0) then
   ipar2(3) = Nexp
   ipar2(4) = ebsdnl%nnk
   ipar2(5) = Nexp*ceiling(float(ipf_wd*ipf_ht)/float(Nexp))
-  ipar2(6) = enl%orav
+  ! to average we need at least two values so check the value of orav
+  if (enl%orav.eq.1) then
+    ipar2(6) = 2
+  else
+    ipar2(6) = enl%orav
+  end if 
   call Message('Computing orientation averages ... ')
   call EBSDgetAverageOrientations(ipar2, Eulervals, tmi, dplist, eulers)
   eulers = eulers*sngl(cPi)/180.0
@@ -173,10 +178,9 @@ dict%pgnum = EBSDDIdata%pgnum
 call DI_Init(dict,'nil') 
 
 call Message('Computing KAM map... ')
+call Message('')
 call EBSDgetKAMMap(Nexp, eulers, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dict, kam)
 kam = kam*180.0/sngl(cPi)
-
-write (*,*) 'KAM range = ',minval(kam), maxval(kam)
 
 where (kam.gt.enl%kamcutoff) kam = enl%kamcutoff
 where (kam.lt.0.0) kam = 0.0
@@ -204,7 +208,6 @@ if(im%empty()) call Message("EMKAM","failed to convert array to image")
 
 ! create the file
 call im%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
-write (*,*) 'iostat = ',iostat
 if(0.ne.iostat) then
   call Message("failed to write image to file : "//iomsg)
 else  
@@ -212,25 +215,30 @@ else
 end if 
 
 ! print image information
-write(*,*) "rank: "             , size(im%dims)
-write(*,*) "dims: "             , im%dims
-write(*,*) "samples per pixel: ", im%samplesPerPixel
-write(*,*) "total pixels: "     , im%size()
+call Message("Image Information:")
+io_int(1) = size(im%dims)
+call WriteValue("rank             : ",io_int,1,"(I3)")
+io_int = im%dims
+call WriteValue("dims             : ",io_int,2,"(I5,' x',I5)")
+io_int(1) = im%samplesPerPixel
+call WriteValue("samples per pixel: ",io_int,1,"(I3)") 
+io_int(1) = im%size()
+call WriteValue("total pixels     : ",io_int,1,"(I8)") 
 select case(im%pixelType)
   case(pix_i8 )
-    write(*,*) "pixel type: 8  bit integer"
+    call Message("pixel type: 8  bit integer")
   case(pix_i16)
-    write(*,*) "pixel type: 16 bit integer"
+    call Message("pixel type: 16 bit integer")
   case(pix_i32)
-    write(*,*) "pixel type: 32 bit integer"
+    call Message("pixel type: 32 bit integer")
   case(pix_i64)
-    write(*,*) "pixel type: 64 bit integer"
+    call Message("pixel type: 64 bit integer")
   case(pix_r32)
-    write(*,*) "pixel type: float"
+    call Message("pixel type: float")
   case(pix_r64)
-    write(*,*) "pixel type: double"
+    call Message("pixel type: double")
   case(pix_unk)
-    write(*,*) "pixel type: unknown"
+    call Message("pixel type: unknown")
 end select
 
 

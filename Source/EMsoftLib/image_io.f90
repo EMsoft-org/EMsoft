@@ -177,6 +177,9 @@ contains
     character(len=128) :: msg
     integer            :: ext
     type(tif_t)        :: tif
+    stat = 0
+    iostat = 0
+    msg = ""
     ext = image_get_extension(filename)
     if(im_ext_unk.eq.ext) then
       if(present(iostat)) iostat = 1
