@@ -128,6 +128,11 @@ contains
     type(tif_t)        :: tif
     logical            :: isFile
 
+! initialize variables
+    stat = 0
+    msg = ""
+    if(present(iostat)) iostat = 0
+    if(present(iomsg)) iomsg = ""
     call im%clear()
 
     ! make sure file exists
@@ -138,7 +143,7 @@ contains
       return
     endif
 
-    ! determine file time from extension and read
+    ! determine file type from extension and read
     ext = image_get_extension(filename)
     if(im_ext_unk.eq.ext) then
       if(present(iostat)) iostat = 1
@@ -181,9 +186,14 @@ contains
     character(len=128) :: msg
     integer            :: ext
     type(tif_t)        :: tif
+
+! initialize variables
     stat = 0
+    msg = ""
     if(present(iostat)) iostat = 0
     if(present(iomsg)) iomsg = ""
+
+! select writer based on the file extention
     ext = image_get_extension(filename)
     if(im_ext_unk.eq.ext) then
       if(present(iostat)) iostat = 1
