@@ -53,10 +53,10 @@
  phi 	= 0.0,
  phi2 	= 0.0,
 
-! step size for construction of quadratic surrogate function (degrees)
- step_phi1 	= 2.0,
- step_phi 	= 2.0,
- step_phi2 	= 2.0,
+! step size for construction of quadratic surrogate function (homochoric coordinates)
+ step_phi1 	= 0.03,
+ step_phi 	= 0.03,
+ step_phi2 	= 0.03,
 !
 !###################################################################
 ! EBSD PARAMETERS
