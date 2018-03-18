@@ -1152,7 +1152,7 @@ do iii = 1,cratioE
 ! calculate the dot product for each of the orientations in the neighborhood of the best match    
 
         quat(1:4) = eu2qu(euler_best(1:3,eindex)*cPi/180.0) 
-        INITMEANVAL(1:3) = euler_best(1:3,eindex)
+        INITMEANVAL(1:3) = eu2ho(euler_best(1:3,eindex) * cPi/180.0) 
 
         X = 0.5D0
         if(trim(modalityname) .eq. 'EBSD') then
@@ -1161,7 +1161,7 @@ do iii = 1,cratioE
                      master%mLPNH, master%mLPSH, mask, prefactor, master%rgx, master%rgy, master%rgz, &
                      STEPSIZE, ebsdnl%gammavalue, verbose) 
        
-            if (mod(ii,100) .eq. 0) then
+            if (mod(ii,1000) .eq. 0) then
                 io_int(1) = eindex
                 call Writevalue('completed refining pattern #',io_int,1,'(I8,I8)')
             end if
@@ -1172,15 +1172,15 @@ do iii = 1,cratioE
                      mLPNHECP, mLPSHECP, mask, prefactor, masterECP%rgx, masterECP%rgy, masterECP%rgz, &
                      STEPSIZE, ecpnl%gammavalue, verbose) 
        
-            if (mod(ii,25) .eq. 0) then
+            if (mod(ii,100) .eq. 0) then
                 io_int(1) = eindex
                 call Writevalue('completed refining pattern #',io_int,1,'(I8,I8)')
             end if
         end if
         
-        euler_best(1:3,eindex) = (/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
+        euler_best(1:3,eindex) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
         X(2)*2.0*STEPSIZE(2) - STEPSIZE(2)  + INITMEANVAL(2), &
-        X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)
+        X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) * 180.0/cPi
        
        if(trim(modalityname) .eq. 'EBSD') then
            call EMFitOrientationcalfunEBSD(IPAR2, INITMEANVAL, tmpimageexpt, acc%accum_e_detector, &

@@ -3514,6 +3514,7 @@ end subroutine EBSD4calfun
 !
 !> @date 12/12/15 SS 1.0 original
 !> @date 03/28/16 SS 1.1 omega is no longer a variable parameter
+!> @date 03/18/18 SS 1.2 refinement in homochoric space
 !--------------------------------------------------------------------------
 
 recursive subroutine EBSDcalfun(nipar, nfpar, ninit, ipar, fpar, initmeanval, expt, accum_e, &
@@ -3608,7 +3609,7 @@ real(kind=sgl)                          :: prefactor
 integer(kind=irg),allocatable           :: img1(:), img2(:)
 ! other variables
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
-real(kind=sgl)                          :: ixy(2), eu(3), eu2(3), eu3(3), eu4(3)
+real(kind=sgl)                          :: ixy(2), eu(3), ho(3)
 real(kind=sgl), allocatable             :: EBSDvector(:), EBSDflip(:,:), mask(:,:)
 integer(kind=irg)                       :: i, j, istat
 
@@ -3626,9 +3627,11 @@ fpar(7) = sngl(X(4))*2.0*stepsize(6)*fpar(3) - stepsize(6)*fpar(3) + initmeanval
 ! 03/28/16 omega is no longer a variable parameter anymore
 fpar(5) = sngl(X(3))*0.0 - 0.0 
 
-eu = (/X(5)*2.0*stepsize(3) - stepsize(3) + initmeanval(2), X(6)*2.0*stepsize(4) - stepsize(4)  + initmeanval(3), &
-       X(7)*2.0*stepsize(5) - stepsize(5) + initmeanval(4)/)*dtor ! mean +/- 2 degrees
+!eu = (/X(5)*2.0*stepsize(3) - stepsize(3) + initmeanval(2), X(6)*2.0*stepsize(4) - stepsize(4)  + initmeanval(3), &
+!       X(7)*2.0*stepsize(5) - stepsize(5) + initmeanval(4)/)*dtor ! mean +/- 2 degrees
 
+ho = (/X(5)*2.0*stepsize(3) - stepsize(3) + initmeanval(2), X(6)*2.0*stepsize(4) - stepsize(4)  + initmeanval(3), &
+       X(7)*2.0*stepsize(5) - stepsize(5) + initmeanval(4)/)
 
 binx = ipar(2)/ipar(12)
 biny = ipar(3)/ipar(12)
@@ -3653,14 +3656,15 @@ img2 = 0
 mask = 1.0
 
 if (present(verbose)) then
-    if(verbose) then    
-        print*,'xpc, ypc, L, eu = ', fpar(1), fpar(2), fpar(7), eu(1:3)*180.0/cPi
+    if(verbose) then
+        eu = ho2eu(ho) * 180.0/cPi    
+        print*,'xpc, ypc, L, eu = ', fpar(1), fpar(2), fpar(7), eu(1:3)
      end if
 end if
 
-fpar2(1:10) = fpar(1:10)
-ipar2(1:10) = ipar(1:10)
-quats(1:4,1) = eu2qu(eu)
+fpar2(1:10)   = fpar(1:10)
+ipar2(1:10)   = ipar(1:10)
+quats(1:4,1)  = ho2qu(ho) 
 
 call getEBSDPatterns(ipar2, fpar2, EBSDpattern, quats, accum_e, mLPNH, mLPSH)
 
@@ -3837,17 +3841,21 @@ integer(kind=irg),allocatable           :: img1(:), img2(:)
 
 integer(kind=irg)                       :: istat, i, j
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
-real(kind=sgl)                          :: eu(3)
+real(kind=sgl)                          :: eu(3), ho(3)
 logical                                 :: stat, readonly
 integer(kind=irg)                       :: hdferr, nlines, nregions
 
 
 fpar(1) = sngl(X(1))*2.0*stepsize(1) - stepsize(1) + initmeanval(1) ! thetac mean +/- stepsize degrees degrees only
 
-eu = (/X(2)*2.0*stepsize(2) - stepsize(2) + initmeanval(2), X(3)*2.0*stepsize(3) - stepsize(3)  + initmeanval(3), &
-       X(4)*2.0*stepsize(4) - stepsize(4) + initmeanval(4)/)*cPi/180.0 ! mean +/- stepsize
+!eu = (/X(2)*2.0*stepsize(2) - stepsize(2) + initmeanval(2), X(3)*2.0*stepsize(3) - stepsize(3)  + initmeanval(3), &
+!       X(4)*2.0*stepsize(4) - stepsize(4) + initmeanval(4)/)*cPi/180.0 ! mean +/- stepsize
 
-quats(1:4,1) = eu2qu(eu)
+ho = (/X(2)*2.0*stepsize(2) - stepsize(2) + initmeanval(2), X(3)*2.0*stepsize(3) - stepsize(3)  + initmeanval(3), &
+       X(4)*2.0*stepsize(4) - stepsize(4) + initmeanval(4)/)
+
+!quats(1:4,1) = eu2qu(eu)
+quats(1:4,1) = ho2qu(ho)
 
 !D = dcmplx(0.D0,0.D0)
 ! read all the files 
@@ -3860,8 +3868,9 @@ ECPpatterninteger = 0
 ECPpatternad = 0
 
 if (present(verbose)) then
-    if(verbose) then    
-        print*,'thetac, eu = ',sngl(X(1))*2.0*stepsize(1) - stepsize(1) + initmeanval(1), eu*180.0/cPi
+    if(verbose) then
+        eu = ho2eu(ho)*180.0/cPi    
+        print*,'thetac, eu = ',sngl(X(1))*2.0*stepsize(1) - stepsize(1) + initmeanval(1), eu
     end if
 end if
 
