@@ -1402,21 +1402,21 @@ logical                                 :: skipread = .FALSE.
 integer(kind=irg)       :: nmuse
 integer(kind=irg)       :: reldisx
 integer(kind=irg)       :: reldisy
-logical                 :: oldformat
+character(1)            :: refined
 character(fnlen)        :: dotproductfile
 character(fnlen)        :: averagectffile
 character(fnlen)        :: averagetxtfile
 character(fnlen)        :: disorientationmap
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /AverageOrientation/ nmuse, dotproductfile, averagectffile, oldformat, averagetxtfile, &
-                              reldisx, reldisy, disorientationmap
+namelist /AverageOrientation/ nmuse, dotproductfile, averagectffile, averagetxtfile, &
+                              reldisx, reldisy, disorientationmap, refined
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 nmuse = 10                      ! number of near-matches to use
 reldisx = 0                     ! x-coordinate for relative disorientation map
 reldisy = 0                     ! y-coordinate for relative disorientation map
-oldformat = .FALSE.             ! switch for older format of dot product files
+refined = 'n'                   ! which Euler angle set to be used for disorientation map ...
 dotproductfile = 'undefined'    ! default filename for input dotproduct file (HDF5)
 averagectffile = 'undefined'    ! default filename for output ctf file
 averagetxtfile = 'undefined'    ! default filename for output txt file (only with oldformat=.TRUE.
@@ -1438,14 +1438,8 @@ if (.not.skipread) then
   call FatalError(' EMAverageOrient',' dotproduct file name is undefined in '//nmlfile)
  end if
 
- if (oldformat.eqv..TRUE.) then
-   if (trim(averagetxtfile).eq.'undefined') then
-    call FatalError(' EMAverageOrient',' txt output file name is undefined in '//nmlfile)
-   end if
- else
-   if (trim(averagectffile).eq.'undefined') then
-    call FatalError(' EMAverageOrient',' ctf output file name is undefined in '//nmlfile)
-   end if
+ if (trim(averagectffile).eq.'undefined') then
+  call FatalError(' EMAverageOrient',' ctf output file name is undefined in '//nmlfile)
  end if
 end if
 
@@ -1453,7 +1447,7 @@ end if
 emnl%nmuse = nmuse
 emnl%reldisx = reldisx
 emnl%reldisy = reldisy
-emnl%oldformat = oldformat
+emnl%refined = refined
 emnl%dotproductfile = dotproductfile
 emnl%averagectffile = averagectffile
 emnl%averagetxtfile = averagetxtfile
@@ -5787,12 +5781,13 @@ logical                                           :: skipread = .FALSE.
 integer(kind=irg)                                 :: nthreads
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
+character(4)                                      :: modality
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
 real(kind=sgl)                                    :: step
 
 
-namelist / RefineOrientations / nthreads, dotproductfile, ctffile, nmis, niter, step
+namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step
 
 nthreads = 1
 dotproductfile = 'undefined'
@@ -5800,6 +5795,7 @@ ctffile = 'undefined'
 nmis = 1
 niter = 1
 step = 1.0
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5829,6 +5825,7 @@ enl%ctffile = ctffile
 enl%nmis = nmis
 enl%niter = niter
 enl%step = step
+enl%modality = modality
 
 end subroutine GetRefineOrientationNameList
 
@@ -5946,15 +5943,17 @@ integer(kind=irg)                                 :: nthreads
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
 real(kind=sgl)                                    :: step
-real(kind=sgl)                                    :: angleaxis(4)
+character(fnlen)                                  :: PSvariantfile
+character(fnlen)                                  :: modality
 
-namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, step, angleaxis
+namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, modality, step, PSvariantfile
 
 nthreads = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
 step = 1.0
-angleaxis = (/1.0,1.0,1.0,120.0/)
+PSvariantfile = 'undefined'
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5975,17 +5974,17 @@ if (.not.skipread) then
         call FatalError('EMRefineOrientation:',' ctf file name is undefined in '//nmlfile)
     end if
 
-    if(NORM2(angleaxis(1:3)) .eq. 0.0) then
-        call FatalError('GetFitOrientationPSNameList:','The angle axis for pseudosymmetric variant has norm 0')
+    if (trim(PSvariantfile).eq.'undefined') then
+        call FatalError('EMRefineOrientation:',' variant file name is undefined in '//nmlfile)
     end if
-
 end if
 
 enl%nthreads = nthreads
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%step = step
-enl%angleaxis = angleaxis
+enl%PSvariantfile = PSvariantfile
+enl%modality = modality
 
 end subroutine GetFitOrientationPSNameList
 

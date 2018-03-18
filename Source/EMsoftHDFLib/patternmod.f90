@@ -412,10 +412,12 @@ if (present(ROI)) then
 else
  kkstart = 1_ill
  kkend = dims3(3)
- if (itype.eq.2) then
-! for the first row, we need to skip the first pattern completely...  needs to be verified
-   if (iii.eq.1) offset = offset + lL / 2_ill
- end if
+! after emailing with Stuart, we decided that we do *not* need to skip the first pattern for the .up2 format;
+! there *is* an extra pattern in the file but it is the last one, not the first one...
+!  if (itype.eq.2) then
+! ! for the first row, we need to skip the first pattern completely...  needs to be verified
+!    if (iii.eq.1) offset = offset + lL / 2_ill
+!  end if
 end if
 
 select case (itype)

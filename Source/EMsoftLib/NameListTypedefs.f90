@@ -911,7 +911,7 @@ type AverageOrientationNameListType
         integer(kind=irg)       :: nmuse
         integer(kind=irg)       :: reldisx
         integer(kind=irg)       :: reldisy
-        logical                 :: oldformat
+        character(1)            :: refined
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: averagectffile
         character(fnlen)        :: averagetxtfile
@@ -1497,6 +1497,7 @@ type RefineOrientationtype
         integer(kind=irg)       :: nthreads
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
+        character(4)            :: modality
         real(kind=sgl)          :: step
         integer(kind=irg)       :: nmis
         integer(kind=irg)       :: niter
@@ -1507,7 +1508,8 @@ type FitOrientationPStype
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
         real(kind=sgl)          :: step
-        real(kind=sgl)          :: angleaxis(4)
+        character(fnlen)        :: PSvariantfile
+        character(fnlen)        :: modality
 end type FitOrientationPStype
 
 type Fitalphavarianttype
