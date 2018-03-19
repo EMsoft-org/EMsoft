@@ -55,6 +55,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                                     SOLUTION_FOLDER EMsoftPublic/Utilities 
                                     INSTALL_PROGRAM TRUE)
 
+     Add_EMsoft_Executable(TARGET EMeqvPS
+                                    SOURCES ${APP_DIR}/EMeqvPS.f90 
+                                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                                    SOLUTION_FOLDER EMsoftPublic/Utilities 
+                                    INSTALL_PROGRAM TRUE)
+
       Add_EMsoft_Executable(TARGET EMqg 
                                     SOURCES ${APP_DIR}/EMqg.f90 
                                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
