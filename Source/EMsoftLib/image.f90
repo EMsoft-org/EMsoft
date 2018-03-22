@@ -176,173 +176,207 @@ module image
 !!            defined in this file (image_base submodule)             !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     module subroutine image_destroy(this)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_destroy    
       type(image_t), intent(inout) :: this ! image data structure to clean up
     end subroutine image_destroy
 
     module subroutine image_clear(this)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_clear    
       class(image_t), intent(inout) :: this ! image data structure to clean up
     end subroutine image_clear
 
     module function image_size(this) result(pixels)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_size    
       class(image_t), intent(in) :: this   ! image data structure to compute size of
       integer                    :: pixels ! size of image in pixel
     end function image_size
 
     module function image_empty(this) result(empty)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_empty    
       class(image_t), intent(in) :: this  ! image data structure to check
       logical                    :: empty ! true if the object doesn't contain an image
     end function image_empty
 
     module function image_build_i8 (data2) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i8    
       integer(int8) , intent(in) :: data2(:,:) ! image data
       type(image_t)              :: im
     end function image_build_i8
 
     module function image_build_i16(data2) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i16    
       integer(int16), intent(in) :: data2(:,:) ! image data
       type(image_t)              :: im
     end function image_build_i16
 
     module function image_build_i32(data2) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i32    
       integer(int32), intent(in) :: data2(:,:) ! image data
       type(image_t)              :: im
     end function image_build_i32
 
     module function image_build_i64(data2) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i64    
       integer(int64), intent(in) :: data2(:,:) ! image data
       type(image_t)              :: im
     end function image_build_i64
 
     module function image_build_r32(data2) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r32    
       real(real32)  , intent(in) :: data2(:,:) ! image data
       type(image_t)              :: im
     end function image_build_r32
 
     module function image_build_r64(data2) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r64    
       real(real64)  , intent(in) :: data2(:,:) ! image data
       type(image_t)              :: im
     end function image_build_r64
 
     ! functions to build image from 3d array
     module function image_build_i8_3 (data3) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i8_3    
       integer(int8) , intent(in) :: data3(:,:,:) ! image data
       type(image_t)              :: im
     end function image_build_i8_3
 
     module function image_build_i16_3(data3) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i16_3    
       integer(int16), intent(in) :: data3(:,:,:) ! image data
       type(image_t)              :: im
     end function image_build_i16_3
 
     module function image_build_i32_3(data3) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i32_3    
       integer(int32), intent(in) :: data3(:,:,:) ! image data
       type(image_t)              :: im
     end function image_build_i32_3
 
     module function image_build_i64_3(data3) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_i64_3    
       integer(int64), intent(in) :: data3(:,:,:) ! image data
       type(image_t)              :: im
     end function image_build_i64_3
 
     module function image_build_r32_3(data3) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r32_3    
       real(real32)  , intent(in) :: data3(:,:,:) ! image data
       type(image_t)              :: im
     end function image_build_r32_3
 
     module function image_build_r64_3(data3) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_build_r64_3    
       real(real64)  , intent(in) :: data3(:,:,:) ! image data
       type(image_t)              :: im
     end function image_build_r64_3
 
     ! functions to get data as appropriate type (casting up if needed)
     module function image_get_i8 (this) result(data)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i8    
       class(image_t), intent(in)  :: this    ! image data structure to copy data from
       integer(int8) , allocatable :: data(:)
      end function image_get_i8
 
     module function image_get_i16(this) result(data)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i16    
       class(image_t), intent(in)  :: this    ! image data structure to copy data from
       integer(int16), allocatable :: data(:)
      end function image_get_i16
 
     module function image_get_i32(this) result(data)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i32    
       class(image_t), intent(in)  :: this    ! image data structure to copy data from
       integer(int32), allocatable :: data(:)
      end function image_get_i32
 
     module function image_get_i64(this) result(data)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_i64    
       class(image_t), intent(in)  :: this    ! image data structure to copy data from
       integer(int64), allocatable :: data(:)
      end function image_get_i64
 
     module function image_get_r32(this) result(data)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_r32    
       class(image_t), intent(in)  :: this    ! image data structure to copy data from
       real(real32)  , allocatable :: data(:)
      end function image_get_r32
 
     module function image_get_r64(this) result(data)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_r64    
       class(image_t), intent(in)  :: this    ! image data structure to copy data from
       real(real64)  , allocatable :: data(:)
      end function image_get_r64
 
     ! routines to get data as 2d array
     module subroutine image_get2_i8 (this, data2)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i8    
       class(image_t), intent(in )              :: this       ! image data structure to copy data from
       integer(int8) , intent(out), allocatable :: data2(:,:) ! array to copy data into
      end subroutine image_get2_i8
 
     module subroutine image_get2_i16(this, data2)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i16    
       class(image_t), intent(in )              :: this       ! image data structure to copy data from
       integer(int16), intent(out), allocatable :: data2(:,:) ! array to copy data into
      end subroutine image_get2_i16
 
     module subroutine image_get2_i32(this, data2)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i32    
       class(image_t), intent(in )              :: this       ! image data structure to copy data from
       integer(int32), intent(out), allocatable :: data2(:,:) ! array to copy data into
      end subroutine image_get2_i32
 
     module subroutine image_get2_i64(this, data2)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_i64    
       class(image_t), intent(in )              :: this       ! image data structure to copy data from
       integer(int64), intent(out), allocatable :: data2(:,:) ! array to copy data into
      end subroutine image_get2_i64
 
     module subroutine image_get2_r32(this, data2)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_r32    
       class(image_t), intent(in )              :: this       ! image data structure to copy data from
       real(real32)  , intent(out), allocatable :: data2(:,:) ! array to copy data into
      end subroutine image_get2_r32
 
     module subroutine image_get2_r64(this, data2)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get2_r64    
       class(image_t), intent(in )              :: this       ! image data structure to copy data from
       real(real64)  , intent(out), allocatable :: data2(:,:) ! array to copy data into
      end subroutine image_get2_r64
 
     ! routines to get data as 3d array
     module subroutine image_get3_i8 (this, data3)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i8    
       class(image_t), intent(in )              :: this         ! image data structure to copy data from
       integer(int8) , intent(out), allocatable :: data3(:,:,:) ! array to copy data into
     end subroutine image_get3_i8
 
     module subroutine image_get3_i16(this, data3)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i16    
       class(image_t), intent(in )              :: this         ! image data structure to copy data from
       integer(int16), intent(out), allocatable :: data3(:,:,:) ! array to copy data into
     end subroutine image_get3_i16
 
     module subroutine image_get3_i32(this, data3)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i32    
       class(image_t), intent(in )              :: this         ! image data structure to copy data from
       integer(int32), intent(out), allocatable :: data3(:,:,:) ! array to copy data into
     end subroutine image_get3_i32
 
     module subroutine image_get3_i64(this, data3)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_i64    
       class(image_t), intent(in )              :: this         ! image data structure to copy data from
       integer(int64), intent(out), allocatable :: data3(:,:,:) ! array to copy data into
     end subroutine image_get3_i64
 
     module subroutine image_get3_r32(this, data3)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_r32    
       class(image_t), intent(in )              :: this         ! image data structure to copy data from
       real(real32)  , intent(out), allocatable :: data3(:,:,:) ! array to copy data into
     end subroutine image_get3_r32
 
     module subroutine image_get3_r64(this, data3)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get3_r64    
       class(image_t), intent(in )              :: this         ! image data structure to copy data from
       real(real64)  , intent(out), allocatable :: data3(:,:,:) ! array to copy data into
     end subroutine image_get3_r64
@@ -351,15 +385,18 @@ module image
 !!         defined in image_io (to break circular references)         !!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     module function image_get_extension(filename) result(ext)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_get_extension    
       character(len=*) , intent(in) :: filename ! filename to parse
       integer                       :: ext      ! one of im_ext_*
     end function image_get_extension
 
     module subroutine image_flatten_rgba(this)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_flatten_rgba    
       type(image_t), intent(inout) :: this
     end subroutine image_flatten_rgba
 
     module function image_read(filename, iostat, iomsg) result(im)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_read    
       character(len=*), intent(in )           :: filename ! filename to read image from
       integer         , intent(out), optional :: iostat   ! error flag
       character(len=*), intent(out), optional :: iomsg    ! error message
@@ -367,6 +404,7 @@ module image
     end function image_read
 
     module subroutine image_write(this, filename, iostat, iomsg)
+!DEC$ ATTRIBUTES DLLEXPORT :: image_write    
       class(image_t)  , intent(in )           :: this     ! image to write to file
       character(len=*), intent(in )           :: filename ! filename to read image from
       integer         , intent(out), optional :: iostat   ! error flag
