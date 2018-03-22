@@ -1243,6 +1243,38 @@ type QCStructureType
   complex(kind=dbl),allocatable         :: LUTqg(:)
 end type QCStructureType
 
+! 2-D Quasi-Crystal data structures
+type TDQCStructureType
+  integer(kind=irg)                     :: atno
+  integer(kind=irg)                     :: imax
+  integer(kind=irg)                     :: numindices
+  integer(kind=irg),allocatable         :: facts(:,:)
+  integer(kind=irg),allocatable         :: Ucgindex(:)
+  logical,allocatable                   :: Ucgcalc(:)
+  integer(kind=irg),allocatable         :: inverseIndex(:,:)
+  real(kind=dbl)                        :: epvec(2,4), epar(4,2)
+  real(kind=dbl)                        :: eovec(2,4), eperp(4,2)
+  real(kind=dbl)                        :: Mp(4,4), Picos(4,4)
+  real(kind=dbl)                        :: Mo(4,4), Qicos(4,4)
+  real(kind=dbl)                        :: SYM_icos(4,4,24)              ! D24 rotational group in matrix representation
+  real(kind=dbl)                        :: QClatparm
+  real(kind=dbl)                        :: dmin
+  real(kind=dbl)                        :: vol
+  real(kind=dbl)                        :: gmax_orth
+  real(kind=dbl)                        :: DWF
+  real(kind=dbl)                        :: voltage
+  real(kind=dbl)                        :: mRelCor
+  real(kind=dbl)                        :: mSigma
+  real(kind=dbl)                        :: mPsihat
+  real(kind=dbl)                        :: mLambda
+  real(kind=dbl)                        :: Upzero
+  real(kind=dbl)                        :: xizerop
+  real(kind=dbl)                        :: multiplicity
+  character(1)                          :: centering   ! 'P','I','F'
+  complex(kind=dbl),allocatable         :: LUT(:)
+  complex(kind=dbl),allocatable         :: LUTqg(:)
+end type TDQCStructureType
+
 type PoleFigures
   integer(kind=irg),allocatable         :: hkl(:,:)
   real(kind=dbl),allocatable            :: PFhkl(:,:,:)
