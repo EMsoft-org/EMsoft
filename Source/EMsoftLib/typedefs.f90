@@ -700,6 +700,22 @@ type QCreflisttype
   type(QCreflisttype),pointer   :: nextw                ! connection to next weak entry in linked list
 end type QCreflisttype
 
+! linked list of quasi-crystal reflections [03/23/18, SS]
+type TDQCreflisttype  
+  integer(kind=irg)                 ::  num, &               ! sequential number
+                                        hkl(5),&             ! Miller indices
+                                        strongnum,&          ! sequential number for strong beams
+                                        weaknum              ! sequential number for weak beams
+  real(kind=dbl)                    ::  sg, &                ! excitation error
+                                        xg, &                ! extinction distance
+                                        glen                 ! length of reciprocal lattice vector
+  logical                           ::  strong, weak         ! is this a strong beam or not; both .FALSE. means 'do not consider'
+  complex(kind=dbl)                 ::  Ucg                  ! Fourier coefficient
+  complex(kind=dbl)                 ::  qg                   ! scaled Fourier coefficient
+  type(TDQCreflisttype),pointer     ::  next                 ! connection to next entry in master linked list
+  type(TDQCreflisttype),pointer     ::  nexts                ! connection to next strong entry in linked list
+  type(TDQCreflisttype),pointer     ::  nextw                ! connection to next weak entry in linked list
+end type TDQCreflisttype
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1252,11 +1268,11 @@ type TDQCStructureType
   integer(kind=irg),allocatable         :: Ucgindex(:)
   logical,allocatable                   :: Ucgcalc(:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
-  real(kind=dbl)                        :: epvec(2,4), epar(4,2)
-  real(kind=dbl)                        :: eovec(2,4), eperp(4,2)
-  real(kind=dbl)                        :: Mp(4,4), Picos(4,4)
-  real(kind=dbl)                        :: Mo(4,4), Qicos(4,4)
-  real(kind=dbl)                        :: SYM_icos(4,4,24)              ! D24 rotational group in matrix representation
+  real(kind=dbl)                        :: epvec(3,5), epar(5,3)
+  real(kind=dbl)                        :: eovec(3,5), eperp(5,3)
+  real(kind=dbl)                        :: Mp(5,5), Picos(5,5)
+  real(kind=dbl)                        :: Mo(5,5), Qicos(5,5)
+  real(kind=dbl)                        :: SYM_icos(5,5,24)              ! D24 rotational group in matrix representation
   real(kind=dbl)                        :: QClatparm
   real(kind=dbl)                        :: dmin
   real(kind=dbl)                        :: vol
