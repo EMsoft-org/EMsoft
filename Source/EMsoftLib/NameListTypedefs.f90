@@ -1505,6 +1505,7 @@ end type RefineOrientationtype
 
 type FitOrientationPStype
         integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: matchdepth
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
         real(kind=sgl)          :: step

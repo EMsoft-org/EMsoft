@@ -5940,15 +5940,17 @@ logical,OPTIONAL,INTENT(IN)                       :: initonly
 logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)                                 :: nthreads
+integer(kind=irg)                                 :: matchdepth
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
 real(kind=sgl)                                    :: step
 character(fnlen)                                  :: PSvariantfile
 character(fnlen)                                  :: modality
 
-namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, modality, step, PSvariantfile
+namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, modality, step, PSvariantfile, matchdepth
 
 nthreads = 1
+matchdepth = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
 step = 1.0
@@ -5980,6 +5982,7 @@ if (.not.skipread) then
 end if
 
 enl%nthreads = nthreads
+enl%matchdepth = matchdepth
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%step = step
