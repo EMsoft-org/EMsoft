@@ -399,7 +399,7 @@ write (*,*) ' Multiplicative factor to generate 1 nC of incident electrons ', em
 ! intensity prefactor  (redefined by MDG, 3/23/18)
 ! prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
 prefactor = emult * enl%beamcurrent * enl%dwelltime * 1.0D-6
-write (*,*) ' Intensity prefactor = ', prefactor
+write (*,*) ' Intensity scaling prefactor = ', prefactor
 
 allocate(energywf(Emin:Emax), wf(enl%numEbins),stat=istat)
 energywf = 0.0

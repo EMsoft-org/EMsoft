@@ -1570,7 +1570,7 @@ if (present(removebackground)) then
   if (removebackground.eq.'y') nobg = .TRUE.
 end if
 
-bindx = 1.0/float(ipar(1))**2
+! bindx = 1.0/float(ipar(1))**2
 
 allocate(EBSDpattern(ipar(2),ipar(3)),stat=istat)
 
@@ -1658,8 +1658,7 @@ if (ipar(1) .ne. 1) then
         end do
     end do
 ! and divide by binning^2
-
-    binned = binned * bindx
+!   binned = binned * bindx
 else
     binned = EBSDpattern
 end if
@@ -1734,7 +1733,7 @@ integer(kind=irg)                               :: nix,niy,nixp,niyp
 
 ystep = floor(float(ipar(3))/float(ipar(8)+1))
 
-bindx = 1.0/float(ipar(1))**2
+! bindx = 1.0/float(ipar(1))**2
 
 allocate(EBSDpattern(ipar(2),ipar(8)),stat=istat)
 
