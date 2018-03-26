@@ -445,6 +445,12 @@ dataset = SC_sig
 dataset = SC_omega
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
 
+dataset = SC_totnumel
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%totnum_el)
+
+dataset = SC_multiplier
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%multiplier)
+
 ! close the name list group
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
