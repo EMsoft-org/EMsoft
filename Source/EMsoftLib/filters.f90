@@ -61,12 +61,11 @@ contains
 !> @param ny y dimension
 !> @param im image array; must have values in range [1..256]
 ! 
-!> @date 01/23/16 MDG 1.0 original
+!> @date 03/23/18 MDG 1.0 original
 !--------------------------------------------------------------------------
 recursive function applyPoissonNoise(image, nx, ny, idum) result(noisy)
 !DEC$ ATTRIBUTES DLLEXPORT :: image_histogram
 
-use deviates
 use noise
 
 IMPLICIT NONE
