@@ -46,6 +46,8 @@
  beamcurrent = 150.0,
 ! beam dwell time [micro s]
  dwelltime = 100.0,
+! include Poisson noise ? (y/n) (noise will be applied *before* binning and intensity scaling)
+ poisson = 'n',
 ! binning mode (1, 2, 4, or 8)
  binning = 1,
 ! should we perform an approximate computation that includes a lattice distortion? ('y' or 'n')

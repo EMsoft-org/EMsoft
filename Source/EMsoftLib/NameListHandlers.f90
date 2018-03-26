@@ -2435,6 +2435,7 @@ real(kind=dbl)          :: Ftensor(3,3)
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
 character(1)            :: includebackground
+character(1)            :: poisson
 character(1)            :: makedictionary
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
@@ -2454,7 +2455,7 @@ namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefi
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
                         applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
-                        maskradius
+                        maskradius, poisson
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2481,6 +2482,7 @@ Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
 makedictionary  = 'y'
+poisson         = 'n'           ! apply poisson noise ? 
 includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
@@ -2551,6 +2553,7 @@ enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%includebackground = includebackground
 enl%makedictionary = makedictionary
+enl%poisson = poisson
 enl%applyDeformation = applyDeformation
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode

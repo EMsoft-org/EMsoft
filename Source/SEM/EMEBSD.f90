@@ -259,12 +259,13 @@ use constants
 use io
 use files
 use filters
+use deviates
 use diffraction
 use EBSDmod
 use Lambert
 use quaternions
 use rotations
-use noise
+use filters
 use HDF5
 use HDFsupport
 use ISO_C_BINDING
@@ -352,7 +353,7 @@ real(kind=sgl)                          :: bitrange
 ! new stuff: deformation tensor
 real(kind=dbl)                          :: Umatrix(3,3), Fmatrix(3,3), Smatrix(3,3), quF(4), Fmatrix_inverse(3,3), &
                                            Gmatrix(3,3)
-logical                                 :: includeFmatrix=.FALSE.
+logical                                 :: includeFmatrix=.FALSE., noise
 
 !====================================
 ! max number of OpenMP threads on this platform
@@ -377,6 +378,9 @@ end if
 ! define some energy-related parameters derived from MC input parameters
 !====================================
 sig = enl%MCsig
+
+noise = .FALSE.
+if (enl%poisson.eq.'y') noise = .TRUE.
 
 ! make sure the requested energy range is within the range available from the Monte Carlo computation
 if (enl%energymin.lt.enl%Ehistmin) enl%energymin = enl%Ehistmin
@@ -730,6 +734,8 @@ call OMP_SET_NUM_THREADS(nthreads)
 call CPU_TIME(tstart)
 call Time_tick(tick)
 
+write (*,*) 'applying noise ? ', noise
+
 !====================================
 !====================================
 do ibatch=1,totnumbatches
@@ -743,7 +749,11 @@ do ibatch=1,totnumbatches
   TID = OMP_GET_THREAD_NUM()
 
 ! initialize the random number generator for the Poison noise
-!  idum = -1-TID               
+  if (noise.eqv..TRUE.) then 
+    idum = -1-TID               
+  else
+    idum = 0_K4B
+  end if
 
 ! each thread needs a private copy of the master and accum arrays; not having
 ! those can produce poor scaling...
@@ -840,18 +850,18 @@ do ibatch=1,totnumbatches
     if (includeFmatrix.eqv..TRUE.) then 
      if (enl%includebackground.eq.'y') then
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor,Fmatrix_inverse)
+                                     Emin,Emax,mask,prefactor,Fmatrix_inverse,applynoise=idum)
      else
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor,Fmatrix_inverse,removebackground='y')
+                                     Emin,Emax,mask,prefactor,Fmatrix_inverse,removebackground='y',applynoise=idum)
      end if
     else
      if (enl%includebackground.eq.'y') then
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor)
+                                     Emin,Emax,mask,prefactor,applynoise=idum)
      else
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor,removebackground='y')
+                                     Emin,Emax,mask,prefactor,removebackground='y',applynoise=idum)
      end if
     end if
 
