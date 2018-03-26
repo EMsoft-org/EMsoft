@@ -259,7 +259,6 @@ use constants
 use io
 use files
 use filters
-use deviates
 use diffraction
 use EBSDmod
 use Lambert
