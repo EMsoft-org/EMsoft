@@ -377,6 +377,7 @@ type EBSDNameListType
         real(kind=dbl)          :: beamcurrent
         real(kind=dbl)          :: dwelltime
         character(1)            :: makedictionary
+        character(1)            :: poisson
         character(1)            :: includebackground
         character(1)            :: applyDeformation
         character(1)            :: maskpattern

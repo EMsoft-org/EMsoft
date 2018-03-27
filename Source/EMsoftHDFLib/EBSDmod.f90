@@ -445,6 +445,12 @@ dataset = SC_sig
 dataset = SC_omega
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
 
+dataset = SC_totnumel
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%totnum_el)
+
+dataset = SC_multiplier
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%multiplier)
+
 ! close the name list group
   call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
@@ -1509,7 +1515,7 @@ end subroutine GenerateBackground
 !> @date 09/26/17 MDG 1.1 added Umatrix argument to try out inclusion of lattice strains
 !--------------------------------------------------------------------------
 recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,mask, &
-                                               prefactor, Fmatrix, removebackground)
+                                               prefactor, Fmatrix, removebackground, applynoise)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFull
 
 use local
@@ -1525,8 +1531,11 @@ use diffraction
 use Lambert
 use quaternions
 use rotations
+use filters
 
 IMPLICIT NONE
+
+integer, parameter                              :: K4B=selected_int_kind(9)
 
 integer(kind=irg),INTENT(IN)                    :: ipar(7)
 real(kind=sgl),INTENT(IN)                       :: qu(4) 
@@ -1542,6 +1551,7 @@ real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2)/ipar(1),ipar(3
 real(kind=sgl),INTENT(IN)                       :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
 real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3)
 character(1),INTENT(IN),OPTIONAL                :: removebackground
+integer(K4B),INTENT(INOUT),OPTIONAL             :: applynoise
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
 real(kind=sgl),allocatable                      :: wf(:)
@@ -1549,7 +1559,7 @@ real(kind=sgl)                                  :: dc(3),ixy(2),scl,bindx, tmp
 real(kind=sgl)                                  :: dx,dy,dxm,dym, x, y, z
 integer(kind=irg)                               :: ii,jj,kk,istat
 integer(kind=irg)                               :: nix,niy,nixp,niyp
-logical                                         :: nobg
+logical                                         :: nobg, noise
 
 ! ipar(1) = ebsdnl%binning
 ! ipar(2) = ebsdnl%numsx
@@ -1564,7 +1574,10 @@ if (present(removebackground)) then
   if (removebackground.eq.'y') nobg = .TRUE.
 end if
 
-bindx = 1.0/float(ipar(1))**2
+noise = .FALSE.
+if (present(applynoise)) then
+  if (applynoise.ne.0_K4B) noise = .TRUE.
+end if
 
 allocate(EBSDpattern(ipar(2),ipar(3)),stat=istat)
 
@@ -1644,6 +1657,12 @@ end do
 
 EBSDpattern = prefactor * EBSDpattern
 
+! do we need to apply Poisson noise ?  (slow...)
+if (noise.eqv..TRUE.) then 
+  EBSDpattern = applyPoissonNoise( EBSDpattern, ipar(2), ipar(3), applynoise )
+end if
+
+! do we need to bin the pattern ?
 if (ipar(1) .ne. 1) then
     do ii=1,ipar(2),ipar(1)
         do jj=1,ipar(3),ipar(1)
@@ -1652,8 +1671,7 @@ if (ipar(1) .ne. 1) then
         end do
     end do
 ! and divide by binning^2
-
-    binned = binned * bindx
+!   binned = binned * bindx
 else
     binned = EBSDpattern
 end if
@@ -1728,7 +1746,7 @@ integer(kind=irg)                               :: nix,niy,nixp,niyp
 
 ystep = floor(float(ipar(3))/float(ipar(8)+1))
 
-bindx = 1.0/float(ipar(1))**2
+! bindx = 1.0/float(ipar(1))**2
 
 allocate(EBSDpattern(ipar(2),ipar(8)),stat=istat)
 

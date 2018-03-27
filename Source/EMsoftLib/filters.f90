@@ -51,6 +51,46 @@ contains
 
 !--------------------------------------------------------------------------
 !
+! FUNCTION: applyPoissonNoise
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  apply a Poisson random deviate to an image
+!
+!> @param nx x dimension
+!> @param ny y dimension
+!> @param im image array; must have values in range [1..256]
+! 
+!> @date 03/23/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function applyPoissonNoise(image, nx, ny, idum) result(noisy)
+!DEC$ ATTRIBUTES DLLEXPORT :: applyPoissonNoise
+
+use noise
+
+IMPLICIT NONE
+
+integer, parameter              :: K4B=selected_int_kind(9)
+
+integer(kind=irg),INTENT(IN)    :: nx
+integer(kind=irg),INTENT(IN)    :: ny
+real(kind=sgl),INTENT(IN)       :: image(nx, ny)
+integer(K4B),INTENT(INOUT)      :: idum
+real(kind=sgl)                  :: noisy(nx, ny)
+
+integer(kind=irg)               :: i, j  
+real(kind=sgl)                  :: av, mult, invmult 
+
+do i=1, nx
+  do j=1, ny
+    noisy(i,j) = POIDEV(image(i,j),idum)
+  end do 
+end do
+
+end function applyPoissonNoise
+
+!--------------------------------------------------------------------------
+!
 ! FUNCTION: image_histogram 
 !
 !> @author Marc De Graef, Carnegie Mellon University

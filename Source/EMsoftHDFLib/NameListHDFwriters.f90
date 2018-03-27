@@ -1827,6 +1827,11 @@ line2(1) = trim(enl%makedictionary)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create makedictionary dataset',.TRUE.)
 
+dataset = SC_poisson
+line2(1) = trim(enl%poisson)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to create poisson dataset',.TRUE.)
+
 dataset = SC_includebackground
 line2(1) = trim(enl%includebackground)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)

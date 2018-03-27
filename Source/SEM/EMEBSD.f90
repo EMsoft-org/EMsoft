@@ -264,7 +264,7 @@ use EBSDmod
 use Lambert
 use quaternions
 use rotations
-use noise
+use filters
 use HDF5
 use HDFsupport
 use ISO_C_BINDING
@@ -302,9 +302,9 @@ integer(kind=irg)                       :: dims2(2),dims3(3)
 real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
-integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), etotal, hdferr, L, correctsize          ! various counters
+integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr, L, correctsize          ! various counters
 integer(kind=irg)                       :: istat, ipar(7), tick, tock
-integer(kind=irg)                       :: nix, niy, binx, biny,num_el, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
 integer(kind=irg),allocatable           :: istart(:,:), istop(:,:), patinbatch(:)
@@ -314,7 +314,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
 integer(kind=irg),parameter             :: storemax = 20        ! number of EBSD patterns stored in one output block
 integer(kind=irg)                       :: Emin, Emax      ! various parameters
-real(kind=dbl)                          :: dc(3), scl, nel           ! direction cosine array
+real(kind=dbl)                          :: dc(3), scl, nel, emult           ! direction cosine array
 real(kind=dbl)                          :: sx, dx, dxm, dy, dym, rhos, x         ! various parameters
 real(kind=dbl)                          :: ixy(2), tmp
 
@@ -352,7 +352,7 @@ real(kind=sgl)                          :: bitrange
 ! new stuff: deformation tensor
 real(kind=dbl)                          :: Umatrix(3,3), Fmatrix(3,3), Smatrix(3,3), quF(4), Fmatrix_inverse(3,3), &
                                            Gmatrix(3,3)
-logical                                 :: includeFmatrix=.FALSE.
+logical                                 :: includeFmatrix=.FALSE., noise
 
 !====================================
 ! max number of OpenMP threads on this platform
@@ -376,8 +376,10 @@ end if
 
 ! define some energy-related parameters derived from MC input parameters
 !====================================
-etotal = enl%num_el 
 sig = enl%MCsig
+
+noise = .FALSE.
+if (enl%poisson.eq.'y') noise = .TRUE.
 
 ! make sure the requested energy range is within the range available from the Monte Carlo computation
 if (enl%energymin.lt.enl%Ehistmin) enl%energymin = enl%Ehistmin
@@ -392,8 +394,15 @@ Emax = nint((enl%energymax - enl%Ehistmin)/enl%Ebinsize) +1
 if (Emax.lt.1)  Emax=1
 if (Emax.gt.enl%numEbins)  Emax=enl%numEbins
 
-nel = sum(acc%accum_e_detector)
-num_el = nint(nel)
+! modified by MDG, 03/26/18
+!nel = sum(acc%accum_e_detector)
+nel = float(enl%totnum_el) * float(enl%multiplier)
+emult = nAmpere * 1e-9 / nel  ! multiplicative factor to convert MC data to an equivalent incident beam of 1 nanoCoulomb
+write (*,*) ' Multiplicative factor to generate 1 nC of incident electrons ', emult
+! intensity prefactor  (redefined by MDG, 3/23/18)
+! prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
+prefactor = emult * enl%beamcurrent * enl%dwelltime * 1.0D-6
+write (*,*) ' Intensity scaling prefactor = ', prefactor
 
 allocate(energywf(Emin:Emax), wf(enl%numEbins),stat=istat)
 energywf = 0.0
@@ -414,8 +423,7 @@ deallocate(wf)
   biny = enl%numsy/enl%binning
   bindx = 1.0/float(enl%binning)**2
 
-! intensity prefactor
-  prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
+
 !====================================
 
 allocate(cell)
@@ -725,6 +733,8 @@ call OMP_SET_NUM_THREADS(nthreads)
 call CPU_TIME(tstart)
 call Time_tick(tick)
 
+write (*,*) 'applying noise ? ', noise
+
 !====================================
 !====================================
 do ibatch=1,totnumbatches
@@ -738,7 +748,11 @@ do ibatch=1,totnumbatches
   TID = OMP_GET_THREAD_NUM()
 
 ! initialize the random number generator for the Poison noise
-!  idum = -1-TID               
+  if (noise.eqv..TRUE.) then 
+    idum = -1-TID               
+  else
+    idum = 0_K4B
+  end if
 
 ! each thread needs a private copy of the master and accum arrays; not having
 ! those can produce poor scaling...
@@ -835,18 +849,18 @@ do ibatch=1,totnumbatches
     if (includeFmatrix.eqv..TRUE.) then 
      if (enl%includebackground.eq.'y') then
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor,Fmatrix_inverse)
+                                     Emin,Emax,mask,prefactor,Fmatrix_inverse,applynoise=idum)
      else
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor,Fmatrix_inverse,removebackground='y')
+                                     Emin,Emax,mask,prefactor,Fmatrix_inverse,removebackground='y',applynoise=idum)
      end if
     else
      if (enl%includebackground.eq.'y') then
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor)
+                                     Emin,Emax,mask,prefactor,applynoise=idum)
      else
       call CalcEBSDPatternSingleFull(ipar,angles%quatang(1:4,iang),taccum,tmLPNH,tmLPSH,trgx,trgy,trgz,binned, &
-                                     Emin,Emax,mask,prefactor,removebackground='y')
+                                     Emin,Emax,mask,prefactor,removebackground='y',applynoise=idum)
      end if
     end if
 
@@ -1182,9 +1196,9 @@ integer(kind=irg)                       :: dims2(2),dims3(3)
 real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
-integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), etotal, hdferr          ! various counters
+integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr          ! various counters
 integer(kind=irg)                       :: istat, ipar(7), tick, tock
-integer(kind=irg)                       :: nix, niy, binx, biny,num_el, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
 integer(kind=irg),allocatable           :: istart(:,:), istop(:,:), patinbatch(:)
@@ -1194,7 +1208,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
 integer(kind=irg),parameter             :: storemax = 20        ! number of EBSD patterns stored in one output block
 integer(kind=irg)                       :: Emin, Emax      ! various parameters
-real(kind=dbl)                          :: dc(3), scl, nel           ! direction cosine array
+real(kind=dbl)                          :: dc(3), scl, nel, emult           ! direction cosine array
 real(kind=dbl)                          :: sx, dx, dxm, dy, dym, rhos, x         ! various parameters
 real(kind=dbl)                          :: ixy(2), tmp
 
@@ -1249,7 +1263,6 @@ call get_bit_parameters(enl%bitdepth, numbits, bitrange, bitmode)
 
 ! define some energy-related parameters derived from MC input parameters
 !====================================
-etotal = enl%num_el 
 sig = enl%MCsig
 
 ! make sure the requested energy range is within the range available from the Monte Carlo computation
@@ -1265,6 +1278,11 @@ Emax = nint((enl%energymax - enl%Ehistmin)/enl%Ebinsize) +1
 if (Emax.lt.1)  Emax=1
 if (Emax.gt.enl%numEbins)  Emax=enl%numEbins
 
+! modified by MDG, 03/26/18
+!nel = sum(acc%accum_e_detector)
+nel = float(enl%totnum_el) * float(enl%multiplier)
+emult = nAmpere * 1e-9 / nel  ! multiplicative factor to convert MC data to an equivalent incident beam of 1 nanoCoulomb
+write (*,*) ' multiplicative factor to generate 1 nC of incident electrons ', emult
 
 !====================================
 ! init a bunch of parameters
@@ -1587,13 +1605,17 @@ do ibatch=1,totnumbatches
       call EBSDGeneratemyDetector(enl, acc, enl%numsx, enl%numsy, enl%numEbins, trgx, trgy, trgz, taccum, &
                                   orpcdef%pcs(1:3,iang),bg=.TRUE.)
 ! intensity prefactor
-      nel = sum(taccum)
-      prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
+!     nel = sum(taccum)
+! intensity prefactor  (redefined by MDG, 3/23/18)
+! prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
+      prefactor = emult * enl%beamcurrent * enl%dwelltime * 1.0D-6
     else
       call EBSDGeneratemyDetector(enl, acc, enl%numsx, enl%numsy, enl%numEbins, trgx, trgy, trgz, taccum, &
                                   orpcdef%pcs(1:3,iang),bg=.FALSE.)
-      nel = 1.0D6   ! we pick a reasonable value here ...
-      prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
+!      nel = 1.0D6 ! we pick a reasonable value here ...
+!      prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
+! we pick a reasonable value here ...
+      prefactor = 3.D0 * enl%beamcurrent * enl%dwelltime * 1.0D-6
     end if
 
     binned = 0.0
