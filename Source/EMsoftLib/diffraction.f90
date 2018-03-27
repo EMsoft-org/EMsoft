@@ -198,7 +198,7 @@ real(kind=dbl)            :: io_real(1), voltage
  call ReadValue('Enter the microscope accelerating voltage [kV, R] : ', io_real, 1)
  voltage = io_real(1)
  cell%voltage = voltage
- call CalcWaveLength(cell,rlp)
+ call CalcWaveLength(cell,rlp,verbose=.TRUE.)
  
 end subroutine
 
