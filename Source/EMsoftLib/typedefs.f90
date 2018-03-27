@@ -1263,7 +1263,9 @@ end type QCStructureType
 type TDQCStructureType
   integer(kind=irg)                     :: atno
   integer(kind=irg)                     :: imax
+  integer(kind=irg)                     :: imaxz
   integer(kind=irg)                     :: numindices
+  integer(kind=irg)                     :: nsym
   integer(kind=irg),allocatable         :: facts(:,:)
   integer(kind=irg),allocatable         :: Ucgindex(:)
   logical,allocatable                   :: Ucgcalc(:)
@@ -1272,8 +1274,9 @@ type TDQCStructureType
   real(kind=dbl)                        :: eovec(3,5), eperp(5,3)
   real(kind=dbl)                        :: Mp(5,5), Picos(5,5)
   real(kind=dbl)                        :: Mo(5,5), Qicos(5,5)
-  real(kind=dbl)                        :: SYM_icos(5,5,24)              ! D24 rotational group in matrix representation
-  real(kind=dbl)                        :: QClatparm
+  real(kind=dbl)                        :: SYM_icos(5,5,40)              ! D24 rotational group in matrix representation
+  real(kind=dbl)                        :: QClatparm_a
+  real(kind=dbl)                        :: QClatparm_c
   real(kind=dbl)                        :: dmin
   real(kind=dbl)                        :: vol
   real(kind=dbl)                        :: gmax_orth
@@ -1286,6 +1289,7 @@ type TDQCStructureType
   real(kind=dbl)                        :: Upzero
   real(kind=dbl)                        :: xizerop
   real(kind=dbl)                        :: multiplicity
+  character(fnlen)                      :: QCtype
   character(1)                          :: centering   ! 'P','I','F'
   complex(kind=dbl),allocatable         :: LUT(:)
   complex(kind=dbl),allocatable         :: LUTqg(:)
