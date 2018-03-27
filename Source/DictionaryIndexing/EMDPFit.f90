@@ -99,10 +99,12 @@ use EMdymod
 use bobyqa_module
 use io, only:WriteValue
 use stringconstants
+use rotations
+use constants
 
 IMPLICIT NONE
 
-type(EMDPFitListType),INTENT(IN)                :: enl
+type(EMDPFitListType),INTENT(INOUT)             :: enl
 character(fnlen),INTENT(IN)                     :: progname
 character(fnlen),INTENT(IN)                     :: nmldeffile
 
@@ -124,7 +126,7 @@ real(kind=sgl),allocatable                      :: INITMEANVAL(:), STEPSIZE(:)
 
 integer(kind=irg)                               :: nnx
 integer(kind=irg)                               :: h5int,io_int(1)
-real(kind=sgl)                                  :: h5flt
+real(kind=sgl)                                  :: h5flt, ho(3), eu(3)
 integer(HSIZE_T), dimension(1:4)                :: hdims4, offset4, dims4
 integer(HSIZE_T), dimension(1:3)                :: hdims3, offset3, dims3 
 character(fnlen)                                :: groupname, dataset, filename
@@ -302,6 +304,7 @@ dataset = SC_sig
 
 dataset = SC_omega
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, fpar(5))
+enl%omega = fpar(5)
 
         call HDF_pop(HDF_head,.TRUE.)
 
@@ -330,10 +333,12 @@ dataset = SC_omega
     FPAR(11) = enl%maskradius
     FPAR(12) = enl%gammavalue
 
+    ho  =   eu2ho((/enl%phi1, enl%phi, enl%phi2/)*cPi/180.0)
+
     INITMEANVAL(1) = enl%L
-    INITMEANVAL(2) = enl%phi1
-    INITMEANVAL(3) = enl%phi
-    INITMEANVAL(4) = enl%phi2
+    INITMEANVAL(2) = ho(1)!enl%phi1
+    INITMEANVAL(3) = ho(2)!enl%phi
+    INITMEANVAL(4) = ho(3)!enl%phi2
     INITMEANVAL(5) = enl%xpc
     INITMEANVAL(6) = enl%ypc
 
@@ -383,8 +388,10 @@ dataset = SC_omega
             stepsize(6)*fpar(3) + INITMEANVAL(1)
             write(6,*)''
 
-            write(6,'(A,3F15.6)')'(phi1,PHI,phi2) :',X(5)*2.0*stepsize(3) - stepsize(3) + INITMEANVAL(2), &
-            X(6)*2.0*stepsize(4) - stepsize(4)  + INITMEANVAL(3), X(7)*2.0*stepsize(5) - stepsize(5) + INITMEANVAL(4)
+            ho = (/X(5)*2.0*stepsize(3) - stepsize(3) + INITMEANVAL(2), &
+            X(6)*2.0*stepsize(4) - stepsize(4)  + INITMEANVAL(3), X(7)*2.0*stepsize(5) - stepsize(5) + INITMEANVAL(4)/)
+            eu = ho2eu(ho) * 180.0/cPi
+            write(6,'(A,3F15.6)')'(phi1,PHI,phi2) :',eu(1), eu(2), eu(3)
             write(6,*)''
 
         end if
@@ -462,7 +469,7 @@ else if(trim(enl%modalityname) .eq. 'ECP') then
         call FatalError('EMDPFit','Unknown similarity measure for images')
     end if
 
-    IPAR(12) = 1!enl%nregions
+    IPAR(12) = enl%nregions
 
     if(enl%mask) IPAR(9) = 1
 
@@ -563,10 +570,12 @@ dataset = SC_sigstep
     FPAR(9) = enl%gammavalue
     FPAR(10) = enl%maskradius
 
+    ho  =   eu2ho((/enl%phi1, enl%phi, enl%phi2/)*cPi/180.0)
+
     initmeanval(1) = enl%thetacone
-    initmeanval(2) = enl%phi1
-    initmeanval(3) = enl%phi
-    initmeanval(4) = enl%phi2
+    initmeanval(2) = ho(1)!enl%phi1
+    initmeanval(3) = ho(2)!enl%phi
+    initmeanval(4) = ho(3)!enl%phi2
 
     STEPSIZE(1) = enl%step_thetacone
     STEPSIZE(2) = enl%step_phi1
@@ -600,11 +609,14 @@ dataset = SC_sigstep
     
         else
 
+            ho = (/X(2)*2.0*stepsize(2) - stepsize(2) + INITMEANVAL(2),&
+            X(3)*2.0*stepsize(3) - stepsize(3)  + INITMEANVAL(3), X(4)*2.0*stepsize(4) - stepsize(4) + INITMEANVAL(4)/)
+            eu = ho2eu(ho) * 180.0/cPi
+
             write(6,'(A)')'Best fit values are as follows:'
             write(6,'(A,F15.6)')'Opening angle of cone :',sngl(X(1))*2.0*stepsize(1) - stepsize(1) + INITMEANVAL(1)
             write(6,*)''
-            write(6,'(A,3F15.6)')'(phi1,PHI,phi2) for pattern 1 :',X(2)*2.0*stepsize(2) - stepsize(2) + INITMEANVAL(2),&
-            X(3)*2.0*stepsize(3) - stepsize(3)  + INITMEANVAL(3), X(4)*2.0*stepsize(4) - stepsize(4) + INITMEANVAL(4)
+            write(6,'(A,3F15.6)')'(phi1,PHI,phi2) for pattern 1 :',eu(1), eu(2), eu(3)
 
         end if
 

@@ -11,6 +11,8 @@
  averagetxtfile = 'undefined',
 ! relative disorientation map
  disorientationmap = 'undefined',
+! which Euler data to be used for disorientation map (refined or not)
+ refined = 'n',
 ! point with respect to which to compute the relative disorientation map
  reldisx = 0,
  reldisy = 0,

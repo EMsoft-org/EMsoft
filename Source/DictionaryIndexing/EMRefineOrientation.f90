@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2016, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2015-2018, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -38,6 +38,7 @@
 !> space around that best indexed point
 !
 !> @date 08/01/16 SS 1.0 original
+!> @date 03/12/18 MDG 1.1 moved dot product file reading to subroutine
 !--------------------------------------------------------------------------
 program EMRefineOrientation
 
@@ -72,6 +73,7 @@ IMPLICIT NONE
 character(fnlen)                        :: nmldeffile, progname, progdesc
 type(RefineOrientationtype)             :: enl
 type(EBSDIndexingNameListType)          :: ebsdnl
+type(EBSDDIdataType)                    :: EBSDDIdata
 
 logical                                 :: stat, readonly, noindex
 character(fnlen)                        :: dpfile, masterfile, energyfile
@@ -86,7 +88,7 @@ real(kind=dbl)                          :: rhozero(4), hipassw
 real(kind=sgl),allocatable              :: angles(:), euler_bestmatch(:,:), CIlist(:), CIlist_new(:), CMarray(:,:,:)
 integer(kind=irg),allocatable           :: indexmain(:,:) 
 real(kind=sgl),allocatable              :: resultmain(:,:)                                         
-integer(HSIZE_T)                        :: dims(1)
+integer(HSIZE_T)                        :: dims(1), dims2D(2)
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                        :: dataset, groupname  
@@ -112,7 +114,8 @@ real(kind=dbl)                          :: prefactor
 real(kind=dbl)                          :: ratioE
 integer(kind=irg)                       :: cratioE, fratioE, eindex, niter
 integer(kind=irg),allocatable           :: ppendE(:)
-real(kind=sgl),allocatable              :: exptpatterns(:,:)
+real(kind=sgl),allocatable              :: exptpatterns(:,:), OSMmap(:,:), IQmap(:)
+character(fnlen)                        :: modalityname
 
 real(kind=dbl)                          :: stepsize, cu0(3)
 real(kind=dbl),allocatable              :: cubneighbor(:,:)
@@ -136,6 +139,7 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 91 /), progname)
 call GetRefineOrientationNameList(nmldeffile,enl)
 
 nthreads = enl%nthreads
+modalityname = trim(enl%modality)
 
 !====================================
 ! read the relevant fields from the dot product HDF5 file
@@ -143,214 +147,41 @@ nthreads = enl%nthreads
 ! open the fortran HDF interface
 call h5open_EMsoft(hdferr)
 
-dpfile = trim(EMsoft_getEMdatapathname())//trim(enl%dotproductfile)
-dpfile = EMsoft_toNativePath(dpfile)
+!====================================
+! read the relevant fields from the dot product HDF5 file
+!====================================
+if (trim(modalityname) .eq. 'EBSD') then
+    call readEBSDDotProductFile(enl%dotproductfile, ebsdnl, hdferr, EBSDDIdata, &
+                                getCI=.TRUE., &
+                                getIQ=.TRUE., & 
+                                getOSM=.TRUE., & 
+                                getPhi1=.TRUE., &
+                                getPhi=.TRUE., &
+                                getPhi2=.TRUE.) 
 
-! is this a proper HDF5 file ?
-call h5fis_hdf5_f(trim(dpfile), stat, hdferr)
-
-!===================================================================================
-!===============read dot product file===============================================
-!===================================================================================
-
-if (stat) then 
-! open the dot product file 
-    nullify(HDF_head)
-    readonly = .TRUE.
-    hdferr =  HDF_openFile(dpfile, HDF_head, readonly)
-
-! get the energyfile and masterfile parameters from NMLParameters
-groupname = SC_NMLparameters
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_EBSDIndexingNameListType
-    hdferr = HDF_openGroup(groupname, HDF_head)
-
-dataset = SC_energyfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%energyfile = trim(stringarray(1))
-    deallocate(stringarray)
-
-dataset = SC_masterfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%masterfile = trim(stringarray(1))
-    deallocate(stringarray)
-
-dataset = SC_ipfwd
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_wd)
-
-dataset = SC_ipfht
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_ht)
-
-dataset = SC_StepX
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepX)
-    
-dataset = SC_StepY
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepY)
-
-dataset = SC_L
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%L)
-
-dataset = SC_beamcurrent
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%beamcurrent)
-
-dataset = SC_binning
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%binning)
-
-dataset = SC_delta
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%delta)
-
-dataset = SC_dwelltime
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%dwelltime)
-
-dataset = SC_energyaverage
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%energyaverage)
-
-dataset = SC_energymax
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymax)
-
-dataset = SC_energymin
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymin)
-
-    !dataset = 'eulerconvention'
-    !call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    !ebsdnl%eulerconvention = trim(stringarray(1))
-    !deallocate(stringarray)
-
-dataset = SC_exptfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%exptfile = trim(stringarray(1))
-    deallocate(stringarray)
-
-dataset = SC_gammavalue
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%gammavalue)
-
-dataset = SC_hipassw
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, hipassw)
-
-dataset = SC_maskpattern
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%maskpattern = trim(stringarray(1))
-    deallocate(stringarray)
-
-dataset = SC_maskradius
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%maskradius)
-
-dataset = SC_ncubochoric  
-! There is an issue with the capitalization on this variable; needs to be resolved 
-! [MDG 10/18/17]  Most likely we will need to put a test in to see if Ncubochoric exists; if it does not then we check
-! for ncubochoric ...
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
-if (g_exists) then
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
-else
-    dataset = 'ncubochoric'
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
-end if
-
-dataset = SC_nnk
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nnk)
-
-dataset = SC_nregions
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nregions)
-
-dataset = SC_numdictsingle
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numdictsingle)
-
-dataset = SC_numexptsingle
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numexptsingle)
-
-dataset = SC_numsx
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsx)
-
-dataset = SC_numsy
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsy)
-
-dataset = SC_omega
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%omega)
-
-dataset = SC_scalingmode
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%scalingmode = trim(stringarray(1))
-    deallocate(stringarray)
-
-dataset = SC_spatialaverage
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%spatialaverage = trim(stringarray(1))
-    deallocate(stringarray)
-
-dataset = SC_thetac
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%thetac)
-
-dataset = SC_tmpfile
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    ebsdnl%tmpfile = trim(stringarray(1))
-    deallocate(stringarray)
-    !ebsdnl%tmpfile = 'EBSDDict_tmp.data'
-    
-dataset = SC_xpc
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%xpc)
-
-dataset = SC_ypc
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%ypc)
-
-! and close the NMLparameters group
-    call HDF_pop(HDF_head)
-    call HDF_pop(HDF_head)
-
-! open the Scan 1/EBSD/Data group
-    groupname = 'Scan 1'
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_EBSD
-    hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_Data
-    hdferr = HDF_openGroup(groupname, HDF_head)
-
-! integers
-dataset = SC_FZcnt
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, FZcnt)
-
-dataset = SC_NumExptPatterns
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, Nexp)
-
-    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),stat=istat)
+    Nexp = EBSDDIdata%Nexp
+    allocate(euler_bestmatch(3,Nexp),CIlist_new(Nexp),CIlist(Nexp),stat=istat)
     if (istat .ne. 0) then
         dpfile = 'Failed to allocate CIlist_new and/or euler_bestmatch array'
         call FatalError('EMAverageOrient',dpfile)
     end if 
     euler_bestmatch = 0.0
     CIlist_new = 0.0
+    euler_bestmatch(1,1:Nexp) = EBSDDIdata%Phi1(1:Nexp)
+    euler_bestmatch(2,1:Nexp) = EBSDDIdata%Phi(1:Nexp)
+    euler_bestmatch(3,1:Nexp) = EBSDDIdata%Phi2(1:Nexp)
+    deallocate(EBSDDIdata%Phi1,EBSDDIdata%Phi,EBSDDIdata%Phi2)
+    CIlist_new(1:Nexp) = EBSDDIdata%CI(1:Nexp)
+    deallocate(EBSDDIdata%CI)
 
-! arrays
-dataset = SC_Phi1
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, angles)
-    
-    euler_bestmatch(1,1:Nexp) = angles(1:Nexp)
-    deallocate(angles)
+! the following arrays are kept in the EBSDDIdata structure
+!   OSMmap = EBSDDIdata%OSM
+!   IQmap = EBSDDIdata%IQ
 
-dataset = SC_Phi
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, angles)
-    
-    euler_bestmatch(2,1:Nexp) = angles(1:Nexp)
-    deallocate(angles)
-
-dataset = SC_Phi2
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, angles)
-    
-    euler_bestmatch(3,1:Nexp) = angles(1:Nexp)
-    deallocate(angles)
-
-dataset = SC_CI
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, CIlist)
-    
-    CIlist_new(1:Nexp) = CIlist(1:Nexp)
-   
-    call HDF_pop(HDF_head,.TRUE.)
-
-    call Message('dot product HDF5 file read')
+    call Message('  --> dot product EBSD HDF5 file read')
 
 else
-    dpfile = 'File '//trim(dpfile)//' is not an HDF5 file'
-    call FatalError('EMRefineOrient',dpfile)
+    call FatalError('EMRefineOrientation','This program can only handle the EBSD modality at the moment...')
 end if
 
 !===================================================================================
@@ -557,7 +388,7 @@ open(unit=iunitexpt,file=trim(ename),&
 
 ! prepare the fftw plan for this pattern size
 EBSDPattern = 0.0
-fdata = HiPassFilter(rdata,dims2,hipassw,init)
+fdata = HiPassFilter(rdata,dims2,ebsdnl%hipassw,init)
 
 !=================================
 !========LOOP VARIABLES===========
@@ -732,13 +563,15 @@ ipar(3) = Nexp
 ipar(4) = FZcnt 
 ipar(5) = FZcnt
 ipar(6) = pgnum
+ipar(7) = ebsdnl%ipf_wd
+ipar(8) = ebsdnl%ipf_ht
 
 allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
 indexmain = 0
 resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
 if (ebsdnl%ctffile.ne.'undefined') then 
-  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,noindex=.TRUE.)
+  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex=.TRUE.)
   call Message('Data stored in ctf file : '//trim(enl%ctffile))
 end if
 

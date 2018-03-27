@@ -1,31 +1,33 @@
  &DPFitdata
 ! template file for the EMDPFit program
 ! name of modality
- modalityname = 'EBSD' ! EBSD or ECP for now; PED will be added later,
+ modalityname 	= 'EBSD', ! EBSD or ECP for now; PED will be added later,
+
 ! name of EBSD master output file; path relative to EMdatapathname
- masterfile = 'master.h5',
-! name of Monte Carlo output file; path relative to EMdatapathname
- energyfile = 'MC.h5',
+ masterfile 	= 'master.h5',
+
+! similarity metric for images (Dot product or jaccard distance ('JD'))
+ metric = 'DP', 
+
 !#################################################################
-! FILL OUT exptfile_pat1 for ECP; ALL FOR EBSD
+! FILL OUT exptfile with the path to the binary pattern file
 !#################################################################
 ! name of file with the single experimental pattern
- exptfile_pat1 = 'undefined',
- exptfile_pat2 = 'undefined',
- exptfile_pat3 = 'undefined',
- exptfile_pat4 = 'undefined',
+ exptfile 	= 'undefined',
 
 !-------number of runs of the algorithm----------------------------
 !-------stepsize reduced by half for each run----------------------
-!
- nrun = 2
+ nrun 		= 1,
+
 ! size of trust region (sort of)
- rhobeg = 1.D0-1,
- rhoend = 1.D0-7,
+ rhobeg 	= 1.0E-1,
+ rhoend 	= 1.0E-5,
+
 ! verbose output or not
- verbose = .TRUE.,
+ verbose	 = .TRUE.,
+
 ! mask pattern while doing fit or not
- mask = .TRUE.,
+ mask 		= .TRUE.,
 !
 !this section deal with the initial guess of some of the parameters together with the known parameters
 !fill out the relevant parameters depending on the modality (EBSD or ECP)
@@ -36,33 +38,25 @@
 !
 ! mask radius
  maskradius = 240.0,
+
 ! gamma correction factor
  gammavalue = 1.0,
+
+! number of regions  for adaptive histogram equalization
+ nregions = 8,
+
 !###################################################################
-! FILL OUT phi1_pat1,phi_pat1 and phi2_pat1 for ECP; ALL FOR EBSD
+! FILL OUT phi1,phi and phi2 as initial guess
 !###################################################################
 ! bunge euler angles (in degrees)
- phi1_pat1 = 0.0,
- phi_pat1 = 0.0,
- phi2_pat1 = 0.0,
+ phi1 	= 0.0,
+ phi 	= 0.0,
+ phi2 	= 0.0,
 
- phi1_pat2 = 0.0,
- phi_pat2 = 0.0,
- phi2_pat2 = 0.0,
-
- phi1_pat3 = 0.0,
- phi_pat3 = 0.0,
- phi2_pat3 = 0.0,
-
- phi1_pat4 = 0.0,
- phi_pat4 = 0.0,
- phi2_pat4 = 0.0,
-
-! step size for construction of quadratic surrogate function (degrees)
- step_phi1 = 2.0
- step_phi = 2.0
- step_phi2 = 2.0
-
+! step size for construction of quadratic surrogate function (homochoric coordinates)
+ step_phi1 	= 0.03,
+ step_phi 	= 0.03,
+ step_phi2 	= 0.03,
 !
 !###################################################################
 ! EBSD PARAMETERS
@@ -70,64 +64,58 @@
 !
 !---------known parameters------------------------------------------
 ! tilt angle of the camera (positive below horizontal, [degrees])
- thetac = 10.0,
+ thetac 		= 10.0,
+
 ! CCD pixel size on the scintillator surface [microns]
- delta = 50.0,
+ delta 			= 50.0,
+
 ! number of CCD pixels along x and y
- numsx = 640,
- numsy = 480,
+ numsx 			= 640,
+ numsy 			= 480,
+
 ! incident beam current [nA]
- beamcurrent = 150.0,
+ beamcurrent 	= 150.0,
+
 ! beam dwell time [micro s]
- dwelltime = 100.0,
+ dwelltime 		= 100.0,
+
 ! binning mode (1, 2, 4, or 8)
- binning = 1,
+ binning 		= 1,
 !
 !----------initial guess for fitting parameters---------------------
 ! distance between scintillator and illumination point [microns]
- L = 15000.0,
+ L 		= 15000.0,
+
 ! pattern center coordinates in units of pixels
- xpc = 0.0,
- ypc = 0.0,
-!
+ xpc 	= 0.0,
+ ypc 	= 0.0,
+
 !----------step size for constructing surrogate function------------
 ! xpc and ypc in pixels
- step_xpc = 5.0 
- step_ypc = 5.0
- step_L = 5.0
-!
-!----------EBSD scan parameters-------------------------------------
-! x coordinate of scan point
- pixx_pat1 = 0
- pixx_pat2 = 0
- pixx_pat3 = 0
- pixx_pat4 = 0
-! y coordinate of scan point
- pixy_pat1 = 0
- pixy_pat2 = 0
- pixy_pat3 = 0
- pixy_pat4 = 0
-! step size in x
- stepx = 5.0
-! step size in y
- stepy = 5.0
+ step_xpc 	= 5.0, 
+ step_ypc 	= 5.0,
+ step_L 	= 5.0,
+
 !###################################################################
 ! ECP PARAMETERS
 !###################################################################
 !
 !---------known parameters------------------------------------------
- npix = 256,
+ npix 	= 256,
+
 ! inner and outer radius of annular integrating detector (in mm)
- Rin = 2.0,
- Rout = 5.0,
+ Rin 	= 2.0,
+ Rout 	= 5.0,
 !
 !----------initial guess for fitting parameters---------------------
 ! half angle of cone (in degrees)
- thetacone = 5.0,
+ thetacone 			= 5.0,
+
 ! sample tilt (in degrees)
- sampletilt = 0.0,
+ sampletilt 		= 0.0,
+
 ! working distance (in mm)
- workingdistance = 5.0
+ workingdistance 	= 5.0,
 !----------step size for constructing surrogate function------------
 ! in degrees
  step_thetacone = 1.0

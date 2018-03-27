@@ -62,6 +62,33 @@ type EBSDMasterDIType
         real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)          ! auxiliary detector arrays needed for interpolation
 end type EBSDMasterDIType
         
+type EBSDDIdataType
+  integer(kind=irg)             :: FZcnt
+  integer(kind=irg)             :: Nexp
+  integer(kind=irg)             :: pgnum
+  real(kind=sgl),allocatable    :: ADP(:)
+  real(kind=sgl),allocatable    :: AverageOrientations(:,:)
+  real(kind=sgl),allocatable    :: CI(:)
+  real(kind=sgl),allocatable    :: EulerAngles(:,:)
+  real(kind=sgl),allocatable    :: Fit(:)
+  real(kind=sgl),allocatable    :: IQ(:)
+  real(kind=sgl),allocatable    :: KAM(:,:)
+  real(kind=sgl),allocatable    :: OSM(:,:)
+  integer(kind=irg),allocatable :: Phase(:)
+  real(kind=sgl),allocatable    :: Phi1(:)
+  real(kind=sgl),allocatable    :: Phi(:)
+  real(kind=sgl),allocatable    :: Phi2(:)
+  integer(kind=irg),allocatable :: SEMsignal(:)
+  real(kind=sgl),allocatable    :: TopDotProductList(:,:)
+  integer(kind=irg),allocatable :: TopMatchIndices(:,:)
+  integer(kind=irg),allocatable :: Valid(:)
+  real(kind=sgl),allocatable    :: XPosition(:)
+  real(kind=sgl),allocatable    :: YPosition(:)
+  real(kind=sgl),allocatable    :: RefinedEulerAngles(:,:)
+  real(kind=sgl),allocatable    :: RefinedDotProducts(:)
+end type EBSDDIdataType
+
+
 contains
 
 !--------------------------------------------------------------------------
@@ -1394,6 +1421,492 @@ end subroutine CalcEBSDPatternSingleApprox
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: readEBSDDotProductFile
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read a Dot Product File from Dictionary Indexing into the correct namelist and data structure
+!
+!> @param dpfile filename of the EBSD dot product file
+!> @param ebsdnl EBSDIndexingNamelist
+!> @param hdferr error code
+!
+!> @date 03/12/18 MDG 1.0 started new routine, to eventually replace older FillEBSDIndexingNameList routine
+!--------------------------------------------------------------------------
+recursive subroutine readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, getADP, getAverageOrientations, getCI, &
+                                            getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
+                                            getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
+                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, getRefinedEulerAngles)
+!DEC$ ATTRIBUTES DLLEXPORT :: readEBSDDotProductFile
+
+use local
+use typedefs
+use NameListTypedefs
+use error
+use HDF5
+use HDFsupport
+use io
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                         :: dpfile
+type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+integer(kind=irg),INTENT(OUT)                       :: hdferr
+type(EBSDDIdataType),INTENT(INOUT)                  :: EBSDDIdata
+logical,INTENT(IN),OPTIONAL                         :: getADP
+logical,INTENT(IN),OPTIONAL                         :: getAverageOrientations
+logical,INTENT(IN),OPTIONAL                         :: getCI
+logical,INTENT(IN),OPTIONAL                         :: getEulerAngles
+logical,INTENT(IN),OPTIONAL                         :: getFit
+logical,INTENT(IN),OPTIONAL                         :: getIQ
+logical,INTENT(IN),OPTIONAL                         :: getKAM
+logical,INTENT(IN),OPTIONAL                         :: getOSM
+logical,INTENT(IN),OPTIONAL                         :: getPhase
+logical,INTENT(IN),OPTIONAL                         :: getPhi1
+logical,INTENT(IN),OPTIONAL                         :: getPhi
+logical,INTENT(IN),OPTIONAL                         :: getPhi2
+logical,INTENT(IN),OPTIONAL                         :: getSEMsignal
+logical,INTENT(IN),OPTIONAL                         :: getTopDotProductList
+logical,INTENT(IN),OPTIONAL                         :: getTopMatchIndices
+logical,INTENT(IN),OPTIONAL                         :: getValid
+logical,INTENT(IN),OPTIONAL                         :: getXPosition
+logical,INTENT(IN),OPTIONAL                         :: getYPosition
+logical,INTENT(IN),OPTIONAL                         :: getRefinedDotProducts
+logical,INTENT(IN),OPTIONAL                         :: getRefinedEulerAngles
+
+character(fnlen)                                    :: infile, groupname, dataset
+logical                                             :: stat, readonly, g_exists
+type(HDFobjectStackType),pointer                    :: HDF_head
+integer(kind=irg)                                   :: ii, nlines
+integer(kind=irg),allocatable                       :: iarray(:)
+real(kind=sgl),allocatable                          :: farray(:)
+integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3) 
+character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
+! we assume that the calling program has opened the HDF interface
+
+infile = trim(EMsoft_getEMdatapathname())//trim(dpfile)
+infile = EMsoft_toNativePath(infile)
+
+! is this a proper HDF5 file ?
+call h5fis_hdf5_f(trim(infile), stat, hdferr)
+
+!===================================================================================
+!===============read dot product file===============================================
+!===================================================================================
+
+if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sure it is an EBSD dot product file
+   call FatalError('readEBSDDotProductFile','This is not a proper HDF5 file')
+end if 
+   
+! open the dot product file 
+nullify(HDF_head)
+readonly = .TRUE.
+hdferr =  HDF_openFile(infile, HDF_head, readonly)
+
+! make sure this is an EBSD dot product file
+groupname = SC_NMLfiles
+    hdferr = HDF_openGroup(groupname, HDF_head)
+dataset = 'EBSDDictionaryIndexingNML'
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists.eqv..FALSE.) then
+    call FatalError('readEBSDDotProductFile','this is not an EBSD dot product file')
+end if
+call HDF_pop(HDF_head)
+
+!====================================
+! read all NMLparameters group datasets
+!====================================
+groupname = SC_NMLparameters
+    hdferr = HDF_openGroup(groupname, HDF_head)
+groupname = SC_EBSDIndexingNameListType
+    hdferr = HDF_openGroup(groupname, HDF_head)
+
+! we'll read these roughly in the order that the HDFView program displays them...
+dataset = SC_HDFstrings
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    do ii=1,10
+      ebsdnl%HDFstrings(ii) = trim(stringarray(ii))
+    end do
+    deallocate(stringarray)
+
+dataset = SC_L
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%L)
+
+dataset = SC_ncubochoric  
+! There is an issue with the capitalization on this variable; needs to be resolved 
+! [MDG 10/18/17]  We test to see if Ncubochoric exists; if it does not then we check
+! for ncubochoric ...
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
+else
+    dataset = 'ncubochoric'
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
+end if
+
+dataset = SC_ROI
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then
+    call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, iarray)
+    ebsdnl%ROI(1:4) = iarray(1:4)
+else
+    ebsdnl%ROI = (/ 0, 0, 0, 0 /)
+end if
+
+dataset = SC_StepX
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepX)
+    
+dataset = SC_StepY
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepY)
+
+dataset = SC_angfile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%angfile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_anglefile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%anglefile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_axisangle
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, farray)
+    ebsdnl%axisangle(1:4) = farray(1:4)
+
+dataset = SC_beamcurrent
+    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%beamcurrent)
+
+dataset = SC_binning
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%binning)
+
+dataset = SC_ctffile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%ctffile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_datafile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%datafile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_delta
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%delta)
+
+dataset = SC_devid
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%devid)
+
+dataset = SC_dwelltime
+    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%dwelltime)
+
+dataset = SC_energyaverage
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%energyaverage)
+
+dataset = SC_energyfile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%energyfile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_energymax
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymax)
+
+dataset = SC_energymin
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%energymin)
+
+dataset = SC_eulerfile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%eulerfile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_exptfile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%exptfile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_gammavalue
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%gammavalue)
+
+dataset = SC_hipassw
+    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%hipassw)
+
+dataset = SC_inputtype
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%inputtype = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_ipfht
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_ht)
+
+dataset = SC_ipfwd
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ipf_wd)
+
+dataset = SC_maskfile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%maskfile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_maskpattern
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%maskpattern = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_maskradius
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%maskradius)
+
+dataset = SC_masterfile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%masterfile = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_nnav
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nnav)
+
+dataset = SC_nnk
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nnk)
+
+dataset = SC_nosm
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nosm)
+
+dataset = SC_nregions
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nregions)
+
+dataset = SC_nthreads
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%nthreads)
+
+dataset = SC_numdictsingle
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numdictsingle)
+
+dataset = SC_numexptsingle
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numexptsingle)
+
+dataset = SC_numsx
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsx)
+
+dataset = SC_numsy
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsy)
+
+dataset = SC_omega
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%omega)
+
+dataset = SC_platid
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%platid)
+
+dataset = SC_scalingmode
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%scalingmode = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_spatialaverage
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%spatialaverage = trim(stringarray(1))
+    deallocate(stringarray)
+
+dataset = SC_thetac
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%thetac)
+
+dataset = SC_tmpfile
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    ebsdnl%tmpfile = trim(stringarray(1))
+    deallocate(stringarray)
+    
+dataset = SC_xpc
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%xpc)
+
+dataset = SC_ypc
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%ypc)
+
+! and close the NMLparameters group
+    call HDF_pop(HDF_head)
+    call HDF_pop(HDF_head)
+!====================================
+!====================================
+
+! open the Scan 1/EBSD/Data group; dictionary indexing files only have one "scan" in them...
+groupname = 'Scan 1'
+    hdferr = HDF_openGroup(groupname, HDF_head)
+groupname = SC_EBSD
+    hdferr = HDF_openGroup(groupname, HDF_head)
+groupname = SC_Data
+    hdferr = HDF_openGroup(groupname, HDF_head)
+
+! integers
+dataset = SC_FZcnt
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%FZcnt)
+
+dataset = SC_NumExptPatterns
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%Nexp)
+
+dataset = SC_PointGroupNumber
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%pgnum)
+
+! various optional arrays
+if (present(getADP)) then
+  if (getADP.eqv..TRUE.) then
+!   dataset = SC_ADP
+!   call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%ADP)
+    call Message('ADP','reading the ADP variable is not yet implemented')
+  end if 
+end if
+
+if (present(getAverageOrientations)) then
+  if (getAverageOrientations.eqv..TRUE.) then
+    dataset = SC_AverageOrientations
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%AverageOrientations)
+  end if 
+end if
+
+if (present(getCI)) then
+  if (getCI.eqv..TRUE.) then
+    dataset = SC_CI
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%CI)
+  end if 
+end if
+
+if (present(getEulerAngles)) then
+  if (getEulerAngles.eqv..TRUE.) then
+    dataset = SC_EulerAngles
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%EulerAngles)
+  end if 
+end if
+
+if (present(getFit)) then
+  if (getFit.eqv..TRUE.) then
+    dataset = SC_Fit
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Fit)
+  end if 
+end if
+
+if (present(getIQ)) then
+  if (getIQ.eqv..TRUE.) then
+    dataset = SC_IQ
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%IQ)
+  end if 
+end if
+
+if (present(getKAM)) then
+  if (getKAM.eqv..TRUE.) then
+    dataset = SC_KAM
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%KAM)
+  end if 
+end if
+
+if (present(getOSM)) then
+  if (getOSM.eqv..TRUE.) then
+    dataset = SC_OSM
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%OSM)
+  end if 
+end if
+
+if (present(getPhase)) then   ! this is a 1-byte integer, to be implemented 
+  if (getPhase.eqv..TRUE.) then
+!   dataset = SC_Phase
+!   call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phase)
+    call Message('Phase','reading the Phase variable is not yet implemented')
+  end if 
+end if
+
+if (present(getPhi)) then
+  if (getPhi.eqv..TRUE.) then
+    dataset = SC_Phi
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi)
+  end if 
+end if
+
+if (present(getPhi1)) then
+  if (getPhi1.eqv..TRUE.) then
+    dataset = SC_Phi1
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi1)
+  end if 
+end if
+
+if (present(getPhi2)) then
+  if (getPhi2.eqv..TRUE.) then
+    dataset = SC_Phi2
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi2)
+  end if 
+end if
+
+if (present(getSEMsignal)) then
+  if (getSEMsignal.eqv..TRUE.) then
+    dataset = SC_SEMsignal
+    call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%SEMsignal)
+  end if 
+end if
+
+if (present(getTopDotProductList)) then
+  if (getTopDotProductList.eqv..TRUE.) then
+    dataset = SC_TopDotProductList
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%TopDotProductList)
+  end if 
+end if
+
+if (present(getTopMatchIndices)) then
+  if (getTopMatchIndices.eqv..TRUE.) then
+    dataset = SC_TopMatchIndices
+    call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%TopMatchIndices)
+  end if 
+end if
+
+if (present(getValid)) then
+  if (getValid.eqv..TRUE.) then
+!   dataset = SC_Valid
+!   call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Valid)
+    call Message('Valid','reading the Valid variable is not yet implemented')
+  end if 
+end if
+
+if (present(getXPosition)) then
+  if (getXPosition.eqv..TRUE.) then
+    dataset = SC_XPosition
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%XPosition)
+  end if 
+end if
+
+if (present(getYPosition)) then
+  if (getYPosition.eqv..TRUE.) then
+    dataset = SC_YPosition
+    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%YPosition)
+  end if 
+end if
+
+if (present(getRefinedDotProducts)) then
+  if (getRefinedDotProducts.eqv..TRUE.) then
+    dataset = SC_RefinedDotProducts
+    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then 
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%RefinedDotProducts)
+    else
+      call Message('readEBSDDotProductFile','There is no RefinedDotProducts data set in this file')
+    end if
+  end if 
+end if
+
+if (present(getRefinedEulerAngles)) then
+  if (getRefinedEulerAngles.eqv..TRUE.) then
+    dataset = SC_RefinedEulerAngles
+    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then 
+      call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%RefinedEulerAngles)
+    else
+      call Message('readEBSDDotProductFile','There is no RefinedEulerAngles data set in this file')
+    end if
+  end if 
+end if
+
+! if (present()) then
+!   if (get.eqv..TRUE.) then
+
+!   end if 
+! end if
+
+! and close the HDF5 dot product file
+call HDF_pop(HDF_head,.TRUE.)
+    
+end subroutine readEBSDDotProductFile
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: FillEBSDIndexingNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University
@@ -1405,6 +1918,7 @@ end subroutine CalcEBSDPatternSingleApprox
 !> @param hdferr error code
 !
 !> @date 04/07/16  SS 1.0 original
+!> @date 03/12/18 MDG 2.0 added additional parameters, and data structure
 !--------------------------------------------------------------------------
 recursive subroutine FillEBSDIndexingNameList(enl,hdferr)
 !DEC$ ATTRIBUTES DLLEXPORT :: FillEBSDIndexingNameList

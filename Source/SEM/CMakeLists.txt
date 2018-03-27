@@ -128,7 +128,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
                         TEMPLATE ${TMPLT_DIR}/EMMfoil.template 
                         SOLUTION_FOLDER EMsoftPublic/SEM 
-                        INSTALL_PROGRAM)
+                        INSTALL_PROGRAM TRUE)
 
   Add_EMsoft_Executable(TARGET EMTKD 
                         SOURCES ${APP_DIR}/EMTKD.f90 

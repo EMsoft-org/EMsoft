@@ -1111,8 +1111,9 @@ ENDIF
 RETURN
 END
 
-SUBROUTINE qsortd(x,ind,n)
- 
+SUBROUTINE qsortd(x,ind,n) &
+bind(c, name = 'qsortd')
+!DEC$ ATTRIBUTES DLLEXPORT :: qsortd 
 ! Code converted using TO_F90 by Alan Miller
 ! Date: 2002-12-18  Time: 11:55:47
 

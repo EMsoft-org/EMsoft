@@ -16,10 +16,13 @@
 !
 ! do you want Email or Slack notification when the run has completed?
  Notify = 'Off',
-! height of inverse pole figure in pixels
+! height of data set in pattern input file
  ipf_ht = 100,
-! width of inverse pole figure in pixels
+! width of data set in pattern input file
  ipf_wd = 100,
+! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
+! region of interest has the point (x0,y0) as its lower left corner and is w x h patterns
+ ROI = 0 0 0 0,
 ! X and Y sampling step sizes
  stepX = 1.0,
  stepY = 1.0,
@@ -39,8 +42,6 @@
  hipassw = 0.05,
 ! number of regions for adaptive histogram equalization
  nregions = 10,
-! number of horizontal scan lines to be used for EBSDFastDI indexing...
- nlines = 3,
 
 !###################################################################
 ! ONLY SPECIFY WHEN INDEXINGMODE IS 'DYNAMIC'
@@ -81,13 +82,26 @@
  gammavalue = 1.0,
 !
 !###################################################################
-! FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+! INPUT FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################
 !
 ! name of datafile where the patterns are stored; path relative to EMdatapathname
  exptfile = 'undefined',
+! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
+ inputtype = 'Binary',
+! here we enter the HDF group names and data set names as individual strings (up to 10)
+! enter the full path of a data set in individual strings for each group, in the correct order,
+! and with the data set name as the last name; leave the remaining strings empty (they should all
+! be empty for the Binary and TSLup2 formats)
+ HDFstrings = '' '' '' '' '' '' '' '' '' '',
+!
+!###################################################################
+! OTHER FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+!###################################################################
+!
 ! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp
  tmpfile = 'EMEBSDDict_tmp.data',
+ keeptmpfile = 'n',
 ! output file ; path relative to EMdatapathname
  datafile = 'undefined',
 ! ctf output file ; path relative to EMdatapathname
@@ -122,7 +136,12 @@
  numexptsingle = 1024,
 ! number of threads for parallel execution
  nthreads = 1,
-! platform and device IDs for OpenCL portion of program
- platid = 1
- devid = 1
+! platform ID for OpenCL portion of program
+ platid = 1,
+! if you are running EMEBSDDI, EMECPDI, EMTKDDI, then define the device you wish to use 
+ devid = 1,
+! if you are running EMEBSDDImem on multiple GPUs, enter their device ids (up to eight) here; leave others at zero
+ multidevid = 0 0 0 0 0 0 0 0,
+! how many GPU devices do you want to use?
+ usenumd = 0,
  /

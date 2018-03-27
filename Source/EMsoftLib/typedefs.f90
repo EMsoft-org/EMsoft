@@ -340,8 +340,8 @@ character(5),parameter  :: PGTHD(32) =(/'    1','   -1','    2','    m','  2/m',
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHD
 
 !> 3D point groups : purely rotational point groups corresponding to each point group
-integer(kind=irg),parameter       :: PGrot(32) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
-                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30/)
+integer(kind=irg),parameter       :: PGrot(33) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
+                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGrot
 
 !> 3D point groups : Laue group number
@@ -700,6 +700,22 @@ type QCreflisttype
   type(QCreflisttype),pointer   :: nextw                ! connection to next weak entry in linked list
 end type QCreflisttype
 
+! linked list of quasi-crystal reflections [03/23/18, SS]
+type TDQCreflisttype  
+  integer(kind=irg)                 ::  num, &               ! sequential number
+                                        hkl(5),&             ! Miller indices
+                                        strongnum,&          ! sequential number for strong beams
+                                        weaknum              ! sequential number for weak beams
+  real(kind=dbl)                    ::  sg, &                ! excitation error
+                                        xg, &                ! extinction distance
+                                        glen                 ! length of reciprocal lattice vector
+  logical                           ::  strong, weak         ! is this a strong beam or not; both .FALSE. means 'do not consider'
+  complex(kind=dbl)                 ::  Ucg                  ! Fourier coefficient
+  complex(kind=dbl)                 ::  qg                   ! scaled Fourier coefficient
+  type(TDQCreflisttype),pointer     ::  next                 ! connection to next entry in master linked list
+  type(TDQCreflisttype),pointer     ::  nexts                ! connection to next strong entry in linked list
+  type(TDQCreflisttype),pointer     ::  nextw                ! connection to next weak entry in linked list
+end type TDQCreflisttype
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1143,7 +1159,7 @@ end type substrateBW
 ! type definition for dictionary-based indexing of EBSD patterns
 type dicttype
         integer(kind=irg)               :: Nqsym        ! number of quaternion symmetry operators for current crystal system 
-        real(kind=dbl)                  :: Pm(4,24)     ! array for quaternion symmetry operators
+        real(kind=dbl)                  :: Pm(4,60)     ! array for quaternion symmetry operators
         integer(kind=irg)               :: pgnum        ! point group number
         integer(kind=irg)               :: prot         ! rotational point group number
         real(kind=dbl),allocatable      :: xAp(:)       ! kappa array
@@ -1217,11 +1233,14 @@ type QCStructureType
   integer(kind=irg)                     :: imax
   integer(kind=irg)                     :: numindices
   integer(kind=irg),allocatable         :: facts(:,:)
+  integer(kind=irg),allocatable         :: Ucgindex(:)
+  logical,allocatable                   :: Ucgcalc(:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
-  real(kind=dbl)                        :: epvec(3,6)
-  real(kind=dbl)                        :: eovec(3,6)
-  real(kind=dbl)                        :: Mp(6,6)
-  real(kind=dbl)                        :: Mo(6,6)
+  real(kind=dbl)                        :: epvec(3,6), epar(6,3)
+  real(kind=dbl)                        :: eovec(3,6), eperp(6,3)
+  real(kind=dbl)                        :: Mp(6,6), Picos(6,6)
+  real(kind=dbl)                        :: Mo(6,6), Qicos(6,6)
+  real(kind=dbl)                        :: SYM_icos(6,6,120)              ! 532 rotational group in matrix representation
   real(kind=dbl)                        :: QClatparm
   real(kind=dbl)                        :: dmin
   real(kind=dbl)                        :: vol
@@ -1239,6 +1258,42 @@ type QCStructureType
   complex(kind=dbl),allocatable         :: LUT(:)
   complex(kind=dbl),allocatable         :: LUTqg(:)
 end type QCStructureType
+
+! 2-D Quasi-Crystal data structures
+type TDQCStructureType
+  integer(kind=irg)                     :: atno
+  integer(kind=irg)                     :: imax
+  integer(kind=irg)                     :: imaxz
+  integer(kind=irg)                     :: numindices
+  integer(kind=irg)                     :: nsym
+  integer(kind=irg),allocatable         :: facts(:,:)
+  integer(kind=irg),allocatable         :: Ucgindex(:)
+  logical,allocatable                   :: Ucgcalc(:)
+  integer(kind=irg),allocatable         :: inverseIndex(:,:)
+  real(kind=dbl)                        :: epvec(3,5), epar(5,3)
+  real(kind=dbl)                        :: eovec(3,5), eperp(5,3)
+  real(kind=dbl)                        :: Mp(5,5), Picos(5,5)
+  real(kind=dbl)                        :: Mo(5,5), Qicos(5,5)
+  real(kind=dbl)                        :: SYM_icos(5,5,40)              ! D24 rotational group in matrix representation
+  real(kind=dbl)                        :: QClatparm_a
+  real(kind=dbl)                        :: QClatparm_c
+  real(kind=dbl)                        :: dmin
+  real(kind=dbl)                        :: vol
+  real(kind=dbl)                        :: gmax_orth
+  real(kind=dbl)                        :: DWF
+  real(kind=dbl)                        :: voltage
+  real(kind=dbl)                        :: mRelCor
+  real(kind=dbl)                        :: mSigma
+  real(kind=dbl)                        :: mPsihat
+  real(kind=dbl)                        :: mLambda
+  real(kind=dbl)                        :: Upzero
+  real(kind=dbl)                        :: xizerop
+  real(kind=dbl)                        :: multiplicity
+  character(fnlen)                      :: QCtype
+  character(1)                          :: centering   ! 'P','I','F'
+  complex(kind=dbl),allocatable         :: LUT(:)
+  complex(kind=dbl),allocatable         :: LUTqg(:)
+end type TDQCStructureType
 
 type PoleFigures
   integer(kind=irg),allocatable         :: hkl(:,:)

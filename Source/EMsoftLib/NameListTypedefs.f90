@@ -359,20 +359,25 @@ type EBSDNameListType
         integer(kind=irg)       :: binning
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: energyaverage
-	real(kind=sgl)          :: L
-	real(kind=sgl)          :: thetac
-	real(kind=sgl)          :: delta
+        integer(kind=irg)       :: maskradius
+        integer(kind=irg)       :: nregions
+        real(kind=sgl)          :: L
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
         real(kind=sgl)          :: omega
-	real(kind=sgl)          :: xpc
-	real(kind=sgl)          :: ypc
-	real(kind=sgl)          :: energymin
-	real(kind=sgl)          :: energymax
-	real(kind=sgl)          :: gammavalue
-	real(kind=sgl)          :: axisangle(4)
-	real(kind=sgl)          :: alphaBD
-    real(kind=dbl)          :: Ftensor(3,3)
-	real(kind=dbl)          :: beamcurrent
-	real(kind=dbl)          :: dwelltime
+        real(kind=sgl)          :: xpc
+        real(kind=sgl)          :: ypc
+        real(kind=sgl)          :: energymin
+        real(kind=sgl)          :: energymax
+        real(kind=sgl)          :: gammavalue
+        real(kind=sgl)          :: axisangle(4)
+        real(kind=sgl)          :: alphaBD
+        real(kind=sgl)          :: hipassw
+        real(kind=dbl)          :: Ftensor(3,3)
+        real(kind=dbl)          :: beamcurrent
+        real(kind=dbl)          :: dwelltime
+        character(1)            :: makedictionary
+        character(1)            :: poisson
         character(1)            :: includebackground
         character(1)            :: applyDeformation
         character(1)            :: maskpattern
@@ -382,6 +387,7 @@ type EBSDNameListType
         character(1)            :: spatialaverage
         character(5)            :: bitdepth
         character(fnlen)        :: anglefile
+        character(fnlen)        :: anglefiletype
         character(fnlen)        :: masterfile
         character(fnlen)        :: energyfile 
         character(fnlen)        :: datafile
@@ -570,6 +576,27 @@ type TKDoverlapNameListType
         character(fnlen)        :: Masterenergyfile
 end type TKDoverlapNameListType
 
+! TKDspots name list type
+type TKDspotsNameListType
+        integer(kind=irg)       :: ncubochoric
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        real(kind=sgl)          :: voltage
+        real(kind=sgl)          :: dmin
+        real(kind=sgl)          :: thickness
+        real(kind=sgl)          :: L
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
+        real(kind=sgl)          :: sig
+        real(kind=sgl)          :: omega
+        real(kind=sgl)          :: xpc
+        real(kind=sgl)          :: ypc
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: outname
+        character(fnlen)        :: eulerfile 
+end type 
+
 ! EMEBSDcluster name list
 type EBSDclusterNameListType
         integer(kind=irg)       :: NClusters
@@ -697,6 +724,32 @@ type ECPQCMasterNameListType
     character(1)            :: centering
     character(fnlen)        :: energyfile
 end type ECPQCMasterNameListType
+
+! namelist for the EMECPQCmaster program
+type EBSDQCMasterNameListType
+    integer(kind=irg)       :: nsamples
+    integer(kind=irg)       :: npx
+    integer(kind=irg)       :: nthreads
+    integer(kind=irg)       :: atno
+    real(kind=sgl)          :: DWF
+    real(kind=sgl)          :: dmin
+    real(kind=sgl)          :: QClatparm 
+    character(1)            :: centering
+    character(fnlen)        :: energyfile
+! parameters from MC simulation
+    real(kind=sgl)          :: depthstep 
+    real(kind=sgl)          :: Ehistmin
+    real(kind=sgl)          :: Ebinsize
+    real(kind=sgl)          :: Ekev
+    real(kind=sgl)          :: depthmax
+    integer(kind=irg)       :: numsx
+    integer(kind=irg)       :: num_el
+    integer(kind=irg)       :: numEbins
+    integer(kind=irg)       :: numzbins
+    integer(kind=irg)       :: multiplier
+    real(kind=sgl)          :: sig
+    character(4)            :: mode
+end type EBSDQCMasterNameListType
 
 !namelist for the EMECP program
 type ECPpatternNameListType
@@ -859,7 +912,7 @@ type AverageOrientationNameListType
         integer(kind=irg)       :: nmuse
         integer(kind=irg)       :: reldisx
         integer(kind=irg)       :: reldisy
-        logical                 :: oldformat
+        character(1)            :: refined
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: averagectffile
         character(fnlen)        :: averagetxtfile
@@ -890,12 +943,31 @@ type DvsDNameListType
         character(fnlen)        :: xtalfile
 end type DvsDNameListType
 
+type EBSDDIpreviewNameListType
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        integer(kind=irg)       :: hipasswnsteps
+        integer(kind=irg)       :: nregionsmin
+        integer(kind=irg)       :: nregionsmax
+        integer(kind=irg)       :: nregionsstepsize
+        integer(kind=irg)       :: patx
+        integer(kind=irg)       :: paty
+        integer(kind=irg)       :: ipf_wd
+        integer(kind=irg)       :: ipf_ht
+        real(kind=sgl)          :: hipasswmax
+        character(fnlen)        :: tifffile
+        character(fnlen)        :: exptfile
+        character(fnlen)        :: inputtype
+        character(fnlen)        :: HDFstrings(10)
+end type EBSDDIpreviewNameListType 
+
 type EBSDIndexingNameListType
         integer(kind=irg)       :: ncubochoric
         integer(kind=irg)       :: numexptsingle
         integer(kind=irg)       :: numdictsingle
         integer(kind=irg)       :: ipf_ht
         integer(kind=irg)       :: ipf_wd 
+        integer(kind=irg)       :: ROI(4)
         integer(kind=irg)       :: nnk
         integer(kind=irg)       :: nnav
         integer(kind=irg)       :: nosm
@@ -907,6 +979,8 @@ type EBSDIndexingNameListType
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: energyaverage
         integer(kind=irg)       :: devid
+        integer(kind=irg)       :: usenumd
+        integer(kind=irg)       :: multidevid(8)
         integer(kind=irg)       :: platid
         integer(kind=irg)       :: nregions
         integer(kind=irg)       :: nlines
@@ -928,6 +1002,7 @@ type EBSDIndexingNameListType
         character(3)            :: Notify
         !character(3)            :: eulerconvention
         !character(3)            :: outputformat
+        character(1)            :: keeptmpfile
         character(1)            :: spatialaverage
         character(fnlen)        :: anglefile
         !character(fnlen)        :: dotproductfile
@@ -942,6 +1017,8 @@ type EBSDIndexingNameListType
         character(fnlen)        :: dictfile
         character(fnlen)        :: maskfile
         character(fnlen)        :: indexingmode
+        character(fnlen)        :: inputtype
+        character(fnlen)        :: HDFstrings(10)
 ! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
         integer(kind=irg)       :: numangles
         integer(kind=irg)       :: numEbins
@@ -977,6 +1054,28 @@ type EBSDIndexingNameListType
         character(fnlen)        :: MCprogname 
         character(fnlen)        :: MCxtalname
 end type EBSDIndexingNameListType
+
+type ADPNameListType
+        integer(kind=irg)       :: ipf_ht
+        integer(kind=irg)       :: ipf_wd 
+        integer(kind=irg)       :: maskradius
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: nregions
+        integer(kind=irg)       :: ROI(4)
+        real(kind=dbl)          :: hipassw
+        character(1)            :: maskpattern
+        character(1)            :: filterpattern
+        character(1)            :: keeptmpfile
+        character(1)            :: usetmpfile
+        character(fnlen)        :: exptfile 
+        character(fnlen)        :: tmpfile
+        character(fnlen)        :: tiffname
+        character(fnlen)        :: maskfile
+        character(fnlen)        :: inputtype
+        character(fnlen)        :: HDFstrings(10)
+end type ADPNameListType
 
 type TKDIndexingNameListType
         integer(kind=irg)       :: ncubochoric
@@ -1017,6 +1116,7 @@ type TKDIndexingNameListType
         character(1)            :: spatialaverage
         character(fnlen)        :: anglefile
         !character(fnlen)        :: dotproductfile
+        character(fnlen)        :: maskfile
         character(fnlen)        :: masterfile
         character(fnlen)        :: energyfile 
         character(fnlen)        :: datafile
@@ -1398,6 +1498,7 @@ type RefineOrientationtype
         integer(kind=irg)       :: nthreads
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
+        character(4)            :: modality
         real(kind=sgl)          :: step
         integer(kind=irg)       :: nmis
         integer(kind=irg)       :: niter
@@ -1405,11 +1506,22 @@ end type RefineOrientationtype
 
 type FitOrientationPStype
         integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: matchdepth
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
         real(kind=sgl)          :: step
-        real(kind=sgl)          :: angleaxis(4)
+        character(fnlen)        :: PSvariantfile
+        character(fnlen)        :: modality
 end type FitOrientationPStype
+
+type Fitalphavarianttype
+        integer(kind=irg)       :: nthreads
+        character(fnlen)        :: betadotproductfile
+        character(fnlen)        :: alphadotproductfile
+        character(fnlen)        :: outputfile
+        character(fnlen)        :: variantquaternionfile
+        real(kind=sgl)          :: step
+end type Fitalphavarianttype
 
 type PFInversionNameListType
         integer(kind=irg)       :: nLam
@@ -1484,5 +1596,20 @@ type EMgammaSTEMNameListType
     character(fnlen)    :: microstructurefile
     character(fnlen)    :: datafile
 end type EMgammaSTEMNameListType
+
+type EMCBEDQCNameListType
+    real(kind=sgl)      :: dmin
+    real(kind=sgl)      :: QClatparm
+    integer(kind=irg)   :: atno
+    real(kind=sgl)      :: DWF
+    real(kind=sgl)      :: voltage
+    real(kind=sgl)      :: convergence
+    real(kind=sgl)      :: eu(3)
+    real(kind=sgl)      :: thickness
+    character(fnlen)    :: datafile
+    integer(kind=irg)   :: nthreads
+    integer(kind=irg)   :: npix
+    character(1)        :: centering
+end type EMCBEDQCNameListType
 
 end module NameListTypedefs

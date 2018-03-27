@@ -1402,21 +1402,21 @@ logical                                 :: skipread = .FALSE.
 integer(kind=irg)       :: nmuse
 integer(kind=irg)       :: reldisx
 integer(kind=irg)       :: reldisy
-logical                 :: oldformat
+character(1)            :: refined
 character(fnlen)        :: dotproductfile
 character(fnlen)        :: averagectffile
 character(fnlen)        :: averagetxtfile
 character(fnlen)        :: disorientationmap
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /AverageOrientation/ nmuse, dotproductfile, averagectffile, oldformat, averagetxtfile, &
-                              reldisx, reldisy, disorientationmap
+namelist /AverageOrientation/ nmuse, dotproductfile, averagectffile, averagetxtfile, &
+                              reldisx, reldisy, disorientationmap, refined
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 nmuse = 10                      ! number of near-matches to use
 reldisx = 0                     ! x-coordinate for relative disorientation map
 reldisy = 0                     ! y-coordinate for relative disorientation map
-oldformat = .FALSE.             ! switch for older format of dot product files
+refined = 'n'                   ! which Euler angle set to be used for disorientation map ...
 dotproductfile = 'undefined'    ! default filename for input dotproduct file (HDF5)
 averagectffile = 'undefined'    ! default filename for output ctf file
 averagetxtfile = 'undefined'    ! default filename for output txt file (only with oldformat=.TRUE.
@@ -1438,14 +1438,8 @@ if (.not.skipread) then
   call FatalError(' EMAverageOrient',' dotproduct file name is undefined in '//nmlfile)
  end if
 
- if (oldformat.eqv..TRUE.) then
-   if (trim(averagetxtfile).eq.'undefined') then
-    call FatalError(' EMAverageOrient',' txt output file name is undefined in '//nmlfile)
-   end if
- else
-   if (trim(averagectffile).eq.'undefined') then
-    call FatalError(' EMAverageOrient',' ctf output file name is undefined in '//nmlfile)
-   end if
+ if (trim(averagectffile).eq.'undefined') then
+  call FatalError(' EMAverageOrient',' ctf output file name is undefined in '//nmlfile)
  end if
 end if
 
@@ -1453,7 +1447,7 @@ end if
 emnl%nmuse = nmuse
 emnl%reldisx = reldisx
 emnl%reldisy = reldisy
-emnl%oldformat = oldformat
+emnl%refined = refined
 emnl%dotproductfile = dotproductfile
 emnl%averagectffile = averagectffile
 emnl%averagetxtfile = averagetxtfile
@@ -2064,7 +2058,7 @@ gmax_orth = 2.0                ! smallest d-spacing to include in dynamical matr
 QClatparm = 0.46
 atno = 28
 DWF = 0.004
-nsamples = 100
+nsamples = 400
 npx = 256
 centering = 'P'
 energyfile = 'undefined'       ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
@@ -2423,6 +2417,8 @@ integer(kind=irg)       :: numsy
 integer(kind=irg)       :: binning
 integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: energyaverage
+integer(kind=irg)       :: maskradius
+integer(kind=irg)       :: nregions
 real(kind=sgl)          :: L
 real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
@@ -2434,10 +2430,13 @@ real(kind=sgl)          :: energymax
 real(kind=sgl)          :: gammavalue
 real(kind=sgl)          :: alphaBD
 real(kind=sgl)          :: axisangle(4)
+real(kind=sgl)          :: hipassw
 real(kind=dbl)          :: Ftensor(3,3)
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
 character(1)            :: includebackground
+character(1)            :: poisson
+character(1)            :: makedictionary
 character(1)            :: applyDeformation
 character(1)            :: maskpattern
 character(1)            :: spatialaverage
@@ -2446,6 +2445,7 @@ character(3)            :: eulerconvention
 character(3)            :: outputformat
 character(5)            :: bitdepth
 character(fnlen)        :: anglefile
+character(fnlen)        :: anglefiletype
 character(fnlen)        :: masterfile
 character(fnlen)        :: energyfile 
 character(fnlen)        :: datafile
@@ -2454,7 +2454,8 @@ character(fnlen)        :: datafile
 namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, bitdepth, &
                         energyfile, datafile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
-                        applyDeformation, Ftensor, includebackground
+                        applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
+                        maskradius, poisson
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -2463,6 +2464,7 @@ numsy           = 480           ! [dimensionless]
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
 nthreads        = 1             ! number of OpenMP threads
+nregions        = 10            ! number of regions in adaptive histogram equalization
 energyaverage   = 0             ! apply energy averaging (1) or not (0); useful for dictionary computations
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
@@ -2473,10 +2475,14 @@ energymin       = 15.0          ! minimum energy to consider
 energymax       = 30.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
 alphaBD         = 0.0           ! transfer lens barrel distortion parameter
+maskradius      = 240           ! mask radius
+hipassw         = 0.05          ! hi-pass filter radius
 axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotation
 Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
+makedictionary  = 'y'
+poisson         = 'n'           ! apply poisson noise ? 
 includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
@@ -2488,6 +2494,7 @@ bitdepth        = '8bit'        ! format for output; '8char' for [0..255], '##in
 ! from the float values to a maximum that is given by the first two digits, which indicate the bit depth; so, valid
 ! values would be '10int' for a 10-bit integer scale, '16int' for a 16-bit integer scale, and so on.
 anglefile       = 'undefined'   ! filename
+anglefiletype   = 'orientations'! 'orientations' or 'orpcdef'
 masterfile      = 'undefined'   ! filename
 energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
 datafile        = 'undefined'   ! output file name
@@ -2526,6 +2533,8 @@ enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
 enl%binning = binning
+enl%nregions = nregions
+enl%maskradius = maskradius
 enl%L = L
 enl%nthreads = nthreads
 enl%energyaverage = energyaverage
@@ -2537,11 +2546,14 @@ enl%energymin = energymin
 enl%energymax = energymax
 enl%gammavalue = gammavalue
 enl%alphaBD = alphaBD
+enl%hipassw = hipassw
 enl%axisangle = axisangle
 enl%Ftensor = Ftensor
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%includebackground = includebackground
+enl%makedictionary = makedictionary
+enl%poisson = poisson
 enl%applyDeformation = applyDeformation
 enl%maskpattern = maskpattern
 enl%scalingmode = scalingmode
@@ -2549,6 +2561,7 @@ enl%eulerconvention = eulerconvention
 enl%outputformat = outputformat
 enl%bitdepth = bitdepth
 enl%anglefile = anglefile
+enl%anglefiletype = anglefiletype
 enl%masterfile = masterfile
 enl%energyfile = energyfile
 enl%datafile = datafile
@@ -2897,6 +2910,115 @@ enl%masterfileB = masterfileB
 enl%datafile = datafile
 
 end subroutine GetTKDoverlapNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetTKDspotsNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMTKDspots.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl TKD name list structure
+!
+!> @date 01/03/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetTKDspotsNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetTKDspotsNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)             :: nmlfile
+type(TKDspotsNameListType),INTENT(INOUT):: enl
+logical,OPTIONAL,INTENT(IN)             :: initonly
+
+logical                                 :: skipread = .FALSE.
+
+integer(kind=irg)       :: ncubochoric
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+real(kind=sgl)          :: voltage
+real(kind=sgl)          :: dmin
+real(kind=sgl)          :: thickness
+real(kind=sgl)          :: L
+real(kind=sgl)          :: thetac
+real(kind=sgl)          :: delta
+real(kind=sgl)          :: omega
+real(kind=sgl)          :: sig
+real(kind=sgl)          :: xpc
+real(kind=sgl)          :: ypc
+character(fnlen)        :: xtalname
+character(fnlen)        :: outname
+character(fnlen)        :: eulerfile 
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / TKDspots / ncubochoric, nthreads, numsx, numsy, voltage, dmin, thickness, L, &
+                       thetac, delta, omega, sig, xpc, ypc, xtalname, outname, eulerfile
+
+! set the input parameters to default values (except for xtalname, which must be present)
+ncubochoric     = 100
+nthreads        = 1
+numsx           = 640
+numsy           = 480
+voltage         = 20.0
+dmin            = 0.05
+thickness       = 50.0
+L               = 15000.0
+thetac          = 10.0
+delta           = 50.0
+omega           = 0.0
+sig             = 70.0
+xpc             = 0.0
+ypc             = 0.0
+xtalname        = 'undefined'
+outname         = 'undefined'
+eulerfile       = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=TKDspots)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('EMTKDspots:',' xtal input file is undefined in '//nmlfile)
+ end if
+
+ if (trim(outname).eq.'undefined') then
+  call FatalError('EMTKDspots:',' output file name B is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+enl%ncubochoric = ncubochoric
+enl%nthreads = nthreads
+enl%numsx = numsx 
+enl%numsy = numsy
+enl%voltage = voltage
+enl%dmin = dmin 
+enl%thickness = thickness
+enl%L = L 
+enl%thetac = thetac
+enl%delta = delta
+enl%omega = omega
+enl%sig = sig
+enl%xpc = xpc 
+enl%ypc = ypc 
+enl%xtalname = xtalname 
+enl%outname = outname 
+enl%eulerfile = eulerfile
+
+end subroutine GetTKDspotsNameList
+
 
 !--------------------------------------------------------------------------
 !
@@ -3967,7 +4089,108 @@ end subroutine GetPEDIndxNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:GetEBSDIndxNameList
+! SUBROUTINE:GetEBSDDIpreviewNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDDIpreview.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl name list structure
+!
+!> @date 01/24/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDDIpreviewNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDDIpreviewNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(EBSDDIpreviewNameListType),INTENT(INOUT)     :: enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: hipasswnsteps
+integer(kind=irg)       :: nregionsmin
+integer(kind=irg)       :: nregionsmax
+integer(kind=irg)       :: nregionsstepsize
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
+real(kind=sgl)          :: hipasswmax
+character(fnlen)        :: tifffile
+character(fnlen)        :: exptfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: hDFstrings(10)
+
+namelist / EBSDDIpreviewdata / numsx, numsy, hipasswmax, hipasswnsteps, nregionsstepsize, &
+          nregionsmax, nregionsmin, patx, paty, tifffile, exptfile, inputtype, HDFstrings, ipf_wd, ipf_ht
+
+! set the input parameters to default values
+numsx = 640
+numsy = 480
+hipasswmax = 0.5
+hipasswnsteps = 10
+nregionsmin = 1
+nregionsmax = 10
+nregionsstepsize = 1
+patx = 1
+paty = 1
+ipf_wd = 100
+ipf_ht = 100
+tifffile = 'undefined'
+exptfile = 'undefined'
+inputtype = 'Binary'
+HDFstrings = ''
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=EBSDDIpreviewdata)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+        
+    if (trim(exptfile).eq.'undefined') then
+        call FatalError('GetEBSDDIpreviewNameList:',' experimental file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tifffile).eq.'undefined') then
+        call FatalError('GetEBSDDIpreviewNameList:',' TIFF file name is undefined in '//nmlfile)
+    end if
+end if
+
+enl%numsx = numsx
+enl%numsy = numsy
+enl%hipasswnsteps = hipasswnsteps
+enl%nregionsmin = nregionsmin
+enl%nregionsmax = nregionsmax
+enl%nregionsstepsize = nregionsstepsize
+enl%patx = patx
+enl%paty = paty
+enl%ipf_wd = ipf_wd
+enl%ipf_ht = ipf_ht
+enl%hipasswmax = hipasswmax
+enl%tifffile = tifffile
+enl%exptfile = exptfile
+enl%inputtype = inputtype
+enl%HDFstrings = HDFstrings
+
+end subroutine GetEBSDDIpreviewNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetBSDIndxNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
@@ -3995,9 +4218,12 @@ logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)                                 :: numsx
 integer(kind=irg)                                 :: numsy
+integer(kind=irg)                                 :: ROI(4)
 integer(kind=irg)                                 :: binning
 integer(kind=irg)                                 :: energyaverage
 integer(kind=irg)                                 :: devid
+integer(kind=irg)                                 :: multidevid(8)
+integer(kind=irg)                                 :: usenumd
 integer(kind=irg)                                 :: platid
 integer(kind=irg)                                 :: nregions
 integer(kind=irg)                                 :: nlines
@@ -4015,6 +4241,7 @@ real(kind=sgl)                                    :: stepX
 real(kind=sgl)                                    :: stepY
 integer(kind=irg)                                 :: nthreads
 character(1)                                      :: maskpattern
+character(1)                                      :: keeptmpfile
 character(3)                                      :: scalingmode
 character(3)                                      :: Notify
 character(fnlen)                                  :: dotproductfile
@@ -4028,6 +4255,8 @@ character(fnlen)                                  :: ctffile
 character(fnlen)                                  :: avctffile
 character(fnlen)                                  :: angfile
 character(fnlen)                                  :: eulerfile
+character(fnlen)                                  :: inputtype
+character(fnlen)                                  :: HDFstrings(10)
 integer(kind=irg)                                 :: ncubochoric
 integer(kind=irg)                                 :: numexptsingle
 integer(kind=irg)                                 :: numdictsingle
@@ -4047,9 +4276,9 @@ character(fnlen)                                  :: indexingmode
 namelist  / EBSDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile, devid, platid, &
 beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, nlines, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
-ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius,&
+ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section
+section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4057,6 +4286,8 @@ numexptsingle   = 1024
 numdictsingle   = 1024
 platid          = 1
 devid           = 1
+usenumd         = 1
+multidevid      = (/ 0, 0, 0, 0, 0, 0, 0, 0 /)
 nregions        = 10
 nlines          = 3
 nnk             = 50
@@ -4065,6 +4296,7 @@ nosm            = 20
 exptfile        = 'undefined'
 numsx           = 640           ! [dimensionless]
 numsy           = 480           ! [dimensionless]
+ROI             = (/ 0, 0, 0, 0 /)  ! Region of interest (/ x0, y0, w, h /)
 maskradius      = 240
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
@@ -4079,6 +4311,7 @@ dwelltime       = 100.0D0       ! in microseconds
 hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
 stepX           = 1.0           ! sampling step size along X
 stepY           = 1.0           ! sampling step size along Y
+keeptmpfile     = 'n'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 Notify          = 'Off'
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -4101,6 +4334,8 @@ dictfile        = 'undefined'
 maskfile        = 'undefined'
 indexingmode    = 'dynamic'
 section         = 0
+inputtype       = 'Binary'    ! Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF 
+HDFstrings      = ''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4132,7 +4367,6 @@ if (.not.skipread) then
         call FatalError('EMEBSDIndexing:',' experimental file name is undefined in '//nmlfile)
     end if
 
-
 end if
 
 
@@ -4140,10 +4374,13 @@ end if
 ! if we get here, then all appears to be ok, and we need to fill in the enl fields
 
 enl%devid         = devid
+enl%multidevid    = multidevid
+enl%usenumd       = usenumd
 enl%platid        = platid
 enl%nregions      = nregions
 enl%nlines        = nlines
 enl%maskpattern   = maskpattern
+enl%keeptmpfile   = keeptmpfile
 enl%exptfile      = exptfile
 enl%nnk           = nnk
 enl%nnav          = nnav
@@ -4169,34 +4406,144 @@ enl%StepY         = stepY
 enl%indexingmode  = trim(indexingmode)
 enl%Notify        = Notify
 enl%section       = section
-if (trim(indexingmode) .eq. 'dynamic') then
-    enl%L               = L
-    enl%numsx           = numsx
-    enl%numsy           = numsy
-    enl%binning         = binning
-    enl%energyaverage   = energyaverage
-    enl%thetac          = thetac
-    enl%delta           = delta
-    enl%xpc             = xpc
-    enl%ypc             = ypc
-    enl%gammavalue      = gammavalue
-    enl%beamcurrent     = beamcurrent
-    enl%dwelltime       = dwelltime
-    enl%scalingmode     = scalingmode
-    enl%ncubochoric     = ncubochoric
-    enl%omega           = omega
-    enl%energymin       = energymin
-    enl%energymax       = energymax
-    enl%spatialaverage  = spatialaverage
-    enl%dictfile        = 'undefined'
-else if (trim(indexingmode) .eq. 'static') then
-    enl%dictfile = dictfile
-    enl%ncubochoric = 0
-else
-    call FatalError('EMEBSDIndexing:',' indexingmode is not known in '//nmlfile)
-end if
+enl%inputtype     = inputtype
+enl%HDFstrings    = HDFstrings
+enl%L             = L
+enl%numsx         = numsx
+enl%numsy         = numsy
+enl%ROI           = ROI
+enl%binning       = binning
+enl%energyaverage = energyaverage
+enl%thetac        = thetac
+enl%delta         = delta
+enl%xpc           = xpc
+enl%ypc           = ypc
+enl%gammavalue    = gammavalue
+enl%beamcurrent   = beamcurrent
+enl%dwelltime     = dwelltime
+enl%scalingmode   = scalingmode
+enl%ncubochoric   = ncubochoric
+enl%omega         = omega
+enl%energymin     = energymin
+enl%energymax     = energymax
+enl%spatialaverage= spatialaverage
+enl%dictfile      = dictfile 
 
 end subroutine GetEBSDIndexingNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetADPNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill adpnl structure (used by EMgetADP.f90)
+!
+!> @param nmlfile namelist file name
+!> @param adpnl name list structure
+!
+!> @date 02/17/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetADPNameList(nmlfile, adpnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetADPNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(ADPNameListType),INTENT(INOUT)               :: adpnl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: ipf_ht
+integer(kind=irg)       :: ipf_wd 
+integer(kind=irg)       :: maskradius
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: nregions
+integer(kind=irg)       :: ROI(4)
+real(kind=dbl)          :: hipassw
+character(1)            :: maskpattern
+character(1)            :: filterpattern
+character(1)            :: keeptmpfile
+character(1)            :: usetmpfile
+character(fnlen)        :: exptfile 
+character(fnlen)        :: tmpfile
+character(fnlen)        :: tiffname
+character(fnlen)        :: maskfile
+character(fnlen)        :: inputtype
+character(fnlen)        :: HDFstrings(10)
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_wd, exptfile, maskradius, inputtype, &
+                     tmpfile, maskfile, HDFstrings, hipassw, tiffname, filterpattern, keeptmpfile, usetmpfile, ROI
+
+! set the input parameters to default values
+ ipf_ht = 100
+ ipf_wd = 100
+ maskfile = 'undefined'
+ filterpattern = 'y'
+ maskpattern = 'n'
+ keeptmpfile = 'n'
+ usetmpfile = 'n'
+ maskradius = 240
+ hipassw = 0.05
+ nregions = 10
+ numsx = 640
+ numsy = 480
+ ROI = (/ 0, 0, 0, 0 /)
+ exptfile = 'undefined'
+ inputtype = 'Binary'
+ HDFstrings = ''
+ tmpfile = 'EMEBSDDict_tmp.data'
+ tiffname = 'undefined'
+ nthreads = 1
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=getADP)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(exptfile).eq.'undefined') then
+        call FatalError('GetADPNameList:',' experimental file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tiffname).eq.'undefined') then
+        call FatalError('GetADPNameList:',' output tiff file name is undefined in '//nmlfile)
+    end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the enl fields
+adpnl%ipf_ht = ipf_ht
+adpnl%ipf_wd = ipf_wd
+adpnl%maskradius = maskradius
+adpnl%numsx = numsx
+adpnl%numsy = numsy
+adpnl%nthreads = nthreads
+adpnl%nregions = nregions
+adpnl%ROI = ROI
+adpnl%hipassw = hipassw
+adpnl%maskpattern = maskpattern
+adpnl%filterpattern = filterpattern
+adpnl%keeptmpfile = keeptmpfile
+adpnl%usetmpfile = usetmpfile
+adpnl%exptfile = exptfile
+adpnl%tmpfile = tmpfile
+adpnl%tiffname = tiffname
+adpnl%maskfile = maskfile
+adpnl%inputtype = inputtype
+adpnl%HDFstrings = HDFstrings
+
+end subroutine GetADPNameList
 
 !--------------------------------------------------------------------------
 !
@@ -4251,6 +4598,7 @@ character(fnlen)                                  :: masterfile
 real(kind=sgl)                                    :: energymin
 real(kind=sgl)                                    :: energymax
 character(1)                                      :: spatialaverage
+character(fnlen)                                  :: maskfile
 character(fnlen)                                  :: tmpfile
 character(fnlen)                                  :: datafile
 character(fnlen)                                  :: ctffile
@@ -4275,7 +4623,7 @@ namelist  / TKDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile,
 beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius,&
-dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile
+dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, maskfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4304,6 +4652,7 @@ dwelltime       = 100.0D0       ! in microseconds
 hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
 stepX           = 1.0           ! sampling step size along X
 stepY           = 1.0           ! sampling step size along Y
+maskfile        = 'undefined'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 masterfile      = 'undefined'   ! filename
@@ -4374,6 +4723,7 @@ enl%ipf_wd = ipf_wd
 enl%nthreads = nthreads
 enl%datafile = datafile
 enl%tmpfile = tmpfile
+enl%maskfile = maskfile
 enl%ctffile = ctffile
 enl%avctffile = avctffile
 enl%angfile = angfile
@@ -4972,7 +5322,6 @@ real(kind=sgl)                                    :: phi, phi1, phi2
 real(kind=sgl)                                    :: L
 real(kind=sgl)                                    :: thetac
 real(kind=sgl)                                    :: delta
-real(kind=sgl)                                    :: omega
 integer(kind=irg)                                 :: numsx
 integer(kind=irg)                                 :: numsy
 integer(kind=irg)                                 :: binning
@@ -5000,56 +5349,55 @@ character(2)                                      :: metric
 
 
 
-namelist / DPFitdata / masterfile, modalityname, exptfile, rhobeg, rhoend, verbose, mask, &
-         phi1, phi, phi2, L, thetac, delta, omega, numsx, numsy, binning, xpc, ypc, beamcurrent, &
-         dwelltime, npix, Rin, Rout, thetacone, sampletilt, workingdistance, gammavalue, maskradius, &
-         step_xpc, step_ypc, step_L, step_phi1, step_phi, step_phi2, step_thetacone, nrun, nregions, metric
+namelist / DPFitdata / modalityname, masterfile, metric, exptfile, nrun, rhobeg, rhoend, verbose, mask, &
+                      maskradius, gammavalue, nregions, phi1, phi, phi2, step_phi1, step_phi, step_phi2, &
+                      thetac, delta, numsx, numsy, beamcurrent, dwelltime, binning, L, xpc, ypc, step_L, &
+                      step_xpc, step_ypc, npix, Rin, Rout, thetacone, sampletilt, workingdistance, step_thetacone
 
-masterfile = 'undefined' 
-modalityname = 'undefined' 
+masterfile    = 'undefined1' 
+modalityname  = 'undefined1' 
 
-exptfile = 'undefined'
+exptfile      = 'undefined1'
 
-rhobeg = 1.0D-2
-rhoend = 1.0D-7
-verbose = .TRUE.
-mask = .TRUE.
-phi1 = 0.0
-phi = 0.0
-phi2 = 0.0
+rhobeg        = 1.0D-2
+rhoend        = 1.0D-7
+verbose       = .TRUE.
+mask          = .TRUE.
+phi1          = 0.0
+phi           = 0.0
+phi2          = 0.0
 
-step_phi1 = 2.0
-step_phi = 2.0
-step_phi2 = 2.0
+step_phi1     = 2.0
+step_phi      = 2.0
+step_phi2     = 2.0
 
-L = 15000.0
-thetac = 10.0
-delta = 50.0
-omega = 0.0
-numsx = 640
-numsy = 480
-binning = 1
-xpc = 0.0
-ypc = 0.0
-beamcurrent = 1000.0
-dwelltime = 1000.0
-npix = 512
-Rin = 2.0
-Rout = 5.0
-thetacone = 5.0
-sampletilt = 0.0
+L             = 15000.0
+thetac        = 10.0
+delta         = 50.0
+numsx         = 640
+numsy         = 480
+binning       = 1
+xpc           = 0.0
+ypc           = 0.0
+beamcurrent   = 1000.0
+dwelltime     = 1000.0
+npix          = 512
+Rin           = 2.0
+Rout          = 5.0
+thetacone     = 5.0
+sampletilt    = 0.0
 workingdistance = 7.0
-gammavalue = 1.0
-maskradius = 256.0
+gammavalue    = 1.0
+maskradius    = 256.0
 
-step_xpc = 5.0
-step_ypc = 5.0
-step_L = 5.0
+step_xpc      = 5.0
+step_ypc      = 5.0
+step_L        = 5.0
 step_thetacone = 1.0
 
-nrun = 2
-nregions = 8
-metric = 'DP'
+nrun          = 2
+nregions      = 8
+metric        = 'DP'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5091,7 +5439,6 @@ enl%phi2 = phi2
 
 enl%L = L
 enl%thetac = thetac
-enl%omega = omega
 enl%numsx = numsx
 enl%numsy = numsy
 enl%binning = binning
@@ -5116,7 +5463,6 @@ enl%step_phi1 = step_phi1
 enl%step_phi = step_phi
 enl%step_phi2 = step_phi2
 enl%step_thetacone = step_thetacone
-
 enl%nrun = nrun
 
 end subroutine GetEMDPFitNameList
@@ -5438,12 +5784,13 @@ logical                                           :: skipread = .FALSE.
 integer(kind=irg)                                 :: nthreads
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
+character(4)                                      :: modality
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
 real(kind=sgl)                                    :: step
 
 
-namelist / RefineOrientations / nthreads, dotproductfile, ctffile, nmis, niter, step
+namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step
 
 nthreads = 1
 dotproductfile = 'undefined'
@@ -5451,6 +5798,7 @@ ctffile = 'undefined'
 nmis = 1
 niter = 1
 step = 1.0
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5480,8 +5828,92 @@ enl%ctffile = ctffile
 enl%nmis = nmis
 enl%niter = niter
 enl%step = step
+enl%modality = modality
 
 end subroutine GetRefineOrientationNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetFitalphavariantsNameList
+!
+!> @author Marc De Graef , Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMFitalphavariants.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl single name list structure
+!
+!> @date 03/05/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetFitalphavariantsNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetFitalphavariantsNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(Fitalphavarianttype),INTENT(INOUT)           :: enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: nthreads
+character(fnlen)        :: betadotproductfile
+character(fnlen)        :: alphadotproductfile
+character(fnlen)        :: outputfile
+character(fnlen)        :: variantquaternionfile
+real(kind=sgl)          :: step
+
+
+namelist / Fitalphavariants / nthreads, betadotproductfile, alphadotproductfile, outputfile, &
+                              variantquaternionfile, step
+
+nthreads = 1
+betadotproductfile = 'undefined'
+alphadotproductfile = 'undefined'
+outputfile = 'undefined'
+variantquaternionfile = 'undefined'
+step = 1.0
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=Fitalphavariants)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(betadotproductfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' beta phase dotproduct file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(alphadotproductfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' alphaa phase dotproduct file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(variantquaternionfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' variantquaternion file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(outputfile).eq.'undefined') then
+        call FatalError('GetFitalphavariantsNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+
+end if
+
+enl%nthreads = nthreads
+enl%betadotproductfile = betadotproductfile
+enl%alphadotproductfile = alphadotproductfile
+enl%outputfile = outputfile
+enl%variantquaternionfile = variantquaternionfile
+enl%step = step
+
+end subroutine GetFitalphavariantsNameList
 
 !--------------------------------------------------------------------------
 !
@@ -5511,18 +5943,22 @@ logical,OPTIONAL,INTENT(IN)                       :: initonly
 logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)                                 :: nthreads
+integer(kind=irg)                                 :: matchdepth
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
 real(kind=sgl)                                    :: step
-real(kind=sgl)                                    :: angleaxis(4)
+character(fnlen)                                  :: PSvariantfile
+character(fnlen)                                  :: modality
 
-namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, step, angleaxis
+namelist / FitOrientationPS / nthreads, dotproductfile, ctffile, modality, step, PSvariantfile, matchdepth
 
 nthreads = 1
+matchdepth = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
 step = 1.0
-angleaxis = (/1.0,1.0,1.0,120.0/)
+PSvariantfile = 'undefined'
+modality = 'EBSD'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5543,17 +5979,18 @@ if (.not.skipread) then
         call FatalError('EMRefineOrientation:',' ctf file name is undefined in '//nmlfile)
     end if
 
-    if(NORM2(angleaxis(1:3)) .eq. 0.0) then
-        call FatalError('GetFitOrientationPSNameList:','The angle axis for pseudosymmetric variant has norm 0')
+    if (trim(PSvariantfile).eq.'undefined') then
+        call FatalError('EMRefineOrientation:',' variant file name is undefined in '//nmlfile)
     end if
-
 end if
 
 enl%nthreads = nthreads
+enl%matchdepth = matchdepth
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
 enl%step = step
-enl%angleaxis = angleaxis
+enl%PSvariantfile = PSvariantfile
+enl%modality = modality
 
 end subroutine GetFitOrientationPSNameList
 
@@ -6649,5 +7086,163 @@ epf%devid                = devid
 epf%convergence          = convergence
 
 end subroutine GetEMgammaSTEMNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEMCBEDQCNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMCBEDQC.f90)
+!
+!> @param nmlfile namelist file name
+!> @param epf single name list structure
+!
+!> @date 02/21/18 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetEMCBEDQCNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMCBEDQCNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(EMCBEDQCNameListType),INTENT(INOUT)          :: enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)   :: nthreads, atno, npix
+real(kind=sgl)      :: voltage, dmin, eu(3), convergence, DWF, QClatparm, thickness
+character(fnlen)    :: datafile
+character(1)        :: centering
+
+namelist /CBEDQC/ voltage, dmin, nthreads, DWF, atno, thickness, &
+          datafile, eu, convergence, QClatparm,centering, npix
+
+datafile    = 'undefined'           ! output filename
+voltage     = 200.0                 ! acceleration voltage [kV]
+eu          = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
+dmin        = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm]
+convergence = 10.0                  ! beam convergence angle [mRad]
+QClatparm   = 0.50                  ! lattice parameter of hyper-cube [nm]
+DWF         = 0.0033                ! Debye-Waller factor [nm^-2]
+atno        = 12                    ! atomin cnumber
+nthreads    = 1                     ! number of threads
+centering   = 'P'                   ! hyper-cube lattice centering
+thickness   = 50.0                  ! film thickness
+npix        = 50
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=CBEDQC)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+    if (trim(datafile).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+end if
+
+enl%datafile              = datafile
+enl%voltage               = voltage
+enl%eu                    = eu
+enl%dmin                  = dmin
+enl%nthreads              = nthreads
+enl%DWF                   = DWF
+enl%atno                  = atno
+enl%QClatparm             = QClatparm
+enl%convergence           = convergence
+enl%centering             = centering
+enl%thickness             = thickness
+enl%npix                  = npix
+
+end subroutine GetEMCBEDQCNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEBSDQCMasterNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDQCmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param epf single name list structure
+!
+!> @date 02/21/18 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDQCMasterNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDQCMasterNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                           :: nmlfile
+type(EBSDQCMasterNameListType),INTENT(INOUT)          :: enl
+logical,OPTIONAL,INTENT(IN)                           :: initonly
+
+logical                                               :: skipread = .FALSE.
+
+integer(kind=irg)                                     :: nthreads, atno, npx, nsamples
+real(kind=sgl)                                        :: dmin, DWF, QClatparm
+character(fnlen)                                      :: energyfile
+character(1)                                          :: centering
+
+namelist /EBSDQCmastervars/ dmin, nthreads, DWF, atno, &
+          energyfile, QClatparm,centering, npx, nsamples
+
+energyfile  = 'undefined'           ! output filename
+dmin        = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm]
+QClatparm   = 0.50                  ! lattice parameter of hyper-cube [nm]
+DWF         = 0.0033                ! Debye-Waller factor [nm^-2]
+atno        = 12                    ! atomin cnumber
+nthreads    = 1                     ! number of threads
+centering   = 'P'                   ! hyper-cube lattice centering
+npx         = 500                   ! size of master pattern
+nsamples    = 200                   ! number of samples for sampling k vectors
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=EBSDQCmastervars)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+    if (trim(energyfile).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+end if
+
+enl%energyfile            = energyfile
+enl%dmin                  = dmin
+enl%nthreads              = nthreads
+enl%DWF                   = DWF
+enl%atno                  = atno
+enl%QClatparm             = QClatparm
+enl%centering             = centering
+enl%nsamples              = nsamples
+enl%npx                   = npx
+
+end subroutine GetEBSDQCMasterNameList
 
 end module NameListHandlers

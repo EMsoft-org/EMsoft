@@ -5,10 +5,12 @@
  dotproductfile = 'undefined',
 ! name of ctf output file for refined orientations (oldformat=.FALSE.)
  ctffile = 'undefined',
+! modality ('EBSD' or 'ECP')
+ modality = 'EBSD',
 ! number of iterations; only used by EMRefineOrientation
  niter = 1,
 ! number of points sampled around given point [(2*nmis+1)^3]; only used by EMRefineOrientation
  nmis = 1,
-! max step size to take in Euler angles (in degrees) during the refinement; only used by EMFitOrientation
- step = 1.0,
+! max step size to take in homochoric space during the refinement; only used by EMFitOrientation
+ step = 0.03,
  /
