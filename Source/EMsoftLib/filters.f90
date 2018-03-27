@@ -64,7 +64,7 @@ contains
 !> @date 03/23/18 MDG 1.0 original
 !--------------------------------------------------------------------------
 recursive function applyPoissonNoise(image, nx, ny, idum) result(noisy)
-!DEC$ ATTRIBUTES DLLEXPORT :: image_histogram
+!DEC$ ATTRIBUTES DLLEXPORT :: applyPoissonNoise
 
 use noise
 
