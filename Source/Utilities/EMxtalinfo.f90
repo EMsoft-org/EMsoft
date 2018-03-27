@@ -124,7 +124,7 @@ end interface
  call ReadValue(' Enter xtal file name : ', gname,"(A)")
  cell%fname = gname
  call CrystalData(cell)
- call GetVoltage(cell, rlp)
+ call GetVoltage(cell, rlp,verbose=.TRUE.)
  call ReadValue(' Camera Length [mm, R] : ', io_real, 1)
  camlen = io_real(1)
 
