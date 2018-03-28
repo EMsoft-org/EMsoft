@@ -318,9 +318,19 @@ contains
       header%offset = header%offset + size(palette)
     endif
 
-    ! open file and write headers
+    ! open file and write headers (header components need to be written individually for ifort)
     open(newunit = unit, file = filename, access = 'stream')
-    write(unit, iostat=iostat, iomsg=iomsg) header
+    write(unit, iostat=iostat, iomsg=iomsg) 'B'
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) 'M'
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%size
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%res1
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%res2
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%offset
     if(iostat.ne.0) return
     write(unit, iostat=iostat, iomsg=iomsg) infoBuff
     if(iostat.ne.0) return
