@@ -125,7 +125,9 @@ contains
     integer(int8)                 :: buff(124)
     integer(int8)   , allocatable :: rowBuff(:)
     logical                       :: isGray
+    integer(int16)                :: magic
 
+    magic = 19778
     ! open file and read header
     inquire(file=filename, size=size) ! get size of file in bytes
     open(newunit = unit, file = filename, status = 'old', access = 'stream') ! open file for reading in stream mode
@@ -133,7 +135,7 @@ contains
     if(iostat.ne.0) return
 
     ! check if file is valid ('BM' signature and file size matches size listed in header)
-    if(header%signature.ne.19778.or.size.ne.header%size) then
+    if(header%signature.ne.magic.or.size.ne.header%size) then
       iostat = 1
       iomsg = "\'" // trim(filename) // "\' is not a bitmap file"
       return
@@ -318,9 +320,19 @@ contains
       header%offset = header%offset + size(palette)
     endif
 
-    ! open file and write headers
+    ! open file and write headers (header components need to be written individually for ifort)
     open(newunit = unit, file = filename, access = 'stream')
-    write(unit, iostat=iostat, iomsg=iomsg) header
+    write(unit, iostat=iostat, iomsg=iomsg) 'B'
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) 'M'
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%size
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%res1
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%res2
+    if(iostat.ne.0) return
+    write(unit, iostat=iostat, iomsg=iomsg) header%offset
     if(iostat.ne.0) return
     write(unit, iostat=iostat, iomsg=iomsg) infoBuff
     if(iostat.ne.0) return

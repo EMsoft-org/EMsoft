@@ -67,7 +67,7 @@ contains
       return
     endif
     if(im%samplesPerPixel.ne.1) then
-      write(*,*) "incorrect pixel samples"
+      write(*,*) "incorrect pixel samples. Expected 1 got",im%samplesPerPixel
       code = 2
       return
     endif
