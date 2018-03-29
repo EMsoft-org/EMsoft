@@ -37,6 +37,7 @@
 !> @brief simple module to convert an array of C strings into the EMsoft configuration parameters
 !
 !> @date 10/28/17 MDG 1.0 original
+!> @date 03/29/18 MDG 1.1 removed all stdout usage
 !--------------------------------------------------------------------------
 module configmod
 
@@ -71,47 +72,73 @@ IMPLICIT NONE
 type(ConfigStructureType),INTENT(IN)   :: CP
 character(fnlen),OPTIONAL              :: fname
 
-integer(kind=irg)                      :: ii, std
+integer(kind=irg)                      :: ii
 
-std = 6
 if (PRESENT(fname)) then
     open(unit=23,file=trim(fname),status='unknown')
-    std = 23
-end if
+    write (23,*) 'EMsoft Configuration Strings'
+    write (23,*) '----------------------------'
 
-call Message('EMsoft Configuration Strings',stdout=std)
-call Message('----------------------------',stdout=std)
+    write (23,*) trim(ConfigStructureNames(1))//' : '//trim(CP%EMsoftpathname) 
+    write (23,*) trim(ConfigStructureNames(2))//' : '//trim(CP%EMXtalFolderpathname) 
+    write (23,*) trim(ConfigStructureNames(3))//' : '//trim(CP%EMdatapathname)
+    write (23,*) trim(ConfigStructureNames(4))//' : '//trim(CP%EMtmppathname) 
+    write (23,*) trim(ConfigStructureNames(5))//' : '//trim(CP%EMsoftLibraryLocation) 
+    write (23,*) trim(ConfigStructureNames(6))//' : '//trim(CP%EMSlackWebHookURL) 
+    write (23,*) trim(ConfigStructureNames(7))//' : '//trim(CP%EMSlackChannel) 
+    write (23,*) trim(ConfigStructureNames(8))//' : '//trim(CP%UserName) 
+    write (23,*) trim(ConfigStructureNames(9))//' : '//trim(CP%UserLocation) 
+    write (23,*) trim(ConfigStructureNames(10))//' : '//trim(CP%UserEmail) 
+    write (23,*) trim(ConfigStructureNames(11))//' : '//trim(CP%EMNotify)
+    write (23,*) trim(ConfigStructureNames(12))//' : '//trim(CP%Develop) 
+    write (23,*) trim(ConfigStructureNames(13))//' : '//trim(CP%Release) 
+    write (23,*) trim(ConfigStructureNames(14))//' : '//trim(CP%h5copypath) 
+    write (23,*) trim(ConfigStructureNames(15))//' : '//trim(CP%EMsoftplatform) 
+    write (23,*) trim(ConfigStructureNames(16))//' : '//trim(CP%EMsofttestpath) 
+    write (23,*) trim(ConfigStructureNames(17))//' : '//trim(CP%EMsoftTestingPath) 
+    write (23,*) trim(ConfigStructureNames(18))//' : '//trim(CP%EMsoftversion) 
+    write (23,*) trim(ConfigStructureNames(19))//' : '//trim(CP%Configpath) 
+    write (23,*) trim(ConfigStructureNames(20))//' : '//trim(CP%Templatepathname) 
+    write (23,*) trim(ConfigStructureNames(21))//' : '//trim(CP%Resourcepathname) 
+    write (23,*) trim(ConfigStructureNames(22))//' : '//trim(CP%Homepathname) 
+    write (23,*) trim(ConfigStructureNames(23))//' : '//trim(CP%OpenCLpathname) 
+    write (23,*) trim(ConfigStructureNames(24))//' : '//trim(CP%Templatecodefilename) 
+    write (23,*) trim(ConfigStructureNames(25))//' : '//trim(CP%WyckoffPositionsfilename) 
+    write (23,*) trim(ConfigStructureNames(26))//' : '//trim(CP%Randomseedfilename) 
+    write (23,*) trim(ConfigStructureNames(27))//' : '//trim(CP%EMsoftnativedelimiter) 
+    close(unit=23,status='keep')
+else
 
-call Message(trim(ConfigStructureNames(1))//' : '//trim(CP%EMsoftpathname),stdout=std) 
-call Message(trim(ConfigStructureNames(2))//' : '//trim(CP%EMXtalFolderpathname),stdout=std) 
-call Message(trim(ConfigStructureNames(3))//' : '//trim(CP%EMdatapathname),stdout=std) 
-call Message(trim(ConfigStructureNames(4))//' : '//trim(CP%EMtmppathname),stdout=std) 
-call Message(trim(ConfigStructureNames(5))//' : '//trim(CP%EMsoftLibraryLocation),stdout=std) 
-call Message(trim(ConfigStructureNames(6))//' : '//trim(CP%EMSlackWebHookURL),stdout=std) 
-call Message(trim(ConfigStructureNames(7))//' : '//trim(CP%EMSlackChannel),stdout=std) 
-call Message(trim(ConfigStructureNames(8))//' : '//trim(CP%UserName),stdout=std) 
-call Message(trim(ConfigStructureNames(9))//' : '//trim(CP%UserLocation),stdout=std) 
-call Message(trim(ConfigStructureNames(10))//' : '//trim(CP%UserEmail),stdout=std) 
-call Message(trim(ConfigStructureNames(11))//' : '//trim(CP%EMNotify),stdout=std) 
-call Message(trim(ConfigStructureNames(12))//' : '//trim(CP%Develop),stdout=std) 
-call Message(trim(ConfigStructureNames(13))//' : '//trim(CP%Release),stdout=std) 
-call Message(trim(ConfigStructureNames(14))//' : '//trim(CP%h5copypath),stdout=std) 
-call Message(trim(ConfigStructureNames(15))//' : '//trim(CP%EMsoftplatform),stdout=std) 
-call Message(trim(ConfigStructureNames(16))//' : '//trim(CP%EMsofttestpath),stdout=std) 
-call Message(trim(ConfigStructureNames(17))//' : '//trim(CP%EMsoftTestingPath),stdout=std) 
-call Message(trim(ConfigStructureNames(18))//' : '//trim(CP%EMsoftversion),stdout=std) 
-call Message(trim(ConfigStructureNames(19))//' : '//trim(CP%Configpath),stdout=std) 
-call Message(trim(ConfigStructureNames(20))//' : '//trim(CP%Templatepathname),stdout=std) 
-call Message(trim(ConfigStructureNames(21))//' : '//trim(CP%Resourcepathname),stdout=std) 
-call Message(trim(ConfigStructureNames(22))//' : '//trim(CP%Homepathname),stdout=std) 
-call Message(trim(ConfigStructureNames(23))//' : '//trim(CP%OpenCLpathname),stdout=std) 
-call Message(trim(ConfigStructureNames(24))//' : '//trim(CP%Templatecodefilename),stdout=std) 
-call Message(trim(ConfigStructureNames(25))//' : '//trim(CP%WyckoffPositionsfilename),stdout=std) 
-call Message(trim(ConfigStructureNames(26))//' : '//trim(CP%Randomseedfilename),stdout=std) 
-call Message(trim(ConfigStructureNames(27))//' : '//trim(CP%EMsoftnativedelimiter),stdout=std) 
+    call Message('EMsoft Configuration Strings')
+    call Message('----------------------------')
 
-if (PRESENT(fname)) then
-  close(unit=23,status='keep')
+    call Message(trim(ConfigStructureNames(1))//' : '//trim(CP%EMsoftpathname)) 
+    call Message(trim(ConfigStructureNames(2))//' : '//trim(CP%EMXtalFolderpathname)) 
+    call Message(trim(ConfigStructureNames(3))//' : '//trim(CP%EMdatapathname)) 
+    call Message(trim(ConfigStructureNames(4))//' : '//trim(CP%EMtmppathname)) 
+    call Message(trim(ConfigStructureNames(5))//' : '//trim(CP%EMsoftLibraryLocation)) 
+    call Message(trim(ConfigStructureNames(6))//' : '//trim(CP%EMSlackWebHookURL)) 
+    call Message(trim(ConfigStructureNames(7))//' : '//trim(CP%EMSlackChannel)) 
+    call Message(trim(ConfigStructureNames(8))//' : '//trim(CP%UserName)) 
+    call Message(trim(ConfigStructureNames(9))//' : '//trim(CP%UserLocation)) 
+    call Message(trim(ConfigStructureNames(10))//' : '//trim(CP%UserEmail)) 
+    call Message(trim(ConfigStructureNames(11))//' : '//trim(CP%EMNotify)) 
+    call Message(trim(ConfigStructureNames(12))//' : '//trim(CP%Develop)) 
+    call Message(trim(ConfigStructureNames(13))//' : '//trim(CP%Release)) 
+    call Message(trim(ConfigStructureNames(14))//' : '//trim(CP%h5copypath)) 
+    call Message(trim(ConfigStructureNames(15))//' : '//trim(CP%EMsoftplatform)) 
+    call Message(trim(ConfigStructureNames(16))//' : '//trim(CP%EMsofttestpath)) 
+    call Message(trim(ConfigStructureNames(17))//' : '//trim(CP%EMsoftTestingPath)) 
+    call Message(trim(ConfigStructureNames(18))//' : '//trim(CP%EMsoftversion)) 
+    call Message(trim(ConfigStructureNames(19))//' : '//trim(CP%Configpath)) 
+    call Message(trim(ConfigStructureNames(20))//' : '//trim(CP%Templatepathname)) 
+    call Message(trim(ConfigStructureNames(21))//' : '//trim(CP%Resourcepathname)) 
+    call Message(trim(ConfigStructureNames(22))//' : '//trim(CP%Homepathname)) 
+    call Message(trim(ConfigStructureNames(23))//' : '//trim(CP%OpenCLpathname)) 
+    call Message(trim(ConfigStructureNames(24))//' : '//trim(CP%Templatecodefilename)) 
+    call Message(trim(ConfigStructureNames(25))//' : '//trim(CP%WyckoffPositionsfilename)) 
+    call Message(trim(ConfigStructureNames(26))//' : '//trim(CP%Randomseedfilename)) 
+    call Message(trim(ConfigStructureNames(27))//' : '//trim(CP%EMsoftnativedelimiter)) 
 end if
 
 end subroutine print_EMsoft_configuration_strings

@@ -193,12 +193,11 @@ IMPLICIT NONE
 type(unitcell),pointer    :: cell
 type(gnode),INTENT(INOUT) :: rlp
 
-real(kind=dbl)            :: io_real(1), voltage
+real(kind=sgl)            :: io_real(1)
 
- call ReadValue('Enter the microscope accelerating voltage [kV, R] : ', io_real, 1)
- voltage = io_real(1)
- cell%voltage = voltage
- call CalcWaveLength(cell,rlp,verbose=.TRUE.)
+call ReadValue('Enter the microscope accelerating voltage [kV, R] : ', io_real, 1)
+cell%voltage = dble(io_real(1))
+call CalcWaveLength(cell,rlp,verbose=.TRUE.)
  
 end subroutine
 

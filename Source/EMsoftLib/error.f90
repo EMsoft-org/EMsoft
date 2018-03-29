@@ -68,8 +68,9 @@ contains
 !> @date   11/27/01 MDG 2.1 added kind support
 !> @date   03/19/13 MDG 3.0 updated for new io routines
 !> @date   06/05/14 MDG 4.0 added stdout argument
+!> @date   03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine FatalError(var1,var2,stdout)
+recursive subroutine FatalError(var1,var2)
 !DEC$ ATTRIBUTES DLLEXPORT :: FatalError
 
 use io
@@ -78,14 +79,8 @@ IMPLICIT NONE
 
 character(*), INTENT(IN)                :: var1  !< first part of error message (routine name)
 character(*), INTENT(IN)                :: var2  !< second part of error message (brief explanation)
-integer(kind=irg), INTENT(IN),OPTIONAL  :: stdout  !< output unit identifier
 
-integer(kind=irg)                       :: std 
-
- std = 6
- if (PRESENT(stdout)) std=stdout
-
- call Message(' ----> Fatal error in routine '//var1//': '//var2, frm='(//A//)', stdout=std) 
+ call Message(' ----> Fatal error in routine '//var1//': '//var2, frm='(//A//)') 
  stop '  Progam ended abnormally'
 
 end subroutine

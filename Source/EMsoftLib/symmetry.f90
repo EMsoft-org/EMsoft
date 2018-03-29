@@ -2719,11 +2719,10 @@ end subroutine SYM_printWyckoffPositions
 !> and Debye-Waller parameter for each atom type; this uses the Wyckoff positions
 !
 !> @param cell unit cell pointer
-!> @param stdout optional output unit identifier
 !!
 !> @date   09/06/16 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine GetAsymPosWyckoff(cell, stdout)
+recursive subroutine GetAsymPosWyckoff(cell)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetAsymPosWyckoff
 
 use io
@@ -2733,7 +2732,6 @@ use error
 IMPLICIT NONE
 
 type(unitcell),INTENT(INOUT)            :: cell
-integer(kind=irg),OPTIONAL,INTENT(IN)   :: stdout
 
 logical                                 :: more, found                !< logical to determine if more atoms need to be entered
 character(1)                            :: ans, list(6)        !< used for IO
@@ -2745,13 +2743,11 @@ character(3)                            :: Wyckoffpos
 character(6)                            :: Wyckoffstring
 character(6)                            :: WyckoffList(27)
 
- std = 6
- if (PRESENT(stdout)) std = stdout
- 
+
  more=.TRUE.
  cell%ATOM_ntype = 0
- call Message(' Enter atoms in asymmetric unit using Wyckoff positions', frm = "(/A)", stdout = std)
- call DisplayElements(std)
+ call Message(' Enter atoms in asymmetric unit using Wyckoff positions', frm = "(/A)")
+ call DisplayElements()
  call SYM_printWyckoffPositions(cell%SYM_SGnum,wpstring,WyckoffList)
 
 ! number of special positions encoded in string 
@@ -2763,7 +2759,7 @@ write (*,*) 'WPstring : ',trim(wpstring)
   cell%ATOM_ntype = cell%ATOM_ntype + 1
 
 ! atomic number
-  call ReadValue(' ->  Atomic number, site occupation, Debye-Waller factor : ', io_real, 3, stdout = std)
+  call ReadValue(' ->  Atomic number, site occupation, Debye-Waller factor : ', io_real, 3)
   cell%ATOM_type(cell%ATOM_ntype) = int(io_real(1))
   cell%ATOM_pos(cell%ATOM_ntype,4:5) = io_real(2:3)
 
@@ -2807,9 +2803,9 @@ write (*,*) 'WPstring : ',trim(wpstring)
 
 ! and write the coordinate back to the terminal  
   out_real = (/ (cell%ATOM_pos(cell%ATOM_ntype,j),j=1,5) /)
-  call WriteValue('    -> ', out_real, 5, frm = "(1x,4(F10.7,2x),F10.7)", stdout = std) 
+  call WriteValue('    -> ', out_real, 5, frm = "(1x,4(F10.7,2x),F10.7)") 
 
-  call ReadValue(' ->  Another atom ? (y/n) ', ans, frm = "(A1)", stdout = std)
+  call ReadValue(' ->  Another atom ? (y/n) ', ans, frm = "(A1)")
   if ((ans.eq.'y').or.(ans.eq.'Y')) then 
    more=.TRUE.
   else

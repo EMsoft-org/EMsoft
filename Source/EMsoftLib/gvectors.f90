@@ -188,8 +188,9 @@ end subroutine AddReflection
 !> @date  11/27/01 MDG 2.1 added kind support
 !> @date  03/26/13 MDG 3.0 updated IO
 !> @date  06/09/14 MDG 4.0 added rlp and stdout arguments
+!> @date  03/29/18 MDG 4.1 removed stdout argument
 !--------------------------------------------------------------------------
-recursive subroutine Printrlp(rlp,first,stdout)
+recursive subroutine Printrlp(rlp,first)
 !DEC$ ATTRIBUTES DLLEXPORT :: Printrlp
  
 use io
@@ -199,33 +200,30 @@ IMPLICIT NONE
 
 type(gnode),INTENT(IN)                 :: rlp
 logical,optional,intent(INOUT)  :: first                !< switch for long/short output
-integer(kind=irg),OPTIONAL,INTENT(IN) :: stdout
 
-integer(kind=irg)                       :: oi_int(3), std
+integer(kind=irg)                       :: oi_int(3)
 real(kind=sgl)                          :: oi_real(7)
 complex(kind=sgl)                       :: oi_cmplx(1)
 
-std = 6
-if (PRESENT(stdout)) std = stdout
 
 if (present(first)) then
  if (first) then
-  call Message('     Scattering factors : ', frm = "(/A,$)", stdout = std)
+  call Message('     Scattering factors : ', frm = "(/A,$)")
     if (rlp%method.eq.'WK') then 
    if (rlp%absorption.eqv..TRUE.) then 
-    call Message(' Weickenmeier-Kohl (with absorption)', frm = "(A/)", stdout = std)
+    call Message(' Weickenmeier-Kohl (with absorption)', frm = "(A/)")
    else
-    call Message(' Weickenmeier-Kohl', frm = "(A/)", stdout = std)
+    call Message(' Weickenmeier-Kohl', frm = "(A/)")
    end if
   else
-    call Message(' Doyle-Turner/Smith-Burge', frm = "(A/)", stdout = std)
+    call Message(' Doyle-Turner/Smith-Burge', frm = "(A/)")
   end if
 
   if (rlp%absorption.eqv..TRUE.) then
     call Message('   h  k  l    |g|    Ucg_r  Ucg_i   |Ug|    phase   |Ugp|   phase   xi_g   xi_gp    ratio  Re-1/q_g-Im', &
-        frm = "(A)", stdout = std)
+        frm = "(A)")
   else
-    call Message('   h  k  l    |g|    Ucg_r  |Ug|    phase    xi_g   1/q_g', frm = "(A)", stdout = std)
+    call Message('   h  k  l    |g|    Ucg_r  |Ug|    phase    xi_g   1/q_g', frm = "(A)")
   end if
   first = .FALSE.
  end if
@@ -233,26 +231,26 @@ end if
 
 if (rlp%absorption.eqv..TRUE.) then
  oi_int(1:3) = rlp%hkl(1:3)
- call WriteValue('',oi_int, 3, "(1x,3I3,1x,$)", stdout = std)
+ call WriteValue('',oi_int, 3, "(1x,3I3,1x,$)")
  oi_real(1) = rlp%g
- call WriteValue('',oi_real, 1, "(F9.4,$)", stdout = std)
+ call WriteValue('',oi_real, 1, "(F9.4,$)")
  oi_cmplx(1) = rlp%Ucg
- call WriteValue('',oi_cmplx, 1, "(2F7.3,1x,$)", stdout = std)
+ call WriteValue('',oi_cmplx, 1, "(2F7.3,1x,$)")
  oi_real(1:7)  = (/ rlp%Umod,rlp%Vphase*180.0/sngl(cPi),rlp%Upmod,rlp%Vpphase*180.0/sngl(cPi),rlp%xg,rlp%xgp,rlp%ar /)
- call WriteValue('',oi_real, 7, "(4F8.3,3F8.1,$)", stdout = std)
+ call WriteValue('',oi_real, 7, "(4F8.3,3F8.1,$)")
  oi_cmplx(1) = rlp%qg
- call WriteValue('',oi_cmplx, 1, "(2F8.3)", stdout = std)
+ call WriteValue('',oi_cmplx, 1, "(2F8.3)")
 else
  oi_int(1:3) = rlp%hkl(1:3)
- call WriteValue('',oi_int, 3, "(1x,3I3,1x,$)", stdout = std)
+ call WriteValue('',oi_int, 3, "(1x,3I3,1x,$)")
  oi_real(1) = rlp%g
- call WriteValue('',oi_real, 1, "(F9.4,$)", stdout = std)
+ call WriteValue('',oi_real, 1, "(F9.4,$)")
  oi_real(1) = real(rlp%Ucg)
- call WriteValue('',oi_real, 1, "(F7.3,1x,$)", stdout = std)
+ call WriteValue('',oi_real, 1, "(F7.3,1x,$)")
  oi_real(1:3)  = (/ rlp%Umod,rlp%Vphase*180.0/sngl(cPi),rlp%xg /)
- call WriteValue('',oi_real, 3, "(2F8.3,F8.1,$)", stdout = std)
+ call WriteValue('',oi_real, 3, "(2F8.3,F8.1,$)")
  oi_cmplx(1) = rlp%qg
- call WriteValue('',oi_cmplx, 1, "(2F8.3)", stdout = std)
+ call WriteValue('',oi_cmplx, 1, "(2F8.3)")
 end if
 
 end subroutine Printrlp

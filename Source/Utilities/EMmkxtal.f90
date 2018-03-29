@@ -56,7 +56,7 @@ IMPLICIT NONE
 
 type(unitcell), pointer         :: cell
 character(fnlen)                :: progname, progdesc, fname
-integer(kind=irg)               :: numarg, i, std
+integer(kind=irg)               :: numarg, i
 integer(kind=irg)               :: iargc        !< external function for command line
 character(fnlen)                :: arg          !< to be read from the command line
 logical                         :: useWyckoff
@@ -67,7 +67,6 @@ logical                         :: useWyckoff
  call EMsoft(progname, progdesc)
  
  useWyckoff = .FALSE.
- std = 6
  numarg = iargc()
  if (numarg.gt.0) then ! there is at least one argument
   do i=1,numarg
@@ -76,10 +75,10 @@ logical                         :: useWyckoff
 ! does the argument start with a '-' character?    
     if (arg(1:1).eq.'-') then
         if (trim(arg).eq.'-h') then
-         call Message(' Program should be called as follows: ', frm = "(/A)", stdout = std)
-         call Message('        '//trim(progname)//' [-h] [-w] ', frm = "(A)", stdout = std)
-         call Message(' To produce this message, type '//trim(progname)//' -h', frm = "(A)", stdout = std)
-         call Message(' To use Wyckoff positions to enter atom coordinates, use -w option', frm = "(A)", stdout = std)
+         call Message(' Program should be called as follows: ', frm = "(/A)")
+         call Message('        '//trim(progname)//' [-h] [-w] ', frm = "(A)")
+         call Message(' To produce this message, type '//trim(progname)//' -h', frm = "(A)")
+         call Message(' To use Wyckoff positions to enter atom coordinates, use -w option', frm = "(A)")
         end if
         if (trim(arg).eq.'-w') then
 ! with this option the GetAsymPosWyckoff routine will ask the user for Wyckoff Positions instead of regular cordinate strings
