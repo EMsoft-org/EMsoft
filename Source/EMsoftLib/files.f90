@@ -45,6 +45,7 @@
 !> @date   01/10/14 MDG 4.0 update after new cell type
 !> @date   03/29/15 MDG 5.0 reformatted xtal files in HDF5 format; removed obsolete routines
 !> @date   05/05/15 MDG 5.1 removed all getenv() calls; replaced with global path strings
+!> @date   03/29/18 MDG 5.2 removed all stdout use
 !--------------------------------------------------------------------------
 
 module files
@@ -69,7 +70,7 @@ contains
 !> @date   01/10/14 MDG 4.0 update after new cell type
 !> @date   06/06/14 MDG 4.1 added cell pointer as argument, corrected Message routine
 !--------------------------------------------------------------------------
-recursive subroutine DumpXtalInfo(cell, stdout)    
+recursive subroutine DumpXtalInfo(cell)    
 !DEC$ ATTRIBUTES DLLEXPORT :: DumpXtalInfo
 
 use constants
@@ -79,61 +80,58 @@ use symmetry
 IMPLICIT NONE
 
 type(unitcell), pointer                 :: cell
-integer(kind=irg),INTENT(IN),OPTIONAL   :: stdout
 
-integer(kind=irg)                       :: i, j, oi_int(3), std
+integer(kind=irg)                       :: i, j, oi_int(3)
 real(kind=dbl)                          :: oi_real(5)
 
- std = 6
- if (PRESENT(stdout)) std = stdout
 
- call Message('', frm = "(A/)", stdout = std)
- call Message('Crystal Structure Information', frm = "('-->',A,'<--')", stdout = std)
+ call Message('', frm = "(A/)")
+ call Message('Crystal Structure Information', frm = "('-->',A,'<--')")
  oi_real(1) = cell%a
- call WriteValue('  a [nm]             : ', oi_real, 1, "(F9.5)", stdout = std)
+ call WriteValue('  a [nm]             : ', oi_real, 1, "(F9.5)")
  oi_real(1) = cell%b
- call WriteValue('  b [nm]             : ', oi_real, 1, "(F9.5)", stdout = std)
+ call WriteValue('  b [nm]             : ', oi_real, 1, "(F9.5)")
  oi_real(1) = cell%c
- call WriteValue('  c [nm]             : ', oi_real, 1, "(F9.5)", stdout = std)
+ call WriteValue('  c [nm]             : ', oi_real, 1, "(F9.5)")
  oi_real(1) = cell%alpha
- call WriteValue('  alpha [deg]        : ', oi_real, 1, "(F9.5)", stdout = std)
+ call WriteValue('  alpha [deg]        : ', oi_real, 1, "(F9.5)")
  oi_real(1) = cell%beta
- call WriteValue('  beta  [deg]        : ', oi_real, 1, "(F9.5)", stdout = std)
+ call WriteValue('  beta  [deg]        : ', oi_real, 1, "(F9.5)")
  oi_real(1) = cell%gamma
- call WriteValue('  gamma [deg]        : ', oi_real, 1, "(F9.5)", stdout = std)
+ call WriteValue('  gamma [deg]        : ', oi_real, 1, "(F9.5)")
  oi_real(1) = cell%vol
- call WriteValue('  Volume [nm^3]      : ', oi_real, 1, "(F12.8)", stdout = std)
+ call WriteValue('  Volume [nm^3]      : ', oi_real, 1, "(F12.8)")
  oi_int(1) = cell%SYM_SGnum
- call WriteValue('  Space group #      : ', oi_int, 1, "(1x,I3)", stdout = std)
- call WriteValue('  Space group symbol : ', trim(SYM_SGname(cell%SYM_SGnum)) , stdout = std)
- call WriteValue('  Generator String   : ',  trim(SYM_GL(cell%SYM_SGnum)) , stdout = std)
+ call WriteValue('  Space group #      : ', oi_int, 1, "(1x,I3)")
+ call WriteValue('  Space group symbol : ', trim(SYM_SGname(cell%SYM_SGnum)) )
+ call WriteValue('  Generator String   : ',  trim(SYM_GL(cell%SYM_SGnum)) )
  if ((cell%SYM_SGset.eq.2).AND.(cell%xtal_system.ne.5)) then 
-  call Message('   Using second origin setting', frm = "(A)", stdout = std)
+  call Message('   Using second origin setting', frm = "(A)")
  endif
  if ((cell%SYM_SGset.eq.2).AND.(cell%xtal_system.eq.5)) then 
-  call Message('   Using rhombohedral parameters', frm = "(A)", stdout = std)
+  call Message('   Using rhombohedral parameters', frm = "(A)")
  endif
   if (cell%SG%SYM_centrosym) then 
-    call Message('   Structure is centrosymmetric', frm = "(A)", stdout = std)
+    call Message('   Structure is centrosymmetric', frm = "(A)")
  else 
-   call Message('   Structure is non-centrosymmetric', frm = "(A)", stdout = std)
+   call Message('   Structure is non-centrosymmetric', frm = "(A)")
  end if
 ! generate atom positions and dump output  
- call Message('', frm = "(A/)", stdout = std)
+ call Message('', frm = "(A/)")
  call CalcPositions(cell,'v')
  oi_int(1) = cell%ATOM_ntype
- call WriteValue('  Number of asymmetric atom positions ', oi_int, 1, stdout = std)
+ call WriteValue('  Number of asymmetric atom positions ', oi_int, 1)
  do i=1,cell%ATOM_ntype
   oi_int(1:3) = (/i, cell%ATOM_type(i), cell%numat(i)/)
-  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3,$)", stdout = std)
-  call Message(' ('//ATOM_sym(cell%ATOM_type(i))//')', frm = "(A)", stdout = std)
-  call Message('   Equivalent positions  (x y z  occ  DWF) ', frm = "(A)", stdout = std)
+  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3,$)")
+  call Message(' ('//ATOM_sym(cell%ATOM_type(i))//')', frm = "(A)")
+  call Message('   Equivalent positions  (x y z  occ  DWF) ', frm = "(A)")
   do j=1,cell%numat(i)
     oi_real(1:5) = (/cell%apos(i, j,1:3),dble(cell%ATOM_pos(i,4:5))/)
-    call WriteValue('         > ', oi_real, 5,"(2x,4(F9.5,','),F9.5)", stdout = std)
+    call WriteValue('         > ', oi_real, 5,"(2x,4(F9.5,','),F9.5)")
   end do
 end do
-call Message('', frm = "(A/)", stdout = std)
+call Message('', frm = "(A/)")
 
 end subroutine DumpXtalInfo
 
@@ -161,8 +159,9 @@ end subroutine DumpXtalInfo
 !> @date   05/05/15 MDG 2.2 removed getenv() call; replaced by global path string
 !> @date   08/19/16 MDG 2.3 added handling of separate NameListTemplate folders for developers
 !> @date   05/11/17 MDG 3.0 added support for json template files
+!> @date   03/29/18 MDG 3.1 removed stdout argument
 !--------------------------------------------------------------------------
-recursive subroutine CopyTemplateFiles(nt,templatelist,stdout,json)
+recursive subroutine CopyTemplateFiles(nt,templatelist,json)
 !DEC$ ATTRIBUTES DLLEXPORT :: CopyTemplateFiles
 
 use io
@@ -172,18 +171,14 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: nt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
-integer(kind=irg),INTENT(IN),OPTIONAL   :: stdout
 logical,INTENT(IN),OPTIONAL             :: json
 
 integer(kind=irg),parameter     :: maxnumtemplates = 256
 character(fnlen)                :: templates(maxnumtemplates)
 character(fnlen)                :: input_name, output_name, tcf, tppath1, tppath2, tpl, tplextension
-integer(kind=irg)               :: ios, i, j, std, ipos
+integer(kind=irg)               :: ios, i, j, ipos
 character(255)                  :: line
 logical                         :: fexist, develop
-
-std = 6
-if (PRESENT(stdout)) std = stdout
 
 ! first open and read the resources/templatecodes.txt file
 
@@ -276,7 +271,7 @@ do i=1,nt
   end do
  close(UNIT=dataunit, STATUS='keep')
  close(UNIT=dataunit2, STATUS='keep')
- call Message('  -> created template file '//trim(templates(templatelist(i)+1))//trim(tplextension), frm = "(A)", stdout = std)
+ call Message('  -> created template file '//trim(templates(templatelist(i)+1))//trim(tplextension), frm = "(A)")
 end do
  
 end subroutine CopyTemplateFiles
@@ -302,8 +297,9 @@ end subroutine CopyTemplateFiles
 !> @date   09/04/13 MDG 1.1 minor modifications to arguments
 !> @date   06/08/14 MDG 2.0 added stdout argument
 !> @date   05/11/17 MDG 3.0 added support for JSON-formatted template files
+!> @date   03/29/18 MDG 3.1 removed stdout argument
 !--------------------------------------------------------------------------
-recursive subroutine Interpret_Program_Arguments(nmldefault,numt,templatelist,progname,stdout)
+recursive subroutine Interpret_Program_Arguments(nmldefault,numt,templatelist,progname)
 !DEC$ ATTRIBUTES DLLEXPORT :: Interpret_Program_Arguments
 
 use io
@@ -314,18 +310,15 @@ character(fnlen),INTENT(INOUT)          :: nmldefault
 integer(kind=irg),INTENT(IN)            :: numt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 character(fnlen),INTENT(IN)             :: progname
-integer(kind=irg),INTENT(IN),OPTIONAL   :: stdout
 
 integer(kind=irg)                       :: numarg       !< number of command line arguments
 integer(kind=irg)                       :: iargc        !< external function for command line
 character(fnlen)                        :: arg          !< to be read from the command line
 character(fnlen)                        :: nmlfile      !< nml file name
-integer(kind=irg)                       :: i, std, io_int(1)
+integer(kind=irg)                       :: i, io_int(1)
 logical                                 :: haltprogram, json
 
 json = .FALSE.
-std = 6
-if (PRESENT(stdout)) std = stdout
 
 !numarg = iargc()
 numarg = command_argument_count()
@@ -347,19 +340,19 @@ if (numarg.gt.0) then ! there is at least one argument
 ! does the argument start with a '-' character?    
     if (arg(1:1).eq.'-') then
         if (trim(arg).eq.'-h') then
-         call Message(' Program should be called as follows: ', frm = "(/A)", stdout = std)
-         call Message('        '//trim(progname)//' -h -t -j [nmlfile]', frm = "(A)", stdout = std)
-         call Message(' where nmlfile is an optional file name for the namelist file;', frm = "(A/)", stdout = std)
-         call Message(' If absent, the default name '''//trim(nmldefault)//''' will be used.', frm = "(A)", stdout = std)
-         call Message(' To create templates of all possible input files, type '//trim(progname)//' -t', frm = "(A)", stdout = std)
-         call Message(' To produce this message, type '//trim(progname)//' -h', frm = "(A)", stdout = std)
-         call Message(' All program arguments can be combined in the same order;  ', frm = "(A)", stdout = std)
-         call Message(' the argument without - will be interpreted as the input file name.', frm = "(A/)", stdout = std)
+         call Message(' Program should be called as follows: ', frm = "(/A)")
+         call Message('        '//trim(progname)//' -h -t -j [nmlfile]', frm = "(A)")
+         call Message(' where nmlfile is an optional file name for the namelist file;', frm = "(A/)")
+         call Message(' If absent, the default name '''//trim(nmldefault)//''' will be used.', frm = "(A)")
+         call Message(' To create templates of all possible input files, type '//trim(progname)//' -t', frm = "(A)")
+         call Message(' To produce this message, type '//trim(progname)//' -h', frm = "(A)")
+         call Message(' All program arguments can be combined in the same order;  ', frm = "(A)")
+         call Message(' the argument without - will be interpreted as the input file name.', frm = "(A/)")
         end if
         if (trim(arg).eq.'-t') then
 ! with this option the program creates template namelist files in the current folder so that the 
 ! user can edit them (file extension will be .template; should be changed by user to .nml)
-                call Message('Creating program name list template files:', frm = "(/A)", stdout = std)
+                call Message('Creating program name list template files:', frm = "(/A)")
                 call CopyTemplateFiles(numt,templatelist)
         end if
         if (trim(arg).eq.'-j') then
@@ -370,7 +363,7 @@ if (numarg.gt.0) then ! there is at least one argument
 ! It should be noted that the template files contain comment lines starting with the "!" character;
 ! this is not standard JSON (which does not allow for comment lines).  The EMsoft JSON files will 
 ! first be filtered to remove all the comment lines before being passed to the json parser routine.
-                call Message('Creating program JSON template files:', frm = "(/A)", stdout = std)
+                call Message('Creating program JSON template files:', frm = "(/A)")
                 call CopyTemplateFiles(numt,templatelist,json=json)
         end if
     else
@@ -384,7 +377,7 @@ if (numarg.gt.0) then ! there is at least one argument
 end if
 
 if (haltprogram) then
-  call Message('To execute program, remove all flags except for nml/json input file name', frm = "(/A/)", stdout = std)
+  call Message('To execute program, remove all flags except for nml/json input file name', frm = "(/A/)")
   stop
 end if
 

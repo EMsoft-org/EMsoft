@@ -1147,7 +1147,6 @@ end subroutine MilBrav
 !> trig/rhomb         5         F            T              T
 !
 !> @param cell unit cell pointer
-!> @param stdout optional output unit identifier
 !!
 !> @date   10/13/98 MDG 1.0 original
 !> @date    5/19/01 MDG 2.0 f90 version
@@ -1157,7 +1156,7 @@ end subroutine MilBrav
 !> @date   06/05/14 MDG 4.1 modified after elimination of global variables
 !> @date   08/30/15 MDG 4.2 validated trigonal setting
 !--------------------------------------------------------------------------
-recursive subroutine GetLatParm(cell, stdout)
+recursive subroutine GetLatParm(cell)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetLatParm
 
 use io
@@ -1165,35 +1164,31 @@ use io
 IMPLICIT NONE
 
 type(unitcell),INTENT(INOUT)            :: cell
-integer(kind=irg),OPTIONAL,INTENT(IN)   :: stdout
 
 integer(kind=irg)                       :: io_int(1)    !< integer input array
 real(kind=dbl)                          :: io_real(1)   !< double precision real input array
 integer(kind=irg)                       :: std
 
- std = 6
- if (PRESENT(stdout)) std = stdout
- 
 ! this routine assumes that the cell pointer has been associated elsewhere
 
- call Message(' Select the crystal system : ', frm = "(A)", stdout = std)
- call Message('  1. Cubic ', frm = "(A)", stdout = std)
- call Message('  2. Tetragonal ', frm = "(A)", stdout = std)
- call Message('  3. Orthorhombic ', frm = "(A)", stdout = std)
- call Message('  4. Hexagonal ', frm = "(A)", stdout = std)
- call Message('  5. Trigonal ', frm = "(A)", stdout = std)
- call Message('  6. Monoclinic ', frm = "(A)", stdout = std)
- call Message('  7. Triclinic ', frm = "(A/)", stdout = std)
+ call Message(' Select the crystal system : ', frm = "(A)")
+ call Message('  1. Cubic ', frm = "(A)")
+ call Message('  2. Tetragonal ', frm = "(A)")
+ call Message('  3. Orthorhombic ', frm = "(A)")
+ call Message('  4. Hexagonal ', frm = "(A)")
+ call Message('  5. Trigonal ', frm = "(A)")
+ call Message('  6. Monoclinic ', frm = "(A)")
+ call Message('  7. Triclinic ', frm = "(A/)")
 
- call Message(' Note about the trigonal system:', frm = "(A)", stdout = std)
- call Message(' -------------------------------', frm = "(A)", stdout = std)
- call Message(' Primitive trigonal crystals are defined with respect to a HEXAGONAL', frm = "(A)", stdout = std)
- call Message(' reference frame.  Rhombohedral crystals can be referenced with', frm = "(A)", stdout = std)
- call Message(' respect to a HEXAGONAL basis (first setting), or with respect to', frm = "(A)", stdout = std)
- call Message(' a RHOMBOHEDRAL basis (second setting).  The default setting for ', frm = "(A)", stdout = std)
- call Message(' trigonal symmetry is the hexagonal setting.  When you select', frm = "(A)", stdout = std)
- call Message(' crystal system 5 above, you will be prompted for the setting. ', frm = "(A//)", stdout = std)
- call ReadValue(' crystal system ---> ', io_int, 1, stdout = std)
+ call Message(' Note about the trigonal system:', frm = "(A)")
+ call Message(' -------------------------------', frm = "(A)")
+ call Message(' Primitive trigonal crystals are defined with respect to a HEXAGONAL', frm = "(A)")
+ call Message(' reference frame.  Rhombohedral crystals can be referenced with', frm = "(A)")
+ call Message(' respect to a HEXAGONAL basis (first setting), or with respect to', frm = "(A)")
+ call Message(' a RHOMBOHEDRAL basis (second setting).  The default setting for ', frm = "(A)")
+ call Message(' trigonal symmetry is the hexagonal setting.  When you select', frm = "(A)")
+ call Message(' crystal system 5 above, you will be prompted for the setting. ', frm = "(A//)")
+ call ReadValue(' crystal system ---> ', io_int, 1)
  cell%xtal_system = io_int(1)
  
 ! make sure the symmetry operations will be reduced to the 
@@ -1207,8 +1202,8 @@ integer(kind=irg)                       :: std
  cell%SG%SYM_second=.FALSE.
  if (cell%xtal_system.eq.5) then
   cell%SG%SYM_trigonal=.TRUE.
-  call Message('Enter 1 for rhombohedral setting ,', frm = "(/A)", stdout = std)
-  call ReadValue('0 for hexagonal setting : ', io_int, 1, stdout = std)
+  call Message('Enter 1 for rhombohedral setting ,', frm = "(/A)")
+  call ReadValue('0 for hexagonal setting : ', io_int, 1)
   if (io_int(1).eq.0) then
    cell%xtal_system=4   ! this is set to 4 so that we ask for the correct lattice parameters below
   else
@@ -1217,10 +1212,10 @@ integer(kind=irg)                       :: std
  end if
 
 ! get the lattice parameters
- call Message('Enter lattice parameters', frm = "(//A)", stdout = std)
+ call Message('Enter lattice parameters', frm = "(//A)")
 
 ! put default values based on cubic symmetry, then change them later
- call ReadValue('    a [nm] = ', io_real, 1, stdout = std)
+ call ReadValue('    a [nm] = ', io_real, 1)
  cell%a = io_real(1)
  cell%b = cell%a 
  cell%c = cell%a 
@@ -1233,44 +1228,44 @@ integer(kind=irg)                       :: std
   case (1)
 ! tetragonal
   case (2)
-   call ReadValue('    c [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    c [nm] = ', io_real, 1)
    cell%c = io_real(1)
 ! orthorhombic
   case (3)
-   call ReadValue('    b [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    b [nm] = ', io_real, 1)
    cell%b = io_real(1)
-   call ReadValue('    c [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    c [nm] = ', io_real, 1)
    cell%c = io_real(1)
 ! hexagonal
   case (4)
-   call ReadValue('    c [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    c [nm] = ', io_real, 1)
    cell%c = io_real(1)
    cell%gamma=120.0_dbl
 ! rhombohedral 
   case (5)
-   call ReadValue('    alpha [deg] = ', io_real, 1, stdout = std)
+   call ReadValue('    alpha [deg] = ', io_real, 1)
    cell%alpha = io_real(1)
    cell%beta = cell%alpha
    cell%gamma = cell%alpha
 ! monoclinic   
   case (6)
-   call ReadValue('    b [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    b [nm] = ', io_real, 1)
    cell%b = io_real(1)
-   call ReadValue('    c [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    c [nm] = ', io_real, 1)
    cell%c = io_real(1)
-   call ReadValue('    beta  [deg] = ', io_real, 1, stdout = std)
+   call ReadValue('    beta  [deg] = ', io_real, 1)
    cell%beta = io_real(1)
 ! triclinic    
   case (7) 
-   call ReadValue('    b [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    b [nm] = ', io_real, 1)
    cell%b = io_real(1)
-   call ReadValue('    c [nm] = ', io_real, 1, stdout = std)
+   call ReadValue('    c [nm] = ', io_real, 1)
    cell%c = io_real(1)
-   call ReadValue('    alpha [deg] = ', io_real, 1, stdout = std)
+   call ReadValue('    alpha [deg] = ', io_real, 1)
    cell%alpha = io_real(1)
-   call ReadValue('    beta  [deg] = ', io_real, 1, stdout = std)
+   call ReadValue('    beta  [deg] = ', io_real, 1)
    cell%beta = io_real(1)
-   call ReadValue('    gamma [deg] = ', io_real, 1, stdout = std)
+   call ReadValue('    gamma [deg] = ', io_real, 1)
    cell%gamma = io_real(1)
  end select
 
@@ -1301,7 +1296,6 @@ end subroutine GetLatParm
 !> and Debye-Waller parameter for each atom type.
 !
 !> @param cell unit cell pointer
-!> @param stdout optional output unit identifier
 !!
 !> @date   10/13/98 MDG 1.0 original
 !> @date    5/19/01 MDG 2.0 f90 version
@@ -1309,7 +1303,7 @@ end subroutine GetLatParm
 !> @date   03/19/13 MDG 3.0 interface support
 !> @date   01/10/14 MDG 4.0 checked for changes to unitcell type
 !--------------------------------------------------------------------------
-recursive subroutine GetAsymPos(cell, stdout)
+recursive subroutine GetAsymPos(cell)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetAsymPos
 
 use io
@@ -1317,26 +1311,23 @@ use io
 IMPLICIT NONE
 
 type(unitcell),INTENT(INOUT)            :: cell
-integer(kind=irg),OPTIONAL,INTENT(IN)   :: stdout
 
 logical                                 :: more                 !< logical to determine if more atoms need to be entered
 character(1)                            :: ans, list(256)       !< used for IO
 real(kind=sgl)                          :: pt(5), out_real(5)   !< used to read and write asymmetric position data
 integer(kind=irg)                       :: j, io_int(1) , std   !< auxiliary variables
 
- std = 6
- if (PRESENT(stdout)) std = stdout
  
  more=.TRUE.
  cell%ATOM_ntype = 0
- call Message(' Enter atoms in asymmetric unit ', frm = "(/A)", stdout = std)
- call DisplayElements(std)
+ call Message(' Enter atoms in asymmetric unit ', frm = "(/A)")
+ call DisplayElements()
 
  do while (more)
   cell%ATOM_ntype = cell%ATOM_ntype + 1
 
 ! atomic number
-  call ReadValue(' ->  Atomic number : ', io_int, 1, stdout = std)
+  call ReadValue(' ->  Atomic number : ', io_int, 1)
   cell%ATOM_type(cell%ATOM_ntype) = io_int(1)
 
 ! general atom coordinate
@@ -1352,9 +1343,9 @@ integer(kind=irg)                       :: j, io_int(1) , std   !< auxiliary var
 
 ! and write the coordinate back to the terminal  
   out_real = (/ (cell%ATOM_pos(cell%ATOM_ntype,j),j=1,5) /)
-  call WriteValue('    -> ', out_real, 5, frm = "(1x,4(F10.7,2x),F10.7)", stdout = std) 
+  call WriteValue('    -> ', out_real, 5, frm = "(1x,4(F10.7,2x),F10.7)") 
 
-  call ReadValue(' ->  Another atom ? (y/n) ', ans, frm = "(A1)", stdout = std)
+  call ReadValue(' ->  Another atom ? (y/n) ', ans, frm = "(A1)")
   if ((ans.eq.'y').or.(ans.eq.'Y')) then 
    more=.TRUE.
   else
@@ -1375,50 +1366,41 @@ end subroutine GetAsymPos
 !
 !> @details display the periodic table so that the user can look up the atomic number
 !
-!> @param stdout optional output unit identifier
-!!
 !> @date   10/13/98 MDG 1.0 original
 !> @date    5/19/01 MDG 2.0 f90 version
 !> @date   11/27/01 MDG 2.1 added kind support
 !> @date   03/19/13 MDG 3.0 interface support
 !> @date   01/10/14 MDG 4.0 modified to a fixed size table
 !--------------------------------------------------------------------------
-recursive subroutine DisplayElements(stdout)
+recursive subroutine DisplayElements()
 !DEC$ ATTRIBUTES DLLEXPORT :: DisplayElements
 
 use io
 
 IMPLICIT NONE
 
-integer(kind=irg),OPTIONAL,INTENT(IN)   :: stdout
-
-integer(kind=irg)                       :: std
-
- std = 6
- if (PRESENT(stdout)) std = stdout
-
  call Message(' ------------------------------------ Periodic Table of the Elements --------------------------------------', & 
-   frm ="(/A/)", stdout = std)
+   frm ="(/A/)")
  call Message('1:H                                                                                                    2:He', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message('3:Li  4:Be                                                               5:B   6:C   7:N   8:O   9:F  10:Ne', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message('11:Na 12:Mg                                                             13:Al 14:Si 15:P  16:S  17:Cl 18:Ar', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message('19:K  20:Ca 21:Sc 22:Ti 23:V  24:Cr 25:Mn 26:Fe 27:Co 28:Ni 29:Cu 30:Zn 31:Ga 32:Ge 33:As 34:Se 35:Br 36:Kr', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message('37:Rb 38:Sr 39:Y  40:Zr 41:Nb 42:Mo 43:Tc 44:Ru 45:Rh 46:Pd 47:Ag 48:Cd 49:In 50:Sn 51:Sb 52:Te 53: I 54:Xe', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message('55:Cs 56:Ba ----- 72:Hf 73:Ta 74:W  75:Re 76:Os 77:Ir 78:Pt 79:Au 80:Hg 81:Tl 82:Pb 83:Bi 84:Po 85:At 86:Rn', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message('87:Fr 88:Ra -----', &
-   frm ="(A)/", stdout = std)
+   frm ="(A)/")
  call Message('57:La 58:Ce 59:Pr 60:Nd 61:Pm 62:Sm 63:Eu 64:Gd 65:Tb 66:Dy 67:Ho 68:Er 69:Tm 70:Yb 71:Lu', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message('89:Ac 90:Th 91:Pa 92:U', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
  call Message(' ----------------------------------------------------------------------------------------------------------', &
-   frm ="(A)", stdout = std)
+   frm ="(A)")
 
 end subroutine DisplayElements
 
@@ -1630,7 +1612,6 @@ end subroutine CalcDensity
 !> and parallel directions; 
 !
 !> @param orel output variable of type orientation
-!> @param stdout optional output unit identifier
 !
 !> @todo Is this routine really necessary ? It is not called very often.
 !
@@ -1640,8 +1621,9 @@ end subroutine CalcDensity
 !> @date   03/19/13 MDG 3.0 interface support
 !> @date   01/10/14 MDG 4.0 checked for changes to unitcell type
 !> @date   06/05/14 MDG 4.1 added stdout 
+!> @date   03/29/18 MDG 4.2 removed stdout 
 !--------------------------------------------------------------------------
-recursive subroutine GetOR(orel, stdout)
+recursive subroutine GetOR(orel)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetOR
 
 use io
@@ -1649,35 +1631,32 @@ use io
 IMPLICIT NONE
 
 type(orientation),INTENT(OUT)                   :: orel                 !< orientation relation type
-integer(kind=irg),OPTIONAL,INTENT(IN)           :: stdout
 
 real(kind=sgl)                                  :: c1,c2                !< auxiliary variables
-integer(kind=irg)                               :: io_int(6), std       !< used for IO
+integer(kind=irg)                               :: io_int(6)            !< used for IO
 
- std = 6
- if (PRESENT(stdout)) std = stdout
  
  c1 = 1.0_sgl
  c2 = 1.0_sgl
  do while ((c1.ne.0.0_sgl).or.(c2.ne.0.0_sgl))
-  call Message('Enter orientation relation in following form:', frm = "(A)", stdout = std)
-  call Message('planes:     h_A,k_A,l_A,h_B,k_B,l_B ', frm = "(A)", stdout = std)
-  call Message('directions: u_A,v_A,w_A,u_B,v_B,w_B ', frm = "(A)", stdout = std)
-  call ReadValue('Plane normals :', io_int, 6, stdout = std) 
+  call Message('Enter orientation relation in following form:', frm = "(A)")
+  call Message('planes:     h_A,k_A,l_A,h_B,k_B,l_B ', frm = "(A)")
+  call Message('directions: u_A,v_A,w_A,u_B,v_B,w_B ', frm = "(A)")
+  call ReadValue('Plane normals :', io_int, 6) 
   orel%gA(1:3) = float(io_int(1:3))
   orel%gB(1:3) = float(io_int(4:6))
-  call ReadValue('Directions    :', io_int, 6, stdout = std) 
+  call ReadValue('Directions    :', io_int, 6) 
   orel%tA(1:3) = float(io_int(1:3))
   orel%tB(1:3) = float(io_int(4:6))
 
 ! check for orthonormality using zone equation
   c1=sum(orel%tA*orel%gA)
   if (c1.ne.0.0_sgl) then
-   call Message('Plane does not contain direction (crystal A)', frm ="(A)", stdout = std)
+   call Message('Plane does not contain direction (crystal A)', frm ="(A)")
   end if
   c2=sum(orel%tB*orel%gB)
   if (c2.ne.0.0_sgl) then
-   call Message('Plane does not contain direction (crystal B)', frm = "(A)", stdout = std)
+   call Message('Plane does not contain direction (crystal B)', frm = "(A)")
   end if
  end do
 
