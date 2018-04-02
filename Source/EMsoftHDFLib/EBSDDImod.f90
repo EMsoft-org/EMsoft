@@ -407,6 +407,9 @@ dataset = SC_EkeV
 dataset = SC_Ehistmin
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
 
+dataset = SC_Ebinsize
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
+
 dataset = SC_depthmax
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
 
