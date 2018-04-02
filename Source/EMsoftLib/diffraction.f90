@@ -254,20 +254,6 @@ integer(kind=irg)                       :: hkl(3), io_int(1)
 ! relativistic acceleration voltage
   cell%mPsihat = cell%voltage*(1.D0+temp2)*1000.D0
 
-  if (present(verbose)) then
-    if (verbose) then
-       write (*,*) 'cPlank      : ', cPlanck
-       write (*,*) 'cRestmass   : ', cRestmass 
-       write (*,*) 'cCharge     : ', cCharge 
-       write (*,*) 'cLight      : ', cLight 
-       write (*,*) 'temp1       : ', temp1 
-       write (*,*) 'temp2       : ', temp2 
-       write (*,*) 'voltage     : ', cell%voltage
-       write (*,*) 'mRelcor     : ', cell%mRelcor 
-       write (*,*) 'mPsihat     : ', cell%mPsihat 
-    end if 
-  end if 
-
 ! compute the electron wavelength in nm
 ! compute V_0 and add it to mPsihat (corrected by mRelcor)
   call CalcPositions(cell,'v')
