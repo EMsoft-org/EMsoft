@@ -5782,19 +5782,28 @@ logical,OPTIONAL,INTENT(IN)                       :: initonly
 logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)                                 :: nthreads
+integer(kind=irg)                                 :: matchdepth
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
+character(fnlen)                                  :: PSvariantfile
+character(fnlen)                                  :: method
 character(4)                                      :: modality
+logical                                           :: inRAM
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
 real(kind=sgl)                                    :: step
 
 
-namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step
+namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step, inRAM, method, &
+                                matchdepth, PSvariantfile
 
 nthreads = 1
+matchdepth = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
+PSvariantfile = 'undefined'
+method = 'FIT'
+inRAM = .FALSE.
 nmis = 1
 niter = 1
 step = 1.0
@@ -5815,16 +5824,18 @@ if (.not.skipread) then
         call FatalError('EMRefineOrientation:',' dotproduct file name is undefined in '//nmlfile)
     end if
 
-    if (trim(dotproductfile).eq.'undefined') then
+    if (trim(ctffile).eq.'undefined') then
         call FatalError('EMRefineOrientation:',' ctf file name is undefined in '//nmlfile)
     end if
-
-
 end if
 
 enl%nthreads = nthreads
+enl%matchdepth = matchdepth
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
+enl%PSvariantfile = PSvariantfile
+enl%method = method
+enl%inRAM = inRAM
 enl%nmis = nmis
 enl%niter = niter
 enl%step = step

@@ -407,9 +407,6 @@ dataset = SC_EkeV
 dataset = SC_Ehistmin
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
 
-dataset = SC_Ebinsize
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
-
 dataset = SC_depthmax
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
 
@@ -421,6 +418,12 @@ dataset = SC_sig
 
 dataset = SC_omega
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
+
+dataset = SC_multiplier
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%multiplier)
+
+dataset = SC_totnumel
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%totnum_el)
 
 ! close the name list group
   call HDF_pop(HDF_head)

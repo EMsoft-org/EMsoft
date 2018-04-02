@@ -1032,6 +1032,8 @@ type EBSDIndexingNameListType
         integer(kind=irg)       :: nE
         integer(kind=irg)       :: numset
         integer(kind=irg)       :: section
+        integer(kind=irg)       :: multiplier
+        integer(kind=irg)       :: totnum_el
         real(kind=dbl)          :: EkeV
         real(kind=dbl)          :: Ehistmin 
         real(kind=dbl)          :: Ebinsize 
@@ -1496,9 +1498,13 @@ end type EMgammaNameListType
 
 type RefineOrientationtype
         integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: matchdepth
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
+        character(fnlen)        :: PSvariantfile
+        character(fnlen)        :: method
         character(4)            :: modality
+        logical                 :: inRAM
         real(kind=sgl)          :: step
         integer(kind=irg)       :: nmis
         integer(kind=irg)       :: niter
