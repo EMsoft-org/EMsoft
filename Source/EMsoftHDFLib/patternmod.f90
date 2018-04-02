@@ -928,8 +928,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
     TID = OMP_GET_THREAD_NUM()
 
 ! initialize thread private variables
-    tmpimageexpt = 0.0
-    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
+    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),tmpimageexpt(binx*biny),stat=istat)
     if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
 
     allocate(EBSDpint(binx,biny),stat=istat)
@@ -938,6 +937,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
     allocate(inp(binx,biny),outp(binx,biny),stat=istat)
     if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
 
+    tmpimageexpt = 0.0
     rrdata = 0.D0
     ffdata = 0.D0
 
@@ -1007,7 +1007,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
       end if
     end if
 
-deallocate(EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
+deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
 !$OMP BARRIER
 !$OMP END PARALLEL
 
