@@ -324,6 +324,7 @@ use typedefs
 use NameListTypedefs
 use files
 use io
+use EBSDmod
 use HDF5
 use HDFsupport
 use error
@@ -336,16 +337,11 @@ character(fnlen),INTENT(IN),OPTIONAL            :: efile
 logical,INTENT(IN),OPTIONAL                     :: verbose
 logical,INTENT(IN),OPTIONAL                     :: NoHDFInterfaceOpen
 
-integer(kind=irg)                               :: istat, hdferr, nlines, nx
-logical                                         :: stat, readonly, HDFopen
-integer(HSIZE_T)                                :: dims3(3),dims4(4)
-character(fnlen)                                :: groupname, dataset, energyfile 
-character(fnlen),allocatable                    :: stringarray(:)
-
-integer(kind=irg),allocatable                   :: acc_e(:,:,:),acc_z(:,:,:,:)
-
-type(HDFobjectStackType),pointer                :: HDF_head
-
+type(MCCLNameListType)                          :: mcnl
+type(EBSDMCdataType)                            :: EBSDMCdata
+integer(kind=irg)                               :: istat, hdferr, nx, sz3(3), sz4(4)
+logical                                         :: stat, HDFopen
+character(fnlen)                                :: energyfile 
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
@@ -362,139 +358,58 @@ end if
 
 allocate(acc)
 
-! first, we need to check whether or not the input file is of the HDF5 format type; if
-! it is, we read it accordingly, otherwise we use the old binary format.
-!
-call h5fis_hdf5_f(energyfile, stat, hdferr)
+if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
+call readEBSDMonteCarloFile(enl%energyfile, mcnl, hdferr, EBSDMCdata, getAccumz=.TRUE., getAccume=.TRUE.)
+if (HDFopen.eqv..TRUE.) call h5close_EMsoft(hdferr)
 
-if (stat) then
-! open the fortran HDF interface
-  if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
+! copy all the necessary variables from the mcnl namelist group
+enl%MCxtalname = trim(mcnl%xtalname)
+enl%MCmode = mcnl%MCmode
+if (enl%MCmode .ne. 'full') call FatalError('EBSDreadMCfile','This file is not in full mode. Please input correct HDF5 file')
 
-  nullify(HDF_head)
+enl%nsx = (mcnl%numsx - 1)/2
+enl%nsy = enl%nsx
 
-! open the MC file using the default properties.
-  readonly = .TRUE.
-  hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
+enl%EkeV = mcnl%EkeV
+enl%Ehistmin = mcnl%Ehistmin
 
-! open the namelist group
-groupname = SC_NMLparameters
-  hdferr = HDF_openGroup(groupname, HDF_head)
+enl%Ebinsize = mcnl%Ebinsize
+enl%depthmax = mcnl%depthmax
+enl%depthstep = mcnl%depthstep
+enl%MCsig = mcnl%sig
+enl%MComega = mcnl%omega
+enl%totnum_el = EBSDMCdata%totnum_el
+enl%multiplier = EBSDMCdata%multiplier
 
-groupname = SC_MCCLNameList
-  hdferr = HDF_openGroup(groupname, HDF_head)
+! it is not clear whether or not these are really ever used ...  
+! a grep of all the source code shows that they are not used at all
+! dataset = SC_ProgramName
+!   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+!   enl%MCprogname = trim(stringarray(1))
+!   deallocate(stringarray)
 
-! read all the necessary variables from the namelist group
-dataset = SC_xtalname
-  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-  enl%MCxtalname = trim(stringarray(1))
-  deallocate(stringarray)
+! dataset = SC_Version
+!   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+!   enl%MCscversion = trim(stringarray(1))
+!   deallocate(stringarray)
 
-dataset = SC_mode
-  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-  enl%MCmode = trim(stringarray(1))
-  deallocate(stringarray)
-  if (enl%MCmode .ne. 'full') call FatalError('EBSDreadMCfile','This file is not in full mode. Please input correct HDF5 file')
-dataset = SC_numsx
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
-  enl%nsx = (enl%nsx - 1)/2
-  enl%nsy = enl%nsx
+enl%numEbins = EBSDMCdata%numEbins
+enl%numzbins = EBSDMCdata%numzbins
+enl%num_el = sum(EBSDMCdata%accum_e)
+sz3 = shape(EBSDMCdata%accum_e)
+nx = (sz3(2)-1)/2
+allocate(acc%accum_e(1:sz3(1),-nx:nx,-nx:nx))
+acc%accum_e = EBSDMCdata%accum_e
+deallocate(EBSDMCdata%accum_e)
+  
+sz4 = shape(EBSDMCdata%accum_z)
+allocate(acc%accum_z(1:sz4(1),1:sz4(2),1:sz4(3),1:sz4(4)))
+acc%accum_z = EBSDMCdata%accum_z
+deallocate(EBSDMCdata%accum_z)
 
-dataset = SC_EkeV
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
-
-dataset = SC_Ehistmin
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
-
-dataset = SC_Ebinsize
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
-
-dataset = SC_depthmax
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
-
-dataset = SC_depthstep
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthstep)
-
-dataset = SC_sig
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsig)
-
-dataset = SC_omega
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
-
-dataset = SC_multiplier
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%multiplier)
-
-dataset = SC_totnumel
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%totnum_el)
-
-! close the name list group
-  call HDF_pop(HDF_head)
-  call HDF_pop(HDF_head)
-
-! read from the EMheader
-groupname = SC_EMheader
-  hdferr = HDF_openGroup(groupname, HDF_head)
-
-groupname = SC_MCOpenCL
-  hdferr = HDF_openGroup(groupname, HDF_head)
-
-dataset = SC_ProgramName
-  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-  enl%MCprogname = trim(stringarray(1))
-  deallocate(stringarray)
-
-dataset = SC_Version
-  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-  enl%MCscversion = trim(stringarray(1))
-  deallocate(stringarray)
-
-  call HDF_pop(HDF_head)
-  call HDF_pop(HDF_head)
-
-! open the Data group
-groupname = SC_EMData
-  hdferr = HDF_openGroup(groupname, HDF_head)
-
-groupname = SC_MCOpenCL
-  hdferr = HDF_openGroup(groupname, HDF_head)
-
-! read data items 
-dataset = SC_numEbins
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numEbins)
-
-dataset = SC_numzbins
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numzbins)
-
-dataset = SC_accume
-  call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
-  enl%num_el = sum(acc_e)
-  nx = (dims3(2)-1)/2
-  allocate(acc%accum_e(1:dims3(1),-nx:nx,-nx:nx))
-  acc%accum_e = acc_e
-  deallocate(acc_e)
-
-dataset = SC_accumz
-  call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
-  allocate(acc%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
-  acc%accum_z = acc_z
-  deallocate(acc_z)
-
-! and close everything
-  call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-  if (HDFopen.eqv..TRUE.) call h5close_EMsoft(hdferr)
-
-else
-  call FatalError('EBSDIndexingreadMCfile','Could not find MC file')
-end if
-
-if (present(verbose)) call Message(' -> completed reading Monte Carlo data from '&
-//trim(enl%energyfile), frm = "(A)")
+if (present(verbose)) call Message(' -> completed reading Monte Carlo data from '//trim(enl%energyfile), frm = "(A)")
 
 end subroutine EBSDIndexingreadMCfile
-
 
 !--------------------------------------------------------------------------
 !

@@ -61,6 +61,7 @@ use NameListTypedefs
 use NameListHandlers
 use JSONsupport
 use io
+use error
 use EBSDmod
 use stringconstants
 
@@ -167,11 +168,12 @@ if (trim(enl%anglefiletype).eq.'orientations') then
   nullify(angles)
   allocate(angles)
   call EBSDreadangles(enl, angles, verbose=.TRUE.)
-end if 
-if (trim(enl%anglefiletype).eq.'orpcdef') then 
+else if (trim(enl%anglefiletype).eq.'orpcdef') then 
   nullify(orpcdef)
   allocate(orpcdef)
   call EBSDreadorpcdef(enl, orpcdef, verbose=.TRUE.)
+else 
+  call FatalError('EMEBSD','unknown anglefiletype')
 end if 
 
 ! 2. read the Monte Carlo data file (HDF format)

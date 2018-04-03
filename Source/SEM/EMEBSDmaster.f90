@@ -145,7 +145,8 @@ end program EMEBSDmaster
 !> @date 08/17/16  MDG 6.5 modified for new HDF internal format
 !> @date 09/29/16  MDG 6.6 added option to read structure data from master file instead of external .xtal file
 !> @date 03/06/17  MDG 6.7 removed normal absorption from depth integration
-!> @date 04/02/18  MDG 6.8 replaced MC file reading by new routine in EBSDmod
+!> @date 04/02/18  MDG 7.0 replaced MC file reading by new routine in EBSDmod
+!> @date 04/03/18  MDG 7.1 replaced all regular MC variables by mcnl structure components
 !--------------------------------------------------------------------------
 subroutine ComputeMasterPattern(emnl, progname, nmldeffile)
 
@@ -191,7 +192,7 @@ integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, ieq
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
-real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstart, tstop, bp(4), nabsl
+real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstart, tstop, bp(4), nabsl, etotal
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:,:), auxSH(:,:,:,:)  ! results
 real(kind=sgl),allocatable      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)  ! results
 complex(kind=dbl)               :: czero
@@ -200,9 +201,8 @@ logical                 :: usehex, switchmirror, verbose
 character(fnlen)        :: xtalname
 
 ! Monte Carlo derived quantities
-integer(kind=irg)       :: numEbins, numzbins, nsx, nsy, hdferr, nlines, lastEnergy    ! variables used in MC energy file
-real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, etotal ! enery variables from MC program
-integer(kind=irg),allocatable :: accum_e(:,:,:), accum_z(:,:,:,:), thick(:), acc_z(:,:,:,:)
+integer(kind=irg)       :: numEbins, nsx, nsy, hdferr, nlines, lastEnergy    ! variables used in MC energy file
+integer(kind=irg),allocatable :: thick(:)
 real(kind=sgl),allocatable :: lambdaE(:,:)
 character(fnlen)        :: oldprogname, groupname, energyfile, outname, datagroupname
 character(8)            :: MCscversion
@@ -272,25 +272,11 @@ call h5open_EMsoft(hdferr)
 call readEBSDMonteCarloFile(emnl%energyfile, mcnl, hdferr, EBSDMCdata, getAccumz=.TRUE.)
 call h5close_EMsoft(hdferr)
 
-xtalname = trim(mcnl%xtalname)
-nsx = mcnl%numsx
-nsx = (nsx - 1)/2
+nsx = (mcnl%numsx - 1)/2
 nsy = nsx
-EkeV = mcnl%EkeV
-Ehistmin = mcnl%Ehistmin
-Ebinsize = mcnl%Ebinsize
-depthmax = mcnl%depthmax
-depthstep = mcnl%depthstep
+etotal = float(EBSDMCdata%totnum_el)
 
-numEbins = EBSDMCdata%numEbins
-numzbins = EBSDMCdata%numzbins
-etotal = EBSDMCdata%totnum_el
-
-allocate(accum_z(numEbins,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
-accum_z = EBSDMCdata%accum_z
-deallocate(EBSDMCdata%accum_z)
-
-io_int(1) = etotal
+io_int(1) = EBSDMCdata%totnum_el
 call WriteValue(' --> total number of BSE electrons in MC data set ', io_int, 1)
 !=============================================
 !=============================================
@@ -301,14 +287,11 @@ call WriteValue(' --> total number of BSE electrons in MC data set ', io_int, 1)
 ! crystallography section; 
  allocate(cell)
  verbose = .TRUE.
- call Initialize_Cell(cell,Dyn,rlp,xtalname, emnl%dmin, sngl(EkeV), verbose)
+ call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
 
 ! allocate and compute the Sgh loop-up table
  numset = cell%ATOM_ntype  
  call Initialize_SghLUT(cell,emnl%dmin, numset, nat, verbose)
-
-! the following line needs to be verified ... 
-!  hexset = .TRUE.    ! if hexagonal structure this switch selects between three and four index notation (4 if true)
 
 ! determine the point group number
  j=0
@@ -334,7 +317,6 @@ SamplingType = PGSamplingType(isym)
 ! next, intercept the special cases (hexagonal vs. rhombohedral cases that require special treatment)
 if ((SamplingType.eq.-1).or.(isym.eq.14).or.(isym.eq.26)) then 
   SamplingType = getHexvsRho(cell,isym)
-  write (*,*) ' --> ',cell%SYM_SGnum, isym, SamplingType,cell%SG%SYM_second,cell%SYM_SGset 
 end if 
 
 ! if the point group is trigonal or hexagonal, we need to switch usehex to .TRUE. so that
@@ -349,42 +331,42 @@ if ((cell%xtal_system.eq.4).or.(cell%xtal_system.eq.5)) usehex = .TRUE.
 !=============================================
 !=============================================
 ! this is where we determine the value for the thickness integration limit for the CalcLgh3 routine...
-allocate(EkeVs(numEbins),thick(numEbins))
+allocate(EkeVs(EBSDMCdata%numEbins),thick(EBSDMCdata%numEbins))
 
-do i=1,numEbins
-  EkeVs(i) = Ehistmin + float(i-1)*Ebinsize
+do i=1,EBSDMCdata%numEbins
+  EkeVs(i) = mcnl%Ehistmin + float(i-1)*mcnl%Ebinsize
 end do
 
 ! then, for each energy determine the 95% histogram thickness
 izzmax = 0
-do iE = 1,numEbins
+do iE = 1,EBSDMCdata%numEbins
  do ix=-nsx/10,nsx/10
   do iy=-nsy/10,nsy/10
-   istat = sum(accum_z(iE,:,ix,iy))
+   istat = sum(EBSDMCdata%accum_z(iE,:,ix,iy))
    izz = 1
-   do while (sum(accum_z(iE,1:izz,ix,iy)).lt.(0.99*istat)) 
+   do while (sum(EBSDMCdata%accum_z(iE,1:izz,ix,iy)).lt.(0.99*istat)) 
     izz = izz+1
    end do
    if (izz.gt.izzmax) izzmax = izz
   end do
  end do
- thick(iE) = dble(izzmax) * depthstep
+ thick(iE) = dble(izzmax) * mcnl%depthstep
 end do
 
-izz = nint(maxval(thick)/depthstep)
-allocate(lambdaE(1:numEbins,1:izz),stat=istat)
-do iE=1,numEbins
+izz = nint(maxval(thick)/mcnl%depthstep)
+allocate(lambdaE(1:EBSDMCdata%numEbins,1:izz),stat=istat)
+do iE=1,EBSDMCdata%numEbins
  cell%voltage = Ekevs(iE)
  call CalcUcg(cell,rlp,(/0,0,0/))
  nabsl = rlp%xgp
  do iz=1,izz
-  lambdaE(iE,iz) = float(sum(accum_z(iE,iz,-nsx/10:nsx/10,-nsy/10:nsy/10)))/etotal
-  lambdaE(iE,iz) = lambdaE(iE,iz) * exp(2.0*sngl(cPi)*(iz-1)*depthstep/nabsl)
+  lambdaE(iE,iz) = float(sum(EBSDMCdata%accum_z(iE,iz,-nsx/10:nsx/10,-nsy/10:nsy/10)))/etotal
+  lambdaE(iE,iz) = lambdaE(iE,iz) * exp(2.0*sngl(cPi)*(iz-1)*mcnl%depthstep/nabsl)
  end do
 end do
 
-! and get rid of the accum_z array
-deallocate(accum_z)
+! and get rid of the EBSDMCdata%accum_z array
+deallocate(EBSDMCdata%accum_z)
 ! ---------- end of 'read Monte Carlo output file and extract necessary parameters' section
 !=============================================
 !=============================================
@@ -532,7 +514,7 @@ groupname = SC_EMData
 
 dataset = SC_xtalname
   allocate(stringarray(1))
-  stringarray(1)= trim(xtalname)
+  stringarray(1)= trim(mcnl%xtalname)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head, overwrite)
@@ -569,17 +551,17 @@ dataset = SC_lastEnergy
 dataset = SC_numEbins
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
-      hdferr = HDF_writeDatasetInteger(dataset, numEbins, HDF_head, overwrite)
+      hdferr = HDF_writeDatasetInteger(dataset, EBSDMCdata%numEbins, HDF_head, overwrite)
     else
-      hdferr = HDF_writeDatasetInteger(dataset, numEbins, HDF_head)
+      hdferr = HDF_writeDatasetInteger(dataset, EBSDMCdata%numEbins, HDF_head)
     end if
 
 dataset = SC_EkeVs
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
-      hdferr = HDF_writeDatasetFloatArray1D(dataset, EkeVs, numEbins, HDF_head, overwrite)
+      hdferr = HDF_writeDatasetFloatArray1D(dataset, EkeVs, EBSDMCdata%numEbins, HDF_head, overwrite)
     else
-      hdferr = HDF_writeDatasetFloatArray1D(dataset, EkeVs, numEbins, HDF_head)
+      hdferr = HDF_writeDatasetFloatArray1D(dataset, EkeVs, EBSDMCdata%numEbins, HDF_head)
     end if
   else
 dataset = SC_numEbins
@@ -601,7 +583,7 @@ dataset = SC_selE
 
 ! create the hyperslabs and write zeroes to them for now
 dataset = SC_mLPNH
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins, numsites /)
   cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, 0, 0 /)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -612,7 +594,7 @@ dataset = SC_mLPNH
   end if
 
 dataset = SC_mLPSH
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins, numsites /)
   cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, 0, 0 /)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -623,7 +605,7 @@ dataset = SC_mLPSH
   end if
 
 dataset = SC_masterSPNH
-  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
+  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, 0 /)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -634,7 +616,7 @@ dataset = SC_masterSPNH
   end if
 
 dataset = SC_masterSPSH
-  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
+  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, 0 /)
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -662,9 +644,8 @@ if (lastEnergy.ne.-1) then
     stop 'Program halted.'
   end if
 else
-  Estart = numEbins
+  Estart = EBSDMCdata%numEbins
 end if
-
 
 !=============================================
 !=============================================
@@ -795,7 +776,7 @@ energyloop: do iE=Estart,1,-1
 
 ! solve the dynamical eigenvalue equation for this beam direction  
      kn = karray(4,ik)
-     call CalcLgh(DynMat,Lgh,dble(thick(iE)),dble(kn),nns,gzero,depthstep,lambdaE(iE,1:izzmax),izzmax)
+     call CalcLgh(DynMat,Lgh,dble(thick(iE)),dble(kn),nns,gzero,mcnl%depthstep,lambdaE(iE,1:izzmax),izzmax)
      deallocate(DynMat)
 
 ! sum over the element-wise (Hadamard) product of the Lgh and Sgh arrays 
@@ -954,7 +935,7 @@ dataset = SC_StopTime
   call WriteValue('Execution time [s]: ',io_int,1)
 
 dataset = SC_Duration
-  if (iE.eq.numEbins) then 
+  if (iE.eq.EBSDMCdata%numEbins) then 
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then     
       hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head, overwrite)
@@ -978,25 +959,25 @@ dataset = SC_lastEnergy
 
 ! add data to the hyperslab
 dataset = SC_mLPNH
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins, numsites /)
   cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, iE-1, 0 /)
   hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
 
 dataset = SC_mLPSH
-  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
+  dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins, numsites /)
   cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, iE-1, 0 /)
   hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
 
 dataset = SC_masterSPNH
-  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
+  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, iE-1 /)
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 
 dataset = SC_masterSPSH
-  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
+  dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, EBSDMCdata%numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, iE-1 /)
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
