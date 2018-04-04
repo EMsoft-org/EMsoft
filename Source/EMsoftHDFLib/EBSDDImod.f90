@@ -365,7 +365,7 @@ if (HDFopen.eqv..TRUE.) call h5close_EMsoft(hdferr)
 ! copy all the necessary variables from the mcnl namelist group
 enl%MCxtalname = trim(mcnl%xtalname)
 enl%MCmode = mcnl%MCmode
-if (enl%MCmode .ne. 'full') call FatalError('EBSDreadMCfile','This file is not in full mode. Please input correct HDF5 file')
+if (enl%MCmode .ne. 'full') call FatalError('EBSDIndexingreadMCfile','File not in full mode. Please input correct HDF5 file')
 
 enl%nsx = (mcnl%numsx - 1)/2
 enl%nsy = enl%nsx
@@ -1379,7 +1379,7 @@ end subroutine CalcEBSDPatternSingleApprox
 !> @param ebsdnl EBSDIndexingNamelist
 !> @param hdferr error code
 !
-!> @date 03/12/18 MDG 1.0 started new routine, to eventually replace older FillEBSDIndexingNameList routine
+!> @date 03/12/18 MDG 1.0 started new routine
 !--------------------------------------------------------------------------
 recursive subroutine readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, getADP, getAverageOrientations, getCI, &
                                             getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &

@@ -500,22 +500,6 @@ type TKDNameListType
 
 end type TKDNameListType
 
-
-
-
-
-! namelist for the EMEBSD program
-! note that not all of these are actually entered via a namelist file
-! some of them are used to facilitate passing of subroutine arguments in EBSDmod.f90
-type EBSDdetparmscanNameListType
-        integer(kind=irg)       :: numdetparm
-        integer(kind=irg)       :: numeuler
-        real(kind=sgl)          :: DetParms(3)
-        real(kind=sgl)          :: Eulertriplet(3)
-        real(kind=sgl)          :: DetParmstepsize(3)
-        real(kind=sgl)          :: Cubochoricstepsize(3)
-end type EBSDdetparmscanNameListType
-
 ! namelist for the EMEBSDoverlap program
 ! note that not all of these are actually entered via a namelist file
 ! some of them are used to facilitate passing of subroutine arguments in EBSDmod.f90
