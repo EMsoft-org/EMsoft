@@ -61,6 +61,9 @@ use NameListTypedefs
 use NameListHandlers
 use JSONsupport
 use io
+use HDF5
+use HDFsupport
+use error
 use EBSDmod
 use stringconstants
 
@@ -68,50 +71,65 @@ IMPLICIT NONE
 
 character(fnlen)                       :: nmldeffile, progname, progdesc
 type(EBSDNameListType)                 :: enl
-type(MCNameListType)                   :: mcnl
+type(MCCLNameListType)                 :: mcnl
+type(EBSDMasterNameListType)           :: mpnl
 
 type(EBSDAngleType),pointer            :: angles
 type(EBSDAnglePCDefType),pointer       :: orpcdef
-type(EBSDLargeAccumType),pointer       :: acc
-type(EBSDMasterType),pointer           :: master
+type(EBSDMCdataType)                   :: EBSDMCdata
+type(EBSDMPdataType)                   :: EBSDMPdata
+type(EBSDDetectorType)                 :: EBSDdetector
 
-integer(kind=irg)                      :: res, error_cnt
+integer(kind=irg)                      :: res, error_cnt, hdferr
 integer(kind=irg)                      :: istat
 logical                                :: verbose
 
 interface
-        subroutine ComputeEBSDPatterns(enl, angles, acc, master, progname, nmldeffile)
-        
+        subroutine ComputeEBSDPatterns(enl, mcnl, mpnl, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
+
         use local
         use typedefs
         use NameListTypedefs
+        use NameListHDFwriters
         use symmetry
         use crystal
         use constants
         use io
         use files
+        use filters
         use diffraction
         use EBSDmod
         use Lambert
         use quaternions
         use rotations
-        use noise
-        
+        use filters
+        use HDF5
+        use HDFsupport
+        use ISO_C_BINDING
+        use omp_lib
+        use timing
+        use stringconstants
+        use math
+
         IMPLICIT NONE
-        
+
         type(EBSDNameListType),INTENT(INOUT)    :: enl
+        type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+        type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
         type(EBSDAngleType),pointer             :: angles
-        type(EBSDLargeAccumType),pointer        :: acc
-        type(EBSDMasterType),pointer            :: master
+        type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+        type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
+        type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
         character(fnlen),INTENT(IN)             :: progname
         character(fnlen),INTENT(IN)             :: nmldeffile
         end subroutine ComputeEBSDPatterns
 
-        subroutine ComputedeformedEBSDPatterns(enl, orpcdef, acc, master, progname, nmldeffile)
-        
+        subroutine ComputedeformedEBSDPatterns(enl, mcnl, mpnl, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
+
         use local
         use typedefs
         use NameListTypedefs
+        use NameListHDFwriters
         use symmetry
         use crystal
         use constants
@@ -123,20 +141,26 @@ interface
         use quaternions
         use rotations
         use noise
-        
+        use HDF5
+        use HDFsupport
+        use ISO_C_BINDING
+        use omp_lib
+        use timing
+        use stringconstants
+        use math
+
         IMPLICIT NONE
-        
+
         type(EBSDNameListType),INTENT(INOUT)    :: enl
+        type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+        type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
         type(EBSDAnglePCDefType),pointer        :: orpcdef
-        type(EBSDLargeAccumType),pointer        :: acc
-        type(EBSDMasterType),pointer            :: master
+        type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+        type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
         character(fnlen),INTENT(IN)             :: progname
         character(fnlen),INTENT(IN)             :: nmldeffile
         end subroutine ComputedeformedEBSDPatterns
 end interface
-
-nullify(acc)
-nullify(master)
 
 nmldeffile = 'EMEBSD.nml'
 progname = 'EMEBSD.f90'
@@ -167,39 +191,41 @@ if (trim(enl%anglefiletype).eq.'orientations') then
   nullify(angles)
   allocate(angles)
   call EBSDreadangles(enl, angles, verbose=.TRUE.)
-end if 
-if (trim(enl%anglefiletype).eq.'orpcdef') then 
+else if (trim(enl%anglefiletype).eq.'orpcdef') then 
   nullify(orpcdef)
   allocate(orpcdef)
   call EBSDreadorpcdef(enl, orpcdef, verbose=.TRUE.)
+else 
+  call FatalError('EMEBSD','unknown anglefiletype')
 end if 
 
 ! 2. read the Monte Carlo data file (HDF format)
-allocate(acc)
-call EBSDreadMCfile(enl, acc, verbose=.TRUE.)
+call h5open_EMsoft(hdferr)
+call readEBSDMonteCarloFile(enl%energyfile, mcnl, hdferr, EBSDMCdata, getAccume=.TRUE.)
 
 ! 3. read EBSD master pattern file (HDF format)
-allocate(master)
-call EBSDreadMasterfile(enl, master, verbose=.TRUE.)
+call readEBSDMasterPatternFile(enl%masterfile, mpnl, hdferr, EBSDMPdata, getmLPNH=.TRUE., getmLPSH=.TRUE.)
+call h5close_EMsoft(hdferr)
 
 ! for a regular Euler angle file, we precompute the detector arrays here; for the 'orpcdef' mode
 ! we compute them later (for each pattern separately)
-allocate(master%rgx(enl%numsx,enl%numsy), master%rgy(enl%numsx,enl%numsy), master%rgz(enl%numsx,enl%numsy), stat=istat)
-allocate(acc%accum_e_detector(enl%numEbins,enl%numsx,enl%numsy), stat=istat)
-
 if (trim(enl%anglefiletype).eq.'orientations') then
+  allocate(EBSDdetector%rgx(enl%numsx,enl%numsy), &
+           EBSDdetector%rgy(enl%numsx,enl%numsy), &
+           EBSDdetector%rgz(enl%numsx,enl%numsy), &
+           EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,enl%numsx,enl%numsy), stat=istat)
 ! 4. generate detector arrays
-  call EBSDGenerateDetector(enl, acc, master, verbose)
-  deallocate(acc%accum_e)
+  call GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
+  deallocate(EBSDMCdata%accum_e)
 
   ! perform the zone axis computations for the knl input parameters
-  call ComputeEBSDpatterns(enl, angles, acc, master, progname, nmldeffile)
-  deallocate(master, acc, angles)
+  call ComputeEBSDpatterns(enl, mcnl, mpnl, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
+  deallocate(angles)
 end if
 
 if (trim(enl%anglefiletype).eq.'orpcdef') then
-  call ComputedeformedEBSDpatterns(enl, orpcdef, acc, master, progname, nmldeffile)
-  deallocate(master, acc, orpcdef)
+  call ComputedeformedEBSDpatterns(enl, mcnl, mpnl, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
+  deallocate(orpcdef)
 end if 
   
 end program EMEBSD
@@ -213,9 +239,12 @@ end program EMEBSD
 !> @brief compute an energy-weighted EBSD pattern
 !
 !> @param enl name list
+!> @param mcnl Monte Carlo name list
+!> @param mpnl master pattern name list
 !> @param angles angle structure
-!> @param acc energy accumulator arrays
-!> @param master structure with master and detector arrays
+!> @param EBSDMCdata Monte Carlo arrays
+!> @param EBSDMPdata Master Pattern arrays
+!> @param EBSDdetector detector arrays
 !> @param progname program name string
 !> @param nmldeffile name of nml file
 !
@@ -246,8 +275,9 @@ end program EMEBSD
 !> @date 09/26/17  MDG 7.0 added ability to incorporate a deformation tensor in the pattern computation
 !> @date 10/13/17  MDG 7.1 correction of deformation tensor code; tested for tetragonal, monoclinic and anorthic deformations
 !> @date 12/20/17  MDG 7.2 added switch to turn off realistic background intensity profile
+!> @date 04/03/18  MDG 8.0 rewrite with separated name lists and new more modular data structures
 !--------------------------------------------------------------------------
-subroutine ComputeEBSDPatterns(enl, angles, acc, master, progname, nmldeffile)
+subroutine ComputeEBSDPatterns(enl, mcnl, mpnl, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
 use local
 use typedefs
@@ -276,12 +306,14 @@ use math
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
 type(EBSDAngleType),pointer             :: angles
-type(EBSDLargeAccumType),pointer        :: acc
-type(EBSDMasterType),pointer            :: master
+type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
+type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
 character(fnlen),INTENT(IN)             :: progname
 character(fnlen),INTENT(IN)             :: nmldeffile
-
 
 ! all geometrical parameters and filenames
 real(kind=dbl)                          :: prefactor, qz(3)
@@ -290,7 +322,6 @@ real(kind=dbl)                          :: prefactor, qz(3)
 real(kind=sgl),allocatable              :: EBSDpattern(:,:), binned(:,:)        ! array with EBSD patterns
 real(kind=sgl),allocatable              :: z(:,:)               ! used to store the computed patterns before writing to disk
 real(kind=sgl),allocatable              :: energywf(:), eulerangles(:,:)
-real(kind=sgl),allocatable              :: accum_e_MC(:,:,:)
 
 ! arrays for each OpenMP thread
 real(kind=sgl),allocatable              :: tmLPNH(:,:,:) , tmLPSH(:,:,:)
@@ -304,12 +335,12 @@ real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 ! various items
 integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr, L, correctsize          ! various counters
 integer(kind=irg)                       :: istat, ipar(7), tick, tock
-integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder, npy     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
 integer(kind=irg),allocatable           :: istart(:,:), istop(:,:), patinbatch(:)
 
-real(kind=sgl)                          :: bindx, sig, ma, mi, tstart, tstop, io_real(3)
+real(kind=sgl)                          :: bindx, ma, mi, tstart, tstop, io_real(3)
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
 integer(kind=irg),parameter             :: storemax = 20        ! number of EBSD patterns stored in one output block
@@ -376,27 +407,25 @@ end if
 
 ! define some energy-related parameters derived from MC input parameters
 !====================================
-sig = enl%MCsig
-
 noise = .FALSE.
 if (enl%poisson.eq.'y') noise = .TRUE.
 
 ! make sure the requested energy range is within the range available from the Monte Carlo computation
-if (enl%energymin.lt.enl%Ehistmin) enl%energymin = enl%Ehistmin
-if (enl%energymax.gt.enl%EkeV) enl%energymax = enl%EkeV
+if (enl%energymin.lt.mcnl%Ehistmin) enl%energymin = mcnl%Ehistmin
+if (enl%energymax.gt.mcnl%EkeV) enl%energymax = mcnl%EkeV
 
 ! get the indices of the minimum and maximum energy
-Emin = nint((enl%energymin - enl%Ehistmin)/enl%Ebinsize) +1
+Emin = nint((enl%energymin - mcnl%Ehistmin)/mcnl%Ebinsize) + 1
 if (Emin.lt.1)  Emin=1
-if (Emin.gt.enl%numEbins)  Emin=enl%numEbins
+if (Emin.gt.EBSDMCdata%numEbins)  Emin=EBSDMCdata%numEbins
 
-Emax = nint((enl%energymax - enl%Ehistmin)/enl%Ebinsize) +1
+Emax = nint((enl%energymax - mcnl%Ehistmin)/mcnl%Ebinsize) + 1
 if (Emax.lt.1)  Emax=1
-if (Emax.gt.enl%numEbins)  Emax=enl%numEbins
+if (Emax.gt.EBSDMCdata%numEbins)  Emax=EBSDMCdata%numEbins
 
 ! modified by MDG, 03/26/18
 !nel = sum(acc%accum_e_detector)
-nel = float(enl%totnum_el) * float(enl%multiplier)
+nel = float(mcnl%totnum_el) * float(EBSDMCdata%multiplier)
 emult = nAmpere * 1e-9 / nel  ! multiplicative factor to convert MC data to an equivalent incident beam of 1 nanoCoulomb
 write (*,*) ' Multiplicative factor to generate 1 nC of incident electrons ', emult
 ! intensity prefactor  (redefined by MDG, 3/23/18)
@@ -404,16 +433,14 @@ write (*,*) ' Multiplicative factor to generate 1 nC of incident electrons ', em
 prefactor = emult * enl%beamcurrent * enl%dwelltime * 1.0D-6
 write (*,*) ' Intensity scaling prefactor = ', prefactor
 
-allocate(energywf(Emin:Emax), wf(enl%numEbins),stat=istat)
+allocate(energywf(Emin:Emax), wf(EBSDMCdata%numEbins),stat=istat)
 energywf = 0.0
 wf = 0.0
 
-wf = sum(sum(acc%accum_e_detector,3),2)
+wf = sum(sum(EBSDdetector%accum_e_detector,3),2)
 energywf(Emin:Emax) = wf(Emin:Emax)
 energywf = energywf/sum(energywf)
 deallocate(wf)
-
-!====================================
 
 !====================================
 ! init a bunch of parameters
@@ -422,12 +449,10 @@ deallocate(wf)
   binx = enl%numsx/enl%binning
   biny = enl%numsy/enl%binning
   bindx = 1.0/float(enl%binning)**2
-
-
 !====================================
 
 allocate(cell)
-cell%fname = trim(enl%MCxtalname)
+cell%fname = trim(mcnl%xtalname)
 call ReadDataHDF(cell)
 call CalcMatrices(cell)
 
@@ -488,7 +513,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
 
 dataset = SC_xtalname
 allocate(stringarray(1))
-stringarray(1)= trim(enl%MCxtalname)
+stringarray(1)= trim(mcnl%xtalname)
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray xtalname')
 
@@ -690,38 +715,35 @@ end if
 ! are added together from the start, and all the master patterns are totaled as well...
 if (enl%energyaverage.eq.1) then
   allocate(acc_array(enl%numsx,enl%numsy))
-  acc_array = sum(acc%accum_e_detector,1)
+  acc_array = sum(EBSDdetector%accum_e_detector,1)
   allocate(wf(enl%numEbins))
-  wf = sum(sum(acc%accum_e_detector,2),2)
+  wf = sum(sum(EBSDdetector%accum_e_detector,2),2)
   wf = wf/sum(wf)
 
 ! this is a straightforward sum; we should probably do a weighted sum instead
-  allocate(master_arrayNH(-enl%npx:enl%npx,-enl%npy:enl%npy))
-  allocate(master_arraySH(-enl%npx:enl%npx,-enl%npy:enl%npy))
+  npy = mpnl%npx
+  allocate(master_arrayNH(-mpnl%npx:mpnl%npx,-npy:npy))
+  allocate(master_arraySH(-mpnl%npx:mpnl%npx,-npy:npy))
   do k=Emin,Emax
-    master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy,k) = master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy,k) * wf(k)
-    master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy,k) = master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy,k) * wf(k)
+    EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,k) = EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,k) * wf(k)
+    EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,k) = EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,k) * wf(k)
   end do
-  master_arrayNH = sum(master%mLPNH,3)
-  master_arraySH = sum(master%mLPSH,3)
-
+  master_arrayNH = sum(EBSDMPdata%mLPNH,3)
+  master_arraySH = sum(EBSDMPdata%mLPSH,3)
 end if
-
-allocate(accum_e_MC(enl%numEbins,enl%numsx,enl%numsy),stat=istat)
-accum_e_MC = acc%accum_e_detector
 
 !====================================
 ! determine the scale factor for the Lambert interpolation
-scl = dble(enl%npx) 
+scl = dble(mpnl%npx) 
 
 !====================================
 ! define the integer parameter list for the CalcEBSDPatternSingleFull call
 ipar(1) = enl%binning
 ipar(2) = enl%numsx
 ipar(3) = enl%numsy
-ipar(4) = enl%npx
-ipar(5) = enl%npy
-ipar(6) = enl%numEbins
+ipar(4) = mpnl%npx
+ipar(5) = mpnl%npx
+ipar(6) = EBSDMCdata%numEbins
 ipar(7) = enl%nE
 
 !====================================
@@ -756,19 +778,19 @@ do ibatch=1,totnumbatches
 
 ! each thread needs a private copy of the master and accum arrays; not having
 ! those can produce poor scaling...
-  dims2 = shape(master%rgx)
+  dims2 = shape(EBSDdetector%rgx)
   allocate(trgx(dims2(1),dims2(2)), trgy(dims2(1),dims2(2)), trgz(dims2(1),dims2(2)))
-  dims3 = shape(accum_e_MC)
+  dims3 = shape(EBSDdetector%accum_e_detector)
   allocate(taccum(dims3(1),dims3(2),dims3(3)))
-  dims3 = shape(master%mLPNH)
+  dims3 = shape(EBSDMPdata%mLPNH)
   allocate(tmLPNH(dims3(1),dims3(2),dims3(3)), tmLPSH(dims3(1),dims3(2),dims3(3)))
 ! and copy the data in
-  trgx = master%rgx
-  trgy = master%rgy
-  trgz = master%rgz
-  taccum = accum_e_MC
-  tmLPNH = master%mLPNH
-  tmLPSH = master%mLPSH
+  trgx = EBSDdetector%rgx
+  trgy = EBSDdetector%rgy
+  trgz = EBSDdetector%rgz
+  taccum = EBSDdetector%accum_e_detector
+  tmLPNH = EBSDMPdata%mLPNH
+  tmLPSH = EBSDMPdata%mLPSH
 
 ! allocate the arrays that will hold the computed pattern
   allocate(binned(binx,biny),stat=istat)
@@ -1141,8 +1163,9 @@ end subroutine ComputeEBSDPatterns
 !> @date 10/13/17  MDG 7.1 correction of deformation tensor code; tested for tetragonal, monoclinic and anorthic deformations
 !> @date 12/20/17  MDG 7.2 added switch to turn off realistic background intensity profile
 !> @date 02/22/18  MDG 8.0 new version that incorporates different pattern center and deformation tensor for each pattern
+!> @date 04/03/18  MDG 8.1 rewrite with separated name lists and new more modular data structures
 !--------------------------------------------------------------------------
-subroutine ComputedeformedEBSDPatterns(enl, orpcdef, acc, master, progname, nmldeffile)
+subroutine ComputedeformedEBSDPatterns(enl, mcnl, mpnl, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
 
 use local
 use typedefs
@@ -1170,12 +1193,13 @@ use math
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
 type(EBSDAnglePCDefType),pointer        :: orpcdef
-type(EBSDLargeAccumType),pointer        :: acc
-type(EBSDMasterType),pointer            :: master
+type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
 character(fnlen),INTENT(IN)             :: progname
 character(fnlen),INTENT(IN)             :: nmldeffile
-
 
 ! all geometrical parameters and filenames
 real(kind=dbl)                          :: prefactor, qz(3)
@@ -1184,7 +1208,6 @@ real(kind=dbl)                          :: prefactor, qz(3)
 real(kind=sgl),allocatable              :: EBSDpattern(:,:), binned(:,:)        ! array with EBSD patterns
 real(kind=sgl),allocatable              :: z(:,:)               ! used to store the computed patterns before writing to disk
 real(kind=sgl),allocatable              :: energywf(:), eulerangles(:,:)
-real(kind=sgl),allocatable              :: accum_e_MC(:,:,:)
 
 ! arrays for each OpenMP thread
 real(kind=sgl),allocatable              :: tmLPNH(:,:,:) , tmLPSH(:,:,:)
@@ -1203,7 +1226,7 @@ integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocat
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
 integer(kind=irg),allocatable           :: istart(:,:), istop(:,:), patinbatch(:)
 
-real(kind=sgl)                          :: bindx, sig, ma, mi, tstart, tstop, io_real(3)
+real(kind=sgl)                          :: bindx, ma, mi, tstart, tstop, io_real(3)
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
 integer(kind=irg),parameter             :: storemax = 20        ! number of EBSD patterns stored in one output block
@@ -1263,24 +1286,21 @@ call get_bit_parameters(enl%bitdepth, numbits, bitrange, bitmode)
 
 ! define some energy-related parameters derived from MC input parameters
 !====================================
-sig = enl%MCsig
-
 ! make sure the requested energy range is within the range available from the Monte Carlo computation
-if (enl%energymin.lt.enl%Ehistmin) enl%energymin = enl%Ehistmin
-if (enl%energymax.gt.enl%EkeV) enl%energymax = enl%EkeV
+if (enl%energymin.lt.mcnl%Ehistmin) enl%energymin = mcnl%Ehistmin
+if (enl%energymax.gt.mcnl%EkeV) enl%energymax = mcnl%EkeV
 
 ! get the indices of the minimum and maximum energy
-Emin = nint((enl%energymin - enl%Ehistmin)/enl%Ebinsize) +1
+Emin = nint((enl%energymin - mcnl%Ehistmin)/mcnl%Ebinsize) +1
 if (Emin.lt.1)  Emin=1
-if (Emin.gt.enl%numEbins)  Emin=enl%numEbins
+if (Emin.gt.EBSDMCdata%numEbins)  Emin=EBSDMCdata%numEbins
 
-Emax = nint((enl%energymax - enl%Ehistmin)/enl%Ebinsize) +1
+Emax = nint((enl%energymax - mcnl%Ehistmin)/mcnl%Ebinsize) +1
 if (Emax.lt.1)  Emax=1
-if (Emax.gt.enl%numEbins)  Emax=enl%numEbins
+if (Emax.gt.EBSDMCdata%numEbins)  Emax=EBSDMCdata%numEbins
 
 ! modified by MDG, 03/26/18
-!nel = sum(acc%accum_e_detector)
-nel = float(enl%totnum_el) * float(enl%multiplier)
+nel = float(mcnl%totnum_el) * float(EBSDMCdata%multiplier)
 emult = nAmpere * 1e-9 / nel  ! multiplicative factor to convert MC data to an equivalent incident beam of 1 nanoCoulomb
 write (*,*) ' multiplicative factor to generate 1 nC of incident electrons ', emult
 
@@ -1295,7 +1315,7 @@ write (*,*) ' multiplicative factor to generate 1 nC of incident electrons ', em
 !====================================
 
 allocate(cell)
-cell%fname = trim(enl%MCxtalname)
+cell%fname = trim(mcnl%xtalname)
 call ReadDataHDF(cell)
 call CalcMatrices(cell)
 
@@ -1356,7 +1376,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
 
 dataset = SC_xtalname
 allocate(stringarray(1))
-stringarray(1)= trim(enl%MCxtalname)
+stringarray(1)= trim(mcnl%xtalname)
 hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray xtalname')
 
@@ -1496,19 +1516,18 @@ end if
     deallocate(lx, ly)
   end if
 
-
 !====================================
 ! determine the scale factor for the Lambert interpolation
-scl = dble(enl%npx) 
+scl = dble(mpnl%npx) 
 
 !====================================
 ! define the integer parameter list for the CalcEBSDPatternSingleFull call
 ipar(1) = enl%binning
 ipar(2) = enl%numsx
 ipar(3) = enl%numsy
-ipar(4) = enl%npx
-ipar(5) = enl%npy
-ipar(6) = enl%numEbins
+ipar(4) = mpnl%npx
+ipar(5) = mpnl%npx
+ipar(6) = EBSDMCdata%numEbins
 ipar(7) = enl%nE
 
 !====================================
@@ -1538,8 +1557,8 @@ do ibatch=1,totnumbatches
   allocate(taccum(enl%numEbins,enl%numsx,enl%numsy))
   allocate(tmLPNH(enl%numsx,enl%numsy,enl%numEbins), tmLPSH(enl%numsx,enl%numsy,enl%numEbins))
 ! and copy the data in
-  tmLPNH = master%mLPNH
-  tmLPSH = master%mLPSH
+  tmLPNH = EBSDMPdata%mLPNH
+  tmLPSH = EBSDMPdata%mLPSH
 
 ! allocate the arrays that will hold the computed pattern
   allocate(binned(binx,biny),stat=istat)
@@ -1602,25 +1621,20 @@ do ibatch=1,totnumbatches
 
 ! for each pattern we need to compute the detector arrays 
     if (enl%includebackground.eq.'y') then
-      call EBSDGeneratemyDetector(enl, acc, enl%numsx, enl%numsy, enl%numEbins, trgx, trgy, trgz, taccum, &
+      call GeneratemyEBSDDetector(enl, mcnl, EBSDMCdata, enl%numsx, enl%numsy, EBSDMCdata%numEbins, trgx, trgy, trgz, taccum, &
                                   orpcdef%pcs(1:3,iang),bg=.TRUE.)
 ! intensity prefactor
-!     nel = sum(taccum)
-! intensity prefactor  (redefined by MDG, 3/23/18)
-! prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
       prefactor = emult * enl%beamcurrent * enl%dwelltime * 1.0D-6
     else
-      call EBSDGeneratemyDetector(enl, acc, enl%numsx, enl%numsy, enl%numEbins, trgx, trgy, trgz, taccum, &
+      call GeneratemyEBSDDetector(enl, mcnl, EBSDMCdata, enl%numsx, enl%numsy, EBSDMCdata%numEbins, trgx, trgy, trgz, taccum, &
                                   orpcdef%pcs(1:3,iang),bg=.FALSE.)
-!      nel = 1.0D6 ! we pick a reasonable value here ...
-!      prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
 ! we pick a reasonable value here ...
       prefactor = 3.D0 * enl%beamcurrent * enl%dwelltime * 1.0D-6
     end if
 
     binned = 0.0
     
-    write (*,*) TID, nel, maxval(trgx), maxval(taccum), maxval(Fmatrix_inverse)
+!   write (*,*) TID, nel, maxval(trgx), maxval(taccum), maxval(Fmatrix_inverse)
 
     if (includeFmatrix.eqv..TRUE.) then 
      if (enl%includebackground.eq.'y') then

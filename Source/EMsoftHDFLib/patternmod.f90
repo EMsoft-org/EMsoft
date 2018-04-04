@@ -788,22 +788,27 @@ end subroutine patternmod_errormessage
 !> histogram equalization.  Then the preprocessed patterns are either stored in a binary direct access file,
 !> or they are kept in RAM, depending on the user parameter setting. 
 !
-!> @param enl namelist for the orientation fitting program
+!> @param nthreads number of threads to be used
+!> @param inRAM write file or keep patterns in RAM ?
 !> @param ebsdnl namelist for the ebsd computations
 !> @param binx, biny pattern size 
 !> @param masklin vector form of pattern mask 
 !> @param correctsize 
 !> @param totnumexpt 
 !> @param epatterns (OPTIONAL) array with pre-processed patterns
+!> @param exptIQ (OPTIONAL) computation of pattern quality (IQ) array
 !
 !> @date 04/01/18 MDG 1.0 original
+!> @date 04/04/18 MDG 1.1 added optional exptIQ parameter
 !--------------------------------------------------------------------------
-recursive subroutine PreProcessPatterns(enl, ebsdnl, binx, biny, masklin, correctsize, totnumexpt, epatterns)
+recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, masklin, correctsize, totnumexpt, &
+                                        epatterns, exptIQ)
 !DEC$ ATTRIBUTES DLLEXPORT :: PreProcessPatterns
 
 use io
 use local
 use typedefs
+use EBSDDImod
 use NameListTypedefs
 use error
 use omp_lib
@@ -814,7 +819,8 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(RefineOrientationtype),INTENT(IN)      :: enl
+integer(kind=irg),INTENT(IN)                :: nthreads
+logical,INTENT(IN)                          :: inRAM
 type(EBSDIndexingNameListType),INTENT(IN)   :: ebsdnl
 integer(kind=irg),INTENT(IN)                :: binx
 integer(kind=irg),INTENT(IN)                :: biny
@@ -822,6 +828,7 @@ real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
 integer(kind=irg),INTENT(IN)                :: correctsize
 integer(kind=irg),INTENT(IN)                :: totnumexpt
 real(kind=sgl),OPTIONAL                     :: epatterns(correctsize, totnumexpt)
+real(kind=sgl),OPTIONAL                     :: exptIQ(totnumexpt)
 
 logical                                     :: ROIselected, f_exists
 character(fnlen)                            :: fname
@@ -830,7 +837,7 @@ integer(kind=irg)                           :: istat, L, recordsize, io_int(2), 
 integer(HSIZE_T)                            :: dims3(3), offset3(3)
 integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42
 real(kind=sgl)                              :: tstart, tstop, vlen, tmp, ma, mi, io_real(1)
-real(kind=dbl)                              :: w
+real(kind=dbl)                              :: w, Jres
 integer(kind=irg),allocatable               :: EBSDpint(:,:)
 real(kind=sgl),allocatable                  :: tmpimageexpt(:), EBSDPattern(:,:), imageexpt(:), exppatarray(:), EBSDpat(:,:)
 real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
@@ -862,7 +869,7 @@ end if
 
 !===================================================================================
 ! open the output file if the patterns are not to be kept in memory
-if (enl%inRAM.eqv..FALSE.) then
+if (inRAM.eqv..FALSE.) then
 ! first, make sure that this file does not already exist
    f_exists = .FALSE.
    fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
@@ -897,13 +904,25 @@ end if
 ! Thread 0 reads one line worth of patterns from the input file, then all threads do 
 ! the work, and thread 0 adds them to the epatterns array in RAM; repeat until all patterns have been processed.
 
-call OMP_SET_NUM_THREADS(enl%nthreads)
-io_int(1) = enl%nthreads
+call OMP_SET_NUM_THREADS(nthreads)
+io_int(1) = nthreads
 call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 
 ! allocate the arrays that holds the experimental patterns from a single row of the region of interest
 allocate(exppatarray(patsz * ebsdnl%ipf_wd),stat=istat)
 if (istat .ne. 0) stop 'could not allocate exppatarray'
+
+if (present(exptIQ)) then
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+  allocate(EBSDPat(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
+  EBSDPat = 0.0
+  allocate(ksqarray(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate ksqarray array'
+  Jres = 0.0
+  call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
+deallocate(EBSDPat)
+end if
 
 ! initialize the HiPassFilter routine (has its own FFTW plans)
 allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
@@ -966,6 +985,11 @@ prepexperimentalloop: do iii = iiistart,iiiend
           EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
         end do
 
+        if (present(exptIQ)) then
+! compute the pattern Image Quality 
+          exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
+        end if
+
 ! Hi-Pass filter
         rrdata = dble(EBSDPat)
         ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
@@ -996,7 +1020,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
 
 ! thread 0 writes the row of patterns to the epatterns array or to the file, depending on the enl%inRAM parameter
     if (TID.eq.0) then
-      if (enl%inRAM.eqv..TRUE.) then
+      if (inRAM.eqv..TRUE.) then
         do jj=1,jjend
           epatterns(1:patsz,(iii-iiistart)*jjend + jj) = exppatarray((jj-1)*patsz+1:jj*patsz)
         end do
@@ -1027,7 +1051,7 @@ call Message(' -> experimental patterns preprocessed')
 
 call closeExpPatternFile(ebsdnl%inputtype, iunitexpt)
 
-if (enl%inRAM.eqv..FALSE.) then
+if (inRAM.eqv..FALSE.) then
   close(unit=itmpexpt,status='keep')
 end if
 
