@@ -500,7 +500,7 @@ end function adhisteq
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief  compute Average Dot Product map, reading patterns from file unit iunit
+!> @brief  compute Average Dot Product map, reading patterns from file unit iunit (expected to be open already)
 !
 !> @param iunit input file unit
 !> @param nexpt number of experimental patterns

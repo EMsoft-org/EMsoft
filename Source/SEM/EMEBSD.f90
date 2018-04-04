@@ -76,8 +76,6 @@ type(EBSDMasterNameListType)           :: mpnl
 
 type(EBSDAngleType),pointer            :: angles
 type(EBSDAnglePCDefType),pointer       :: orpcdef
-type(EBSDLargeAccumType),pointer       :: acc
-type(EBSDMasterType),pointer           :: master
 type(EBSDMCdataType)                   :: EBSDMCdata
 type(EBSDMPdataType)                   :: EBSDMPdata
 type(EBSDDetectorType)                 :: EBSDdetector
@@ -164,9 +162,6 @@ interface
         end subroutine ComputedeformedEBSDPatterns
 end interface
 
-nullify(acc)
-nullify(master)
-
 nmldeffile = 'EMEBSD.nml'
 progname = 'EMEBSD.f90'
 progdesc = 'Dynamical EBSD patterns, using precomputed MC and master Lambert projections'
@@ -204,26 +199,21 @@ else
   call FatalError('EMEBSD','unknown anglefiletype')
 end if 
 
-call h5open_EMsoft(hdferr)
 ! 2. read the Monte Carlo data file (HDF format)
-! allocate(acc)
+call h5open_EMsoft(hdferr)
 call readEBSDMonteCarloFile(enl%energyfile, mcnl, hdferr, EBSDMCdata, getAccume=.TRUE.)
-! call EBSDreadMCfile(enl, acc, verbose=.TRUE.)
 
 ! 3. read EBSD master pattern file (HDF format)
-allocate(master)
 call readEBSDMasterPatternFile(enl%masterfile, mpnl, hdferr, EBSDMPdata, getmLPNH=.TRUE., getmLPSH=.TRUE.)
-! call EBSDreadMasterfile(enl, master, verbose=.TRUE.)
 call h5close_EMsoft(hdferr)
 
 ! for a regular Euler angle file, we precompute the detector arrays here; for the 'orpcdef' mode
 ! we compute them later (for each pattern separately)
-allocate(EBSDdetector%rgx(enl%numsx,enl%numsy), &
-         EBSDdetector%rgy(enl%numsx,enl%numsy), &
-         EBSDdetector%rgz(enl%numsx,enl%numsy), &
-         EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,enl%numsx,enl%numsy), stat=istat)
-
 if (trim(enl%anglefiletype).eq.'orientations') then
+  allocate(EBSDdetector%rgx(enl%numsx,enl%numsy), &
+           EBSDdetector%rgy(enl%numsx,enl%numsy), &
+           EBSDdetector%rgz(enl%numsx,enl%numsy), &
+           EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,enl%numsx,enl%numsy), stat=istat)
 ! 4. generate detector arrays
   call GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
   deallocate(EBSDMCdata%accum_e)
@@ -332,7 +322,6 @@ real(kind=dbl)                          :: prefactor, qz(3)
 real(kind=sgl),allocatable              :: EBSDpattern(:,:), binned(:,:)        ! array with EBSD patterns
 real(kind=sgl),allocatable              :: z(:,:)               ! used to store the computed patterns before writing to disk
 real(kind=sgl),allocatable              :: energywf(:), eulerangles(:,:)
-real(kind=sgl),allocatable              :: accum_e_MC(:,:,:)
 
 ! arrays for each OpenMP thread
 real(kind=sgl),allocatable              :: tmLPNH(:,:,:) , tmLPSH(:,:,:)
@@ -1219,7 +1208,6 @@ real(kind=dbl)                          :: prefactor, qz(3)
 real(kind=sgl),allocatable              :: EBSDpattern(:,:), binned(:,:)        ! array with EBSD patterns
 real(kind=sgl),allocatable              :: z(:,:)               ! used to store the computed patterns before writing to disk
 real(kind=sgl),allocatable              :: energywf(:), eulerangles(:,:)
-real(kind=sgl),allocatable              :: accum_e_MC(:,:,:)
 
 ! arrays for each OpenMP thread
 real(kind=sgl),allocatable              :: tmLPNH(:,:,:) , tmLPSH(:,:,:)

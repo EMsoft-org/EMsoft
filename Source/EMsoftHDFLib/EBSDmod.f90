@@ -1288,7 +1288,6 @@ end subroutine EBSDreadMasterfile_overlap
 !--------------------------------------------------------------------------
 recursive subroutine GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: GenerateEBSDDetector
-! enl, acc, master, verbose)
 
 use local
 use typedefs
