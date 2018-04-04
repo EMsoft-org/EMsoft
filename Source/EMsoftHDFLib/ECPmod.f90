@@ -444,7 +444,7 @@ dataset = SC_Version
 
 else
   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'
-  call FatalError('EBSDreadMasterfile',masterfile)
+  call FatalError('ECPreadMasterfile',masterfile)
 end if
 !====================================
 
@@ -1328,7 +1328,7 @@ dataset = SC_Version
 
 else
   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'
-  call FatalError('EBSDreadMasterfile',masterfile)
+  call FatalError('ECPIndexingreadMasterfile',masterfile)
 end if
 !====================================
 
