@@ -382,9 +382,11 @@ logical,INTENT(IN),OPTIONAL                         :: getAccumSP
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
 type(HDFobjectStackType),pointer                    :: HDF_head
-integer(kind=irg)                                   :: ii, nlines
+integer(kind=irg)                                   :: ii, nlines, nx
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
+integer(kind=irg),allocatable                       :: accum_e(:,:,:)
+integer(kind=irg),allocatable                       :: accum_z(:,:,:,:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3), dims4(4) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
@@ -548,7 +550,11 @@ dataset = SC_totnumel
 if (present(getAccume)) then 
   if (getAccume.eqv..TRUE.) then
     dataset = SC_accume
-    call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, EBSDMCdata%accum_e)
+    call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, accum_e)
+    nx = (dims3(2)-1)/2
+    allocate(EBSDMCdata%accum_e(1:dims3(1),-nx:nx,-nx:nx))
+    EBSDMCdata%accum_e = accum_e
+    deallocate(accum_e)
   end if 
 end if
 
@@ -556,6 +562,9 @@ if (present(getAccumz)) then
   if (getAccumz.eqv..TRUE.) then
     dataset = SC_accumz
     call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, EBSDMCdata%accum_z)
+    allocate(EBSDMCdata%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
+    EBSDMCdata%accum_z = accum_z
+    deallocate(accum_z)  
   end if 
 end if
 
