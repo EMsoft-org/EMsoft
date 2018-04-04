@@ -846,13 +846,16 @@ end do
 ! them in a temporary file as vectors; also, create 
 ! an average dot product map to be stored in the h5ebsd output file
 !=====================================================
-call PreProcessPatterns(ebsdnl%nthreads, .FALSE., ebsdnl, binx, biny, masklin, correctsize, totnumexpt)
+call PreProcessPatterns(ebsdnl%nthreads, .FALSE., ebsdnl, binx, biny, masklin, correctsize, totnumexpt, exptIQ)
 
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')
 call Message(' ')
 
 ! re-open the temporary file
+fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
+fname = EMsoft_toNativePath(fname)
+
 open(unit=itmpexpt,file=trim(fname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
 
