@@ -1956,7 +1956,7 @@ end subroutine CalcECPatternSingleFull
 !> @param ecpnl ECP IndexingNamelist
 !> @param hdferr error code
 !
-!> @date 03/12/18 MDG 1.0 started new routine, to eventually replace older FillEBSDIndexingNameList routine
+!> @date 03/12/18 MDG 1.0 started new routine, to be integrated with other ECP code 
 !--------------------------------------------------------------------------
 recursive subroutine readECPDotProductFile(dpfile, ecpnl, hdferr, ECPDIdata, getADP, getAverageOrientations, getCI, &
                                            getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
