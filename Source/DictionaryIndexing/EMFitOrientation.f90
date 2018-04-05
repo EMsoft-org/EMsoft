@@ -41,6 +41,9 @@
 !
 !> @date 08/01/16  SS 1.0 original
 !> @date 03/12/18 MDG 1.1 moved dot product file reading to subroutine
+!
+!> THIS PROGRAM IS SLATED TO BE REPLACED BY A MORE GENERAL REFINEMENT PROGRAM IN APRIL 2018
+!> DO NOT SPEND ANY TIME MODIFYING THIS CODE !!!
 !--------------------------------------------------------------------------
 program EMFitOrientation
 

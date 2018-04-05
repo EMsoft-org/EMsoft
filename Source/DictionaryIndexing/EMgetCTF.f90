@@ -76,12 +76,14 @@ type(EBSDIndexingNameListType)          :: ebsdnl
 type(ECPIndexingNameListType)           :: ecpnl
 type(EBSDDIdataType)                    :: EBSDDIdata
 type(ECPDIdataType)                     :: ECPDIdata
+type(MCCLNameListType)                  :: mcnl
+type(EBSDMCdataType)                    :: EBSDMCdata
+
 
 logical                                 :: stat, readonly, noindex, g_exists
 character(fnlen)                        :: dpfile, masterfile, energyfile
 integer(kind=irg)                       :: hdferr, ii, jj, kk, iii, istat
 
-type(EBSDLargeAccumDIType),pointer      :: acc
 real(kind=sgl),allocatable              :: euler_best(:,:), CIlist(:)
 integer(kind=irg),allocatable           :: indexmain(:,:) 
 real(kind=sgl),allocatable              :: resultmain(:,:)                                         
@@ -188,10 +190,8 @@ else
 end if
 
 ! read the Monte Carlo data file to get the xtal file name
-    allocate(acc)
-    call EBSDIndexingreadMCfile(ebsdnl, acc, verbose=.TRUE.,NoHDFInterfaceOpen=.FALSE.)
-    deallocate(acc)
-    pgnum = GetPointGroup(ebsdnl%MCxtalname,.FALSE.)
+    call readEBSDMonteCarloFile(ebsdnl%masterfile, mcnl, hdferr, EBSDMCdata)
+    pgnum = GetPointGroup(mcnl%xtalname,.FALSE.)
 
 ! and prepare the .ctf output file 
 if(modalityname .eq. 'EBSD') then
