@@ -186,7 +186,7 @@ else if (trim(modalityname) .eq. 'ECP') then
 
 else
     dpfile = 'File '//trim(dpfile)//' is not an HDF5 file'
-    call FatalError('EMFitOrientation:',dpfile)
+    call FatalError('EMgetCTF:',dpfile)
 end if
 
 ! read the Monte Carlo data file to get the xtal file name
@@ -196,7 +196,8 @@ end if
 ! and prepare the .ctf output file 
 if(modalityname .eq. 'EBSD') then
     ebsdnl%ctffile = enl%ctffile
-
+    ebsdnl%MCxtalname = trim(mcnl%xtalname)
+    
     ipar = 0
     ipar(1) = 1
     ipar(2) = Nexp
