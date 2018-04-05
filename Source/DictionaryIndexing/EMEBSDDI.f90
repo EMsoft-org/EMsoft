@@ -1199,6 +1199,7 @@ allocate(OSMmap(jjend, iiiend))
 
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
+ebsdnl%MCxtalname = trim(mcnl%xtalname)
 
 if (ebsdnl%datafile.ne.'undefined') then 
   vendor = 'TSL'
