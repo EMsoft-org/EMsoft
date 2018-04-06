@@ -846,9 +846,7 @@ end do
 ! them in a temporary file as vectors; also, create 
 ! an average dot product map to be stored in the h5ebsd output file
 !=====================================================
-call PreProcessPatterns(ebsdnl%nthreads, .FALSE., ebsdnl, binx, biny, masklin, correctsize, totnumexpt, exptIQ)
-
-write (*,*) 'exptIQ range = ', minval(exptIQ), maxval(exptIQ)
+call PreProcessPatterns(ebsdnl%nthreads, .FALSE., ebsdnl, binx, biny, masklin, correctsize, totnumexpt, exptIQ=exptIQ)
 
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')
