@@ -848,6 +848,8 @@ end do
 !=====================================================
 call PreProcessPatterns(ebsdnl%nthreads, .FALSE., ebsdnl, binx, biny, masklin, correctsize, totnumexpt, exptIQ)
 
+write (*,*) 'exptIQ range = ', minval(exptIQ), maxval(exptIQ)
+
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')
 call Message(' ')

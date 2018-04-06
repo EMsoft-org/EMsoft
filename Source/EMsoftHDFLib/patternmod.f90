@@ -921,6 +921,7 @@ if (present(exptIQ)) then
   if (istat .ne. 0) stop 'could not allocate ksqarray array'
   Jres = 0.0
   call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
+  write (*,*) 'setting up for exptIQ: ',binx, biny, shape(EBSDPat),shape(ksqarray), Jres
 deallocate(EBSDPat)
 end if
 
