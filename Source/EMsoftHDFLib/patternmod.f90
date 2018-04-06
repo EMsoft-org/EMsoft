@@ -827,8 +827,8 @@ integer(kind=irg),INTENT(IN)                :: biny
 real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
 integer(kind=irg),INTENT(IN)                :: correctsize
 integer(kind=irg),INTENT(IN)                :: totnumexpt
-real(kind=sgl),OPTIONAL                     :: epatterns(correctsize, totnumexpt)
-real(kind=sgl),OPTIONAL                     :: exptIQ(totnumexpt)
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
 
 logical                                     :: ROIselected, f_exists
 character(fnlen)                            :: fname
