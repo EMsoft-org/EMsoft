@@ -196,7 +196,6 @@ end if
 ! and prepare the .ctf output file 
 if(modalityname .eq. 'EBSD') then
     ebsdnl%ctffile = enl%ctffile
-    ebsdnl%MCxtalname = trim(mcnl%xtalname)
     
     ipar = 0
     ipar(1) = 1
