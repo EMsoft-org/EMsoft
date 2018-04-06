@@ -562,7 +562,8 @@ if (present(getAccumz)) then
   if (getAccumz.eqv..TRUE.) then
     dataset = SC_accumz
     call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, accum_z)
-    allocate(EBSDMCdata%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
+    nx = (dims4(3)-1)/2
+    allocate(EBSDMCdata%accum_z(1:dims4(1),1:dims4(2),-nx:nx, -nx:nx))
     EBSDMCdata%accum_z = accum_z
     deallocate(accum_z)  
   end if 
