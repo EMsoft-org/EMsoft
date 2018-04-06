@@ -1203,13 +1203,13 @@ ebsdnl%MCxtalname = trim(mcnl%xtalname)
 
 if (ebsdnl%datafile.ne.'undefined') then 
   vendor = 'TSL'
-  call h5ebsd_writeFile(vendor, ebsdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
+  call h5ebsd_writeFile(vendor, ebsdnl, mcnl%xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
                         dpmap, progname, nmldeffile, OSMmap)
   call Message('Data stored in h5ebsd file : '//trim(ebsdnl%datafile))
 end if
 
 if (ebsdnl%ctffile.ne.'undefined') then 
-  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
+  call ctfebsd_writeFile(ebsdnl,mcnl%xtalname,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
   call Message('Data stored in ctf file : '//trim(ebsdnl%ctffile))
 end if
 

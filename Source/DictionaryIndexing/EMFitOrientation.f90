@@ -942,7 +942,8 @@ if(modalityname .eq. 'EBSD') then
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
     if (ebsdnl%ctffile.ne.'undefined') then 
-      call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex=.TRUE.)
+      call ctfebsd_writeFile(ebsdnl,ebsdnl%MCxtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM, &
+                             EBSDDIdata%IQ,noindex=.TRUE.)
       call Message('Data stored in ctf file : '//trim(enl%ctffile))
     end if
 

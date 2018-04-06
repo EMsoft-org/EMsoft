@@ -723,8 +723,8 @@ end subroutine h5ebsd_writePhaseGroup
 !
 !> @date 03/10/16 MDG 1.0 original
 !--------------------------------------------------------------------------
-subroutine h5ebsd_writeFile(vendor, ebsdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, dpmap, &
-                            progname, nmldeffile, OSMmap)
+subroutine h5ebsd_writeFile(vendor, ebsdnl, xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
+                            dpmap, progname, nmldeffile, OSMmap)
 !DEC$ ATTRIBUTES DLLEXPORT :: h5ebsd_writeFile
 
 use NameListTypedefs
@@ -739,6 +739,7 @@ IMPLICIT NONE
 
 character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+character(fnlen),INTENT(IN)                         :: xtalname
 character(11),INTENT(INOUT)                         :: dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
@@ -912,7 +913,7 @@ dataset = SC_OSM
     lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
     noindex = .TRUE.
 
-    call ctfebsd_writeFile(ebsdnl,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
+    call ctfebsd_writeFile(ebsdnl,xtalname,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
     call Message('Average orientation data stored in ctf file : '//trim(ebsdnl%avctffile))
     ebsdnl%ctffile = savefile
     ipar(1:6) = ipar2(1:6)
