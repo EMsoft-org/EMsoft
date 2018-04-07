@@ -850,7 +850,7 @@ call Message('Preprocessing experimental patterns')
 
 !===================================================================================
 ! define a bunch of mostly integer parameters
-recordsize = binx*biny*4
+recordsize = correctsize*4
 L = binx*biny
 patsz = correctsize
 w = ebsdnl%hipassw
