@@ -1179,7 +1179,7 @@ dataset = SC_Operator
 groupname = SC_Phase
   hdferr = HDF_createGroup(groupname, HDF_head)
 groupname = "1"
-  call h5ebsd_writePhaseGroup(groupname, ebsdnl%MCxtalname, HDF_head)
+  call h5ebsd_writePhaseGroup(groupname, xtalname, HDF_head)
 
 ! close the Phase group
   call HDF_pop(HDF_head)

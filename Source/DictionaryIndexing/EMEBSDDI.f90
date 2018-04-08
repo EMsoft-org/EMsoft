@@ -309,7 +309,7 @@ real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! C
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
-                                                       recordsize_correct, patsz, tickstart, tock, npy
+                                                       recordsize_correct, patsz, tickstart, tock, npy, sz(3)
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 real(kind=sgl),pointer                              :: dict(:), T0dict(:)
 real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
@@ -517,6 +517,9 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
     Emax = nint((dinl%energymax - mcnl%Ehistmin)/mcnl%Ebinsize) + 1
     if (Emax .lt. 1) Emax = 1
     if (Emax .gt. EBSDMCdata%numEbins) Emax = EBSDMCdata%numEbins
+
+    sz = shape(EBSDMPdata%mLPNH)
+    dinl%nE = sz(3)
 
     ! intensity prefactor
     nel = float(mcnl%totnum_el) * float(EBSDMCdata%multiplier)
