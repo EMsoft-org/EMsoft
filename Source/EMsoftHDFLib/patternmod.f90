@@ -68,7 +68,7 @@ integer(kind=irg),allocatable,save,private          :: semiy(:)
 integer(HSIZE_T),save,private                       :: semixydims(1)
 
 ! this one is used to keep track of the even/odd patterns start locations in the .up2 input format
-logical,save,private                                :: up2wdLeven
+logical,save,private                                :: up2wdLeven, up2halfshift
 integer(kind=ill),save,private                      :: offset
 
 type(HDFobjectStackType),pointer,save,private       :: pmHDF_head 
@@ -199,6 +199,7 @@ end subroutine invert_ordering_arrays
 !> @date 02/15/18 MDG 1.1 added record length correction for windows platform
 !> @date 02/15/18 MDG 1.2 added special handling for out-of-order patterns in the Bruker HDF5 format
 !> @date 02/18/18 MDG 1.3 added special handling for patterns with odd number of pixels in .up2 format
+!> @date 04/12/18 MDG 1.4 added option for patterns that don't start at record boundaries in up2 format
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -217,7 +218,7 @@ integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
-integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize
+integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), ios
 character(fnlen)                        :: groupname, dataset, platform
 
 istat = 0
@@ -269,13 +270,39 @@ select case (itype)
             call WriteValue("File open error; error type ",io_int,1)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
-        offset = 4_ill
+        ! normally, the first four 4-byte entries form a header with a version number (unimportant), then 
+        ! the two dimensions of patterns, and finally an offset parameter indicating at which byte
+        ! the first pattern starts.  Often, this offset parameter is 16, indicating that there is 
+        ! no space between the header of four 4-byte integers and the start of the first pattern.
+        ! If there is space, then we need to make sure that we get the correct offset parameter
+        ! to start reading the patterns.  The tricky thing is that the offset parameter, while even,
+        ! is not necessarily a multiple of the record size of 4 bytes (that would be too easy, right?).
+        ! So, we read the first four integers and consider the fourth number...
+        do i=1,4
+          read(unit=funit,rec=i, iostat=ios) up2header(i)
+        end do
+        up2halfshift = .FALSE.
+        if (up2header(4).eq.16) then 
+          offset = 4_ill
+        else
+          offset = up2header(4)
+          offset = offset/4_ill
+          ! if the difference between up2header(4) and 16 is a multiple of 4, then we're good and 
+          ! we just add that multiple to the offset for the header
+          if (mod(up2header(4),4).ne.0) then
+          ! the pattern starts in the middle of a 4-byte record (was that really necessary?) so we set the
+          ! offset to the header value modulo 4; e.g., up2header(4)=42 will result in offset=10, and then 
+          ! we need to keep track of the fact that we need to skip the first 2 bytes before the pattern starts...
+            up2halfshift = .TRUE.
+          end if
+        end if
 
     case(4)  ! "OxfordBinary"
-        call FatalError("openExpPatternFile","input format not yet implemented")
+        call FatalError("openExpPatternFile","OxfordBinary input format not yet implemented")
 
 
     case(5)  ! "OxfordHDF"
+        call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
@@ -357,6 +384,7 @@ end function openExpPatternFile
 !
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/21/18 MDG 1.1 added optional Region-of-Interest capability
+!> @date 04/12/18 MDG 1.2 added option for patterns that don't start at record boundaries in up2 format
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
@@ -447,9 +475,13 @@ select case (itype)
         read(unit=funit,rec=offset+ii, iostat=ios) buffer(ii)
       end do
 
-! we convert the 4-byte integers into pairs of 2-byte integers
+! we convert the 4-byte integers into pairs of 2-byte integers with appropriate 2-byte shifts where needed
       allocate(pairs(2_ill*buffersize))
       pairs = transfer(buffer,pairs)
+      ! if the header(4) entry read in the previous function indicates that the first pattern starts
+      ! in the middle of a record, then we need to shift the pairs array one value to the left, regardless
+      ! of the up2wdLeven value... and we need to keep doing that all the time... 
+      if (up2halfshift.eqv..TRUE.) pairs = cshift(pairs,1_ill)
       if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then  ! shift the array by one entry to the left 
         pairs = cshift(pairs,1_ill)
       end if
