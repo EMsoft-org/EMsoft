@@ -414,8 +414,8 @@ character(3), INTENT(IN)                  :: ot
 
 logical                                   :: res, c1, c2
 real(kind=dbl)                            :: r(3)
-real(kind=dbl),parameter                  :: r1 = 1.0D0
-real(kind=dbl),parameter                  :: eps = 1.0D-6
+real(kind=dbl),parameter                  :: r1  = 1.0D0
+real(kind=dbl),parameter                  :: eps = 1.0D-8
 
 r(1:3) = rod(1:3) * rod(4)
 
