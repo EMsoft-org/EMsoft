@@ -80,12 +80,13 @@ type(EBSDMCdataType)                   :: EBSDMCdata
 type(EBSDMPdataType)                   :: EBSDMPdata
 type(EBSDDetectorType)                 :: EBSDdetector
 
-integer(kind=irg)                      :: res, error_cnt, hdferr
+integer(kind=irg)                      :: res, error_cnt, hdferr, numangles
 integer(kind=irg)                      :: istat
 logical                                :: verbose
 
 interface
-        subroutine ComputeEBSDPatterns(enl, mcnl, mpnl, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
+        subroutine ComputeEBSDPatterns(enl, mcnl, mpnl, numangles, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, &
+          progname, nmldeffile)
 
         use local
         use typedefs
@@ -116,6 +117,7 @@ interface
         type(EBSDNameListType),INTENT(INOUT)    :: enl
         type(MCCLNameListType),INTENT(INOUT)    :: mcnl
         type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
+        integer(kind=irg),INTENT(IN)            :: numangles
         type(EBSDAngleType),pointer             :: angles
         type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
         type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
@@ -124,7 +126,7 @@ interface
         character(fnlen),INTENT(IN)             :: nmldeffile
         end subroutine ComputeEBSDPatterns
 
-        subroutine ComputedeformedEBSDPatterns(enl, mcnl, mpnl, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
+        subroutine ComputedeformedEBSDPatterns(enl, mcnl, mpnl, numangles, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
 
         use local
         use typedefs
@@ -154,6 +156,7 @@ interface
         type(EBSDNameListType),INTENT(INOUT)    :: enl
         type(MCCLNameListType),INTENT(INOUT)    :: mcnl
         type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
+        integer(kind=irg),INTENT(IN)            :: numangles
         type(EBSDAnglePCDefType),pointer        :: orpcdef
         type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
         type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
@@ -190,11 +193,11 @@ verbose = .TRUE.
 if (trim(enl%anglefiletype).eq.'orientations') then 
   nullify(angles)
   allocate(angles)
-  call EBSDreadangles(enl, angles, verbose=.TRUE.)
+  call EBSDreadangles(enl, numangles, angles, verbose=.TRUE.)
 else if (trim(enl%anglefiletype).eq.'orpcdef') then 
   nullify(orpcdef)
   allocate(orpcdef)
-  call EBSDreadorpcdef(enl, orpcdef, verbose=.TRUE.)
+  call EBSDreadorpcdef(enl, numangles, orpcdef, verbose=.TRUE.)
 else 
   call FatalError('EMEBSD','unknown anglefiletype')
 end if 
@@ -219,12 +222,12 @@ if (trim(enl%anglefiletype).eq.'orientations') then
   deallocate(EBSDMCdata%accum_e)
 
   ! perform the zone axis computations for the knl input parameters
-  call ComputeEBSDpatterns(enl, mcnl, mpnl, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
+  call ComputeEBSDpatterns(enl, mcnl, mpnl, numangles, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
   deallocate(angles)
 end if
 
 if (trim(enl%anglefiletype).eq.'orpcdef') then
-  call ComputedeformedEBSDpatterns(enl, mcnl, mpnl, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
+  call ComputedeformedEBSDpatterns(enl, mcnl, mpnl, numangles, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
   deallocate(orpcdef)
 end if 
   
@@ -241,6 +244,7 @@ end program EMEBSD
 !> @param enl name list
 !> @param mcnl Monte Carlo name list
 !> @param mpnl master pattern name list
+!> @param numangles number of angles to consider
 !> @param angles angle structure
 !> @param EBSDMCdata Monte Carlo arrays
 !> @param EBSDMPdata Master Pattern arrays
@@ -277,7 +281,7 @@ end program EMEBSD
 !> @date 12/20/17  MDG 7.2 added switch to turn off realistic background intensity profile
 !> @date 04/03/18  MDG 8.0 rewrite with separated name lists and new more modular data structures
 !--------------------------------------------------------------------------
-subroutine ComputeEBSDPatterns(enl, mcnl, mpnl, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
+subroutine ComputeEBSDPatterns(enl, mcnl, mpnl, numangles, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
 use local
 use typedefs
@@ -308,6 +312,7 @@ IMPLICIT NONE
 type(EBSDNameListType),INTENT(INOUT)    :: enl
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
 type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
+integer(kind=irg),INTENT(IN)            :: numangles
 type(EBSDAngleType),pointer             :: angles
 type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
 type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
@@ -518,16 +523,16 @@ hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray xtalname')
 
 dataset = SC_numangles
-hdferr = HDF_writeDatasetInteger(dataset, enl%numangles, HDF_head) 
+hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetInteger numangles')
 
 ! and add the Euler angles to the output file
-allocate(eulerangles(3,enl%numangles))
-do i=1,enl%numangles
+allocate(eulerangles(3,numangles))
+do i=1,numangles
   eulerangles(1:3,i) = qu2eu(angles%quatang(1:4,i))
 end do
 dataset = SC_Eulerangles
-hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, enl%numangles, HDF_head) 
+hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
 
 ! and we leave this group open for further data output from the main program loop ... 
@@ -597,9 +602,9 @@ end if
   ninbatch = 1024
   nlastbatches = 0
   singlebatch = .FALSE.
-  if (enl%numangles.ge.ninbatch*nthreads) then 
-    nbatches = enl%numangles/(ninbatch*nthreads)
-    nremainder = mod(enl%numangles,ninbatch*nthreads)
+  if (numangles.ge.ninbatch*nthreads) then 
+    nbatches = numangles/(ninbatch*nthreads)
+    nremainder = mod(numangles,ninbatch*nthreads)
     nextra = 0
     if (nremainder.gt.0) then
       singlebatch = .TRUE.
@@ -610,18 +615,18 @@ end if
   else
 ! if there are fewer patterns than ninbatch*nthreads we need to redefine ninbatch
     singlebatch = .TRUE.
-    if (enl%numangles.le.nthreads) then
+    if (numangles.le.nthreads) then
       nthreads = 1
     end if
     nbatches = 0
-    ninlastbatch = enl%numangles/nthreads+1
-    nlastremainder = enl%numangles - (nthreads-1)*ninlastbatch
+    ninlastbatch = numangles/nthreads+1
+    nlastremainder = numangles - (nthreads-1)*ninlastbatch
     nlastbatches = 1
     nextra = 0
     if (nlastremainder.gt.0) nextra = 1 
 end if
   if (nbatches.ne.0) then
-    io_int(1) = enl%numangles 
+    io_int(1) = numangles 
     io_int(2) = ninbatch
     io_int(3) = nthreads
     io_int(4) = nbatches
@@ -629,7 +634,7 @@ end if
     call WriteValue('  OpenMP loop variables : ',io_int,5,"(I10,' = ',I4,' * ',I2,' * ',I4,' + ',I6)")
   end if
   if ((ninlastbatch.ne.0).and.(nextra.ne.0)) then
-    io_int(1) = enl%numangles - nbatches * nthreads * ninbatch
+    io_int(1) = numangles - nbatches * nthreads * ninbatch
     io_int(2) = ninlastbatch
     io_int(3) = nthreads-1
     io_int(4) = 1
@@ -716,7 +721,7 @@ end if
 if (enl%energyaverage.eq.1) then
   allocate(acc_array(enl%numsx,enl%numsy))
   acc_array = sum(EBSDdetector%accum_e_detector,1)
-  allocate(wf(enl%numEbins))
+  allocate(wf(EBSDMCdata%numEbins))
   wf = sum(sum(EBSDdetector%accum_e_detector,2),2)
   wf = wf/sum(wf)
 
@@ -744,7 +749,7 @@ ipar(3) = enl%numsy
 ipar(4) = mpnl%npx
 ipar(5) = mpnl%npx
 ipar(6) = EBSDMCdata%numEbins
-ipar(7) = enl%nE
+ipar(7) = EBSDMCdata%numEbins
 
 !====================================
 ! set the number of OpenMP threads 
@@ -1014,12 +1019,12 @@ dataset = SC_EBSDpatterns
  !if (outputformat.eq.'bin') then
    if (trim(bitmode).eq.'dict') then 
      offset2 = (/ 0, (ibatch-1)*ninbatch*enl%nthreads /)
-     hdims2 = (/ correctsize, enl%numangles /)
+     hdims2 = (/ correctsize, numangles /)
      dim0 = correctsize
      dim1 = patinbatch(ibatch)
    else
      offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
-     hdims = (/ binx, biny, enl%numangles /)
+     hdims = (/ binx, biny, numangles /)
      dim0 = binx
      dim1 = biny
      dim2 = patinbatch(ibatch)
@@ -1165,7 +1170,7 @@ end subroutine ComputeEBSDPatterns
 !> @date 02/22/18  MDG 8.0 new version that incorporates different pattern center and deformation tensor for each pattern
 !> @date 04/03/18  MDG 8.1 rewrite with separated name lists and new more modular data structures
 !--------------------------------------------------------------------------
-subroutine ComputedeformedEBSDPatterns(enl, mcnl, mpnl, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
+subroutine ComputedeformedEBSDPatterns(enl, mcnl, mpnl, numangles, orpcdef, EBSDMCdata, EBSDMPdata, progname, nmldeffile)
 
 use local
 use typedefs
@@ -1195,6 +1200,7 @@ IMPLICIT NONE
 type(EBSDNameListType),INTENT(INOUT)    :: enl
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
 type(EBSDMasterNameListType),INTENT(INOUT) :: mpnl
+integer(kind=irg),INTENT(IN)            :: numangles
 type(EBSDAnglePCDefType),pointer        :: orpcdef
 type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
 type(EBSDMPdataType),INTENT(INOUT)      :: EBSDMPdata
@@ -1381,17 +1387,17 @@ hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetStringArray xtalname')
 
 dataset = SC_numangles
-hdferr = HDF_writeDatasetInteger(dataset, enl%numangles, HDF_head) 
+hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetInteger numangles')
 
 
 ! and add the Euler angles to the output file
-allocate(eulerangles(3,enl%numangles))
-do i=1,enl%numangles
+allocate(eulerangles(3,numangles))
+do i=1,numangles
   eulerangles(1:3,i) = qu2eu(orpcdef%quatang(1:4,i))
 end do
 dataset = SC_Eulerangles
-hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, enl%numangles, HDF_head) 
+hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
 
 ! and we leave this group open for further data output from the main program loop ... 
@@ -1423,9 +1429,9 @@ includeFmatrix = .TRUE.
   ninbatch = 1024
   nlastbatches = 0
   singlebatch = .FALSE.
-  if (enl%numangles.ge.ninbatch*nthreads) then 
-    nbatches = enl%numangles/(ninbatch*nthreads)
-    nremainder = mod(enl%numangles,ninbatch*nthreads)
+  if (numangles.ge.ninbatch*nthreads) then 
+    nbatches = numangles/(ninbatch*nthreads)
+    nremainder = mod(numangles,ninbatch*nthreads)
     nextra = 0
     if (nremainder.gt.0) then
       singlebatch = .TRUE.
@@ -1436,18 +1442,18 @@ includeFmatrix = .TRUE.
   else
 ! if there are fewer patterns than ninbatch*nthreads we need to redefine ninbatch
     singlebatch = .TRUE.
-    if (enl%numangles.le.nthreads) then
+    if (numangles.le.nthreads) then
       nthreads = 1
     end if
     nbatches = 0
-    ninlastbatch = enl%numangles/nthreads+1
-    nlastremainder = enl%numangles - (nthreads-1)*ninlastbatch
+    ninlastbatch = numangles/nthreads+1
+    nlastremainder = numangles - (nthreads-1)*ninlastbatch
     nlastbatches = 1
     nextra = 0
     if (nlastremainder.gt.0) nextra = 1 
 end if
   if (nbatches.ne.0) then
-    io_int(1) = enl%numangles 
+    io_int(1) = numangles 
     io_int(2) = ninbatch
     io_int(3) = nthreads
     io_int(4) = nbatches
@@ -1455,7 +1461,7 @@ end if
     call WriteValue('  OpenMP loop variables : ',io_int,5,"(I10,' = ',I4,' * ',I2,' * ',I4,' + ',I6)")
   end if
   if ((ninlastbatch.ne.0).and.(nextra.ne.0)) then
-    io_int(1) = enl%numangles - nbatches * nthreads * ninbatch
+    io_int(1) = numangles - nbatches * nthreads * ninbatch
     io_int(2) = ninlastbatch
     io_int(3) = nthreads-1
     io_int(4) = 1
@@ -1528,7 +1534,7 @@ ipar(3) = enl%numsy
 ipar(4) = mpnl%npx
 ipar(5) = mpnl%npx
 ipar(6) = EBSDMCdata%numEbins
-ipar(7) = enl%nE
+ipar(7) = EBSDMCdata%numEbins
 
 !====================================
 ! set the number of OpenMP threads 
@@ -1554,8 +1560,8 @@ do ibatch=1,totnumbatches
 ! each thread needs a private copy of the master and accum arrays; not having
 ! those can produce poor scaling... in addition, they need to be recomputed for each pattern !
   allocate(trgx(enl%numsx,enl%numsy), trgy(enl%numsx,enl%numsy), trgz(enl%numsx,enl%numsy))
-  allocate(taccum(enl%numEbins,enl%numsx,enl%numsy))
-  allocate(tmLPNH(enl%numsx,enl%numsy,enl%numEbins), tmLPSH(enl%numsx,enl%numsy,enl%numEbins))
+  allocate(taccum(EBSDMCdata%numEbins,enl%numsx,enl%numsy))
+  allocate(tmLPNH(enl%numsx,enl%numsy,EBSDMCdata%numEbins), tmLPSH(enl%numsx,enl%numsy,EBSDMCdata%numEbins))
 ! and copy the data in
   tmLPNH = EBSDMPdata%mLPNH
   tmLPSH = EBSDMPdata%mLPSH
@@ -1741,7 +1747,7 @@ do ibatch=1,totnumbatches
 dataset = SC_EBSDpatterns
  !if (outputformat.eq.'bin') then
    offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
-   hdims = (/ binx, biny, enl%numangles /)
+   hdims = (/ binx, biny, numangles /)
    dim0 = binx
    dim1 = biny
    dim2 = patinbatch(ibatch)

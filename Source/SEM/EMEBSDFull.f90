@@ -56,16 +56,16 @@ use stringconstants
 IMPLICIT NONE
 
 character(fnlen)                       :: nmldeffile, progname, progdesc
-type(EBSDNameListType)                 :: enl
+type(EBSDFullNameListType)             :: enl
 
 type(EBSDAngleType),pointer            :: angles
-type(EBSDFullDetector),pointer         :: scintillator
+type(EBSDDetectorType)                 :: EBSDdetector
 
-integer(kind=irg)                      :: istat
+integer(kind=irg)                      :: istat, numangles
 logical                                :: verbose
 
 interface
-        subroutine ComputeFullEBSDPatterns(enl, angles, scintillator, progname, nmldeffile)
+        subroutine ComputeFullEBSDPatterns(enl, numangles, angles, EBSDdetector, progname, nmldeffile)
 
             use local
             use typedefs
@@ -84,9 +84,10 @@ interface
 
             IMPLICIT NONE
 
-            type(EBSDNameListType),INTENT(IN)             :: enl
+            type(EBSDFullNameListType),INTENT(IN)         :: enl
+            integer(kind=irg),INTENT(IN)                  :: numangles
             type(EBSDAngleType),pointer                   :: angles
-            type(EBSDFullDetector),pointer                :: scintillator
+            type(EBSDDetectorType),INTENT(INOUT)          :: EBSDdetector
             character(fnlen),INTENT(IN)                   :: nmldeffile
             character(fnlen),INTENT(IN)                   :: progname
 
@@ -95,7 +96,6 @@ interface
 end interface
 
 nullify(angles)
-nullify(scintillator)
 
 nmldeffile = 'EMEBSDFull.nml'
 progname = 'EMEBSDFull.f90'
@@ -112,21 +112,21 @@ call GetEBSDFullNameList(nmldeffile,enl)
 
 ! 1. read the angle array from file
 verbose = .TRUE.
+nullify(angles)
 allocate(angles)
-call EBSDreadangles(enl, angles, verbose=.TRUE.)
+call EBSDFullreadangles(enl, numangles, angles, verbose=.TRUE.)
 
 ! generate the detector
 ! all lambdaEZ arrays are allocated in this subroutine, so no need to reallocate them
-allocate(scintillator)
-allocate(scintillator%detector(enl%numsx,enl%numsy))
-call EBSDFullGenerateDetector(enl, scintillator, verbose=.TRUE.)
+allocate(EBSDdetector%detector(enl%numsx,enl%numsy))
+call EBSDFullGenerateDetector(enl, EBSDdetector, verbose=.TRUE.)
 
 ! compute full EBSD pattern
-call ComputeFullEBSDPatterns(enl, angles, scintillator, progname, nmldeffile)
+call ComputeFullEBSDPatterns(enl, numangles, angles, EBSDdetector, progname, nmldeffile)
 
 end program EMEBSDFull
 
-recursive subroutine ComputeFullEBSDPatterns(enl, angles, scintillator, progname, nmldeffile)
+recursive subroutine ComputeFullEBSDPatterns(enl, numangles, angles, EBSDdetector, progname, nmldeffile)
 
 use local
 use typedefs
@@ -156,9 +156,10 @@ use stringconstants
 
 IMPLICIT NONE
 
-type(EBSDNameListType),INTENT(IN)             :: enl
+type(EBSDFullNameListType),INTENT(IN)         :: enl
 type(EBSDAngleType),pointer                   :: angles
-type(EBSDFullDetector),pointer                :: scintillator
+integer(kind=irg),INTENT(IN)                  :: numangles
+type(EBSDDetectorType),INTENT(INOUT)          :: EBSDdetector
 character(fnlen),INTENT(IN)                   :: nmldeffile
 character(fnlen),INTENT(IN)                   :: progname
 
@@ -332,16 +333,16 @@ hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
 
 dataset = SC_numangles
-hdferr = HDF_writeDatasetInteger(dataset, enl%numangles, HDF_head) 
+hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetInteger numangles')
 
 ! and add the Euler angles to the output file
-allocate(eulerangles(3,enl%numangles))
-do i=1,enl%numangles
+allocate(eulerangles(3,numangles))
+do i=1,numangles
   eulerangles(1:3,i) = qu2eu(angles%quatang(1:4,i))
 end do
 dataset = SC_Eulerangles
-hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, enl%numangles, HDF_head) 
+hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
 
 
@@ -588,8 +589,8 @@ mainloop: do i = 1,(totnum_el/num_max+1)
                     if ( (iz.gt.0).and.(iz.le.enl%numzbins) ) then
                         val = val + 1
 
-                        scintillator%detector(idxy(1),idxy(2))%lambdaEZ(iE,iz) = &
-                        scintillator%detector(idxy(1),idxy(2))%lambdaEZ(iE,iz) + 1.0
+                        EBSDdetector%detector(idxy(1),idxy(2))%lambdaEZ(iE,iz) = &
+                        EBSDdetector%detector(idxy(1),idxy(2))%lambdaEZ(iE,iz) + 1.0
                     end if
                 end if
             end if
@@ -661,7 +662,8 @@ prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ dble(t
 ! normalize get weight factors for each pixel
 do i = 1,enl%numsx
     do j = 1,enl%numsy
-        scintillator%detector(i,j)%lambdaEZ = scintillator%detector(i,j)%lambdaEZ/dble(totnum_el + num_max)
+        EBSDdetector%detector(i,j)%lambdaEZ = &
+          EBSDdetector%detector(i,j)%lambdaEZ/dble(totnum_el + num_max)
     end do
 end do
 
@@ -692,10 +694,10 @@ do i = 1,enl%numsx
        izzmax = 0
 
         do iE = 1,enl%numEbins
-            lambdas(i,j,iE,1:enl%numzbins) = scintillator%detector(i,j)%lambdaEZ(iE,1:enl%numzbins)
+            lambdas(i,j,iE,1:enl%numzbins) = EBSDdetector%detector(i,j)%lambdaEZ(iE,1:enl%numzbins)
             lambdas(i,j,iE,1:enl%numzbins) = lambdas(i,j,iE,1:enl%numzbins)*nabsfact
             izz = 1
-            do while(sum(scintillator%detector(i,j)%lambdaEZ(iE,izz:enl%numzbins)) .gt. 0.0)
+            do while(sum(EBSDdetector%detector(i,j)%lambdaEZ(iE,izz:enl%numzbins)) .gt. 0.0)
                 izz = izz + 1
             end do
             !if(izz .gt. izzmax) izzmax = izz
@@ -705,7 +707,7 @@ do i = 1,enl%numsx
 end do
 
 ! allocate main EBSD array
-allocate(EBSDPatterns(enl%numsx,enl%numsy,enl%numEbins,enl%numangles))
+allocate(EBSDPatterns(enl%numsx,enl%numsy,enl%numEbins,numangles))
 EBSDPatterns = 0.0
 
 ! allocate and compute the Sgh loop-up table
@@ -731,7 +733,7 @@ call OMP_SET_NUM_THREADS(enl%nthreads)
 io_int(1) = enl%nthreads
 call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
 
-do iang = 1,enl%numangles
+do iang = 1,numangles
 
     qu(1:4) = angles%quatang(1:4,iang)
 
@@ -743,7 +745,7 @@ do iang = 1,enl%numangles
         cell%voltage = EkeV
         call CalcWaveLength(cell, rlp, skip) 
 
-!$OMP PARALLEL default(PRIVATE) COPYIN(rlp,cell) SHARED(scintillator, enl, qu) &
+!$OMP PARALLEL default(PRIVATE) COPYIN(rlp,cell) SHARED(EBSDdetector, enl, qu) &
 !$OMP& SHARED(BetheParameters, dmin, verbose, czero, gzero, numset, nat) &
 !$OMP& SHARED(EBSDPatterns, NTHREADS, iang, prefactor, iE, nabsfact, lambdafile)
 
@@ -764,10 +766,10 @@ do iang = 1,enl%numangles
             j = (k-1)/enl%numsy + 1
 
             lambdaZ = 0.0
-            lambdaZ(1:enl%numzbins) = scintillator%detector(i,j)%lambdaEZ(iE,1:enl%numzbins)
+            lambdaZ(1:enl%numzbins) = EBSDdetector%detector(i,j)%lambdaEZ(iE,1:enl%numzbins)
             lambdaZ = lambdaZ*nabsfact
 ! get the incident wavevector of the electron in xtal frame
-            kk = scintillator%detector(i,j)%dc(1:3)           
+            kk = EBSDdetector%detector(i,j)%dc(1:3)           
             kk = quat_Lp(conjg(qu), kk) 
             kk = kk/cell%mLambda
 
@@ -841,7 +843,7 @@ call WriteValue('Execution time [system_clock()] = ',io_int,1,"(I8,' [s]')")
 
 ! add data to the hyperslab
 dataset = SC_EBSDPatterns
-dims4 = (/  enl%numsx, enl%numsy, enl%numEbins, enl%numangles /)
+dims4 = (/  enl%numsx, enl%numsy, enl%numEbins, numangles /)
 hdferr = HDF_writeDatasetFloatArray4D(dataset, EBSDPatterns, dims4(1), dims4(2), dims4(3),&
 dims4(4), HDF_head)
 

@@ -6199,7 +6199,7 @@ use error
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
-type(EBSDNameListType),INTENT(INOUT)          :: enl
+type(EBSDFullNameListType),INTENT(INOUT)      :: enl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
 logical                                   :: skipread = .FALSE.
