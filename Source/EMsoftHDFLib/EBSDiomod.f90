@@ -211,9 +211,9 @@ str1 = trim(str1)//TAB//trim(str4)//';'//trim(str5)//';'//trim(str6)
 
 ! structure name
 str3 = ''
-ii = len(trim(ebsdnl%MCxtalname))-5
+ii = len(trim(xtalname))-5
 do i=1,ii
-  str3(i:i) = ebsdnl%MCxtalname(i:i)
+  str3(i:i) = xtalname(i:i)
 end do
 str1 = trim(str1)//TAB//trim(str3)
 

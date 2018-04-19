@@ -5627,10 +5627,8 @@ call HDFerror_check('HDF_readHyperslabCharArray3D:h5dopen_f:'//trim(dataname), h
 call h5dget_space_f(dset, space, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray3D:h5dget_space_f:'//trim(dataname), hdferr)
 
-
 call h5sget_simple_extent_dims_f(space, hdims, max_dims, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray3D:h5sget_simple_extent_dims_f:'//trim(dataname), hdferr)
-
 
 rnk = 3
 call h5sselect_hyperslab_f(space, H5S_SELECT_SET_F, offset, dims, hdferr) 
