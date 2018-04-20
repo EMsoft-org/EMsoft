@@ -330,34 +330,36 @@ integer(kind=irg),parameter       :: PGTWDinverse(12,11) = reshape((/ &
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTWDinverse
 
 
-!> 32 3D point group symbols in International Tables order
-character(5),parameter  :: PGTHD(32) =(/'    1','   -1','    2','    m','  2/m','  222', &
+!> 32 3D point group symbols in International Tables order; additional quasi-crystal rotational
+!> groups are added at the end of the list
+character(5),parameter  :: PGTHD(36) =(/'    1','   -1','    2','    m','  2/m','  222', &
                                         '  mm2','  mmm','    4','   -4','  4/m','  422', &
                                         '  4mm',' -42m','4/mmm','    3','   -3','   32', &
                                         '   3m','  -3m','    6','   -6','  6/m','  622', &
                                         '  6mm',' -6m2','6/mmm','   23','   m3','  432', &
-                                        ' -43m',' m-3m'/)
+                                        ' -43m',' m-3m','  532','  822',' 1022',' 1222' /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHD
 
 !> 3D point groups : purely rotational point groups corresponding to each point group
-integer(kind=irg),parameter       :: PGrot(33) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
-                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33/)
+integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
+                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33,34,35,36/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGrot
 
 !> 3D point groups : Laue group number
-integer(kind=irg),parameter       :: PGLaue(32) =(/2,2,5,5,5,8,8,8,11,11,11,15,15,15,15,17,17, &
-                                                  20,20,20,23,23,23,27,27,27,27,29,29,32,32,32/)
+integer(kind=irg),parameter       :: PGLaue(36) =(/2,2,5,5,5,8,8,8,11,11,11,15,15,15,15,17,17, &
+                                                  20,20,20,23,23,23,27,27,27,27,29,29,32,32,32,33,34,35,36/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGLaue
 
 !> 3D point groups : inverted Laue group number
-integer(kind=irg),parameter       :: PGLaueinv(32) = (/1,1,2,2,2,3,3,3,4,4,4,5,5,5,5,6,6, &
-                                                       7,7,7,8,8,8,9,9,9,9,10,10,11,11,11/)
+integer(kind=irg),parameter       :: PGLaueinv(36) = (/1,1,2,2,2,3,3,3,4,4,4,5,5,5,5,6,6, &
+                                                       7,7,7,8,8,8,9,9,9,9,10,10,11,11,11,12,13,14,15/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGLaueinv
 
 !> 3D point groups mapped onto kvector sampling type (used for master pattern computations) [-1 for special cases]
-integer(kind=irg),parameter       :: PGSamplingType(32) = (/1, 2, 3, 4, 5, 5, 5, 6, 5, 5, &
+integer(kind=irg),parameter       :: PGSamplingType(36) = (/1, 2, 3, 4, 5, 5, 5, 6, 5, 5, &
                                                             6, 6, 7,-1, 9,-1,-1,-1,-1,-1, &
-                                                           15,12,17,16,18,-1,19, 3, 6, 6, 8, 9 /)
+                                                           15,12,17,16,18,-1,19, 3, 6, 6, &
+                                                            8, 9, -1, -1, -1, -1 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGSamplingType
 
 !> 31 diffraction group symbols in BESR order
