@@ -41,6 +41,7 @@
 !> @date   03/30/15 MDG 2.0 modified output to HDF format
 !> @date   10/07/15 MDG 2.1 minor cleanup in preparation for release 3.0
 !> @date   09/06/16 MDG 3.0 added Wyckoff position entry as an option
+!> @date   04/20/18 MDG 4.0 start incorporation of 2D and 3D quasi-crystal structures
 !--------------------------------------------------------------------------
 program EMmkxtal
 

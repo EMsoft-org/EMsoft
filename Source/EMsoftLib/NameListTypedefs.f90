@@ -46,6 +46,14 @@ use local
 
 IMPLICIT NONE
 
+! namelist for EMGBO program
+type GBONameListType
+        integer(kind=irg)       :: pgnum
+        integer(kind=irg)       :: numsamples
+        integer(kind=irg)       :: nthreads
+        character(fnlen)        :: outname
+end type GBONameListType
+
 ! namelist for the EMLorentz program
 type LorentzNameListType
         integer(kind=irg)       :: nthreads

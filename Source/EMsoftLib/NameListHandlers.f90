@@ -49,6 +49,69 @@ contains
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetGBONameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill gbonl structure (used by EMGBO.f90)
+!
+!> @param nmlfile namelist file name
+!> @param gbonl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 04/22/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetGBONameList(nmlfile, gbonl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetGBONameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(GBONameListType),INTENT(INOUT)         :: gbonl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: numsamples
+integer(kind=irg)       :: pgnum
+character(fnlen)        :: outname
+
+namelist /GBOlist/ pgnum, numsamples, outname, nthreads
+
+nthreads = 1
+outname = 'undefined' 
+pgnum = 32
+numsamples = 100000
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=GBOlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(outname).eq.'undefined') then
+  call FatalError('EMGBO:',' output file name is undefined in '//nmlfile)
+ end if
+end if
+
+gbonl%nthreads = nthreads
+gbonl%pgnum = pgnum
+gbonl%numsamples = numsamples
+gbonl%outname = outname
+
+end subroutine GetGBONameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetLorentzNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
