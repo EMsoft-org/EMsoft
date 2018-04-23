@@ -76,15 +76,17 @@ logical                                     :: skipread = .FALSE.
 
 integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: numsamples
+integer(kind=irg)       :: numbins
 integer(kind=irg)       :: pgnum
 character(fnlen)        :: outname
 
-namelist /GBOlist/ pgnum, numsamples, outname, nthreads
+namelist /GBOlist/ pgnum, numsamples, numbins, outname, nthreads
 
 nthreads = 1
 outname = 'undefined' 
 pgnum = 32
 numsamples = 100000
+numbins = 180
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -105,6 +107,7 @@ end if
 gbonl%nthreads = nthreads
 gbonl%pgnum = pgnum
 gbonl%numsamples = numsamples
+gbonl%numbins = numbins
 gbonl%outname = outname
 
 end subroutine GetGBONameList

@@ -50,6 +50,7 @@ IMPLICIT NONE
 type GBONameListType
         integer(kind=irg)       :: pgnum
         integer(kind=irg)       :: numsamples
+        integer(kind=irg)       :: numbins
         integer(kind=irg)       :: nthreads
         character(fnlen)        :: outname
 end type GBONameListType
