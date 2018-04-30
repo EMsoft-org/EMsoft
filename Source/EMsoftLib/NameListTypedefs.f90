@@ -1611,4 +1611,18 @@ type EMCBEDQCNameListType
     character(1)        :: centering
 end type EMCBEDQCNameListType
 
+!typedef for EMmdSTEM program
+type EMmdSTEMNameListType
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: datafile
+        real(kind=sgl)          :: eu(3)
+        character(3)            :: eulerconvention
+        real(kind=dbl)          :: phi1, phi, phi2
+        real(kind=sgl)          :: dmin
+        real(kind=sgl)          :: voltage
+        real(kind=sgl)          :: convergence
+        integer(kind=irg)       :: platid
+        integer(kind=irg)       :: devid
+end type EMmdSTEMNameListType
+
 end module NameListTypedefs

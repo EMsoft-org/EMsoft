@@ -7257,4 +7257,79 @@ enl%npx                   = npx
 
 end subroutine GetEBSDQCMasterNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEMgammaSTEMNameList
+!
+!> @author JosephTessmer, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mdstem structure (used by EMgammaSTEM.f90)
+
+!
+!> @date 06/28/17 jt 1.0 original
+!--------------------------------------------------------------------------
+
+recursive subroutine GetEMmdSTEMNameList(nmlfile, msnml, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMmdSTEMNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+type(EMmdSTEMNameListType),INTENT(INOUT)          :: msnml
+character(fnlen),INTENT(IN)                       :: nmlfile
+
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+character(fnlen)        :: xtalname,datafile
+character(3)            :: eulerconvention
+integer(kind=irg)       :: platid, devid
+real(kind=sgl)          :: voltage, dmin, eu(3), convergence
+real(kind=dbl)          :: phi1, phi2, phi3
+
+
+
+namelist /MDSTEMlist/ xtalname, datafile, eu, eulerconvention, phi1, phi2, phi3, dmin, &
+          voltage, convergence, platid, devid
+
+
+datafile = 'undefined' ! output filename
+voltage = 200.0    ! acceleration voltage [kV]
+eu = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
+dmin = 0.04     ! smallest d-spacing to include in dynamical matrix [nm]
+platid = 1
+devid = 1
+convergence = 0.0
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=MDSTEMlist)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+    if (trim(datafile).eq.'undefined') then
+        call FatalError('GetEMmdSTEMNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+end if
+
+msnml%datafile             = datafile
+msnml%voltage              = voltage
+msnml%eu                   = eu
+msnml%dmin                 = dmin
+msnml%platid               = platid
+msnml%devid                = devid
+msnml%convergence          = convergence
+
+end subroutine GetEMmdSTEMNameList
+
 end module NameListHandlers
