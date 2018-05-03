@@ -746,7 +746,6 @@ end type EBSDQCMasterNameListType
 
 ! namelist for the EMEBSDQCmaster program
 type EBSD2DQCMasterNameListType
-    integer(kind=irg)       :: nsamples
     integer(kind=irg)       :: npx
     integer(kind=irg)       :: nthreads
     integer(kind=irg)       :: atno

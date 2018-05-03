@@ -1158,7 +1158,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSD2DQCMasterNameListType),INTENT(INOUT)        :: emnl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 4
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 4
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1170,11 +1170,10 @@ logical                                               :: g_exists, overwrite=.TR
 groupname = SC_EBSDMasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
-io_int = (/emnl%npx, emnl%nsamples, emnl%nthreads, emnl%atno /)
+io_int = (/emnl%npx, emnl%nthreads, emnl%atno /)
 intlist(1) = 'npx'
-intlist(2) = 'nsamples'
-intlist(3) = 'nthreads'
-intlist(4) = 'atno'
+intlist(2) = 'nthreads'
+intlist(3) = 'atno'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single floats

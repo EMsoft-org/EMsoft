@@ -7291,7 +7291,7 @@ character(fnlen)                                      :: energyfile
 character(3)                                          :: QCtype
 
 namelist /EBSD2DQCmastervars/ dmin, nthreads, DWF, atno, &
-          energyfile, QClatparm_a, QClatparm_c,  QCtype, npx, nsamples
+          energyfile, QClatparm_a, QClatparm_c,  QCtype, npx
 
 energyfile  = 'undefined'           ! output filename
 dmin        = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm]
@@ -7301,7 +7301,6 @@ DWF         = 0.0033                ! Debye-Waller factor [nm^-2]
 atno        = 12                    ! atomin cnumber
 nthreads    = 1                     ! number of threads
 npx         = 500                   ! size of master pattern
-nsamples    = 200                   ! number of samples for sampling k vectors
 QCtype      = 'undefined'
 
 if (present(initonly)) then
@@ -7334,7 +7333,6 @@ enl%atno                  = atno
 enl%QClatparm_a           = QClatparm_a
 enl%QClatparm_c           = QClatparm_c
 enl%QCtype                = QCtype
-enl%nsamples              = nsamples
 enl%npx                   = npx
 
 end subroutine GetEBSD2DQCMasterNameList
