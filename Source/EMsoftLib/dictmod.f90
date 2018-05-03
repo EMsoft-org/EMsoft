@@ -643,6 +643,21 @@ select case (dict%prot)
                 do i=2,60
                   dict%Pm(1:4,i) = SYM_Qsymop(1:4,35+i)
                 end do
+        case(34)  ! 822
+                dict%Nqsym = 16
+                do i = 1,15
+                  dict%Pm(1:4,i) = SYM_Qsymop(1:4,95+i)
+                end do
+        case(35)  ! 1022
+                dict%Nqsym = 20
+                do i = 1,19
+                  dict%Pm(1:4,i) = SYM_Qsymop(1:4,110+i)
+                end do
+        case(36)  ! 1222
+                dict%Nqsym = 24
+                do i = 1,23
+                  dict%Pm(1:4,i) = SYM_Qsymop(1:4,130+i)
+                end do
 
         case default    ! this should never happen ...
                 call FatalError('InitDictionaryIndexing','unknown rotational point group number')

@@ -7259,6 +7259,88 @@ end subroutine GetEBSDQCMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetEBSD2DQCMasterNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDQCmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl single name list structure
+!
+!> @date 05/1/18 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSD2DQCMasterNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSD2DQCMasterNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                           :: nmlfile
+type(EBSD2DQCMasterNameListType),INTENT(INOUT)        :: enl
+logical,OPTIONAL,INTENT(IN)                           :: initonly
+
+logical                                               :: skipread = .FALSE.
+
+integer(kind=irg)                                     :: nthreads, atno, npx, nsamples
+real(kind=sgl)                                        :: dmin, DWF, QClatparm_a, QClatparm_c
+character(fnlen)                                      :: energyfile
+character(3)                                          :: QCtype
+
+namelist /EBSD2DQCmastervars/ dmin, nthreads, DWF, atno, &
+          energyfile, QClatparm_a, QClatparm_c,  QCtype, npx, nsamples
+
+energyfile  = 'undefined'           ! output filename
+dmin        = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm]
+QClatparm_a = 0.50                  ! lattice parameter of hyper-lattice in aperiodic plane
+QClatparm_c = 0.50                  ! lattice parameter of hyper-lattice in periodic axial direction
+DWF         = 0.0033                ! Debye-Waller factor [nm^-2]
+atno        = 12                    ! atomin cnumber
+nthreads    = 1                     ! number of threads
+npx         = 500                   ! size of master pattern
+nsamples    = 200                   ! number of samples for sampling k vectors
+QCtype      = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=EBSD2DQCmastervars)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+    if (trim(energyfile).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(QCtype).eq.'undefined') then
+        call FatalError('GetEMgammaNameList:',' type of 2D quasi-crystals is undefined in '//nmlfile)
+    end if
+
+end if
+
+enl%energyfile            = energyfile
+enl%dmin                  = dmin
+enl%nthreads              = nthreads
+enl%DWF                   = DWF
+enl%atno                  = atno
+enl%QClatparm_a           = QClatparm_a
+enl%QClatparm_c           = QClatparm_c
+enl%QCtype                = QCtype
+enl%nsamples              = nsamples
+enl%npx                   = npx
+
+end subroutine GetEBSD2DQCMasterNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetEMgammaSTEMNameList
 !
 !> @author JosephTessmer, Carnegie Mellon University
