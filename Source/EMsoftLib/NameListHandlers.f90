@@ -6926,7 +6926,7 @@ end subroutine GetEMTwoPhaseNameList
 !> @date 02/22/16  SS 1.0 original
 !--------------------------------------------------------------------------
 recursive subroutine GetMDElectronPropNameList(nmlfile, enl, initonly)
-!DEC$ ATTRIBUTES DLLEXPORT :: GetECPSingleNameList
+!DEC$ ATTRIBUTES DLLEXPORT :: GetMDElectronPropNameList
 
 use error
 
