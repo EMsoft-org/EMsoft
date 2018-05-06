@@ -65,6 +65,7 @@
 097EMFitalphavariants
 098EMGBO
 099EMEBSD2DQCmaster
+100EMoSLERP
 110EMOMmaster
 111EMOM
 200EMdefectdata

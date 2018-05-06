@@ -55,6 +55,23 @@ type GBONameListType
         character(fnlen)        :: outname
 end type GBONameListType
 
+! namelist for EMoSLERP program
+type oSLERPNameListType
+        integer(kind=irg)       :: framesize
+        real(kind=dbl)          :: qm(4)
+        real(kind=dbl)          :: mA(3)
+        real(kind=dbl)          :: mC(3)
+        real(kind=dbl)          :: o1(8)
+        real(kind=dbl)          :: o2(8)
+        real(kind=dbl)          :: dOmega
+        character(fnlen)        :: rendermode
+        character(fnlen)        :: GBmode
+        character(fnlen)        :: xtalname 
+        character(fnlen)        :: povrayfile
+        character(fnlen)        :: framefolder
+        character(fnlen)        :: moviename
+end type oSLERPNameListType
+
 ! namelist for the EMLorentz program
 type LorentzNameListType
         integer(kind=irg)       :: nthreads

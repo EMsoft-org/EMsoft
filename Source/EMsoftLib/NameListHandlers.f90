@@ -112,6 +112,101 @@ gbonl%outname = outname
 
 end subroutine GetGBONameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetoSLERPNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill onl structure (used by EMoSLERP.f90)
+!
+!> @param nmlfile namelist file name
+!> @param onl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 05/05/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetoSLERPNameList(nmlfile, onl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetoSLERPNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(oSLERPNameListType),INTENT(INOUT)      :: onl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+integer(kind=irg)       :: framesize
+real(kind=dbl)          :: qm(4)
+real(kind=dbl)          :: mA(3)
+real(kind=dbl)          :: mC(3)
+real(kind=dbl)          :: o1(8)
+real(kind=dbl)          :: o2(8)
+real(kind=dbl)          :: dOmega
+character(fnlen)        :: GBmode
+character(fnlen)        :: rendermode
+character(fnlen)        :: xtalname 
+character(fnlen)        :: povrayfile
+character(fnlen)        :: framefolder
+character(fnlen)        :: moviename
+
+namelist /oSLERPlist/ framesize, qm, mA, mC, o1, o2, dOmega, GBmode, xtalname, povrayfile, framefolder, &
+                      rendermode, moviename
+
+framesize = 1024
+! if GBmode = 'normal'
+qm = (/ 1.D0, 0.D0, 0.D0, 0.D0 /)
+mA = (/ 1.D0, 0.D0, 0.D0 /)
+mC = (/ 1.D0, 0.D0, 0.D0 /)
+! if GBmode = 'octonion'
+o1 = (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0 /)   ! normalization will be done by program
+o2 = (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0 /)   ! normalization will be done by program
+
+dOmega = 0.25D0
+GBmode = 'normal'      ! 'normal' for (mA, qm) description; 'octonion' for (qA, qB) description
+rendermode = 'cubes'
+xtalname = 'undefined'
+povrayfile = 'underfined'
+framefolder = 'frames'
+moviename = 'render.mp4'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=oSLERPlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('EMoSLERP:',' xtal input file name is undefined in '//nmlfile)
+ end if
+ if (trim(povrayfile).eq.'undefined') then
+  call FatalError('EMoSLERP:',' POVray output file name is undefined in '//nmlfile)
+ end if
+end if
+
+onl%framesize = framesize
+onl%qm = qm
+onl%mA = mA
+onl%mC = mC
+onl%o1 = o1
+onl%o2 = o2
+onl%qm = qm
+onl%dOmega = dOmega
+onl%rendermode = rendermode
+onl%xtalname = trim(xtalname)
+onl%povrayfile = trim(povrayfile) 
+onl%framefolder = trim(framefolder)
+onl%moviename = trim(moviename)
+
+end subroutine GetoSLERPNameList
 
 !--------------------------------------------------------------------------
 !
