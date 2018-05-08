@@ -78,15 +78,17 @@ integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: numsamples
 integer(kind=irg)       :: numbins
 integer(kind=irg)       :: pgnum
+character(3)            :: CSLtype
 character(fnlen)        :: outname
 
-namelist /GBOlist/ pgnum, numsamples, numbins, outname, nthreads
+namelist /GBOlist/ pgnum, numsamples, numbins, outname, nthreads, CSLtype
 
 nthreads = 1
 outname = 'undefined' 
 pgnum = 32
 numsamples = 100000
 numbins = 180
+CSLtype = ''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -109,6 +111,7 @@ gbonl%pgnum = pgnum
 gbonl%numsamples = numsamples
 gbonl%numbins = numbins
 gbonl%outname = outname
+gbonl%CSLtype = trim(CSLtype)
 
 end subroutine GetGBONameList
 

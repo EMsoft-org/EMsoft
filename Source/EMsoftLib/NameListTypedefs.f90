@@ -52,6 +52,7 @@ type GBONameListType
         integer(kind=irg)       :: numsamples
         integer(kind=irg)       :: numbins
         integer(kind=irg)       :: nthreads
+        character(3)            :: CSLtype
         character(fnlen)        :: outname
 end type GBONameListType
 

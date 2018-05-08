@@ -57,6 +57,7 @@
 !> @date   12/11/15 MDG 4.9 added Einclusion (Eshelby isotropic inclusion) defect type
 !> @date   01/11/15 MDG 5.0 moved HDFobjectStackType to HDFSupport module
 !> @date   05/02/16 MDG 5.1 added SghLUT to unitcell type
+!> @date   05/07/18 MDG 5.2 added CSL types
 !--------------------------------------------------------------------------
 module typedefs
 
@@ -1478,8 +1479,48 @@ type LTEMstruct
     real(kind=dbl),allocatable      :: kmag(:,:,:)
 end type LTEMstruct
 
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
 
+integer(kind=irg),parameter         :: CSLnumberdefined = 28
+!DEC$ ATTRIBUTES DLLEXPORT :: CSLnumberdefined
 
+character(3), parameter             :: CSLlabels(CSLnumberdefined) = &
+                                       (/ '3  ', '5  ', '7  ', '9  ', '11 ', '13a', '13b', '15 ', '17a', '17b', &
+                                          '19a', '19b', '21a', '21b', '23 ', '25a', '25b', '27a', '27b', '29a', &
+                                          '29b', '31a', '31b', '33a', '33b', '33c', '35a', '35b' /)
+!DEC$ ATTRIBUTES DLLEXPORT :: CSLlabels
+
+integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape((/ 1,3,1,3,1,3, &
+                                                                                    1,3,0,1,0,1, &
+                                                                                    1,5,1,5,1,5, &
+                                                                                    1,4,1,4,0,1, &
+                                                                                    1,3,1,3,0,1, &
+                                                                                    1,5,0,1,0,1, &
+                                                                                    1,7,1,7,1,7, &
+                                                                                    2,5,1,5,0,1, &
+                                                                                    1,4,0,1,0,1, &
+                                                                                    2,5,2,5,1,5, &
+                                                                                    1,6,1,6,0,1, &
+                                                                                    1,4,1,4,1,4, &
+                                                                                    1,9,1,9,1,9, &
+                                                                                    1,3,1,6,1,6, &
+                                                                                    1,3,1,9,1,9, &
+                                                                                    1,7,0,1,0,1, &
+                                                                                    1,3,1,3,1,9, &
+                                                                                    1,5,1,5,0,1, &
+                                                                                    2,7,1,7,0,1, &
+                                                                                    2,5,0,1,0,1, &
+                                                                                    2,7,2,7,1,7, &
+                                                                                    1,11,1,11,1,11, &
+                                                                                    2,5,1,5,1,5, &
+                                                                                    1,8,1,8,0,1, &
+                                                                                    2,11,1,11,1,11, &
+                                                                                    2,5,2,5,0,1, &
+                                                                                    1,4,1,8,1,8, &
+                                                                                    2,11,2,11,1,11 /), (/ 6, CSLnumberdefined /))
+!DEC$ ATTRIBUTES DLLEXPORT :: CSLintegers
 
 
 
