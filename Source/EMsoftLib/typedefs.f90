@@ -1516,10 +1516,10 @@ integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape
                                                                                     1,11,1,11,1,11, &
                                                                                     2,5,1,5,1,5, &
                                                                                     1,8,1,8,0,1, &
-                                                                                    2,11,1,11,1,11, &
+                                                                                    3,11,1,11,1,11, &
                                                                                     2,5,2,5,0,1, &
                                                                                     1,4,1,8,1,8, &
-                                                                                    2,11,2,11,1,11 /), (/ 6, CSLnumberdefined /))
+                                                                                    3,11,3,11,1,11 /), (/ 6, CSLnumberdefined /))
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLintegers
 
 
