@@ -53,6 +53,7 @@ type GBONameListType
         integer(kind=irg)       :: numbins
         integer(kind=irg)       :: nthreads
         character(3)            :: CSLtype
+        logical                 :: fixedAB
         character(fnlen)        :: outname
 end type GBONameListType
 

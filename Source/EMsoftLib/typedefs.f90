@@ -1483,16 +1483,17 @@ end type LTEMstruct
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 
-integer(kind=irg),parameter         :: CSLnumberdefined = 28
+integer(kind=irg),parameter         :: CSLnumberdefined = 29
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLnumberdefined
 
 character(3), parameter             :: CSLlabels(CSLnumberdefined) = &
-                                       (/ '3  ', '5  ', '7  ', '9  ', '11 ', '13a', '13b', '15 ', '17a', '17b', &
+                                       (/ 'I  ', '3  ', '5  ', '7  ', '9  ', '11 ', '13a', '13b', '15 ', '17a', '17b', &
                                           '19a', '19b', '21a', '21b', '23 ', '25a', '25b', '27a', '27b', '29a', &
                                           '29b', '31a', '31b', '33a', '33b', '33c', '35a', '35b' /)
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLlabels
 
-integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape((/ 1,3,1,3,1,3, &
+integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape((/ 0,1,0,1,0,1, &
+                                                                                    1,3,1,3,1,3, &
                                                                                     1,3,0,1,0,1, &
                                                                                     1,5,1,5,1,5, &
                                                                                     1,4,1,4,0,1, &

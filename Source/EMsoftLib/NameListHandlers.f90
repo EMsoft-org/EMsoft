@@ -79,9 +79,10 @@ integer(kind=irg)       :: numsamples
 integer(kind=irg)       :: numbins
 integer(kind=irg)       :: pgnum
 character(3)            :: CSLtype
+logical                 :: fixedAB
 character(fnlen)        :: outname
 
-namelist /GBOlist/ pgnum, numsamples, numbins, outname, nthreads, CSLtype
+namelist /GBOlist/ pgnum, numsamples, numbins, outname, nthreads, CSLtype, fixedAB
 
 nthreads = 1
 outname = 'undefined' 
@@ -89,6 +90,7 @@ pgnum = 32
 numsamples = 100000
 numbins = 180
 CSLtype = ''
+fixedAB = .FALSE.
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -112,6 +114,7 @@ gbonl%numsamples = numsamples
 gbonl%numbins = numbins
 gbonl%outname = outname
 gbonl%CSLtype = trim(CSLtype)
+gbonl%fixedAB = fixedAB
 
 end subroutine GetGBONameList
 
