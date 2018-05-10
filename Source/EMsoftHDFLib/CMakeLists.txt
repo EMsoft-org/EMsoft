@@ -69,7 +69,13 @@ if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
   endif()
 endif()
 
-target_link_libraries(EMsoftHDFLib ${EMSOFT_hdf5LinkLibs} EMsoftLib)
+if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
+  target_link_libraries(EMsoftHDFLib ${EMSOFT_hdf5LinkLibs} gomp EMsoftLib)
+endif()
+
+if (Fortran_COMPILER_NAME MATCHES "ifort.*")
+  target_link_libraries(EMsoftHDFLib ${EMSOFT_hdf5LinkLibs} EMsoftLib)
+endif()
 
 set_target_properties (EMsoftHDFLib PROPERTIES
   LINKER_LANGUAGE Fortran

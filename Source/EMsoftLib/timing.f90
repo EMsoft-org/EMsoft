@@ -140,29 +140,22 @@ end subroutine Time_reset
 !
 !> @param TT time structure
 !> @param interval interval for reporting
-!> @param stdout optional output unit identifier
 !
 !> @date   06/04/01 MDG 1.0 original
 !> @date   06/04/13 MDG 2.0 rewrite
 !> @date   06/05/14 MDG 3.0 added TT as argument
 !--------------------------------------------------------------------------
-recursive subroutine Time_report(TT, interval, stdout)
+recursive subroutine Time_report(TT, interval)
 !DEC$ ATTRIBUTES DLLEXPORT :: Time_report
 
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
 real(kind=sgl),intent(IN)   		:: interval
-integer(kind=irg),OPTIONAL,INTENT(IN)	:: stdout
-
-integer(kind=irg)			:: std
-
- std = 6
- if (PRESENT(stdout)) std = stdout
 
  TT%TIME_interval = interval
  TT%TIME_fraction = TT%TIME_interval
- call Message('Starting computation', frm = "(/A)", stdout = std)
+ call Message('Starting computation', frm = "(/A)")
 
 end subroutine Time_report
 
@@ -201,26 +194,21 @@ end subroutine Time_start
 !
 !> @param TT time structure
 !> @param numk number of idividual computations
-!> @param stdout optional output unit identifier
 !
 !> @date   06/04/01 MDG 1.0 original
 !> @date   06/04/13 MDG 2.0 rewrite
 !> @date   06/05/14 MDG 3.0 added TT as argument
 !--------------------------------------------------------------------------
-recursive subroutine Time_estimate(TT, numk, stdout)
+recursive subroutine Time_estimate(TT, numk)
 !DEC$ ATTRIBUTES DLLEXPORT :: Time_estimate
 
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
 integer(kind=irg),intent(IN)     	:: numk
-integer(kind=irg),INTENT(IN),OPTIONAL	:: stdout
 
-integer(kind=irg)      		:: TIME_nc, std
+integer(kind=irg)      		:: TIME_nc
 real(kind=sgl)				:: io_real(1)
-
-std = 6
-if (PRESENT(stdout)) std = stdout
 
 ! get the current time
  call system_clock(TIME_nc, TT%TIME_count_rate, TT%TIME_count_max)
@@ -228,9 +216,9 @@ if (PRESENT(stdout)) std = stdout
  TT%TIME_t_count = float(TT%TIME_newcount-TT%TIME_count)/float(TT%TIME_count_rate)
  TT%TIME_unit_count = TT%TIME_t_count
  io_real(1) = TT%TIME_unit_count
- call WriteValue(' Time for first computation step [s, typically overestimate] :', io_real, 1, frm = "(F10.5)", stdout = std)
- call Message('  Anticipated total computation time :', frm = "(A$)", stdout = std)
- call PrintTime(TT%TIME_unit_count*float(numk), stdout = std)
+ call WriteValue(' Time for first computation step [s, typically overestimate] :', io_real, 1, frm = "(F10.5)")
+ call Message('  Anticipated total computation time :', frm = "(A$)")
+ call PrintTime(TT%TIME_unit_count*float(numk))
  
 end subroutine Time_estimate
 
@@ -245,13 +233,12 @@ end subroutine Time_estimate
 !> @param TT time structure
 !> @param ik current computation
 !> @param numk number of idividual computations
-!> @param stdout optional output unit identifier
 !
 !> @date   06/04/01 MDG 1.0 original
 !> @date   06/04/13 MDG 2.0 rewrite
 !> @date   06/05/14 MDG 3.0 added TT as argument
 !--------------------------------------------------------------------------
-recursive subroutine Time_remaining(TT, ik, numk, stdout)
+recursive subroutine Time_remaining(TT, ik, numk)
 !DEC$ ATTRIBUTES DLLEXPORT :: Time_remaining
 
 IMPLICIT NONE
@@ -259,13 +246,10 @@ IMPLICIT NONE
 type(timetype),INTENT(INOUT)		:: TT
 integer(kind=irg),intent(IN)   	:: ik
 integer(kind=irg),intent(IN)   	:: numk
-integer(kind=irg),INTENT(IN),OPTIONAL	:: stdout
 
-integer(kind=irg)    			:: TIME_nc, io_int(1), std
+integer(kind=irg)    			:: TIME_nc, io_int(1)
 real(kind=sgl)				:: io_real(1)
 
- std = 6
- if (PRESENT(stdout)) std = stdout
 
  TT%TIME_fraction = TT%TIME_fraction + TT%TIME_interval
 
@@ -287,11 +271,11 @@ real(kind=sgl)				:: io_real(1)
 
 ! print estimated remaining time
  io_int(1) = nint(100.0*TT%TIME_t_count/(TT%TIME_t_count+TT%TIME_unit_count*(float(numk)-float(ik))))
- call WriteValue (' ',io_int, 1, frm = "(1x,I3,' % completed; '$)", stdout = std) 
+ call WriteValue (' ',io_int, 1, frm = "(1x,I3,' % completed; '$)") 
  io_real(1) = TT%TIME_t_count
- call WriteValue(' Total computation time [s] ', io_real, 1, frm = "(F$)", stdout = std)
- call Message(';  Estimated remaining time : ', frm = "(A$)", stdout = std)
- call PrintTime(TT%TIME_unit_count*(float(numk)-float(ik)), stdout = std)
+ call WriteValue(' Total computation time [s] ', io_real, 1, frm = "(F$)")
+ call Message(';  Estimated remaining time : ', frm = "(A$)")
+ call PrintTime(TT%TIME_unit_count*(float(numk)-float(ik)))
 !
 end subroutine Time_remaining
 
@@ -304,25 +288,20 @@ end subroutine Time_remaining
 !> @brief print  time
 !
 !> @param tm time variable
-!> @param stdout optional output unit identifier
 !
 !> @date   06/04/01 MDG 1.0 original
 !> @date   06/04/13 MDG 2.0 rewrite
 !> @date   06/05/14 MDG 3.0 changed IO
 !--------------------------------------------------------------------------
-recursive subroutine PrintTime(tm, stdout)
+recursive subroutine PrintTime(tm)
 !DEC$ ATTRIBUTES DLLEXPORT :: PrintTime
 
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)		:: tm
-integer(kind=irg),INTENT(IN),OPTIONAL	:: stdout
 
-integer(kind=irg)    			:: days, hours, minutes, seconds, io_int(4), std
+integer(kind=irg)    			:: days, hours, minutes, seconds, io_int(4)
 real(kind=sgl)       			:: secs
-
-  std = 6
-  if (PRESENT(stdout)) std = stdout
 
   secs = tm
   days = 0
@@ -343,7 +322,7 @@ real(kind=sgl)       			:: secs
   seconds = int(secs)
 
   io_int(1:4) = (/ days, hours, minutes, seconds /)
-  call WriteValue(' ',io_int, 4, frm = "(1x,I3,' d,',I3,' h,',I3,' m,',I3,' s')", stdout = std)
+  call WriteValue(' ',io_int, 4, frm = "(1x,I3,' d,',I3,' h,',I3,' m,',I3,' s')")
 
 end subroutine PrintTime
 
@@ -357,33 +336,28 @@ end subroutine PrintTime
 !
 !> @param TT time structure
 !> @param numk total number of computations
-!> @param stdout optional output unit identifier
 !
 !> @date   06/04/01 MDG 1.0 original
 !> @date   06/04/13 MDG 2.0 rewrite
 !> @date   06/05/14 MDG 3.0 added TT; changed IO
 !--------------------------------------------------------------------------
-recursive subroutine Time_stop(TT, numk, stdout)
+recursive subroutine Time_stop(TT, numk)
 !DEC$ ATTRIBUTES DLLEXPORT :: Time_stop
 
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
 integer(kind=irg),INTENT(IN)  		:: numk
-integer(kind=irg),INTENT(IN),OPTIONAL	:: stdout
 
 real(kind=sgl)				:: io_real(1)
-integer(kind=irg)			:: std
 
-  std = 6
-  if (PRESENT(stdout)) std= stdout
 
   call system_clock(TT%TIME_newcount, TT%TIME_count_rate, TT%TIME_count_max)
-  call Message('  Total computation time [s] ', frm = "(A$)", stdout = std)
+  call Message('  Total computation time [s] ', frm = "(A$)")
   call PrintTime((float(TT%TIME_loops)*float(TT%TIME_count_max)+float(TT%TIME_newcount-TT%TIME_count))/float(TT%TIME_count_rate))
   io_real(1)= float(TT%TIME_loops)*float(TT%TIME_count_max)+float(TT%TIME_newcount-TT%TIME_count)
   io_real(1) = io_real(1)/float(TT%TIME_count_rate)/float(numk)
-  call WriteValue(' Time per step/pixel [s] ', io_real, 1, frm = "(F)", stdout = std)
+  call WriteValue(' Time per step/pixel [s] ', io_real, 1, frm = "(F)")
 end subroutine Time_stop
 
 

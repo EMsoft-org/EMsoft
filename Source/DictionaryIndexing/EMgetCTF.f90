@@ -76,12 +76,14 @@ type(EBSDIndexingNameListType)          :: ebsdnl
 type(ECPIndexingNameListType)           :: ecpnl
 type(EBSDDIdataType)                    :: EBSDDIdata
 type(ECPDIdataType)                     :: ECPDIdata
+type(MCCLNameListType)                  :: mcnl
+type(EBSDMCdataType)                    :: EBSDMCdata
+
 
 logical                                 :: stat, readonly, noindex, g_exists
 character(fnlen)                        :: dpfile, masterfile, energyfile
 integer(kind=irg)                       :: hdferr, ii, jj, kk, iii, istat
 
-type(EBSDLargeAccumDIType),pointer      :: acc
 real(kind=sgl),allocatable              :: euler_best(:,:), CIlist(:)
 integer(kind=irg),allocatable           :: indexmain(:,:) 
 real(kind=sgl),allocatable              :: resultmain(:,:)                                         
@@ -184,19 +186,17 @@ else if (trim(modalityname) .eq. 'ECP') then
 
 else
     dpfile = 'File '//trim(dpfile)//' is not an HDF5 file'
-    call FatalError('EMFitOrientation:',dpfile)
+    call FatalError('EMgetCTF:',dpfile)
 end if
 
 ! read the Monte Carlo data file to get the xtal file name
-    allocate(acc)
-    call EBSDIndexingreadMCfile(ebsdnl, acc, verbose=.TRUE.,NoHDFInterfaceOpen=.FALSE.)
-    deallocate(acc)
-    pgnum = GetPointGroup(ebsdnl%MCxtalname,.FALSE.)
+    call readEBSDMonteCarloFile(ebsdnl%masterfile, mcnl, hdferr, EBSDMCdata)
+    pgnum = GetPointGroup(mcnl%xtalname,.FALSE.)
 
 ! and prepare the .ctf output file 
 if(modalityname .eq. 'EBSD') then
     ebsdnl%ctffile = enl%ctffile
-
+    
     ipar = 0
     ipar(1) = 1
     ipar(2) = Nexp
@@ -212,7 +212,8 @@ if(modalityname .eq. 'EBSD') then
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
     if (ebsdnl%ctffile.ne.'undefined') then 
-      call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex=.TRUE.)
+      call ctfebsd_writeFile(ebsdnl,mcnl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM, &
+                             EBSDDIdata%IQ,noindex=.TRUE.)
       call Message('Data stored in ctf file : '//trim(enl%ctffile))
     end if
 else if(modalityname .eq. 'ECP') then

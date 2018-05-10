@@ -46,6 +46,8 @@
 !> @date 02/14/18 MDG 1.1 added old Binary, TSL .up2, and EMEBSD HDF5 formats
 !> @date 02/15/18 MDG 1.2 added TSL and Bruker HDF formatted files
 !> @date 02/20/18 MDG 1.3 added option to extract a single pattern from the input file
+!> @date 04/01/18 MDG 2.0 added routine to preprocess EBSD patterns 
+!> @date 05/09/18 MDG 2.1 added .up1 TSL format 
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -66,8 +68,9 @@ integer(kind=irg),allocatable,save,private          :: semix(:)
 integer(kind=irg),allocatable,save,private          :: semiy(:)
 integer(HSIZE_T),save,private                       :: semixydims(1)
 
-! this one is used to keep track of the even/odd patterns start locations in the .up2 input format
-logical,save,private                                :: up2wdLeven
+! this one is used to keep track of the even/odd patterns start locations in the .up1 and .up2 input formats
+logical,save,private                                :: up1wdLeven, up1halfshift
+logical,save,private                                :: up2wdLeven, up2halfshift
 integer(kind=ill),save,private                      :: offset
 
 type(HDFobjectStackType),pointer,save,private       :: pmHDF_head 
@@ -96,12 +99,13 @@ integer(kind=irg)                       :: itype
 itype = -1
 
 if (trim(inputtype).eq."Binary") itype = 1
-if (trim(inputtype).eq."TSLup2") itype = 2
-if (trim(inputtype).eq."TSLHDF") itype = 3
-if (trim(inputtype).eq."OxfordBinary") itype = 4
-if (trim(inputtype).eq."OxfordHDF") itype = 5
-if (trim(inputtype).eq."EMEBSD") itype = 6
-if (trim(inputtype).eq."BrukerHDF") itype = 7
+if (trim(inputtype).eq."TSLup1") itype = 2
+if (trim(inputtype).eq."TSLup2") itype = 3
+if (trim(inputtype).eq."TSLHDF") itype = 4
+if (trim(inputtype).eq."OxfordBinary") itype = 5
+if (trim(inputtype).eq."OxfordHDF") itype = 6
+if (trim(inputtype).eq."EMEBSD") itype = 7
+if (trim(inputtype).eq."BrukerHDF") itype = 8
 
 end function get_input_type
 
@@ -198,6 +202,8 @@ end subroutine invert_ordering_arrays
 !> @date 02/15/18 MDG 1.1 added record length correction for windows platform
 !> @date 02/15/18 MDG 1.2 added special handling for out-of-order patterns in the Bruker HDF5 format
 !> @date 02/18/18 MDG 1.3 added special handling for patterns with odd number of pixels in .up2 format
+!> @date 04/12/18 MDG 1.4 added option for patterns that don't start at record boundaries in up2 format
+!> @date 05/10/18 MDG 1.5 changed .up2 access mode to STREAM to facilitate record positioning
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -216,7 +222,8 @@ integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
-integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize
+integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
+                                           ios, up1header(4), version, patx, paty, myoffset
 character(fnlen)                        :: groupname, dataset, platform
 
 istat = 0
@@ -248,37 +255,35 @@ select case (itype)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
 
-    case(2)  ! "TSLup2"
-        if (trim(platform).eq.'Windows') then
-            recordsize = 1    ! windows record length is in units of 4 bytes
-        else
-            recordsize = 4    ! all other platforms use record length in units of bytes
-        end if
-        ! for wd * L odd, we need to take care of the proper starting bytes for each pattern
-        ! so we check for wd * L odd here and initialize a flag
-        if (mod(npat * L,2).eq.0) then
-          up2wdLeven = .TRUE.
-        else
-          up2wdLeven = .FALSE.
-        end if 
-        open(unit=funit,file=trim(ename), &
-            status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
-        if (ierr.ne.0) then
-            io_int(1) = ierr
+    case(2,3)  ! "TSLup1", TSLup2"
+        ! open the file in STREAM access mode to allow for byte-level access
+        open(unit=funit,file=trim(ename), status='old',access='stream',iostat=ios)
+        if (ios.ne.0) then
+            io_int(1) = ios
             call WriteValue("File open error; error type ",io_int,1)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
-        offset = 4_ill
+        ! the first four 4-byte entries form a header with a version number (unimportant), then 
+        ! the two dimensions of patterns, and finally an offset parameter indicating at which byte
+        ! the first pattern starts.  We don't really need the other parameters, but we'll read them anyway.
+        read(unit=funit, iostat=ios) version, patx, paty, myoffset
+        offset = myoffset + 1_ill
+        if (ios.ne.0) then
+            io_int(1) = ios
+            call WriteValue("Read error in .up1/2 file header",io_int,1)
+            call FatalError("openExpPatternFile","Cannot continue program")
+        end if
 
-    case(4)  ! "OxfordBinary"
-        call FatalError("openExpPatternFile","input format not yet implemented")
+    case(5)  ! "OxfordBinary"
+        call FatalError("openExpPatternFile","OxfordBinary input format not yet implemented")
 
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
+        call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(3, 6)  ! "TSLHDF", "EMEBSD"
+    case(4, 7)  ! "TSLHDF", "EMEBSD"
         nullify(pmHDF_head)
         call h5open_EMsoft(hdferr)
         ! open the file
@@ -293,7 +298,7 @@ select case (itype)
         ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
-    case(7)  !  "BrukerHDF"
+    case(8)  !  "BrukerHDF"
         nullify(pmHDF_head)
         call h5open_EMsoft(hdferr)
         ! open the file
@@ -356,6 +361,8 @@ end function openExpPatternFile
 !
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/21/18 MDG 1.1 added optional Region-of-Interest capability
+!> @date 04/12/18 MDG 1.2 added option for patterns that don't start at record boundaries in up2 format
+!> @date 05/10/18 MDG 1.3 completely reworked up1 and up2 reading by switching to STREAM access instead of DIRECT access
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
@@ -378,13 +385,13 @@ integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
-integer(kind=irg),allocatable           :: buffer(:)
+character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
-                                           kkstart, kkend
+                                           kkstart, kkend, multfactor 
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -396,28 +403,21 @@ liii = iii
 lwd = wd
 lpatsz = patsz
 lL = L
+if (itype.eq.2) multfactor = 1_ill
+if (itype.eq.3) multfactor = 2_ill
+
 if (present(ROI)) then 
  kkstart = ROI(1)
  kkend = kkstart + ROI(3) - 1_ill 
- if ((itype.eq.2).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
-! we need to skip the first ROI(2)-1 rows (and potentially the first pattern as well)
+! for the TSL up1 and up2 formats we need to skip the first ROI(2)-1 rows and set the correct offset value (in bytes) 
+ if (((itype.eq.2).or.(itype.eq.3)).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
    do ii=1,ROI(2)-1
-      offset = offset + (lwd * lL) / 2_ill 
-      if ((up2wdLeven.eqv..FALSE.).and.(mod(ii,2).eq.0)) then
-        offset = offset + 1_ill
-      end if
+      offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
    end do
-   offset = offset + lL / 2_ill
  end if
 else
  kkstart = 1_ill
  kkend = dims3(3)
-! after emailing with Stuart, we decided that we do *not* need to skip the first pattern for the .up2 format;
-! there *is* an extra pattern in the file but it is the last one, not the first one...
-!  if (itype.eq.2) then
-! ! for the first row, we need to skip the first pattern completely...  needs to be verified
-!    if (iii.eq.1) offset = offset + lL / 2_ill
-!  end if
 end if
 
 select case (itype)
@@ -431,30 +431,27 @@ select case (itype)
         exppatarray((jj-kkstart)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 
-    case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
-
-! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
-! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
-! then the next pattern will start in the middle of a 4-byte block... since we are reading things in
-! multiples of 4 bytes (recl), that means that alternating patterns will begin at the start of the 
-! 4-byte blocks or in the middle... Hence the somewhat convoluted code below which attempts to keep 
-! track of where the current pattern starts (byte 1 or 3).
-      buffersize = (lwd * lL) / 2_ill + 1_ill   ! +1 to allow for half record at the end.
+    case(2,3)  ! "TSLup1", TSLup2"  
+! up1 file has single bytes as entries, up2 has 2-byte unsigned integers
+      ! generate a buffer of the correct size ... 
+      buffersize = (lwd * lL) * multfactor
       allocate(buffer(buffersize))
-! first we read the entire buffer as 4-byte integers
-      do ii=1_ill,buffersize
-        read(unit=funit,rec=offset+ii, iostat=ios) buffer(ii)
-      end do
+! first we read the entire buffer as bytes
+      read(unit=funit, pos=offset, iostat=ios) buffer
 
-! we convert the 4-byte integers into pairs of 2-byte integers
-      allocate(pairs(2_ill*buffersize))
-      pairs = transfer(buffer,pairs)
-      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then  ! shift the array by one entry to the left 
-        pairs = cshift(pairs,1_ill)
+! then we convert the byte values into single byte or 2-byte integers 
+      if (multfactor.eq.2_ill) then ! .up2 format
+        allocate(pairs(buffersize/2_ill))
+        pairs = transfer(buffer,pairs)
+      else ! .up1 format
+        allocate(pairs(buffersize))
+        do jj=1_ill,buffersize
+         pairs(jj) = ichar(buffer(jj)) 
+        end do
       end if
       deallocate(buffer)
 
-! then we need to place them in the exppatarray array with the proper offsets if patsz ne L 
+! then we need to place them in the exppatarray array 
       exppatarray = 0.0
       pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
       do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI; remember to flip the patterns upside down !
@@ -468,24 +465,24 @@ select case (itype)
         end do 
       end do 
 
-! increment the row offset parameter, taking into account any necessary shifts due to an odd value of wd*L
-      offset = offset + (lwd * lL) / 2_ill 
-
-      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then
-        offset = offset + 1_ill
-      end if
+! increment the row offset parameter (in bytes)
+      offset = offset + (lwd * lL) * multfactor
       deallocate(pairs)
 
 ! finally, correct for the fact that the original values were unsigned integers
-      where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
+      if (itype.eq.3) then
+        where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
+      else
+        where(exppatarray.lt.0.0) exppatarray = exppatarray + 256.0
+      end if
 
-    case(4)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary"
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(3,6)  ! "TSLHDF" "EMEBSD" passed tests on 2/14/18 by MDG
+    case(4,7)  ! "TSLHDF" "EMEBSD" passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
@@ -501,7 +498,7 @@ select case (itype)
             end do 
         end do 
 
-    case(7)  ! "BrukerHDF"  passed tests on 2/16/18 by MDG
+    case(8)  ! "BrukerHDF"  passed tests on 2/16/18 by MDG
 ! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
 ! were acquired, we need to read each patttern separately from the file using the appropriate offset, which 
 ! is calculated using the semix and semiy arrays.  That means that we have to redefine both dims3 and offset3
@@ -566,16 +563,20 @@ integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
-integer(kind=irg),allocatable           :: buffer(:)
+character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
-integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, l1, l2
+integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
+                                           l1, l2, multfactor
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
 if (hdfnumg.gt.0) dataset = trim(HDFstrings(hdfnumg+1))
+
+if (itype.eq.2) multfactor = 1_ill
+if (itype.eq.3) multfactor = 2_ill
 
 select case (itype)
     case(1)  ! "Binary"  
@@ -587,38 +588,35 @@ select case (itype)
         read(funit,rec=offset3(3)) imageexpt
         exppat(1:L) = imageexpt(1:L)
 
-    case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
+
+    case(2,3)  ! "TSL_up1", TSLup2" 
 ! tested and compared to IDL version of read_up2 routine on 2/20/18, MDG.
 ! the requested pattern should be in the encoded in the third entry of the offset3 array.
 ! we need to use ill-type integers since the numbers can get pretty large...
-       lwd = wd
-       lpatsz = patsz
-       lL = L
-       l1 = mod(offset3(3),wd) + 1_ill
-       l2 = offset3(3)/wd + 1_ill
-! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
-! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
-! then the next pattern will start in the middle of a 4-byte block... since we are reading things in
-! multiples of 4 bytes (recl), that means that alternating patterns will begin at the start of the 
-! 4-byte blocks or in the middle... Hence the somewhat convoluted code below which attempts to keep 
-! track of where the current pattern starts (byte 1 or 3).  Also, we are skipping the very first pattern
-! in the file, so the initial offset parameter is 4 + first-pattern-size/2; special care is needed
-! when pattern size and number of patterns in each row are both odd integers.
+        lwd = wd
+        lpatsz = patsz
+        lL = L
+        l1 = offset3(3)
+        if (itype.eq.2) then
+         multfactor = 1_ill
+        else
+         multfactor = 2_ill
+        end if
 
-        offset = 4_ill + lL / 2_ill  ! initial offset
-        offset = offset + ( (l2 * lwd + l1) * lL ) / 2_ill 
-        buffersize = lL / 2_ill + 1_ill   ! +1 to allow for half record at the end.
+        offset = offset + (l1-1_ill) * lpatsz * multfactor
+        buffersize = lpatsz * multfactor
         allocate(buffer(buffersize))
-! ! first we read the entire buffer as 4-byte integers
-        do ii=1_ill,buffersize
-          read(unit=funit,rec=offset+ii, iostat=ios) buffer(ii)
-        end do
+        read(unit=funit, pos=offset, iostat=ios) buffer
 
-! ! we convert the 4-byte integers into pairs of 2-byte integers
-        allocate(pairs(2_ill*buffersize))
-        pairs = transfer(buffer,pairs)
-        if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then  ! shift the array by one entry to the left 
-          pairs = cshift(pairs,1_ill)
+! then we convert the byte values into single byte or 2-byte integers 
+        if (multfactor.eq.2_ill) then ! .up2 format
+          allocate(pairs(buffersize/2_ill))
+          pairs = transfer(buffer,pairs)
+        else ! .up1 format
+          allocate(pairs(buffersize))
+          do jj=1_ill,buffersize
+           pairs(jj) = ichar(buffer(jj)) 
+          end do
         end if
         deallocate(buffer)
 
@@ -635,15 +633,19 @@ select case (itype)
         deallocate(pairs)
 
 ! finally, correct for the fact that the original values were unsigned integers
-        where(exppat.lt.0.0) exppat = exppat + 65536.0
+        if (itype.eq.3) then
+          where(exppat.lt.0.0) exppat = exppat + 65536.0
+        else
+          where(exppat.lt.0.0) exppat = exppat + 256.0
+        end if
 
-    case(4)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary"
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(3,6)  ! "TSLHDF" "EMEBSD" passed tests on 2/20/18 by MDG
+    case(4,7)  ! "TSLHDF" "EMEBSD" passed tests on 2/20/18 by MDG
 ! read a hyperslab single pattern section from the HDF5 input file
 ! dims3 should have the pattern dimensions and then 1_HSIZE_T for the third dimension
 ! offset3 should have (0,0) and then the offset of the pattern (0-based)
@@ -659,7 +661,7 @@ select case (itype)
             end do 
         end do 
 
-    case(7)  ! "BrukerHDF"  to be tested
+    case(8)  ! "BrukerHDF"  to be tested
 ! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
 ! were acquired, we need to read each patttern separately from the file using the appropriate offset, which 
 ! is calculated using the semix and semiy arrays.  That means that we have to redefine both dims3 and offset3
@@ -713,21 +715,21 @@ select case (itype)
     case(1)  ! "Binary"
         close(unit=funit,status='keep')
 
-    case(2)  ! "TSLup2"
+    case(2,3)  ! "TSLup2"
         close(unit=funit,status='keep')
 
-    case(3, 6)  ! "TSLHDF" "EMEBSD"
+    case(4, 7)  ! "TSLHDF" "EMEBSD"
         call HDF_pop(pmHDF_head,.TRUE.)
         call h5close_EMsoft(hdferr)
         nullify(pmHDF_head)
 
-    case(4)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary"
         call FatalError("closeExpPatternFile","input format not yet implemented")
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
         call FatalError("closeExpPatternFile","input format not yet implemented")
 
-    case(7)  !  "BrukerHDF"
+    case(8)  !  "BrukerHDF"
         call HDF_pop(pmHDF_head,.TRUE.)
         call h5close_EMsoft(hdferr)
         nullify(pmHDF_head)
@@ -772,6 +774,298 @@ select case (istat)
 end select
 
 end subroutine patternmod_errormessage
+
+
+!--------------------------------------------------------------------------
+!
+! subroutine: PreProcessPatterns
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief standard preprocessing of EBSD patterns (hi-pass filter+adaptive histogram equalization)
+!
+!> @details This is one of the core routines used to pre-process EBSD patterns for dictionary indexing.
+!> The routine reads the experimental patterns row by row, and performs a hi-pass filter and adaptive
+!> histogram equalization.  Then the preprocessed patterns are either stored in a binary direct access file,
+!> or they are kept in RAM, depending on the user parameter setting. 
+!
+!> @param nthreads number of threads to be used
+!> @param inRAM write file or keep patterns in RAM ?
+!> @param ebsdnl namelist for the ebsd computations
+!> @param binx, biny pattern size 
+!> @param masklin vector form of pattern mask 
+!> @param correctsize 
+!> @param totnumexpt 
+!> @param epatterns (OPTIONAL) array with pre-processed patterns
+!> @param exptIQ (OPTIONAL) computation of pattern quality (IQ) array
+!
+!> @date 04/01/18 MDG 1.0 original
+!> @date 04/04/18 MDG 1.1 added optional exptIQ parameter
+!--------------------------------------------------------------------------
+recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, masklin, correctsize, totnumexpt, &
+                                        epatterns, exptIQ)
+!DEC$ ATTRIBUTES DLLEXPORT :: PreProcessPatterns
+
+use io
+use local
+use typedefs
+use EBSDDImod
+use NameListTypedefs
+use error
+use omp_lib
+use filters
+use timing
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                :: nthreads
+logical,INTENT(IN)                          :: inRAM
+type(EBSDIndexingNameListType),INTENT(IN)   :: ebsdnl
+integer(kind=irg),INTENT(IN)                :: binx
+integer(kind=irg),INTENT(IN)                :: biny
+real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
+integer(kind=irg),INTENT(IN)                :: correctsize
+integer(kind=irg),INTENT(IN)                :: totnumexpt
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
+
+logical                                     :: ROIselected, f_exists
+character(fnlen)                            :: fname
+integer(kind=irg)                           :: istat, L, recordsize, io_int(2), patsz, iii, &
+                                               iiistart, iiiend, jjend, TID, jj, kk, ierr
+integer(HSIZE_T)                            :: dims3(3), offset3(3)
+integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42
+real(kind=sgl)                              :: tstart, tstop, vlen, tmp, ma, mi, io_real(1)
+real(kind=dbl)                              :: w, Jres
+integer(kind=irg),allocatable               :: EBSDpint(:,:)
+real(kind=sgl),allocatable                  :: tmpimageexpt(:), EBSDPattern(:,:), imageexpt(:), exppatarray(:), EBSDpat(:,:)
+real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
+complex(kind=dbl),allocatable               :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable       :: inp(:,:), outp(:,:)
+type(C_PTR)                                 :: planf, HPplanf, HPplanb
+
+
+call Message('Preprocessing experimental patterns')
+
+!===================================================================================
+! define a bunch of mostly integer parameters
+recordsize = correctsize*4
+L = binx*biny
+patsz = correctsize
+w = ebsdnl%hipassw
+
+if (sum(ebsdnl%ROI).ne.0) then
+  ROIselected = .TRUE.
+  iiistart = ebsdnl%ROI(2)
+  iiiend = ebsdnl%ROI(2)+ebsdnl%ROI(4)-1
+  jjend = ebsdnl%ROI(3)
+else
+  ROIselected = .FALSE.
+  iiistart = 1
+  iiiend = ebsdnl%ipf_ht
+  jjend = ebsdnl%ipf_wd
+end if
+
+!===================================================================================
+! open the output file if the patterns are not to be kept in memory
+if (inRAM.eqv..FALSE.) then
+! first, make sure that this file does not already exist
+   f_exists = .FALSE.
+   fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
+   fname = EMsoft_toNativePath(fname)
+   inquire(file=trim(trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)), exist=f_exists)
+
+   call WriteValue('Creating temporary file :',trim(fname))
+
+   if (f_exists) then
+      open(unit=itmpexpt,file=trim(fname),&
+          status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+      close(unit=itmpexpt,status='delete')
+   end if
+   open(unit=itmpexpt,file=trim(fname),&
+   status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+end if
+  
+!===================================================================================
+! open the file with experimental patterns; depending on the inputtype parameter, this
+! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
+! pattern file produced by EMEBSD.f90; or a vendor binary or HDF5 file... in each case we need to 
+! open the file and leave it open, then use the getExpPatternRow() routine to read a row
+! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
+! properly close the experimental pattern file
+istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
+if (istat.ne.0) then
+    call patternmod_errormessage(istat)
+    call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
+end if
+
+! this next part is done with OpenMP, with only thread 0 doing the reading;
+! Thread 0 reads one line worth of patterns from the input file, then all threads do 
+! the work, and thread 0 adds them to the epatterns array in RAM; repeat until all patterns have been processed.
+
+call OMP_SET_NUM_THREADS(nthreads)
+io_int(1) = nthreads
+call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
+
+! allocate the arrays that holds the experimental patterns from a single row of the region of interest
+allocate(exppatarray(patsz * ebsdnl%ipf_wd),stat=istat)
+if (istat .ne. 0) stop 'could not allocate exppatarray'
+
+if (present(exptIQ)) then
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+  allocate(EBSDPat(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
+  EBSDPat = 0.0
+  allocate(ksqarray(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate ksqarray array'
+  Jres = 0.0
+  call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
+  deallocate(EBSDPat)
+end if
+
+! initialize the HiPassFilter routine (has its own FFTW plans)
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate hpmask array'
+call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+deallocate(inp, outp)
+
+call Message('Starting processing of experimental patterns')
+call cpu_time(tstart)
+
+dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
+
+!===================================================================================
+! we do one row at a time
+prepexperimentalloop: do iii = iiistart,iiiend
+
+! start the OpenMP portion
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
+
+! set the thread ID
+    TID = OMP_GET_THREAD_NUM()
+
+! initialize thread private variables
+    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),tmpimageexpt(binx*biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+
+    allocate(EBSDpint(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate EBSDpint array'
+
+    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+
+    tmpimageexpt = 0.0
+    rrdata = 0.D0
+    ffdata = 0.D0
+
+! thread 0 reads the next row of patterns from the input file
+! we have to allow for all the different types of input files here...
+    if (TID.eq.0) then
+        offset3 = (/ 0, 0, (iii-1)*ebsdnl%ipf_wd /)
+        if (ROIselected.eqv..TRUE.) then
+            call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray, ebsdnl%ROI)
+        else
+            call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray)
+        end if
+    end if
+
+! other threads must wait until T0 is ready
+!$OMP BARRIER
+    jj=0
+
+! then loop in parallel over all patterns to perform the preprocessing steps
+!$OMP DO SCHEDULE(DYNAMIC)
+    do jj=1,jjend
+! convert imageexpt to 2D EBSD Pattern array
+        do kk=1,biny
+          EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
+        end do
+
+        if (present(exptIQ)) then
+! compute the pattern Image Quality 
+          exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
+        end if
+
+! Hi-Pass filter
+        rrdata = dble(EBSDPat)
+        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
+        EBSDPat = sngl(ffdata)
+
+! adaptive histogram equalization
+        ma = maxval(EBSDPat)
+        mi = minval(EBSDPat)
+    
+        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+        EBSDPat = float(adhisteq(ebsdnl%nregions,binx,biny,EBSDpint))
+
+! convert back to 1D vector
+        do kk=1,biny
+          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = EBSDPat(1:binx,kk)
+        end do
+
+! apply circular mask and normalize for the dot product computation
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
+        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        if (vlen.ne.0.0) then
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
+        else
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
+        end if
+    end do
+!$OMP END DO
+
+! thread 0 writes the row of patterns to the epatterns array or to the file, depending on the enl%inRAM parameter
+    if (TID.eq.0) then
+      if (inRAM.eqv..TRUE.) then
+        do jj=1,jjend
+          epatterns(1:patsz,(iii-iiistart)*jjend + jj) = exppatarray((jj-1)*patsz+1:jj*patsz)
+        end do
+      else
+        do jj=1,jjend
+          write(itmpexpt,rec=(iii-iiistart)*jjend + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
+        end do
+      end if
+    end if
+
+deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
+!$OMP BARRIER
+!$OMP END PARALLEL
+
+! print an update of progress
+    if (mod(iii-iiistart+1,5).eq.0) then
+      if (ROIselected.eqv..TRUE.) then
+        io_int(1:2) = (/ iii-iiistart+1, ebsdnl%ROI(4) /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      else
+        io_int(1:2) = (/ iii-iiistart+1, ebsdnl%ipf_ht /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      end if
+    end if
+end do prepexperimentalloop
+
+call Message(' -> experimental patterns preprocessed')
+
+call closeExpPatternFile(ebsdnl%inputtype, iunitexpt)
+
+if (inRAM.eqv..FALSE.) then
+  close(unit=itmpexpt,status='keep')
+end if
+
+! print some timing information
+call CPU_TIME(tstop)
+tstop = tstop - tstart
+io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
+call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+
+end subroutine PreProcessPatterns
+
+
+
 
 
 

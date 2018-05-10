@@ -643,6 +643,21 @@ select case (dict%prot)
                 do i=2,60
                   dict%Pm(1:4,i) = SYM_Qsymop(1:4,35+i)
                 end do
+        case(34)  ! 822
+                dict%Nqsym = 16
+                do i = 1,15
+                  dict%Pm(1:4,i+1) = SYM_Qsymop(1:4,95+i)
+                end do
+        case(35)  ! 1022
+                dict%Nqsym = 20
+                do i = 1,19
+                  dict%Pm(1:4,i+1) = SYM_Qsymop(1:4,110+i)
+                end do
+        case(36)  ! 1222
+                dict%Nqsym = 24
+                do i = 1,23
+                  dict%Pm(1:4,i+1) = SYM_Qsymop(1:4,130+i)
+                end do
 
         case default    ! this should never happen ...
                 call FatalError('InitDictionaryIndexing','unknown rotational point group number')
@@ -1459,6 +1474,9 @@ logical,OPTIONAL,INTENT(IN)             :: MFZ
 real(kind=dbl)                          :: Mu(4), qu(4), rod(4)
 integer(kind=irg)                       :: i, j, Pmdims
 logical                                 :: useMFZ
+real(kind=dbl)                          :: tol
+
+tol = 1.0D-6
 
 useMFZ = .FALSE.
 if (present(MFZ)) then 
@@ -1476,12 +1494,12 @@ FZloop: do j=1,Pmdims
   qu = quat_mult(dict%Pm(1:4,j),Mu)
   if (qu(1).lt.0.D0) qu = -qu
   rod = qu2ro(qu)
-  if(abs(rod(4)) .gt. 1.0D10) rod(4) = inftyd()
+  if(abs(rod(4)) .gt. 1.0D0+tol) rod(4) = inftyd()
   
   if (useMFZ.eqv..TRUE.) then
     if (IsinsideMFZ(rod,FZtype,FZorder)) EXIT FZloop
   else
-    if (IsinsideFZ(rod,FZtype,FZorder)) EXIT FZloop
+    if (IsinsideFZ(rod,FZtype,FZorder))  EXIT FZloop
   end if
   ! we really should never get to the following line ...
   !if (j.eq.Pmdims) write (*,*) 'problem ... ',180.0*eu(1:3)/cPi,eu2ro(eu)

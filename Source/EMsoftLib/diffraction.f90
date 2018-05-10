@@ -183,7 +183,7 @@ contains
 !> @date   03/26/13 MDG 3.0 updated IO
 !> @date   12/02/14 MDG 3.1 added voltage as argument
 !--------------------------------------------------------------------------
-recursive subroutine GetVoltage(cell, rlp)
+recursive subroutine GetVoltage(cell, rlp, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetVoltage
 
 use io
@@ -192,14 +192,18 @@ IMPLICIT NONE
 
 type(unitcell),pointer    :: cell
 type(gnode),INTENT(INOUT) :: rlp
+logical,INTENT(IN),OPTIONAL             :: verbose
+real(kind=sgl)            :: io_real(1)
 
-real(kind=dbl)            :: io_real(1), voltage
+call ReadValue('Enter the microscope accelerating voltage [kV, R] : ', io_real, 1)
+cell%voltage = dble(io_real(1))
 
- call ReadValue('Enter the microscope accelerating voltage [kV, R] : ', io_real, 1)
- voltage = io_real(1)
- cell%voltage = voltage
- call CalcWaveLength(cell,rlp)
- 
+if (present(verbose)) then
+  if (verbose) then
+     write (*,*) 'cell%voltage      : ', cell%voltage
+  end if 
+end if 
+call CalcWaveLength(cell,rlp,verbose=.TRUE.)
 end subroutine
 
 !--------------------------------------------------------------------------
@@ -242,7 +246,7 @@ real(kind=dbl)                          :: temp1,temp2, oi_real(1)
 integer(kind=irg)                       :: hkl(3), io_int(1)
 
   temp1 = 1.0D+9*cPlanck/dsqrt(2.D0*cRestmass*cCharge)
-  temp2 = cCharge*0.5D0*cell%voltage*1000.D0/cRestmass/cLight**2
+  temp2 = cCharge*0.5D0*cell%voltage*1000.D0/cRestmass/(cLight**2)
 
 ! relativistic correction factor (known as gamma)      
   cell%mRelcor = 1.0D0+2.0D0*temp2

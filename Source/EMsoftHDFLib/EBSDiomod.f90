@@ -68,7 +68,7 @@ contains
 !> @date 02/18/18 MDG 1.6 made sure that Euler angles are ALWAYS positive
 !> @date 03/05/18 MDG 1.7 replaced BC=OSMmap, BC=IQmap, BANDS=pattern index columns
 !--------------------------------------------------------------------------
-recursive subroutine ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain,OSMmap,IQmap,noindex)
+recursive subroutine ctfebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain,OSMmap,IQmap,noindex)
 !DEC$ ATTRIBUTES DLLEXPORT :: ctfebsd_writeFile
 
 use NameListTypedefs
@@ -81,6 +81,7 @@ use error
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+character(fnlen),INTENT(IN)                         :: xtalname
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
@@ -156,7 +157,7 @@ write(dataunit2,'(A)') 'Phases'//TAB//'1'
 
 ! here we need to read the .xtal file and extract the lattice parameters, Laue group and space group numbers
 ! test to make sure the input file exists and is HDF5 format
-filename = trim(EMsoft_getXtalpathname())//trim(ebsdnl%MCxtalname)
+filename = trim(EMsoft_getXtalpathname())//trim(xtalname)
 filename = EMsoft_toNativePath(filename)
 
 stat = .FALSE.
@@ -210,9 +211,9 @@ str1 = trim(str1)//TAB//trim(str4)//';'//trim(str5)//';'//trim(str6)
 
 ! structure name
 str3 = ''
-ii = len(trim(ebsdnl%MCxtalname))-5
+ii = len(trim(xtalname))-5
 do i=1,ii
-  str3(i:i) = ebsdnl%MCxtalname(i:i)
+  str3(i:i) = xtalname(i:i)
 end do
 str1 = trim(str1)//TAB//trim(str3)
 

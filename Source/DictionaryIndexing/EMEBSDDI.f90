@@ -27,10 +27,10 @@
 ! ###################################################################
 
 !--------------------------------------------------------------------------
-! EMsoft:EBSDIndexing.f90
+! EMsoft:EMEBSDDI.f90
 !--------------------------------------------------------------------------
 !
-! PROGRAM: EBSDIndexing
+! PROGRAM: EMEBSDDI
 !
 !> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
 !
@@ -43,9 +43,9 @@
 !> @date 02/04/16 MDG 1.2 added circular mask code
 !> @date 03/10/16 MDG 1.3 added h5ebsd formatted output
 !> @date 11/14/16 MDG 1.4 added code to read dictionary patterns from h5 file
+!> @date 04/04/18 MDG 2.0 separated MC and MP name lists and data structures (all internal changes)
 !--------------------------------------------------------------------------
-
-program EBSDIndexing
+program EMEBSDDI
 
 use local
 use typedefs
@@ -57,18 +57,25 @@ use error
 use initializers
 use EBSDmod
 use EBSDDImod
+use HDF5
+use HDFsupport
 
 IMPLICIT NONE
 
 character(fnlen)                            :: nmldeffile, progname, progdesc
-type(EBSDIndexingNameListType)              :: ebsdnl
-type(EBSDLargeAccumDIType),pointer          :: acc
-type(EBSDMasterDIType),pointer              :: master
+type(EBSDIndexingNameListType)              :: dinl
+type(MCCLNameListType)                      :: mcnl
+type(EBSDMasterNameListType)                :: mpnl
+type(EBSDNameListType)                      :: enl
+
+type(EBSDMCdataType)                        :: EBSDMCdata
+type(EBSDMPdataType)                        :: EBSDMPdata
+type(EBSDDetectorType)                      :: EBSDdetector
 logical                                     :: verbose
-integer(kind=irg)                           :: istat, res
+integer(kind=irg)                           :: istat, res, hdferr
 
 interface
-        subroutine MasterSubroutine(ebsdnl,acc,master,progname,nmldeffile)
+        subroutine MasterSubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
         use local
         use typedefs
@@ -109,9 +116,12 @@ interface
 
         IMPLICIT NONE
 
-        type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
-        type(EBSDLargeAccumDIType),pointer,INTENT(IN)       :: acc
-        type(EBSDMasterDIType),pointer,INTENT(IN)           :: master
+        type(EBSDIndexingNameListType),INTENT(INOUT)        :: dinl
+        type(MCCLNameListType),INTENT(INOUT)                :: mcnl
+        type(EBSDMasterNameListType),INTENT(INOUT)          :: mpnl
+        type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
+        type(EBSDMPdataType),INTENT(INOUT)                  :: EBSDMPdata
+        type(EBSDDetectorType),INTENT(INOUT)                :: EBSDdetector
         character(fnlen),INTENT(IN)                         :: progname
         character(fnlen),INTENT(IN)                         :: nmldeffile
 
@@ -133,41 +143,51 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 80 /), progname)
 res = index(nmldeffile,'.nml',kind=irg)
 if (res.eq.0) then
   call FatalError('EMEBSDIndexing','JSON input not yet implemented')
-!  call JSONreadEBSDIndexingNameList(ebsdnl, nmldeffile, error_cnt)
+!  call JSONreadEBSDIndexingNameList(dinl, nmldeffile, error_cnt)
 else
-  call GetEBSDIndexingNameList(nmldeffile,ebsdnl)
+  call GetEBSDIndexingNameList(nmldeffile,dinl)
 end if
 
 ! is this a dynamic calculation (i.e., do we actually compute the EBSD patterns)?
-if (trim(ebsdnl%indexingmode).eq.'dynamic') then 
+if (trim(dinl%indexingmode).eq.'dynamic') then 
 
     ! 1. read the Monte Carlo data file
-    allocate(acc)
-    call EBSDIndexingreadMCfile(ebsdnl, acc)
+    call h5open_EMsoft(hdferr)
+    call readEBSDMonteCarloFile(dinl%masterfile, mcnl, hdferr, EBSDMCdata, getAccume=.TRUE.)
 
     ! 2. read EBSD master pattern file
-    allocate(master)
-    call EBSDIndexingreadMasterfile(ebsdnl, master)
+    call readEBSDMasterPatternFile(dinl%masterfile, mpnl, hdferr, EBSDMPdata, getmLPNH=.TRUE., getmLPSH=.TRUE.)
+    call h5close_EMsoft(hdferr)
 
-    ! 3. generate detector arrays
-    allocate(master%rgx(ebsdnl%numsx,ebsdnl%numsy), master%rgy(ebsdnl%numsx,ebsdnl%numsy), &
-             master%rgz(ebsdnl%numsx,ebsdnl%numsy), stat=istat)
-    allocate(acc%accum_e_detector(ebsdnl%numEbins,ebsdnl%numsx,ebsdnl%numsy), stat=istat)
+    ! 3. allocate detector arrays
+    allocate(EBSDdetector%rgx(dinl%numsx,dinl%numsy), &
+           EBSDdetector%rgy(dinl%numsx,dinl%numsy), &
+           EBSDdetector%rgz(dinl%numsx,dinl%numsy), &
+           EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=istat)
 
-    call EBSDIndexingGenerateDetector(ebsdnl, acc, master)
-    deallocate(acc%accum_e)
+    ! 4. copy a few parameters from dinl to enl, which is the regular EBSDNameListType structure
+    ! and then generate the detector arrays
+    enl%numsx = dinl%numsx
+    enl%numsy = dinl%numsy
+    enl%xpc = dinl%xpc
+    enl%ypc = dinl%ypc
+    enl%delta = dinl%delta
+    enl%thetac = dinl%thetac
+    enl%L = dinl%L
+    enl%energymin = dinl%energymin
+    enl%energymax = dinl%energymax
+    call GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 else    ! this is a static run using an existing dictionary
 ! we'll use the same MasterSubroutine so we need to at least allocate the input structures
 ! even though we will not make use of them in static mode
-   allocate(acc, master) 
+!  allocate(acc, master) 
 
 end if
+
 ! perform the dictionary indexing computations
-call MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
+call MasterSubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
-deallocate(master, acc)
-
-end program EBSDIndexing
+end program EMEBSDDI
 
 !--------------------------------------------------------------------------
 !
@@ -178,9 +198,12 @@ end program EBSDIndexing
 !> @brief Master subroutine to control dictionary generation, inner products computations, sorting values
 !> and indexing of points, all in parallel using OpenCL/openMP
 !
-!> @param ebsdnl ped indexing namelist pointer
-!> @param acc accumulator pointer containing MC results
-!> @param master master pattern is read into this pointer
+!> @param dinl ped indexing namelist pointer
+!> @param mcnl Monte Carlo namelist structure 
+!> @param mpnl Master PAttern namelist structure 
+!> @param EBSDMCdata Monte Carlo data arrays
+!> @param EBSDMPdata master pattern data arrays
+!> @param EBSDdetector detector arrays
 !> @param progname name of the program
 !> @param nmldeffile namelist filename
 !
@@ -198,9 +221,9 @@ end program EBSDIndexing
 !> @date 01/09/18 MDG 2.1 first attempt at OpenMP for pattern pre-processing
 !> @date 02/13/18 MDG 2.2 added support for multiple input formats for experimental patterns
 !> @date 02/22/18 MDG 2.3 added support for Region-of-Interest (ROI) selection
+!> @date 04/04/18 MDG 3.0 revised name list use as well as MC and MP data structures
 !--------------------------------------------------------------------------
-
-subroutine MasterSubroutine(ebsdnl,acc,master,progname, nmldeffile)
+subroutine MasterSubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
 use local
 use typedefs
@@ -245,9 +268,12 @@ use timing
 
 IMPLICIT NONE
 
-type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
-type(EBSDLargeAccumDIType),pointer,INTENT(IN)       :: acc
-type(EBSDMasterDIType),pointer,Intent(IN)           :: master
+type(EBSDIndexingNameListType),INTENT(INOUT)        :: dinl
+type(MCCLNameListType),INTENT(INOUT)                :: mcnl
+type(EBSDMasterNameListType),INTENT(INOUT)          :: mpnl
+type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
+type(EBSDMPdataType),INTENT(INOUT)                  :: EBSDMPdata
+type(EBSDDetectorType),INTENT(INOUT)                :: EBSDdetector
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
 
@@ -283,7 +309,7 @@ real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! C
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
-                                                       recordsize_correct, patsz, tickstart, tock
+                                                       recordsize_correct, patsz, tickstart, tock, npy, sz(3)
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 real(kind=sgl),pointer                              :: dict(:), T0dict(:)
 real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
@@ -331,7 +357,7 @@ real(kind=sgl)                                      :: dmin,voltage,scl,ratio, m
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
 integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax, iiistart, iiiend, jjend
-real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp, mvres
+real(kind=sgl)                                      :: sx,dx,dxm,dy,dym,rhos,x,projweight, dp, mvres, nel, emult
 real(kind=sgl)                                      :: dc(3),quat(4),ixy(2),bindx
 integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
@@ -351,16 +377,16 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
-if (trim(ebsdnl%indexingmode).eq.'static') then
+if (trim(dinl%indexingmode).eq.'static') then
     !
     ! Initialize FORTRAN interface.
     CALL h5open_EMsoft(hdferr)
 
     ! get the full filename
-    dictfile = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%dictfile)
+    dictfile = trim(EMsoft_getEMdatapathname())//trim(dinl%dictfile)
     dictfile = EMsoft_toNativePath(dictfile)
 
-    call Message('-->  '//'Opening HDF5 dictionary file '//trim(ebsdnl%dictfile))
+    call Message('-->  '//'Opening HDF5 dictionary file '//trim(dinl%dictfile))
     nullify(HDF_head)
 
     hdferr =  HDF_openFile(dictfile, HDF_head)
@@ -395,11 +421,8 @@ if (trim(ebsdnl%indexingmode).eq.'static') then
     hdferr = HDF_openGroup(datagroupname, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EBSD')
 
-    dataset = SC_xtalname
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    xtalname = trim(stringarray(1))
-    ebsdnl%MCxtalname = trim(xtalname)
-    if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetInteger:numangles')
+    ! we already have the xtalname string from the Monte Carlo name list
+    xtalname = trim(mcnl%xtalname)
 
     ! number of Eulerangles numangles
     dataset = SC_numangles
@@ -417,43 +440,42 @@ if (trim(ebsdnl%indexingmode).eq.'static') then
     call Message('-->  completed initial reading of dictionary file ')
 end if
 
-if (sum(ebsdnl%ROI).ne.0) then
+if (sum(dinl%ROI).ne.0) then
   ROIselected = .TRUE.
-  iiistart = ebsdnl%ROI(2)
-  iiiend = ebsdnl%ROI(2)+ebsdnl%ROI(4)-1
-  jjend = ebsdnl%ROI(3)
+  iiistart = dinl%ROI(2)
+  iiiend = dinl%ROI(2)+dinl%ROI(4)-1
+  jjend = dinl%ROI(3)
 else
   ROIselected = .FALSE.
   iiistart = 1
-  iiiend = ebsdnl%ipf_ht
-  jjend = ebsdnl%ipf_wd
+  iiiend = dinl%ipf_ht
+  jjend = dinl%ipf_wd
 end if
 
 verbose = .FALSE.
 init = .TRUE.
-Ne = ebsdnl%numexptsingle
-Nd = ebsdnl%numdictsingle
-L = ebsdnl%numsx*ebsdnl%numsy/ebsdnl%binning**2
+Ne = dinl%numexptsingle
+Nd = dinl%numdictsingle
+L = dinl%numsx*dinl%numsy/dinl%binning**2
 if (ROIselected.eqv..TRUE.) then 
-    totnumexpt = ebsdnl%ROI(3)*ebsdnl%ROI(4)
+    totnumexpt = dinl%ROI(3)*dinl%ROI(4)
 else
-    totnumexpt = ebsdnl%ipf_wd*ebsdnl%ipf_ht
+    totnumexpt = dinl%ipf_wd*dinl%ipf_ht
 end if
-imght = ebsdnl%numsx/ebsdnl%binning
-imgwd = ebsdnl%numsy/ebsdnl%binning
+imght = dinl%numsx/dinl%binning
+imgwd = dinl%numsy/dinl%binning
 dims = (/imght, imgwd/)
-nnk = ebsdnl%nnk
-ncubochoric = ebsdnl%ncubochoric
+nnk = dinl%nnk
+ncubochoric = dinl%ncubochoric
 recordsize = L*4
 itmpexpt = 43
-w = ebsdnl%hipassw
+w = dinl%hipassw
 source_l = source_length
 
-! these will need to be read from an experimental data file but we''l set
-! defaults values here.
-ebsdnl%WD = 10.0
+! these will eventually need to be read from an experimental data file but we'll set defaults values here.
+dinl%WD = 10.0
 
-! nullify the dict  and T0dict pointers
+! nullify the dict and T0dict pointers
 nullify(dict,T0dict)
 
 ! make sure that correctsize is a multiple of 16; if not, make it so
@@ -470,45 +492,49 @@ recordsize_correct = correctsize*4
 patsz              = correctsize
 
 
-if (trim(ebsdnl%indexingmode).eq.'dynamic') then 
-    ! get the total number of electrons on the detector
-    totnum_el = sum(acc%accum_e_detector)
-
+if (trim(dinl%indexingmode).eq.'dynamic') then 
     !=====================================================
     ! EXTRACT POINT GROUP NUMBER FROM CRYSTAL STRUCTURE FILE 
     !=====================================================
-    write (*,*) 'reading from xtalfile '//trim(ebsdnl%MCxtalname)
-    pgnum = GetPointGroup(ebsdnl%MCxtalname)
+    write (*,*) 'reading from xtalfile '//trim(mcnl%xtalname)
+    pgnum = GetPointGroup(mcnl%xtalname)
 
     !=====================================================
     ! make sure the minimum energy is set smaller than the maximum
     !=====================================================
-    if (ebsdnl%energymin.gt.ebsdnl%energymax) then
+    if (dinl%energymin.gt.dinl%energymax) then
         call Message('Minimum energy is larger than maximum energy; please correct input file')
         stop
     end if
+
     !=====================================================
     ! get the indices of the minimum and maximum energy
     !=====================================================
-    Emin = nint((ebsdnl%energymin - ebsdnl%Ehistmin)/ebsdnl%Ebinsize) +1
+    Emin = nint((dinl%energymin - mcnl%Ehistmin)/mcnl%Ebinsize) +1
     if (Emin.lt.1)  Emin=1
-    if (Emin.gt.ebsdnl%numEbins)  Emin=ebsdnl%numEbins
+    if (Emin.gt.EBSDMCdata%numEbins)  Emin=EBSDMCdata%numEbins
 
-    Emax = nint((ebsdnl%energymax - ebsdnl%Ehistmin)/ebsdnl%Ebinsize) + 1
+    Emax = nint((dinl%energymax - mcnl%Ehistmin)/mcnl%Ebinsize) + 1
     if (Emax .lt. 1) Emax = 1
-    if (Emax .gt. ebsdnl%numEbins) Emax = ebsdnl%numEbins
+    if (Emax .gt. EBSDMCdata%numEbins) Emax = EBSDMCdata%numEbins
 
-! intensity prefactor
-    prefactor = 0.25D0 * nAmpere * ebsdnl%beamcurrent * ebsdnl%dwelltime * 1.0D-15/ totnum_el
+    sz = shape(EBSDMPdata%mLPNH)
+    dinl%nE = sz(3)
+
+    ! intensity prefactor
+    nel = float(mcnl%totnum_el) * float(EBSDMCdata%multiplier)
+    emult = nAmpere * 1e-9 / nel  ! multiplicative factor to convert MC data to an equivalent incident beam of 1 nanoCoulomb
+    ! intensity prefactor  (redefined by MDG, 3/23/18)
+    prefactor = emult * dinl%beamcurrent * dinl%dwelltime * 1.0D-6
 end if
 
 !====================================
 ! init a bunch of parameters
 !====================================
 ! binned pattern array
-binx = ebsdnl%numsx/ebsdnl%binning
-biny = ebsdnl%numsy/ebsdnl%binning
-bindx = 1.0/float(ebsdnl%binning)**2
+binx = dinl%numsx/dinl%binning
+biny = dinl%numsy/dinl%binning
+bindx = 1.0/float(dinl%binning)**2
 
 ! for dictionary computations, the patterns are usually rather small, so perhaps the explicit
 ! energy sums can be replaced by an averaged approximate approach, in which all the energy bins
@@ -516,34 +542,33 @@ bindx = 1.0/float(ebsdnl%binning)**2
 ! this is a straightforward sum; we should probably do a weighted sum instead
 
 ! this code will be removed in a later version [post 3.1]
-if (trim(ebsdnl%indexingmode).eq.'dynamic') then
-    if (ebsdnl%energyaverage .eq. 0) then
-            allocate(mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ebsdnl%nE))
-            allocate(mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ebsdnl%nE))
-            allocate(accum_e_MC(ebsdnl%numEbins,ebsdnl%numsx,ebsdnl%numsy),stat=istat)
-            accum_e_MC = acc%accum_e_detector
-            mLPNH = master%mLPNH
-            mLPSH = master%mLPSH
-    else if (ebsdnl%energyaverage .eq. 1) then
-            allocate(mLPNH_simple(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy))
-            allocate(mLPSH_simple(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy))
-            allocate(wf(ebsdnl%numEbins))
-            allocate(acc_array(ebsdnl%numsx,ebsdnl%numsy))
-            acc_array = sum(acc%accum_e_detector,1)
-            wf = sum(sum(acc%accum_e_detector,2),2)
+npy = mpnl%npx
+if (trim(dinl%indexingmode).eq.'dynamic') then
+    if (dinl%energyaverage .eq. 0) then
+            allocate(mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
+            allocate(mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
+            allocate(accum_e_MC(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy),stat=istat)
+            accum_e_MC = EBSDdetector%accum_e_detector
+            mLPNH = EBSDMPdata%mLPNH
+            mLPSH = EBSDMPdata%mLPSH
+    else if (dinl%energyaverage .eq. 1) then
+            allocate(mLPNH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
+            allocate(mLPSH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
+            allocate(wf(EBSDMCdata%numEbins))
+            allocate(acc_array(dinl%numsx,dinl%numsy))
+            acc_array = sum(EBSDdetector%accum_e_detector,1)
+            wf = sum(sum(EBSDdetector%accum_e_detector,2),2)
             wf = wf/sum(wf)
             do ii=Emin,Emax
-                master%mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) = &
-                master%mLPNH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) * wf(ii)
+                EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
+                EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
 
-                master%mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) = &
-                master%mLPSH(-ebsdnl%npx:ebsdnl%npx,-ebsdnl%npy:ebsdnl%npy,ii) * wf(ii)
+                EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
+                EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
 
             end do
-
-            mLPNH_simple = sum(master%mLPNH,3)
-            mLPSH_simple = sum(master%mLPNH,3)
-
+            mLPNH_simple = sum(EBSDMPdata%mLPNH,3)
+            mLPSH_simple = sum(EBSDMPdata%mLPNH,3)
     else
             stop 'Invalid value of energyaverage parameter'
     end if
@@ -557,10 +582,10 @@ end if
 ! and generate the FZlist here... this can be useful to index patterns that
 ! have only a small misorientation range with respect to a known orientation,
 ! so that it is not necessary to scan all of orientation space.
-if (trim(ebsdnl%indexingmode).eq.'dynamic') then
+if (trim(dinl%indexingmode).eq.'dynamic') then
     nullify(FZlist)
     FZcnt = 0
-    if (trim(ebsdnl%eulerfile).eq.'undefined') then
+    if (trim(dinl%eulerfile).eq.'undefined') then
       call Message('Orientation space sampling mode set to RFZ')
       io_int(1) = pgnum
       io_int(2) = ncubochoric
@@ -569,7 +594,7 @@ if (trim(ebsdnl%indexingmode).eq.'dynamic') then
       call sampleRFZ(ncubochoric, pgnum, 0, FZcnt, FZlist)
     else
     ! read the euler angle file and create the linked list
-      call getEulersfromFile(ebsdnl%eulerfile, FZcnt, FZlist) 
+      call getEulersfromFile(dinl%eulerfile, FZcnt, FZlist) 
       call Message('Orientation space sampling mode set to MIS')
       io_int(1) = pgnum
       io_int(2) = FZcnt
@@ -595,7 +620,7 @@ end if
 !================================
 call Message('--> Initializing OpenCL device')
 
-call CLinit_PDCCQ(platform, nump, ebsdnl%platid, device, numd, ebsdnl%devid, info, context, command_queue)
+call CLinit_PDCCQ(platform, nump, dinl%platid, device, numd, dinl%devid, info, context, command_queue)
 
 ! read the cl source file
 sourcefile = 'DictIndx.cl'
@@ -623,7 +648,7 @@ call CLerror_check('InnerProdGPU:clCreateProgramWithSource', ierr)
 ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
 
 ! get the compilation log
-ierr2 = clGetProgramBuildInfo(prog, device(ebsdnl%devid), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
+ierr2 = clGetProgramBuildInfo(prog, device(dinl%devid), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
 ! if(cnum > 1) call Message(trim(source(1:cnum))//'test',frm='(A)')
 call CLerror_check('InnerProdGPU:clBuildProgram', ierr)
 call CLerror_check('InnerProdGPU:clGetProgramBuildInfo', ierr2)
@@ -677,7 +702,7 @@ if (istat .ne. 0) stop 'Could not allocate array for mean dictionary and experim
 meandict = 0.0
 meanexpt = 0.0
 
-! allocate(EBSDpattern(ebsdnl%numsx,ebsdnl%numsy),binned(binx,biny),stat=istat)
+! allocate(EBSDpattern(dinl%numsx,dinl%numsy),binned(binx,biny),stat=istat)
 allocate(EBSDpattern(binx,biny),binned(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for EBSD pattern'
 EBSDpattern = 0.0
@@ -725,7 +750,7 @@ indextmp = 0
 allocate(eulerarray(1:3,Nd*ceiling(float(FZcnt)/float(Nd))),stat=istat)
 if (istat .ne. 0) stop 'could not allocate euler array'
 eulerarray = 0.0
-if (trim(ebsdnl%indexingmode).eq.'static') then
+if (trim(dinl%indexingmode).eq.'static') then
     eulerarray(1:3,1:FZcnt) = eulerarray2(1:3,1:FZcnt)
     deallocate(eulerarray2)
 end if
@@ -737,6 +762,17 @@ allocate(rdata(binx,biny),fdata(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
 rdata = 0.D0
 fdata = 0.D0
+
+! also, allocate the arrays used to create the average dot product map; this will require 
+! reading the actual EBSD HDF5 file to figure out how many rows and columns there
+! are in the region of interest.  For now we get those from the nml until we actually 
+! implement the HDF5 reading bit
+! this portion of code was first tested in IDL.
+allocate(EBSDpatterninteger(binx,biny))
+EBSDpatterninteger = 0
+allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
+EBSDpatternad = 0.0
+EBSDpatternintd = 0.0
 
 !=====================================================
 ! determine loop variables to avoid having to duplicate 
@@ -765,7 +801,7 @@ end if
 ! define the circular mask if necessary and convert to 1D vector
 !=====================================================
 
-if (trim(ebsdnl%maskfile).ne.'undefined') then
+if (trim(dinl%maskfile).ne.'undefined') then
 ! read the mask from file; the mask can be defined by a 2D array of 0 and 1 values
 ! that is stored in row form as strings, e.g.    
 !    0000001110000000
@@ -773,7 +809,7 @@ if (trim(ebsdnl%maskfile).ne.'undefined') then
 ! ... etc
 !
     f_exists = .FALSE.
-    fname = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%maskfile)
+    fname = trim(EMsoft_getEMdatapathname())//trim(dinl%maskfile)
     fname = EMsoft_toNativePath(fname)
     inquire(file=trim(fname), exist=f_exists)
     if (f_exists.eqv..TRUE.) then
@@ -790,10 +826,10 @@ if (trim(ebsdnl%maskfile).ne.'undefined') then
       call FatalError('MasterSubroutine','maskfile '//trim(fname)//' does not exist')
     end if
 else
-    if (ebsdnl%maskpattern.eq.'y') then
+    if (dinl%maskpattern.eq.'y') then
       do ii = 1,biny
           do jj = 1,binx
-              if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. ebsdnl%maskradius**2) then
+              if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. dinl%maskradius**2) then
                   mask(jj,ii) = 0.0
               end if
           end do
@@ -808,247 +844,35 @@ do ii = 1,biny
     end do
 end do
 
-
 !=====================================================
 ! Preprocess all the experimental patterns and store
 ! them in a temporary file as vectors; also, create 
 ! an average dot product map to be stored in the h5ebsd output file
-!
-! this could become a separate routine in the EMEBSDmod module ...
 !=====================================================
-
-! first, make sure that this file does not already exist
-f_exists = .FALSE.
-fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
-fname = EMsoft_toNativePath(fname)
-inquire(file=trim(fname), exist=f_exists)
-
-call WriteValue('Creating temporary file :',trim(fname))
-
-if (f_exists) then
-  open(unit=itmpexpt,file=trim(fname),&
-      status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
-  close(unit=itmpexpt,status='delete')
-end if
-
-! open the temporary file
-open(unit=itmpexpt,file=trim(fname),&
-     status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
-
-! open the file with experimental patterns; depending on the inputtype parameter, this
-! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
-! pattern file produced by EMEBSD.f90; or a vendor binary or HDF5 file... in each case we need to 
-! open the file and leave it open, then use the getExpPatternRow() routine to read a row
-! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
-! properly close the experimental pattern file
-istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
-if (istat.ne.0) then
-    call patternmod_errormessage(istat)
-    call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
-end if
-
-! also, allocate the arrays used to create the average dot product map; this will require 
-! reading the actual EBSD HDF5 file to figure out how many rows and columns there
-! are in the region of interest.  For now we get those from the nml until we actually 
-! implement the HDF5 reading bit
-! this portion of code was first tested in IDL.
-allocate(EBSDpatterninteger(binx,biny))
-EBSDpatterninteger = 0
-allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
-EBSDpatternad = 0.0
-EBSDpatternintd = 0.0
-
-
-! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
-! Thread 0 reads one line worth of patterns from the input file, then all threads do 
-! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
-
-call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
-io_int(1) = ebsdnl%nthreads
-call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
-
-! allocate the arrays that holds the experimental patterns from a single row of the region of interest
-allocate(exppatarray(patsz * ebsdnl%ipf_wd),stat=istat)
-if (istat .ne. 0) stop 'could not allocate exppatarray'
-
-
-! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
-allocate(EBSDPat(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
-EBSDPat = 0.0
-allocate(ksqarray(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate ksqarray array'
-Jres = 0.0
-call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
-deallocate(EBSDPat)
-
-! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate hpmask array'
-call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
-
-call Message('Starting processing of experimental patterns')
-call cpu_time(tstart)
-
-dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
-
-! we do one row at a time
-prepexperimentalloop: do iii = iiistart,iiiend
-
-! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
-!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
-
-! set the thread ID
-    TID = OMP_GET_THREAD_NUM()
-! initialize thread private variables
-    tmpimageexpt = 0.0
-    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
-
-    allocate(EBSDpint(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate EBSDpint array'
-
-    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
-
-    rrdata = 0.D0
-    ffdata = 0.D0
-
-! thread 0 reads the next row of patterns from the input file
-! we have to allow for all the different types of input files here...
-    if (TID.eq.0) then
-        offset3 = (/ 0, 0, (iii-1)*ebsdnl%ipf_wd /)
-        if (ROIselected.eqv..TRUE.) then
-            call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
-                                  ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray, ebsdnl%ROI)
-        else
-            call getExpPatternRow(iii, ebsdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
-                                  ebsdnl%inputtype, ebsdnl%HDFstrings, exppatarray)
-        end if
-    end if
-
-! other threads must wait until T0 is ready
-!$OMP BARRIER
-    jj=0
-
-! then loop in parallel over all patterns to perform the preprocessing steps
-!$OMP DO SCHEDULE(DYNAMIC)
-    do jj=1,jjend
-! convert imageexpt to 2D EBSD Pattern array
-        do kk=1,biny
-          EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
-        end do
-
-! compute the pattern Image Quality 
-        exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
-
-! Hi-Pass filter
-        rrdata = dble(EBSDPat)
-        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
-        EBSDPat = sngl(ffdata)
-
-! adaptive histogram equalization
-        ma = maxval(EBSDPat)
-        mi = minval(EBSDPat)
-    
-        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
-        EBSDPat = float(adhisteq(ebsdnl%nregions,binx,biny,EBSDpint))
-
-! convert back to 1D vector
-        do kk=1,biny
-          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = EBSDPat(1:binx,kk)
-        end do
-
-! apply circular mask and normalize for the dot product computation
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
-        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
-        if (vlen.ne.0.0) then
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
-        else
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
-        end if
-    end do
-!$OMP END DO
-
-! thread 0 writes the row of patterns to the output file
-    if (TID.eq.0) then
-      do jj=1,jjend
-        write(itmpexpt,rec=(iii-iiistart)*jjend + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
-      end do
-    end if
-
-deallocate(EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
-!$OMP BARRIER
-!$OMP END PARALLEL
-
-! print an update of progress
-    if (mod(iii-iiistart+1,5).eq.0) then
-      if (ROIselected.eqv..TRUE.) then
-        io_int(1:2) = (/ iii-iiistart+1, ebsdnl%ROI(4) /)
-        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
-      else
-        io_int(1:2) = (/ iii-iiistart+1, ebsdnl%ipf_ht /)
-        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
-      end if
-    end if
-end do prepexperimentalloop
-
-call Message(' -> experimental patterns stored in tmp file')
-
-call closeExpPatternFile(ebsdnl%inputtype, iunitexpt)
-
-close(unit=itmpexpt,status='keep')
-
-! print some timing information
-call CPU_TIME(tstop)
-tstop = tstop - tstart
-io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt, exptIQ=exptIQ)
 
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')
 call Message(' ')
 
 ! re-open the temporary file
+fname = trim(EMsoft_getEMtmppathname())//trim(dinl%tmpfile)
+fname = EMsoft_toNativePath(fname)
+
 open(unit=itmpexpt,file=trim(fname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
 
 ! use the getADPmap routine in the filters module
 if (ROIselected.eqv..TRUE.) then
-  allocate(dpmap(ebsdnl%ROI(3)*ebsdnl%ROI(4)))
-  call getADPmap(itmpexpt, ebsdnl%ROI(3)*ebsdnl%ROI(4), L, ebsdnl%ROI(3), ebsdnl%ROI(4), dpmap)
-  TIFF_nx = ebsdnl%ROI(3)
-  TIFF_ny = ebsdnl%ROI(4)
+  allocate(dpmap(dinl%ROI(3)*dinl%ROI(4)))
+  call getADPmap(itmpexpt, dinl%ROI(3)*dinl%ROI(4), L, dinl%ROI(3), dinl%ROI(4), dpmap)
+  TIFF_nx = dinl%ROI(3)
+  TIFF_ny = dinl%ROI(4)
 else
   allocate(dpmap(totnumexpt))
-  call getADPmap(itmpexpt, totnumexpt, L, ebsdnl%ipf_wd, ebsdnl%ipf_ht, dpmap)
-  TIFF_nx = ebsdnl%ipf_wd
-  TIFF_ny = ebsdnl%ipf_ht
-end if
-
-! output the ADP map as a tiff file (for debugging purposes only)
-if (1.eq.0) then
-        TIFF_filename = "ADPmap.tiff"
-
-    ! allocate memory for image
-    allocate(TIFF_image(0:TIFF_nx-1,0:TIFF_ny-1))
-
-    ! fill the image with whatever data you have (between 0 and 255)
-    ma = maxval(dpmap)
-    mi = minval(dpmap)
-
-    do j=0,TIFF_ny-1
-     do i=0,TIFF_nx-1
-      ii = j * TIFF_nx + i + 1
-      TIFF_image(i,j) = int(255 * (dpmap(ii)-mi)/(ma-mi))
-     end do
-    end do
-
-    ! create the file
-    call TIFF_Write_File
-    deallocate(TIFF_image)
+  call getADPmap(itmpexpt, totnumexpt, L, dinl%ipf_wd, dinl%ipf_ht, dpmap)
+  TIFF_nx = dinl%ipf_wd
+  TIFF_ny = dinl%ipf_ht
 end if
 
 ! we will leave the itmpexpt file open, since we'll be reading from it again...
@@ -1085,9 +909,9 @@ end if
 call cpu_time(tstart)
 call Time_tick(tickstart)
 
-if (trim(ebsdnl%indexingmode).eq.'dynamic') then
-    call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
-    io_int(1) = ebsdnl%nthreads
+if (trim(dinl%indexingmode).eq.'dynamic') then
+    call OMP_SET_NUM_THREADS(dinl%nthreads)
+    io_int(1) = dinl%nthreads
 else
     call OMP_SET_NUM_THREADS(2)
     io_int(1) = 2
@@ -1095,13 +919,13 @@ end if
 call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
 
 ! define the jpar array of integer parameters
-jpar(1) = ebsdnl%binning
-jpar(2) = ebsdnl%numsx
-jpar(3) = ebsdnl%numsy
-jpar(4) = ebsdnl%npx
-jpar(5) = ebsdnl%npy
-jpar(6) = ebsdnl%numEbins
-jpar(7) = ebsdnl%nE
+jpar(1) = dinl%binning
+jpar(2) = dinl%numsx
+jpar(3) = dinl%numsy
+jpar(4) = mpnl%npx
+jpar(5) = npy
+jpar(6) = EBSDMCdata%numEbins
+jpar(7) = dinl%nE
 
 call timestamp()
 
@@ -1133,8 +957,6 @@ dictionaryloop: do ii = 1,cratio+1
         TID = OMP_GET_THREAD_NUM()
 
       if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' actual number of OpenMP threads  = ',OMP_GET_NUM_THREADS()
-!     if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' maximum number of OpenMP threads = ',OMP_GET_MAX_THREADS()
-
 
 ! the master thread should be the one working on the GPU computation
 !$OMP MASTER
@@ -1175,7 +997,7 @@ dictionaryloop: do ii = 1,cratio+1
                                     0, C_NULL_PTR, C_NULL_PTR)
         call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
 
-        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,ebsdnl%devid,kernel,context,command_queue)
+        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,dinl%devid,kernel,context,command_queue)
 
         dp =  maxval(results)
         if (dp.gt.mvres) mvres = dp
@@ -1235,25 +1057,25 @@ dictionaryloop: do ii = 1,cratio+1
        end if
      end if
 
-if (trim(ebsdnl%indexingmode).eq.'dynamic') then
+if (trim(dinl%indexingmode).eq.'dynamic') then
 !$OMP DO SCHEDULE(DYNAMIC)
 
      do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
        binned = 0.0
        quat = ro2qu(FZarray(1:4,(ii-1)*Nd+pp))
 
-       if (ebsdnl%energyaverage .eq. 0) then
-         call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,master%rgx,&
-                                        master%rgy,master%rgz,binned,Emin,Emax,mask,prefactor)
-       else if (ebsdnl%energyaverage .eq. 1) then 
-         call CalcEBSDPatternSingleApprox(jpar,quat,acc_array,mLPNH_simple,mLPSH_simple,master%rgx,&
-                                                   master%rgy,master%rgz,binned,mask,prefactor)
+       if (dinl%energyaverage .eq. 0) then
+         call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,EBSDdetector%rgx,&
+                                        EBSDdetector%rgy,EBSDdetector%rgz,binned,Emin,Emax,mask,prefactor)
+       else if (dinl%energyaverage .eq. 1) then 
+         call CalcEBSDPatternSingleApprox(jpar,quat,acc_array,mLPNH_simple,mLPSH_simple,EBSDdetector%rgx,&
+                                                   EBSDdetector%rgy,EBSDdetector%rgz,binned,mask,prefactor)
        else
          stop 'Invalid value of energyaverage'
        end if
 
-       if (ebsdnl%scalingmode .eq. 'gam') then
-         binned = binned**ebsdnl%gammavalue
+       if (dinl%scalingmode .eq. 'gam') then
+         binned = binned**dinl%gammavalue
        end if
 
 ! hi pass filtering
@@ -1268,7 +1090,7 @@ if (trim(ebsdnl%indexingmode).eq.'dynamic') then
        
        EBSDpatternintd = ((binned - mi)/ (ma-mi))
        EBSDpatterninteger = nint(EBSDpatternintd*255.0)
-       EBSDpatternad =  adhisteq(ebsdnl%nregions,binx,biny,EBSDpatterninteger)
+       EBSDpatternad =  adhisteq(dinl%nregions,binx,biny,EBSDpatterninteger)
        binned = float(EBSDpatternad)
 
        imagedictflt = 0.0
@@ -1331,7 +1153,7 @@ end if
 
 end do dictionaryloop
 
-if (ebsdnl%keeptmpfile.eq.'n') then
+if (dinl%keeptmpfile.eq.'n') then
     close(itmpexpt,status='delete')
 else
     close(itmpexpt,status='keep')
@@ -1341,7 +1163,7 @@ end if
 ierr = clReleaseKernel(kernel)
 call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
 
-if (trim(ebsdnl%indexingmode).eq.'static') then
+if (trim(dinl%indexingmode).eq.'static') then
 ! close file and nullify pointer
     call HDF_pop(HDF_head,.TRUE.)
     call h5close_EMsoft(hdferr)
@@ -1360,7 +1182,7 @@ call WriteValue('Number of experimental patterns indexed per second : ',io_real,
 ! ===================
 
 ! fill the ipar array with integer parameters that are needed to write the h5ebsd file
-! (anything other than what is already in the ebsdnl structure)
+! (anything other than what is already in the dinl structure)
 ipar = 0
 ipar(1) = nnk
 ipar(2) = Ne*ceiling(float(totnumexpt)/float(Ne))
@@ -1369,11 +1191,11 @@ ipar(4) = Nd*ceiling(float(FZcnt)/float(Nd))
 ipar(5) = FZcnt
 ipar(6) = pgnum
 if (ROIselected.eqv..TRUE.) then
-  ipar(7) = ebsdnl%ROI(3)
-  ipar(8) = ebsdnl%ROI(4)
+  ipar(7) = dinl%ROI(3)
+  ipar(8) = dinl%ROI(4)
 else
-  ipar(7) = ebsdnl%ipf_wd
-  ipar(8) = ebsdnl%ipf_ht
+  ipar(7) = dinl%ipf_wd
+  ipar(8) = dinl%ipf_ht
 end if 
 
 allocate(OSMmap(jjend, iiiend))
@@ -1381,22 +1203,22 @@ allocate(OSMmap(jjend, iiiend))
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
-if (ebsdnl%datafile.ne.'undefined') then 
+if (dinl%datafile.ne.'undefined') then 
   vendor = 'TSL'
-  call h5ebsd_writeFile(vendor, ebsdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
+  call h5ebsd_writeFile(vendor, dinl, mcnl%xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
                         dpmap, progname, nmldeffile, OSMmap)
-  call Message('Data stored in h5ebsd file : '//trim(ebsdnl%datafile))
+  call Message('Data stored in h5ebsd file : '//trim(dinl%datafile))
 end if
 
-if (ebsdnl%ctffile.ne.'undefined') then 
-  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
-  call Message('Data stored in ctf file : '//trim(ebsdnl%ctffile))
+if (dinl%ctffile.ne.'undefined') then 
+  call ctfebsd_writeFile(dinl,mcnl%xtalname,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
+  call Message('Data stored in ctf file : '//trim(dinl%ctffile))
 end if
 
-if (ebsdnl%angfile.ne.'undefined') then 
-  write (*,*) 'ang format not available until Release 3.2'
-  !call angebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain)
-  !call Message('Data stored in ang file : '//trim(ebsdnl%angfile))
+if (dinl%angfile.ne.'undefined') then 
+  write (*,*) 'ang format not available until Release 4.2'
+  !call angebsd_writeFile(dinl,ipar,indexmain,eulerarray,resultmain)
+  !call Message('Data stored in ang file : '//trim(dinl%angfile))
 end if
 
 ! close the fortran HDF5 interface
@@ -1404,14 +1226,14 @@ call h5close_EMsoft(hdferr)
 
 ! if requested, we notify the user that this program has completed its run
 if (trim(EMsoft_getNotify()).ne.'Off') then
-  if (trim(ebsdnl%Notify).eq.'On') then 
+  if (trim(dinl%Notify).eq.'On') then 
     NumLines = 3
     allocate(MessageLines(NumLines))
 
     call hostnm(c)
  
     MessageLines(1) = 'EMEBSDDI program has ended successfully'
-    MessageLines(2) = 'Indexed data stored in '//trim(ebsdnl%datafile)
+    MessageLines(2) = 'Indexed data stored in '//trim(dinl%datafile)
     write (exectime,"(F15.0)") tstop  
     MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
     TitleMessage = 'EMsoft on '//trim(c)

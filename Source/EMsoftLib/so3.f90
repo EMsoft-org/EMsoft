@@ -379,6 +379,7 @@ else
         c2 = c2.and.( dabs( 0.5D0*r(1)-LPs%srt*r(2)).le.r1 )
         c2 = c2.and.( dabs(r(2)).le.r1 )
         c2 = c2.and.( dabs(r(1)).le.r1 )
+! add the 2-D quasi crystal type for 822, 1022, and 1222 rotational groups
     end select
     res = c2
   end if
@@ -414,8 +415,8 @@ character(3), INTENT(IN)                  :: ot
 
 logical                                   :: res, c1, c2
 real(kind=dbl)                            :: r(3)
-real(kind=dbl),parameter                  :: r1 = 1.0D0
-real(kind=dbl),parameter                  :: eps = 1.0D-6
+real(kind=dbl),parameter                  :: r1  = 1.0D0
+real(kind=dbl),parameter                  :: eps = 1.0D-8
 
 r(1:3) = rod(1:3) * rod(4)
 

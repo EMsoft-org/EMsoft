@@ -237,7 +237,7 @@ write (*,*) 'xtalname  = ', ebsdnl%MCxtalname
   resultmain(1,1:Nexp) = dplist(1,1:Nexp)
   noindex = .TRUE.
   call h5open_EMsoft(hdferr)
-  call ctfebsd_writeFile(ebsdnl,ipar,indexmain,avEuler,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex)
+  call ctfebsd_writeFile(ebsdnl,ebsdnl%MCxtalname,ipar,indexmain,avEuler,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex)
   call h5close_EMsoft(hdferr)
   call Message('Data stored in ctf file : '//trim(enl%averagectffile))
 end if 

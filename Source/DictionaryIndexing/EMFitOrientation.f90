@@ -41,6 +41,9 @@
 !
 !> @date 08/01/16  SS 1.0 original
 !> @date 03/12/18 MDG 1.1 moved dot product file reading to subroutine
+!
+!> THIS PROGRAM IS SLATED TO BE REPLACED BY A MORE GENERAL REFINEMENT PROGRAM IN APRIL 2018
+!> DO NOT SPEND ANY TIME MODIFYING THIS CODE !!!
 !--------------------------------------------------------------------------
 program EMFitOrientation
 
@@ -939,7 +942,8 @@ if(modalityname .eq. 'EBSD') then
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
     if (ebsdnl%ctffile.ne.'undefined') then 
-      call ctfebsd_writeFile(ebsdnl,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM,EBSDDIdata%IQ,noindex=.TRUE.)
+      call ctfebsd_writeFile(ebsdnl,ebsdnl%MCxtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM, &
+                             EBSDDIdata%IQ,noindex=.TRUE.)
       call Message('Data stored in ctf file : '//trim(enl%ctffile))
     end if
 
