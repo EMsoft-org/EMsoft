@@ -47,6 +47,7 @@
 !> @date 02/15/18 MDG 1.2 added TSL and Bruker HDF formatted files
 !> @date 02/20/18 MDG 1.3 added option to extract a single pattern from the input file
 !> @date 04/01/18 MDG 2.0 added routine to preprocess EBSD patterns 
+!> @date 05/09/18 MDG 2.1 added .up1 TSL format 
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -67,7 +68,8 @@ integer(kind=irg),allocatable,save,private          :: semix(:)
 integer(kind=irg),allocatable,save,private          :: semiy(:)
 integer(HSIZE_T),save,private                       :: semixydims(1)
 
-! this one is used to keep track of the even/odd patterns start locations in the .up2 input format
+! this one is used to keep track of the even/odd patterns start locations in the .up1 and .up2 input formats
+logical,save,private                                :: up1wdLeven, up1halfshift
 logical,save,private                                :: up2wdLeven, up2halfshift
 integer(kind=ill),save,private                      :: offset
 
@@ -97,12 +99,13 @@ integer(kind=irg)                       :: itype
 itype = -1
 
 if (trim(inputtype).eq."Binary") itype = 1
-if (trim(inputtype).eq."TSLup2") itype = 2
-if (trim(inputtype).eq."TSLHDF") itype = 3
-if (trim(inputtype).eq."OxfordBinary") itype = 4
-if (trim(inputtype).eq."OxfordHDF") itype = 5
-if (trim(inputtype).eq."EMEBSD") itype = 6
-if (trim(inputtype).eq."BrukerHDF") itype = 7
+if (trim(inputtype).eq."TSLup1") itype = 2
+if (trim(inputtype).eq."TSLup2") itype = 3
+if (trim(inputtype).eq."TSLHDF") itype = 4
+if (trim(inputtype).eq."OxfordBinary") itype = 5
+if (trim(inputtype).eq."OxfordHDF") itype = 6
+if (trim(inputtype).eq."EMEBSD") itype = 7
+if (trim(inputtype).eq."BrukerHDF") itype = 8
 
 end function get_input_type
 
@@ -200,6 +203,7 @@ end subroutine invert_ordering_arrays
 !> @date 02/15/18 MDG 1.2 added special handling for out-of-order patterns in the Bruker HDF5 format
 !> @date 02/18/18 MDG 1.3 added special handling for patterns with odd number of pixels in .up2 format
 !> @date 04/12/18 MDG 1.4 added option for patterns that don't start at record boundaries in up2 format
+!> @date 05/10/18 MDG 1.5 changed .up2 access mode to STREAM to facilitate record positioning
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -218,7 +222,8 @@ integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
-integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), ios
+integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
+                                           ios, up1header(4)
 character(fnlen)                        :: groupname, dataset, platform
 
 istat = 0
@@ -250,7 +255,7 @@ select case (itype)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
 
-    case(2)  ! "TSLup2"
+    case(2,3)  ! "TSLup1", TSLup2"
         if (trim(platform).eq.'Windows') then
             recordsize = 1    ! windows record length is in units of 4 bytes
         else
@@ -259,9 +264,17 @@ select case (itype)
         ! for wd * L odd, we need to take care of the proper starting bytes for each pattern
         ! so we check for wd * L odd here and initialize a flag
         if (mod(npat * L,2).eq.0) then
-          up2wdLeven = .TRUE.
+          if (itype.eq.2) then 
+            up1wdLeven = .TRUE.
+          else
+            up2wdLeven = .TRUE.
+          end if
         else
-          up2wdLeven = .FALSE.
+          if (itype.eq.2) then 
+            up1wdLeven = .FALSE.
+          else
+            up2wdLeven = .FALSE.
+          end if
         end if 
         open(unit=funit,file=trim(ename), &
             status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
@@ -278,35 +291,38 @@ select case (itype)
         ! to start reading the patterns.  The tricky thing is that the offset parameter, while even,
         ! is not necessarily a multiple of the record size of 4 bytes (that would be too easy, right?).
         ! So, we read the first four integers and consider the fourth number...
-        do i=1,4
-          read(unit=funit,rec=i, iostat=ios) up2header(i)
-        end do
-        up2halfshift = .FALSE.
-        if (up2header(4).eq.16) then 
-          offset = 4_ill
-        else
-          offset = up2header(4)
-          offset = offset/4_ill
-          ! if the difference between up2header(4) and 16 is a multiple of 4, then we're good and 
-          ! we just add that multiple to the offset for the header
-          if (mod(up2header(4),4).ne.0) then
-          ! the pattern starts in the middle of a 4-byte record (was that really necessary?) so we set the
-          ! offset to the header value modulo 4; e.g., up2header(4)=42 will result in offset=10, and then 
-          ! we need to keep track of the fact that we need to skip the first 2 bytes before the pattern starts...
-            up2halfshift = .TRUE.
+        if (itype.eq.3) then
+          do i=1,4
+            read(unit=funit,rec=i, iostat=ios) up2header(i)
+          end do
+          up2halfshift = .FALSE.
+          if (up2header(4).eq.16) then 
+            offset = 4_ill
+          else
+            offset = up2header(4)
+            offset = offset/4_ill
+            ! if the difference between up2header(4) and 16 is a multiple of 4, then we're good and 
+            ! we just add that multiple to the offset for the header
+            if (mod(up2header(4),4).ne.0) then
+            ! the pattern starts in the middle of a 4-byte record (was that really necessary?) so we set the
+            ! offset to the header value modulo 4; e.g., up2header(4)=42 will result in offset=10, and then 
+            ! we need to keep track of the fact that we need to skip the first 2 bytes before the pattern starts...
+              up2halfshift = .TRUE.
+            end if
           end if
+        else ! we have a .up1 file
         end if
 
-    case(4)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary"
         call FatalError("openExpPatternFile","OxfordBinary input format not yet implemented")
 
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
         call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(3, 6)  ! "TSLHDF", "EMEBSD"
+    case(4, 7)  ! "TSLHDF", "EMEBSD"
         nullify(pmHDF_head)
         call h5open_EMsoft(hdferr)
         ! open the file
@@ -321,7 +337,7 @@ select case (itype)
         ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
-    case(7)  !  "BrukerHDF"
+    case(8)  !  "BrukerHDF"
         nullify(pmHDF_head)
         call h5open_EMsoft(hdferr)
         ! open the file
@@ -460,7 +476,9 @@ select case (itype)
         exppatarray((jj-kkstart)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 
-    case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
+    case(2)  ! "TSLup1"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
+
+    case(3)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
 
 ! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
 ! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
@@ -512,13 +530,13 @@ select case (itype)
 ! finally, correct for the fact that the original values were unsigned integers
       where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
 
-    case(4)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary"
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(3,6)  ! "TSLHDF" "EMEBSD" passed tests on 2/14/18 by MDG
+    case(4,7)  ! "TSLHDF" "EMEBSD" passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
@@ -534,7 +552,7 @@ select case (itype)
             end do 
         end do 
 
-    case(7)  ! "BrukerHDF"  passed tests on 2/16/18 by MDG
+    case(8)  ! "BrukerHDF"  passed tests on 2/16/18 by MDG
 ! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
 ! were acquired, we need to read each patttern separately from the file using the appropriate offset, which 
 ! is calculated using the semix and semiy arrays.  That means that we have to redefine both dims3 and offset3
@@ -620,7 +638,9 @@ select case (itype)
         read(funit,rec=offset3(3)) imageexpt
         exppat(1:L) = imageexpt(1:L)
 
-    case(2)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
+    case(2)  ! "TSLup1"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
+
+    case(3)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
 ! tested and compared to IDL version of read_up2 routine on 2/20/18, MDG.
 ! the requested pattern should be in the encoded in the third entry of the offset3 array.
 ! we need to use ill-type integers since the numbers can get pretty large...
@@ -670,13 +690,13 @@ select case (itype)
 ! finally, correct for the fact that the original values were unsigned integers
         where(exppat.lt.0.0) exppat = exppat + 65536.0
 
-    case(4)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary"
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(3,6)  ! "TSLHDF" "EMEBSD" passed tests on 2/20/18 by MDG
+    case(4,7)  ! "TSLHDF" "EMEBSD" passed tests on 2/20/18 by MDG
 ! read a hyperslab single pattern section from the HDF5 input file
 ! dims3 should have the pattern dimensions and then 1_HSIZE_T for the third dimension
 ! offset3 should have (0,0) and then the offset of the pattern (0-based)
@@ -692,7 +712,7 @@ select case (itype)
             end do 
         end do 
 
-    case(7)  ! "BrukerHDF"  to be tested
+    case(8)  ! "BrukerHDF"  to be tested
 ! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
 ! were acquired, we need to read each patttern separately from the file using the appropriate offset, which 
 ! is calculated using the semix and semiy arrays.  That means that we have to redefine both dims3 and offset3
@@ -746,21 +766,21 @@ select case (itype)
     case(1)  ! "Binary"
         close(unit=funit,status='keep')
 
-    case(2)  ! "TSLup2"
+    case(2,3)  ! "TSLup2"
         close(unit=funit,status='keep')
 
-    case(3, 6)  ! "TSLHDF" "EMEBSD"
+    case(4, 7)  ! "TSLHDF" "EMEBSD"
         call HDF_pop(pmHDF_head,.TRUE.)
         call h5close_EMsoft(hdferr)
         nullify(pmHDF_head)
 
-    case(4)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary"
         call FatalError("closeExpPatternFile","input format not yet implemented")
 
-    case(5)  ! "OxfordHDF"
+    case(6)  ! "OxfordHDF"
         call FatalError("closeExpPatternFile","input format not yet implemented")
 
-    case(7)  !  "BrukerHDF"
+    case(8)  !  "BrukerHDF"
         call HDF_pop(pmHDF_head,.TRUE.)
         call h5close_EMsoft(hdferr)
         nullify(pmHDF_head)
