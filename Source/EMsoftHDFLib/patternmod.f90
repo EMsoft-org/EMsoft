@@ -223,7 +223,7 @@ character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
-                                           ios, up1header(4)
+                                           ios, up1header(4), version, patx, paty, myoffset
 character(fnlen)                        :: groupname, dataset, platform
 
 istat = 0
@@ -256,61 +256,22 @@ select case (itype)
         end if
 
     case(2,3)  ! "TSLup1", TSLup2"
-        if (trim(platform).eq.'Windows') then
-            recordsize = 1    ! windows record length is in units of 4 bytes
-        else
-            recordsize = 4    ! all other platforms use record length in units of bytes
-        end if
-        ! for wd * L odd, we need to take care of the proper starting bytes for each pattern
-        ! so we check for wd * L odd here and initialize a flag
-        if (mod(npat * L,2).eq.0) then
-          if (itype.eq.2) then 
-            up1wdLeven = .TRUE.
-          else
-            up2wdLeven = .TRUE.
-          end if
-        else
-          if (itype.eq.2) then 
-            up1wdLeven = .FALSE.
-          else
-            up2wdLeven = .FALSE.
-          end if
-        end if 
-        open(unit=funit,file=trim(ename), &
-            status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
-        if (ierr.ne.0) then
-            io_int(1) = ierr
+        ! open the file in STREAM access mode to allow for byte-level access
+        open(unit=funit,file=trim(ename), status='old',access='stream',iostat=ios)
+        if (ios.ne.0) then
+            io_int(1) = ios
             call WriteValue("File open error; error type ",io_int,1)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
-        ! normally, the first four 4-byte entries form a header with a version number (unimportant), then 
+        ! the first four 4-byte entries form a header with a version number (unimportant), then 
         ! the two dimensions of patterns, and finally an offset parameter indicating at which byte
-        ! the first pattern starts.  Often, this offset parameter is 16, indicating that there is 
-        ! no space between the header of four 4-byte integers and the start of the first pattern.
-        ! If there is space, then we need to make sure that we get the correct offset parameter
-        ! to start reading the patterns.  The tricky thing is that the offset parameter, while even,
-        ! is not necessarily a multiple of the record size of 4 bytes (that would be too easy, right?).
-        ! So, we read the first four integers and consider the fourth number...
-        if (itype.eq.3) then
-          do i=1,4
-            read(unit=funit,rec=i, iostat=ios) up2header(i)
-          end do
-          up2halfshift = .FALSE.
-          if (up2header(4).eq.16) then 
-            offset = 4_ill
-          else
-            offset = up2header(4)
-            offset = offset/4_ill
-            ! if the difference between up2header(4) and 16 is a multiple of 4, then we're good and 
-            ! we just add that multiple to the offset for the header
-            if (mod(up2header(4),4).ne.0) then
-            ! the pattern starts in the middle of a 4-byte record (was that really necessary?) so we set the
-            ! offset to the header value modulo 4; e.g., up2header(4)=42 will result in offset=10, and then 
-            ! we need to keep track of the fact that we need to skip the first 2 bytes before the pattern starts...
-              up2halfshift = .TRUE.
-            end if
-          end if
-        else ! we have a .up1 file
+        ! the first pattern starts.  We don't really need the other parameters, but we'll read them anyway.
+        read(unit=funit, iostat=ios) version, patx, paty, myoffset
+        offset = myoffset + 1_ill
+        if (ios.ne.0) then
+            io_int(1) = ios
+            call WriteValue("Read error in .up1/2 file header",io_int,1)
+            call FatalError("openExpPatternFile","Cannot continue program")
         end if
 
     case(5)  ! "OxfordBinary"
@@ -401,6 +362,7 @@ end function openExpPatternFile
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/21/18 MDG 1.1 added optional Region-of-Interest capability
 !> @date 04/12/18 MDG 1.2 added option for patterns that don't start at record boundaries in up2 format
+!> @date 05/10/18 MDG 1.3 completely reworked up1 and up2 reading by switching to STREAM access instead of DIRECT access
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
@@ -423,13 +385,13 @@ integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
-integer(kind=irg),allocatable           :: buffer(:)
+character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
-                                           kkstart, kkend
+                                           kkstart, kkend, multfactor 
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -441,28 +403,21 @@ liii = iii
 lwd = wd
 lpatsz = patsz
 lL = L
+if (itype.eq.2) multfactor = 1_ill
+if (itype.eq.3) multfactor = 2_ill
+
 if (present(ROI)) then 
  kkstart = ROI(1)
  kkend = kkstart + ROI(3) - 1_ill 
- if ((itype.eq.2).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
-! we need to skip the first ROI(2)-1 rows (and potentially the first pattern as well)
+! for the TSL up1 and up2 formats we need to skip the first ROI(2)-1 rows and set the correct offset value (in bytes) 
+ if (((itype.eq.2).or.(itype.eq.3)).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
    do ii=1,ROI(2)-1
-      offset = offset + (lwd * lL) / 2_ill 
-      if ((up2wdLeven.eqv..FALSE.).and.(mod(ii,2).eq.0)) then
-        offset = offset + 1_ill
-      end if
+      offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
    end do
-   offset = offset + lL / 2_ill
  end if
 else
  kkstart = 1_ill
  kkend = dims3(3)
-! after emailing with Stuart, we decided that we do *not* need to skip the first pattern for the .up2 format;
-! there *is* an extra pattern in the file but it is the last one, not the first one...
-!  if (itype.eq.2) then
-! ! for the first row, we need to skip the first pattern completely...  needs to be verified
-!    if (iii.eq.1) offset = offset + lL / 2_ill
-!  end if
 end if
 
 select case (itype)
@@ -476,36 +431,27 @@ select case (itype)
         exppatarray((jj-kkstart)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
       end do
 
-    case(2)  ! "TSLup1"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
-
-    case(3)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
-
-! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
-! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
-! then the next pattern will start in the middle of a 4-byte block... since we are reading things in
-! multiples of 4 bytes (recl), that means that alternating patterns will begin at the start of the 
-! 4-byte blocks or in the middle... Hence the somewhat convoluted code below which attempts to keep 
-! track of where the current pattern starts (byte 1 or 3).
-      buffersize = (lwd * lL) / 2_ill + 1_ill   ! +1 to allow for half record at the end.
+    case(2,3)  ! "TSLup1", TSLup2"  
+! up1 file has single bytes as entries, up2 has 2-byte unsigned integers
+      ! generate a buffer of the correct size ... 
+      buffersize = (lwd * lL) * multfactor
       allocate(buffer(buffersize))
-! first we read the entire buffer as 4-byte integers
-      do ii=1_ill,buffersize
-        read(unit=funit,rec=offset+ii, iostat=ios) buffer(ii)
-      end do
+! first we read the entire buffer as bytes
+      read(unit=funit, pos=offset, iostat=ios) buffer
 
-! we convert the 4-byte integers into pairs of 2-byte integers with appropriate 2-byte shifts where needed
-      allocate(pairs(2_ill*buffersize))
-      pairs = transfer(buffer,pairs)
-      ! if the header(4) entry read in the previous function indicates that the first pattern starts
-      ! in the middle of a record, then we need to shift the pairs array one value to the left, regardless
-      ! of the up2wdLeven value... and we need to keep doing that all the time... 
-      if (up2halfshift.eqv..TRUE.) pairs = cshift(pairs,1_ill)
-      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then  ! shift the array by one entry to the left 
-        pairs = cshift(pairs,1_ill)
+! then we convert the byte values into single byte or 2-byte integers 
+      if (multfactor.eq.2_ill) then ! .up2 format
+        allocate(pairs(buffersize/2_ill))
+        pairs = transfer(buffer,pairs)
+      else ! .up1 format
+        allocate(pairs(buffersize))
+        do jj=1_ill,buffersize
+         pairs(jj) = ichar(buffer(jj)) 
+        end do
       end if
       deallocate(buffer)
 
-! then we need to place them in the exppatarray array with the proper offsets if patsz ne L 
+! then we need to place them in the exppatarray array 
       exppatarray = 0.0
       pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
       do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI; remember to flip the patterns upside down !
@@ -519,16 +465,16 @@ select case (itype)
         end do 
       end do 
 
-! increment the row offset parameter, taking into account any necessary shifts due to an odd value of wd*L
-      offset = offset + (lwd * lL) / 2_ill 
-
-      if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then
-        offset = offset + 1_ill
-      end if
+! increment the row offset parameter (in bytes)
+      offset = offset + (lwd * lL) * multfactor
       deallocate(pairs)
 
 ! finally, correct for the fact that the original values were unsigned integers
-      where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
+      if (itype.eq.3) then
+        where(exppatarray.lt.0.0) exppatarray = exppatarray + 65536.0
+      else
+        where(exppatarray.lt.0.0) exppatarray = exppatarray + 256.0
+      end if
 
     case(5)  ! "OxfordBinary"
 
@@ -617,16 +563,20 @@ integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
-integer(kind=irg),allocatable           :: buffer(:)
+character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
-integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, l1, l2
+integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
+                                           l1, l2, multfactor
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
 if (hdfnumg.gt.0) dataset = trim(HDFstrings(hdfnumg+1))
+
+if (itype.eq.2) multfactor = 1_ill
+if (itype.eq.3) multfactor = 2_ill
 
 select case (itype)
     case(1)  ! "Binary"  
@@ -638,40 +588,35 @@ select case (itype)
         read(funit,rec=offset3(3)) imageexpt
         exppat(1:L) = imageexpt(1:L)
 
-    case(2)  ! "TSLup1"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
 
-    case(3)  ! "TSLup2"  THIS MAY NOT WORK CORRECTLY ON WINDOWS DUE TO THE RECORD LENGTH BEING DIFFERENT !!!
+    case(2,3)  ! "TSL_up1", TSLup2" 
 ! tested and compared to IDL version of read_up2 routine on 2/20/18, MDG.
 ! the requested pattern should be in the encoded in the third entry of the offset3 array.
 ! we need to use ill-type integers since the numbers can get pretty large...
-       lwd = wd
-       lpatsz = patsz
-       lL = L
-       l1 = mod(offset3(3),wd) + 1_ill
-       l2 = offset3(3)/wd + 1_ill
-! we need to be really really careful here because the .up2 file has 2-byte integers in it and they 
-! run continuously with no separation between patterns; so, if a pattern has an odd number of pixels,
-! then the next pattern will start in the middle of a 4-byte block... since we are reading things in
-! multiples of 4 bytes (recl), that means that alternating patterns will begin at the start of the 
-! 4-byte blocks or in the middle... Hence the somewhat convoluted code below which attempts to keep 
-! track of where the current pattern starts (byte 1 or 3).  Also, we are skipping the very first pattern
-! in the file, so the initial offset parameter is 4 + first-pattern-size/2; special care is needed
-! when pattern size and number of patterns in each row are both odd integers.
+        lwd = wd
+        lpatsz = patsz
+        lL = L
+        l1 = offset3(3)
+        if (itype.eq.2) then
+         multfactor = 1_ill
+        else
+         multfactor = 2_ill
+        end if
 
-        offset = 4_ill + lL / 2_ill  ! initial offset
-        offset = offset + ( (l2 * lwd + l1) * lL ) / 2_ill 
-        buffersize = lL / 2_ill + 1_ill   ! +1 to allow for half record at the end.
+        offset = offset + (l1-1_ill) * lpatsz * multfactor
+        buffersize = lpatsz * multfactor
         allocate(buffer(buffersize))
-! ! first we read the entire buffer as 4-byte integers
-        do ii=1_ill,buffersize
-          read(unit=funit,rec=offset+ii, iostat=ios) buffer(ii)
-        end do
+        read(unit=funit, pos=offset, iostat=ios) buffer
 
-! ! we convert the 4-byte integers into pairs of 2-byte integers
-        allocate(pairs(2_ill*buffersize))
-        pairs = transfer(buffer,pairs)
-        if ((up2wdLeven.eqv..FALSE.).and.(mod(iii,2).eq.0)) then  ! shift the array by one entry to the left 
-          pairs = cshift(pairs,1_ill)
+! then we convert the byte values into single byte or 2-byte integers 
+        if (multfactor.eq.2_ill) then ! .up2 format
+          allocate(pairs(buffersize/2_ill))
+          pairs = transfer(buffer,pairs)
+        else ! .up1 format
+          allocate(pairs(buffersize))
+          do jj=1_ill,buffersize
+           pairs(jj) = ichar(buffer(jj)) 
+          end do
         end if
         deallocate(buffer)
 
@@ -688,7 +633,11 @@ select case (itype)
         deallocate(pairs)
 
 ! finally, correct for the fact that the original values were unsigned integers
-        where(exppat.lt.0.0) exppat = exppat + 65536.0
+        if (itype.eq.3) then
+          where(exppat.lt.0.0) exppat = exppat + 65536.0
+        else
+          where(exppat.lt.0.0) exppat = exppat + 256.0
+        end if
 
     case(5)  ! "OxfordBinary"
 
