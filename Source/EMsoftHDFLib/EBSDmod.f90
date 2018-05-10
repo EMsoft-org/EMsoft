@@ -162,11 +162,6 @@ open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
 read(dataunit,*) angletype
-if (angletype.eq.'eu') then 
-  enl%anglemode = 'euler'
-else
-  enl%anglemode = 'quats'
-end if
 
 ! then the number of angles in the file
 read(dataunit,*) numangles
@@ -176,7 +171,7 @@ if (present(verbose)) then
   call WriteValue('Number of angle entries = ',io_int,1)
 end if
 
-if (enl%anglemode.eq.'euler') then
+if (angletype.eq.'eu') then
 ! allocate the euler angle array
   allocate(eulang(3,numangles),stat=istat)
 ! if istat.ne.0 then do some error handling ... 
@@ -192,7 +187,6 @@ if (enl%anglemode.eq.'euler') then
 
 ! convert the euler angle triplets to quaternions
   allocate(angles%quatang(4,numangles),stat=istat)
-! if (istat.ne.0) then ...
 
   if (present(verbose)) call Message('  -> converting Euler angles to quaternions', frm = "(A/)")
   
@@ -221,7 +215,7 @@ if (enl%axisangle(4).ne.0.0) then
   end do 
 end if
 
-write (*,*) 'completed reading Euler angles'
+call Message('completed reading Euler angles')
 
 end subroutine EBSDreadangles
 
@@ -277,11 +271,6 @@ open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
 read(dataunit,*) angletype
-if (angletype.eq.'eu') then 
-  enl%anglemode = 'euler'
-else
-  enl%anglemode = 'quats'
-end if
 
 ! then the number of angles in the file
 read(dataunit,*) numangles
@@ -291,7 +280,7 @@ if (present(verbose)) then
   call WriteValue('Number of angle entries = ',io_int,1)
 end if
 
-if (enl%anglemode.eq.'euler') then
+if (angletype.eq.'eu') then
 ! allocate the euler angle array
   allocate(eulang(3,numangles),stat=istat)
 ! if istat.ne.0 then do some error handling ... 
@@ -325,18 +314,7 @@ end if
 
 close(unit=dataunit,status='keep')
 
-!====================================
-! Do we need to apply an additional axis-angle pair rotation to all the quaternions ?
-!
-if (enl%axisangle(4).ne.0.0) then
-  enl%axisangle(4) = enl%axisangle(4) * dtor
-  qax = ax2qu( enl%axisangle )
-  do i=1,numangles
-    angles%quatang(1:4,i) = quat_mult(qax,angles%quatang(1:4,i))
-  end do 
-end if
-
-write (*,*) 'completed reading Euler angles'
+call Message('completed reading Euler angles')
 
 end subroutine EBSDFullreadangles
 
@@ -393,10 +371,7 @@ open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
 read(dataunit,*) angletype
-if (angletype.eq.'eu') then 
-  enl%anglemode = 'euler'
-else
-!  enl%anglemode = 'quats'
+if (angletype.ne.'eu') then 
   call FatalError("EBSDreadorpcdef","Other orientation formats to be implemented; only Euler for now")
 end if
 
@@ -2199,11 +2174,11 @@ end subroutine CalcEBSDPatternSingleFullFast
 !> @param enl EBSD name list structure
 !
 !> @date 06/24/14  MDG 1.0 original
-!> @date 07/01/15   SS  1.1 added omega as the second tilt angle
-!> @date 07/07/15   SS  1.2 correction to the omega tilt parameter; old version in the comments
-
+!> @date 07/01/15   SS 1.1 added omega as the second tilt angle
+!> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
+!> @date 05/10/18  MDG 1.3 added arguments to clean up namelists 
 !--------------------------------------------------------------------------
-recursive subroutine EBSDFullGenerateDetector(enl, EBSDdetector, verbose)
+recursive subroutine EBSDFullGenerateDetector(enl, EBSDdetector, numEbins, numzbins, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDFullGenerateDetector
 
 use local
@@ -2219,6 +2194,7 @@ IMPLICIT NONE
 
 type(EBSDFullNameListType),INTENT(INOUT):: enl
 type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
+integer(kind=irg),INTENT(IN)            :: numEbins, numzbins
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 ! scintillator coordinate ararays [microns]
@@ -2241,7 +2217,7 @@ scin_x = - ( enl%xpc - ( 1.0 - enl%numsx ) * 0.5 - (/ (i-1, i=1,enl%numsx) /) ) 
 scin_y = ( enl%ypc - ( 1.0 - enl%numsy ) * 0.5 - (/ (i-1, i=1,enl%numsy) /) ) * enl%delta
 
 ! auxiliary angle to rotate between reference frames
-alp = 0.5 * cPi - (enl%MCsig - enl%thetac) * dtor
+alp = 0.5 * cPi - (enl%sig - enl%thetac) * dtor
 ca = cos(alp)
 sa = sin(alp)
 
@@ -2264,7 +2240,7 @@ do j=1,enl%numsx
 
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
 
-   allocate(EBSDdetector%detector(j,i)%lambdaEZ(1:enl%numEbins,1:enl%numzbins))
+   allocate(EBSDdetector%detector(j,i)%lambdaEZ(1:numEbins,1:numzbins))
 
    EBSDdetector%detector(j,i)%lambdaEZ = 0.D0
 

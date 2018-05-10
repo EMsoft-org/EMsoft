@@ -82,7 +82,8 @@
  devid = 1,
 ! number of work items (depends on GPU card; leave unchanged)
  globalworkgrpsz = 512,
-
+! number of electrons per work item
+ num_el = 10,
 !===============================================================
 !=========================FILE I/O==============================
 !===============================================================

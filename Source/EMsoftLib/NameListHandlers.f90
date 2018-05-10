@@ -6374,6 +6374,7 @@ logical                                   :: skipread = .FALSE.
 character(fnlen)        :: xtalname
 real(kind=dbl)          :: dmin
 integer(kind=irg)       :: totnum_el
+integer(kind=irg)       :: num_el
 real(kind=dbl)          :: EkeV
 real(kind=dbl)          :: Ehistmin
 real(kind=dbl)          :: Ebinsize
@@ -6407,12 +6408,13 @@ integer(kind=irg)       :: multiplier
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDFulldata / xtalname, dmin, totnum_el, EkeV, Ehistmin, Ebinsize, depthmax, depthstep, beamcurrent,&
           dwelltime, sig, omega, L, xpc, ypc, thetac, delta, numsx, numsy, binning, scalingmode, gammavalue, maskpattern,&
-          nthreads, platid, devid,  globalworkgrpsz, eulerconvention, anglefile, datafile, multiplier
+          nthreads, platid, devid,  globalworkgrpsz, eulerconvention, anglefile, datafile, multiplier, num_el
 ! set the input parameters to default values (except for xtalname, anglefile and datafile, which must be present)
 
 xtalname = 'undefined'        ! name of xtal
 dmin = 0.04D0                 ! maximum g vector used in computation
 totnum_el = 2000000000        ! number of electrons for MC run
+num_el = 10                   ! number of electrons per work item
 EkeV = 20.D0                  ! incident electron energy [kV]
 Ehistmin = 10.D0              ! cutoff energy [kV]
 Ebinsize = 1.D0               ! energy step size [kV]
@@ -6467,9 +6469,10 @@ if (.not.skipread) then
  end if
 end if
 
-enl%MCxtalname = xtalname                     ! name of xtal
+enl%xtalname = xtalname                       ! name of xtal
 enl%dmin = dmin                               ! maximum g vector used in computation
 enl%totnum_el = totnum_el                     ! number of electrons for MC run
+enl%num_el = num_el                           ! number of electrons per work item
 enl%EkeV = EkeV                               ! incident electron energy [kV]
 enl%Ehistmin = Ehistmin                       ! cutoff energy [kV]
 enl%Ebinsize = Ebinsize                       ! energy step size [kV]
@@ -6477,8 +6480,8 @@ enl%depthmax = depthmax                       ! depth cutoff [nm]
 enl%depthstep = depthstep                     ! depth bin size [nm]
 enl%beamcurrent = beamcurrent                 ! [nA]
 enl%dwelltime = dwelltime                     ! [micro seconds]
-enl%MCsig = sig                               ! sample tilt angle [degrees]
-enl%MComega = omega                           ! tilt about RD axis [degrees]
+enl%sig = sig                                 ! sample tilt angle [degrees]
+enl%omega = omega                             ! tilt about RD axis [degrees]
 enl%L = L                                     ! scintillator to sample distance [micro m]
 enl%xpc = xpc                                 ! units of pixel [dimensionless]
 enl%ypc = ypc                                 ! units of pixel [dimensionless] 
@@ -6498,22 +6501,6 @@ enl%eulerconvention = eulerconvention         ! euler angle convention
 enl%anglefile = anglefile                     ! list of euler angles for which simulation is done
 enl%datafile = datafile                       ! output HDF5 file
 enl%multiplier = multiplier
-
-! fill other namelist variables in the ebsd namelist; will be used to write the HDF5 files etc.
-enl%energyaverage = 0
-enl%spatialaverage = 'n'
-enl%alphaBD = 0.0
-enl%energyfile = 'undefined'
-enl%masterfile = 'undefined'
-enl%nsx = enl%numsx
-enl%nsy = enl%numsy
-enl%num_el = 10 ! this is variable in the MCOpenCL program, here we keep it to a fixed value
-enl%MCnthreads = enl%nthreads
-enl%npx = enl%numsx
-enl%npy = enl%numsy
-enl%MCmode = 'full'
-enl%numEbins =  int((enl%EkeV-enl%Ehistmin)/enl%Ebinsize)+1
-enl%numzbins =  int(enl%depthmax/enl%depthstep)+1
 
 end subroutine GetEBSDFullNameList
 

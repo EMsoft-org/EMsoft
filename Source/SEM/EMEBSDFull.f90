@@ -61,7 +61,7 @@ type(EBSDFullNameListType)             :: enl
 type(EBSDAngleType),pointer            :: angles
 type(EBSDDetectorType)                 :: EBSDdetector
 
-integer(kind=irg)                      :: istat, numangles
+integer(kind=irg)                      :: istat, numangles, numEbins, numzbins
 logical                                :: verbose
 
 interface
@@ -119,7 +119,9 @@ call EBSDFullreadangles(enl, numangles, angles, verbose=.TRUE.)
 ! generate the detector
 ! all lambdaEZ arrays are allocated in this subroutine, so no need to reallocate them
 allocate(EBSDdetector%detector(enl%numsx,enl%numsy))
-call EBSDFullGenerateDetector(enl, EBSDdetector, verbose=.TRUE.)
+numEbins =  int((enl%EkeV-enl%Ehistmin)/enl%Ebinsize)+1
+numzbins =  int(enl%depthmax/enl%depthstep)+1
+call EBSDFullGenerateDetector(enl, EBSDdetector, numEbins, numzbins, verbose=.TRUE.)
 
 ! compute full EBSD pattern
 call ComputeFullEBSDPatterns(enl, numangles, angles, EBSDdetector, progname, nmldeffile)
@@ -227,7 +229,7 @@ integer(c_size_t)                             :: cnum, cnuminfo
 
 ! dynamical calculation variables
 integer(kind=irg)                             :: nref, nns, nnw, iang, totstrong, totweak, numset, &
-                                                 gzero, ix, nat(100)
+                                                 gzero, ix, nat(100), numEbins, numzbins
 real(kind=sgl)                                :: kk(3), FN(3), kkk(3), qu(4), testval, nabsl
 type(reflisttype),pointer                     :: reflist,firstw, rltmp
 complex(kind=dbl)                             :: czero
@@ -294,7 +296,7 @@ allocate(cell)
 verbose = .TRUE.
 dmin = sngl(enl%dmin)
 EkeV = sngl(enl%Ekev)
-xtalname = trim(enl%MCxtalname)
+xtalname = trim(enl%xtalname)
 call Initialize_Cell(cell,Dyn, rlp, xtalname, dmin, EkeV, verbose)
 
 ! open HDF5 interface
@@ -358,14 +360,14 @@ steps = 300
 
 
 ! parameter used for binning MC results
-alpha = 0.5 * cPi - (enl%MCsig - enl%thetac)*dtoR
+alpha = 0.5 * cPi - (enl%sig - enl%thetac)*dtoR
 tana = tan(alpha)
 cota = 1.0/tana
 sa = sin(alpha)
 ca = cos(alpha)
 
-sig = enl%MCsig*dtoR
-omega = enl%MComega*dtoR
+sig = enl%sig*dtoR
+omega = enl%omega*dtoR
 globalworkgrpsz = enl%globalworkgrpsz
 num_el = enl%num_el ! no. of electron simulation by one work item
 num_max = globalworkgrpsz*globalworkgrpsz*num_el ! total simulation in one loop
@@ -373,6 +375,8 @@ totnum_el_nml = enl%totnum_el
 multiplier =  enl%multiplier
 totnum_el = totnum_el_nml * multiplier ! total number of electrons to simulate
 globalsize = (/ enl%globalworkgrpsz, enl%globalworkgrpsz /)
+numEbins =  int((enl%EkeV-enl%Ehistmin)/enl%Ebinsize)+1
+numzbins =  int(enl%depthmax/enl%depthstep)+1
 
 !===============================================================================
 !========================ALLOCATE ARRAYS HERE===================================
@@ -586,7 +590,7 @@ mainloop: do i = 1,(totnum_el/num_max+1)
 ! first add this electron to the correct exit distance vs. energy bin (coarser than the angular plot)
                     edis = abs(depthres(j))  ! distance from last scattering point to surface along trajectory
                     iz = nint(edis/enl%depthstep) +1
-                    if ( (iz.gt.0).and.(iz.le.enl%numzbins) ) then
+                    if ( (iz.gt.0).and.(iz.le.numzbins) ) then
                         val = val + 1
 
                         EBSDdetector%detector(idxy(1),idxy(2))%lambdaEZ(iE,iz) = &
@@ -670,8 +674,8 @@ end do
 !=============================================
 !=============================================
 ! this is where we determine the value for the thickness integration limit for the CalcLgh3 routine...
-allocate(EkeVs(enl%numEbins),thick(enl%numEbins,enl%numsx,enl%numsy))
-allocate(lambdas(enl%numsx,enl%numsy,enl%numEbins,enl%numzbins),nabsfact(enl%numzbins))
+allocate(EkeVs(numEbins),thick(numEbins,enl%numsx,enl%numsy))
+allocate(lambdas(enl%numsx,enl%numsy,numEbins,numzbins),nabsfact(numzbins))
 lambdas = 0.0
 thick = 0.0
 EkeVs = 0.0
@@ -680,12 +684,12 @@ nabsfact = 0.0
 call CalcUcg(cell,rlp,(/0,0,0/))
 nabsl = rlp%xgp
 
-do i = 1,enl%numzbins
+do i = 1,numzbins
     nabsfact(i) = exp(2.0*sngl(cPi)*(i-1)*enl%depthstep/nabsl)
 end do
 
 
-do i=1,enl%numEbins
+do i=1,numEbins
   EkeVs(i) = enl%Ehistmin + float(i-1)*enl%Ebinsize
 end do
 
@@ -693,11 +697,11 @@ do i = 1,enl%numsx
     do j = 1,enl%numsy
        izzmax = 0
 
-        do iE = 1,enl%numEbins
-            lambdas(i,j,iE,1:enl%numzbins) = EBSDdetector%detector(i,j)%lambdaEZ(iE,1:enl%numzbins)
-            lambdas(i,j,iE,1:enl%numzbins) = lambdas(i,j,iE,1:enl%numzbins)*nabsfact
+        do iE = 1,numEbins
+            lambdas(i,j,iE,1:numzbins) = EBSDdetector%detector(i,j)%lambdaEZ(iE,1:numzbins)
+            lambdas(i,j,iE,1:numzbins) = lambdas(i,j,iE,1:numzbins)*nabsfact
             izz = 1
-            do while(sum(EBSDdetector%detector(i,j)%lambdaEZ(iE,izz:enl%numzbins)) .gt. 0.0)
+            do while(sum(EBSDdetector%detector(i,j)%lambdaEZ(iE,izz:numzbins)) .gt. 0.0)
                 izz = izz + 1
             end do
             !if(izz .gt. izzmax) izzmax = izz
@@ -707,13 +711,13 @@ do i = 1,enl%numsx
 end do
 
 ! allocate main EBSD array
-allocate(EBSDPatterns(enl%numsx,enl%numsy,enl%numEbins,numangles))
+allocate(EBSDPatterns(enl%numsx,enl%numsy,numEbins,numangles))
 EBSDPatterns = 0.0
 
 ! allocate and compute the Sgh loop-up table
 call Initialize_SghLUT(cell, dmin, numset, nat, verbose)
 
-allocate(svals(numset),lambdaZ(enl%numzbins),stat=istat)
+allocate(svals(numset),lambdaZ(numzbins),stat=istat)
 
 
 lambdafile = 0.0
@@ -737,7 +741,7 @@ do iang = 1,numangles
 
     qu(1:4) = angles%quatang(1:4,iang)
 
-    do iE = enl%numEbins,1,-1
+    do iE = numEbins,1,-1
 
         EkeV = EkeVs(iE) !(iE - 1)*enl%Ebinsize + enl%Ehistmin
 ! calculate wavelength for the energy
@@ -749,7 +753,7 @@ do iang = 1,numangles
 !$OMP& SHARED(BetheParameters, dmin, verbose, czero, gzero, numset, nat) &
 !$OMP& SHARED(EBSDPatterns, NTHREADS, iang, prefactor, iE, nabsfact, lambdafile)
 
-        if (iE .eq. enl%numEbins) then
+        if (iE .eq. numEbins) then
             if (TID .eq. 0) NTHREADS = OMP_GET_NUM_THREADS()
             TID = OMP_GET_THREAD_NUM()
 
@@ -766,7 +770,7 @@ do iang = 1,numangles
             j = (k-1)/enl%numsy + 1
 
             lambdaZ = 0.0
-            lambdaZ(1:enl%numzbins) = EBSDdetector%detector(i,j)%lambdaEZ(iE,1:enl%numzbins)
+            lambdaZ(1:numzbins) = EBSDdetector%detector(i,j)%lambdaEZ(iE,1:numzbins)
             lambdaZ = lambdaZ*nabsfact
 ! get the incident wavevector of the electron in xtal frame
             kk = EBSDdetector%detector(i,j)%dc(1:3)           
@@ -793,7 +797,7 @@ do iang = 1,numangles
 ! then we need to initialize the Sgh and Lgh arrays
             if (allocated(Sgh)) deallocate(Sgh)
             if (allocated(Lghtmp)) deallocate(Lghtmp)
-            allocate(Sgh(nns,nns,numset),Lghtmp(nns,nns,enl%numzbins))
+            allocate(Sgh(nns,nns,numset),Lghtmp(nns,nns,numzbins))
 
             !if (allocated(Lgh)) deallocate(Lgh)
             !allocate(Sgh(nns,nns,numset),Lgh(nns,nns))
@@ -806,7 +810,7 @@ do iang = 1,numangles
 
 ! solve the dynamical eigenvalue equation for this beam direction  
             kn = 1.0/cell%mLambda
-            call CalcLghSM(cell,DynMat,nns,lambdaZ,enl%numzbins,sngl(enl%depthstep),Lghtmp)
+            call CalcLghSM(cell,DynMat,nns,lambdaZ,numzbins,sngl(enl%depthstep),Lghtmp)
 
             !call CalcLgh(DynMat,Lgh,enl%depthmax,kn,nns,gzero,enl%depthstep,&
             !lambdaZ(1:enl%numzbins),enl%numzbins)
@@ -815,7 +819,7 @@ do iang = 1,numangles
              svals = 0.0
              do ix=1,numset
                  !svals(ix) = real(sum(Lgh(1:nns,1:nns)*Sgh(1:nns,1:nns,ix)))
-                 svals(ix) = real(sum(Lghtmp(1:nns,1:nns,enl%numzbins)*Sgh(1:nns,1:nns,ix)))
+                 svals(ix) = real(sum(Lghtmp(1:nns,1:nns,numzbins)*Sgh(1:nns,1:nns,ix)))
              end do
              svals = svals/float(sum(nat(1:numset)))
              
@@ -843,12 +847,12 @@ call WriteValue('Execution time [system_clock()] = ',io_int,1,"(I8,' [s]')")
 
 ! add data to the hyperslab
 dataset = SC_EBSDPatterns
-dims4 = (/  enl%numsx, enl%numsy, enl%numEbins, numangles /)
+dims4 = (/  enl%numsx, enl%numsy, numEbins, numangles /)
 hdferr = HDF_writeDatasetFloatArray4D(dataset, EBSDPatterns, dims4(1), dims4(2), dims4(3),&
 dims4(4), HDF_head)
 
 dataset = SC_Lambdas
-dims4 = (/  enl%numsx, enl%numsy, enl%numEbins, enl%numzbins /)
+dims4 = (/  enl%numsx, enl%numsy, numEbins, numzbins /)
 hdferr = HDF_writeDatasetFloatArray4D(dataset, lambdas, dims4(1), dims4(2), dims4(3),&
 dims4(4), HDF_head)
 
