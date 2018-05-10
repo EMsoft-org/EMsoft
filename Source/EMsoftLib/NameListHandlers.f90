@@ -7189,6 +7189,88 @@ end subroutine GetEMgammaSTEMNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetEMTGBSTEMNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMTGBSTEM.f90)
+!
+!> @param nmlfile namelist file name
+!> @param epf single name list structure
+!
+!> @date 05/10/18 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetEMTGBSTEMNameList(nmlfile, epf, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMTGBSTEMNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(EMTGBSTEMNameListType),INTENT(INOUT)         :: epf
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)   :: platid, devid
+real(kind=sgl)      :: voltage, dmin, eu(3), convergence
+character(fnlen)    :: xtalname, microstructurefile, datafile
+
+namelist /TGBSTEMlist/ xtalname, microstructurefile, voltage, dmin, &
+          datafile, eu, platid, devid, convergence
+
+xtalname            = 'undefined' ! initial value to check that the keyword is present in the nml file (gamma phase)
+microstructurefile  = 'undefined' ! microstructure file name
+datafile            = 'undefined' ! output filename
+voltage             = 200.0    ! acceleration voltage [kV]
+eu                  = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
+dmin                = 0.04     ! smallest d-spacing to include in dynamical matrix [nm]
+platid              = 1
+devid               = 1
+convergence         = 0.0
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=TGBSTEMlist)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(xtalname).eq.'undefined') then
+        call FatalError('GetEMTGBSTEMNameList:',' gamma xtal file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(microstructurefile).eq.'undefined') then
+        call FatalError('GetEMTGBSTEMNameList:',' microfile name is undefined in '//nmlfile)
+    end if
+
+    if (trim(datafile).eq.'undefined') then
+        call FatalError('GetEMTGBSTEMNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+end if
+
+epf%xtalname             = xtalname
+epf%microstructurefile   = microstructurefile
+epf%datafile             = datafile
+epf%voltage              = voltage
+epf%eu                   = eu
+epf%dmin                 = dmin
+epf%platid               = platid
+epf%devid                = devid
+epf%convergence          = convergence
+
+end subroutine GetEMTGBSTEMNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetEMCBEDQCNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University

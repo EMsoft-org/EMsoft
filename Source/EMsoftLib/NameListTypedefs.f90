@@ -1639,6 +1639,19 @@ type EMgammaSTEMNameListType
     character(fnlen)    :: datafile
 end type EMgammaSTEMNameListType
 
+! typedef for special EMTGBSTEM program
+type EMTGBSTEMNameListType
+    real(kind=sgl)      :: voltage
+    real(kind=sgl)      :: dmin
+    real(kind=sgl)      :: eu(3)
+    real(kind=sgl)      :: convergence
+    integer(kind=irg)   :: platid
+    integer(kind=irg)   :: devid
+    character(fnlen)    :: xtalname
+    character(fnlen)    :: microstructurefile
+    character(fnlen)    :: datafile
+end type EMTGBSTEMNameListType
+
 type EMCBEDQCNameListType
     real(kind=sgl)      :: dmin
     real(kind=sgl)      :: QClatparm
