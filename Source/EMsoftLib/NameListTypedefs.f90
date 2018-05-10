@@ -46,6 +46,34 @@ use local
 
 IMPLICIT NONE
 
+! namelist for EMGBO program
+type GBONameListType
+        integer(kind=irg)       :: pgnum
+        integer(kind=irg)       :: numsamples
+        integer(kind=irg)       :: numbins
+        integer(kind=irg)       :: nthreads
+        character(3)            :: CSLtype
+        logical                 :: fixedAB
+        character(fnlen)        :: outname
+end type GBONameListType
+
+! namelist for EMoSLERP program
+type oSLERPNameListType
+        integer(kind=irg)       :: framesize
+        real(kind=dbl)          :: qm(4)
+        real(kind=dbl)          :: mA(3)
+        real(kind=dbl)          :: mC(3)
+        real(kind=dbl)          :: o1(8)
+        real(kind=dbl)          :: o2(8)
+        real(kind=dbl)          :: dOmega
+        character(fnlen)        :: rendermode
+        character(fnlen)        :: GBmode
+        character(fnlen)        :: xtalname 
+        character(fnlen)        :: povrayfile
+        character(fnlen)        :: framefolder
+        character(fnlen)        :: moviename
+end type oSLERPNameListType
+
 ! namelist for the EMLorentz program
 type LorentzNameListType
         integer(kind=irg)       :: nthreads
@@ -788,7 +816,7 @@ type ECPQCMasterNameListType
     character(fnlen)        :: energyfile
 end type ECPQCMasterNameListType
 
-! namelist for the EMECPQCmaster program
+! namelist for the EMEBSDQCmaster program
 type EBSDQCMasterNameListType
     integer(kind=irg)       :: nsamples
     integer(kind=irg)       :: npx
@@ -813,6 +841,33 @@ type EBSDQCMasterNameListType
     real(kind=sgl)          :: sig
     character(4)            :: mode
 end type EBSDQCMasterNameListType
+
+! namelist for the EMEBSDQCmaster program
+type EBSD2DQCMasterNameListType
+    integer(kind=irg)       :: npx
+    integer(kind=irg)       :: nthreads
+    integer(kind=irg)       :: atno
+    real(kind=sgl)          :: DWF
+    real(kind=sgl)          :: dmin
+    real(kind=sgl)          :: QClatparm_a
+    real(kind=sgl)          :: QClatparm_c 
+    character(1)            :: centering
+    character(fnlen)        :: energyfile
+    character(3)            :: QCtype
+! parameters from MC simulation
+    real(kind=sgl)          :: depthstep 
+    real(kind=sgl)          :: Ehistmin
+    real(kind=sgl)          :: Ebinsize
+    real(kind=sgl)          :: Ekev
+    real(kind=sgl)          :: depthmax
+    integer(kind=irg)       :: numsx
+    integer(kind=irg)       :: num_el
+    integer(kind=irg)       :: numEbins
+    integer(kind=irg)       :: numzbins
+    integer(kind=irg)       :: multiplier
+    real(kind=sgl)          :: sig
+    character(4)            :: mode
+end type EBSD2DQCMasterNameListType
 
 !namelist for the EMECP program
 type ECPpatternNameListType
@@ -1680,5 +1735,19 @@ type EMCBEDQCNameListType
     integer(kind=irg)   :: npix
     character(1)        :: centering
 end type EMCBEDQCNameListType
+
+!typedef for EMmdSTEM program
+type EMmdSTEMNameListType
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: datafile
+        real(kind=sgl)          :: eu(3)
+        character(3)            :: eulerconvention
+        real(kind=dbl)          :: phi1, phi, phi2
+        real(kind=sgl)          :: dmin
+        real(kind=sgl)          :: voltage
+        real(kind=sgl)          :: convergence
+        integer(kind=irg)       :: platid
+        integer(kind=irg)       :: devid
+end type EMmdSTEMNameListType
 
 end module NameListTypedefs

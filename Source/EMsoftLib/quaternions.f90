@@ -196,7 +196,6 @@ interface quat_slerp
         module procedure quat_slerp_d
 end interface
 
-
 contains
 
 !--------------------------------------------------------------------------
@@ -715,10 +714,57 @@ recursive function quat_slerp_d(qa,qb,n) result (res)
 
 end function quat_slerp_d
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: quat_Marsaglia
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief   return a single random quaternion using the Marsaglia approach
+!
+!> @param seed seed number 
+! 
+!> @date 04/23/18   MDG 1.0 original
+!--------------------------------------------------------------------------!
+recursive function quat_Marsaglia(seed) result (q)
+!DEC$ ATTRIBUTES DLLEXPORT :: quat_Marsaglia
 
+use rng 
 
+IMPLICIT NONE
 
+type(rng_t),INTENT(INOUT)           :: seed 
+real(kind=dbl)                      :: q(4) 
 
+real(kind=dbl)                      :: x1,x2,y1,y2,s1,s2
+
+x1 = 2.D0*rng_uniform(seed)-1.D0
+y1 = 2.D0*rng_uniform(seed)-1.D0
+s1 = x1*x1+y1*y1
+if (s1.gt.1.D0) then 
+  do while (s1.gt.1.D0) 
+    x1 = 2.D0*rng_uniform(seed)-1.D0
+    x2 = 2.D0*rng_uniform(seed)-1.D0
+    s1 = x1*x1+y1*y1
+  end do
+end if 
+
+x2 = 2.D0*rng_uniform(seed)-1.D0
+y2 = 2.D0*rng_uniform(seed)-1.D0
+s2 = x2*x2+y2*y2
+if (s2.gt.1.D0) then 
+  do while (s2.gt.1.D0) 
+    x2 = 2.D0*rng_uniform(seed)-1.D0
+    y2 = 2.D0*rng_uniform(seed)-1.D0
+    s2 = x2*x2+y2*y2
+  end do
+end if 
+
+s1 = sqrt( (1.D0-s2)/s2 )
+
+q = (/ x1, y1, x2*s1, y2*s1 /)
+
+end function quat_Marsaglia
 
 
 end module quaternions

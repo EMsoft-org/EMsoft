@@ -616,6 +616,29 @@ call PoVRay_addCylinder(dunit,(/ -ac, -ac, -ac /), (/-ac, -ac,  ac /), 0.005D0, 
 
 end subroutine PoVRay_addCubochoricCube
 
+!--------------------------------------------------------------------------
+!
+! function: PoVRay_fliprotationmatrix
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  change a rotation matrix to the POVray axes convention (left handed)
+! 
+!> @param mat input matrix
+!
+!> @date    05/05/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function PoVRay_fliprotationmatrix(M) result(O)
+!DEC$ ATTRIBUTES DLLEXPORT :: PoVRay_fliprotationmatrix
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)         :: M(3,3)
+real(kind=dbl)                    :: O(3,3)
+
+O = reshape( (/ M(1,1), M(1,3), M(1,2), M(3,1), M(3,3), M(3,2), M(2,1), M(2,3), M(2,2) /), (/ 3,3 /) )
+
+end function PoVRay_fliprotationmatrix
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------

@@ -1155,6 +1155,7 @@ end subroutine MilBrav
 !> @date   01/10/14 MDG 4.0 checked for changes to unitcell 
 !> @date   06/05/14 MDG 4.1 modified after elimination of global variables
 !> @date   08/30/15 MDG 4.2 validated trigonal setting
+!> @date   04/20/18 MDG 5.0 prepare code for 2D and 3D quasicrystals
 !--------------------------------------------------------------------------
 recursive subroutine GetLatParm(cell)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetLatParm
@@ -1179,6 +1180,8 @@ integer(kind=irg)                       :: std
  call Message('  5. Trigonal ', frm = "(A)")
  call Message('  6. Monoclinic ', frm = "(A)")
  call Message('  7. Triclinic ', frm = "(A/)")
+!call Message('  8. 2-D Quasi-Crystal', frm = "(A/)")
+!call Message('  9. 3-D Quasi-Crystal', frm = "(A/)")
 
  call Message(' Note about the trigonal system:', frm = "(A)")
  call Message(' -------------------------------', frm = "(A)")
@@ -1191,97 +1194,102 @@ integer(kind=irg)                       :: std
  call ReadValue(' crystal system ---> ', io_int, 1)
  cell%xtal_system = io_int(1)
  
-! make sure the symmetry operations will be reduced to the 
-! fundamental unit cell
- cell%SG%SYM_reduce=.TRUE.
- cell%hexset=.FALSE.
+!if (io_int(1).gt.7) then
 
-! deal with the rhombohedral vs. hexagonal setting in the trigonal crystal system
-! (the rhombohedral axes are considered as the second setting)
- cell%SG%SYM_trigonal=.FALSE.
- cell%SG%SYM_second=.FALSE.
- if (cell%xtal_system.eq.5) then
-  cell%SG%SYM_trigonal=.TRUE.
-  call Message('Enter 1 for rhombohedral setting ,', frm = "(/A)")
-  call ReadValue('0 for hexagonal setting : ', io_int, 1)
-  if (io_int(1).eq.0) then
-   cell%xtal_system=4   ! this is set to 4 so that we ask for the correct lattice parameters below
-  else
-   cell%SG%SYM_second=.TRUE.
-  end if
+!else
+
+  ! make sure the symmetry operations will be reduced to the 
+  ! fundamental unit cell
+   cell%SG%SYM_reduce=.TRUE.
+   cell%hexset=.FALSE.
+
+  ! deal with the rhombohedral vs. hexagonal setting in the trigonal crystal system
+  ! (the rhombohedral axes are considered as the second setting)
+   cell%SG%SYM_trigonal=.FALSE.
+   cell%SG%SYM_second=.FALSE.
+   if (cell%xtal_system.eq.5) then
+    cell%SG%SYM_trigonal=.TRUE.
+    call Message('Enter 1 for rhombohedral setting ,', frm = "(/A)")
+    call ReadValue('0 for hexagonal setting : ', io_int, 1)
+    if (io_int(1).eq.0) then
+     cell%xtal_system=4   ! this is set to 4 so that we ask for the correct lattice parameters below
+    else
+     cell%SG%SYM_second=.TRUE.
+    end if
+   end if
+
+  ! get the lattice parameters
+   call Message('Enter lattice parameters', frm = "(//A)")
+
+  ! put default values based on cubic symmetry, then change them later
+   call ReadValue('    a [nm] = ', io_real, 1)
+   cell%a = io_real(1)
+   cell%b = cell%a 
+   cell%c = cell%a 
+   cell%alpha = 90.0_dbl
+   cell%beta = 90.0_dbl
+   cell%gamma = 90.0_dbl
+
+  ! now get the proper lattice parameters
+   select case (cell%xtal_system)
+    case (1)
+  ! tetragonal
+    case (2)
+     call ReadValue('    c [nm] = ', io_real, 1)
+     cell%c = io_real(1)
+  ! orthorhombic
+    case (3)
+     call ReadValue('    b [nm] = ', io_real, 1)
+     cell%b = io_real(1)
+     call ReadValue('    c [nm] = ', io_real, 1)
+     cell%c = io_real(1)
+  ! hexagonal
+    case (4)
+     call ReadValue('    c [nm] = ', io_real, 1)
+     cell%c = io_real(1)
+     cell%gamma=120.0_dbl
+  ! rhombohedral 
+    case (5)
+     call ReadValue('    alpha [deg] = ', io_real, 1)
+     cell%alpha = io_real(1)
+     cell%beta = cell%alpha
+     cell%gamma = cell%alpha
+  ! monoclinic   
+    case (6)
+     call ReadValue('    b [nm] = ', io_real, 1)
+     cell%b = io_real(1)
+     call ReadValue('    c [nm] = ', io_real, 1)
+     cell%c = io_real(1)
+     call ReadValue('    beta  [deg] = ', io_real, 1)
+     cell%beta = io_real(1)
+  ! triclinic    
+    case (7) 
+     call ReadValue('    b [nm] = ', io_real, 1)
+     cell%b = io_real(1)
+     call ReadValue('    c [nm] = ', io_real, 1)
+     cell%c = io_real(1)
+     call ReadValue('    alpha [deg] = ', io_real, 1)
+     cell%alpha = io_real(1)
+     call ReadValue('    beta  [deg] = ', io_real, 1)
+     cell%beta = io_real(1)
+     call ReadValue('    gamma [deg] = ', io_real, 1)
+     cell%gamma = io_real(1)
+   end select
+
+  ! if trigonal symmetry was selected in the first setting,
+  ! then the xtal_system must be reset to 5
+   if (cell%SG%SYM_trigonal) then
+    cell%xtal_system=5
+   end if
+
+  ! if hexagonal setting is used, then Miller-Bravais indices must be enabled
+   if ((cell%xtal_system.eq.4).OR.((cell%xtal_system.eq.5).AND.(.not.cell%SG%SYM_second))) then
+    cell%hexset = .TRUE.
+   else 
+    cell%hexset = .FALSE.
  end if
-
-! get the lattice parameters
- call Message('Enter lattice parameters', frm = "(//A)")
-
-! put default values based on cubic symmetry, then change them later
- call ReadValue('    a [nm] = ', io_real, 1)
- cell%a = io_real(1)
- cell%b = cell%a 
- cell%c = cell%a 
- cell%alpha = 90.0_dbl
- cell%beta = 90.0_dbl
- cell%gamma = 90.0_dbl
-
-! now get the proper lattice parameters
- select case (cell%xtal_system)
-  case (1)
-! tetragonal
-  case (2)
-   call ReadValue('    c [nm] = ', io_real, 1)
-   cell%c = io_real(1)
-! orthorhombic
-  case (3)
-   call ReadValue('    b [nm] = ', io_real, 1)
-   cell%b = io_real(1)
-   call ReadValue('    c [nm] = ', io_real, 1)
-   cell%c = io_real(1)
-! hexagonal
-  case (4)
-   call ReadValue('    c [nm] = ', io_real, 1)
-   cell%c = io_real(1)
-   cell%gamma=120.0_dbl
-! rhombohedral 
-  case (5)
-   call ReadValue('    alpha [deg] = ', io_real, 1)
-   cell%alpha = io_real(1)
-   cell%beta = cell%alpha
-   cell%gamma = cell%alpha
-! monoclinic   
-  case (6)
-   call ReadValue('    b [nm] = ', io_real, 1)
-   cell%b = io_real(1)
-   call ReadValue('    c [nm] = ', io_real, 1)
-   cell%c = io_real(1)
-   call ReadValue('    beta  [deg] = ', io_real, 1)
-   cell%beta = io_real(1)
-! triclinic    
-  case (7) 
-   call ReadValue('    b [nm] = ', io_real, 1)
-   cell%b = io_real(1)
-   call ReadValue('    c [nm] = ', io_real, 1)
-   cell%c = io_real(1)
-   call ReadValue('    alpha [deg] = ', io_real, 1)
-   cell%alpha = io_real(1)
-   call ReadValue('    beta  [deg] = ', io_real, 1)
-   cell%beta = io_real(1)
-   call ReadValue('    gamma [deg] = ', io_real, 1)
-   cell%gamma = io_real(1)
- end select
-
-! if trigonal symmetry was selected in the first setting,
-! then the xtal_system must be reset to 5
- if (cell%SG%SYM_trigonal) then
-  cell%xtal_system=5
- end if
-
-! if hexagonal setting is used, then Miller-Bravais indices must be enabled
- if ((cell%xtal_system.eq.4).OR.((cell%xtal_system.eq.5).AND.(.not.cell%SG%SYM_second))) then
-  cell%hexset = .TRUE.
- else 
-  cell%hexset = .FALSE.
- end if
-
+!end if 
+  
 end subroutine GetLatParm
 
 !--------------------------------------------------------------------------
