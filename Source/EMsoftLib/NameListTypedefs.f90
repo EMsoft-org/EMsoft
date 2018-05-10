@@ -378,8 +378,6 @@ type EBSDMasterOpenCLNameListType
 end type EBSDMasterOpenCLNameListType
 
 ! namelist for the EMEBSD program
-! note that not all of these are actually entered via a namelist file
-! some of them are used to facilitate passing of subroutine arguments in EBSDmod.f90
 type EBSDNameListType
         integer(kind=irg)       :: stdout
         integer(kind=irg)       :: numsx
