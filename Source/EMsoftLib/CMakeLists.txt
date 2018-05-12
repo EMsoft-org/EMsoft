@@ -49,6 +49,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/notifications.f90
   ${EMsoftLib_SOURCE_DIR}/others.f90
   ${EMsoftLib_SOURCE_DIR}/PEDmod.f90
+  ${EMsoftLib_SOURCE_DIR}/GBmod.f90
   ${EMsoftLib_SOURCE_DIR}/pgm.f90
   ${EMsoftLib_SOURCE_DIR}/postscript.f90
   ${EMsoftLib_SOURCE_DIR}/povray.f90

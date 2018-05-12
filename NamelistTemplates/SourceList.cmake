@@ -32,6 +32,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMTKDmaster.template
   ${APP_DIR}/EMdefectdata.template
   ${APP_DIR}/EMdefects.template
+  ${APP_DIR}/EMoSLERP.template
   ${APP_DIR}/EMfoil.template
   ${APP_DIR}/EMsampleRFZ.template
   ${APP_DIR}/EMRefineOrientation.template
