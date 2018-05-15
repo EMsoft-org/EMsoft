@@ -656,7 +656,7 @@ select case (dict%prot)
         case(36)  ! 1222
                 dict%Nqsym = 24
                 do i = 1,23
-                  dict%Pm(1:4,i+1) = SYM_Qsymop(1:4,130+i)
+                  dict%Pm(1:4,i+1) = SYM_Qsymop(1:4,129+i)
                 end do
 
         case default    ! this should never happen ...

@@ -482,7 +482,7 @@ end type
 
 ! finally, we define the rotational crystal symmetry operators in terms of quaternions (q0, q1,q2,q3) with q0 the scalar part;
 ! these are used in the dictmod EBSD dictionary indexing module, and are defined with respect to the standard cartesian reference frame
-real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
+real(kind=dbl),parameter :: SYM_Qsymop(4,152) = reshape( (/ &
                                 1.D0, 0.D0, 0.D0, 0.D0, &       ! 1: identity operator
                                 0.D0, 1.D0, 0.D0, 0.D0, &       ! 2: 180@[100]
                                 0.D0, 0.D0, 1.D0, 0.D0, &       ! 3: 180@[010]
@@ -583,7 +583,7 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                                0.D0, 1.D0, 0.D0, 0.D0, &                                    ! 180@[100]
                                0.D0, 0.923879532511287D0, 0.38268343236509D0, 0.D0, &       ! 180@[cos(pi/8) sin(pi/8) 0]
                                0.923879532511287D0, 0.D0, 0.D0, 0.38268343236509D0, &       ! 45@[001]
-                               sq22, 0.D0, 0.D0, sq22, &                                    ! 90@[001]
+                               0.707106781186547D0, 0.D0, 0.D0, 0.707106781186547D0, &      ! 90@[001]
                                0.38268343236509D0, 0.D0, 0.D0, 0.923879532511287D0, &       ! 135@[001]
                                0.D0, 0.D0, 0.D0, 1.D0, &                                    ! 180@[001]
                                -0.382683432365090D0, 0.D0, 0.D0, 0.923879532511287D0, &     ! 225@[001]
@@ -596,7 +596,6 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                                0.0D0, 0.0D0, -1.0D0, 0.0D0, &
                                0.0D0, -0.382683432365090D0, -0.923879532511287D0, 0.0D0, &
                                0.0D0, -0.707106781186547D0, -0.707106781186548D0, 0.0D0, &
-                               0.0D0, -0.923879532511287D0, -0.382683432365090D0, 0.0D0, &
                                
                                ! decagonal QC group 1022
                                0.D0, 1.D0, 0.D0, 0.D0, &                                    ! 180@[100]
@@ -644,9 +643,8 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                               0.0D0, -0.258819045102521D0, -0.965925826289068D0, 0.0D0, &
                               0.0D0, -0.5D0, -0.866025403784439D0, 0.0D0, &
                               0.0D0, -0.707106781186547D0, -0.707106781186548D0, 0.0D0, &
-                              0.0D0, -0.866025403784439D0, -0.5D0, 0.0D0, &
-                              0.0D0, -0.965925826289068D0, -0.258819045102521D0, 0.0D0 &
-                              /), (/4,154/) )
+                              0.0D0, -0.866025403784439D0, -0.5D0, 0.0D0 &
+                              /), (/4,152/) )
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_Qsymop
 
 
