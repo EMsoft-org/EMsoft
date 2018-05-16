@@ -85,7 +85,7 @@ if (present(exchange)) then
     nom = (qb(4)*qc(1)-qb(1)*qc(4)) + (qa(4)*qd(1)-qa(1)*qd(4)) + (qb(2)*qc(3)-qb(3)*qc(2)) + (qa(2)*qd(3)-qa(3)*qd(2))
     denom = sum(qb*qc) + sum(qa*qd)
 	if ((denom.ne.0.D0).or.(nom.ne.0.D0)) then
-      mu = atan2(nom, denom)
+      mu = 2.D0 * atan2(nom, denom)
 	  if (mu.lt.0.D0) then
        zeta = 2.D0*cPi + mu
 	  else
@@ -97,7 +97,7 @@ else
   nom = (qa(4)*qc(1)-qa(1)*qc(4)) + (qb(4)*qd(1)-qb(1)*qd(4)) + (qa(2)*qc(3)-qa(3)*qc(2)) + (qb(2)*qd(3)-qb(3)*qd(2))
   denom = sum(qa*qc) + sum(qb*qd)
   if ((denom.ne.0.D0).or.(nom.ne.0.D0)) then
-    mu = atan2(nom, denom)
+    mu = 2.D0 * atan2(nom, denom)
     if (mu.lt.0.D0) then
       zeta = 2.D0*cPi + mu
     else
@@ -182,8 +182,8 @@ real(kind=dbl)                    :: qq(4), zeta, sigma, cac, cbd, cbc, cad, cz,
 
 ! ! determine the minimal U(1) angle for the (a,b) - (c,d) boundary pair
 zeta = GBO_minimal_U1_angle(qa,qb,qc,qd)
-cz = cos(zeta)
-sz = sin(zeta)
+cz = cos(zeta*0.5D0)
+sz = sin(zeta*0.5D0)
 qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
 if (qq(1).lt.0.0) qq = -qq
 cac = sum(qa*qq)
@@ -193,8 +193,8 @@ cbd = sum(qb*qq)
 
 ! ! determine the minimal U(1) angle for the (b,a) - (c,d) boundary pair
 sigma = GBO_minimal_U1_angle(qa,qb,qc,qd,exchange=.TRUE.)
-cs = cos(sigma)
-ss = sin(sigma)
+cs = cos(sigma*0.5D0)
+ss = sin(sigma*0.5D0)
 qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
 if (qq(1).lt.0.0) qq = -qq
 cbc = sum(qb*qq)
