@@ -39,6 +39,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/MDElectronProp.template
   ${APP_DIR}/EMTKDmaster.template
   ${APP_DIR}/EMTKD.template
+  ${APP_DIR}/PFInversion.template
   ${APP_DIR}/EMTKDDI.template
 )
 

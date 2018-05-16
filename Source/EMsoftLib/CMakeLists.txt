@@ -49,6 +49,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/notifications.f90
   ${EMsoftLib_SOURCE_DIR}/others.f90
   ${EMsoftLib_SOURCE_DIR}/PEDmod.f90
+  ${EMsoftLib_SOURCE_DIR}/PFInversionmod.f90
   ${EMsoftLib_SOURCE_DIR}/GBmod.f90
   ${EMsoftLib_SOURCE_DIR}/pgm.f90
   ${EMsoftLib_SOURCE_DIR}/postscript.f90
@@ -77,6 +78,10 @@ set(EMsoftLib_C_SRCS
   ${EMsoftLib_SOURCE_DIR}/mbir.c
   ${EMsoftLib_SOURCE_DIR}/mbirHeader.h
   ${EMsoftLib_SOURCE_DIR}/denoise.c
+  ${EMsoftLib_SOURCE_DIR}/bclsf90wrapper.c
+  ${EMsoftLib_SOURCE_DIR}/cs_malloc.c
+  ${EMsoftLib_SOURCE_DIR}/cs_util.c
+  ${EMsoftLib_SOURCE_DIR}/cs.h
   ${EMsoftLib_Additional_C_SRCS}
 )
 if(NOT WIN32 AND BUILD_SHARED_LIBS)
