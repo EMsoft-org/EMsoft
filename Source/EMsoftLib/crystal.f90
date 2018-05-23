@@ -1180,8 +1180,8 @@ integer(kind=irg)                       :: std
  call Message('  5. Trigonal ', frm = "(A)")
  call Message('  6. Monoclinic ', frm = "(A)")
  call Message('  7. Triclinic ', frm = "(A/)")
-!call Message('  8. 2-D Quasi-Crystal', frm = "(A/)")
-!call Message('  9. 3-D Quasi-Crystal', frm = "(A/)")
+! call Message('  8. 2-D Quasi-Crystal', frm = "(A/)")
+! call Message('  9. 3-D Quasi-Crystal', frm = "(A/)")
 
  call Message(' Note about the trigonal system:', frm = "(A)")
  call Message(' -------------------------------', frm = "(A)")

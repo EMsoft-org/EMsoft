@@ -1328,6 +1328,18 @@ type QCStructureType
   complex(kind=dbl),allocatable         :: LUTqg(:)
 end type QCStructureType
 
+type TDQCsymdata
+  integer(kind=irg)                 :: SYM_GENnum                   !< number of generator matrices
+  integer(kind=irg)                 :: SYM_MATnum                   !< number of non-zero symmetry matrices
+! integer(kind=irg)                 :: SYM_NUMpt                    !< number of point group operators
+  logical                           :: SYM_reduce                   !< switch to enable/disable reduction to fundamental cell
+  real(kind=dbl)                    :: SYM_data(200,6,6)            !< all symmetry matrices for a given spacegroup
+! real(kind=dbl)                    :: SYM_direc(40,5,5)            !< direct space point group matrices
+  real(kind=dbl)                    :: SYM_recip(40,5,5)            !< reciprocal space point group matrices
+  real(kind=dbl)                    :: SYM_c(6,6)                   !< dummy 6x6 matrix used for various computations
+  character(11)                     :: SYM_name
+end type
+
 ! 2-D Quasi-Crystal data structures
 type TDQCStructureType
   integer(kind=irg)                     :: atno
@@ -1339,6 +1351,7 @@ type TDQCStructureType
   integer(kind=irg),allocatable         :: Ucgindex(:)
   logical,allocatable                   :: Ucgcalc(:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
+  type(TDQCsymdata)                     :: SG
   real(kind=dbl)                        :: epvec(3,5), epar(5,3)
   real(kind=dbl)                        :: eovec(3,5), eperp(5,3)
   real(kind=dbl)                        :: Mp(5,5), Picos(5,5)
@@ -1362,6 +1375,8 @@ type TDQCStructureType
   character(1)                          :: centering   ! 'P','I','F'
   complex(kind=dbl),allocatable         :: LUT(:)
   complex(kind=dbl),allocatable         :: LUTqg(:)
+  integer(kind=irg)                     :: ATOM_ntype, ATOM_type(maxpasym), SYM_SGnum
+  real(kind=sgl)                        :: ATOM_pos(maxpasym,7)
 end type TDQCStructureType
 
 type PoleFigures
