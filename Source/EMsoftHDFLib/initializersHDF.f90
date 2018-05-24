@@ -270,7 +270,7 @@ logical                                    :: loadingfile
 ! matrices as well as all the symmetry arrays
  cell%SG%SYM_reduce=.TRUE.
  cell%fname = xtalname
- call PrintSGTable(cell,toprint=.FALSE.)
+
  cell%voltage = dble(voltage)
 
  call QCrystalData(cell,verbose, existingHDFhead)

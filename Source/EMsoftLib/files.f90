@@ -172,12 +172,12 @@ real(kind=dbl)                          :: oi_real(7)
  oi_real(1) = cell%QClatparm_c
  call WriteValue('  a_5 [nm]                             : ', oi_real, 1, "(F9.5)")
  oi_int(1)  = cell%SG%N_Axial
- call WriteValue('  Highest axial rotational symmetry    : ', oi_int, 1, "(I5)")
+ call WriteValue('  Highest axial rotational symmetry    : ', oi_int, 1, "(I4)")
  oi_real(1) = cell%vol
  call WriteValue('  Volume [nm^3]                        : ', oi_real, 1, "(F12.8)")
  oi_int(1) = cell%SYM_SGnum
  call WriteValue('  Space group #                        : ', oi_int, 1, "(1x,I3)")
- call WriteValue('  Space group symbol                   :    ', trim(cell%SGname(cell%SYM_SGnum)) )
+ call WriteValue('  Space group symbol                   : ', '  '//trim(cell%SGname(cell%SYM_SGnum)) )
  
 ! generate atom positions and dump output  
  call Message('', frm = "(A/)")

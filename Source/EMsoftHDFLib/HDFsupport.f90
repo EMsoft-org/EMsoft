@@ -6764,7 +6764,7 @@ cellparams = (/ cell%QClatparm_a, cell%QClatparm_c /)
 hdferr = HDF_writeDatasetDoubleArray1D(dataset, cellparams, 6, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetDoubleArray1D:'//trim(dataset), hdferr)
 
-dataset = SC_AxialSymmetry!'Axial Symmetry'
+dataset = SC_AxialSymmetry !'Axial Symmetry'
 hdferr = HDF_writeDatasetInteger(dataset, cell%SG%N_Axial, HDF_head)
 
 dataset = SC_SpaceGroupNumber
@@ -6842,39 +6842,50 @@ if (present(existingHDFhead)) then
     openHDFfile = .FALSE.
     HDF_head => existingHDFhead
   else
-    call FatalError("ReadDataHDF","HDF_head pointer passed in to routine is not associated")
+    call FatalError("Read2DQCDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
 end if
 
 if (openHDFfile) then 
   nullify(HDF_head)
   call h5open_EMsoft(hdferr)
-  call HDFerror_check('ReadDataHDF:h5open_EMsoft', hdferr)
+  call HDFerror_check('Read2DQCDataHDF:h5open_EMsoft', hdferr)
 
   fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
   fname = EMsoft_toNativePath(fname)
   hdferr =  HDF_openFile(fname, HDF_head)
-  call HDFerror_check('ReadDataHDF:HDF_openFile:'//trim(fname), hdferr)
+  call HDFerror_check('Read2DQCDataHDF:HDF_openFile:'//trim(fname), hdferr)
 end if
 
 groupname = SC_CrystalData
 hdferr = HDF_openGroup(groupname, HDF_head)
-call HDFerror_check('ReadDataHDF:HDF_openGroup:'//trim(groupname), hdferr)
+call HDFerror_check('Read2DQCDataHDF:HDF_openGroup:'//trim(groupname), hdferr)
 
 dataset = SC_LatticeParameters
 call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head, hdferr, cellparams)
-call HDFerror_check('ReadDataHDF:HDF_readDatasetDoubleArray1D:'//trim(dataset), hdferr)
+call HDFerror_check('Read2DQCDataHDF:HDF_readDatasetDoubleArray1D:'//trim(dataset), hdferr)
 
 cell%QClatparm_a = cellparams(1)
 cell%QClatparm_c = cellparams(2)
 
 dataset = SC_SpaceGroupNumber
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%SYM_SGnum) 
-call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+call HDFerror_check('Read2DQCDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
 dataset = SC_AxialSymmetry
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%SG%N_Axial) 
-call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+call HDFerror_check('Read2DQCDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+
+if(cell%SG%N_Axial .eq. 8) then
+  cell%QCType = 'Oct'
+else if(cell%SG%N_Axial .eq. 10) then
+  cell%QCType = 'Dec'
+else if(cell%SG%N_Axial .eq. 12) then
+  cell%QCType = 'DoD'
+else
+  call FatalError('Read2DQCDataHDF',&
+  'The axial symmetry is not one of the implemented ones (only 8, 10 and 12 fold implemented.)')
+end if
 
 dataset = SC_Natomtypes
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%ATOM_ntype)
@@ -6944,6 +6955,8 @@ type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhea
 integer(kind=irg)                       :: i, ipg, isave
 
 call ReadQCDataHDF(cell, existingHDFhead)
+
+ call PrintSGTable(cell,toprint=.FALSE.)
 
 ! compute the metric matrices
  call QC_setMetricParameters(cell)
