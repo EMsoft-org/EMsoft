@@ -1376,8 +1376,10 @@ type TDQCStructureType
   character(1)                          :: centering   ! 'P','I','F'
   complex(kind=dbl),allocatable         :: LUT(:)
   complex(kind=dbl),allocatable         :: LUTqg(:)
-  integer(kind=irg)                     :: ATOM_ntype, ATOM_type(maxpasym), SYM_SGnum
+  integer(kind=irg)                     :: ATOM_ntype, ATOM_type(maxpasym), SYM_SGnum, numat(maxpasym)
+  character(fnlen),allocatable          :: SGname(:)
   real(kind=sgl)                        :: ATOM_pos(maxpasym,7)
+  real(kind=sgl),allocatable            :: apos(:,:,:)
 end type TDQCStructureType
 
 type PoleFigures

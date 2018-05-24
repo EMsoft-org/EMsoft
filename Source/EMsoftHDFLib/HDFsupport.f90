@@ -89,6 +89,11 @@ interface SaveQCDataHDF
   !module procedure Save3DQCDataHDF
 end interface SaveQCDataHDF
 
+interface ReadQCDataHDF
+  module procedure Read2DQCDataHDF
+  !module procedure Read2DQCDataHDF
+end interface ReadQCDataHDF
+
 contains
 
 
@@ -6793,6 +6798,168 @@ else ! just close this group, but not the file
 end if
 
 end subroutine Save2DQCDataHDF
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: Read2DQCDataHDF
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief read 2D quasicrystal crystal structure data from an HDF file
+! 
+!> @param 2D quasicrystal cell unit cell pointer
+!> @param existingHDFhead (optional) if present, then use this as HDF_head
+!
+!> @date    05/23/18 SS 1.0 original, adapted from ReadDataHDF above
+!--------------------------------------------------------------------------
+recursive subroutine Read2DQCDataHDF(cell, existingHDFhead)
+!DEC$ ATTRIBUTES DLLEXPORT :: Read2DQCDataHDF
+
+use io
+use crystal
+use error
+use HDF5
+ 
+IMPLICIT NONE
+
+type(TDQCStructureType),pointer         :: cell
+type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+
+type(HDFobjectStackType),pointer        :: HDF_head
+
+character(fnlen)                        :: dataset, groupname, fname
+integer(HSIZE_T)                        :: dims(1), dims2(2)
+integer(kind=irg)                       :: hdferr
+real(kind=dbl),allocatable              :: cellparams(:)
+integer(kind=irg),allocatable           :: atomtypes(:)
+real(kind=sgl),allocatable              :: atompos(:,:)
+character(fnlen)                        :: pp
+logical                                 :: openHDFfile
+
+openHDFfile = .TRUE.
+if (present(existingHDFhead)) then
+  if (associated(existingHDFhead)) then
+    openHDFfile = .FALSE.
+    HDF_head => existingHDFhead
+  else
+    call FatalError("ReadDataHDF","HDF_head pointer passed in to routine is not associated")
+  end if 
+end if
+
+if (openHDFfile) then 
+  nullify(HDF_head)
+  call h5open_EMsoft(hdferr)
+  call HDFerror_check('ReadDataHDF:h5open_EMsoft', hdferr)
+
+  fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
+  fname = EMsoft_toNativePath(fname)
+  hdferr =  HDF_openFile(fname, HDF_head)
+  call HDFerror_check('ReadDataHDF:HDF_openFile:'//trim(fname), hdferr)
+end if
+
+groupname = SC_CrystalData
+hdferr = HDF_openGroup(groupname, HDF_head)
+call HDFerror_check('ReadDataHDF:HDF_openGroup:'//trim(groupname), hdferr)
+
+dataset = SC_LatticeParameters
+call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head, hdferr, cellparams)
+call HDFerror_check('ReadDataHDF:HDF_readDatasetDoubleArray1D:'//trim(dataset), hdferr)
+
+cell%QClatparm_a = cellparams(1)
+cell%QClatparm_c = cellparams(2)
+
+dataset = SC_SpaceGroupNumber
+call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%SYM_SGnum) 
+call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+
+dataset = SC_AxialSymmetry
+call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%SG%N_Axial) 
+call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+
+dataset = SC_Natomtypes
+call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%ATOM_ntype)
+call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+
+dataset = SC_Atomtypes
+call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, atomtypes)
+call HDFerror_check('ReadDataHDF:HDF_readDatasetIntegerArray1D:'//trim(dataset), hdferr)
+
+cell%ATOM_type(1:cell%ATOM_ntype) = atomtypes(1:cell%ATOM_ntype) 
+deallocate(atomtypes)
+
+dataset = SC_AtomData
+call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, atompos)
+call HDFerror_check('ReadDataHDF:HDF_readDatasetFloatArray2D:'//trim(dataset), hdferr)
+
+cell%ATOM_pos(1:cell%ATOM_ntype,1:7) = atompos(1:cell%ATOM_ntype,1:7) 
+deallocate(atompos)
+
+if (openHDFfile) then
+  call HDF_pop(HDF_head,.TRUE.)
+
+  call h5close_EMsoft(hdferr)
+  call HDFerror_check('ReadDataHDF:h5close_EMsoft', hdferr)
+else ! just close this group, but not the file
+  call HDF_pop(HDF_head)
+end if
+
+end subroutine Read2DQCDataHDF
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!-- routines that used to be in files.f90 but contain HDF stuff -----------
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: QCrystalData
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief load or generate 2D quasi crystal data
+! 
+!> @param cell 2D quasicrystal unit cell pointer
+!> @param verbose (OPTIONAL)
+!> @param existingHDFhead (OPTIONAL) pass-on variable with current HDF_head pointer, if any
+!
+!> @date    05/23/18 SS 1.0 original, adapted from CrystalData subroutine
+!--------------------------------------------------------------------------
+recursive subroutine QCrystalData(cell,verbose, existingHDFhead)
+!DEC$ ATTRIBUTES DLLEXPORT :: QCrystalData
+
+use io
+use crystal
+use files
+use symmetry
+use typedefs
+use TDQCmod
+use qcrystal
+
+IMPLICIT NONE
+
+type(TDQCStructureType),pointer         :: cell
+logical,INTENT(IN),OPTIONAL             :: verbose
+type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+
+integer(kind=irg)                       :: i, ipg, isave
+
+call ReadQCDataHDF(cell, existingHDFhead)
+
+! compute the metric matrices
+ call QC_setMetricParameters(cell)
+
+ call GenerateQCSymmetry(cell)
+
+ call Get2DQCPGsymmetry(cell)
+
+! and print the information on the screen
+if (present(verbose)) then
+ if (verbose) then
+   call DumpQXtalInfo(cell)
+ end if
+end if 
+
+end subroutine QCrystalData
 
 !--------------------------------------------------------------------------
 !

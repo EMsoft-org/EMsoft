@@ -41,6 +41,11 @@
 
 module initializersHDF
 
+interface Initialize_QCCell
+ module procedure Initialize_2DQCCell
+ !module procedure Initialize_3DQCCell
+end interface Initialize_QCCell
+
 contains
 
 !--------------------------------------------------------------------------
@@ -211,5 +216,173 @@ izl:   do iz=-2*iml,2*iml
 
 ! that's it
 end subroutine Initialize_Cell
+
+!--------------------------------------------------------------------------
+!
+! subroutine: Initialize_2DQCCell
+!
+!> @author Saransh Singh
+!
+!> @brief perform all steps to initialize a 2D quasicrystal unit cell type variable
+!
+!> @param cell unit cell pointer
+!> @param xtalname file name for crystal structure
+!> @param dmin smallest d-spacing to consider
+!> @param voltage accelerating voltage (needed to compute relativistic scattering factors)
+!
+!> @date 05/23/18 SS 1.0 original, adapted from routine above
+!--------------------------------------------------------------------------
+recursive subroutine Initialize_2DQCCell(cell, xtalname, dmin, voltage, verbose, existingHDFhead)
+!DEC$ ATTRIBUTES DLLEXPORT :: Initialize_2DQCCell
+
+use local
+use typedefs
+use crystal
+use symmetry
+use files
+use io
+use error
+use gvectors
+use diffraction
+use HDFsupport
+use TDQCmod
+use qcrystal
+
+IMPLICIT NONE
+
+type(TDQCStructureType), pointer           :: cell
+character(fnlen),INTENT(IN)                :: xtalname
+real(kind=sgl),INTENT(IN)                  :: dmin
+real(kind=sgl),INTENT(IN)                  :: voltage
+logical,INTENT(IN),OPTIONAL                :: verbose
+type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+
+integer(kind=irg)                          :: istat, io_int(3), skip
+integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
+real(kind=sgl)                             :: dhkl, io_real(3), ddt
+logical                                    :: loadingfile
+
+
+! clear the cell variable (set everything to zero)
+ !call ResetCell(cell)
+
+! load the crystal structure file, which also computes all the important 
+! matrices as well as all the symmetry arrays
+ cell%SG%SYM_reduce=.TRUE.
+ cell%fname = xtalname
+ call PrintSGTable(cell,toprint=.FALSE.)
+ cell%voltage = dble(voltage)
+
+ call QCrystalData(cell,verbose, existingHDFhead)
+ cell%voltage = dble(voltage)
+
+ ! always use Weickenmeier&Kohl scattering coefficients, including absorptive form factors
+ call QC_CalcWaveLength(cell, verbose)
+
+! generate all atom positions
+! if the cell is distorted, then this is not exactly correct, but it should be close for small distortions
+ !call CalcQCPositions(cell)
+
+! ! compute the range of reflections for the lookup table and allocate the table
+! ! The master list is easily created by brute force
+!  imh = 1
+!  do 
+!    dhkl = 1.0/CalcLength(cell,  (/float(imh) ,0.0_sgl,0.0_sgl/), 'r')
+!    if (dhkl.lt.dmin) EXIT
+!    imh = imh + 1
+!  end do
+!  imk = 1
+!  do 
+!    dhkl = 1.0/CalcLength(cell, (/0.0_sgl,float(imk),0.0_sgl/), 'r')
+!    if (dhkl.lt.dmin) EXIT
+!    imk = imk + 1
+!  end do
+!  iml = 1
+!  do 
+!    dhkl = 1.0/CalcLength(cell, (/0.0_sgl,0.0_sgl,float(iml)/), 'r')
+!    if (dhkl.lt.dmin) EXIT
+!    iml = iml + 1
+!  end do
+ 
+!  if (present(verbose)) then
+!   if (verbose) then
+!     io_int = (/ imh, imk, iml /)
+!     call WriteValue(' Range of reflections along a*, b* and c* = ',io_int,3)
+!   end if
+!  end if
+  
+! ! the LUT array stores all the Fourier coefficients, so that we only need to compute them once... i.e., here and now
+!  allocate(cell%LUT(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
+!  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%LUT array')
+!  cell%LUT = dcmplx(0.D0,0.D0)
+!  allocate(cell%LUTqg(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
+!  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%LUTqg array')
+!  cell%LUTqg = dcmplx(0.D0,0.D0)
+ 
+! ! allocate an array that keeps track of potential double diffraction reflections
+!  allocate(cell%dbdiff(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
+!  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%dbdiff array')
+!  cell%dbdiff = .FALSE.
+!  ddt = 1.0e-5  
+! ! changed from 1.0e-10 on 08/14/15 by MDG in response to some issues with double
+! ! diffraction spots not being taken into account in EBSD master pattern simulations 
+
+
+! ! next, we compute the overall lookup table cell%LUT; we do not, at this point, create a 
+! ! list of linked reflections; in the old code, this was done at the same time, but it appears
+! ! it is better to decouple these two computations. In this new approach, we'll compute a much
+! ! shorter linked list based on the incident wave vector direction.
+
+! ! first, we deal with the transmitted beam
+!  gg = (/ 0,0,0 /)
+!  call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)  
+!  Dyn%Upz = rlp%Vpmod         ! U'0 normal absorption parameter 
+!  if (present(verbose)) then
+!   if (verbose) then
+!    io_real(1) = rlp%xgp
+!    call WriteValue(' Normal absorption length [nm] = ', io_real, 1)
+!   end if
+!  end if
+ 
+! ! and add this reflection to the look-up table
+!  cell%LUT(0,0,0) = rlp%Ucg
+!  cell%LUTqg(0,0,0) = rlp%qg
+
+!  if (present(verbose)) then
+!   if (verbose) then
+!    call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+!   end if
+!  end if
+ 
+! ! now do the same for the other allowed reflections
+! ! note that the lookup table must be twice as large as the list of participating reflections,
+! ! since the dynamical matrix uses g-h as its index !!!  
+! ixl: do ix=-2*imh,2*imh
+! iyl:  do iy=-2*imk,2*imk
+! izl:   do iz=-2*iml,2*iml
+!         gg = (/ ix, iy, iz /)
+!         if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
+! ! add the reflection to the look up table
+!            call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
+!            cell%LUT(ix, iy, iz) = rlp%Ucg
+!            cell%LUTqg(ix, iy, iz) = rlp%qg
+! ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
+!            if (cabs(rlp%Ucg).le.ddt) then 
+!              cell%dbdiff(ix,iy,iz) = .TRUE.
+!            end if
+!         end if ! IsGAllowed
+!        end do izl
+!       end do iyl
+!     end do ixl
+
+!   if (present(verbose)) then
+!    if (verbose) then
+!     call Message('Done', frm = "(A/)")
+!    end if
+!   end if
+  
+
+! that's it
+end subroutine Initialize_2DQCCell
 
 end module initializersHDF
