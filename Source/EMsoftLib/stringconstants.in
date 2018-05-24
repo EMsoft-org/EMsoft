@@ -41,6 +41,7 @@
 !
 ! configuration constants used in local.f90
 [CATEGORY];"Generic String Constants"
+AxialSymmetry;"Axial Symmetry"
 h5copy;"/bin/h5copy"
 h5copypath;"h5copypath"
 Testing;"Testing"

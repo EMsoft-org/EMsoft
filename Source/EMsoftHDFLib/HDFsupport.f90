@@ -84,6 +84,11 @@ logical, private, save                  :: FixedLengthflag
 
 private :: HDF_readfromTextfile, HDF_push !, HDF_stackdump
 
+interface SaveQCDataHDF
+  module procedure Save2DQCDataHDF
+  !module procedure Save3DQCDataHDF
+end interface SaveQCDataHDF
+
 contains
 
 
@@ -6667,6 +6672,127 @@ cell%SG%SYM_second = .FALSE.
 
 end subroutine ReadDataHDF
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: Save2DQCDataHDF
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief save 2D QCcrystal structure data to an HDF file
+! 
+!> @param cell 2D quasicrystal unit cell pointer
+!> @param existingHDFhead (optional) if present, then use this as HDF_head
+!
+!> @date    05/23/18 SS 1.0 original, adapted from SaveDataHDF
+!--------------------------------------------------------------------------
+recursive subroutine Save2DQCDataHDF(cell, existingHDFhead)
+!DEC$ ATTRIBUTES DLLEXPORT :: Save2DQCDataHDF
+
+use io
+use crystal
+use HDF5
+use error
+ 
+IMPLICIT NONE
+
+type(TDQCStructureType),pointer         :: cell
+type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+
+type(HDFobjectStackType),pointer        :: HDF_head
+
+character(11)                           :: dstr
+character(15)                           :: tstr
+character(fnlen)                        :: progname = 'EMmkqxtal.f90', groupname, dataset, fname
+integer(kind=irg)                       :: hdferr
+real(kind=dbl)                          :: cellparams(2)
+integer(kind=irg),allocatable           :: atomtypes(:)
+real(kind=sgl),allocatable              :: atompos(:,:)
+logical                                 :: openHDFfile
+
+openHDFfile = .TRUE.
+if (present(existingHDFhead)) then
+  if (associated(existingHDFhead)) then
+    openHDFfile = .FALSE.
+    HDF_head => existingHDFhead
+  else
+    call FatalError("SaveDataHDF","HDF_head pointer passed in to routine is not associated")
+  end if 
+end if
+
+call timestamp(datestring=dstr, timestring=tstr)
+
+! Initialize FORTRAN interface if needed.
+!
+if (openHDFfile) then 
+  nullify(HDF_head)
+  call h5open_EMsoft(hdferr)
+  call HDFerror_check('SaveDataHDF:h5open_EMsoft', hdferr)
+
+  fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
+  fname = EMsoft_toNativePath(fname)
+  hdferr =  HDF_createFile(fname, HDF_head)
+  call HDFerror_check('SaveDataHDF:HDF_createFile:'//trim(fname), hdferr)
+end if
+
+groupname = SC_CrystalData
+hdferr = HDF_createGroup(groupname, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_createGroup:'//trim(groupname), hdferr)
+
+dataset = SC_ProgramName
+hdferr = HDF_writeDatasetStringArray(dataset, progname, 1, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
+
+dataset = SC_CreationDate
+hdferr = HDF_writeDatasetStringArray(dataset, dstr, 1, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
+
+dataset = SC_CreationTime
+hdferr = HDF_writeDatasetStringArray(dataset, tstr, 1, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
+
+dataset = SC_Creator
+hdferr = HDF_writeDatasetStringArray(dataset, EMsoft_getUsername(), 1, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
+
+dataset = SC_LatticeParameters
+cellparams = (/ cell%QClatparm_a, cell%QClatparm_c /)
+hdferr = HDF_writeDatasetDoubleArray1D(dataset, cellparams, 6, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetDoubleArray1D:'//trim(dataset), hdferr)
+
+dataset = SC_AxialSymmetry!'Axial Symmetry'
+hdferr = HDF_writeDatasetInteger(dataset, cell%SG%N_Axial, HDF_head)
+
+dataset = SC_SpaceGroupNumber
+hdferr = HDF_writeDatasetInteger(dataset, cell%SYM_SGnum, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetInteger:'//trim(dataset), hdferr)
+
+dataset = SC_Natomtypes
+hdferr = HDF_writeDatasetInteger(dataset, cell%ATOM_ntype, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetInteger:'//trim(dataset), hdferr)
+
+allocate(atomtypes(cell%ATOM_ntype))
+atomtypes(1:cell%ATOM_ntype) = cell%ATOM_type(1:cell%ATOM_ntype)
+dataset = SC_Atomtypes
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, atomtypes, cell%ATOM_ntype, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetIntegerArray1D:'//trim(dataset), hdferr)
+deallocate(atomtypes)
+
+allocate(atompos(cell%ATOM_ntype,7))
+atompos(1:cell%ATOM_ntype,1:7) = cell%ATOM_pos(1:cell%ATOM_ntype,1:7)
+dataset = SC_AtomData
+hdferr = HDF_writeDatasetFloatArray2D(dataset, atompos, cell%ATOM_ntype, 7, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetFloatArray2D:'//trim(dataset), hdferr)
+deallocate(atompos)
+
+if (openHDFfile) then
+  call HDF_pop(HDF_head,.TRUE.)
+  call h5close_EMsoft(hdferr)
+  call HDFerror_check('SaveDataHDF:h5close_EMsoft', hdferr)
+else ! just close this group, but not the file
+  call HDF_pop(HDF_head)
+end if
+
+end subroutine Save2DQCDataHDF
 
 !--------------------------------------------------------------------------
 !

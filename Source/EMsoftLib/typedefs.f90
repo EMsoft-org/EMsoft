@@ -1338,6 +1338,7 @@ type TDQCsymdata
   real(kind=dbl)                    :: SYM_recip(40,5,5)            !< reciprocal space point group matrices
   real(kind=dbl)                    :: SYM_c(6,6)                   !< dummy 6x6 matrix used for various computations
   character(11)                     :: SYM_name
+  integer(kind=irg)                 :: N_Axial
 end type
 
 ! 2-D Quasi-Crystal data structures
@@ -1371,7 +1372,7 @@ type TDQCStructureType
   real(kind=dbl)                        :: Upzero
   real(kind=dbl)                        :: xizerop
   real(kind=dbl)                        :: multiplicity
-  character(fnlen)                      :: QCtype
+  character(fnlen)                      :: QCtype, fname
   character(1)                          :: centering   ! 'P','I','F'
   complex(kind=dbl),allocatable         :: LUT(:)
   complex(kind=dbl),allocatable         :: LUTqg(:)
