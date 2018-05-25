@@ -1374,8 +1374,9 @@ type TDQCStructureType
   real(kind=dbl)                        :: multiplicity
   character(fnlen)                      :: QCtype, fname
   character(1)                          :: centering   ! 'P','I','F'
-  complex(kind=dbl),allocatable         :: LUT(:)
-  complex(kind=dbl),allocatable         :: LUTqg(:)
+  complex(kind=dbl),allocatable         :: LUT(:,:,:,:,:)
+  complex(kind=dbl),allocatable         :: LUTqg(:,:,:,:,:)
+  logical, allocatable                  :: dbdiff(:,:,:,:,:)
   integer(kind=irg)                     :: ATOM_ntype, ATOM_type(maxpasym), SYM_SGnum, numat(maxpasym)
   character(fnlen),allocatable          :: SGname(:)
   real(kind=sgl)                        :: ATOM_pos(maxpasym,7)

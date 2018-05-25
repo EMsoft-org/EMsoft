@@ -46,6 +46,7 @@ interface Initialize_QCCell
  !module procedure Initialize_3DQCCell
 end interface Initialize_QCCell
 
+
 contains
 
 !--------------------------------------------------------------------------
@@ -257,11 +258,16 @@ real(kind=sgl),INTENT(IN)                  :: voltage
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 
-integer(kind=irg)                          :: istat, io_int(3), skip
-integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
-real(kind=sgl)                             :: dhkl, io_real(3), ddt
+integer(kind=irg)                          :: istat, io_int(5), skip
+integer(kind=irg)                          :: imh, imk, gg(5), ia1, ia2, ia3, ia4, ia5
+real(kind=sgl)                             :: dhkl, io_real(5), ddt
 logical                                    :: loadingfile
-
+complex(kind=dbl)                          :: Ucg
+complex(kind=dbl)                          :: qg
+real(kind=dbl)                             :: Vmod
+real(kind=dbl)                             :: Vpmod, Upz
+real(kind=dbl)                             :: xig
+real(kind=dbl)                             :: xgp
 
 ! clear the cell variable (set everything to zero)
  !call ResetCell(cell)
@@ -285,45 +291,40 @@ logical                                    :: loadingfile
 
 ! ! compute the range of reflections for the lookup table and allocate the table
 ! ! The master list is easily created by brute force
-!  imh = 1
-!  do 
-!    dhkl = 1.0/CalcLength(cell,  (/float(imh) ,0.0_sgl,0.0_sgl/), 'r')
-!    if (dhkl.lt.dmin) EXIT
-!    imh = imh + 1
-!  end do
-!  imk = 1
-!  do 
-!    dhkl = 1.0/CalcLength(cell, (/0.0_sgl,float(imk),0.0_sgl/), 'r')
-!    if (dhkl.lt.dmin) EXIT
-!    imk = imk + 1
-!  end do
-!  iml = 1
-!  do 
-!    dhkl = 1.0/CalcLength(cell, (/0.0_sgl,0.0_sgl,float(iml)/), 'r')
-!    if (dhkl.lt.dmin) EXIT
-!    iml = iml + 1
-!  end do
- 
-!  if (present(verbose)) then
-!   if (verbose) then
-!     io_int = (/ imh, imk, iml /)
-!     call WriteValue(' Range of reflections along a*, b* and c* = ',io_int,3)
-!   end if
-!  end if
-  
+ imh = 1
+ do 
+   dhkl = 1.0/QC_getGvectorLength(cell, (/imh,0,0,0,0/), 'P')
+   !dhkl = 1.0/CalcLength(cell,  (/float(imh) ,0.0_sgl,0.0_sgl/), 'r')
+   if (dhkl.lt.dmin) EXIT
+   imh = imh + 1
+ end do
+ imk = 1
+ do 
+   dhkl = 1.0/QC_getGvectorLength(cell, (/0,0,0,0,imk/), 'P')
+   if (dhkl.lt.dmin) EXIT
+   imk = imk + 1
+ end do
+
+if (present(verbose)) then
+  if (verbose) then
+    io_int(1:2) = (/imh,imk/)
+    call WriteValue('number of reflections along a*_i | i = {1,2,3,4} and a*_5 = ',io_int,2)
+  end if
+end if
+
 ! ! the LUT array stores all the Fourier coefficients, so that we only need to compute them once... i.e., here and now
-!  allocate(cell%LUT(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
-!  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%LUT array')
-!  cell%LUT = dcmplx(0.D0,0.D0)
-!  allocate(cell%LUTqg(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
-!  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%LUTqg array')
-!  cell%LUTqg = dcmplx(0.D0,0.D0)
+ allocate(cell%LUT(-2*imh:2*imh,-2*imh:2*imh,-2*imh:2*imh,-2*imh:2*imh,-2*imk:2*imk),stat=istat)
+ if (istat.ne.0) call FatalError('InitializeQCCell:',' unable to allocate cell%LUT array')
+ cell%LUT = dcmplx(0.D0,0.D0)
+ allocate(cell%LUTqg(-2*imh:2*imh,-2*imh:2*imh,-2*imh:2*imh,-2*imh:2*imh,-2*imk:2*imk),stat=istat)
+ if (istat.ne.0) call FatalError('InitializeQCCell:',' unable to allocate cell%LUTqg array')
+ cell%LUTqg = dcmplx(0.D0,0.D0)
  
 ! ! allocate an array that keeps track of potential double diffraction reflections
-!  allocate(cell%dbdiff(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
-!  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%dbdiff array')
-!  cell%dbdiff = .FALSE.
-!  ddt = 1.0e-5  
+ allocate(cell%dbdiff(-2*imh:2*imh,-2*imh:2*imh,-2*imh:2*imh,-2*imh:2*imh,-2*imk:2*imk),stat=istat)
+ if (istat.ne.0) call FatalError('InitializeQCCell:',' unable to allocate cell%dbdiff array')
+ cell%dbdiff = .FALSE.
+ ddt = 1.0e-5  
 ! ! changed from 1.0e-10 on 08/14/15 by MDG in response to some issues with double
 ! ! diffraction spots not being taken into account in EBSD master pattern simulations 
 
@@ -334,53 +335,50 @@ logical                                    :: loadingfile
 ! ! shorter linked list based on the incident wave vector direction.
 
 ! ! first, we deal with the transmitted beam
-!  gg = (/ 0,0,0 /)
-!  call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)  
-!  Dyn%Upz = rlp%Vpmod         ! U'0 normal absorption parameter 
-!  if (present(verbose)) then
-!   if (verbose) then
-!    io_real(1) = rlp%xgp
-!    call WriteValue(' Normal absorption length [nm] = ', io_real, 1)
-!   end if
-!  end if
+ gg       = (/ 0,0,0,0,0 /)
+ Ucg      = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp) 
+ Upz      = Vpmod         ! U'0 normal absorption parameter 
  
 ! ! and add this reflection to the look-up table
-!  cell%LUT(0,0,0) = rlp%Ucg
-!  cell%LUTqg(0,0,0) = rlp%qg
+ cell%LUT(0,0,0,0,0)    = Ucg
+ cell%LUTqg(0,0,0,0,0)  = qg
 
-!  if (present(verbose)) then
-!   if (verbose) then
-!    call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
-!   end if
-!  end if
+ if (present(verbose)) then
+  if (verbose) then
+   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+  end if
+ end if
  
-! ! now do the same for the other allowed reflections
-! ! note that the lookup table must be twice as large as the list of participating reflections,
-! ! since the dynamical matrix uses g-h as its index !!!  
-! ixl: do ix=-2*imh,2*imh
-! iyl:  do iy=-2*imk,2*imk
-! izl:   do iz=-2*iml,2*iml
-!         gg = (/ ix, iy, iz /)
-!         if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
-! ! add the reflection to the look up table
-!            call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
-!            cell%LUT(ix, iy, iz) = rlp%Ucg
-!            cell%LUTqg(ix, iy, iz) = rlp%qg
-! ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
-!            if (cabs(rlp%Ucg).le.ddt) then 
-!              cell%dbdiff(ix,iy,iz) = .TRUE.
-!            end if
-!         end if ! IsGAllowed
-!        end do izl
-!       end do iyl
-!     end do ixl
+! now do the same for the other allowed reflections
+! note that the lookup table must be twice as large as the list of participating reflections,
+! since the dynamical matrix uses g-h as its index !!!  
+ia1l: do ia1 = -2*imh,2*imh
+ia2l:  do ia2 = -2*imh,2*imh
+ia3l:   do ia3 = -2*imh,2*imh
+ia4l:     do ia4 = -2*imh, 2*imh
+ia5l:       do ia5 = -2*imk, 2*imk
+              gg = (/ ia1, ia2, ia3, ia4, ia5 /)
+              !if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
+! add the reflection to the look up table
+              Ucg = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp)
+              cell%LUT(ia1, ia2, ia3, ia4, ia5)   = Ucg !rlp%Ucg
+              cell%LUTqg(ia1, ia2, ia3, ia4, ia5) = qg
+! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
+              if (abs(Ucg).le.ddt) then 
+                cell%dbdiff(ia1, ia2, ia3, ia4, ia5) = .TRUE.
+              end if
+            end do ia5l
+          end do ia4l
+        !end if ! IsGAllowed
+       end do ia3l
+      end do ia2l
+    end do ia1l
 
-!   if (present(verbose)) then
-!    if (verbose) then
-!     call Message('Done', frm = "(A/)")
-!    end if
-!   end if
-  
+  if (present(verbose)) then
+   if (verbose) then
+    call Message('Done', frm = "(A/)")
+   end if
+  end if
 
 ! that's it
 end subroutine Initialize_2DQCCell
