@@ -155,7 +155,7 @@ recursive subroutine Dump2DQXtalInfo(cell)
 
 use constants
 use io
-use qcrystal, only: Calc2DQCPositions
+use qcrystal ! , only: Calc2DQCPositions
 
 IMPLICIT NONE
 
