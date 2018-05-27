@@ -587,7 +587,7 @@ recursive function quat_Lp(q,v) result (res)
 !DEC$ ATTRIBUTES DLLEXPORT :: quat_Lp
 
     real(kind=sgl),intent(in)                   :: q(4)         !< input quaternion
-    real(kind=sgl),intent(in)                   :: v(3)         !< input vector (must be normalized)
+    real(kind=sgl),intent(in)                   :: v(3)         !< input vector
     real(kind=sgl)                              :: qv(4), rqv(4)
     real(kind=sgl)                              :: res(3)
 
@@ -616,7 +616,7 @@ recursive function quat_Lp_d(q,v) result (res)
 !DEC$ ATTRIBUTES DLLEXPORT :: quat_Lp_d
 
     real(kind=dbl),intent(in)                   :: q(4)         !< input quaternion
-    real(kind=dbl),intent(in)                   :: v(3)         !< input vector (must be normalized)
+    real(kind=dbl),intent(in)                   :: v(3)         !< input vector
     real(kind=dbl)                              :: qv(4), rqv(4)
     real(kind=dbl)                              :: res(3)
 
