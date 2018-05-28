@@ -53,11 +53,6 @@ module files
 use local
 use typedefs
 
-interface DumpQXtalInfo
-  module procedure Dump2DQXtalInfo
-  !module procedure Dump3DQXtalInfo
-end interface DumpQXtalInfo
-
 contains
 
 !--------------------------------------------------------------------------
@@ -139,64 +134,6 @@ end do
 call Message('', frm = "(A/)")
 
 end subroutine DumpXtalInfo
-
-!--------------------------------------------------------------------------
-!
-! SUBROUTINE: Dump2DQXtalInfo
-!
-!> @author Saransh Singh, Carnegie Mellon University
-!
-!> @brief Write a brief summary of the 2D quasicrystal structure on the screen
-! 
-!> @date    05/23/18 SS 1.0 original, adapted from subroutine above
-!--------------------------------------------------------------------------
-recursive subroutine Dump2DQXtalInfo(cell)    
-!DEC$ ATTRIBUTES DLLEXPORT :: Dump2DQXtalInfo
-
-use constants
-use io
-use qcrystal ! , only: Calc2DQCPositions
-
-IMPLICIT NONE
-
-type(TDQCStructureType),pointer         :: cell
-
-integer(kind=irg)                       :: i, j, oi_int(3)
-real(kind=dbl)                          :: oi_real(7)
-
-
- call Message('', frm = "(A/)")
- call Message('Quasicrystal Structure Information', frm = "('-->',A,'<--')")
- oi_real(1) = cell%QClatparm_a
- call WriteValue('  a_i | i = {1,2,3,4} [nm]             : ', oi_real, 1, "(F9.5)")
- oi_real(1) = cell%QClatparm_c
- call WriteValue('  a_5 [nm]                             : ', oi_real, 1, "(F9.5)")
- oi_int(1)  = cell%SG%N_Axial
- call WriteValue('  Highest axial rotational symmetry    : ', oi_int, 1, "(I4)")
- oi_real(1) = cell%vol
- call WriteValue('  Volume [nm^3]                        : ', oi_real, 1, "(F12.8)")
- oi_int(1) = cell%SYM_SGnum
- call WriteValue('  Space group #                        : ', oi_int, 1, "(1x,I3)")
- call WriteValue('  Space group symbol                   : ', '  '//trim(cell%SGname(cell%SYM_SGnum)) )
- 
-! generate atom positions and dump output  
- call Message('', frm = "(A/)")
- call CalcQCPositions(cell)
- oi_int(1) = cell%ATOM_ntype
- call WriteValue('  Number of asymmetric atom positions ', oi_int, 1)
- do i=1,cell%ATOM_ntype
-  oi_int(1:3) = (/i, cell%ATOM_type(i), cell%numat(i)/)
-  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3,$)")
-  call Message(' ('//ATOM_sym(cell%ATOM_type(i))//')', frm = "(A)")
-  call Message('   Equivalent positions  (a_1 a_2 a_3 a_4 a_5  occ  DWF) ', frm = "(A)")
-  do j=1,cell%numat(i)
-    oi_real(1:7) = (/dble(cell%apos(i, j,1:5)),dble(cell%ATOM_pos(i,6:7))/)
-    call WriteValue('         > ', oi_real, 7,"(2x,6(F9.5,','),F9.5)")
-  end do
-end do
-call Message('', frm = "(A/)")
-
-end subroutine Dump2DQXtalInfo
 
 !--------------------------------------------------------------------------
 !

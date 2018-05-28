@@ -55,7 +55,6 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/postscript.f90
   ${EMsoftLib_SOURCE_DIR}/povray.f90
   ${EMsoftLib_SOURCE_DIR}/quaternions.f90
-  ${EMsoftLib_SOURCE_DIR}/qcrystal.f90
   ${EMsoftLib_SOURCE_DIR}/rng.f90
   ${EMsoftLib_SOURCE_DIR}/rotations.f90
   ${EMsoftLib_SOURCE_DIR}/simulated_annealing.f90
