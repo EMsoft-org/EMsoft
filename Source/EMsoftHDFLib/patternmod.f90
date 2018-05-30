@@ -313,13 +313,13 @@ select case (itype)
             !  this part is different from the other vendors: the patterns are not necessarily in the correct order (why not???)
             !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
             !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
-            if (i.eq.1) then 
+            if (i.eq.2) then 
                groupname = 'SEM'
                hdferr = HDF_openGroup(groupname, pmHDF_head)
-               dataset = 'SEM IX'
+               dataset = 'IX'
                call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
                if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
-               dataset = 'SEM IY'
+               dataset = 'IY'
                call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
                if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
                call invert_ordering_arrays(npat)
