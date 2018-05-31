@@ -336,7 +336,7 @@ bool MonteCarloSimulationController::setSParValue(StringType type, const QString
   int stringSize = EMsoftWorkbenchConstants::Constants::SParStringSize;
   if (value.size() > stringSize)
   {
-    errorMessageGenerated(tr("The string '%1' is longer than 512 characters").arg(value));
+    errorMessageGenerated(tr("The string '%1' is longer than %2 characters").arg(value).arg(EMsoftWorkbenchConstants::Constants::SParStringSize));
     return false;
   }
 
