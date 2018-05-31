@@ -45,6 +45,7 @@
 #include "EMsoftLib/EMsoftLib.h"
 
 #include "Common/EigenConversions.h"
+#include "Common/Constants.h"
 
 #include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
 
@@ -71,10 +72,10 @@ FloatArrayType::Pointer PatternTools::GeneratePattern(PatternTools::IParValues i
                                                           Int32ArrayType::Pointer monteCarloSquareData, FloatArrayType::Pointer eulerAngles,
                                                           int angleIndex, bool &cancel)
 {
-  Int32ArrayType::Pointer genericIParPtr = Int32ArrayType::CreateArray(40, QVector<size_t>(1, 1), "IPar");
+  Int32ArrayType::Pointer genericIParPtr = Int32ArrayType::CreateArray(EMsoftWorkbenchConstants::Constants::IParSize, QVector<size_t>(1, 1), "IPar");
   genericIParPtr->initializeWithZeros();
 
-  FloatArrayType::Pointer  genericFParPtr = FloatArrayType::CreateArray(40, QVector<size_t>(1, 1), "FPar");
+  FloatArrayType::Pointer  genericFParPtr = FloatArrayType::CreateArray(EMsoftWorkbenchConstants::Constants::FParSize, QVector<size_t>(1, 1), "FPar");
   genericFParPtr->initializeWithZeros();
 
   int32_t* genericIPar = genericIParPtr->getPointer(0);
