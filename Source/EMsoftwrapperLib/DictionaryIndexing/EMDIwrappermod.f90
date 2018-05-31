@@ -41,7 +41,7 @@
 ! are identical, so we document here their component definitions; to allow for future expansion, each
 ! array has 40 entries, of which about half are currently (April 2016) used.
 !
-! integer(kind=irg) :: ipar(40)  components 
+! integer(kind=irg) :: ipar(wraparraysize)  components 
 ! ipar(1) : nx  = (numsx-1)/2
 ! ipar(2) : globalworkgrpsz
 ! ipar(3) : num_el
@@ -78,9 +78,10 @@
 ! ipar(32): ROI2
 ! ipar(33): ROI3
 ! ipar(34): ROI4
-! ipar(35:40) : 0 (unused for now)
+! ipar(35): inputtype
+! ipar(36:wraparraysize) : 0 (unused for now)
 
-! real(kind=dbl) :: fpar(40)  components
+! real(kind=dbl) :: fpar(wraparraysize)  components
 ! fpar(1) : sig
 ! fpar(2) : omega
 ! fpar(3) : EkeV
@@ -107,11 +108,11 @@
 ! fpar(22): gamma value
 ! fpar(23): maskradius
 ! fpar(24): hipasswd
-! fpar(25:40): 0 (unused for now)
+! fpar(25:wraparraysize): 0 (unused for now)
 
 ! newly added in version 3.2, to facilitate passing EMsoft configuration
 ! strings back and forth to C/C++ programs that call EMdymod routines...
-! character(fnlen)  :: spar(40)   configuration string components
+! character(fnlen)  :: spar(wraparraysize)   configuration string components
 ! spar(1): EMsoftpathname
 ! spar(2): EMXtalFolderpathname
 ! spar(3): EMdatapathname
@@ -139,7 +140,7 @@
 ! spar(25): WyckoffPositionsfilename
 ! spar(26): Randomseedfilename
 ! spar(27): EMsoftnativedelimiter
-! spar(28:40): '' (unused for now)
+! spar(28:wraparraysize): '' (unused for now)
 
 
 module EMDIwrappermod
@@ -184,153 +185,522 @@ contains
 !> @date 01/23/18 MDG 1.1 added callback routine and fixed compilation errors
 !> @date 05/31/18 MDG 2.0 updated to new routine from patternmod module, including ROI handling and various pattern file formats
 !--------------------------------------------------------------------------
-! recursive subroutine EMsoftCpreprocessEBSDPatterns(ipar, fpar, spar, mask, exptIQ, ADPmap, cproc, objAddress, cancel) &
-!            bind(c, name='EMsoftCpreprocessEBSDPatterns')    ! this routine is callable from a C/C++ program
-! !DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCpreprocessEBSDPatterns
+recursive subroutine EMsoftCpreprocessEBSDPatterns(ipar, fpar, spar, mask, exptIQ, ADPmap, cproc, objAddress, cancel) &
+           bind(c, name='EMsoftCpreprocessEBSDPatterns')    ! this routine is callable from a C/C++ program
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCpreprocessEBSDPatterns
 
-! use local
-! use configmod
-! use constants
-! use typedefs
-! use iso_c_binding
-! use filters
-! use EBSDDImod
-! use omp_lib
-! use patternmod
+use local
+use configmod
+use constants
+use typedefs
+use iso_c_binding
+use filters
+use EBSDDImod
+use omp_lib
+use patternmod
 
-! IMPLICIT NONE
+IMPLICIT NONE
 
-! integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
-! real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
-! character(kind=c_char, len=1), target, INTENT(IN) :: spar(wraparraysize*fnlen)
-! real(kind=sgl),INTENT(INOUT)            :: mask(ipar(19), ipar(20))
-! real(kind=sgl),INTENT(INOUT)            :: exptIQ(ipar(26)*ipar(27))
-! real(kind=sgl),INTENT(INOUT)            :: ADPmap(ipar(26)*ipar(27))
-! TYPE(C_FUNPTR), INTENT(IN), VALUE       :: cproc
-! integer(c_size_t),INTENT(IN), VALUE     :: objAddress
-! character(len=1),INTENT(IN)             :: cancel
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
+character(kind=c_char, len=1), target, INTENT(IN) :: spar(wraparraysize*fnlen)
+real(kind=sgl),INTENT(INOUT)            :: mask(ipar(19), ipar(20))
+real(kind=sgl),INTENT(INOUT)            :: exptIQ(ipar(26)*ipar(27))
+real(kind=sgl),INTENT(INOUT)            :: ADPmap(ipar(26)*ipar(27))
+TYPE(C_FUNPTR), INTENT(IN), VALUE       :: cproc
+integer(c_size_t),INTENT(IN), VALUE     :: objAddress
+character(len=1),INTENT(IN)             :: cancel
 
-! PROCEDURE(ProgressCallBackDI2), POINTER :: proc
-! character(fnlen)                        :: maskfile, tmpfile, exptname
-! logical                                 :: f_exists, ROIselected
-! integer(kind=irg)                       :: ii, jj, kk, iii, maskpattern, numsx, numsy, L, binx, biny, binning, ipf_wd, ipf_ht, & 
-!                                            TID, itmpexpt, iunitexpt, recordsize_correct, ierr, correctsize, recordsize, patsz, &
-!                                            nregions, totnumexpt, istat, nthreads
-! real(kind=sgl)                          :: mi, ma, vlen, tmp, maskradius
-! real(kind=dbl)                          :: Jres, w
-! character(1000)                         :: charline
-! real(kind=sgl),allocatable              :: imageexpt(:), tmpimageexpt(:), imagedict(:), masklin(:)
-! integer(kind=irg),allocatable           :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
-! real(kind=sgl),allocatable              :: EBSDpatternintd(:,:), EBSDpat(:,:), exppatarray(:)
-! real(kind=dbl),allocatable              :: ksqarray(:,:), rrdata(:,:), ffdata(:,:)
-! complex(kind=dbl),allocatable           :: hpmask(:,:)
-! complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
-
-! type(C_PTR)                             :: planf, HPplanf, HPplanb
-
-
-! ! parameters to deal with the input string array spar
-! type(ConfigStructureType)               :: CS
-
-! nullify(proc)
-
-! ! link the proc procedure to the cproc argument
-! CALL C_F_PROCPOINTER (cproc, proc)
-
-! ! outputs of this routine: all output arrays must be allocated in the calling program
-! !
-! ! mask(binx,biny)
-! ! IQ map
-! ! ADP map
-! !
-
-! ! required input parameters:
-! !
-! ! binx, biny
-! ! binning
-! ! nthreads
-! ! maskpattern           ---> ipar()
-! ! maskradius            ---> fpar()
-! ! output file path      ---> CS%strvals(31)
-! ! experimental file     ---> CS%strvals(32)
-! ! nregions              ---> ipar()
-! ! hipasswd              ---> fpar(24)
-
-! ! the calling program passes a c-string array spar that we need to convert to the 
-! ! standard EMsoft config structure for use inside this routine
-! call C2F_configuration_strings(nspar, C_LOC(spar), CS)
-
-! ! set up all the necessary variables and auxiliary arrays
-! recordsize = correctsize*4
-! L = binx*biny
-! patsz = correctsize
-! w = ebsdnl%hipassw
-
-! if (ipar(30).ne.0) then
-!   ROIselected = .TRUE.
-!   iiistart = ipar(32)
-!   iiiend = ipar(32)+ipar(34)-1
-!   jjend = ipar(33)
-! else
-!   ROIselected = .FALSE.
-!   iiistart = 1
-!   iiiend = ipar(27) ! ipf_ht
-!   jjend = ipar(26)  ! ipf_wd
-! end if
+PROCEDURE(ProgressCallBackDI2), POINTER :: proc
+character(fnlen)                        :: maskfile='', tmpfile='', exptname=''
+logical                                 :: f_exists=.FALSE., ROIselected=.FALSE.
+integer(kind=irg)                       :: ii=0, jj=0, kk=0, iii=0, maskpattern=0, numsx=0, numsy=0, L=0, binx=0, biny=0, &
+                                           binning=0, ipf_wd=0, ipf_ht=0, TID=0, itmpexpt=0, iunitexpt=0, recordsize_correct=0, &
+                                           ierr=0, correctsize=0, recordsize=0, patsz=0, nregions=0, totnumexpt=0, istat=0, &
+                                           nthreads=0, ROI(4), i=0, iiiend=0, iiistart=0, jjend=0, dn=0, cn=0, totn=0, wd=0, ht=0, &
+                                           nexpt=0, pindex=0
+real(kind=sgl)                          :: mi=0.0, ma=0.0, vlen=0.0, tmp=0.0, maskradius=0.0, dp=0.0
+real(kind=dbl)                          :: Jres=0.D0, w=0.D0
+real(kind=sgl),allocatable              :: imageexpt(:), tmpimageexpt(:), imagedict(:), masklin(:)
+integer(kind=irg),allocatable           :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
+real(kind=sgl),allocatable              :: EBSDpatternintd(:,:), EBSDpat(:,:), exppatarray(:)
+real(kind=dbl),allocatable              :: ksqarray(:,:), rrdata(:,:), ffdata(:,:)
+complex(kind=dbl),allocatable           :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
+real(kind=sgl),allocatable              :: lstore(:,:), pstore(:,:), lp(:), cp(:)
 
 
-! !===================================================================================
-! ! open the file with experimental patterns; depending on the inputtype parameter, this
-! ! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
-! ! pattern file produced by EMEBSD.f90; or a vendor binary or HDF5 file... in each case we need to 
-! ! open the file and leave it open, then use the getExpPatternRow() routine to read a row
-! ! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
-! ! properly close the experimental pattern file
-! istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
+type(C_PTR)                             :: planf, HPplanf, HPplanb
+character(fnlen)                        :: HDFstrings(10), fname='', inputtype=''
+integer(HSIZE_T)                        :: dims3(3), offset3(3)
+
+
+! parameters to deal with the input string array spar
+type(ConfigStructureType)               :: CS
+
+nullify(proc)
+
+! link the proc procedure to the cproc argument
+CALL C_F_PROCPOINTER (cproc, proc)
+
+! outputs of this routine: all output arrays must be allocated in the calling program
+!
+! mask
+! IQ map
+! ADP map
+!
+
+! required input parameters:
+!
+! integers:
+! nthreads              ---> ipar(18)
+! numsx                 ---> ipar(19)
+! numsy                 ---> ipar(20)
+! binning               ---> ipar(22)
+! binx                  ---> ipar(23)
+! biny                  ---> ipar(24)
+! ipf_wd                ---> ipar(26)
+! ipf_ht                ---> ipar(27)
+! nregions              ---> ipar(28)
+! maskpattern           ---> ipar(29)
+! useROI                ---> ipar(30)
+! ROI(1)                ---> ipar(31)
+! ROI(2)                ---> ipar(32)
+! ROI(3)                ---> ipar(33)
+! ROI(4)                ---> ipar(34)
+! inputtype             ---> ipar(35)     2 = up1, 3 = up2, 4 = h5ebsd 
+
+! floats:
+! maskradius            ---> fpar(23)
+! w                     ---> fpar(24)
+
+! strings:
+! output file path      ---> CS%strvals(31)
+! experimental data file---> CS%strvals(32)
+! HDFstrings(1)         ---> CS%strvals(41)
+! HDFstrings(2)         ---> CS%strvals(42)
+! HDFstrings(3)         ---> CS%strvals(43)
+! HDFstrings(4)         ---> CS%strvals(44)
+! HDFstrings(5)         ---> CS%strvals(45)
+! HDFstrings(6)         ---> CS%strvals(46)
+! HDFstrings(7)         ---> CS%strvals(47)
+! HDFstrings(8)         ---> CS%strvals(48)
+! HDFstrings(9)         ---> CS%strvals(49)
+! HDFstrings(10)        ---> CS%strvals(50)
+
+! the calling program passes a c-string array spar that we need to convert to the 
+! standard EMsoft config structure for use inside this routine
+call C2F_configuration_strings(C_LOC(spar), CS)
+
+! set up all the necessary variables and auxiliary arrays
+L = ipar(19) * ipar(20) / ipar(22)**2
+if (mod(L,16) .ne. 0) then
+    correctsize = 16*ceiling(float(L)/16.0)
+else
+    correctsize = L
+end if
+recordsize = correctsize*4
+
+binx = ipar(19) / ipar(22)
+biny = ipar(20) / ipar(22)
+nthreads = ipar(18)
+patsz = correctsize
+w = fpar(24)
+iunitexpt =  110
+itmpexpt = 111
+
+! get the HDF group and dataset names (in case the input file is HDF5 format)
+do i=1,10
+  HDFstrings(i) = trim(CS%strvals(40+i))
+end do 
+
+! set up the Region-of-Interest handling
+if (ipar(30).ne.0) then
+  ROIselected = .TRUE.
+  iiistart = ipar(32)
+  iiiend = ipar(32)+ipar(34)-1
+  jjend = ipar(33)
+  ROI = (/ ipar(31), ipar(32), ipar(33), ipar(34) /)
+else
+  ROIselected = .FALSE.
+  iiistart = 1
+  iiiend = ipar(27) ! ipf_ht
+  jjend = ipar(26)  ! ipf_wd
+  ROI = (/ 0, 0, 0, 0 /)
+end if
+
+! define the mask if necessary
+if (ipar(29).eq.1) then
+  do ii = 1,biny
+      do jj = 1,binx
+          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. fpar(23)**2) then
+              mask(jj,ii) = 0.0
+          end if
+      end do
+  end do
+end if
+
+select case(ipar(35))
+  case(1) 
+    inputtype = "Binary"
+  case(2) 
+    inputtype = "TSLup1"
+  case(3) 
+    inputtype = "TSLup2"
+  case(4) 
+    inputtype = "TSLHDF"
+  case(5) 
+    inputtype = "OxfordBinary"
+  case(6) 
+    inputtype = "OxfordHDF"
+  case(7) 
+    inputtype = "EMEBSD"
+  case(8) 
+    inputtype = "BrukerHDF"
+end select
+
+! convert the mask to a linear (1D) array
+do ii = 1,biny
+    do jj = 1,binx
+        masklin((ii-1)*binx+jj) = mask(jj,ii)
+    end do
+end do
+
+! deal with the output file name ...
+f_exists = .FALSE.
+fname = trim(CS%EMtmppathname)//trim(CS%strvals(32))
+fname = EMsoft_toNativePath(fname)
+inquire(file=trim(fname), exist=f_exists)
+
+! delete the file if it already exists
+if (f_exists) then
+  open(unit=itmpexpt,file=trim(fname),&
+       status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+  close(unit=itmpexpt,status='delete')
+end if
+
+! now open the new file for direct access mode
+! this file will be used by the main dictionary indexing routine as well as the refinement routine.
+open(unit=itmpexpt,file=trim(fname),&
+     status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+
+!===================================================================================
+! open the file with experimental patterns; depending on the inputtype parameter, this
+! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
+! pattern file produced by EMEBSD.f90; or a vendor binary or HDF5 file... in each case we need to 
+! open the file and leave it open, then use the getExpPatternRow() routine to read a row
+! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
+! properly close the experimental pattern file
+istat = openExpPatternFile(CS%strvals(32), ipar(26), L, inputtype, recordsize, iunitexpt, HDFstrings)
 ! if (istat.ne.0) then
 !     call patternmod_errormessage(istat)
 !     call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
 ! end if
 
-! ! this next part is done with OpenMP, with only thread 0 doing the reading;
-! ! Thread 0 reads one line worth of patterns from the input file, then all threads do 
-! ! the work, and thread 0 adds them to the epatterns array in RAM; repeat until all patterns have been processed.
+! this next part is done with OpenMP, with only thread 0 doing the reading;
+! Thread 0 reads one line worth of patterns from the input file, then all threads do 
+! the work, and thread 0 adds them to the epatterns array in RAM; repeat until all patterns have been processed.
 
-! call OMP_SET_NUM_THREADS(nthreads)
-! io_int(1) = nthreads
-! call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
+call OMP_SET_NUM_THREADS(nthreads)
 
-! ! allocate the arrays that holds the experimental patterns from a single row of the region of interest
-! allocate(exppatarray(patsz * ebsdnl%ipf_wd),stat=istat)
+! allocate the arrays that holds the experimental patterns from a single row of the region of interest
+allocate(exppatarray(patsz * ipar(26)),stat=istat)
 ! if (istat .ne. 0) stop 'could not allocate exppatarray'
 
-! if (present(exptIQ)) then
-! ! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
-!   allocate(EBSDPat(binx,biny),stat=istat)
-!   if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
-!   EBSDPat = 0.0
-!   allocate(ksqarray(binx,biny),stat=istat)
-!   if (istat .ne. 0) stop 'could not allocate ksqarray array'
-!   Jres = 0.0
-!   call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
-!   deallocate(EBSDPat)
-! end if
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+allocate(EBSDPat(binx,biny),stat=istat)
+! if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
+EBSDPat = 0.0
+allocate(ksqarray(binx,biny),stat=istat)
+! if (istat .ne. 0) stop 'could not allocate ksqarray array'
+Jres = 0.0
+call init_getEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf)
+deallocate(EBSDPat)
 
-! ! initialize the HiPassFilter routine (has its own FFTW plans)
-! allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+! initialize the HiPassFilter routine (has its own FFTW plans)
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
 ! if (istat .ne. 0) stop 'could not allocate hpmask array'
-! call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-! deallocate(inp, outp)
+call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+deallocate(inp, outp)
 
-! call Message('Starting processing of experimental patterns')
-! call cpu_time(tstart)
+dims3 = (/ binx, biny, ipar(26) /)
 
-! dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
+! set the call-back parameters and allocate the arrays for the ADPmap computation
+dn = 1
+if (ipar(30).eq.1) then 
+  totn = ROI(4)
+  cn = iiistart
+  wd = ROI(3)
+  ht = ROI(4)
+  nexpt = ROI(3) * ROI(4)
+else
+  totn = ipar(27)
+  cn = 1
+  wd = ipar(26)
+  ht = ipar(27)
+  nexpt = ipar(26) * ipar(27)
+end if
+allocate(lstore(L,wd), pstore(L,wd), lp(L), cp(L), imageexpt(L))
+ADPmap= 0.0
+pstore = 0.0
+lstore = 0.0
+lp = 0.0
+cp = 0.0
+pindex = 0
+
+!===================================================================================
+! we do one row at a time
+prepexperimentalloop: do iii = iiistart,iiiend
+
+! start the OpenMP portion
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
+
+! set the thread ID
+    TID = OMP_GET_THREAD_NUM()
+
+! initialize thread private variables
+    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),tmpimageexpt(binx*biny),stat=istat)
+    ! if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+
+    allocate(EBSDpint(binx,biny),stat=istat)
+    ! if (istat .ne. 0) stop 'could not allocate EBSDpint array'
+
+    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
+    ! if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+
+    tmpimageexpt = 0.0
+    rrdata = 0.D0
+    ffdata = 0.D0
+
+! thread 0 reads the next row of patterns from the input file
+! we have to allow for all the different types of input files here...
+    if (TID.eq.0) then
+        offset3 = (/ 0, 0, (iii-1)*ipar(26)/)
+        if (ROIselected.eqv..TRUE.) then
+            call getExpPatternRow(iii, ipar(26), patsz, L, dims3, offset3, iunitexpt, &
+                                  inputtype, HDFstrings, exppatarray, ROI)
+        else
+            call getExpPatternRow(iii, ipar(26), patsz, L, dims3, offset3, iunitexpt, &
+                                  inputtype, HDFstrings, exppatarray)
+        end if
+    end if
+
+! other threads must wait until T0 is ready
+!$OMP BARRIER
+    jj=0
+
+! then loop in parallel over all patterns to perform the preprocessing steps
+!$OMP DO SCHEDULE(DYNAMIC)
+    do jj=1,jjend
+! convert imageexpt to 2D EBSD Pattern array
+        do kk=1,biny
+          EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
+        end do
+
+! compute the pattern Image Quality 
+        exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(binx, biny, EBSDPat, ksqarray, Jres, planf))
+
+! Hi-Pass filter
+        rrdata = dble(EBSDPat)
+        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
+        EBSDPat = sngl(ffdata)
+
+! adaptive histogram equalization
+        ma = maxval(EBSDPat)
+        mi = minval(EBSDPat)
+    
+        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+        EBSDPat = float(adhisteq(ipar(28), binx, biny, EBSDpint))
+
+! convert back to 1D vector
+        do kk=1,biny
+          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = EBSDPat(1:binx,kk)
+        end do
+
+! apply circular mask and normalize for the dot product computation
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
+        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        if (vlen.ne.0.0) then
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
+        else
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
+        end if
+    end do
+!$OMP END DO
+
+! thread 0 writes the row of patterns to the file, and computes the ADP map
+    if (TID.eq.0) then
+      do jj=1,jjend
+        write(itmpexpt,rec=(iii-iiistart)*jjend + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
+        imageexpt = exppatarray((jj-1)*patsz+1:jj*patsz)
+
+        pindex = pindex + 1
+    ! do we need to copy pstore into lstore ? (starts with second line)
+        if ((jj.eq.1).and.(iii.gt.iiistart)) lstore = pstore
+    ! determine to which dpmap entries we need to add the dot product
+        if (jj.eq.1) then
+          cp(1:L) = imageexpt(1:L)
+          pstore(1:L,jj) = cp(1:L)
+        else
+          lp = cp
+          cp(1:L) = imageexpt(1:L)
+          pstore(1:L,jj) = cp(1:L)
+          dp = 0.25 * sum(lp(1:L)*cp(1:L))
+          ADPmap(pindex-1) = ADPmap(pindex-1) + dp
+          ADPmap(pindex) = ADPmap(pindex) + dp
+        end if
+        if (jj.gt.1) then
+          dp = 0.25 * sum(lstore(1:L,jj)*cp(1:L))
+          ADPmap(pindex-wd+1) = ADPmap(pindex-wd+1) + dp
+          ADPmap(pindex) = ADPmap(pindex) + dp
+        end if
+      end do
+
+      ! correct the lower corners and lower edge when we are done with the second row
+      if ((iii-iiistart).eq.1) then
+        ADPmap(1) = ADPmap(1) * 4.0
+        ADPmap(wd) = ADPmap(wd) * 2.0
+        ADPmap(2:wd-1) = ADPmap(2:wd-1) * 4.0/3.0
+      end if
+      ! once we've completed the third row, we can correct the edge points of the previous row
+      if ((iii-iiistart).ge.2) then
+        ADPmap(wd*(iii-iiistart-1)+1) = ADPmap(wd*(iii-iiistart-1)+1) * 4.0/3.0
+        ADPmap(wd*(iii-iiistart)) = ADPmap(wd*(iii-iiistart)) * 4.0/3.0
+      end if
+    end if
+
+deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
+!$OMP BARRIER
+!$OMP END PARALLEL
+
+! has the cancel flag been set by the calling program ?
+  if (cancel.ne.char(0)) EXIT prepexperimentalloop
+
+! provide an update of progress via the call back routine (number of rows completed out of total number of rows)
+  if(objAddress.ne.0) then
+    call proc(objAddress, cn, totn)
+    cn = cn+dn
+  end if
+
+end do prepexperimentalloop
+
+! do final corrections to ADPmap
+! edge points of next to last line from the top
+ADPmap(wd*(ht-2)+1) = ADPmap(wd*(ht-2)+1) * 4.0/3.0
+ADPmap(wd*(ht-1)) = ADPmap(wd*(ht-1)) * 4.0/3.0
+
+! upper corners and edge
+ADPmap(nexpt) = ADPmap(nexpt) * 2.0
+ADPmap(nexpt-wd+1) = ADPmap(nexpt-wd+1) * 4.0/3.0
+ADPmap(nexpt-wd+2:nexpt-1) = ADPmap(nexpt-wd+2:nexpt-1) * 4.0/3.0
+
+! close both files
+call closeExpPatternFile(inputtype, iunitexpt)
+close(unit=itmpexpt,status='keep')
+
+! that's it folks...
+end subroutine EMsoftCpreprocessEBSDPatterns
 
 
 
-! ! that's it folks...
-! end subroutine EMsoftCpreprocessEBSDPatterns
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EMsoftCpreprocessSingleEBSDPattern
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief This subroutine can be called by a C/C++ program as a standalone function to preprocess a single experimental EBSD pattern
+!
+!> @details This subroutine provides a method to preprocess a series of experimental EBSD patterns and
+!> can be called from an external C/C++ program; the routine provides a callback mechanism to
+!> update the calling program about computational progress, as well as a cancel option.
+!> The routine is intended to be called form a C/C++ program, e.g., EMsoftWorkbench.  This routine is a portion
+!> of the core of the EMEBSDDI program. 
+!>
+!> @param ipar array with integer input parameters
+!> @param fpar array with float input parameters
+!> @param inputpattern unprocessed pattern
+!> @param inputpattern processed pattern
+!
+!> @date 01/22/18 MDG 1.0 original extracted from EMEBSDDI program
+!> @date 05/31/18 MDG 2.0 rewrite based on EMsoftCpreprocessEBSDPatterns call.
+!--------------------------------------------------------------------------
+recursive subroutine EMsoftCpreprocessSingleEBSDPattern(ipar, fpar, inputpattern, outputpattern) &
+           bind(c, name='EMsoftCpreprocessSingleEBSDPattern')    ! this routine is callable from a C/C++ program
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCpreprocessSingleEBSDPattern
+
+use local
+use configmod
+use constants
+use typedefs
+use iso_c_binding
+use filters
+use EBSDDImod
+use omp_lib
+use patternmod
+
+IMPLICIT NONE
+
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: inputpattern(ipar(19),ipar(20))
+real(kind=sgl),INTENT(OUT)              :: outputpattern(ipar(19),ipar(20))
+
+integer(kind=irg)                       :: binx=0, biny=0, istat=0
+real(kind=sgl)                          :: mi=0.0, ma=0.0
+integer(kind=irg),allocatable           :: EBSDpint(:,:)
+real(kind=sgl),allocatable              :: EBSDpat(:,:)
+real(kind=dbl),allocatable              :: rrdata(:,:), ffdata(:,:)
+complex(kind=dbl),allocatable           :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
+
+type(C_PTR)                             :: HPplanf, HPplanb
+
+! output of this routine: all output arrays must be allocated in the calling program
+!
+! outputpattern
+!
+
+! required input parameters:
+!
+! integers:
+! numsx                 ---> ipar(19)
+! numsy                 ---> ipar(20)
+! nregions              ---> ipar(28)
+
+! floats:
+! w                     ---> fpar(24)
+
+! set up all the necessary variables and auxiliary arrays
+binx = ipar(19)
+biny = ipar(20)
+
+! initialize the HiPassFilter routine (has its own FFTW plans)
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+call init_HiPassFilter(dble(fpar(24)), (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+
+! initialize thread private variables
+allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
+
+allocate(EBSDpint(binx,biny),stat=istat)
+
+! Hi-Pass filter
+rrdata = dble(inputpattern)
+EBSDPat = sngl( applyHiPassFilter(rrdata, (/ binx, biny /), dble(fpar(24)), hpmask, inp, outp, HPplanf, HPplanb) )
+
+! adaptive histogram equalization
+ma = maxval(EBSDPat)
+mi = minval(EBSDPat)
+    
+EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+outputpattern = float(adhisteq(ipar(28), binx, biny, EBSDpint))
+
+deallocate(inp, outp, EBSDpint, EBSDPat, rrdata, ffdata, hpmask)
+
+! that's it folks...
+end subroutine EMsoftCpreprocessSingleEBSDPattern
+
 
 ! !--------------------------------------------------------------------------
 ! !

@@ -262,10 +262,8 @@ use,INTRINSIC :: ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer(c_int32_t),PARAMETER            :: nipar=40
-integer(c_int32_t),PARAMETER            :: nfpar=40
-integer(c_int32_t),INTENT(IN)           :: ipar(nipar)
-real(kind=sgl),INTENT(IN)               :: fpar(nfpar)
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
 integer(c_int32_t),PARAMETER            :: nq=4
 real(kind=sgl),INTENT(IN)               :: quats(nq,ipar(21))
 integer(c_int32_t),INTENT(IN)           :: accum_e(ipar(12),-ipar(1):ipar(1),-ipar(1):ipar(1))
@@ -845,12 +843,9 @@ use,INTRINSIC :: ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer(c_int32_t),PARAMETER            :: nipar=40
-integer(c_int32_t),PARAMETER            :: nfpar=40
-integer(c_int32_t),PARAMETER            :: nspar=40
-integer(c_int32_t),INTENT(IN)           :: ipar(nipar)
-real(kind=sgl),INTENT(IN)               :: fpar(nfpar)
-character(kind=c_char, len=1), target, INTENT(IN) :: spar(nspar*fnlen)
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
+character(kind=c_char, len=1), target, INTENT(IN) :: spar(wraparraysize*fnlen)
 real(kind=sgl),INTENT(IN)               :: atompos(ipar(9),5)
 integer(kind=irg),INTENT(IN)            :: atomtypes(ipar(9))
 real(kind=sgl),INTENT(IN)               :: latparm(6)
@@ -926,7 +921,7 @@ CALL C_F_PROCPOINTER (cproc, proc)
 
 ! the calling program passes a c-string array spar that we need to convert to the 
 ! standard EMsoft config structure for use inside this routine
-call C2F_configuration_strings(nspar, C_LOC(spar), CS)
+call C2F_configuration_strings(C_LOC(spar), CS)
 
 ! code used for testing
 !outname = '/Users/mdg/Files/EMPlay/Test/WBMCoutput.txt'
@@ -1391,10 +1386,8 @@ use omp_lib
 
 IMPLICIT NONE
 
-integer(c_int32_t),PARAMETER            :: nipar=40
-integer(c_int32_t),PARAMETER            :: nfpar=40
-integer(c_int32_t),INTENT(IN)           :: ipar(nipar)
-real(kind=sgl),INTENT(IN)               :: fpar(nfpar)
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
 real(kind=sgl),INTENT(IN)               :: atompos(ipar(9),5)
 integer(kind=irg),INTENT(IN)            :: atomtypes(ipar(9))
 real(kind=sgl),INTENT(IN)               :: latparm(6)

@@ -31,6 +31,15 @@ void EMsoftCpreprocessEBSDPatterns
      float* exptIQ, float* ADPmap, ProgCallBackTypeDI2 callback, 
      size_t object, bool* cancel);
 
+/**
+* EBSD single experimental pattern preprocessing:
+* @param ipar array with integer input parameters
+* @param fpar array with float input parameters
+* @param inputpattern  input EBSD pattern as float array
+* @param outputpattern  input EBSD pattern as float array
+*/
+void EMsoftCpreprocessSingleEBSDPattern
+    (size_t* ipar, float* fpar, float* inputpattern, float* outputpattern);
 
 #ifdef __cplusplus
 }
