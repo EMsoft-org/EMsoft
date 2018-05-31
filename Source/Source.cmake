@@ -32,7 +32,7 @@ set(MODALITY_DIRS
   SEM
   TEM
   Utilities
-  XRay
+#  XRay
 )
 
 

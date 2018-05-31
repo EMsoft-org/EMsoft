@@ -235,24 +235,24 @@ character(100)                    :: c
 
 !$OMP THREADPRIVATE(rlp) 
 
-interface
-  function InterpolateLambert(dc, master, npx, nf) result(res)
+! interface
+!   function InterpolateLambert(dc, master, npx, nf) result(res)
 
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
+!   use local
+!   use Lambert
+!   use EBSDmod
+!   use constants
   
-  IMPLICIT NONE
+!   IMPLICIT NONE
   
-  real(kind=dbl),INTENT(INOUT)            :: dc(3)
-  real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx, 1, 1:nf)
-  integer(kind=irg),INTENT(IN)            :: npx 
-  integer(kind=irg),INTENT(IN)            :: nf
-  real(kind=sgl)                          :: res
-  end function InterpolateLambert
+!   real(kind=dbl),INTENT(INOUT)            :: dc(3)
+!   real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx, 1, 1:nf)
+!   integer(kind=irg),INTENT(IN)            :: npx 
+!   integer(kind=irg),INTENT(IN)            :: nf
+!   real(kind=sgl)                          :: res
+!   end function InterpolateLambert
 
-end interface
+! end interface
 
 stereog = .TRUE.
 
