@@ -911,13 +911,13 @@ dzt = depthstep/thick
   do k=1,nn
      q =  dcmplx(0.D0,0.D0)
      qold = dcmplx(tpi*(aimag(W(j))+aimag(W(k))),tpi*(real(W(j))-real(W(k))))
+     !if(real(qold) .lt. 0.D0) qold = -qold
      do iz = 1,izz
        q = q + dble(lambdaE(iz)) * cdexp( - qold * dble(iz) ) !MNS changed cexp to cdexp to be compatible with gfortran
      end do
      Ijk(j,k) = conjg(CGinv(j,gzero)) * q * CGinv(k,gzero)
   end do
  end do
-
 Ijk = Ijk * dzt
 
 ! then the matrix multiplications to obtain Lgh 

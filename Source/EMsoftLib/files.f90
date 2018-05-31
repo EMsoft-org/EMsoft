@@ -135,8 +135,6 @@ call Message('', frm = "(A/)")
 
 end subroutine DumpXtalInfo
 
-
-
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE: CopyTemplateFiles

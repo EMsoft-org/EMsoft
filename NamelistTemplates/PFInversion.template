@@ -1,0 +1,38 @@
+ &PFInversion
+
+!#################################################################
+! XTAL NAME 
+!#################################################################
+
+ xtalname = 'undefined',
+
+!#################################################################
+! Miller Indices and respective files; right now it assumes 
+! a miximum of 10 pole figures
+! all Miller indices in 3 index notation
+!#################################################################
+
+! nfiles
+ nfiles = 3,
+ flist = 'filename1.txt', 'filename2.txt','filename3.txt',
+
+!#################################################################
+! regularization paramter for L2 regularization
+!#################################################################
+
+ damp = 1.D0,
+
+!#################################################################
+! ADDITIONAL PARAMETERS AND OUTPUT FILE
+!#################################################################
+! number of points in lambert projections
+! size of PF data is 2nLam+1**2
+ nLam = 20,
+! number of points in discrete ODF
+! size of ODF is 2*ncub+1**3
+ ncub = 40,
+! output data file; relative to EMdatapathname
+ datafile = 'undefined'
+! mrc file name for visualization
+ mrcfile = 'undefined'
+ /

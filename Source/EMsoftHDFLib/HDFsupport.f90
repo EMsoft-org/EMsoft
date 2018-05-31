@@ -6667,7 +6667,6 @@ cell%SG%SYM_second = .FALSE.
 
 end subroutine ReadDataHDF
 
-
 !--------------------------------------------------------------------------
 !
 ! FUNCTION: CheckFixedLengthflag

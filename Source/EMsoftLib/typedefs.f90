@@ -482,7 +482,7 @@ end type
 
 ! finally, we define the rotational crystal symmetry operators in terms of quaternions (q0, q1,q2,q3) with q0 the scalar part;
 ! these are used in the dictmod EBSD dictionary indexing module, and are defined with respect to the standard cartesian reference frame
-real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
+real(kind=dbl),parameter :: SYM_Qsymop(4,152) = reshape( (/ &
                                 1.D0, 0.D0, 0.D0, 0.D0, &       ! 1: identity operator
                                 0.D0, 1.D0, 0.D0, 0.D0, &       ! 2: 180@[100]
                                 0.D0, 0.D0, 1.D0, 0.D0, &       ! 3: 180@[010]
@@ -579,28 +579,25 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                                0.80901700537708732D0,-0.16245984550474032D0, 0.50000000000000000D0,-0.26286554613984575D0, &
                                0.30901702997862029D0,-0.26286555540853851D0, 0.80901696456355054D0,-0.42532539390974122D0, & 
 
-                               ! octagonal QC group 822
-                               0.D0, 1.D0, 0.D0, 0.D0, &                                    ! 180@[100]
-                               0.D0, 0.923879532511287D0, 0.38268343236509D0, 0.D0, &       ! 180@[cos(pi/8) sin(pi/8) 0]
+                               ! octagonal QC group 822                              
                                0.923879532511287D0, 0.D0, 0.D0, 0.38268343236509D0, &       ! 45@[001]
-                               sq22, 0.D0, 0.D0, sq22, &                                    ! 90@[001]
+                               0.707106781186547D0, 0.D0, 0.D0, 0.707106781186547D0, &      ! 90@[001]
                                0.38268343236509D0, 0.D0, 0.D0, 0.923879532511287D0, &       ! 135@[001]
                                0.D0, 0.D0, 0.D0, 1.D0, &                                    ! 180@[001]
-                               -0.382683432365090D0, 0.D0, 0.D0, 0.923879532511287D0, &     ! 225@[001]
-                               -0.707106781186547D0, 0.0D0, 0.0D0, 0.707106781186548D0, &   ! 270@[001]
-                               -0.923879532511287D0, 0.0D0, 0.0D0, 0.382683432365090D0, &   ! 315@[001]
+                              -0.382683432365090D0, 0.D0, 0.D0, 0.923879532511287D0, &     ! 225@[001]
+                              -0.707106781186547D0, 0.0D0, 0.0D0, 0.707106781186548D0, &   ! 270@[001]
+                              -0.923879532511287D0, 0.0D0, 0.0D0, 0.382683432365090D0, &   ! 315@[001]
                                ! all 2 fold rotation axes
+                               0.D0, 1.D0, 0.D0, 0.D0, &                                    ! 180@[100]
+                               0.D0, 0.923879532511287D0, 0.38268343236509D0, 0.D0, &       ! 180@[cos(pi/8) sin(pi/8) 0]
                                0.0D0, 0.923879532511287D0, -0.382683432365090D0, 0.0D0, &
                                0.0D0, 0.707106781186548D0, -0.707106781186547D0, 0.0D0, &
                                0.0D0, 0.382683432365090D0, -0.923879532511287D0, 0.0D0, &
                                0.0D0, 0.0D0, -1.0D0, 0.0D0, &
                                0.0D0, -0.382683432365090D0, -0.923879532511287D0, 0.0D0, &
                                0.0D0, -0.707106781186547D0, -0.707106781186548D0, 0.0D0, &
-                               0.0D0, -0.923879532511287D0, -0.382683432365090D0, 0.0D0, &
                                
                                ! decagonal QC group 1022
-                               0.D0, 1.D0, 0.D0, 0.D0, &                                    ! 180@[100]
-                               0.D0, 0.951056516295154D0, 0.309016994374947D0, 0.D0,   &    ! 180@[cos(pi/10) sin(pi/10) 0]
                                0.951056516295154D0, 0.0D0, 0.0D0, 0.309016994374947D0, &    ! 36@[001]
                                0.809016994374947D0, 0.0D0, 0.0D0, 0.587785252292473D0, &    ! 72@[001]
                                0.587785252292473D0, 0.0D0, 0.0D0, 0.809016994374947D0, &    ! 108@[001]
@@ -611,6 +608,8 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                               -0.809016994374947D0, 0.0D0, 0.0D0, 0.587785252292473D0, &    ! 288@[001]
                               -0.951056516295154D0, 0.0D0, 0.0D0, 0.309016994374948D0, &    ! 324@[001]  
                               ! all 2-fold rotation axis
+                               0.D0, 1.D0, 0.D0, 0.D0, &                                    ! 180@[100]
+                               0.D0, 0.951056516295154D0, 0.309016994374947D0, 0.D0,   &    ! 180@[cos(pi/10) sin(pi/10) 0]
                                0.0D0, 0.951056516295154D0, -0.309016994374947D0, 0.0D0, &
                                0.0D0, 0.809016994374947D0, -0.587785252292473D0, 0.0D0, &
                                0.0D0, 0.587785252292473D0, -0.809016994374947D0, 0.0D0, &
@@ -621,8 +620,6 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                                0.0D0, -0.809016994374947D0, -0.587785252292473D0, 0.0D0, &
 
                                ! dodecagonal QC group 1222
-                               0.0D0, 1.0D0, 0.0D0, 0.0D0, &                                    ! 180@[100]
-                               0.0D0, 0.965925826289068D0, 0.258819045102521D0, 0.0D0, &      ! 180@[cos(pi/12) sin(pi/12) 0]
                                0.965925826289068D0, 0.0D0, 0.0D0, 0.258819045102521D0, &    ! 30@[001] 
                                0.866025403784439D0, 0.0D0, 0.0D0, 0.5D0, &                  ! 60@[001] 
                                0.707106781186548D0, 0.0D0, 0.0D0, 0.707106781186547D0, &    ! 90@[001] 
@@ -635,6 +632,8 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                               -0.866025403784439D0, 0.0D0, 0.0D0, 0.5D0, &                  ! 300@[001] 
                               -0.965925826289068D0, 0.0D0, 0.0D0, 0.258819045102521D0, &    ! 330@[001]
                               ! all 2-fold rotation axes
+                              0.0D0, 1.0D0, 0.0D0, 0.0D0, &                                    ! 180@[100]
+                              0.0D0, 0.965925826289068D0, 0.258819045102521D0, 0.0D0, &      ! 180@[cos(pi/12) sin(pi/12) 0]
                               0.0D0, 0.965925826289068D0, -0.258819045102521D0, 0.0D0, &
                               0.0D0, 0.866025403784439D0, -0.5D0, 0.0D0, &
                               0.0D0, 0.707106781186548D0, -0.707106781186547D0, 0.0D0, &
@@ -644,9 +643,8 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,154) = reshape( (/ &
                               0.0D0, -0.258819045102521D0, -0.965925826289068D0, 0.0D0, &
                               0.0D0, -0.5D0, -0.866025403784439D0, 0.0D0, &
                               0.0D0, -0.707106781186547D0, -0.707106781186548D0, 0.0D0, &
-                              0.0D0, -0.866025403784439D0, -0.5D0, 0.0D0, &
-                              0.0D0, -0.965925826289068D0, -0.258819045102521D0, 0.0D0 &
-                              /), (/4,154/) )
+                              0.0D0, -0.866025403784439D0, -0.5D0, 0.0D0 &
+                              /), (/4,152/) )
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_Qsymop
 
 
@@ -1330,6 +1328,19 @@ type QCStructureType
   complex(kind=dbl),allocatable         :: LUTqg(:)
 end type QCStructureType
 
+type TDQCsymdata
+  integer(kind=irg)                 :: SYM_GENnum                   !< number of generator matrices
+  integer(kind=irg)                 :: SYM_MATnum                   !< number of non-zero symmetry matrices
+! integer(kind=irg)                 :: SYM_NUMpt                    !< number of point group operators
+  logical                           :: SYM_reduce                   !< switch to enable/disable reduction to fundamental cell
+  real(kind=dbl)                    :: SYM_data(200,6,6)            !< all symmetry matrices for a given spacegroup
+! real(kind=dbl)                    :: SYM_direc(40,5,5)            !< direct space point group matrices
+  real(kind=dbl)                    :: SYM_recip(40,5,5)            !< reciprocal space point group matrices
+  real(kind=dbl)                    :: SYM_c(6,6)                   !< dummy 6x6 matrix used for various computations
+  character(11)                     :: SYM_name
+  integer(kind=irg)                 :: N_Axial
+end type
+
 ! 2-D Quasi-Crystal data structures
 type TDQCStructureType
   integer(kind=irg)                     :: atno
@@ -1341,6 +1352,7 @@ type TDQCStructureType
   integer(kind=irg),allocatable         :: Ucgindex(:)
   logical,allocatable                   :: Ucgcalc(:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
+  type(TDQCsymdata)                     :: SG
   real(kind=dbl)                        :: epvec(3,5), epar(5,3)
   real(kind=dbl)                        :: eovec(3,5), eperp(5,3)
   real(kind=dbl)                        :: Mp(5,5), Picos(5,5)
@@ -1360,10 +1372,15 @@ type TDQCStructureType
   real(kind=dbl)                        :: Upzero
   real(kind=dbl)                        :: xizerop
   real(kind=dbl)                        :: multiplicity
-  character(fnlen)                      :: QCtype
+  character(fnlen)                      :: QCtype, fname
   character(1)                          :: centering   ! 'P','I','F'
-  complex(kind=dbl),allocatable         :: LUT(:)
-  complex(kind=dbl),allocatable         :: LUTqg(:)
+  complex(kind=dbl),allocatable         :: LUT(:,:,:,:,:)
+  complex(kind=dbl),allocatable         :: LUTqg(:,:,:,:,:)
+  logical, allocatable                  :: dbdiff(:,:,:,:,:)
+  integer(kind=irg)                     :: ATOM_ntype, ATOM_type(maxpasym), SYM_SGnum, numat(maxpasym)
+  character(fnlen),allocatable          :: SGname(:)
+  real(kind=sgl)                        :: ATOM_pos(maxpasym,7)
+  real(kind=sgl),allocatable            :: apos(:,:,:)
 end type TDQCStructureType
 
 type PoleFigures
