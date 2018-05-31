@@ -96,8 +96,10 @@ MonteCarloSimulationController::MonteCarloSimulationController(QObject* parent) 
   m_XtalReader = new XtalFileReader();
   connect(m_XtalReader, &XtalFileReader::errorMessageGenerated, [=] (const QString &msg) { emit errorMessageGenerated(msg); });
 
-  m_SPar = new char[m_NumberOfStrings*m_StringSize];
-  std::memset(m_SPar, '\0', m_NumberOfStrings*m_StringSize);
+  int numberOfStrings = EMsoftWorkbenchConstants::Constants::SParSize;
+  int stringSize = EMsoftWorkbenchConstants::Constants::SParStringSize;
+  m_SPar = new char[numberOfStrings*stringSize];
+  std::memset(m_SPar, '\0', numberOfStrings*stringSize);
 }
 
 // -----------------------------------------------------------------------------
@@ -289,11 +291,11 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     return;
   }
 
-//  for (int i = 0; i < 40; i++)
+//  for (int i = 0; i < EMsoftWorkbenchConstants::Constants::SParSize; i++)
 //  {
-//    for (int j = 0; j < 512; j++)
+//    for (int j = 0; j < EMsoftWorkbenchConstants::Constants::SParStringSize; j++)
 //    {
-//      printf("%x ", m_SPar[i*512 + j]);
+//      printf("%x ", m_SPar[i*EMsoftWorkbenchConstants::Constants::SParStringSize + j]);
 //    }
 //    printf("\n");
 //  }
@@ -331,7 +333,8 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
 // -----------------------------------------------------------------------------
 bool MonteCarloSimulationController::setSParValue(StringType type, const QString &value)
 {
-  if (value.size() > m_StringSize)
+  int stringSize = EMsoftWorkbenchConstants::Constants::SParStringSize;
+  if (value.size() > stringSize)
   {
     errorMessageGenerated(tr("The string '%1' is longer than 512 characters").arg(value));
     return false;
@@ -340,7 +343,7 @@ bool MonteCarloSimulationController::setSParValue(StringType type, const QString
   int index = static_cast<int>(type);
 
   char* valueArray = value.toLatin1().data();
-  std::memcpy(m_SPar + (index*m_StringSize), valueArray, value.size());
+  std::memcpy(m_SPar + (index*stringSize), valueArray, value.size());
   return true;
 }
 

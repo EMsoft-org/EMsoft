@@ -41,6 +41,8 @@
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 
+#include "Common/Constants.h"
+
 #include "H5Support/HDF5ScopedFileSentinel.h"
 
 // -----------------------------------------------------------------------------
@@ -130,7 +132,7 @@ Int32ArrayType::Pointer XtalFileReader::getIParPtr()
   if (m_IParPtr == Int32ArrayType::NullPointer())
   {
     // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
-    QVector<size_t> cDims = { 40 };
+    QVector<size_t> cDims = { EMsoftWorkbenchConstants::Constants::IParSize };
 
     int crystalSystem = 0;
     int natomTypes = 0;
@@ -165,7 +167,7 @@ FloatArrayType::Pointer XtalFileReader::getFParPtr()
   if (m_FParPtr == FloatArrayType::NullPointer())
   {
     // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
-    QVector<size_t> cDims = { 40 };
+    QVector<size_t> cDims = { EMsoftWorkbenchConstants::Constants::FParSize };
 
     m_FParPtr = FloatArrayType::CreateArray(QVector<size_t>(1, 1), cDims, "genericFPar", true);
     m_FParPtr->initializeWithZeros();

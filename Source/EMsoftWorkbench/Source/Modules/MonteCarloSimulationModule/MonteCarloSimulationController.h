@@ -133,9 +133,6 @@ class MonteCarloSimulationController : public QObject
     void updateMCProgress(int loop, int totalLoops, float bseYield);
     
   private:
-    const int                   m_StringSize = 512;
-    const int                   m_NumberOfStrings = 40;
-
     XtalFileReader*             m_XtalReader = nullptr;
     QString                     m_StartTime = "";
 
