@@ -1334,11 +1334,12 @@ type TDQCsymdata
 ! integer(kind=irg)                 :: SYM_NUMpt                    !< number of point group operators
   logical                           :: SYM_reduce                   !< switch to enable/disable reduction to fundamental cell
   real(kind=dbl)                    :: SYM_data(200,6,6)            !< all symmetry matrices for a given spacegroup
-! real(kind=dbl)                    :: SYM_direc(40,5,5)            !< direct space point group matrices
-  real(kind=dbl)                    :: SYM_recip(40,5,5)            !< reciprocal space point group matrices
+  real(kind=dbl)                    :: SYM_direc(100,5,5)           !< direct space point group matrices
+  real(kind=dbl)                    :: SYM_recip(100,5,5)           !< reciprocal space point group matrices
   real(kind=dbl)                    :: SYM_c(6,6)                   !< dummy 6x6 matrix used for various computations
   character(11)                     :: SYM_name
   integer(kind=irg)                 :: N_Axial
+  character(40),allocatable         :: SYM_GL(:)
 end type
 
 ! 2-D Quasi-Crystal data structures
@@ -1355,9 +1356,9 @@ type TDQCStructureType
   type(TDQCsymdata)                     :: SG
   real(kind=dbl)                        :: epvec(3,5), epar(5,3)
   real(kind=dbl)                        :: eovec(3,5), eperp(5,3)
-  real(kind=dbl)                        :: Mp(5,5), Picos(5,5)
-  real(kind=dbl)                        :: Mo(5,5), Qicos(5,5)
-  real(kind=dbl)                        :: SYM_icos(5,5,40)              ! D24 rotational group in matrix representation
+  real(kind=dbl)                        :: Mdirect(5,5), Picos(5,5)
+  real(kind=dbl)                        :: Mrecip(5,5), Qicos(5,5)
+  real(kind=dbl)                        :: SYM_icos(5,5,40)
   real(kind=dbl)                        :: QClatparm_a
   real(kind=dbl)                        :: QClatparm_c
   real(kind=dbl)                        :: dmin

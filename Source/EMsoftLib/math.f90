@@ -3261,5 +3261,60 @@ end if
 
 end function trilinear_splat
 
+!--------------------------------------------------------------------------
+!
+! function: CalcDeterminant
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief calculate determinant of mxn real matrix
+!
+!> @details a generic subroutine to calculate the determinant of any mxn matrix.
+!> we will be using the dgetrf subroutine of BLAS to calculate the decomposition of
+!> A as A = P * L * U, where L is the unitriangular matrix i.e. det(L) = 1; P is the
+!> permutation matrix so its determinant is either +/- 1. using the property det(A) = 
+!> det(P) * det(L) * det(U), we can calculate determinant as simply the product of diagonal
+!> elements of U.
+!
+!> @param A nxn real matrix
+!> @param n size of A
+! 
+!> @date  06/01/18 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive function CalcDeterminant(A, m, n) result(determinant)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcDeterminant
+
+use local
+use error
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)             :: A(m,n)
+integer(kind=irg),INTENT(IN)          :: m, n
+
+real(kind=dbl),allocatable            :: Ap(:,:)
+integer(kind=irg),allocatable         :: IPIV(:)
+integer(kind=irg)                     :: LDA, INFO, mm, nn, ii
+real(kind=dbl)                        :: determinant
+
+LDA = maxval((/m,1/))
+nn = minval((/m,n/))
+
+allocate(IPIV(nn), Ap(LDA,n))
+Ap = A
+
+call dgetrf(m, n, Ap, LDA, IPIV, INFO)
+
+if(INFO .ne. 0) call FatalError('CalcDeterminant:','BLAS subroutine did not return successfully.')
+
+determinant = 1.D0
+do ii = 1,nn
+  determinant = determinant * Ap(ii,ii)
+  if(IPIV(ii) .ne. ii) determinant = -determinant
+end do
+
+
+end function CalcDeterminant
+
 
 end module math
