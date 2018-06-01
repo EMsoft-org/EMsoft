@@ -777,9 +777,12 @@ dataset = SC_Esel
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%Esel)
 
 dataset = SC_combinesites
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+mpnl%combinesites = .FALSE.
+if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, combinesites)
-    mpnl%combinesites = .FALSE.
     if (combinesites.ne.0) mpnl%combinesites = .TRUE.
+end if
 
 dataset = SC_copyfromenergyfile
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
