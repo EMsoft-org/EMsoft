@@ -75,12 +75,14 @@ use json_module
 use files
 use io
 use stringconstants
+use HDF5
+use HDFsupport
 
 IMPLICIT NONE
 
 character(fnlen)                        :: nmldeffile, progname, progdesc
 type(EBSDMasterNameListType)            :: emnl
-integer(kind=irg)                       :: res, error_cnt
+integer(kind=irg)                       :: res, error_cnt, hdferr
 
 nmldeffile = 'EMEBSDmaster.nml'
 progname = 'EMEBSDmaster.f90'
@@ -104,7 +106,9 @@ end if
 ! copy all the Monte Carlo data from that file into a new file, which 
 ! will then be read from and written to by the ComputeMasterPattern routine.
 if (emnl%copyfromenergyfile.ne.'undefined') then
+  call h5open_EMsoft(hdferr)
   call EBSDcopyMCdata(emnl%copyfromenergyfile, emnl%energyfile)
+  call h5close_EMsoft(hdferr)
 end if
 
 ! generate a set of master EBSD patterns

@@ -603,9 +603,6 @@ stat = .FALSE.
 call h5fis_hdf5_f(filename, stat, hdferr)
 
 if (stat) then
-! open the fortran HDF interface [this is already done in the calling program]
-! call h5open_EMsoft(hdferr)
-
   nullify(HDF_head_local)
 
 ! open the xtal file using the default properties.

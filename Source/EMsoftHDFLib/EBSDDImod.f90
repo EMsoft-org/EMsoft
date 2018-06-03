@@ -127,8 +127,6 @@ type(HDFobjectStackType),pointer                :: HDF_head
 
 ! Initialize FORTRAN interface.
 !
-call h5open_EMsoft(hdferr)
-
 nullify(HDF_head)
 
 ! Open the HDF5 file  in readonly mode
@@ -160,9 +158,6 @@ call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%NScanRows)
 
 ! close the datafile
 call HDF_pop(HDF_head,.TRUE.)
-
-! close the Fortran interface
-call h5close_EMsoft(hdferr)
 
 ! convert to double precision intensities between 0 and 1
 allocate(rdata(1:rdims(1),1:rdims(2),1:rdims(3)))

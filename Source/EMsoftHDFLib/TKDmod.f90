@@ -248,9 +248,6 @@ energyfile = EMsoft_toNativePath(energyfile)
 call h5fis_hdf5_f(energyfile, stat, hdferr)
 
 if (stat) then
-! open the fortran HDF interface
-  call h5open_EMsoft(hdferr)
-
   nullify(HDF_head)
 
 ! open the MC file using the default properties.
@@ -360,10 +357,6 @@ dataset = SC_accumz
 
 ! and close everything
   call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
-
 else
   call FatalError('TKDreadMCfile','MC file not found')
 end if
@@ -426,9 +419,6 @@ character(fnlen)                        :: groupname, dataset, masterfile, datag
 character(fnlen),allocatable            :: stringarray(:)
 
 type(HDFobjectStackType),pointer        :: HDF_head
-
-! open the fortran HDF interface
-call h5open_EMsoft(hdferr)
 
 nullify(HDF_head)
 
@@ -530,10 +520,6 @@ dataset = SC_Version
   deallocate(stringarray)
   
   call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
-
 else
   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'
   call FatalError('TKDreadMasterfile',masterfile)
@@ -592,9 +578,6 @@ character(fnlen)                        :: groupname, dataset, masterfile
 character(fnlen),allocatable            :: stringarray(:)
 
 type(HDFobjectStackType),pointer        :: HDF_head
-
-! open the fortran HDF interface
-call h5open_EMsoft(hdferr)
 
 nullify(HDF_head, HDF_head)
 
@@ -683,10 +666,6 @@ dataset = SC_Version
   deallocate(stringarray)
   
   call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
-
 else
   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'
   call FatalError('TKDreadMasterfile_overlap',masterfile)

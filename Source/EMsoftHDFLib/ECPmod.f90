@@ -158,8 +158,7 @@ allocate(acc)
 call h5fis_hdf5_f(energyfile, stat, hdferr)
 
 if (stat) then
-! open the fortran HDF interface
-  call h5open_EMsoft(hdferr)
+
 
   nullify(HDF_head)
 
@@ -276,9 +275,6 @@ dataset = SC_accume
 ! and close everything
   call HDF_pop(HDF_head,.TRUE.)
 
-! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
-
 else
 !==============================================
 ! OLD VERSION OF MC FILE NOT SUPPORTED ANYMORE
@@ -347,9 +343,6 @@ character(fnlen),allocatable            :: stringarray(:)
 type(HDFobjectStackType),pointer        :: HDF_head
 
 allocate(master)
-
-! open the fortran HDF interface
-call h5open_EMsoft(hdferr)
 
 nullify(HDF_head)
 
@@ -438,9 +431,6 @@ dataset = SC_Version
   deallocate(stringarray)
   
   call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
 
 else
   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'
@@ -1744,8 +1734,6 @@ type(HDFobjectStackType),pointer        :: HDF_head
 
 allocate(master)
 
-! open the fortran HDF interface
-call h5open_EMsoft(hdferr)
 
 nullify(HDF_head, HDF_head)
 
@@ -1824,9 +1812,6 @@ dataset = SC_Version
   deallocate(stringarray)
   
   call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran HDF interface
-  call h5close_EMsoft(hdferr)
 
 else
   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'

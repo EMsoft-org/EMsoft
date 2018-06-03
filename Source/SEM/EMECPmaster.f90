@@ -53,11 +53,14 @@ use EBSDmod
 use files
 use io
 use stringconstants
+use HDFsupport
+use HDF5
 
 IMPLICIT NONE
 
 character(fnlen)                        :: nmldeffile, progname, progdesc
 type(ECPMasterNameListType)             :: ecpnl
+integer(kind=irg)                       :: hdferr 
 
 nmldeffile = 'EMECPmaster.nml'
 progname = 'EMECPmaster.f90'
@@ -76,7 +79,9 @@ call GetECPMasterNameList(nmldeffile,ecpnl)
 ! copy all the Monte Carlo data from that file into a new file, which 
 ! will then be read from and written to by the ECmasterpattern routine.
 if (ecpnl%copyfromenergyfile.ne.'undefined') then
+  call h5open_EMsoft(hdferr)  
   call EBSDcopyMCdata(ecpnl%copyfromenergyfile, ecpnl%energyfile)
+  call h5close_EMsoft(hdferr)  
 end if
 
 ! perform the zone axis computations

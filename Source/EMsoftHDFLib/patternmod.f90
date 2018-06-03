@@ -285,7 +285,6 @@ select case (itype)
 
     case(4, 7)  ! "TSLHDF", "EMEBSD"
         nullify(pmHDF_head)
-        call h5open_EMsoft(hdferr)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -300,7 +299,6 @@ select case (itype)
 
     case(8)  !  "BrukerHDF"
         nullify(pmHDF_head)
-        call h5open_EMsoft(hdferr)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -720,7 +718,6 @@ select case (itype)
 
     case(4, 7)  ! "TSLHDF" "EMEBSD"
         call HDF_pop(pmHDF_head,.TRUE.)
-        call h5close_EMsoft(hdferr)
         nullify(pmHDF_head)
 
     case(5)  ! "OxfordBinary"
@@ -731,7 +728,6 @@ select case (itype)
 
     case(8)  !  "BrukerHDF"
         call HDF_pop(pmHDF_head,.TRUE.)
-        call h5close_EMsoft(hdferr)
         nullify(pmHDF_head)
         deallocate(semix, semiy)
 

@@ -48,6 +48,8 @@ use JSONsupport
 use io
 use TKDmod
 use stringconstants
+use HDF5
+use HDFsupport
 
 IMPLICIT NONE
 
@@ -59,7 +61,7 @@ type(TKDAngleType),pointer             :: angles
 type(TKDLargeAccumType),pointer        :: acc
 type(TKDMasterType),pointer            :: master
 
-integer(kind=irg)                      :: res, error_cnt
+integer(kind=irg)                      :: res, error_cnt, hdferr
 integer(kind=irg)                      :: istat
 logical                                :: verbose
 
@@ -128,11 +130,15 @@ call TKDreadangles(enl, angles, verbose=.TRUE.)
 
 ! 2. read the Monte Carlo data file (HDF format)
 allocate(acc)
+! open the fortran HDF interface
+call h5open_EMsoft(hdferr)
 call TKDreadMCfile(enl, acc, verbose=.TRUE.)
 
 ! 3. read TKD master pattern file (HDF format)
 allocate(master)
 call TKDreadMasterfile(enl, master, verbose=.TRUE.)
+! close the fortran HDF interface
+call h5close_EMsoft(hdferr)
 
 ! 3.1 twin the master pattern with equal weight (FZ == pg 622)
 !call TwinCubicMasterPattern(enl,master)

@@ -376,9 +376,6 @@ if (trim(modalityname) .eq. 'EBSD') then
 
     dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
 
-
-call h5close_EMsoft(hdferr)
-
 !=====================================================
 ! Preprocess all the experimental patterns and store
 ! them in a temporary file as vectors; also, create 
@@ -884,8 +881,6 @@ do iii = 1,cratioE
 end do
 
 ! add fitted dot product values to HDF5 file
-! open the fortran HDF interface
-call h5open_EMsoft(hdferr)
 nullify(HDF_head)
 
 dpfile = trim(EMsoft_getEMdatapathname())//trim(enl%dotproductfile)

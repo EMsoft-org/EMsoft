@@ -165,6 +165,8 @@ logical                                 :: overwrite = .TRUE., insert = .TRUE.
 ! first, we need to load the data from the output of EMMCOpenCL
 ! used in the bse1 mode
 !=================================================================
+! open the fortran HDF interface
+call h5open_EMsoft(hdferr)
 
 call Message(' -> opening '//trim(ecpnl%energyfile), frm = "(A)" )
 call  ECPreadMCfile(ecpnl, acc, verbose=.TRUE.)
@@ -231,10 +233,6 @@ call WriteValue('Number of beams for which interpolation will be done = ',io_int
 ! ------ and open the output file for IDL visualization (only thread 0 can write to this file)
 !=============================================================================================
 ! we need to write the image dimensions, and also how many of those there are...
-
-! Initialize FORTRAN interface.
-!
-CALL h5open_EMsoft(hdferr)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = tstrb
