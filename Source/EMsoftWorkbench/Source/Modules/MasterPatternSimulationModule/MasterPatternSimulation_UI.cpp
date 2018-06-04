@@ -48,7 +48,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtConcurrent>
 
-#include "EMsoftLib/EMsoftLib.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 

@@ -40,7 +40,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QFileDialog>
 
-#include "EMsoftLib/EMsoftLib.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 

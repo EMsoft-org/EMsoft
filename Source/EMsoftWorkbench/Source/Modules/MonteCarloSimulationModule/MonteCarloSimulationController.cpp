@@ -40,7 +40,7 @@
 #include <iostream>
 #include <functional>
 
-#include "EMsoftLib/EMsoftLib.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>

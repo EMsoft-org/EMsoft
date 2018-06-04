@@ -25,6 +25,7 @@ Support/Scripts/GMT/gmt.history
 .vscode
 /ExternalProjects
 
+*.bak
 
 # ignore object code
 *.o

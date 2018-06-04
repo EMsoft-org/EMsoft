@@ -41,7 +41,7 @@
 #include <QtCore/QThreadPool>
 #include <QtConcurrent>
 
-#include "EMsoftLib/EMsoftLib.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
 

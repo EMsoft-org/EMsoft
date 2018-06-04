@@ -163,6 +163,8 @@ include_directories(${EMsoftWorkbench_SOURCE_DIR}/Source )
 include_directories(${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench )
 include_directories(${EMsoftWorkbench_BINARY_DIR})
 include_directories(${EMsoft_SOURCE_DIR}/Source)
+include_directories(${EMsoft_SOURCE_DIR}/Source/EMsoftWrapperLib/DictionaryIndexing)
+include_directories(${EMsoft_SOURCE_DIR}/Source/EMsoftWrapperLib/SEM)
 include_directories(${EMsoft_BINARY_DIR})
 
 
@@ -182,7 +184,7 @@ endif()
 
   
 GetHDF5LinkLibraries(EMSOFT)
-set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib)
+set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib EMsoftWrapperLib )
 
 
 if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
@@ -199,7 +201,7 @@ BuildQtAppBundle(
     VERSION_MINOR ${EMsoftWorkbench_VER_MINOR}
     VERSION_PATCH ${EMsoftWorkbench_VER_PATCH}
     BINARY_DIR    ${${PROJECT_NAME}_BINARY_DIR}
-    LINK_LIBRARIES ${OPENGL_LIBRARIES} ${EXE_LINK_LIBRARIES} H5Support OrientationLib EMsoftLib
+    LINK_LIBRARIES ${OPENGL_LIBRARIES} ${EXE_LINK_LIBRARIES} H5Support OrientationLib EMsoftLib EMsoftWrapperLib
     LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     QT_PLUGINS    ${QT_PLUGINS}
     QT5_MODULES   Core Gui Widgets OpenGL Network

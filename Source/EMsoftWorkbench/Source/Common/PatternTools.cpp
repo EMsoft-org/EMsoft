@@ -42,7 +42,7 @@
 
 #include <QtGui/QImage>
 
-#include "EMsoftLib/EMsoftLib.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "Common/EigenConversions.h"
 #include "Common/Constants.h"

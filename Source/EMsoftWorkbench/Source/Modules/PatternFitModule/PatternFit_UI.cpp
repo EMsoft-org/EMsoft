@@ -45,7 +45,7 @@
 
 #include <QtWidgets/QSplashScreen>
 
-#include "EMsoftLib/EMsoftLib.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 

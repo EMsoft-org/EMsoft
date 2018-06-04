@@ -42,7 +42,7 @@
 
 #include <QtWidgets/QFileDialog>
 
-#include "EMsoftLib/EMsoftLib.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 #include "EMsoftLib/EMsoftStringConstants.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
