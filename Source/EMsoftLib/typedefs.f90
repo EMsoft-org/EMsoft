@@ -1331,7 +1331,7 @@ end type QCStructureType
 type TDQCsymdata
   integer(kind=irg)                 :: SYM_GENnum                   !< number of generator matrices
   integer(kind=irg)                 :: SYM_MATnum                   !< number of non-zero symmetry matrices
-! integer(kind=irg)                 :: SYM_NUMpt                    !< number of point group operators
+  integer(kind=irg)                 :: SYM_NUMpt                    !< number of point group operators
   logical                           :: SYM_reduce                   !< switch to enable/disable reduction to fundamental cell
   real(kind=dbl)                    :: SYM_data(200,6,6)            !< all symmetry matrices for a given spacegroup
   real(kind=dbl)                    :: SYM_direc(100,5,5)           !< direct space point group matrices
