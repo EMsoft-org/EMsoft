@@ -58,10 +58,10 @@ namespace EMsoftWorkbenchConstants
 
   namespace Constants
   {
-    static const int IParSize = 80;
-    static const int FParSize = 80;
-    static const int SParSize = 80;
-    static const int SParStringSize = 512;
+    static const size_t IParSize = 80;
+    static const size_t FParSize = 80;
+    static const size_t SParSize = 80;
+    static const size_t SParStringSize = 512;
 
     static const int AnorthicType = 0; // Triclinic
     static const int CyclicType = 1;

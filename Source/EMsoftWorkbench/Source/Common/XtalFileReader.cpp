@@ -132,7 +132,8 @@ Int32ArrayType::Pointer XtalFileReader::getIParPtr()
   if (m_IParPtr == Int32ArrayType::NullPointer())
   {
     // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
-    QVector<size_t> cDims = { EMsoftWorkbenchConstants::Constants::IParSize };
+    size_t iParSize = static_cast<size_t>(EMsoftWorkbenchConstants::Constants::IParSize);
+    QVector<size_t> cDims = { iParSize };
 
     int crystalSystem = 0;
     int natomTypes = 0;
