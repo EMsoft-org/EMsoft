@@ -154,21 +154,6 @@ type(gnode),save        :: rlp
 type(HDFobjectStackType),pointer  :: HDF_head
 
 interface
-  function InterpolateLambert(dc, master, npx) result(res)
-
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
-  
-  IMPLICIT NONE
-  
-  real(kind=sgl),INTENT(INOUT)            :: dc(3)
-  real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx)
-  integer(kind=irg),INTENT(IN)            :: npx 
-  real(kind=sgl)                          :: res
-  end function InterpolateLambert
-
   subroutine AntiAlias(master,ixy,nix,niy,nx,inten)
 
   use local
@@ -528,54 +513,6 @@ if ((abs(nix).lt.nx).and.(abs(niy).lt.nx)) then
 end if
 
 end subroutine AntiAlias
-
-
-
-
-function InterpolateLambert(dc, master, npx) result(res)
-
-use local
-use Lambert
-use EBSDmod
-use constants
-
-IMPLICIT NONE
-
-real(kind=sgl),INTENT(INOUT)            :: dc(3)
-real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx)
-integer(kind=irg),INTENT(IN)            :: npx 
-real(kind=sgl)                          :: res
-
-integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
-real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
-
-scl = float(npx) 
-
-if (dc(3).lt.0.0) dc = -dc
-
-! convert direction cosines to lambert projections
-xy = scl * LambertSphereToSquare( dc, istat )
-res = 0.0
-
-if (istat.eq.0) then 
-! interpolate intensity from the neighboring points
-  nix = floor(xy(1))
-  niy = floor(xy(2))
-  nixp = nix+1
-  niyp = niy+1
-  if (nixp.gt.npx) nixp = nix
-  if (niyp.gt.npx) niyp = niy
-  dx = xy(1) - nix
-  dy = xy(2) - niy
-  dxm = 1.0 - dx
-  dym = 1.0 - dy
-  
-  res = master(nix,niy)*dxm*dym + master(nixp,niy)*dx*dym + &
-        master(nix,niyp)*dxm*dy + master(nixp,niyp)*dx*dy
-end if
-
-
-end function InterpolateLambert
 
 
 

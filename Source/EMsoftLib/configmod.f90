@@ -152,13 +152,13 @@ end subroutine print_EMsoft_configuration_strings
 !> @brief Converts string array to EMsoft ConfigStructureType 
 !
 !> @date 10/28/17 MDG 1.0 original
+!> @date 01/22/18 MDG 1.1 added strvals array
 !--------------------------------------------------------------------------
-subroutine C2F_configuration_strings(nstring, cptr, CS) ! bind(C)
+subroutine C2F_configuration_strings(cptr, CS) ! bind(C)
 !DEC$ ATTRIBUTES DLLEXPORT :: C2F_configuration_strings
 
 IMPLICIT NONE
 
-integer(c_int), INTENT(IN), value     :: nstring
 type(c_ptr), INTENT(IN), value        :: cptr
 type(ConfigStructureType),INTENT(OUT) :: CS
 
@@ -166,7 +166,7 @@ character(kind=c_char), pointer       :: fptr(:,:)
 integer(kind=irg)               	  :: ii, lenstr
 character(fnlen)                      :: blank
 
-call c_f_pointer(cptr, fptr, [ fnlen, nstring ])
+call c_f_pointer(cptr, fptr, [ fnlen, wraparraysize ])
 
 CS%EMsoftpathname = cstrf(fptr(1:fnlen,1))
 CS%EMXtalFolderpathname = cstrf(fptr(1:fnlen,2))
@@ -195,6 +195,14 @@ CS%Templatecodefilename = cstrf(fptr(1:fnlen,24))
 CS%WyckoffPositionsfilename = cstrf(fptr(1:fnlen,25))
 CS%Randomseedfilename = cstrf(fptr(1:fnlen,26))
 CS%EMsoftnativedelimiter = cstrf(fptr(1:fnlen,27))
+
+! also copy all the strings into a regular array of strings; this is useful
+! if we want to extract strings that do not correspond to any of the predefined
+! strings in the list above.
+
+do ii=1,wraparraysize
+  CS%strvals(ii) = cstrf(fptr(1:fnlen,ii))
+end do 
 
 end subroutine C2F_configuration_strings
 

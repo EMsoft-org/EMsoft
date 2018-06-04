@@ -820,31 +820,13 @@ deallocate(z)
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
        dc = (/ master%rgx(i,j),master%rgy(i,j),master%rgz(i,j) /)
+
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
-! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        x = ixy(1)
-        ixy(1) = ixy(2)
-        ixy(2) = -x
-! four-point interpolation (bi-quadratic)
-        nix = int(enl%nsx+ixy(1))-enl%nsx
-        niy = int(enl%nsy+ixy(2))-enl%nsy
-        nixp = nix+1
-        niyp = niy+1
-        if (nix .gt. enl%nsx) nix = enl%nsx
-        if (niy .gt. enl%nsx) niy = enl%nsx
-        if (nix .lt. -enl%nsx) nix = -enl%nsx
-        if (niy .lt. -enl%nsx) niy = -enl%nsx
 
-        if (nixp .gt. enl%nsx) nixp = enl%nsx
-        if (niyp .gt. enl%nsx) niyp = enl%nsx
-        if (nixp .lt. -enl%nsx) nixp = -enl%nsx
-        if (niyp .lt. -enl%nsx) niyp = -enl%nsx
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+! convert these direction cosines to coordinates in the Rosca-Lambert projection
+        call LambertgetInterpolation(dc, scl, enl%nsx, enl%nsy, nix, niy, nixp, niyp, dx, dy, dxm, dym, swap=.TRUE.)
+
 ! do the area correction for this detector pixel
         dp = dot_product(pcvec,dc)
         theta = acos(dp)
@@ -853,12 +835,13 @@ deallocate(z)
         else
           g = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3) * 0.25
         end if
+
 ! interpolate the intensity 
         do k=Emin,Emax 
           s = acc%accum_e(k,nix,niy) * dxm * dym + &
-              acc%accum_e(k,nix+1,niy) * dx * dym + &
-              acc%accum_e(k,nix,niy+1) * dxm * dy + &
-              acc%accum_e(k,nix+1,niy+1) * dx * dy
+              acc%accum_e(k,nixp,niy) * dx * dym + &
+              acc%accum_e(k,nix,niyp) * dxm * dy + &
+              acc%accum_e(k,nixp,niyp) * dx * dy
           acc%accum_e_detector(k,i,j) = g * s
         end do
     end do
@@ -1030,21 +1013,8 @@ do ii = 1,ipar(2)
         dc = dc/sqrt(sum(dc**2))
 
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        if (istat .ne. 0) stop 'Something went wrong during interpolation...'
-! four-point interpolation (bi-quadratic)
-        nix = int(ipar(4)+ixy(1))-ipar(4)
-        niy = int(ipar(5)+ixy(2))-ipar(5)
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.ipar(4)) nixp = nix
-        if (niyp.gt.ipar(5)) niyp = niy
-        if (nix.lt.-ipar(4)) nix = nixp
-        if (niy.lt.-ipar(5)) niy = niyp
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+        call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
 ! interpolate the intensity
         if (dc(3) .ge. 0.0) then
             do kk = Emin, Emax

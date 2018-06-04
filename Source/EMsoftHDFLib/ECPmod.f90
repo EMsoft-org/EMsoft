@@ -925,21 +925,9 @@ do isig = 1,nsig
     do ipolar = 1,ecpnl%npolar
         do iazimuth = 1,ecpnl%nazimuth
             dc(1:3) = (/master%rgx(ipolar,iazimuth),master%rgy(ipolar,iazimuth),master%rgz(ipolar,iazimuth)/)
+
 ! convert to Rosca-lambert projection
-            ixy = scl *  LambertSphereToSquare( dc, istat )
-            if (istat .ne. 0) call FatalError('ECPGetWeightFactors','Cannot convert to square Lambert projection')
-            nix = int(ecpnl%nsx+ixy(1)) - ecpnl%nsx
-            niy = int(ecpnl%nsy+ixy(2)) - ecpnl%nsy
-            nixp = nix+1
-            niyp = niy+1
-            if (nixp.gt.ecpnl%nsx) nixp = nix
-            if (niyp.gt.ecpnl%nsy) niyp = niy
-            if (nix.lt.-ecpnl%nsx) nix = nixp
-            if (niy.lt.-ecpnl%nsy) niy = niyp
-            dx = ixy(1)-nix
-            dy = ixy(2)-niy
-            dxm = 1.0-dx
-            dym = 1.0-dy
+            call LambertgetInterpolation(dc, scl, ecpnl%nsx, ecpnl%nsy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
             
             acc_sum = 0.25*(acc%accum_e(isampletilt,nix,niy) * dxm * dym + &
                             acc%accum_e(isampletilt,nixp,niy) * dx * dym + &
@@ -1559,21 +1547,9 @@ do isig = 1,nsig
     do ipolar = 1,ecpnl%npolar
         do iazimuth = 1,ecpnl%nazimuth
             dc(1:3) = (/master%rgx(ipolar,iazimuth),master%rgy(ipolar,iazimuth),master%rgz(ipolar,iazimuth)/)
+
 ! convert to Rosca-lambert projection
-            ixy = scl *  LambertSphereToSquare( dc, istat )
-            if (istat .ne. 0) call FatalError('ECPGetWeightFactors','Cannot convert to square Lambert projection')
-            nix = int(ecpnl%nsx+ixy(1))-ecpnl%nsx
-            niy = int(ecpnl%nsy+ixy(2))-ecpnl%nsy
-            nixp = nix+1
-            niyp = niy+1
-            if (nixp.gt.ecpnl%nsx) nixp = nix
-            if (niyp.gt.ecpnl%nsy) niyp = niy
-            if (nix.lt.-ecpnl%nsx) nix = nixp
-            if (niy.lt.-ecpnl%nsy) niy = niyp
-            dx = ixy(1)-nix
-            dy = ixy(2)-niy
-            dxm = 1.0-dx
-            dym = 1.0-dy
+            call LambertgetInterpolation(dc, scl, ecpnl%nsx, ecpnl%nsy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
             
             acc_sum = 0.25*(acc%accum_e(isampletilt,nix,niy) * dxm * dym + &
                             acc%accum_e(isampletilt,nixp,niy) * dx * dym + &
@@ -1897,21 +1873,8 @@ do ii = 1,ipar(2)
         dc = dc/sqrt(sum(dc**2))
         
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
-        ixy = scl * LambertSphereToSquare( dc, istat )
-        if (istat .ne. 0) stop 'Something went wrong during interpolation...'
-! four-point interpolation (bi-quadratic)
-        nix = int(ipar(4)+ixy(1))-ipar(4)
-        niy = int(ipar(5)+ixy(2))-ipar(5)
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.ipar(4)) nixp = nix
-        if (niyp.gt.ipar(5)) niyp = niy
-        if (nix.lt.-ipar(4)) nix = nixp
-        if (niy.lt.-ipar(5)) niy = niyp
-        dx = ixy(1)-nix
-        dy = ixy(2)-niy
-        dxm = 1.0-dx
-        dym = 1.0-dy
+        call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
 ! interpolate the intensity
         if (dc(3) .ge. 0.0) then
                 ECpattern(ii,jj) = ECpattern(ii,jj) + accum(1,ii,jj) * ( mLPNH(nix,niy,1) * dxm * dym + &

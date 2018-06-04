@@ -179,25 +179,6 @@ character(fnlen)        :: groupname, dataset, instring, dataname, fname, source
 integer(kind=irg)       :: numangle, iang
 type(HDFobjectStackType),pointer  :: HDF_head
 
-interface
-  function InterpolateLambertMC(dc, master, npx, nf) result(res)
-  
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
-
-  IMPLICIT NONE
-
-  integer(kind=irg),INTENT(IN)            :: nf
-  integer(kind=irg),INTENT(IN)            :: npx 
-  real(kind=dbl),INTENT(INOUT)            :: dc(3)
-  integer(kind=irg),INTENT(IN)            :: master(nf,-npx:npx,-npx:npx)
-  integer(kind=irg)                       :: res(nf)
-  end function InterpolateLambertMC
-end interface
-
-
 
 nullify(HDF_head)
 
@@ -572,7 +553,7 @@ do i=-nx,nx
     if (ierr.ne.0) then 
       accum_e_SP(1:numEbins,i,j) = 0.0
     else
-      accum_e_SP(1:numEbins,i,j) = InterpolateLambertMC(xyz, accum_e_SH, nx, numEbins)
+      accum_e_SP(1:numEbins,i,j) = InterpolateLambert(xyz, accum_e_SH, nx, numEbins)
     end if
   end do
 end do
@@ -609,54 +590,3 @@ call CLerror_check('DoMCsimulation:clReleaseMemObject:seeds', ierr)
 
 
 end subroutine DoMCsimulation
-
-
-
-
-function InterpolateLambertMC(dc, master, npx, nf) result(res)
-
-use local
-use Lambert
-use EBSDmod
-use constants
-
-IMPLICIT NONE
-
-integer(kind=irg),INTENT(IN)            :: nf
-integer(kind=irg),INTENT(IN)            :: npx 
-real(kind=dbl),INTENT(INOUT)            :: dc(3)
-integer(kind=irg),INTENT(IN)            :: master(nf,-npx:npx,-npx:npx)
-integer(kind=irg)                       :: res(nf)
-
-integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
-real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
-
-scl = float(npx) 
-
-if (dc(3).lt.0.0) dc = -dc
-
-! convert direction cosines to lambert projections
-xy = scl * LambertSphereToSquare( dc, istat )
-res = 0.0
-
-if (istat.eq.0) then 
-! interpolate intensity from the neighboring points
-  nix = floor(xy(1))
-  niy = floor(xy(2))
-  nixp = nix+1
-  niyp = niy+1
-  if (nixp.gt.npx) nixp = nix
-  if (niyp.gt.npx) niyp = niy
-  dx = xy(1) - nix
-  dy = xy(2) - niy
-  dxm = 1.0 - dx
-  dym = 1.0 - dy
-  
-  res(1:nf) = nint(master(1:nf,nix,niy)*dxm*dym + master(1:nf,nixp,niy)*dx*dym + &
-        master(1:nf,nix,niyp)*dxm*dy + master(1:nf,nixp,niyp)*dx*dy)
-end if
-
-
-end function InterpolateLambertMC
-
-

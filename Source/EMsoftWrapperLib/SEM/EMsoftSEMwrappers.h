@@ -1,5 +1,5 @@
-#ifndef _emsoft_lib_H_
-#define _emsoft_lib_H_
+#ifndef _emsoft_SEMwrappers_H_
+#define _emsoft_SEMwrappers_H_
 
 
 #ifdef __cplusplus
@@ -132,4 +132,4 @@ void HiPassFilterC(double* rdata, int32_t* dims, double* w, bool* init, bool* de
 
 
 
-#endif /*_EMSOFTLIB_H_*/
+#endif /*_EMSOFTSEMWRAPPERS_H_*/

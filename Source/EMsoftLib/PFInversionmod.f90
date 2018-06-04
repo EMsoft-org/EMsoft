@@ -518,7 +518,7 @@ do ii = -nLam,nLam
         xyz = xyz/NORM2(xyz)
 
         if (ierr .eq. 0) then
-            call InterpolateLambert(xyz,PFLam,nLam,res)
+            res = InterpolateLambert(xyz,PFLam,nLam)
             PFstereo(ii,jj) = res
         end if
 

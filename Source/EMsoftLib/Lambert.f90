@@ -53,7 +53,8 @@
 !> @date 08/01/13   MDG 1.2 added standard Lambert projection
 !> @date 08/12/13   MDG 1.3 added inverse Lambert projections for Ball to Cube
 !> @date 09/20/13   MDG 1.4 added ApplyLaueSymmetry
-!> @date 08/29/15   MDg 1.5 small changes to hexagonal mapping routines; coordinate swap inside routines
+!> @date 08/29/15   MDG 1.5 small changes to hexagonal mapping routines; coordinate swap inside routines
+!> @date 01/20/18   MDG 1.6 added Lambert interpolations routines
 !--------------------------------------------------------------------------
 module Lambert
 
@@ -173,6 +174,22 @@ public :: LambertInverse
 interface LambertInverse
         module procedure LambertInverseSingle
         module procedure LambertInverseDouble
+end interface
+
+public :: LambertgetInterpolation
+interface LambertgetInterpolation
+        module procedure LambertgetInterpolationSingle
+        module procedure LambertgetInterpolationDouble
+end interface
+
+public :: InterpolateLambert
+interface InterpolateLambert
+        module procedure InterpolationLambert2DSingle
+        module procedure InterpolationLambert2DDouble
+        module procedure InterpolationLambert3DSingle
+        module procedure InterpolationLambert3DInteger
+        module procedure InterpolationLambert4DSingle
+        module procedure InterpolationLambert4DDouble4b4
 end interface
 
 contains
@@ -2272,6 +2289,410 @@ end do
 nequiv = n
 
 end subroutine Apply3DPGSymmetry
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: LambertgetInterpolationSingle
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief take direction cosines and return all parameters for square Lambert interpolation
+!
+!> @details this piece of code replaces code that occurred many times in various programs
+!
+!> @param dc direction cosines
+!> @param scl scale parameter for square Lambert projection
+!> @param npx number of pixels along square semi-edge
+!> @param npy should be the same as npx
+!> @param nix coordinates of point
+!> @param niy
+!> @param nixp and neighboring point
+!> @param niyp
+!> @param dx  interpolation weight factors
+!> @param dy
+!> @param dxm
+!> @param dym
+!> @param swap sometimes we need to swap the x and y coordinates (OPTIONAL)
+! 
+!> @date  01/18/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine LambertgetInterpolationSingle(dc, scl, npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym, swap)
+!DEC$ ATTRIBUTES DLLEXPORT :: LambertgetInterpolationSingle
+
+use local
+use io
+
+real(kind=sgl),INTENT(IN)           :: dc(3)
+real(kind=sgl),INTENT(IN)           :: scl
+integer(kind=irg),INTENT(IN)        :: npx
+integer(kind=irg),INTENT(IN)        :: npy
+integer(kind=irg),INTENT(OUT)       :: nix
+integer(kind=irg),INTENT(OUT)       :: niy
+integer(kind=irg),INTENT(OUT)       :: nixp
+integer(kind=irg),INTENT(OUT)       :: niyp
+real(kind=sgl),INTENT(OUT)          :: dx
+real(kind=sgl),INTENT(OUT)          :: dy
+real(kind=sgl),INTENT(OUT)          :: dxm
+real(kind=sgl),INTENT(OUT)          :: dym
+logical,INTENT(IN),OPTIONAL         :: swap
+
+real(kind=sgl)                      :: xy(2), x
+integer(kind=irg)                   :: istat
+
+! Lambert sphere to square transformation
+xy = scl * Lambert2DSquareInverseSingle( dc, istat )
+if (istat .ne. 0) then
+  write (*,*) 'input direction cosines : ', dc
+  write (*,*) 'input scale factor      : ', scl
+  call Message('LambertgetInterpolationSingle: Something went wrong during interpolation...')
+end if
+
+if (present(swap)) then 
+  if (swap.eqv..TRUE.) then
+    x = xy(1)
+    xy(1) = xy(2)
+    xy(2) = -x
+  end if
+end if
+
+! four-point interpolation (bi-quadratic)
+nix = int(npx+xy(1))-npx
+niy = int(npy+xy(2))-npy
+nixp = nix+1
+niyp = niy+1
+if (nixp.gt.npx) nixp = nix
+if (niyp.gt.npy) niyp = niy
+if (nix.lt.-npx) nix = nixp
+if (niy.lt.-npy) niy = niyp
+dx = xy(1)-nix
+dy = xy(2)-niy
+dxm = 1.0-dx
+dym = 1.0-dy
+
+end subroutine LambertgetInterpolationSingle
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: LambertgetInterpolationDouble
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief take direction cosines and return all parameters for square Lambert interpolation
+!
+!> @details this piece of code replaces code that occurred many times in various programs
+!
+!> @param dc direction cosines
+!> @param scl scale parameter for square Lambert projection
+!> @param npx number of pixels along square semi-edge
+!> @param npy should be the same as npx
+!> @param nix coordinates of point
+!> @param niy
+!> @param nixp and neighboring point
+!> @param niyp
+!> @param dx  interpolation weight factors
+!> @param dy
+!> @param dxm
+!> @param dym
+!> @param swap sometimes we need to swap the x and y coordinates (OPTIONAL)
+! 
+!> @date  01/18/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine LambertgetInterpolationDouble(dc, scl, npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym, swap)
+!DEC$ ATTRIBUTES DLLEXPORT :: LambertgetInterpolationDouble
+
+use local
+use io
+
+real(kind=dbl),INTENT(IN)           :: dc(3)
+real(kind=dbl),INTENT(IN)           :: scl
+integer(kind=irg),INTENT(IN)        :: npx
+integer(kind=irg),INTENT(IN)        :: npy
+integer(kind=irg),INTENT(OUT)       :: nix
+integer(kind=irg),INTENT(OUT)       :: niy
+integer(kind=irg),INTENT(OUT)       :: nixp
+integer(kind=irg),INTENT(OUT)       :: niyp
+real(kind=dbl),INTENT(OUT)          :: dx
+real(kind=dbl),INTENT(OUT)          :: dy
+real(kind=dbl),INTENT(OUT)          :: dxm
+real(kind=dbl),INTENT(OUT)          :: dym
+logical,INTENT(IN),OPTIONAL         :: swap
+
+real(kind=dbl)                      :: xy(2), x
+integer(kind=irg)                   :: istat
+
+! Lambert sphere to square transformation
+xy = scl * Lambert2DSquareInverseDouble( dc, istat )
+if (istat .ne. 0) then
+  write (*,*) 'input direction cosines : ', dc
+  write (*,*) 'input scale factor      : ', scl
+  call Message('LambertgetInterpolationDouble: Something went wrong during interpolation...')
+end if
+
+if (present(swap)) then 
+  if (swap.eqv..TRUE.) then
+    x = xy(1)
+    xy(1) = xy(2)
+    xy(2) = -x
+  end if
+end if
+
+! four-point interpolation (bi-quadratic)
+nix = int(npx+xy(1))-npx
+niy = int(npy+xy(2))-npy
+nixp = nix+1
+niyp = niy+1
+if (nixp.gt.npx) nixp = nix
+if (niyp.gt.npy) niyp = niy
+if (nix.lt.-npx) nix = nixp
+if (niy.lt.-npy) niy = niyp
+dx = xy(1)-nix
+dy = xy(2)-niy
+dxm = 1.D0-dx
+dym = 1.D0-dy
+
+end subroutine LambertgetInterpolationDouble
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: InterpolationLambert2DSingle
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief perform a Lambert interpolation
+!
+!> @param dc direction cosines
+!> @param m master array
+!> @param npx number of pixels along square semi-edge
+! 
+!> @date  01/20/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function InterpolationLambert2DSingle(dc, m, npx) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: InterpolationLambert2DSingle
+
+IMPLICIT NONE
+
+real(kind=sgl),INTENT(INOUT)            :: dc(3)
+integer(kind=irg),INTENT(IN)            :: npx 
+real(kind=sgl),INTENT(IN)               :: m(-npx:npx,-npx:npx)
+real(kind=sgl)                          :: res
+
+integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
+real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
+
+scl = float(npx) 
+
+if (dc(3).lt.0.0) dc = -dc
+
+! convert direction cosines to lambert projections
+call LambertgetInterpolation(dc, scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+res = m(nix,niy)*dxm*dym + m(nixp,niy)*dx*dym + m(nix,niyp)*dxm*dy + m(nixp,niyp)*dx*dy
+
+end function InterpolationLambert2DSingle
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: InterpolationLambert2DDouble
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief perform a Lambert interpolation
+!
+!> @param dc direction cosines
+!> @param m master array
+!> @param npx number of pixels along square semi-edge
+! 
+!> @date  01/20/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function InterpolationLambert2DDouble(dc, m, npx) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: InterpolationLambert2DDouble
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(INOUT)            :: dc(3)
+integer(kind=irg),INTENT(IN)            :: npx 
+real(kind=dbl),INTENT(IN)               :: m(-npx:npx,-npx:npx)
+real(kind=dbl)                          :: res
+
+integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
+real(kind=dbl)                          :: xy(2), dx, dy, dxm, dym, scl
+
+scl = dble(npx) 
+
+if (dc(3).lt.0.0) dc = -dc
+
+! convert direction cosines to lambert projections
+call LambertgetInterpolation(dc, scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+res = m(nix,niy)*dxm*dym + m(nixp,niy)*dx*dym + m(nix,niyp)*dxm*dy + m(nixp,niyp)*dx*dy
+
+end function InterpolationLambert2DDouble
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: InterpolationLambert3DSingle
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief perform a Lambert interpolation
+!
+!> @param dc direction cosines
+!> @param m master array
+!> @param npx number of pixels along square semi-edge
+!> @param nn dimension of output array
+! 
+!> @date  01/20/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function InterpolationLambert3DSingle(dc, m, npx, nn) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: InterpolationLambert3DSingle
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(INOUT)            :: dc(3)
+integer(kind=irg),INTENT(IN)            :: npx 
+integer(kind=irg),INTENT(IN)            :: nn
+real(kind=sgl),INTENT(IN)               :: m(-npx:npx,-npx:npx, nn)
+real(kind=sgl)                          :: res(nn)
+
+integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
+real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
+
+scl = float(npx) 
+
+if (dc(3).lt.0.0) dc = -dc
+
+! convert direction cosines to lambert projections
+call LambertgetInterpolation(sngl(dc), scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+res(1:nn) = m(nix,niy,1:nn)*dxm*dym + m(nixp,niy,1:nn)*dx*dym + &
+            m(nix,niyp,1:nn)*dxm*dy + m(nixp,niyp,1:nn)*dx*dy
+
+end function InterpolationLambert3DSingle
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: InterpolationLambert3DInteger
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief perform a Lambert interpolation
+!
+!> @param dc direction cosines
+!> @param m master array
+!> @param npx number of pixels along square semi-edge
+!> @param nn dimension of output array
+! 
+!> @date  01/20/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function InterpolationLambert3DInteger(dc, m, npx, nn) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: InterpolationLambert3DInteger
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(INOUT)            :: dc(3)
+integer(kind=irg),INTENT(IN)            :: npx 
+integer(kind=irg),INTENT(IN)            :: nn
+integer(kind=irg),INTENT(IN)            :: m(nn,-npx:npx,-npx:npx)
+real(kind=sgl)                          :: res(nn)
+
+integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
+real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
+
+scl = float(npx) 
+
+if (dc(3).lt.0.0) dc = -dc
+
+! convert direction cosines to lambert projections
+call LambertgetInterpolation(sngl(dc), scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+res(1:nn) = m(1:nn,nix,niy)*dxm*dym + m(1:nn,nixp,niy)*dx*dym + &
+            m(1:nn,nix,niyp)*dxm*dy + m(1:nn,nixp,niyp)*dx*dy
+
+end function InterpolationLambert3DInteger
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: InterpolationLambert4DSingle
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief perform a Lambert interpolation
+!
+!> @param dc direction cosines
+!> @param m master array
+!> @param npx number of pixels along square semi-edge
+!> @param nn dimension of output array
+! 
+!> @date  01/20/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function InterpolationLambert4DSingle(dc, m, npx, nn) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: InterpolationLambert4DSingle
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(INOUT)            :: dc(3)
+integer(kind=irg),INTENT(IN)            :: npx 
+integer(kind=irg),INTENT(IN)            :: nn
+real(kind=sgl),INTENT(IN)               :: m(-npx:npx,-npx:npx, 1, nn)
+real(kind=sgl)                          :: res
+
+integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
+real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl, resarray(nn)
+
+scl = float(npx) 
+
+if (dc(3).lt.0.0) dc = -dc
+
+! convert direction cosines to lambert projections
+call LambertgetInterpolation(sngl(dc), scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+resarray(1:nn) = m(nix,niy,1,1:nn)*dxm*dym + m(nixp,niy,1,1:nn)*dx*dym + &
+                 m(nix,niyp,1,1:nn)*dxm*dy + m(nixp,niyp,1,1:nn)*dx*dy
+
+res = sum(resarray)
+
+end function InterpolationLambert4DSingle
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: InterpolationLambert4DDouble4b4
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief perform a Lambert interpolation
+!
+!> @param dc direction cosines
+!> @param m master array
+!> @param npx number of pixels along square semi-edge
+! 
+!> @date  01/20/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function InterpolationLambert4DDouble4b4(dc, m, npx) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: InterpolationLambert4DDouble4b4
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(INOUT)            :: dc(3)
+integer(kind=irg),INTENT(IN)            :: npx 
+real(kind=dbl),INTENT(IN)               :: m(4,4,-npx:npx,-npx:npx)
+real(kind=dbl)                          :: res(4,4)
+
+integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
+real(kind=dbl)                          :: xy(2), dx, dy, dxm, dym, scl
+
+scl = dble(npx) 
+
+if (dc(3).lt.0.0) dc = -dc
+
+! convert direction cosines to lambert projections
+call LambertgetInterpolation(dc, scl, npx, npx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+res(1:4,1:4) = m(1:4,1:4,nix,niy)*dxm*dym + m(1:4,1:4,nixp,niy)*dx*dym + &
+               m(1:4,1:4,nix,niyp)*dxm*dy + m(1:4,1:4,nixp,niyp)*dx*dy
+
+end function InterpolationLambert4DDouble4b4
 
 end module Lambert
 

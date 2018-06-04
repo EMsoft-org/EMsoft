@@ -239,24 +239,24 @@ character(100)                    :: c
 
 !$OMP THREADPRIVATE(rlp) 
 
-interface
-  function InterpolateLambert(dc, master, npx, nf) result(res)
+! interface
+!   function InterpolateLambert(dc, master, npx, nf) result(res)
 
-  use local
-  use Lambert
-  use EBSDmod
-  use constants
+!   use local
+!   use Lambert
+!   use EBSDmod
+!   use constants
   
-  IMPLICIT NONE
+!   IMPLICIT NONE
   
-  real(kind=dbl),INTENT(INOUT)            :: dc(3)
-  real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx, 1, 1:nf)
-  integer(kind=irg),INTENT(IN)            :: npx 
-  integer(kind=irg),INTENT(IN)            :: nf
-  real(kind=sgl)                          :: res
-  end function InterpolateLambert
+!   real(kind=dbl),INTENT(INOUT)            :: dc(3)
+!   real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx, 1, 1:nf)
+!   integer(kind=irg),INTENT(IN)            :: npx 
+!   integer(kind=irg),INTENT(IN)            :: nf
+!   real(kind=sgl)                          :: res
+!   end function InterpolateLambert
 
-end interface
+! end interface
 
 stereog = .TRUE.
 
@@ -1026,61 +1026,6 @@ if (trim(EMsoft_getNotify()).ne.'Off') then
   end if
 end if
 
-
-
-
 end subroutine ComputeMasterPattern
-
-
-
-
-function InterpolateLambert(dc, master, npx, nf) result(res)
-
-use local
-use Lambert
-use EBSDmod
-use constants
-
-IMPLICIT NONE
-
-real(kind=dbl),INTENT(INOUT)            :: dc(3)
-real(kind=sgl),INTENT(IN)               :: master(-npx:npx,-npx:npx, 1, 1:nf)
-integer(kind=irg),INTENT(IN)            :: npx 
-integer(kind=irg),INTENT(IN)            :: nf
-real(kind=sgl)                          :: res
-
-real(kind=sgl)                          :: resarray(nf)
-integer(kind=irg)                       :: nix, niy, nixp, niyp, istat
-real(kind=sgl)                          :: xy(2), dx, dy, dxm, dym, scl
-
-scl = float(npx) 
-
-if (dc(3).lt.0.0) dc = -dc
-
-! convert direction cosines to lambert projections
-xy = scl * LambertSphereToSquare( dc, istat )
-res = 0.0
-
-if (istat.eq.0) then 
-! interpolate intensity from the neighboring points
-  nix = floor(xy(1))
-  niy = floor(xy(2))
-  nixp = nix+1
-  niyp = niy+1
-  if (nixp.gt.npx) nixp = nix
-  if (niyp.gt.npx) niyp = niy
-  dx = xy(1) - nix
-  dy = xy(2) - niy
-  dxm = 1.0 - dx
-  dym = 1.0 - dy
-  
-  resarray(1:nf) = master(nix,niy,1,1:nf)*dxm*dym + master(nixp,niy,1,1:nf)*dx*dym + &
-        master(nix,niyp,1,1:nf)*dxm*dy + master(nixp,niyp,1,1:nf)*dx*dy
-end if
-
-res = sum(resarray)
-
-end function InterpolateLambert
-
 
 

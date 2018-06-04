@@ -32,8 +32,13 @@ set(MODALITY_DIRS
   SEM
   TEM
   Utilities
-  XRay
+#  XRay
 )
+
+
+# --------------------------------------------------------------------
+# Add the wrapper library for EMsoft
+add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftWrapperLib ${PROJECT_BINARY_DIR}/EMsoftWrapperLib)
 
 # --------------------------------------------------------------------
 # Add the executables

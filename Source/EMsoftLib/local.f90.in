@@ -104,6 +104,10 @@ use,intrinsic :: ISO_C_BINDING
   integer(kind=irg),parameter           :: fnlen = 512
 !DEC$ ATTRIBUTES DLLEXPORT :: fnlen
 
+!> standard array size for all wrapper routine calls; applies to ipar, fpar, and spar arrays
+  integer(c_int32_t),parameter          :: wraparraysize = 80
+!DEC$ ATTRIBUTES DLLEXPORT :: wraparraysize
+
 !> reserved IO unit identifiers for postscript (20) and data (21-23)
   integer(kind=irg), parameter          :: psunit = 20, dataunit = 21, dataunit2 = 22, dataunit3 = 23
 !DEC$ ATTRIBUTES DLLEXPORT :: psunit
@@ -148,6 +152,7 @@ type ConfigStructureType
  character(fnlen)  :: WyckoffPositionsfilename
  character(fnlen)  :: Randomseedfilename
  character(1)      :: EMsoftnativedelimiter
+ character(fnlen)  :: strvals(wraparraysize)
 end type ConfigStructureType
 
 character(30)      :: ConfigStructureNames(27) = (/ "EMsoftpathname                ", &
