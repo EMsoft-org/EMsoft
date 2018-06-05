@@ -360,7 +360,7 @@ if (HDFopen.eqv..TRUE.) call h5close_EMsoft(hdferr)
 ! copy all the necessary variables from the mcnl namelist group
 enl%MCxtalname = trim(mcnl%xtalname)
 enl%MCmode = mcnl%MCmode
-if (enl%MCmode .ne. 'full') call FatalError('EBSDIndexingreadMCfile','File not in full mode. Please input correct HDF5 file')
+!if (enl%MCmode .ne. 'full') call FatalError('EBSDIndexingreadMCfile','File not in full mode. Please input correct HDF5 file')
 
 enl%nsx = (mcnl%numsx - 1)/2
 enl%nsy = enl%nsx
