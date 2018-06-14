@@ -1354,10 +1354,9 @@ type TDQCStructureType
   logical,allocatable                   :: Ucgcalc(:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
   type(TDQCsymdata)                     :: SG
-  real(kind=dbl)                        :: epvec(3,5), epar(5,3)
-  real(kind=dbl)                        :: eovec(3,5), eperp(5,3)
-  real(kind=dbl)                        :: Mdirect(5,5), rmtp(5,5), dmtp(5,5), rmt(5,5)
-  real(kind=dbl)                        :: Mrecip(5,5), rmto(5,5), dmto(5,5), dmt(5,5)
+  real(kind=dbl)                        :: epvec(3,5), epar(5,3), scaling(5,5), scalingfact
+  real(kind=dbl)                        :: dsm(5,5), rsm(5,5)
+  real(kind=dbl)                        :: rmt(5,5), dmt(5,5)
   real(kind=dbl)                        :: SYM_icos(5,5,40)
   real(kind=dbl)                        :: QClatparm_a
   real(kind=dbl)                        :: QClatparm_c
