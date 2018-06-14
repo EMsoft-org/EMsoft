@@ -1380,7 +1380,7 @@ type TDQCStructureType
   logical, allocatable                  :: dbdiff(:,:,:,:,:)
   integer(kind=irg)                     :: ATOM_ntype, ATOM_type(maxpasym), SYM_SGnum, numat(maxpasym)
   character(fnlen),allocatable          :: SGname(:)
-  real(kind=sgl)                        :: ATOM_pos(maxpasym,8)
+  real(kind=sgl)                        :: ATOM_pos(maxpasym,10)
   real(kind=sgl),allocatable            :: apos(:,:,:)
 end type TDQCStructureType
 
