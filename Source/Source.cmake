@@ -35,26 +35,34 @@ set(MODALITY_DIRS
 #  XRay
 )
 
+# -----------------------------------------------------------------------
+# Establish which modalities are going to be compiled
+# -----------------------------------------------------------------------
+foreach(MODALITY ${MODALITY_DIRS})
+  option(EMsoft_ENABLE_${MODALITY} "Build sources and programs related to ${MODALITY}" ON)
+endforeach()
 
-# --------------------------------------------------------------------
-# Add the wrapper library for EMsoft
+
+# -----------------------------------------------------------------------
+# Add a wrapper lib thats uses the eabled modality options to compile itself
+# -----------------------------------------------------------------------
 add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftWrapperLib ${PROJECT_BINARY_DIR}/EMsoftWrapperLib)
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------
 # Add the executables
+# -----------------------------------------------------------------------
 foreach(MODALITY ${MODALITY_DIRS})
-
-  option(EMsoft_ENABLE_${MODALITY} "Build sources and programs related to ${MODALITY}" ON)
   if( "${EMsoft_ENABLE_${MODALITY}}" STREQUAL "ON" )
     message(STATUS "EMsoft: Enabling public ${MODALITY} Modality")
     add_subdirectory( ${PROJECT_SOURCE_DIR}/Source/${MODALITY} ${PROJECT_BINARY_DIR}/${MODALITY})
   endif()
-
 endforeach()
 
 
 
-
+# -----------------------------------------------------------------------
+# Does the developer want to compile the GUI for EMsoft?
+# -----------------------------------------------------------------------
 if( EMsoft_ENABLE_EMsoftWorkbench )
 
   INCLUDE (${EMsoft_SOURCE_DIR}/Support/cmp/cmpCMakeMacros.cmake )

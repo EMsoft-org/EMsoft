@@ -643,6 +643,7 @@ end subroutine CalcFamily
 !> @date  11/27/01 MDG 2.1 added kind support
 !> @date  01/10/14 MDG 4.0 SG is now part of the unitcell type
 !> @date  06/05/14 MDG 4.1 made cell an argument instead of global variable; replaced itmp by argument
+!> @date  06/18/18 MDG 4.2 added code to intercept rare rounding problem (happened with alpha-quartz)
 !--------------------------------------------------------------------------
 recursive subroutine CalcOrbit(cell,m,n,ctmp)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcOrbit
@@ -656,6 +657,7 @@ integer(kind=irg),INTENT(IN)            :: m                    !< index of inpu
 
 real(kind=dbl)                          :: r(3),s(3),diff       !< auxiliary variables
 real(kind=dbl), parameter               :: eps = 1.0D-4         !< comparison threshold
+real(kind=dbl), parameter               :: eps2= 1.0D-6         !< comparison threshold
 integer(kind=irg)                       :: i,j,k,mm             !< auxiliary variables
 logical                                 :: new                  !< is this a new point ?
 
@@ -676,12 +678,22 @@ logical                                 :: new                  !< is this a new
    end do
   end do
 
+! sometimes the code below produces an incorrect answer when one of the fractional coordinates
+! is slightly negative... we intercept such issues here ... 
+  do j=1,3
+    if (abs(s(j)).lt.eps2) s(j) = 0.D0
+  end do
+
 ! reduce to the fundamental unit cell if necessary
-  if (cell%SG%SYM_reduce) then
+  if (cell%SG%SYM_reduce.eqv..TRUE.) then
    do j=1,3
     s(j) = mod(s(j)+100.0_dbl,1.0_dbl)
    end do
   end if
+
+  do j=1,3
+    if (abs(s(j)).lt.eps2) s(j) = 0.D0
+  end do
 
 ! is this a new point ?
   new = .TRUE.
@@ -862,11 +874,11 @@ real(kind=sgl)                  :: r(3),g(3)                    !< auxiliary var
 
 ! replicate in all cells
   do j=1,celln(1)+1
-   ff(1)=float(j)
+   ff(1)=dble(j)
    do k=1,celln(2)+1
-    ff(2)=float(k)
+    ff(2)=dble(k)
     do l=1,celln(3)+1
-     ff(3)=float(l)
+     ff(3)=dble(l)
      do kk=1,cell%numat(i)
       do mm=1,3
        r(mm)=ctmp(kk,mm)+ff(mm)-sh(mm)
