@@ -766,7 +766,8 @@ type EBSD2DQCMasterNameListType
     integer(kind=irg)       :: nthreads
     integer(kind=irg)       :: atno
     real(kind=sgl)          :: DWF
-    real(kind=sgl)          :: dmin
+    real(kind=sgl)          :: dmin_qc
+    real(kind=sgl)          :: dmin_p
     real(kind=sgl)          :: QClatparm_a
     real(kind=sgl)          :: QClatparm_c 
     character(1)            :: centering

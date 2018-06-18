@@ -1158,7 +1158,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSD2DQCMasterNameListType),INTENT(INOUT)        :: emnl
 
-integer(kind=irg),parameter                           :: n_int = 3, n_real = 4
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 5
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1177,11 +1177,12 @@ intlist(3) = 'atno'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single floats
-io_real = (/emnl%dmin, emnl%QClatparm_a, emnl%QClatparm_c, emnl%DWF/)
-reallist(1) = 'dmin'
-reallist(2) = 'QClatparm_a'
-reallist(3) = 'QClatparm_c'
-reallist(4) = 'DWF'
+io_real = (/emnl%dmin_qc, emnl%dmin_p, emnl%QClatparm_a, emnl%QClatparm_c, emnl%DWF/)
+reallist(1) = 'dmin_qc'
+reallist(2) = 'dmin_p'
+reallist(3) = 'QClatparm_a'
+reallist(4) = 'QClatparm_c'
+reallist(5) = 'DWF'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 dataset = SC_energyfile

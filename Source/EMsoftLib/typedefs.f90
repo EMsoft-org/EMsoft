@@ -1361,7 +1361,7 @@ type TDQCStructureType
   real(kind=dbl)                        :: QClatparm_a
   real(kind=dbl)                        :: QClatparm_c
   real(kind=dbl)                        :: alphaij, alphai5, alphastarij
-  real(kind=dbl)                        :: dmin
+  real(kind=dbl)                        :: dmin_qc, dmin_p
   real(kind=dbl)                        :: vol
   real(kind=dbl)                        :: gmax_orth
   real(kind=dbl)                        :: DWF

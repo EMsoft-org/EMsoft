@@ -7456,22 +7456,20 @@ logical,OPTIONAL,INTENT(IN)                           :: initonly
 logical                                               :: skipread = .FALSE.
 
 integer(kind=irg)                                     :: nthreads, atno, npx, nsamples
-real(kind=sgl)                                        :: dmin, DWF, QClatparm_a, QClatparm_c
+real(kind=sgl)                                        :: dmin_qc, dmin_p, DWF, QClatparm_a, QClatparm_c
 character(fnlen)                                      :: energyfile
 character(3)                                          :: QCtype
 
-namelist /EBSD2DQCmastervars/ dmin, nthreads, DWF, atno, &
-          energyfile, QClatparm_a, QClatparm_c,  QCtype, npx
+namelist /EBSD2DQCmastervars/ dmin_qc, dmin_p, nthreads, &
+          energyfile, QClatparm_a, QClatparm_c, npx
 
 energyfile  = 'undefined'           ! output filename
-dmin        = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm]
+dmin_qc     = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm] in quasiperiodic dimensions
+dmin_p      = 0.05                  ! smallest d-spacing to include in dynamical matrix [nm] in periodic dimensions
 QClatparm_a = 0.50                  ! lattice parameter of hyper-lattice in aperiodic plane
 QClatparm_c = 0.50                  ! lattice parameter of hyper-lattice in periodic axial direction
-DWF         = 0.0033                ! Debye-Waller factor [nm^-2]
-atno        = 12                    ! atomin cnumber
 nthreads    = 1                     ! number of threads
 npx         = 500                   ! size of master pattern
-QCtype      = 'undefined'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -7496,7 +7494,8 @@ if (.not.skipread) then
 end if
 
 enl%energyfile            = energyfile
-enl%dmin                  = dmin
+enl%dmin_qc               = dmin_qc
+enl%dmin_p                = dmin_p
 enl%nthreads              = nthreads
 enl%DWF                   = DWF
 enl%atno                  = atno
