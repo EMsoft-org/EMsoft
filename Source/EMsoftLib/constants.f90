@@ -258,8 +258,9 @@ type LambertParametersType
                                                 -2.401996891720091D-7, 4.386887017466388D-8, &
                                                 -3.5917775353564864D-9 /)
 
-	real(kind=dbl)          :: BP(6)= (/ 0.D0, 1.D0, 0.577350269189626D0, 0.414213562373095D0, 0.D0,  &
-                                             0.267949192431123D0 /)       ! used for Fundamental Zone determination in so3 module
+	real(kind=dbl)          :: BP(12)= (/ 0.D0, 1.D0, 0.577350269189626D0, 0.414213562373095D0, 0.D0,  &
+                                             0.267949192431123D0, 0.D0, 0.198912367379658D0, 0.D0, &
+                                             0.158384440324536D0, 0.D0, 0.131652497587396D0/)       ! used for Fundamental Zone determination in so3 module
 end type LambertParametersType
 
 type(LambertParametersType)        :: LPs
