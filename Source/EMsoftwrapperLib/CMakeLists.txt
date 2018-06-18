@@ -1,13 +1,14 @@
 
 project(EMsoftWrapperLib)
 
-
+# --------------------------------------------------------------------
+# The MODALITY_DIRS variable is set one level above this one.
 
 # --------------------------------------------------------------------
 # Add the executables
 foreach(MODALITY ${MODALITY_DIRS})
   if( "${EMsoft_ENABLE_${MODALITY}}" STREQUAL "ON" )
-    message(STATUS "${MODALITY} Wrapper Lib: ${EMsoft_ENABLE_${MODALITY}}")
+    # message(STATUS "${MODALITY} Wrapper Lib: ${EMsoft_ENABLE_${MODALITY}}")
     include( ${PROJECT_SOURCE_DIR}/${MODALITY}/SourceList.cmake)
   endif()
 endforeach()
@@ -35,13 +36,7 @@ include_directories("${EMsoftHDFLib_BINARY_DIR}")
 ADD_LIBRARY(EMsoftWrapperLib ${LIB_TYPE} ${EMsoftWrapperLib_SOURCES})
 TARGET_LINK_LIBRARIES(EMsoftWrapperLib
                 EMsoftHDFLib
-                # jsonfortran 
-                # ${FFTW3_LIBRARY} 
-                # ${OpenCL_LIBRARY}
-                # bcls::bcls 
-                # ${EMsoft_BLAS_LAPACK_LIBS}
-                # ${IFORT_COMPILER_LIBRARIES}
-          )
+)
 
 set_target_properties (EMsoftWrapperLib PROPERTIES
   LINKER_LANGUAGE Fortran
