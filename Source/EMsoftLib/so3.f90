@@ -703,6 +703,7 @@ FZorder = FZoarray(pgnum)
 !          rod(2) = ztmp
 !        end if
         FZtmp%rod = rod
+        FZtmp%gridpt(1:3) = (/i, j, k/)
         FZcnt = FZcnt + 1
        end if
     end if

@@ -1202,6 +1202,7 @@ end type orientationtyped
 type FZpointd
         real(kind=dbl)          :: rod(4)        ! Rodrigues-Frank vector [nx, ny, nz, tan(omega/2) ]
         real(kind=dbl)          :: trod(4)       ! second Rodrigues-Frank vector; can be used for coordinate transformations
+        integer(kind=irg)       :: gridpt(3)     ! coordinates of grid point ! added on 06/19/18 by SS
         type(FZpointd),pointer  :: next          ! link to next point
 end type FZpointd
 
