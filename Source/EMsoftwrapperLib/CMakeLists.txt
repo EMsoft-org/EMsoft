@@ -61,9 +61,7 @@ EMsoft_SetupInstallDirs()
 #endif()
 
 
-install(FILES ${EMsoftWrapperLib_SOURCE_DIR}/EMsoftWrapperLib.h
-          ${EMsoftWrapperLib_HEADERS}
-          ${EMsoftWrapperLib_BINARY_DIR}/EMsoftStringConstants.h
+install(FILES ${EMsoftWrapperLib_HEADERS}
       DESTINATION ${include_install_dir}/EMsoftWrapperLib
       COMPONENT Applications
 )
@@ -119,7 +117,6 @@ set(ConfigPackageLocation ${lib_install_dir}/cmake/EMsoft)
 
 install(
   FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/EMsoft/EMsoftConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/EMsoft/EMsoftWrapperLibTargetsConfigVersion.cmake"
   DESTINATION
     ${ConfigPackageLocation}
