@@ -1298,6 +1298,20 @@ end type StokesVectorType
 !--------------------------------------------------------------------------
 
 ! Quasi-Crystal data structures
+
+type QCsymdata
+  integer(kind=irg)                 :: SYM_GENnum                   !< number of generator matrices
+  integer(kind=irg)                 :: SYM_MATnum                   !< number of non-zero symmetry matrices
+  integer(kind=irg)                 :: SYM_NUMpt                    !< number of point group operators
+  logical                           :: SYM_reduce                   !< switch to enable/disable reduction to fundamental cell
+  real(kind=dbl)                    :: SYM_data(200,7,7)            !< all symmetry matrices for a given spacegroup
+  real(kind=dbl)                    :: SYM_direc(200,6,6)           !< direct space point group matrices
+  real(kind=dbl)                    :: SYM_recip(200,6,6)           !< reciprocal space point group matrices
+  real(kind=dbl)                    :: SYM_c(7,7)                   !< dummy 6x6 matrix used for various computations
+  character(11)                     :: SYM_name
+  character(40),allocatable         :: SYM_GL(:)
+end type
+
 type QCStructureType
   integer(kind=irg)                     :: atno
   integer(kind=irg)                     :: imax
@@ -1306,12 +1320,13 @@ type QCStructureType
   integer(kind=irg),allocatable         :: Ucgindex(:)
   logical,allocatable                   :: Ucgcalc(:)
   integer(kind=irg),allocatable         :: inverseIndex(:,:)
+  type(QCsymdata)                       :: SG
   real(kind=dbl)                        :: epvec(3,6), epar(6,3)
   real(kind=dbl)                        :: eovec(3,6), eperp(6,3)
   real(kind=dbl)                        :: Mp(6,6), Picos(6,6)
   real(kind=dbl)                        :: Mo(6,6), Qicos(6,6)
   real(kind=dbl)                        :: SYM_icos(6,6,120)              ! 532 rotational group in matrix representation
-  real(kind=dbl)                        :: QClatparm
+  real(kind=dbl)                        :: QClatparm, alphaij, alphastarij
   real(kind=dbl)                        :: dmin
   real(kind=dbl)                        :: vol
   real(kind=dbl)                        :: gmax_orth
@@ -1325,8 +1340,14 @@ type QCStructureType
   real(kind=dbl)                        :: xizerop
   real(kind=dbl)                        :: multiplicity
   character(1)                          :: centering   ! 'P','I','F'
-  complex(kind=dbl),allocatable         :: LUT(:)
-  complex(kind=dbl),allocatable         :: LUTqg(:)
+  complex(kind=dbl),allocatable         :: LUT(:,:,:,:,:,:)
+  complex(kind=dbl),allocatable         :: LUTqg(:,:,:,:,:,:)
+  logical, allocatable                  :: dbdiff(:,:,:,:,:,:)
+  character(fnlen)                      :: SGname(11), QCtype, fname
+  integer(kind=irg)                     :: SYM_SGnum, ATOM_ntype, ATOM_type(maxpasym), numat(maxpasym)
+  real(kind=sgl),allocatable            :: apos(:,:,:)
+  real(kind=sgl)                        :: ATOM_pos(maxpasym,10)
+
 end type QCStructureType
 
 type TDQCsymdata
