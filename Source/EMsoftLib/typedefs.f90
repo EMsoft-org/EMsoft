@@ -1340,9 +1340,9 @@ type QCStructureType
   real(kind=dbl)                        :: xizerop
   real(kind=dbl)                        :: multiplicity
   character(1)                          :: centering   ! 'P','I','F'
-  complex(kind=dbl),allocatable         :: LUT(:,:,:,:,:,:)
-  complex(kind=dbl),allocatable         :: LUTqg(:,:,:,:,:,:)
-  logical, allocatable                  :: dbdiff(:,:,:,:,:,:)
+  complex(kind=dbl),allocatable         :: LUT(:)
+  complex(kind=dbl),allocatable         :: LUTqg(:)
+  logical, allocatable                  :: dbdiff(:)
   character(fnlen)                      :: SGname(11), QCtype, fname
   integer(kind=irg)                     :: SYM_SGnum, ATOM_ntype, ATOM_type(maxpasym), numat(maxpasym)
   real(kind=sgl),allocatable            :: apos(:,:,:)
