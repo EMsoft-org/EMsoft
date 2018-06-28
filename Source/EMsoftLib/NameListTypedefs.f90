@@ -736,14 +736,8 @@ end type ECPMasterNameListType
 type ECPQCMasterNameListType
     integer(kind=irg)       :: nsamples
     integer(kind=irg)       :: npx
-    integer(kind=irg)       :: Esel
     integer(kind=irg)       :: nthreads
-    integer(kind=irg)       :: atno
-    real(kind=sgl)          :: DWF
     real(kind=sgl)          :: dmin
-    real(kind=sgl)          :: gmax_orth
-    real(kind=sgl)          :: QClatparm
-    character(1)            :: centering
     character(fnlen)        :: energyfile
 end type ECPQCMasterNameListType
 
@@ -752,11 +746,8 @@ type EBSDQCMasterNameListType
     integer(kind=irg)       :: nsamples
     integer(kind=irg)       :: npx
     integer(kind=irg)       :: nthreads
-    integer(kind=irg)       :: atno
-    real(kind=sgl)          :: DWF
     real(kind=sgl)          :: dmin
     real(kind=sgl)          :: QClatparm 
-    character(1)            :: centering
     character(fnlen)        :: energyfile
 ! parameters from MC simulation
     real(kind=sgl)          :: depthstep 
@@ -1670,9 +1661,6 @@ end type EMTGBSTEMNameListType
 
 type EMCBEDQCNameListType
     real(kind=sgl)      :: dmin
-    real(kind=sgl)      :: QClatparm
-    integer(kind=irg)   :: atno
-    real(kind=sgl)      :: DWF
     real(kind=sgl)      :: voltage
     real(kind=sgl)      :: convergence
     real(kind=sgl)      :: eu(3)
@@ -1680,8 +1668,19 @@ type EMCBEDQCNameListType
     character(fnlen)    :: datafile
     integer(kind=irg)   :: nthreads
     integer(kind=irg)   :: npix
-    character(1)        :: centering
 end type EMCBEDQCNameListType
+
+type EMCBED2DQCNameListType
+    real(kind=sgl)      :: dmin_qc
+    real(kind=sgl)      :: dmin_p
+    real(kind=sgl)      :: voltage
+    real(kind=sgl)      :: convergence
+    real(kind=sgl)      :: eu(3)
+    real(kind=sgl)      :: thickness
+    character(fnlen)    :: datafile
+    integer(kind=irg)   :: nthreads
+    integer(kind=irg)   :: npix
+end type EMCBED2DQCNameListType
 
 !typedef for EMmdSTEM program
 type EMmdSTEMNameListType

@@ -1084,7 +1084,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSDQCMasterNameListType),INTENT(INOUT)          :: emnl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 3
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1096,18 +1096,15 @@ logical                                               :: g_exists, overwrite=.TR
 groupname = SC_EBSDMasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
-io_int = (/emnl%npx, emnl%nsamples, emnl%nthreads, emnl%atno /)
+io_int = (/emnl%npx, emnl%nsamples, emnl%nthreads /)
 intlist(1) = 'npx'
 intlist(2) = 'nsamples'
 intlist(3) = 'nthreads'
-intlist(4) = 'atno'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single floats
-io_real = (/emnl%dmin, emnl%QClatparm, emnl%DWF/)
+io_real = (/emnl%dmin/)
 reallist(1) = 'dmin'
-reallist(2) = 'QClatparm'
-reallist(3) = 'DWF'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 dataset = SC_energyfile
@@ -1119,16 +1116,6 @@ else
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDQCMasterNameList: unable to create energyfile dataset',.TRUE.)
-
-dataset = SC_centering
-line2(1) = emnl%centering
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
-if (g_exists) then 
-  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
-else
-  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-end if
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDQCMasterNameList: unable to create centering dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
@@ -1620,7 +1607,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(ECPQCMasterNameListType),INTENT(INOUT)           :: ecpnl
 
-integer(kind=irg),parameter                           :: n_int = 5, n_real = 4
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
 integer(kind=irg)                                     :: hdferr, io_int(n_int), distort
 real(kind=dbl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1628,32 +1615,20 @@ character(fnlen)                                      :: dataset, groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = 'ECPQCMasterNameList'
+groupname = 'ECPMasterNameList'
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ ecpnl%Esel, ecpnl%npx, ecpnl%nthreads, ecpnl%atno, ecpnl%nsamples /)
-intlist(1) = 'Esel'
-intlist(2) = 'npx'
-intlist(3) = 'nthreads'
-intlist(4) = 'atno'
-intlist(5) = 'nsamples'
+io_int = (/ ecpnl%npx, ecpnl%nthreads, ecpnl%nsamples /)
+intlist(1) = 'npx'
+intlist(2) = 'nthreads'
+intlist(3) = 'nsamples'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
-
 ! write all the single doubles
-io_real = (/ ecpnl%dmin, ecpnl%gmax_orth, ecpnl%QClatparm, ecpnl%DWF /)
+io_real = (/ ecpnl%dmin /)
 reallist(1) = 'dmin'
-reallist(2) = 'gmax_orth'
-reallist(3) = 'QClatparm'
-reallist(4) = 'DWF'
 call HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
-
-! write all the strings
-dataset = 'centering'
-line2(1) = ecpnl%centering
-hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECPQCMasterNameList: unable to create centering dataset',.TRUE.)
 
 dataset = 'energyfile'
 line2(1) = ecpnl%energyfile
@@ -4111,7 +4086,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EMCBEDQCNameListType),INTENT(INOUT)              :: cbednl
 
-integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 4
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -4123,21 +4098,17 @@ groupname = SC_CBEDQCNameList
 hdferr    = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int      = (/ cbednl%atno, cbednl%nthreads, cbednl%npix /)
-intlist(1)  = 'atomic number'
-intlist(2)  = 'nthreads'
-intlist(3)  = 'npix'
+io_int      = (/ cbednl%nthreads, cbednl%npix /)
+intlist(1)  = 'nthreads'
+intlist(2)  = 'npix'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals
-io_real     = (/ cbednl%voltage, cbednl%thickness, cbednl%dmin, cbednl%DWF, cbednl%convergence, &
-               cbednl%QClatparm /)
+io_real     = (/ cbednl%voltage, cbednl%thickness, cbednl%dmin, cbednl%convergence /)
 reallist(1) = 'voltage'
 reallist(2) = 'thickness'
 reallist(3) = 'dmin'
-reallist(4) = 'DWF'
-reallist(5) = 'convergence'
-reallist(6) = 'QClatparm'
+reallist(4) = 'convergence'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! euler vectors
@@ -4155,5 +4126,70 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to cr
 call HDF_pop(HDF_head)
 
 end subroutine HDFwriteCBEDNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteCBEDNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param pednl CBEDQC name list structure
+!
+!> @date 02/22/18 SS 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwrite2DQCCBEDNameList(HDF_head, cbednl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwrite2DQCCBEDNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(EMCBED2DQCNameListType),INTENT(INOUT)            :: cbednl
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 5
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_CBEDQCNameList
+hdferr    = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int      = (/ cbednl%nthreads, cbednl%npix /)
+intlist(1)  = 'nthreads'
+intlist(2)  = 'npix'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real     = (/ cbednl%voltage, cbednl%thickness, cbednl%dmin_qc, cbednl%dmin_p, cbednl%convergence /)
+reallist(1) = 'voltage'
+reallist(2) = 'thickness'
+reallist(3) = 'dmin_qc'
+reallist(4) = 'dmin_p'
+reallist(5) = 'convergence'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! euler vectors
+dataset = SC_Eulertriplet
+hdferr = HDF_writeDatasetFloatArray1D(dataset, cbednl%eu, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create euler dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_datafile
+line2(1) = cbednl%datafile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create datafile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwrite2DQCCBEDNameList
 
 end module NameListHDFwriters

@@ -2292,19 +2292,13 @@ character(1)            :: centering
 character(fnlen)        :: energyfile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /ECPQCmastervars/ nsamples, DWF, atno, dmin, gmax_orth, energyfile, Esel, npx, nthreads, QClatparm, centering
+namelist /ECPQCmastervars/ nsamples, dmin, energyfile, npx, nthreads
 
 ! set the input parameters to default values (except for xtalname, which must be present)
-Esel = -1                      ! selected energy value for single energy run
 nthreads = 1
-dmin = 0.04                    ! smallest d-spacing to include in dynamical matrix [nm]
-gmax_orth = 2.0                ! smallest d-spacing to include in dynamical matrix [nm]
-QClatparm = 0.46
-atno = 28
-DWF = 0.004
+dmin = 0.1                     ! smallest d-spacing to include in dynamical matrix [nm]
 nsamples = 400
 npx = 256
-centering = 'P'
 energyfile = 'undefined'       ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 
 if (present(initonly)) then
@@ -2324,17 +2318,11 @@ end if
 end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the emnl fields
-ecpnl%Esel = Esel
 ecpnl%nsamples = nsamples
 ecpnl%npx = npx
 ecpnl%nthreads = nthreads
 ecpnl%dmin = dmin
-ecpnl%atno = atno
-ecpnl%DWF = DWF
-ecpnl%QClatparm = QClatparm
-ecpnl%gmax_orth = gmax_orth
 ecpnl%energyfile = energyfile
-ecpnl%centering = centering
 
 end subroutine GetECPQCMasterNameList
 
@@ -7388,19 +7376,15 @@ real(kind=sgl)      :: voltage, dmin, eu(3), convergence, DWF, QClatparm, thickn
 character(fnlen)    :: datafile
 character(1)        :: centering
 
-namelist /CBEDQC/ voltage, dmin, nthreads, DWF, atno, thickness, &
-          datafile, eu, convergence, QClatparm,centering, npix
+namelist /CBEDQC/ voltage, dmin, nthreads, thickness, &
+          datafile, eu, convergence, npix
 
 datafile    = 'undefined'           ! output filename
 voltage     = 200.0                 ! acceleration voltage [kV]
 eu          = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
 dmin        = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm]
 convergence = 10.0                  ! beam convergence angle [mRad]
-QClatparm   = 0.50                  ! lattice parameter of hyper-cube [nm]
-DWF         = 0.0033                ! Debye-Waller factor [nm^-2]
-atno        = 12                    ! atomin cnumber
 nthreads    = 1                     ! number of threads
-centering   = 'P'                   ! hyper-cube lattice centering
 thickness   = 50.0                  ! film thickness
 npix        = 50
 
@@ -7417,7 +7401,7 @@ if (.not.skipread) then
 ! check for required entries
 
     if (trim(datafile).eq.'undefined') then
-        call FatalError('GetEMgammaNameList:',' output file name is undefined in '//nmlfile)
+        call FatalError('GetEMCBEDQCNameList:',' output file name is undefined in '//nmlfile)
     end if
 
 end if
@@ -7427,15 +7411,87 @@ enl%voltage               = voltage
 enl%eu                    = eu
 enl%dmin                  = dmin
 enl%nthreads              = nthreads
-enl%DWF                   = DWF
-enl%atno                  = atno
-enl%QClatparm             = QClatparm
 enl%convergence           = convergence
-enl%centering             = centering
 enl%thickness             = thickness
 enl%npix                  = npix
 
 end subroutine GetEMCBEDQCNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEMCBED2DQCNameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMCBEDQC.f90)
+!
+!> @param nmlfile namelist file name
+!> @param epf single name list structure
+!
+!> @date 06/28/18 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetEMCBED2DQCNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMCBED2DQCNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(EMCBED2DQCNameListType),INTENT(INOUT)        :: enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)   :: nthreads, npix
+real(kind=sgl)      :: voltage, dmin_qc, dmin_p, eu(3), convergence, thickness
+character(fnlen)    :: datafile
+character(1)        :: centering
+
+namelist /CBEDQC/ voltage, dmin_qc, dmin_p, nthreads, thickness, &
+          datafile, eu, convergence, npix
+
+datafile    = 'undefined'           ! output filename
+voltage     = 200.0                 ! acceleration voltage [kV]
+eu          = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
+dmin_qc     = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm] for quaiscrystal plane
+dmin_p 		= 0.05 					! smallest d-spacing to include in dynamical matrix [nm] for periodic direction
+convergence = 10.0                  ! beam convergence angle [mRad]
+nthreads    = 1                     ! number of threads
+thickness   = 50.0                  ! film thickness
+npix        = 50
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=CBEDQC)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+    if (trim(datafile).eq.'undefined') then
+        call FatalError('GetEMCBED2DQCNameList:',' output file name is undefined in '//nmlfile)
+    end if
+
+end if
+
+enl%datafile              = datafile
+enl%voltage               = voltage
+enl%eu                    = eu
+enl%dmin_qc               = dmin_qc
+enl%dmin_p                = dmin_p
+enl%nthreads              = nthreads
+enl%convergence           = convergence
+enl%thickness             = thickness
+enl%npix                  = npix
+
+end subroutine GetEMCBED2DQCNameList
 
 !--------------------------------------------------------------------------
 !
@@ -7465,21 +7521,16 @@ logical,OPTIONAL,INTENT(IN)                           :: initonly
 
 logical                                               :: skipread = .FALSE.
 
-integer(kind=irg)                                     :: nthreads, atno, npx, nsamples
-real(kind=sgl)                                        :: dmin, DWF, QClatparm
+integer(kind=irg)                                     :: nthreads, npx, nsamples
+real(kind=sgl)                                        :: dmin
 character(fnlen)                                      :: energyfile
-character(1)                                          :: centering
 
-namelist /EBSDQCmastervars/ dmin, nthreads, DWF, atno, &
-          energyfile, QClatparm,centering, npx, nsamples
+namelist /EBSDQCmastervars/ dmin, nthreads, &
+          energyfile, npx, nsamples
 
 energyfile  = 'undefined'           ! output filename
 dmin        = 0.25                  ! smallest d-spacing to include in dynamical matrix [nm]
-QClatparm   = 0.50                  ! lattice parameter of hyper-cube [nm]
-DWF         = 0.0033                ! Debye-Waller factor [nm^-2]
-atno        = 12                    ! atomin cnumber
 nthreads    = 1                     ! number of threads
-centering   = 'P'                   ! hyper-cube lattice centering
 npx         = 500                   ! size of master pattern
 nsamples    = 200                   ! number of samples for sampling k vectors
 
@@ -7504,10 +7555,6 @@ end if
 enl%energyfile            = energyfile
 enl%dmin                  = dmin
 enl%nthreads              = nthreads
-enl%DWF                   = DWF
-enl%atno                  = atno
-enl%QClatparm             = QClatparm
-enl%centering             = centering
 enl%nsamples              = nsamples
 enl%npx                   = npx
 

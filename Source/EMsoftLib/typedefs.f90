@@ -1325,6 +1325,9 @@ type QCStructureType
   real(kind=dbl)                        :: eovec(3,6), eperp(6,3)
   real(kind=dbl)                        :: Mp(6,6), Picos(6,6)
   real(kind=dbl)                        :: Mo(6,6), Qicos(6,6)
+  real(kind=dbl)						:: dsm(6,6), rsm(6,6)
+  real(kind=dbl)						:: dmt(6,6), rmt(6,6)
+  real(kind=dbl)						:: scaling(6,6)
   real(kind=dbl)                        :: SYM_icos(6,6,120)              ! 532 rotational group in matrix representation
   real(kind=dbl)                        :: QClatparm, alphaij, alphastarij
   real(kind=dbl)                        :: dmin
