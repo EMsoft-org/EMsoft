@@ -46,6 +46,18 @@ use local
 
 IMPLICIT NONE
 
+! namelist for EMgrainviz program
+type GrainVizNameListType
+        real(kind=dbl)          :: fraction
+        real(kind=dbl)          :: pA(4)
+        integer(kind=irg)       :: numbins
+        character(6)            :: inside
+        character(fnlen)        :: qAfilename
+        character(fnlen)        :: qBfilename
+        character(fnlen)        :: povname
+end type GrainVizNameListType
+
+
 ! namelist for EMGBO program
 type GBONameListType
         integer(kind=irg)       :: pgnum
@@ -222,9 +234,10 @@ end type MCLIPSSNameListType
 
 ! namelist for the EMreflectors program
 type reflectorNameListType
-        integer(kind=irg)       :: numphi
-        integer(kind=irg)       :: numtheta
+        real(kind=sgl)          :: increment
         real(kind=sgl)          :: dmin
+        logical                 :: latex
+        integer(kind=irg)       :: numlist
         character(fnlen)        :: masterfile
         character(fnlen)        :: energyfile
 end type reflectorNameListType
@@ -1007,6 +1020,7 @@ type EBSDIndexingNameListType
         integer(kind=irg)       :: nnk
         integer(kind=irg)       :: nnav
         integer(kind=irg)       :: nosm
+        integer(kind=irg)       :: nism
         integer(kind=irg)       :: maskradius
         character(fnlen)        :: exptfile 
         integer(kind=irg)       :: numsx
@@ -1026,6 +1040,7 @@ type EBSDIndexingNameListType
         real(kind=sgl)          :: omega
         real(kind=sgl)          :: xpc
         real(kind=sgl)          :: ypc
+        real(kind=sgl)          :: isangle
         real(kind=sgl)          :: energymin
         real(kind=sgl)          :: energymax
         real(kind=sgl)          :: gammavalue

@@ -529,5 +529,133 @@ rod(4) = l
 end function GB_getCSLrod
 
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: GB_getGrainNormalVector
+!
+!> @author Marc De Graef, Carnegie Mellon University 
+!
+!> @brief for a given Lambert sampling point, determine the representation in the Olmsted approach
+!
+!> @param 
+!> @param 
+!
+!> @date 06/21/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function GB_getGrainNormalVector(xyz, f, pos)  result(nvec)
+!DEC$ ATTRIBUTES DLLEXPORT :: GB_getGrainNormalVector
+
+use typedefs
+use error
+use Lambert
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)              :: xyz(3)
+real(kind=dbl),INTENT(IN)              :: f
+real(kind=dbl),INTENT(OUT)             :: pos(3)
+real(kind=dbl)                         :: nvec(3)
+
+integer(kind=irg)                      :: p 
+real(kind=dbl)                         :: xyz1(3), xyz3(3), newn(3), ppos(3)
+real(kind=dbl)                         :: d, theta, phi, ct, st, tt, cp, sp, gth, gthp, s, sg
+
+newn = (/ 0.D0, 0.D0, 0.D0 /)
+ppos = newn
+
+! determine pyramid
+if (GetPyramidDouble(xyz).eq.1) then
+
+  ! get the spherical angles theta and phi
+  theta = acos(xyz(3))
+  phi = atan2(xyz(2),xyz(1))
+
+  if (theta.eq.0.D0) then
+    nvec = (/ 0.D0, 0.D0, 1.D0 /)
+    ppos = (/ 0.D0, 0.D0, 1.D0 + (sqrt(3.D0)-1.D0)*f /)
+  else
+  ! derived quantities
+    ct = cos(theta)
+    st = sin(theta)
+    tt = tan(theta)
+    cp = cos(phi)
+    sp = sin(phi)
+    s = sqrt(3.D0) - 1.D0/ct
+    sg = 1.D0
+    if (s.lt.0.D0) sg = -1.D0
+    gth =  abs(s)
+    gthp = -sg * tt / ct
+    s = f * (1.D0+f*ct*gth) * tt * (gth*st - ct*gthp)
+    nvec(1) = s * cp
+    nvec(2) = s * sp
+    nvec(3) = (1.D0+f*ct*gth) *  tt * (1.D0 + f*ct**3*gth + f*ct**2*st*gthp) / ct**2
+    nvec = nvec / Norm2(nvec)
+    pos = (/ f*cp*gth*st + cp*tt, f*sp*gth*st + sp*tt, 1.D0+f*ct*gth/) 
+  end if
+end if 
+
+end function GB_getGrainNormalVector
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: GB_getOlmstedRepresentation
+!
+!> @author Marc De Graef, Carnegie Mellon University 
+!
+!> @brief for a given Lambert sampling point, determine the representation in the Olmsted approach
+!
+!> @param 
+!> @param 
+!
+!> @date 06/21/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function GB_getOlmstedRepresentation(nvec, pA, qB, verbose)  result(qA)
+!DEC$ ATTRIBUTES DLLEXPORT :: GB_getOlmstedRepresentation
+
+use typedefs
+use error
+use Lambert
+use quaternions 
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)              :: nvec(3)
+real(kind=dbl),INTENT(IN)              :: pA(4)
+real(kind=dbl),INTENT(OUT)             :: qB(4)
+logical,INTENT(IN),OPTIONAL            :: verbose
+real(kind=dbl)                         :: qA(4)
+
+real(kind=dbl)                         :: phi, rho(4), msA(3), d, s
+logical                                :: v 
+
+v = .FALSE.
+if (present(verbose)) then 
+  if (verbose.eqv..TRUE.) then 
+    v = .TRUE.
+  end if 
+end if
+
+! transform the plane normal nvec (=mA) to the sample reference frame
+msA = quat_Lp(conjg(pA),nvec)
+! msA = quat_Lp(pA,nvec)
+if (v) write (*,*) nvec, conjg(pA), msA 
+
+! get the rotation angle and quaternion rho that bring msA onto the sample z-axis
+phi = acos(msA(3))
+if (abs(msA(3)).eq.1.D0) then
+  rho = (/ 1.D0, 0.D0, 0.D0, 0.D0 /)
+else
+  s = sin(phi*0.5D0)
+  d = sqrt(msA(1)**2+msA(2)**2)
+  rho = (/ cos(phi*0.5D0), s * msA(2)/d, -s*msA(1)/d, 0.D0 /)
+end if
+if (v) write (*,*) phi, d, rho 
+
+! prepare the return variables
+qB = rho
+qA = quat_mult(pA, rho)
+if (v) write (*,*) qA, qB 
+
+end function GB_getOlmstedRepresentation
 
 end module GBmod

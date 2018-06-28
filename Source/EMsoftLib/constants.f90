@@ -172,7 +172,7 @@ real(kind=sgl), parameter :: ATOM_MTradii(98)=(/0.100,0.100,0.156,0.112,0.100,0.
 
 !> atom colors for PostScript drawings
 character(3), parameter :: ATOM_color(98)=(/'blu','grn','blu','blu','red','bro','blu','red','grn','grn', &
-                                            'blu','pnk','grn','red','pnk','cyn','blu','blu','grn','grn', &
+                                            'blu','pnk','grn','blu','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &

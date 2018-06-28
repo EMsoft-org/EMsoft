@@ -28,10 +28,14 @@
  stepY = 1.0,
 ! number of top matches to keep from the dot product results
  nnk = 50,
-! number of top matches to use for orientation averaging
+! number of top matches to use for orientation averaging (<nnk)
  nnav =  20,
-! number of top matches to use for Orientation Similarity Map computation
+! number of top matches to use for Orientation Similarity Map computation (<nnk)
  nosm = 20,
+! number of top matches to use for Indexing Success Map computation (<nnk)
+ nism = 5,
+! Indexing Success threshold angle (degrees)
+ isangle = 1.5,
 ! to use a custom mask, enter the mask filename here; leave undefined for standard mask option
  maskfile = 'undefined',
 ! mask or not

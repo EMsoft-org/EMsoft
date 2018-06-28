@@ -1233,7 +1233,7 @@ xyz1 = (/ T1inv, T2inv, xyz2(3) /)
 ! inverse M_1
 xyz1 = xyz1 / LPs%sc
 
-! reverst the coordinates back to the regular order according to the original pyramid number
+! reverse the coordinates back to the regular order according to the original pyramid number
 select case (p)
  case (1,2)
   res = xyz1

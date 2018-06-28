@@ -561,7 +561,12 @@ dataset = SC_mode
     deallocate(stringarray)
 
 dataset = SC_multiplier
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%multiplier)
+else
+    mcnl%multiplier  = 1
+end if
 
 dataset = 'num_el'
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%num_el)
@@ -573,7 +578,12 @@ dataset = SC_omega
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%omega)
 
 dataset = SC_platid
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%platid)
+else
+    mcnl%platid  = 1
+end if
 
 dataset = SC_sig
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%sig)
@@ -603,7 +613,12 @@ groupname = SC_MCOpenCL
 
 ! integers
 dataset = SC_multiplier
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%multiplier)
+else
+    EBSDMCdata%multiplier = 1
+end if
 
 dataset = SC_numEbins
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%numEbins)
@@ -781,9 +796,14 @@ if (g_exists.eqv..TRUE.) then
 end if
 
 dataset = SC_copyfromenergyfile
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     mpnl%copyfromenergyfile = trim(stringarray(1))
     deallocate(stringarray)
+else
+    mpnl%copyfromenergyfile = 'n'
+end if 
 
 dataset = SC_dmin
     call HDF_readDatasetFloat(dataset, HDF_head, hdferr, mpnl%dmin)
@@ -808,9 +828,12 @@ dataset = SC_stdout
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%stdout)
 
 dataset = SC_uniform
+mpnl%uniform = .FALSE.
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, uniform)
-    mpnl%uniform = .FALSE.
     if (uniform.ne.0) mpnl%uniform = .TRUE.
+end if 
 
 ! and close the NMLparameters group
     call HDF_pop(HDF_head)
@@ -854,6 +877,7 @@ if (present(getmLPNH)) then
   if (getmLPNH.eqv..TRUE.) then
     dataset = SC_mLPNH
     call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
+write (*,*) mpnl%npx, EBSDMPdata%numEbins
     allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
     EBSDMPdata%mLPNH = sum(mLPNH,4)
     deallocate(mLPNH)

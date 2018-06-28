@@ -3155,7 +3155,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSDIndexingNameListType),INTENT(INOUT)          :: ebsdnl
 
-integer(kind=irg),parameter                           :: n_int = 19, n_real = 11, n_reald = 3
+integer(kind=irg),parameter                           :: n_int = 20, n_real = 12, n_reald = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_reald(n_reald)
@@ -3172,7 +3172,7 @@ hdferr = HDF_createGroup(groupname,HDF_head)
 io_int = (/ ebsdnl%ncubochoric, ebsdnl%numexptsingle, ebsdnl%numdictsingle, ebsdnl%ipf_ht, &
             ebsdnl%ipf_wd, ebsdnl%nnk, ebsdnl%maskradius, ebsdnl%numsx, ebsdnl%numsy, ebsdnl%binning, &
             ebsdnl%nthreads, ebsdnl%energyaverage, ebsdnl%devid, ebsdnl%platid, ebsdnl%nregions, ebsdnl%nnav, &
-            ebsdnl%nosm, ebsdnl%nlines, ebsdnl%usenumd /)
+            ebsdnl%nosm, ebsdnl%nlines, ebsdnl%usenumd, ebsdnl%nism /)
 intlist(1) = 'Ncubochoric'
 intlist(2) = 'numexptsingle'
 intlist(3) = 'numdictsingle'
@@ -3192,10 +3192,12 @@ intlist(16) = 'nnav'
 intlist(17) = 'nosm'
 intlist(18) = 'nlines'
 intlist(19) = 'usenumd'
+intlist(20) = 'nism'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 io_real = (/ ebsdnl%L, ebsdnl%thetac, ebsdnl%delta, ebsdnl%omega, ebsdnl%xpc, &
-             ebsdnl%ypc, ebsdnl%energymin, ebsdnl%energymax, ebsdnl%gammavalue, ebsdnl%StepX, ebsdnl%StepY /)
+             ebsdnl%ypc, ebsdnl%energymin, ebsdnl%energymax, ebsdnl%gammavalue, ebsdnl%StepX, &
+             ebsdnl%StepY, ebsdnl%isangle /)
 reallist(1) = 'L'
 reallist(2) = 'thetac'
 reallist(3) = 'delta'
@@ -3207,6 +3209,7 @@ reallist(8) = 'energymax'
 reallist(9) = 'gammavalue'
 reallist(10) = 'StepX'
 reallist(11) = 'StepY'
+reallist(12) = 'isangle'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 io_reald = (/ ebsdnl%beamcurrent, ebsdnl%dwelltime, ebsdnl%hipassw /)

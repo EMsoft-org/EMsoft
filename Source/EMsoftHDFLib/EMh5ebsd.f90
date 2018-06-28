@@ -245,7 +245,7 @@ end subroutine h5tkd_writeInfo
 !
 !> @date 02/11/16 MDG 1.0 original
 !--------------------------------------------------------------------------
-subroutine h5ebsd_write2DImageFromVector(dataset, inpvec, nump, ebsdnl, HDF_head)
+subroutine h5ebsd_write2DImageFromVector(dataset, inpvec, nump, ebsdnl, HDF_head, binary)
 !DEC$ ATTRIBUTES DLLEXPORT :: h5ebsd_write2DImageFromVector
 
 use error
@@ -258,21 +258,23 @@ integer(kind=irg),INTENT(IN)                        :: nump
 real(kind=sgl),INTENT(IN)                           :: inpvec(nump)
 type(EBSDIndexingNameListType),INTENT(IN)           :: ebsdnl
 type(HDFobjectStackType),pointer                    :: HDF_head
+real(kind=sgl),OPTIONAL,INTENT(IN)                  :: binary
 
 real(kind=sgl)                                      :: mi, ma
-integer(kind=irg)                                   :: istat, jj, hdferr
+integer(kind=irg)                                   :: istat, ii, jj, hdferr
 real(kind=sgl),allocatable                          :: newvec(:)
 integer(kind=irg),allocatable                       :: image(:,:)
 integer(HSIZE_T)                                    :: width, height
+logical                                             :: isbinary
+
+isbinary = .FALSE.
+if (present(binary)) isbinary=.TRUE.
 
 allocate(newvec(nump),stat=istat)
 if (istat.ne.0) call FatalError('h5ebsd_write2DImageFromVector','Could not allocate array for copy of input image')
 
 newvec = inpvec
 
-mi = minval(newvec)
-newvec = newvec - mi
-ma = maxval(newvec)
 if (sum(ebsdnl%ROI).ne.0) then
   width = ebsdnl%ROI(3)
   height = ebsdnl%ROI(4)
@@ -283,9 +285,25 @@ end if
 allocate(image(width,height),stat=istat)
 if (istat.ne.0) call FatalError('h5ebsd_write2DImageFromVector','Could not allocate array for output image')
 
-do jj = 1,height
-  image(1:width,jj) = int(255.0*newvec((jj-1)*width+1:jj*width)/ma)
-end do
+if (isbinary.eqv..TRUE.) then 
+  do jj = 1,height
+    do ii = 1, width
+      if (newvec((jj-1)*width+ii).gt.ebsdnl%isangle) then
+        image(ii,jj) = 0
+      else
+        image(ii,jj) = 255
+      end if 
+    end do 
+  end do
+else
+  mi = minval(newvec)
+  newvec = newvec - mi
+  ma = maxval(newvec)
+
+  do jj = 1,height
+    image(1:width,jj) = int(255.0*newvec((jj-1)*width+1:jj*width)/ma)
+  end do
+end if 
 
 call h5immake_image_8bit_f(HDF_head%objectID,dataset,width,height,image,hdferr)
 deallocate(image, newvec)
@@ -751,18 +769,18 @@ real(kind=sgl),INTENT(OUT)                          :: OSMmap(ipar(7),ipar(8))
 
 character(15)                                       :: tstre
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
-integer(kind=irg)                                   :: hdferr, filetype, i, ii, jj,indx, istat, ipar2(6), L
+integer(kind=irg)                                   :: hdferr, filetype, i, j, ii, jj,indx, istat, ipar2(6), L
 character(fnlen)                                    :: groupname, dataset, h5ebsdfile, savefile
 logical                                             :: noindex
 type(dicttype)                                      :: dict
 
-real(kind=sgl),allocatable                          :: kam(:,:)
+real(kind=sgl),allocatable                          :: kam(:,:), ISMap(:)
 
 real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), results(:), avEuler(:,:), &
                                                        lresultmain(:,:), eulers(:,:) 
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
-
+real(kind=sgl)                                      :: isratio, io_real(1)
 type(HDFobjectStackType),pointer                    :: HDF_head
 
 
@@ -770,7 +788,7 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 !=====================================================
 ! write the output in the format of an h5ebsd file
 !!!! THIS PART IS STILL UNDER DEVELOPMENT !!!!
-! we use the TSL hrebsd file as a template for now; this 
+! we use the TSL h5ebsd file as a template for now; this 
 ! can be extended later other vendor formats
 !=====================================================
 
@@ -932,6 +950,28 @@ dataset = SC_IQMap
   call h5ebsd_write2DImageFromVector(dataset, exptIQ, ipar(3), ebsdnl, HDF_head)
 
 !=====================================================
+! generate the indexing success map (ISM) 
+  eulerarray = eulerarray * sngl(cPi)/180.0
+  allocate(ISMap(ipar(7)*ipar(8)))
+  call EBSDgetIndexingSuccessMap(ipar, indexmain, eulerarray, ebsdnl, ISMap)
+  eulerarray = eulerarray * 180.0/sngl(cPi)
+
+dataset = SC_ISM
+  hdferr = HDF_writeDatasetFloatArray1D(dataset, ISMap, ipar(7)*ipar(8), HDF_head)
+
+dataset = SC_ISMap
+  call h5ebsd_write2DImageFromVector(dataset, ISMap, ipar(7)*ipar(8), ebsdnl, HDF_head, binary=ebsdnl%isangle)
+  j = 0
+  do i=1,ipar(7)*ipar(8)
+    if (ISMap(i).le.ebsdnl%isangle) j = j+1
+  end do 
+  isratio = real(j) / real(ipar(7)*ipar(8))
+  io_real(1) = isratio * 100.0
+  call WriteValue('Indexing Success Rate : ',io_real,1)
+
+  deallocate(ISMap)
+
+!=====================================================
 ! PRIAS Bottom Strip: to be implemented
 !   call Message('h5ebsd_writeFile: writing of ->PRIAS Bottom Strip<- data not yet implemented.')
 
@@ -960,7 +1000,7 @@ dataset = SC_Phase
 
 !=====================================================
 ! SEM Signal: all 0 for now
-  dataset = 'SEM Signal'
+dataset = SC_SEMSignal
   allocate(SEMsignal(ipar(3)),stat=istat)
   SEMsignal = 10000
   hdferr = HDF_writeDatasetIntegerArray1D(dataset, SEMsignal, ipar(3), HDF_head)
@@ -1014,7 +1054,7 @@ dataset = SC_Phi2
 !=====================================================
 ! X Position: list of x positions for sampling points; requires knowledge of step size
 ! from Header
-  dataset = 'X Position'
+dataset = SC_XPos
   allocate(results(ipar(3)),stat=istat)
   if (sum(ebsdnl%ROI).eq.0) then
     do jj=1,ebsdnl%ipf_ht
@@ -1036,7 +1076,7 @@ dataset = SC_Phi2
 !=====================================================
 ! Y Position: list of y positions for sampling points; requires knowledge of step size
 ! from Header
-  dataset = 'Y Position'
+dataset = SC_YPos
   if (sum(ebsdnl%ROI).eq.0) then
     do jj=1,ebsdnl%ipf_ht
       do ii=1,ebsdnl%ipf_wd
@@ -1119,13 +1159,13 @@ groupname = SC_Header
 
 !=====================================================
 ! Camera Azimuthal Angle
-  dataset = 'Camera Azimuthal Angle'
+dataset = SC_CameraAzimuthalAngle
   hdferr = HDF_writeDatasetFloat(dataset, 0.0, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Camera Azimuthal Angle')
  
 !=====================================================
 ! Camera Elevation Angle
-  dataset = 'Camera Elevation Angle'
+dataset = SC_CameraElevationAngle
   hdferr = HDF_writeDatasetFloat(dataset, ebsdnl%thetac, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopMatchIndices')
  
@@ -1136,7 +1176,7 @@ groupname = SC_Header
 
 !=====================================================
 ! Grid Type
-  dataset = 'Grid Type'
+dataset = SC_GridType
   stringarray(1) = 'SqrGrid'
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Grid Type')
@@ -1161,13 +1201,13 @@ dataset = SC_Operator
 
 !=====================================================
 ! Pattern height
-  dataset = 'Pattern Height'
+dataset = SC_PatternHeight
   hdferr = HDF_writeDatasetInteger(dataset, ebsdnl%numsx/ebsdnl%binning, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Pattern Height')
 
 !=====================================================
 ! Pattern width
-  dataset = 'Pattern Width'
+dataset = SC_PatternWidth
   hdferr = HDF_writeDatasetInteger(dataset, ebsdnl%numsy/ebsdnl%binning, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Pattern Width')
 
@@ -1184,34 +1224,34 @@ groupname = "1"
 
 !=====================================================
 ! Sample ID
-  dataset = 'Sample ID'
+dataset = SC_SampleID
   stringarray(1) = ''
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 !=====================================================
 ! Sample Tilt
-  dataset = 'Sample Tilt'
+dataset = SC_SampleTilt
   hdferr = HDF_writeDatasetFloat(dataset, sngl(ebsdnl%MCsig), HDF_head)
  
 !=====================================================
 ! Scan ID
-  dataset = 'Scan ID'
+dataset = SC_ScanID
   stringarray(1) = ''
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 !=====================================================
 ! Step X
-  dataset = 'Step X'
+dataset = SC_StepX
   hdferr = HDF_writeDatasetFloat(dataset, ebsdnl%StepX, HDF_head)
  
 !=====================================================
 ! Step Y
-  dataset = 'Step Y'
+dataset = SC_StepY
   hdferr = HDF_writeDatasetFloat(dataset, ebsdnl%StepY, HDF_head)
 
 !=====================================================
 ! Working Distance
-  dataset = 'Working Distance'
+dataset = SC_WorkingDistance
   hdferr = HDF_writeDatasetFloat(dataset, ebsdnl%WD, HDF_head)
 
 !=====================================================

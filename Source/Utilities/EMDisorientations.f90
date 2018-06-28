@@ -51,6 +51,7 @@ use Lambert
 use constants
 use rotations
 use so3
+use io
 use error
 
 IMPLICIT NONE
@@ -118,7 +119,7 @@ write (*,*) 'opening file '//trim(fname)
 
 open(unit=10,file=trim(fname),status='unknown',form='formatted')
 read(10,"(I10)") nump
-write (*,*) 'number of patterns detected : ',nump, Pmdims
+write (*,*) 'number of patterns detected/number of symmetry operators : ',nump, Pmdims
 
 allocate(LUT(7,nump),ax(3,nump))
 ax = 0.0
@@ -129,15 +130,15 @@ close(10,status='keep')
 
 LUT = LUT*cPi/180.0
 
-write (*,*) 'FZ : ',FZtype, FZorder
-
 ! for each point, make sure it lies in the fundamental zone
+call Message('Reducing orientations to Fundamental Zone')
 do i=1,nump
   call ReduceOrientationtoRFZ(dble(LUT(4:6,i)), dict, FZtype, FZorder, eu)
   LUT(4:6,i) = eu(1:3)
 end do
 
 ! and here we compute the disorientation angle from a quaternion product...
+call Message('Computing disorientations')
 do i=1,nump
   call getDisorientationAngle(LUT(1:3,i), LUT(4:6,i), dict, LUT(7,i), ax(1:3,i))
 end do
@@ -147,6 +148,7 @@ LUT = LUT *180.0/cPi
 fname = trim(EMsoft_getEMdatapathname())//trim(enl%outputfile)
 fname = EMsoft_toNativePath(fname)
 
+call Message('Saving results')
 open(unit=10,file=trim(fname),status='unknown',form='formatted')
 write(10,"(I7)") nump
 
@@ -155,7 +157,7 @@ do i=1,nump
 end do
 close(10,status='keep')
 
-write (*,*) 'program completed successfully'
+call Message('Program completed successfully')
 
 
 end program EMDisorientations

@@ -2094,6 +2094,90 @@ end subroutine EBSDgetOrientationSimilarityMap
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: EBSDgetIndexingSuccessMap
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the ISM (Indexing Success Map) given a set of near matches
+!
+!> @param idims dimensions of TopMatchIndices (tmi) array
+!> @param tmi Top Match Indices array
+!> @param eq Euler angles array
+!> @param ebsdnl namelist
+!> @param ism (returned) Indexing Success Rate Map 
+!
+!> @date 06/27/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine EBSDgetIndexingSuccessMap(ipar, tmi, ea, ebsdnl, ism)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDgetIndexingSuccessMap
+
+use NameListTypedefs
+use omp_lib
+use io
+use dictmod
+use constants
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                :: ipar(10)
+integer(kind=irg),INTENT(IN)                :: tmi(ipar(1),ipar(2))
+real(kind=sgl),INTENT(INOUT)                :: ea(3,ipar(4))
+type(EBSDIndexingNameListType),INTENT(IN)   :: ebsdnl
+real(kind=sgl),INTENT(OUT)                  :: ism(ipar(7)*ipar(8))
+
+integer(kind=irg)                           :: io_int(2), lnism, i, j
+real(kind=sgl),allocatable                  :: angles(:)
+real(kind=sgl)                              :: angle
+type(dicttype),pointer                      :: dict
+
+ism = 0.0
+
+! make sure that the requested number of near-matches is smaller than/equal to the available number
+if (ebsdnl%nism.gt.ebsdnl%nnk-1) then
+  io_int(1) = ebsdnl%nism
+  io_int(2) = ebsdnl%nnk-1
+  call WriteValue('Requested number of near matches is too large: ',io_int,2,"(I4,' > ',I4)")
+  call Message(' --> Resetting requested number to maximum available')
+  lnism = ebsdnl%nnk-1
+else
+  lnism = ebsdnl%nism
+end if
+
+! set up the correct symmetry variables 
+nullify(dict)
+allocate(dict)
+dict%Num_of_init = 1
+dict%Num_of_iterations = 2
+dict%pgnum = ipar(6)
+call DI_Init(dict,'nil') 
+
+! next we go through the entire list of points in tmi and compute the misorientation angle
+! for the best match with respect to the next nism matches
+
+! this should be done in parallel ... 
+call OMP_SET_NUM_THREADS(ebsdnl%nthreads)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(i,j,angles,angle)
+allocate(angles(lnism))
+!$OMP DO SCHEDULE(DYNAMIC)
+do i=1,ipar(3)
+  do j=2,lnism+1
+    call getDisorientationAngle(ea(1:3,tmi(1,i)), ea(1:3,tmi(j,i)), dict, angle)
+    angles(j-1) = angle
+  end do
+  ism(i) = minval(angles)
+end do
+!$OMP END DO
+deallocate(angles)
+!$OMP END PARALLEL
+
+ism = ism * 180.0/sngl(cPi)
+
+! that's it.
+
+end subroutine EBSDgetIndexingSuccessMap
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: EBSDgetKAMMap
 !
 !> @author Marc De Graef, Carnegie Mellon University

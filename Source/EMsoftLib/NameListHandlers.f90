@@ -1,4 +1,4 @@
-! ###################################################################
+
 ! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
@@ -46,6 +46,83 @@ use NameListTypedefs
 
 contains
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetGrainVizNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill gvnl structure (used by EMgrainviz.f90)
+!
+!> @param nmlfile namelist file name
+!> @param gvnl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 04/22/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetGrainVizNameList(nmlfile, gvnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetGrainVizNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(GrainVizNameListType),INTENT(INOUT)    :: gvnl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+real(kind=dbl)          :: fraction
+real(kind=dbl)          :: pA(4)
+integer(kind=irg)       :: numbins
+character(6)            :: inside
+character(fnlen)        :: qAfilename
+character(fnlen)        :: qBfilename
+character(fnlen)        :: povname
+
+namelist /GrainVizlist/ fraction, numbins, inside, qAfilename, qBfilename, povname, pA
+
+fraction = 1.D0   ! 0=cube, 1=sphere
+pA = (/ 1.D0, 0.D0, 0.D0, 0.D0 /)
+numbins = 50      ! number of sampling points along semi edge of Lambert square
+inside = 'inside' ! 'inside' or 'all'
+qAfilename = 'undefined'
+qBfilename = 'undefined'
+povname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=GrainVizlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(qAfilename).eq.'undefined') then
+  call FatalError('EMgrainviz:',' qA output file name is undefined in '//nmlfile)
+ end if
+ if (trim(qBfilename).eq.'undefined') then
+  call FatalError('EMgrainviz:',' qB output file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(povname).eq.'undefined') then
+  call FatalError('EMgrainviz:',' powray output file name is undefined in '//nmlfile)
+ end if
+end if
+
+gvnl%fraction = fraction 
+gvnl%pA = pA
+gvnl%numbins = numbins
+gvnl%inside = trim(inside)
+gvnl%qAfilename = trim(qAfilename)
+gvnl%qBfilename = trim(qBfilename)
+gvnl%povname = trim(povname)
+
+end subroutine GetGrainVizNameList
 
 !--------------------------------------------------------------------------
 !
@@ -2373,19 +2450,21 @@ logical,OPTIONAL,INTENT(IN)                    :: initonly
 
 logical                                        :: skipread = .FALSE.
 
-integer(kind=irg)                              :: numphi
-integer(kind=irg)                              :: numtheta
+real(kind=sgl)                                 :: increment
 real(kind=sgl)                                 :: dmin
+logical                                        :: latex
+integer(kind=irg)                              :: numlist
 character(fnlen)                               :: masterfile
 character(fnlen)                               :: energyfile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDreflectors/ numphi, numtheta, dmin, masterfile, energyfile
+namelist /EBSDreflectors/ increment, dmin, masterfile, latex, energyfile, numlist
 
 ! set the input parameters to default values (except for xtalname, which must be present)
-numphi = 360
-numtheta = 10
+increment = 1.0                 ! angular increment [°]
 dmin = 0.05                    ! smallest d-spacing to include in dynamical matrix [nm]
+latex = .FALSE.
+numlist = 10
 masterfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 
@@ -2409,9 +2488,10 @@ if (.not.skipread) then
 end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the emnl fields
-rnl%numphi = numphi
-rnl%numtheta = numtheta
+rnl%increment = increment
 rnl%dmin = dmin
+rnl%latex = latex
+rnl%numlist = numlist
 rnl%masterfile = masterfile
 rnl%energyfile = energyfile
 
@@ -4334,6 +4414,7 @@ real(kind=sgl)                                    :: thetac
 real(kind=sgl)                                    :: delta
 real(kind=sgl)                                    :: xpc
 real(kind=sgl)                                    :: ypc
+real(kind=sgl)                                    :: isangle
 real(kind=sgl)                                    :: gammavalue
 real(kind=dbl)                                    :: beamcurrent
 real(kind=dbl)                                    :: dwelltime
@@ -4367,6 +4448,7 @@ integer(kind=irg)                                 :: ipf_wd
 integer(kind=irg)                                 :: nnk
 integer(kind=irg)                                 :: nnav
 integer(kind=irg)                                 :: nosm
+integer(kind=irg)                                 :: nism
 integer(kind=irg)                                 :: maskradius
 integer(kind=irg)                                 :: section
 character(fnlen)                                  :: exptfile
@@ -4380,7 +4462,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd
+section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd, nism, isangle
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -4395,6 +4477,7 @@ nlines          = 3
 nnk             = 50
 nnav            = 20
 nosm            = 20
+nism            = 5
 exptfile        = 'undefined'
 numsx           = 640           ! [dimensionless]
 numsy           = 480           ! [dimensionless]
@@ -4408,6 +4491,7 @@ delta           = 25.0          ! [microns]
 xpc             = 0.0           ! [pixels]
 ypc             = 0.0           ! [pixels]
 gammavalue      = 1.0           ! gamma factor
+isangle         = 1.5
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
 hipassw         = 0.05D0        ! hi pass inverted Gaussian mask parameter
@@ -4487,6 +4571,8 @@ enl%exptfile      = exptfile
 enl%nnk           = nnk
 enl%nnav          = nnav
 enl%nosm          = nosm
+enl%nism          = nism
+enl%isangle       = isangle
 enl%ipf_ht        = ipf_ht
 enl%ipf_wd        = ipf_wd
 enl%nthreads      = nthreads

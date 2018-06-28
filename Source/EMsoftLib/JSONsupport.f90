@@ -2955,11 +2955,8 @@ else
   call GetreflectorNameList(nmlfile, defrnl, initonly=init)
 
 ! then we start reading the values in the json file  
-  ep = 'EBSDreflectors.numphi'
-  call JSONreadInteger(json, ep, rnl%numphi, defrnl%numphi)
-  ep = 'EBSDreflectors.numtheta'
-  call JSONreadInteger(json, ep, rnl%numtheta, defrnl%numtheta)
-
+  ep = 'EBSDreflectors.increment'
+  call JSONreadReal(json, ep, rnl%increment, defrnl%increment)
   ep = 'EBSDreflectors.dmin'
   call JSONreadReal(json, ep, rnl%dmin, defrnl%dmin)
 

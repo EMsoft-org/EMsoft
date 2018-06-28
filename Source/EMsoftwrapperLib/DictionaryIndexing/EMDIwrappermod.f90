@@ -271,7 +271,7 @@ CALL C_F_PROCPOINTER (cproc, proc)
 ! inputtype             ---> ipar(35)     2 = up1, 3 = up2, 4 = h5ebsd 
 
 ! floats:
-! maskradius            ---> fpar(23)
+! maskradius            ---> fpar(23) [pixels]
 ! w                     ---> fpar(24)
 
 ! strings:
@@ -667,10 +667,10 @@ type(C_PTR)                             :: HPplanf, HPplanb
 ! integers:
 ! numsx                 ---> ipar(19)
 ! numsy                 ---> ipar(20)
-! nregions              ---> ipar(28)
+! nregions              ---> ipar(28)  [1 .. 20]
 
 ! floats:
-! w                     ---> fpar(24)
+! w                     ---> fpar(24)  [in range [0 .. 0.5]]
 
 ! set up all the necessary variables and auxiliary arrays
 binx = ipar(19)
