@@ -162,8 +162,7 @@ EMsoft_SetupInstallDirs()
 #endif()
 
 
-install(FILES ${EMsoftLib_SOURCE_DIR}/EMsoftLib.h
-          ${EMsoftLib_BINARY_DIR}/EMsoftStringConstants.h
+install(FILES ${EMsoftLib_BINARY_DIR}/EMsoftStringConstants.h
       DESTINATION ${include_install_dir}/EMsoftLib
       COMPONENT Applications
 )

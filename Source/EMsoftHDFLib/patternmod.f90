@@ -204,6 +204,7 @@ end subroutine invert_ordering_arrays
 !> @date 02/18/18 MDG 1.3 added special handling for patterns with odd number of pixels in .up2 format
 !> @date 04/12/18 MDG 1.4 added option for patterns that don't start at record boundaries in up2 format
 !> @date 05/10/18 MDG 1.5 changed .up2 access mode to STREAM to facilitate record positioning
+!> @date 06/21/18 SS  1.6 changed recorsize to L*4 instead of recsize (correctsize*4); recsize has padded 0's
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -243,9 +244,9 @@ platform = EMsoft_getEMsoftplatform()
 select case (itype)
     case(1)  ! "Binary"
         if (trim(platform).eq.'Windows') then
-            recordsize = recsize/4  ! windows record length is in units of 4 bytes
+            recordsize = L 			  ! windows record length is in units of 4 bytes
         else
-            recordsize = recsize    ! all other platforms use record length in units of bytes
+            recordsize = L*4	      ! all other platforms use record length in units of bytes
         end if
         open(unit=funit,file=trim(ename),&
             status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)

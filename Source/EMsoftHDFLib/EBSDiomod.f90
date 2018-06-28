@@ -248,11 +248,11 @@ do ii = 1,ipar(3)
     end if
 ! changed order of coordinates to conform with ctf standard
     if (sum(ebsdnl%ROI).ne.0) then
-      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%StepX
-      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%StepY
+      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%StepY
+      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%StepX
     else
-      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%StepX
-      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%StepY
+      write(str2,'(F12.3)') float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%StepY
+      write(str1,'(F12.3)') float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%StepX
     end if 
 
     write(str3,'(I8)') indx  ! pattern index into dictionary list of discrete orientations
