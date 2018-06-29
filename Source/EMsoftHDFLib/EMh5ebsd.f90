@@ -965,11 +965,15 @@ dataset = SC_ISMap
   do i=1,ipar(7)*ipar(8)
     if (ISMap(i).le.ebsdnl%isangle) j = j+1
   end do 
-  isratio = real(j) / real(ipar(7)*ipar(8))
-  io_real(1) = isratio * 100.0
-  call WriteValue('Indexing Success Rate : ',io_real,1)
-
+  isratio = 100.0 * real(j) / real(ipar(7)*ipar(8))
+  io_real(1) = isratio 
+  call WriteValue('Indexing Success Rate (%) : ',io_real,1)
   deallocate(ISMap)
+
+dataset = SC_ISR 
+  hdferr = HDF_writeDatasetFloat(dataset, isratio, HDF_head)
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset ISR')
+ 
 
 !=====================================================
 ! PRIAS Bottom Strip: to be implemented
