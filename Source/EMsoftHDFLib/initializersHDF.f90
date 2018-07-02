@@ -154,20 +154,22 @@ if(.not. justinit) then
 ! the LUT array stores all the Fourier coefficients, so that we only need to compute them once... i.e., here and now
  allocate(cell%LUT(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%LUT array')
- cell%LUT = dcmplx(0.D0,0.D0)
+
  allocate(cell%LUTqg(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%LUTqg array')
- cell%LUTqg = dcmplx(0.D0,0.D0)
  
 ! allocate an array that keeps track of potential double diffraction reflections
  allocate(cell%dbdiff(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%dbdiff array')
- cell%dbdiff = .FALSE.
- ddt = 1.0e-5  
+
 ! changed from 1.0e-10 on 08/14/15 by MDG in response to some issues with double
 ! diffraction spots not being taken into account in EBSD master pattern simulations 
 end if
-
+ cell%LUT = dcmplx(0.D0,0.D0)
+ cell%LUTqg = dcmplx(0.D0,0.D0)
+ cell%dbdiff = .FALSE.
+ ddt = 1.0e-5 
+  
 ! next, we compute the overall lookup table cell%LUT; we do not, at this point, create a 
 ! list of linked reflections; in the old code, this was done at the same time, but it appears
 ! it is better to decouple these two computations. In this new approach, we'll compute a much
