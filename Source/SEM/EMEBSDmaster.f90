@@ -678,7 +678,11 @@ energyloop: do iE=Estart,1,-1
 ! set the accelerating voltage
    skip = 3
    cell%voltage = dble(EkeVs(iE))
-   call CalcWaveLength(cell, rlp, skip)
+   if(iE .ne. Estart) then
+   	verbose = .TRUE.
+   	call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose, initLUT=.TRUE.)
+   end if
+   !call CalcWaveLength(cell, rlp, skip)
 
 !=============================================
 ! ---------- create the incident beam directions list

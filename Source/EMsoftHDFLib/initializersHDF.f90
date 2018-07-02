@@ -61,8 +61,9 @@ contains
 !> @date 08/14/15 MDG 2.1 increased threshold ddt for double diffraction spots
 !> @date 09/08/15 MDG 2.2 added LUTqg array to cell
 !> @date 09/29/16 MDG 5.2 added option to read CrystalData from currently open HDF file
+!> @date 07/02/18 SS  5.3 added initLUT optional variable
 !--------------------------------------------------------------------------
-recursive subroutine Initialize_Cell(cell,Dyn,rlp,xtalname, dmin, voltage, verbose, existingHDFhead)
+recursive subroutine Initialize_Cell(cell,Dyn,rlp,xtalname, dmin, voltage, verbose, existingHDFhead, initLUT)
 !DEC$ ATTRIBUTES DLLEXPORT :: Initialize_Cell
 
 use local
@@ -86,13 +87,20 @@ real(kind=sgl),INTENT(IN)                  :: dmin
 real(kind=sgl),INTENT(IN)                  :: voltage
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+logical,INTENT(IN),OPTIONAL 			   :: initLUT
 
 integer(kind=irg)                          :: istat, io_int(3), skip
 integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
 real(kind=sgl)                             :: dhkl, io_real(3), ddt
-logical                                    :: loadingfile
+logical                                    :: loadingfile, justinit
 
 
+justinit = .FALSE.
+if(present(initLUT)) then
+	if(initLUT) justinit = .TRUE.
+end if
+
+if(.not. justinit) then
 ! clear the cell variable (set everything to zero)
  call ResetCell(cell)
 
@@ -101,14 +109,18 @@ logical                                    :: loadingfile
  cell%SG%SYM_reduce=.TRUE.
  cell%fname = xtalname
  call CrystalData(cell,verbose, existingHDFhead)
+
+! generate all atom positions
+! if the cell is distorted, then this is not exactly correct, but it should be close for small distortions
+ call CalcPositions(cell,'v')
+
+end if
+
  cell%voltage = dble(voltage)
 
  skip = 3        ! always use Weickenmeier&Kohl scattering coefficients, including absorptive form factors
  call CalcWaveLength(cell,rlp,skip,verbose)
 
-! generate all atom positions
-! if the cell is distorted, then this is not exactly correct, but it should be close for small distortions
- call CalcPositions(cell,'v')
 
 ! compute the range of reflections for the lookup table and allocate the table
 ! The master list is easily created by brute force
@@ -137,7 +149,8 @@ logical                                    :: loadingfile
     call WriteValue(' Range of reflections along a*, b* and c* = ',io_int,3)
   end if
  end if
-  
+
+if(.not. justinit) then  
 ! the LUT array stores all the Fourier coefficients, so that we only need to compute them once... i.e., here and now
  allocate(cell%LUT(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%LUT array')
@@ -153,7 +166,7 @@ logical                                    :: loadingfile
  ddt = 1.0e-5  
 ! changed from 1.0e-10 on 08/14/15 by MDG in response to some issues with double
 ! diffraction spots not being taken into account in EBSD master pattern simulations 
-
+end if
 
 ! next, we compute the overall lookup table cell%LUT; we do not, at this point, create a 
 ! list of linked reflections; in the old code, this was done at the same time, but it appears
