@@ -1309,7 +1309,7 @@ type QCsymdata
   real(kind=dbl)                    :: SYM_recip(200,6,6)           !< reciprocal space point group matrices
   real(kind=dbl)                    :: SYM_c(7,7)                   !< dummy 6x6 matrix used for various computations
   character(11)                     :: SYM_name
-  character(40),allocatable         :: SYM_GL(:)
+  character(100)				    :: SYM_GL(11)
 end type
 
 type QCStructureType
