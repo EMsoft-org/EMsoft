@@ -680,7 +680,7 @@ energyloop: do iE=Estart,1,-1
    cell%voltage = dble(EkeVs(iE))
    if(iE .ne. Estart) then
    	verbose = .TRUE.
-   	call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose, initLUT=.TRUE.)
+   	call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, EkeVs(iE), verbose, initLUT=.TRUE.)
    end if
    !call CalcWaveLength(cell, rlp, skip)
 
