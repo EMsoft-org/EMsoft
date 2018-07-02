@@ -1304,9 +1304,9 @@ type QCsymdata
   integer(kind=irg)                 :: SYM_MATnum                   !< number of non-zero symmetry matrices
   integer(kind=irg)                 :: SYM_NUMpt                    !< number of point group operators
   logical                           :: SYM_reduce                   !< switch to enable/disable reduction to fundamental cell
-  real(kind=dbl)                    :: SYM_data(200,7,7)            !< all symmetry matrices for a given spacegroup
-  real(kind=dbl)                    :: SYM_direc(200,6,6)           !< direct space point group matrices
-  real(kind=dbl)                    :: SYM_recip(200,6,6)           !< reciprocal space point group matrices
+  real(kind=dbl)                    :: SYM_data(500,7,7)            !< all symmetry matrices for a given spacegroup
+  real(kind=dbl)                    :: SYM_direc(500,6,6)           !< direct space point group matrices
+  real(kind=dbl)                    :: SYM_recip(500,6,6)           !< reciprocal space point group matrices
   real(kind=dbl)                    :: SYM_c(7,7)                   !< dummy 6x6 matrix used for various computations
   character(11)                     :: SYM_name
   character(100)				    :: SYM_GL(11)

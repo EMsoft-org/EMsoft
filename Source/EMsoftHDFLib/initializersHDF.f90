@@ -165,11 +165,12 @@ if(.not. justinit) then
 ! changed from 1.0e-10 on 08/14/15 by MDG in response to some issues with double
 ! diffraction spots not being taken into account in EBSD master pattern simulations 
 end if
+
  cell%LUT = dcmplx(0.D0,0.D0)
  cell%LUTqg = dcmplx(0.D0,0.D0)
  cell%dbdiff = .FALSE.
  ddt = 1.0e-5 
-  
+
 ! next, we compute the overall lookup table cell%LUT; we do not, at this point, create a 
 ! list of linked reflections; in the old code, this was done at the same time, but it appears
 ! it is better to decouple these two computations. In this new approach, we'll compute a much
