@@ -196,8 +196,8 @@ integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, ieq
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
-real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstart, tstop, bp(4), nabsl, etotal
-real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:,:), auxSH(:,:,:,:)  ! results
+real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstart, tstop, bp(4), nabsl, etotal, dens, avA, avZ
+real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:,:), auxSH(:,:,:,:), Z2percent(:)  ! results
 real(kind=sgl),allocatable      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)  ! results
 complex(kind=dbl)               :: czero
 complex(kind=dbl),allocatable   :: Lgh(:,:), Sgh(:,:,:)
@@ -292,6 +292,9 @@ call WriteValue(' --> total number of BSE electrons in MC data set ', io_int, 1)
  allocate(cell)
  verbose = .TRUE.
  call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+
+! then calculate density, average atomic number and average atomic weight
+ call CalcDensity(cell, dens, avZ, avA, Z2percent)
 
 ! allocate and compute the Sgh loop-up table
  numset = cell%ATOM_ntype  
@@ -551,6 +554,14 @@ dataset = SC_lastEnergy
     hdferr = HDF_writeDatasetInteger(dataset, lastEnergy, HDF_head)
   end if
   
+dataset = 'Z2percent'  ! SC_Z2percent
+  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  if (g_exists) then 
+    hdferr = HDF_writeDatasetFloatArray1D(dataset, Z2percent, cell%ATOM_ntype, HDF_head, overwrite)
+  else
+    hdferr = HDF_writeDatasetFloatArray1D(dataset, Z2percent, cell%ATOM_ntype, HDF_head)
+  end if
+
   if (emnl%Esel.eq.-1) then
 dataset = SC_numEbins
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)

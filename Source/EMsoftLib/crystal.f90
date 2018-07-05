@@ -1577,7 +1577,7 @@ end subroutine extractposition
 !> @date   01/10/14 MDG 4.0 checked for changes to unitcell type
 !> @date   06/05/14 MDG 4.1 added unit cell pointer argument
 !--------------------------------------------------------------------------
-recursive subroutine CalcDensity(cell, dens, avZ, avA)
+recursive subroutine CalcDensity(cell, dens, avZ, avA, Z2percent)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcDensity
 
 use constants
@@ -1586,7 +1586,9 @@ IMPLICIT NONE
 
 type(unitcell),INTENT(IN)               :: cell
 real(kind=sgl),INTENT(OUT)              :: dens, avA, avZ
+real(kind=sgl),OPTIONAL,INTENT(OUT),allocatable  :: Z2percent(:)
 
+real(kind=sgl),allocatable              :: Z2list(:)
 real(kind=sgl)                          :: AW, Z
 integer(kind=irg)                       :: i, nat
 
@@ -1604,6 +1606,18 @@ avZ = Z/float(nat)
 
 ! and compute the density in gram/centimeter^3
 dens = AW / sngl(cell % vol * 1.D-21 * cAvogadro)
+
+! do we need to fill the Z2percent array?
+! this estimates the percentage contribution of each atom type to the 
+! Rutherford scattering process by simply taking Z^2 for each atom in the unit cell
+if (present(Z2percent)) then
+  allocate(Z2percent(cell%ATOM_ntype),Z2list(cell%ATOM_ntype))
+  do i=1, cell%ATOM_ntype
+    Z2list(i) = cell%numat(i) * cell%ATOM_pos(i,4) * cell%ATOM_type(i)**2
+  end do
+  Z = sum(Z2list)
+  Z2percent = 100.0 * Z2list / Z
+end if 
 
 end subroutine CalcDensity
 
