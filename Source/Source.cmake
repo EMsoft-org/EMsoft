@@ -44,7 +44,7 @@ endforeach()
 
 
 # -----------------------------------------------------------------------
-# Add a wrapper lib thats uses the eabled modality options to compile itself
+# Add a wrapper lib thats uses the enabled modality options to compile itself
 # -----------------------------------------------------------------------
 add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftWrapperLib ${PROJECT_BINARY_DIR}/EMsoftWrapperLib)
 

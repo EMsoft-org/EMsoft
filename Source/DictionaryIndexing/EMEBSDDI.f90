@@ -849,7 +849,9 @@ end do
 ! them in a temporary file as vectors; also, create 
 ! an average dot product map to be stored in the h5ebsd output file
 !=====================================================
+call h5open_EMsoft(hdferr)
 call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt, exptIQ=exptIQ)
+call h5close_EMsoft(hdferr)
 
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')
