@@ -1367,17 +1367,20 @@ MFZloop: do j=1,n
   rod(4) = mag
   rod(1:3) = stmp(j,1:3)/mag
   inMFZ = IsinsideMFZ(rod, FZtype, FZorder)
-  if (inMFZ) EXIT MFZloop
+  if (inMFZ) then
+   roMFZ = rod
+   EXIT MFZloop
+  end if
 ! we really should never get to the following line ...
   if (j.eq.n) then
-    write (*,*) 'problem ... ',j, inMFZ
-    write(*,*) r, n
-    write(*,*) mag, rod
-    write (*,*) transpose(stmp)
-    stop
+    roMFZ = (/ 0.D0, 0.D0, 1.D0, 0.D0 /)
+    ! write (*,*) 'problem ... ',j, inMFZ
+    ! write(*,*) r, n
+    ! write(*,*) mag, rod
+    ! write (*,*) transpose(stmp)
+    ! stop
   end if
 end do MFZloop
-roMFZ = rod
 
 end subroutine ReduceDisorientationtoMFZ
 

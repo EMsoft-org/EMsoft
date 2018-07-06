@@ -538,8 +538,8 @@ real(kind=dbl),INTENT(IN)             :: ctr(3)
 real(kind=dbl),INTENT(IN)             :: radius 
 real(kind=sgl),INTENT(IN)             :: rgb(3)
 
-write (dataunit,"('sphere { <',2(F9.6,','),F9.6,'>,',F9.6,'  pigment { rgb <', &
-                2(F9.6,','),F9.6,'>}}')") ctr(1:3), radius, rgb(1:3)
+write (dataunit,"('sphere { <',2(F9.6,','),F9.6,'>,',F9.6,' material { texture { pigment { rgb <', &
+                2(F9.6,','),F9.6,'>}}}}')") ctr(1:3), radius, rgb(1:3)
 
 end subroutine PoVRay_addSphere
 
