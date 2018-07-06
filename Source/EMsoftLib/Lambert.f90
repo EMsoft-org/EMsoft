@@ -1660,21 +1660,29 @@ end function StereoGraphicForwardDouble
 ! 
 !> @date 7/12/13    MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function StereoGraphicInverseSingle(xy, ierr, Radius) result(res)
+recursive function StereoGraphicInverseSingle(xy, ierr, Radius, quat) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: StereoGraphicInverseSingle
+
+use quaternions
 
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 real(kind=sgl),INTENT(IN)               :: Radius
+real(kind=sgl),INTENT(IN),OPTIONAL 		:: quat(4)
 real(kind=sgl)                          :: res(3)
 
 real(kind=sgl)                          :: q, qq
+logical 								:: torot
+
+torot = .FALSE.
+if(present(quat)) torot = .TRUE.
 
 ierr = 0
 if (maxval(abs(xy)).eq.0.0) then
   res = (/ 0.0, 0.0, 1.0 /)
+  if(torot) res = quat_Lp(quat, res)
 else
   qq = sum(xy**2)
   if (qq.gt.Radius**2) then
@@ -1684,6 +1692,7 @@ else
     q = 1.0/(Radius**2 + qq)
     res = (/ 2.0*xy(1), 2.0*xy(2), 1.0-qq /) 
     res = res * q
+    if(torot) res = quat_Lp(quat, res)
   end if
 end if
 
@@ -1702,21 +1711,29 @@ end function StereoGraphicInverseSingle
 ! 
 !> @date 7/12/13    MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function StereoGraphicInverseDouble(xy, ierr, Radius) result(res)
+recursive function StereoGraphicInverseDouble(xy, ierr, Radius, quat) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: StereoGraphicInverseDouble
+
+use quaternions
 
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 real(kind=dbl),INTENT(IN)               :: Radius
+real(kind=dbl),INTENT(IN),OPTIONAL 		:: quat(4)
 real(kind=dbl)                          :: res(3)
 
 real(kind=dbl)                          :: q, qq
+logical 								:: torot
+
+torot = .FALSE.
+if(present(quat)) torot = .TRUE.
 
 ierr = 0
 if (maxval(dabs(xy)).eq.0.D0) then
   res = (/ 0.D0, 0.D0, 1.D0 /)
+  if(torot) res = quat_Lp(quat, res)
 else
   qq = sum(xy**2)
   if (qq.gt.Radius**2) then
@@ -1726,6 +1743,7 @@ else
     q = 1.D0/(Radius**2 + qq)
     res = (/ 2.D0*xy(1), 2.D0*xy(2), 1.D0-qq /) 
     res = res * q
+    if(torot) res = quat_Lp(quat, res)
   end if
 end if
   
