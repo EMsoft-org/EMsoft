@@ -488,7 +488,7 @@ select case (itype)
         do kk=kkstart,kkend
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
-                    if (itype.eq.4) then
+                    if (itype.eq.7) then
                       exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
                     else  ! TSL patterns are upside down compared to the EMsoft convention...
                       exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,kk)))
@@ -652,7 +652,7 @@ select case (itype)
         exppat = 0.0
         do jj=1,dims3(2)
             do ii=1,dims3(1)
-                if (itype.eq.6) then
+                if (itype.eq.7) then
                   exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
                 else  ! TSL patterns are stored upside down compared to the EMsoft convention...
                   exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
