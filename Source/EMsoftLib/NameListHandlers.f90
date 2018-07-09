@@ -7373,12 +7373,13 @@ logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)   :: nthreads, atno, npix
 real(kind=sgl)      :: voltage, dmin, eu(3), convergence, DWF, QClatparm, thickness
-character(fnlen)    :: datafile
+character(fnlen)    :: datafile, qxtalname
 character(1)        :: centering
 
-namelist /CBEDQC/ voltage, dmin, nthreads, thickness, &
+namelist /CBEDQC/ qxtalname, voltage, dmin, nthreads, thickness, &
           datafile, eu, convergence, npix
 
+qxtalname   = 'undefined'
 datafile    = 'undefined'           ! output filename
 voltage     = 200.0                 ! acceleration voltage [kV]
 eu          = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
@@ -7400,12 +7401,13 @@ if (.not.skipread) then
 
 ! check for required entries
 
-    if (trim(datafile).eq.'undefined') then
+    if (trim(datafile).eq.'undefined' .or. trim(qxtalname) .eq. 'undefined') then
         call FatalError('GetEMCBEDQCNameList:',' output file name is undefined in '//nmlfile)
     end if
 
 end if
 
+enl%qxtalname 			  = qxtalname
 enl%datafile              = datafile
 enl%voltage               = voltage
 enl%eu                    = eu
@@ -7447,12 +7449,13 @@ logical                                           :: skipread = .FALSE.
 
 integer(kind=irg)   :: nthreads, npix
 real(kind=sgl)      :: voltage, dmin_qc, dmin_p, eu(3), convergence, thickness
-character(fnlen)    :: datafile
+character(fnlen)    :: datafile, qxtalname
 character(1)        :: centering
 
-namelist /CBEDQC/ voltage, dmin_qc, dmin_p, nthreads, thickness, &
+namelist /CBEDQC/ qxtalname, voltage, dmin_qc, dmin_p, nthreads, thickness, &
           datafile, eu, convergence, npix
 
+qxtalname   = 'undefined'
 datafile    = 'undefined'           ! output filename
 voltage     = 200.0                 ! acceleration voltage [kV]
 eu          = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
@@ -7475,12 +7478,13 @@ if (.not.skipread) then
 
 ! check for required entries
 
-    if (trim(datafile).eq.'undefined') then
+    if (trim(datafile).eq.'undefined' .or. trim(qxtalname) .eq. 'undefined') then
         call FatalError('GetEMCBED2DQCNameList:',' output file name is undefined in '//nmlfile)
     end if
 
 end if
 
+enl%qxtalname 			  = qxtalname
 enl%datafile              = datafile
 enl%voltage               = voltage
 enl%eu                    = eu

@@ -1666,6 +1666,7 @@ type EMCBEDQCNameListType
     real(kind=sgl)      :: eu(3)
     real(kind=sgl)      :: thickness
     character(fnlen)    :: datafile
+    character(fnlen)	:: qxtalname
     integer(kind=irg)   :: nthreads
     integer(kind=irg)   :: npix
 end type EMCBEDQCNameListType
@@ -1678,6 +1679,7 @@ type EMCBED2DQCNameListType
     real(kind=sgl)      :: eu(3)
     real(kind=sgl)      :: thickness
     character(fnlen)    :: datafile
+    character(fnlen)	:: qxtalname
     integer(kind=irg)   :: nthreads
     integer(kind=irg)   :: npix
 end type EMCBED2DQCNameListType

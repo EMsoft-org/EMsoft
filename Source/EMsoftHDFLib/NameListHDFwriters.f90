@@ -4065,19 +4065,19 @@ end subroutine HDFwriteSTEMGeometryNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:HDFwriteCBEDNameList
+! SUBROUTINE:HDFwriteCBEDQCNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief write namelist to HDF file
+!> @brief write CBEDQC namelist to HDF file
 !
 !> @param HDF_head top of push stack
 !> @param pednl CBEDQC name list structure
 !
 !> @date 02/22/18 SS 1.0 new routine
 !--------------------------------------------------------------------------
-recursive subroutine HDFwriteCBEDNameList(HDF_head, cbednl)
-!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteCBEDNameList
+recursive subroutine HDFwriteCBEDQCNameList(HDF_head, cbednl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteCBEDQCNameList
 
 use ISO_C_BINDING
 
@@ -4122,10 +4122,16 @@ line2(1) = cbednl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create datafile dataset',.TRUE.)
 
+! write all the strings
+dataset = SC_xtalname
+line2(1) = cbednl%qxtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create qxtalname dataset',.TRUE.)
+
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 
-end subroutine HDFwriteCBEDNameList
+end subroutine HDFwriteCBEDQCNameList
 
 !--------------------------------------------------------------------------
 !
@@ -4186,6 +4192,12 @@ dataset = SC_datafile
 line2(1) = cbednl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create datafile dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_xtalname
+line2(1) = cbednl%qxtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create qxtalname dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
