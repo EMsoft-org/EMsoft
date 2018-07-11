@@ -384,6 +384,7 @@ integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
 character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt
@@ -481,21 +482,31 @@ select case (itype)
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(4,7)  ! "TSLHDF" "EMEBSD" passed tests on 2/14/18 by MDG
+    case(4)  ! "TSLHDF" passed tests on 2/14/18 by MDG
+! read a hyperslab section from the HDF5 input file
+        EBSDpatint = HDF_readHyperslabIntegerArray3D(dataset, offset3, dims3, pmHDF_head) 
+        exppatarray = 0.0
+        do kk=kkstart,kkend
+            do jj=1,dims3(2)
+                do ii=1,dims3(1)
+                      exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(EBSDpatint(ii,dims3(2)+1-jj,kk))
+                end do 
+            end do 
+        end do 
+
+
+    case(7)  ! "EMEBSD" passed tests on 2/14/18 by MDG
 ! read a hyperslab section from the HDF5 input file
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3, dims3, pmHDF_head) 
         exppatarray = 0.0
         do kk=kkstart,kkend
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
-                    if (itype.eq.7) then
                       exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,kk)))
-                    else  ! TSL patterns are upside down compared to the EMsoft convention...
-                      exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,kk)))
-                    end if 
                 end do 
             end do 
         end do 
+
 
     case(8)  ! "BrukerHDF"  passed tests on 2/16/18 by MDG
 ! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
@@ -562,6 +573,7 @@ integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L)
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
+integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
 character(1),allocatable                :: buffer(:)
 integer(kind=ish),allocatable           :: pairs(:)
 integer(kind=irg)                       :: sng, pixcnt
@@ -644,7 +656,19 @@ select case (itype)
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
 
-    case(4,7)  ! "TSLHDF" "EMEBSD" passed tests on 2/20/18 by MDG
+    case(4)  ! "TSLHDF" passed tests on 2/20/18 by MDG
+! read a hyperslab single pattern section from the HDF5 input file
+! dims3 should have the pattern dimensions and then 1_HSIZE_T for the third dimension
+! offset3 should have (0,0) and then the offset of the pattern (0-based)
+        EBSDpatint = HDF_readHyperslabIntegerArray3D(dataset, offset3, dims3, pmHDF_head) 
+        exppat = 0.0
+        do jj=1,dims3(2)
+            do ii=1,dims3(1)
+                  exppat((jj-1)*dims3(1)+ii) = float(EBSDpatint(ii,dims3(2)+1-jj,1))
+            end do 
+        end do 
+
+    case(7)  ! "EMEBSD" passed tests on 2/20/18 by MDG
 ! read a hyperslab single pattern section from the HDF5 input file
 ! dims3 should have the pattern dimensions and then 1_HSIZE_T for the third dimension
 ! offset3 should have (0,0) and then the offset of the pattern (0-based)
@@ -652,13 +676,10 @@ select case (itype)
         exppat = 0.0
         do jj=1,dims3(2)
             do ii=1,dims3(1)
-                if (itype.eq.7) then
                   exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
-                else  ! TSL patterns are stored upside down compared to the EMsoft convention...
-                  exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
-                end if 
             end do 
         end do 
+
 
     case(8)  ! "BrukerHDF"  to be tested
 ! since the pattern order in the Bruker data file is not necessarily the order in which the patterns
