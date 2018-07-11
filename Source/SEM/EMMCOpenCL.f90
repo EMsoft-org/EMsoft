@@ -194,7 +194,7 @@ character(len=source_length, KIND=c_char),TARGET :: csource
 type(c_ptr), target :: psource
 integer(c_int)         :: nump, numd, irec, val,val1 ! auxiliary variables
 integer(c_size_t)      :: cnum, cnuminfo
-character(fnlen)        :: groupname, dataset, instring, dataname, fname, sourcefile, datagroupname
+character(fnlen)        :: groupname, dataset, instring, dataname, fname, sourcefile, datagroupname, attributename, HDF_FileVersion
 integer(kind=irg)       :: numangle, iang
 
 type(HDFobjectStackType),pointer  :: HDF_head
@@ -764,7 +764,16 @@ call HDF_pop(HDF_head)
 ! then the remainder of the data in a EMData group
 groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
+
+! here we add the data groupname MCOpenCL and we attach to it a HDF_FileVersion attribute 
 hdferr = HDF_createGroup(datagroupname, HDF_head)
+HDF_FileVersion = '4.0'
+attributename = SC_HDFFileVersion
+hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
+
+! =====================================================
+! The following write commands constitute HDF_FileVersion = 4.0
+! =====================================================
 
 dataset = SC_numzbins
 hdferr = HDF_writeDatasetInteger(dataset, numzbins, HDF_head)
@@ -809,6 +818,10 @@ dataset = SC_accumxyz
     hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_xyz, 2*nx+1, 2*nx+1, numzbins, HDF_head)
 
 end if
+
+! =====================================================
+! end of HDF_FileVersion = 4.0 write statements
+! =====================================================
 
 call HDF_pop(HDF_head,.TRUE.)
 
