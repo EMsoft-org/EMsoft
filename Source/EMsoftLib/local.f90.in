@@ -370,7 +370,7 @@ recursive function EMsoft_getEMsoftversion() result(version)
 
 IMPLICIT NONE
 
-character(8) :: version
+character(20) :: version
 
 version = "@EMsoft_VER_MAJOR@_@EMsoft_VER_MINOR@_@EMsoft_VER_PATCH@_@EMsoft_VERSION_TWEAK@"
 
