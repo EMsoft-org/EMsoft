@@ -372,7 +372,7 @@ IMPLICIT NONE
 
 character(8) :: version
 
-version = "@EMsoft_VER_MAJOR@_@EMsoft_VER_MINOR@_@EMsoft_VER_PATCH@"
+version = "@EMsoft_VER_MAJOR@_@EMsoft_VER_MINOR@_@EMsoft_VER_PATCH@_@EMsoft_VERSION_TWEAK@"
 
 end function EMsoft_getEMsoftversion
 

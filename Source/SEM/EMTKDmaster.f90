@@ -150,7 +150,7 @@ integer(kind=irg)       :: numEbins, numzbins, nsx, nsy, hdferr, nlines, lastEne
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, etotal, nabsl ! enery variables from MC program
 integer(kind=irg),allocatable :: accum_e(:,:,:), accum_z(:,:,:,:), thick(:), acc_z(:,:,:,:)
 real(kind=sgl),allocatable :: lambdaE(:,:)
-character(fnlen)        :: oldprogname, groupname, energyfile, outname, datagroupname
+character(fnlen)        :: oldprogname, groupname, energyfile, outname, datagroupname, attributename, HDF_FileVersion
 character(8)            :: MCscversion
 character(11)           :: dstr
 character(15)           :: tstrb
@@ -573,7 +573,16 @@ groupname = SC_NMLparameters
 ! then the remainder of the data in a EMData group
 groupname = SC_EMData
   hdferr = HDF_createGroup(groupname, HDF_head)
+
+! create the TKDmaster group and add a HDF_FileVersion attribbute to it 
   hdferr = HDF_createGroup(datagroupname, HDF_head)
+  HDF_FileVersion = '4.0'
+  attributename = SC_HDFFileVersion
+  hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
+
+! =====================================================
+! The following write commands constitute HDF_FileVersion = 4.0
+! =====================================================
 
 dataset = SC_xtalname
   stringarray(1)= trim(xtalname)
@@ -687,6 +696,9 @@ dataset = SC_masterSPSH
   else
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
   end if
+! =====================================================
+! end of HDF_FileVersion = 4.0 write statements
+! =====================================================
 
   call HDF_pop(HDF_head,.TRUE.)
 

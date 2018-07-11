@@ -153,7 +153,7 @@ type(HDFobjectStackType),pointer        :: HDF_head
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
 integer(HSIZE_T)                        :: dim0, dim1, dim2
 character(fnlen,kind=c_char)            :: line2(1)
-character(fnlen)                        :: groupname, dataset
+character(fnlen)                        :: groupname, dataset, attributename, HDF_FileVersion
 character(11)                           :: dstr
 character(15)                           :: tstrb
 character(15)                           :: tstre
@@ -274,15 +274,26 @@ call HDF_pop(HDF_head)
 groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 
+! create the ECP group and add a HDF_FileVersion attribbute to it 
 groupname = SC_ECP
-hdferr = HDF_createGroup(groupname, HDF_head)
+  hdferr = HDF_createGroup(groupname, HDF_head)
+  HDF_FileVersion = '4.0'
+  attributename = SC_HDFFileVersion
+  hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
 
+! =====================================================
+! The following write commands constitute HDF_FileVersion = 4.0
+! =====================================================
 ! we need to write the image dimensions
 dataset = SC_npix
 hdferr = HDF_writeDatasetInteger(dataset, ecpnl%npix, HDF_head) 
 
 dataset = SC_numangledictionary
 hdferr = HDF_writeDatasetInteger(dataset, ecpnl%numangle_anglefile, HDF_head) 
+! =====================================================
+! end of HDF_FileVersion = 4.0 write statements
+! =====================================================
+
 
 ! and we leave this group open for further data output ... 
 
@@ -458,6 +469,9 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
     !ECPpatterninteger = nint(ECPpatternintd*255.0)
     !ECPpatternad =  adhisteq(10,ecpnl%npix,ecpnl%npix,ECPpatterninteger)
     !ECPpattern = float(ECPpatternad)
+! =====================================================
+! The following write commands constitute HDF_FileVersion = 4.0
+! =====================================================
 
     if (mod(iang,2500) .eq. 0) then
         io_int(1) = iang
@@ -492,6 +506,10 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
           dim2 = 1
           hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dim0, dim1, dim2, &
                                           HDF_head, insert)
+! =====================================================
+! end of HDF_FileVersion = 4.0 write statements
+! =====================================================
+
     end if
 !$OMP END CRITICAL
 
