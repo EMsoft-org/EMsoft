@@ -166,7 +166,7 @@ integer(kind=irg),allocatable   :: kij(:,:), nat(:)
 real(kind=dbl)          :: res(2), xyz(3), ind, nabsl
 
 character(fnlen)        :: oldprogname, energyfile, outname
-character(fnlen)        :: xtalname, groupname, datagroupname
+character(fnlen)        :: xtalname, groupname, datagroupname, HDF_FileVersion, attributename
 character(8)            :: MCscversion
 character(4)            :: MCmode
 character(6)            :: projtype
@@ -524,8 +524,16 @@ call HDF_pop(HDF_head)
 ! then the remainder of the data in a EMData group
 groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
-hdferr = HDF_createGroup(datagroupname, HDF_head)
 
+! create the ECPmaster group and add a HDF_FileVersion attribbute to it 
+hdferr = HDF_createGroup(datagroupname, HDF_head)
+  HDF_FileVersion = '4.0'
+  attributename = SC_HDFFileVersion
+  hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
+
+! =====================================================
+! The following write commands constitute HDF_FileVersion = 4.0
+! =====================================================
 dataset = SC_xtalname
 stringarray(1)= trim(xtalname)
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -607,6 +615,10 @@ if (g_exists) then
 else
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
 end if
+
+! =====================================================
+! end of HDF_FileVersion = 4.0 write statements
+! =====================================================
 
 call HDF_pop(HDF_head,.TRUE.)
 

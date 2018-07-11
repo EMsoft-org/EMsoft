@@ -6918,4 +6918,101 @@ recursive SUBROUTINE h5_read_integer_dataset(fname, dsetnm, hdferr, rdata)
 END SUBROUTINE h5_read_integer_dataset
 
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION:HDF_addStringAttributeToGroup
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief add a string attribute to the current level in the HDF file 
+!
+!> @note Note that this routine uses fortran-2003 options
+!
+!> @param dataname dataset name (string)
+!> @param fltval real 
+!> @param HDF_head
+!
+!> @date 07/11/18  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function HDF_addStringAttributeToGroup(dataname, stratt, HDF_head, overwrite) result(success)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDF_addStringAttributeToGroup
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                             :: dataname
+character(len=fnlen, KIND=c_char),INTENT(INOUT)         :: stratt 
+type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+logical,INTENT(IN),OPTIONAL                             :: overwrite
+integer(kind=irg)                                       :: success
+
+integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer(HID_T)                                          :: aspace_id, dset, atype_id, attr_id ! Handles
+integer                                                 :: hdferr, rnk
+integer(SIZE_T)                                         :: attrlen
+integer(HSIZE_T), DIMENSION(1:1)                        :: dims
+integer(HSIZE_T), DIMENSION(1)                          :: data_dims
+
+success = 0
+
+dims(1) = 1
+
+attrlen = len_trim(stratt)
+attrlen = attrlen+1
+stratt(attrlen:attrlen) = C_NULL_CHAR
+
+! Create dataspace.
+rnk = 1
+call h5screate_simple_f(rnk, dims, aspace_id, hdferr)
+call HDFerror_check('HDF_addStringAttribute:h5screate_simple_f:'//trim(dataname), hdferr)
+!
+! Create datatype for the attribute.
+!
+call h5tcopy_f(H5T_NATIVE_CHARACTER, atype_id, hdferr)
+call HDFerror_check('HDF_addStringAttribute:h5tcopy_f:'//trim(dataname), hdferr)
+
+call h5tset_size_f(atype_id, attrlen, hdferr)
+call HDFerror_check('HDF_addStringAttribute:h5tset_size_f:'//trim(dataname), hdferr)
+!
+! Create the attribute and write the string data to it.
+!
+if (present(overwrite)) then
+  call h5aopen_f(HDF_head%objectID, cstringify(dataname), attr_id, hdferr)
+  call HDFerror_check('HDF_addStringAttribute:h5aopen_f:'//trim(dataname), hdferr)
+else
+  call h5acreate_f(HDF_head%objectID, cstringify(dataname), atype_id, aspace_id, attr_id, hdferr)
+  call HDFerror_check('HDF_addStringAttribute:h5acreate_f:'//trim(dataname), hdferr)
+end if
+
+if (hdferr.lt.0) then
+  success = -1
+end if
+
+data_dims(1) = 1
+call h5awrite_f(attr_id, atype_id, stratt, data_dims, hdferr )
+call HDFerror_check('HDF_addStringAttribute:h5awrite_f:'//trim(dataname), hdferr)
+
+if (hdferr.lt.0) then
+  success = -1
+end if
+!
+! Close and release resources.
+!
+call h5aclose_f(attr_id , hdferr)
+call HDFerror_check('HDF_addStringAttribute:h5aclose_f:'//trim(dataname), hdferr)
+
+call h5sclose_f(aspace_id, hdferr)
+call HDFerror_check('HDF_addStringAttribute:h5sclose_f:'//trim(dataname), hdferr)
+
+! that's it
+
+end function HDF_addStringAttributeToGroup
+
+
+
+
+
+
+
 end module HDFsupport

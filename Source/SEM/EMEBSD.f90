@@ -374,7 +374,7 @@ integer(HSIZE_T), dimension(1:3)        :: hdims, offset
 integer(HSIZE_T), dimension(1:2)        :: hdims2, offset2 
 integer(HSIZE_T)                        :: dim0, dim1, dim2
 character(fnlen,kind=c_char)            :: line2(1)
-character(fnlen)                        :: groupname, dataset, datagroupname
+character(fnlen)                        :: groupname, dataset, datagroupname, attributename, HDF_FileVersion
 character(11)                           :: dstr
 character(15)                           :: tstrb
 character(15)                           :: tstre
@@ -513,9 +513,17 @@ call HDF_pop(HDF_head)
 groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EMData')
+
+! create the EBSD group and add a HDF_FileVersion attribbute to it 
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
+HDF_FileVersion = '4.0'
+attributename = SC_HDFFileVersion
+hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
 
+! =====================================================
+! The following write commands constitute HDF_FileVersion = 4.0
+! =====================================================
 dataset = SC_xtalname
 allocate(stringarray(1))
 stringarray(1)= trim(mcnl%xtalname)
@@ -534,6 +542,11 @@ end do
 dataset = SC_Eulerangles
 hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
+
+! =====================================================
+! end of HDF_FileVersion = 4.0 write statements
+! =====================================================
+
 
 ! and we leave this group open for further data output from the main program loop ... 
 
@@ -1015,6 +1028,9 @@ do ibatch=1,totnumbatches
 !$OMP END PARALLEL
 
 ! here we write all the entries in the batchpatterns array to the HDF file as a hyperslab
+! =====================================================
+! The following write commands constitute HDF_FileVersion = 4.0
+! =====================================================
 dataset = SC_EBSDpatterns
  !if (outputformat.eq.'bin') then
    if (trim(bitmode).eq.'dict') then 
@@ -1073,6 +1089,10 @@ dataset = SC_EBSDpatterns
      end if
    end if
  !end if
+! =====================================================
+! end of HDF_FileVersion = 4.0 write statements
+! =====================================================
+
 
  io_int(1) = ibatch
  io_int(2) = totnumbatches
