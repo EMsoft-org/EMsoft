@@ -73,5 +73,10 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
  
-
+   Add_EMsoft_Executable(TARGET EMEBSDDIpreview
+                      SOURCES ${APP_DIR}/EMEBSDDIpreview.f90 
+                      LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
+                      TEMPLATE ${TMPLT_DIR}/EMEBSDDIpreview.template 
+                      SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
+                      INSTALL_PROGRAM TRUE)
 endif()

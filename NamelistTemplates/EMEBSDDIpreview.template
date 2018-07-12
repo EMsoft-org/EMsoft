@@ -1,0 +1,33 @@
+&EBSDDIpreviewdata
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+! number of pattern pixels along x and y
+ numsx = 640,
+ numsy = 480,
+! number of patterns along x and y 
+ ipf_wd = 100,
+ ipf_ht = 100,
+! hipass w parameter range and number of steps (starts near zero)
+ hipasswmax = 0.5,
+ hipasswnsteps = 10,
+! number of regions for adaptive histogram equalization
+ nregionsmin = 1,
+ nregionsmax = 10,
+ nregionsstepsize = 1,
+! name of tiff output file; will contain an array of pre-processed patterns
+ tifffile = 'undefined',
+! name of datafile where the patterns are stored; path relative to EMdatapathname
+ exptfile = 'undefined',
+! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
+ inputtype = 'Binary',
+! here we enter the HDF group names and data set names as individual strings (up to 10)
+! enter the full path of a data set in individual strings for each group, in the correct order,
+! and with the data set name as the last name; leave the remaining strings empty (they should all
+! be empty for the Binary and TSLup2 formats)
+ HDFstrings = '' '' '' '' '' '' '' '' '' '',
+! pattern coordinates to be used for the preview
+ patx = 1,
+ paty = 1,
+/

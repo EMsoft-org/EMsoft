@@ -12,6 +12,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMDPFit.template
   ${APP_DIR}/EMEBSD.template
   ${APP_DIR}/EMEBSDDI.template
+  ${APP_DIR}/EMEBSDDIpreview.template
   ${APP_DIR}/EMEBSDFull.template
   ${APP_DIR}/EMEBSDmaster.template
   ${APP_DIR}/EMECCI.template
