@@ -339,7 +339,7 @@ call Message('Program Build Successful... Creating kernel')
 
 ! finally get the kernel and release the program
 if (mode.eq.'Ivol') then
-  kernelname2 = 'MCxyz'
+  kernelname2 = 'MCxyz'//CHAR(0)
   kernel = clCreateKernel(prog, C_LOC(kernelname2), ierr)
   call CLerror_check('DoMCsimulation:clCreateKernel:MCxyz', ierr)
 else
