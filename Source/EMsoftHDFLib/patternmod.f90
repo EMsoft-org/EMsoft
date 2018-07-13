@@ -381,7 +381,7 @@ real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
 integer(kind=irg),OPTIONAL,INTENT(IN)   :: ROI(4)
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
-real(kind=sgl)                          :: imageexpt(L)
+real(kind=sgl)                          :: imageexpt(L), z
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
 integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
@@ -489,7 +489,9 @@ select case (itype)
         do kk=kkstart,kkend
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
-                      exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(EBSDpatint(ii,dims3(2)+1-jj,kk))
+                   z = float(EBSDpatint(ii,dims3(2)+1-jj,kk))
+                   if (z.lt.0.0) z = z+2.0**16
+                   exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = z
                 end do 
             end do 
         end do 
@@ -570,7 +572,7 @@ character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppat(patsz)
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
-real(kind=sgl)                          :: imageexpt(L)
+real(kind=sgl)                          :: imageexpt(L), z
 character(fnlen)                        :: dataset
 character(kind=c_char),allocatable      :: EBSDpat(:,:,:)
 integer(kind=C_INT16_T),allocatable     :: EBSDpatint(:,:,:)
@@ -664,7 +666,9 @@ select case (itype)
         exppat = 0.0
         do jj=1,dims3(2)
             do ii=1,dims3(1)
-                  exppat((jj-1)*dims3(1)+ii) = float(EBSDpatint(ii,dims3(2)+1-jj,1))
+                  z = float(EBSDpatint(ii,dims3(2)+1-jj,1))
+                  if (z.lt.0.0) z = z+2.0**16
+                  exppat((jj-1)*dims3(1)+ii) = z
             end do 
         end do 
 
