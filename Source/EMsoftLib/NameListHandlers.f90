@@ -5890,7 +5890,7 @@ character(2)          :: geometry
 
 ! DEFINE THE IO NAMELIST FOR VARIABLE PASSING
 namelist / STEMGeometrydata / numberofsvalues, numCL, BFradius, ADFinnerradius, ADFouterradius, kt, &
-                              beamconvergence, CLarray, geometry
+                              beamconvergence, CLarray, geometry, diffaprad, diffapcenter
 
 ! SET INPUT PARAMETERS TO DEFAULT VALUES (EXCEPT XTALNAME, WHICH MUST BE PRESENT)
 numberofsvalues = 21
