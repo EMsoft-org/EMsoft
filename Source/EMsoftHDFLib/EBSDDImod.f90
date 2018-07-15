@@ -1471,11 +1471,6 @@ else
     ebsdnl%ROI = (/ 0, 0, 0, 0 /)
 end if
 
-dataset = SC_StepX
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepX)
-    
-dataset = SC_StepY
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepY)
 
 dataset = SC_angfile
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
@@ -1809,6 +1804,17 @@ if (present(getRefinedEulerAngles)) then
     end if
   end if 
 end if
+
+call HDF_pop(HDF_head)
+
+groupname = SC_Header
+    hdferr = HDF_openGroup(groupname, HDF_head)
+
+dataset = SC_StepX
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepX)
+    
+dataset = SC_StepY
+    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepY)
 
 ! if (present()) then
 !   if (get.eqv..TRUE.) then
