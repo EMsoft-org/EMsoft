@@ -785,7 +785,8 @@ groupname = SC_EBSDMasterNameList
 
 ! we'll read these roughly in the order that the HDFView program displays them...
 dataset = SC_Esel
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%Esel)
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%Esel)
 
 dataset = SC_combinesites
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -820,16 +821,22 @@ dataset = SC_nthreads
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%nthreads)
 
 dataset = SC_restart
+call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, restart)
     mpnl%restart = .FALSE.
     if (restart.ne.0) mpnl%restart = .TRUE.
+end if
 
 dataset = SC_stdout
+call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%stdout)
+end if
 
 dataset = SC_uniform
 mpnl%uniform = .FALSE.
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, uniform)
     if (uniform.ne.0) mpnl%uniform = .TRUE.
@@ -849,7 +856,10 @@ groupname = SC_EBSDmaster
 
 ! integers
 dataset = SC_lastEnergy
+call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%lastEnergy)
+end if
 
 dataset = SC_numEbins
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%numEbins)
@@ -877,7 +887,6 @@ if (present(getmLPNH)) then
   if (getmLPNH.eqv..TRUE.) then
     dataset = SC_mLPNH
     call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
-write (*,*) mpnl%npx, EBSDMPdata%numEbins
     allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
     EBSDMPdata%mLPNH = sum(mLPNH,4)
     deallocate(mLPNH)

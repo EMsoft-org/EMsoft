@@ -1601,8 +1601,8 @@ integer(kind=irg)                           :: pgnum
 
 character(fnlen)                        :: filename, xtalname2
 character(1)                            :: rchar
-integer(kind=irg)                       :: hdferr, sgnum, i
-logical                                 :: stat, readonly, HDFopen
+integer(kind=irg)                       :: hdferr, sgnum, i, naxis
+logical                                 :: stat, readonly, HDFopen, dexists
 character(fnlen)                        :: groupname, dataset
 
 type(HDFobjectStackType),pointer        :: HDF_head
@@ -1640,21 +1640,42 @@ if (stat) then
 groupname = SC_CrystalData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-! read the space group number from the file
-dataset = SC_SpaceGroupNumber
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, sgnum)
+dataset = SC_AxialSymmetry
+call H5Lexists_f(HDF_head%objectID, trim(dataset), dexists, hdferr)
 
-! and close everything
-  call HDF_pop(HDF_head,.TRUE.)
+if(dexists) then
 
-! close the fortran HDF interface
-  if (HDFopen.eqv..TRUE.) call h5close_EMsoft(hdferr)
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, naxis)
 
-! and convert the space group number into a point group number
-  pgnum = 0
-  do i=1,32
-    if (SGPG(i).le.sgnum) pgnum = i
-  end do
+  if(naxis .eq. 8) then
+    pgnum = 34
+  else if(naxis .eq. 10) then
+    pgnum = 35
+  else if(naxis .eq. 12) then
+    pgnum = 36
+  else
+    call FatalError('GetPointGroup','unknown 2D quasicrystal symmetry in '//trim(filename))
+  end if
+
+  else
+    ! read the space group number from the file
+    dataset = SC_SpaceGroupNumber
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, sgnum)
+
+    ! and close everything
+      call HDF_pop(HDF_head,.TRUE.)
+
+    ! close the fortran HDF interface
+      if (HDFopen.eqv..TRUE.) call h5close_EMsoft(hdferr)
+
+    ! and convert the space group number into a point group number
+      pgnum = 0
+      do i=1,32
+        if (SGPG(i).le.sgnum) pgnum = i
+      end do
+
+  end if
+
 else
   pgnum = 0
   call FatalError('GetPointGroup','Error reading xtal file '//trim(filename))
