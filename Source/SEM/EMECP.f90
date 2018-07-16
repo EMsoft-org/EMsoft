@@ -64,7 +64,7 @@ progdesc = 'Electron channeling patterns from master pattern'
 call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any
-call Interpret_Program_Arguments(nmldeffile,2,(/ 0, 40 /), progname)
+call Interpret_Program_Arguments(nmldeffile,1,(/ 40 /), progname)
 
 ! deal with the namelist stuff
 call GetECPNameList(nmldeffile,ecpnl)
