@@ -3,11 +3,11 @@
 !
 ! sampling mode; 'RFZ' standard Rodrigues FZ; 'MIS' misorientation ball sampling; 'CON' conical sampling;
 ! 'FIB' for uniform fiber texture sampling
-samplemode = 'RFZ'
+ samplemode = 'RFZ'
 ! maximum misorientation [degrees], for 'MIS' samplemode only
-maxmisor = 5.D0,
+ maxmisor = 5.D0,
 ! Rodrigues vector (n,tan(omega/2)) for center of misorientation ball, for 'MIS' samplemode only
-rodrigues = 0.D0, 0.D0, 0.D0, 0.D0,
+ rodrigues = 0.D0, 0.D0, 0.D0, 0.D0,
 ! cone axis for conical sampling 
  conevector = 0.D0, 0.D0, 1.D0,
 ! cone semi-angle (in degrees)
