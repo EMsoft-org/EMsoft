@@ -6,12 +6,12 @@
 !------------
 ! multi-threading parameters
 !------------
- SETNTHR = 1,
+ nthreads = 1,
 !------------
 ! microscope parameters
 !------------
-! microscope accelerating voltage [V]
- voltage = 30000.,
+! microscope accelerating voltage [kV]
+ voltage = 30.,
 !------------
 ! crystal structure and incident beam parameters
 !------------

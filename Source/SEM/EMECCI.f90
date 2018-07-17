@@ -72,7 +72,7 @@ progdesc = 'Dynamical ECCI defect image simulation'
 call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any
-call Interpret_Program_Arguments(nmldeffile,3,(/ 0, 41, 200 /), progname)
+call Interpret_Program_Arguments(nmldeffile,4,(/ 0, 3, 41, 200 /), progname)
 
 ! deal with the namelist stuff
 call GetECCINameList(nmldeffile,eccinl)
@@ -683,8 +683,7 @@ mainloop: do isg = numstart,numstop   ! this is the main computational loop
    DHWMvoid(i,i) = DHWMz(i,i)
   end forall
 
-! NTHR = SETNTHR
-NTHR = 12
+NTHR = eccinl%nthreads 
 
 !$OMP  PARALLEL NUM_THREADS(NTHR) DEFAULT(SHARED) PRIVATE(TID,i,j,k,ii,jj,ic,ir,g,Azz,DDD,zmax)
 TID = OMP_GET_THREAD_NUM() 
