@@ -309,8 +309,20 @@ CALL C_F_PROCPOINTER (cproc, proc)
 
   allocate(mLPNHsum(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12)))
   allocate(mLPSHsum(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12)))
-  mLPNHsum = sum(mLPNH,4)
-  mLPSHsum = sum(mLPSH,4)
+  ! Stuart Wright: for some reason the following calls do not work on my Windows 10 computer, VS 2015
+  ! so I unwrapped the code to perform this function explicitely
+  !mLPNHsum = sum(mLPNH,4)
+  !mLPSHsum = sum(mLPSH,4)
+  do i=-ipar(17),ipar(17)
+      do j=-ipar(17),ipar(17)
+          do k=1,ipar(12)
+              do ii=1,ipar(9)
+                  mLPNHsum(i,j,k) = mLPNHsum(i,j,k) + mLPNH(i,j,k,ii)
+                  mLPSHsum(i,j,k) = mLPSHsum(i,j,k) + mLPSH(i,j,k,ii)
+              end do
+          end do
+      end do
+  end do
 
   allocate(scin_x(ipar(19)),scin_y(ipar(20)),stat=istat)
   
