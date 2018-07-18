@@ -56,6 +56,7 @@ use files
 use constants
 use error
 use omp_lib
+use ISO_C_BINDING
 
 IMPLICIT NONE
 
@@ -67,12 +68,12 @@ type(EBSDDIdataType)                        :: EBSDDIdata
 type(EBSDMPdataType)                        :: EBSDMPdata
 
 integer(kind=irg)                           :: hdferr, pgnum, sgnum, orthonum, i, TID, ipar(10) 
-integer(kind=irg),parameter                 :: nlines=1
-character(fnlen)                            :: outstring, dataset, infile, groupname, comment(nlines)
+character(fnlen)                            :: outstring, dataset, infile, groupname, comment
 real(kind=dbl)                              :: dtor, qrot(4), qin(4)
 real(kind=dbl),allocatable                  :: newEulers(:,:), newAvOr(:,:), oldEulers(:,:)
 real(kind=sgl),allocatable                  :: eulers(:,:), ang(:), resultmain(:,:)
 logical                                     :: g_exists, readonly, verbose, overwrite = .TRUE.
+character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
 type(HDFobjectStackType),pointer            :: HDF_head
 
@@ -254,11 +255,18 @@ dataset = SC_AverageOrientations
 hdferr = HDF_writeDatasetFloatArray2D(dataset, sngl(newAvOr), 3, EBSDDIdata%Nexp, HDF_head, overwrite)
 
 ! add an explanatory data set
-comment(1) = 'Original orthorhombic setting changed to '//extendedOrthsettings(csnl%orthorhombicSetting)// &
-          ' corresponding to space group '//extendedHMOrthsymbols(csnl%orthorhombicSetting,orthonum)
-
+comment = 'Original orthorhombic setting changed to '//extendedOrthsettings(csnl%orthorhombicSetting)// &
+          ', corresponding to space group symbol '//extendedHMOrthsymbols(csnl%orthorhombicSetting,orthonum)
+allocate(stringarray(1))
+stringarray(1)= trim(comment)
 dataset = 'Comment'
-hdferr = HDF_writeDatasetStringArray(dataset, comment, nlines, HDF_head) 
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head, overwrite) 
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head) 
+end if
+deallocate(stringarray)
 
 ! also, update the Phi1, Phi, and Phi2 data sets 
 newEulers = newEulers * sngl(dtor)
@@ -269,15 +277,15 @@ end do
 
 dataset = SC_Phi1
 ang(:) = eulers(1,:)
-hdferr = HDF_writeDatasetFloatArray1D(dataset, ang, EBSDDIdata%Nexp, HDF_head,overwrite)
+hdferr = HDF_writeDatasetFloatArray1D(dataset, ang, EBSDDIdata%Nexp, HDF_head, overwrite)
 
 dataset = SC_Phi
 ang(:) = eulers(2,:)
-hdferr = HDF_writeDatasetFloatArray1D(dataset, ang, EBSDDIdata%Nexp, HDF_head,overwrite)
+hdferr = HDF_writeDatasetFloatArray1D(dataset, ang, EBSDDIdata%Nexp, HDF_head, overwrite)
 
 dataset = SC_Phi2
 ang(:) = eulers(3,:)
-hdferr = HDF_writeDatasetFloatArray1D(dataset, ang, EBSDDIdata%Nexp, HDF_head,overwrite)
+hdferr = HDF_writeDatasetFloatArray1D(dataset, ang, EBSDDIdata%Nexp, HDF_head, overwrite)
 
 ! leave this group and file
 call HDF_pop(HDF_head,.TRUE.)
