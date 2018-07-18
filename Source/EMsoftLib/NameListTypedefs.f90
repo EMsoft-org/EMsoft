@@ -996,6 +996,7 @@ type EBSDDIpreviewNameListType
         integer(kind=irg)       :: ipf_wd
         integer(kind=irg)       :: ipf_ht
         real(kind=sgl)          :: hipasswmax
+        character(fnlen)        :: patternfile
         character(fnlen)        :: tifffile
         character(fnlen)        :: exptfile
         character(fnlen)        :: inputtype

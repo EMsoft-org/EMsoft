@@ -36,7 +36,8 @@
 !
 !> @brief Simple program to preview what the filtering parameters will result in 
 !
-!> @date 01/24/18 MDG 1.0 original, 
+!> @date 01/24/18 MDG 1.0 original 
+!> @date 07/17/18 MDG 1.1 added option to extract single pattern from data set and scale
 !--------------------------------------------------------------------------
 
 program EMEBSDDIpreview
@@ -94,13 +95,15 @@ end program EMEBSDDIpreview
 !
 !> @date 01/24/18 MDG 1.0 original
 !> @date 02/19/18 MDG 1.1 modified input to new patternmod module options
+!> @date 07/17/18 MDG 1.2 option to extract and scale up individual pattern
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(enl, progname, nmldeffile)
 
 use local
 use error
-use TIFF_f90
+use image
+use, intrinsic :: iso_fortran_env
 use io
 use filters
 use patternmod
@@ -113,9 +116,9 @@ type(EBSDDIpreviewNameListType),INTENT(INOUT)       :: enl
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
 
-character(fnlen)                                    :: ename
+character(fnlen)                                    :: ename, image_filename
 integer(kind=irg)                                   :: iunitexpt, recordsize, ierr, kk, ii, jj, i, j, numr, numw, binx, biny, &
-                                                       xoffset, yoffset, io_int(2), istat, L, patsz , hdferr
+                                                       xoffset, yoffset, io_int(2), istat, L, patsz , hdferr, nx, ny
 integer(HSIZE_T)                                    :: dims3(3), offset3(3)
 logical                                             :: f_exists
 real(kind=sgl)                                      :: mi, ma, io_real(1)
@@ -126,6 +129,14 @@ type(C_PTR)                                         :: HPplanf, HPplanb
 complex(kind=dbl),allocatable                       :: hpmask(:,:)
 complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
 real(kind=dbl),allocatable                          :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
+
+! declare variables for use in object oriented image module
+integer                                             :: iostat
+character(len=128)                                  :: iomsg
+logical                                             :: isInteger
+type(image_t)                                       :: im, im2
+integer(int8)                                       :: i8 (3,4), int8val
+integer(int8), allocatable                          :: output_image(:,:)
 
 call h5open_EMsoft(hdferr)
 
@@ -161,6 +172,37 @@ do kk=1,biny
   pcopy(1:binx,kk) = expt((kk-1)*binx+1:kk*binx)
 end do
 
+! do we need to extract this pattern from the file and store it as an image file ?
+if (trim(enl%patternfile).ne.'undefined') then
+! allocate a byte array for the final output TIFF image that will contain all individual images
+  allocate(output_image(binx,biny))
+  image_filename = trim(EMsoft_getEMdatapathname())//trim(enl%patternfile)
+  image_filename = EMsoft_toNativePath(image_filename)
+
+  ma = maxval(pcopy)
+  mi = minval(pcopy)
+
+  do i=1,binx
+    do j=1,biny
+     int8val = int(255.0*(pcopy(i,biny-j+1)-mi)/(ma-mi))
+     output_image(i,j) = int8val
+    end do
+  end do
+
+ ! set up the image_t structure
+  im = image_t(output_image)
+  if(im%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+
+ ! create the file
+  call im%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+  if(0.ne.iostat) then
+    call Message("failed to write image to file : "//iomsg)
+  else  
+    call Message('  Selected pattern written to '//trim(image_filename))
+  end if 
+  deallocate(output_image)
+end if
+
 ! define the high-pass filter width array and the nregions array
 numr = (enl%nregionsmax - enl%nregionsmin) / enl%nregionsstepsize + 1
 allocate(nrvals(numr))
@@ -174,11 +216,11 @@ do ii=1,numw
 end do
 
 ! allocate a byte array for the final output TIFF image that will contain all individual images
-TIFF_nx = numw * binx
-TIFF_ny = numr * biny
-allocate(TIFF_image(0:TIFF_nx-1,0:TIFF_ny-1))
-TIFF_filename = trim(EMsoft_getEMdatapathname())//trim(enl%tifffile)
-TIFF_filename = EMsoft_toNativePath(TIFF_filename)
+nx = numw * binx
+ny = numr * biny
+allocate(output_image(nx,ny))
+image_filename = trim(EMsoft_getEMdatapathname())//trim(enl%tifffile)
+image_filename = EMsoft_toNativePath(image_filename)
 
 ! next we need to set up the high-pass filter fftw plans
 allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
@@ -199,7 +241,7 @@ do ii=1,numw
     mi = minval(pattern)
 
     pint = nint(((pattern - mi) / (ma-mi))*255.0)
-    xoffset = (ii-1) * binx 
+    xoffset = (ii-1) * binx + 1
     do jj=1,numr
 ! adaptive histogram equalization
         if (nrvals(jj).eq.0) then
@@ -208,9 +250,13 @@ do ii=1,numw
             ppp = adhisteq(nrvals(jj),binx,biny,pint)
         end if 
 
-! and store the pattern in the correct spot in the TIFF_image array
-        yoffset =  (jj-1) * biny 
-        TIFF_image(xoffset:xoffset+binx-1, yoffset:yoffset+biny-1) = ppp(1:binx, 1:biny)
+! and store the pattern in the correct spot in the output_image array (flipped upside down !!!)
+        yoffset =  (numr-jj) * biny + 1
+        do i=1,binx
+          do j=1,biny
+           output_image(xoffset+i-1, yoffset+j-1) = ppp(i,biny-j+1)
+          end do
+        end do
     end do
 
 ! regenerate the complex inverted Gaussian mask with the next value of the mask width
@@ -231,11 +277,18 @@ do ii=1,numw
     end do
 end do
 
-call TIFF_Write_File
-call Message(' --> final images written to output file '//trim(TIFF_filename))
-io_int(1) = TIFF_nx
-io_int(2) = TIFF_ny
-call WriteValue(' Tiff image dimensions : ',io_int,2)
+! set up the image_t structure
+im2 = image_t(output_image)
+if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+
+! create the file
+call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+if(0.ne.iostat) then
+  call Message("failed to write image to file : "//iomsg)
+else  
+  call Message('  Preprocessed pattern array written to '//trim(image_filename))
+end if 
+deallocate(output_image)
 
 call Message('')
 call Message(' High-pass filter parameter values along horizontal axis (L to R) :')

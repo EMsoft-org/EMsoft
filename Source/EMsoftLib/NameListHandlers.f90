@@ -4294,13 +4294,15 @@ integer(kind=irg)       :: paty
 integer(kind=irg)       :: ipf_wd
 integer(kind=irg)       :: ipf_ht
 real(kind=sgl)          :: hipasswmax
+character(fnlen)        :: patternfile
 character(fnlen)        :: tifffile
 character(fnlen)        :: exptfile
 character(fnlen)        :: inputtype
 character(fnlen)        :: hDFstrings(10)
 
 namelist / EBSDDIpreviewdata / numsx, numsy, hipasswmax, hipasswnsteps, nregionsstepsize, &
-          nregionsmax, nregionsmin, patx, paty, tifffile, exptfile, inputtype, HDFstrings, ipf_wd, ipf_ht
+          nregionsmax, nregionsmin, patx, paty, tifffile, exptfile, inputtype, HDFstrings, ipf_wd, &
+          ipf_ht, patternfile
 
 ! set the input parameters to default values
 numsx = 640
@@ -4314,6 +4316,7 @@ patx = 1
 paty = 1
 ipf_wd = 100
 ipf_ht = 100
+patternfile = 'undefined'
 tifffile = 'undefined'
 exptfile = 'undefined'
 inputtype = 'Binary'
@@ -4350,6 +4353,7 @@ enl%patx = patx
 enl%paty = paty
 enl%ipf_wd = ipf_wd
 enl%ipf_ht = ipf_ht
+enl%patternfile = patternfile
 enl%hipasswmax = hipasswmax
 enl%tifffile = tifffile
 enl%exptfile = exptfile
