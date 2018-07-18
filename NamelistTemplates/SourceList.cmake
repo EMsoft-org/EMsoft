@@ -21,6 +21,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMECPSingle.template
   ${APP_DIR}/EMECPZA.template
   ${APP_DIR}/EMECPmaster.template
+  ${APP_DIR}/EMgetADP.template
   ${APP_DIR}/EMKAM.template
   ${APP_DIR}/EMKosselmaster.template
   ${APP_DIR}/EMkinematical.template

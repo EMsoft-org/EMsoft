@@ -79,4 +79,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       TEMPLATE ${TMPLT_DIR}/EMEBSDDIpreview.template 
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
+
+    Add_EMsoft_Executable(TARGET EMgetADP
+                        SOURCES ${APP_DIR}/EMgetADP.f90 
+                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} ${FORTRAN_LIBRARIES}
+                        TEMPLATE ${TMPLT_DIR}/EMgetADP.template 
+                        SOLUTION_FOLDER EMsoftPublic/DictionaryIndexing 
+                        INSTALL_PROGRAM TRUE)
+
 endif()
