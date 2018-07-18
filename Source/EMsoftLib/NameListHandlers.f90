@@ -126,6 +126,72 @@ end subroutine GetGrainVizNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetChangeSettingNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill gvnl structure (used by EMgrainviz.f90)
+!
+!> @param nmlfile namelist file name
+!> @param gvnl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 04/22/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetChangeSettingNameList(nmlfile, csnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetChangeSettingNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(ChangeSettingNameListType),INTENT(INOUT) :: csnl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+integer(kind=irg)       :: orthorhombicSetting
+integer(kind=irg)       :: nthreads
+character(fnlen)        :: dotproductfile
+character(fnlen)        :: newctffile
+
+namelist /ChangeSettingslist/ nthreads, orthorhombicSetting, dotproductfile, newctffile
+
+dotproductfile = 'undefined'
+newctffile = 'undefined'
+orthorhombicSetting = 1
+nthreads = 1
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=ChangeSettingslist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(dotproductfile).eq.'undefined') then
+  call FatalError('GetChangeSettingNameList:',' dotproductfile name is undefined in '//nmlfile)
+ end if
+
+ if (trim(newctffile).eq.'undefined') then
+  call FatalError('GetChangeSettingNameList:',' newctffile name is undefined in '//nmlfile)
+ end if
+end if
+
+csnl%dotproductfile = dotproductfile 
+csnl%newctffile = newctffile
+csnl%nthreads = nthreads
+csnl%orthorhombicSetting = orthorhombicSetting 
+
+end subroutine GetChangeSettingNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetGBONameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

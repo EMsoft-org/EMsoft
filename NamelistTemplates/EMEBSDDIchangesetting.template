@@ -1,0 +1,16 @@
+ &ChangeSettingslist
+! number of parallel threads
+ nthreads = 1,
+! orthorhombic setting number
+! 1 = " a  b  c"
+! 2 = " b  a -c"
+! 3 = " c  a  b"
+! 4 = "-c  b  a"
+! 5 = " b  c  a" 
+! 6 = " a -c  b"
+ orthorhombicSetting = 1,
+! name of new ctf file (relative to EMdatapathname)
+ newctffile = 'undefined',
+! name of input dot product file (relative to EMdatapathname)
+ dotproductfile = 'undefined',
+ /

@@ -86,6 +86,14 @@ type oSLERPNameListType
         character(fnlen)        :: moviename
 end type oSLERPNameListType
 
+! namelist for EMEBSDDIchangesetting program
+type ChangeSettingNameListType
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: orthorhombicSetting
+        character(fnlen)        :: dotproductfile
+        character(fnlen)        :: newctffile
+end type ChangeSettingNameListType
+
 ! namelist for the EMLorentz program
 type LorentzNameListType
         integer(kind=irg)       :: nthreads

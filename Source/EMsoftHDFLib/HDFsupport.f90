@@ -109,7 +109,7 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(INOUT) :: hdferr
 integer(kind=irg)               :: printonoff
 
-!write (*,*) '>>>>>>>>>>>>>>>  OPENING HDF INTERFACE !!!!!!!!!'
+! write (*,*) '>>>>>>>>>>>>>>>  OPENING HDF INTERFACE !!!!!!!!!'
 ! open the HDF fortran interface
 call h5open_f(hdferr)
 call HDFerror_check('h5open_EMsoft:h5open_f', hdferr)
@@ -142,7 +142,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT) :: hdferr
 
-!write (*,*) '>>>>>>>>>>>>>>>  CLOSING HDF INTERFACE !!!!!!!!!'
+! write (*,*) '>>>>>>>>>>>>>>>  CLOSING HDF INTERFACE !!!!!!!!!'
 
 ! turn standard error reporting on
 !call h5eset_auto_f(1,hdferr)

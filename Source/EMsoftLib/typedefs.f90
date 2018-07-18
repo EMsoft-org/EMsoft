@@ -207,6 +207,77 @@ character(11),parameter :: SYM_SGname(237)= (/" P  1      " ," P -1      ", & ! 
         " R 3 c |161" ," R -3 m|166" ," R -3 c|167"/)
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_SGname
 
+!> extended Hermann-Mauguin symbols for the orthorhombic space groups in the following settings:
+character(8), parameter  :: extendedOrthsettings(6) = (/ &
+    " a  b  c", " b  a -c", " c  a  b", "-c  b  a", " b  c  a", " a -c  b"  /)
+!DEC$ ATTRIBUTES DLLEXPORT :: extendedOrthsettings
+
+character(11), parameter :: extendedHMOrthsymbols(6,59) = reshape( (/ &
+    " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", &
+    " P 2 2 21  ", " P 2 2 21  ", " P 21 2 2  ", " P 21 2 2  ", " P 2 21 2  ", " P 2 21 2  ", &
+    " P 21 21 2 ", " P 21 21 2 ", " P 2  21 21", " P 2  21 21", " P 21 2  21", " P 21 2  21", &
+    " P 21 21 21", " P 21 21 21", " P 21 21 21", " P 21 21 21", " P 21 21 21", " P 21 21 21", &
+    " C 2 2 21  ", " C 2 2 21  ", " A 21 2 2  ", " A 21 2 2  ", " B 2 21 2  ", " B 2 21 2  ", &
+    " C 2 2 2   ", " C 2 2 2   ", " A 2 2 2   ", " A 2 2 2   ", " B 2 2 2   ", " B 2 2 2   ", &
+    " F 2 2 2   ", " F 2 2 2   ", " F 2 2 2   ", " F 2 2 2   ", " F 2 2 2   ", " F 2 2 2   ", &
+    " I 2 2 2   ", " I 2 2 2   ", " I 2 2 2   ", " I 2 2 2   ", " I 2 2 2   ", " I 2 2 2   ", &
+    " I 21 21 21", " I 21 21 21", " I 21 21 21", " I 21 21 21", " I 21 21 21", " I 21 21 21", &
+    " P m m 2   ", " P m m 2   ", " P 2 m m   ", " P 2 m m   ", " P m 2 m   ", " P m 2 m   ", &
+    " P m c 21  ", " P c m 21  ", " P 21 m a  ", " P 21 a m  ", " P b 21 m  ", " P m 21 b  ", &
+    " P c c 2   ", " P c c 2   ", " P 2 a a   ", " P 2 a a   ", " P b 2 b   ", " P b 2 b   ", &
+    " P m a 2   ", " P b m 2   ", " P 2 m b   ", " P 2 c m   ", " P c 2 m   ", " P c 2 a   ", &
+    " P c a 21  ", " P b c 21  ", " P 21 a b  ", " P 21 c a  ", " P c 21 b  ", " P b 21 a  ", &
+    " P n c 2   ", " P c n 2   ", " P 2 n a   ", " P 2 a n   ", " P b 2 n   ", " P n 2 b   ", &
+    " P m n 21  ", " P n m 21  ", " P 21 m n  ", " P 21 n m  ", " P n 21 m  ", " P m 21 n  ", &
+    " P b a 2   ", " P b a 2   ", " P 2 c b   ", " P 2 c b   ", " P c 2 a   ", " P c 2 a   ", &
+    " P n a 21  ", " P b n 21  ", " P 21 n b  ", " P 21 c n  ", " P c 21 n  ", " P n 21 a  ", &
+    " P n n 2   ", " P n n 2   ", " P 2 n n   ", " P 2 n n   ", " P n 2 n   ", " P n 2 n   ", &
+    " C m m 2   ", " C m m 2   ", " A 2 m m   ", " A 2 m m   ", " B m 2 m   ", " B m 2 m   ", &
+    " C m c 21  ", " C c m 21  ", " A 21 m a  ", " A 21 a m  ", " B b 21 m  ", " B m 21 b  ", &
+    " C c c 2   ", " C c c 2   ", " A 2 a a   ", " A 2 a a   ", " B b 2 b   ", " B b 2 b   ", &
+    " A m m 2   ", " B m m 2   ", " B 2 m m   ", " C 2 m m   ", " C m 2 m   ", " A m 2 m   ", &
+    " A b m 2   ", " B m a 2   ", " B 2 c m   ", " C 2 m b   ", " C m 2 a   ", " A c 2 m   ", &
+    " A m a 2   ", " B b m 2   ", " B 2 m b   ", " C 2 c m   ", " C c 2 m   ", " A m 2 a   ", &
+    " A b a 2   ", " B b a 2   ", " B 2 c b   ", " C 2 c b   ", " C c 2 a   ", " A c 2 a   ", &
+    " F m m 2   ", " F m m 2   ", " F 2 m m   ", " F 2 m m   ", " F m 2 m   ", " F m 2 m   ", &
+    " F d d 2   ", " F d d 2   ", " F 2 d d   ", " F 2 d d   ", " F d 2 d   ", " F d 2 d   ", &
+    " I m m 2   ", " I m m 2   ", " I 2 m m   ", " I 2 m m   ", " I m 2 m   ", " I m 2 m   ", &
+    " I b a 2   ", " I b a 2   ", " I 2 c b   ", " I 2 c b   ", " I c 2 a   ", " I c 2 a   ", &
+    " I m a 2   ", " I b m 2   ", " I 2 m b   ", " I 2 c m   ", " I c 2 m   ", " I m 2 a   ", &
+    " P m m m   ", " P m m m   ", " P m m m   ", " P m m m   ", " P m m m   ", " P m m m   ", &
+    " P n n n   ", " P n n n   ", " P n n n   ", " P n n n   ", " P n n n   ", " P n n n   ", &
+    " P c c m   ", " P c c m   ", " P m a a   ", " P m a a   ", " P b m b   ", " P b m b   ", &
+    " P b a n   ", " P b a n   ", " P n c b   ", " P n c b   ", " P c n a   ", " P c n a   ", &
+    " P m m a   ", " P m m b   ", " P b m m   ", " P c m m   ", " P m c m   ", " P m a m   ", &
+    " P n n a   ", " P n n b   ", " P b n n   ", " P c n n   ", " P n c n   ", " P n a n   ", &
+    " P m n a   ", " P n m b   ", " P b m n   ", " P c n m   ", " P n c m   ", " P m a n   ", &
+    " P c c a   ", " P c c b   ", " P b a a   ", " P c a a   ", " P b c b   ", " P b a b   ", &
+    " P b a m   ", " P b a m   ", " P m c b   ", " P m c b   ", " P c m a   ", " P c m a   ", &
+    " P c c n   ", " P c c n   ", " P n a a   ", " P n a a   ", " P b n b   ", " P b n b   ", &
+    " P b c m   ", " P c a m   ", " P m c a   ", " P m a b   ", " P b m a   ", " P c m b   ", &
+    " P n n m   ", " P n n m   ", " P m n n   ", " P m n n   ", " P n m n   ", " P n m n   ", &
+    " P m m n   ", " P m m n   ", " P n m m   ", " P n m m   ", " P m n m   ", " P m n m   ", &
+    " P b c n   ", " P c a n   ", " P n c a   ", " P n a b   ", " P b n a   ", " P c n b   ", &
+    " P b c a   ", " P c a b   ", " P b c a   ", " P c a b   ", " P b c a   ", " P c a b   ", &
+    " P n m a   ", " P m n b   ", " P b n m   ", " P c m n   ", " P m c n   ", " P n a m   ", &
+    " C m c m   ", " C c m m   ", " A m m a   ", " A m a m   ", " B b m m   ", " B m m b   ", &
+    " C m c a   ", " C c m b   ", " A b m a   ", " A c a m   ", " B b c m   ", " B m a b   ", &
+    " C m m m   ", " C m m m   ", " A m m m   ", " A m m m   ", " B m m m   ", " B m m m   ", &
+    " C c c m   ", " C c c m   ", " A m a a   ", " A m m a   ", " B b m b   ", " B b m b   ", &
+    " C m m a   ", " C m m b   ", " A b m m   ", " A c m m   ", " B m c m   ", " B m a m   ", &
+    " C c c a   ", " C c c b   ", " A b a a   ", " A c a a   ", " B b c b   ", " B b a b   ", &
+    " F m m m   ", " F m m m   ", " F m m m   ", " F m m m   ", " F m m m   ", " F m m m   ", &
+    " F d d d   ", " F d d d   ", " F d d d   ", " F d d d   ", " F d d d   ", " F d d d   ", &
+    " I m m m   ", " I m m m   ", " I m m m   ", " I m m m   ", " I m m m   ", " I m m m   ", &
+    " I b a m   ", " I b a m   ", " I m c b   ", " I m c b   ", " I c m a   ", " I c m a   ", &
+    " I b c a   ", " I c a b   ", " I b c a   ", " I c a b   ", " I b c a   ", " I c a b   ", &
+    " I m m a   ", " I m m b   ", " I b m m   ", " I c m m   ", " I m c m   ", " I m a m   " /), (/6, 59/) )
+!DEC$ ATTRIBUTES DLLEXPORT :: extendedHMsymbolsOrth
+
+
+
+
+
 
 !>  SYM_GL	encoded generator strings
 character(40),parameter :: SYM_GL(237)= (/  &

@@ -1584,7 +1584,7 @@ end subroutine ECPIndexingGetWeightFactors
 !> @date 01/26/16 MDG 1.0 original version
 !> @date 01/26/16 SS  1.1 corrected path; changed name
 !--------------------------------------------------------------------------
-recursive function GetPointGroup(xtalname,NoHDFInterfaceOpen) result(pgnum) &
+recursive function GetPointGroup(xtalname,NoHDFInterfaceOpen,sgnumber) result(pgnum) &
 bind(c, name = 'GetPointGroup')
 !DEC$ ATTRIBUTES DLLEXPORT :: GetPointGroup
 
@@ -1597,6 +1597,7 @@ IMPLICIT NONE
 
 character(1),dimension(fnlen),INTENT(IN)    :: xtalname
 logical,OPTIONAL,INTENT(IN)                 :: NoHDFInterfaceOpen
+integer,OPTIONAL,INTENT(OUT)                :: sgnumber
 integer(kind=irg)                           :: pgnum
 
 character(fnlen)                        :: filename, xtalname2
@@ -1641,26 +1642,27 @@ groupname = SC_CrystalData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 dataset = SC_AxialSymmetry
-call H5Lexists_f(HDF_head%objectID, trim(dataset), dexists, hdferr)
+  call H5Lexists_f(HDF_head%objectID, trim(dataset), dexists, hdferr)
 
-if(dexists) then
+  if(dexists) then
 
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, naxis)
+    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, naxis)
 
-  if(naxis .eq. 8) then
-    pgnum = 34
-  else if(naxis .eq. 10) then
-    pgnum = 35
-  else if(naxis .eq. 12) then
-    pgnum = 36
-  else
-    call FatalError('GetPointGroup','unknown 2D quasicrystal symmetry in '//trim(filename))
-  end if
+    if(naxis .eq. 8) then
+      pgnum = 34
+    else if(naxis .eq. 10) then
+      pgnum = 35
+    else if(naxis .eq. 12) then
+      pgnum = 36
+    else
+      call FatalError('GetPointGroup','unknown 2D quasicrystal symmetry in '//trim(filename))
+    end if
 
   else
     ! read the space group number from the file
     dataset = SC_SpaceGroupNumber
       call HDF_readDatasetInteger(dataset, HDF_head, hdferr, sgnum)
+    if (present(sgnumber)) sgnumber = sgnum
 
     ! and close everything
       call HDF_pop(HDF_head,.TRUE.)
