@@ -313,7 +313,7 @@ CALL C_F_PROCPOINTER (cproc, proc)
 
   ! Stuart Wright: for some reason the following calls do not work on my Windows 10 computer, VS 2015
   ! so I unwrapped the code to perform this function explicitly [modified with platform check, MDG]
-  if (trim(EMsoft_getEMsoftplatform().ne.'Windows')) then 
+  if (trim(EMsoft_getEMsoftplatform()).ne.'Windows')) then 
      mLPNHsum = sum(mLPNH,4)
      mLPSHsum = sum(mLPSH,4)
   else
