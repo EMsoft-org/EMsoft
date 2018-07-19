@@ -232,10 +232,6 @@ if(modalityname .eq. 'EBSD') then
         ipar(8) = dinl%ipf_ht
     end if
 
-
-    ipar(7) = dinl%ipf_wd
-    ipar(8) = dinl%ipf_ht
-
     allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
     indexmain = 0
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
