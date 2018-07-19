@@ -1,0 +1,10 @@
+ &CTFlist
+! modality  'EBSD' or 'ECP'
+ modality = 'EBSD',
+! which Euler angle data set do you want to use? 'original' or 'refined'
+ angledataset = 'original',
+! name of new ctf output file (relative to EMdatapathname)
+ newctffile = 'undefined',
+! name of input dot produt file (relative to EMdatapathname)
+ dotproductfile = 'undefined',
+ /

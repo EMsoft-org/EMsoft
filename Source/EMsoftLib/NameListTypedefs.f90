@@ -57,6 +57,13 @@ type GrainVizNameListType
         character(fnlen)        :: povname
 end type GrainVizNameListType
 
+! namelist for EMgetCTF program
+type CTFNameListType
+        character(4)            :: modality
+        character(8)            :: angledataset   ! 'original' or 'refined'
+        character(fnlen)        :: newctffile
+        character(fnlen)        :: dotproductfile
+end type CTFNameListType
 
 ! namelist for EMGBO program
 type GBONameListType

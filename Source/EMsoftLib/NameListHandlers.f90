@@ -136,7 +136,7 @@ end subroutine GetGrainVizNameList
 !> @param gvnl name list structure
 !> @param initonly [optional] logical
 !
-!> @date 04/22/18  MDG 1.0 new routine
+!> @date 07/18/18  MDG 1.0 new routine
 !--------------------------------------------------------------------------
 recursive subroutine GetChangeSettingNameList(nmlfile, csnl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetChangeSettingNameList
@@ -189,6 +189,74 @@ csnl%nthreads = nthreads
 csnl%orthorhombicSetting = orthorhombicSetting 
 
 end subroutine GetChangeSettingNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetCTFNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill csnl structure (used by EMgetCTF.f90)
+!
+!> @param nmlfile namelist file name
+!> @param csnl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 07/19/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetCTFNameList(nmlfile, csnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetCTFNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(CTFNameListType),INTENT(INOUT)         :: csnl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+character(4)            :: modality
+character(8)            :: angledataset   ! 'original' or 'refined'
+character(fnlen)        :: newctffile
+character(fnlen)        :: dotproductfile
+
+
+namelist /CTFlist/ modality, angledataset, dotproductfile, newctffile
+
+dotproductfile = 'undefined'
+newctffile = 'undefined'
+modality = 'EBSD'
+angledataset = 'original'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=CTFlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(dotproductfile).eq.'undefined') then
+  call FatalError('GetChangeSettingNameList:',' dotproductfile name is undefined in '//nmlfile)
+ end if
+
+ if (trim(newctffile).eq.'undefined') then
+  call FatalError('GetChangeSettingNameList:',' newctffile name is undefined in '//nmlfile)
+ end if
+end if
+
+csnl%dotproductfile = dotproductfile 
+csnl%newctffile = newctffile
+csnl%modality = trim(modality)
+csnl%angledataset = trim(angledataset) 
+
+end subroutine GetCTFNameList
+
 
 !--------------------------------------------------------------------------
 !

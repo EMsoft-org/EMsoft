@@ -69,7 +69,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
    Add_EMsoft_Executable(TARGET EMgetCTF
                       SOURCES ${APP_DIR}/EMgetCTF.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                      TEMPLATE ${TMPLT_DIR}/EMRefineOrientation.template 
+                      TEMPLATE ${TMPLT_DIR}/EMgetCTF.template 
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
  

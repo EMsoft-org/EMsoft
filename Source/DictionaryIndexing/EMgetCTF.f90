@@ -38,6 +38,7 @@
 !
 !> @date 03/07/18 MDG 1.0 original
 !> @date 03/12/18 MDG 1.1 replaced dot product file reading with call to subroutine
+!> @date 07/19/18 MDG 1.2 add option to extract refined Euler angles instead of regular array (for now only for EBSD modality)
 !--------------------------------------------------------------------------
 program EMgetCTF
 
@@ -71,8 +72,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen)                        :: nmldeffile, progname, progdesc
-type(RefineOrientationtype)             :: enl
-type(EBSDIndexingNameListType)          :: ebsdnl
+type(CTFNameListType)                   :: enl
+type(EBSDIndexingNameListType)          :: dinl
 type(ECPIndexingNameListType)           :: ecpnl
 type(EBSDDIdataType)                    :: EBSDDIdata
 type(ECPDIdataType)                     :: ECPDIdata
@@ -97,7 +98,7 @@ character(fnlen)                        :: ename, fname
 
 logical                                 :: verbose
 
-logical                                 :: f_exists, init, overwrite =.TRUE.
+logical                                 :: f_exists, init, overwrite =.TRUE., refined
 real(kind=sgl)                          :: quat(4), ma, mi, dp, tstart, tstop, io_real(1), tmp, totnum_el, genfloat, vlen
 integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tick, tock, ierr, L 
 integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2)
@@ -108,18 +109,18 @@ character(fnlen)                        :: modalityname
 
 init = .TRUE.
 
-nmldeffile = 'EMFitOrientation.nml'
+nmldeffile = 'EMgetCTF.nml'
 progname = 'EMgetCTF.f90'
-progdesc = 'Extract a .ctf file from a dot product HDF5 file'
+progdesc = 'Extract a regular or refined .ctf file from a dot product HDF5 file'
 
 ! print some information
 call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any
-call Interpret_Program_Arguments(nmldeffile,1,(/ 91 /), progname)
+call Interpret_Program_Arguments(nmldeffile, 1, (/ 18 /), progname)
 
 ! deal with the namelist stuff
-call GetRefineOrientationNameList(nmldeffile,enl)
+call GetCTFNameList(nmldeffile,enl)
 
 modalityname = trim(enl%modality)
 
@@ -130,13 +131,23 @@ modalityname = trim(enl%modality)
 call h5open_EMsoft(hdferr)
 
 if (trim(modalityname) .eq. 'EBSD') then
-    call readEBSDDotProductFile(enl%dotproductfile, ebsdnl, hdferr, EBSDDIdata, &
+    call readEBSDDotProductFile(enl%dotproductfile, dinl, hdferr, EBSDDIdata, &
                                 getCI=.TRUE., &
                                 getIQ=.TRUE., & 
                                 getOSM=.TRUE., & 
+                                getRefinedEulerAngles=.TRUE., &
                                 getPhi1=.TRUE., &
                                 getPhi=.TRUE., &
                                 getPhi2=.TRUE.) 
+
+    refined = .FALSE.
+    if (trim(enl%angledataset).eq.'refined') then 
+        if (allocated(EBSDDIdata%RefinedEulerAngles)) then
+            refined = .TRUE.
+        else
+            call FatalError('EMgetCTF','There is no refined Euler Angle dataset in this dot product file')
+        end if
+    end if
 
     Nexp = EBSDDIdata%Nexp
     allocate(euler_best(3,Nexp),CIlist(Nexp),stat=istat)
@@ -146,10 +157,19 @@ if (trim(modalityname) .eq. 'EBSD') then
     end if 
     euler_best = 0.0
     CIlist = 0.0
-    euler_best(1,1:Nexp) = EBSDDIdata%Phi1(1:Nexp)*180.0/cPi
-    euler_best(2,1:Nexp) = EBSDDIdata%Phi(1:Nexp)*180.0/cPi
-    euler_best(3,1:Nexp) = EBSDDIdata%Phi2(1:Nexp)*180.0/cPi
-    deallocate(EBSDDIdata%Phi1,EBSDDIdata%Phi,EBSDDIdata%Phi2)
+    if (refined.eqv..TRUE.) then
+        euler_best(1,1:Nexp) = EBSDDIdata%Phi1(1:Nexp)*180.0/cPi
+        euler_best(2,1:Nexp) = EBSDDIdata%Phi(1:Nexp)*180.0/cPi
+        euler_best(3,1:Nexp) = EBSDDIdata%Phi2(1:Nexp)*180.0/cPi
+        deallocate(EBSDDIdata%Phi1,EBSDDIdata%Phi,EBSDDIdata%Phi2)
+        call Message(' Using original Euler angles from dot product file')
+    else
+        euler_best(1,1:Nexp) = EBSDDIdata%RefinedEulerAngles(1,1:Nexp)*180.0/cPi
+        euler_best(2,1:Nexp) = EBSDDIdata%RefinedEulerAngles(2,1:Nexp)*180.0/cPi
+        euler_best(3,1:Nexp) = EBSDDIdata%RefinedEulerAngles(3,1:Nexp)*180.0/cPi
+        deallocate(EBSDDIdata%RefinedEulerAngles)
+        call Message(' Using refined Euler angles from dot product file')
+    end if 
     CIlist(1:Nexp) = EBSDDIdata%CI(1:Nexp)
     deallocate(EBSDDIdata%CI)
 
@@ -190,12 +210,12 @@ else
 end if
 
 ! read the Monte Carlo data file to get the xtal file name
-    call readEBSDMonteCarloFile(ebsdnl%masterfile, mcnl, hdferr, EBSDMCdata)
+    call readEBSDMonteCarloFile(dinl%masterfile, mcnl, hdferr, EBSDMCdata)
     pgnum = GetPointGroup(mcnl%xtalname,.FALSE.)
 
 ! and prepare the .ctf output file 
 if(modalityname .eq. 'EBSD') then
-    ebsdnl%ctffile = enl%ctffile
+    dinl%ctffile = enl%newctffile
     
     ipar = 0
     ipar(1) = 1
@@ -204,21 +224,30 @@ if(modalityname .eq. 'EBSD') then
     ipar(4) = Nexp
     ipar(5) = FZcnt
     ipar(6) = pgnum
-    ipar(7) = ebsdnl%ipf_wd
-    ipar(8) = ebsdnl%ipf_ht
+    if (sum(dinl%ROI).ne.0) then
+        ipar(7) = dinl%ROI(3)
+        ipar(8) = dinl%ROI(4)
+    else
+        ipar(7) = dinl%ipf_wd
+        ipar(8) = dinl%ipf_ht
+    end if
+
+
+    ipar(7) = dinl%ipf_wd
+    ipar(8) = dinl%ipf_ht
 
     allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
     indexmain = 0
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
-    if (ebsdnl%ctffile.ne.'undefined') then 
-      call ctfebsd_writeFile(ebsdnl,mcnl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM, &
+    if (dinl%ctffile.ne.'undefined') then 
+      call ctfebsd_writeFile(dinl,mcnl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM, &
                              EBSDDIdata%IQ,noindex=.TRUE.)
-      call Message('Data stored in ctf file : '//trim(enl%ctffile))
+      call Message('Data stored in ctf file : '//trim(enl%newctffile))
     end if
 else if(modalityname .eq. 'ECP') then
 
-    ecpnl%ctffile = enl%ctffile
+    ecpnl%ctffile = enl%newctffile
 
     ipar = 0
     ipar(1) = 1
@@ -234,7 +263,7 @@ else if(modalityname .eq. 'ECP') then
 
     if (ecpnl%ctffile.ne.'undefined') then 
       call ctfecp_writeFile(ecpnl,ipar,indexmain,euler_best,resultmain,noindex=.TRUE.)
-      call Message('Data stored in ctf file : '//trim(enl%ctffile))
+      call Message('Data stored in ctf file : '//trim(enl%newctffile))
     end if
 
 end if
