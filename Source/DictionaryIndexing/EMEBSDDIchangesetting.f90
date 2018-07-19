@@ -70,9 +70,9 @@ type(EBSDMPdataType)                        :: EBSDMPdata
 integer(kind=irg)                           :: hdferr, pgnum, sgnum, orthonum, i, TID, ipar(10) 
 character(fnlen)                            :: outstring, dataset, infile, groupname, comment
 real(kind=dbl)                              :: dtor, qrot(4), qin(4)
-real(kind=dbl),allocatable                  :: newEulers(:,:), newAvOr(:,:), oldEulers(:,:)
+real(kind=dbl),allocatable                  :: newEulers(:,:), newAvOr(:,:), oldEulers(:,:), newRefined(:,:)
 real(kind=sgl),allocatable                  :: eulers(:,:), ang(:), resultmain(:,:)
-logical                                     :: g_exists, readonly, verbose, overwrite = .TRUE.
+logical                                     :: g_exists, readonly, verbose, overwrite = .TRUE., transformRefined
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
 type(HDFobjectStackType),pointer            :: HDF_head
@@ -108,6 +108,7 @@ call readEBSDDotProductFile(csnl%dotproductfile, dinl, hdferr, EBSDDIdata, &
                             getPhi1=.TRUE., &
                             getPhi=.TRUE., &
                             getPhi2=.TRUE., &
+                            getRefinedEulerAngles=.TRUE., &
                             getAverageOrientations=.TRUE., &
                             getEulerAngles=.TRUE., &
                             getTopMatchIndices=.TRUE.)
@@ -115,6 +116,12 @@ call readEBSDDotProductFile(csnl%dotproductfile, dinl, hdferr, EBSDDIdata, &
 allocate(oldEulers(3,EBSDDIdata%FZcnt))
 allocate(newEulers(3,EBSDDIdata%FZcnt))
 allocate(newAvOr(3,EBSDDIdata%Nexp))
+
+transformRefined = .FALSE.
+if (allocated(EBSDDIdata%RefinedEulerAngles)) then
+  transformRefined = .TRUE.
+  allocate(newRefined(3,EBSDDIdata%Nexp))
+end if
 
 do i=1,EBSDDIdata%FZcnt
   oldEulers(1:3,i) = EBSDDIdata%EulerAngles(1:3,i)
@@ -202,8 +209,20 @@ do i=1,EBSDDIdata%Nexp
   newAvOr(1:3,i) = qu2eu(qin)
 end do
 !$OMP END DO
+if (TID.eq.0) call Message('  -> completed transformation of AverageOrientations array')
+
+if (transformRefined.eqv..TRUE.) then
+!$OMP DO SCHEDULE(DYNAMIC)
+  do i=1,EBSDDIdata%Nexp
+    qin = eu2qu(EBSDDIdata%RefinedEulerAngles(1:3,i))
+    qin = quat_mult(qrot,qin)
+    newRefined(1:3,i) = qu2eu(qin)
+  end do
+!$OMP END DO
+  if (TID.eq.0) call Message('  -> completed transformation of RefinedEulerAngles array')
+end if
+
 !$OMP END PARALLEL
-call Message('  -> completed transformation of AverageOrientations array')
 
 newEulers = newEulers / dtor
 newAvOr = newAvOr / dtor
@@ -253,6 +272,21 @@ end if
 ! then, overwrite the existing EulerAngles data set with the rotated orientations
 dataset = SC_AverageOrientations
 hdferr = HDF_writeDatasetFloatArray2D(dataset, sngl(newAvOr), 3, EBSDDIdata%Nexp, HDF_head, overwrite)
+
+if (transformRefined.eqv..TRUE.) then
+  ! next, create a new RefinedEulerAnglesOriginal array and write the original angles to its
+  dataset = 'RefinedEulerAnglesOriginal'
+  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  if (g_exists) then 
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, EBSDDIdata%RefinedEulerAngles, 3, EBSDDIdata%Nexp, HDF_head, overwrite)
+  else
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, EBSDDIdata%RefinedEulerAngles, 3, EBSDDIdata%Nexp, HDF_head)
+  end if
+
+  ! then, overwrite the existing EulerAngles data set with the rotated orientations
+  dataset = SC_RefinedEulerAngles
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, sngl(newRefined), 3, EBSDDIdata%Nexp, HDF_head, overwrite)
+end if
 
 ! add an explanatory data set
 comment = 'Original orthorhombic setting changed to '//extendedOrthsettings(csnl%orthorhombicSetting)// &
