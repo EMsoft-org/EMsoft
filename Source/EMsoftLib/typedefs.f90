@@ -968,6 +968,8 @@ end type
 !
 !> the following entries used to be globals in diffraction.f90 [MDG, 12/02/14]
 !>  voltage,mLambda,mRelcor,mSigma,mPsihat
+!>
+!> added source string on 07/19/18 [MDG]
 
 type unitcell
   real(kind=dbl)                       :: a,b,c,alpha,beta,gamma
@@ -976,6 +978,7 @@ type unitcell
   real(kind=sgl)                       :: ATOM_pos(maxpasym,5)
   integer(kind=irg)                    :: numat(maxpasym)      !< number of atoms of each type in the asymmetric unit
   character(fnlen)                     :: fname
+  character(fnlen)                     :: source
   logical                              :: hexset
   real(kind=dbl),allocatable           :: apos(:,:,:)
   complex(kind=dbl),allocatable        :: LUT(:,:,:), SghLUT(:,:,:,:)

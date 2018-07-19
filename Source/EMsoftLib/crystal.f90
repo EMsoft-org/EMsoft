@@ -1323,8 +1323,8 @@ type(unitcell),INTENT(INOUT)            :: cell
 logical                                 :: more                 !< logical to determine if more atoms need to be entered
 character(1)                            :: ans, list(256)       !< used for IO
 real(kind=sgl)                          :: pt(5), out_real(5)   !< used to read and write asymmetric position data
-integer(kind=irg)                       :: j, io_int(1) , std   !< auxiliary variables
-
+integer(kind=irg)                       :: i, j, io_int(1), std, sl   !< auxiliary variables
+character(fnlen)                        :: instring
  
  more=.TRUE.
  cell%ATOM_ntype = 0
@@ -1341,7 +1341,16 @@ integer(kind=irg)                       :: j, io_int(1) , std   !< auxiliary var
 ! general atom coordinate
   list = (/ (' ',j=1,256) /)
   call Message(' ->  Fractional coordinates, site occupation, and Debye-Waller Factor [nm^2] : ', frm = "(A,' ',$)")
-  read (5,"(256A)") list
+  read (5,"(A)") instring
+! read (5,"(256A)") list
+  sl = len(trim(instring))
+  j = 0
+  do i=1,sl
+    if (instring(i:i).ne.' ') then
+      j = j+1
+      list(j) = instring(i:i)
+    end if
+  end do
 
 ! interpret this string and extract coordinates and such ...
   call extractposition(list,pt) 
@@ -1447,6 +1456,8 @@ integer(kind=irg)                       :: comma(6),slash(5),period(5), &
 integer(kind=irg),parameter             :: nmb(48:57)=(/0,1,2,3,4,5,6,7,8,9/)   !< list of numbers
 real(kind=dbl)                          :: nominator,denominator,x              !< used for fraction interpretation
 logical                                 :: hasperiod                            !< used for decimal interpretation
+
+! first, make sure all the spaces are removed from the list array
 
 ! initalize a few variables
  comma(1:6) = 0

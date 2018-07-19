@@ -121,6 +121,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                                     SOLUTION_FOLDER EMsoftPublic/Utilities 
                                     INSTALL_PROGRAM TRUE)
 
+      Add_EMsoft_Executable(TARGET EMxtalExtract 
+                                    SOURCES ${APP_DIR}/EMxtalExtract.f90 
+                                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                                    SOLUTION_FOLDER EMsoftPublic/Utilities 
+                                    INSTALL_PROGRAM TRUE)
+
       Add_EMsoft_Executable(TARGET EMdrawcell 
                                     SOURCES ${APP_DIR}/EMdrawcell.f90 
                                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}

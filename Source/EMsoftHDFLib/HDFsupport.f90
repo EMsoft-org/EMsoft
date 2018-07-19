@@ -6428,7 +6428,7 @@ type(HDFobjectStackType),pointer        :: HDF_head
 
 character(11)                           :: dstr
 character(15)                           :: tstr
-character(fnlen)                        :: progname = 'EMmkxtal.f90', groupname, dataset, fname
+character(fnlen)                        :: progname = 'EMmkxtal.f90', groupname, dataset, fname, strings(1)
 integer(kind=irg)                       :: hdferr
 real(kind=dbl)                          :: cellparams(6)
 integer(kind=irg),allocatable           :: atomtypes(:)
@@ -6517,6 +6517,11 @@ hdferr = HDF_writeDatasetFloatArray2D(dataset, atompos, cell%ATOM_ntype, 5, HDF_
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetFloatArray2D:'//trim(dataset), hdferr)
 deallocate(atompos)
 
+dataset = SC_Source
+strings(1) = trim(cell%source)
+hdferr = HDF_writeDatasetStringArray(dataset, strings, 1, HDF_head)
+call HDFerror_check('SaveDataHDF:HDF_writeDatasetStringArray:'//trim(dataset), hdferr)
+
 if (openHDFfile) then
   call HDF_pop(HDF_head,.TRUE.)
   call h5close_EMsoft(hdferr)
@@ -6555,6 +6560,7 @@ use io
 use crystal
 use error
 use HDF5
+use ISO_C_BINDING
  
 IMPLICIT NONE
 
@@ -6565,12 +6571,14 @@ type(HDFobjectStackType),pointer        :: HDF_head
 
 character(fnlen)                        :: dataset, groupname, fname
 integer(HSIZE_T)                        :: dims(1), dims2(2)
-integer(kind=irg)                       :: hdferr
+integer(kind=irg)                       :: hdferr, nlines
 real(kind=dbl),allocatable              :: cellparams(:)
 integer(kind=irg),allocatable           :: atomtypes(:)
 real(kind=sgl),allocatable              :: atompos(:,:)
 character(fnlen)                        :: pp
-logical                                 :: openHDFfile
+logical                                 :: openHDFfile, d_exists
+character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
@@ -6643,6 +6651,17 @@ call HDFerror_check('ReadDataHDF:HDF_readDatasetFloatArray2D:'//trim(dataset), h
 
 cell%ATOM_pos(1:cell%ATOM_ntype,1:5) = atompos(1:cell%ATOM_ntype,1:5) 
 deallocate(atompos)
+
+dataset = SC_Source
+call H5Lexists_f(HDF_head%objectID,trim(dataset),d_exists, hdferr)
+if (d_exists) then 
+  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+  cell%source = trim(stringarray(1))
+  deallocate(stringarray)
+else
+  cell%source = 'undefined'
+  call Message('ReadDataHDF: There is no Source data set in this structure file')
+end if
 
 if (openHDFfile) then
   call HDF_pop(HDF_head,.TRUE.)

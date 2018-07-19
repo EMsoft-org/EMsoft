@@ -56,7 +56,7 @@ use files
 IMPLICIT NONE
 
 type(unitcell), pointer         :: cell
-character(fnlen)                :: progname, progdesc, fname
+character(fnlen)                :: progname, progdesc, fname, source
 integer(kind=irg)               :: numarg, i
 integer(kind=irg)               :: iargc        !< external function for command line
 character(fnlen)                :: arg          !< to be read from the command line
@@ -101,7 +101,12 @@ logical                         :: useWyckoff
   call GetAsymPos(cell)
  end if
  call ReadValue('Enter output file name (*.xtal) ', fname)
+
+ call ReadValue('Enter the source for this data [max. 512 characters] ', source)
+ cell%source = trim(source)
  cell%fname = fname
+
+ write (*,*) 'Source = '//trim(cell%source)
  call SaveDataHDF(cell)
 
 end program EMmkxtal
