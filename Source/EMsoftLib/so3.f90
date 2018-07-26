@@ -348,10 +348,10 @@ real(kind=dbl), INTENT(IN)                :: rod(4)
 integer(kind=irg), INTENT(IN)             :: order
 
 logical                                   :: res, c1, c2
-real(kind=dbl)                            :: r(3)
+real(kind=dbl)                            :: r(3), px, py
 real(kind=dbl),parameter                  :: r1 = 1.00D0
 real(kind=dbl),allocatable                :: polygonvertex(:,:)
-integer(kind=irg)                         :: inout
+integer(kind=irg)                         :: inout, ii
 
 if (rod(4).gt.1.5) then 
   res = .FALSE.
@@ -384,22 +384,22 @@ else
 
       ! add the 2-D quasi crystal type for 822, 1022, and 1222 rotational groups
       case (8)
+        c2  = .FALSE.
         allocate(polygonvertex(order*2, 2))
-        polygonvertex = 0.D0
         call getVertex(order, polygonvertex)
         inout = PNPOLY(r(1),r(2),polygonvertex(1:2*order,1),polygonvertex(1:2*order,2),order*2)
         if(inout .ge. 0) c2 = .TRUE.
 
       case (10)
+        c2 = .FALSE.
         allocate(polygonvertex(order*2, 2))
-        polygonvertex = 0.D0
         call getVertex(order, polygonvertex)
         inout = PNPOLY(r(1),r(2),polygonvertex(1:2*order,1),polygonvertex(1:2*order,2),order*2)
         if(inout .ge. 0) c2 = .TRUE.
 
       case(12)
-        allocate(polygonvertex(order*2, 2))
-        polygonvertex = 0.D0
+        c2  = .FALSE.
+        allocate(polygonvertex(order*2, 2))  
         call getVertex(order, polygonvertex)
         inout = PNPOLY(r(1),r(2),polygonvertex(1:2*order,1),polygonvertex(1:2*order,2),order*2)
         if(inout .ge. 0) c2 = .TRUE.
@@ -1774,9 +1774,9 @@ end function insideDihedralMFZ
 !
 !> @brief get vertices of RFZ for quasicrystals (dihedral symmetries)
 !
-!> @param order name of the Euler angle file (with usual path handling)
-!> @param vertex the number of components in the returned linked list
-!
+!> @param order  order of the FZ
+!> @param vertex vertices of the FZ
+
 !> @date 06/18/18 SS 1.0 original
 !--------------------------------------------------------------------------
 recursive subroutine getVertex(order, vertex)
@@ -1792,96 +1792,72 @@ real(kind=dbl),INTENT(OUT)              :: vertex(2*order,2)
 integer(kind=irg)                       :: ii
 real(kind=dbl)                          :: th
 
+vertex = 0.D0
 do ii = 1,2*order
   th  = (dble(ii - 1)/dble(order) + 1.D0/2.D0/dble(order)) * cPi
   vertex(ii,1:2) = (/dcos(th), dsin(th)/)
 end do
 
 end subroutine getVertex
-                                                                
-!                                                                      
-!     ..................................................................
-!                                                                       
-!        SUBROUTINE PNPOLY                                              
-!                                                                       
-!        PURPOSE                                                        
-!           TO DETERMINE WHETHER A POINT IS INSIDE A POLYGON            
-!                                                                       
-!        USAGE                                                          
-!           CALL PNPOLY (PX, PY, XX, YY, N, INOUT )                     
-!                                                                       
-!        DESCRIPTION OF THE PARAMETERS                                  
-!           PX      - X-COORDINATE OF POINT IN QUESTION.                
-!           PY      - Y-COORDINATE OF POINT IN QUESTION.                
-!           XX      - N LONG VECTOR CONTAINING X-COORDINATES OF         
-!                     VERTICES OF POLYGON.                              
-!           YY      - N LONG VECTOR CONTAING Y-COORDINATES OF           
-!                     VERTICES OF POLYGON.                              
-!           N       - NUMBER OF VERTICES IN THE POLYGON.                
-!           INOUT   - THE SIGNAL RETURNED:                              
-!                     -1 IF THE POINT IS OUTSIDE OF THE POLYGON,        
-!                      0 IF THE POINT IS ON AN EDGE OR AT A VERTEX,     
-!                      1 IF THE POINT IS INSIDE OF THE POLYGON.         
-!                                                                       
-!        REMARKS                                                        
-!           THE VERTICES MAY BE LISTED CLOCKWISE OR ANTICLOCKWISE.      
-!           THE FIRST MAY OPTIONALLY BE REPEATED, IF SO N MAY           
-!           OPTIONALLY BE INCREASED BY 1.                               
-!           THE INPUT POLYGON MAY BE A COMPOUND POLYGON CONSISTING      
-!           OF SEVERAL SEPARATE SUBPOLYGONS. IF SO, THE FIRST VERTEX    
-!           OF EACH SUBPOLYGON MUST BE REPEATED, AND WHEN CALCULATING   
-!           N, THESE FIRST VERTICES MUST BE COUNTED TWICE.              
-!           INOUT IS THE ONLY PARAMETER WHOSE VALUE IS CHANGED.         
-!           THE SIZE OF THE ARRAYS MUST BE INCREASED IF N > MAXDIM      
-!           WRITTEN BY RANDOLPH FRANKLIN, UNIVERSITY OF OTTAWA, 7/70.   
-!                                                                       
-!        SUBROUTINES AND FUNCTION SUBPROGRAMS REQUIRED                  
-!           NONE                                                        
-!                                                                       
-!        METHOD                                                         
-!           A VERTICAL LINE IS DRAWN THRU THE POINT IN QUESTION. IF IT  
-!           CROSSES THE POLYGON AN ODD NUMBER OF TIMES, THEN THE        
-!           POINT IS INSIDE OF THE POLYGON.                             
-!                                                                       
-!     ..................................................................
-!                                                                       
-      RECURSIVE FUNCTION PNPOLY(PX,PY,XX,YY,N) RESULT(INOUT)
 
-      IMPLICIT NONE
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: PNPOLY
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief get check if point lies inside convex polygon given its vertices
+!> points can be in clockwise or counter-clockwise order
+!
+!> @param px x-coordinates of point to check
+!> @param py y-coordinates of point to check
+!> @param xx x coordinates of the polygon
+!> @param yy y coordinates of the polygon
+!> @param n  number of points in polygon
+!> @result inout if point is in(+1), out (-1) or on the edge (0)
+!
+!> @date 07/26/18 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive function PNPOLY(px, py, xx, yy, n) result(inout)
+!DEC$ ATTRIBUTES DLLEXPORT :: PNPOLY
 
-      REAL(KIND=DBL) PX, PY
-      INTEGER(KIND=IRG) N
+use local
 
-      REAL(KIND=DBL) X(200),Y(200),XX(N),YY(N)                                    
-      LOGICAL MX,MY,NX,NY                                         
-      INTEGER O,INOUT,I,J,MAXDIM                                                         
-!      OUTPUT UNIT FOR PRINTED MESSAGES                                 
-      DATA O/6/                                                         
-      MAXDIM=200                                                        
-      IF(N.LE.MAXDIM)GO TO 6                                            
-      WRITE(O,7)                                                        
-7     FORMAT('0WARNING:',I5,' TOO GREAT FOR THIS VERSION OF PNPOLY. RESULTS INVALID')                                                 
-      RETURN                                                            
-6     DO 1 I=1,N                                                        
-      X(I)=XX(I)-PX                                                     
-1     Y(I)=YY(I)-PY                                                     
-      INOUT=-1                                                          
-      DO 2 I=1,N                                                        
-      J=1+MOD(I,N)                                                      
-      MX=X(I).GE.0.0                                                    
-      NX=X(J).GE.0.0                                                    
-      MY=Y(I).GE.0.0                                                    
-      NY=Y(J).GE.0.0                                                    
-      IF(.NOT.((MY.OR.NY).AND.(MX.OR.NX)).OR.(MX.AND.NX)) GO TO 2       
-      IF(.NOT.(MY.AND.NY.AND.(MX.OR.NX).AND..NOT.(MX.AND.NX))) GO TO 3  
-      INOUT=-INOUT                                                      
-      GO TO 2                                                           
-3     IF((Y(I)*X(J)-X(I)*Y(J))/(X(J)-X(I))) 2,4,5                       
-4     INOUT=0                                                           
-      RETURN                                                            
-5     INOUT=-INOUT                                                      
-2     CONTINUE                                                          
-      RETURN                                                            
-      END FUNCTION PNPOLY
+IMPLICIT NONE
+
+real(kind=dbl), INTENT(IN)              :: px
+real(kind=dbl), INTENT(IN)              :: py
+real(kind=dbl),INTENT(IN)               :: xx(n)                                                          
+real(kind=dbl),INTENT(IN)               :: yy(n)                                                          
+integer(kind=irg),INTENT(IN)            :: n
+
+integer(kind=irg)                       :: inout
+real(kind=dbl)                          :: xa, xb, ya, yb, det
+real(kind=dbl),parameter                :: eps = 1.0D-8
+integer(kind=irg)                       :: ii, jj, id1, id2
+
+do ii = 1, n-1
+
+  jj = 1 + ii
+
+  inout = 1
+  xa = xx(ii) - px
+  ya = yy(ii) - py
+  xb = xx(jj) - px
+  yb = yy(jj) - py
+
+  det = xa * yb - ya * xb
+  if(abs(det) .lt. eps) then
+    inout = 0
+    return
+  end if
+  if(det .lt. 0.D0) then
+    inout = -1
+    return
+  end if
+
+end do
+
+end function PNPOLY
 
 end module so3
