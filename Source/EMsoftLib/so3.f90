@@ -384,6 +384,7 @@ else
 
       ! add the 2-D quasi crystal type for 822, 1022, and 1222 rotational groups
       case (8)
+        c2 = .FALSE.
         allocate(polygonvertex(order*2, 2))
         polygonvertex = 0.D0
         call getVertex(order, polygonvertex)
@@ -391,6 +392,7 @@ else
         if(inout .ge. 0) c2 = .TRUE.
 
       case (10)
+        c2 = .FALSE.
         allocate(polygonvertex(order*2, 2))
         polygonvertex = 0.D0
         call getVertex(order, polygonvertex)
@@ -398,6 +400,7 @@ else
         if(inout .ge. 0) c2 = .TRUE.
 
       case(12)
+        c2 = .FALSE.
         allocate(polygonvertex(order*2, 2))
         polygonvertex = 0.D0
         call getVertex(order, polygonvertex)
