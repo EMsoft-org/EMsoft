@@ -72,14 +72,14 @@ use local
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)	:: NumLines
-character(fnlen),INTENT(IN)		:: MessageLines(NumLines)
-character(fnlen),INTENT(IN)		:: MessageTitle
-integer(kind=irg)				:: status
+integer(kind=irg),INTENT(IN) :: NumLines
+character(fnlen),INTENT(IN)  :: MessageLines(NumLines)
+character(fnlen),INTENT(IN)  :: MessageTitle
+integer(kind=irg)            :: status
 
-character(fnlen)				:: EMSlackWebHookURL, EMSlackChannel
-character(4096)					:: JSONMessage, cmd
-integer(kind=irg)				:: j
+character(fnlen)             :: EMSlackWebHookURL, EMSlackChannel
+character(4096)              :: JSONMessage, cmd
+integer(kind=irg)            :: j
 
 status = 0
 
@@ -93,20 +93,20 @@ if (len(trim(EMSlackChannel)).eq.0) status = -21
 
 if (status.eq.0) then
 ! put the json message together
-	JSONMessage = '{"channel": "'
-	JSONMessage = trim(JSONMessage)//trim(EMSlackChannel)//'",'
-	JSONMessage = trim(JSONMessage)//' "username": "'//trim(MessageTitle)//'",'
-	JSONMessage = trim(JSONMessage)//' "icon_url": "http://muri.materials.cmu.edu/wp-content/uploads/2017/08/128x128.png",'
-	JSONMessage = trim(JSONMessage)//' "text": "'
+   JSONMessage = '{"channel": "'
+   JSONMessage = trim(JSONMessage)//trim(EMSlackChannel)//'",'
+   JSONMessage = trim(JSONMessage)//' "username": "'//trim(MessageTitle)//'",'
+   JSONMessage = trim(JSONMessage)//' "icon_url": "http://muri.materials.cmu.edu/wp-content/uploads/2017/08/128x128.png",'
+   JSONMessage = trim(JSONMessage)//' "text": "'
 
-	do j=1,NumLines-1
-	  JSONMessage = trim(JSONMessage)//trim(MessageLines(j))//'\n'
-	end do
-	JSONMessage = trim(JSONMessage)//trim(MessageLines(NumLines))//'"}'
+   do j=1,NumLines-1
+     JSONMessage = trim(JSONMessage)//trim(MessageLines(j))//'\n'
+   end do
+   JSONMessage = trim(JSONMessage)//trim(MessageLines(NumLines))//'"}'
 
-	! and generate the curl command string
-	cmd = 'curl -s -d ''payload='//trim(JSONMessage)//''' '//trim(EMSlackWebHookURL)//' >/dev/null'
-	call system(cmd)
+ ! and generate the curl command string
+   cmd = 'curl -s -d ''payload='//trim(JSONMessage)//''' '//trim(EMSlackWebHookURL)//' >/dev/null'
+   call system(cmd)
 end if
 
 end function PostSlackMessage
@@ -132,14 +132,14 @@ use local
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)	:: NumLines
-character(fnlen),INTENT(IN)		:: MessageLines(NumLines)
-character(fnlen),INTENT(IN)		:: MessageTitle
-integer(kind=irg)				:: status
+integer(kind=irg),INTENT(IN) :: NumLines
+character(fnlen),INTENT(IN)  :: MessageLines(NumLines)
+character(fnlen),INTENT(IN)  :: MessageTitle
+integer(kind=irg)            :: status
 
-character(fnlen)				:: UserEmail
-character(4096)					:: EmailMessage, cmd
-integer(kind=irg)				:: j
+character(fnlen)             :: UserEmail
+character(4096)              :: EmailMessage, cmd
+integer(kind=irg)            :: j
 
 status = 0
 
@@ -147,19 +147,19 @@ status = 0
 UserEmail = EMsoft_getUseremail()
 
 if (len(trim(UserEmail)).eq.0) then 
-  status = -10
+   status = -10
 else
 ! put the email message together
-	EmailMessage = '\nEMsoft automated email message service\n\n'
+   EmailMessage = '\nEMsoft automated email message service\n\n'
 
-	do j=1,NumLines-1
-  		EmailMessage = trim(EmailMessage)//trim(MessageLines(j))//'\n'
-	end do
-	EmailMessage = trim(EmailMessage)//trim(MessageLines(NumLines))
+   do j=1,NumLines-1
+      EmailMessage = trim(EmailMessage)//trim(MessageLines(j))//'\n'
+   end do
+   EmailMessage = trim(EmailMessage)//trim(MessageLines(NumLines))
 
 ! and generate the email send command string
-	cmd = 'echo "'//trim(EmailMessage)//'" | mail -s "Message from '//trim(MessageTitle)//'" '//trim(UserEmail)
-	call system(cmd)
+   cmd = 'echo "'//trim(EmailMessage)//'" | mail -s "Message from '//trim(MessageTitle)//'" '//trim(UserEmail)
+   call system(cmd)
 end if
 
 end function PostEmailMessage
@@ -186,42 +186,42 @@ use io
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)	:: NumLines
-character(fnlen),INTENT(IN)		:: MessageLines(NumLines)
-character(fnlen),INTENT(IN)		:: MessageTitle
-integer(kind=irg)				:: status
+integer(kind=irg),INTENT(IN) :: NumLines
+character(fnlen),INTENT(IN)  :: MessageLines(NumLines)
+character(fnlen),INTENT(IN)  :: MessageTitle
+integer(kind=irg)            :: status
 
-character(fnlen)				:: notifymode, platform
-integer(kind=irg)				:: ierr
+character(fnlen)             :: notifymode, platform
+integer(kind=irg)            :: ierr
 
 platform = EMsoft_getEMsoftplatform()
 if (trim(platform).ne.'Windows') then
 
 ! get the notification mode (should be 'Email' or 'Slack')
-	notifymode = EMsoft_getNotify()
+   notifymode = EMsoft_getNotify()
 
-	if (notifymode.eq.'Email') then
-	  ierr = PostEmailMessage(MessageLines, NumLines, MessageTitle)
-	else 
-	  ierr = PostSlackMessage(MessageLines, NumLines, MessageTitle)
-	end if
+   if (notifymode.eq.'Email') then
+     ierr = PostEmailMessage(MessageLines, NumLines, MessageTitle)
+   else 
+     ierr = PostSlackMessage(MessageLines, NumLines, MessageTitle)
+   end if
 
 ! do some error handling based on the value of ierr
-	if (ierr.ne.0) then
-	  select case (ierr) 
-	    case(-10)
-	    	call Message('PostMessage Warning: User email address not set in EMsoftConfig.json configuration file') 
-	    case(-20)
-	    	call Message('PostMessage Warning: SlackWebHookURL not set in EMsoftConfig.json configuration file') 
-	    case(-21)
-	    	call Message('PostMessage Warning: SlackChannel not set in EMsoftConfig.json configuration file') 
-	    case default
-	  end select
-	  call Message('Message not posted via '//trim(notifymode))
-	end if
+   if (ierr.ne.0) then
+     select case (ierr) 
+       case(-10)
+        call Message('PostMessage Warning: User email address not set in EMsoftConfig.json configuration file') 
+       case(-20)
+        call Message('PostMessage Warning: SlackWebHookURL not set in EMsoftConfig.json configuration file') 
+       case(-21)
+        call Message('PostMessage Warning: SlackChannel not set in EMsoftConfig.json configuration file') 
+       case default
+     end select
+     call Message('Message not posted via '//trim(notifymode))
+   end if
 
 else
-	call Message('PostMessage Warning: notifications are disabled on Windows at this time')
+   call Message('PostMessage Warning: notifications are disabled on Windows at this time')
 end if
 
 end function PostMessage
