@@ -2349,6 +2349,7 @@ end subroutine CheckPatternSymmetry
 !> @date  08/25/15 MDG 1.0 original
 !> @date  08/26/15 MDG 1.1 added point group cases 14 and 26
 !> @date  11/06/15 MDG 1.2 fixed special cases (errors for trigonal symmetry)
+!> @date  07/30/18 MDG 1.3 correction of space groups 166 and 167 (after error in Calcite EBSD master)
 !--------------------------------------------------------------------------
 recursive function getHexvsRho(cell,pgnum) result(stnum)
 !DEC$ ATTRIBUTES DLLEXPORT :: getHexvsRho
@@ -2389,7 +2390,7 @@ if (cell%SG%SYM_trigonal.eqv..TRUE.) then ! yes, it is
 ! point group bar3m
   if ((sg.eq.162).or.(sg.eq.163)) stnum = 17
   if ((sg.eq.164).or.(sg.eq.165)) stnum = 17 ! 16
-  if ((sg.eq.166).or.(sg.eq.167)) stnum = 17 ! 16
+  if ((sg.eq.166).or.(sg.eq.167)) stnum = 16 ! 17 ! 16
 else
 ! this must be either point group 14 or 26, each with two settings
   if (pgnum.eq.14) then
