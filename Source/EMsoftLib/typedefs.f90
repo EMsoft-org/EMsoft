@@ -272,11 +272,7 @@ character(11), parameter :: extendedHMOrthsymbols(6,59) = reshape( (/ &
     " I b a m   ", " I b a m   ", " I m c b   ", " I m c b   ", " I c m a   ", " I c m a   ", &
     " I b c a   ", " I c a b   ", " I b c a   ", " I c a b   ", " I b c a   ", " I c a b   ", &
     " I m m a   ", " I m m b   ", " I b m m   ", " I c m m   ", " I m c m   ", " I m a m   " /), (/6, 59/) )
-!DEC$ ATTRIBUTES DLLEXPORT :: extendedHMsymbolsOrth
-
-
-
-
+!DEC$ ATTRIBUTES DLLEXPORT :: extendedHMOrthsymbols
 
 
 !>  SYM_GL	encoded generator strings
