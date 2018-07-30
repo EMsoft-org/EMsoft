@@ -309,7 +309,7 @@ real(kind=dbl),parameter                            :: nAmpere = 6.241D+18   ! C
 
 integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                        recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
-                                                       recordsize_correct, patsz, tickstart, tock, npy, sz(3)
+                                                       recordsize_correct, patsz, tickstart, tock, npy, sz(3), jjj
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 real(kind=sgl),pointer                              :: dict(:), T0dict(:)
 real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
@@ -1006,17 +1006,18 @@ dictionaryloop: do ii = 1,cratio+1
 
 ! this might be simplified later for the remainder of the patterns
         do qq = 1,ppendE(jj)
+            jjj = (jj-1)*Ne+qq
             resultarray(1:Nd) = results((qq-1)*Nd+1:qq*Nd)
             indexarray(1:Nd) = indexlist((iii-1)*Nd+1:iii*Nd)
 
             call SSORT(resultarray,indexarray,Nd,-2)
-            resulttmp(nnk+1:2*nnk,(jj-1)*Ne+qq) = resultarray(1:nnk)
-            indextmp(nnk+1:2*nnk,(jj-1)*Ne+qq) = indexarray(1:nnk)
+            resulttmp(nnk+1:2*nnk,jjj) = resultarray(1:nnk)
+            indextmp(nnk+1:2*nnk,jjj) = indexarray(1:nnk)
 
-            call SSORT(resulttmp(:,(jj-1)*Ne+qq),indextmp(:,(jj-1)*Ne+qq),2*nnk,-2)
+            call SSORT(resulttmp(:,jjj),indextmp(:,jjj),2*nnk,-2)
 
-            resultmain(1:nnk,(jj-1)*Ne+qq) = resulttmp(1:nnk,(jj-1)*Ne+qq)
-            indexmain(1:nnk,(jj-1)*Ne+qq) = indextmp(1:nnk,(jj-1)*Ne+qq)
+            resultmain(1:nnk,jjj) = resulttmp(1:nnk,jjj)
+            indexmain(1:nnk,jjj) = indextmp(1:nnk,jjj)
         end do
       end do experimentalloop
 
