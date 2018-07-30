@@ -93,6 +93,59 @@ contains
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: GetEMsoftXtalSystem
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  convert a space group to the EMsoft xtal system numbering
+! 
+!> @date   07/30/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function GetEMsoftXtalSystem(iSG) result(xs)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMsoftXtalSystem
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)       :: iSG
+integer(kind=irg)                  :: xs
+
+integer(kind=irg)                  :: i, j 
+
+! first get the crystal system number in the international numbering scheme
+j = 0
+do i=1,7
+  if (SGXsym(i).lt.iSG) j = j+1
+end do
+
+! and convert it to the EMsoft internal numbering scheme
+! 1. Cubic
+! 2. Tetragonal
+! 3. Orthorhombic
+! 4. Hexagonal
+! 5. Trigonal
+! 6. Monoclinic
+! 7. Triclinic
+select case(j)
+  case(1)
+    xs = 7
+  case(2)
+    xs = 6
+  case(3)
+    xs = 3
+  case(4)
+    xs = 2
+  case(5)
+    xs = 5
+  case(6)
+    xs = 4
+  case(7)
+    xs = 1
+end select
+
+end function GetEMsoftXtalSystem
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: ResetCell
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -158,8 +211,6 @@ type(unitcell),pointer  :: cell
  if (associated(cell%reflist)) nullify(cell%reflist)
 
 end subroutine ResetCell
-
-
 
 !--------------------------------------------------------------------------
 !

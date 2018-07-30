@@ -358,7 +358,9 @@ character(40),parameter :: SYM_GL(237)= (/  &
 "02dOOOlDDD0                             ","12dOOOfOOO0                             ","12dOOOfDDD0                             "/) 
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_GL
 
-
+!> SGXsym contains the first space group of each crystal system
+integer(kind=irg),parameter :: SGXsym(7) = (/ 1, 3, 16, 75, 143, 168, 195 /)
+!DEC$ ATTRIBUTES DLLEXPORT :: SGXsym
 
 !>  SGPG contains the first space group # for a given point group
 integer(kind=irg),parameter :: SGPG(32) =(/1,2,3,6,10,16,25,47,75,81,83,89,99,111,123,143, &

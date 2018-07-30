@@ -38,6 +38,7 @@
 046EMEBSDFull
 047EMEBSDDIpreview
 048EMEBSDDIchangesetting
+049EMEBSDSGtest
 050EMoverlap
 060EMsampleRFZ
 070EMECPIndexing
