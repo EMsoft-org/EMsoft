@@ -110,14 +110,14 @@ integer(kind=irg),INTENT(IN)       :: iSG
 integer(kind=irg)                  :: xs
 
 integer(kind=irg)                  :: i, j 
+integer(kind=irg),parameter        :: icv(7) = (/ 7, 6, 3, 2, 5, 4, 1 /)
 
 ! first get the crystal system number in the international numbering scheme
 j = 0
 do i=1,7
-  if (SGXsym(i).lt.iSG) j = j+1
+  if (SGXsym(i).le.iSG) j = j+1
 end do
 
-! and convert it to the EMsoft internal numbering scheme
 ! 1. Cubic
 ! 2. Tetragonal
 ! 3. Orthorhombic
@@ -125,22 +125,8 @@ end do
 ! 5. Trigonal
 ! 6. Monoclinic
 ! 7. Triclinic
-select case(j)
-  case(1)
-    xs = 7
-  case(2)
-    xs = 6
-  case(3)
-    xs = 3
-  case(4)
-    xs = 2
-  case(5)
-    xs = 5
-  case(6)
-    xs = 4
-  case(7)
-    xs = 1
-end select
+
+xs = icv(j)
 
 end function GetEMsoftXtalSystem
 

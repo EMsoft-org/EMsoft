@@ -73,6 +73,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                                     SOLUTION_FOLDER EMsoftPublic/Utilities 
                                     INSTALL_PROGRAM TRUE)
 
+      Add_EMsoft_Executable(TARGET EMshowxtal
+                                    SOURCES ${APP_DIR}/EMshowxtal.f90 
+                                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                                    SOLUTION_FOLDER EMsoftPublic/Utilities 
+                                    INSTALL_PROGRAM TRUE)
+
       Add_EMsoft_Executable(TARGET EMstar 
                                     SOURCES ${APP_DIR}/EMstar.f90 
                                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}

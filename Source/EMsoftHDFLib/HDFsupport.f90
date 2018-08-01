@@ -6360,22 +6360,16 @@ call ReadDataHDF(cell, existingHDFhead)
 ! compute the metric matrices
  call CalcMatrices(cell)
 
+! [code modified on 8/1/18 (MDG), to correct k-vector sampling symmetry errors]
 ! First generate the point symmetry matrices, then the actual space group.
-! Get the symmorphic space group corresponding to the point group
-! of the actual space group
- ipg=0
- do i=1,32
-  if (SGPG(i).le.cell%SYM_SGnum) ipg=i
- end do
-
 ! if the actual group is also the symmorphic group, then both 
 ! steps can be done simultaneously, otherwise two calls to 
 ! GenerateSymmetry are needed.
- if (SGPG(ipg).eq.cell%SYM_SGnum) then
+ if (SGsymnum(cell%SYM_SGnum).eq.cell%SYM_SGnum) then
   call GenerateSymmetry(cell,.TRUE.)
  else
   isave = cell%SYM_SGnum
-  cell%SYM_SGnum = SGPG(ipg)
+  cell%SYM_SGnum = SGsymnum(cell%SYM_SGnum)
   call GenerateSymmetry(cell,.TRUE.)
   cell%SYM_SGnum = isave
   call GenerateSymmetry(cell,.FALSE.)

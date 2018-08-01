@@ -2370,12 +2370,11 @@ if (cell%SG%SYM_trigonal.eqv..TRUE.) then ! yes, it is
 
 ! go through all the trigonal space groups from 143 to 167 and set the correct sampling type number stnum
 ! point group 3
-  if ((sg.ge.143).and.(sg.le.145)) stnum = 10
-  if (sg.eq.146) stnum = 10
+  if ((sg.ge.143).and.(sg.le.146)) stnum = 10
 
-! point group bar3
-  if (sg.eq.147) stnum = 13 !!!!!
-  if (sg.eq.148) stnum = 13
+! point group bar3 [corrected on 7/31/18 by MDG]
+  if (sg.eq.147) stnum = 12 
+  if (sg.eq.148) stnum = 12
 
 ! point group 32
   if ((sg.eq.149).or.(sg.eq.151).or.(sg.eq.153)) stnum = 13
@@ -2384,30 +2383,28 @@ if (cell%SG%SYM_trigonal.eqv..TRUE.) then ! yes, it is
 
 ! point group 3m
   if ((sg.eq.156).or.(sg.eq.158)) stnum = 14
-  if ((sg.eq.157).or.(sg.eq.159)) stnum = 14 ! 15
-  if ((sg.eq.160).or.(sg.eq.161)) stnum = 14 ! 15
+  if ((sg.eq.157).or.(sg.eq.159)) stnum = 15 
+  if ((sg.eq.160).or.(sg.eq.161)) stnum = 14
   
 ! point group bar3m
   if ((sg.eq.162).or.(sg.eq.163)) stnum = 17
-  if ((sg.eq.164).or.(sg.eq.165)) stnum = 17 ! 16
+  if ((sg.eq.164).or.(sg.eq.165)) stnum = 16 
   if ((sg.eq.166).or.(sg.eq.167)) stnum = 16 
 else
 ! this must be either point group 14 or 26, each with two settings
   if (pgnum.eq.14) then
-    stnum = 8
-!   if ((sg.ge.115).and.(sg.le.120)) then
-!     stnum = 8! 6
-!   else
-!     stnum = 8
-!   end if
+    if ((sg.ge.115).and.(sg.le.120)) then
+      stnum = 6
+    else
+      stnum = 8
+    end if
   end if
   if (pgnum.eq.26) then
-    stnum = 16
-!   if ((sg.eq.187).or.(sg.eq.188)) then
-!     stnum = 16
-!   else
-!     stnum = 17
-!   end if
+    if ((sg.eq.187).or.(sg.eq.188)) then
+      stnum = 16
+    else
+      stnum = 17
+    end if
  end if
 end if
 

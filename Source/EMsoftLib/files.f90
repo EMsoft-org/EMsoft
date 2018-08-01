@@ -69,6 +69,7 @@ contains
 !> @date   03/25/13 MDG 3.0 updated IO
 !> @date   01/10/14 MDG 4.0 update after new cell type
 !> @date   06/06/14 MDG 4.1 added cell pointer as argument, corrected Message routine
+!> @date   07/31/18 MDG 4.2 added a few more output parameters
 !--------------------------------------------------------------------------
 recursive subroutine DumpXtalInfo(cell)    
 !DEC$ ATTRIBUTES DLLEXPORT :: DumpXtalInfo
@@ -116,6 +117,15 @@ real(kind=dbl)                          :: oi_real(5)
  else 
    call Message('   Structure is non-centrosymmetric', frm = "(A)")
  end if
+
+! space group and point group information
+ oi_int(1) = cell%SG%SYM_GENnum
+ call WriteValue('  # generators       : ', oi_int, 1, "(1x,I3)")
+ oi_int(1) = cell%SG%SYM_MATnum
+ call WriteValue('  # symmetry matrices: ', oi_int, 1, "(1x,I3)")
+ oi_int(1) = cell%SG%SYM_NUMpt
+ call WriteValue('  # point sym. matr. : ', oi_int, 1, "(1x,I3)")
+
 ! generate atom positions and dump output  
  call Message('', frm = "(A/)")
  call CalcPositions(cell,'v')

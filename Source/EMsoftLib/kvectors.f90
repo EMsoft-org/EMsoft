@@ -603,7 +603,7 @@ if (mapmode.eq.'RoscaLambert') then
             end do
         end if
 
-  case (13)   ! [not implemented: rhombohedral -3], hexagonal 312
+  case (13)   ! [not implemented: rhombohedral -3], hexagonal 312  [ modified 7/31/18, MDG ]
         if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
           call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
         else
@@ -613,8 +613,11 @@ if (mapmode.eq.'RoscaLambert') then
           jend = -npx
             do j=jstart,jend,-1
               do i=istart+j/2,iend   ! 
-                xy = (/ dble(i), dble(j) /) * delta 
-                if (InsideHexGrid(xy)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid)
+                xy = (/ dble(i),  dble(j) /) * delta 
+                if (InsideHexGrid(xy)) then
+                  call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
+                  ktail%k(2) = -ktail%k(2)
+                end if
               end do
             end do
           istart = 0
@@ -623,8 +626,11 @@ if (mapmode.eq.'RoscaLambert') then
           jend = npx
             do i=istart,iend   ! 
               do j=jstart,i/2
-                xy = (/ dble(i), dble(j) /) * delta 
-                if (InsideHexGrid(xy)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid)
+                xy = (/ dble(i),  dble(j) /) * delta 
+                if (InsideHexGrid(xy)) then 
+                  call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
+                  ktail%k(2) = -ktail%k(2)
+                end if
               end do
             end do
         end if
@@ -633,54 +639,33 @@ if (mapmode.eq.'RoscaLambert') then
         if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
           call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
         else
-          istart = 0
+          istart = 1
           iend = npx
-          jstart = 0
+          jstart = 1
           jend = npx
-          eps = 1.0D-4 ! 0.0*delta
             do j=jstart,jend
-              do i=istart,iend
-                  xy = (/ dble(i), dble(j) /) * delta
-                  xx = dble(i)-dble(j)/2.D0
-                  yy = dble(j)*LPs%srt
-                  
-                  check = .TRUE.
-                   if (xx.lt.0.D0) then
-                     check = .FALSE.
-                   else
-                     if (xx.ge.0.D0) then
-                       yy = datan2(yy,xx)
-                       if (yy .lt. (LPs%Pi/6.D0-eps)) check = .FALSE.
-                     end if
-                   end if
-                  if (InsideHexGrid(xy).and.(check)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, addSH = yes)
+              do i=istart+(j-1)/2,2*j
+                xy = (/ dble(i),  dble(j) /) * delta 
+                if (InsideHexGrid(xy)) then 
+                  call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, addSH = yes)
+                end if
               end do
             end do
         end if
 
   case (15)   ! hexagonal 31m, 6
-        istart = 0
-        iend = npx
-        jstart = 0
-        jend = npx
-        eps = 1.0D-4
-          do j=jstart,jend
-            do i=istart,iend
-                xy = (/ dble(i), dble(j) /) * delta
-                xx = dble(i)-dble(j)/2.D0
-                yy = dble(j)*LPs%srt
-                check = .TRUE.
-                if (xx.lt.0.D0) then
-                   check = .FALSE.
-                else
-                   if (xx.ge.0.D0) then
-                     yy = datan2(yy,xx)
-                     if (yy.gt.(cPi/3.D0+eps)) check = .FALSE.
-                   end if
+          istart = 0
+          iend = npx
+          jstart = 1
+          jend = npx
+            do j=jstart,jend
+              do i=istart+j,jend
+                xy = (/ dble(i),  dble(j) /) * delta 
+                if (InsideHexGrid(xy)) then 
+                  call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, addSH = yes)
                 end if
-                if (InsideHexGrid(xy).and.(check)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, addSH = yes)
+              end do
             end do
-          end do
 
   case (16)   ! hexagonal -3m1, 622, -6m2 [not implemented: rhombohedral -3m]
         if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
@@ -1193,13 +1178,13 @@ end if
      nullify(ktail%next)                                ! nullify next in new value
      numk = numk + 1                                    ! keep track of number of k-vectors so far
      ktail%hs = 1                                       ! which hemisphere (Northern = 1, Southern = -1)
-!    if (hex) then                                      ! transform the hex coordinates to square-array coordinates
-!      ktail%i = i - j/2+mod(j,2)/2                     ! i-index of beam
-!      ktail%j = j                                      ! j-index of beam
-!    else                                               ! leave the square coordinates unchanged
+     ! if (iv) then                                      ! transform the hex coordinates to square-array coordinates
+     !   ktail%i = i - j/2+mod(j,2)/2                     ! i-index of beam
+     !   ktail%j = j                                      ! j-index of beam
+     ! else                                               ! leave the square coordinates unchanged
        ktail%i = i                                      ! i-index of beam
-       ktail%j = j                                      ! j-index of beam
-!    end if 
+       ktail%j = j                                     ! j-index of beam
+     ! end if 
      call NormVec(cell,kstar,'c')                       ! normalize incident direction in cartesian space
      kstar = kstar/cell%mLambda                         ! divide by wavelength
 ! and transform to reciprocal crystal space using the direct structure matrix
@@ -1215,13 +1200,13 @@ end if
          nullify(ktail%next)                                ! nullify next in new value
          numk = numk + 1                                    ! keep track of number of k-vectors so far
          ktail%hs = -1                                      ! which hemisphere (Northern = 1, Southern = -1)
-!        if (hex) then                                      ! transform the hex coordinates to square-array coordinates
-!          ktail%i = i - j/2+mod(j,2)/2                     ! i-index of beam
-!          ktail%j = j                                      ! j-index of beam
-!        else                                               ! leave the square coordinates unchanged
+         ! if (iv) then                                      ! transform the hex coordinates to square-array coordinates
+         !   ktail%i = i - j/2+mod(j,2)/2                     ! i-index of beam
+         !   ktail%j = j                                      ! j-index of beam
+         ! else                                               ! leave the square coordinates unchanged
            ktail%i = i                                      ! i-index of beam
-           ktail%j = j                                      ! j-index of beam
-!        end if 
+           ktail%j = j                                     ! j-index of beam
+         ! end if 
 ! get the Southern hemisphere version of kstar
          kstar(3) = -kstar(3)
 ! and transform to reciprocal crystal space using the direct structure matrix
