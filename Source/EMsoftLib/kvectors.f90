@@ -615,8 +615,9 @@ if (mapmode.eq.'RoscaLambert') then
               do i=istart+j/2,iend   ! 
                 xy = (/ dble(i),  dble(j) /) * delta 
                 if (InsideHexGrid(xy)) then
-                  call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
-                  ktail%k(2) = -ktail%k(2)
+                  ! call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
+                  ! ktail%k(2) = -ktail%k(2)
+                 call AddkVector(ktail,cell,numk,xy,i,j,hexgrid)
                 end if
               end do
             end do
@@ -628,8 +629,9 @@ if (mapmode.eq.'RoscaLambert') then
               do j=jstart,i/2
                 xy = (/ dble(i),  dble(j) /) * delta 
                 if (InsideHexGrid(xy)) then 
-                  call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
-                  ktail%k(2) = -ktail%k(2)
+                  call AddkVector(ktail,cell,numk,xy,i,j,hexgrid)
+                 ! call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
+                 !  ktail%k(2) = -ktail%k(2)
                 end if
               end do
             end do

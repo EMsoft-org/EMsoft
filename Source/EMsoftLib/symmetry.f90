@@ -2377,13 +2377,13 @@ if (cell%SG%SYM_trigonal.eqv..TRUE.) then ! yes, it is
   if (sg.eq.148) stnum = 12
 
 ! point group 32
-  if ((sg.eq.149).or.(sg.eq.151).or.(sg.eq.153)) stnum = 13
+  if ((sg.eq.149).or.(sg.eq.151).or.(sg.eq.153)) stnum = 12
   if ((sg.eq.150).or.(sg.eq.152).or.(sg.eq.154)) stnum = 12
   if (sg.eq.155) stnum = 12
 
 ! point group 3m
   if ((sg.eq.156).or.(sg.eq.158)) stnum = 14
-  if ((sg.eq.157).or.(sg.eq.159)) stnum = 15 
+  if ((sg.eq.157).or.(sg.eq.159)) stnum = 14 
   if ((sg.eq.160).or.(sg.eq.161)) stnum = 14
   
 ! point group bar3m
