@@ -2576,17 +2576,19 @@ real(kind=sgl)                                 :: increment
 real(kind=sgl)                                 :: dmin
 logical                                        :: latex
 integer(kind=irg)                              :: numlist
+integer(kind=irg)                              :: nthreads
 character(fnlen)                               :: masterfile
 character(fnlen)                               :: energyfile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDreflectors/ increment, dmin, masterfile, latex, energyfile, numlist
+namelist /EBSDreflectors/ increment, dmin, masterfile, latex, energyfile, numlist, nthreads
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 increment = 1.0                 ! angular increment [°]
 dmin = 0.05                    ! smallest d-spacing to include in dynamical matrix [nm]
 latex = .FALSE.
 numlist = 10
+nthreads = 1
 masterfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 
@@ -2614,6 +2616,7 @@ rnl%increment = increment
 rnl%dmin = dmin
 rnl%latex = latex
 rnl%numlist = numlist
+rnl%nthreads = nthreads
 rnl%masterfile = masterfile
 rnl%energyfile = energyfile
 

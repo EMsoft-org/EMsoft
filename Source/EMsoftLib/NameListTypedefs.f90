@@ -253,6 +253,7 @@ type reflectorNameListType
         real(kind=sgl)          :: dmin
         logical                 :: latex
         integer(kind=irg)       :: numlist
+        integer(kind=irg)       :: nthreads
         character(fnlen)        :: masterfile
         character(fnlen)        :: energyfile
 end type reflectorNameListType
