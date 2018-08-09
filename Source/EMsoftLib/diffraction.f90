@@ -401,8 +401,9 @@ end function
 !> @date  06/09/14 MDG 4.1 added cell as argument
 !> @date  12/02/14 MDG 4.2 added voltage as argument
 !> @date  09/11/15 MDG 4.3 added optional argument
+!> @date  08/09/18 MDG 5.0 added option to use precomputed FSCATT values stored in cell structure
 !--------------------------------------------------------------------------
-recursive subroutine CalcUcg(cell,rlp,hkl,applyqgshift)
+recursive subroutine CalcUcg(cell,rlp,hkl,applyqgshift,interpolate)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcUcg
 
 use crystal
@@ -416,13 +417,22 @@ type(unitcell),pointer          :: cell
 type(gnode),INTENT(INOUT)       :: rlp
 integer(kind=irg),INTENT(IN)    :: hkl(3)               !< Miller indices
 logical,OPTIONAL,INTENT(IN)     :: applyqgshift
+logical,OPTIONAL,INTENT(IN)     :: interpolate          ! requires rlp%mode = 'IP'
 
 integer(kind=irg)               :: j,absflg,m,ii
-real(kind=sgl)                  :: s,twopi,arg,swk,dwwk,pref,ul,pre,preg,sct,fs,fsp
+real(kind=sgl)                  :: s,twopi,arg,swk,dwwk,pref,ul,pre,sct,fs,fsp
+real(kind=sgl),parameter        :: preg = 0.664840340614319 ! = 2.0 * sngl(cRestmass*cCharge/cPlanck**2)*1.0E-18
 complex(kind=sgl)               :: ff,gg,sf,p1
 complex(kind=sgl)               :: czero
-logical                         :: accflg, dwflg
+complex(kind=sgl),allocatable   :: sfarray(:)
+logical                         :: accflg, dwflg, interp
 character(2)                    :: smb
+
+! interpolatiobn is only used for the WK mode to pre-compute the scattering factor array
+interp = .FALSE.
+if (present(interpolate)) then
+  if (interpolate.eqv..TRUE.) interp=.TRUE.
+end if
 
 twopi = sngl(2.D0*cPi)
 czero = cmplx(0.0,0.0)
@@ -564,7 +574,6 @@ if (rlp%method.eq.'WK') then
 
 ! preg is used to go from V to U, remembering that gamma is already
 ! included in the output from fscatt
- preg = 2.0 * sngl(cRestmass*cCharge/cPlanck**2)*1.0E-18
  pre = pref * preg
 
 ! initialize the real and imaginary parts of the structure factor
@@ -649,8 +658,231 @@ if (rlp%method.eq.'WK') then
 
 end if
 
+!----------------------------------
+if (rlp%method.eq.'IP') then 
+ allocate(sfarray(cell%ATOM_ntype))
+
+! The Weickenmeier-Kohl (WK) scattering parameters have been pre-calculated 
+! so all we need to do is linear interpolation to get the correct value
+ swk = 0.1*twopi
+  
+! properly scale the scattering parameter
+ s = rlp%g*swk
+
+! get the atomic scattering factors for all atom types by linear interpolation
+ call getScatfac(cell, s, sfarray)
+
+! compute the scaling prefactors
+! pref contains A to nm conversion, and divides by 4pi
+ pref = 0.04787801/cell % vol/(4.0*cPi) 
+
+! preg is used to go from V to U, remembering that gamma is already
+! included in the output from fscatt
+ pre = pref * preg
+
+! initialize the real and imaginary parts of the structure factor
+ ff=czero
+ gg=czero
+
+! loop over all atoms in the asymmetric unit
+ do m=1,cell % ATOM_ntype
+  sf = sfarray(m)
+
+! loop over all atoms in the orbit
+  p1 = czero
+  do j=1,cell%numat(m)
+   arg=twopi*sum(float(hkl(1:3))*cell%apos(m,j,1:3))
+   p1 = p1 + exp(cmplx(0.0,-arg))
+  end do
+
+  ff = ff + p1*real(sf)
+  gg = gg + p1*aimag(sf)
+
+ end do
+!
+! fill in the entries of the rlp variable
+ rlp%hkl = hkl
+
+! these are the modulus and phase of the real part of Vg
+ rlp%Vmod = pref * cabs(ff)
+ rlp%Vphase = atan2(aimag(ff),real(ff))
+
+! modulus of U_g
+ rlp%Umod = preg*rlp%Vmod
+
+! if absorption is included, also compute the imaginary part of Vg, i.e., Vprime_g
+ if (rlp%absorption.eqv..TRUE.) then 
+  rlp%Vpmod = pref * cabs(gg)
+  rlp%Vpphase = atan2(aimag(gg),real(gg))
+
+! modulus of Uprime_g
+  rlp%Upmod = preg*rlp%Vpmod
+
+! complex Ucg = U_g + i Uprime_g = U_g,r-Uprime_g,i + i(U_g,i+Uprime_g,r)
+  rlp%Ucg = pre * cmplx(real(ff)-aimag(gg),aimag(ff)+real(gg))
+ else ! set absorption parameters to zero
+  rlp%Vpmod = 0.0
+  rlp%Vpphase = 0.0
+! Ucg = U_g (complex number)
+  rlp%Ucg = pre * ff
+ end if
+
+! complex Vg 
+ rlp%Vg = rlp%Ucg/preg
+ if (abs(rlp%Umod).gt.0.0) then 
+  rlp%xg = 1.0/abs(rlp%Umod)/cell%mLambda
+ else
+  rlp%xg = 1.0E+8
+ end if 
+
+ if (abs(rlp%Upmod).gt.0.0) then 
+  rlp%xgp = 1.0/abs(rlp%Upmod)/cell%mLambda
+ else
+  rlp%xgp = 1.0E+8
+ end if 
+
+ if (rlp%absorption.eqv..TRUE.) then 
+  rlp%ar = rlp%xgp/rlp%xg
+  if (present(applyqgshift)) then
+    if (applyqgshift.eqv..TRUE.) then
+      rlp%qg = cmplx(cos(rlp%Vphase)/rlp%xg-sin(rlp%Vpphase)/rlp%xgp,cos(rlp%Vpphase)/rlp%xgp+sin(rlp%Vphase)/rlp%xg)
+    end if
+  else
+    arg = rlp%Vpphase-rlp%Vphase
+    rlp%qg = cmplx(1.0/rlp%xg-sin(arg)/rlp%xgp,cos(arg)/rlp%xgp)
+  end if
+ else
+  rlp%ar = 0.0
+  rlp%qg = cmplx(1.0/rlp%xg,0.0)
+ end if
+
+ deallocate(sfarray)
+end if
+
+
 end subroutine CalcUcg
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: PreCalcFSCATT
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief precompute the FSCATT values for interpolation purposes, to speed up STEM-DCI and other codes
+!
+!> @param cell unit cell pointer
+!> @param dmin smallest d-spacing to consider
+!> @param gstep step size in the cell%scatfacg array
+!
+!> @date   08/09/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine PreCalcFSCATT(cell, dmin, gstep)
+!DEC$ ATTRIBUTES DLLEXPORT :: PreCalcFSCATT
+
+use crystal
+!use symmetry
+use constants
+use others
+
+IMPLICIT NONE
+
+type(unitcell),pointer          :: cell
+real(kind=sgl),INTENT(IN)       :: dmin
+real(kind=sgl),INTENT(IN)       :: gstep
+
+integer(kind=irg)               :: j,m,ii,i
+real(kind=sgl)                  :: s,ul
+real(kind=sgl),parameter        :: swk = 0.628318530717959
+real(kind=sgl),parameter        :: dwwk = 1.26651479552922
+integer(kind=irg),parameter     :: absflg = 3
+logical                         :: accflg=.TRUE., dwflg=.TRUE.
+character(2)                    :: smb
+
+! first generate the array of s-values for which the scattering factors need to be computed
+s = 2.0/dmin   ! maximum range in reciprocal space
+cell%numscatfac = nint(s/gstep) + 2
+allocate(cell%scatfacg(cell%numscatfac))
+cell%scatfacg = (/ (gstep * float(i-1),i=1,cell%numscatfac) /)
+cell%scatfacg = cell%scatfacg * swk
+
+! allocate the scattering factor interpolation array
+allocate( cell%scatfac(cell%numscatfac, cell % ATOM_ntype) )
+
+! The Weickenmeier-Kohl (WK) subroutine works in Angstrom, and also 
+! scales reciprocal space by a factor of 2*pi;  this scaling
+! is accomplished by changing the g-value in nm^{-1} by a 
+! scaling factor swk = 2*pi/10, to go from book units to WK units.
+!
+! A similar scaling must be performed on the Debye Waller factor;
+! the book defines it as exp(-Bs^2), with s in [nm^2]; WK define
+! it in A^2, and with a scaled reciprocal space.  The conversion
+! factor dwwk = 100.0/8*pi^2
+!
+! To go from the standard B factor in [nm^2] to ul^2 in A^2,
+! ul = sqrt(B*dwwk)
+  
+do i=1,cell%numscatfac
+! properly scale the scattering parameter
+ s = cell%scatfacg(i)
+
+! loop over all atoms in the asymmetric unit
+ do m=1,cell % ATOM_ntype
+! get the atomic scattering factor for this atom
+! scale and include Debye-Waller factor and site occupation parameter
+  ul = sqrt(cell % ATOM_pos(m,5)*dwwk)
+  j = cell % ATOM_type(m)
+  cell%scatfac(i,m) = FSCATT(s,ul,j,smb,sngl(cell%voltage),absflg,accflg,dwflg)*cell%ATOM_pos(m,4)
+ end do 
+end do 
+
+end subroutine PreCalcFSCATT
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getScatfac
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief interpolate the precomputed FSCATT values 
+!
+!> @param cell unit cell pointer
+!> @param s reciprocal distance value
+!> @param sfarray returned scattering factor values
+!
+!> @date   08/09/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getScatfac(cell, s, sfarray)
+!DEC$ ATTRIBUTES DLLEXPORT :: getScatfac
+
+use crystal
+!use symmetry
+use constants
+use others
+
+IMPLICIT NONE
+
+type(unitcell),pointer          :: cell
+real(kind=sgl),INTENT(IN)       :: s
+complex(kind=sgl),INTENT(OUT)   :: sfarray(*)
+
+integer(kind=irg)               :: jj
+real(kind=sgl)                  :: dx
+
+if (s.eq.0.0) then 
+    sfarray(1:cell%ATOM_ntype) = cell%scatfac(1,1:cell%ATOM_ntype)
+else
+    jj = ifix(s/cell%scatfacg(2))
+    if (jj.ge.cell%numscatfac) then
+        sfarray(1:cell%ATOM_ntype) = cell%scatfac(cell%numscatfac,1:cell%ATOM_ntype)
+    else
+        dx = s/cell%scatfacg(2) - float(jj)
+        sfarray(1:cell%ATOM_ntype) = cell%scatfac(jj,1:cell%ATOM_ntype)*(1.0-dx) + &
+                                     cell%scatfac(jj+1,1:cell%ATOM_ntype)*dx
+    end if
+end if
+
+end subroutine getScatfac
 
 
 !--------------------------------------------------------------------------
