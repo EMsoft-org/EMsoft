@@ -586,7 +586,7 @@ if (rlp%method.eq.'WK') then
 ! scale and include Debye-Waller factor and site occupation parameter
   ul = sqrt(cell % ATOM_pos(m,5)*dwwk)
   j = cell % ATOM_type(m)
-  sf = FSCATT(s,ul,j,smb,sngl(cell%voltage),absflg,accflg,dwflg)*cell%ATOM_pos(m,4)
+  sf = FSCATT(s,ul,j,smb,sngl(cell%voltage),absflg,accflg,dwflg)*cmplx(cell%ATOM_pos(m,4),0.0)
 
 ! loop over all atoms in the orbit
   p1 = czero

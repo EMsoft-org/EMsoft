@@ -7811,25 +7811,28 @@ character(fnlen),INTENT(IN)                       :: nmlfile
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
-character(fnlen)        :: xtalname,datafile
+character(fnlen)        :: xtalname,datafile,inputfilename
 character(3)            :: eulerconvention
-integer(kind=irg)       :: platid, devid
-real(kind=sgl)          :: voltage, dmin, eu(3), convergence
+integer(kind=irg)       :: platid, devid, discsize
+real(kind=sgl)          :: voltage, dmin, eu(3), convergence, scalefactor(6)
 real(kind=dbl)          :: phi1, phi2, phi3
 
 
 
 namelist /MDSTEMlist/ xtalname, datafile, eu, eulerconvention, phi1, phi2, phi3, dmin, &
-          voltage, convergence, platid, devid
+          voltage, convergence, platid, devid, inputfilename, scalefactor, discsize
 
 
 datafile = 'undefined' ! output filename
+inputfilename = 'undefined' ! input filename
 voltage = 200.0    ! acceleration voltage [kV]
 eu = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
+scalefactor = (/ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 /)
 dmin = 0.04     ! smallest d-spacing to include in dynamical matrix [nm]
 platid = 1
 devid = 1
 convergence = 0.0
+discsize = 10.0
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -7849,6 +7852,7 @@ if (.not.skipread) then
 
 end if
 
+msnml%xtalname             = xtalname
 msnml%datafile             = datafile
 msnml%voltage              = voltage
 msnml%eu                   = eu
@@ -7856,6 +7860,9 @@ msnml%dmin                 = dmin
 msnml%platid               = platid
 msnml%devid                = devid
 msnml%convergence          = convergence
+msnml%inputfilename        = inputfilename
+msnml%scalefactor          = scalefactor
+msnml%discsize             = discsize
 
 end subroutine GetEMmdSTEMNameList
 
