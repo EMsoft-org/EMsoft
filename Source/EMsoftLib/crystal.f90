@@ -1624,6 +1624,7 @@ end subroutine extractposition
 !> @date   07/23/13 MDG 1.1 converted to subroutine from function
 !> @date   01/10/14 MDG 4.0 checked for changes to unitcell type
 !> @date   06/05/14 MDG 4.1 added unit cell pointer argument
+!> @date   08/10/18 MDG 4.2 correct weight factors for average atomic number...
 !--------------------------------------------------------------------------
 recursive subroutine CalcDensity(cell, dens, avZ, avA, Z2percent)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcDensity
@@ -1638,19 +1639,18 @@ real(kind=sgl),OPTIONAL,INTENT(OUT),allocatable  :: Z2percent(:)
 
 real(kind=sgl),allocatable              :: Z2list(:)
 real(kind=sgl)                          :: AW, Z
-integer(kind=irg)                       :: i, nat
+integer(kind=irg)                       :: i
 
 ! compute the total atomic weight for the unit cell (g/mol)
 ! also compute the total atomic number
 AW = 0.0
 Z = 0.0
-nat = sum( cell%numat(1:cell % ATOM_ntype) )
 do i = 1, cell % ATOM_ntype
   AW = AW + cell%numat(i) * ATOM_weights(cell % ATOM_type(i)) * cell % ATOM_pos(i,4)
   Z = Z + cell%numat(i) * float(cell % ATOM_type(i))
 end do
-avA = AW/float(nat)
-avZ = Z/float(nat)
+avA = AW/sum( cell%numat(1:cell % ATOM_ntype) * cell%ATOM_pos(1:cell%ATOM_ntype,4) )
+avZ = Z/float(sum( cell%numat(1:cell % ATOM_ntype) ))
 
 ! and compute the density in gram/centimeter^3
 dens = AW / sngl(cell % vol * 1.D-21 * cAvogadro)
