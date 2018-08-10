@@ -1,0 +1,37 @@
+&MDSTEMlist 
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the crystal input file MUST be specified (full pathname)
+ xtalname = 'xtalfile',
+! DDD or MD input file MUST be specified
+ inputfilename = 'input'
+! output will be stored here (full pathname)
+ datafile = 'output.h5',
+! scale factor for DDD data - this MUST be specified based on scaling of your displacement grid (sx,sy,sz,dx,dy,dz)
+ scalefactor = sx,sy,sz,dx,dy,dz,
+! size of the CBED disk in pixels
+ discsize = 10,
+! orientation of crystal; euler angle representation in degrees
+ eu = 0.0,0.0,0.0,
+ ! orientation of crystal; euler angle representation in degrees
+ eulerconvention = 'bsd',
+! ph1,ph2,phi3
+ phi1 = 0.0,
+ phi2 = 0.0,
+ phi3 = 0.0,
+! minimum d-spacing to be taken into account [nm]
+ dmin = 0.06, 
+! microscope accelerating voltage [kV]
+ voltage = 200.0,
+! beam convergence angle
+ convergence = 4.0,
+! platform id for opencl
+ devid = 1,
+! device id for opencl
+ platid = 1
+! this last line must be present!
+/
+
