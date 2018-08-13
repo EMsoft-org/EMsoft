@@ -1705,7 +1705,9 @@ end type EMCBED2DQCNameListType
 type EMmdSTEMNameListType
         character(fnlen)        :: xtalname
         character(fnlen)        :: datafile
+        character(fnlen)        :: inputfilename
         real(kind=sgl)          :: eu(3)
+        real(kind=sgl)          :: scalefactor(6)
         character(3)            :: eulerconvention
         real(kind=dbl)          :: phi1, phi, phi2
         real(kind=sgl)          :: dmin
@@ -1713,6 +1715,7 @@ type EMmdSTEMNameListType
         real(kind=sgl)          :: convergence
         integer(kind=irg)       :: platid
         integer(kind=irg)       :: devid
+        integer(kind=irg)       :: discsize
 end type EMmdSTEMNameListType
 
 end module NameListTypedefs
