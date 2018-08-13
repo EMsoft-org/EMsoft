@@ -7430,12 +7430,12 @@ logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
 
-integer(kind=irg)   :: platid, devid
+integer(kind=irg)   :: platid, usenumd, selnumd(4)
 real(kind=sgl)      :: voltage, dmin, eu(3), convergence
 character(fnlen)    :: xtalname, microstructurefile, datafile
 
 namelist /TGBSTEMlist/ xtalname, microstructurefile, voltage, dmin, &
-          datafile, eu, platid, devid, convergence
+          datafile, eu, platid, usenumd, selnumd, convergence
 
 xtalname            = 'undefined' ! initial value to check that the keyword is present in the nml file (gamma phase)
 microstructurefile  = 'undefined' ! microstructure file name
@@ -7444,8 +7444,9 @@ voltage             = 200.0    ! acceleration voltage [kV]
 eu                  = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
 dmin                = 0.04     ! smallest d-spacing to include in dynamical matrix [nm]
 platid              = 1
-devid               = 1
-convergence         = 0.0
+usenumd             = 1
+selnumd             = (/1, 0, 0, 0/)
+convergence         = 5.0
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -7479,7 +7480,8 @@ epf%voltage              = voltage
 epf%eu                   = eu
 epf%dmin                 = dmin
 epf%platid               = platid
-epf%devid                = devid
+epf%usenumd              = usenumd
+epf%selnumd              = selnumd
 epf%convergence          = convergence
 
 end subroutine GetEMTGBSTEMNameList

@@ -617,11 +617,11 @@ integer(kind=irg), INTENT(OUT)           :: nump
 integer(kind=irg), INTENT(IN)            :: selnump
 integer(c_intptr_t),allocatable, target  :: device(:)
 integer(kind=irg), INTENT(OUT)           :: numd
-integer(kind=irg), INTENT(IN)            :: usenumd
+integer(kind=irg), INTENT(INOUT)         :: usenumd
 integer(kind=irg), INTENT(IN)            :: selnumd(usenumd)
-character(fnlen),INTENT(OUT)             :: devinfo(usenumd)
-integer(c_intptr_t),target               :: context
-integer(c_intptr_t),target               :: command_queue(usenumd)
+character(fnlen),allocatable,INTENT(OUT) :: devinfo(:)
+integer(c_intptr_t),allocatable, target  :: context(:)
+integer(c_intptr_t),allocatable, target  :: command_queue(:)
 
 integer(c_int32_t)                       :: ierr
 integer(c_size_t)                        :: cnuminfo
@@ -648,11 +648,21 @@ allocate(device(numd))
 ierr =  clGetDeviceIDs(platform(selnump), CL_DEVICE_TYPE_GPU, numd, C_LOC(device), numd)
 call CLerror_check('CLinit_PDCCQ:clGetDeviceIDs',ierr)
 
+if(usenumd .gt. numd) then
+  call Message('')
+  call Message('Number of devices requested is greater than number of available devices')
+  call Message('setting number of devices to maximum number of available devices')
+  call Message('')
+  usenumd = numd
+end if
+
 do i=1,usenumd
   if (selnumd(i).gt.numd) then
     call FatalError("CLinit_PDCCQ","non-existing device id requested")
   end if
 end do
+
+allocate(context(usenumd), command_queue(usenumd), devinfo(usenumd))
 
 ! get the device name and return it as devinfo
 do i=1,usenumd
@@ -661,9 +671,9 @@ do i=1,usenumd
 
   if (cnuminfo.gt.fnlen) then 
     call WriteValue("CLinit_PDCCQ","device info string truncated")
-    devinfo = trim(info(1:fnlen))
+    devinfo(i) = trim(info(1:fnlen))
   else
-    devinfo = trim(info(1:cnuminfo))
+    devinfo(i) = trim(info(1:cnuminfo))
   end if
 end do
 
@@ -671,12 +681,14 @@ end do
 ctx_props(1) = CL_CONTEXT_PLATFORM
 ctx_props(2) = platform(selnump)
 ctx_props(3) = 0
-context = clCreateContext(C_LOC(ctx_props), numd, C_LOC(device),C_NULL_FUNPTR, C_NULL_PTR, ierr)
-call CLerror_check('CLinit_PDCCQ:clCreateContext',ierr)
 
 cmd_queue_props = CL_QUEUE_PROFILING_ENABLE
 do i=1,usenumd
-  command_queue(i) = clCreateCommandQueue(context, device(selnumd(i)), cmd_queue_props, ierr)
+
+  context(i) = clCreateContext(C_LOC(ctx_props), 1, C_LOC(device(selnumd(i))),C_NULL_FUNPTR, C_NULL_PTR, ierr)
+  call CLerror_check('CLinit_PDCCQ:clCreateContext',ierr)
+
+  command_queue(i) = clCreateCommandQueue(context(i), device(selnumd(i)), cmd_queue_props, ierr)
   call CLerror_check('CLinit_PDCCQ:clCreateCommandQueue',ierr)
 end do
 end subroutine CLinit_multiPDCCQ

@@ -3957,9 +3957,9 @@ groupname = SC_STEMDCINameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ dcinl%platid, dcinl%devid /)
+io_int = (/ dcinl%platid, dcinl%usenumd /)
 intlist(1) = 'platid'
-intlist(2) = 'devid'
+intlist(2) = 'usenumd'
 
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 

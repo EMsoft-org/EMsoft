@@ -1670,7 +1670,8 @@ type EMTGBSTEMNameListType
     real(kind=sgl)      :: eu(3)
     real(kind=sgl)      :: convergence
     integer(kind=irg)   :: platid
-    integer(kind=irg)   :: devid
+    integer(kind=irg)   :: usenumd
+    integer(kind=irg)   :: selnumd(4)
     character(fnlen)    :: xtalname
     character(fnlen)    :: microstructurefile
     character(fnlen)    :: datafile
