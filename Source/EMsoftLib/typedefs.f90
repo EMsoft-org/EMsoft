@@ -997,6 +997,10 @@ end type
 !>  voltage,mLambda,mRelcor,mSigma,mPsihat
 !>
 !> added source string on 07/19/18 [MDG]
+!>
+!> added scatfac(s) arrays to store pre-computed FSCATT values on 08/09/18 [MDG]
+!>
+
 
 type unitcell
   real(kind=dbl)                       :: a,b,c,alpha,beta,gamma
@@ -1008,6 +1012,8 @@ type unitcell
   character(fnlen)                     :: source
   logical                              :: hexset
   real(kind=dbl),allocatable           :: apos(:,:,:)
+  real(kind=sgl),allocatable           :: scatfacg(:)
+  complex(kind=sgl),allocatable        :: scatfac(:,:) 
   complex(kind=dbl),allocatable        :: LUT(:,:,:), SghLUT(:,:,:,:)
   complex(kind=dbl),allocatable        :: LUTqg(:,:,:)
   logical,allocatable                  :: dbdiff(:,:,:)
@@ -1015,7 +1021,7 @@ type unitcell
   type(symdata)                        :: SG
   type(reflisttype),pointer            :: reflist
   type(reflisttype),pointer            :: firstw                ! connection to first weak entry in linked list
-  integer(kind=irg)                    :: DynNbeams, DynNbeamsLinked, nns, nnw
+  integer(kind=irg)                    :: DynNbeams, DynNbeamsLinked, nns, nnw, numscatfac
   real(kind=dbl)                       :: voltage, mLambda, mRelcor, mSigma, mPsihat   ! voltage always in keV !
 end type unitcell
 

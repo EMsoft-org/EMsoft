@@ -59,7 +59,7 @@ IMPLICIT NONE
 integer(kind=irg)              :: ind(3),ans, oi_int(3)
 real(kind=sgl)                 :: oi_real(7)
 complex(kind=sgl)              :: oi_cmplx(1)
-real(kind=sgl)                 :: preg
+real(kind=sgl)                 :: preg, dmin, gstepsize
 real(kind=dbl)				   :: eps = 1.0D-6
 character(fnlen)               :: progname, progdesc, gname
 character(200)                 :: parta
@@ -81,11 +81,19 @@ type(gnode)                    :: rlp
  call CalcPositions(cell,'v')
  preg = 2.0 * sngl(cRestmass*cCharge/cPlanck**2)*1.0E-18
 
+! temporary code for testing
+ dmin = 0.05
+ gstepsize = 0.001
+ call PreCalcFSCATT(cell, dmin, gstepsize)
+! end of temporary code
+
  ans = 1
  do while (ans.eq.1)
   call Message('Enter Miller indices :', frm = "(/A)")
   call GetIndex(cell%hexset,ind,'r')
-  call CalcUcg(cell, rlp, ind)
+! call CalcUcg(cell, rlp, ind)
+  rlp%method = 'IP'
+  call CalcUcg(cell, rlp, ind,interpolate=.TRUE.)
   isallowed = IsGAllowed(cell,ind)
 
 ! check whether this is a lattice extinction, a symmetry extinction, or an allowed reflection

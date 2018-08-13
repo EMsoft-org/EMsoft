@@ -62,8 +62,10 @@ contains
 !> @date 09/08/15 MDG 2.2 added LUTqg array to cell
 !> @date 09/29/16 MDG 5.2 added option to read CrystalData from currently open HDF file
 !> @date 07/02/18 SS  5.3 added initLUT optional variable
+!> @date 08/09/18 MDG 5.4 added FSCATT interpolation option
 !--------------------------------------------------------------------------
-recursive subroutine Initialize_Cell(cell,Dyn,rlp,xtalname, dmin, voltage, verbose, existingHDFhead, initLUT)
+recursive subroutine Initialize_Cell(cell,Dyn,rlp,xtalname, dmin, voltage, &
+                                     verbose, existingHDFhead, initLUT, interpolate)
 !DEC$ ATTRIBUTES DLLEXPORT :: Initialize_Cell
 
 use local
@@ -87,13 +89,22 @@ real(kind=sgl),INTENT(IN)                  :: dmin
 real(kind=sgl),INTENT(IN)                  :: voltage
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
-logical,INTENT(IN),OPTIONAL 			   :: initLUT
+logical,INTENT(IN),OPTIONAL                :: initLUT
+logical,INTENT(IN),OPTIONAL                :: interpolate
 
 integer(kind=irg)                          :: istat, io_int(3), skip
 integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
 real(kind=sgl)                             :: dhkl, io_real(3), ddt
-logical                                    :: loadingfile, justinit
+logical                                    :: loadingfile, justinit, interp
+real(kind=sgl),parameter                   :: gstepsize = 0.001  ! [nm^-1] interpolation stepsize
 
+interp = .FALSE.
+if (present(interpolate)) then
+  if (interpolate) then
+    interp = .TRUE.
+    rlp%method= 'IP'
+  end if
+end if
 
 justinit = .FALSE.
 if(present(initLUT)) then
@@ -150,6 +161,11 @@ end if
   end if
  end if
 
+! do we need to pre-compute the scattering factors and store them in cell%scatfac ?
+ if (interp.eqv..TRUE.) then
+   call PreCalcFSCATT(cell, dmin, gstepsize)
+ end if
+
 if(.not. justinit) then  
 ! the LUT array stores all the Fourier coefficients, so that we only need to compute them once... i.e., here and now
  allocate(cell%LUT(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
@@ -178,7 +194,11 @@ end if
 
 ! first, we deal with the transmitted beam
  gg = (/ 0,0,0 /)
- call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)  
+ if (interp.eqv..TRUE.) then
+   call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)  
+ else
+   call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)  
+ end if
  Dyn%Upz = rlp%Vpmod         ! U'0 normal absorption parameter 
  if (present(verbose)) then
   if (verbose) then
@@ -206,7 +226,11 @@ izl:   do iz=-2*iml,2*iml
         gg = (/ ix, iy, iz /)
         if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
 ! add the reflection to the look up table
-           call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
+           if (interp.eqv..TRUE.) then          
+             call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.,interpolate=.TRUE.)
+           else
+             call CalcUcg(cell,rlp,gg,applyqgshift=.TRUE.)
+           end if
            cell%LUT(ix, iy, iz) = rlp%Ucg
            cell%LUTqg(ix, iy, iz) = rlp%qg
 ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
