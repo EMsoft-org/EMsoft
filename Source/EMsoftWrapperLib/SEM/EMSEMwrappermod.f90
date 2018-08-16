@@ -1364,7 +1364,7 @@ recursive subroutine EMsoftCgetEBSDmaster(ipar,fpar,atompos,atomtypes,latparm,ac
 ! the following are only used in this routine, not in the Monte Carlo routine
 ! ipar(17): integer(kind=irg)       :: npx
 ! ipar(18): integer(kind=irg)       :: nthreads
-! ipar(19): integer(kind=irg)       :: uniform  ['1' = yes (background only), '0' = no ]
+! ipar(36): integer(kind=irg)       :: uniform  ['1' = yes (background only), '0' = no ]
 
 ! fpar components
 ! fpar(1) : real(kind=dbl)          :: sig
@@ -1483,7 +1483,7 @@ nthreads = ipar(18)
 etotal = dble(ipar(4))*dble(ipar(5))
 
 uniform = .FALSE.
-if (ipar(19).eq.1) uniform = .TRUE.
+if (ipar(36).eq.1) uniform = .TRUE.
 
 ! extract the BetheParameters ... 
 BetheParameters%c1 = fpar(12)
@@ -1733,11 +1733,12 @@ totn2 = Estart
 
 !=============================================
 !=============================================
-! ---------- from here on, we need to repeat the entire computation for each energy value
-cancelerr = 0
-energyloop: do iE=Estart,1,-1
-   cn2 = cn2+dn 
-   if (uniform.eqv..FALSE.) then
+! ---------- from here on, we need to repeat the entire computation for each energy value, assuming that uniform = .FALSE.
+if (uniform.eqv..FALSE.) then
+
+  cancelerr = 0
+  energyloop: do iE=Estart,1,-1
+  cn2 = cn2+dn 
 ! set the accelerating voltage
      skip = 3
      cell%voltage = dble(EkeVs(iE))
@@ -1950,9 +1951,10 @@ energyloop: do iE=Estart,1,-1
    mLPSH(-npx:npx,-npx,iE,1:numset) = mLPNH(-npx:npx,-npx,iE,1:numset)
    mLPSH(-npx:npx, npx,iE,1:numset) = mLPNH(-npx:npx, npx,iE,1:numset)
 
-  end if ! (uniform.eqv..FALSE.)
 
-end do energyloop
+  end do energyloop
+
+end if ! (uniform.eqv..FALSE.)
 
 ! that's the end of it...
 

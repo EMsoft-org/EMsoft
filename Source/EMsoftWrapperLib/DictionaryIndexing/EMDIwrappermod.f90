@@ -39,7 +39,7 @@
 !--------------------------------------------------------------------------
 ! general information: the ipar and fpar arrays for all the routines that are C-callable
 ! are identical, so we document here their component definitions; to allow for future expansion, each
-! array has 40 entries, of which about half are currently (April 2016) used.
+! array has 80 entries, of which about half are currently (April 2016) used.
 !
 ! integer(kind=irg) :: ipar(wraparraysize)  components 
 ! ipar(1) : nx  = (numsx-1)/2
@@ -79,7 +79,8 @@
 ! ipar(33): ROI3
 ! ipar(34): ROI4
 ! ipar(35): inputtype
-! ipar(36:wraparraysize) : 0 (unused for now)
+! ipar(36): uniform  ['1' = yes (background only), '0' = no ]
+! ipar(37:wraparraysize) : 0 (unused for now)
 
 ! real(kind=dbl) :: fpar(wraparraysize)  components
 ! fpar(1) : sig
