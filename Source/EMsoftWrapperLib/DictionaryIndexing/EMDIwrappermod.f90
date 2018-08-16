@@ -787,7 +787,6 @@ end subroutine EMsoftCpreprocessSingleEBSDPattern
 
 
 
-! IMPLICIT NONE
 
 ! type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
 ! type(EBSDLargeAccumDIType),pointer,INTENT(IN)       :: acc
@@ -831,7 +830,7 @@ end subroutine EMsoftCpreprocessSingleEBSDPattern
 ! integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 ! real(kind=sgl),pointer                              :: dict(:), T0dict(:)
 ! real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
-! real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
+! real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), masklin(:), &
 !                                                        exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 ! real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
 !                                                        tmpimageexpt(:)
@@ -877,8 +876,6 @@ end subroutine EMsoftCpreprocessSingleEBSDPattern
 ! integer(kind=irg)                                   :: indx
 ! integer(kind=irg)                                   :: correctsize
 ! logical                                             :: f_exists, init
-
-! integer(kind=irg)                                   :: ipar(10)
 
 ! character(fnlen),ALLOCATABLE                        :: MessageLines(:)
 ! integer(kind=irg)                                   :: NumLines
@@ -1303,6 +1300,7 @@ end subroutine EMsoftCpreprocessSingleEBSDPattern
 
 !        eulerarray(1:3,(ii-1)*Nd+pp) = 180.0/cPi*ro2eu(FZarray(1:4,(ii-1)*Nd+pp))
 !      end do
+!     end if
 ! !$OMP END DO
 ! ! and we end the parallel section here (all threads will synchronize).
 ! !$OMP END PARALLEL

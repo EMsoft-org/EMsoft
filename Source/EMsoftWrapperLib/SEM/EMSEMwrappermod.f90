@@ -1337,6 +1337,7 @@ end subroutine EMsoftCgetMCOpenCL
 !> @param mLPSH modified Lambert projection southern hemisphere (output)
 !
 !> @date 04/17/16 MDG 1.0 original
+!> @date 08/16/18 MDG 1.1 added 'uniform' parameter [ipar(19)] to generate only the background
 !--------------------------------------------------------------------------
 recursive subroutine EMsoftCgetEBSDmaster(ipar,fpar,atompos,atomtypes,latparm,accum_z,mLPNH,mLPSH,cproc,objAddress,cancel) &
            bind(c, name='EMsoftCgetEBSDmaster')    ! this routine is callable from a C/C++ program
@@ -1363,6 +1364,7 @@ recursive subroutine EMsoftCgetEBSDmaster(ipar,fpar,atompos,atomtypes,latparm,ac
 ! the following are only used in this routine, not in the Monte Carlo routine
 ! ipar(17): integer(kind=irg)       :: npx
 ! ipar(18): integer(kind=irg)       :: nthreads
+! ipar(19): integer(kind=irg)       :: uniform  ['1' = yes (background only), '0' = no ]
 
 ! fpar components
 ! fpar(1) : real(kind=dbl)          :: sig
@@ -1435,7 +1437,7 @@ integer(kind=irg)       :: numEbins, numzbins, nsx, nsy, hdferr, nlines, lastEne
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, etotal ! enery variables from MC program
 integer(kind=irg),allocatable :: thick(:), acc_z(:,:,:,:)
 real(kind=sgl),allocatable :: lambdaE(:,:)
-logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE., stereog
+logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE., stereog, uniform
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 character(fnlen,kind=c_char)                     :: line2(1)
 
@@ -1479,6 +1481,9 @@ num_el = ipar(3)
 dmin = fpar(11)
 nthreads = ipar(18)
 etotal = dble(ipar(4))*dble(ipar(5))
+
+uniform = .FALSE.
+if (ipar(19).eq.1) uniform = .TRUE.
 
 ! extract the BetheParameters ... 
 BetheParameters%c1 = fpar(12)
@@ -1705,9 +1710,14 @@ end do
 ! allocate(mLPNH(-emnl%npx:emnl%npx,-npy:npy,1,1:numset),stat=istat)
 ! allocate(mLPSH(-emnl%npx:emnl%npx,-npy:npy,1,1:numset),stat=istat)
 
-! set various arrays to zero
+! set various arrays to zero or 1, depending on uniform parameter
+if (uniform.eqv..TRUE.) then
+   mLPNH = 1.0
+   mLPSH = 1.0
+else
    mLPNH = 0.0
    mLPSH = 0.0
+end if
 
 ! force dynamical matrix routine to read new Bethe parameters from file
 ! this will all be changed with the new version of the Bethe potentials
@@ -1727,48 +1737,48 @@ totn2 = Estart
 cancelerr = 0
 energyloop: do iE=Estart,1,-1
    cn2 = cn2+dn 
-
+   if (uniform.eqv..FALSE.) then
 ! set the accelerating voltage
-   skip = 3
-   cell%voltage = dble(EkeVs(iE))
-   call CalcWaveLength(cell, rlp, skip)
+     skip = 3
+     cell%voltage = dble(EkeVs(iE))
+     call CalcWaveLength(cell, rlp, skip)
 
 !=============================================
 ! ---------- create the incident beam directions list
 ! determine all independent incident beam directions (use a linked list starting at khead)
 ! numk is the total number of k-vectors to be included in this computation;
 ! note that this needs to be redone for each energy, since the wave vector changes with energy
-   nullify(khead)
-   if (usehex) then
-    call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,npx,npy,numk, &
-                SamplingType,ijmax,'RoscaLambert',usehex)
-   else 
-    call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,npx,npy,numk, &
-                SamplingType,ijmax,'RoscaLambert',usehex)
-   end if
-   totn = numk
-   cn = dn
+     nullify(khead)
+     if (usehex) then
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambert',usehex)
+     else 
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambert',usehex)
+     end if
+     totn = numk
+     cn = dn
 
 ! convert part of the kvector linked list into arrays for OpenMP
-  allocate(karray(4,numk), kij(3,numk),stat=istat)
+    allocate(karray(4,numk), kij(3,numk),stat=istat)
 ! point to the first beam direction
-  ktmp => khead
+    ktmp => khead
 ! and loop through the list, keeping k, kn, and i,j
-  karray(1:3,1) = sngl(ktmp%k(1:3))
-  karray(4,1) = sngl(ktmp%kn)
-  kij(1:3,1) = (/ ktmp%i, ktmp%j, ktmp%hs /)
-   do ik=2,numk
-     ktmp => ktmp%next
-     karray(1:3,ik) = sngl(ktmp%k(1:3))
-     karray(4,ik) = sngl(ktmp%kn)
-     kij(1:3,ik) = (/ ktmp%i, ktmp%j, ktmp%hs /)
-   end do
+    karray(1:3,1) = sngl(ktmp%k(1:3))
+    karray(4,1) = sngl(ktmp%kn)
+    kij(1:3,1) = (/ ktmp%i, ktmp%j, ktmp%hs /)
+     do ik=2,numk
+       ktmp => ktmp%next
+       karray(1:3,ik) = sngl(ktmp%k(1:3))
+       karray(4,ik) = sngl(ktmp%kn)
+       kij(1:3,ik) = (/ ktmp%i, ktmp%j, ktmp%hs /)
+     end do
 ! and remove the linked list
-  call Delete_kvectorlist(khead)
+    call Delete_kvectorlist(khead)
 
-  verbose = .FALSE.
-  totstrong = 0
-  totweak = 0
+    verbose = .FALSE.
+    totstrong = 0
+    totweak = 0
 
 ! ---------- end of "create the incident beam directions list"
 !=============================================
@@ -1776,20 +1786,20 @@ energyloop: do iE=Estart,1,-1
 ! here's where we introduce the OpenMP calls, to spead up the overall calculations...
 
 ! set the number of OpenMP threads 
-  call OMP_SET_NUM_THREADS(nthreads)
+    call OMP_SET_NUM_THREADS(nthreads)
 
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL COPYIN(rlp) &
 !$OMP& PRIVATE(DynMat,Sgh,Lgh,ik,FN,TID,kn,ipx,ipy,ix,iequiv,nequiv,reflist,firstw) &
 !$OMP& PRIVATE(kkk,nns,nnw,nref,svals,nat) SHARED(cancelerr)
 
-  NUMTHREADS = OMP_GET_NUM_THREADS()
-  TID = OMP_GET_THREAD_NUM()
+    NUMTHREADS = OMP_GET_NUM_THREADS()
+    TID = OMP_GET_THREAD_NUM()
 
 
 !$OMP DO SCHEDULE(DYNAMIC,100)    
 ! ---------- and here we start the beam direction loop
-   beamloop:do ik = 1,numk
+     beamloop:do ik = 1,numk
 
 !=============================================
 ! ---------- create the master reflection list for this beam direction
@@ -1798,87 +1808,87 @@ energyloop: do iE=Estart,1,-1
 ! distinguish between zero and higher order Laue zones, since that 
 ! distinction becomes meaningless when we consider the complete 
 ! reciprocal lattice.  
-     nullify(reflist)
-     kkk = karray(1:3,ik)
-     FN = kkk
+       nullify(reflist)
+       kkk = karray(1:3,ik)
+       FN = kkk
 
-     call Initialize_ReflectionList(cell, reflist, BetheParameters, FN, kkk, sngl(dmin), nref)
+       call Initialize_ReflectionList(cell, reflist, BetheParameters, FN, kkk, sngl(dmin), nref)
 ! ---------- end of "create the master reflection list"
 !=============================================
 
 
 ! determine strong and weak reflections
-     nullify(firstw)
-     nns = 0
-     nnw = 0
-     call Apply_BethePotentials(cell, reflist, firstw, BetheParameters, nref, nns, nnw)
+       nullify(firstw)
+       nns = 0
+       nnw = 0
+       call Apply_BethePotentials(cell, reflist, firstw, BetheParameters, nref, nns, nnw)
 
 ! generate the dynamical matrix
-     allocate(DynMat(nns,nns))
-     call GetDynMat(cell, reflist, firstw, rlp, DynMat, nns, nnw)
-     totstrong = totstrong + nns
-     totweak = totweak + nnw
+       allocate(DynMat(nns,nns))
+       call GetDynMat(cell, reflist, firstw, rlp, DynMat, nns, nnw)
+       totstrong = totstrong + nns
+       totweak = totweak + nnw
 
 ! then we need to initialize the Sgh and Lgh arrays
-     if (allocated(Sgh)) deallocate(Sgh)
-     if (allocated(Lgh)) deallocate(Lgh)
-     allocate(Sgh(nns,nns,numset),Lgh(nns,nns))
-     Sgh = czero
-     Lgh = czero
-     nat = 0
-     call CalcSgh(cell,reflist,nns,numset,Sgh,nat)
+       if (allocated(Sgh)) deallocate(Sgh)
+       if (allocated(Lgh)) deallocate(Lgh)
+       allocate(Sgh(nns,nns,numset),Lgh(nns,nns))
+       Sgh = czero
+       Lgh = czero
+       nat = 0
+       call CalcSgh(cell,reflist,nns,numset,Sgh,nat)
 
 ! solve the dynamical eigenvalue equation for this beam direction  
-     kn = karray(4,ik)
-     call CalcLgh(DynMat,Lgh,dble(thick(iE)),dble(kn),nns,gzero,depthstep,lambdaE(iE,1:izzmax),izzmax)
-     deallocate(DynMat)
+       kn = karray(4,ik)
+       call CalcLgh(DynMat,Lgh,dble(thick(iE)),dble(kn),nns,gzero,depthstep,lambdaE(iE,1:izzmax),izzmax)
+       deallocate(DynMat)
 
 ! sum over the element-wise (Hadamard) product of the Lgh and Sgh arrays 
-     svals = 0.0
-     do ix=1,numset
-       svals(ix) = real(sum(Lgh(1:nns,1:nns)*Sgh(1:nns,1:nns,ix)))
-     end do
-     svals = svals/float(sum(nat(1:numset)))
+       svals = 0.0
+       do ix=1,numset
+         svals(ix) = real(sum(Lgh(1:nns,1:nns)*Sgh(1:nns,1:nns,ix)))
+       end do
+       svals = svals/float(sum(nat(1:numset)))
 
 ! and store the resulting svals values, applying point group symmetry where needed.
-     ipx = kij(1,ik)
-     ipy = kij(2,ik)
-     ipz = kij(3,ik)
+       ipx = kij(1,ik)
+       ipy = kij(2,ik)
+       ipz = kij(3,ik)
 !
-     if (usehex) then 
-       call Apply3DPGSymmetry(cell,ipx,ipy,ipz,npx,iequiv,nequiv,usehex)
-     else
-       if ((cell%SYM_SGnum.ge.195).and.(cell%SYM_SGnum.le.230)) then
-         call Apply3DPGSymmetry(cell,ipx,ipy,ipz,npx,iequiv,nequiv,cubictype=SamplingType)
+       if (usehex) then 
+         call Apply3DPGSymmetry(cell,ipx,ipy,ipz,npx,iequiv,nequiv,usehex)
        else
-         call Apply3DPGSymmetry(cell,ipx,ipy,ipz,npx,iequiv,nequiv)
+         if ((cell%SYM_SGnum.ge.195).and.(cell%SYM_SGnum.le.230)) then
+           call Apply3DPGSymmetry(cell,ipx,ipy,ipz,npx,iequiv,nequiv,cubictype=SamplingType)
+         else
+           call Apply3DPGSymmetry(cell,ipx,ipy,ipz,npx,iequiv,nequiv)
+         end if
        end if
-     end if
 !$OMP CRITICAL
-     do ix=1,nequiv
-       if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),iE,1:numset) = svals(1:numset)
-       if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),iE,1:numset) = svals(1:numset)
-     end do
+       do ix=1,nequiv
+         if (iequiv(3,ix).eq.-1) mLPSH(iequiv(1,ix),iequiv(2,ix),iE,1:numset) = svals(1:numset)
+         if (iequiv(3,ix).eq.1) mLPNH(iequiv(1,ix),iequiv(2,ix),iE,1:numset) = svals(1:numset)
+       end do
 !$OMP END CRITICAL
   
-     call Delete_gvectorlist(reflist)
+       call Delete_gvectorlist(reflist)
 
 ! has the cancel flag been set by the calling program ?
 !!!!$OMP CANCELLATION POINT
-    if(cancel.ne.char(0)) then
+     if(cancel.ne.char(0)) then
 !$OMP ATOMIC WRITE
-       cancelerr = 1
+         cancelerr = 1
 !$OMP CANCEL DO
-    end if 
+      end if 
 
 ! update the progress counter and report it to the calling program via the proc callback routine
 !$OMP CRITICAL
-   if(objAddress.ne.0) then
-     cn = cn+dn
-     if (mod(cn,1000).eq.0) then 
-       call proc(objAddress, cn, totn, cn2, totn2)
+     if(objAddress.ne.0) then
+       cn = cn+dn
+       if (mod(cn,1000).eq.0) then 
+         call proc(objAddress, cn, totn, cn2, totn2)
+       end if
      end if
-   end if
 !$OMP END CRITICAL
 
     end do beamloop
@@ -1887,60 +1897,60 @@ energyloop: do iE=Estart,1,-1
 !$OMP END PARALLEL
   
 ! was the Cancel button pressed in the calling program?
-  if(cancelerr.ne.0) EXIT energyloop
+    if(cancelerr.ne.0) EXIT energyloop
 
-  deallocate(karray, kij)
+   deallocate(karray, kij)
 
- if (usehex) then
+   if (usehex) then
 ! and finally, we convert the hexagonally sampled array to a square Lambert projection which will be used 
 ! for all EBSD pattern interpolations;  we need to do this for both the Northern and Southern hemispheres
 
 ! we begin by allocating auxiliary arrays to hold copies of the hexagonal data; the original arrays will
 ! then be overwritten with the newly interpolated data.
-  allocate(auxNH(-npx:npx,-npy:npy,1:numset),stat=istat)
-  allocate(auxSH(-npx:npx,-npy:npy,1:numset),stat=istat)
-  auxNH = mLPNH(-npx:npx,-npy:npy,iE,1:numset)
-  auxSH = mLPSH(-npx:npx,-npy:npy,iE,1:numset)
-
+    allocate(auxNH(-npx:npx,-npy:npy,1:numset),stat=istat)
+    allocate(auxSH(-npx:npx,-npy:npy,1:numset),stat=istat)
+    auxNH = mLPNH(-npx:npx,-npy:npy,iE,1:numset)
+    auxSH = mLPSH(-npx:npx,-npy:npy,iE,1:numset)
 ! 
-  edge = 1.D0 / dble(npx)
-  scl = float(npx) 
-  do i=-npx,npx
-    do j=-npy,npy
+    edge = 1.D0 / dble(npx)
+    scl = float(npx) 
+    do i=-npx,npx
+      do j=-npy,npy
 ! determine the spherical direction for this point
-      xy = (/ dble(i), dble(j) /) * edge
-      dc = LambertSquareToSphere(xy, ierr)
+        xy = (/ dble(i), dble(j) /) * edge
+        dc = LambertSquareToSphere(xy, ierr)
 ! convert direction cosines to hexagonal Lambert projections
-      xy = scl * LambertSphereToHex( dc, ierr )
+        xy = scl * LambertSphereToHex( dc, ierr )
 ! interpolate intensity from the neighboring points
-      if (ierr.eq.0) then 
-        nix = floor(xy(1))
-        niy = floor(xy(2))
-        nixp = nix+1
-        niyp = niy+1
-        if (nixp.gt.npx) nixp = nix
-        if (niyp.gt.npx) niyp = niy
-        dx = xy(1) - nix
-        dy = xy(2) - niy
-        dxm = 1.D0 - dx
-        dym = 1.D0 - dy
-        mLPNH(i,j,iE,1:numset) = auxNH(nix,niy,1:numset)*dxm*dym + auxNH(nixp,niy,1:numset)*dx*dym + &
-                             auxNH(nix,niyp,1:numset)*dxm*dy + auxNH(nixp,niyp,1:numset)*dx*dy
-        mLPSH(i,j,iE,1:numset) = auxSH(nix,niy,1:numset)*dxm*dym + auxSH(nixp,niy,1:numset)*dx*dym + &
-                             auxSH(nix,niyp,1:numset)*dxm*dy + auxSH(nixp,niyp,1:numset)*dx*dy
-      end if
+        if (ierr.eq.0) then 
+          nix = floor(xy(1))
+          niy = floor(xy(2))
+          nixp = nix+1
+          niyp = niy+1
+          if (nixp.gt.npx) nixp = nix
+          if (niyp.gt.npx) niyp = niy
+          dx = xy(1) - nix
+          dy = xy(2) - niy
+          dxm = 1.D0 - dx
+          dym = 1.D0 - dy
+          mLPNH(i,j,iE,1:numset) = auxNH(nix,niy,1:numset)*dxm*dym + auxNH(nixp,niy,1:numset)*dx*dym + &
+                               auxNH(nix,niyp,1:numset)*dxm*dy + auxNH(nixp,niyp,1:numset)*dx*dy
+          mLPSH(i,j,iE,1:numset) = auxSH(nix,niy,1:numset)*dxm*dym + auxSH(nixp,niy,1:numset)*dx*dym + &
+                               auxSH(nix,niyp,1:numset)*dxm*dy + auxSH(nixp,niyp,1:numset)*dx*dy
+        end if
+      end do
     end do
-  end do
-  deallocate(auxNH, auxSH)
- end if
+    deallocate(auxNH, auxSH)
+   end if
 
 ! make sure that the outer pixel rim of the mLPSH patterns is identical to
 ! that of the mLPNH array.
- mLPSH(-npx,-npx:npx,iE,1:numset) = mLPNH(-npx,-npx:npx,iE,1:numset)
- mLPSH( npx,-npx:npx,iE,1:numset) = mLPNH( npx,-npx:npx,iE,1:numset)
- mLPSH(-npx:npx,-npx,iE,1:numset) = mLPNH(-npx:npx,-npx,iE,1:numset)
- mLPSH(-npx:npx, npx,iE,1:numset) = mLPNH(-npx:npx, npx,iE,1:numset)
+   mLPSH(-npx,-npx:npx,iE,1:numset) = mLPNH(-npx,-npx:npx,iE,1:numset)
+   mLPSH( npx,-npx:npx,iE,1:numset) = mLPNH( npx,-npx:npx,iE,1:numset)
+   mLPSH(-npx:npx,-npx,iE,1:numset) = mLPNH(-npx:npx,-npx,iE,1:numset)
+   mLPSH(-npx:npx, npx,iE,1:numset) = mLPNH(-npx:npx, npx,iE,1:numset)
 
+  end if ! (uniform.eqv..FALSE.)
 
 end do energyloop
 
