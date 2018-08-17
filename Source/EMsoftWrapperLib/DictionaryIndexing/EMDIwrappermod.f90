@@ -157,6 +157,14 @@ ABSTRACT INTERFACE
     INTEGER(KIND=4), INTENT(IN), VALUE           :: totalLoops
    END SUBROUTINE ProgressCallBackDI2
 
+   SUBROUTINE ProgressCallBackDI3(objAddress, loopCompleted, totalLoops, timeRemaining) bind(C)
+    USE, INTRINSIC :: ISO_C_BINDING
+    INTEGER(c_size_t),INTENT(IN), VALUE          :: objAddress
+    INTEGER(KIND=4), INTENT(IN), VALUE           :: loopCompleted
+    INTEGER(KIND=4), INTENT(IN), VALUE           :: totalLoops
+    REAL(KIND=4),INTENT(IN), VALUE               :: timeRemaining
+   END SUBROUTINE ProgressCallBackDI3
+
    SUBROUTINE OpenCLErrorCallBackDI2(objAddress, errorCode) bind(C)
     USE, INTRINSIC :: ISO_C_BINDING
     INTEGER(c_size_t),INTENT(IN), VALUE          :: objAddress
@@ -755,6 +763,7 @@ use io
 use others
 use clfortran
 use omp_lib
+use timing
 use ISO_C_BINDING
 
 ! ipar, fpar, and spar variables used in this wrapper routine:
@@ -770,7 +779,7 @@ use ISO_C_BINDING
 ! ipar(42): 16*ceiling(float(numsx*numsy)/16.0)
 ! ipar(43): neulers  (number of Euler angle triplets in the dictionary)
 
-! floats
+! no floats
 
 ! strings
 ! spar(23):  OpenCLpathname
@@ -791,8 +800,9 @@ integer(c_size_t),INTENT(IN), VALUE       :: objAddress
 character(len=1),INTENT(IN)               :: cancel
 
 integer(kind=irg)                         :: i, ii, jj, cratio, fratio, cratioE, fratioE, FZcnt, Nd, ierr, totnumexpt, Ne, pp, ll, &
-                                             mm, correctsize, TID, iii, irec, numsx, numsy, L, nnk, istat, devid, platid, qq
-real(kind=sgl)                            :: ratio, ratioE
+                                             mm, correctsize, TID, iii, irec, numsx, numsy, L, nnk, istat, devid, platid, qq, &
+                                             tickstart, tock
+real(kind=sgl)                            :: ratio, ratioE, tstop, ttime
 integer(kind=irg),allocatable             :: ppend(:), ppendE(:)
 real(kind=sgl),pointer                    :: dict(:), results(:), dpsort(:)
 integer(kind=irg),pointer                 :: indexlist(:), dpindex(:)
@@ -800,7 +810,7 @@ real(kind=sgl),allocatable, target        :: res(:), results1(:), results2(:), e
                                              resulttmp(:,:)
 real(kind=sgl),allocatable                :: tmpimageexpt(:)                                             
 integer(kind=irg),allocatable,target      :: indexlist1(:),indexlist2(:),indexarray(:),indextmp(:,:)
-PROCEDURE(ProgressCallBackDI2), POINTER   :: proc
+PROCEDURE(ProgressCallBackDI3), POINTER   :: proc
 PROCEDURE(OpenCLErrorCallBackDI2), POINTER:: errorproc
 logical                                   :: returnPending
 
@@ -888,8 +898,6 @@ end if
 ! initialize the OpenCL device by duplicating the CLinit_PDCCQ code here, but with the 
 ! CLerror_check routine replaced by the error callback routine
 
-! Initializing OpenCL device
-!call CLinit_PDCCQ(platform, nump, platid, device, numd, devid, info, context, command_queue)
 ! get the platform ID
 ierr = clGetPlatformIDs(0, C_NULL_PTR, nump)
 if ((ierr.ne.0).and.(objAddress.ne.0)) then
@@ -1112,7 +1120,7 @@ dictionaryloop: do ii = 1,cratio+1
          end do
       end if
       
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,resultarray,indexarray)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,qq,ierr,resultarray,indexarray)
 
       TID = OMP_GET_THREAD_NUM()
 
@@ -1127,60 +1135,57 @@ dictionaryloop: do ii = 1,cratio+1
         returnPending = .TRUE.
       end if 
 
-      !call Message('starting loop over experimental patterns')
-      experimentalloop: do jj = 1,cratioE
+      if (returnPending.eqv..FALSE.) then
+        experimentalloop: do jj = 1,cratioE
 
-        expt = 0.0
-        res = 0.0
+          expt = 0.0
+          res = 0.0
 
-        do pp = 1,ppendE(jj)   ! Ne or MODULO(totnumexpt,Ne)
-          tmpimageexpt(1:correctsize) = epatterns(1:correctsize,(jj-1)*Ne+pp)
+          do pp = 1,ppendE(jj)   ! Ne or MODULO(totnumexpt,Ne)
+            tmpimageexpt(1:correctsize) = epatterns(1:correctsize,(jj-1)*Ne+pp)
 
-          expt((pp-1)*correctsize+1:pp*correctsize) = tmpimageexpt(1:correctsize)
-        end do
+            expt((pp-1)*correctsize+1:pp*correctsize) = tmpimageexpt(1:correctsize)
+          end do
 
-        ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
-                                    0, C_NULL_PTR, C_NULL_PTR)
-        if ((ierr.ne.0).and.(objAddress.ne.0)) then
-          call errorproc(objAddress, ierr)
-          returnPending = .TRUE.
-        end if 
+          ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
+                                      0, C_NULL_PTR, C_NULL_PTR)
+          if ((ierr.ne.0).and.(objAddress.ne.0)) then
+            call errorproc(objAddress, ierr)
+            returnPending = .TRUE.
+            exit experimentalloop
+          end if 
 
-        call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,res,numd,devid,kernel,context,command_queue)
+          call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,res,numd,devid,kernel,context,command_queue)
 
-! we will do the sorting of the dot products in the other threads; we will just use results and indexlist
-! directly, without copying anything...  Use pointers to swap back and forth between the two versions of the 
-! arrays
-        results((jj-1)*Ne*Nd+1:jj*Ne*Nd) = res(1:Nd*Ne)
-      end do experimentalloop
+  ! we will do the sorting of the dot products in the other threads; we will just use results and indexlist
+  ! directly, without copying anything...  Use pointers to swap back and forth between the two versions of the 
+  ! arrays
+          results((jj-1)*Ne*Nd+1:jj*Ne*Nd) = res(1:Nd*Ne)
+        end do experimentalloop
+      end if
 
-      ! io_real(1) = maxval(results)
-      ! io_real(2) = float(ii-1)/float(cratio)*100.0
-      ! call WriteValue('',io_real,2,"(' max. dot product = ',F10.6,';',F6.1,'% complete')")
-
-!       if (mod(ii,10) .eq. 0) then
-! ! do a remaining time estimate
-! ! and print information
-!         if (ii.eq.10) then
-!             tock = Time_tock(tickstart)
-!             ttime = float(tock) * float(cratio) / float(ii)
-!             tstop = ttime
-!             io_int(1:4) = (/ii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
-!             call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. total time ', &
-!                            I4,' hrs',I3,' min')")
-!         else
-!             ttime = tstop * float(cratio-ii) / float(cratio)
-!             io_int(1:4) = (/ii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
-!             call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. remaining time ', &
-!                            I4,' hrs',I3,' min')")
-!         end if
-!       end if
+      if ((objAddress.ne.0).and.(mod(ii,10).eq.0)) then
+! do a remaining time estimate
+! and send information via the callback routine
+        if (ii.eq.10) then
+            tock = Time_tock(tickstart)
+            ttime = float(tock) * float(cratio) / float(ii)
+            tstop = ttime
+            call proc(objAddress, ii, cratio, ttime)
+        else
+            ttime = tstop * float(cratio-ii) / float(cratio)
+            call proc(objAddress, ii, cratio, ttime)
+        end if
+      end if
     end if 
 
 !$OMP END MASTER
 
+! has the cancel flag been set by the calling program ?
+    if(cancel.ne.char(0)) returnPending = .TRUE.
+
 ! here we carry out the sorting of dot products, unless we are in the ii=1 step
-    if (ii.gt.1) then
+    if ((ii.gt.1).and.(returnPending.eqv..FALSE.)) then
 !$OMP DO SCHEDULE(DYNAMIC)
         do qq = 1,totnumexpt
           resultarray(1:Nd) = dpsort((qq-1)*Nd+1:qq*Nd)
@@ -1200,7 +1205,12 @@ dictionaryloop: do ii = 1,cratio+1
 
 ! and we end the parallel section here (all threads will synchronize).
 !$OMP END PARALLEL
-  if (returnPending.eqv..TRUE.) return
+
+  if (returnPending.eqv..TRUE.) EXIT dictionaryloop
+
+! has the cancel flag been set by the calling program ?
+  if(cancel.ne.char(0)) EXIT dictionaryloop
+
 end do dictionaryloop
 
 ! release the OpenCL kernel
