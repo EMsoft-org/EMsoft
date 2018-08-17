@@ -41,10 +41,28 @@ void EMsoftCpreprocessEBSDPatterns
 void EMsoftCpreprocessSingleEBSDPattern
     (size_t* ipar, float* fpar, float* inputpattern, float* outputpattern);
 
+
+/**
+* EBSD Dictionary indexing (all in ram) wrapper routine
+* @param ipar array with integer input parameters
+* @param fpar array with float input parameters
+* @param spar array with string input parameters
+* @param dpatterns array with pre-processed dictionary patterns
+* @param epatterns array with pre-processed experimental patterns
+* @param resultmain array with top N dot product values
+* @param indexmain array with euler angle indices for top N dot product values
+* @param callback callback routine to update progress bar
+* @param object unique identifier for calling class instantiation
+* @param cancel boolean to trigger cancellation of computation
+*/
+
+void EMsoftCEBSDDI
+	(size_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
+	 float* resultmain, size_t* indexmain, ProgCallBackTypeDI2 callback, 
+     size_t object, bool* cancel); 
+
 #ifdef __cplusplus
 }
 #endif
-
-
 
 #endif /*_EMSOFTDIWRAPPERS_H_*/

@@ -341,7 +341,6 @@ character(fnlen), INTENT(IN)            :: sourcefile
 character(len=source_length, KIND=c_char),INTENT(OUT) :: csource
 integer(c_size_t),INTENT(OUT)           :: slength
 
-
 character(len=source_length),target     :: source
 character(fnlen)                        :: fname, clpath, clpath2, tcf
 integer(kind=irg)                       :: irec, ierr, ipos, i, j
@@ -380,9 +379,9 @@ else
 end if
 
 if (sourcefile(idx:idx).ne.EMsoftnativedelimiter) then
-fname = trim(clpath)//trim(sourcefile)
+  fname = trim(clpath)//trim(sourcefile)
 else
-fname = trim(sourcefile)
+  fname = trim(sourcefile)
 endif
 fname = EMsoft_toNativePath(fname)
 inquire(file=trim(fname),exist=fexist)
