@@ -15,6 +15,13 @@ extern "C" {
 typedef void (*ProgCallBackTypeDI2)(size_t, int, int);
 
 /**
+* @brief This is the typedef for an OpenCL error call back function that is used in the EMsoft library.
+* @param size_t Unique integer that designates which C++ object did the call into EMsoft
+* @param int
+*/
+typedef void (*ProgCallBackTypeError)(size_t, int);
+
+/**
 * EBSD experimental pattern preprocessing:
 * @param ipar array with integer input parameters
 * @param fpar array with float input parameters
@@ -52,13 +59,14 @@ void EMsoftCpreprocessSingleEBSDPattern
 * @param resultmain array with top N dot product values
 * @param indexmain array with euler angle indices for top N dot product values
 * @param callback callback routine to update progress bar
+* @param errorcallback callback routine to report OpenCL error code
 * @param object unique identifier for calling class instantiation
 * @param cancel boolean to trigger cancellation of computation
 */
 
 void EMsoftCEBSDDI
 	(size_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
-	 float* resultmain, size_t* indexmain, ProgCallBackTypeDI2 callback, 
+	 float* resultmain, size_t* indexmain, ProgCallBackTypeDI2 callback, ProgCallBackTypeError errorcallback,
      size_t object, bool* cancel); 
 
 #ifdef __cplusplus

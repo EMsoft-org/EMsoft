@@ -146,6 +146,8 @@
 
 module EMDIwrappermod
 
+use local
+
 ! similar callback routine, with two integer arguments
 ABSTRACT INTERFACE
    SUBROUTINE ProgressCallBackDI2(objAddress, loopCompleted, totalLoops) bind(C)
@@ -154,6 +156,12 @@ ABSTRACT INTERFACE
     INTEGER(KIND=4), INTENT(IN), VALUE           :: loopCompleted
     INTEGER(KIND=4), INTENT(IN), VALUE           :: totalLoops
    END SUBROUTINE ProgressCallBackDI2
+
+   SUBROUTINE OpenCLErrorCallBackDI2(objAddress, errorCode) bind(C)
+    USE, INTRINSIC :: ISO_C_BINDING
+    INTEGER(c_size_t),INTENT(IN), VALUE          :: objAddress
+    INTEGER(KIND=4), INTENT(IN), VALUE           :: errorCode
+   END SUBROUTINE OpenCLErrorCallBackDI2
 END INTERFACE
 
 contains
@@ -725,13 +733,14 @@ end subroutine EMsoftCpreprocessSingleEBSDPattern
 ! !> @param resultmain dot product array for top N matches
 ! !> @param indexmain array with indices of matches into the euler angle array
 ! !> @param cproc pointer to a C-function for the callback process
+! !> @param cerrorproc pointer to a C-function for the OpenCL error callback process
 ! !> @param objAddress unique integer identifying the calling class in DREAM.3D
 ! !> @param cancel character defined by DREAM.3D; when not equal to NULL (i.e., char(0)), the computation should be halted
 ! !
 ! !> @date 08/17/18 MDG 1.0 original extracted from EMEBSDDImem program
 ! !--------------------------------------------------------------------------
 recursive subroutine EMsoftCEBSDDI(ipar, fpar, spar, dpatterns, epatterns, resultmain, indexmain, &
-                                   cproc, objAddress, cancel) &
+                                   cproc, cerrorproc, objAddress, cancel) &
           bind(c, name='EMsoftCEBSDDI')    ! this routine is callable from a C/C++ program
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCEBSDDI
 
@@ -745,35 +754,8 @@ use error
 use io
 use others
 use clfortran
-use CLsupport
 use omp_lib
 use ISO_C_BINDING
-
-! ! not sure yet if we will need any of the following modules or not... 
-! !use NameListTypedefs
-! !use NameListHandlers
-! !use files
-! !use Lambert
-! !use crystal
-! !use initializersHDF
-! !use gvectors
-! !use filters
-! !use diffraction
-! !use symmetry
-! !use quaternions
-! !use rotations
-! !use so3
-! !use math
-! !use EBSDmod
-! !use EBSDDImod
-! !use HDF5
-! !use h5im
-! !use h5lt
-! !use HDFsupport
-! !use EMh5ebsd
-! !use EBSDiomod
-! !use NameListHDFwriters
-! !use ECPmod, only: GetPointGroup
 
 ! ipar, fpar, and spar variables used in this wrapper routine:
 ! integers
@@ -783,7 +765,7 @@ use ISO_C_BINDING
 ! ipar(37): numexptsingle  (multiple of 16; number of expt patterns in one dot product chunk)
 ! ipar(38): numdictsingle  (multiple of 16; number of dict patterns in one dot product chunk)
 ! ipar(39): nnk (number of top matches to keep)
-! ipar(40): totnumexpt     (number of experimental patterns)
+! ipar(40): totnumexpt     (number of experimental patterns in current batch)
 ! ipar(41): numexptsingle*ceiling(float(totnumexpt)/float(numexptsingle))  
 ! ipar(42): 16*ceiling(float(numsx*numsy)/16.0)
 ! ipar(43): neulers  (number of Euler angle triplets in the dictionary)
@@ -804,6 +786,7 @@ real(kind=sgl),INTENT(INOUT)              :: epatterns(ipar(42),ipar(40))   ! co
 real(kind=sgl),INTENT(INOUT)              :: resultmain(ipar(39),ipar(41))
 integer(c_int32_t),INTENT(INOUT)          :: indexmain(ipar(39),ipar(41)) 
 TYPE(C_FUNPTR), INTENT(IN), VALUE         :: cproc
+TYPE(C_FUNPTR), INTENT(IN), VALUE         :: cerrorproc
 integer(c_size_t),INTENT(IN), VALUE       :: objAddress
 character(len=1),INTENT(IN)               :: cancel
 
@@ -818,6 +801,8 @@ real(kind=sgl),allocatable, target        :: res(:), results1(:), results2(:), e
 real(kind=sgl),allocatable                :: tmpimageexpt(:)                                             
 integer(kind=irg),allocatable,target      :: indexlist1(:),indexlist2(:),indexarray(:),indextmp(:,:)
 PROCEDURE(ProgressCallBackDI2), POINTER   :: proc
+PROCEDURE(OpenCLErrorCallBackDI2), POINTER:: errorproc
+logical                                   :: returnPending
 
 ! OpenCL related variables
 integer(c_intptr_t),allocatable, target             :: platform(:)
@@ -840,14 +825,18 @@ character(fnlen)                                    :: info, sourcefile ! info a
 integer(c_int)                                      :: numd, nump
 integer(c_size_t),target                            :: slength
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
+integer(c_intptr_t),target                          :: ctx_props(3)
+integer(c_int64_t)                                  :: cmd_queue_props
 
 ! parameters to deal with the input string array spar
 type(ConfigStructureType)                           :: CS
 
+returnPending = .FALSE.
 
 ! link the proc procedure to the cproc argument
-nullify(proc)
+nullify(proc, errorproc)
 CALL C_F_PROCPOINTER (cproc, proc)
+CALL C_F_PROCPOINTER (cerrorproc, errorproc)
 
 ! the calling program passes a c-string array spar that we need to convert to the 
 ! standard EMsoft config structure for use inside this routine
@@ -891,10 +880,73 @@ if (fratioE.lt.cratioE) then
 end if
 
 !================================
+!================================
+!================================
 ! INITIALIZATION OF OpenCL DEVICE
 !================================
+! to allow for the wrapper to return with a reasonable OpenCL error code, we explicitly 
+! initialize the OpenCL device by duplicating the CLinit_PDCCQ code here, but with the 
+! CLerror_check routine replaced by the error callback routine
+
 ! Initializing OpenCL device
-call CLinit_PDCCQ(platform, nump, platid, device, numd, devid, info, context, command_queue)
+!call CLinit_PDCCQ(platform, nump, platid, device, numd, devid, info, context, command_queue)
+! get the platform ID
+ierr = clGetPlatformIDs(0, C_NULL_PTR, nump)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
+
+allocate(platform(nump))
+ierr = clGetPlatformIDs(nump, C_LOC(platform), nump)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
+
+if ((platid.gt.nump).and.(objAddress.ne.0)) then
+  ierr = -32
+  call errorproc(objAddress, ierr)
+  return
+end if 
+
+! get the device ID
+ierr =  clGetDeviceIDs(platform(platid), CL_DEVICE_TYPE_GPU, 0, C_NULL_PTR, numd)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
+allocate(device(numd))
+
+ierr =  clGetDeviceIDs(platform(platid), CL_DEVICE_TYPE_GPU, numd, C_LOC(device), numd)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
+
+if ((devid.gt.numd).and.(objAddress.ne.0)) then
+  ierr = -33
+  call errorproc(objAddress, ierr)
+  return
+end if 
+
+! create the context
+ctx_props(1) = CL_CONTEXT_PLATFORM
+ctx_props(2) = platform(platid)
+ctx_props(3) = 0
+context = clCreateContext(C_LOC(ctx_props), numd, C_LOC(device),C_NULL_FUNPTR, C_NULL_PTR, ierr)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if
+
+! set up the command queue
+cmd_queue_props = CL_QUEUE_PROFILING_ENABLE
+command_queue = clCreateCommandQueue(context, device(devid), cmd_queue_props, ierr)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if
 
 ! read the cl source file
 sourcefile = trim(CS%OpenCLpathname)//'/DictIndx.cl'
@@ -918,10 +970,16 @@ slength = irec
 
 ! allocate device memory for experimental and dictionary patterns
 cl_expt = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_expt, C_NULL_PTR, ierr)
-call CLerror_check('EMsoftCEBSDDI:clCreateBuffer', ierr, nonfatal=.TRUE.)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
 
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
-call CLerror_check('EMsoftCEBSDDI:clCreateBuffer', ierr, nonfatal=.TRUE.)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
 
 !================================
 ! the following lines were originally in the InnerProdGPU routine, but there is no need
@@ -932,7 +990,10 @@ pcnt = 1
 psource = C_LOC(csource)
 !prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(source_l), ierr)
 prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(slength), ierr)
-call CLerror_check('EMsoftCEBSDDI:clCreateProgramWithSource', ierr, nonfatal=.TRUE.)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
 
 ! build the program
 ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
@@ -940,20 +1001,34 @@ ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NU
 ! get the compilation log
 ierr2 = clGetProgramBuildInfo(prog, device(devid), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
 ! if(cnum > 1) call Message(trim(source(1:cnum))//'test',frm='(A)')
-call CLerror_check('EMsoftCEBSDDI:clBuildProgram', ierr, nonfatal=.TRUE.)
-call CLerror_check('EMsoftCEBSDDI:clGetProgramBuildInfo', ierr2, nonfatal=.TRUE.)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
+if ((ierr2.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr2)
+  return
+end if 
 
 ! finally get the kernel and release the program
 kernelname = 'InnerProd'
 ckernelname = kernelname
 ckernelname(10:10) = C_NULL_CHAR
 kernel = clCreateKernel(prog, C_LOC(ckernelname), ierr)
-call CLerror_check('EMsoftCEBSDDI:clCreateKernel', ierr, nonfatal=.TRUE.)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
 
 ierr = clReleaseProgram(prog)
-call CLerror_check('EMsoftCEBSDDI:clReleaseProgram', ierr, nonfatal=.TRUE.)
+if ((ierr.ne.0).and.(objAddress.ne.0)) then
+  call errorproc(objAddress, ierr)
+  return
+end if 
 ! the remainder is done in the InnerProdGPU routine
-!=========================================
+!================================
+!================================
+!================================
 
 !=========================================
 ! ALLOCATION AND INITIALIZATION OF ARRAYS
@@ -1047,7 +1122,10 @@ dictionaryloop: do ii = 1,cratio+1
 
       ierr = clEnqueueWriteBuffer(command_queue, cl_dict, CL_TRUE, 0_8, size_in_bytes_dict, C_LOC(dicttranspose(1)), &
                                   0, C_NULL_PTR, C_NULL_PTR)
-      call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr, nonfatal=.TRUE.)
+      if ((ierr.ne.0).and.(objAddress.ne.0)) then
+        call errorproc(objAddress, ierr)
+        returnPending = .TRUE.
+      end if 
 
       !call Message('starting loop over experimental patterns')
       experimentalloop: do jj = 1,cratioE
@@ -1063,7 +1141,10 @@ dictionaryloop: do ii = 1,cratio+1
 
         ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
                                     0, C_NULL_PTR, C_NULL_PTR)
-        call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr, nonfatal = .TRUE.)
+        if ((ierr.ne.0).and.(objAddress.ne.0)) then
+          call errorproc(objAddress, ierr)
+          returnPending = .TRUE.
+        end if 
 
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,res,numd,devid,kernel,context,command_queue)
 
@@ -1119,6 +1200,7 @@ dictionaryloop: do ii = 1,cratio+1
 
 ! and we end the parallel section here (all threads will synchronize).
 !$OMP END PARALLEL
+  if (returnPending.eqv..TRUE.) return
 end do dictionaryloop
 
 ! release the OpenCL kernel
