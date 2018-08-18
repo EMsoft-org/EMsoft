@@ -559,8 +559,10 @@ write(dataunit2,'(A)') '# MaterialName  	',trim(angname)
 write(dataunit2,'(A)') '# Formula     	',trim(angname)
 write(dataunit2,'(A)') '# Info          indexed using EMsoft::EMEBSDDictionaryIndexing'
 
-
+! here we need a mapping of the regular point groups onto the EDAX/TSL convention
 write(dataunit2,'(A)') '# Symmetry              43'
+
+! for the lattice parameters, we will need to read the .xtal file
 write(dataunit2,'(A)') '# LatticeConstants      3.520 3.520 3.520  90.000  90.000  90.000'
 
 write(dataunit2,'(A)') '# NumberFamilies        4'

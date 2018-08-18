@@ -80,7 +80,14 @@
 ! ipar(34): ROI4
 ! ipar(35): inputtype
 ! ipar(36): uniform  ['1' = yes (background only), '0' = no ]
-! ipar(37:wraparraysize) : 0 (unused for now)
+! ipar(37): numexptsingle  (multiple of 16; number of expt patterns in one dot product chunk)
+! ipar(38): numdictsingle  (multiple of 16; number of dict patterns in one dot product chunk)
+! ipar(39): nnk (number of top matches to keep)
+! ipar(40): totnumexpt     (number of experimental patterns in current batch)
+! ipar(41): numexptsingle*ceiling(float(totnumexpt)/float(numexptsingle))  
+! ipar(42): 16*ceiling(float(numsx*numsy)/16.0)
+! ipar(43): neulers  (number of Euler angle triplets in the dictionary)
+! ipar(44:wraparraysize) : 0 (unused for now)
 
 ! real(kind=dbl) :: fpar(wraparraysize)  components
 ! fpar(1) : sig
