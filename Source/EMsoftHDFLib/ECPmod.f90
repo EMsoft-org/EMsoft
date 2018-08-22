@@ -2,27 +2,27 @@
 ! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
-! Redistribution and use in source and binary forms, with or without modification, are 
+! Redistribution and use in source and binary forms, with or without modification, are
 ! permitted provided that the following conditions are met:
 !
-!     - Redistributions of source code must retain the above copyright notice, this list 
+!     - Redistributions of source code must retain the above copyright notice, this list
 !        of conditions and the following disclaimer.
-!     - Redistributions in binary form must reproduce the above copyright notice, this 
-!        list of conditions and the following disclaimer in the documentation and/or 
+!     - Redistributions in binary form must reproduce the above copyright notice, this
+!        list of conditions and the following disclaimer in the documentation and/or
 !        other materials provided with the distribution.
-!     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names 
-!        of its contributors may be used to endorse or promote products derived from 
+!     - Neither the names of Marc De Graef, Carnegie Mellon University nor the names
+!        of its contributors may be used to endorse or promote products derived from
 !        this software without specific prior written permission.
 !
-! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
-! DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR 
-! SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
-! CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-! OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
+! THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+! AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+! IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+! ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+! LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+! DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+! SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+! CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+! OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 ! USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ! ###################################################################
 !--------------------------------------------------------------------------
@@ -41,7 +41,7 @@
 !---------------------------------------------------------------------------
 module ECPmod
 
-use local 
+use local
 use typedefs
 use stringconstants
 
@@ -110,7 +110,7 @@ contains
 !> @date 11/18/14  MDG 1.1 removed enl%MCnthreads from file read
 !> @date 04/02/15  MDG 2.0 changed program input & output to HDF format
 !> @date 04/29/15  MDG 2.1 add optional parameter efile
-!> @date 09/15/15  SS  2.2 added accum_z reading 
+!> @date 09/15/15  SS  2.2 added accum_z reading
 !> @date 09/15/15  SS  3.0 made part of ECPmod module
 !> @date 10/12/15  SS  3.1 changes to handle new mc program; old version of mc file
 !>                         not supported anymore
@@ -135,7 +135,7 @@ logical,INTENT(IN),OPTIONAL             :: verbose
 integer(kind=irg)                       :: istat, hdferr, nlines, nx
 logical                                 :: stat, readonly
 integer(HSIZE_T)                        :: dims3(3),dims4(4)
-character(fnlen)                        :: groupname, dataset, energyfile 
+character(fnlen)                        :: groupname, dataset, energyfile
 character(fnlen),allocatable            :: stringarray(:)
 
 integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
@@ -251,7 +251,7 @@ groupname = SC_EMData
 groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-! read data items 
+! read data items
 dataset = SC_numangle
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numangle)
 
@@ -266,10 +266,10 @@ dataset = SC_accumz
 
 dataset = SC_accume
   call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
-  allocate(acc%accum_e(1:dims3(1),1:dims3(2),1:dims3(3)))
+  allocate(acc%accum_e(1:dims3(1),-enl%nsx:enl%nsx,-enl%nsx:enl%nsx))
   acc%accum_e = acc_e
   deallocate(acc_e)
- 
+
   enl%num_el = sum(acc%accum_z)
 
 ! and close everything
@@ -326,9 +326,9 @@ type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
 
-real(kind=sgl),allocatable              :: mLPNH(:,:) 
-real(kind=sgl),allocatable              :: mLPSH(:,:) 
-real(kind=sgl),allocatable              :: EkeVs(:) 
+real(kind=sgl),allocatable              :: mLPNH(:,:)
+real(kind=sgl),allocatable              :: mLPSH(:,:)
+real(kind=sgl),allocatable              :: EkeVs(:)
 integer(kind=irg),allocatable           :: atomtype(:)
 
 real(kind=sgl),allocatable              :: srtmp(:,:,:)
@@ -357,8 +357,8 @@ masterfile = EMsoft_toNativePath(masterfile)
 ! is this a propoer HDF5 file ?
 call h5fis_hdf5_f(trim(masterfile), stat, hdferr)
 
-if (stat) then 
-! open the master file 
+if (stat) then
+! open the master file
   readonly = .TRUE.
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
@@ -389,8 +389,8 @@ groupname = SC_ECPmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 dataset = SC_EkeV
-  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV) 
-  
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
+
 dataset = SC_numset
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
 
@@ -424,12 +424,12 @@ dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
-  
+
 dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
-  
+
   call HDF_pop(HDF_head,.TRUE.)
 
 else
@@ -689,7 +689,7 @@ allocate(angles)
 !====================================
 ! get the angular information, either in Euler angles or in quaternions, from a file
 !====================================
-! open the angle file 
+! open the angle file
 anglefile = trim(EMsoft_getEMdatapathname())//trim(enl%anglefile)
 anglefile = EMsoft_toNativePath(anglefile)
 
@@ -697,7 +697,7 @@ open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
 read(dataunit,*) angletype
-if (angletype.eq.'eu') then 
+if (angletype.eq.'eu') then
   enl%anglemode = 'euler'
 else
   enl%anglemode = 'quats'
@@ -706,7 +706,7 @@ end if
 ! then the number of angles in the file
 read(dataunit,*) enl%numangle_anglefile
 
-if (present(verbose)) then 
+if (present(verbose)) then
   io_int(1) = enl%numangle_anglefile
   call WriteValue(' -> Number of angle entries = ',io_int,1)
 end if
@@ -714,7 +714,7 @@ end if
 if (enl%anglemode.eq.'euler') then
 ! allocate the euler angle array
   allocate(eulang(3,enl%numangle_anglefile),stat=istat)
-! if istat.ne.0 then do some error handling ... 
+! if istat.ne.0 then do some error handling ...
   do i=1,enl%numangle_anglefile
     read(dataunit,*) eulang(1:3,i)
   end do
@@ -730,7 +730,7 @@ if (enl%anglemode.eq.'euler') then
 ! if (istat.ne.0) then ...
 
   if (present(verbose)) call Message(' -> converting Euler angles to quaternions', frm = "(A/)")
-  
+
   do i=1,enl%numangle_anglefile
     angles%quatang(1:4,i) = eu2qu(eulang(1:3,i)*dtor)
   end do
@@ -756,7 +756,7 @@ close(unit=dataunit,status='keep')
 !  qax = ax2qu( enl%axisangle )
 !  do i=1,enl%numangles_
 !    angles%quatang(1:4,i) = quat_mult(qax,angles%quatang(1:4,i))
-!  end do 
+!  end do
 !end if
 call Message(' -> completed reading '//trim(enl%anglefile), frm = "(A)")
 
@@ -768,7 +768,7 @@ end subroutine ECPreadangles
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief discretize the annular detector as a set of direction cosines in the 
+!> @brief discretize the annular detector as a set of direction cosines in the
 !> microscope frame
 !
 !> @param ecpnl ECP name list structure
@@ -868,7 +868,7 @@ end subroutine ECPGenerateDetector
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief calculate the interpolation weight factors 
+!> @brief calculate the interpolation weight factors
 !
 !> @param ecpnl ECP name list structure
 !> @param master ECPMasterType data type
@@ -915,25 +915,25 @@ do isig = 1,nsig
     acc_sum = 0.0
     MCangle = (isig - 1)*deltheta
     isampletilt = nint((MCangle - ecpnl%MCsigstart)/ecpnl%MCsigstep)
-    
+
     if (isampletilt .lt. 1) then
         isampletilt = abs(isampletilt) + 1
     else
         isampletilt = isampletilt + 1
     end if
-    
+
     do ipolar = 1,ecpnl%npolar
         do iazimuth = 1,ecpnl%nazimuth
             dc(1:3) = (/master%rgx(ipolar,iazimuth),master%rgy(ipolar,iazimuth),master%rgz(ipolar,iazimuth)/)
 
 ! convert to Rosca-lambert projection
             call LambertgetInterpolation(dc, scl, ecpnl%nsx, ecpnl%nsy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
-            
+
             acc_sum = 0.25*(acc%accum_e(isampletilt,nix,niy) * dxm * dym + &
                             acc%accum_e(isampletilt,nixp,niy) * dx * dym + &
                             acc%accum_e(isampletilt,nix,niyp) * dxm * dy + &
                             acc%accum_e(isampletilt,nixp,niyp) * dx * dy)
-             
+
             weightfact(isig) = weightfact(isig) + acc_sum
 
         end do
@@ -963,7 +963,7 @@ end subroutine ECPGetWeightFactors
 !> @date 11/18/14  MDG 1.1 removed enl%MCnthreads from file read
 !> @date 04/02/15  MDG 2.0 changed program input & output to HDF format
 !> @date 04/29/15  MDG 2.1 add optional parameter efile
-!> @date 09/15/15  SS  2.2 added accum_z reading 
+!> @date 09/15/15  SS  2.2 added accum_z reading
 !> @date 09/15/15  SS  3.0 made part of ECPmod module
 !> @date 10/12/15  SS  3.1 changes to handle new mc program; old version of mc file
 !>                         not supported anymore
@@ -990,7 +990,7 @@ logical,INTENT(IN),OPTIONAL                     :: NoHDFInterfaceOpen
 integer(kind=irg)                               :: istat, hdferr, nlines, nx
 logical                                         :: stat, readonly, HDFopen
 integer(HSIZE_T)                                :: dims3(3),dims4(4)
-character(fnlen)                                :: groupname, dataset, energyfile 
+character(fnlen)                                :: groupname, dataset, energyfile
 character(fnlen),allocatable                    :: stringarray(:)
 
 integer(kind=irg),allocatable                   :: acc_z(:,:,:,:), acc_e(:,:,:)
@@ -1008,7 +1008,7 @@ energyfile = EMsoft_toNativePath(energyfile)
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
   if (NoHDFInterfaceOpen.eqv..FALSE.) HDFopen = .FALSE.
-end if 
+end if
 
 
 ! allocate(acc)
@@ -1113,7 +1113,7 @@ groupname = SC_EMData
 groupname = SC_MCOpenCL
   hdferr = HDF_openGroup(groupname, HDF_head)
 
-! read data items 
+! read data items
 dataset = SC_numangle
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numangle)
 
@@ -1128,10 +1128,10 @@ dataset = SC_accumz
 
 dataset = SC_accume
   call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
-  allocate(acc%accum_e(1:dims3(1),1:dims3(2),1:dims3(3)))
+  allocate(acc%accum_e(1:dims3(1),-nx:nx,-nx:nx))
   acc%accum_e = acc_e
   deallocate(acc_e)
- 
+
   enl%num_el = sum(acc%accum_z)
 
 ! and close everything
@@ -1186,9 +1186,9 @@ character(fnlen),INTENT(IN),OPTIONAL            :: mfile
 logical,INTENT(IN),OPTIONAL                     :: verbose
 logical,INTENT(IN),OPTIONAL                     :: NoHDFInterfaceOpen
 
-real(kind=sgl),allocatable                      :: mLPNH(:,:) 
-real(kind=sgl),allocatable                      :: mLPSH(:,:) 
-real(kind=sgl),allocatable                      :: EkeVs(:) 
+real(kind=sgl),allocatable                      :: mLPNH(:,:)
+real(kind=sgl),allocatable                      :: mLPSH(:,:)
+real(kind=sgl),allocatable                      :: EkeVs(:)
 integer(kind=irg),allocatable                   :: atomtype(:)
 
 real(kind=sgl),allocatable                      :: srtmp(:,:,:)
@@ -1207,7 +1207,7 @@ type(HDFobjectStackType),pointer                :: HDF_head
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
   if (NoHDFInterfaceOpen.eqv..FALSE.) HDFopen = .FALSE.
-end if 
+end if
 
 ! open the fortran HDF interface
 if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
@@ -1226,8 +1226,8 @@ masterfile = EMsoft_toNativePath(masterfile)
 call h5fis_hdf5_f(trim(masterfile), stat, hdferr)
 
 if (stat) then
- 
-! open the master file 
+
+! open the master file
   readonly = .TRUE.
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
@@ -1259,7 +1259,7 @@ groupname = SC_ECPmaster
 
 dataset = SC_EkeV
   call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
-  
+
 dataset = SC_numset
   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
 
@@ -1293,12 +1293,12 @@ dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
-  
+
 dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
-  
+
   call HDF_pop(HDF_head,.TRUE.)
 
 ! close the fortran HDF interface
@@ -1388,7 +1388,7 @@ end subroutine GetVectorsConeIndexing
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief discretize the annular detector as a set of direction cosines in the 
+!> @brief discretize the annular detector as a set of direction cosines in the
 !> microscope frame
 !
 !> @param ecpnl ECP name list structure
@@ -1489,7 +1489,7 @@ end subroutine ECPIndexingGenerateDetector
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief calculate the interpolation weight factors 
+!> @brief calculate the interpolation weight factors
 !
 !> @param ecpnl ECP name list structure
 !> @param master ECPMasterType data type
@@ -1519,7 +1519,7 @@ type(ECPLargeAccumType),pointer                 :: acc
 real(kind=sgl), INTENT(OUT)                     :: weightfact(nsig)
 integer(kind=irg), INTENT(IN)                   :: nsig
 logical, INTENT(IN), OPTIONAL                   :: verbose
- 
+
 integer(kind=irg)                               :: isig, ipolar, iazimuth, istat
 integer(kind=irg)                               :: nix, niy, nixp, niyp, isampletilt
 real(kind=sgl)                                  :: dx, dy, dxm, dym, acc_sum, samplenormal(3), dp
@@ -1537,25 +1537,25 @@ do isig = 1,nsig
     acc_sum = 0.0
     MCangle = (isig - 1)*deltheta
     isampletilt = nint((MCangle - ecpnl%MCsigstart)/ecpnl%MCsigstep)
-    
+
     if (isampletilt .lt. 1) then
         isampletilt = abs(isampletilt) + 1
     else
         isampletilt = isampletilt + 1
     end if
-    
+
     do ipolar = 1,ecpnl%npolar
         do iazimuth = 1,ecpnl%nazimuth
             dc(1:3) = (/master%rgx(ipolar,iazimuth),master%rgy(ipolar,iazimuth),master%rgz(ipolar,iazimuth)/)
 
 ! convert to Rosca-lambert projection
             call LambertgetInterpolation(dc, scl, ecpnl%nsx, ecpnl%nsy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
-            
+
             acc_sum = 0.25*(acc%accum_e(isampletilt,nix,niy) * dxm * dym + &
                             acc%accum_e(isampletilt,nixp,niy) * dx * dym + &
                             acc%accum_e(isampletilt,nix,niyp) * dxm * dy + &
                             acc%accum_e(isampletilt,nixp,niyp) * dx * dy)
-             
+
             weightfact(isig) = weightfact(isig) + acc_sum
 
         end do
@@ -1611,7 +1611,7 @@ type(HDFobjectStackType),pointer        :: HDF_head
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
   if (NoHDFInterfaceOpen.eqv..FALSE.) HDFopen = .FALSE.
-end if 
+end if
 
 xtalname2 = ''
 do i = 1,fnlen
@@ -1715,8 +1715,8 @@ type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
 
-real(kind=sgl),allocatable              :: mLPNH(:,:) 
-real(kind=sgl),allocatable              :: mLPSH(:,:) 
+real(kind=sgl),allocatable              :: mLPNH(:,:)
+real(kind=sgl),allocatable              :: mLPSH(:,:)
 real(kind=sgl)                          :: voltage
 integer(kind=irg),allocatable           :: atomtype(:)
 
@@ -1747,8 +1747,8 @@ masterfile = EMsoft_toNativePath(masterfile)
 ! is this a propoer HDF5 file ?
 call h5fis_hdf5_f(trim(masterfile), stat, hdferr)
 
-if (stat) then 
-! open the master file 
+if (stat) then
+! open the master file
   readonly = .TRUE.
   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
 
@@ -1761,7 +1761,7 @@ groupname = SC_EMkinematicalNameList
 
 dataset = SC_voltage
   call HDF_readDatasetfloat(dataset, HDF_head, hdferr, voltage)
-  enl%Ekev = dble(voltage) 
+  enl%Ekev = dble(voltage)
 
 dataset = SC_xtalname
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
@@ -1804,12 +1804,12 @@ dataset = SC_ProgramName
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterprogname = trim(stringarray(1))
   deallocate(stringarray)
-  
+
 dataset = SC_Version
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   enl%Masterscversion = trim(stringarray(1))
   deallocate(stringarray)
-  
+
   call HDF_pop(HDF_head,.TRUE.)
 
 else
@@ -1854,7 +1854,7 @@ use rotations
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                    :: ipar(7)
-real(kind=sgl),INTENT(IN)                       :: qu(4) 
+real(kind=sgl),INTENT(IN)                       :: qu(4)
 real(kind=sgl),INTENT(IN)                       :: accum(ipar(6),ipar(2),ipar(3))
 real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
 real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
@@ -1886,7 +1886,7 @@ allocate(ECpattern(ipar(2),ipar(3)),stat=istat)
 binned = 0.0
 ECpattern = 0.0
 
-scl = float(ipar(4)) 
+scl = float(ipar(4))
 
 do ii = 1,ipar(2)
     do jj = 1,ipar(3)
@@ -1894,7 +1894,7 @@ do ii = 1,ipar(2)
         dc = sngl(quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) ))
 
         dc = dc/sqrt(sum(dc**2))
-        
+
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
         call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
@@ -1927,11 +1927,11 @@ end subroutine CalcECPatternSingleFull
 !> @param ecpnl ECP IndexingNamelist
 !> @param hdferr error code
 !
-!> @date 03/12/18 MDG 1.0 started new routine, to be integrated with other ECP code 
+!> @date 03/12/18 MDG 1.0 started new routine, to be integrated with other ECP code
 !--------------------------------------------------------------------------
 recursive subroutine readECPDotProductFile(dpfile, ecpnl, hdferr, ECPDIdata, getADP, getAverageOrientations, getCI, &
                                            getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
-                                           getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
+                                           getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, &
                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, getRefinedEulerAngles)
 !DEC$ ATTRIBUTES DLLEXPORT :: readECPDotProductFile
 
@@ -1977,7 +1977,7 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
-integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3) 
+integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3)
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 ! we assume that the calling program has opened the HDF interface
@@ -1994,9 +1994,9 @@ call h5fis_hdf5_f(trim(infile), stat, hdferr)
 
 if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sure it is an EBSD dot product file
    call FatalError('readECPDotProductFile','This is not a proper HDF5 file')
-end if 
-   
-! open the dot product file 
+end if
+
+! open the dot product file
 nullify(HDF_head)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
@@ -2030,8 +2030,8 @@ groupname = SC_ECPIndexingNameListType
 ! dataset = SC_L
 !     call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ecpnl%L)
 
-dataset = SC_ncubochoric  
-! There is an issue with the capitalization on this variable; needs to be resolved 
+dataset = SC_ncubochoric
+! There is an issue with the capitalization on this variable; needs to be resolved
 ! [MDG 10/18/17]  We test to see if Ncubochoric exists; if it does not then we check
 ! for ncubochoric ...
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -2059,7 +2059,7 @@ dataset = SC_Rout
 
 ! dataset = SC_StepX
 !     call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ecpnl%StepX)
-    
+
 ! dataset = SC_StepY
 !     call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ecpnl%StepY)
 
@@ -2155,7 +2155,7 @@ dataset = SC_tmpfile
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     ecpnl%tmpfile = trim(stringarray(1))
     deallocate(stringarray)
-    
+
 dataset = SC_workingdistance
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ecpnl%workingdistance)
 
@@ -2195,106 +2195,106 @@ if (present(getADP)) then
 !   dataset = SC_ADP
 !   call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%ADP)
     call Message('ADP','reading the ADP variable is not yet implemented')
-  end if 
+  end if
 end if
 
 if (present(getAverageOrientations)) then
   if (getAverageOrientations.eqv..TRUE.) then
     dataset = SC_AverageOrientations
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%AverageOrientations)
-  end if 
+  end if
 end if
 
 if (present(getCI)) then
   if (getCI.eqv..TRUE.) then
     dataset = SC_CI
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%CI)
-  end if 
+  end if
 end if
 
 if (present(getEulerAngles)) then
   if (getEulerAngles.eqv..TRUE.) then
     dataset = SC_EulerAngles
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%EulerAngles)
-  end if 
+  end if
 end if
 
 if (present(getFit)) then
   if (getFit.eqv..TRUE.) then
     dataset = SC_Fit
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%Fit)
-  end if 
+  end if
 end if
 
 if (present(getIQ)) then
   if (getIQ.eqv..TRUE.) then
     dataset = SC_IQ
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%IQ)
-  end if 
+  end if
 end if
 
 if (present(getKAM)) then
   if (getKAM.eqv..TRUE.) then
     dataset = SC_KAM
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%KAM)
-  end if 
+  end if
 end if
 
 if (present(getOSM)) then
   if (getOSM.eqv..TRUE.) then
     dataset = SC_OSM
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%OSM)
-  end if 
+  end if
 end if
 
-if (present(getPhase)) then   ! this is a 1-byte integer, to be implemented 
+if (present(getPhase)) then   ! this is a 1-byte integer, to be implemented
   if (getPhase.eqv..TRUE.) then
 !   dataset = SC_Phase
 !   call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%Phase)
     call Message('Phase','reading the Phase variable is not yet implemented')
-  end if 
+  end if
 end if
 
 if (present(getPhi)) then
   if (getPhi.eqv..TRUE.) then
     dataset = SC_Phi
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%Phi)
-  end if 
+  end if
 end if
 
 if (present(getPhi1)) then
   if (getPhi1.eqv..TRUE.) then
     dataset = SC_Phi1
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%Phi1)
-  end if 
+  end if
 end if
 
 if (present(getPhi2)) then
   if (getPhi2.eqv..TRUE.) then
     dataset = SC_Phi2
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%Phi2)
-  end if 
+  end if
 end if
 
 if (present(getSEMsignal)) then
   if (getSEMsignal.eqv..TRUE.) then
     dataset = SC_SEMsignal
     call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%SEMsignal)
-  end if 
+  end if
 end if
 
 if (present(getTopDotProductList)) then
   if (getTopDotProductList.eqv..TRUE.) then
     dataset = SC_TopDotProductList
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%TopDotProductList)
-  end if 
+  end if
 end if
 
 if (present(getTopMatchIndices)) then
   if (getTopMatchIndices.eqv..TRUE.) then
     dataset = SC_TopMatchIndices
     call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%TopMatchIndices)
-  end if 
+  end if
 end if
 
 if (present(getValid)) then
@@ -2302,58 +2302,57 @@ if (present(getValid)) then
 !   dataset = SC_Valid
 !   call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%Valid)
     call Message('Valid','reading the Valid variable is not yet implemented')
-  end if 
+  end if
 end if
 
 if (present(getXPosition)) then
   if (getXPosition.eqv..TRUE.) then
     dataset = SC_XPosition
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%XPosition)
-  end if 
+  end if
 end if
 
 if (present(getYPosition)) then
   if (getYPosition.eqv..TRUE.) then
     dataset = SC_YPosition
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%YPosition)
-  end if 
+  end if
 end if
 
 if (present(getRefinedDotProducts)) then
   if (getRefinedDotProducts.eqv..TRUE.) then
     dataset = SC_RefinedDotProducts
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists) then 
+    if (g_exists) then
       call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%RefinedDotProducts)
     else
       call Message('readEBSDDotProductFile','There is no RefinedDotProducts data set in this file')
     end if
-  end if 
+  end if
 end if
 
 if (present(getRefinedEulerAngles)) then
   if (getRefinedEulerAngles.eqv..TRUE.) then
     dataset = SC_RefinedEulerAngles
     call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
-    if (g_exists) then 
+    if (g_exists) then
       call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%RefinedEulerAngles)
     else
       call Message('readEBSDDotProductFile','There is no RefinedEulerAngles data set in this file')
     end if
-  end if 
+  end if
 end if
 
 ! if (present()) then
 !   if (get.eqv..TRUE.) then
 
-!   end if 
+!   end if
 ! end if
 
 ! and close the HDF5 dot product file
 call HDF_pop(HDF_head,.TRUE.)
-    
+
 end subroutine readECPDotProductFile
 
 
 end module ECPmod
-
