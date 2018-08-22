@@ -266,7 +266,6 @@ dataset = SC_accumz
 
 dataset = SC_accume
   call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
-  !allocate(acc%accum_e(1:dims3(1),1:dims3(2),1:dims3(3)))
   allocate(acc%accum_e(1:dims3(1),-enl%nsx:enl%nsx,-enl%nsx:enl%nsx))
   acc%accum_e = acc_e
   deallocate(acc_e)
