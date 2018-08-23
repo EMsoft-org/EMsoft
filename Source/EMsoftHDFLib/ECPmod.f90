@@ -294,6 +294,207 @@ end subroutine ECPreadMCfile
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:ECPreadMCfile
+!
+!> @author Marc De Graef/Saransh Singh, Carnegie Mellon University
+!
+!> @brief read monte carlo file
+!
+!> @param enl EBSD name list structure
+!> @param acc energy structure
+!
+!> @date 06/24/14  MDG 1.0 original
+!> @date 11/18/14  MDG 1.1 removed enl%MCnthreads from file read
+!> @date 04/02/15  MDG 2.0 changed program input & output to HDF format
+!> @date 04/29/15  MDG 2.1 add optional parameter efile
+!> @date 09/15/15  SS  2.2 added accum_z reading
+!> @date 09/15/15  SS  3.0 made part of ECPmod module
+!> @date 10/12/15  SS  3.1 changes to handle new mc program; old version of mc file
+!>                         not supported anymore
+!--------------------------------------------------------------------------
+recursive subroutine ECPSinglereadMCfile(enl,acc,efile,verbose)
+!DEC$ ATTRIBUTES DLLEXPORT :: ECPSinglereadMCfile
+
+use NameListTypedefs
+use files
+use io
+use HDF5
+use HDFsupport
+use error
+
+IMPLICIT NONE
+
+type(ECPSingleNameListType),INTENT(INOUT)     :: enl
+type(ECPLargeAccumType),pointer         :: acc
+character(fnlen),INTENT(IN),OPTIONAL    :: efile
+logical,INTENT(IN),OPTIONAL             :: verbose
+
+integer(kind=irg)                       :: istat, hdferr, nlines, nx
+logical                                 :: stat, readonly
+integer(HSIZE_T)                        :: dims3(3),dims4(4)
+character(fnlen)                        :: groupname, dataset, energyfile
+character(fnlen),allocatable            :: stringarray(:)
+
+integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
+
+type(HDFobjectStackType),pointer        :: HDF_head
+! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
+if (PRESENT(efile)) then
+  energyfile = efile
+else
+  energyfile = trim(EMsoft_getEMdatapathname())//trim(enl%energyfile)
+end if
+energyfile = EMsoft_toNativePath(energyfile)
+
+allocate(acc)
+
+! first, we need to check whether or not the input file is of the HDF5 format type; if
+! it is, we read it accordingly, otherwise we give error. Old format not supported anymore
+!
+call h5fis_hdf5_f(energyfile, stat, hdferr)
+
+if (stat) then
+! open the fortran HDF interface
+  call h5open_EMsoft(hdferr)
+
+  nullify(HDF_head)
+
+! open the MC file using the default properties.
+  readonly = .TRUE.
+  hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
+
+! open the namelist group
+groupname = SC_NMLparameters
+  hdferr = HDF_openGroup(groupname, HDF_head)
+
+groupname = SC_MCCLNameList
+  hdferr = HDF_openGroup(groupname, HDF_head)
+
+! read all the necessary variables from the namelist group
+dataset = SC_xtalname
+  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+  enl%MCxtalname = trim(stringarray(1))
+  deallocate(stringarray)
+
+dataset = SC_mode
+  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+  enl%MCmode = trim(stringarray(1))
+  deallocate(stringarray)
+
+  if(enl%MCmode .ne. 'bse1') then
+     call FatalError('ECPreadMCfile','This file is not bse1 mode. Please input correct HDF5 file')
+  end if
+
+dataset = SC_numsx
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nsx)
+  enl%nsx = (enl%nsx - 1)/2
+  enl%nsy = enl%nsx
+
+dataset = SC_EkeV
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%EkeV)
+
+dataset = SC_Ehistmin
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ehistmin)
+
+dataset = SC_Ebinsize
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%Ebinsize)
+
+dataset = SC_depthmax
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthmax)
+
+dataset = SC_depthstep
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%depthstep)
+
+dataset = SC_sigstart
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigstart)
+
+dataset = SC_sigend
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigend)
+
+dataset = SC_sigstep
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MCsigstep)
+
+dataset = SC_omega
+  call HDF_readDatasetDouble(dataset, HDF_head, hdferr, enl%MComega)
+
+! close the name list group
+  call HDF_pop(HDF_head)
+  call HDF_pop(HDF_head)
+
+! read from the EMheader
+groupname = SC_EMheader
+  hdferr = HDF_openGroup(groupname, HDF_head)
+
+groupname = SC_MCOpenCL
+  hdferr = HDF_openGroup(groupname, HDF_head)
+
+dataset = SC_ProgramName
+  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+  enl%MCprogname = trim(stringarray(1))
+  deallocate(stringarray)
+
+dataset = SC_Version
+  call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+  enl%MCscversion = trim(stringarray(1))
+  deallocate(stringarray)
+
+  call HDF_pop(HDF_head)
+  call HDF_pop(HDF_head)
+
+! open the Data group
+groupname = SC_EMData
+  hdferr = HDF_openGroup(groupname, HDF_head)
+
+groupname = SC_MCOpenCL
+  hdferr = HDF_openGroup(groupname, HDF_head)
+
+! read data items
+dataset = SC_numangle
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numangle)
+
+dataset = SC_numzbins
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numzbins)
+
+dataset = SC_accumz
+  call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
+  allocate(acc%accum_z(1:dims4(1),1:dims4(2),1:dims4(3),1:dims4(4)))
+  acc%accum_z = acc_z
+  deallocate(acc_z)
+
+dataset = SC_accume
+  call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, acc_e)
+  allocate(acc%accum_e(1:dims3(1),-enl%nsx:enl%nsx,-enl%nsx:enl%nsx))
+  acc%accum_e = acc_e
+  deallocate(acc_e)
+
+  enl%num_el = sum(acc%accum_z)
+
+! and close everything
+  call HDF_pop(HDF_head,.TRUE.)
+
+! close the fortran HDF interface
+  call h5close_EMsoft(hdferr)
+
+else
+!==============================================
+! OLD VERSION OF MC FILE NOT SUPPORTED ANYMORE
+! COMMENTING OUT THE FOLLOWING LINES
+! REPLACING WITH FATALERROR COMMENT
+!==============================================
+
+  call FatalError('ECPreadMCfile','The file is not a h5 file. Old version of MC file not supported anymore!')
+  !if (present(verbose)) call Message('opening '//trim(enl%energyfile), frm = "(A)")
+end if
+
+if (present(verbose)) then
+    if (verbose) call Message(' -> completed reading '//trim(enl%energyfile), frm = "(A)")
+end if
+
+end subroutine ECPSinglereadMCfile
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:ECPreadMasterfile
 !
 !> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
