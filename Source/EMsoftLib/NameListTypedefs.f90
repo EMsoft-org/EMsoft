@@ -1716,6 +1716,8 @@ type EMmdSTEMNameListType
         real(kind=sgl)          :: convergence
         integer(kind=irg)       :: platid
         integer(kind=irg)       :: devid
+        integer(kind=irg)       :: usenumd
+        integer(kind=irg)       :: selnumd(4)
         integer(kind=irg)       :: discsize
 end type EMmdSTEMNameListType
 
