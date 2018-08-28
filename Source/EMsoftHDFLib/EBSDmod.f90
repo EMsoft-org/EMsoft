@@ -92,6 +92,8 @@ type EBSDMPdataType
         character(fnlen)                :: xtalname
         real(kind=sgl),allocatable      :: BetheParameters(:)
         real(kind=sgl),allocatable      :: keVs(:)
+        real(kind=sgl),allocatable      :: mLPNH4(:,:,:,:)
+        real(kind=sgl),allocatable      :: mLPSH4(:,:,:,:)
         real(kind=sgl),allocatable      :: mLPNH(:,:,:)
         real(kind=sgl),allocatable      :: mLPSH(:,:,:)
         real(kind=sgl),allocatable      :: masterSPNH(:,:,:)
@@ -682,9 +684,10 @@ end subroutine readEBSDMonteCarloFile
 !> @param hdferr error code
 !
 !> @date 04/02/18 MDG 1.0 started new routine, to eventually replace all other EBSD Monte Carlo reading routines
+!> @date 08/28/18 MDG 1.1 added keep4 parameter to pass 4D master patterns instead of 3D
 !--------------------------------------------------------------------------
 recursive subroutine readEBSDMasterPatternFile(MPfile, mpnl, hdferr, EBSDMPdata, getkeVs, getmLPNH, getmLPSH, &
-                                               getmasterSPNH, getmasterSPSH)
+                                               getmasterSPNH, getmasterSPSH, keep4)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDMasterPatternFile
 
 use local
@@ -707,9 +710,10 @@ logical,INTENT(IN),OPTIONAL                         :: getmLPNH
 logical,INTENT(IN),OPTIONAL                         :: getmLPSH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPNH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPSH
+logical,INTENT(IN),OPTIONAL                         :: keep4
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
-logical                                             :: stat, readonly, g_exists, f_exists, FL
+logical                                             :: stat, readonly, g_exists, f_exists, FL, keepall
 type(HDFobjectStackType),pointer                    :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, restart, combinesites, uniform, istat
 integer(kind=irg),allocatable                       :: iarray(:)
@@ -717,6 +721,11 @@ real(kind=sgl),allocatable                          :: farray(:)
 real(kind=sgl),allocatable                          :: mLPNH(:,:,:,:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3), dims4(4) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
+keepall = .FALSE.
+if (present(keep4)) then
+  if (keep4.eqv..TRUE.) keepall = .TRUE.
+end if
 
 ! we assume that the calling program has opened the HDF interface
 
@@ -887,8 +896,13 @@ if (present(getmLPNH)) then
   if (getmLPNH.eqv..TRUE.) then
     dataset = SC_mLPNH
     call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
-    allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
-    EBSDMPdata%mLPNH = sum(mLPNH,4)
+    if (keepall) then
+      allocate(EBSDMPdata%mLPNH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
+      EBSDMPdata%mLPNH4 = mLPNH
+    else
+      allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
+      EBSDMPdata%mLPNH = sum(mLPNH,4)
+    end if
     deallocate(mLPNH)
   end if 
 end if
@@ -897,8 +911,13 @@ if (present(getmLPSH)) then
   if (getmLPSH.eqv..TRUE.) then
     dataset = SC_mLPSH
     call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
-    allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
-    EBSDMPdata%mLPSH = sum(mLPNH,4)
+    if (keepall) then
+      allocate(EBSDMPdata%mLPSH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
+      EBSDMPdata%mLPSH4 = mLPNH
+    else
+      allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
+      EBSDMPdata%mLPSH = sum(mLPNH,4)
+    end if
     deallocate(mLPNH)
   end if 
 end if
