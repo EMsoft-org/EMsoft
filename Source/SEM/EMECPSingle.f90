@@ -364,12 +364,12 @@ hdferr = HDF_writeDatasetDouble(dataset, EkeV, HDF_head)
 dataset = SC_cellATOMtype
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, cell%ATOM_type(1:numset), numset, HDF_head)
 
-dataset = SC_squhex
-if (usehex) then
-hdferr = HDF_writeDatasetStringArray(dataset, 'hexago', 1, HDF_head)
-else
-hdferr = HDF_writeDatasetStringArray(dataset, 'square', 1, HDF_head)
-end if
+! dataset = SC_squhex
+! if (usehex) then
+! hdferr = HDF_writeDatasetStringArray(dataset, 'hexago', 1, HDF_head)
+! else
+! hdferr = HDF_writeDatasetStringArray(dataset, 'square', 1, HDF_head)
+! end if
 
 ! create the hyperslab and write zeroes to it for now
 dataset = SC_ECP
