@@ -84,8 +84,8 @@ end program EMDPFit
 !> @date 02/22/16  SS 1.0 original
 !> @date 08/08/16  SS 1.1 4 pattern fit
 !> @date 08/10/16  SS 1.2 added variable stepsize
-!> @date 08/28/18 MDG 1.3 replaced single pattern reading by standard input of patterns from various formats
-!> @date 08/28/18 MDG 1.4 replaced master pattern reading by standard routines in EBSDmod.f90
+!> @date 08/28/18 MDG 1.3 replaced master pattern reading by standard routines in EBSDmod.f90
+!> @date 08/28/18 MDG 1.4 replaced single pattern reading by standard input of patterns from various formats
 !--------------------------------------------------------------------------
 subroutine FitDP(enl, progname, nmldeffile)
 
@@ -309,6 +309,9 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
     STEPSIZE(6) = enl%step_L
     
     allocate(EXPT(IPAR(2)*IPAR(3)/IPAR(12)**2))
+
+! this part needs to be replaced with the proper reading routines so that all file formats can be accessed 
+! using this fitting program... 
 
     open(unit=dataunit,file=trim(EMsoft_getEMdatapathname())//trim(enl%exptfile),action='read',access='direct',&
     form='unformatted',recl=(4*ipar(2)*ipar(3)/ipar(12)**2))
