@@ -1180,6 +1180,7 @@ end function EMsoft_fromNativePath
 !> @date  02/25/16 MDG 1.3 removed support for environment variables; added creation of EMsoftConfig.json file
 !> @date  02/25/16 MDG 1.4 added optional config parameter
 !> @date  10/07/16 MDG 1.5 modified creation of configuration file for new split Public/Private develop setup
+!> @date  08/31/18 MDG 1.6 replaced 'mv' command by 'ren' for Windows platform
 !--------------------------------------------------------------------------
 
 subroutine EMsoft_path_init(config)
@@ -1194,7 +1195,7 @@ character(fnlen)                        :: pathstring, dirstring, ep, EMsoftpath
 integer(kind=irg)                       :: i, error_cnt
 logical                                 :: found, fexists, jexists
 character(fnlen)                        :: confname, emsoftname, jsonname, jsonfilename, fname, cwd, &
-                                           dirname, library, dataname, xtalname
+                                           dirname, library, dataname, xtalname, platform
 character(3)                            :: release, develop
 character(len=1)                        :: edp, tab, yesno, EMsoftnativedelimiter
 
@@ -1236,7 +1237,12 @@ if (present(config)) then
       write (*,*) '         Renaming old file to ',trim(jsonname)//'.save'
       write (*,*) '         Creating new configuration file'
       write (*,*) '-------'
-      call system('mv '//trim(jsonname)//' '//trim(jsonname)//'.save')
+      platform = EMsoft_getEMsoftplatform()
+      if (trim(platform).ne.'Windows') then   ! use the UNIX rename command 'mv oldname newname'
+        call system('mv '//trim(jsonname)//' '//trim(jsonname)//'.save')
+      else   ! on Windows the file rename command is 'ren oldname newname'
+        call system('ren '//trim(jsonname)//' '//trim(jsonname)//'.save')
+      end if
     end if
 
 ! look for the .config/EMsoft/EMsoftConfig.json file one step at a time
