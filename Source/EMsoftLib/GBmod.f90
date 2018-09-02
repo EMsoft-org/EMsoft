@@ -179,7 +179,9 @@ real(kind=dbl),INTENT(INOUT)      :: qd(4)
 logical,INTENT(IN),OPTIONAL       :: noU1
 real(kind=dbl)                    :: Omega
 
-real(kind=dbl)                    :: qq(4), zeta, sigma, cac, cbd, cbc, cad, cz, sz, cs, ss, sum1, sum2
+real(kind=dbl)                    :: qq(4), zeta, sigma, cac, cbd, cbc, cad, cz, sz, cs, ss, &
+                                     sum1, sum2, sum3, sum4, sums(4), smax
+integer(kind=irg)                 :: isum(1)                                     
 
 if (present(noU1)) then
   if (noU1.eqv..TRUE.) then
@@ -189,6 +191,8 @@ if (present(noU1)) then
     cad = sum(qa*qd)
     sum1 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
     sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
+! and determine the smallest geodesic distance on S^7
+    Omega = 2.0 * minval( (/ acos(sum1), acos(sum2) /) )
   end if
 else
 ! determine the minimal U(1) angle for the (a,b) - (c,d) boundary pair
@@ -202,6 +206,17 @@ else
   
   sum1 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
 
+! determine the minimal U(1) angle for the (a,-b) - (c,d) boundary pair
+  zeta = GBO_minimal_U1_angle(qa,-qb,qc,qd)
+  cz = cos(zeta*0.5D0)
+  sz = sin(zeta*0.5D0)
+  qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
+  cac = sum(qa*qq)
+  qq = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
+  cbd = sum(-qb*qq)
+  
+  sum3 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
+
 ! determine the minimal U(1) angle for the (b,a) - (c,d) boundary pair
   sigma = GBO_minimal_U1_angle(qa,qb,qc,qd,exchange=.TRUE.)
   cs = cos(sigma*0.5D0)
@@ -212,10 +227,27 @@ else
   cad = sum(qa*qq)
 
   sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
-end if
+
+! determine the minimal U(1) angle for the (b,-a) - (c,d) boundary pair
+  sigma = GBO_minimal_U1_angle(-qa,qb,qc,qd,exchange=.TRUE.)
+  cs = cos(sigma*0.5D0)
+  ss = sin(sigma*0.5D0)
+  qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
+  cbc = sum(qb*qq)
+  qq = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
+  cad = sum(-qa*qq)
+
+  sum4 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
+
+  sums = (/ sum1, sum2, sum3, sum4 /)
+  smax = maxval(sums)
+  isum = maxloc(sums)
 
 ! and determine the smallest geodesic distance on S^7
-Omega = 2.0 * minval( (/ acos(sum1), acos(sum2) /) )
+  Omega = 2.0 * acos(smax)
+
+! do we also need to reorganize the quaternions depending on the value of isum?
+end if
 
 end function GBO_Omega
 
