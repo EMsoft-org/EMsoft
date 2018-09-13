@@ -84,6 +84,7 @@ end program EMECP
 !
 !> @date 08/27/14 SS 1.0 f90
 !> @date 13/10/15 SS 2.0 added detector model+new GetVectorCone routine+OpenMP+hdf5
+!> @date 09/13/18 MDG 2.1 fix off-by-one error in writing of pattern byte arrays (fixes issue 26)
 !-------------------------------------------------------------------------------------
 subroutine ECpattern(ecpnl, progname, nmldeffile)
 
@@ -487,7 +488,7 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
 
 ! write dictionary pattern to h5 file
         offset = (/ 0, 0, iang-1 /)
-        hdims = (/ ecpnl%npix+1, ecpnl%npix+1, ecpnl%numangle_anglefile /)
+        hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
         dim0 = ecpnl%npix
         dim1 = ecpnl%npix
         dim2 = 1
