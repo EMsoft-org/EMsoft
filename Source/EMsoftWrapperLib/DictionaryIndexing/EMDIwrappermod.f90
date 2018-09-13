@@ -681,6 +681,9 @@ complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
 
 type(C_PTR)                             :: HPplanf, HPplanb
 
+HPplanf = C_NULL_PTR
+HPplanb = C_NULL_PTR
+
 ! output of this routine: all output arrays must be allocated in the calling program
 !
 ! outputpattern
@@ -721,6 +724,8 @@ EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
 outputpattern = float(adhisteq(ipar(28), binx, biny, EBSDpint))
 
 deallocate(inp, outp, EBSDpint, EBSDPat, rrdata, ffdata, hpmask)
+HPplanf = C_NULL_PTR
+HPplanb = C_NULL_PTR
 
 ! that's it folks...
 end subroutine EMsoftCpreprocessSingleEBSDPattern

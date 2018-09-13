@@ -39,6 +39,7 @@
 !> @date 01/21/16 MDG 1.0 original
 !> @date 02/02/16 MDG 1.1 added Hough Transform
 !> @date 01/09/18 MDG 1.2 added getADPmap
+!> @date 09/14/18 MDG 1.3 added fftw_cleanup() calls to eliminate momory leaks
 !--------------------------------------------------------------------------
 
 module filters
@@ -864,6 +865,8 @@ inp = outp * hpmask
 call fftw_execute_dft(planb, inp, outp) 
 fdata(1:dims(1),1:dims(2)) = real(outp)
 
+call fftw_cleanup()
+
 end function HiPassFilter
 
 !--------------------------------------------------------------------------
@@ -893,9 +896,9 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: w
 integer(kind=irg),INTENT(IN)            :: dims(2)
-complex(kind=dbl),INTENT(OUT)           :: hpmask(dims(1),dims(2))
-complex(C_DOUBLE_COMPLEX),INTENT(OUT)   :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
-type(C_PTR),INTENT(OUT)                 :: planf, planb
+complex(kind=dbl),INTENT(INOUT)         :: hpmask(dims(1),dims(2))
+complex(C_DOUBLE_COMPLEX),INTENT(INOUT) :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
+type(C_PTR),INTENT(INOUT)               :: planf, planb
 
 integer(kind=irg)                       :: i, j
 real(kind=dbl)                          :: x, y, val, v2
@@ -921,6 +924,8 @@ end do
 ! then we set up the fftw plans for forward and reverse transforms
 planf = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_FORWARD, FFTW_ESTIMATE)
 planb = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_BACKWARD, FFTW_ESTIMATE)
+
+call fftw_cleanup()
 
 end subroutine init_HiPassFilter
 
@@ -951,7 +956,7 @@ integer(kind=irg),INTENT(IN)            :: dims(2)
 real(kind=dbl),INTENT(IN)               :: w
 real(kind=dbl),INTENT(IN)               :: rdata(dims(1),dims(2))
 complex(kind=dbl),INTENT(IN)            :: hpmask(dims(1),dims(2))
-complex(C_DOUBLE_COMPLEX),INTENT(OUT)   :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
+complex(C_DOUBLE_COMPLEX),INTENT(INOUT) :: inp(dims(1),dims(2)), outp(dims(1),dims(2))
 type(C_PTR),INTENT(IN)                  :: planf, planb
 real(kind=dbl)                          :: fdata(dims(1),dims(2))
 
@@ -969,6 +974,8 @@ call fftw_execute_dft(planf, inp, outp)
 inp = outp * hpmask
 call fftw_execute_dft(planb, inp, outp) 
 fdata(1:dims(1),1:dims(2)) = real(outp)
+
+call fftw_cleanup()
 
 end function applyHiPassFilter
 
@@ -1060,6 +1067,8 @@ if ((destroy.eqv..FALSE.).and.(init.eqv..FALSE.)) then
   call fftw_execute_dft(planb, inp, outp) 
   fdata(1:dims(1),1:dims(2)) = real(outp)
 endif
+
+call fftw_cleanup()
 
 end subroutine HiPassFilterC
 
