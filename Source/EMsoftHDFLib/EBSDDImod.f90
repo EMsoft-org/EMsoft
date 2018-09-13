@@ -247,6 +247,7 @@ end do
 
 call fftw_destroy_plan(planf)
 call fftw_destroy_plan(planb)
+call fftw_cleanup()
 
 ! do we need to bin the patterns down ?
 if (enl%binfactor.ne.1) then
@@ -1025,6 +1026,7 @@ end if
 
 call fftw_free(p)
 call fftw_free(o)
+call fftw_cleanup()
 
 end function getEBSDIQ
 
@@ -1097,6 +1099,7 @@ Jres = sum(ksqarray) / dble(dimx) / dble(dimy)
 
 call fftw_free(p)
 call fftw_free(o)
+call fftw_cleanup()
 
 end subroutine init_getEBSDIQ
 
@@ -1165,6 +1168,7 @@ Q = 1.0 - J/Jres/wtot
 
 call fftw_free(p)
 call fftw_free(o)
+call fftw_cleanup()
 
 end function computeEBSDIQ
 
