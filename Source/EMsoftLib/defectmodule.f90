@@ -105,6 +105,8 @@ defects%numinc = 0
 defects%numEinc = 0
 
 ! first of all, we need to read all the defect data from the jsonname file, including the foil data
+! note that the JSON file should have the .jsonc extension, isince it may have comments; those lines
+! will be removed first
 call JSONreadDefectFile(cell, jsonname, defects, error_cnt, verbose)
 
 if (v.eq.1) then

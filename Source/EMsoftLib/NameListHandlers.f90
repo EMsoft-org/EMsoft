@@ -6102,6 +6102,7 @@ integer(kind=irg)                                 :: nthreads
 integer(kind=irg)                                 :: matchdepth
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: ctffile
+character(fnlen)                                  :: tmpfile
 character(fnlen)                                  :: PSvariantfile
 character(fnlen)                                  :: method
 character(4)                                      :: modality
@@ -6112,12 +6113,13 @@ real(kind=sgl)                                    :: step
 
 
 namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step, inRAM, method, &
-                                matchdepth, PSvariantfile
+                                matchdepth, PSvariantfile, tmpfile
 
 nthreads = 1
 matchdepth = 1
 dotproductfile = 'undefined'
 ctffile = 'undefined'
+tmpfile = 'undefined'
 PSvariantfile = 'undefined'
 method = 'FIT'
 inRAM = .FALSE.
@@ -6144,12 +6146,17 @@ if (.not.skipread) then
     if (trim(ctffile).eq.'undefined') then
         call FatalError('EMRefineOrientation:',' ctf file name is undefined in '//nmlfile)
     end if
+
+    if (trim(tmpfile).eq.'undefined') then
+        call FatalError('EMRefineOrientation:',' tmp file name is undefined in '//nmlfile)
+    end if
 end if
 
 enl%nthreads = nthreads
 enl%matchdepth = matchdepth
 enl%dotproductfile = dotproductfile
 enl%ctffile = ctffile
+enl%tmpfile = tmpfile
 enl%PSvariantfile = PSvariantfile
 enl%method = method
 enl%inRAM = inRAM
