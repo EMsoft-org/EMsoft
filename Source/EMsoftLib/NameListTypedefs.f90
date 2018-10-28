@@ -1593,6 +1593,7 @@ type RefineOrientationtype
         integer(kind=irg)       :: matchdepth
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: ctffile
+        character(fnlen)        :: tmpfile
         character(fnlen)        :: PSvariantfile
         character(fnlen)        :: method
         character(4)            :: modality
