@@ -5,6 +5,9 @@
  dotproductfile = 'undefined',
 ! name of ctf output file for refined orientations
  ctffile = 'undefined',
+! name of temporary file for pre-processed patterns 
+! (will override the temporary file name defined in the dot product file)
+ tmpfile = 'undefined',
 ! modality ('EBSD' or 'ECP')
  modality = 'EBSD',
 ! keep the pre-processed patterns all in memory?
