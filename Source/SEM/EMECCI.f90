@@ -896,14 +896,14 @@ if (trim(eccinl%montagename).ne.'undefined') then
   fname = EMsoft_toNativePath(fname)
   Image_filename = trim(fname)
 
-! divide the beam offsets by the dkt step size so that we can turn them into integers
-  XYarray = XYarray / eccinl%dkt
-  allocate(XYint(2,numk))
-  XYint = nint(XYarray)
-  maxXY = maxval(XYint)
   
 ! allocate the montage array
   if (eccinl%progmode.eq.'array') then 
+! divide the beam offsets by the dkt step size so that we can turn them into integers
+    XYarray = XYarray / eccinl%dkt
+    allocate(XYint(2,numk))
+    XYint = nint(XYarray)
+    maxXY = maxval(XYint)
     montage_nx = eccinl%DF_npix*(2*maxXY+1)
     montage_ny = eccinl%DF_npiy*(2*maxXY+1)
     allocate(montage(montage_nx,montage_ny))
@@ -930,7 +930,7 @@ if (trim(eccinl%montagename).ne.'undefined') then
           jj = eccinl%DF_npiy * (maxXY + XYint(2,kkk)) + j
           montage(ii,jj) = int(255 * (ECCIstore(i,j,kkk)-mi)/(ma-mi))
         else
-          ii = eccinl%DF_npix * kkk + i
+          ii = eccinl%DF_npix * (kkk-1) + i
           jj = j
           montage(ii,jj) = int(255 * (ECCIstore(i,j,kkk)-mi)/(ma-mi))
         end if
