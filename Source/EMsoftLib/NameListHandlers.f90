@@ -3959,6 +3959,7 @@ character(4)            :: dispmode
 character(4)            :: summode
 character(5)            :: progmode
 character(fnlen)        :: xtalname
+character(fnlen)        :: montagename
 character(fnlen)        :: defectfilename
 character(fnlen)        :: dispfile
 character(fnlen)        :: dataname
@@ -3969,7 +3970,7 @@ character(fnlen)        :: sgname
 namelist / ECCIlist / DF_L, DF_npix, DF_npiy, DF_slice, dmin, sgname, stdout, &
                       progmode, dispfile, ktmax, dkt, ECPname, summode, lauec, lauec2, &
                       dispmode, nthreads, xtalname, voltage, k, nktstep, &
-                      dataname, defectfilename
+                      dataname, defectfilename, montagename
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -3990,6 +3991,7 @@ dispmode = 'not'
 summode = 'diag'
 progmode = 'array'
 xtalname = 'undefined'
+montagename = 'undefined'
 defectfilename = 'undefined'
 dispfile = 'displacements.data'
 dataname = 'ECCIout.data'
@@ -4036,6 +4038,7 @@ eccinl%dispmode = dispmode
 eccinl%summode = summode
 eccinl%progmode = progmode
 eccinl%xtalname = xtalname
+eccinl%montagename = montagename
 eccinl%defectfilename = defectfilename
 eccinl%dispfile = dispfile
 eccinl%dataname = dataname

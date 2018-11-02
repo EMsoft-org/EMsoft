@@ -885,6 +885,7 @@ type ECCINameListType
     character(4)            :: summode
     character(5)            :: progmode
     character(fnlen)        :: xtalname
+    character(fnlen)        :: montagename
     character(fnlen)        :: defectfilename
     character(fnlen)        :: dispfile
     character(fnlen)        :: dataname
