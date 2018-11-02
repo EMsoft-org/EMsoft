@@ -44,6 +44,9 @@
  dataname = '/some/folder/on/your/drive/trialbinary.data',
 ! full filename of the corresponding ECP file
  ECPname = '/some/folder/on/your/drive/ECPfile.data',
+! name for optional output of image montage (can be .tiff, .jpeg, or .png)
+! leave set to undefined if not needed
+ montagename = 'undefined',
 !------------
 ! image parameters and scattering matrix step size
 !------------
