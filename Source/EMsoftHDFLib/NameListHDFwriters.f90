@@ -2914,7 +2914,7 @@ line2(1) = eccinl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create xtalname dataset',.TRUE.)
 
-odataset = SC_montagename
+dataset = SC_montagename
 line2(1) = eccinl%montagename
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteECCINameList: unable to create montagename dataset',.TRUE.)
