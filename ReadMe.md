@@ -19,6 +19,28 @@ Precompiled binaries requirements:
 | macOS | Version 10.12.6 (Sierra or newer) |
 | Windows 10 | 64 bit, NVidia GPU with latest (3.88) drivers installed |
 
+
+In the top folder where you have cloned the repository, carry out the following commands (for UNIX-type builds; on Windows, use nmake instead of make):
+
+```fortran
+  mkdir EMsoftBuild
+  cd EMsoftBuild
+  mkdir Release
+  cd Release
+  cmake -DCMAKE_BUILD_TYPE=Release -DEMsoft_SDK=/somepath/EMsoft_SDK ../../EMsoft
+  make -j
+  cd ../
+  mkdir Debug
+  cd Debug
+  cmake -DCMAKE_BUILD_TYPE=Debug -DEMsoft_SDK=/somepath/EMsoft_SDK ../../EMsoft
+  make -j
+
+```
+This should compile both a Release and a Debug version of EMsoft. You can then add the path to the EMsoftBuild/Release/Bin folder to your shell path and start using the programs.  Note that the Debug version of the executables will run much more slowly than the Release version.
+
+If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-optionds.md file. 
+
+
 ## New features in 4.0 ##
 - *EMMCfoil*, *EMTKDmaster*, *EMTKD*, *EMTKDDI*: this is a sequence of programs to perform a Monte Carlo simulation for the TKD geometry, then compute a master pattern (same conventions as for EBSD), simulate individual patterns, and finally perform dictionary indexing for experimental TKD patterns.  This is the first release of these programs, so we welcome any feedback and issue reports.
 - *EMFitOrientation* and *EMRefineOrientation*: these are two new programs in the EBSD program set.  After you have performed a dictionary indexing run, the best matching orientation is one of the orientations belonging to the cubochoric grid of points used to generate the dictionary. With the *EMRefineOrientation*, you can refine each indexed orientation by means of a cubochoric grid surrounding the best matching grid point of the original indexing run, and then gradually reduce the size of the grid to find a better matching orientation.  Alternatively, you can use the *EMFitOrientation* program to perform a derivative-free optimization of the orientation; this works a little faster than the *EMRefineOrientation* program.  Either program can be used to get rid of artifacts caused by the discrete nature of the orientation grid used for dictionary indexing.
