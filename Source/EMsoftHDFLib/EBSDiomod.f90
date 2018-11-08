@@ -96,7 +96,6 @@ character                                           :: TAB = CHAR(9)
 character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 real(kind=sgl)                                      :: euler(3), eu, mi, ma
 logical                                             :: donotuseindexarray
-integer(HSIZE_T)                                    :: dims(1)
 real(kind=dbl)                                      :: cellparams(6)
 integer(kind=irg),allocatable                       :: osm(:), iq(:)
 
@@ -299,7 +298,6 @@ character                                           :: TAB = CHAR(9)
 character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 real(kind=sgl)                                      :: euler(3)
 logical                                             :: donotuseindexarray
-integer(HSIZE_T)                                    :: dims(1)
 real(kind=dbl)                                      :: cellparams(6)
 
 donotuseindexarray = .FALSE.
@@ -451,10 +449,12 @@ end subroutine ctftkd_writeFile
 !> @date 03/10/16 MDG 1.1 moved from program to module and updated [TO BE COMPLETED]
 !> @date 11/08/18 MDG 2.0 rewrite and testing
 !--------------------------------------------------------------------------
-recursive subroutine angebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain)
+recursive subroutine angebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain,IQmap,noindex)
 !DEC$ ATTRIBUTES DLLEXPORT :: angebsd_writeFile
 
 use NameListTypedefs
+use constants 
+
 
 IMPLICIT NONE
 
@@ -464,14 +464,25 @@ integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
+real(kind=sgl),INTENT(IN)                           :: IQmap(ipar(3))
+logical,INTENT(IN),OPTIONAL                         :: noindex
 
 integer(kind=irg)                                   :: ierr, ii, indx, SGnum
 character(fnlen)                                    :: angname
 character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 character                                           :: TAB = CHAR(9)
-real(kind=sgl)                                      :: euler(3), s
-real(kind=dbl)                                      :: cellparams(6)
+real(kind=sgl)                                      :: euler(3), s, BSval
+real(kind=dbl)                                      :: cellparams(6), dtor
+logical                                             :: donotuseindexarray
 
+dtor = cPi/180.D0
+
+donotuseindexarray = .FALSE.
+if (present(noindex)) then
+  if (noindex.eqv..TRUE.) then 
+    donotuseindexarray = .TRUE.
+  end if
+end if
 
 ! open the file (overwrite old one if it exists)
 angname = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%angfile)
@@ -559,16 +570,45 @@ write(dataunit2,'(A)') '#'
 ! * phi1                      -> Phi1
 ! * phi                       -> Phi
 ! * phi2                      -> Phi2
-! * x pos                     ->
-! * y pos                     ->
-! * image quality             ->
-! * confidence index          ->
-! * phase                     -> 1
-! * SEM Signal                ->
-! * Fit of Solution           ->
+! * x pos                     -> pixel position
+! * y pos                     -> pixel position
+! * image quality             -> iq
+! * confidence index          -> resultmain
+! * phase                     -> 1 (since there is only one phase in each indexing run)
 ! the second entry after the arrow is the EMsoft parameter that we write into that location
-! the first 8 entries must be present...
+! these 8 entries must be present...
 
+! go through the entire array and write one line per sampling point
+do ii = 1,ipar(3)
+    BSval = 255.0 * IQmap(ii)
+! should we use the index array or not?
+    if (donotuseindexarray.eqv..TRUE.) then
+      indx = 0
+      euler = eulerarray(1:3,ii)
+    else
+      indx = indexmain(1,ii)
+      euler = eulerarray(1:3,indx)
+    end if
+    write(str1,'(A,F8.5)') ' ',euler(1)*dtor
+    write(str2,'(A,F8.5)') ' ',euler(2)*dtor
+    write(str3,'(A,F8.5)') ' ',euler(3)*dtor
+! sampling coordinates
+    if (sum(ebsdnl%ROI).ne.0) then
+      write(str4,'(A,F12.5)') ' ',float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%StepY
+      write(str5,'(A,F12.5)') ' ',float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%StepX
+    else
+      write(str4,'(A,F12.5)') ' ',float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%StepY
+      write(str5,'(A,F12.5)') ' ',float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%StepX
+    end if 
+! Image Quality (using the Krieger Lassen pattern sharpness parameter iq)
+    write(str6,'(A,F6.1)') ' ',BSval  !  IQ value in range [0.0 .. 255.0]
+    write(str7,'(A,F6.3)') ' ',resultmain(1,ii)   ! this replaces MAD
+    write(str8,'(A,I1)') '  ',1 
+!
+    write(dataunit2,'(A,A,A,A,A,A,A,A)')'1',trim(adjustl(str1)),trim(adjustl(str2)),&
+                                            trim(adjustl(str3)),trim(adjustl(str4)),trim(adjustl(str5)),&
+                                            trim(adjustl(str6)),trim(adjustl(str7)),trim(adjustl(str8))
+end do
 
 
 
@@ -600,6 +640,7 @@ use HDF5
 use HDFsupport
 use typedefs
 use error
+use io
 
 IMPLICIT NONE
 
@@ -611,6 +652,7 @@ character(fnlen)              :: filename, grname, dataset
 logical                       :: stat, readonly
 integer(kind=irg)             :: hdferr
 integer(HSIZE_T)              :: dims(1)
+real(kind=dbl),allocatable    :: cpm(:)
 
 type(HDFobjectStackType),pointer                    :: HDF_head_local
 
@@ -639,7 +681,7 @@ dataset = SC_SpaceGroupNumber
 
 ! get the lattice parameters
 dataset = SC_LatticeParameters
-  call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head_local, hdferr, cellparams) 
+  call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head_local, hdferr, cpm) 
 
 ! and close the xtal file
   call HDF_pop(HDF_head_local,.TRUE.)
@@ -647,9 +689,11 @@ dataset = SC_LatticeParameters
 else
   call Message('getXtalData','Error reading xtal file '//trim(filename))
   call Message('Writing default lattice parameter set; .ctf/.ang file will need to be edited manually')
-  cellparams = (/ 0.4D0, 0.4D0, 0.4D0, 90.D0, 90.D0, 90.D0 /)
+  cpm = (/ 0.4D0, 0.4D0, 0.4D0, 90.D0, 90.D0, 90.D0 /)
   SGnum = 225
 end if
+
+cellparams = cpm 
 
 end subroutine getXtalData
 
