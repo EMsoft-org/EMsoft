@@ -43,6 +43,8 @@ use stringconstants
 
 IMPLICIT NONE
 
+private :: getXtalData
+
 contains
 
 !--------------------------------------------------------------------------
@@ -72,8 +74,6 @@ recursive subroutine ctfebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray
 !DEC$ ATTRIBUTES DLLEXPORT :: ctfebsd_writeFile
 
 use NameListTypedefs
-use HDF5
-use HDFsupport
 use typedefs
 use symmetry
 use error
@@ -93,14 +93,12 @@ logical,INTENT(IN),OPTIONAL                         :: noindex
 integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr, SGnum, LaueGroup, BCval, BSval
 character(fnlen)                                    :: ctfname
 character                                           :: TAB = CHAR(9)
-character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,filename,grname,dataset
+character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 real(kind=sgl)                                      :: euler(3), eu, mi, ma
-logical                                             :: stat, readonly, donotuseindexarray
+logical                                             :: donotuseindexarray
 integer(HSIZE_T)                                    :: dims(1)
-real(kind=dbl),allocatable                          :: cellparams(:)
+real(kind=dbl)                                      :: cellparams(6)
 integer(kind=irg),allocatable                       :: osm(:), iq(:)
-
-type(HDFobjectStackType),pointer                    :: HDF_head_local
 
 donotuseindexarray = .FALSE.
 if (present(noindex)) then
@@ -157,38 +155,7 @@ write(dataunit2,'(A)') 'Phases'//TAB//'1'
 
 ! here we need to read the .xtal file and extract the lattice parameters, Laue group and space group numbers
 ! test to make sure the input file exists and is HDF5 format
-filename = trim(EMsoft_getXtalpathname())//trim(xtalname)
-filename = EMsoft_toNativePath(filename)
-
-stat = .FALSE.
-
-call h5fis_hdf5_f(filename, stat, hdferr)
-nullify(HDF_head_local)
-
-
-if (stat) then
-
-! open the xtal file using the default properties.
-  readonly = .TRUE.
-  hdferr =  HDF_openFile(filename, HDF_head_local, readonly)
-
-! open the namelist group
-  grname = 'CrystalData'
-  hdferr = HDF_openGroup(grname, HDF_head_local)
-
-! get the spacegroupnumber
-dataset = SC_SpaceGroupNumber
-  call HDF_readDatasetInteger(dataset, HDF_head_local, hdferr, SGnum)
-
-! get the lattice parameters
-dataset = SC_LatticeParameters
-  call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head_local, hdferr, cellparams) 
-
-! and close the xtal file
-  call HDF_pop(HDF_head_local,.TRUE.)
-else
-  call FatalError('ctfebsd_writeFile','Error reading xtal file '//trim(filename))
-end if
+call getXtalData(xtalname, cellparams, SGnum)
 
 ! unit cell size
 cellparams(1:3) = cellparams(1:3)*10.0  ! convert to Angstrom
@@ -314,8 +281,6 @@ recursive subroutine ctftkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain
 !DEC$ ATTRIBUTES DLLEXPORT :: ctftkd_writeFile
 
 use NameListTypedefs
-use HDF5
-use HDFsupport
 use typedefs
 use error
 
@@ -328,16 +293,14 @@ real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 logical,INTENT(IN),OPTIONAL                         :: noindex
 
-integer(kind=irg)                                   :: ierr, i, ii, indx, hdferr, SGnum, LaueGroup
+integer(kind=irg)                                   :: ierr, i, ii, indx, SGnum, LaueGroup
 character(fnlen)                                    :: ctfname
 character                                           :: TAB = CHAR(9)
-character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10,filename,grname,dataset
+character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 real(kind=sgl)                                      :: euler(3)
-logical                                             :: stat, readonly, donotuseindexarray
+logical                                             :: donotuseindexarray
 integer(HSIZE_T)                                    :: dims(1)
-real(kind=dbl),allocatable                          :: cellparams(:)
-
-type(HDFobjectStackType),pointer                    :: HDF_head_local
+real(kind=dbl)                                      :: cellparams(6)
 
 donotuseindexarray = .FALSE.
 if (present(noindex)) then
@@ -374,38 +337,7 @@ write(dataunit2,'(A)') 'Phases'//TAB//'1'
 
 ! here we need to read the .xtal file and extract the lattice parameters, Laue group and space group numbers
 ! test to make sure the input file exists and is HDF5 format
-filename = trim(EMsoft_getXtalpathname())//trim(tkdnl%MCxtalname)
-filename = EMsoft_toNativePath(filename)
-
-stat = .FALSE.
-
-call h5fis_hdf5_f(filename, stat, hdferr)
-nullify(HDF_head_local)
-
-
-if (stat) then
-
-! open the xtal file using the default properties.
-  readonly = .TRUE.
-  hdferr =  HDF_openFile(filename, HDF_head_local, readonly)
-
-! open the namelist group
-  grname = 'CrystalData'
-  hdferr = HDF_openGroup(grname, HDF_head_local)
-
-! get the spacegroupnumber
-dataset = SC_SpaceGroupNumber
-  call HDF_readDatasetInteger(dataset, HDF_head_local, hdferr, SGnum)
-
-! get the lattice parameters
-dataset = SC_LatticeParameters
-  call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head_local, hdferr, cellparams) 
-
-! and close the xtal file
-  call HDF_pop(HDF_head_local,.TRUE.)
-else
-  call FatalError('ctfebsd_writeFile','Error reading xtal file '//trim(filename))
-end if
+call getXtalData(tkdnl%MCxtalname, cellparams, SGnum)
 
 ! unit cell size
 cellparams(1:3) = cellparams(1:3)*10.0  ! convert to Angstrom
@@ -517,8 +449,9 @@ end subroutine ctftkd_writeFile
 !
 !> @date 02/07/15  SS 1.0 original
 !> @date 03/10/16 MDG 1.1 moved from program to module and updated [TO BE COMPLETED]
+!> @date 11/08/18 MDG 2.0 rewrite and testing
 !--------------------------------------------------------------------------
-recursive subroutine angebsd_writeFile(ebsdnl,ipar,indexmain,eulerarray,resultmain)
+recursive subroutine angebsd_writeFile(ebsdnl,xtalname,ipar,indexmain,eulerarray,resultmain)
 !DEC$ ATTRIBUTES DLLEXPORT :: angebsd_writeFile
 
 use NameListTypedefs
@@ -526,15 +459,19 @@ use NameListTypedefs
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+character(fnlen),INTENT(IN)                         :: xtalname
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 
-integer(kind=irg)                                   :: ierr, ii, indx
+integer(kind=irg)                                   :: ierr, ii, indx, SGnum
 character(fnlen)                                    :: angname
+character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 character                                           :: TAB = CHAR(9)
 real(kind=sgl)                                      :: euler(3), s
+real(kind=dbl)                                      :: cellparams(6)
+
 
 ! open the file (overwrite old one if it exists)
 angname = trim(EMsoft_getEMdatapathname())//trim(ebsdnl%angfile)
@@ -549,27 +486,59 @@ s = ( float(ebsdnl%numsy)*0.5 + ebsdnl%ypc ) / float(ebsdnl%numsy)      ! y-star
 write(dataunit2,'(A,F9.6)') '# y-star                ', s
 s = ebsdnl%L / ( ebsdnl%delta * float(ebsdnl%numsx) )                   ! z-star
 write(dataunit2,'(A,F9.6)') '# z-star                ', s 
-write(dataunit2,'(A,F9.6)') '# WorkingDistance       ', ebsdnl%WD
+write(dataunit2,'(A,F9.6)') '# WorkingDistance       ', ebsdnl%WD       ! this quantity is not used in EMsoft
 write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# Phase 1'
 
-ii = scan(trim(ebsdnl%MCxtalname),'.')
-angname = ebsdnl%MCxtalname(1:ii-1)
+ii = scan(trim(xtalname),'.')
+angname = xtalname(1:ii-1)
 write(dataunit2,'(A)') '# MaterialName  	',trim(angname)
 write(dataunit2,'(A)') '# Formula     	',trim(angname)
-write(dataunit2,'(A)') '# Info          indexed using EMsoft::EMEBSDDictionaryIndexing'
+write(dataunit2,'(A)') '# Info          patterns indexed using EMsoft::EMEBSDDI'
+
+call getXtalData(xtalname,cellparams,SGnum)
 
 ! here we need a mapping of the regular point groups onto the EDAX/TSL convention
+!==========================
 write(dataunit2,'(A)') '# Symmetry              43'
 
-! for the lattice parameters, we will need to read the .xtal file
-write(dataunit2,'(A)') '# LatticeConstants      3.520 3.520 3.520  90.000  90.000  90.000'
+! lattice parameters
+!==========================
+cellparams(1:3) = cellparams(1:3)*10.0  ! convert to Angstrom
+write(str1,'(F8.3)') cellparams(1)
+write(str2,'(F8.3)') cellparams(2)
+write(str3,'(F8.3)') cellparams(3)
+str1 = adjustl(str1)
+str2 = adjustl(str2)
+str3 = adjustl(str3)
+str1 = trim(str1)//' '//trim(str2)//' '//trim(str3)
 
-write(dataunit2,'(A)') '# NumberFamilies        4'
-write(dataunit2,'(A)') '# hklFamilies   	 1  1  1 1 0.000000'
-write(dataunit2,'(A)') '# hklFamilies   	 2  0  0 1 0.000000'
-write(dataunit2,'(A)') '# hklFamilies   	 2  2  0 1 0.000000'
-write(dataunit2,'(A)') '# hklFamilies   	 3  1  1 1 0.000000'
+! unit cell angles
+write(str4,'(F8.3)') cellparams(4)
+write(str5,'(F8.3)') cellparams(5)
+write(str6,'(F8.3)') cellparams(6)
+str4 = adjustl(str5)
+str5 = adjustl(str5)
+str6 = adjustl(str6)
+str1 = trim(str1)//TAB//trim(str4)//' '//trim(str5)//' '//trim(str6)
+
+write(dataunit2,'(A)') '# LatticeConstants      '//trim(str1)
+!==========================
+
+! next we need to get the hklFamilies ranked by kinematical intensity, going out to some value
+! this is probably not necessary
+write(dataunit2,'(A)') '# NumberFamilies        0'
+
+
+! write(dataunit2,'(A)') '# NumberFamilies        4'
+! write(dataunit2,'(A)') '# hklFamilies   	 1  1  1 1 0.000000'
+! write(dataunit2,'(A)') '# hklFamilies   	 2  0  0 1 0.000000'
+! write(dataunit2,'(A)') '# hklFamilies   	 2  2  0 1 0.000000'
+! write(dataunit2,'(A)') '# hklFamilies   	 3  1  1 1 0.000000'
+
+
+
+!==========================
 write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
 write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
@@ -586,7 +555,19 @@ write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# SCANID:'
 write(dataunit2,'(A)') '#'
 
-! to be written !!!
+! ok, next we have the actual data, which is in the following order
+! * phi1                      -> Phi1
+! * phi                       -> Phi
+! * phi2                      -> Phi2
+! * x pos                     ->
+! * y pos                     ->
+! * image quality             ->
+! * confidence index          ->
+! * phase                     -> 1
+! * SEM Signal                ->
+! * Fit of Solution           ->
+! the second entry after the arrow is the EMsoft parameter that we write into that location
+! the first 8 entries must be present...
 
 
 
@@ -596,6 +577,81 @@ close(dataunit2,status='keep')
 end subroutine angebsd_writeFile
 
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getXtalData
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief get structure data from .xtal file
+!
+!> @param xtalname filename 
+!> @param cellparams lattice parameters
+!> @param SGnum space group number
+!
+!> @date 11/08/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getXtalData(xtalname, cellparams, SGnum)
+!DEC$ ATTRIBUTES DLLEXPORT :: getXtalData
+
+use NameListTypedefs
+use HDF5
+use HDFsupport
+use typedefs
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)   :: xtalname
+real(kind=dbl),INTENT(OUT)    :: cellparams(6)
+integer(kind=irg),INTENT(OUT) :: SGnum
+
+character(fnlen)              :: filename, grname, dataset
+logical                       :: stat, readonly
+integer(kind=irg)             :: hdferr
+integer(HSIZE_T)              :: dims(1)
+
+type(HDFobjectStackType),pointer                    :: HDF_head_local
+
+nullify(HDF_head_local)
+
+filename = trim(EMsoft_getXtalpathname())//trim(xtalname)
+filename = EMsoft_toNativePath(filename)
+
+stat = .FALSE.
+
+call h5fis_hdf5_f(filename, stat, hdferr)
+
+if (stat) then
+
+! open the xtal file using the default properties.
+  readonly = .TRUE.
+  hdferr =  HDF_openFile(filename, HDF_head_local, readonly)
+
+! open the namelist group
+  grname = 'CrystalData'
+  hdferr = HDF_openGroup(grname, HDF_head_local)
+
+! get the spacegroupnumber
+dataset = SC_SpaceGroupNumber
+  call HDF_readDatasetInteger(dataset, HDF_head_local, hdferr, SGnum)
+
+! get the lattice parameters
+dataset = SC_LatticeParameters
+  call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head_local, hdferr, cellparams) 
+
+! and close the xtal file
+  call HDF_pop(HDF_head_local,.TRUE.)
+  nullify(HDF_head_local)
+else
+  call Message('getXtalData','Error reading xtal file '//trim(filename))
+  call Message('Writing default lattice parameter set; .ctf/.ang file will need to be edited manually')
+  cellparams = (/ 0.4D0, 0.4D0, 0.4D0, 90.D0, 90.D0, 90.D0 /)
+  SGnum = 225
+end if
+
+end subroutine getXtalData
 
 
 end module EBSDiomod
