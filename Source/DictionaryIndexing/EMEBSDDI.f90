@@ -222,6 +222,7 @@ end program EMEBSDDI
 !> @date 02/13/18 MDG 2.2 added support for multiple input formats for experimental patterns
 !> @date 02/22/18 MDG 2.3 added support for Region-of-Interest (ROI) selection
 !> @date 04/04/18 MDG 3.0 revised name list use as well as MC and MP data structures
+!> @date 11/10/18 MDG 3.1 added EDAX/TSL .ang output format
 !--------------------------------------------------------------------------
 subroutine MasterSubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
@@ -1219,9 +1220,8 @@ if (dinl%ctffile.ne.'undefined') then
 end if
 
 if (dinl%angfile.ne.'undefined') then 
-  write (*,*) 'ang format not available until Release 4.2'
-  !call angebsd_writeFile(dinl,ipar,indexmain,eulerarray,resultmain)
-  !call Message('Data stored in ang file : '//trim(dinl%angfile))
+    call angebsd_writeFile(dinl,mcnl%xtalname,ipar,indexmain,eulerarray,resultmain,exptIQ)
+    call Message('Data stored in ang file : '//trim(dinl%angfile))
 end if
 
 ! close the fortran HDF5 interface
