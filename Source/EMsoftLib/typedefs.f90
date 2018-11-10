@@ -746,7 +746,37 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,152) = reshape( (/ &
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_Qsymop
 
 
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+! The EBSDiomod module needs a conversion table from a point group number to 
+! a 2 character string describing the TSL symmetry convention for that point group
+!
+! TSL LAUE Symmetry Identifiers (taken from DREAM3D/Source/EbsdLib/TSL/AngConstants.h in DREAM.3D source code)
 
+! #define OH  43        // cubic            Oh         a=b=c     a=b=g=90
+! #define TH  23        // tetrahedral      Th         a=b=c     a=b=g=90
+
+! #define D4H 42        // ditetragonal     D4h        a=b!=c    a=b=g=90
+! #define C4H 4         // tetragonal       C4h        a=b!=c    a=b=g=90
+
+! #define D2H 22        // orthrohombic     D2h        a!=b!=c   a=b=g=90
+
+! #define C2H_c 2       // monoclinic       C2h        a!=b!=c   a=b=90!=g
+! #define C2H_b 20      // monoclinic       C2h        a!=b!=c   a=g=90!=b
+! #define C2H_a 21      // monoclinic       C2h        a!=b!=c   b=g=90!=a
+
+! #define D6H 62        // dihexagonal      D6h        a=b!=c    a=b=90 g=120
+! #define C6H 6         // hexagonal        C6h        a=b! =c   a=b=90 g=120
+
+! #define D3D 32        // ditrigonal       D3d        a=b=c     a=b=g!=90
+! #define C3I 3         // trigonal         C3i        a=b=c     a=b=g!=90
+
+! #define CIs 1         // triclinic        Ci         a!=b!=c  a!=b!=g!=90
+!--------------------------------------------------------------------------
+character(2),PARAMETER :: TSLsymtype(32) = (/' 1',' 1',' 2',' 2',' 2','22','22','22', &
+                                             ' 4',' 4',' 4','42','42','42','42',' 3', &
+                                             ' 3','32','32','32',' 6',' 6',' 6','62', &
+                                             '62','62','62','23','23','43','43','43'/)
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------

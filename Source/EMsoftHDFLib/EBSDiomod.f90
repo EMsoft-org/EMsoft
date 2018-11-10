@@ -471,6 +471,7 @@ integer(kind=irg)                                   :: ierr, ii, indx, SGnum
 character(fnlen)                                    :: angname
 character(fnlen)                                    :: str1,str2,str3,str4,str5,str6,str7,str8,str9,str10
 character                                           :: TAB = CHAR(9)
+character(2)                                        :: TSLsymmetry
 real(kind=sgl)                                      :: euler(3), s, BSval
 real(kind=dbl)                                      :: cellparams(6), dtor
 logical                                             :: donotuseindexarray
@@ -503,18 +504,18 @@ write(dataunit2,'(A)') '# Phase 1'
 
 ii = scan(trim(xtalname),'.')
 angname = xtalname(1:ii-1)
-write(dataunit2,'(A)') '# MaterialName  	',trim(angname)
-write(dataunit2,'(A)') '# Formula     	',trim(angname)
+write(dataunit2,'(A)') '# MaterialName  	'//trim(angname)
+write(dataunit2,'(A)') '# Formula     	'//trim(angname)
 write(dataunit2,'(A)') '# Info          patterns indexed using EMsoft::EMEBSDDI'
 
-call getXtalData(xtalname,cellparams,SGnum)
-
-! here we need a mapping of the regular point groups onto the EDAX/TSL convention
 !==========================
-write(dataunit2,'(A)') '# Symmetry              43'
+! get space group, lattice parameters, and TSL symmetry string
+call getXtalData(xtalname,cellparams,SGnum,TSLsymmetry)
+
+! symmetry string
+write(dataunit2,'(A)') '# Symmetry              '//TSLsymmetry
 
 ! lattice parameters
-!==========================
 cellparams(1:3) = cellparams(1:3)*10.0  ! convert to Angstrom
 write(str1,'(F8.3)') cellparams(1)
 write(str2,'(F8.3)') cellparams(2)
@@ -537,17 +538,13 @@ write(dataunit2,'(A)') '# LatticeConstants      '//trim(str1)
 !==========================
 
 ! next we need to get the hklFamilies ranked by kinematical intensity, going out to some value
-! this is probably not necessary
-write(dataunit2,'(A)') '# NumberFamilies        0'
-
-
+! this is probably not necessary [based on Stuart's feedback], so we comment it all out
+! write(dataunit2,'(A)') '# NumberFamilies        0'
 ! write(dataunit2,'(A)') '# NumberFamilies        4'
 ! write(dataunit2,'(A)') '# hklFamilies   	 1  1  1 1 0.000000'
 ! write(dataunit2,'(A)') '# hklFamilies   	 2  0  0 1 0.000000'
 ! write(dataunit2,'(A)') '# hklFamilies   	 2  2  0 1 0.000000'
 ! write(dataunit2,'(A)') '# hklFamilies   	 3  1  1 1 0.000000'
-
-
 
 !==========================
 write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
@@ -555,9 +552,9 @@ write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
 write(dataunit2,'(A,F9.6)') '# XSTEP: ', ebsdnl%StepX
 write(dataunit2,'(A,F9.6)') '# YSTEP: ', ebsdnl%StepY
-write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ebsdnl%ipf_wd
-write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ebsdnl%ipf_wd
-write(dataunit2,'(A,I5)') '# NROWS: ', ebsdnl%ipf_ht
+write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ipar(7)
+write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ipar(7)
+write(dataunit2,'(A,I5)') '# NROWS: ', ipar(8)
 write(dataunit2,'(A)') '#'
 write(dataunit2,'(A,A)') '# OPERATOR: 	', trim(EMsoft_getUsername())
 write(dataunit2,'(A)') '#'
@@ -605,12 +602,10 @@ do ii = 1,ipar(3)
     write(str7,'(A,F6.3)') ' ',resultmain(1,ii)   ! this replaces MAD
     write(str8,'(A,I1)') '  ',1 
 !
-    write(dataunit2,'(A,A,A,A,A,A,A,A)')'1',trim(adjustl(str1)),trim(adjustl(str2)),&
+    write(dataunit2,"(A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A)") trim(adjustl(str1)),trim(adjustl(str2)),&
                                             trim(adjustl(str3)),trim(adjustl(str4)),trim(adjustl(str5)),&
                                             trim(adjustl(str6)),trim(adjustl(str7)),trim(adjustl(str8))
 end do
-
-
 
 close(dataunit2,status='keep')
 
@@ -631,8 +626,9 @@ end subroutine angebsd_writeFile
 !> @param SGnum space group number
 !
 !> @date 11/08/18 MDG 1.0 original
+!> @date 11/10/18 NDG 1,1 added optional TSLsymmetry argument
 !--------------------------------------------------------------------------
-recursive subroutine getXtalData(xtalname, cellparams, SGnum)
+recursive subroutine getXtalData(xtalname, cellparams, SGnum, TSLsymmetry)
 !DEC$ ATTRIBUTES DLLEXPORT :: getXtalData
 
 use NameListTypedefs
@@ -644,17 +640,18 @@ use io
 
 IMPLICIT NONE
 
-character(fnlen),INTENT(IN)   :: xtalname
-real(kind=dbl),INTENT(OUT)    :: cellparams(6)
-integer(kind=irg),INTENT(OUT) :: SGnum
+character(fnlen),INTENT(IN)           :: xtalname
+real(kind=dbl),INTENT(OUT)            :: cellparams(6)
+integer(kind=irg),INTENT(OUT)         :: SGnum
+character(2),INTENT(OUT),OPTIONAL     :: TSLsymmetry
 
-character(fnlen)              :: filename, grname, dataset
-logical                       :: stat, readonly
-integer(kind=irg)             :: hdferr
-integer(HSIZE_T)              :: dims(1)
-real(kind=dbl),allocatable    :: cpm(:)
+character(fnlen)                      :: filename, grname, dataset
+logical                               :: stat, readonly
+integer(kind=irg)                     :: hdferr, pgnum, i
+integer(HSIZE_T)                      :: dims(1)
+real(kind=dbl),allocatable            :: cpm(:)
 
-type(HDFobjectStackType),pointer                    :: HDF_head_local
+type(HDFobjectStackType),pointer      :: HDF_head_local
 
 nullify(HDF_head_local)
 
@@ -694,6 +691,22 @@ else
 end if
 
 cellparams = cpm 
+
+! optionally, we may need to mapping the regular point group onto the EDAX/TSL convention
+!==========================
+if (present(TSLsymmetry)) then
+! convert the space group number into a point group number
+      pgnum = 0
+      do i=1,32
+        if (SGPG(i).le.SGnum) pgnum = i
+      end do
+! and get the TSL symmetry string from the TSLsymtype array
+      TSLsymmetry = TSLsymtype(pgnum)
+end if
+
+
+
+
 
 end subroutine getXtalData
 
