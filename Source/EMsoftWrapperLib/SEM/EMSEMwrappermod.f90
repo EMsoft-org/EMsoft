@@ -1960,4 +1960,585 @@ end if ! (uniform.eqv..FALSE.)
 
 end subroutine EMsoftCgetEBSDmaster
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EMsoftCgetEBSDreflectorranking
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief This subroutine can be called by a C/C++ program as a standalone routine to compute EBSD master patterns
+!
+!> @details This subroutine returns a ranked list of EBSD reflectors using the dynamical integrated Kikuchi
+!> band intensity, as well as kinematical intensities based on x-rays and electrons (including normal absorption).
+!> All intensity lists are scaled to the range [0..100].
+!>
+!> @param ipar array with integer input parameters
+!> @param fpar array with float input parameters
+!> @param atompos atom coordinate array
+!> @param atomtypes atom type array
+!> @param latparm lattice parameter array
+!> @param accum_e output array with Monte Carlo depth histogram
+!> @param mLPNH modified Lambert projection northern hemisphere (output)
+!> @param mLPSH modified Lambert projection southern hemisphere (output)
+!> @param hkl miller index array ranked according to dynamical intensities
+!> @param beta integrated Kikuchi band intensities
+!> @param XKI X-ray kinematical intensities
+!> @param EKI electron kinematical intensities with normal absorption
+!
+!> @date 11/15/18 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine EMsoftCgetEBSDreflectorranking(ipar,fpar,atompos,atomtypes,latparm,accum_e,mLPNH,mLPSH, &
+                                          hkl,beta,XKI,EKI,cproc,objAddress,cancel) &
+           bind(c, name='EMsoftCgetEBSDreflectorranking')    ! this routine is callable from a C/C++ program
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCgetEBSDreflectorranking
+
+! these are the same as in the EMsoftCgetMCOpenCL routine, with a few extras at the end.
+! ipar components
+! ipar(1) : integer(kind=irg)       :: nx  = (numsx-1)/2
+! ipar(2) : integer(kind=irg)       :: globalworkgrpsz
+! ipar(3) : integer(kind=irg)       :: num_el
+! ipar(4) : integer(kind=irg)       :: totnum_el
+! ipar(5) : integer(kind=irg)       :: multiplier
+! ipar(6) : integer(kind=irg)       :: devid
+! ipar(7) : integer(kind=irg)       :: platid
+! ipar(8) : integer(kind=irg)       :: CrystalSystem
+! ipar(9) : integer(kind=irg)       :: Natomtypes
+! ipar(10): integer(kind=irg)       :: SpaceGroupNumber
+! ipar(11): integer(kind=irg)       :: SpaceGroupSetting
+! ipar(12): integer(kind=irg)       :: numEbins
+! ipar(13): integer(kind=irg)       :: numzbins
+! ipar(14): integer(kind=irg)       :: mcmode  ( 1 = 'full', 2 = 'bse1' )
+! ipar(15): integer(kind=irg)       :: numangle
+! ipar(16): integer(kind=irg)       :: nxten = nx/10
+! the following are only used in this routine, not in the Monte Carlo routine
+! ipar(17): integer(kind=irg)       :: npx
+! ipar(18): integer(kind=irg)       :: nthreads
+! ipar(37): integer(kind=irg)       :: numlist (number of reflections in ranked list)
+
+! fpar components
+! fpar(1) : real(kind=dbl)          :: sig
+! fpar(2) : real(kind=dbl)          :: omega
+! fpar(3) : real(kind=dbl)          :: EkeV
+! fpar(4) : real(kind=dbl)          :: Ehistmin
+! fpar(5) : real(kind=dbl)          :: Ebinsize
+! fpar(6) : real(kind=dbl)          :: depthmax
+! fpar(7) : real(kind=dbl)          :: depthstep
+! parameters only used in this routine, this includes the Bethe Parameters !!!!
+! fpar(11) : real(kind=dbl)         :: dmin
+! fpar(12) : real(kind=dbl)         :: increment  (integration increment, typically 0.025)
+
+use NameListTypedefs
+use initializers
+use MBmodule
+use symmetry
+use crystal
+use constants
+use error
+use gvectors
+use kvectors
+use io
+use local
+use files
+use diffraction
+use timing
+use Lambert
+use ISO_C_BINDING
+use omp_lib
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: atompos(ipar(9),5)
+integer(kind=irg),INTENT(IN)            :: atomtypes(ipar(9))
+real(kind=sgl),INTENT(IN)               :: latparm(6)
+integer(kind=irg),INTENT(IN)            :: accum_e(ipar(12),-ipar(1):ipar(1),-ipar(1):ipar(1))
+real(kind=sgl),INTENT(IN)               :: mLPNH(-ipar(17):ipar(17),-ipar(17):ipar(17),1:ipar(12),1:ipar(9))
+real(kind=sgl),INTENT(IN)               :: mLPSH(-ipar(17):ipar(17),-ipar(17):ipar(17),1:ipar(12),1:ipar(9))
+integer(kind=sgl),INTENT(OUT)           :: hkl(3,ipar(37))
+real(kind=sgl),INTENT(OUT)              :: beta(ipar(37))
+real(kind=sgl),INTENT(OUT)              :: XKI(ipar(37))
+real(kind=sgl),INTENT(OUT)              :: EKI(ipar(37))
+TYPE(C_FUNPTR), INTENT(IN), VALUE       :: cproc
+integer(c_size_t),INTENT(IN), VALUE     :: objAddress
+character(len=1),INTENT(IN)             :: cancel
+
+real(kind=dbl)          :: ctmp(192,3), arg
+
+real(kind=sgl),allocatable              :: mLPNHsum(:,:,:), mLPSHsum(:,:,:)
+
+
+integer(kind=irg)               :: isym,i,j,ik,npy,ipx,ipy,ipz, NUMTHREADS, TID, npx, nthreads,  &
+                                   istat,gzero,ix,iy, nix, niy, nixp, niyp, nkeep,nx 
+real(kind=dbl)                  :: tpi, xy(2), dmin !
+real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:), auxSH(:,:,:)  ! results
+integer(kind=irg)               :: dims3(3), dims4(3)
+
+integer(kind=irg)       :: cn, dn
+integer(kind=irg)       :: imh, imk, iml, ipg, isave
+
+integer(kind=irg)                            :: ii,  num, nums, mhkl, valpos, numphi, numtheta
+integer(kind=irg),allocatable                :: family(:,:,:),numfam(:),idx(:), idx2(:), sfi(:)
+integer(kind=irg)                            :: h,k,l,totfam,ind(3),icnt, oi_int(1), itmp(48,3), g1(3), g2(3)
+logical                                      :: first
+logical,allocatable                          :: z(:,:,:)
+real(kind=sgl)                               :: g(3), thr, dphi, gc(3), gax(3), gz(3), v(3), qu(4), ax(4), x, val1, val2, valmax
+real(kind=sgl),allocatable                   :: Vgg(:),ddg(:),gg(:),th(:), gcart(:,:), gcrys(:,:), cp(:), sp(:), ca(:), sa(:), &
+                                                phi(:), theta(:), dc(:,:), Vg(:), VgX(:), VggX(:), cosnorm(:)
+character(1)                                 :: space
+real(kind=sgl)                               :: dx,dy,dxm,dym
+real(kind=sgl)                               :: dhkl, incrad, glen, sd, m, zero, scl
+real(kind=sgl)                               :: ixy(2)
+integer(kind=irg)                            :: jj,kk
+logical,allocatable                          :: keep(:)
+real(kind=sgl),allocatable                   :: Eweights(:)
+real(kind=sgl),allocatable                   :: masterNH(:,:), masterSH(:,:), KBI(:)
+
+
+type(unitcell),pointer          :: cell
+type(DynType),save              :: Dyn
+type(gnode),save                :: rlp
+
+PROCEDURE(ProgressCallBack2), POINTER   :: proc
+
+!$OMP THREADPRIVATE(rlp) 
+
+! link the proc procedure to the cproc argument
+CALL C_F_PROCPOINTER (cproc, proc)
+
+!------------------------------
+! parameters that would normally be read from the MC HDF5 file
+!------------------------------
+dmin = fpar(11)
+nthreads = ipar(18)
+
+!------------------------------
+! convert the 4D input array to 3D by summing over all atom types
+!------------------------------
+if (allocated(mLPNHsum)) deallocate(mLPNHsum)
+if (allocated(mLPSHsum)) deallocate(mLPSHsum)
+
+allocate(mLPNHsum(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12)))
+allocate(mLPSHsum(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12)))
+
+if (trim(EMsoft_getEMsoftplatform()).ne.'Windows') then 
+   mLPNHsum = sum(mLPNH,4)
+   mLPSHsum = sum(mLPSH,4)
+else
+  do i=-ipar(17),ipar(17)
+      do j=-ipar(17),ipar(17)
+          do k=1,ipar(12)
+              do ii=1,ipar(9)
+                  mLPNHsum(i,j,k) = mLPNHsum(i,j,k) + mLPNH(i,j,k,ii)
+                  mLPSHsum(i,j,k) = mLPSHsum(i,j,k) + mLPSH(i,j,k,ii)
+              end do
+          end do
+      end do
+  end do
+end if
+
+!------------------------------
+! compute the energy weight factors by integrating the lower rectangular portion
+! of the Lambert projection; we'll take the lower quarter in vertical dimension
+! and a similar distance to left and right in the horizontal direction
+!------------------------------
+dims3 = shape(accum_e)
+allocate(Eweights(dims3(1)))
+Eweights = 0.0
+do i=1,dims3(1)
+  Eweights(i) = sum(accum_e(i,-dims3(2)/4:dims3(2)/4,-dims3(3)/2:-dims3(3)/4))
+end do
+Eweights = Eweights/maxval(Eweights)
+
+dims4 = shape(mLPNHsum)
+nx = (dims4(1)-1)/2
+
+! perform E-weighted averaging to get a single NH+SH master pattern
+allocate(masterNH(-nx:nx,-nx:nx),stat=istat)
+allocate(masterSH(-nx:nx,-nx:nx),stat=istat)
+masterNH = 0.0
+masterSH = 0.0
+do ix=-nx,nx
+  do iy=-nx,nx
+    masterNH(ix,iy) = sum(mLPNHsum(ix,iy,1:dims4(3))*Eweights(1:dims3(1))) 
+    masterSH(ix,iy) = sum(mLPSHsum(ix,iy,1:dims4(3))*Eweights(1:dims3(1))) 
+  end do
+end do
+deallocate(mLPSHsum, mLPNHsum)
+
+! subtract the average value from the master pattern arrays and divide by the standard deviation
+m = sum(masterNH)/float((2*nx+1)**2)
+masterNH = masterNH - m
+sd = sqrt( sum(masterNH**2) / (float((2*nx+1)**2 - 1)))
+masterNH = masterNH / sd
+
+m = sum(masterSH)/float((2*nx+1)**2)
+masterSH = masterSH - m
+sd = sqrt( sum(masterSH**2) / (float((2*nx+1)**2 - 1)))
+masterSH = masterSH / sd
+
+! initalize a few variables
+tpi = 2.D0*cPi
+
+
+
+
+!=============================================
+!=============================================
+! crystallography section
+
+nullify(cell)
+allocate(cell)
+
+! lattice parameters
+cell%a = dble(latparm(1))
+cell%b = dble(latparm(2))
+cell%c = dble(latparm(3))
+cell%alpha = dble(latparm(4))
+cell%beta = dble(latparm(5))
+cell%gamma = dble(latparm(6))
+
+! symmetry parameters
+cell%xtal_system = ipar(8)
+cell%SYM_SGset = ipar(11)
+cell%SYM_SGnum = ipar(10)
+if ((cell%SYM_SGnum.ge.143).and.(cell%SYM_SGnum.le.167)) then
+  cell%SG%SYM_trigonal = .TRUE.
+else
+  cell%SG%SYM_trigonal = .FALSE.
+end if 
+
+! atom type and coordinate parameters
+cell%ATOM_ntype = ipar(9)
+cell%ATOM_type(1:cell%ATOM_ntype) = atomtypes(1:cell%ATOM_ntype) 
+cell%ATOM_pos(1:cell%ATOM_ntype,1:5) = atompos(1:cell%ATOM_ntype,1:5) 
+
+! generate the symmetry operations
+cell%hexset = .FALSE.
+if (cell%xtal_system.eq.4) cell%hexset = .TRUE.
+if ((cell%xtal_system.eq.5).AND.(cell%SYM_SGset.ne.2)) cell%hexset = .TRUE.
+
+! compute the metric matrices
+ call CalcMatrices(cell)
+
+! First generate the point symmetry matrices, then the actual space group.
+! Get the symmorphic space group corresponding to the point group
+! of the actual space group
+ ipg=0
+ do i=1,32
+  if (SGPG(i).le.cell%SYM_SGnum) ipg=i
+ end do
+
+! if the actual group is also the symmorphic group, then both 
+! steps can be done simultaneously, otherwise two calls to 
+! GenerateSymmetry are needed.
+ if (SGPG(ipg).eq.cell%SYM_SGnum) then
+  call GenerateSymmetry(cell,.TRUE.)
+ else
+  isave = cell%SYM_SGnum
+  cell%SYM_SGnum = SGPG(ipg)
+  call GenerateSymmetry(cell,.TRUE.)
+  cell%SYM_SGnum = isave
+  call GenerateSymmetry(cell,.FALSE.)
+ end if
+! next we get all the atom positions
+call CalcPositions(cell,'v')
+
+! compute the range of reflections for the lookup table and allocate the table
+! The master list is easily created by brute force
+ imh = 1
+ do 
+   dhkl = 1.0/CalcLength(cell,  (/float(imh) ,0.0_sgl,0.0_sgl/), 'r')
+   if (dhkl.lt.dmin) EXIT
+   imh = imh + 1
+ end do
+ imk = 1
+ do 
+   dhkl = 1.0/CalcLength(cell, (/0.0_sgl,float(imk),0.0_sgl/), 'r')
+   if (dhkl.lt.dmin) EXIT
+   imk = imk + 1
+ end do
+ iml = 1
+ do 
+   dhkl = 1.0/CalcLength(cell, (/0.0_sgl,0.0_sgl,float(iml)/), 'r')
+   if (dhkl.lt.dmin) EXIT
+   iml = iml + 1
+ end do
+  
+! allocate all arrays
+ allocate(z(-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml))
+ ii = (2*imh+1)*(2*imk+1)*(2*iml+1)
+ allocate(family(ii,48,3))
+ allocate(numfam(ii))
+ allocate(Vgg(ii))
+ allocate(VggX(ii))
+ allocate(ddg(ii))
+ allocate(gg(ii))
+ allocate(th(ii))
+! determine the families of reflections with (hkl)<=(imh,imk,iml)
+! first initialize the boolean array z
+ z = .FALSE.
+! then loop through all (hkl) values
+ first = .TRUE.
+ icnt = 1
+ totfam=0
+ rlp%method= 'DT'   ! we're computing simple Doyle-Turner or Smith-Burge scattering factors to get the list of reflectors
+ do h=-imh,imh
+  ind(1)=-h
+  do k=-imk,imk
+   ind(2)=-k
+   do l=-iml,iml
+    ind(3)=-l
+
+! make sure we have not already done this one in another family
+    if (.not.z(-h,-k,-l)) then
+
+! if it is a new one, then determine the entire family
+     rlp%method = 'DT'
+     call CalcUcg(cell,rlp,ind)
+
+! but ignore the reciprocal lattice point if Vgg is small
+     if (abs(rlp%Ucg).ge.thr) then 
+
+! copy family in array and label all its members and multiples in z-array
+      call CalcFamily(cell,ind,num,space,itmp)
+      do i=1,num
+       do j=1,3
+        family(icnt,i,j)=itmp(i,j)
+       end do
+       z(itmp(i,1),itmp(i,2),itmp(i,3))=.TRUE.
+      end do
+
+! store the Fourier coefficient of the lattice potential
+      VggX(icnt) = abs(rlp%Ucg)
+
+! also get the structure factor with the WK parameters and absorption
+      rlp%method = 'WK'
+      call CalcUcg(cell,rlp,ind)
+      Vgg(icnt) = rlp%Vmod
+
+! increment family counter
+      numfam(icnt)=num
+      totfam=totfam+num-1
+      icnt=icnt+1
+     end if
+    end if
+   end do
+  end do
+ end do
+
+ icnt=icnt-1
+
+zero = 0.0
+
+! compute d-spacings, g-spacings, theta
+ allocate(gcart(3,icnt),gcrys(3,icnt))
+ do k=1,icnt
+  g(1:3)=float(family(k,1,1:3))
+  gg(k)=CalcLength(cell,g,'r')
+  gcrys(1:3,k) = g(1:3) 
+  call TransSpace(cell,g,gc,'r','c')
+  call NormVec(cell,gc,'c')
+  gcart(1:3,k) = gc(1:3) 
+  th(k)=asin(0.5*cell%mLambda*gg(k))
+ end do
+
+! here we need to eliminate those entries that are multiples of a smaller hkl
+! and only keep the one that has the largest structure factor.
+
+allocate(idx(icnt))
+call SPSORT(gg,icnt,idx,1,istat)
+
+allocate(keep(icnt))
+keep = .TRUE.
+keep(idx(1)) = .FALSE.   ! eliminate (000) from the list
+
+mhkl = int(maxval(gcrys))   
+
+do k=2,icnt-1
+ if (keep(idx(k)).eqv..TRUE.) then
+  valpos = idx(k)
+  g1 = int(gcrys(:,valpos))
+  val1 = VggX(valpos)
+  valmax = val1
+  keep(valpos) = .TRUE.
+!  write(*,*) '-> ',g1, valmax, valpos
+! scan through the multiples
+  do j=2,mhkl
+    g2 = j * g1
+    do i=k+1,icnt 
+      if (sum(abs(g2-int(gcrys(:,idx(i))))).eq.0) then
+        if (VggX(idx(i)).gt.valmax) then
+          keep(valpos) = .FALSE.
+          valpos = idx(i)
+          valmax = VggX(valpos)
+          keep(valpos) = .TRUE.
+        else
+          keep(idx(i)) = .FALSE.
+        end if
+      end if
+    end do 
+  end do
+ end if
+end do
+
+nkeep = 0
+do i=1,icnt
+  if (keep(i).eqv..TRUE.) nkeep = nkeep+1
+end do
+
+! and here is the main part of this program: Kikuchi band integration for 
+! each unique family (one member per family).  
+
+! allocate the output arrays (KikuchiBandIntegral = KBI); we will copy final results from 
+! these arrays into the return variables
+allocate(KBI(icnt),Vg(icnt),VgX(icnt))
+KBI = 0.0
+Vg = 0.0
+VgX = 0.0
+
+! azimuthal integration angle
+numphi = 360.0/fpar(12)
+allocate(phi(numphi), cp(numphi),sp(numphi))
+dphi = fpar(12) * sngl(cPi)/180.0
+phi = (/ (float(i-1)*dphi,i=1,numphi) /)
+cp = cos(phi)
+sp = sin(phi)
+
+incrad = fpar(12) * sngl(cPi)/180.0
+scl = float(nx)
+
+! set the callback parameters
+dn = 1
+cn = dn
+
+! set the number of OpenMP threads 
+call OMP_SET_NUM_THREADS(nthreads)
+
+! use OpenMP to run on multiple cores ... 
+!$OMP PARALLEL DEFAULT(PRIVATE) &
+!$OMP& SHARED(k, nx, cp, sp, icnt, keep, th, incrad, numphi, gcart, cell, scl, masterNH, masterSH) &
+!$OMP& SHARED(Vg, VgX, Vgg, VggX, KBI, cn, dn)
+
+NUMTHREADS = OMP_GET_NUM_THREADS()
+TID = OMP_GET_THREAD_NUM()
+
+!$OMP DO SCHEDULE(STATIC,1)
+do k=1,icnt-1   ! ignore the last point
+ if (keep(k)) then
+  ! update the counter for the callback routine
+!$OMP CRITICAL
+    cn = cn + dn 
+!$OMP END CRITICAL
+
+  ii = nint(th(k)/incrad)
+  numtheta = 2*ii+1
+  allocate(theta(numtheta),ca(numtheta),sa(numtheta))
+  nums = numphi * numtheta
+  allocate( dc(3,nums), cosnorm(nums) )
+
+  theta = (/ (float(i),i=-ii,ii) /) * incrad
+  gz = (/ 0.0, 0.0, 1.0 /)
+
+! get the unrotated direction cosines of the sampling points on the sphere
+! also initialize the cosine term in the surface integration, and the segment normalization
+    ca = cos( theta )
+    sa = sin( theta )
+    ii = 1
+    do i=1,numphi
+      do j=1,numtheta
+        dc(1,ii) = ca(j) * cp(i)
+        dc(2,ii) = ca(j) * sp(i)
+        dc(3,ii) = sa(j) 
+        cosnorm(ii) = ca(j) / ( 4.0 * sngl(cPi) * sin(th(k)) )
+        ii = ii+1
+      end do
+    end do
+
+! then determine the rotation quaternion to bring the z axis onto the g direction (cartesian)
+    v = gcart(1:3,k) 
+    x = CalcDot(cell,gz,v,'c')
+    if (x.ne.1.0) then   ! the cross product exists
+      call CalcCross(cell,v,gz,gax,'c','c',0) ! gax is the rotation axis
+      call NormVec(cell,gax,'c')
+      x = acos(x)
+      if (x.lt.0.0) then
+        ax = (/-gax(1),-gax(2),-gax(3), -x /)
+      else
+        ax = (/ gax(1), gax(2), gax(3), x /)
+      end if
+      qu = conjg(ax2qu(ax))
+      do i=1,nums
+        v(:) = dc(:,i)
+        v = quat_LP(qu,v)
+        call NormVec(cell,v,'c')
+        dc(:,i) = v(:)
+      end do
+    end if
+
+! now that all the points have been rotated, we simply transform the direction cosines
+! into square Lambert coordinates and interpolate from the master patterns in the usual way...
+    do i=1,nums
+  ! convert these direction cosines to coordinates in the Rosca-Lambert projection
+      v(:) = dc(:,i)
+      call LambertgetInterpolation(v, scl, nx, nx, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+  ! interpolate the intensity
+      if (dc(3,i) .ge. 0.0) then
+         KBI(k) = KBI(k)+ ( masterNH(nix,niy) * dxm * dym +  masterNH(nixp,niy) * dx * dym + &
+                            masterNH(nix,niyp) * dxm * dy +  masterNH(nixp,niyp) * dx * dy ) * 0.25 * cosnorm(i)
+      else
+         KBI(k) = KBI(k)+ ( masterSH(nix,niy) * dxm * dym +  masterSH(nixp,niy) * dx * dym + &
+                            masterSH(nix,niyp) * dxm * dy +  masterSH(nixp,niyp) * dx * dy ) * 0.25 * cosnorm(i)
+      end if
+    end do
+    Vg(k) = Vgg(k)
+    VgX(k) = VggX(k)
+    deallocate(theta,ca,sa,cosnorm,dc)
+ else
+    Vg(k) = 0.0
+    VgX(k) = 0.0
+ end if
+
+! update the progress counter and report it to the calling program via the proc callback routine
+!$OMP CRITICAL
+     if(objAddress.ne.0) then
+       if (mod(cn,25).eq.0) then 
+         call proc(objAddress, cn, nkeep, zero)
+       end if
+     end if
+!$OMP END CRITICAL
+
+end do
+!$OMP END DO
+!$OMP END PARALLEL
+
+x = maxval(KBI)
+KBI = KBI * 100.0/x
+Vg(icnt) = 0.0
+x = maxval(Vg)
+Vg = Vg * 100.0/x
+VgX(icnt) = 0.0
+x = maxval(VgX)
+VgX = VgX * 100.0/x
+
+call SPSORT(KBI,icnt,idx,-1,istat)
+
+! and prepare the output arrays
+do i=1,ipar(37)
+  if (i.le.icnt) then
+    k = idx(i)
+    XKI(i) = VgX(k)
+    EKI(i) = Vg(k)
+    beta(i) = KBI(k)
+    hkl(1:3,i) = gcrys(1:3,k)
+  end if
+end do
+
+! that's all folks...
+
+end subroutine EMsoftCgetEBSDreflectorranking
+
 end module EMSEMwrappermod
