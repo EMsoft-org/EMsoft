@@ -44,8 +44,6 @@ use utilities
 
 IMPLICIT NONE
 
-private :: getXtalData
-
 contains
 
 !--------------------------------------------------------------------------
@@ -540,7 +538,7 @@ write(dataunit2,'(A)') '# LatticeConstants      '//trim(str1)
 
 ! next we need to get the hklFamilies ranked by kinematical intensity, going out to some value
 ! this is probably not necessary [based on Stuart's feedback], so we comment it all out
-! write(dataunit2,'(A)') '# NumberFamilies        0'
+write(dataunit2,'(A)') '# NumberFamilies        0'
 ! write(dataunit2,'(A)') '# NumberFamilies        4'
 ! write(dataunit2,'(A)') '# hklFamilies   	 1  1  1 1 0.000000'
 ! write(dataunit2,'(A)') '# hklFamilies   	 2  0  0 1 0.000000'
