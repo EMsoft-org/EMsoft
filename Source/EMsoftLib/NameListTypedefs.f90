@@ -252,10 +252,11 @@ type reflectorNameListType
         real(kind=sgl)          :: increment
         real(kind=sgl)          :: dmin
         logical                 :: latex
+        logical                 :: usemultiplicity
         integer(kind=irg)       :: numlist
         integer(kind=irg)       :: nthreads
         character(fnlen)        :: masterfile
-        character(fnlen)        :: energyfile
+        character(fnlen)        :: listfile
 end type reflectorNameListType
 
 ! namelist for the EMreflectors program
@@ -375,6 +376,19 @@ type EBSDMasterNameListType
         logical                 :: restart
         logical                 :: uniform
 end type EBSDMasterNameListType
+
+! namelist for the EMEBSDsinglemaster program
+type EBSDSingleMasterNameListType
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: dmin
+        real(kind=sgl)          :: kV
+        real(kind=sgl)          :: tstep
+        character(3)            :: Notify
+        character(fnlen)        :: outname
+        character(fnlen)        :: xtalname
+        logical                 :: combinesites
+end type EBSDSingleMasterNameListType
 
 ! namelist for the EMTKDmaster program
 type TKDMasterNameListType

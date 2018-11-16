@@ -2139,6 +2139,90 @@ emnl%uniform = uniform
 
 end subroutine GetEBSDMasterNameList
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEBSDSingleMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill emnl structure (used by EMEBSDsinglemaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl EBSD master name list structure
+!
+!> @date 11/13/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDSingleMasterNameList(nmlfile, emnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDSingleMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(EBSDSingleMasterNameListType),INTENT(INOUT):: emnl
+logical,OPTIONAL,INTENT(IN)                     :: initonly
+
+logical                                         :: skipread = .FALSE.
+
+integer(kind=irg)       :: npx
+integer(kind=irg)       :: nthreads
+real(kind=sgl)          :: dmin
+real(kind=sgl)          :: kV
+real(kind=sgl)          :: tstep
+character(3)            :: Notify
+character(fnlen)        :: outname
+character(fnlen)        :: xtalname
+logical                 :: combinesites
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /EBSDsinglemastervars/ dmin,npx,nthreads,kV,tstep,xtalname,Notify,outname,combinesites
+
+! set the input parameters to default values (except for xtalname, which must be present)
+npx = 500                       ! Nx pixels (total = 2Nx+1)
+nthreads = 1
+kV = 20.0                       ! microscope accelerating voltage
+dmin = 0.05                     ! smallest d-spacing to include in dynamical matrix [nm]
+tstep = 0.5                     ! thickness increment in nm
+Notify = 'Off'
+combinesites = .TRUE.           ! combine all atom sites into one BSE yield or not
+xtalname = 'undefined'
+outname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=EBSDsinglemastervars)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('EMEBSDsinglemaster:',' xtal file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(outname).eq.'undefined') then
+  call FatalError('EMEBSDsinglemaster:',' output file name is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+emnl%npx = npx
+emnl%kV = kV
+emnl%nthreads = nthreads
+emnl%dmin = dmin
+emnl%tstep = tstep
+emnl%xtalname = trim(xtalname)
+emnl%Notify = Notify
+emnl%outname = trim(outname)
+emnl%combinesites = combinesites
+
+end subroutine GetEBSDSingleMasterNameList
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:GetTKDMasterNameList
@@ -2575,22 +2659,24 @@ logical                                        :: skipread = .FALSE.
 real(kind=sgl)                                 :: increment
 real(kind=sgl)                                 :: dmin
 logical                                        :: latex
+logical                                        :: usemultiplicity
 integer(kind=irg)                              :: numlist
 integer(kind=irg)                              :: nthreads
 character(fnlen)                               :: masterfile
-character(fnlen)                               :: energyfile
+character(fnlen)                               :: listfile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDreflectors/ increment, dmin, masterfile, latex, energyfile, numlist, nthreads
+namelist /EBSDreflectors/ increment, dmin, masterfile, latex, listfile, numlist, nthreads, usemultiplicity
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 increment = 1.0                 ! angular increment [°]
 dmin = 0.05                    ! smallest d-spacing to include in dynamical matrix [nm]
 latex = .FALSE.
+usemultiplicity = .FALSE.
 numlist = 10
 nthreads = 1
 masterfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
-energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+listfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -2603,8 +2689,8 @@ if (.not.skipread) then
   close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
-  if (trim(energyfile).eq.'undefined') then
-    call FatalError('EMreflectors:',' energy file name is undefined in '//nmlfile)
+  if (trim(listfile).eq.'undefined') then
+    call FatalError('EMreflectors:',' output file name is undefined in '//nmlfile)
   end if
   if (trim(masterfile).eq.'undefined') then
     call FatalError('EMreflectors:',' master file name is undefined in '//nmlfile)
@@ -2615,10 +2701,11 @@ end if
 rnl%increment = increment
 rnl%dmin = dmin
 rnl%latex = latex
+rnl%usemultiplicity = usemultiplicity
 rnl%numlist = numlist
 rnl%nthreads = nthreads
 rnl%masterfile = masterfile
-rnl%energyfile = energyfile
+rnl%listfile = listfile
 
 end subroutine GetreflectorNameList
 

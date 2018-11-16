@@ -2963,7 +2963,7 @@ else
   ep = 'EBSDreflectors.masterfile'
   call JSONreadString(json, ep, rnl%masterfile, defrnl%masterfile)
   ep = 'EBSDreflectors.energyfile'
-  call JSONreadString(json, ep, rnl%energyfile, defrnl%energyfile)
+  call JSONreadString(json, ep, rnl%listfile, defrnl%listfile)
 end if
 
 call json%destroy(); call JSON_failtest(error_cnt)

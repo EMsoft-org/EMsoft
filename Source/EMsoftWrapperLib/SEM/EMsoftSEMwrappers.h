@@ -114,6 +114,29 @@ void EMsoftCgetEBSDmaster
         float* latparm, int32_t* accum_z,  float* mLPNH, float* mLPSH,
         ProgCallBackType3 callback, size_t object, bool* cancel);
 
+/**
+* EBSD dynamical reflector ranking:
+* @param ipar array with integer input parameters
+* @param fpar array with float input parameters
+* @param atompos atom position, site occupations and Debye-Waller factors
+* @param atomtypes atom numbers
+* @param latparm lattice parameters
+* @param accum_e array with Monte Carlo energy histogram
+* @param mLPNH modified Lambert projection northern hemisphere
+* @param mLPSH modified Lambert projection southern hemisphere
+* @param hkl list of hkl triplets (output)
+* @param beta list of dynamical integrated Kikuchi band intensities (output)
+* @param XKI list of x-ray kinematical intensities (output)
+* @param EKI list of electron kinematical intensities (output)
+* @param callback callback routine to update progress bar
+* @param object unique identifier for calling class instantiation
+* @param cancel boolean to trigger cancellation of computation
+*/
+void EMsoftCgetEBSDreflectorranking
+        (int32_t* ipar, float* fpar, float* atompos, int32_t* atomtypes, 
+        float* latparm, int32_t* accum_e, float* mLPNH, float* mLPSH,
+        int32_t* hkl, float* beta, float* XKI, float* EKI, 
+        ProgCallBackType2 callback, size_t object, bool* cancel);
 
 /**
  * @brief HiPassFilterC
