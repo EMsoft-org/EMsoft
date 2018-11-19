@@ -1455,6 +1455,7 @@ end subroutine ReduceOrientationtoCubicEFZ
 !
 !> @date 07/29/16 MDG 1.0 original
 !> @date 03/27/17 MDG 1.1 added checking of MacKenzie cell
+!> @date 11/19/18 MDG 1.2 correction of tolerance issue
 !--------------------------------------------------------------------------
 recursive subroutine ReduceOrientationtoRFZ(eu, dict, FZtype, FZorder, euFZ, MFZ)
 !DEC$ ATTRIBUTES DLLEXPORT :: ReduceOrientationtoRFZ
@@ -1479,7 +1480,7 @@ integer(kind=irg)                       :: i, j, Pmdims
 logical                                 :: useMFZ
 real(kind=dbl)                          :: tol
 
-tol = 1.0D-6
+tol = 1.0D+5
 
 useMFZ = .FALSE.
 if (present(MFZ)) then 
@@ -1497,7 +1498,7 @@ FZloop: do j=1,Pmdims
   qu = quat_mult(dict%Pm(1:4,j),Mu)
   if (qu(1).lt.0.D0) qu = -qu
   rod = qu2ro(qu)
-  if(abs(rod(4)) .gt. 1.0D0+tol) rod(4) = inftyd()
+  if(abs(rod(4)) .gt. tol) rod(4) = inftyd()
   
   if (useMFZ.eqv..TRUE.) then
     if (IsinsideMFZ(rod,FZtype,FZorder)) EXIT FZloop
