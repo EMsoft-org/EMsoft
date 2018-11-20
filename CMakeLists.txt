@@ -10,15 +10,13 @@ if(${CMAKE_MAJOR_VERSION} STREQUAL "3")
   # CMake 3.0 introduces VERSION variables for each Project. We do our own version numbering so we need to have
   # cmake ignore that policy
   cmake_policy(SET CMP0048 NEW)
-  # CMake 3.0 introduces some OS X RPath policies
-  cmake_policy(SET CMP0042 OLD)
 endif()
 
 set(EMsoft_VER_MAJOR "4")
 set(EMsoft_VER_MINOR "0")
 set(EMsoft_VER_PATCH "0")
 
-cmake_minimum_required (VERSION 3.7.0)
+cmake_minimum_required (VERSION 3.8.0)
 project (EMsoft LANGUAGES C CXX Fortran  VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
 
 include(CMakeParseArguments)
