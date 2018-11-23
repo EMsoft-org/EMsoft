@@ -251,10 +251,9 @@ end type MCLIPSSNameListType
 type reflectorNameListType
         real(kind=sgl)          :: increment
         real(kind=sgl)          :: dmin
-        logical                 :: latex
-        logical                 :: usemultiplicity
         integer(kind=irg)       :: numlist
         integer(kind=irg)       :: nthreads
+        character(fnlen)        :: outputformat
         character(fnlen)        :: masterfile
         character(fnlen)        :: listfile
 end type reflectorNameListType

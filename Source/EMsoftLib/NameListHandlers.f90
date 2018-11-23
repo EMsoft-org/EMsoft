@@ -2658,25 +2658,23 @@ logical                                        :: skipread = .FALSE.
 
 real(kind=sgl)                                 :: increment
 real(kind=sgl)                                 :: dmin
-logical                                        :: latex
-logical                                        :: usemultiplicity
 integer(kind=irg)                              :: numlist
 integer(kind=irg)                              :: nthreads
+character(fnlen)                               :: outputformat
 character(fnlen)                               :: masterfile
 character(fnlen)                               :: listfile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDreflectors/ increment, dmin, masterfile, latex, listfile, numlist, nthreads, usemultiplicity
+namelist /EBSDreflectors/ increment, dmin, masterfile, listfile, numlist, nthreads, outputformat
 
 ! set the input parameters to default values (except for xtalname, which must be present)
-increment = 1.0                 ! angular increment [°]
-dmin = 0.05                    ! smallest d-spacing to include in dynamical matrix [nm]
-latex = .FALSE.
-usemultiplicity = .FALSE.
-numlist = 10
+increment = 0.025               ! angular increment [°]
+dmin = 0.05                     ! smallest d-spacing to include in dynamical matrix [nm]
+numlist = 20
 nthreads = 1
-masterfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
-listfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+outputformat = 'csv'            ! options: 'latex', 'csv', and 'markdown'
+masterfile = 'undefined'        ! master pattern filename
+listfile = 'undefined'          ! filename for output (no extension)
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -2700,12 +2698,11 @@ end if
 ! if we get here, then all appears to be ok, and we need to fill in the emnl fields
 rnl%increment = increment
 rnl%dmin = dmin
-rnl%latex = latex
-rnl%usemultiplicity = usemultiplicity
+rnl%outputformat = trim(outputformat)
 rnl%numlist = numlist
 rnl%nthreads = nthreads
-rnl%masterfile = masterfile
-rnl%listfile = listfile
+rnl%masterfile = trim(masterfile)
+rnl%listfile = trim(listfile)
 
 end subroutine GetreflectorNameList
 
