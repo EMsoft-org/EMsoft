@@ -2643,6 +2643,85 @@ call HDF_pop(HDF_head)
 
 end subroutine HDFwriteLACBEDNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteCBEDNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param cbednl CBED name list structure
+!
+!> @date 11/24/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteCBEDNameList(HDF_head, cbednl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteCBEDNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(CBEDNameListType),INTENT(INOUT)                  :: cbednl
+
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 5
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_CBEDNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ cbednl%maxHOLZ, cbednl%numthick, cbednl%npix, cbednl%nthreads /)
+intlist(1) = 'maxHOLZ'
+intlist(2) = 'numthick'
+intlist(3) = 'npix'
+intlist(4) = 'nthreads'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! vectors
+dataset = SC_k
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, cbednl%k, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create k dataset',.TRUE.)
+
+dataset = SC_fn
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, cbednl%fn, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create fn dataset',.TRUE.)
+
+dataset = SC_lauec
+hdferr = HDF_writeDatasetFloatArray1D(dataset, cbednl%lauec, 2, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create lauec dataset',.TRUE.)
+
+! write all the single reals
+io_real = (/ cbednl%voltage, cbednl%dmin, cbednl%convergence, cbednl%startthick, cbednl%thickinc /)
+reallist(1) = 'voltage'
+reallist(2) = 'dmin'
+reallist(3) = 'convergence'
+reallist(4) = 'startthick'
+reallist(5) = 'thickinc'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! write all the strings
+dataset = SC_outname
+line2(1) = cbednl%outname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create outname dataset',.TRUE.)
+
+dataset = SC_xtalname
+line2(1) = cbednl%xtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to create xtalname dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteCBEDNameList
 
 !--------------------------------------------------------------------------
 !
