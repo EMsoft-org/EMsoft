@@ -727,6 +727,24 @@ type ECPNameListType
         character(fnlen)        :: MCxtalname
 end type ECPNameListType
 
+! CBED structure
+type CBEDNameListType
+        integer(kind=irg)       :: maxHOLZ
+        integer(kind=irg)       :: npix
+        integer(kind=irg)       :: numthick
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: k(3)
+        integer(kind=irg)       :: fn(3)
+        real(kind=sgl)          :: voltage
+        real(kind=sgl)          :: lauec(2)
+        real(kind=sgl)          :: dmin
+        real(kind=sgl)          :: convergence
+        real(kind=sgl)          :: startthick
+        real(kind=sgl)          :: thickinc
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: outname
+end type CBEDNameListType
+
 ! LACBED structure
 type LACBEDNameListType
         integer(kind=irg)       :: stdout

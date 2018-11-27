@@ -1,5 +1,4 @@
-
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2018, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -3731,6 +3730,99 @@ lacbednl%outname = outname
 
 end subroutine GetLACBEDNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetCBEDNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill cbednl structure (used by EMCBED.f90)
+!
+!> @param nmlfile namelist file name
+!> @param cbednl CBED name list structure
+!
+!> @date 11/24/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetCBEDNameList(nmlfile, cbednl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetCBEDNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)             :: nmlfile
+type(CBEDNameListType),INTENT(INOUT)    :: cbednl
+logical,OPTIONAL,INTENT(IN)             :: initonly
+
+logical                                 :: skipread = .FALSE.
+
+integer(kind=irg)       :: k(3)
+integer(kind=irg)       :: fn(3)
+integer(kind=irg)       :: maxHOLZ
+integer(kind=irg)       :: numthick
+integer(kind=irg)       :: npix
+integer(kind=irg)       :: nthreads
+real(kind=sgl)          :: voltage
+real(kind=sgl)          :: lauec(2)
+real(kind=sgl)          :: dmin
+real(kind=sgl)          :: convergence
+real(kind=sgl)          :: startthick
+real(kind=sgl)          :: thickinc
+character(fnlen)        :: xtalname
+character(fnlen)        :: outname
+
+namelist /CBEDlist/ xtalname, voltage, k, fn, dmin, convergence, lauec, &
+                    nthreads, startthick, thickinc, numthick, outname, npix, maxHOLZ
+
+k = (/ 0, 0, 1 /)               ! beam direction [direction indices]
+fn = (/ 0, 0, 1 /)              ! foil normal [direction indices]
+maxHOLZ = 2                     ! maximum HOLZ layer index to be used for the output file; note that his number
+                                ! does not affect the actual computations; it only determines which reflection 
+                                ! families will end up in the output file
+lauec = (/ 0.0, 0.0 /)          ! Laue center coordinates
+numthick = 10                   ! number of increments
+npix = 256                      ! output arrays will have size npix x npix
+nthreads = 1                    ! number of computational threads
+voltage = 200.0                 ! acceleration voltage [kV]
+dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
+convergence = 25.0              ! beam convergence angle [mrad]
+startthick = 10.0               ! starting thickness [nm]
+thickinc = 10.0                 ! thickness increment
+xtalname = 'undefined'          ! initial value to check that the keyword is present in the nml file
+outname = 'undefined'           ! output filename
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+read(UNIT=dataunit,NML=CBEDlist)
+close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+if (trim(xtalname).eq.'undefined') then
+  call FatalError('EMCBED:',' structure file name is undefined in '//nmlfile)
+end if
+end if
+
+cbednl%k = k
+cbednl%fn = fn
+cbednl%maxHOLZ = maxHOLZ
+cbednl%numthick = numthick
+cbednl%npix = npix
+cbednl%nthreads = nthreads
+cbednl%lauec = lauec
+cbednl%voltage = voltage
+cbednl%dmin = dmin
+cbednl%convergence = convergence
+cbednl%startthick = startthick
+cbednl%thickinc = thickinc
+cbednl%xtalname = xtalname
+cbednl%outname = outname
+
+end subroutine GetCBEDNameList
 
 !--------------------------------------------------------------------------
 !

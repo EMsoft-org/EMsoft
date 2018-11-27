@@ -156,6 +156,88 @@ end subroutine CalcBWint
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: CalcCBEDint
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the scattered intensities for a range of thicknesses (specifically for CBED mode)
+!
+!> @param Dyn dynamical matrix
+!> @param cell unit cell pointer
+!> @param ktmp wave vector structure
+!> @param BetheParameter Bethe potential parameters
+!> @param nn number of strong beams
+!> @param nw number of weak beams
+!> @param nt number of thickness values
+!> @param thick thickness array
+!> @param inten output intensity list, including weak beams
+!
+!> @date  10/13/98 MDG 1.0 original
+!> @date   7/04/01 MDG 2.0 f90
+!> @date  04/29/13 MDG 3.0 inclusion of Bethe weak beams
+!> @date  06/10/14 MDG 4.0 added Dyn, cell, ktmp, and BetheParameter arguments
+!--------------------------------------------------------------------------
+subroutine CalcCBEDint(DynMat,cell,kn,BetheParameter,nn,nt,thick,inten)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcCBEDint
+
+use io
+use diffraction
+use kvectors
+use gvectors
+use constants
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
+complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
+type(unitcell),pointer          :: cell
+real(kind=sgl),INTENT(IN)       :: kn
+type(BetheParameterType),INTENT(IN) :: BetheParameter
+integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
+real(kind=sgl),INTENT(IN)       :: thick(nt)            !< thickness array
+real(kind=sgl),INTENT(INOUT)    :: inten(nt,nn)      !< output intensities (both strong and weak)
+
+integer(kind=irg)               :: i,j,IPIV(nn), ll(3), jp
+complex(kind=dbl)               :: CGinv(nn,nn), Minp(nn,nn),diag(nn),Wloc(nn), lCG(nn,nn), lW(nn), &
+                                   lalpha(nn), delta(nn,nn) 
+real(kind=sgl)                  :: th
+
+! compute the eigenvalues and eigenvectors
+ Minp = DynMat
+ IPIV = 0
+ call BWsolve(Minp,Wloc,lCG,CGinv,nn,IPIV)
+
+! the alpha coefficients are in the first column of the inverse matrix
+! the minus sign in W(i) stems from the fact that k_n is in the direction
+! opposite to the foil normal
+ lW = cPi*Wloc/cmplx(kn,0.0)
+ do i=1,nn
+  lalpha(i) = CGinv(i,1)
+ end do
+
+! we are going to ignore weak beam intensities for now...
+
+! compute the strong beam intensities, stored in the first nn slots of inten 
+! we could also compute the weak beams, since they make use of the same diag(1:nn) expression
+! as the strong beams, plus a few other factors (excitation error, wave length, Fourier coefficients)
+! that part would need to rewritten entirely
+ do i=1,nt
+  th = thick(i)
+  diag(1:nn)=exp(-th*imag(lW(1:nn)))*cmplx(cos(th*real(lW(1:nn))),sin(th*real(lW(1:nn))))*lalpha(1:nn)
+! the delta array is common to the strong and weak beam intensity computation, so we compute it first
+  do j=1,nn
+   delta(j,1:nn) = lCG(j,1:nn)*diag(1:nn)
+  end do
+! strong beams
+  do j=1,nn
+   inten(i,j) = cdabs(sum(delta(j,1:nn)))**2
+  end do 
+ end do
+   
+end subroutine CalcCBEDint
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: CalcPEDint
 !
 !> @author Marc De Graef, Carnegie Mellon University
