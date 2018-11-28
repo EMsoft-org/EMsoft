@@ -1,26 +1,76 @@
 
+
+if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.1.0")
+  cmake_policy(SET CMP0002 NEW)
+  cmake_policy(SET CMP0054 NEW)
+  cmake_policy(SET CMP0048 NEW)
+endif()
+
+if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.12.0")
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.13.0")
+  cmake_policy(SET CMP0079 NEW)
+endif()
+
+cmake_minimum_required(VERSION 3.8.0)
+message(STATUS "********* STARTING EMsoft CONFIGURATION ***********************")
 if(NOT "${EMsoft_SDK}" STREQUAL "")
   include("${EMsoft_SDK}/EMsoft_SDK.cmake")
   message(STATUS "EMsoft_SDK Location: ${EMsoft_SDK}")
 else()
-  message(FATAL_ERROR "EMsoft_SDK location was not specified. Please pass -DEMsoft_SDK=xxxxxxxx  as a CMake variable.")
+
+  message(STATUS "You have elected to NOT set a EMsoft_SDK CMake variable. You will")
+  message(STATUS "need to point to the various dependecies that EMsoft requires for")
+  message(STATUS "building. Those that are undefined are listed next:")
+  
+  if(NOT DEFINED bcls_DIR)
+      message(STATUS "Set bcls_DIR variable to the directory where bclsConfig.cmake is located.")
+  endif()
+
+  if(NOT DEFINED CLFORTRAN_DIR)
+    message(STATUS "Set CLFORTRAN_DIR variable to the directory where CLFortranConfig.cmake is located.")
+  endif()
+
+  if(NOT DEFINED EIGEN_INSTALL)
+      message(STATUS "Set EIGEN_INSTALL variable to the root directory of the Eigen installation.")
+  endif()
+ 
+  if(NOT DEFINED FFTW3_INSTALL)
+      message(STATUS "Set FFTW3_INSTALL variable to the root directory of the FFTW installation.")
+  endif()
+
+  if(NOT DEFINED HDF5_DIR)
+      message(STATUS "Set HDF5_DIR variable to the directory where the hdf5-config.cmake is located.")
+  endif()
+
+  if(NOT DEFINED JSONFORTRAN_DIR)
+      message(STATUS "Set JSONFORTRAN_DIR variable to the directory where the jsonfortran-*-config.cmake is located.")
+  endif()
+
+  if(NOT DEFINED Qt5_DIR)
+      message(STATUS "Set Qt5_DIR variable to the directory where the Qt5Config.cmake is located.")
+  endif()
+
+  if(NOT DEFINED TBB_DIR)
+      message(STATUS "Set TBB_DIR variable to the directory where TBBConfig.cmake is located.")
+  endif()
 endif()
 
-if(${CMAKE_MAJOR_VERSION} STREQUAL "3")
-  # CMake 3.0 introduces VERSION variables for each Project. We do our own version numbering so we need to have
-  # cmake ignore that policy
-  cmake_policy(SET CMP0048 NEW)
-endif()
+# Request C++11 standard, using new CMake variables.
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_EXTENSIONS False)
+
 
 set(EMsoft_VER_MAJOR "4")
 set(EMsoft_VER_MINOR "0")
 set(EMsoft_VER_PATCH "0")
 
-cmake_minimum_required (VERSION 3.8.0)
-project (EMsoft LANGUAGES C CXX Fortran  VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
+project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
 
 include(CMakeParseArguments)
-
 
 set(EMsoft_TEST_DIR "EMsofttmp")
 
