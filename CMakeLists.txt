@@ -15,10 +15,15 @@ if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.13.0")
 endif()
 
 cmake_minimum_required(VERSION 3.8.0)
-message(STATUS "********* STARTING EMsoft CONFIGURATION ***********************")
+
 if(NOT "${EMsoft_SDK}" STREQUAL "")
   include("${EMsoft_SDK}/EMsoft_SDK.cmake")
-  message(STATUS "EMsoft_SDK Location: ${EMsoft_SDK}")
+  get_property(EMsoft_SDK_STATUS_PRINTED GLOBAL PROPERTY EMsoft_SDK_STATUS_PRINTED)
+  if(NOT EMsoft_SDK_STATUS_PRINTED)
+    message(STATUS "********* STARTING EMsoft CONFIGURATION ***********************")
+    message(STATUS "EMsoft_SDK Location: ${EMsoft_SDK}")
+    set_property(GLOBAL PROPERTY EMsoft_SDK_STATUS_PRINTED TRUE)
+  endif()
 else()
 
   message(STATUS "You have elected to NOT set a EMsoft_SDK CMake variable. You will")
