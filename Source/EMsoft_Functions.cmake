@@ -71,7 +71,7 @@ function(Add_EMsoft_Executable)
   # option(EMsoft_BUILD_${Z_TARGET} "Build ${Z_TARGET}" ON)
   # mark_as_advanced(EMsoft_BUILD_${Z_TARGET})
 
-  include_directories(${CLFORTRAN_INCLUDE_DIR})
+  include_directories(${CLFortran_INCLUDE_DIRS})
   include_directories(${HDF5_INCLUDE_DIR})
 
   #if(EMsoft_BUILD_${Z_TARGET})  

@@ -130,7 +130,7 @@ TARGET_LINK_LIBRARIES(EMsoftLib
                 ${EMsoft_BLAS_LAPACK_LIBS}
                 ${IFORT_COMPILER_LIBRARIES}
           )
-target_include_directories(EMsoftLib PUBLIC ${CLFORTRAN_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR})
+target_include_directories(EMsoftLib PUBLIC ${CLFortran_INCLUDE_DIRS} ${FFTW3_INCLUDE_DIR})
 set_target_properties (EMsoftLib PROPERTIES
                   LINKER_LANGUAGE Fortran
                    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}

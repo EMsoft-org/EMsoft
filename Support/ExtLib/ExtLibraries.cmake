@@ -77,7 +77,7 @@ endif(APPLE)
 
 
 
-include_directories(${JSONFORTRAN_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${CLFORTRAN_INCLUDE_DIR})
+include_directories(${JSONFORTRAN_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${CLFortran_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Find the OpenCL Package
@@ -107,15 +107,16 @@ endif( OPENCL_HAS_CPP_BINDINGS )
 #------------------------------------------------------------------------------
 # Find the Fortran OpenCL Bindings Package
 find_package(CLFortran REQUIRED)
-if( NOT CLFORTRAN_FOUND)
+if( NOT CLFortran_FOUND)
   message(STATUS "CLFortran is REQUIRED for this project but was not found.")
   message(STATUS "This can happen if CLFortran was built with a different GFortran.")
-  message(STATUS "CLFORTRAN_DIR: ${CLFORTRAN_DIR}")
-  message(STATUS "Fortran_COMPILER_NAME: ${Fortran_COMPILER_NAME}")
+  message(STATUS "CLFortran_DIR: ${CLFortran_DIR}")
+  message(STATUS "CMAKE_Fortran_COMPILER: ${CMAKE_Fortran_COMPILER}")
   message(STATUS "CLFortran source repository is at http://code.google.com/p/fortrancl/downloads/list")
-  message(FATAL_ERROR "Please Download, Build and install. After install export the environment variable CLFORTRAN_INSTALL to point to the installation location.")
+  message(FATAL_ERROR "Please Download, Build and install. After install export the environment variable CLFortran_DIR to point to the folder that contains the CLFortranConfig.cmake file.")
 else()
-  message(STATUS "CLFortran Found.")
+  get_target_property(CLFortran_LIB_PATH clfortran IMPORTED_LOCATION)
+  message(STATUS "CLFortran Found: ${CLFortran_LIB_PATH}")
 endif()
 
 # ---------- Find FFTW3 Headers/Libraries -----------------------
