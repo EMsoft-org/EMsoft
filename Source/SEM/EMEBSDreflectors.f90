@@ -81,6 +81,7 @@ end program EMEBSDreflectors
 !> @date 05/31/16  MDG 1.0 original
 !> @date 02/12/18  MDG 1.1 converted to most recent h5 format; modified reflection selection criteria
 !> @date 06/06/18  MDG 1.2 modified discrete integration 
+!> @date 11/29/18  MDG 1.3 added kinematical X-ray intensities to output
 !--------------------------------------------------------------------------
 subroutine GetReflectors(rnl, progname, nmldeffile)
 
@@ -294,7 +295,9 @@ call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname,rnl%dmin, sngl(mcnl%EkeV), verbo
        z(itmp(i,1),itmp(i,2),itmp(i,3))=.TRUE.
       end do
 
-! store the Fourier coefficient of the lattice potential
+! compute the X-ray kinematical structure factor
+      rlp%method = 'XR'
+      call CalcUcg(cell,rlp,ind)
       VggX(icnt) = abs(rlp%Ucg)
 
 ! also get the structure factor with the WK parameters and absorption
@@ -518,8 +521,8 @@ if ((trim(rnl%outputformat).eq.'latex').or.(trim(rnl%outputformat).eq.'all')) th
   open(unit=80,file=trim(outputfile),status='unknown',form='formatted')
 
 ! format everything as a LaTeX table, with rank, hkl, |g|, KBI, Vg (sfi)
-  write (80,"('\begin{table}[th]\caption{reflector ranking}\centering\leavevmode\begin{tabular}{llrr}')")
-  write (80,"('\hline $\#$ & $(hkl)$ & $\beta_{hkl}$ & $I^{\text{abs}}_{hkl}$\\')")
+  write (80,"('\begin{table}[th]\caption{reflector ranking}\centering\leavevmode\begin{tabular}{llrrr}')")
+  write (80,"('\hline $\#$ & $(hkl)$ & $\beta_{hkl}$ & $I^{\text{abs}}_{hkl}$ & $I^{\text{X}}_{hkl}$ \\')")
   write (80,"('\hline')")
   do i=1,rnl%numlist
     k = idx(i)
@@ -541,7 +544,7 @@ if ((trim(rnl%outputformat).eq.'latex').or.(trim(rnl%outputformat).eq.'all')) th
             end if
           end if
         end do
-        write (80,"(')$ & ',F6.2,' & ',F6.2,'\\ ')") KBI(k), Vg(k)
+        write (80,"(')$ & ',F6.2,' & ',F6.2,' & ',F6.2,'\\ ')") KBI(k), Vg(k), VgX(k)
     end if
   end do
   write(80,"('\hline\end{tabular}\end{table}')")
@@ -554,12 +557,12 @@ if ((trim(rnl%outputformat).eq.'csv').or.(trim(rnl%outputformat).eq.'all')) then
   outputfile = trim(listfile)//'.csv'
   open(unit=80,file=trim(outputfile),status='unknown',form='formatted')
 
-  write (80,"(A)") '#,h,k,l,KBI,Ikin+abs' 
+  write (80,"(A)") '#,h,k,l,KBI,Ikin+abs,IX' 
 
   do i=1,rnl%numlist
     k = idx(i)
     if ((sum(abs(gcrys(:,k))).ne.0.0).and.(KBI(k).ne.0.0)) then
-      write (80,"(I4,',',3(I3,','),F6.2,',',F6.2)") i,int(gcrys(:,k)),KBI(k),Vg(k)
+      write (80,"(I4,',',3(I3,','),F6.2,',',F6.2,',',F6.2)") i,int(gcrys(:,k)),KBI(k),Vg(k),VgX(k)
     end if
   end do
   close(unit=80,status='keep')
@@ -572,8 +575,8 @@ if ((trim(rnl%outputformat).eq.'markdown').or.(trim(rnl%outputformat).eq.'all'))
 
   write (80,"(A)") '##EBSD Dynamical Reflector Ranking for '//trim(mcnl%xtalname) 
   write (80,"(A)") ' '
-  write (80,"(A)") '|\# | (hkl) | beta_hkl | Ikin+abs |' 
-  write (80,"(A)") '|---|-------|----------|----------|' 
+  write (80,"(A)") '|\# | (hkl) | beta_hkl | Ikin+abs |    IX   |' 
+  write (80,"(A)") '|---|-------|----------|----------|---------|' 
 
   do i=1,rnl%numlist
     k = idx(i)
@@ -582,7 +585,7 @@ if ((trim(rnl%outputformat).eq.'markdown').or.(trim(rnl%outputformat).eq.'all'))
         do jj=1,3
           write (80,"(I3,$)") int(gcrys(jj,k))
         end do
-        write (80,"(')|',F6.2,'|',F6.2,'|')") KBI(k), Vg(k)
+        write (80,"(')|',F6.2,'|',F6.2,'|',F6.2,'|')") KBI(k), Vg(k), VgX(k)
     end if
   end do
   close(unit=80,status='keep')
