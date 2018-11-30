@@ -3578,6 +3578,10 @@ dataset = SC_axisangle
 hdferr = HDF_writeDatasetFloatArray1D(dataset, tkdnl%axisangle, 4, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create axisangle dataset',.TRUE.)
 
+dataset = SC_ROI
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, tkdnl%ROI, 4, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create ROI dataset',.TRUE.)
+
 
 ! strings
 dataset = SC_maskpattern

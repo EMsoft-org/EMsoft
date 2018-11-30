@@ -48,6 +48,7 @@
 !> @date 02/20/18 MDG 1.3 added option to extract a single pattern from the input file
 !> @date 04/01/18 MDG 2.0 added routine to preprocess EBSD patterns 
 !> @date 05/09/18 MDG 2.1 added .up1 TSL format 
+!> @date 11/30/18 MDG 2.2 added suport for TKD pattern preprocessing
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -920,7 +921,7 @@ end if
 istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
-    call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
+    call FatalError("PreProcessPatterns:", "Fatal error handling experimental pattern file")
 end if
 
 ! this next part is done with OpenMP, with only thread 0 doing the reading;
@@ -1085,6 +1086,295 @@ io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
 call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
 
 end subroutine PreProcessPatterns
+
+
+!--------------------------------------------------------------------------
+!
+! subroutine: PreProcessTKDPatterns
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief standard preprocessing of TKD patterns (hi-pass filter+adaptive histogram equalization)
+!
+!> @details This is one of the core routines used to pre-process TKD patterns for dictionary indexing.
+!> The routine reads the experimental patterns row by row, and performs a hi-pass filter and adaptive
+!> histogram equalization.  Then the preprocessed patterns are either stored in a binary direct access file,
+!> or they are kept in RAM, depending on the user parameter setting. 
+!
+!> @param nthreads number of threads to be used
+!> @param inRAM write file or keep patterns in RAM ?
+!> @param tkdnl namelist for the tkd computations
+!> @param binx, biny pattern size 
+!> @param masklin vector form of pattern mask 
+!> @param correctsize 
+!> @param totnumexpt 
+!> @param epatterns (OPTIONAL) array with pre-processed patterns
+!> @param exptIQ (OPTIONAL) computation of pattern quality (IQ) array
+!
+!> @date 11/30/18 MDG 1.0 original, based on EBSD routine
+!--------------------------------------------------------------------------
+recursive subroutine PreProcessTKDPatterns(nthreads, inRAM, tkdnl, binx, biny, masklin, correctsize, totnumexpt, &
+                                        epatterns, exptIQ)
+!DEC$ ATTRIBUTES DLLEXPORT :: PreProcessPatterns
+
+use io
+use local
+use typedefs
+use EBSDDImod
+use NameListTypedefs
+use error
+use omp_lib
+use filters
+use timing
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                :: nthreads
+logical,INTENT(IN)                          :: inRAM
+type(TKDIndexingNameListType),INTENT(IN)    :: tkdnl
+integer(kind=irg),INTENT(IN)                :: binx
+integer(kind=irg),INTENT(IN)                :: biny
+real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
+integer(kind=irg),INTENT(IN)                :: correctsize
+integer(kind=irg),INTENT(IN)                :: totnumexpt
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
+
+logical                                     :: ROIselected, f_exists
+character(fnlen)                            :: fname
+integer(kind=irg)                           :: istat, L, recordsize, io_int(2), patsz, iii, &
+                                               iiistart, iiiend, jjend, TID, jj, kk, ierr
+integer(HSIZE_T)                            :: dims3(3), offset3(3)
+integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42
+real(kind=sgl)                              :: tstart, tstop, vlen, tmp, ma, mi, io_real(1)
+real(kind=dbl)                              :: w, Jres
+integer(kind=irg),allocatable               :: TKDpint(:,:)
+real(kind=sgl),allocatable                  :: tmpimageexpt(:), TKDPattern(:,:), imageexpt(:), exppatarray(:), TKDpat(:,:)
+real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
+complex(kind=dbl),allocatable               :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable       :: inp(:,:), outp(:,:)
+type(C_PTR)                                 :: planf, HPplanf, HPplanb
+
+
+call Message('Preprocessing experimental patterns')
+
+!===================================================================================
+! define a bunch of mostly integer parameters
+recordsize = correctsize*4
+L = binx*biny
+patsz = correctsize
+w = tkdnl%hipassw
+
+if (sum(tkdnl%ROI).ne.0) then
+  ROIselected = .TRUE.
+  iiistart = tkdnl%ROI(2)
+  iiiend = tkdnl%ROI(2)+tkdnl%ROI(4)-1
+  jjend = tkdnl%ROI(3)
+else
+  ROIselected = .FALSE.
+  iiistart = 1
+  iiiend = tkdnl%ipf_ht
+  jjend = tkdnl%ipf_wd
+end if
+
+!===================================================================================
+! open the output file if the patterns are not to be kept in memory
+if (inRAM.eqv..FALSE.) then
+! first, make sure that this file does not already exist
+   f_exists = .FALSE.
+   fname = trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)
+   fname = EMsoft_toNativePath(fname)
+   inquire(file=trim(trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)), exist=f_exists)
+
+   call WriteValue('Creating temporary file :',trim(fname))
+
+   if (f_exists) then
+      open(unit=itmpexpt,file=trim(fname),&
+          status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+      close(unit=itmpexpt,status='delete')
+   end if
+   open(unit=itmpexpt,file=trim(fname),&
+   status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+end if
+  
+!===================================================================================
+! open the file with experimental patterns; depending on the inputtype parameter, this
+! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
+! pattern file produced by EMTKD.f90; or a vendor binary or HDF5 file... in each case we need to 
+! open the file and leave it open, then use the getExpPatternRow() routine to read a row
+! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
+! properly close the experimental pattern file
+istat = openExpPatternFile(tkdnl%exptfile, tkdnl%ipf_wd, L, tkdnl%inputtype, recordsize, iunitexpt, tkdnl%HDFstrings)
+if (istat.ne.0) then
+    call patternmod_errormessage(istat)
+    call FatalError("PreProcessTKDPatterns:", "Fatal error handling experimental pattern file")
+end if
+
+! this next part is done with OpenMP, with only thread 0 doing the reading;
+! Thread 0 reads one line worth of patterns from the input file, then all threads do 
+! the work, and thread 0 adds them to the epatterns array in RAM; repeat until all patterns have been processed.
+
+call OMP_SET_NUM_THREADS(nthreads)
+io_int(1) = nthreads
+call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
+
+! allocate the arrays that holds the experimental patterns from a single row of the region of interest
+allocate(exppatarray(patsz * tkdnl%ipf_wd),stat=istat)
+if (istat .ne. 0) stop 'could not allocate exppatarray'
+
+if (present(exptIQ)) then
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+  allocate(TKDPat(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
+  TKDPat = 0.0
+  allocate(ksqarray(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate ksqarray array'
+  Jres = 0.0
+! we should be able to just use the EBSD routine to do this ...
+  call init_getEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf)
+  deallocate(TKDPat)
+end if
+
+! initialize the HiPassFilter routine (has its own FFTW plans)
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate hpmask array'
+call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+deallocate(inp, outp)
+
+call Message('Starting processing of experimental patterns')
+call cpu_time(tstart)
+
+dims3 = (/ binx, biny, tkdnl%ipf_wd /)
+
+!===================================================================================
+! we do one row at a time
+prepexperimentalloop: do iii = iiistart,iiiend
+
+! start the OpenMP portion
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, vlen, tmp, inp, outp)
+
+! set the thread ID
+    TID = OMP_GET_THREAD_NUM()
+
+! initialize thread private variables
+    allocate(TKDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),tmpimageexpt(binx*biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+
+    allocate(TKDpint(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate TKDpint array'
+
+    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+
+    tmpimageexpt = 0.0
+    rrdata = 0.D0
+    ffdata = 0.D0
+
+! thread 0 reads the next row of patterns from the input file
+! we have to allow for all the different types of input files here...
+    if (TID.eq.0) then
+        offset3 = (/ 0, 0, (iii-1)*tkdnl%ipf_wd /)
+        if (ROIselected.eqv..TRUE.) then
+            call getExpPatternRow(iii, tkdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  tkdnl%inputtype, tkdnl%HDFstrings, exppatarray, tkdnl%ROI)
+        else
+            call getExpPatternRow(iii, tkdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  tkdnl%inputtype, tkdnl%HDFstrings, exppatarray)
+        end if
+    end if
+
+! other threads must wait until T0 is ready
+!$OMP BARRIER
+    jj=0
+
+! then loop in parallel over all patterns to perform the preprocessing steps
+!$OMP DO SCHEDULE(DYNAMIC)
+    do jj=1,jjend
+! convert imageexpt to 2D TKD Pattern array
+        do kk=1,biny
+          TKDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
+        end do
+
+        if (present(exptIQ)) then
+! compute the pattern Image Quality 
+          exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf))
+        end if
+
+! Hi-Pass filter
+        rrdata = dble(TKDPat)
+        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
+        TKDPat = sngl(ffdata)
+
+! adaptive histogram equalization
+        ma = maxval(TKDPat)
+        mi = minval(TKDPat)
+    
+        TKDpint = nint(((TKDPat - mi) / (ma-mi))*255.0)
+        TKDPat = float(adhisteq(tkdnl%nregions,binx,biny,TKDpint))
+
+! convert back to 1D vector
+        do kk=1,biny
+          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = TKDPat(1:binx,kk)
+        end do
+
+! apply circular mask and normalize for the dot product computation
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
+        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        if (vlen.ne.0.0) then
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
+        else
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
+        end if
+    end do
+!$OMP END DO
+
+! thread 0 writes the row of patterns to the epatterns array or to the file, depending on the enl%inRAM parameter
+    if (TID.eq.0) then
+      if (inRAM.eqv..TRUE.) then
+        do jj=1,jjend
+          epatterns(1:patsz,(iii-iiistart)*jjend + jj) = exppatarray((jj-1)*patsz+1:jj*patsz)
+        end do
+      else
+        do jj=1,jjend
+          write(itmpexpt,rec=(iii-iiistart)*jjend + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
+        end do
+      end if
+    end if
+
+deallocate(tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, inp, outp)
+!$OMP BARRIER
+!$OMP END PARALLEL
+
+! print an update of progress
+    if (mod(iii-iiistart+1,5).eq.0) then
+      if (ROIselected.eqv..TRUE.) then
+        io_int(1:2) = (/ iii-iiistart+1, tkdnl%ROI(4) /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      else
+        io_int(1:2) = (/ iii-iiistart+1, tkdnl%ipf_ht /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      end if
+    end if
+end do prepexperimentalloop
+
+call Message(' -> experimental patterns preprocessed')
+
+call closeExpPatternFile(tkdnl%inputtype, iunitexpt)
+
+if (inRAM.eqv..FALSE.) then
+  close(unit=itmpexpt,status='keep')
+end if
+
+! print some timing information
+call CPU_TIME(tstop)
+tstop = tstop - tstart
+io_real(1) = float(tkdnl%nthreads) * float(totnumexpt)/tstop
+call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+
+end subroutine PreProcessTKDPatterns
 
 
 

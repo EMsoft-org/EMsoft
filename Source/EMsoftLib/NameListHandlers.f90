@@ -5107,6 +5107,7 @@ integer(kind=irg)                                 :: numdictsingle
 integer(kind=irg)                                 :: ipf_ht
 integer(kind=irg)                                 :: ipf_wd
 integer(kind=irg)                                 :: nnk
+integer(kind=irg)                                 :: ROI(4) 
 integer(kind=irg)                                 :: nnav
 integer(kind=irg)                                 :: nosm
 integer(kind=irg)                                 :: maskradius
@@ -5116,7 +5117,7 @@ character(fnlen)                                  :: indexingmode
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / TKDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile, devid, platid, &
-beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, &
+beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, ROI, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius,&
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, maskfile
@@ -5128,6 +5129,7 @@ numdictsingle   = 1024
 platid          = 1
 devid           = 1
 nregions        = 10
+ROI             = (/ 0, 0, 0, 0 /)
 nnk             = 50
 nnav            = 20
 nosm            = 20
@@ -5211,6 +5213,7 @@ enl%platid = platid
 enl%nregions = nregions
 enl%maskpattern = maskpattern
 enl%exptfile = exptfile
+enl%ROI = ROI
 enl%nnk = nnk
 enl%nnav = nnav
 enl%nosm = nosm

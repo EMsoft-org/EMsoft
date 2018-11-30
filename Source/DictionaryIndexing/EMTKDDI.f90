@@ -180,6 +180,7 @@ end program EMTKDDI
 !> @date 11/14/16 MDG 1.7 added code to read h5 file instead of compute on-the-fly (static mode)
 !> @date 05/07/17 MDG 2.0 forked routine from original EBSD program; modified for TKD indexing
 !> @date 11/13/17 MDG 2.1 moved OpenCL code from InnerProdGPU routine to main code
+!> @date 11/30/18 MDG 3.0 replaced pattern preprocessing with standard routine, allowing other fileformats
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(tkdnl,acc,master,progname, nmldeffile)
@@ -218,6 +219,7 @@ use h5lt
 use HDFsupport
 use EMh5ebsd
 use EBSDiomod
+use patternmod
 use NameListHDFwriters
 use ECPmod, only: GetPointGroup
 use Indexingmod
@@ -684,197 +686,21 @@ else
     end if
 end if
 
-
-
-
-
 do ii = 1,biny
     do jj = 1,binx
         masklin((ii-1)*binx+jj) = mask(jj,ii)
     end do
 end do
 
-
 !=====================================================
 ! Preprocess all the experimental patterns and store
 ! them in a temporary file as vectors; also, create 
 ! an average dot product map to be stored in the h5ebsd output file
-!
-! this could become a separate routine in the EMTKDmod module ...
 !=====================================================
-
-! first, make sure that this file does not already exist
-f_exists = .FALSE.
-fname = trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)
-fname = EMsoft_toNativePath(fname)
-inquire(file=trim(fname), exist=f_exists)
-
-call WriteValue('Creating temporary file :',trim(fname))
-
-if (f_exists) then
-  open(unit=itmpexpt,file=trim(fname),&
-      status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
-  close(unit=itmpexpt,status='delete')
-end if
-
-! open the temporary file
-open(unit=itmpexpt,file=trim(fname),&
-     status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
-
-ename = trim(EMsoft_getEMdatapathname())//trim(tkdnl%exptfile)
-ename = EMsoft_toNativePath(ename)
-open(unit=iunitexpt,file=trim(ename),&
-    status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
-call Message(' opened input file '//trim(ename))
-
-! prepare the fftw plan for this pattern size
-TKDpattern = 0.0
-tmp = sngl(getEBSDIQ(binx, biny, TKDpattern, init))
-
-! also, allocate the arrays used to create the dot product map; this will require 
-! reading the actual EBSD HDF5 file to figure out how many rows and columns there
-! are in the region of interest.  For now we get those from the nml until we actually 
-! implement the HDF5 reading bit
-! this portion of code was first tested in IDL.
-allocate(TKDpatterninteger(binx,biny))
-TKDpatterninteger = 0
-allocate(TKDpatternad(binx,biny),TKDpatternintd(binx,biny))
-TKDpatternad = 0.0
-TKDpatternintd = 0.0
-
-! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
-! Thread 0 reads one line worth of patterns from the input file, then the threads do 
-! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
-
-call OMP_SET_NUM_THREADS(tkdnl%nthreads)
-io_int(1) = tkdnl%nthreads
-call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
-
-! allocate the arrays that holds the experimental patterns from a single row of the region of interest
-allocate(exppatarray(patsz * tkdnl%ipf_wd),stat=istat)
-if (istat .ne. 0) stop 'could not allocate exppatarray'
-
-! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
-allocate(TKDPat(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate arrays for TKDPat filter'
-TKDPat = 0.0
-allocate(ksqarray(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate ksqarray array'
-Jres = 0.0
-call init_getEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf)
-deallocate(TKDPat)
-
-! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate hpmask array'
-call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
-
-call Message('Starting processing of experimental patterns')
-call cpu_time(tstart)
-
-! we do one row at a time
-prepexperimentalloop: do iii = 1,tkdnl%ipf_ht
-
-! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
-!$OMP& PRIVATE(imageexpt, tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, vlen, tmp, inp, outp)
-
-! set the thread ID
-    TID = OMP_GET_THREAD_NUM()
-! initialize thread private variables
-    tmpimageexpt = 0.0
-    allocate(TKDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
-
-    allocate(TKDpint(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate TKDpint array'
-
-    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
-
-    rrdata = 0.D0
-    ffdata = 0.D0
-
-! thread 0 reads the next row of patterns from the input file
-    if (TID.eq.0) then
-      do jj=1,tkdnl%ipf_wd
-        read(iunitexpt,rec=(iii-1)*tkdnl%ipf_wd + jj) imageexpt
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
-      end do
-    end if
-
-! other threads must wait until T0 is ready
-!$OMP BARRIER
-    jj=0
-
-! then loop in parallel over all patterns to perform the preprocessing steps
-!$OMP DO SCHEDULE(DYNAMIC)
-    do jj=1,tkdnl%ipf_wd
-! convert imageexpt to 2D Pattern array
-        do kk=1,biny
-          TKDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
-        end do
-
-! compute the pattern Image Quality 
-        exptIQ((iii-1)*tkdnl%ipf_wd + jj) = sngl(computeEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf))
-
-! Hi-Pass filter
-        rrdata = dble(TKDPat)
-        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
-        TKDPat = sngl(ffdata)
-
-! adaptive histogram equalization
-        ma = maxval(TKDPat)
-        mi = minval(TKDPat)
-    
-        TKDpint = nint(((TKDPat - mi) / (ma-mi))*255.0)
-        TKDPat = float(adhisteq(tkdnl%nregions,binx,biny,TKDpint))
-
-! convert back to 1D vector
-        do kk=1,biny
-          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = TKDPat(1:binx,kk)
-        end do
-
-! apply circular mask and normalize for the dot product computation
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
-        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
-        if (vlen.ne.0.0) then
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
-        else
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
-        end if
-    end do
-!$OMP END DO
-
-! thread 0 writes the row of patterns to the output file
-    if (TID.eq.0) then
-      do jj=1,tkdnl%ipf_wd
-        write(itmpexpt,rec=(iii-1)*tkdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
-      end do
-    end if
-
-deallocate(TKDPat, rrdata, ffdata, TKDpint, inp, outp)
-!$OMP BARRIER
-!$OMP END PARALLEL
-
-! print an update of progress
-    if (mod(iii,5).eq.0) then
-        io_int(1:2) = (/ iii, tkdnl%ipf_ht /)
-        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
-    end if
-end do prepexperimentalloop
-
-call Message(' -> experimental patterns stored in tmp file')
-
-close(unit=iunitexpt,status='keep')
-close(unit=itmpexpt,status='keep')
-
-! print some timing information
-call CPU_TIME(tstop)
-tstop = tstop - tstart
-io_real(1) = float(tkdnl%nthreads) * float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+call h5open_EMsoft(hdferr)
+call PreProcessTKDPatterns(tkdnl%nthreads, .FALSE., tkdnl, binx, biny, masklin, correctsize, totnumexpt, &
+                           exptIQ=exptIQ)
+call h5close_EMsoft(hdferr)
 
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')

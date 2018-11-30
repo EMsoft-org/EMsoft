@@ -1176,6 +1176,7 @@ type TKDIndexingNameListType
         integer(kind=irg)       :: numdictsingle
         integer(kind=irg)       :: ipf_ht
         integer(kind=irg)       :: ipf_wd
+        integer(kind=irg)       :: ROI(4)
         integer(kind=irg)       :: nnk
         integer(kind=irg)       :: nnav
         integer(kind=irg)       :: nosm
@@ -1220,6 +1221,8 @@ type TKDIndexingNameListType
         character(fnlen)        :: eulerfile
         character(fnlen)        :: dictfile
         character(fnlen)        :: indexingmode
+        character(fnlen)        :: inputtype
+        character(fnlen)        :: HDFstrings(10)
 ! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
         integer(kind=irg)       :: numangles
         integer(kind=irg)       :: numEbins
