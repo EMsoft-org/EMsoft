@@ -5089,6 +5089,7 @@ real(kind=sgl)                                    :: stepY
 integer(kind=irg)                                 :: nthreads
 character(1)                                      :: maskpattern
 character(3)                                      :: scalingmode
+character(3)                                      :: Notify
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: masterfile
 real(kind=sgl)                                    :: energymin
@@ -5101,12 +5102,15 @@ character(fnlen)                                  :: ctffile
 character(fnlen)                                  :: avctffile
 character(fnlen)                                  :: angfile
 character(fnlen)                                  :: eulerfile
+character(fnlen)                                  :: inputtype
+character(fnlen)                                  :: HDFstrings(10)
 integer(kind=irg)                                 :: ncubochoric
 integer(kind=irg)                                 :: numexptsingle
 integer(kind=irg)                                 :: numdictsingle
 integer(kind=irg)                                 :: ipf_ht
 integer(kind=irg)                                 :: ipf_wd
 integer(kind=irg)                                 :: nnk
+integer(kind=irg)                                 :: ROI(4) 
 integer(kind=irg)                                 :: nnav
 integer(kind=irg)                                 :: nosm
 integer(kind=irg)                                 :: maskradius
@@ -5116,18 +5120,20 @@ character(fnlen)                                  :: indexingmode
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / TKDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile, devid, platid, &
-beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, &
+beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, ROI, inputtype, HDFstrings, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
-ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius,&
+ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, Notify, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, maskfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
+Notify          = 'Off'
 ncubochoric     = 50
 numexptsingle   = 1024
 numdictsingle   = 1024
 platid          = 1
 devid           = 1
 nregions        = 10
+ROI             = (/ 0, 0, 0, 0 /)
 nnk             = 50
 nnav            = 20
 nosm            = 20
@@ -5159,6 +5165,8 @@ ipf_ht          = 100
 ipf_wd          = 100
 nthreads        = 1
 spatialaverage  = 'n'
+inputtype       = 'Binary'
+HDFstrings      = (/ '', '', '', '', '', '', '', '', '', '' /)
 datafile        = 'undefined'
 ctffile         = 'undefined'
 avctffile       = 'undefined'
@@ -5206,11 +5214,13 @@ end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the enl fields
 
+enl%Notify = Notify
 enl%devid = devid
 enl%platid = platid
 enl%nregions = nregions
 enl%maskpattern = maskpattern
 enl%exptfile = exptfile
+enl%ROI = ROI
 enl%nnk = nnk
 enl%nnav = nnav
 enl%nosm = nosm
@@ -5233,6 +5243,8 @@ enl%energyfile = enl%masterfile
 enl%StepX = stepX
 enl%StepY = stepY
 enl%indexingmode = trim(indexingmode)
+enl%inputtype = inputtype
+enl%hDFstrings = hDFstrings
 
 if (trim(indexingmode) .eq. 'dynamic') then
     enl%L = L

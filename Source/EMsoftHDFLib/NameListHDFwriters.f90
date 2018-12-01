@@ -3522,7 +3522,7 @@ real(kind=dbl)                                        :: io_reald(n_reald)
 character(20)                                         :: intlist(n_int), reallist(n_real), realdlist(n_reald)
 integer(kind=irg)                                     :: i
 character(fnlen)                                      :: dataset, groupname
-character(fnlen,kind=c_char)                          :: line2(1)
+character(fnlen,kind=c_char)                          :: line2(1), line10(10)
 
 ! create the group for this namelist
 groupname = SC_TKDIndexingNameListType
@@ -3577,6 +3577,10 @@ call HDF_writeNMLdbles(HDF_head, io_reald, realdlist, n_reald)
 dataset = SC_axisangle
 hdferr = HDF_writeDatasetFloatArray1D(dataset, tkdnl%axisangle, 4, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create axisangle dataset',.TRUE.)
+
+dataset = SC_ROI
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, tkdnl%ROI, 4, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create ROI dataset',.TRUE.)
 
 
 ! strings
@@ -3657,6 +3661,16 @@ dataset = SC_eulerfile
 line2(1) = tkdnl%eulerfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create eulerfile dataset',.TRUE.)
+
+dataset = SC_inputtype
+line2(1) = tkdnl%inputtype
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create inputtype dataset',.TRUE.)
+
+dataset = SC_HDFstrings
+line10 = tkdnl%HDFstrings
+hdferr = HDF_writeDatasetStringArray(dataset, line10, 10, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDDictionaryIndexingNameList: unable to create HDFstrings dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
