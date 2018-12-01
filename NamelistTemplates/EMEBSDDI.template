@@ -112,8 +112,8 @@
  ctffile = 'undefined',
 ! average ctf output file ; path relative to EMdatapathname
  avctffile = 'undefined',
-! ang output file ; path relative to EMdatapathname [NOT AVAILABLE UNTIL RELEASE 3.2!!!]
-! angfile = 'undefined',
+! ang output file ; path relative to EMdatapathname
+ angfile = 'undefined',
 ! euler angle input file
  eulerfile = 'undefined'
 

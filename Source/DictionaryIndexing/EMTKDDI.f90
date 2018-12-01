@@ -180,7 +180,7 @@ end program EMTKDDI
 !> @date 11/14/16 MDG 1.7 added code to read h5 file instead of compute on-the-fly (static mode)
 !> @date 05/07/17 MDG 2.0 forked routine from original EBSD program; modified for TKD indexing
 !> @date 11/13/17 MDG 2.1 moved OpenCL code from InnerProdGPU routine to main code
-!> @date 11/30/18 MDG 3.0 replaced pattern preprocessing with standard routine, allowing other fileformats
+!> @date 11/30/18 MDG 3.0 replaced pattern preprocessing with standard routine from patternmod, allowing other fileformats
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(tkdnl,acc,master,progname, nmldeffile)
@@ -220,6 +220,7 @@ use HDFsupport
 use EMh5ebsd
 use EBSDiomod
 use patternmod
+use notifications
 use NameListHDFwriters
 use ECPmod, only: GetPointGroup
 use Indexingmod
@@ -273,7 +274,7 @@ real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
 real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
                                                        exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
-                                                       tmpimageexpt(:)
+                                                       tmpimageexpt(:), OSMmap(:,:)
 real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:),&
                                                        eulerarray(:,:),resultmain(:,:),resulttmp(:,:)
 integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:) 
@@ -299,7 +300,7 @@ integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
 
-integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
+integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq, iiiend, iiistart, jjend, TIFF_nx, TIFF_ny
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc
 type(FZpointd),pointer                              :: FZlist, FZtmp
 integer(kind=irg),allocatable                       :: indexlist(:),indexarray(:),indexmain(:,:),indextmp(:,:)
@@ -314,22 +315,46 @@ integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
 integer(kind=irg)                                   :: indx
 integer(kind=irg)                                   :: correctsize
-logical                                             :: f_exists, init
+logical                                             :: f_exists, init, ROIselected
 character(1000)                                     :: charline
 
 integer(kind=irg)                                   :: ipar(10)
+
+character(fnlen),ALLOCATABLE                        :: MessageLines(:)
+integer(kind=irg)                                   :: NumLines
+character(fnlen)                                    :: TitleMessage, exectime
+character(100)                                      :: c
+
 
 
 type(HDFobjectStackType),pointer                    :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
+
+if (sum(tkdnl%ROI).ne.0) then
+  ROIselected = .TRUE.
+  iiistart = tkdnl%ROI(2)
+  iiiend = tkdnl%ROI(2)+tkdnl%ROI(4)-1
+  jjend = tkdnl%ROI(3)
+else
+  ROIselected = .FALSE.
+  iiistart = 1
+  iiiend = tkdnl%ipf_ht
+  jjend = tkdnl%ipf_wd
+end if
+
+
 verbose = .FALSE.
 init = .TRUE.
 Ne = tkdnl%numexptsingle
 Nd = tkdnl%numdictsingle
 L = tkdnl%numsx*tkdnl%numsy/tkdnl%binning**2
-totnumexpt = tkdnl%ipf_wd*tkdnl%ipf_ht
+if (ROIselected.eqv..TRUE.) then 
+    totnumexpt = tkdnl%ROI(3)*tkdnl%ROI(4)
+else
+    totnumexpt = tkdnl%ipf_wd*tkdnl%ipf_ht
+end if
 imght = tkdnl%numsx/tkdnl%binning
 imgwd =  tkdnl%numsy/tkdnl%binning
 nnk = tkdnl%nnk
@@ -478,6 +503,8 @@ call WriteValue(' Number of unique orientations sampled =        : ', io_int, 1,
 !================================
 ! INITIALIZATION OF OpenCL DEVICE
 !================================
+call Message('--> Initializing OpenCL device')
+
 call CLinit_PDCCQ(platform, nump, tkdnl%platid, device, numd, tkdnl%devid, info, context, command_queue)
 
 ! read the cl source file
@@ -640,15 +667,6 @@ end if
 !=====================================================
 ! define the circular mask if necessary and convert to 1D vector
 !=====================================================
-! if (tkdnl%maskpattern.eq.'y') then
-!   do ii = 1,biny
-!       do jj = 1,binx
-!           if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. tkdnl%maskradius**2) then
-!               mask(jj,ii) = 0.0
-!           end if
-!       end do
-!   end do
-! end if
   
 if (trim(tkdnl%maskfile).ne.'undefined') then
 ! read the mask from file; the mask can be defined by a 2D array of 0 and 1 values
@@ -708,10 +726,24 @@ call Message(' ')
 
 allocate(dpmap(totnumexpt))
 ! re-open the temporary file
+fname = trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)
+fname = EMsoft_toNativePath(fname)
+
 open(unit=itmpexpt,file=trim(fname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
+
 ! use the getADPmap routine in the filters module
-call getADPmap(itmpexpt, totnumexpt, L, tkdnl%ipf_wd, tkdnl%ipf_ht, dpmap)
+if (ROIselected.eqv..TRUE.) then
+  allocate(dpmap(tkdnl%ROI(3)*tkdnl%ROI(4)))
+  call getADPmap(itmpexpt, tkdnl%ROI(3)*tkdnl%ROI(4), L, tkdnl%ROI(3), tkdnl%ROI(4), dpmap)
+  TIFF_nx = tkdnl%ROI(3)
+  TIFF_ny = tkdnl%ROI(4)
+else
+  allocate(dpmap(totnumexpt))
+  call getADPmap(itmpexpt, totnumexpt, L, tkdnl%ipf_wd, tkdnl%ipf_ht, dpmap)
+  TIFF_nx = tkdnl%ipf_wd
+  TIFF_ny = tkdnl%ipf_ht
+end if
 
 ! we keep the temporary file open since we will be reading from it...
 
@@ -976,6 +1008,15 @@ ipar(3) = totnumexpt
 ipar(4) = Nd*ceiling(float(FZcnt)/float(Nd))
 ipar(5) = FZcnt
 ipar(6) = pgnum
+if (ROIselected.eqv..TRUE.) then
+  ipar(7) = tkdnl%ROI(3)
+  ipar(8) = tkdnl%ROI(4)
+else
+  ipar(7) = tkdnl%ipf_wd
+  ipar(8) = tkdnl%ipf_ht
+end if 
+
+allocate(OSMmap(jjend, iiiend))
 
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
@@ -983,22 +1024,39 @@ call h5open_EMsoft(hdferr)
 if (tkdnl%datafile.ne.'undefined') then 
   vendor = 'TSL'
   call h5tkd_writeFile(vendor, tkdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
-                        dpmap, progname, nmldeffile)
+                        dpmap, progname, nmldeffile, OSMmap)
   call Message('Data stored in h5tkd file : '//trim(tkdnl%datafile))
 end if
 
 if (tkdnl%ctffile.ne.'undefined') then 
-  call ctftkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain)
+  call ctftkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
   call Message('Data stored in ctf file : '//trim(tkdnl%ctffile))
 end if
 
 if (tkdnl%angfile.ne.'undefined') then 
-  write (*,*) 'ang format not available until Release 3.2'
-  !call angebsd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain)
-  !call Message('Data stored in ang file : '//trim(tkdnl%angfile))
+    call angtkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain,exptIQ)
+    call Message('Data stored in ang file : '//trim(tkdnl%angfile))
 end if
 
 ! close the fortran HDF5 interface
 call h5close_EMsoft(hdferr)
+
+! if requested, we notify the user that this program has completed its run
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(tkdnl%Notify).eq.'On') then 
+    NumLines = 3
+    allocate(MessageLines(NumLines))
+
+    call hostnm(c)
+ 
+    MessageLines(1) = 'EMEBSDDI program has ended successfully'
+    MessageLines(2) = 'Indexed data stored in '//trim(tkdnl%datafile)
+    write (exectime,"(F15.0)") tstop  
+    MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
+    TitleMessage = 'EMsoft on '//trim(c)
+    i = PostMessage(MessageLines, NumLines, TitleMessage)
+  end if
+end if
+
 
 end subroutine MasterSubroutine
