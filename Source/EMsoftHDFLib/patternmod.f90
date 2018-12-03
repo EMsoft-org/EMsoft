@@ -1115,7 +1115,7 @@ end subroutine PreProcessPatterns
 !--------------------------------------------------------------------------
 recursive subroutine PreProcessTKDPatterns(nthreads, inRAM, tkdnl, binx, biny, masklin, correctsize, totnumexpt, &
                                         epatterns, exptIQ)
-!DEC$ ATTRIBUTES DLLEXPORT :: PreProcessPatterns
+!DEC$ ATTRIBUTES DLLEXPORT :: PreProcessTKDPatterns
 
 use io
 use local
