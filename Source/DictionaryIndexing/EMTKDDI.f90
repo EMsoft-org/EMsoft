@@ -724,7 +724,7 @@ call h5close_EMsoft(hdferr)
 call Message(' -> computing Average Dot Product map (ADP)')
 call Message(' ')
 
-allocate(dpmap(totnumexpt))
+
 ! re-open the temporary file
 fname = trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)
 fname = EMsoft_toNativePath(fname)
