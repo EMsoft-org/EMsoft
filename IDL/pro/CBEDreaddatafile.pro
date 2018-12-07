@@ -242,7 +242,7 @@ logunit = 10
 ; accelerating voltage
   dset_id = H5D_open(group_id,'voltage')
   z = H5D_read(dset_id) 
-  data.voltage = z[0]
+  data.voltage = z[0] * 1000.0
   H5D_close,dset_id
   data.wavelength= 1226.39/sqrt(data.voltage + 0.97845E-6 * data.voltage^2)
     CBEDprint,'Wave length = '+string(data.wavelength,FORMAT="(F7.4)")
