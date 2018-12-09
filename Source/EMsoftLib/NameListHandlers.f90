@@ -3659,7 +3659,6 @@ logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
 
-integer(kind=irg)       :: stdout
 integer(kind=irg)       :: k(3)
 integer(kind=irg)       :: fn(3)
 integer(kind=irg)       :: maxHOLZ
@@ -3675,10 +3674,9 @@ real(kind=sgl)          :: minten
 character(fnlen)        :: xtalname
 character(fnlen)        :: outname
 
-namelist /inputlist/ stdout, xtalname, voltage, k, fn, dmin, convergence, minten, &
+namelist /LACBEDlist/ xtalname, voltage, k, fn, dmin, convergence, minten, &
                               nthreads, startthick, thickinc, numthick, outname, npix, maxHOLZ
 
-stdout = 6                      ! standard output
 k = (/ 0, 0, 1 /)               ! beam direction [direction indices]
 fn = (/ 0, 0, 1 /)              ! foil normal [direction indices]
 maxHOLZ = 2                     ! maximum HOLZ layer index to be used for the output file; note that his number
@@ -3692,7 +3690,7 @@ dmin = 0.025                    ! smallest d-spacing to include in dynamical mat
 convergence = 25.0              ! beam convergence angle [mrad]
 startthick = 10.0               ! starting thickness [nm]
 thickinc = 10.0                 ! thickness increment
-minten = 1.0E-5                 ! minimum intensity in diffraction disk to make it into the output file
+minten = 1.0E-6                 ! minimum intensity in diffraction disk to make it into the output file
 xtalname = 'undefined'          ! initial value to check that the keyword is present in the nml file
 outname = 'lacbedout.data'      ! output filename
 
@@ -3703,7 +3701,7 @@ end if
 if (.not.skipread) then
 ! read the namelist file
 open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
-read(UNIT=dataunit,NML=inputlist)
+read(UNIT=dataunit,NML=LACBEDlist)
 close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
@@ -3712,7 +3710,6 @@ if (trim(xtalname).eq.'undefined') then
 end if
 end if
 
-lacbednl%stdout = stdout
 lacbednl%k = k
 lacbednl%fn = fn
 lacbednl%maxHOLZ = maxHOLZ

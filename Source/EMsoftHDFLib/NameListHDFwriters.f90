@@ -2588,7 +2588,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(LACBEDNameListType),INTENT(INOUT)                :: lacbednl
 
-integer(kind=irg),parameter                           :: n_int = 5, n_real = 6
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -2600,12 +2600,11 @@ groupname = SC_LACBEDNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ lacbednl%stdout, lacbednl%maxHOLZ, lacbednl%numthick, lacbednl%npix, lacbednl%nthreads /)
-intlist(1) = 'stdout'
-intlist(2) = 'maxHOLZ'
-intlist(3) = 'numthick'
-intlist(4) = 'npix'
-intlist(5) = 'nthreads'
+io_int = (/ lacbednl%maxHOLZ, lacbednl%numthick, lacbednl%npix, lacbednl%nthreads /)
+intlist(1) = 'maxHOLZ'
+intlist(2) = 'numthick'
+intlist(3) = 'npix'
+intlist(4) = 'nthreads'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! vectors
