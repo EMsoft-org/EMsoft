@@ -350,8 +350,6 @@ logunit = 10
   gxy = H5D_read(dset_id) 
   H5D_close,dset_id
 
-  gxy[1,*] *= -1.0
-
 ; get the HOLZ identifier list
   HOLZlist = indgen(data.datadims[3])
   HOLZlist[0] = 0	; transmitted beam
