@@ -26,6 +26,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMgetCTF.template
   ${APP_DIR}/EMKAM.template
   ${APP_DIR}/EMKosselmaster.template
+  ${APP_DIR}/EMLACBED.template
   ${APP_DIR}/EMkinematical.template
   ${APP_DIR}/EMMC.template
   ${APP_DIR}/EMMCOpenCL.template

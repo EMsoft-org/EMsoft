@@ -25,6 +25,13 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
 
 
 
+  Add_EMsoft_Executable(TARGET EMLACBED
+                      SOURCES ${APP_DIR}/EMLACBED.f90 
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      TEMPLATE ${TMPLT_DIR}/EMLACBED.template 
+                      SOLUTION_FOLDER EMsoftPublic/TEM 
+                      INSTALL_PROGRAM TRUE)
+
   Add_EMsoft_Executable(TARGET EMPEDZA 
                       SOURCES ${APP_DIR}/EMPEDZA.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
