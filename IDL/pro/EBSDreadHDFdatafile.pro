@@ -76,7 +76,7 @@ EMdatapathname = ''
     goto, skipall
   endif 
 
-; first we need to determine what kind of master file this is (EBSD, ECP, or Kossel)
+; first we need to determine what kind of master file this is (EBSD, ECP, TKD, or Kossel)
 ; and then we open the corresponding group in the EMheader group
   SEMdata.mpfiletype=-1
   res = H5G_GET_NMEMBERS(file_id,'EMheader')
@@ -104,7 +104,7 @@ EMdatapathname = ''
     
   endfor
   if (SEMdata.mpfiletype eq -1) then begin
-    Core_Print,'  This file does not contain an EBSD, ECP, or Kossel master pattern',/blank
+    Core_Print,'  This file does not contain an EBSD, ECP, TKD, or Kossel master pattern',/blank
     goto, skipall
   endif
 

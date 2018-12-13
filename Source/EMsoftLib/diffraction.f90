@@ -270,7 +270,7 @@ integer(kind=irg)                       :: hkl(3), io_int(1)
    call Message('  [1] Doyle-Turner/Smith-Burge (no absorption) ', frm = "(A)")
    call Message('  [2] Weickenmeier-Kohl (no absorption) ', frm = "(A)")
    call Message('  [3] Weickenmeier-Kohl (with absorption) ', frm = "(A/)")
-   call ReadValue('Which set do you want to use [1/2/3] ? ', io_int,1)
+   call ReadValue(' Which set do you want to use [1/2/3] ? ', io_int,1)
    rlp%absorption = .FALSE.
    select case (io_int(1)) 
     case(1); rlp%method='DT'; 
@@ -290,16 +290,16 @@ integer(kind=irg)                       :: hkl(3), io_int(1)
  if (present(verbose)) then
   if (verbose) then
     oi_real(1) = rlp%Vmod
-    call WriteValue('Mean inner potential [V] ', oi_real, 1,"(' ',E10.4)")
+    call WriteValue(' Mean inner potential [V] ', oi_real, 1,"(' ',E10.4)")
     call Message(' Wavelength corrected for refraction', frm = "(A)")
     oi_real(1) = cell%mRelcor
-    call WriteValue('Relativistic correction factor [gamma]  ', oi_real, 1,"(' ',E10.4)")
+    call WriteValue(' Relativistic correction factor [gamma]  ', oi_real, 1,"(' ',E10.4)")
     oi_real(1) = cell%mPsihat
-    call WriteValue('Relativistic Accelerating Potential [V] ', oi_real, 1,"(' ',E10.4)")
+    call WriteValue(' Relativistic Accelerating Potential [V] ', oi_real, 1,"(' ',E10.4)")
     oi_real(1) = cell%mLambda
-    call WriteValue('Electron Wavelength [nm]                ', oi_real, 1,"(' ',E10.4)")
+    call WriteValue(' Electron Wavelength [nm]                ', oi_real, 1,"(' ',E10.4)")
     oi_real(1) = cell%mSigma
-    call WriteValue('Interaction constant [V nm]^(-1)        ', oi_real, 1,"(' ',E10.4)")
+    call WriteValue(' Interaction constant [V nm]^(-1)        ', oi_real, 1,"(' ',E10.4)")
   end if
  end if
 

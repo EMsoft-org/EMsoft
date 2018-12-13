@@ -747,7 +747,6 @@ end type CBEDNameListType
 
 ! LACBED structure
 type LACBEDNameListType
-        integer(kind=irg)       :: stdout
         integer(kind=irg)       :: k(3)
         integer(kind=irg)       :: fn(3)
         integer(kind=irg)       :: maxHOLZ
