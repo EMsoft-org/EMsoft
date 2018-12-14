@@ -24,6 +24,7 @@ Support/Scripts/GMT/gmt.history
 .ctags
 .vscode
 /ExternalProjects
+UpdateCopyrightRange.pro
 
 *.bak
 
