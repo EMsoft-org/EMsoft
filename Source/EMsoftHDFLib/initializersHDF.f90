@@ -213,7 +213,7 @@ end if
 
  if (present(verbose)) then
   if (verbose) then
-   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+   call Message(' Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
   end if
  end if
  

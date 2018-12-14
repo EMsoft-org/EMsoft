@@ -254,8 +254,9 @@ allocate(gequiv(numksame,3))
 call ShortestG(cell,cbednl%k,ga,gb,isym)
 io_int(1:3)=ga(1:3)
 io_int(4:6)=gb(1:3)
-call WriteValue(' Reciprocal lattice vectors : ', io_int, 6,"('(',3I3,') and (',3I3,')',/)")
+call WriteValue(' Reciprocal lattice vectors : ', io_int, 6,"('(',3I3,') and (',3I3,')')")
 call Message('  (the first lattice vector is horizontal in the CBED pattern)')
+call Message(' ')
 galen = CalcLength(cell, float(ga), 'r')
 
 ! get number of thicknesses for which to compute the CBED disk images
