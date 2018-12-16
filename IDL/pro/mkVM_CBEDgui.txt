@@ -1,13 +1,13 @@
 
-.r SEMDisplay
+.r CBEDDisplay
 resolve_all                                                                                                                                                                            
 
 ;define a few variables
-appname = 'SEMDisplay'
+appname = 'CBEDDisplay'
 saveappname = appname+'.sav'
 IDLappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL'
 VMappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps'
-Resdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps/SEMDisplay/Resources'
+Resdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps/CBEDDisplay/Resources'
 
 cd,CURRENT=cdir
 
