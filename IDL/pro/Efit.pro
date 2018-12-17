@@ -750,7 +750,7 @@ WIDGET_CONTROL,Efitwidget_s.base,/REALIZE
 WIDGET_CONTROL, Efitwidget_s.logodraw, GET_VALUE=drawID
 Efitwidget_s.logodrawID = drawID
 ;
-read_jpeg,'../Resources/EMsoftlogo.jpg',logo
+read_jpeg,'Resources/EMsoftlogo.jpg',logo
 wset,Efitwidget_s.logodrawID
 tvscl,logo,true=1
 
