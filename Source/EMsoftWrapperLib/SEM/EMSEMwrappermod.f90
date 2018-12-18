@@ -1986,6 +1986,7 @@ end subroutine EMsoftCgetEBSDmaster
 !> @param EKI electron kinematical intensities with normal absorption
 !
 !> @date 11/15/18 MDG 1.0 original
+!> @date 12/18/18 MDG 1.1 added computation of wave length [error identified by Stuart Wright]
 !--------------------------------------------------------------------------
 recursive subroutine EMsoftCgetEBSDreflectorranking(ipar,fpar,atompos,atomtypes,latparm,accum_e,mLPNH,mLPSH, &
                                           hkl,beta,XKI,EKI,cproc,objAddress,cancel) &
@@ -2076,7 +2077,7 @@ real(kind=dbl)                  :: tpi, xy(2), dmin !
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:), auxSH(:,:,:)  ! results
 integer(kind=irg)               :: dims3(3), dims4(3)
 
-integer(kind=irg)       :: cn, dn
+integer(kind=irg)       :: cn, dn, skip
 integer(kind=irg)       :: imh, imk, iml, ipg, isave
 
 integer(kind=irg)                            :: ii,  num, nums, mhkl, valpos, numphi, numtheta
@@ -2245,6 +2246,11 @@ if ((cell%xtal_system.eq.5).AND.(cell%SYM_SGset.ne.2)) cell%hexset = .TRUE.
  end if
 ! next we get all the atom positions
 call CalcPositions(cell,'v')
+
+! set the voltage and wave length 
+cell%voltage = fpar(3)
+skip = 3        ! always use Weickenmeier&Kohl scattering coefficients, including absorptive form factors
+call CalcWaveLength(cell,rlp,skip)
 
 ! compute the range of reflections for the lookup table and allocate the table
 ! The master list is easily created by brute force
