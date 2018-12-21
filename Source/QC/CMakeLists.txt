@@ -51,6 +51,13 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                              SOLUTION_FOLDER EMsoftPublic/QC
                              INSTALL_PROGRAM TRUE)
 
+  Add_EMsoft_Executable(TARGET EMECPQC
+                              SOURCES ${APP_DIR}/EMECPQC.f90 
+                              LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
+                              TEMPLATE ${TMPLT_DIR}/EMECP.template 
+                              SOLUTION_FOLDER EMsoftPublic/SEM 
+                              INSTALL_PROGRAM TRUE)
+
   Add_EMsoft_Executable(TARGET EMCBEDQC
 		                      SOURCES ${APP_DIR}/EMCBEDQC.f90 
 		                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${FORTRAN_LIBRARIES} 
