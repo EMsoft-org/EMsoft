@@ -119,7 +119,7 @@ write (*,*) 'opening file '//trim(fname)
 
 open(unit=10,file=trim(fname),status='unknown',form='formatted')
 read(10,"(I10)") nump
-write (*,*) 'number of patterns detected/number of symmetry operators : ',nump, Pmdims
+write (*,*) 'number of orientation pairs detected/number of symmetry operators : ',nump, Pmdims
 
 allocate(LUT(7,nump),ax(3,nump))
 ax = 0.0

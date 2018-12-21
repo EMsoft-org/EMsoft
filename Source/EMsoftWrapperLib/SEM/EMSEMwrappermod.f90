@@ -2426,7 +2426,7 @@ call OMP_SET_NUM_THREADS(nthreads)
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL DEFAULT(PRIVATE) &
 !$OMP& SHARED(k, nx, cp, sp, icnt, keep, th, incrad, numphi, gcart, cell, scl, masterNH, masterSH) &
-!$OMP& SHARED(Vg, VgX, Vgg, VggX, KBI, cn, dn)
+!$OMP& SHARED(Vg, VgX, Vgg, VggX, KBI, cn, dn, objAddress, nkeep)
 
 NUMTHREADS = OMP_GET_NUM_THREADS()
 TID = OMP_GET_THREAD_NUM()
@@ -2434,9 +2434,12 @@ TID = OMP_GET_THREAD_NUM()
 !$OMP DO SCHEDULE(STATIC,1)
 do k=1,icnt-1   ! ignore the last point
  if (keep(k)) then
-  ! update the counter for the callback routine
+! update the counter for the callback routine
 !$OMP CRITICAL
-    cn = cn + dn 
+  if(objAddress.ne.0) then
+    call proc(objAddress, cn, nkeep, zero)
+  end if
+  cn = cn + dn 
 !$OMP END CRITICAL
 
   ii = nint(th(k)/incrad)
@@ -2508,14 +2511,7 @@ do k=1,icnt-1   ! ignore the last point
     VgX(k) = 0.0
  end if
 
-! update the progress counter and report it to the calling program via the proc callback routine
-!$OMP CRITICAL
-     if(objAddress.ne.0) then
-       if (mod(cn,25).eq.0) then 
-         call proc(objAddress, cn, nkeep, zero)
-       end if
-     end if
-!$OMP END CRITICAL
+
 
 end do
 !$OMP END DO

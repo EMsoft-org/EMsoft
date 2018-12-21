@@ -7,6 +7,7 @@
 @Core_WidgetEvent				; general data handler for various widget events
 @Core_getenv                    ; read the environment variable(s)
 @Core_eu2qu                     ; convert euler angles to quaternion
+@Core_Tag_Exists				; routine to check for existence of data sets in a given H5_PARSE structure
 @SEMDisplay_event    			; EBSD event handler
 @EBSDgetfilename				; select a geometry file
 @EBSDreadHDFdatafile			; read geometry and HDF data files
