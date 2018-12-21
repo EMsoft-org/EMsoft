@@ -1,0 +1,32 @@
+ &CBEDQC
+! name of qxtal file
+ qxtalname = 'undefined',
+! smallest d-spacing to take into account [nm]
+ dmin = 0.05,
+!==================================================
+! MICROSCOPE SETTINGS AND SAMPLE INFORMATION
+!==================================================
+! microscope acceleration voltage
+ voltage = 200.0,
+! beam convergence angle [mRad]
+ convergence = 20.0,
+! number of pixels in single CBED spot ( total k vectors = npix*npix )
+ npix = 50
+! film thickness [nm]
+ thickness = 50.0,
+!==================================================
+! ORIENTATION INFORMATION [degrees]
+!==================================================
+ eu = 0.0,0.0,0.0,
+!==================================================
+! HDF5 I/O SECTION
+!==================================================
+! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname
+! this file will also contain the output of the master program
+ datafile = 'EMCBEDout.h5',
+!==================================================
+! OPENMP PARAMETERS
+!==================================================
+! number of threads to run the master pattern
+ nthreads = 1
+ /

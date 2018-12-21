@@ -54,6 +54,12 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/pgm.f90
   ${EMsoftLib_SOURCE_DIR}/postscript.f90
   ${EMsoftLib_SOURCE_DIR}/povray.f90
+  ${EMsoftLib_SOURCE_DIR}/QCmod.f90
+  ${EMsoftLib_SOURCE_DIR}/qcrystal.f90
+  ${EMsoftLib_SOURCE_DIR}/diffractionQC.f90
+  ${EMsoftLib_SOURCE_DIR}/MBmoduleQC.f90
+  ${EMsoftLib_SOURCE_DIR}/kvectorsQC.f90
+  ${EMsoftLib_SOURCE_DIR}/gvectorsQC.f90
   ${EMsoftLib_SOURCE_DIR}/quaternions.f90
   ${EMsoftLib_SOURCE_DIR}/rng.f90
   ${EMsoftLib_SOURCE_DIR}/rotations.f90
