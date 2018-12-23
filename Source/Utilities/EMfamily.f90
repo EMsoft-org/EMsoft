@@ -119,7 +119,7 @@ integer(kind=irg)           	:: itmp(48,3)
    call GetIndex(cell%hexset,hkl,sp)
    call CalcFamily(cell,hkl,num,sp,itmp)
    io_int(:1) = num
-   call WriteValue('Multiplicity = ', io_int, 1, "(I3)")
+   call WriteValue('  Multiplicity = ', io_int, 1, "(I3)")
 
    do i=1,num
     h=itmp(i,1)

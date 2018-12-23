@@ -1046,15 +1046,17 @@ if (present(EMconfig)) then
    EMconfig%EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 end if 
 
- write (std,"(//1x,'EMsoft version ',A,', Copyright (C) 2001-2018 Marc De Graef Research Group/CMU')") &
-      trim(EMsoft_getEMsoftversion()) 
+ write (std,"(//1x,'Copyright (C) 2001-2019 Marc De Graef Research Group/CMU')") 
  write (std,"(1x,'EMsoft comes with ABSOLUTELY NO WARRANTY.')")
  write (std,"(1x,'This is free software, and you are welcome to redistribute it')")
  write (std,"(1x,'under certain conditions; see License.txt file for details.'//)")
 
- write (std,"(1x,'Program name : ',A)") trim(progname)
- write (std,"(1x,'Purpose      : ',A)") trim(progdesc)
- write (std,"(1x,'Platform     : ',A/)") "@CMAKE_SYSTEM_NAME@"
+ write (std,"(1x,'Program name         : ',A)") trim(progname)
+ write (std,"(1x,'Purpose              : ',A)") trim(progdesc)
+ write (std,"(1x,'Platform             : ',A)") "@CMAKE_SYSTEM_NAME@"
+ write (std,"(1x,'Source code version  : ',A/)") trim(EMsoft_getEMsoftversion())
+
+ write (std,"(1x,'See https://github.com/EMsoft-org/EMsoft/wiki for selected help pages.'/)")
 
  call timestamp(std)
  write (std,"(1x,/)")
