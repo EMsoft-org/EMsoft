@@ -777,6 +777,22 @@ type ECPMasterNameListType
     logical                 :: combinesites
 end type ECPMasterNameListType
 
+
+! namelist for the EMCTEMQC program
+type CTEMQCNameListType
+    integer(kind=irg)       :: nthreads
+    integer(kind=irg)       :: npix
+    integer(kind=irg)       :: wwmax
+    real(kind=sgl)          :: kvec(3)
+    real(kind=sgl)          :: dmin
+    real(kind=sgl)          :: rnmpp
+    real(kind=sgl)          :: voltage
+    character(fnlen)        :: qxtalname
+    character(fnlen)        :: hdfname
+    character(fnlen)        :: tiffname
+end type CTEMQCNameListType
+
+
 ! namelist for the EMECPQCmaster program
 type ECPQCMasterNameListType
     integer(kind=irg)       :: nsamples

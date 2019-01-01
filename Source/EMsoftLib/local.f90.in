@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2018, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2019, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -137,7 +137,7 @@ type ConfigStructureType
  character(5)      :: EMNotify
  character(3)      :: Develop
  character(3)      :: Release
-! other configuration parameters that may be needed in various program but are not in the EMsoftConfig.json file
+! other configuration parameters that may be needed in various programs but are not in the EMsoftConfig.json file
  character(fnlen)  :: h5copypath
  character(fnlen)  :: EMsoftplatform
  character(fnlen)  :: EMsofttestpath
@@ -176,9 +176,9 @@ character(30)      :: ConfigStructureNames(27) = (/ "EMsoftpathname             
                                                     "Configpath                    ", &
                                                     "Templatepathname              ", &
                                                     "Resourcepathname              ", &
-                                                    "Homepathname                  ",&
+                                                    "Homepathname                  ", &
                                                     "OpenCLpathname                ", &
-                                                    "Templatecodefilename          ",&
+                                                    "Templatecodefilename          ", &
                                                     "WyckoffPositionsfilename      ", &
                                                     "Randomseedfilename            ", &
                                                     "EMsoftnativedelimiter         " /)

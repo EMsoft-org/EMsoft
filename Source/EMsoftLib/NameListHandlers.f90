@@ -2547,6 +2547,101 @@ end subroutine GetECPQCMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetCTEMQCNameList
+!
+!> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mcnl structure (used by EMECPQCmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param ctemqcnl EMCTEMQC name list structure
+!
+!> @date 06/19/14  SS 1.0 new routine
+!> @date 08/12/15 MDG 1.1 correction of type for startthick and fn(3)
+!> @date 09/15/15  SS 1.2 clean up of the subroutine
+!> @date 01/04/18 MDG 1.3 added to Public repo
+!--------------------------------------------------------------------------
+recursive subroutine GetCTEMQCNameList(nmlfile, ctemqcnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetCTEMQCNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                    :: nmlfile
+type(CTEMQCNameListType),INTENT(INOUT)         :: ctemqcnl
+logical,OPTIONAL,INTENT(IN)                    :: initonly
+
+logical                                        :: skipread = .FALSE.
+
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: npix
+integer(kind=irg)       :: wwmax
+real(kind=sgl)          :: kvec(3)
+real(kind=sgl)          :: dmin
+real(kind=sgl)          :: rnmpp
+real(kind=sgl)          :: voltage
+character(fnlen)        :: qxtalname
+character(fnlen)        :: hdfname
+character(fnlen)        :: tiffname
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /CTEMQCvars/ dmin, npix, wwmax, nthreads, kvec, rnmpp, voltage, qxtalname, hdfname, tiffname
+
+! set the input parameters to default values (except for xtalname, which must be present)
+nthreads = 1
+npix = 512
+wwmax = 100
+kvec = (/ 0.0, 0.0, 1.0 /)
+dmin = 0.25
+rnmpp = 200.0
+voltage = 200.0
+qxtalname = 'undefined'
+hdfname = 'undefined'
+tiffname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+  open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+  read(UNIT=dataunit,NML=CTEMQCvars)
+  close(UNIT=dataunit,STATUS='keep')
+
+  ! check for required entries
+  if (trim(qxtalname).eq.'undefined') then
+    call FatalError('GetCTEMQCNameList:',' qxtalname file name is undefined in '//nmlfile)
+  end if
+
+  if (trim(hdfname).eq.'undefined') then
+    call FatalError('GetCTEMQCNameList:',' hdf file name is undefined in '//nmlfile)
+  end if
+
+  if (trim(tiffname).eq.'undefined') then
+    call FatalError('GetCTEMQCNameList:',' tiff file name is undefined in '//nmlfile)
+  end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+ctemqcnl%nthreads = nthreads
+ctemqcnl%npix = npix
+ctemqcnl%wwmax = wwmax 
+ctemqcnl%kvec = kvec
+ctemqcnl%dmin = dmin
+ctemqcnl%rnmpp = rnmpp 
+ctemqcnl%voltage = voltage
+ctemqcnl%qxtalname = qxtalname
+ctemqcnl%hdfname = hdfname
+ctemqcnl%tiffname = tiffname
+
+end subroutine GetCTEMQCNameList
+
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetECPMasterNameList
 !
 !> @author Saransh Singh/Marc De Graef, Carnegie Mellon University

@@ -216,7 +216,7 @@ use error
  
 IMPLICIT NONE
 
-type(QCStructureType),pointer         	:: cell
+type(QCStructureType),pointer            :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
@@ -453,7 +453,7 @@ use error
  
 IMPLICIT NONE
 
-type(QCStructureType),pointer         	:: cell
+type(QCStructureType),pointer            :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
@@ -616,7 +616,7 @@ use qcrystal
 
 IMPLICIT NONE
 
-type(QCStructureType),pointer         	:: cell
+type(QCStructureType),pointer            :: cell
 
 integer(kind=irg)                       :: i, j, oi_int(3)
 real(kind=dbl)                          :: oi_real(10)
@@ -625,9 +625,9 @@ real(kind=dbl)                          :: oi_real(10)
  call Message('', frm = "(A/)")
  call Message('Quasicrystal Structure Information', frm = "('-->',A,'<--')")
  oi_real(1) = cell%QClatparm
- call WriteValue('  a_i [nm]			       : ', oi_real, 1, "(F9.5)")
+ call WriteValue('  a_i [nm]                : ', oi_real, 1, "(F9.5)")
  oi_real(1) = cell%alphaij
- call WriteValue('  alpha_ij [deg]   		       : ', oi_real, 1, "(F10.5)")
+ call WriteValue('  alpha_ij [deg]                : ', oi_real, 1, "(F10.5)")
  oi_real(1) = cell%vol
  call WriteValue('  Volume [nm^5]                        : ', oi_real, 1, "(F12.8)")
  oi_int(1) = cell%SYM_SGnum
@@ -666,7 +666,7 @@ end subroutine Dump3DQXtalInfo
 !> @param existingHDFhead (OPTIONAL) pass-on variable with current HDF_head pointer, if any
 !
 !> @date    05/23/18 SS 1.0 original, adapted from CrystalData subroutine
-!> @date 	06/25/18 SS 1.1 name changed; handled by module interface
+!> @date    06/25/18 SS 1.1 name changed; handled by module interface
 !--------------------------------------------------------------------------
 recursive subroutine QCrystal2DData(cell, verbose, existingHDFhead)
 !DEC$ ATTRIBUTES DLLEXPORT :: QCrystal2DData
@@ -719,7 +719,7 @@ end subroutine QCrystal2DData
 !> @param verbose (OPTIONAL)
 !> @param existingHDFhead (OPTIONAL) pass-on variable with current HDF_head pointer, if any
 !
-!> @date 	06/25/18 SS 1.1 original
+!> @date    06/25/18 SS 1.1 original
 !--------------------------------------------------------------------------
 recursive subroutine QCrystal3DData(cell, verbose, existingHDFhead)
 !DEC$ ATTRIBUTES DLLEXPORT :: QCrystal3DData
@@ -733,7 +733,7 @@ use qcrystal
 
 IMPLICIT NONE
 
-type(QCStructureType),pointer         	:: cell
+type(QCStructureType),pointer            :: cell
 logical,INTENT(IN),OPTIONAL             :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 
@@ -790,7 +790,7 @@ character(fnlen),INTENT(IN)                :: xtalname
 real(kind=sgl),INTENT(IN)                  :: dmin_qc
 real(kind=sgl),INTENT(IN)                  :: dmin_p
 real(kind=sgl),INTENT(IN)                  :: voltage
-integer(kind=irg),INTENT(IN)			   :: nthreads
+integer(kind=irg),INTENT(IN)            :: nthreads
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
@@ -838,21 +838,21 @@ imh = cell%imax_qc/2
 imk = cell%imax_p/2
 
 if(.not. justinit) then
-	imh = 1
-	do 
-	   dhkl = 1.D0/QC_getvectorLength(cell, (/imh,0,0,0,0/), 'P', 'r')
-	   if (dhkl.lt.dmin_qc) EXIT
-	   imh = imh + 1
-	 end do
+   imh = 1
+   do 
+      dhkl = 1.D0/QC_getvectorLength(cell, (/imh,0,0,0,0/), 'P', 'r')
+      if (dhkl.lt.dmin_qc) EXIT
+      imh = imh + 1
+    end do
 
-	imk = 1
-	do 
-	   dhkl = 1.D0/QC_getvectorLength(cell, (/0,0,0,0,imk/), 'P', 'r')
-	   if (dhkl.lt.dmin_p) EXIT
-	   imk = imk + 1
-	end do
-	cell%imax_qc = 2*imh
-	cell%imax_p  = 2*imk
+   imk = 1
+   do 
+      dhkl = 1.D0/QC_getvectorLength(cell, (/0,0,0,0,imk/), 'P', 'r')
+      if (dhkl.lt.dmin_p) EXIT
+      imk = imk + 1
+   end do
+   cell%imax_qc = 2*imh
+   cell%imax_p  = 2*imk
 end if
 
 if (present(verbose)) then
@@ -900,7 +900,7 @@ ddt = 1.0e-5
  gg       = (/ 0,0,0,0,0 /)
  Ucg      = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp) 
  Upz      = Vpmod         ! U'0 normal absorption parameter 
- id   	  = QC_getIndex(cell, gg)
+ id        = QC_getIndex(cell, gg)
 ! ! and add this reflection to the look-up table
  cell%LUT(id)    = Ucg
  cell%LUTqg(id)  = qg
@@ -915,14 +915,14 @@ if(.not. justinit) then
 ! now do the same for the other allowed reflections
 ! note that the lookup table must be twice as large as the list of participating reflections,
 ! since the dynamical matrix uses g-h as its index !!!  
-	ia1l: do ia1 = -cell%imax_qc,cell%imax_qc 		!-2*imh,2*imh
-		ia2l:  do ia2 = -cell%imax_qc,cell%imax_qc 		!-2*imh,2*imh
-			ia3l:   do ia3 = -cell%imax_qc,cell%imax_qc 	!-2*imh,2*imh
-				ia4l:     do ia4 = -cell%imax_qc,cell%imax_qc	!-2*imh, 2*imh
-					ia5l:       do ia5 = -cell%imax_p,cell%imax_p	!-2*imk, 2*imk
-              			   gg 		= (/ ia1, ia2, ia3, ia4, ia5 /)
-              			   id 		= QC_getIndex(cell, gg)
-              			   cell%inverseIndex(id,1:5) = gg(1:5)
+   ia1l: do ia1 = -cell%imax_qc,cell%imax_qc       !-2*imh,2*imh
+      ia2l:  do ia2 = -cell%imax_qc,cell%imax_qc       !-2*imh,2*imh
+         ia3l:   do ia3 = -cell%imax_qc,cell%imax_qc    !-2*imh,2*imh
+            ia4l:     do ia4 = -cell%imax_qc,cell%imax_qc   !-2*imh, 2*imh
+               ia5l:       do ia5 = -cell%imax_p,cell%imax_p   !-2*imk, 2*imk
+                          gg       = (/ ia1, ia2, ia3, ia4, ia5 /)
+                          id       = QC_getIndex(cell, gg)
+                          cell%inverseIndex(id,1:5) = gg(1:5)
               !if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
 ! add the reflection to the look up table
               !Ucg = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp)
@@ -942,10 +942,10 @@ end if
 ! set the number of OpenMP threads 
 call OMP_SET_NUM_THREADS(nthreads)
 if (present(verbose)) then
-  	if (verbose) then
-  		io_int(1) = nthreads
-  		call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
-  	end if
+     if (verbose) then
+        io_int(1) = nthreads
+        call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
+     end if
 end if
 
 ! use OpenMP to run on multiple cores ... 
@@ -958,26 +958,26 @@ TID = OMP_GET_THREAD_NUM()
 
 do id = 1,nLUT
 
-	gg 				= cell%inverseIndex(id,1:5)
+   gg             = cell%inverseIndex(id,1:5)
 
-	Ucg 			= QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp)
-	cell%LUT(id)   	= Ucg !rlp%Ucg
-	cell%LUTqg(id) 	= qg
+   Ucg          = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp)
+   cell%LUT(id)      = Ucg !rlp%Ucg
+   cell%LUTqg(id)    = qg
 
 ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
-	if (abs(Ucg).le.ddt) then 
-		cell%dbdiff(id) = .TRUE.
-	end if
+   if (abs(Ucg).le.ddt) then 
+      cell%dbdiff(id) = .TRUE.
+   end if
 
 
- 	if(present(verbose)) then
- 		if(verbose) then
- 			if(mod(id,250000) .eq. 0) then
- 				io_real(1) = 100.D0 * dble(id)/dble(nLUT)
- 				call WriteValue(' Finished computing ',io_real, 1, '(F8.2, " % of the total coefficients ")')
- 			end if
- 		end if
- 	end if
+    if(present(verbose)) then
+       if(verbose) then
+          if(mod(id,250000) .eq. 0) then
+             io_real(1) = 100.D0 * dble(id)/dble(nLUT)
+             call WriteValue(' Finished computing ',io_real, 1, '(F8.2, " % of the total coefficients ")')
+          end if
+       end if
+    end if
 
 end do
 ! end of OpenMP portion
@@ -1025,7 +1025,7 @@ type(QCStructureType), pointer             :: cell
 character(fnlen),INTENT(IN)                :: xtalname
 real(kind=sgl),INTENT(IN)                  :: dmin
 real(kind=sgl),INTENT(IN)                  :: voltage
-integer(kind=irg),INTENT(IN)			   :: nthreads
+integer(kind=irg),INTENT(IN)               :: nthreads
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
@@ -1085,7 +1085,7 @@ end if
 if (present(verbose)) then
   if (verbose) then
     io_int(1) = imh
-    call WriteValue('number of reflections along a* = ',io_int,1)
+    call WriteValue(' Number of reflections along a* = ',io_int,1)
   end if
 end if
 
@@ -1124,19 +1124,19 @@ ddt = 1.0e-5
 ! ! shorter linked list based on the incident wave vector direction.
 
 ! ! first, we deal with the transmitted beam
-gg       = (/ 0,0,0,0,0,0 /)
-Ucg      = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp) 
-Upz      = Vpmod         ! U'0 normal absorption parameter 
+gg  = (/ 0,0,0,0,0,0 /)
+Ucg = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp) 
+Upz = Vpmod         ! U'0 normal absorption parameter 
 
 ! ! and add this reflection to the look-up table
 
-id 				= QC_getindex(cell, gg)
+id              = QC_getindex(cell, gg)
 cell%LUT(id)    = Ucg
 cell%LUTqg(id)  = qg
 
  if (present(verbose)) then
   if (verbose) then
-   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+   call Message(' Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
   end if
  end if
 
@@ -1145,31 +1145,36 @@ if(.not. justinit) then
 ! now do the same for the other allowed reflections
 ! note that the lookup table must be twice as large as the list of participating reflections,
 ! since the dynamical matrix uses g-h as its index !!!  
-	ia1l: do ia1 = -cell%imax,cell%imax !-2*imh,2*imh
-		ia2l: do ia2 = -cell%imax,cell%imax !-2*imh,2*imh
-			ia3l: do ia3 = -cell%imax,cell%imax !-2*imh,2*imh
-				ia4l: do ia4 = -cell%imax,cell%imax !-2*imh, 2*imh
-					ia5l: do ia5 = -cell%imax,cell%imax !-2*imh, 2*imh
-						ia6l: do ia6 = -cell%imax,cell%imax !-2*imh, 2*imh
-              					gg = (/ ia1, ia2, ia3, ia4, ia5, ia6 /)
-              					id = QC_getindex(cell, gg)
-              					cell%inverseIndex(id,1:6) = gg(1:6)
-              			end do ia6l
-            		end do ia5l
-          		end do ia4l
-       		end do ia3l
-      	end do ia2l
+   ia1l: do ia1 = -cell%imax,cell%imax !-2*imh,2*imh
+      ia2l: do ia2 = -cell%imax,cell%imax !-2*imh,2*imh
+         ia3l: do ia3 = -cell%imax,cell%imax !-2*imh,2*imh
+            ia4l: do ia4 = -cell%imax,cell%imax !-2*imh, 2*imh
+               ia5l: do ia5 = -cell%imax,cell%imax !-2*imh, 2*imh
+                  ia6l: do ia6 = -cell%imax,cell%imax !-2*imh, 2*imh
+                             gg = (/ ia1, ia2, ia3, ia4, ia5, ia6 /)
+                             id = QC_getindex(cell, gg)
+                             cell%inverseIndex(id,1:6) = gg(1:6)
+                       end do ia6l
+                  end do ia5l
+                end do ia4l
+             end do ia3l
+         end do ia2l
     end do ia1l
 
 end if
 ! set the number of OpenMP threads 
 call OMP_SET_NUM_THREADS(nthreads)
 if (present(verbose)) then
-  	if (verbose) then
-  		io_int(1) = nthreads
-  		call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
-  	end if
+     if (verbose) then
+        io_int(1) = nthreads
+        call WriteValue('  Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
+     end if
 end if
+
+
+io_int(1) = nLUT
+call WriteValue(' Number of entries in look up table : ', io_int, 1)
+
 
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL DEFAULT(PRIVATE) &
@@ -1181,33 +1186,33 @@ TID = OMP_GET_THREAD_NUM()
 
 do id = 1,nLUT
 
-	gg 				= cell%inverseIndex(id,1:6)
-	allowed 		= IsGAllowedQC(cell,gg)
+   gg       = cell%inverseIndex(id,1:6)
+   allowed  = IsGAllowedQC(cell,gg)
 
-	if (allowed) then  			! is this reflection allowed by lattice centering ?
-		Ucg 			= QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp)
-    	cell%LUT(id)   	= Ucg !rlp%Ucg
-    	cell%LUTqg(id) 	= qg
+   if (allowed) then           ! is this reflection allowed by lattice centering ?
+      Ucg               = QC_getUcg(cell, gg, qg, Vmod, Vpmod, xig, xgp)
+      cell%LUT(id)      = Ucg !rlp%Ucg
+      cell%LUTqg(id)    = qg
 
-	! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
-    	if (abs(Ucg).le.ddt) then 
-    		cell%dbdiff(id) = .TRUE.
-    	end if
+   ! flag this reflection as a double diffraction candidate if cabs(Ucg)<ddt threshold
+       if (abs(Ucg).le.ddt) then 
+          cell%dbdiff(id) = .TRUE.
+       end if
 
     else
-    	cell%LUT(id)   	= dcmplx(0.D0,0.D0)
-    	cell%LUTqg(id) 	= dcmplx(0.D0,0.D0)
-    	cell%dbdiff(id) = .FALSE.
+       cell%LUT(id)    = dcmplx(0.D0,0.D0)
+       cell%LUTqg(id)  = dcmplx(0.D0,0.D0)
+       cell%dbdiff(id) = .FALSE.
     end if
 
- 	if(present(verbose)) then
- 		if(verbose) then
- 			if(mod(id,500000) .eq. 0) then
- 				io_real(1) = 100.D0 * dble(id)/dble(nLUT)
- 				call WriteValue(' Finished computing ',io_real, 1, '(F8.2, " % of the total coefficients ")')
- 			end if
- 		end if
- 	end if
+    if(present(verbose)) then
+       if(verbose) then
+          if(mod(id,500000) .eq. 0) then
+             io_real(1) = 100.D0 * dble(id)/dble(nLUT)
+             call WriteValue(' Finished computing ',io_real, 1, '(F8.2, " % of Fourier coefficients ")')
+          end if
+       end if
+    end if
 
 end do
 ! end of OpenMP portion
@@ -1215,9 +1220,9 @@ end do
 !$OMP END PARALLEL
 
 if (present(verbose)) then
-	if (verbose) then
-		call Message('Done', frm = "(A/)")
-	end if
+   if (verbose) then
+      call Message('Done', frm = "(A/)")
+   end if
 end if
 
 ! that's it

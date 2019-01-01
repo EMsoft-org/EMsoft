@@ -1,0 +1,22 @@
+ &CTEMQCvars
+! number of threads to use for Fourier coefficient computation
+ nthreads = 1,
+! output array dimension
+ npix = 512,
+! 
+ wwmax = 100,
+! direction cosines of the zone axis w.r.t the two-fold axes as coordinate axes
+ kvec = 0.0 0.0 1.0,
+! smallest d-spacing to take into account
+ dmin = 0.25,
+! reciprocal nanometers per pixel
+ rnmpp = 200.0,
+! microscope voltage [kV]
+ voltage = 200.0,
+! input crystal structure filename [assumed to be in XtalFolder]
+ qxtalname = 'undefined',
+! output HDF% filename realtive to EMdatapathname
+ hdfname = 'undefined',
+! output name for tiff files (without the extension !!!)
+ tiffname = 'undefined',
+ /
