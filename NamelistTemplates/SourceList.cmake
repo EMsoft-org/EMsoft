@@ -46,6 +46,11 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMTKD.template
   ${APP_DIR}/PFInversion.template
   ${APP_DIR}/EMTKDDI.template
+  ${APP_DIR}/EMCBEDQC.template
+  ${APP_DIR}/EMCBED2DQC.template
+  ${APP_DIR}/EMEBSD2DQCmaster.template
+  ${APP_DIR}/EMEBSDQCmaster.template
+  ${APP_DIR}/EMECPQCmaster.template
 )
 
 if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")

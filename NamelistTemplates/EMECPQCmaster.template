@@ -1,0 +1,13 @@
+ &ECPQCmastervars
+! no. of pixels in the X and Y direction
+ npx = 500,
+! no. of x-sampling pixels in icosahedral unit triangle
+ nsamples = 100,
+! smallest d-spacing to take into account [nm]
+ dmin = 0.05,
+! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname
+! this file will also contain the output of the master program
+ energyfile = 'MCoutput.data',
+! number of threads to run the master pattern
+ nthreads = 1
+ /

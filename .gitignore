@@ -26,6 +26,7 @@ Support/Scripts/GMT/gmt.history
 /ExternalProjects
 UpdateCopyrightRange.pro
 
+/IDL/pro/*.sav
 *.bak
 
 # ignore object code

@@ -1,0 +1,103 @@
+
+IDLappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL'
+; should we make this folder ?
+res = file_info(IDLappdir)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+IDLappdir
+
+;define a few variables
+VMappdirOSX = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsOSX'
+ResdirOSX = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsOSX/'+appname+'/Resources'
+
+VMappdirWin = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsWin'
+ResdirWin = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsWin/'+appname+'/Resources'
+
+VMappdirLinux = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsLinux'
+ResdirLinux = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsLinux/'+appname+'/Resources'
+
+cd,CURRENT=cdir
+
+; add the VMapp folders for each OS
+res = file_info(VMappdirOSX)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+VMappdirOSX
+res = file_info(VMappdirWin)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+VMappdirWin
+res = file_info(VMappdirLinux)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+VMappdirLinux
+
+; create the .sav file
+save,/routines,filename=saveappname
+
+; create the Virtual Machine app for Mac OS X 64bit
+print,'Creating MACINT64 VM'
+make_rt,appname,VMappdirOSX,savefile=cdir+'/'+saveappname,/VM,/MACINT64,/OVERWRITE
+
+; create the Virtual Machine app for Windows 64bit
+print,'Creating WIN64 bit VM'
+make_rt,appname,VMappdirWin,savefile=cdir+'/'+saveappname,/VM,/WIN64,/OVERWRITE
+
+; create the Virtual Machine app for Linux 64bit
+print,'Creating LIN64 bit VM'
+make_rt,appname,VMappdirLinux,savefile=cdir+'/'+saveappname,/VM,/LIN64,/OVERWRITE
+
+; add the resource folder if necessary
+res = file_info(ResdirOSX)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+ResdirOSX
+res = file_info(ResdirWin)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+ResdirWin
+res = file_info(ResdirLinux)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+ResdirLinux
+
+; and add the logo file to it if necessary
+res = file_info(ResdirOSX+'/EMsoftlogo.jpg')
+if (res.EXISTS eq 0) then spawn, '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftVBFFlogo.jpg '+ResDirOSX+'/EMsoftlogo.jpg'
+res = file_info(ResdirWin+'/EMsoftlogo.jpg')
+if (res.EXISTS eq 0) then spawn, '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftVBFFlogo.jpg '+ResDirWin+'/EMsoftlogo.jpg'
+res = file_info(ResdirLinux+'/EMsoftlogo.jpg')
+if (res.EXISTS eq 0) then spawn, '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftVBFFlogo.jpg '+ResDirLinux+'/EMsoftlogo.jpg'
+
+
+print,'moving IDL files and apps into the correct location for OSX'
+; next, we need to move the appropriate files one folder up; we need to change the foldername first to avoid issues with duplicate names
+spawn, '/bin/mv '+VMappdirOSX+'/'+appname+' '+VMappdirOSX+'/tmp'
+; then check whether or not the IDL libraries have already been copied 
+res = file_info(VMappdirOSX+'/idl86')
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirOSX+'/tmp/idl86 '+VMappdirOSX
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirOSX+'/tmp/Resources '+VMappdirOSX
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirOSX+'/tmp/Utils_applescripts.scpt '+VMappdirOSX
+; and then move the app files
+spawn, '/bin/mv '+VMappdirOSX+'/tmp/'+appname+'_mac_script_source.txt '+VMappdirOSX
+spawn, '/bin/mv '+VMappdirOSX+'/tmp/'+appname+'.app '+VMappdirOSX
+spawn, '/bin/mv '+VMappdirOSX+'/tmp/'+appname+'.sav '+VMappdirOSX
+; finally, delete the tmp folder
+spawn, '/bin/rm -r '+VMappdirOSX+'/tmp'
+
+print,'moving IDL files and apps into the correct location for Win'
+; next, we need to move the appropriate files one folder up; we need to change the foldername first to avoid issues with duplicate names
+spawn, '/bin/mv '+VMappdirWin+'/'+appname+' '+VMappdirWin+'/tmp'
+; then check whether or not the IDL libraries have already been copied 
+res = file_info(VMappdirWin+'/idl86')
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/idl86 '+VMappdirWin
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/Resources '+VMappdirWin
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/splash.bmp '+VMappdirWin
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirWin+'/tmp/idl.ico '+VMappdirWin
+; and then move the app files
+spawn, '/bin/mv '+VMappdirWin+'/tmp/'+appname+'.exe '+VMappdirWin
+spawn, '/bin/mv '+VMappdirWin+'/tmp/'+appname+'.ini '+VMappdirWin
+spawn, '/bin/mv '+VMappdirWin+'/tmp/'+appname+'.sav '+VMappdirWin
+; finally, delete the tmp folder
+spawn, '/bin/rm -r '+VMappdirWin+'/tmp'
+
+print,'moving IDL files and apps into the correct location for Linux'
+; next, we need to move the appropriate files one folder up; we need to change the foldername first to avoid issues with duplicate names
+spawn, '/bin/mv '+VMappdirLinux+'/'+appname+' '+VMappdirLinux+'/tmp'
+; then check whether or not the IDL libraries have already been copied 
+res = file_info(VMappdirLinux+'/idl86')
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirLinux+'/tmp/idl86 '+VMappdirLinux
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirLinux+'/tmp/Resources '+VMappdirLinux
+; and then move the app files
+spawn, '/bin/mv '+VMappdirLinux+'/tmp/'+appname+' '+VMappdirLinux
+spawn, '/bin/mv '+VMappdirLinux+'/tmp/'+appname+'.sav '+VMappdirLinux
+; finally, delete the tmp folder
+spawn, '/bin/rm -r '+VMappdirLinux+'/tmp'
+
+exit

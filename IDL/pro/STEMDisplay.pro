@@ -838,8 +838,7 @@ widget_s.detdrawID = drawID
 WIDGET_CONTROL, widget_s.progress, GET_VALUE=drawID
 widget_s.progressdrawID = drawID
 ;
-logo = read_image('../Resources/EMsoftlogo.jpg')
-;logo = read_image('Resources/CTEMlogo.jpg')
+logo = read_image('Resources/EMsoftlogo.jpg')
 wset,widget_s.logodrawID
 tvscl,logo,true=1
 
@@ -852,7 +851,7 @@ cth = cos(th)
 sth = sin(th)
 
 ; init the status text window
-STEMprint,'Zone Axis STEM Display Program [M. De Graef, 2013-2017]',/blank
+STEMprint,'Zone Axis STEM Display Program [M. De Graef, 2013 and counting]',/blank
 
 ; ask the user to select an input geometry file
 ;STEMgetfilename

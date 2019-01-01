@@ -19,6 +19,7 @@ set(EMsoftWrapperLib_SOURCES
   ${OM_Wrapper_SRCS}
   ${SEM_Wrapper_SRCS}
   ${TEM_Wrapper_SRCS}
+  ${QC_Wrapper_SRCS}
   ${Utilities_Wrapper_SRCS}
 )
 

@@ -1,34 +1,65 @@
-
-.r STEMDisplay
-resolve_all                                                                                                                                                                            
-
-;define a few variables
+; define the appname
 appname = 'STEMDisplay'
 saveappname = appname+'.sav'
+
 IDLappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL'
-VMappdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps'
-Resdir = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMapps/STEMdisplay/Resources'
+; should we make this folder ?
+res = file_info(IDLappdir)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+IDLappdir
+
+; compile the program and get all dependencies resolved
+.r STEMDisplay
+resolve_all                    
+                                                                                                                                                        
+;define a few variables
+VMappdirOSX = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsOSX'
+ResdirOSX = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsOSX/'+appname+'/Resources'
+
+VMappdirWin = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsWin'
+ResdirWin = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsWin/'+appname+'/Resources'
+
+VMappdirLinux = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsLinux'
+ResdirLinux = '/Users/mdg/Files/EMsoftBuild/Bin/IDL/VMappsLinux/'+appname+'/Resources'
 
 cd,CURRENT=cdir
 
-; add whatever resource folder is needed
-cmd = '/bin/mkdir '+IDLappdir
-spawn,cmd
-cmd = '/bin/mkdir '+VMappdir
-spawn,cmd
+; add the VMapp folders for each OS
+res = file_info(VMappdirOSX)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+VMappdirOSX
+res = file_info(VMappdirWin)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+VMappdirWin
+res = file_info(VMappdirLinux)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+VMappdirLinux
 
 ; create the .sav file
 save,/routines,filename=saveappname
 
 ; create the Virtual Machine app for Mac OS X 64bit
-make_rt,appname,VMappdir,savefile=cdir+'/'+saveappname,/VM,/MACINT64,/OVERWRITE
+print,'Creating MACINT64 VM'
+make_rt,appname,VMappdirOSX,savefile=cdir+'/'+saveappname,/VM,/MACINT64,/OVERWRITE
 
-; add whatever resource folder is needed
-cmd = '/bin/mkdir '+Resdir
-spawn,cmd
+; create the Virtual Machine app for Windows 64bit
+print,'Creating WIN64 bit VM'
+make_rt,appname,VMappdirWin,savefile=cdir+'/'+saveappname,/VM,/WIN64,/OVERWRITE
 
-; and add the logo file to it
-cmd = '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftlogo.jpg'+ResDir
-spawn,cmd
+; create the Virtual Machine app for Linux 64bit
+print,'Creating LIN64 bit VM'
+make_rt,appname,VMappdirLinux,savefile=cdir+'/'+saveappname,/VM,/LIN64,/OVERWRITE
+
+; add the resource folder if necessary
+res = file_info(ResdirOSX)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+ResdirOSX
+res = file_info(ResdirWin)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+ResdirWin
+res = file_info(ResdirLinux)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+ResdirLinux
+
+; and add the logo file to it if necessary
+res = file_info(ResdirOSX+'/EMsoftlogo.jpg')
+if (res.EXISTS eq 0) then spawn, '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftVBFFlogo.jpg '+ResDirOSX+'/EMsoftlogo.jpg'
+res = file_info(ResdirWin+'/EMsoftlogo.jpg')
+if (res.EXISTS eq 0) then spawn, '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftVBFFlogo.jpg '+ResDirWin+'/EMsoftlogo.jpg'
+res = file_info(ResdirLinux+'/EMsoftlogo.jpg')
+if (res.EXISTS eq 0) then spawn, '/bin/cp /Users/mdg/Files/EMsoftPublic/IDL/Resources/EMsoftVBFFlogo.jpg '+ResDirLinux+'/EMsoftlogo.jpg'
 
 exit

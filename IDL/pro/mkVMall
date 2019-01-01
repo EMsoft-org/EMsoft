@@ -1,0 +1,11 @@
+#!/bin/csh
+idl mkVM_CBEDgui.txt generateVM.txt
+idl mkVM_SEMgui.txt generateVM.txt
+idl mkVM_Efitgui.txt generateVM.txt
+
+rm *.sav
+
+cd ~/Files/EMsoftBuild/Bin/IDL
+zip -q -r VMappsLinux.zip VMappsLinux
+zip -q -r VMappsOSX.zip VMappsOSX
+zip -q -r VMappsWin.zip VMappsWin

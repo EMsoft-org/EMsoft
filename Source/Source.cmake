@@ -31,6 +31,7 @@ set(MODALITY_DIRS
   OM
   SEM
   TEM
+  QC
   Utilities
 #  XRay
 )
