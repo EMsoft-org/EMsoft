@@ -70,7 +70,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 
 
 set(EMsoft_VER_MAJOR "4")
-set(EMsoft_VER_MINOR "0")
+set(EMsoft_VER_MINOR "1")
 set(EMsoft_VER_PATCH "0")
 
 project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
