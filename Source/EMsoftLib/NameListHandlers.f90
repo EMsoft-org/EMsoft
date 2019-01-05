@@ -6613,6 +6613,89 @@ enl%modality = modality
 
 end subroutine GetFitOrientationPSNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetRefineMartensiteNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMRefineMartensite.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl single name list structure
+!
+!> @date 01/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetRefineMartensiteNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetRefineMartensiteNameList
+
+use error
+use constants
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(RefineMartensitetype),INTENT(INOUT)          :: enl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: numMartensite
+real(kind=sgl)          :: step
+character(fnlen)        :: martensiteMPprefix
+character(fnlen)        :: martensiteMPpostfix
+character(fnlen)        :: ferritedotproductfile
+character(fnlen)        :: outputfile
+
+namelist / RefineMartensite / nthreads, ferritedotproductfile, step, numMartensite, martensiteMPprefix, &
+                              martensiteMPpostfix, outputfile
+
+nthreads = 1
+ferritedotproductfile = 'undefined'
+step = 1.0
+martensiteMPprefix = 'undefined'
+martensiteMPpostfix = 'undefined'
+outputfile = 'undefined'
+numMartensite = 1
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=RefineMartensite)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(ferritedotproductfile).eq.'undefined') then
+        call FatalError('GetRefineMartensiteNameList:',' ferrite dotproduct file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(martensiteMPprefix).eq.'undefined') then
+        call FatalError('GetRefineMartensiteNameList:',' martensiteMPprefix is undefined in '//nmlfile)
+    end if
+
+    if (trim(martensiteMPpostfix).eq.'undefined') then
+        call FatalError('GetRefineMartensiteNameList:',' martensiteMPpostfix is undefined in '//nmlfile)
+    end if
+
+    if (trim(outputfile).eq.'undefined') then
+        call FatalError('GetRefineMartensiteNameList:',' outputfile is undefined in '//nmlfile)
+    end if
+end if
+
+enl%nthreads = nthreads
+enl%ferritedotproductfile = ferritedotproductfile 
+enl%step = step
+enl%martensiteMPprefix = martensiteMPprefix
+enl%martensiteMPpostfix = martensiteMPpostfix
+enl%outputfile = outputfile
+enl%numMartensite = numMartensite
+
+end subroutine GetRefineMartensiteNameList
 
 !--------------------------------------------------------------------------
 !

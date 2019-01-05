@@ -664,7 +664,7 @@ end if
 ! and close the HDF5 Monte Carloe file
 call HDF_pop(HDF_head,.TRUE.)
 
-call Message(' -> completed reading '//trim(infile), frm = "(A/)")
+call Message(' -> completed reading Monte Carlo data from '//trim(infile), frm = "(A/)")
 
 end subroutine readEBSDMonteCarloFile
 
@@ -939,7 +939,7 @@ end if
 ! and close the HDF5 Master Pattern file
 call HDF_pop(HDF_head,.TRUE.)
 
-call Message(' -> completed reading '//trim(infile), frm = "(A/)")
+call Message(' -> completed reading master pattern data from '//trim(infile), frm = "(A/)")
 
 end subroutine readEBSDMasterPatternFile
 

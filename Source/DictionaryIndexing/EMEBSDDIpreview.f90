@@ -166,6 +166,8 @@ call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitex
 ! and close the pattern file
 call closeExpPatternFile(enl%inputtype, iunitexpt)
 
+write (*,*) 'maximum intensity in pattern ',maxval(expt)
+
 ! turn it into a 2D pattern
 allocate(pattern(binx, biny), pcopy(binx, biny), pint(binx,biny), ppp(binx,biny), stat=ierr)
 do kk=1,biny

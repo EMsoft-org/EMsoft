@@ -1162,6 +1162,100 @@ call HDF_pop(HDF_head)
 
 end subroutine HDFwriteEBSDSingleMasterNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteRefineMartensiteNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param emnl EMRefineMartensite name list structure
+!
+!> @date 01/04/19 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteRefineMartensiteNameList(HDF_head, emnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteRefineMartensiteNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(RefineMartensitetype),INTENT(INOUT)              :: emnl
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+logical                                               :: g_exists, overwrite=.TRUE.
+
+! create the group for this namelist
+groupname = 'RefineMartensite'
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+io_int = (/ emnl%numMartensite, emnl%nthreads /)
+intlist(1) = 'numMartensite'
+intlist(2) = 'nthreads'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single floats
+io_real = (/emnl%step/)
+reallist(1) = 'step'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+dataset = 'outputfile'
+line2(1) = emnl%outputfile
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRefineMartensiteNameList: unable to create outputfile dataset',&
+                                      .TRUE.)
+
+dataset = 'martensiteMPprefix'
+line2(1) = emnl%martensiteMPprefix
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRefineMartensiteNameList: unable to create martensiteMPprefix dataset',&
+                                      .TRUE.)
+
+dataset = 'martensiteMPpostfix'
+line2(1) = emnl%martensiteMPpostfix
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRefineMartensiteNameList: unable to create martensiteMPpostfix dataset',&
+                                      .TRUE.)
+
+dataset = 'ferritedotproductfile'
+line2(1) = emnl%ferritedotproductfile
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRefineMartensiteNameList: unable to create ferritedotproductfile dataset',&
+                                      .TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteRefineMartensiteNameList
+
 
 !--------------------------------------------------------------------------
 !

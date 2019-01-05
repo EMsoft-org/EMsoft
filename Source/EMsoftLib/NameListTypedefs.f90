@@ -1354,42 +1354,41 @@ end type ECPIndexingNameListType
 
 type ZAdefectnameListType
 
-	character(fnlen)		:: xtalname
-	real(kind=sgl)			:: voltage
-	integer(kind=irg)		:: kk(3)
-	real(kind=sgl)			:: lauec(2)
-	real(kind=sgl)			:: dmin
+    character(fnlen)        :: xtalname
+    real(kind=sgl)          :: voltage
+    integer(kind=irg)       :: kk(3)
+    real(kind=sgl)          :: lauec(2)
+    real(kind=sgl)          :: dmin
 
 ! EM or STEM ?
-	character(fnlen)		:: progmode
-	character(fnlen)		:: STEMnmlfile
-character(fnlen)			:: foilnmlfile
+    character(fnlen)        :: progmode
+    character(fnlen)        :: STEMnmlfile
+character(fnlen)            :: foilnmlfile
 
 ! column approximation parameters and image parameters
-	real(kind=sgl)			:: DF_L
-	real(kind=sgl)			:: DF_npix
-	real(kind=sgl)			:: DF_npiy
-	real(kind=sgl)			:: DF_slice
+    real(kind=sgl)          :: DF_L
+    real(kind=sgl)          :: DF_npix
+    real(kind=sgl)          :: DF_npiy
+    real(kind=sgl)          :: DF_slice
 
-	integer(kind=irg)		:: dinfo
-	character(fnlen)		:: sgname
+    integer(kind=irg)       :: dinfo
+    character(fnlen)        :: sgname
 
 ! defect parameters
-	integer(kind=irg)		:: numdisl
-	integer(kind=irg)		:: numsf
-	integer(kind=irg)		:: numinc
-	integer(kind=irg)		:: numvoids
-	character(fnlen)		:: voidname
-	character(fnlen)		::dislname
-	character(fnlen)		::sfname
-	character(fnlen)		::incname
-	character(fnlen)		::dispfile
-	character(fnlen)		::dispmode
+    integer(kind=irg)       :: numdisl
+    integer(kind=irg)       :: numsf
+    integer(kind=irg)       :: numinc
+    integer(kind=irg)       :: numvoids
+    character(fnlen)        :: voidname
+    character(fnlen)        ::dislname
+    character(fnlen)        ::sfname
+    character(fnlen)        ::incname
+    character(fnlen)        ::dispfile
+    character(fnlen)        ::dispmode
 
 ! output parameters
-	character(fnlen)		:: dataname
-	integer(kind=irg)		:: t_interval
-
+    character(fnlen)        :: dataname
+    integer(kind=irg)       :: t_interval
 
 end type ZAdefectnameListType
 
@@ -1664,6 +1663,17 @@ type FitOrientationPStype
         character(fnlen)        :: modality
 end type FitOrientationPStype
 
+type RefineMartensitetype
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: numMartensite
+        real(kind=sgl)          :: step
+        character(fnlen)        :: martensiteMPprefix
+        character(fnlen)        :: martensiteMPpostfix
+        character(fnlen)        :: ferritedotproductfile
+        character(fnlen)        :: outputfile
+        character(fnlen)        :: tmpfile
+end type RefineMartensitetype
+
 type Fitalphavarianttype
         integer(kind=irg)       :: nthreads
         character(fnlen)        :: betadotproductfile
@@ -1768,7 +1778,7 @@ type EMCBEDQCNameListType
     real(kind=sgl)      :: eu(3)
     real(kind=sgl)      :: thickness
     character(fnlen)    :: datafile
-    character(fnlen)	:: qxtalname
+    character(fnlen)    :: qxtalname
     integer(kind=irg)   :: nthreads
     integer(kind=irg)   :: npix
 end type EMCBEDQCNameListType
@@ -1781,7 +1791,7 @@ type EMCBED2DQCNameListType
     real(kind=sgl)      :: eu(3)
     real(kind=sgl)      :: thickness
     character(fnlen)    :: datafile
-    character(fnlen)	:: qxtalname
+    character(fnlen)    :: qxtalname
     integer(kind=irg)   :: nthreads
     integer(kind=irg)   :: npix
 end type EMCBED2DQCNameListType

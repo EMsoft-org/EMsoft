@@ -227,6 +227,7 @@ character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
                                            ios, up1header(4), version, patx, paty, myoffset
 character(fnlen)                        :: groupname, dataset, platform
+logical                                 :: f_exists
 
 istat = 0
 
@@ -236,6 +237,17 @@ itype = get_input_type(inputtype)
 
 ename = trim(EMsoft_getEMdatapathname())//trim(filename)
 ename = EMsoft_toNativePath(ename)
+
+f_exists = .FALSE.
+inquire(file=trim(ename), exist=f_exists)
+
+if (.not.f_exists) then
+   call Message(' Input file '//trim(ename)//' does not exist in this location ... ')
+   call Message(' Please check the input parameters in the namelist file.')
+   call Message(' ')
+   call FatalError('openExpPatternFile','Unrecoverable error; file not found')
+end if
+
 call Message('Pattern input file '//trim(ename))
 call Message('  input file type '//trim(inputtype))
 
@@ -245,9 +257,9 @@ platform = EMsoft_getEMsoftplatform()
 select case (itype)
     case(1)  ! "Binary"
         if (trim(platform).eq.'Windows') then
-            recordsize = L 			  ! windows record length is in units of 4 bytes
+            recordsize = L        ! windows record length is in units of 4 bytes
         else
-            recordsize = L*4	      ! all other platforms use record length in units of bytes
+            recordsize = L*4      ! all other platforms use record length in units of bytes
         end if
         open(unit=funit,file=trim(ename),&
             status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
@@ -700,7 +712,7 @@ select case (itype)
         do jj=1,dims3(2)
             do ii=1,dims3(1) 
                 ! Bruker patterns are stored upside down compared to the EMsoft convention...
-                exppat((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+                exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
             end do 
         end do 
 
