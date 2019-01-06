@@ -61,6 +61,7 @@ end type GrainVizNameListType
 type CTFNameListType
         character(4)            :: modality
         character(8)            :: angledataset   ! 'original' or 'refined'
+        character(fnlen)        :: xtalname
         character(fnlen)        :: newctffile
         character(fnlen)        :: dotproductfile
 end type CTFNameListType

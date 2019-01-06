@@ -500,7 +500,7 @@ end function EMsoft_getEMdatapathname
 !> @date  08/15/17 MDG 1.0 new function
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMXtalFolderpathname() result(EMXtalFolderpathname)
-!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMdatapathname
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMXtalFolderpathname
 
 IMPLICIT NONE
 

@@ -219,14 +219,16 @@ logical                                     :: skipread = .FALSE.
 
 character(4)            :: modality
 character(8)            :: angledataset   ! 'original' or 'refined'
+character(fnlen)        :: xtalname
 character(fnlen)        :: newctffile
 character(fnlen)        :: dotproductfile
 
 
-namelist /CTFlist/ modality, angledataset, dotproductfile, newctffile
+namelist /CTFlist/ modality, xtalname, angledataset, dotproductfile, newctffile
 
 dotproductfile = 'undefined'
 newctffile = 'undefined'
+xtalname = 'undefined'
 modality = 'EBSD'
 angledataset = 'original'
 
@@ -242,16 +244,21 @@ if (.not.skipread) then
 
 ! check for required entries
  if (trim(dotproductfile).eq.'undefined') then
-  call FatalError('GetChangeSettingNameList:',' dotproductfile name is undefined in '//nmlfile)
+  call FatalError('GetCTFNameList:',' dotproductfile name is undefined in '//nmlfile)
+ end if
+
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetCTFNameList:',' xtalname name is undefined in '//nmlfile)
  end if
 
  if (trim(newctffile).eq.'undefined') then
-  call FatalError('GetChangeSettingNameList:',' newctffile name is undefined in '//nmlfile)
+  call FatalError('GetCTFNameList:',' newctffile name is undefined in '//nmlfile)
  end if
 end if
 
 csnl%dotproductfile = dotproductfile 
 csnl%newctffile = newctffile
+csnl%xtalname = xtalname
 csnl%modality = trim(modality)
 csnl%angledataset = trim(angledataset) 
 
