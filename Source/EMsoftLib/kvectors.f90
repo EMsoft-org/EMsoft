@@ -116,8 +116,9 @@ end function Kdelta
 !> @date   06/19/14
 !> @date   08/25/15 MDG 3.0 modified symmetry handling to full point group, with doubled Lambert projection
 !> @date   11/13/15 MDG 3.1 inclusion of small epsilon in trigonal and hexagonal cases, to eliminate rounding errors
+!> @date   01/07/19 MDG 3.2 adds Legendre lattitude grid sampling for spherical indexing
 !--------------------------------------------------------------------------
-recursive subroutine Calckvectors(khead,cell,k,ga,ktmax,npx,npy,numk,isym,ijmax,mapmode,usehex)
+recursive subroutine Calckvectors(khead,cell,k,ga,ktmax,npx,npy,numk,isym,ijmax,mapmode,usehex,LegendreArray)
 !DEC$ ATTRIBUTES DLLEXPORT :: Calckvectors
 
 use io
@@ -140,9 +141,10 @@ integer(kind=irg),INTENT(IN)            :: isym         !< Laue symmetry group n
 integer(kind=irg),INTENT(INOUT)         :: ijmax        !< max parameter used for Conical and StandardConical modes
 character(*),INTENT(IN)                 :: mapmode      !< controls the type of mapping used ('Standard' or 'RoscaLambert')
 !real(kind=sgl),INTENT(IN)              :: klaue(2)     !< Laue center coordinates
+real(kind=dbl),INTENT(IN),OPTIONAL      :: LegendreArray(2*npx+1) !< Legendre lattitude grid points for spherical indexing
 logical,INTENT(IN),OPTIONAL             :: usehex       !< hexagonal mode for RoscaLambert mapmode
 
-integer(kind=irg)                       :: istat,i,j,istart,iend,jstart,jend, imin, imax, jmin, jmax, ii, jj
+integer(kind=irg)                       :: istat,i,j,istart,iend,jstart,jend, imin, imax, jmin, jmax, ii, jj, sqring
 real(kind=dbl)                          :: glen, gan(3), gperp(3), kstar(3), delta, xy(2), xx, yy, eps
 logical                                 :: hexgrid = .FALSE., yes = .TRUE., flip = .TRUE., check
 character(3)                            :: grid
@@ -405,6 +407,7 @@ if ( (mapmode.eq.'Standard').or.(mapmode.eq.'StandardConical') ) then
   end select  ! grid value
 
 end if ! mapmode.eq.'Standard' or 'StandardConical'
+
 
 ! the next type of grid is the one used for the modified Lambert maps in the dynamical EBSD 
 ! programs; this requires some special care, since these mappings are a little trickier than 
@@ -776,6 +779,405 @@ if (mapmode.eq.'RoscaLambert') then
 
 end if
 
+
+! the next type of grid is the one used for the modified Lambert maps with Legendre lattitude grid values in the 
+! dynamical EBSD programs; this requires some special care, since these mappings are a little 
+! trickier than those of the standard mapmode.  While it is possible to use a plain Lambert 
+! projection as well, here we only allow for the RoscaLambert mode with modified lattitudinal angles.
+
+if (mapmode.eq.'RoscaLambertLegendre') then 
+   delta =  1.D0 / dble(npx)
+   if (usehex) then             ! hexagonal grid 
+      hexgrid = .TRUE.
+   else                         ! square grid
+      hexgrid = .FALSE.
+   end if
+
+! allocate the head of the linked list
+   allocate(khead,stat=istat)                   ! allocate new value
+   if (istat.ne.0) call FatalError('Calckvectors',' unable to allocate khead pointer')
+   ktail => khead                               ! tail points to new value
+   nullify(ktail%next)                          ! nullify next in new value
+   numk = 1                                     ! keep track of number of k-vectors so far
+   ktail%hs = 1                                 ! this lies in the Northern Hemisphere
+   ktail%i = 0                                  ! i-index of beam
+   ktail%j = 0                                  ! j-index of beam
+   kstar = (/ 0.0, 0.0, 1.0 /)                  ! we always use c* as the center of the RoscaLambert projection
+   call NormVec(cell,kstar,'c')                 ! normalize incident direction
+   kstar = kstar/cell%mLambda                   ! divide by wavelength
+! and transform to reciprocal crystal space using the structure matrix
+   ktail%k = matmul(transpose(cell%dsm),kstar)
+   ktail%kn = 1.0/cell%mLambda
+
+! MDG: as of 8/25/15, we no longer use the Laue groups to determine the set of independent wave vectors,
+! but instead we use the complete point group symmetry, as it should be.  Upon reflection, using
+! the Laue groups was equivalent to implicitly using Friedel's law, which makes all diffraction patterns
+! centrosymmetric, and that is not correct for EBSD. So, the symbol isym now encodes the full point group,
+! not the Laue group.  This will require a modification in each calling program as well.
+
+! in addition, the modified Lambert projection will now require two hemispheres (NH and SH). We can handle this
+! by means of an optional argument to the AddkVector routine; when the argument is present, the -k_z version
+! of the direction is also added to the list.
+
+! The main difference with the regular RoscaLambert case is the fact that the lattitudinal value of the direction
+! cosines needs to be replaced by the one from the Legendre array, and then the in-plane dorection cosines need to
+! be properly scaled; this type of master pattern is then used for Spherical Indexing in the EMSphInx program.
+
+! deal with each point group symmetry separately or in sets, depending on the value of isym
+ select case (isym)
+ 
+   case (1)  ! triclinic 1
+        istart = -npx
+        iend = npx
+        jstart = -npy
+        jend = npy
+          do j=jstart,jend
+            do i=istart,iend   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j,addSH = yes,LegendreLattitude=LegendreArray(sqring))
+            end do
+          end do
+
+   case (2)  ! triclinic -1
+        istart = -npx
+        iend = npx
+        jstart = -npy
+        jend = npy
+          do j=jstart,jend
+            do i=istart,iend   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j,LegendreLattitude=LegendreArray(sqring))
+            end do
+          end do
+
+  case (3)   !  monoclinic 2
+        istart = 0
+        iend = npx
+        jstart = -npy
+        jend = npy
+          do j=jstart,jend
+           do i=istart,iend   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j, addSH = yes,LegendreLattitude=LegendreArray(sqring))
+           end do
+          end do
+
+  case (4)   !  monoclinic m
+        istart = -npx
+        iend = npx
+        jstart = 0
+        jend = npy
+          do j=jstart,jend
+           do i=istart,iend   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j, addSH = yes,LegendreLattitude=LegendreArray(sqring))
+           end do
+          end do
+
+  case (5)  ! monoclinic 2/m, orthorhombic 222, mm2, tetragonal 4, -4
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npy
+          do j=jstart,jend
+           do i=istart,iend   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j, addSH = yes,LegendreLattitude=LegendreArray(sqring))
+           end do
+          end do
+
+  case (6)  ! orthorhombic mmm, tetragonal 4/m, 422, -4m2, cubic m-3, 432 (for now)
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npy
+          do j=jstart,jend
+           do i=istart,iend   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j,LegendreLattitude=LegendreArray(sqring))
+           end do
+          end do
+
+  case (7)  ! tetragonal 4mm
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npx
+          do i=istart,iend
+           do j=jstart,i   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j, addSH = yes,LegendreLattitude=LegendreArray(sqring))
+           end do
+          end do
+
+  case (8)  ! tetragonal -42m, cubic -43m (for now)
+        istart = 0
+        iend = npx
+        jstart = -npx
+        jend = npx
+          do i=istart,iend
+           do j=-i, i   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j,LegendreLattitude=LegendreArray(sqring))
+           end do
+          end do
+
+  case (9)  ! tetragonal 4/mmm, cubic m-3m (for now)
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npx
+          do i=istart,iend
+           do j=jstart,i   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                call AddkVector(ktail,cell,numk,xy,i,j,LegendreLattitude=LegendreArray(sqring))
+           end do
+          end do
+
+! cases 10 through 19 are all on a hexagonal grid...
+! for now (08/31/15), we have not yet implemented the rhombohedral setting of the trigonal space groups;
+! this case is truly a pain in the neck to implement...
+
+  case (10)   ! hexagonal 3
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npx
+          do j=jstart,jend
+            do i=istart,iend   ! 
+                xy = (/ dble(i), dble(j) /) * delta
+                 sqring = maxval( (/ abs(i), abs(j) /) )
+               if (InsideHexGrid(xy)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, addSH = yes, &
+                                                       LegendreLattitude=LegendreArray(sqring))
+            end do
+          end do
+
+  case (11)   ! rhombohedral 3
+        call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
+!       istart = 0
+!       iend = npx
+!       jstart = 0
+!       jend = npx
+!         do j=jstart,jend
+!           do i=istart,iend   ! 
+!               ii = 2*j-i
+!               jj = j-2*i
+!               xy = (/ dble(ii), dble(jj) /) * delta * LPs%isrt
+!               if (InsideHexGrid(xy)) call AddkVector(ktail,cell,numk,xy,ii,jj,hexgrid, addSH = yes)
+!           end do
+!         end do
+
+  case (12)   ! hexagonal -3, 321, -6; [not implemented: rhombohedral 32]
+        if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
+          call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
+        else
+          istart = 0
+          iend = npx
+          jstart = 0
+          jend = npx
+            do j=jstart,jend
+              do i=istart,iend   ! 
+                  xy = (/ dble(i), dble(j) /) * delta
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                  if (InsideHexGrid(xy)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid,LegendreLattitude=LegendreArray(sqring))
+              end do
+            end do
+        end if
+
+  case (13)   ! [not implemented: rhombohedral -3], hexagonal 312  [ modified 7/31/18, MDG ]
+        if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
+          call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
+        else
+          istart = 0
+          iend = npx
+          jstart = 0
+          jend = -npx
+            do j=jstart,jend,-1
+              do i=istart+j/2,iend   ! 
+                xy = (/ dble(i),  dble(j) /) * delta 
+                if (InsideHexGrid(xy)) then
+                  ! call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
+                  ! ktail%k(2) = -ktail%k(2)
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                 call AddkVector(ktail,cell,numk,xy,i,j,hexgrid,LegendreLattitude=LegendreArray(sqring))
+                end if
+              end do
+            end do
+          istart = 0
+          iend = npx
+          jstart = 0
+          jend = npx
+            do i=istart,iend   ! 
+              do j=jstart,i/2
+                xy = (/ dble(i),  dble(j) /) * delta 
+                if (InsideHexGrid(xy)) then 
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                  call AddkVector(ktail,cell,numk,xy,i,j,hexgrid,LegendreLattitude=LegendreArray(sqring))
+                 ! call AddkVector(ktail,cell,numk,xy,-i,-j,hexgrid)
+                 !  ktail%k(2) = -ktail%k(2)
+                end if
+              end do
+            end do
+        end if
+
+  case (14)   ! hexagonal 3m1, [not implemented: rhombohedral 3m]
+        if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
+          call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
+        else
+          istart = 1
+          iend = npx
+          jstart = 1
+          jend = npx
+            do j=jstart,jend
+              do i=istart+(j-1)/2,2*j
+                xy = (/ dble(i),  dble(j) /) * delta 
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                if (InsideHexGrid(xy)) then 
+                  call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, addSH = yes,LegendreLattitude=LegendreArray(sqring))
+                end if
+              end do
+            end do
+        end if
+
+  case (15)   ! hexagonal 31m, 6
+          istart = 0
+          iend = npx
+          jstart = 1
+          jend = npx
+            do j=jstart,jend
+              do i=istart+j,jend
+                xy = (/ dble(i),  dble(j) /) * delta 
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                if (InsideHexGrid(xy)) then 
+                  call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, addSH = yes,LegendreLattitude=LegendreArray(sqring))
+                end if
+              end do
+            end do
+
+  case (16)   ! hexagonal -3m1, 622, -6m2 [not implemented: rhombohedral -3m]
+        if ((cell%SG%SYM_trigonal).and.(cell%SG%SYM_second)) then
+          call FatalError('Calckvectors: ','rhombohedral setting has not been implemented yet, use hexagonal setting instead')
+        else
+          istart = 0
+          iend = npx
+          jstart = 0
+          jend = npx
+          eps = 1.0D-4
+            do j=jstart,jend
+              do i=istart,iend
+                  xy = (/ dble(i), dble(j) /) * delta
+                  xx = dble(i)-dble(j)/2.D0
+                  yy = dble(j)*LPs%srt
+                  check = .TRUE.
+                  if (xx.lt.0.D0) then
+                    check = .FALSE.
+                  else
+                    if (xx.ge.0.D0) then
+                      yy = datan2(yy,xx)
+                      if (yy .lt. (LPs%Pi/6.D0-eps)) check = .FALSE.
+                    end if
+                  end if
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                  if (InsideHexGrid(xy).and.(check)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid,&
+                                                                     LegendreLattitude=LegendreArray(sqring))
+              end do
+            end do
+        end if
+
+  case (17)   ! hexagonal -31m, 6/m, -62m
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npx
+        eps = 1.0D-4
+          do j=jstart,jend
+            do i=istart,iend
+                xy = (/ dble(i), dble(j) /) * delta
+                xx = dble(i)-dble(j)/2.D0
+                yy = dble(j)*LPs%srt
+                check = .TRUE.
+                if (xx.lt.0.D0) then
+                   check = .FALSE.
+                else
+                   if (xx.ge.0.D0) then
+                     yy = datan2(yy,xx)
+                     if (yy.gt.(cPi/3.D0+eps)) check = .FALSE.
+                   end if
+                end if
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                if (InsideHexGrid(xy).and.(check)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, &
+                                                                   LegendreLattitude=LegendreArray(sqring))
+            end do
+          end do
+
+  case (18)   ! hexagonal 6mm
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npx
+        eps = 1.0D-4
+          do j=jstart,jend
+            do i=istart,iend
+                xy = (/ dble(i), dble(j) /) * delta
+                xx = dble(i)-dble(j)/2.D0
+                yy = dble(j)*LPs%srt
+                check = .TRUE.
+                if (xx.lt.0.D0) then
+                   check = .FALSE.
+                else
+                   if (xx.ge.0.D0) then
+                     yy = datan2(yy,xx)
+                     if (yy.gt.(cPi/6.D0+eps)) check = .FALSE.
+                   end if
+                end if
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                if (InsideHexGrid(xy).and.(check)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid, &
+                                                                   addSH = yes,LegendreLattitude=LegendreArray(sqring))
+            end do
+          end do
+
+  case (19)   ! hexagonal 6/mmm
+        istart = 0
+        iend = npx
+        jstart = 0
+        jend = npx
+        eps = 1.0D-4
+          do j=jstart,jend
+            do i=istart,iend
+                xy = (/ dble(i), dble(j) /) * delta
+                xx = dble(i)-dble(j)/2.D0
+                yy = dble(j)*LPs%srt
+
+                check = .TRUE.
+                if (xx.lt.0.D0) then
+                   check = .FALSE.
+                else
+                   if (xx.ge.0.D0) then
+                     yy = datan2(yy, xx)
+                     if (yy.gt.(LPs%Pi/6.D0+eps)) check = .FALSE.
+                   end if
+
+                end if
+                sqring = maxval( (/ abs(i), abs(j) /) )
+                if (InsideHexGrid(xy).and.(check)) call AddkVector(ktail,cell,numk,xy,i,j,hexgrid,&
+                                                                   LegendreLattitude=LegendreArray(sqring))
+
+            end do
+          end do
+
+ end select
+
+end if
+
 end subroutine Calckvectors
 
 
@@ -1136,8 +1538,9 @@ end function GetSextant
 !> @date   08/27/15 MDG 2.2 added flip for special case of rhombohedral sampling
 !> @date   08/28/15 MDG 2.3 mappings replaced with calls to Lambert module (significant simplification of code)
 !> @date   08/31/15 MDG 2.4 replaced integer coordinates by actual scaled coordinates
+!> @date   01/07/19 MDG 2.5 adds Legendre lattitude grid sampling
 !--------------------------------------------------------------------------
-recursive subroutine AddkVector(ktail,cell,numk,xy,i,j,usehex,addSH)
+recursive subroutine AddkVector(ktail,cell,numk,xy,i,j,usehex,addSH,LegendreLattitude)
 !DEC$ ATTRIBUTES DLLEXPORT :: AddkVector
 
 use io
@@ -1159,9 +1562,10 @@ integer(kind=irg),INTENT(IN)            :: i
 integer(kind=irg),INTENT(IN)            :: j
 logical,INTENT(IN),OPTIONAL             :: usehex
 logical,INTENT(IN),OPTIONAL             :: addSH
+real(kind=dbl),INTENT(IN),OPTIONAL      :: LegendreLattitude
 
 integer(kind=irg)                       :: istat, ks, ii, ierr
-real(kind=dbl)                          :: kstar(3)
+real(kind=dbl)                          :: kstar(3), p 
 logical                                 :: hex
 
 ! project the coordinate up to the sphere, to get a unit 3D vector kstar in cartesian space
@@ -1171,6 +1575,15 @@ if (present(usehex)) then
 else
   kstar = LambertSquareToSphere(xy, ierr)
   hex = .FALSE.
+end if
+
+! do we need to modify the direction cosines to coincide with the Legendre lattitudinal grid values?
+if (present(LegendreLattitude)) then
+  if (kstar(3).ne.1.D0) then
+! the factor p rescales the x and y components of kstar to maintain a unit vector
+    p = sqrt((1.D0-LegendreLattitude**2)/(1.D0-kstar(3)**2))
+    kstar = (/ p*kstar(1), p*kstar(2), LegendreLattitude /)
+  end if
 end if
 
 ! add this vector to the linked list

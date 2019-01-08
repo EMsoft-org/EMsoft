@@ -2091,6 +2091,7 @@ integer(kind=irg)       :: Esel
 integer(kind=irg)       :: nthreads
 real(kind=sgl)          :: dmin
 character(3)            :: Notify
+character(fnlen)        :: latgridtype
 character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: energyfile
 logical                 :: combinesites
@@ -2099,7 +2100,7 @@ logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites
+                          combinesites, latgridtype
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2108,6 +2109,7 @@ nthreads = 1
 Esel = -1                       ! selected energy value for single energy run
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
 Notify = 'Off'
+latgridtype = 'Lambert'        ! 'Lambert' (regular) or 'Legendre' (for EMSphInx indexing)
 copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a different Monte Carlo simulation
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
@@ -2136,6 +2138,7 @@ emnl%npx = npx
 emnl%Esel = Esel
 emnl%nthreads = nthreads
 emnl%dmin = dmin
+emnl%latgridtype = latgridtype
 emnl%copyfromenergyfile = copyfromenergyfile
 emnl%energyfile = energyfile
 emnl%Notify = Notify

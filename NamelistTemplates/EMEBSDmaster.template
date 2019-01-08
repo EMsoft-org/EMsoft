@@ -3,6 +3,8 @@
  dmin = 0.05,
 ! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
  npx = 500,
+! lattitudinal grid type:  'Lambert' or 'Legendre'
+ latgridtype = 'Lambert', 
 ! name of EMMCOpenCL output file to be used to copy the MC data from for this master pattern run;
 ! This can be used to perform multiple master pattern runs starting from the same MC data set without
 ! having to rerun the MC computation.  Leave this variable set to 'undefined' if not needed.
