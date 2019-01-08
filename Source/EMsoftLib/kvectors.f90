@@ -158,7 +158,7 @@ real(kind=sgl)                          :: xytest(2), xxtest, yytest
  
 ! do we know this mapmode ?
 if ( .not.( (mapmode.eq.'Conical').or.(mapmode.eq.'Standard').or.(mapmode.eq.'StandardConical').or. &
-   (mapmode.eq.'RoscaLambert') ) ) then
+   (mapmode.eq.'RoscaLambert').or.(mapmode.eq.'RoscaLambertLegendre') ) ) then
   call FatalError('Calckvectors','mapmode unknown')
 end if
 

@@ -151,7 +151,7 @@ end program EMEBSDmaster
 !> @date 03/06/17  MDG 6.7 removed normal absorption from depth integration
 !> @date 04/02/18  MDG 7.0 replaced MC file reading by new routine in EBSDmod
 !> @date 04/03/18  MDG 7.1 replaced all regular MC variables by mcnl structure components
-!> @date 01/07/19  MDG 7.2 added Legendre longitudinal grid mode (used for spherical indexing)
+!> @date 01/07/19  MDG 7.2 added Legendre lattitudinal grid mode (used for spherical indexing)
 !--------------------------------------------------------------------------
 subroutine ComputeMasterPattern(emnl, progname, nmldeffile)
 
@@ -670,15 +670,16 @@ end if
 !=============================================
 ! do we need to precompute the Legendre array for the new lattitudinal grid values?
 if (doLegendre.eqv..TRUE.) then
+  call Message(' Computing Legendre lattitudinal grid values')
   allocate(diagonal(2*emnl%npx+1),upd(2*emnl%npx+1))
   diagonal = 0.D0
   upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,2*emnl%npx+1) /)
-  call dsterf(j, diagonal, upd, info) 
+  call dsterf(2*emnl%npx-1, diagonal, upd, info) 
 ! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
   allocate(LegendreArray(2*emnl%npx+1))
-  do i=2*emnl%npx+1,1,-1
-    LegendreArray(2*emnl%npx+2-i) = diagonal(i)
-  end do
+  LegendreArray(1:2*emnl%npx+1) = diagonal(2*emnl%npx+1:1:-1)
+! set the center eigenvalue to 0
+  LegendreArray(emnl%npx+1) = 0.D0
   deallocate(diagonal, upd)
 end if
 
@@ -714,7 +715,7 @@ energyloop: do iE=Estart,1,-1
 ! print a message to indicate where we are in the computation
    io_int(1)=iE
    io_int(2)=Estart
-   call Message('Starting computation for energy bin (in reverse order)', frm = "(/A$)")
+   call Message(' Starting computation for energy bin (in reverse order)', frm = "(/A$)")
    call WriteValue(' ',io_int,2,"(I4,' of ',I4$)")
    io_real(1) = EkeVs(iE)
    call WriteValue('; energy [keV] = ',io_real,1,"(F6.2/)")
