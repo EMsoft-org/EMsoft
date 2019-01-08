@@ -1036,6 +1036,11 @@ else
 end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create dmin dataset',.TRUE.)
 
+dataset = SC_latgridtype
+line2(1) = emnl%latgridtype
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create latgridtype dataset',.TRUE.)
+
 dataset = SC_copyfromenergyfile
 line2(1) = emnl%copyfromenergyfile
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)

@@ -369,6 +369,7 @@ type EBSDMasterNameListType
         integer(kind=irg)       :: nthreads
         real(kind=sgl)          :: dmin
         character(3)            :: Notify
+        character(fnlen)        :: latgridtype
         character(fnlen)        :: copyfromenergyfile
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname

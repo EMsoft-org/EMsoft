@@ -151,6 +151,7 @@ end program EMEBSDmaster
 !> @date 03/06/17  MDG 6.7 removed normal absorption from depth integration
 !> @date 04/02/18  MDG 7.0 replaced MC file reading by new routine in EBSDmod
 !> @date 04/03/18  MDG 7.1 replaced all regular MC variables by mcnl structure components
+!> @date 01/07/19  MDG 7.2 added Legendre lattitudinal grid mode (used for spherical indexing)
 !--------------------------------------------------------------------------
 subroutine ComputeMasterPattern(emnl, progname, nmldeffile)
 
@@ -198,7 +199,8 @@ integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, ieq
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
 real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstart, tstop, bp(4), nabsl, etotal, dens, avA, avZ
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:,:), auxSH(:,:,:,:), Z2percent(:)  ! results
-real(kind=sgl),allocatable      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)  ! results
+real(kind=sgl),allocatable      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)
+real(kind=dbl),allocatable      :: LegendreArray(:), upd(:), diagonal(:)
 complex(kind=dbl)               :: czero
 complex(kind=dbl),allocatable   :: Lgh(:,:), Sgh(:,:,:)
 logical                 :: usehex, switchmirror, verbose
@@ -213,7 +215,7 @@ character(8)            :: MCscversion
 character(11)           :: dstr
 character(15)           :: tstrb
 character(15)           :: tstre
-logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE., stereog, g_exists, xtaldataread, FL
+logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE., stereog, g_exists, xtaldataread, FL, doLegendre
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 character(fnlen,kind=c_char)                     :: line2(1)
 
@@ -233,7 +235,7 @@ type(MCCLNameListType)          :: mcnl
 type(HDFobjectStackType),pointer  :: HDF_head
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)
-integer(kind=irg)                 :: NumLines
+integer(kind=irg)                 :: NumLines, info
 character(fnlen)                  :: SlackUsername, exectime
 character(100)                    :: c
 
@@ -268,6 +270,10 @@ call cpu_time(tstart)
 
 tpi = 2.D0*cPi
 czero = dcmplx(0.D0,0.D0)
+
+! is the master pattern used for spherical indexing only ?  If so, then we need to modifiy the k-vector sampling
+doLegendre = .FALSE.
+if (trim(emnl%latgridtype).eq.'Legendre') doLegendre = .TRUE.
 
 !=============================================
 !=============================================
@@ -662,6 +668,23 @@ end if
 
 !=============================================
 !=============================================
+! do we need to precompute the Legendre array for the new lattitudinal grid values?
+if (doLegendre.eqv..TRUE.) then
+  call Message(' Computing Legendre lattitudinal grid values')
+  allocate(diagonal(2*emnl%npx+1),upd(2*emnl%npx+1))
+  diagonal = 0.D0
+  upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,2*emnl%npx+1) /)
+  call dsterf(2*emnl%npx-1, diagonal, upd, info) 
+! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
+  allocate(LegendreArray(2*emnl%npx+1))
+  LegendreArray(1:2*emnl%npx+1) = diagonal(2*emnl%npx+1:1:-1)
+! set the center eigenvalue to 0
+  LegendreArray(emnl%npx+1) = 0.D0
+  deallocate(diagonal, upd)
+end if
+
+!=============================================
+!=============================================
 ! figure out what the start energy value is for the energyloop
 if (lastEnergy.ne.-1) then
   Estart = lastEnergy-1
@@ -692,7 +715,7 @@ energyloop: do iE=Estart,1,-1
 ! print a message to indicate where we are in the computation
    io_int(1)=iE
    io_int(2)=Estart
-   call Message('Starting computation for energy bin (in reverse order)', frm = "(/A$)")
+   call Message(' Starting computation for energy bin (in reverse order)', frm = "(/A$)")
    call WriteValue(' ',io_int,2,"(I4,' of ',I4$)")
    io_real(1) = EkeVs(iE)
    call WriteValue('; energy [keV] = ',io_real,1,"(F6.2/)")
@@ -713,12 +736,22 @@ energyloop: do iE=Estart,1,-1
 ! numk is the total number of k-vectors to be included in this computation;
 ! note that this needs to be redone for each energy, since the wave vector changes with energy
    nullify(khead)
-   if (usehex) then
-    call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
-                SamplingType,ijmax,'RoscaLambert',usehex)
+   if (doLegendre.eqv..FALSE.) then
+    if (usehex) then
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambert',usehex)
+    else 
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambert',usehex)
+    end if
    else 
-    call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
-                SamplingType,ijmax,'RoscaLambert',usehex)
+    if (usehex) then
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambertLegendre',usehex, LegendreArray)
+    else 
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambertLegendre',usehex, LegendreArray)
+    end if
    end if
    io_int(1)=numk
    call WriteValue('# independent beam directions to be considered = ', io_int, 1, "(I8)")
