@@ -87,7 +87,8 @@
 ! ipar(41): numexptsingle*ceiling(float(totnumexpt)/float(numexptsingle))  
 ! ipar(42): 16*ceiling(float(numsx*numsy)/16.0)
 ! ipar(43): neulers  (number of Euler angle triplets in the dictionary)
-! ipar(44:wraparraysize) : 0 (unused for now)
+! ipar(44): nvariants (number of variants for refinement wrapper)
+! ipar(45:wraparraysize) : 0 (unused for now)
 
 ! real(kind=dbl) :: fpar(wraparraysize)  components
 ! fpar(1) : sig
@@ -116,7 +117,9 @@
 ! fpar(22): gamma value
 ! fpar(23): maskradius
 ! fpar(24): hipasswd
-! fpar(25:wraparraysize): 0 (unused for now)
+! refinement parameters
+! fpar(25): step 
+! fpar(26:wraparraysize): 0 (unused for now)
 
 ! newly added in version 3.2, to facilitate passing EMsoft configuration
 ! strings back and forth to C/C++ programs that call EMdymod routines...
@@ -742,7 +745,7 @@ end subroutine EMsoftCpreprocessSingleEBSDPattern
 ! !> @details This subroutine provides a method to index experimental EBSD patterns and
 ! !> can be called from an external C/C++ program; the routine provides a callback mechanism to
 ! !> update the calling program about computational progress, as well as a cancel option.
-! !> The routine is intended to be called form a C/C++ program, e.g., EMsoftWorkbench.  This routine is a portion
+! !> The routine is intended to be called from a C/C++ program, e.g., EMsoftWorkbench.  This routine is a portion
 ! !> of the core of the EMEBSDDI program. 
 ! !>
 ! !> @param ipar array with integer input parameters
@@ -1234,6 +1237,398 @@ deallocate(resulttmp, expt, dicttranspose, resultarray)
 
 end subroutine EMsoftCEBSDDI
 
+! !--------------------------------------------------------------------------
+! !
+! ! SUBROUTINE:EMsoftCEBSDRefine
+! !
+! !> @author Marc De Graef, Carnegie Mellon University
+! !
+! !> @brief This subroutine can be called by a C/C++ program as a standalone function to perform dictionary indexing of experimental EBSD patterns
+! !
+! !> @details This subroutine provides a method to refine indexed experimental EBSD patterns and
+! !> can be called from an external C/C++ program; the routine provides a callback mechanism to
+! !> update the calling program about computational progress, as well as a cancel option.
+! !> The routine is intended to be called from a C/C++ program, e.g., EMsoftWorkbench.  This routine is a portion
+! !> of the core of the EMFitOrientationPS program. 
+! !>
+! !> @param ipar array with integer input parameters
+! !> @param fpar array with float input parameters
+! !> @param accum_e array with Monte Carlo histogram
+! !> @param mLPNH Northern hemisphere master pattern
+! !> @param mLPSH Southern hemisphere master pattern
+! !> @param variants array with quaternions defining the potential pseudosymmetry variants float(4,nvars)
+! !> @param epatterns array with pre-processed experimental patterns float(correctsize, totnumexpt)
+! !> @param startEulers array with initial Euler angle triplets in radians  float(3,totnumexpt)
+! !> @param startdps array with initial dot product values float(totnumexpt)
+! !> @param eumain array with refined Euler angle triplets in radians float(3,totnumexpt)
+! !> @param dpmain array with refined dot product values float(totnumexpt)
+! !> @param cproc pointer to a C-function for the callback process
+! !> @param objAddress unique integer identifying the calling class in DREAM.3D
+! !> @param cancel character defined by DREAM.3D; when not equal to NULL (i.e., char(0)), the computation should be halted
+! !
+! !> @date 01/10/19 MDG 1.0 original extracted from EFitOrientationPS program
+! !--------------------------------------------------------------------------
+recursive subroutine EMsoftCEBSDRefine(ipar, fpar, accum_e, mLPNH, mLPSH, variants, epatterns, startEulers, &
+                                       startdps, eumain, dpmain, cproc, objAddress, cancel) &
+          bind(c, name='EMsoftCEBSDRefine')    ! this routine is callable from a C/C++ program
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCEBSDRefine
 
+use local
+use typedefs 
+use NameListTypedefs
+use crystal
+use patternmod
+use rotations
+use constants
+use EBSDmod
+use EBSDDImod
+use omp_lib
+use dictmod
+use bobyqa_refinement,only:bobyqa
+use FitOrientations,only:EMFitOrientationcalfunEBSD
+use stringconstants
+
+use ISO_C_BINDING
+
+! ipar, fpar, and spar variables used in this wrapper routine:
+! integers
+! ipar(1) : nx  = (numsx-1)/2
+! ipar(4) : totnum_el
+! ipar(5) : multiplier
+! ipar(10): SpaceGroupNumber
+! ipar(12): numEbins
+! ipar(17): npx
+! ipar(18): nthreads
+! ipar(19): numx of detector pixels
+! ipar(20): numy of detector pixels
+! ipar(26): ipf_wd
+! ipar(27): ipf_ht
+! ipar(29): maskpattern
+! ipar(37): numexptsingle  (multiple of 16; number of expt patterns in one dot product chunk)
+! ipar(38): numdictsingle  (multiple of 16; number of dict patterns in one dot product chunk)
+! ipar(40): totnumexpt     (number of experimental patterns in current batch)
+! ipar(41): numexptsingle*ceiling(float(totnumexpt)/float(numexptsingle))  
+! ipar(42): 16*ceiling(float(numsx*numsy)/16.0)
+! ipar(44): nvariants (number of variants for refinement wrapper)
+
+! floats
+! fpar(1) : sig
+! fpar(2) : omega
+! fpar(3) : EkeV
+! fpar(4) : Ehistmin
+! fpar(5) : Ebinsize
+! fpar(15): pattern center x
+! fpar(16): pattern center y
+! fpar(17): scintillator pixel size
+! fpar(18): detector tilt angle
+! fpar(19): sample-scintillator distance
+! fpar(20): beam current
+! fpar(21): dwelltime
+! fpar(22): gamma value
+! fpar(23): maskradius
+! fpar(25): step 
+
+! no strings
+!
+
+IMPLICIT NONE
+
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
+integer(c_int32_t),INTENT(IN)           :: accum_e(ipar(12),-ipar(1):ipar(1),-ipar(1):ipar(1))
+real(kind=sgl),INTENT(IN)               :: mLPNH(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12), ipar(9))
+real(kind=sgl),INTENT(IN)               :: mLPSH(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12), ipar(9))
+real(kind=sgl),INTENT(IN)               :: variants(4,ipar(44))
+real(kind=sgl),INTENT(IN)               :: epatterns(ipar(42),ipar(40))   ! correctsize x totnumexpt
+real(kind=sgl),INTENT(IN)               :: startEulers(3,ipar(40)) 
+real(kind=sgl),INTENT(IN)               :: startdps(ipar(40)) 
+real(kind=sgl),INTENT(INOUT)            :: eumain(3,ipar(40)) 
+real(kind=sgl),INTENT(INOUT)            :: dpmain(ipar(40))
+TYPE(C_FUNPTR), INTENT(IN), VALUE       :: cproc
+integer(c_size_t),INTENT(IN), VALUE     :: objAddress
+character(len=1),INTENT(IN)             :: cancel
+
+type(MCCLNameListType)                  :: mcnl
+type(EBSDNameListType)                  :: ebsdnl
+type(EBSDMCdataType)                    :: EBSDMCdata
+type(EBSDDetectorType)                  :: EBSDdetector
+
+logical                                 :: stat
+integer(kind=irg)                       :: ii, jj, kk, iii, istat, npx, npy, jjj
+real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
+
+integer(c_size_t),allocatable           :: LOCALIPAR(:)
+real(kind=dbl),allocatable              :: X(:), XL(:), XU(:)
+real(kind=sgl),allocatable              :: INITMEANVAL(:)
+real(kind=dbl)                          :: RHOBEG, RHOEND
+integer(kind=irg)                       :: NPT, N, IPRINT, NSTEP, NINIT
+integer(kind=irg),parameter             :: MAXFUN = 10000
+logical                                 :: verbose
+
+integer(kind=irg)                       :: binx, biny, recordsize, pos(1), globalcount, numexptsingle
+real(kind=sgl),allocatable              :: tmpimageexpt(:), imageexpt(:), mask(:,:), masklin(:)
+integer(kind=8)                         :: size_in_bytes_dict,size_in_bytes_expt
+
+real(kind=dbl)                          :: emult 
+real(kind=sgl)                          :: quat(4), quat2(4), ma, mi, dp, tmp, vlen, avec(3), dtor, nel
+real(kind=dbl)                          :: qu(4), rod(4) 
+integer(kind=irg)                       :: Emin, Emax, nthreads, TID, io_int(2), tick, tock, ierr, L, nvar, niter
+integer(kind=irg)                       :: ll, mm, Nexp, pgnum, FZcnt, nlines, dims2(2), correctsize, totnumexpt
+
+real(kind=dbl)                          :: prefactor, F
+real(kind=sgl),allocatable              :: dpPS(:), eulerPS(:,:)
+real(kind=dbl)                          :: ratioE, eurfz(3), euinp(3)
+integer(kind=irg)                       :: cratioE, fratioE, eindex, jjend, iiistart, iiiend, Nd, Ne, patsz, pp
+integer(kind=irg),allocatable           :: ppendE(:)
+
+real(kind=sgl),allocatable              :: STEPSIZE(:)
+type(dicttype),pointer                  :: dict
+integer(kind=irg)                       :: FZtype, FZorder
+PROCEDURE(ProgressCallBackDI2), POINTER :: proc
+
+! link the proc procedure to the cproc argument
+nullify(proc)
+CALL C_F_PROCPOINTER (cproc, proc)
+
+! get a few parameters from the input parameter arrays
+Ne = ipar(37)
+Nd = ipar(38)
+nthreads = ipar(18)
+iiistart = 1
+iiiend = ipar(27)
+jjend = ipar(26)
+totnumexpt = ipar(26) * ipar(27)
+numexptsingle = ipar(37)
+nvar = ipar(44)
+
+! generate the detector arrays
+ebsdnl%numsx = ipar(19)
+ebsdnl%numsy = ipar(20)
+ebsdnl%xpc = fpar(15)
+ebsdnl%ypc = fpar(16)
+ebsdnl%delta = fpar(17)
+ebsdnl%thetac = fpar(18)
+ebsdnl%L = fpar(19)
+ebsdnl%energymin = fpar(4)
+ebsdnl%energymax = fpar(3)
+mcnl%sig = fpar(1)
+mcnl%omega = fpar(2)
+mcnl%numsx = 2*ipar(1)+1
+mcnl%Ehistmin = fpar(4)
+mcnl%Ebinsize = fpar(5)
+EBSDMCdata%numEbins = ipar(12)
+
+allocate(EBSDdetector%rgx(ebsdnl%numsx,ebsdnl%numsy), &
+         EBSDdetector%rgy(ebsdnl%numsx,ebsdnl%numsy), &
+         EBSDdetector%rgz(ebsdnl%numsx,ebsdnl%numsy), &
+         EBSDdetector%accum_e_detector(ipar(12),ebsdnl%numsx,ebsdnl%numsy), stat=istat)
+
+call GenerateEBSDDetector(ebsdnl, mcnl, EBSDMCdata, EBSDdetector, verbose)
+
+!=====================================================
+! get the indices of the minimum and maximum energy
+!=====================================================
+Emin = nint((ebsdnl%energymin - mcnl%Ehistmin)/mcnl%Ebinsize) +1
+if (Emin.lt.1)  Emin=1
+if (Emin.gt.EBSDMCdata%numEbins)  Emin=EBSDMCdata%numEbins
+
+Emax = nint((ebsdnl%energymax - mcnl%Ehistmin)/mcnl%Ebinsize) + 1
+if (Emax .lt. 1) Emax = 1
+if (Emax .gt. EBSDMCdata%numEbins) Emax = EBSDMCdata%numEbins
+
+!=====================================================
+! determine important size parameters
+!=====================================================
+binx = ebsdnl%numsx
+biny = ebsdnl%numsy
+recordsize = binx*biny*4
+L = binx*biny
+npx = ipar(17)
+npy = npx
+
+! make sure that correctsize is a multiple of 16; if not, make it so
+if (mod(L,16) .ne. 0) then
+    correctsize = 16*ceiling(float(L)/16.0)
+else
+    correctsize = L
+end if
+
+! determine the experimental and dictionary sizes in bytes
+size_in_bytes_dict = Nd*correctsize*sizeof(correctsize)
+size_in_bytes_expt = Ne*correctsize*sizeof(correctsize)
+patsz              = correctsize
+
+! initialize the parameter arrays for the refinement routine
+allocate(LOCALIPAR(10))
+LOCALIPAR = 0
+
+! define the LOCALIPAR array
+LOCALIPAR(1) = 1
+LOCALIPAR(2) = binx
+LOCALIPAR(3) = biny
+LOCALIPAR(4) = ipar(17)
+LOCALIPAR(5) = ipar(17)
+LOCALIPAR(6) = EBSDMCdata%numEbins
+LOCALIPAR(7) = EBSDMCdata%numEbins
+LOCALIPAR(8) = Emin
+LOCALIPAR(9) = Emax
+LOCALIPAR(10)= 0
+
+dims2 = (/binx, biny/)
+
+! intensity prefactor
+nel = float(ipar(4)) * float(ipar(5))
+emult = nAmpere * 1e-9 / nel  ! multiplicative factor to convert MC data to an equivalent incident beam of 1 nanoCoulomb
+! intensity prefactor 
+prefactor = emult * fpar(20)* fpar(21) * 1.0D-6
+
+! point group number 
+pgnum = 0
+do ii=1,32
+  if (SGPG(ii).le.ipar(10)) pgnum = ii
+end do
+
+! allocate the dict structure
+allocate(dict)
+dict%Num_of_init = 3
+dict%Num_of_iterations = 30
+dict%pgnum = pgnum
+
+FZtype = FZtarray(dict%pgnum)
+FZorder = FZoarray(dict%pgnum)
+
+! initialize the symmetry matrices
+call DI_Init(dict,'nil') 
+
+! allocate arrays for the results
+allocate(dpPS(nvar),eulerPS(3, nvar))
+
+!=====================================================
+!==========ALLOCATE ALL ARRAYS HERE=================== 
+!=====================================================
+allocate(mask(binx,biny),masklin(binx*biny))
+mask = 1.0
+masklin = 0.0
+
+allocate(tmpimageexpt(binx*biny),imageexpt(binx*biny))
+tmpimageexpt = 0.0
+imageexpt = 0.0
+
+!===============================================================
+! define the circular mask if necessary and convert to 1D vector
+!===============================================================
+if (ipar(29).eq.1) then
+  do ii = 1,biny
+      do jj = 1,binx
+          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. fpar(23)**2) then
+              mask(jj,ii) = 0.0
+          end if
+      end do
+  end do
+end if
+  
+do ii = 1,biny
+    do jj = 1,binx
+        masklin((ii-1)*binx+jj) = mask(jj,ii)
+    end do
+end do
+
+!=================================
+!========LOOP VARIABLES===========
+!=================================
+ratioE = float(totnumexpt)/float(numexptsingle)
+cratioE = ceiling(ratioE)
+fratioE = floor(ratioE)
+
+ppendE = (/ (numexptsingle, ii=1,cratioE) /)
+if (fratioE.lt.cratioE) then
+  ppendE(cratioE) = MODULO(totnumexpt,numexptsingle)
+end if
+
+!===================================================================================
+!===============BOBYQA VARIABLES====================================================
+!===================================================================================
+N = 3
+allocate(X(N),XL(N),XU(N),INITMEANVAL(N),STEPSIZE(N))
+
+XL = 0.D0
+XU = 1.D0
+RHOBEG = 0.1D0
+RHOEND = 0.0001D0
+IPRINT = 0
+NPT = N + 6
+STEPSIZE = fpar(25)
+verbose = .FALSE.
+
+call OMP_SET_NUM_THREADS(nthreads)
+
+globalcount = 0
+
+do iii = 1,cratioE
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,ii,tmpimageexpt,jj,quat,quat2,ma,mi,eindex) &
+!$OMP& PRIVATE(ll,mm, X,INITMEANVAL,dpPS,eulerPS,eurfz,euinp,pos)
+         
+  TID = OMP_GET_THREAD_NUM()
+
+!$OMP DO SCHEDULE(DYNAMIC)
+  do jj = 1,ppendE(iii)
+
+!$OMP CRITICAL
+    globalcount = globalcount+1
+!$OMP END CRITICAL
+
+    eindex = (iii - 1)*Ne + jj
+    tmpimageexpt(1:correctsize) = epatterns(1:correctsize,eindex)
+    tmpimageexpt = tmpimageexpt/NORM2(tmpimageexpt)
+
+! calculate the dot product for each of the orientations in the neighborhood of the best match
+! including the pseudosymmetric variant; do this for all the selected top matches (matchdepth)
+    quat(1:4) = eu2qu(startEulers(1:3,eindex))
+
+    do ll = 1,nvar
+      quat2 = quat_mult(variants(1:4,ll), quat)
+      euinp = qu2eu(quat2)
+      call ReduceOrientationtoRFZ(euinp, dict, FZtype, FZorder, eurfz)
+      quat2 = eu2qu(eurfz)
+
+      INITMEANVAL(1:3) = eu2ho(eurfz(1:3)) 
+      X = 0.5D0
+      call bobyqa (LOCALIPAR, INITMEANVAL, tmpimageexpt, N, NPT, X, XL, XU, RHOBEG, RHOEND, IPRINT, MAXFUN, &
+                   EMFitOrientationcalfunEBSD, EBSDdetector%accum_e_detector, mLPNH, mLPSH, mask, prefactor, &
+                   EBSDdetector%rgx, EBSDdetector%rgy, EBSDdetector%rgz, STEPSIZE, fpar(22), verbose)
+  
+      eulerPS(1:3,ll) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
+                                X(2)*2.0*STEPSIZE(2) - STEPSIZE(2) + INITMEANVAL(2), &
+                                X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) 
+
+      call EMFitOrientationcalfunEBSD(LOCALIPAR, INITMEANVAL, tmpimageexpt, EBSDdetector%accum_e_detector, &
+                                      mLPNH, mLPSH, N, X, F, mask, prefactor, EBSDdetector%rgx, &
+                                      EBSDdetector%rgy, EBSDdetector%rgz, STEPSIZE, fpar(22), verbose)
+
+      dpPS(ll) = 1.D0 - F
+    end do
+
+! updating the confidence index only if a better match is found
+    dp = maxval(dpPS)
+    if (dp .gt. startdps(eindex)) then
+      dpmain(eindex) = dp
+      pos = maxloc(dpPS)
+      eumain(1:3,eindex) = eulerPS(1:3,pos(1))
+    else
+      dpmain(eindex) = startdps(eindex)
+      eumain(1:3,eindex) = startEulers(1:3,eindex) 
+    end if
+
+! callback section
+      if ((objAddress.ne.0).and.(mod(globalcount,10).eq.0)) then
+! send information via the callback routine
+        call proc(objAddress, globalcount, totnumexpt)
+      end if
+  end do
+!$OMP END DO
+!$OMP END PARALLEL
+end do
+
+end subroutine EMsoftCEBSDRefine
 
 end module EMDIwrappermod

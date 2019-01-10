@@ -78,6 +78,30 @@ void EMsoftCEBSDDI
 	 float* resultmain, size_t* indexmain, ProgCallBackTypeDI3 callback, ProgCallBackTypeError errorcallback,
      size_t object, bool* cancel); 
 
+/**
+* EBSD indexing refinement (all in ram) wrapper routine
+* @param ipar array with integer input parameters
+* @param fpar array with float input parameters
+* @param accum_e array with Monte Carlo histogram
+* @param mLPNH Northern hemisphere master pattern
+* @param mLPSH Southern hemisphere master pattern
+* @param variants array with quaternions defining the potential pseudosymmetry variants
+* @param epatterns array with pre-processed experimental patterns
+* @param startEulers array with initial Euler angle triplets
+* @param startdps array with initial dot product values
+* @param eumain array with refined Euler angle triplets
+* @param dpmain array with refined dot product values
+* @param callback callback routine to update progress bar
+* @param object unique identifier for calling class instantiation
+* @param cancel boolean to trigger cancellation of computation
+*/
+
+void EMsoftCEBSDRefine
+	(size_t* ipar, float* fpar, int32_t* accum_e, float* mLPNH, float* mLPSH,
+	 float* variants, float* epatterns, float* startEulers, float* startdps, float* eumain, 
+	 float* dpmain, ProgCallBackTypeDI2 callback, size_t object, bool* cancel);
+
+
 #ifdef __cplusplus
 }
 #endif
