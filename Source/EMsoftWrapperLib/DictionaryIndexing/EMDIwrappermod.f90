@@ -1258,9 +1258,9 @@ end subroutine EMsoftCEBSDDI
 ! !> @param mLPSH Southern hemisphere master pattern
 ! !> @param variants array with quaternions defining the potential pseudosymmetry variants float(4,nvars)
 ! !> @param epatterns array with pre-processed experimental patterns float(correctsize, totnumexpt)
-! !> @param startEulers array with initial Euler angle triplets float(3,totnumexpt)
+! !> @param startEulers array with initial Euler angle triplets in radians  float(3,totnumexpt)
 ! !> @param startdps array with initial dot product values float(totnumexpt)
-! !> @param eumain array with refined Euler angle triplets float(3,totnumexpt)
+! !> @param eumain array with refined Euler angle triplets in radians float(3,totnumexpt)
 ! !> @param dpmain array with refined dot product values float(totnumexpt)
 ! !> @param cproc pointer to a C-function for the callback process
 ! !> @param objAddress unique integer identifying the calling class in DREAM.3D
@@ -1599,7 +1599,7 @@ do iii = 1,cratioE
   
       eulerPS(1:3,ll) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
                                 X(2)*2.0*STEPSIZE(2) - STEPSIZE(2) + INITMEANVAL(2), &
-                                X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) * 180.0/cPi
+                                X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) 
 
       call EMFitOrientationcalfunEBSD(LOCALIPAR, INITMEANVAL, tmpimageexpt, EBSDdetector%accum_e_detector, &
                                       mLPNH, mLPSH, N, X, F, mask, prefactor, EBSDdetector%rgx, &
@@ -1616,7 +1616,7 @@ do iii = 1,cratioE
       eumain(1:3,eindex) = eulerPS(1:3,pos(1))
     else
       dpmain(eindex) = startdps(eindex)
-      eumain(1:3,eindex) = startEulers(1:3,eindex) * 180.0/cPi
+      eumain(1:3,eindex) = startEulers(1:3,eindex) 
     end if
 
 ! callback section
