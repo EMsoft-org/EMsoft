@@ -58,6 +58,7 @@
 !> @date   01/11/15 MDG 5.0 moved HDFobjectStackType to HDFSupport module
 !> @date   05/02/16 MDG 5.1 added SghLUT to unitcell type
 !> @date   05/07/18 MDG 5.2 added CSL types
+!> @date   01/12/19 MDG 5.3 added Spherical Harmonic type
 !--------------------------------------------------------------------------
 module typedefs
 
@@ -1703,6 +1704,17 @@ integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape
                                                                                     1,4,1,8,1,8, &
                                                                                     3,11,3,11,1,11 /), (/ 6, CSLnumberdefined /))
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLintegers
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+type SH_Coefficients
+    real(kind=dbl),allocatable          :: Alm(:)
+    real(kind=dbl),allocatable          :: Blm(:)
+    real(kind=dbl),allocatable          :: Plm(:)
+    real(kind=dbl),allocatable          :: Ylm(:)
+end type SH_Coefficients
 
 
 

@@ -43,6 +43,7 @@
 !> @date 11/13/13 MDG 4.0 added MatrixExponential routine
 !> @date 11/23/15 MDG 4.1 moved several routines from other mods into this one
 !> @date 10/24/17 MDG 4.2 added infty()/inftyd() functions to return the IEEE infinity value
+!> @date 01/12/19 MDG 5.0 added spherical harmonic routines
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -546,6 +547,229 @@ do icnt = 1,j
 end do
 
 end subroutine MatrixExponential
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: SH_PT
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief combine l and m into an array index for Spherical Harmonics
+!
+!> @details Based on https://arxiv.org/pdf/1410.1748.pdf
+!
+!> @param l SH index
+!> @param m SH index
+!
+!> @date 01/12/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function SH_PT(l, m) result(PT)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_PT
+
+IMPLICIT NONE
+
+integer(kind=irg), INTENT(IN)   :: l
+integer(kind=irg), INTENT(IN)   :: m
+integer(kind=irg)               :: PT
+
+PT = m + l * (l+1) / 2
+
+end function SH_PT
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: SH_YR
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief combine l and m into an array index for Spherical Harmonics
+!
+!> @details Based on https://arxiv.org/pdf/1410.1748.pdf
+!
+!> @param l SH index
+!> @param m SH index
+!
+!> @date 01/12/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function SH_YR(l, m) result(PT)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_YR
+
+IMPLICIT NONE
+
+integer(kind=irg), INTENT(IN)   :: l
+integer(kind=irg), INTENT(IN)   :: m
+integer(kind=irg)               :: PT
+
+PT = m + l * (l+1) 
+
+end function SH_YR
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: SH_ABlm 
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief initialize Spherical Harmonic auxiliary arrays
+!
+!> @details Based on https://arxiv.org/pdf/1410.1748.pdf
+!
+!> @param SH_A 
+!> @param SH_B
+!> @param z0 slice thickness in [nm]
+!> @param TP 'Tayl' or 'Pade', to select method
+!> @param nn number of row/column entries in A
+!
+!> @date 09/16/13 MDG 1.0 original, tested against analytical version for small array
+!> @date 06/05/14 MDG 1.1 updated IO
+!--------------------------------------------------------------------------
+recursive subroutine SH_ABlm(SHcoeff, maxL)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_ABlm
+
+use typedefs
+
+IMPLICIT NONE
+
+type(SH_Coefficients),INTENT(INOUT)   :: SHcoeff
+integer(kind=irg), INTENT(IN)         :: maxL
+
+integer(kind=irg)                     :: l, m, ls, lm1s, ms
+
+if (allocated(SHcoeff%Alm).eqv..TRUE.) deallocate(SHcoeff%Alm)
+if (allocated(SHcoeff%Blm).eqv..TRUE.) deallocate(SHcoeff%Blm)
+
+allocate(SHcoeff%Alm(SH_PT(maxL,maxL)+1))
+allocate(SHcoeff%Blm(SH_PT(maxL,maxL)+1))
+
+do l=2,maxL
+  ls = l*l
+  lm1s = (l-1)*(l-1)
+  do m=0,l-2
+    ms = m*m
+    SHcoeff%Alm(SH_PT(l,m)) = sqrt((4.D0*dble(ls)-1.D0)/dble(ls-ms))
+    SHcoeff%Blm(SH_PT(l,m)) = -sqrt((dble(lm1s-ms))/dble(4*lm1s-1))
+  end do
+end do
+
+end subroutine SH_ABlm
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: SH_ComputeP
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute a set of Plm for a given value of x
+!
+!> @details Based on https://arxiv.org/pdf/1410.1748.pdf
+!
+!> @param SH_coeff
+!> @param L
+!> @param x
+!
+!> @date 01/12/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine SH_ComputeP(SHcoeff, L, x)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_ComputeP
+
+use typedefs
+
+IMPLICIT NONE
+
+type(SH_Coefficients),INTENT(INOUT)   :: SHcoeff
+integer(kind=irg), INTENT(IN)         :: L
+real(kind=dbl), INTENT(IN)            :: x
+
+real(kind=dbl), parameter             :: sqrt3 = 1.7320508075688772935D0, sqrt3div2 = -1.2247448713915890491D0
+real(kind=dbl)                        :: temp, sintheta
+integer(kind=irg)                     :: ll, m, PTlm
+
+if (allocated(SHcoeff%Plm).eqv..TRUE.) deallocate(SHcoeff%Plm)
+allocate(SHcoeff%Plm(SH_PT(L,L)+1))
+
+temp = 0.39894228040143267794D0
+
+SHcoeff%Plm(SH_PT(0,0)) = temp
+if (L.gt.0) then 
+  SHcoeff%Plm(SH_PT(1,0)) = x * sqrt3 * temp
+  temp = sqrt3div2*sintheta*temp
+  SHcoeff%Plm(SH_PT(1,1)) = temp
+
+  do ll=2,L
+    do m=0,l-2
+      PTlm = SH_PT(ll,m)
+      SHcoeff%Plm(PTlm) = SHcoeff%Alm(PTlm) * ( x * SHcoeff%Plm(SH_PT(ll-1,m)) + SHcoeff%Blm(PTlm) * SHcoeff%Plm(SH_PT(ll-2,m)) )
+    end do
+    SHcoeff%Plm(SH_PT(ll,ll-1)) = x * sqrt(dble(2*(ll-1)+3)) * temp
+    temp = -sqrt(1.D0+0.5D0/dble(ll)) * sintheta * temp
+    SHcoeff%Plm(SH_PT(ll,ll)) = temp
+  end do
+end if 
+
+end subroutine SH_ComputeP
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: SH_ComputeY
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute a set of Ylm for a given value of x
+!
+!> @details Based on https://arxiv.org/pdf/1410.1748.pdf
+!
+!> @param SH_coeff
+!> @param L
+!> @param phi
+!
+!> @date 01/12/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine SH_ComputeY(SHcoeff, L, phi)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_ComputeY
+
+use typedefs
+
+IMPLICIT NONE
+
+type(SH_Coefficients),INTENT(INOUT)   :: SHcoeff
+integer(kind=irg), INTENT(IN)         :: L
+real(kind=dbl), INTENT(IN)            :: phi
+
+real(kind=dbl)                        :: c1, c2, s1, s2, tc, s, c, tt
+integer(kind=irg)                     :: ll, m 
+
+
+if (allocated(SHcoeff%Ylm).eqv..TRUE.) deallocate(SHcoeff%Ylm)
+allocate(SHcoeff%Ylm(SH_YR(L,L)+1))
+
+m = 0
+do ll=0,L
+  SHcoeff%Ylm(SH_YR(ll,m)) = SHcoeff%Plm(SH_PT(ll,m)) * 0.5D0 * sqrt(2.D0)
+end do 
+
+c1 = 1.D0
+c2 = cos(phi)
+s1 = 0.D0
+s2 = -sin(phi)
+tc = 2.D0 * c2
+do m=1,L
+  s = tc * s1 - s2
+  c = tc * c1 - c2
+  s2 = s1
+  s1 = s
+  c2 = c1
+  c1 = c
+  do ll=m,L 
+    tt = SHcoeff%Plm(SH_PT(ll,m))
+    SHcoeff%Ylm(SH_YR(ll,-m)) =  tt * s
+    SHcoeff%Ylm(SH_YR(ll,m)) = tt * c
+  end do
+end do
+
+end subroutine SH_ComputeY
 
 
 !--------------------------------------------------------------------------
