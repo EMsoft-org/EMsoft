@@ -1710,11 +1710,20 @@ integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape
 !--------------------------------------------------------------------------
 
 type SH_Coefficients
+    integer(kind=irg)                   :: maxL
     real(kind=dbl),allocatable          :: Alm(:)
     real(kind=dbl),allocatable          :: Blm(:)
     real(kind=dbl),allocatable          :: Plm(:)
     real(kind=dbl),allocatable          :: Ylm(:)
+    real(kind=dbl)                      :: lastPhi
+    real(kind=dbl)                      :: lastTheta
 end type SH_Coefficients
+
+type SH_Mode 
+  integer  :: l
+  integer  :: m 
+  complex  :: weight
+end type SH_Mode
 
 
 
