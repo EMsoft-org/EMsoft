@@ -44,6 +44,7 @@ program EMeqvrot
 
 use local
 use constants
+use symmetry
 use dictmod
 use rotations
 use quaternions
@@ -65,10 +66,10 @@ progdesc = 'List equivalent rotations'
 ! print some information
 call EMsoft(progname, progdesc)
 
-
 dtor = cPi/180.D0
 
 ! ask for point group number
+call ListPointGroups
 call ReadValue('Enter the point group number ',io_int)
 pgnum = io_int(1)
 
