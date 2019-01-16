@@ -88,7 +88,7 @@ contains
 !
 ! SUBROUTINE: SH_setSHTConstants
 !
-!> @author Marc De Graef, Carnegie Mellon University
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
 !> @brief Initialize a number of constants 
 !
@@ -186,7 +186,7 @@ end subroutine SH_setSHTConstants
 !
 ! SUBROUTINE: SH_printRow
 !
-!> @author Marc De Graef, Carnegie Mellon University
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
 !> @brief Print square lambert projection in row major order to a file 'SHTC-printrow.txt'
 !
@@ -229,7 +229,7 @@ end subroutine SH_printRow
 !
 ! SUBROUTINE: SH_printRing
 !
-!> @author Marc De Graef, Carnegie Mellon University
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
 !> @brief Print square lambert projection in row major order to a file 'SHTC-printrow.txt'
 !
@@ -286,7 +286,7 @@ end subroutine SH_printRing
 !
 ! SUBROUTINE: SH_readRing
 !
-!> @author Marc De Graef, Carnegie Mellon University
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
 !> @brief get a single ring form a square lambert projection
 !
@@ -367,7 +367,7 @@ end subroutine SH_readRing
 !
 ! SUBROUTINE: SH_writeRing
 !
-!> @author Marc De Graef, Carnegie Mellon University
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
 !> @brief write a single ring to a square lambert projection
 !
@@ -443,6 +443,90 @@ else  ! this is the innermost ring with 8 slots
 end if
 
 end subroutine SH_writeRing
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: SH_computeWeightsSkip
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute quadrature weights for rings (w_y in equation 10 of Reinecke)
+!
+!> @details For details, see https://doi.org/10.1111/j.1365-246X.1994.tb03995.x
+!
+!> @param dim side length of square lambert projection to compute weights for
+!> @param lat cosines of ring latitudes (symmetric across equator)
+!> @param wgt weights for each row
+!> @param skp ring to exclude from weights (e.g. skip = 0 will exclude the poles)
+!
+!> @date 01/16/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine SH_computeWeightsSkip(dim, lat, wgt, skp)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_computeWeightsSkip
+
+use constants
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                  :: dim
+real(kind=dbl),INTENT(INOUT)                  :: lat
+real(kind=dbl),INTENT(INOUT)                  :: wgt
+integer(kind=irg),INTENT(IN)                  :: skp
+
+integer(kind=irg)                             :: num, nMat, gridPoints
+real(kind=dbl)                                :: wn, w0
+real(kind=dbl),allocatable                    :: a(:,:), x(:), b(:)
+
+num = dim
+nMat = (num+1)/2 -1
+
+! build matrix of the form a_ij = cos(2*i*latitude[j]) for Sneeuw equation (21)
+! We'll compute them using Chebyshev recursion: cos(ni) = T_n(cos(i)) with: T_0(x) = 1, 
+!  T_1(x) = x, T_{n}(x) = 2x T_{n-1}(x) - T_{n-2}(x)
+allocate(a(0:nMat-1,0:nMat-1), x(0:nMat-1), b(0:nMat-1))
+a(:,0) = 1.D0
+! fill the second row with cos(2theta_j) values using the double angle formula for cos(2x)
+if (skp.eq.0) then
+  do i=1,nMat-1
+    x(i) = lat(i)*lat(i)*2.D0-1.D0
+  end do
+else
+  do i=1,skp-1
+    x(i) = lat(i)*lat(i)*2.D0-1.D0
+  end do
+  do i=skp,nMat-1
+    x(i) = lat(i+1)*lat(i+1)*2.D0-1.D0
+  end do
+end if 
+a(:,1) = x(:)
+
+! loop over remaining rows using Chebyshev recursion to fill in cos(2*n*i)
+do j=2,nMat-1
+  a(:,j) = x(:) * a(:,j-1) * 2.D0 - a(:,j-2)  
+end do
+
+! build the column vector for the right hand side of the equation
+b = (/ (-1.D0/(4.D0*dble(i)*dble(i)-1.D0),i=0,nMat-1 ) /)
+
+! solve the equation     a * wgt = b   (we'll use a Lapack routine to do so)
+
+! compute the solid angle of a grid point
+gridPoints = dim*dim*2 -(dim-1)*4     ! total number of points on sphere (equator has double cover)
+wn = cPi * 4.D0 / dble(gridPoints)    ! solid angle of single point (solid angle of sphere / # grid points)
+w0 = wn * dble( dim * (dim-2) +2 )    ! initial scaling factor (doesn't account for different # pts in each ring)
+
+! rescale weights by solid angle and ratio of points to equatorial points and use symmetry to fill southern hemisphere weights
+! (the master pattern always has an odd number of points along the side so we simplify the original C++ code, using offset = 0)
+
+
+
+
+
+
+
+
+
+end subroutine SH_computeWeightsSkip
 
 
 
