@@ -309,7 +309,7 @@ real(kind=dbl),INTENT(IN)                     :: MP(-SHTC%dim:SHTC%dim,-SHTC%dim
 integer(kind=irg),INTENT(IN)                  :: ringID
 real(kind=dbl),INTENT(INOUT)                  :: buffer(0:4*ringID*(ringID+1)-1)
 
-integer(kind=irg) 							  :: d, i, j, icol, jrow, idx
+integer(kind=irg) 							              :: d, i, j, icol, jrow, idx
 
 d = SHTC%d
 if (ringID.gt.d) call FatalError('SH_readRing','requested ring number does not exist')
@@ -362,5 +362,89 @@ else  ! this is the innermost ring with 8 slots
 end if
 
 end subroutine SH_readRing
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: SH_writeRing
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write a single ring to a square lambert projection
+!
+!> @param SHTC
+!> @param MP
+!> @param ringID
+!> @param buffer
+!
+!> @date 01/16/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine SH_writeRing(SHTC, MP, ringID, ringdim, buffer) 
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_writeRing
+
+use error
+
+IMPLICIT NONE
+
+type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC 
+real(kind=dbl),INTENT(INOUT)                  :: MP(-SHTC%dim:SHTC%dim,-SHTC%dim:SHTC%dim)
+integer(kind=irg),INTENT(IN)                  :: ringID
+real(kind=dbl),INTENT(IN)                     :: buffer(0:4*ringID*(ringID+1)-1)
+
+integer(kind=irg)                             :: d, i, j, icol, jrow, idx
+
+d = SHTC%d
+if (ringID.gt.d) call FatalError('SH_writeRing','requested ring number does not exist')
+
+! set the starting location
+idx = 0
+icol = ringID
+jrow = 0
+MP(icol, jrow) = buffer(idx)
+
+if (ringID.gt.1) then  ! this is a regular ring
+! we spiral counter-clockwise through the array and make a 90° turn at the diagonals
+! go up to the upper right diagonal
+  do jrow=1,ringID
+    idx = idx + 1
+    MP(icol, jrow) = buffer(idx)
+  end do
+! move to the upper left diagonal
+  jrow = ringID
+  do irow = ringID-1,-ringID,-1
+    idx = idx + 1
+    MP(icol, jrow) = buffer(idx)
+  end do
+! move to the lower left diagonal
+  icol = -ringID
+  do jrow=ringID-1,-ringID,-1
+    idx = idx + 1
+    MP(icol, jrow) = buffer(idx)
+  end
+! move to the lower right diagonal
+  jrow = -ringID
+  do icol = -ringID+1,ringID
+    idx = idx + 1
+    MP(icol, jrow) = buffer(idx)
+  end do
+! and close the ring
+  icol = ringID
+  do jrow=-ringID+1,-1
+    idx = idx + 1
+    MP(icol, jrow) = buffer(idx)
+  end do
+else  ! this is the innermost ring with 8 slots
+  MP( 1, 1) = buffer(1)
+  MP( 0, 1) = buffer(2)
+  MP(-1, 1) = buffer(3)
+  MP(-1, 0) = buffer(4)
+  MP(-1,-1) = buffer(5)
+  MP( 0,-1) = buffer(6)
+  MP( 1,-1) = buffer(7)
+end if
+
+end subroutine SH_writeRing
+
+
+
 
 end module DSHT
