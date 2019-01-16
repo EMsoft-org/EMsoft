@@ -1708,6 +1708,11 @@ integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
+! type definitions used for the Spherical Indexing algorithm
+
+type SH_gridLayout
+    integer(kind=irg)                   :: LambertLegendre  ! 1 for Legendre (preferred), 2 for Lambert
+end type SH_gridLayout
 
 type SH_Coefficients
     integer(kind=irg)                   :: maxL
@@ -1725,6 +1730,24 @@ type SH_Mode
   complex  :: weight
 end type SH_Mode
 
+type SH_LUT
+  real(kind=dbl),allocatable            :: ring         ! work space to repack patterns from row -> ring major order
+  complex(kind=dbl),allocatable         :: cWrk1, cWrk2 ! complex working arrays for a single ring
+  real(kind=dbl),allocatable            :: rWrk1, rWrk2 ! real working array for a single ring
+  integer(kind=irg),allocatable         :: ringStart(:) ! starting index of reach ring in the row representation
+end type SH_LUT
 
+type SH_SHTConstantsType
+  integer(kind=irg)                     :: dim          ! side length of square Lambert projection
+  integer(kind=irg)                     :: d            ! half length of square Lambert projection
+  integer(kind=irg)                     :: Nt           ! number of pairs of equal lattitude rings [(dim+1)/2]
+  integer(kind=irg)                     :: maxL         ! maximum bandwidth of square lambert projection (must be < Nt for arbitrary rings (Nt*2 for legendre rings))
+  integer(kind=irg)                     :: Nw           ! number of different types of weights [(dim-2) / 8 + 1]
+  real(kind=dbl),allocatable            :: wy(:)        ! weighting factor for each ring [Nt * Nw]
+  real(kind=dbl),allocatable            :: cosTy(:,:)   ! cosine of latitude of each ring [Nt]
+  real(kind=dbl),allocatable            :: amn(:)       ! precomputed a^m_n values for on the fly ylm calculation [maxL^2]
+  real(kind=dbl),allocatable            :: bmn(:)       ! precomputed b^m_n values for on the fly ylm calculation [maxL^2]
+! array of pointers to fftw plans ...   This is implemented in the DSHT module rather than here ... 
+end type SH_SHTConstantsType
 
 end module typedefs

@@ -32,9 +32,12 @@
 !
 ! MODULE: Ylm
 !
-!> @author Marc De Graef, Carnegie Mellon University
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
 !> @brief Spherical Harmonic stuff
+! 
+!> @details This implements Will Lenthe's ylm.hpp routines for the computation of 
+!> spherical harmonics, which are subsequently used in the EMSphInx algorithm.
 ! 
 !> @date 01/13/19 MDG 1.0 original, based on Will Lenthe's C++ routines, tested against Mathematica
 !--------------------------------------------------------------------------
