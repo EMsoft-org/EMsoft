@@ -95,6 +95,12 @@ real(kind=dbl), parameter :: epsijkd = 1.D0
 ! rotations tutorial paper for an in-depth explanation.  These changes propagate
 ! to a number of files, notably quaternions.f90, and everywhere else that quaternions
 ! and rotations in general are used.
+!
+! Reference:  D.J. Rowenhorst, A.D. Rollett, G.S. Roher, M.A. Groeber, M.A. Jackson, 
+!  P.J. Konijnenberg, and M. De Graef. "Tutorial: consistent representations of and 
+!  conversions between 3D rotations". Modeling and Simulations in Materials Science 
+!  and Engineering, 23, 083501 (2015).
+!
 ! ****************************************************
 ! ****************************************************
 ! ****************************************************
