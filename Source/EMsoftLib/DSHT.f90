@@ -469,16 +469,17 @@ use constants
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                  :: dim
-real(kind=dbl),INTENT(INOUT)                  :: lat
-real(kind=dbl),INTENT(INOUT)                  :: wgt
+real(kind=dbl),INTENT(INOUT)                  :: lat(:)   ! nMat
+real(kind=dbl),INTENT(INOUT)                  :: wgt(:)   ! nMat + 1
 integer(kind=irg),INTENT(IN)                  :: skp
 
-integer(kind=irg)                             :: num, nMat, gridPoints
+integer(kind=irg)                             :: num, nMat, gridPoints, INFO
+integer(kind=irg),allocatable                 :: IPIV(:)
 real(kind=dbl)                                :: wn, w0
 real(kind=dbl),allocatable                    :: a(:,:), x(:), b(:)
 
 num = dim
-nMat = (num+1)/2 -1
+nMat = (num+1)/2 - 1   ! -1 for the skipped ring
 
 ! build matrix of the form a_ij = cos(2*i*latitude[j]) for Sneeuw equation (21)
 ! We'll compute them using Chebyshev recursion: cos(ni) = T_n(cos(i)) with: T_0(x) = 1, 
@@ -504,31 +505,73 @@ a(:,1) = x(:)
 do j=2,nMat-1
   a(:,j) = x(:) * a(:,j-1) * 2.D0 - a(:,j-2)  
 end do
+deallocate(x)
 
 ! build the column vector for the right hand side of the equation
 b = (/ (-1.D0/(4.D0*dble(i)*dble(i)-1.D0),i=0,nMat-1 ) /)
 
 ! solve the equation     a * wgt = b   (we'll use a Lapack routine to do so)
+allocate(IPIV(nMat))
+call dgesv(nMat, 1, a, nMat, IPIV, b, nMat, INFO)
+if (INFO.ne.0) then 
+  if (INFO.gt.0) then
+    io_int(1) = INFO
+    call WriteValue(' The following matrix argument had an illegal value',io_int,1)
+  else
+    io_int(1) = -INFO
+    call WriteValue(' The following U matrix element is zero :',io_int,1,'(I2,$')
+    call Message('; Matrix factorization completed, but solution could not be computed.')
+  end if
+  call FatalError('SH_computeWeightsSkip','Error returned from LAPACK dgesv routine ... ')
+end if
+wgt(:) = b(:)
+deallocate(IPIV)
 
 ! compute the solid angle of a grid point
 gridPoints = dim*dim*2 -(dim-1)*4     ! total number of points on sphere (equator has double cover)
 wn = cPi * 4.D0 / dble(gridPoints)    ! solid angle of single point (solid angle of sphere / # grid points)
 w0 = wn * dble( dim * (dim-2) +2 )    ! initial scaling factor (doesn't account for different # pts in each ring)
 
-! rescale weights by solid angle and ratio of points to equatorial points and use symmetry to fill southern hemisphere weights
-! (the master pattern always has an odd number of points along the side so we simplify the original C++ code, using offset = 0)
+! rescale weights by solid angle and ratio of points to equatorial points and use 
+! symmetry to fill southern hemisphere weights (the master pattern always has an 
+! odd number of points along the side so we simplify the original C++ code, using offset = 0)
+delta = sum(wgt(0:nMat-1)) - 1.D0     ! should be zero
+if (delta.gt.(epsilon(1.D0)**(1.D0/3.D0))/64.D0) then 
+    call FatalError('SH_computeWeightsSkip','insufficient precision to accurately compute ring weights')
+end if
 
-
-
-
-
-
-
-
+! correct for alignment for missing ring
+do i=nMat+1,skp,-1
+  wgt(i) = wgt(i-1)
+end do
+wgt(skp) = 0
+wgt(0) = wgt(0) * w0
+do i=1,nMat+1
+  wgt(i) = wgt(i) * w0 / dble(8*i)
+end do
 
 end subroutine SH_computeWeightsSkip
 
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: SH_analyze
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute spherical harmonic coefficients from a spherical function (forward transformation)
+!
+!> @param pts value of function to analyze at each grid point (row major order, northern 
+!             followed by southern hemisphere)
+!> @param alm location to write alm values maxL * maxL with (m,l) stored: (0,0), (0,1), (0,2), ..., 
+!             (0,maxL), (1,0), (1,1), (1,2), ..., (maxL,0), (maxL,1), (maxL,maxL)
+!
+!> @date 01/16/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine SH_analyze(pts, alm)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_analyze
 
+
+end subroutine SH_analyze
 
 end module DSHT
