@@ -76,7 +76,7 @@ use Lambert
 IMPLICIT NONE
 
 public :: SH_DiscreteSHT, SH_analyze, SH_synthesize, SH_cosLats, SH_printRow, SH_printRing, SH_row2ring, &
-          SH_ring2row, SH_computeWeightsSkip, SH_SHTConstants 
+          SH_ring2row, SH_computeWeightsSkip, SH_setSHTConstants 
 
 ! here we need to define an array of pointers (ffts) to fftw plans ...
 
@@ -86,7 +86,7 @@ contains
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE: SH_setSHTConstants
+! SUBROUTINE: SH_dicreteSHTConstructor
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
@@ -99,8 +99,8 @@ contains
 !
 !> @date 01/16/19 MDG 1.0 original, based on Will Lenthe's classes in square_sphere.hpp
 !--------------------------------------------------------------------------
-recursive subroutine SH_setSHTConstants(SHTC, d, l, c) 
-!DEC$ ATTRIBUTES DLLEXPORT :: SH_setSHTConstants
+recursive subroutine SH_dicreteSHTConstructor(SHTC, d, l, layout) 
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_dicreteSHTConstructor
 
 use error
 use constants
@@ -110,10 +110,10 @@ IMPLICIT NONE
 type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC 
 integer(kind=irg),INTENT(IN)                  :: d 
 integer(kind=irg),INTENT(IN)                  :: l 
-real(kind=dbl),INTENT(IN)                     :: c
+character(fnlen),INTENT(IN)                   :: layout
 
-real(kind=dbl)								  :: k4p, kamm
-integer(kind=irg)							  :: m, m, m2, n12, n2, n2m2, n12m2, i, y
+real(kind=dbl)								                :: k4p, kamm
+integer(kind=irg)							                :: m, m, m2, n12, n2, n2m2, n12m2, i, y
 
 ! set a few constants
 SHTC%dim = d 
@@ -128,10 +128,13 @@ if (mod(dim,2).eq.1) call FatalError('SH_setSHTConstants','only odd Lambert squa
 if (l.ge.Nt) call FatalError('SH_setSHTConstants','maximum bandwidth is (Lambert square side length) / 2')
 
 ! everything is ok, so allocate the constant arrays
-allocate(SHTC%wy(Nt*Nw), SHTC%cosTy(c,c+Nt), SHTC%amn(0:l*l), SHTC%bmn(0:l*l))
+allocate(SHTC%wy(Nt*Nw), SHTC%cosTy(0:Nt-1), SHTC%amn(0:l*l), SHTC%bmn(0:l*l))
 allocate(ffts(Nt)) ! these are defined separately, but are part of SHTC in the original C++ code
 SHTC%amn = 0.D0
 SHTC%bmn = 0.D0
+
+! get the cosines of the lattitudes
+SHTC%cosTy = SH_cosLats(d, layout)
 
 ! compute amn and bmn values
 k4p = 1.D0/ (4.D0 * cPi)
@@ -162,9 +165,7 @@ iloop: do m=0,SHTC%maxL-1
 end do iloop
 
 ! compute the ring weights (scales with dim^4 !!!)
-do i=0,SHTC%Nw-1
-  call SH_computeWeightsSkip(SHTC, i)
-end do
+call SH_computeWeightsSkip(SHTC, i)
 
 ! finally, build the array of pointers to fft plans
 ! do y=0,SHTC%Nt-1
@@ -173,13 +174,64 @@ end do
 
 
 
-end subroutine SH_setSHTConstants
+end subroutine SH_dicreteSHTConstructor
 
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: SH_cosLats
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the cosines of the Lambert or Legendre lattitudes
+!
+!> @param d
+!> @param t
+!> returns lat
+!
+!> @date 01/21/19 MDG 1.0 original, based on Will Lenthe's classes in square_sphere.hpp
+!--------------------------------------------------------------------------
+recursive function SH_cosLats(d, t) result(lat)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_cosLats
 
+IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)                  :: d
+character(fnlen),INTENT(IN)                   :: t
+real(kind=dbl)                                :: lat(0:(d+1)/2-1)
 
+integer(kind=irg)                             :: i, count, denom, numer, delta 
+logical                                       :: even
+real(kind=dbl),allocatable                    :: upd(:), diagonal(:)
 
+! set some constants
+count = (d+1)/2
+even = .TRUE.
+if (mod(dim,2).ne.0) even = .FALSE.
+
+if (trim(t).eq.'lambert') then ! Lambert lattitudinal grid
+  denom = (d-1) * (d-1)
+  numer = denom
+  delta = 4
+  if (even.eqv..TRUE.) then
+    numer = numer - 1
+    delta = 8
+  end if
+
+  do i = 0, count-1 
+    lat(i) = dble(numer)/dble(denom)
+    numer = numer - delta
+    delta = delta + 8
+  end do
+else ! Legendre lattitudinal grid (we'll use a Lapack routine to get the lattitudes)
+  allocate(diagonal(count),upd(count))
+  diagonal = 0.D0
+  upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,count) /)
+  call dsterf(count, diagonal, upd, info)
+  lat(0:count-1) = diagonal(1:count)
+end if
+
+end function SH_cosLats
 
 
 !--------------------------------------------------------------------------
@@ -297,7 +349,7 @@ end subroutine SH_printRing
 !
 !> @date 01/16/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine SH_readRing(SHTC, MP, ringID, ringdim, buffer) 
+recursive subroutine SH_readRing(SHTC, MP, ringID, buffer) 
 !DEC$ ATTRIBUTES DLLEXPORT :: SH_readRing
 
 use error
@@ -305,7 +357,7 @@ use error
 IMPLICIT NONE
 
 type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC 
-real(kind=dbl),INTENT(IN)                     :: MP(-SHTC%dim:SHTC%dim,-SHTC%dim:SHTC%dim)
+real(kind=dbl),INTENT(IN)                     :: MP(-SHTC%d:SHTC%d,-SHTC%d:SHTC%d)
 integer(kind=irg),INTENT(IN)                  :: ringID
 real(kind=dbl),INTENT(INOUT)                  :: buffer(0:4*ringID*(ringID+1)-1)
 
@@ -386,7 +438,7 @@ use error
 IMPLICIT NONE
 
 type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC 
-real(kind=dbl),INTENT(INOUT)                  :: MP(-SHTC%dim:SHTC%dim,-SHTC%dim:SHTC%dim)
+real(kind=dbl),INTENT(INOUT)                  :: MP(-SHTC%d:SHTC%d,-SHTC%d:SHTC%d)
 integer(kind=irg),INTENT(IN)                  :: ringID
 real(kind=dbl),INTENT(IN)                     :: buffer(0:4*ringID*(ringID+1)-1)
 
@@ -454,23 +506,19 @@ end subroutine SH_writeRing
 !
 !> @details For details, see https://doi.org/10.1111/j.1365-246X.1994.tb03995.x
 !
-!> @param dim side length of square lambert projection to compute weights for
-!> @param lat cosines of ring latitudes (symmetric across equator)
-!> @param wgt weights for each row
+!> @param SHTC
 !> @param skp ring to exclude from weights (e.g. skip = 0 will exclude the poles)
 !
 !> @date 01/16/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine SH_computeWeightsSkip(dim, lat, wgt, skp)
+recursive subroutine SH_computeWeightsSkip(SHTC, skp)
 !DEC$ ATTRIBUTES DLLEXPORT :: SH_computeWeightsSkip
 
 use constants
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)                  :: dim
-real(kind=dbl),INTENT(INOUT)                  :: lat(:)   ! nMat
-real(kind=dbl),INTENT(INOUT)                  :: wgt(:)   ! nMat + 1
+type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC 
 integer(kind=irg),INTENT(IN)                  :: skp
 
 integer(kind=irg)                             :: num, nMat, gridPoints, INFO
@@ -478,7 +526,7 @@ integer(kind=irg),allocatable                 :: IPIV(:)
 real(kind=dbl)                                :: wn, w0
 real(kind=dbl),allocatable                    :: a(:,:), x(:), b(:)
 
-num = dim
+num = SHTC%dim
 nMat = (num+1)/2 - 1   ! -1 for the skipped ring
 
 ! build matrix of the form a_ij = cos(2*i*latitude[j]) for Sneeuw equation (21)
@@ -489,14 +537,14 @@ a(:,0) = 1.D0
 ! fill the second row with cos(2theta_j) values using the double angle formula for cos(2x)
 if (skp.eq.0) then
   do i=1,nMat-1
-    x(i) = lat(i)*lat(i)*2.D0-1.D0
+    x(i) = SHTC%cosTy(i)*SHTC%cosTy(i)*2.D0-1.D0
   end do
 else
   do i=1,skp-1
-    x(i) = lat(i)*lat(i)*2.D0-1.D0
+    x(i) = SHTC%cosTy(i)*SHTC%cosTy(i)*2.D0-1.D0
   end do
   do i=skp,nMat-1
-    x(i) = lat(i+1)*lat(i+1)*2.D0-1.D0
+    x(i) = SHTC%cosTy(i+1)*SHTC%cosTy(i+1)*2.D0-1.D0
   end do
 end if 
 a(:,1) = x(:)
@@ -524,7 +572,7 @@ if (INFO.ne.0) then
   end if
   call FatalError('SH_computeWeightsSkip','Error returned from LAPACK dgesv routine ... ')
 end if
-wgt(:) = b(:)
+SHTC%wy(:) = b(:)
 deallocate(IPIV)
 
 ! compute the solid angle of a grid point
@@ -535,19 +583,19 @@ w0 = wn * dble( dim * (dim-2) +2 )    ! initial scaling factor (doesn't account 
 ! rescale weights by solid angle and ratio of points to equatorial points and use 
 ! symmetry to fill southern hemisphere weights (the master pattern always has an 
 ! odd number of points along the side so we simplify the original C++ code, using offset = 0)
-delta = sum(wgt(0:nMat-1)) - 1.D0     ! should be zero
+delta = sum(SHTC%wy(0:nMat-1)) - 1.D0     ! should be zero
 if (delta.gt.(epsilon(1.D0)**(1.D0/3.D0))/64.D0) then 
     call FatalError('SH_computeWeightsSkip','insufficient precision to accurately compute ring weights')
 end if
 
 ! correct for alignment for missing ring
 do i=nMat+1,skp,-1
-  wgt(i) = wgt(i-1)
+  SHTC%wy(i) = SHTC%wy(i-1)
 end do
-wgt(skp) = 0
-wgt(0) = wgt(0) * w0
+SHTC%wy(skp) = 0
+SHTC%wy(0) = SHTC%wy(0) * w0
 do i=1,nMat+1
-  wgt(i) = wgt(i) * w0 / dble(8*i)
+  SHTC%wy(i) = SHTC%wy(i) * w0 / dble(8*i)
 end do
 
 end subroutine SH_computeWeightsSkip
@@ -566,12 +614,106 @@ end subroutine SH_computeWeightsSkip
 !> @param alm location to write alm values maxL * maxL with (m,l) stored: (0,0), (0,1), (0,2), ..., 
 !             (0,maxL), (1,0), (1,1), (1,2), ..., (maxL,0), (maxL,1), (maxL,maxL)
 !
-!> @date 01/16/19 MDG 1.0 original
+!> @date 01/21/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine SH_analyze(pts, alm)
+recursive subroutine SH_analyze(SHTC, mLPNH, mLPSH, alm)
 !DEC$ ATTRIBUTES DLLEXPORT :: SH_analyze
 
+use typedefs
+
+IMPLICIT NONE
+
+type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC 
+complex(kind=dbl),INTENT(IN)                  :: mLPNH(-SHTC%d:SHTC%d,-SHTC%d:SHTC%d) 
+complex(kind=dbl),INTENT(IN)                  :: mLPSH(-SHTC%d:SHTC%d,-SHTC%d:SHTC%d) 
+complex(kind=dbl),INTENT(INOUT)               :: alm(SHTC%maxL,SHTC%maxL)
+
+type(SH_LUT)                                  :: shtLut
+integer(kind=irg)                             :: y, Npy, fftN, maxdim, mLim, m 
+real(kind=dbl),allocatable                    :: buffer(:)
+complex(kind=dbl)                             :: nPt, sPt
+real(kind=dbl)                                :: x, wy, r1x2, kpmm
+
+! fill alm with complex zeroes
+alm = cmplx(0.D0,0.D0)
+
+! for each ring we have a series of operations...
+do y=0,SHTC%Nt-1
+  ringdim = 4*y*(y+1)
+  allocate(buffer(0:ringdim-1), cWrk1(0:ringdim-1), cWrk2(0:ringdim-1)
+
+! copy current rings and compute G_{m,y} by fft (Reinecke equation 10) leveraging real symmetry
+  Npy = maxval( (/ 1, 8*y /) )
+  fftN = Npy/2+1   ! //number of fft points: half from real -> conjugate symmetric, this includes problematic points (imag == 0 from conjugate symmetry)
+
+! read a ring from Northern and Southern hemispheres, and perform the correct fft on it to result in complex-valued data
+  call SH_readRing(SHTC, mLPNH, y, buffer)  
+! fft
+  call SH_readRing(SHTC, mLPSH, y, buffer)
+! fft
+
+! compute G_{m,y} +/- G_{m,Nt-1-y} since they are multiplied by symmetric values
+  mLim = minval( (/ SHTC%maxL, fftN /) )   ! anything after l+1 isn't needed and anything after fftN is 0
+  do m=0,mLim-1 
+! get ring weight w_y
+! weights excluding only the closest problematic ring (missing complex value due to real even dft) are most stable + accurate
+! negate odd m values to correct for sign error in legendre polynomial calculation
+
+! const Real& wy = shtLut->wy[size_t(m/4) * shtLut->Nt + y] * (m % 2 == 1 ? -1 : 1);//mod 4 from rings having 8y points + real symmetry of dft
+
+! combine northern / southern hemisphere rings to take advantages of spherical harmonic symmetry
+    nPt = cWrk1(m) * cmplx(wy,0.D0)
+    sPt = cWrk1(m) * cmplx(wy,0.D0)
+
+    cWrk1(m) = nPt + sPt ! for even l+m (harmonics are     symmetric across equator)
+    cWrk2(m) = nPt - sPt ! for odd  l+m (harmonics are antisymmetric across equator)
+  end do
+
+! calculate seed values for on the fly legendre polynomial calculation
+  x = SHTC%cosTy(y)       ! cosine of ring latitude
+  r1x2 = sqrt(1.D0-x*x)   ! (1-x)^\frac{1}{2}: constant for P^m_m calculation
+  kpmm = 1.D0             ! (1 - x^2) ^ \frac{|m|}{2} for m = 0: for P^m_m calculation
+
+! accumulate a_{l,m} via direct summation (Reinecke equation 9) via on the fly summation
+  do m=0,mLim-1
+! get weighted values from fft 
+    gmyS = cWrk1(m)       ! symmetric modes
+    gmyA = cWrk2(m)       ! antisymmetric modes
+
+! first compute P^m_m
+    pmn2 = SHTC%amn(0,m) * kpmm    ! recursively compute P^m_m (Schaeffer equation 13)
+    kpmm = kpmm * r1x2             ! update recursion for (1 - x^2) ^ \frac{|m|}{2}
+    alm(0,m) = alm(0,m) + gmyS * pmn2
+    if (m+1.eq.SHTC%maxL) EXIT     ! P^m_{m+1} doesn't exist
+
+! now compute P^m_{m+1}
+    pmn1 = SHTC%amn(0,m+1) * x * pmn2   ! P^m_n for n = m+1 (Schaeffer equation 14)
+    alm(0,m+1) = alm(0,m+1) + gmyA * pmn1
+
+! now compute the remaining polynomial values
+    do n=m+2, SHTC%maxL-1
+      pmn = SHTC%amn() * x * pmn1 - SHTC%bmn() * pmn2     ! P^m_n (Schaeffer equation 15)
+      pmn2 = pmn1
+      pmn1 = pmn
+      if (mod(n+m,2).eq.0) then
+        alm(n,m) = alm(n,m) + gmyS * pmn
+      else
+        alm(n,m) = alm(n,m) + gmyA * pmn
+      end if 
+    end do
+  end do
+
+  deallocate(buffer, cWrk1, cWrk2)
+end do
 
 end subroutine SH_analyze
 
 end module DSHT
+
+
+
+
+
+
+
+
