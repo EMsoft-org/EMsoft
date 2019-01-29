@@ -897,6 +897,27 @@ xtalpathname = trim(EMsoft_getEMXtalFolderpathname())
 
 end function EMsoft_getXtalpathname
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getfftwWisdomfilename
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the filename of the fftw wisdom file
+!
+!> @param no input parameters
+!
+!> @date  01/29/19 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getfftwWisdomfilename() result(fftwWisdomfilename)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getfftwWisdomfilename
+
+character(fnlen)                        :: fftwWisdomfilename
+
+fftwWisdomfilename = trim(EMsoft_getResourcepathname())//SC_fftwwisdomtxt
+
+end function EMsoft_getfftwWisdomfilename
+
 
 !--------------------------------------------------------------------------
 !

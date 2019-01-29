@@ -1749,7 +1749,7 @@ type SH_SHTConstantsType
   integer(kind=irg)                     :: maxL         ! maximum bandwidth of square lambert projection (must be < Nt for arbitrary rings (Nt*2 for legendre rings))
   integer(kind=irg)                     :: Nw           ! number of different types of weights [(dim-2) / 8 + 1]
   real(kind=dbl),allocatable            :: r1x2(:)      ! precomputed sqrt(1-x*x) values
-  real(kind=dbl),allocatable            :: wy(:)        ! weighting factor for each ring [Nt * Nw]
+  real(kind=dbl),allocatable            :: wy(:,:)      ! weighting factor for each ring [Nt * Nw]
   real(kind=dbl),allocatable            :: cosTy(:)     ! cosine of latitude of each ring [Nt]
   real(kind=dbl),allocatable            :: amn(:,:)     ! precomputed a^m_n values for on the fly ylm calculation [maxL^2]
   real(kind=dbl),allocatable            :: bmn(:,:)     ! precomputed b^m_n values for on the fly ylm calculation [maxL^2]
