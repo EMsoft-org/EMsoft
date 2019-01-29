@@ -188,15 +188,15 @@ do y=1,SHTC%Nt-1
   Nr = maxval( (/ 1, 8*y /) )
 
   p = fftw_alloc_real(int(Nr,C_SIZE_T))
-  call c_f_pointer(p, inp, (/Nr/))
+  call c_f_pointer(p, inp, [Nr])
   inp = 0.D0
 
   o = fftw_alloc_complex(int(Nr,C_SIZE_T))
-  call c_f_pointer(o, outp, (/Nr/))
-  outp = 0.D0
+  call c_f_pointer(o, outp, [Nr])
+  outp = cmplx(0.D0,0.D0)
 
-  SHTC%fftwPlans(y)%frwdplan = fftw_plan_dft_r2c_1d(Nr, inp, outp, FFTW_FORWARD)
-  SHTC%fftwPlans(y)%bkwdplan = fftw_plan_dft_c2r_1d(Nr, outp, inp, FFTW_BACKWARD)
+  SHTC%fftwPlans(y)%frwdplan = fftw_plan_dft_r2c_1d(Nr, inp, outp, FFTW_FORWARD)! +FFTW_ESTIMATE)
+  SHTC%fftwPlans(y)%bkwdplan = fftw_plan_dft_c2r_1d(Nr, outp, inp, FFTW_BACKWARD)! +FFTW_ESTIMATE)
   
   call fftw_free(p)
   call fftw_free(o)
@@ -795,6 +795,7 @@ recursive subroutine SH_synthesize(SHTC, alm, mLPNH, mLPSH, limL)
 use typedefs
 use FFTW3MOD
 use error
+use ieee_arithmetic
 
 IMPLICIT NONE
 
@@ -805,11 +806,14 @@ real(kind=dbl),INTENT(INOUT)                  :: mLPSH(-SHTC%d:SHTC%d,-SHTC%d:SH
 integer(kind=irg),INTENT(IN)                  :: limL
 
 type(SH_LUT)                                  :: shtLut
-integer(kind=irg)                             :: y, Npy, fftN, mLim, bndMax, d, m, n
+integer(kind=irg)                             :: y, Npy, fftN, mLim, bndMax, d, m, n, Nr, i
 real(kind=dbl)                                :: x, r1x2, kpmm, pmn1, pmn2, pmn
-complex(kind=dbl)                             :: fmyS, fmyA, sigma, delta
-real(kind=dbl),allocatable                    :: buffer(:)
-complex(C_DOUBLE_COMPLEX),pointer             :: inp(:)
+complex(kind=dbl)                             :: sigma, delta
+
+real(C_DOUBLE),pointer                        :: buffer(:)
+complex(C_DOUBLE_COMPLEX),pointer             :: cWrk1(:), cWrk2(:)
+type(C_PTR)                                   :: p, o1, o2
+
 
 if (verbose.eqv..TRUE.) write (*,*) 'entering SH_synthesize'
 
@@ -825,7 +829,7 @@ end if
 
 ! allocate Wrk arrays
 d = SHTC%dim
-allocate(shtLut%cWrk1(0:4*(d-1)), shtLut%cWrk2(0:4*(d-1)))
+allocate(cWrk1(0:4*(d-1)), cWrk2(0:4*(d-1)))
 
 ! compute inverse SHT one ring at a time
 do y=1, SHTC%Nt-1  ! loop over rings
@@ -834,25 +838,34 @@ do y=1, SHTC%Nt-1  ! loop over rings
       fftN = Npy/2 + 1  ! number of fft points: half from real -> conjugate symmetric, 
                         ! this includes problematic points (imag == 0 from conjugate symmetry)
 
+      o1 = fftw_alloc_complex(int(Npy,C_SIZE_T))
+      call c_f_pointer(o1, cWrk1, [Npy])
+
+      o2 = fftw_alloc_complex(int(Npy,C_SIZE_T))
+      call c_f_pointer(o2, cWrk2, [Npy])
+
 ! calculate seed values for on the fly legendre polynomial calculation (we've already initialized these in the set up)
       x = SHTC%cosTy(y)  ! cosine of ring latitude
       r1x2 = SHTC%r1x2(y)! (1-x)^\frac{1}{2}: constant for P^m_m calculation
       kpmm = 1.D0        ! (1 - x^2) ^ \frac{|m|}{2} for m = 0: for P^m_m calculation
 
+      cWrk1 = cmplx(0.D0,0.D0)   ! for symmetric modes
+      cWrk2 = cmplx(0.D0,0.D0)   ! for antisymmetric modes
+
       mLim = minval( (/ SHTC%maxL, fftN /) )   ! anything after l+1 isn't needed and anything after fftN is 0
       do m = 0, mLim-1
-        fmyS = cmplx(0.D0,0.D0)   ! for symmetric modes
-        fmyA = cmplx(0.D0,0.D0)   ! for antisymmetric modes
+        ! cWrk1(m) = cmplx(0.D0,0.D0)   ! for symmetric modes
+        ! cWrk2(m) = cmplx(0.D0,0.D0)   ! for antisymmetric modes
 
 ! first compute P^m_m
         pmn2 = SHTC%amn(m,m) * kpmm    ! recursively compute P^m_m (Schaeffer equation 13)
         kpmm = kpmm * r1x2             ! update recursion for (1 - x^2) ^ \frac{|m|}{2}
-        fmyS = fmyS + alm(m,m) * pmn2
+        cWrk1(m) = cWrk1(m) + alm(m,m) * pmn2
         if (m+1.eq.SHTC%maxL) EXIT     ! P^m_{m+1} doesn't exist
 
 ! now compute P^m_{m+1}
         pmn1 = SHTC%amn(m,m+1) * x * pmn2   ! P^m_n for n = m+1 (Schaeffer equation 14)
-        fmyA = fmyA + alm(m,m+1) * pmn1
+        cWrk2(m) = cWrk2(m) + alm(m,m+1) * pmn1
 
 ! now compute the remaining polynomial values    [check minus sign !!!]
         do n=m+2, SHTC%maxL-1
@@ -860,9 +873,9 @@ do y=1, SHTC%Nt-1  ! loop over rings
           pmn2 = pmn1
           pmn1 = pmn
           if (mod(n+m,2).eq.0) then
-            fmyS = fmyS + alm(n,m) * pmn
+            cWrk1(m) = cWrk1(m) + alm(n,m) * pmn
           else
-            fmyA = fmyA + alm(n,m) * pmn
+            cWrk2(m) = cWrk2(m) + alm(n,m) * pmn
           end if 
         end do
        end do
@@ -872,36 +885,38 @@ do y=1, SHTC%Nt-1  ! loop over rings
 ! combine northern / southern hemisphere rings to take advantages of spherical harmonic symmetry
 ! negate odd m values to correct for sign error in legendre polynomial calculation
         if (mod(m,2).eq.1) then
-          sigma = -shtLut%cWrk1(m)         ! F_{m,y} + F_{m,Nt-1-y}
-          delta = -shtLut%cWrk2(m)         ! F_{m,y} - F_{m,Nt-1-y}
+          sigma = -cWrk1(m)         ! F_{m,y} + F_{m,Nt-1-y}
+          delta = -cWrk2(m)         ! F_{m,y} - F_{m,Nt-1-y}
         else
-          sigma = shtLut%cWrk1(m)          ! F_{m,y} + F_{m,Nt-1-y}
-          delta = shtLut%cWrk2(m)          ! F_{m,y} - F_{m,Nt-1-y}
+          sigma = cWrk1(m)          ! F_{m,y} + F_{m,Nt-1-y}
+          delta = cWrk2(m)          ! F_{m,y} - F_{m,Nt-1-y}
         end if
-        shtLut%cWrk1(m) = sigma + delta    ! northern hemisphere point
-        shtLut%cWrk2(m) = sigma - delta    ! southern hemisphere point
+        cWrk1(m) = sigma + delta    ! northern hemisphere point
+        cWrk2(m) = sigma - delta    ! southern hemisphere point
       end do
-write (*,*) 'starting fft ',y
-         ! shtlut%cWrk1 = cmplx(0.D0,0.D0)
-         ! shtlut%cWrk1 = cmplx(0.D0,0.D0)
+write (*,*) 'starting fft ',y,'; max val Wrk arrays ', maxval(abs(cWrk1)), maxval(abs(cWrk2))
 
 ! do the inverse ffts of F_{m,y} and F_{m,Nt-1-y} (Reinecke equation 7) and copy to output
-      allocate(buffer(8*y))
-      ! inp => shtLut%cWrk1
-      call fftw_execute_dft_c2r(SHTC%fftwPlans(y)%bkwdplan, shtLut%cWrk1, buffer)
+      Nr = 8*y
+
+      p = fftw_alloc_real(int(Nr,C_SIZE_T))
+      call c_f_pointer(p, buffer, [Nr])
+      buffer = 0.D0
+
+write (*,*) cWrk1(0:2)
+  
+      call fftw_execute_dft_c2r(SHTC%fftwPlans(y)%bkwdplan, cWrk1, buffer)
       write (*,*) y, maxval(buffer)
       call SH_writeRing(SHTC, mLPNH, y, buffer)
 
-      ! inp => shtLut%cWrk2
-      call fftw_execute_dft_c2r(SHTC%fftwPlans(y)%bkwdplan,  shtLut%cWrk2, buffer)
+      call fftw_execute_dft_c2r(SHTC%fftwPlans(y)%bkwdplan, cWrk2, buffer)
       call SH_writeRing(SHTC, mLPSH, y, buffer)
 
-      deallocate (buffer)
-      ! shtLut->ffts[y]->inverse(cWrk1.data(), rWrk1.data())  ! do ffts into real working arrays (north hemisphere)
-      ! shtLut->ffts[y]->inverse(cWrk2.data(), rWrk2.data())  ! do ffts into real working arrays (south hemisphere)
+      call fftw_free(p)
+      call fftw_free(o1)
+      call fftw_free(o2)
+      call fftw_cleanup()
 
-      ! writeRing(shtLut->dim, y, pts                            , rWrk1.data())  ! copy current ring to row major order (north hemisphere)
-      ! writeRing(shtLut->dim, y, pts + shtLut->dim * shtLut->dim, rWrk2.data())  ! copy current ring to row major order (south hemisphere)
 end do
 
 if (verbose.eqv..TRUE.) write (*,*) 'leaving  SH_synthesize'
