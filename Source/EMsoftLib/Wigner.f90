@@ -408,28 +408,30 @@ bloop: do b=0,bandWidth-1
         if (ba.eqv..FALSE.) d_bab = -d_bba
         wigD(b, a, b) = d_bba ! save d^{b  }_{b,a}
         wigD(b, b, a) = d_bab ! save d^{b  }_{a,b}
-        if ((b + 1).eq.bandWidth) continue  ! we don't need any higher order terms
+        if ((b + 1).ne.bandWidth) then ! we don't need any higher order terms
 
 ! compute d^{b+1}_{b,a} with recursion
-        d_b1ba = d_bba * Wigner_a_km(b, a) ! d^{b+1}_{b,a}
-        d_b1ab = d_b1ba 
-        if (ba.eqv..FALSE.) d_b1ab = -d_b1ba
-        wigD(b+1, a, b) = d_b1ba ! save d^{b+1}_{b,a}
-        wigD(b+1, b, a) = d_b1ab ! save d^{b+1}_{a,b}
-        if ((b + 2).eq.bandWidth) continue ! we don't need any higher order terms        
+            d_b1ba = d_bba * Wigner_a_km(b, a) ! d^{b+1}_{b,a}
+            d_b1ab = d_b1ba 
+            if (ba.eqv..FALSE.) d_b1ab = -d_b1ba
+            wigD(b+1, a, b) = d_b1ba ! save d^{b+1}_{b,a}
+            wigD(b+1, b, a) = d_b1ab ! save d^{b+1}_{a,b}
+            if ((b + 2).ne.bandWidth) then ! we don't need any higher order terms        
 
 ! compute higher order terms with 3 term recursion
-        d_j1ba = d_b1ba ! d^{j-1}_{b,a}
-        d_j2ba = d_bba  ! d^{j-2}_{b,a}
-        do j=b+2,bandWidth-1
-            djba = Wigner_a_jkm(j, b, a) * d_j1ba - Wigner_b_jkm(j, b, a) * d_j2ba ! d^{j}_{b,a}
-            djab = djba 
-            if (ba.eqv..FALSE.) djab = -djba
-            wigD(j, a, b) = djba ! save d^{j}_{b,a}
-            wigD(j, b, a) = djab ! save d^{j}_{a,b}
-            d_j2ba = d_j1ba
-            d_j1ba = djba
-        end do
+                d_j1ba = d_b1ba ! d^{j-1}_{b,a}
+                d_j2ba = d_bba  ! d^{j-2}_{b,a}
+                do j=b+2,bandWidth-1
+                    djba = Wigner_a_jkm(j, b, a) * d_j1ba - Wigner_b_jkm(j, b, a) * d_j2ba ! d^{j}_{b,a}
+                    djab = djba 
+                    if (ba.eqv..FALSE.) djab = -djba
+                    wigD(j, a, b) = djba ! save d^{j}_{b,a}
+                    wigD(j, b, a) = djab ! save d^{j}_{a,b}
+                    d_j2ba = d_j1ba
+                    d_j1ba = djba
+                end do
+            end if 
+        end if
     end do aloop
 end do bloop
 
@@ -511,12 +513,12 @@ recursive subroutine Wigner_coeffTable(jMax, cTable)
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: jMax
-real(kind=dbl),INTENT(INOUT)            :: cTable(jMax * (2*jMax+1) * (2*jMax+1)) 
+real(kind=dbl),INTENT(INOUT)            :: cTable(jMax * (2*jMax-1) * (2*jMax-1)) 
 
 integer(kind=irg)                       :: j, m1, m2, sl
 real(kind=dbl)                          :: ratio 
 
-sl = 2*jMax+1
+sl = 2*jMax-1
 cTable = D_QNAN
 
 do j=0,jMax-1
@@ -540,8 +542,6 @@ do j=0,jMax-1
 end do
 
 end subroutine Wigner_coeffTable
-
-
 
 !--------------------------------------------------------------------------
 !
@@ -570,10 +570,10 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: jMax
 real(kind=dbl),INTENT(IN)               :: qu(0:3)
-real(kind=dbl),INTENT(IN)               :: cTable(jMax * (2*jMax+1) * (2*jMax+1))
+real(kind=dbl),INTENT(IN)               :: cTable(jMax * (2*jMax-1) * (2*jMax-1))
 complex(kind=dbl),INTENT(INOUT)         :: wigD(jMax * (2*jMax-1) * (2*jMax-1))
 
-integer(kind=irg)                       :: j, m, iJ, m1, m2, ms, rhoMin, rhoMax, N1, N2, MM, rho, sl, SideLength 
+integer(kind=irg)                       :: j, m, iJ, m1, m2, ms, rhoMin, rhoMax, N1, N2, MM, rho, sideLength 
 real(kind=dbl),parameter                :: pijk = 1.D0 ! see the infamous rotations tutorial paper for an explanation...
 real(kind=dbl)                          :: rA, rB, pA, pB, rL, rS, eps, rLpow, absRRatioSquared, d, phi1, phi2, sm 
 complex(kind=dbl)                       :: pre1, pre2 
@@ -597,7 +597,6 @@ else
 end if
 
 eps = epsilon(1.D0) * 8
-sl = 2*jMax+1
 sideLength = 2*jMax-1
 
 ! check for special case
