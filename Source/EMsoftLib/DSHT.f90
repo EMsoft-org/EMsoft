@@ -76,26 +76,12 @@ use, intrinsic :: iso_c_binding
 
 IMPLICIT NONE
 
-! public :: SH_DiscreteSHT, SH_analyze, SH_synthesize, SH_cosLats, SH_printRow, SH_printRing, SH_row2ring, &
-!           SH_ring2row, SH_computeWeightsSkip, SH_setSHTConstants 
+public :: SH_dicreteSHTConstructor, SH_analyze, SH_synthesize, SH_printRow, SH_printRing
 
 logical, parameter    :: verbose = .FALSE.
-
 private :: verbose
 
-  ! interface
-  !   integer(C_INT) function strlen(s) bind(C, name='strlen')
-  !     import
-  !     type(C_PTR), value :: s
-  !   end function strlen
-  !   subroutine free(p) bind(C, name='free')
-  !     import
-  !     type(C_PTR), value :: p
-  !   end subroutine free
-  ! end interface
-
 contains
-
 
 !--------------------------------------------------------------------------
 !
@@ -145,6 +131,7 @@ type(C_PTR)                                   :: planf
 logical                                       :: fileExists
 
 
+! check for the existence of the wisdom file; read it if it exists...
 wisdomFile = EMsoft_getfftwWisdomfilename()
 wisdomFile = EMsoft_toNativePath(wisdomFile)
 
@@ -164,8 +151,6 @@ if (fileExists) then
     call FatalError('SH_dicreteSHTConstructor','error reading wisdom from file')
   endif
 endif
-
-if (verbose.eqv..TRUE.) write (*,*) 'entering SH_dicreteSHTConstructor'
 
 ! set a few constants
 SHTC%dim = d 
@@ -222,7 +207,7 @@ call SH_computeWeightsSkip(SHTC, i)
 
 ! finally, build the array of pointers to fftw plans; we need a backward and forward plan for each lattitudinal ring size
 allocate(SHTC%fftwPlans(0:SHTC%Nt-1))
-call Message ('Creating fftw plans for direct and inverse Fourier transforms')
+if (verbose.eqv..TRUE.) call Message ('Creating fftw plans for direct and inverse Fourier transforms')
 do y=1,SHTC%Nt-1
   Nr = maxval( (/ 1, 8*y /) )
   p = fftw_alloc_real(int(Nr,C_SIZE_T))
@@ -233,15 +218,15 @@ do y=1,SHTC%Nt-1
   call c_f_pointer(o, outp, [Nr])
   outp = cmplx(0.D0,0.D0)
 
-  SHTC%fftwPlans(y)%frwdplan = fftw_plan_dft_r2c_1d(Nr, inp, outp, FFTW_FORWARD +FFTW_ESTIMATE)
-  SHTC%fftwPlans(y)%bkwdplan = fftw_plan_dft_c2r_1d(Nr, outp, inp, FFTW_BACKWARD +FFTW_ESTIMATE)
+  SHTC%fftwPlans(y)%frwdplan = fftw_plan_dft_r2c_1d(Nr, inp, outp, FFTW_FORWARD + FFTW_ESTIMATE)
+  SHTC%fftwPlans(y)%bkwdplan = fftw_plan_dft_c2r_1d(Nr, outp, inp, FFTW_BACKWARD + FFTW_ESTIMATE)
   
   call fftw_free(p)
   call fftw_free(o)
 end do
 
 ! write accumulated wisdom to file
-if (verbose.eqv..TRUE.) call Message('writing wisdom to file')
+if (verbose.eqv..TRUE.) call Message(' writing wisdom to file '//trim(wisdomFile))
 status = fftw_export_wisdom_to_filename(s)
 if (status .eq. 0) then
   call FatalError('SH_dicreteSHTConstructor','error writing wisdom to file')
@@ -280,7 +265,6 @@ real(kind=dbl)                                :: lat(0:(d+1)/2-1)
 integer(kind=irg)                             :: i, count, denom, numer, delta, info 
 logical                                       :: even
 real(kind=dbl),allocatable                    :: upd(:), diagonal(:)
-
 
 
 if (trim(t).eq.'lambert') then ! Lambert lattitudinal grid
@@ -365,6 +349,8 @@ end subroutine SH_printRow
 !
 !> @brief Print square lambert projection in row major order to a file 'SHTC-printrow.txt'
 !
+!> @note  This routine has not been tested yet...
+!
 !> @param SHTC
 !> @param dunit
 !> @param rng
@@ -424,7 +410,7 @@ end subroutine SH_printRing
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
-!> @brief get a single ring form a square lambert projection
+!> @brief get a single ring from a square lambert projection
 !
 !> @param SHTC
 !> @param MP
@@ -445,7 +431,6 @@ type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC
 real(kind=dbl),INTENT(IN)                     :: MP(-SHTC%d:SHTC%d,-SHTC%d:SHTC%d)
 integer(kind=irg),INTENT(IN)                  :: ringID
 real(kind=dbl),INTENT(INOUT)                  :: buffer(0:8*ringID-1)
-!real(kind=dbl),INTENT(INOUT)                  :: buffer(0:4*ringID*(ringID+1)-1)
 
 integer(kind=irg) 							              :: d, i, j, icol, jrow, idx
 
@@ -528,7 +513,6 @@ type(SH_SHTConstantsType),INTENT(INOUT)       :: SHTC
 real(kind=dbl),INTENT(INOUT)                  :: MP(-SHTC%d:SHTC%d,-SHTC%d:SHTC%d)
 integer(kind=irg),INTENT(IN)                  :: ringID
 real(kind=dbl),INTENT(IN)                     :: buffer(0:8*ringID-1)
-!real(kind=dbl),INTENT(IN)                     :: buffer(0:4*ringID*(ringID+1)-1)
 
 integer(kind=irg)                             :: d, i, j, icol, jrow, idx
 
@@ -592,6 +576,8 @@ end subroutine SH_writeRing
 !
 !> @brief compute quadrature weights for rings (w_y in equation 10 of Reinecke)
 !
+!> @note  This will only work correctly for the Legendre case 
+!
 !> @details For details, see https://doi.org/10.1111/j.1365-246X.1994.tb03995.x
 !
 !> @param SHTC
@@ -616,8 +602,6 @@ integer(kind=irg)                             :: num, dim, nMat, gridPoints, INF
 integer(kind=irg),allocatable                 :: IPIV(:)
 real(kind=dbl)                                :: wn, w0, delta
 real(kind=dbl),allocatable                    :: a(:,:), x(:), b(:)
-
-if (verbose.eqv..TRUE.) write (*,*) 'entering SH_computeWeightsSkip'
 
 num = SHTC%dim
 dim = SHTC%dim
@@ -683,7 +667,7 @@ w0 = wn * dble( dim * (dim-2) +2 )    ! initial scaling factor (doesn't account 
 delta = sum(SHTC%wy(0:nMat-1,0)) - 1.D0     ! should be zero
 if (delta.gt.(epsilon(1.D0)**(1.D0/3.D0))/64.D0) then 
     write (*,*) 'delta = ',delta
-    ! call FatalError('SH_computeWeightsSkip','insufficient precision to accurately compute ring weights')
+    call FatalError('SH_computeWeightsSkip','insufficient precision to accurately compute ring weights')
 end if
 
 ! correct for alignment for missing ring
@@ -696,7 +680,6 @@ do i=1,nMat
   SHTC%wy(i,:) = SHTC%wy(i,:) * w0 / dble(8*i)
 end do
 
-if (verbose.eqv..TRUE.) write (*,*) 'leaving SH_computeWeightsSkip'
 end subroutine SH_computeWeightsSkip
 
 
@@ -739,8 +722,6 @@ real(C_DOUBLE),pointer                        :: buffer(:)
 complex(C_DOUBLE_COMPLEX),pointer             :: cWrk1(:), cWrk2(:)
 type(C_PTR)                                   :: p, o1, o2
 
-if (verbose.eqv..TRUE.) write (*,*) 'entering SH_analyze'
-
 ! fill alm with complex zeroes
 alm = cmplx(0.D0,0.D0)
 
@@ -775,7 +756,6 @@ do y=1,SHTC%Nt-1
 ! weights excluding only the closest problematic ring (missing complex value due to real even dft) are most stable + accurate
 ! negate odd m values to correct for sign error in legendre polynomial calculation
 
-! const Real& wy = shtLut->wy[size_t(m/4) * shtLut->Nt + y] * (m % 2 == 1 ? -1 : 1);//mod 4 from rings having 8y points + real symmetry of dft
     wcorr = 1.D0
     if (mod(m,2).eq.1) wcorr = -1.D0
 
@@ -825,8 +805,6 @@ do y=1,SHTC%Nt-1
 
 end do
 
-
-if (verbose.eqv..TRUE.) write (*,*) 'leaving SH_analyze'
 end subroutine SH_analyze
 
 !--------------------------------------------------------------------------
@@ -869,8 +847,6 @@ real(C_DOUBLE),pointer                        :: buffer(:)
 complex(C_DOUBLE_COMPLEX),pointer             :: cWrk1(:), cWrk2(:)
 type(C_PTR)                                   :: p, o1, o2
 
-
-if (verbose.eqv..TRUE.) write (*,*) 'entering SH_synthesize'
 
 ! sanity check bandwidth limit
 if (limL.gt.SHTC%maxL) then
@@ -963,12 +939,13 @@ do y=1, SHTC%Nt-1  ! loop over rings
       call fftw_free(p)
       call fftw_free(o1)
       call fftw_free(o2)
-      call fftw_cleanup()
 end do
 
-if (verbose.eqv..TRUE.) write (*,*) 'leaving  SH_synthesize'
+call fftw_cleanup()
 
 end subroutine SH_synthesize
+
+
 
 end module DSHT
 

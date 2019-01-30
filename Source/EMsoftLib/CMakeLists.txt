@@ -79,6 +79,8 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/lzw.f90
   ${EMsoftLib_SOURCE_DIR}/Ylm.f90
   ${EMsoftLib_SOURCE_DIR}/DSHT.f90
+  ${EMsoftLib_SOURCE_DIR}/SHCorrelator.f90
+  ${EMsoftLib_SOURCE_DIR}/Wigner.f90
 
   ${EMsoftLib_Additional_SRCS}
 )
