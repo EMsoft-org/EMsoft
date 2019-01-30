@@ -312,6 +312,7 @@ else
                 RETURN
             else
                 djkm = -Wigner_d(j,-k,m)
+                RETURN
             end if
         else
             if (k.lt.m) then  ! d^j_{ m, k} = (-1)^(   k- m) d^j_{k,m}
@@ -321,6 +322,7 @@ else
                     RETURN
                 else
                     djkm = -Wigner_d(j,m,k)
+                    RETURN
                 end if
             end if 
         end if 
