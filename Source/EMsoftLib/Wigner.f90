@@ -574,7 +574,6 @@ real(kind=dbl),INTENT(IN)               :: cTable(jMax * (2*jMax-1) * (2*jMax-1)
 complex(kind=dbl),INTENT(INOUT)         :: wigD(jMax * (2*jMax-1) * (2*jMax-1))
 
 integer(kind=irg)                       :: j, m, iJ, m1, m2, ms, rhoMin, rhoMax, N1, N2, MM, rho, sideLength 
-real(kind=dbl),parameter                :: pijk = 1.D0 ! see the infamous rotations tutorial paper for an explanation...
 real(kind=dbl)                          :: rA, rB, pA, pB, rL, rS, eps, rLpow, absRRatioSquared, d, phi1, phi2, sm 
 complex(kind=dbl)                       :: pre1, pre2 
 logical                                 :: smallA
@@ -582,8 +581,10 @@ logical                                 :: smallA
 ! extract a and b parts of quaternion as magnitude and phase
 rA = sqrt(qu(0)*qu(0) + qu(3)*qu(3) ) ! |w + J * z|
 rB = sqrt(qu(2)*qu(2) + qu(1)*qu(1) ) ! |y + J * x|
-pA = atan2(-pijk * qu(3), qu(0)        ) ! phase of w + J * z
-pB = atan2(-pijk * qu(1), -pijk * qu(2)) ! phase of w + J * z
+
+! see the infamous rotations tutorial paper for an explanation of the epsijkd parameter
+pA = atan2(-epsijkd * qu(3), qu(0)        ) ! phase of w + J * z
+pB = atan2(-epsijkd * qu(1), -epsijkd * qu(2)) ! phase of w + J * z
 
 ! determine which half of the quaternion is smallest
 smallA = .TRUE.

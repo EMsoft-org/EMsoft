@@ -78,16 +78,17 @@ contains
 !
 !> @date 01/30/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
 !--------------------------------------------------------------------------
-recursive function SH_interpolateMaxima(p, x) result(vPeak)
+recursive function SH_interpolateMaxima(p, x, maxIter) result(vPeak)
 !DEC$ ATTRIBUTES DLLEXPORT :: SH_interpolateMaxima
 
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)           :: p(0:2,0:2,0:2)
 real(kind=dbl),INTENT(INOUT)        :: x(0:2)
+integer(kind=irg),INTENT(IN)        :: maxIter
 real(kind=dbl)                      :: vPeak
 
-integer(kind=irg)                   :: maxIter, i 
+integer(kind=irg)                   :: i 
 real(kind=dbl)                      :: a000, a001, a002, a010, a020, a100, a200, a022, a011, a012, a021, a220, a110, a120, a122, &
                                        a210, a202, a101, a201, a102, a222, a211, a121, a112, a111, a212, a221, eps, xx, xy, &
                                        h00, h11, h22, h01, h12, h02, det, i00, i11, i22, i01, i12, i02, d0, d1, d2, step(0:2), &
@@ -143,7 +144,6 @@ a221 = (p(2,2,2) - p(0,0,0) + p(0,2,2) + p(2,0,2) - p(2,2,0) - p(2,0,0) - p(0,2,
 
 ! newton iterate to find maxima
 x = 0.D0  !  initial guess at maximum voxel (z,y,x)
-maxIter = 25
 eps = sqrt(epsilon(1.D0))
 do i = 0, maxIter-1 
 ! compute components of hessian matrix
@@ -191,6 +191,7 @@ do i = 0, maxIter-1
     x = x - step 
 
 ! check for convergence
+write (*,*) i, x, step 
     maxStep = maxval(abs(step)) 
     if (maxStep.lt.eps) EXIT
     if (i+1.eq.maxIter) x = 0.D0   ! don't interpolate if convergence wasn't reached
@@ -222,6 +223,221 @@ end function SH_interpolateMaxima
 
 
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: SH_zyz2qu
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief   convert ZYZ euler angles to quaternion
+!
+! @param eu : euler angles to convert to quaternion (Z, Y', Z'')
+! @param pos: true/false to restrict rotation to [0,pi] (positive w)
+! @result qu: location to write quaternion as w, x, y, z
+!   
+!> @date 01/30/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!--------------------------------------------------------------------------
+recursive function SH_zyz2qu(eu, pos) result(qu)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_zyz2qu
+
+use constants
+
+IMPLICIT NONE
+
+real(kind=dbl), INTENT(IN)          :: eu(0:2)
+logical,INTENT(IN)                  :: pos 
+real(kind=dbl)                      :: qu(0:3) 
+
+real(kind=dbl)                      :: s, c, sigma, delta
+
+c = 0.5D0 * cos(eu(1))
+s = 0.5D0 * sin(eu(1))
+sigma = 0.5D0 * (eu(2) + eu(0))
+delta = 0.5D0 * (eu(2) - eu(0))
+
+! this uses the epsijkd constant to define the 3D rotations convention (see constants.f90 module)
+qu(0) = c * cos(sigma)
+qu(1) = -epsijkd * s * sin(delta)
+qu(2) = -epsijkd * s * cos(delta)
+qu(3) = -epsijkd * s * sin(sigma)
+
+if ((pos.eqv..TRUE.).and.(qu(0).lt.0.D0)) qu = -qu 
+
+end function SH_zyz2qu
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: SH_quatAverage
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief   temporary helper function to average 2 quaternions for my garbage nonlinear optimization test
+!
+! @param qIn1: first quat to average
+! @param qIn2: second quat to average
+! @param qOut: average + normalized quaternion
+!   
+!> @date 01/30/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!--------------------------------------------------------------------------
+recursive function SH_quatAverage(qIn1, qIn2) result(qOut)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_quatAverage
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)           :: qIn1(0:3)
+real(kind=dbl),INTENT(IN)           :: qIn2(0:3)
+real(kind=dbl)                      :: qOut(0:3)
+
+qOut = 0.5D * (qIn1 + qIn2)
+qOut = qOut/NORM2(qOut)
+
+end function SH_quatAverage
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: SH_correlate
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief   compute the cross correlation between two spherical functions
+!
+! @param flm: spherical harmonic coefficients for the first function
+! @param gln: spherical harmonic coefficients for the second function
+! @param qu : location to write rotation of maximum cross correlation as quaternion
+! @return   : maximum cross correlation
+!   
+! from the original C++ code :
+! //naive implementation (no symmetry) to make summation clear
+! /*
+! const bool realFft = true;//true/false to use half sized fft format
+! const size_t dm = realFft ? bw : sl;//length of fastest indexing dimension
+! for(size_t ic = 0; ic < sl; ic++) {
+!     const int k = ic >= bw ? int(ic) - sl : ic;
+!     const size_t ak = std::abs(k);
+!     for(size_t ib = 0; ib < sl; ib++) {
+!         const int n = ib >= bw ? int(ib) - sl : ib;
+!         const size_t an = std::abs(n);
+!         const size_t maxKN = std::max(ak, an);
+!         for(size_t ia = 0; ia < dm; ia++) {
+!             const int m = ia >= bw ? int(ia) - sl : ia;
+!             const size_t am = std::abs(m);
+!             const size_t start = std::max<size_t>(am, maxKN);
+!             for(size_t j = start; j < bw; j++) {
+!                 const Real dlkm = wigD[ak * bw * bw + am * bw + j] * wigner::dSign(j, k, m);//wigner::d<Real>(j, k, m);
+!                 const Real dlnk = wigD[an * bw * bw + ak * bw + j] * wigner::dSign(j, n, k);//wigner::d<Real>(j, n, k);
+!                 const std::complex<Real>& vflm = flm[am * bw + j];//\hat{f}^l_{|m|}
+!                 const std::complex<Real>& vgln = gln[an * bw + j];//\hat{g}^l_{|n|}
+!                 const std::complex<Real> f = std::signbit(m) ? std::conj(vflm) * Real(0 == am % 2 ? 1 : -1) : vflm;//symmetry of real SHT coefficients
+!                 const std::complex<Real> g = std::signbit(n) ? std::conj(vgln) * Real(0 == an % 2 ? 1 : -1) : vgln;//symmetry of real SHT coefficients
+!                 fxc[ic * sl * dm + ib * dm + ia] += f * std::conj(g) * dlkm * dlnk;
+!             }
+!         }
+!     }
+! }
+! */
+
+!> @date 01/30/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!--------------------------------------------------------------------------
+recursive function SH_correlate(SHCOR, flm, gln, qu) result(peak)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_correlate
+
+IMPLICIT NONE
+
+type(SH_correlatorType),INTENT(IN)      :: SHCOR
+complex(kind=dbl),INTENT(IN)            :: flm(:)
+complex(kind=dbl),INTENT(IN)            :: gln(:)
+real(kind=dbl),INTENT(IN)               :: qu(0:3)
+real(kind=dbl)                          :: peak 
+
+integer(kind=irg)                       :: j, k, m, n, bw, maxKN, m2, ind, match
+complex(kind=dbl)                       :: v, vnc, vc
+real(kind=dbl)                          :: rr, ri, ir, ii
+
+! the above quadruple loop is conceptually simple but has many redundant calculations
+! the loop that follows is mathematically equivalent (for SHT of real functions only!!) but much faster:
+!  -use \hat{f}^l_{-m} = (-1)^m * \hat{f}^l_{m} for real valued functions (and the same for \hat{g}^l_{-n})
+!  -build the fft of a real valued cross correlation
+!  -precompute values of \hat{f}^l_{m} * d^l_{k,m}(\frac{\pi}{2}) [stored in fm]
+!  -precompute values of \hat{g}^l_{n} * d^l_{n,k}(\frac{\pi}{2}) [stored in gn]
+!  -eliminate redundant calculations from f * g and f * conj(g)
+
+bw = SHCOR%bw
+
+! loop over planes
+do k = 0, bw-1
+! precompute flm values * wigner d function
+    do m = 0, bw-1
+        do j = maxval( (/ m, k /) ), bw-1 
+            fm(m * bw + j) = flm(m * bw + j) * wigD(k * bw * bw + m * bw + j) ! f^j_m * wigner::d<Real>(j, k, m)
+        end do
+    end do
+
+! loop over rows
+    do n = 0, bw-1
+! precompute gln values * wigner d function
+        maxKN = maxval( (/ k, n /) )
+        do j = maxKN, bw-1
+            gn(j) = conjg(gln(n * bw + j) * wigD(n * bw * bw + k * bw + j) ! \hat{g}^j_n * wigner::d<Real>(j, n, k)
+        end do
+
+! loop over columns
+        do m = 0, bw-1 
+! build a pair of values as dot product
+            m2 = mod(m, 2)
+            v = cmplx(0.D0,0.D0)
+            vnc = cmplx(0.D0,0.D0)
+            do j = maxval( (/ m, maxKN /) ), bw-1
+! do complex multiplication of components by hand to eliminate duplicate flops from multiplying with conjugate
+                ind = m * bw + j
+                rr = real(fm(ind)) * real(gn(j))
+                ri = real(fm(ind)) * aimag(gn(j))
+                ir = aimag(fm(ind)) * real(gn(j))
+                ii = aimag(fm(ind)) * aimag(gn(j))
+                v = v + cmplx(rr - ii, ri + ir) ! pF[j] * gn[j]
+                if (mod(j,2).eq.m2) then 
+                    vnc = vnc + cmplx( rr + ii, ir - ri)  
+                else 
+                    vnc = vnc + cmplx(-(rr + ii), ri - ir)  ! +/- pF[g] * std::conj(gn[j])
+                end if
+            end do
+
+ ! fill in symmetric values using symmetry from: wigner d function, sht of real signal, sht of real pattern
+            match = mod(m + n,2)
+            fxc(k * sl * bw + n * bw + m] = v ! fxc(k, n, m)
+            if (k.gt.0) then
+                if (match.eq.0) then
+                    fxc((sl - k) * sl * bw + n * bw + m) = v ! fxc(-k, n, m)
+                else 
+                    fxc((sl - k) * sl * bw + n * bw + m) = -v ! fxc(-k, n, m)
+                end if
+            end if
+            if (n.gt.0) then ! fill symmetry within a slice
+                if (mod(k,2).eq.match) then 
+                    vc = vnc 
+                else
+                    vc = -vnc
+                end if
+                fxc(k * sl * bw + (sl - n) * bw + m) = vc ! fxc(k, -n, m)
+                if (k.gt.0) then 
+                    if (match.eq.0) then 
+                        fxc((sl - k) * sl * bw + (sl - n) * bw + m) = vc  ! fxc(-k, -n, m)
+                    else
+                        fxc((sl - k) * sl * bw + (sl - n) * bw + m) = -vc  ! fxc(-k, -n, m)
+                    end if 
+                end if
+            end if 
+        end do 
+    end do
+end do
+
+
+
+
+
+
+
+end function SH_correlate
 
 
 end module SHcorrelator
