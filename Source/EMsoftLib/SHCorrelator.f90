@@ -61,8 +61,9 @@ IMPLICIT NONE
 
 public :: SH_interpolateMaxima
 
-contains
+private :: signbit
 
+contains
 
 !--------------------------------------------------------------------------
 !
@@ -221,7 +222,31 @@ x(0) = xx
 
 end function SH_interpolateMaxima
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: signbit
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief  mimics std::signbit() behavior but returns =/- 1.D0 instead of logical
+!
+! @param x : a real (double) argument
+! @result sb :  +/- 1.D0
+!   
+!> @date 01/31/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!--------------------------------------------------------------------------
+recursive function signbit(x) result(sb)
+!DEC$ ATTRIBUTES DLLEXPORT :: signbit
 
+IMPLICIT NONE 
+
+real(kind=dbl),INTENT(IN)           :: x 
+real(kind=dbl)                      :: sb 
+
+sb = -1.D0
+if (x.ge.0.D0) sb = 1.D0
+
+end function signbit
 
 !--------------------------------------------------------------------------
 !
@@ -232,7 +257,7 @@ end function SH_interpolateMaxima
 !> @brief   convert ZYZ euler angles to quaternion
 !
 ! @param eu : euler angles to convert to quaternion (Z, Y', Z'')
-! @param pos: true/false to restrict rotation to [0,pi] (positive w)
+! @param pos: true/false to restrict rotation to (0,pi) (positive w)
 ! @result qu: location to write quaternion as w, x, y, z
 !   
 !> @date 01/30/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
@@ -324,13 +349,13 @@ end function SH_quatAverage
 !             const size_t am = std::abs(m);
 !             const size_t start = std::max<size_t>(am, maxKN);
 !             for(size_t j = start; j < bw; j++) {
-!                 const Real dlkm = wigD[ak * bw * bw + am * bw + j] * wigner::dSign(j, k, m);//wigner::d<Real>(j, k, m);
-!                 const Real dlnk = wigD[an * bw * bw + ak * bw + j] * wigner::dSign(j, n, k);//wigner::d<Real>(j, n, k);
-!                 const std::complex<Real>& vflm = flm[am * bw + j];//\hat{f}^l_{|m|}
-!                 const std::complex<Real>& vgln = gln[an * bw + j];//\hat{g}^l_{|n|}
+!                 const Real dlkm = wigD(ak * bw * bw + am * bw + j) * wigner::dSign(j, k, m);//wigner::d<Real>(j, k, m);
+!                 const Real dlnk = wigD(an * bw * bw + ak * bw + j) * wigner::dSign(j, n, k);//wigner::d<Real>(j, n, k);
+!                 const std::complex<Real>& vflm = flm(am * bw + j);//\hat{f}^l_{|m|}
+!                 const std::complex<Real>& vgln = gln(an * bw + j);//\hat{g}^l_{|n|}
 !                 const std::complex<Real> f = std::signbit(m) ? std::conj(vflm) * Real(0 == am % 2 ? 1 : -1) : vflm;//symmetry of real SHT coefficients
 !                 const std::complex<Real> g = std::signbit(n) ? std::conj(vgln) * Real(0 == an % 2 ? 1 : -1) : vgln;//symmetry of real SHT coefficients
-!                 fxc[ic * sl * dm + ib * dm + ia] += f * std::conj(g) * dlkm * dlnk;
+!                 fxc(ic * sl * dm + ib * dm + ia) += f * std::conj(g) * dlkm * dlnk;
 !             }
 !         }
 !     }
@@ -342,27 +367,34 @@ end function SH_quatAverage
 recursive function SH_correlate(SHCOR, flm, gln, qu) result(peak)
 !DEC$ ATTRIBUTES DLLEXPORT :: SH_correlate
 
+use constants
+
 IMPLICIT NONE
 
 type(SH_correlatorType),INTENT(IN)      :: SHCOR
 complex(kind=dbl),INTENT(IN)            :: flm(:)
 complex(kind=dbl),INTENT(IN)            :: gln(:)
-real(kind=dbl),INTENT(IN)               :: qu(0:3)
+real(kind=dbl),INTENT(INOUT)            :: qu(0:3)
 real(kind=dbl)                          :: peak 
 
-integer(kind=irg)                       :: j, k, m, n, bw, maxKN, m2, ind, match
+integer(kind=irg)                       :: j, k, m, n, bw, maxKN, m2, ind, match, ind0, k0, m0, n0, sl, mg, ng, kg, mg1, ng1, &
+                                           indMax(0:4), indPeak, ik, in, im, imm, inm, ikm, imp, inp, ikp, x, y, z, iter, xMax, &
+                                           yMax, zMax 
 complex(kind=dbl)                       :: v, vnc, vc
-real(kind=dbl)                          :: rr, ri, ir, ii
+real(kind=dbl)                          :: rr, ri, ir, ii, vMax(0:4), xCorr(3,3,3), x(0:2), peak, eu3(3), eu(0:1,0:1,0:1,0:2), &
+                                           quGrid(0:1,0:1,0:1,0:3), corrGrid(0:1,0:1,0:1), corrMax, corr
+logical                                 :: useRefinement
 
 ! the above quadruple loop is conceptually simple but has many redundant calculations
 ! the loop that follows is mathematically equivalent (for SHT of real functions only!!) but much faster:
 !  -use \hat{f}^l_{-m} = (-1)^m * \hat{f}^l_{m} for real valued functions (and the same for \hat{g}^l_{-n})
 !  -build the fft of a real valued cross correlation
-!  -precompute values of \hat{f}^l_{m} * d^l_{k,m}(\frac{\pi}{2}) [stored in fm]
-!  -precompute values of \hat{g}^l_{n} * d^l_{n,k}(\frac{\pi}{2}) [stored in gn]
+!  -precompute values of \hat{f}^l_{m} * d^l_{k,m}(\frac{\pi}{2}) (stored in fm)
+!  -precompute values of \hat{g}^l_{n} * d^l_{n,k}(\frac{\pi}{2}) (stored in gn)
 !  -eliminate redundant calculations from f * g and f * conj(g)
 
 bw = SHCOR%bw
+sl = SHCOR%sl
 
 ! loop over planes
 do k = 0, bw-1
@@ -394,17 +426,17 @@ do k = 0, bw-1
                 ri = real(fm(ind)) * aimag(gn(j))
                 ir = aimag(fm(ind)) * real(gn(j))
                 ii = aimag(fm(ind)) * aimag(gn(j))
-                v = v + cmplx(rr - ii, ri + ir) ! pF[j] * gn[j]
+                v = v + cmplx(rr - ii, ri + ir) ! pF(j) * gn(j)
                 if (mod(j,2).eq.m2) then 
                     vnc = vnc + cmplx( rr + ii, ir - ri)  
                 else 
-                    vnc = vnc + cmplx(-(rr + ii), ri - ir)  ! +/- pF[g] * std::conj(gn[j])
+                    vnc = vnc + cmplx(-(rr + ii), ri - ir)  ! +/- pF(g) * std::conj(gn(j))
                 end if
             end do
 
  ! fill in symmetric values using symmetry from: wigner d function, sht of real signal, sht of real pattern
             match = mod(m + n,2)
-            fxc(k * sl * bw + n * bw + m] = v ! fxc(k, n, m)
+            fxc(k * sl * bw + n * bw + m) = v ! fxc(k, n, m)
             if (k.gt.0) then
                 if (match.eq.0) then
                     fxc((sl - k) * sl * bw + n * bw + m) = v ! fxc(-k, n, m)
@@ -431,11 +463,273 @@ do k = 0, bw-1
     end do
 end do
 
+! compute cross correlation via fft find maximum correlation pixel in half the volume (glide plane make second half redundant)
+plan.inverse(fxc.data(), xc.data());
+ind0 = std::distance(xc.cbegin(), std::max_element(xc.cbegin(), xc.cbegin() + xc.size() / 2));
+k0 = ind0 / (sl * sl) ! k component of ind0
+ind0 = ind0 - k0 * sl * sl
+n0 = ind0 / sl  ! n component of ind0
+ind0 = ind0 - n0 * sl
+m0 = ind0  ! m component of ind0
 
+! the peak may have better alignment with the grid across the glide plane
+! need to check glide point and +x, +y, and +xy neighbors
+if (m0.lt.bw) then 
+    mg = m0 + bw - 1 
+else
+    mg = m0 - bw  ! m0 across glide plane
+end if
+if (n0.lt.bw) then 
+    ng  = n0 + bw - 1 
+else
+    ng = n0 - bw  ! n0 across glide plane
+end if
+kg  = sl - 1 - k0 ! k0 component across glide plane
+if ((mg+1).eq.sl) then
+    mg1 = 0
+else 
+    mg1 = mg + 1 ! get +x index using periodic boundary conditions
+end if
+if ((ng+1).eq.sl) then
+    ng1 = 0 
+else
+    ng1 = ng + 1 ! get +y index using periodic boundary conditions
+end if 
 
+! indices of possible maxima (faster to just check these 4 points than find the global maximum with both halves)
+indMax = (/ k0 * sl * sl + n0  * sl + m0, &  ! maxima in half searched
+            kg * sl * sl + ng  * sl + mg, &  ! glide point
+            kg * sl * sl + ng  * sl + mg1, & ! +x neighbor of glide point
+            kg * sl * sl + ng1 * sl + mg, &  ! +y neighbor of glide point
+            kg * sl * sl + ng1 * sl + mg1 /) ! +xy neighbor of glide point
 
+! select maximum cross correlation point and get index
+vMax = (/ xc(indMax(0)), xc(indMax(1)), xc(indMax(2)), xc(indMax(3)), xc(indMax(4) /)
+indPeak = indMax(std::distance(vMax, std::max_element(vMax, vMax + 5))) ! index of maximum cross correlation in entire volume
+ik = indPeak / (sl * sl) ! k component of indPeak
+indPeak = indPeak - ik * sl * sl
+in = indPeak / sl ! n component of indPeak
+indPeak = indPeak - in * sl
+im = indPeak ! m component of indPeak
 
+! extract cross correlation for 3x3 grid surrounding maxima at indPeak
+if (im.eq.0) then
+    imm = sl - 1 
+else 
+    imm = im - 1  ! get previous m index with periodic boundary conditions
+end if
+if (in.eq.0) then
+    inm = sl - 1 
+else 
+    inm = in - 1  ! get previous n index with periodic boundary conditions
+end if
+if (ik.eq.0) then
+    ikm = sl - 1 
+else 
+    ikm = ik - 1  ! get previous k index with periodic boundary conditions
+end if
+if (im.eq.(sl-1)) then
+    imp = 0 
+else 
+    imp = im + 1  ! get next m index with periodic boundary conditions
+end if
+if (in.eq.(sl-1)) then
+    inp = 0 
+else 
+    inp = in + 1  ! get next n index with periodic boundary conditions
+end if
+if (ik.eq.(sl-1)) then 
+    ikp = 0 
+else
+    ikp = ik + 1 ! get next k index with periodic boundary conditions
+end if
+xCorr = reform( (/ &  ! z,y,x
+                xc(ikm*sl*sl + inm*sl + imm), xc(ikm*sl*sl + inm*sl + im ), xc(ikm*sl*sl + inm*sl + imp), &
+                xc(ikm*sl*sl + in *sl + imm), xc(ikm*sl*sl + in *sl + im ), xc(ikm*sl*sl + in *sl + imp), &
+                xc(ikm*sl*sl + inp*sl + imm), xc(ikm*sl*sl + inp*sl + im ), xc(ikm*sl*sl + inp*sl + imp), &
+                xc(ik *sl*sl + inm*sl + imm), xc(ik *sl*sl + inm*sl + im ), xc(ik *sl*sl + inm*sl + imp), &
+                xc(ik *sl*sl + in *sl + imm), xc(ik *sl*sl + in *sl + im ), xc(ik *sl*sl + in *sl + imp), &
+                xc(ik *sl*sl + inp*sl + imm), xc(ik *sl*sl + inp*sl + im ), xc(ik *sl*sl + inp*sl + imp), &
+                xc(ikp*sl*sl + inm*sl + imm), xc(ikp*sl*sl + inm*sl + im ), xc(ikp*sl*sl + inm*sl + imp), &
+                xc(ikp*sl*sl + in *sl + imm), xc(ikp*sl*sl + in *sl + im ), xc(ikp*sl*sl + in *sl + imp), &
+                xc(ikp*sl*sl + inp*sl + imm), xc(ikp*sl*sl + inp*sl + im ), xc(ikp*sl*sl + inp*sl + imp) /), (/3,3,3/) )
 
+! sub pixel interpolate peak using tri quadratic
+x = 0.D0 ;//initial guess at maximum voxel (z,y,x)
+peak = SH_interpolateMaxima(xCorr, x)
+
+! should we use real space refinement?
+useRefinement = .FALSE. 
+if(useRefinement.eqv..TRUE.) then  ! //use real space refinement
+! extract bounding box of euler angles
+    Real eu(2,2,2,3);
+
+! origin of bound box is brightest pixel
+    eu(0,0,0,0) = ((dble(im) + 0.D0)*4.D0 - dble(sl)) * cPi / dble(2 * sl)  ! alpha
+    eu(0,0,0,1) = ((dble(ik) + 0.D0)*2.D0 - dble(sl)) * cPi / dble(    sl)  ! beta
+    eu(0,0,0,2) = ((dble(in) + 0.D0)*4.D0 - dble(sl)) * cPi / dble(2 * sl)  ! gamma
+
+! far corner of bounding box is pixel in direction of subpixel maximum
+    eu(1,1,1,0) = ((dble(im) + signbit(x(0)))*4.D0 - sl) * cPi / dble(2 * sl) ! alpha
+    eu(1,1,1,1) = ((dble(ik) + signbit(x(2)))*2.D0 - sl) * cPi / dble(    sl) ! beta
+    eu(1,1,1,2) = ((dble(in) + signbit(x(1)))*4.D0 - sl) * cPi / dble(2 * sl) ! gamma
+
+! fill in remaining angle to build box
+    eu(0,1,0,0) = eu(0,0,0,0)
+    eu(1,0,0,0) = eu(0,0,0,0)
+    eu(1,1,0,0) = eu(0,0,0,0)
+    eu(0,0,1,1) = eu(0,0,0,1)
+    eu(1,0,0,1) = eu(0,0,0,1)
+    eu(1,0,1,1) = eu(0,0,0,1)
+    eu(0,0,1,2) = eu(0,0,0,2)
+    eu(0,1,0,2) = eu(0,0,0,2)
+    eu(0,1,1,2) = eu(0,0,0,2)
+    eu(0,0,1,0) = eu(1,1,1,0)
+    eu(0,1,1,0) = eu(1,1,1,0)
+    eu(1,0,1,0) = eu(1,1,1,0)
+    eu(0,1,0,1) = eu(1,1,1,1)
+    eu(0,1,1,1) = eu(1,1,1,1)
+    eu(1,1,0,1) = eu(1,1,1,1)
+    eu(1,0,0,2) = eu(1,1,1,2)
+    eu(1,0,1,2) = eu(1,1,1,2)
+    eu(1,1,0,2) = eu(1,1,1,2)
+
+! convert bounding box to quats
+    do z = 0,1 
+        do y = 0,1 
+            do x = 0,1 
+                quGrid(z,y,x) = zyz2qu(eu(z,y,x), .FALSE.) ! don't restrict to (0,pi) in case we are straddling the hypersphere equator
+            end do 
+        end do 
+    end do
+
+! now to extremely naive derivative free nonlinear optimization:
+! -compute correlation at corners of 3d box
+! -select max correlation corner
+! -move all other corners halfway toward max correlation corner
+! -iterate
+    do iter = 0, 9 ! ~10 iterations is good
+    ! compute correlation at each grid point
+        zMax = 0 
+        yMax = 0 
+        xMax = 0
+        corrMax = -10000.D0
+        do z = 0,1 
+            do y = 0,1 
+                do x = 0,1 
+                    wigner::D(bw, quGrid(z,y,x), coeff.data(), table.data());
+                    ! /*
+                    ! std::complex<Real> corr(0);
+                    ! for(size_t ib = 0; ib < sl; ib++) {
+                    !     const int n = ib >= bw ? int(ib) - sl : ib;
+                    !     const size_t an = std::abs(n);
+                    !     for(size_t ia = 0; ia < sl; ia++) {
+                    !         const int m = ia >= bw ? int(ia) - sl : ia;
+                    !         const size_t am = std::abs(m);
+                    !         const size_t start = std::max<size_t>(am, an);
+                    !         for(size_t j = start; j < bw; j++) {
+                    !             const std::complex<Real>& vflm = flm(am * bw + j);//\hat{f}^l_{|m|}
+                    !             const std::complex<Real>& vgln = gln(an * bw + j);//\hat{g}^l_{|n|}
+                    !             const std::complex<Real> f = std::signbit(m) ? std::conj(vflm) * Real(0 == am % 2 ? 1 : -1) : vflm;//symmetry of real SHT coefficients
+                    !             const std::complex<Real> g = std::signbit(n) ? std::conj(vgln) * Real(0 == an % 2 ? 1 : -1) : vgln;//symmetry of real SHT coefficients
+                    !             const std::complex<Real> dlmn = table(j * sl * sl + ( m + bw-1) * sl + ( n + bw-1));// D_{m,n}(R)
+                    !             corr += f * std::conj(g) * dlmn;//flm(am * bw + j) * std::conj(gjn) * D^l_m
+                    !         }
+                    !     }
+                    ! }
+                    ! /*/
+
+                ! the above loop is conceptually simple but has many redundant calculations
+                ! the loop that follows is mathematically equivalent (for SHT of real functions only!!) much faster:
+                !  -use \hat{f}^l_{-m} = (-1)^m * \hat{f}^l_{m} for real valued functions (and the same for \hat{g}^l_{-n})
+                !  -eliminate redundant calculations from f * g and f * conj(g)
+                !  -only compute real part of product (we know cross correlation is real)
+                    corr = 0.D0
+                    do n = 0, bw -1
+                        n2 = mod(n, 2)
+                        sn = -1.D0
+                        if (n2.eq.0) sn = 1.D0
+                        do  m = 0, bw-1
+                            m2 = mod(m, 2)
+                            sm = -1.D0
+                            if (m2.eq.0) sm = 1.D0
+                            do j = maxval( (/ m, n /) ), bw-1
+                            ! do complex multiplication components by hand to eliminate duplicate flops from multiplying with conjugate
+                            imd = m * bw + j
+                            ind = n * bw + j
+                            rr = real(flm(imd)) * real(gln(ind))  ! ac
+                            ri = real(fim(imd)) * aimag(gln(ind)) ! ad 
+                            ir = aimag(fim(imd)) * real(gln(ind)) ! bc 
+                            ii = aimag(fim(imd)) * aimag(gln(ind))! bd
+                            vp = cmplx(rr - ii, ri + ir) ! \hat{f}^l_{+m} *      hat{g}^l_{+n}
+                            vc = cmplx(rr + ii, ir - ri) ! \hat{f}^l_{+m} * conj(hat{g}^l_{+n})
+
+                            ! at this point we're interested in 4 intermediate values:
+                            ! \hat{f}^l_{+m} * conj(hat{g}^l_{+n}) ==      vc
+                            ! \hat{f}^l_{+m} * conj(hat{g}^l_{-n}) ==      vp  * sn
+                            ! \hat{f}^l_{-m} * conj(hat{g}^l_{+n}) == conj(vp) * sm
+                            ! \hat{f}^l_{-m} * conj(hat{g}^l_{-n}) == conj(vc) * sn * sm
+                            ! these values need to be multiplied by the appropriate D_{m,n}(R) values which have the following symmetry
+                            !  D_{-m,-n}(R) = (-1)^{m2+m1} * conj(D_{ m, n}(R))
+                                dlmn_p = table(j * sl * sl + (bw-1 + m) * sl + (bw-1 + n)) !  D_{ m, n}(R)
+                                dlmn_n = table(j * sl * sl + (bw-1 + m) * sl + (bw-1 - n)) !  D_{ m,-n}(R)
+
+                            ! compute real parts of cross correlation (imaginary part is zero) and accumulate
+                                const Real xc =  dlmn_p.real() * vc.real() - dlmn_p.imag() * vc.imag()      ;//real(dlmn_p * vc)
+                                const Real xp = (dlmn_n.real() * vp.real() - dlmn_n.imag() * vp.imag()) * sn;//real(dlmn_n * vp)
+
+                                corr += xc;//real( \hat{f}^l_{+m} * conj(hat{g}^l_{+n}) * D_{+m,+n}(R) )
+                                if(n > 0) corr += xp;//\hat{f}^l_{+m} * conj(hat{g}^l_{+n}) * D_{+m,-n}(R)
+                                if(m > 0) {
+                                    corr += xp;//\hat{f}^l_{-m} * conj(hat{g}^l_{+n}) * D_{-m,+n}(R)
+                                    if(n > 0) corr += xc;//real(\hat{f}^l_{-m} * conj(hat{g}^l_{-n}) * D_{-m,-n}(R))
+                                }
+                            }
+                        }
+                    }
+
+                    corrGrid(z,y,x) = corr;//save correlation at this grid point
+                    if(corrGrid(z,y,x) > corrMax) {//update max correlation if needed
+                        corrMax = corr;
+                        zMax = z;
+                        yMax = y;
+                        xMax = x;
+                    }
+                }
+            }
+        }
+
+    ! collapse z direction towards zMax
+        quatAverage(quGrid(0,0,0), quGrid(1,0,0), quGrid(1-zMax,0,0));
+        quatAverage(quGrid(0,0,1), quGrid(1,0,1), quGrid(1-zMax,0,1));
+        quatAverage(quGrid(0,1,0), quGrid(1,1,0), quGrid(1-zMax,1,0));
+        quatAverage(quGrid(0,1,1), quGrid(1,1,1), quGrid(1-zMax,1,1));
+
+    ! collapse y direction towards yMax
+        quatAverage(quGrid(0,0,0), quGrid(0,1,0), quGrid(0,1-yMax,0));
+        quatAverage(quGrid(0,0,1), quGrid(0,1,1), quGrid(0,1-yMax,1));
+        quatAverage(quGrid(1,0,0), quGrid(1,1,0), quGrid(1,1-yMax,0));
+        quatAverage(quGrid(1,0,1), quGrid(1,1,1), quGrid(1,1-yMax,1));
+
+    ! collapse x direction towards xMax
+        quatAverage(quGrid(0,0,0), quGrid(0,0,1), quGrid(0,0,1-xMax));
+        quatAverage(quGrid(0,1,0), quGrid(0,1,1), quGrid(0,1,1-xMax));
+        quatAverage(quGrid(1,0,0), quGrid(1,0,1), quGrid(1,0,1-xMax));
+        quatAverage(quGrid(1,1,0), quGrid(1,1,1), quGrid(1,1,1-xMax));
+
+    ! save current best rotation and correlation
+        std::copy(quGrid(zMax,yMax,xMax), quGrid(zMax,yMax,xMax) + 4, qu);
+        peak = corrMax;
+    }
+    if(std::signbit(qu(0))) std::transform(qu, qu+4, qu, std::negate<Real>());//restrict rotation to (0,pi)    ! to be translated from C++ routine ... 
+else
+! convert subpixel to ZYZ euler angle
+    eu3 = (/ &  ! first subpixel from fractional position to ZYZ euler angles
+            ((dble(im) + x(0))*4.D0 - dble(sl)) * cPi / dble(2 * sl), & ! alpha
+            ((dble(ik) + x(2))*2.D0 - dble(sl)) * cPi / dble(    sl), & ! beta
+            ((dble(in) + x(1))*4.D0 - dble(sl)) * cPi / dble(2 * sl) /) ! gamma
+    qu = zyz2qu(eu3, .TRUE.)
+end if
 
 end function SH_correlate
 
