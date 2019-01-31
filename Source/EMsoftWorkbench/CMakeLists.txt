@@ -204,7 +204,7 @@ BuildQtAppBundle(
     LINK_LIBRARIES ${OPENGL_LIBRARIES} ${EXE_LINK_LIBRARIES} H5Support OrientationLib EMsoftLib EMsoftWrapperLib
     LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     QT_PLUGINS    ${QT_PLUGINS}
-    QT5_MODULES   Core Gui Widgets OpenGL Network
+    QT5_MODULES   Core Gui Widgets OpenGL Network Concurrent
     COMPONENT     Applications
     INSTALL_DEST  ${DEST_DIR}
 )

@@ -15,15 +15,6 @@
       <key>CFBundleTypeRole</key>
       <string>Editor</string>
     </dict>
-    <dict>
-        <key>CFBundleTypeExtensions</key>
-        <array>
-          <string>ini</string>
-          <string>txt</string>
-      </array>
-      <key>CFBundleTypeRole</key>
-      <string>Viewer</string>
-    </dict>
   </array>
 	<key>CFBundleExecutable</key>
 	<string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>

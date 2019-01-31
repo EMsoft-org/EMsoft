@@ -46,7 +46,10 @@ HDF5_COMPONENTS="@HDF5_COMPONENTS@"
 arr=$(echo $HDF5_COMPONENTS | tr ";" "\n")
 for x in $arr
 do
-    copyLibraries "@HDF5_INSTALL@/lib"  "$x"
+  if [ ! -e "${x}" ]; then
+    echo "@linux_app_name@: Copy ${x} Lib/Link into Deployment Lib Directory" 
+    cp --no-dereference ${x} ${InstallPrefix}/lib/.
+  fi  
 done
 
 
@@ -84,7 +87,7 @@ done
 
 # ----------------------------------------------------
 # Copy the QtWebEngine parts of the QtWebEngineCore 
-if [ "@SIMPLView_USE_QtWebEngine@" = "ON" ];
+if [ "@SIMPL_USE_QtWebEngine@" = "ON" ];
   then
     if [ ! -e "${InstallPrefix}/bin/resources" ];
       then
