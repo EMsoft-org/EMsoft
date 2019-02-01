@@ -738,7 +738,7 @@ end subroutine h5ebsd_writePhaseGroup
 !
 !> @date 03/10/16 MDG 1.0 original
 !--------------------------------------------------------------------------
-subroutine h5ebsd_writeFile(vendor, ebsdnl, xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
+subroutine h5ebsd_writeFile(vendor, ebsdnl, xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, dicteulerarray, &
                             dpmap, progname, nmldeffile, OSMmap)
 !DEC$ ATTRIBUTES DLLEXPORT :: h5ebsd_writeFile
 
@@ -761,7 +761,7 @@ integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: exptIQ(ipar(3))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
-real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
+real(kind=sgl),INTENT(INOUT)                        :: dicteulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
@@ -771,12 +771,13 @@ character(15)                                       :: tstre
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 integer(kind=irg)                                   :: hdferr, filetype, i, j, ii, jj,indx, istat, ipar2(6), L
 character(fnlen)                                    :: groupname, dataset, h5ebsdfile, savefile
-logical                                             :: noindex
+logical                                             :: noindex, g_exists, overwrite=.TRUE.
 type(dicttype)                                      :: dict
+real(kind=sgl)                                      :: eulerarray(3,ipar(4))
 
 real(kind=sgl),allocatable                          :: kam(:,:), ISMap(:)
 
-real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), results(:), avEuler(:,:), &
+real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), eangles(:,:), results(:), avEuler(:,:), &
                                                        lresultmain(:,:), eulers(:,:) 
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
@@ -1020,6 +1021,21 @@ dataset = SC_Valid
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Valid')
   deallocate(valid)
 
+  dataset = SC_EulerAngles
+  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  allocate(eangles(3,ipar(3)),stat=istat)
+  do ii = 1,ipar(3)
+    indx = indexmain(1,ii)
+    eangles(1:3,ii) = eulerarray(1:3,indx)
+  end do
+  eangles = eangles * sngl(cPi)/180.0
+  if (g_exists) then 
+     hdferr = HDF_writeDatasetFloatArray2D(dataset, eangles, 3, ipar(3), HDF_head, overwrite)
+  else
+     hdferr = HDF_writeDatasetFloatArray2D(dataset, eangles, 3, ipar(3), HDF_head)
+  end if
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset EulerAngles')
+
 !=====================================================
 ! Euler angles: Phi 
 dataset = SC_Phi
@@ -1125,8 +1141,8 @@ dataset = SC_Ncubochoric
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Ncubochoric')
 
 ! write the list of sampled Euler angles
-dataset = SC_EulerAngles
-  hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerarray, 3, ipar(4), HDF_head)
+dataset = SC_DictionaryEulerAngles
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, dicteulerarray, 3, ipar(4), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset EulerAngles')
 
 ! number of experimental patterns 
