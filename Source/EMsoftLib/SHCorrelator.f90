@@ -361,13 +361,15 @@ end function SH_quatAverage
 !     }
 ! }
 ! */
-
+!
 !> @date 01/30/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
 !--------------------------------------------------------------------------
 recursive function SH_correlate(SHCOR, flm, gln, qu) result(peak)
 !DEC$ ATTRIBUTES DLLEXPORT :: SH_correlate
 
 use constants
+use Wigner
+use FFTW3mod
 
 IMPLICIT NONE
 
@@ -377,12 +379,13 @@ complex(kind=dbl),INTENT(IN)            :: gln(:)
 real(kind=dbl),INTENT(INOUT)            :: qu(0:3)
 real(kind=dbl)                          :: peak 
 
+! since "in" is a reserved word in f90, we use "inn"
 integer(kind=irg)                       :: j, k, m, n, bw, maxKN, m2, ind, match, ind0, k0, m0, n0, sl, mg, ng, kg, mg1, ng1, &
-                                           indMax(0:4), indPeak, ik, in, im, imm, inm, ikm, imp, inp, ikp, x, y, z, iter, xMax, &
-                                           yMax, zMax 
+                                           indMax(0:4), indPeak, ik, inn, im, imm, inm, ikm, imp, inp, ikp, x, y, z, iter, xMax, &
+                                           yMax, zMax, vMaxPos(1), xcMaxPos(1), xcshape(1)
 complex(kind=dbl)                       :: v, vnc, vc
 real(kind=dbl)                          :: rr, ri, ir, ii, vMax(0:4), xCorr(3,3,3), x(0:2), peak, eu3(3), eu(0:1,0:1,0:1,0:2), &
-                                           quGrid(0:1,0:1,0:1,0:3), corrGrid(0:1,0:1,0:1), corrMax, corr
+                                           quGrid(0:1,0:1,0:1,0:3), corrGrid(0:1,0:1,0:1), corrMax, corr, indPeak
 logical                                 :: useRefinement
 
 ! the above quadruple loop is conceptually simple but has many redundant calculations
@@ -463,9 +466,14 @@ do k = 0, bw-1
     end do
 end do
 
-! compute cross correlation via fft find maximum correlation pixel in half the volume (glide plane make second half redundant)
-plan.inverse(fxc.data(), xc.data());
-ind0 = std::distance(xc.cbegin(), std::max_element(xc.cbegin(), xc.cbegin() + xc.size() / 2));
+! compute cross correlation via fft 
+plan.inverse(fxc.data(), xc.data())
+
+! find maximum correlation pixel in half the volume (glide plane make second half redundant)
+xcshape = shape(xc)
+xcMaxPos = maxpos(xc(0:xcshape(1)/2-1))
+! ind0 = std::distance(xc.cbegin(), std::max_element(xc.cbegin(), xc.cbegin() + xc.size() / 2));
+ind0 = xcMaxPos(1)
 k0 = ind0 / (sl * sl) ! k component of ind0
 ind0 = ind0 - k0 * sl * sl
 n0 = ind0 / sl  ! n component of ind0
@@ -497,7 +505,7 @@ else
 end if 
 
 ! indices of possible maxima (faster to just check these 4 points than find the global maximum with both halves)
-indMax = (/ k0 * sl * sl + n0  * sl + m0, &  ! maxima in half searched
+indMax = (/ k0 * sl * sl + n0  * sl + m0, &  ! maximum in half searched
             kg * sl * sl + ng  * sl + mg, &  ! glide point
             kg * sl * sl + ng  * sl + mg1, & ! +x neighbor of glide point
             kg * sl * sl + ng1 * sl + mg, &  ! +y neighbor of glide point
@@ -505,12 +513,15 @@ indMax = (/ k0 * sl * sl + n0  * sl + m0, &  ! maxima in half searched
 
 ! select maximum cross correlation point and get index
 vMax = (/ xc(indMax(0)), xc(indMax(1)), xc(indMax(2)), xc(indMax(3)), xc(indMax(4) /)
-indPeak = indMax(std::distance(vMax, std::max_element(vMax, vMax + 5))) ! index of maximum cross correlation in entire volume
+! indPeak = indMax(std::distance(vMax, std::max_element(vMax, vMax + 5))) ! index of maximum cross correlation in entire volume
+vMaxPos = maxpos(vMax)
+indPeak = indMax(vMaxPos(1))
+
 ik = indPeak / (sl * sl) ! k component of indPeak
 indPeak = indPeak - ik * sl * sl
-in = indPeak / sl ! n component of indPeak
-indPeak = indPeak - in * sl
-im = indPeak ! m component of indPeak
+inn = indPeak / sl       ! n component of indPeak
+indPeak = indPeak - inn * sl
+im = indPeak             ! m component of indPeak
 
 ! extract cross correlation for 3x3 grid surrounding maxima at indPeak
 if (im.eq.0) then
@@ -518,10 +529,10 @@ if (im.eq.0) then
 else 
     imm = im - 1  ! get previous m index with periodic boundary conditions
 end if
-if (in.eq.0) then
+if (inn.eq.0) then
     inm = sl - 1 
 else 
-    inm = in - 1  ! get previous n index with periodic boundary conditions
+    inm = inn - 1  ! get previous n index with periodic boundary conditions
 end if
 if (ik.eq.0) then
     ikm = sl - 1 
@@ -533,10 +544,10 @@ if (im.eq.(sl-1)) then
 else 
     imp = im + 1  ! get next m index with periodic boundary conditions
 end if
-if (in.eq.(sl-1)) then
+if (inn.eq.(sl-1)) then
     inp = 0 
 else 
-    inp = in + 1  ! get next n index with periodic boundary conditions
+    inp = inn + 1  ! get next n index with periodic boundary conditions
 end if
 if (ik.eq.(sl-1)) then 
     ikp = 0 
@@ -545,17 +556,17 @@ else
 end if
 xCorr = reform( (/ &  ! z,y,x
                 xc(ikm*sl*sl + inm*sl + imm), xc(ikm*sl*sl + inm*sl + im ), xc(ikm*sl*sl + inm*sl + imp), &
-                xc(ikm*sl*sl + in *sl + imm), xc(ikm*sl*sl + in *sl + im ), xc(ikm*sl*sl + in *sl + imp), &
+                xc(ikm*sl*sl + inn*sl + imm), xc(ikm*sl*sl + inn*sl + im ), xc(ikm*sl*sl + inn*sl + imp), &
                 xc(ikm*sl*sl + inp*sl + imm), xc(ikm*sl*sl + inp*sl + im ), xc(ikm*sl*sl + inp*sl + imp), &
                 xc(ik *sl*sl + inm*sl + imm), xc(ik *sl*sl + inm*sl + im ), xc(ik *sl*sl + inm*sl + imp), &
-                xc(ik *sl*sl + in *sl + imm), xc(ik *sl*sl + in *sl + im ), xc(ik *sl*sl + in *sl + imp), &
+                xc(ik *sl*sl + inn*sl + imm), xc(ik *sl*sl + inn*sl + im ), xc(ik *sl*sl + inn*sl + imp), &
                 xc(ik *sl*sl + inp*sl + imm), xc(ik *sl*sl + inp*sl + im ), xc(ik *sl*sl + inp*sl + imp), &
                 xc(ikp*sl*sl + inm*sl + imm), xc(ikp*sl*sl + inm*sl + im ), xc(ikp*sl*sl + inm*sl + imp), &
-                xc(ikp*sl*sl + in *sl + imm), xc(ikp*sl*sl + in *sl + im ), xc(ikp*sl*sl + in *sl + imp), &
+                xc(ikp*sl*sl + inn*sl + imm), xc(ikp*sl*sl + inn*sl + im ), xc(ikp*sl*sl + inn*sl + imp), &
                 xc(ikp*sl*sl + inp*sl + imm), xc(ikp*sl*sl + inp*sl + im ), xc(ikp*sl*sl + inp*sl + imp) /), (/3,3,3/) )
 
 ! sub pixel interpolate peak using tri quadratic
-x = 0.D0 ;//initial guess at maximum voxel (z,y,x)
+x = 0.D0 ! initial guess at maximum voxel (z,y,x)
 peak = SH_interpolateMaxima(xCorr, x)
 
 ! should we use real space refinement?
@@ -567,12 +578,12 @@ if(useRefinement.eqv..TRUE.) then  ! //use real space refinement
 ! origin of bound box is brightest pixel
     eu(0,0,0,0) = ((dble(im) + 0.D0)*4.D0 - dble(sl)) * cPi / dble(2 * sl)  ! alpha
     eu(0,0,0,1) = ((dble(ik) + 0.D0)*2.D0 - dble(sl)) * cPi / dble(    sl)  ! beta
-    eu(0,0,0,2) = ((dble(in) + 0.D0)*4.D0 - dble(sl)) * cPi / dble(2 * sl)  ! gamma
+    eu(0,0,0,2) = ((dble(inn) + 0.D0)*4.D0 - dble(sl)) * cPi / dble(2 * sl)  ! gamma
 
 ! far corner of bounding box is pixel in direction of subpixel maximum
     eu(1,1,1,0) = ((dble(im) + signbit(x(0)))*4.D0 - sl) * cPi / dble(2 * sl) ! alpha
     eu(1,1,1,1) = ((dble(ik) + signbit(x(2)))*2.D0 - sl) * cPi / dble(    sl) ! beta
-    eu(1,1,1,2) = ((dble(in) + signbit(x(1)))*4.D0 - sl) * cPi / dble(2 * sl) ! gamma
+    eu(1,1,1,2) = ((dble(inn) + signbit(x(1)))*4.D0 - sl) * cPi / dble(2 * sl) ! gamma
 
 ! fill in remaining angle to build box
     eu(0,1,0,0) = eu(0,0,0,0)
@@ -727,7 +738,7 @@ else
     eu3 = (/ &  ! first subpixel from fractional position to ZYZ euler angles
             ((dble(im) + x(0))*4.D0 - dble(sl)) * cPi / dble(2 * sl), & ! alpha
             ((dble(ik) + x(2))*2.D0 - dble(sl)) * cPi / dble(    sl), & ! beta
-            ((dble(in) + x(1))*4.D0 - dble(sl)) * cPi / dble(2 * sl) /) ! gamma
+            ((dble(inn) + x(1))*4.D0 - dble(sl)) * cPi / dble(2 * sl) /) ! gamma
     qu = zyz2qu(eu3, .TRUE.)
 end if
 
