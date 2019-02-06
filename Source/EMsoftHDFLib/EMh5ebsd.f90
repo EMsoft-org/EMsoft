@@ -231,6 +231,45 @@ end subroutine h5tkd_writeInfo
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:h5ebsd_read2DImage
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read a gray scale image from the HDF5 file 
+!
+!> @date 02/11/16 MDG 1.0 original
+!--------------------------------------------------------------------------
+subroutine h5ebsd_read2DImage(dataset, image, numx, numy, HDF_head)
+!DEC$ ATTRIBUTES DLLEXPORT :: h5ebsd_read2DImage
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                         :: dataset
+integer(kind=irg),INTENT(IN)                        :: numx
+integer(kind=irg),INTENT(IN)                        :: numy
+integer(kind=irg),INTENT(INOUT)                     :: image(numx,numy)
+type(HDFobjectStackType),pointer                    :: HDF_head
+
+integer(kind=irg),allocatable                       :: vec(:)
+integer(kind=irg)                                   :: hdferr
+
+! read the image from the file
+write (*,*) 'dataset = ',trim(dataset)
+allocate(vec(numx*numy))
+call h5imread_image_f(HDF_head%objectID,dataset,vec,hdferr)
+
+write (*,*) 'hdferr = ', hdferr
+
+! reorganize it into a regular image
+image = reshape( vec, (/ numx, numy/) )
+
+end subroutine h5ebsd_read2DImage
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:h5ebsd_write2DImageFromVector
 !
 !> @author Marc De Graef, Carnegie Mellon University

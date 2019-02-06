@@ -66,7 +66,7 @@ type EBSDDIdataType
   integer(kind=irg)             :: FZcnt
   integer(kind=irg)             :: Nexp
   integer(kind=irg)             :: pgnum
-  real(kind=sgl),allocatable    :: ADP(:)
+  integer(kind=sgl),allocatable :: ADP(:,:)
   real(kind=sgl),allocatable    :: AverageOrientations(:,:)
   real(kind=sgl),allocatable    :: CI(:)
   real(kind=sgl),allocatable    :: EulerAngles(:,:)
@@ -1352,11 +1352,13 @@ end subroutine CalcEBSDPatternSingleApprox
 !> @param hdferr error code
 !
 !> @date 03/12/18 MDG 1.0 started new routine
+!> @date 02/05/19 MDG 1.1 added presentFolder optional keyword to turn off standard path handling
 !--------------------------------------------------------------------------
 recursive subroutine readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, getADP, getAverageOrientations, getCI, &
                                             getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
                                             getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
-                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, getRefinedEulerAngles)
+                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, getRefinedEulerAngles, &
+                                            presentFolder)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDDotProductFile
 
 use local
@@ -1367,6 +1369,7 @@ use HDF5
 use HDFsupport
 use io
 use ISO_C_BINDING
+use EMh5ebsd
 
 IMPLICIT NONE
 
@@ -1394,6 +1397,7 @@ logical,INTENT(IN),OPTIONAL                         :: getXPosition
 logical,INTENT(IN),OPTIONAL                         :: getYPosition
 logical,INTENT(IN),OPTIONAL                         :: getRefinedDotProducts
 logical,INTENT(IN),OPTIONAL                         :: getRefinedEulerAngles
+logical,INTENT(IN),OPTIONAL                         :: presentFolder 
 
 character(fnlen)                                    :: infile, groupname, dataset
 logical                                             :: stat, readonly, g_exists
@@ -1406,8 +1410,13 @@ character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 ! we assume that the calling program has opened the HDF interface
 
-infile = trim(EMsoft_getEMdatapathname())//trim(dpfile)
-infile = EMsoft_toNativePath(infile)
+! check to see if we are using the standard path handling or omitting the path completely
+if (present(presentFolder)) then 
+  infile = trim(dpfile)
+else 
+  infile = trim(EMsoft_getEMdatapathname())//trim(dpfile)
+  infile = EMsoft_toNativePath(infile)
+end if
 
 ! is this a proper HDF5 file ?
 call h5fis_hdf5_f(trim(infile), stat, hdferr)
@@ -1658,9 +1667,11 @@ dataset = SC_PointGroupNumber
 ! various optional arrays
 if (present(getADP)) then
   if (getADP.eqv..TRUE.) then
-!   dataset = SC_ADP
-!   call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%ADP)
-    call Message('ADP','reading the ADP variable is not yet implemented')
+   dataset = SC_AvDotProductMap
+   allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
+   write (*,*) 'shape = ',shape(EBSDDIdata%ADP)
+   call h5ebsd_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
+   write (*,*) '   read ADP image'
   end if 
 end if
 
