@@ -300,7 +300,7 @@ select case (itype)
     case(4, 7)  ! "TSLHDF", "EMEBSD"
         nullify(pmHDF_head)
         ! open the file
-        hdferr =  HDF_openFile(ename, pmHDF_head)
+        hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
         ! open all the groups to the correct level of the data set
         do i=1,hdfnumg
@@ -314,7 +314,7 @@ select case (itype)
     case(8)  !  "BrukerHDF"
         nullify(pmHDF_head)
         ! open the file
-        hdferr =  HDF_openFile(ename, pmHDF_head)
+        hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
 
         ! open all the groups to the correct level of the data set
