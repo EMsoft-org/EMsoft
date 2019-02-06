@@ -755,8 +755,9 @@ macro(CMP_LIBRARIES_INSTALL_RULES _libraryList destination)
 
         set(BTYPE "RELEASE" )
           STRING(TOUPPER ${BTYPE} TYPE)
-          get_filename_component(lib_path ${${upperlib}_LIBRARY_${TYPE}} PATH)
-          get_filename_component(lib_name ${${upperlib}_LIBRARY_${TYPE}} NAME_WE)
+	  message(STATUS "${upperlib}_LIBRARY_${TYPE}: ${${upperlib}_LIBRARY_${TYPE}}")
+          get_filename_component(lib_path "${${upperlib}_LIBRARY_${TYPE}}" PATH)
+          get_filename_component(lib_name "${${upperlib}_LIBRARY_${TYPE}}" NAME_WE)
 
           find_file(${upperlib}_LIBRARY_SO_${TYPE}
                         NAMES ${lib_name}.so

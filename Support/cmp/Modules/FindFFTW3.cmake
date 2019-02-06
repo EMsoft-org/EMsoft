@@ -3,7 +3,7 @@
 #  FFTW3_INCLUDE_DIR - where to find fftw3.h, etc.
 #  FFTW3_LIBRARIES   - List of libraries
 #  FFTW3_FOUND       - True if FFTW3 found.
-set(FFTW3_DEBUG 0)
+set(FFTW3_DEBUG 1)
 if(FFTW3_DEBUG)
   MESSAGE(STATUS "Finding FFTW3")
 endif()
@@ -29,7 +29,8 @@ SET(FFTW3_LIB_NAMES fftw3)
 FIND_LIBRARY(FFTW3_LIBRARY
   NAMES ${FFTW3_LIB_NAMES}
   PATHS
-  ${FFTW3_INSTALL}/lib /usr/lib /usr/local/lib
+  ${FFTW3_INSTALL}/lib ${FFTW3_INSTALL}/lib64  /usr/lib /usr/local/lib
+
   NO_DEFAULT_PATH
 )
 

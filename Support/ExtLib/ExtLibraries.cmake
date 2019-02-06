@@ -122,8 +122,8 @@ endif()
 # ---------- Find FFTW3 Headers/Libraries -----------------------
 if(NOT WIN32)
   include(${CMP_SOURCE_DIR}/Modules/FindFFTW3.cmake)
-  CMP_COPY_DEPENDENT_LIBRARIES(fftw3)
-  CMP_LIBRARIES_INSTALL_RULES(fftw3 bin)
+#  CMP_COPY_DEPENDENT_LIBRARIES(fftw3)
+#  CMP_LIBRARIES_INSTALL_RULES(fftw3 bin)
 endif()
 
 
