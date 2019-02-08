@@ -1357,8 +1357,8 @@ end subroutine CalcEBSDPatternSingleApprox
 recursive subroutine readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, getADP, getAverageOrientations, getCI, &
                                             getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
                                             getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
-                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, getRefinedEulerAngles, &
-                                            presentFolder)
+                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, &
+                                            getRefinedEulerAngles, presentFolder)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDDotProductFile
 
 use local
