@@ -1669,9 +1669,7 @@ if (present(getADP)) then
   if (getADP.eqv..TRUE.) then
    dataset = SC_AvDotProductMap
    allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
-   write (*,*) 'shape = ',shape(EBSDDIdata%ADP)
    call h5ebsd_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
-   write (*,*) '   read ADP image'
   end if 
 end if
 

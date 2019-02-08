@@ -154,6 +154,88 @@ if(0.ne.iostat) then
 else  
   call Message('  CI array written to '//trim(image_filename))
 end if 
+deallocate(output_image)
+
+! ==============================
+! ==============================
+! ==============================
+! IQ map
+image_filename = trim(dpfilebase)//'_IQ.tiff'
+allocate(output_image(nx,ny))
+
+mi = minval(EBSDDIdata%IQ)
+EBSDDIdata%IQ = EBSDDIdata%IQ - mi
+ma = maxval(EBSDDIdata%IQ)
+output_image = 0
+
+do jj = 1,ny
+    output_image(1:nx,jj) = int(255.0*EBSDDIdata%IQ((jj-1)*nx+1:jj*nx)/ma)
+end do
+
+im2 = image_t(output_image)
+if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+
+! create the file
+call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+if(0.ne.iostat) then
+  call Message(" failed to write image to file : "//iomsg)
+else  
+  call Message('  IQ array written to '//trim(image_filename))
+end if 
+deallocate(output_image)
+
+! ==============================
+! ==============================
+! ==============================
+! KAM map
+image_filename = trim(dpfilebase)//'_KAM.tiff'
+allocate(output_image(nx,ny))
+
+mi = minval(EBSDDIdata%KAM)
+EBSDDIdata%KAM = EBSDDIdata%KAM - mi
+ma = maxval(EBSDDIdata%KAM)
+output_image = 0
+
+output_image = int(255.0*EBSDDIdata%KAM/ma)
+
+im2 = image_t(output_image)
+if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+
+! create the file
+call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+if(0.ne.iostat) then
+  call Message(" failed to write image to file : "//iomsg)
+else  
+  call Message('  KAM array written to '//trim(image_filename))
+end if 
+deallocate(output_image)
+
+! ==============================
+! ==============================
+! ==============================
+! OSM map
+image_filename = trim(dpfilebase)//'_OSM.tiff'
+allocate(output_image(nx,ny))
+
+mi = minval(EBSDDIdata%OSM)
+EBSDDIdata%OSM = EBSDDIdata%OSM - mi
+ma = maxval(EBSDDIdata%OSM)
+output_image = 0
+
+output_image = int(255.0*EBSDDIdata%OSM/ma)
+
+im2 = image_t(output_image)
+if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
+
+! create the file
+call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+if(0.ne.iostat) then
+  call Message(" failed to write image to file : "//iomsg)
+else  
+  call Message('  OSM array written to '//trim(image_filename))
+end if 
+deallocate(output_image)
+
 
 
 

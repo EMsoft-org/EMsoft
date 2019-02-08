@@ -256,11 +256,8 @@ integer(kind=irg),allocatable                       :: vec(:)
 integer(kind=irg)                                   :: hdferr
 
 ! read the image from the file
-write (*,*) 'dataset = ',trim(dataset)
 allocate(vec(numx*numy))
 call h5imread_image_f(HDF_head%objectID,dataset,vec,hdferr)
-
-write (*,*) 'hdferr = ', hdferr
 
 ! reorganize it into a regular image
 image = reshape( vec, (/ numx, numy/) )
