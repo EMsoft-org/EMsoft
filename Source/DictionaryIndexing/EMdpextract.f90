@@ -67,7 +67,7 @@ logical                                 :: fexists
 ! declare variables for use in object oriented image module
 integer                                 :: iostat
 character(len=128)                      :: iomsg
-logical                                 :: isInteger
+logical                                 :: isInteger, pfolder
 type(image_t)                           :: im, im2
 integer(int8)                           :: i8 (3,4), int8val
 integer(int8), allocatable              :: output_image(:,:)
@@ -87,13 +87,14 @@ call Message (' looking for file '//trim(dpfile))
 
 ! read all the image-type arrays from the file
 call h5open_EMsoft(hdferr)
+pfolder = .TRUE.
 call readEBSDDotProductFile(dpfile, dinl, hdferr, EBSDDIdata, &
                             getADP=.TRUE., &
                             getKAM=.TRUE., &
                             getCI=.TRUE., &
                             getIQ=.TRUE., & 
                             getOSM=.TRUE., & 
-                            presentFolder=.TRUE.) 
+                            presentFolder=pfolder) 
 call h5close_EMsoft(hdferr)
 call Message('   found file and read data arrays')
 
