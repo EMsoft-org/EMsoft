@@ -1369,7 +1369,6 @@ use HDF5
 use HDFsupport
 use io
 use ISO_C_BINDING
-use EMh5ebsd
 
 IMPLICIT NONE
 
@@ -1669,7 +1668,7 @@ if (present(getADP)) then
   if (getADP.eqv..TRUE.) then
    dataset = SC_AvDotProductMap
    allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
-   call h5ebsd_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
+   call HDF_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
   end if 
 end if
 
