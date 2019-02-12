@@ -67,7 +67,7 @@ logical                                 :: fexists
 ! declare variables for use in object oriented image module
 integer                                 :: iostat
 character(len=128)                      :: iomsg
-logical                                 :: isInteger, pfolder
+logical                                 :: isInteger
 type(image_t)                           :: im, im2
 integer(int8)                           :: i8 (3,4), int8val
 integer(int8), allocatable              :: output_image(:,:)
@@ -87,14 +87,13 @@ call Message (' looking for file '//trim(dpfile))
 
 ! read all the image-type arrays from the file
 call h5open_EMsoft(hdferr)
-pfolder = .TRUE.
 call readEBSDDotProductFile(dpfile, dinl, hdferr, EBSDDIdata, &
                             getADP=.TRUE., &
                             getKAM=.TRUE., &
                             getCI=.TRUE., &
                             getIQ=.TRUE., & 
                             getOSM=.TRUE., & 
-                            presentFolder=pfolder) 
+                            presentFolder=.TRUE.) 
 call h5close_EMsoft(hdferr)
 call Message('   found file and read data arrays')
 
@@ -120,6 +119,8 @@ output_image = EBSDDIdata%ADP
 im2 = image_t(output_image)
 if(im2%empty()) call Message("EMEBSDDIpreview","failed to convert array to image")
 
+! this data set is already scaled to byte range
+
 ! create the file
 call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
 if(0.ne.iostat) then
@@ -141,6 +142,7 @@ EBSDDIdata%CI = EBSDDIdata%CI - mi
 ma = maxval(EBSDDIdata%CI)
 output_image = 0
 
+! CI is a 1-D array; map onto 2-D array
 do jj = 1,ny
     output_image(1:nx,jj) = int(255.0*EBSDDIdata%CI((jj-1)*nx+1:jj*nx)/ma)
 end do
@@ -169,6 +171,7 @@ EBSDDIdata%IQ = EBSDDIdata%IQ - mi
 ma = maxval(EBSDDIdata%IQ)
 output_image = 0
 
+! IQ is a 1-D array; map onto 2-D array
 do jj = 1,ny
     output_image(1:nx,jj) = int(255.0*EBSDDIdata%IQ((jj-1)*nx+1:jj*nx)/ma)
 end do
