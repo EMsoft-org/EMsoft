@@ -69,124 +69,170 @@ contains
 !--------------------------------------------------------------------------
 ! a couple of helper functions
 !--------------------------------------------------------------------------
+
 !--------------------------------------------------------------------------
 !
-! FUNCTION: Wigner_e_km
+! FUNCTION: Wigner_zyz2qu
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
-!> @brief  compute \sqrt{\frac{(2k)!}{(k+m)!(k-m)!}} recursively (m <= k)
+!> @brief   : convert ZYZ Euler angles to quaternion
 !
-!> @param k: k in d^k_{k,m}
-!> @param m: m in d^k_{k,m}
-!> @return: ekm where d^k_{k,m} = 2^-k * e_km
+!> @param eu: euler angles to convert to quaternion (Z, Y', Z'')
+!> @param qu: location to write quaternion as w, x, y, z
 !
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @note    : materials science euler angles are generally ZXZ
+!> @note    : equivalent to eu[0] -= pi/2 and eu[2] += pi/2 followed by eu2qu for ZXZ
+!
+!> @date 02/12/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
-recursive function Wigner_e_km(k, m) result(ekm)
-!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_e_km
+recursive function Wigner_zyz2qu(eu) result(qu)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_zyz2qu
+
+use constants 
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)        :: k
-integer(kind=irg),INTENT(IN)        :: m
-real(kind=dbl)                      :: ekm 
+real(kind=dbl),INTENT(IN)           :: eu(3)
+real(kind=dbl)                      :: qu(4)
 
-integer(kind=irg)                   :: l 
+real(kind=dbl)                      :: c, s, sigma, delta
 
-ekm = 1.D0
-do l=m+1,k 
-    ekm = 2.D0 * ekm * sqrt( dble(l*(2*l-1)) / dble( 2 * (l+m) * (l-m) ) )
-end do
+c = cos(eu(2)*0.5D0)
+s = sin(eu(2)*0.5D0)
+sigma = (eu(3)+eu(1))*0.5D0
+delta = (eu(3)-eu(1))*0.5D0
 
-end function Wigner_e_km
+qu = (/ c*cos(sigma), s*sin(delta)*epsijkd, s*cos(delta)*epsijkd, c*sin(sigma)*epsijkd /)
+if (qu(1).lt.0.D0) qu = -qu
+
+end function Wigner_zyz2qu
 
 !--------------------------------------------------------------------------
 !
-! FUNCTION: Wigner_a_km
+! FUNCTION: Wigner_qu2zyz
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
-!> @brief  compute seeds for recursion coefficients
+!> @brief   : convert ZYZ Euler angles to quaternion
 !
-!> @param k: k in d^k_{k,m}
-!> @param m: m in d^k_{k,m}
-!> @return: ekm where d^k_{k,m} = 2^-k * e_km
+!> @param qu: quaternion to convert to euler angles as w, x, y, z
+!> @param eu: location to write euler angles (Z, Y', Z'')
 !
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @note    : materials science euler angles are generally ZXZ
+!> @note    : equivalent to eu[0] -= pi/2 and eu[2] += pi/2 followed by eu2qu for ZXZ
+!
+!> @date 02/12/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
-recursive function Wigner_a_km(k, m) result(akm)
-!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_km
+recursive function Wigner_qu2zyz(qu) result(eu)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_qu2zyz
+
+use constants 
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)        :: k
-integer(kind=irg),INTENT(IN)        :: m
-real(kind=dbl)                      :: akm 
+real(kind=dbl),INTENT(IN)           :: qu(4)
+real(kind=dbl)                      :: eu(3)
 
-integer(kind=irg)                   :: l 
+real(kind=dbl)                      :: qu0, q03, q12, chi, thr, x1, x2, y1, y2 
 
-akm = sqrt( dble(2*k+1) / dble(  4 * (k+m+1) * (k-m+1) ) ) * dble(-2*m)
+thr = epsilon(1.D0) * 10.D0
+qu0 = qu(1) * epsijkd
+q03 = qu(1)*qu(1) + qu(4)*qu(4)
+q12 = qu(2)*qu(2) + qu(3)*qu(3)
+chi = sqrt(q03*q12)
 
-end function Wigner_a_km
+if (chi.le.thr) then 
+    if (q12.le.thr) then 
+        eu(1) = atan2(-2.D0 * qu0 * qu(4), qu(1)*qu(1)-qu(4)*qu(4))
+        eu(2) = 0.D0
+    else
+        eu(1) = atan2(-2.D0 * qu(2) * qu(3), qu(3)*qu(3)-qu(2)*qu(2))
+        eu(2) = cPi
+    end if
+    eu(3) = 0.D0
+else
+    y1 = qu(3)*qu(4)
+    y2 = -qu(2) * qu0
+    x1 = -qu(3) * qu0
+    x2 = -qu(2) * qu(4)
+    eu = (/ atan2(y1-y2,x1-x2), atan2(2.D0*chi, q03-q12), atan2(y1+y2, x1+x2) /)
+end if
+
+where(eu.lt.0) eu = eu + 2.D0*cPi 
+
+end function Wigner_qu2zyz
+
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+! simplified helper functions to compute Wigner (lowercase) d functions d^j_{k,m}(beta) for 0 <= beta <= pi and integer j,k,m
+! all functions use the notation of: Fukushima, Toshio. (2016). Numerical computation of Wigner's d-function of arbitrary 
+! high degree and orders by extending exponent of floating point numbers.
+! URL: https://doi.org/10.13140/RG.2.2.31922.20160
+! blocks functions share the same basic structure but the factor of 2 has been removed since only whole (not half) integers 
+! are needed.
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
 
 !--------------------------------------------------------------------------
 !
-! FUNCTION: Wigner_a_jkm
+! FUNCTION: Wigner_u_jkm
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
-!> @brief  compute intermediate recursion coefficients
+!> @brief     : compute intermediate recursion coefficient u_{j,k,m} (equation 13)
+!> @param j   : degree in d^j_{k,m}
+!> @param k   : first order in d^j_{k,m}
+!> @param m   : second order in d^j_{k,m}
+!> @param t/tc: cos(beta) / 1 - cos(beta)
+!> @return    : recursion coefficient
+!> @note      : _0, _1, _2 for 0 <= beta < pi / 2, beta == pi / 2, and pi / 2 < beta <= pi / 2 respectively
 !
-!> @param j: current j in recursive calculation of d^j_{k,m}
-!> @param k: k in d^k_{k,m}
-!> @param m: m in d^k_{k,m}
-!> @return: recursion coefficient
-!
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @date 02/13/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
-recursive function Wigner_a_jkm(j, k, m) result(ajkm)
-!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_jkm
+recursive function Wigner_u_jkm0(j, k, m, tc) result(ujkm0)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_u_jkm0
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)        :: j
-integer(kind=irg),INTENT(IN)        :: k
-integer(kind=irg),INTENT(IN)        :: m
-real(kind=dbl)                      :: ajkm 
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: tc
+real(kind=dbl)                      :: ujkm0 
 
-ajkm = Wigner_w_jkm(j,k,m) * dble((1-2*j)*k*m)
+ujkm0 = -tc * ((j - 1) * j) - (k * m - (j - 1) * j)
 
-end function Wigner_a_jkm
+end function Wigner_u_jkm0
 
-!--------------------------------------------------------------------------
-!
-! FUNCTION: Wigner_b_jkm
-!
-!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
-!
-!> @brief  compute intermediate recursion coefficients
-!
-!> @param j: current j in recursive calculation of d^j_{k,m}
-!> @param k: k in d^k_{k,m}
-!> @param m: m in d^k_{k,m}
-!> @return: recursion coefficient
-!
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
-!--------------------------------------------------------------------------
-recursive function Wigner_b_jkm(j, k, m) result(bjkm)
-!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_b_jkm
+recursive function Wigner_u_jkm1(k, m) result(ujkm1)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_u_jkm1
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)        :: j
-integer(kind=irg),INTENT(IN)        :: k
-integer(kind=irg),INTENT(IN)        :: m
-real(kind=dbl)                      :: bjkm 
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+integer(kind=ill)                   :: ujkm1 
 
-bjkm = Wigner_w_jkm(j,k,m) * Wigner_v_jkm(j,k,m)
+ujkm1 =  -  k * m
 
-end function Wigner_b_jkm
+end function Wigner_u_jkm1
+
+recursive function Wigner_u_jkm2(j, k, m, t) result(ujkm2)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_u_jkm2
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: t
+real(kind=dbl)                      :: ujkm2 
+
+ujkm2 = t  * ((j - 1) * j) -  k * m
+
+end function Wigner_u_jkm2
 
 !--------------------------------------------------------------------------
 !
@@ -194,28 +240,28 @@ end function Wigner_b_jkm
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
-!> @brief  compute intermediate recursion coefficients
+!> @brief     : compute intermediate recursion coefficient v_{j,k,m} (equation 14)
+!> @param j   : degree in d^j_{k,m}
+!> @param k   : first order in d^j_{k,m}
+!> @param m   : second order in d^j_{k,m}
+!> @return    : recursion coefficient
 !
-!> @param j: current j in recursive calculation of d^j_{k,m}
-!> @param k: k in d^k_{k,m}
-!> @param m: m in d^k_{k,m}
-!> @return: recursion coefficient
-!
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @date 02/13/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
 recursive function Wigner_v_jkm(j, k, m) result(vjkm)
 !DEC$ ATTRIBUTES DLLEXPORT :: Wigner_v_jkm
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)        :: j
-integer(kind=irg),INTENT(IN)        :: k
-integer(kind=irg),INTENT(IN)        :: m
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
 real(kind=dbl)                      :: vjkm 
 
-vjkm = dble(j) * sqrt( dble( (j+k-1) * (j-k-1) * (j+m-1) * (j-m-1) ) )
+vjkm = sqrt( dble( (j+k-1) * (j-k-1) * (j+m-1) * (j-m-1) ) ) * dble(j)
 
 end function Wigner_v_jkm
+
 
 !--------------------------------------------------------------------------
 !
@@ -229,23 +275,257 @@ end function Wigner_v_jkm
 !> @param k: k in d^k_{k,m}
 !> @param m: m in d^k_{k,m}
 !> @return: recursion coefficient
+!> @note: this function is most susceptible to integer overflow (particularly at k = m = 0) with a 
+!>        max k of only 215 for 32 bit ints (2^31-1)^(1/4), 64 bit integers buys up to ~55k which should be plenty
 !
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
 recursive function Wigner_w_jkm(j, k, m) result(wjkm)
 !DEC$ ATTRIBUTES DLLEXPORT :: Wigner_w_jkm
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)        :: j
-integer(kind=irg),INTENT(IN)        :: k
-integer(kind=irg),INTENT(IN)        :: m
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
 real(kind=dbl)                      :: wjkm 
 
 wjkm = 1.D0 / ( dble(j-1) * sqrt( dble( (j+k) * (j-k) * (j+m) * (j-m) ) ) )
 
 end function Wigner_w_jkm
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: Wigner_a_jkm
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief     : compute intermediate recursion coefficient a_{j,k,m} (equation 11)
+!> @param j   : degree in d^j_{k,m}
+!> @param k   : first order in d^j_{k,m}
+!> @param m   : second order in d^j_{k,m}
+!> @param t/tc: cos(beta) / 1 - cos(beta)
+!> @return    : recursion coefficient
+!> @note      : _0, _1, _2 for 0 <= beta < pi / 2, beta == pi / 2, and pi / 2 < beta <= pi / 2 respectively
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive function Wigner_a_jkm0(j, k, m, tc) result(ajkm0)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_jkm0
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: tc
+real(kind=dbl)                      :: ajkm0 
+
+ajkm0 = Wigner_w_jkm(j, k, m) * ( Wigner_u_jkm0(j, k, m, tc) * dble(2*j-1) )
+
+end function Wigner_a_jkm0
+
+recursive function Wigner_a_jkm1(j, k, m) result(ajkm1)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_jkm1
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl)                      :: ajkm1 
+
+ajkm1 = Wigner_w_jkm(j, k, m) * ( Wigner_u_jkm1(k, m) * dble(2*j-1) )
+
+end function Wigner_a_jkm1
+
+recursive function Wigner_a_jkm2(j, k, m, t) result(ajkm2)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_jkm2
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: t
+real(kind=dbl)                      :: ajkm2 
+
+ajkm2 = Wigner_w_jkm(j, k, m) * ( Wigner_u_jkm2(j, k, m, t) * dble(2*j-1) )
+
+end function Wigner_a_jkm2
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: Wigner_b_jkm
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute intermediate recursion coefficient  (equation 12)
+!
+!> @param j: current j in recursive calculation of d^j_{k,m}
+!> @param k: k in d^k_{k,m}
+!> @param m: m in d^k_{k,m}
+!> @return: recursion coefficient
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive function Wigner_b_jkm(j, k, m) result(bjkm)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_b_jkm
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl)                      :: bjkm 
+
+bjkm = Wigner_w_jkm(j,k,m) * Wigner_v_jkm(j,k,m)
+
+end function Wigner_b_jkm
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: Wigner_u_km
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief     : compute intermediate recursion coefficient  (equation 23)
+!> @param k   : first order in d^j_{k,m}
+!> @param m   : second order in d^j_{k,m}
+!> @param t/tc: cos(beta) / 1 - cos(beta)
+!> @return    : recursion coefficient
+!> @note      : _0, _1, _2 for 0 <= beta < pi / 2, beta == pi / 2, and pi / 2 < beta <= pi / 2 respectively
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive function Wigner_u_km0(k, m, tc) result(ukm0)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_u_km0
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: tc
+real(kind=dbl)                      :: ukm0 
+
+ukm0 =  ( -tc * dble(k + 1) - dble(m - 1 - k) )
+
+end function Wigner_u_km0
+
+recursive function Wigner_u_km1(k, m) result(ukm1)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_u_km1
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl)                      :: ukm1 
+
+ukm1 =  -dble(m)  
+
+end function Wigner_u_km1
+
+recursive function Wigner_u_km2(k, m, t) result(ukm2)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_u_km2
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: t
+real(kind=dbl)                      :: ukm2 
+
+ukm2 = ( t  * dble(k + 1) - dble(m) )
+
+end function Wigner_u_km2
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: Wigner_a_km
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief     : compute intermediate recursion coefficient (equation 22)
+!> @param k   : first order in d^j_{k,m}
+!> @param m   : second order in d^j_{k,m}
+!> @param t/tc: cos(beta) / 1 - cos(beta)
+!> @return    : recursion coefficient
+!> @note      : _0, _1, _2 for 0 <= beta < pi / 2, beta == pi / 2, and pi / 2 < beta <= pi / 2 respectively
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive function Wigner_a_km0(k, m, tc) result(akm0)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_km0
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: tc
+real(kind=dbl)                      :: akm0 
+
+akm0 = sqrt( dble( 2*k+1 ) / dble( (k+m+1) * (k-m+1) ) ) * Wigner_u_km0(k, m, tc)
+
+end function Wigner_a_km0
+
+recursive function Wigner_a_km1(k, m) result(akm1)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_km1
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl)                      :: akm1 
+
+akm1 = sqrt( dble( 2*k+1 ) / dble( (k+m+1) * (k-m+1) ) ) * Wigner_u_km1(k, m)
+
+end function Wigner_a_km1
+
+recursive function Wigner_a_km2(k, m, t) result(akm2)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_a_km2
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: t
+real(kind=dbl)                      :: akm2 
+
+akm2 = sqrt( dble( 2*k+1 ) / dble( (k+m+1) * (k-m+1) ) ) * Wigner_u_km2(k, m, t)
+
+end function Wigner_a_km2
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: Wigner_e_km
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief: compute recursion seed coefficient e_{k,m} = \sqrt{\frac{(2k)!}{(k+m)!(k-m)!}} recursively (m <= k) (equation 21)
+!
+!> @param k: k in d^k_{k,m}
+!> @param m: m in d^k_{k,m}
+!> @return: ekm where d^k_{k,m} = 2^-k * e_km
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive function Wigner_e_km(k, m) result(ekm)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_e_km
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl)                      :: ekm 
+
+integer(kind=ill)                   :: l 
+
+ekm = 1.D0
+do l=m+1,k 
+    ekm = 2.D0 * ekm * sqrt( dble(l*(2*l-1)) / dble( 2 * (l+m) * (l-m) ) )
+end do
+
+end function Wigner_e_km
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -253,7 +533,7 @@ end function Wigner_w_jkm
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE: Wigner_d
+! FUNCTION: Wigner_d3    (3 input parameters)
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
@@ -265,63 +545,59 @@ end function Wigner_w_jkm
 !
 !> @note: NAN when j < max(|k|, |m|)
 !
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
-recursive function Wigner_d(j, k, m) result(djkm)
-!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_d
+recursive function Wigner_d3(j, k, m) result(djkm)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_d3
 
 use, intrinsic :: IEEE_ARITHMETIC
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)            :: j
-integer(kind=irg),INTENT(IN)            :: k
-integer(kind=irg),INTENT(IN)            :: m
+integer(kind=ill),INTENT(IN)            :: j
+integer(kind=ill),INTENT(IN)            :: k
+integer(kind=ill),INTENT(IN)            :: m
 real(kind=dbl)                          :: djkm
 
 real(kind=dbl)                          :: d_kkm, d_k1km, d_ikm, d_i1km, d_i2km 
-integer(kind=irg)                       :: i
+integer(kind=ill)                       :: i
 
 ! require 0 <= m <= k <= j (handle with symmetry where possible)
 ! we'll reorganize the indices by means of recursive calls to itself...
 
 if ((k.lt.0).and.(m.lt.0)) then ! d^j_{-k,-m} = (-1)^(   k- m) d^j_{k,m}
-! in C++:    return (    k-  m) % 2 == 0 ? d<Real>(j, -k, -m) : -d<Real>(j, -k, -m);
     if (mod(k-m,2).eq.0) then 
-        djkm = Wigner_d(j,-k,-m)
+        djkm =  Wigner_d3(j,-k,-m)
         RETURN
     else
-        djkm = -Wigner_d(j,-k,-m)
+        djkm = -Wigner_d3(j,-k,-m)
         RETURN
     end if 
 else 
     if (m.lt.0) then  ! d^j_{ k,-m} = (-1)^(j+ k+2m) d^j_{k,m}
-! in C++:   return (j+  k+2*m) % 2 == 0 ? d<Real>(j,  k, -m) : -d<Real>(j,  k, -m);
         if (mod(j+k+2*m,2).eq.0) then
-            djkm = Wigner_d(j,k,-m)
+            djkm =  Wigner_d3(j,k,-m)
             RETURN
         else
-            djkm = -Wigner_d(j,k,-m)
+            djkm = -Wigner_d3(j,k,-m)
             RETURN     
         end if 
     else
         if (k.lt.0) then  ! d^j_{-k, m} = (-1)^(j+2k+3m) d^j_{k,m}
-! in C++:    return (j+2*k+3*m) % 2 == 0 ? d<Real>(j, -k,  m) : -d<Real>(j, -k,  m);
             if (mod(j+2*k+3*m,2).eq.0) then
-                djkm = Wigner_d(j,-k,m)
+                djkm =  Wigner_d3(j,-k,m)
                 RETURN
             else
-                djkm = -Wigner_d(j,-k,m)
+                djkm = -Wigner_d3(j,-k,m)
                 RETURN
             end if
         else
             if (k.lt.m) then  ! d^j_{ m, k} = (-1)^(   k- m) d^j_{k,m}
-! in C++:    return (    k-  m) % 2 == 0 ? d<Real>(j,  m,  k) : -d<Real>(j,  m,  k);
                 if (mod(k-m,2).eq.2) then 
-                    djkm = Wigner_d(j,m,k)
+                    djkm =  Wigner_d3(j,m,k)
                     RETURN
                 else
-                    djkm = -Wigner_d(j,m,k)
+                    djkm = -Wigner_d3(j,m,k)
                     RETURN
                 end if
             end if 
@@ -344,7 +620,7 @@ if (j.eq.k) then
     djkm = d_kkm
     RETURN
 end if
-d_k1km = d_kkm * Wigner_a_km(k, m)
+d_k1km = d_kkm * Wigner_a_km1(k, m)
 if (j.eq.k+1) then
     djkm = d_k1km
     RETURN
@@ -354,90 +630,173 @@ end if
 d_i2km = d_kkm 
 d_i1km = d_k1km
 do i=k+2,j
-    d_ikm = Wigner_a_jkm(i, k, m) * d_i1km - Wigner_b_jkm(i, k, m) * d_i2km
+    d_ikm = Wigner_a_jkm1(i, k, m) * d_i1km - Wigner_b_jkm(i, k, m) * d_i2km
     d_i2km = d_i1km
     d_i1km = d_ikm
 end do
+
 djkm = d_ikm
 
-end function Wigner_d
+end function Wigner_d3
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE: Wigner_dTable
+! SUBROUTINE: Wigner_d5   (5 input parameters)
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
-!> @brief  compute a table of Wigner (lowercase) d functions at pi/2
+!> @brief   : compute Wigner (lowercase) d function (also called reduced wigner d)
+!> @param j : degree in d^j_{k,m}(beta)
+!> @param k : first order in d^j_{k,m}(beta)
+!> @param m : second order in d^j_{k,m}(beta)
+!> @param t : cos(beta)
+!> @param nB: true/false for negative/positive beta
+!> @return  : d^j_{k,m}(beta)
+!> @note    : NAN when j < max(|k|, |m|)
+!> @note    : equivalent to D^j_{k,m}({0, beta, 0})
+!> @note    : equivalent to the mathematica function WignerD[{j, k, m}, beta]
 !
-!> @param bandWidth: max bandWidth
-!> @return: dTable   d^j_{k,m}(\frac{\pi}{2}) for j 0->bandWidth-1, k 0->bandWidth-1, m 0->bandWidth
-!
-!> @note: d^j_{k,m} located at k * bandWidth * bandWidth + m * bandWidth + j
-!
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
-recursive subroutine Wigner_dTable(bandWidth, wigD)
-!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_dTable
+recursive function Wigner_d5(j, k, m, t, nB) result(djkm)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_d5
+
+use, intrinsic :: IEEE_ARITHMETIC
 
 IMPLICIT NONE
 
-integer(kind=irg),INTENT(IN)            :: bandWidth
-real(kind=dbl),INTENT(INOUT)            :: wigD(0:bandWidth-1,0:bandWidth-1,0:bandWidth-1)
+integer(kind=ill),INTENT(IN)            :: j
+integer(kind=ill),INTENT(IN)            :: k
+integer(kind=ill),INTENT(IN)            :: m
+real(kind=dbl),INTENT(IN)               :: t 
+logical,INTENT(IN)                      :: nB
+real(kind=dbl)                          :: djkm
 
-integer(kind=irg)                       :: a, b, j ! , na, nb
-real(kind=dbl)                          :: d_bba, d_bab, d_b1ba, d_b1ab, djba, d_j1ba, d_j2ba, djab 
-logical                                 :: ba
+real(kind=dbl)                          :: d_kkm, a_km, d_k1km, d_ikm, d_i1km, d_i2km, tc, c2, s2, cn, sn 
+integer(kind=ill)                       :: i
+integer(kind=irg)                       :: tp
 
-wigD = D_QNAN
+! require 0 <= m <= k <= j (handle with symmetry where possible)
+! we'll reorganize the indices by means of recursive calls to itself...
 
-! recursively compute wigner d function values for all d^j_{ba} where b >= a >= 0
-! use symmetry to fill in table for a < 0 and a > b: /d^j_{ a, b} = (-1)^(  b- a) d^j_{b,a}
-bloop: do b=0,bandWidth-1
-    ! nb = 0
-    ! if (b.gt.0) nb = bandWidth-b
-    aloop: do a=0,b
-        ! na = 0
-        ! if (a.gt.0) na = bandWidth-a
-        ba = .FALSE.
-        if (mod(b-a,2).eq.0) ba=.TRUE.
-
-! compute d^b_{ba} with closed form solution
-        d_bba = Wigner_e_km(b, a) / 2.D0**dble(b) ! d^{b  }_{b,a}
-        d_bab = d_bba 
-        if (ba.eqv..FALSE.) d_bab = -d_bba
-        wigD(b, a, b) = d_bba ! save d^{b  }_{b,a}
-        wigD(b, b, a) = d_bab ! save d^{b  }_{a,b}
-        if ((b + 1).ne.bandWidth) then ! we don't need any higher order terms
-
-! compute d^{b+1}_{b,a} with recursion
-            d_b1ba = d_bba * Wigner_a_km(b, a) ! d^{b+1}_{b,a}
-            d_b1ab = d_b1ba 
-            if (ba.eqv..FALSE.) d_b1ab = -d_b1ba
-            wigD(b+1, a, b) = d_b1ba ! save d^{b+1}_{b,a}
-            wigD(b+1, b, a) = d_b1ab ! save d^{b+1}_{a,b}
-            if ((b + 2).ne.bandWidth) then ! we don't need any higher order terms        
-
-! compute higher order terms with 3 term recursion
-                d_j1ba = d_b1ba ! d^{j-1}_{b,a}
-                d_j2ba = d_bba  ! d^{j-2}_{b,a}
-                do j=b+2,bandWidth-1
-                    djba = Wigner_a_jkm(j, b, a) * d_j1ba - Wigner_b_jkm(j, b, a) * d_j2ba ! d^{j}_{b,a}
-                    djab = djba 
-                    if (ba.eqv..FALSE.) djab = -djba
-                    wigD(j, a, b) = djba ! save d^{j}_{b,a}
-                    wigD(j, b, a) = djab ! save d^{j}_{a,b}
-                    d_j2ba = d_j1ba
-                    d_j1ba = djba
-                end do
+if (nB.eqv..TRUE.) then             ! d^j_{ k, m}(-beta) =                d^j_{m,k}(     beta)
+    djkm = Wigner_d5(j, m, k, t, .FALSE.)
+    RETURN                          ! equation 5
+else
+    if ((k.lt.0).and.(m.lt.0)) then ! d^j_{-k,-m}( beta) = (-1)^(   k- m) d^j_{k,m}(     beta)
+        if (mod(k-m,2).eq.0) then 
+            djkm =  Wigner_d5(j,-k,-m, t, .FALSE.)
+            RETURN                  ! equation 6
+        else
+            djkm = -Wigner_d5(j,-k,-m, t, .FALSE.)
+            RETURN                  ! equation 6
+        end if 
+    else 
+        if (m.lt.0) then            ! d^j_{ k,-m}( beta) = (-1)^(j+ k+2m) d^j_{k,m}(pi - beta)
+            if (mod(j+k,2).eq.0) then
+                djkm =  Wigner_d5(j, k,-m,-t, .FALSE.)
+                RETURN              ! equation 7
+            else
+                djkm = -Wigner_d5(j, k,-m,-t, .FALSE.)
+                RETURN              ! equation 7
             end if 
-        end if
-    end do aloop
-end do bloop
+        else
+            if (k.lt.0) then        ! d^j_{-k, m}( beta) = (-1)^(j+2k+3m) d^j_{k,m}(pi - beta)
+                if (mod(j+m,2).eq.0) then
+                    djkm =  Wigner_d5(j,-k, m,-t, .FALSE.)
+                    RETURN          ! equation 8
+                else
+                    djkm = -Wigner_d5(j,-k, m,-t, .FALSE.)
+                    RETURN          ! equation 8
+                end if
+            else
+                if (k.lt.m) then    ! d^j_{ m, k}( beta) = (-1)^(   k- m) d^j_{k,m}(     beta)
+                    if (mod(k-m,2).eq.2) then 
+                        djkm =  Wigner_d5(j, m, k, t, .FALSE.)
+                        RETURN      ! equation 9
+                    else
+                        djkm = -Wigner_d5(j, m, k, t, .FALSE.)
+                        RETURN      ! equation 9
+                    end if
+                end if 
+            end if 
+        end if 
+    end if 
+end if
 
+! We need to mimic NaN in f95...
+! in C++:  if (j < k) return NAN;
+if (j.lt.k) then 
+    djkm = D_QNAN
+    RETURN
+end if
 
-end subroutine Wigner_dTable
+! here is the actual recursive computation ... 
 
+! determine if beta is < (0), > (2), or = (1) to pi/2
+tp = 0
+if (t.lt.0.D0) tp = 2
+if (t.eq.0.D0) tp = 1
+tc = 1.D0 - t
+
+! compute powers of cos/sin of beta / 2
+c2 = sqrt( (1.D0 + t) * 0.5D0 )     ! cos(acos(t)) == cos(beta / 2), always positive since at this point 0 <= beta <= pi
+s2 = sqrt( (1.D0 - t) * 0.5D0 )     ! sin(acos(t)) == sin(beta / 2), always positive since at this point 0 <= beta <= pi
+cn = c2**(k+m)                      ! equation 20 for n = k+m
+sn = s2**(k-m)                      ! equation 20 for n = k-m
+
+! compute first term for three term recursion 
+d_kkm  = cn * sn * Wigner_e_km(k, m)! equation 18, d^k_{k, m}(beta)
+if (j.eq.k) then 
+    djkm = d_kkm   ! if j == k we're done
+    RETURN 
+end if
+
+! compute second term for three term recursion 
+select case (tp) 
+    case (0)
+        a_km = Wigner_a_km0(k, m, tc) ! beta <  pi/2
+    case (1) 
+        a_km = Wigner_a_km1(k, m    ) ! beta == pi/2
+    case (2) 
+        a_km = Wigner_a_km2(k, m, t ) ! beta >  pi/2
+end select 
+
+d_k1km = d_kkm * a_km               ! equation 19, d^{k+1}_{k, m}(beta)
+if (j.eq.k+1) then 
+    djkm =  d_k1km  ! if j == k + 1 we're done
+    RETURN 
+end if 
+
+! recursively compute by degree to j
+d_i2km = d_kkm
+d_i1km = d_k1km
+select case (tp) 
+    case (0) ! beta <  pi/2
+        do i = k + 2, j
+            d_ikm = Wigner_a_jkm0(i, k, m, tc) * d_i1km - Wigner_b_jkm(i, k, m) * d_i2km ! equation 10, d^i_{k, m}(beta)
+            d_i2km = d_i1km
+            d_i1km = d_ikm
+        end do
+
+    case (1) ! beta == pi/2
+        do i = k + 2, j
+            d_ikm = Wigner_a_jkm1(i, k, m) * d_i1km - Wigner_b_jkm(i, k, m) * d_i2km ! equation 10, d^i_{k, m}(beta)
+            d_i2km = d_i1km
+            d_i1km = d_ikm
+        end do
+
+    case (2) ! beta >  pi/2
+        do i = k + 2, j
+            d_ikm = Wigner_a_jkm2(i, k, m, t) * d_i1km - Wigner_b_jkm(i, k, m) * d_i2km ! equation 10, d^i_{k, m}(beta)
+            d_i2km = d_i1km
+            d_i1km = d_ikm
+        end do
+end select
+
+djkm = d_ikm
+
+end function Wigner_d5
 
 !--------------------------------------------------------------------------
 !
@@ -453,7 +812,7 @@ end subroutine Wigner_dTable
 !> @param m: second order
 !> @return:  +/-1 such that dSign(j, k, m) * d(j, |k|, |m|) == d(j, k, m)
 !
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
 recursive function Wigner_dSign(j, k, m) result(sgn)
 !DEC$ ATTRIBUTES DLLEXPORT :: Wigner_dSign
@@ -467,20 +826,20 @@ integer(kind=irg)                       :: sgn
 
 sgn = 1
 
-if ((k.lt.0).and.(m.lt.0)) then  ! d^j_{-k,-m} = (-1)^(   k- m) d^j_{k,m}
+if ((k.lt.0).and.(m.lt.0)) then     ! d^j_{-k,-m} = (-1)^(   k- m) d^j_{k,m}
     if (mod(k-m,2).eq.1) then
         sgn = -1
         RETURN
     end if
 else 
-    if (m.lt.0) then ! d^j_{ k,-m} = (-1)^(j+ k+2m) d^j_{k,m}
-        if (mod(j+k+2*m,2).eq.1) then 
+    if (m.lt.0) then                ! d^j_{ k,-m} = (-1)^(j+ k+2m) d^j_{k,m}
+        if (mod(j+k,2).eq.1) then 
             sgn = -1
             RETURN
         end if 
     else 
-        if (k.lt.0) then  ! d^j_{-k, m} = (-1)^(j+2k+3m) d^j_{k,m}
-            if (mod(j+2*k+3*m,2).eq.1) then
+        if (k.lt.0) then            ! d^j_{-k, m} = (-1)^(j+2k+3m) d^j_{k,m}
+            if (mod(j+m,2).eq.1) then
                 sgn = -1
                 RETURN
             end if 
@@ -490,207 +849,434 @@ end if
 
 end function Wigner_dSign
 
-
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE: Wigner_coeffTable
+! FUNCTION: Wigner_capD
 !
 !> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
 !
-!> @brief  construct a table of prefactors for the captial D function
+!> @brief   : compute Wigner (uppercase) D function
+!> @param j : degree in d^j_{k,m}(beta)
+!> @param k : first order in d^j_{k,m}(beta)
+!> @param m : second order in d^j_{k,m}(beta)
+!> @param eu: ZYZ euler angles
+!> @return  : D^j_{k,m}(eu)
+!> @note    : NAN when j < max(|k|, |m|)
+!> @note    : equivalent to the mathematica function WignerD[{j, k, m}, eu[2], eu[1], eu[0]]
+!> @note    : for ZYZ euler angles this d^j_{k,m}(eu[1]) * exp(I*m*eu[0] + I*k*eu[2])
 !
-!> @param jMax: maximum j value to build matrix for (exclusive)
-!> @return: dTable   d^j_{k,m}(\frac{\pi}{2}) for j 0->bandWidth-1, k 0->bandWidth-1, m 0->bandWidth
-!
-!> @note: table(j, m1, m2) = sqrt( ( (j+m1)! * (j-m2)! ) / ( (j+m2)! * (j-m1)! ) ) / (m1-m2)! if m2 <= m1, table(j, m2, m1)
-!> @note: there is overflow even for very small numbers (j ~ 12) when computed directly so a recursive calculation is used instead
-!
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
 !--------------------------------------------------------------------------
-recursive subroutine Wigner_coeffTable(jMax, cTable)
-!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_coeffTable
-
-IMPLICIT NONE
-
-integer(kind=irg),INTENT(IN)            :: jMax
-real(kind=dbl),INTENT(INOUT)            :: cTable(jMax * (2*jMax-1) * (2*jMax-1)) 
-
-integer(kind=irg)                       :: j, m1, m2, sl
-real(kind=dbl)                          :: ratio 
-
-sl = 2*jMax-1
-cTable = D_QNAN
-
-do j=0,jMax-1
-    do m2 = -j, j
-        cTable(j * sl * sl + (jMax-1 + m2) * sl + (jMax-1 + m2)) = 1.D0
-        do m1 = m2, j-1 
-            ratio = sqrt( dble((j - m1) * (j + m1 + 1)) / dble(m1 + 1 - m2) )
-            cTable(j * sl * sl + (m2 + jMax-1) * sl + (m1+1 + jMax-1)) = &
-            cTable(j * sl * sl + (m2 + jMax-1) * sl + (m1 + jMax-1)) * ratio
-        end do
-    end do
-end do
-
-do j=0,jMax-1
-    do m2 = -j, j
-        do m1 = -j, m2
-            cTable(j * sl * sl + (m2 + jMax-1) * sl + (m1 + jMax-1)) = &
-            cTable(j * sl * sl + (m1 + jMax-1) * sl + (m2 + jMax-1)) 
-        end do
-    end do
-end do
-
-end subroutine Wigner_coeffTable
-
-!--------------------------------------------------------------------------
-!
-! SUBROUTINE: Wigner_capD
-!
-!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
-!
-!> @brief compute Wigner (capital) D function for a given rotation
-!> @param jMax : maximum j value to build matrix for (exclusive)
-!> @param qu   : rotation to calculate matrix for as quaternion
-!> @param cTable : prefactor table built via coeffTable(jMax)
-!> @param wigD : location to write wigner D matrix with j incrementing slowest and m1 fastest for D^j_{m2,m1}(qu)
-!
-!> @note       : wigner (lowercase) d function is (uppercase) D for qu = {0.707107, 0.0, 0.707107, 0.0}
-!
-!> @reference  : http://moble.github.io/spherical_functions/WignerDMatrices.html#mjx-eqn-eqD_RbApprox0
-!
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
-!--------------------------------------------------------------------------
-recursive subroutine Wigner_capD(jMax, qu, cTable, wigD) 
+recursive function Wigner_capD(j, k, m, eu) result(wD)
 !DEC$ ATTRIBUTES DLLEXPORT :: Wigner_capD
 
-use constants
+integer(kind=ill),INTENT(IN)        :: j
+integer(kind=ill),INTENT(IN)        :: k
+integer(kind=ill),INTENT(IN)        :: m
+real(kind=dbl),INTENT(IN)           :: eu(3)
+complex(kind=dbl)                   :: wD 
+
+real(kind=dbl)                      :: sm
+logical                             :: sgn 
+
+sm = eu(1) * dble(m) + eu(3) * dble(k)
+sgn = .FALSE.
+if (eu(2).lt.0.D0) sgn = .TRUE.
+
+wD = cmplx(cos(sm), sin(sm)) * cmplx(Wigner_d5(j, k, m, cos(eu(2)), sgn), 0.D0)
+
+end function Wigner_capD
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: Wigner_dTable1
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute a table of Wigner (lowercase) d functions at pi/2
+!
+!> @param jMax: max bandWidth
+!> @return: dTable: location to write d^j_{k,m}(\frac{\pi}{2}) for j = [0,jMax), k = [0,jMax), m = [0, jMax)
+!
+!> @note: d^j_{k,m} located at k * jMax * jMax + m * jMax + j in original C++ code; 3D array here ...
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive subroutine Wigner_dTable1(jMax, wigD)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_dTable1
 
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: jMax
-real(kind=dbl),INTENT(IN)               :: qu(0:3)
-real(kind=dbl),INTENT(IN)               :: cTable(jMax * (2*jMax-1) * (2*jMax-1))
-complex(kind=dbl),INTENT(INOUT)         :: wigD(jMax * (2*jMax-1) * (2*jMax-1))
+real(kind=dbl),INTENT(INOUT)            :: wigD(0:jMax-1,0:jMax-1,0:jMax-1)
 
-integer(kind=irg)                       :: j, m, iJ, m1, m2, ms, rhoMin, rhoMax, N1, N2, MM, rho, sideLength 
-real(kind=dbl)                          :: rA, rB, pA, pB, rL, rS, eps, rLpow, absRRatioSquared, d, phi1, phi2, sm 
-complex(kind=dbl)                       :: pre1, pre2 
-logical                                 :: smallA
+integer(kind=ill)                       :: k, m, j
+real(kind=dbl)                          :: d_kkm, d_kmk, d_k1km, d_k1mk, djkm, d_j1km, d_j2km, djmk
+logical                                 :: km
 
-! extract a and b parts of quaternion as magnitude and phase
-rA = sqrt(qu(0)*qu(0) + qu(3)*qu(3) ) ! |w + J * z|
-rB = sqrt(qu(2)*qu(2) + qu(1)*qu(1) ) ! |y + J * x|
+wigD = D_QNAN
 
-! see the infamous rotations tutorial paper for an explanation of the epsijkd parameter
-pA = atan2(-epsijkd * qu(3), qu(0)        ) ! phase of w + J * z
-pB = atan2(-epsijkd * qu(1), -epsijkd * qu(2)) ! phase of w + J * z
+! recursively compute wigner d function values for all d^j_{k,m} where k >= m >= 0
+! use symmetry to fill in table for m < 0 and m > k: /d^j_{ m, k} = (-1)^(  k- m) d^j_{k,m}
+kloop: do k=0,jMax-1
+    mloop: do m=0,k
+        km = .FALSE.
+        if (mod(k-m,2).eq.0) km=.TRUE.
 
-! determine which half of the quaternion is smallest
-smallA = .TRUE.
-if (rB.lt.rA) then
-    smallA = .FALSE.
-    rS = rB
-    rL = rA 
-else
-    rS = rA
-    rL = rB 
-end if
+! compute d^k_{k,m} with closed form solution
+        d_kkm = Wigner_e_km(k, m) / 2.D0**dble(k) ! d^{k  }_{k,m}
+        d_kmk = d_kkm 
+        if (km.eqv..FALSE.) d_kmk = -d_kkm
+        wigD(k, m, k) = d_kkm ! save d^{k  }_{k,m}
+        wigD(k, k, m) = d_kmk ! save d^{k  }_{m,k}
+        if ((k + 1).ne.jMax) then ! we don't need any higher order terms
 
-eps = epsilon(1.D0) * 8
-sideLength = 2*jMax-1
+! compute d^{k+1}_{k,m} with recursion
+            d_k1km = d_kkm * Wigner_a_km1(k, m) ! d^{k+1}_{k,m}
+            d_k1mk = d_k1km 
+            if (km.eqv..FALSE.) d_k1mk = -d_k1km
+            wigD(k+1, m, k) = d_k1km ! save d^{k+1}_{k,m}
+            wigD(k+1, k, m) = d_k1mk ! save d^{k+1}_{m,k}
+            if ((k + 2).ne.jMax) then ! we don't need any higher order terms        
 
-! check for special case
-if (rS.le.eps) then  ! one of the complex halves is ~0 so we have a simplified expression for wigD
-    wigD = cmplx(0.D0,0.D0)
-    do j = 0, jMax - 1
-        iJ = j * sideLength * sideLength
-        if (smallA.eqv..TRUE.) then
-            do  m = -j, j 
-                rLpow = rL ** dble(-2*m)
-                if (mod(j+m,2).eq.0) then 
-                    wigD(iJ + (m + jMax-1) * sideLength + (m + jMax-1)) = rLpow 
-                else 
-                    wigD(iJ + (m + jMax-1) * sideLength + (m + jMax-1)) = -rLpow 
-                end if
-            end do
-        else
-            do m = -j, j 
-                wigD(iJ + (m + jMax-1) * sideLength + (m + jMax-1)) = rL ** dble(2*m)
-            end do 
+! compute higher order terms with 3 term recursion
+                d_j1km = d_k1km ! d^{j-1}_{k,m}
+                d_j2km = d_kkm  ! d^{j-2}_{m,m}
+                do j=k+2,jMax-1
+                    djkm = Wigner_a_jkm1(j, k, m) * d_j1km - Wigner_b_jkm(j, k, m) * d_j2km ! d^{j}_{b,a}
+                    djmk = djkm
+                    if (km.eqv..FALSE.) djmk = -djkm
+                    wigD(j, m, k) = djkm ! save d^{j}_{k,m}
+                    wigD(j, k, m) = djmk ! save d^{j}_{m,k}
+                    d_j2km = d_j1km
+                    d_j1km = djkm
+                end do
+            end if 
         end if
-    end do
-else  ! otherwise do the general case
-    absRRatioSquared = -rS * rS / (rL * rL)
-    do j = 0, jMax-1 
-        iJ = j * sideLength * sideLength
-        do m2 = -j, 0
-            do m1 = m2, -m2
-                ms = -m2
-                if (smallA.eqv..FALSE.) ms = m2
-                rhoMin = maxval( (/0, ms - m1 /) )
-! protect against overflow with polar decomposition of rA and rB and remove factor of absRRatioSquared^rhoMin
-! rS could be very small making rS^(m1-ms) very large for negative exponents
-! avoid underflow by adding 2*rhoMin to the exponent (always posive, underflow should be ok)
-                d = cTable(j * sideLength * sideLength + (m1 + jMax-1) * sideLength + (ms + jMax-1)) * &
-                        rL**dble(2 * j - m1 + ms - 2 * rhoMin) * rS**dble(m1 - ms + 2 * rhoMin)
-                if (d.eq.0.D0) then
-                    wigD(iJ + ( m2 + jMax-1) * sideLength + ( m1 + jMax-1)) = cmplx(0.D0,0.D0)  ! D_{m2,m1}
-                    if (abs(m1).ne.abs(m2)) then
-                        wigD(iJ + (-m2 + jMax-1) * sideLength + (-m1 + jMax-1)) = cmplx(0.D0,0.D0) ! D_{-m2,-m1}(R) = (-1)^{m2+m1} \bar{D}_{m2,m1}(R)
-                        wigD(iJ + ( m1 + jMax-1) * sideLength + ( m2 + jMax-1)) = cmplx(0.D0,0.D0) ! D_{m1,m2}(R) = \bar{D}_{m2,m1}(\bar{R})
-                        wigD(iJ + (-m1 + jMax-1) * sideLength + (-m2 + jMax-1)) = cmplx(0.D0,0.D0) ! D_{-m1,-m2}(R) = (-1)^{m2+m1} D_{m2,m1}(\bar{R})
-                    else 
-                        if (m1.ne.0) then
-                            wigD(iJ + (-m2 + jMax-1) * sideLength + (-m1 + jMax-1)) = cmplx(0.D0,0.D0) ! D_{-m2,-m1}(R) = (-1)^{m2+m1} \bar{D}_{m2,m1}(R)
-                        end if
-                    end if
-                else 
-                    if (smallA.eqv..TRUE.) then
-                        if (mod(j + m1 + rhoMin,2).ne.0) d = -d
+    end do mloop
+end do kloop
+
+end subroutine Wigner_dTable1
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: Wigner_dTable2
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief  compute a table of Wigner (lowercase) d functions at 0 <= beta <= pi
+!
+!> @param jMax: max bandWidth
+!> @param t   : cos(beta)
+!> @param nB  : 
+!> @return: wigD: location to write d^j_{k,m}(beta) for all non negative j, k, m (must have space for jMax * jMax * jMax * 2 Reals)
+!
+!> @note: d^j_{k,m}(beta) located at (k * jMax * jMax + m * jMax + j)*2+0 in original C++ code; 4D array here ...
+!> @note: d^j_{k,m}(pi-beta) located at (k * jMax * jMax + m * jMax + j)*2+1 in original C++ code; 4D array here ...
+!> @note       : the table has unused (an uninitialized space) for j < max(|k|, |m|)
+!> @note       : d^j_{k,m}(   beta) at table[(k * jMax * jMax + m * jMax + j)*2 + 0]
+!> @note       : d^j_{k,m}(pi-beta) at table[(k * jMax * jMax + m * jMax + j)*2 + 1]
+!> @note       : negative k/m values can be found with the following symmetry relationships
+!>               d^j_{-k,-m}( beta) = (-1)^(k-m) d^j_{k,m}(     beta)
+!>               d^j_{ k,-m}( beta) = (-1)^(j+k) d^j_{k,m}(pi - beta)
+!>               d^j_{-k, m}( beta) = (-1)^(j+m) d^j_{k,m}(pi - beta)
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive subroutine Wigner_dTable2(jMax, t, nB, wigD)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_dTable2
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: jMax
+real(kind=dbl),INTENT(IN)               :: t
+logical,INTENT(IN)                      :: nB
+real(kind=dbl),INTENT(INOUT)            :: wigD(0:1,0:jMax-1,0:jMax-1,0:jMax-1)
+
+logical                                 :: isType0 
+real(kind=dbl)                          :: tc, tcN, c2, s2, t0, tN, cn, sn, cnN, snN, d_kkm, d_kkmN, ekm, a_km, a_kmN, &
+                                           d_k1km, d_k1kmN, d_ikm, d_i2km, d_i1km, d_ikmN, d_i2kmN, d_i1kmN
+integer(kind=ill)                       :: i, k, m, sign, signN, itmp  
+
+! determine which branch of function is needed and compute cos/sin of half angles
+isType0 = .FALSE.  ! std::signbit(t);//is this type 0 or type 2? (type 1 will be grouped with type 0)
+if (t.lt.0.D0) isType0 = .TRUE.
+tc  = 1.D0 - t
+tcN = 1.D0 + t  ! tc for -t
+c2  = sqrt(tcN * 0.5D0)   ! cos(acos(t)) == cos(beta / 2), always positive since at this point 0 <= beta <= pi
+s2  = sqrt(tc  * 0.5D0)   ! sin(acos(t)) == sin(beta / 2), always positive since at this point 0 <= beta <= pi
+
+t0 = t 
+if (isType0.eqv..TRUE.) t0 = tc
+tN = tcN
+if (isType0.eqv..TRUE.) tN = -t
+
+do k = 0, jMax-1
+    do m = 0, k
+! determine sign change for swapping k/m
+        sign = 1
+        signN = -1
+        if (mod(k-m,2).eq.0) signN = 1
+        if (nB.eqv..TRUE.) then   ! swap sign and signN
+            itmp = sign
+            sign = signN
+            signN = sign
+        end if 
+
+! compute powers of cos/sin of beta / 2
+        cn  = c2**(k+m) ! equation 20 for n = k+m for  t
+        sn  = s2**(k-m) ! equation 20 for n = k-m for  t
+        cnN = s2**(k+m) ! equation 20 for n = k+m for -t
+        snN = c2**(k-m) ! equation 20 for n = k-m for -t
+
+! compute first term for three term recursion 
+        ekm = Wigner_e_km(k, m)
+        d_kkm  = cn  * sn  * ekm              ! equation 18, d^k_{k, m}(beta) for  t
+        d_kkmN = cnN * snN * ekm              ! equation 18, d^k_{k, m}(beta) for -t
+        wigD(0, k, m, k) = d_kkm  * sign 
+        wigD(0, k, k, m) = d_kkm  * signN     ! symmetry from eq 9
+        wigD(1, k, m, k) = d_kkmN * sign 
+        wigD(1, k, k, m) = d_kkmN * signN     ! symmetry from eq 9
+        if (jMax .ne. k+1) then  ! if j == k we're done
+
+! compute second term for three term recursion 
+            if (isType0.eqv..TRUE.) then
+                a_km  = Wigner_a_km0(k, m, t0)
+                a_kmN = Wigner_a_km2(k, m, tN)
+            else
+                a_kmN = Wigner_a_km0(k, m, tN)
+                a_km  = Wigner_a_km2(k, m, t0)
+            end if
+            d_k1km  = d_kkm  * a_km     ! equation 19, d^{k+1}_{k, m}(beta) for  t
+            d_k1kmN = d_kkmN * a_kmN    ! equation 19, d^{k+1}_{k, m}(beta) for -t
+            wigD(0, k+1, m, k) = d_k1km  * sign
+            wigD(0, k+1, k, m) = d_k1km  * signN        ! symmetry from eq 9
+            wigD(1, k+1, m, k) = d_k1kmN * sign
+            wigD(1, k+1, k, m) = d_k1kmN * signN        ! symmetry from eq 9
+            if (jMax.ne.k+2) then ! if j == k + 1 we're done
+
+! recursively compute by degree to j
+                d_i2km = d_kkm
+                d_i1km = d_k1km
+                d_i2kmN = d_kkmN
+                d_i1kmN = d_k1kmN
+
+                do i = k + 2, jMax-1
+                    if (isType0.eqv..TRUE.) then 
+                        d_ikm = Wigner_a_jkm0(i, k, m, t0) * d_i1km - Wigner_b_jkm(i, k, m) * d_i2km  ! equation 10, d^i_{k, m}(beta)
                     else
-                        if (mod(rhoMin,2).ne.0) d = -d
+                        d_ikm = Wigner_a_jkm2(i, k, m, t0) * d_i1km - Wigner_b_jkm(i, k, m) * d_i2km  ! equation 10, d^i_{k, m}(beta)
                     end if
-                    phi1 =  pA * (m1 + m2) +  pB        * (m1 - m2)
-                    phi2 = -pA * (m1 + m2) + (pB + cPi) * (m1 - m2)
-                    pre1 = cmplx(cos(phi1), sin(phi1)) * d
-                    pre2 = cmplx(cos(phi2), sin(phi2)) * d
-                    rhoMax = minval( (/j + ms, j - m1 /) )
-                    N1 = j + ms + 1
-                    N2 = j - m1 + 1
-                    MM = m1 - ms
+                    d_i2km = d_i1km
+                    d_i1km = d_ikm
+                    if (isType0.eqv..TRUE.) then 
+                        d_ikmN = Wigner_a_jkm2(i, k, m, tN) * d_i1kmN - Wigner_b_jkm(i, k, m) * d_i2kmN  ! equation 10, d^i_{k, m}(beta)
+                    else
+                        d_ikmN = Wigner_a_jkm0(i, k, m, tN) * d_i1kmN - Wigner_b_jkm(i, k, m) * d_i2kmN  ! equation 10, d^i_{k, m}(beta)
+                    end if 
+                    d_i2kmN = d_i1kmN
+                    d_i1kmN = d_ikmN
+                    wigD(0, i, m, k) = d_i1km  * sign
+                    wigD(0, i, k, m) = d_i1km  * signN
+                    wigD(1, i, m, k) = d_i1kmN * sign
+                    wigD(1, i, k, m) = d_i1kmN * signN
+                end do 
+            end if 
+        end if 
+    end do 
+end do 
 
-                    sm = 1.D0
-                    do rho = rhoMax, rhoMin+1, -1 ! for rho in range(rhoMax, rhoMin, -1):
-                        sm = sm * ( absRRatioSquared * dble((N1 - rho) * (N2 - rho)) ) / dble(rho * (MM + rho))
-                        sm = sm + 1.D0
-                    end do 
+end subroutine Wigner_dTable2
 
-                    wigD(iJ + ( m2 + jMax-1) * sideLength + ( m1 + jMax-1)) = pre1 * sm ! D_{m2,m1}(R)
-                    if (abs(m1).ne.abs(m2)) then
-                        if (mod(m1 + m2, 2).eq.0) then
-                            wigD(iJ + (-m2 + jMax-1) * sideLength + (-m1 + jMax-1)) =  conjg(pre1) * sm ! D_{-m2,-m1}(R) = (-1)^{m2+m1} \bar{D}_{m2,m1}(R)
-                            wigD(iJ + (-m1 + jMax-1) * sideLength + (-m2 + jMax-1)) =        pre2  * sm ! D_{-m1,-m2}(R) = (-1)^{m2+m1} D_{m2,m1}(\bar{R})
-                        else 
-                            wigD(iJ + (-m2 + jMax-1) * sideLength + (-m1 + jMax-1)) = -conjg(pre1) * sm ! D_{-m2,-m1}(R) = (-1)^{m2+m1} \bar{D}_{m2,m1}(R)
-                            wigD(iJ + (-m1 + jMax-1) * sideLength + (-m2 + jMax-1)) = -      pre2  * sm ! D_{-m1,-m2}(R) = (-1)^{m2+m1} D_{m2,m1}(\bar{R})
-                        end if
-                        wigD(iJ + ( m1 + jMax-1) * sideLength + ( m2 + jMax-1)) =  conjg(pre2) * sm ! D_{m1,m2}(R) = \bar{D}_{m2,m1}(\bar{R})
-                    else 
-                        if (m1.ne.0) then
-                            if (mod(m1 + m2,2).eq.0) then
-                                wigD(iJ + (-m2 + jMax-1) * sideLength + (-m1 + jMax-1)) =  conjg(pre1) * sm ! D_{-m2,-m1}(R) = (-1)^{m2+m1} \bar{D}_{m2,m1}(R)
-                            else
-                                wigD(iJ + (-m2 + jMax-1) * sideLength + (-m1 + jMax-1)) = -conjg(pre1) * sm ! D_{-m2,-m1}(R) = (-1)^{m2+m1} \bar{D}_{m2,m1}(R)
-                            end if
-                        end if
-                    end if
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: Wigner_rotateHarmonics
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief  rotate the spherical harmonic transformation of a real function
+!
+!> @param jMax: max bandWidth
+!> @param bw : bandwidth of harmonic coefficients (max l exclusive)
+!> @param alm: spherical harmonic coefficients to rotate with \hat{a}^l_{m} at alm[m * bw + j]
+!> @param blm: location to write rotated spherical harmonic coefficients with \hat{b}^l_{m} at blm[m * bw + j]
+!> @param qu : rotation to apply
+!> @note     : b^l_m = \sum_{n=-1}^l a^l_n D^l_{m,n}(qu)
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive subroutine Wigner_rotateHarmonics(jMax, bw, alm, blm, qu)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_rotateHarmonics
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: jMax 
+integer(kind=irg),INTENT(IN)            :: bw 
+complex(kind=dbl),INTENT(IN)            :: alm(0:bw-1,0:bw-1)
+complex(kind=dbl),INTENT(INOUT)         :: blm(0:bw-1,0:bw-1)
+real(kind=dbl),INTENT(IN)               :: qu(4)
+
+real(kind=dbl)                          :: eu(3), rr, ri, ir, ii, dmn0, dmn1 
+complex(kind=dbl)                       :: almRot(0:bw-1,0:bw-1), expAlpha, expGamma, alGamma, vp, vc
+real(kind=dbl)                          :: wigD(0:1,0:bw-1,0:bw-1,0:bw-1)
+logical                                 :: sgn 
+integer(kind=irg)                       :: m, n, j
+
+! convert rotation to ZYZ euler angles and clear output array
+eu = Wigner_qu2zyz(qu)
+almRot = cmplx(0.D0,0.D0)
+
+! construct wigner (lowercase) d lookup table for beta
+sgn = .TRUE.
+if (eu(2).lt.0.D0) sgn = .FALSE.
+call Wigner_dTable2(bw, cos(eu(2)), sgn, wigD)              ! compute wigner (lowercase) d(beta) once
+
+! now that we can easily compute D^l_{m,n}(qu) do the actual summation
+do m = 0, bw-1
+    expAlpha = cmplx(cos(eu(3) * m), sin(eu(3) * m))        ! exp(I m gamma)
+    do n = 0, bw-1
+        expGamma = cmplx(cos(eu(1) * n), sin(eu(1) * n))    ! exp(I n alpha)
+        do j = maxval( (/m, n/) ), bw-1 
+            alGamma = alm(j, n) * expGamma                  ! \hat{a}^l_{n}
+            rr = real(expAlpha) * real(alGamma)             ! ac
+            ri = real(expAlpha) * aimag(alGamma)            ! ad
+            ir = aimag(expAlpha) * real(alGamma)            ! bc
+            ii = aimag(expAlpha) * aimag(alGamma)           ! bd
+            vp = cmplx(rr - ii, ir + ri)                    ! expAlpha *      alGamma  = \hat{a}^l_{+n} * exp(I m gamma) * exp(I +n alpha)
+            vc = cmplx(rr + ii, ir - ri)                    ! expAlpha * conj(alGamma) = \hat{a}^l_{-n} * exp(I m gamma) * exp(I -n alpha) * (-1)^n using symmetry of real SHT
+            dmn0 = wigD(0, j, n, m)                         ! d^j_{m,n}(     beta)
+            dmn1 = wigD(1, j, n, m)                         ! d^j_{m,n}(pi - beta) since d^j_{m,-n}( beta) = (-1)^(j+m) d^j_{m,n}(pi - beta)
+            almRot(j,m) = almRot(j, m) + vp * dmn0          ! \hat{a}^l_{+n} * D^l_{m,+n}(eu)
+            if (n.gt.0) then 
+                if (mod(j+m+n,2).eq.0) then 
+                    almRot(j,m) = almRot(j,m) + vc * dmn1   ! \hat{a}^l_{-n} * D^l_{m,-n}(eu)
+                else
+                    almRot(j,m) = almRot(j,m) - vc * dmn1   ! \hat{a}^l_{-n} * D^l_{m,-n}(eu)
                 end if
-            end do
-        end do
-   end do 
+            end if
+        end do 
+    end do 
+end do
+
+blm = almRot
+
+end subroutine Wigner_rotateHarmonics
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: Wigner_dPrime
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief   : compute first derivative of Wigner (lowercase) d function (also called reduced wigner d) with respect to beta
+!> @param j : degree in (d/dBeta) d^j_{k,m}(beta)
+!> @param k : first order in (d/dBeta) d^j_{k,m}(beta)
+!> @param m : second order in (d/dBeta) d^j_{k,m}(beta)
+!> @param t : cos(beta)
+!> @param nB: true/false for negative/positive beta
+!> @return  : (d/dBeta) d^j_{k,m}(beta)
+!> @note    : NAN when j < max(|k|, |m|)
+!> @note    : equivalent to the mathematica function D[WignerD[{j, k, m}, beta], beta]
+!> @note    : negative k/m values have the following symmetry relationships
+!>            dPrime^j_{-k,-m}( beta) = (-1)^(k+m  ) dPrime^j_{k,m}(     beta)
+!>            dPrime^j_{ k,-m}( beta) = (-1)^(j+k+1) dPrime^j_{k,m}(pi - beta)
+!>            dPrime^j_{-k, m}( beta) = (-1)^(j+m+1) dPrime^j_{k,m}(pi - beta)
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive function Wigner_dPrime(j, k, m, t, nB) result(dd)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_dPrime
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)            :: j
+integer(kind=ill),INTENT(IN)            :: k
+integer(kind=ill),INTENT(IN)            :: m
+real(kind=dbl),INTENT(IN)               :: t 
+logical,INTENT(IN)                      :: nB 
+real(kind=dbl)                          :: dd
+
+real(kind=dbl)                          :: csc, d0Term, d1Term 
+
+! compute prefactor (same for all j, k, and m for a given beta)
+csc = 1.D0 / sqrt(1.D0 - t * t)     ! csc(beta), cot(beta) is csc * t
+if (nB.eqv..TRUE.) csc = -csc 
+
+! compute derivative
+d0Term = Wigner_d5(j, k, m, t, nB) * (t * k - m) * csc  ! d^j_{k,m}(beta) * (k*cot(beta) - m*csc(beta))
+if (j.eq.k) then 
+    d1Term = 0.D0 
+else 
+    d1Term = Wigner_d5(j, k+1, m, t, nB) * sqrt( dble( (j - k) * (j + k + 1) ) )  ! d^j_{k+1,m}(beta) * (j+k+1) * sqrt( (j-k) / (j+kl+1) )
+end if 
+
+dd = d0Term - d1Term
+
+end function Wigner_dPrime
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: Wigner_dPrime2
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief   : compute second derivative of Wigner (lowercase) d function (also called reduced wigner d) with respect to beta
+!> @param j : degree in (d/dBeta)^2 d^j_{k,m}(beta)
+!> @param k : first order in (d/dBeta)^2 d^j_{k,m}(beta)
+!> @param m : second order in (d/dBeta)^2 d^j_{k,m}(beta)
+!> @param t : cos(beta)
+!> @param nB: true/false for negative/positive beta
+!> @return  : (d/dBeta)^2 d^j_{k,m}(beta)
+!> @note    : NAN when j < max(|k|, |m|)
+!> @note    : equivalent to the mathematica function D[WignerD[{j, k, m}, beta], {beta, 2}]
+!> @note    : negative k/m values have the following symmetry relationships
+!>               dPrime2^j_{-k,-m}( beta) = (-1)^(k+m) dPrime2^j_{k,m}(     beta)
+!>               dPrime2^j_{ k,-m}( beta) = (-1)^(j+k) dPrime2^j_{k,m}(pi - beta)
+!>               dPrime2^j_{-k, m}( beta) = (-1)^(j+m) dPrime2^j_{k,m}(pi - beta)
+!
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's classes in Wigner.hpp
+!--------------------------------------------------------------------------
+recursive function Wigner_dPrime2(j, k, m, t, nB) result(dd)
+!DEC$ ATTRIBUTES DLLEXPORT :: Wigner_dPrime2
+
+IMPLICIT NONE
+
+integer(kind=ill),INTENT(IN)            :: j
+integer(kind=ill),INTENT(IN)            :: k
+integer(kind=ill),INTENT(IN)            :: m
+real(kind=dbl),INTENT(IN)               :: t 
+logical,INTENT(IN)                      :: nB 
+real(kind=dbl)                          :: dd
+
+real(kind=dbl)                          :: csc, d0Term, d1Term, d2Term, rjk, d0Coef, d1Coef, d2Coef 
+
+! compute prefactor (same for all j, k, and m for a given beta)
+csc = 1.D0 / sqrt(1.D0 - t * t)     ! csc(beta), cot(beta) is csc * t
+if (nB.eqv..TRUE.) csc = -csc 
+
+! compute derivative prefactors
+rjk  = sqrt( dble( (j - k    ) * (j + k + 1) ) )
+d0Coef = ( t * t * k * k + t * m * (1 - 2 * k) + (m * m - k) ) * csc * csc
+d1Coef = rjk * (t * (1 + 2 * k) - 2 * m) * csc
+d2Coef = rjk * sqrt( dble( (j - k - 1) * (j + k + 2) ) )
+
+! compute derivative
+d0Term = Wigner_d5(j, k  , m, t, nB) * d0Coef
+if (k.ge.j) then 
+    d1Term = 0.D0 
+else 
+    d1Term = Wigner_d5(j, k+1, m, t, nB) * d1Coef
+end if 
+if (k+1.ge.j) then 
+    d2Term = 0.D0
+else
+    d2Term = Wigner_d5(j, k+2, m, t, nB) * d2Coef
 end if
 
-end subroutine Wigner_capD
+dd = d0Term - d1Term + d2Term
+
+end function Wigner_dPrime2
 
 end module Wigner
