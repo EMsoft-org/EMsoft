@@ -1,5 +1,6 @@
 @Core_WText			; core text widget creation 
 @Core_WTextE			; core editable text widget creation 
+@Core_getenv			; core editable text widget creation 
 @CBEDprint			; appends messages to the status text widget
 @CBEDgetpreferences		; read the preferences file
 @CBEDwritepreferences		; write the preferences file
