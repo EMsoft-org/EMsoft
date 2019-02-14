@@ -1,0 +1,46 @@
+
+IDLappdir = '/home/EMsoft/EMsoftBuild/Bin/IDL'
+; should we make this folder ?
+res = file_info(IDLappdir)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+IDLappdir
+
+;define a few variables
+
+VMappdirLinux = '/home/EMsoft/EMsoftBuild/Bin/IDL/VMappsLinux'
+ResdirLinux = '/home/EMsoft/EMsoftBuild/Bin/IDL/VMappsLinux/'+appname+'/Resources'
+
+cd,CURRENT=cdir
+
+; add the VMapp folders 
+res = file_info(VMappdirLinux)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+VMappdirLinux
+
+; create the .sav file
+save,/routines,filename=saveappname
+
+; create the Virtual Machine app for Linux 64bit
+print,'Creating LIN64 bit VM'
+make_rt,appname,VMappdirLinux,savefile=cdir+'/'+saveappname,/VM,/LIN64,/OVERWRITE
+
+; add the resource folder if necessary
+res = file_info(ResdirLinux)
+if (res.DIRECTORY eq 0) then spawn, '/bin/mkdir '+ResdirLinux
+
+; and add the logo file to it if necessary
+res = file_info(ResdirLinux+'/EMsoftlogo.jpg')
+if (res.EXISTS eq 0) then spawn, '/bin/cp /home/EMsoft/EMsoftPublic/IDL/Resources/EMsoftVBFFlogo.jpg '+ResDirLinux+'/EMsoftlogo.jpg'
+
+print,'moving IDL files and apps into the correct location for Linux'
+; next, we need to move the appropriate files one folder up; we need to change the foldername first to avoid issues with duplicate names
+spawn, '/bin/mv '+VMappdirLinux+'/'+appname+' '+VMappdirLinux+'/tmp'
+; then check whether or not the IDL libraries have already been copied 
+res = file_info(VMappdirLinux+'/idl86')
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirLinux+'/tmp/idl86 '+VMappdirLinux
+if (res.DIRECTORY eq 0) then spawn, '/bin/mv '+VMappdirLinux+'/tmp/Resources '+VMappdirLinux
+; and then move the app files
+spawn, '/bin/mv '+VMappdirLinux+'/tmp/'+appname+' '+VMappdirLinux
+spawn, '/bin/mv '+VMappdirLinux+'/tmp/'+appname+'.sav '+VMappdirLinux
+; finally, delete the tmp folder
+spawn, '/bin/rm -r '+VMappdirLinux+'/tmp'
+
+exit
