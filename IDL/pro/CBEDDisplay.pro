@@ -20,6 +20,7 @@
 @CBEDCBEDWidget			; CBED display widget
 @CBEDMBCBEDWidget		; MBCBED display widget
 @CBEDMBCBEDWidget_event		; MBCBED display widget event handler
+@CBEDDrawWidget	; Draw widget 
 @CBEDMBCBEDDrawWidget_event	; MBCBED Draw widget event handler
 @CBEDCBEDDrawWidget		; CBED Draw widget
 @CBEDCBEDDrawWidget_event	; CBED Draw widget event handler
