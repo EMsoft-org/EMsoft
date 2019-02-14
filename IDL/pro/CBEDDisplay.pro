@@ -1,6 +1,7 @@
 @Core_WText			; core text widget creation 
 @Core_WTextE			; core editable text widget creation 
 @Core_getenv			; core editable text widget creation 
+@Core_Print			; core editable text widget creation 
 @CBEDprint			; appends messages to the status text widget
 @CBEDgetpreferences		; read the preferences file
 @CBEDwritepreferences		; write the preferences file
@@ -19,6 +20,7 @@
 ;@CBEDDrawWidget_event		; LACBED draw widget event handler
 @CBEDCBEDWidget			; CBED display widget
 @CBEDMBCBEDWidget		; MBCBED display widget
+@CBEDMBCBEDDrawWidget		; MBCBED display widget
 @CBEDMBCBEDWidget_event		; MBCBED display widget event handler
 @CBEDDrawWidget	; Draw widget 
 @CBEDMBCBEDDrawWidget_event	; MBCBED Draw widget event handler
