@@ -374,15 +374,15 @@ use FFTW3mod
 IMPLICIT NONE
 
 type(SH_correlatorType),INTENT(IN)      :: SHCOR
-complex(kind=dbl),INTENT(IN)            :: flm(:)
-complex(kind=dbl),INTENT(IN)            :: gln(:)
+complex(kind=dbl),INTENT(IN)            :: flm(:,:)
+complex(kind=dbl),INTENT(IN)            :: gln(:,:)
 real(kind=dbl),INTENT(INOUT)            :: qu(0:3)
 real(kind=dbl)                          :: peak 
 
 ! since "in" is a reserved word in f90, we use "inn"
 integer(kind=irg)                       :: j, k, m, n, bw, maxKN, m2, ind, match, ind0, k0, m0, n0, sl, mg, ng, kg, mg1, ng1, &
                                            indMax(0:4), indPeak, ik, inn, im, imm, inm, ikm, imp, inp, ikp, x, y, z, iter, xMax, &
-                                           yMax, zMax, vMaxPos(1), xcMaxPos(1), xcshape(1)
+                                           yMax, zMax, vMaxPos(1), xcMaxPos(3), xcshape(3)
 complex(kind=dbl)                       :: v, vnc, vc
 real(kind=dbl)                          :: rr, ri, ir, ii, vMax(0:4), xCorr(3,3,3), x(0:2), peak, eu3(3), eu(0:1,0:1,0:1,0:2), &
                                            quGrid(0:1,0:1,0:1,0:3), corrGrid(0:1,0:1,0:1), corrMax, corr, indPeak
@@ -398,13 +398,14 @@ logical                                 :: useRefinement
 
 bw = SHCOR%bw
 sl = SHCOR%sl
+SHCOR%fxc = cmplx(0.D0,0.D0)
 
 ! loop over planes
 do k = 0, bw-1
 ! precompute flm values * wigner d function
     do m = 0, bw-1
         do j = maxval( (/ m, k /) ), bw-1 
-            fm(m * bw + j) = flm(m * bw + j) * wigD(k * bw * bw + m * bw + j) ! f^j_m * wigner::d<Real>(j, k, m)
+            SHCOR%fm(j, m) = flm(j, m) * SHCOR%wigD(j, m, k) ! f^j_m * wigner::d<Real>(j, k, m)
         end do
     end do
 
@@ -413,7 +414,7 @@ do k = 0, bw-1
 ! precompute gln values * wigner d function
         maxKN = maxval( (/ k, n /) )
         do j = maxKN, bw-1
-            gn(j) = conjg(gln(n * bw + j) * wigD(n * bw * bw + k * bw + j) ! \hat{g}^j_n * wigner::d<Real>(j, n, k)
+            gn(j) = conjg(gln(j, n) * SHCOR%wigD(j, k, n) ! \hat{g}^j_n * wigner::d<Real>(j, n, k)
         end do
 
 ! loop over columns
@@ -424,27 +425,23 @@ do k = 0, bw-1
             vnc = cmplx(0.D0,0.D0)
             do j = maxval( (/ m, maxKN /) ), bw-1
 ! do complex multiplication of components by hand to eliminate duplicate flops from multiplying with conjugate
-                ind = m * bw + j
-                rr = real(fm(ind)) * real(gn(j))
-                ri = real(fm(ind)) * aimag(gn(j))
-                ir = aimag(fm(ind)) * real(gn(j))
-                ii = aimag(fm(ind)) * aimag(gn(j))
-                v = v + cmplx(rr - ii, ri + ir) ! pF(j) * gn(j)
+                call SH_conjMult(fm(j,m), gn(j), vp, vc)
+                v = v + vp ! pF(j) * gn(j)
                 if (mod(j,2).eq.m2) then 
-                    vnc = vnc + cmplx( rr + ii, ir - ri)  
+                    vnc = vnc + vc
                 else 
-                    vnc = vnc + cmplx(-(rr + ii), ri - ir)  ! +/- pF(g) * std::conj(gn(j))
+                    vnc = vnc - vc  ! +/- pF(g) * std::conj(gn(j))
                 end if
             end do
 
  ! fill in symmetric values using symmetry from: wigner d function, sht of real signal, sht of real pattern
             match = mod(m + n,2)
-            fxc(k * sl * bw + n * bw + m) = v ! fxc(k, n, m)
+            fxc(m, n, k) = v ! fxc(k, n, m)
             if (k.gt.0) then
                 if (match.eq.0) then
-                    fxc((sl - k) * sl * bw + n * bw + m) = v ! fxc(-k, n, m)
+                    fxc(m, n, sl - k) = v ! fxc(-k, n, m)
                 else 
-                    fxc((sl - k) * sl * bw + n * bw + m) = -v ! fxc(-k, n, m)
+                    fxc(m, n,  sl - k) = -v ! fxc(-k, n, m)
                 end if
             end if
             if (n.gt.0) then ! fill symmetry within a slice
@@ -453,12 +450,12 @@ do k = 0, bw-1
                 else
                     vc = -vnc
                 end if
-                fxc(k * sl * bw + (sl - n) * bw + m) = vc ! fxc(k, -n, m)
+                fxc(m, sl-n, k) = vc ! fxc(k, -n, m)
                 if (k.gt.0) then 
                     if (match.eq.0) then 
-                        fxc((sl - k) * sl * bw + (sl - n) * bw + m) = vc  ! fxc(-k, -n, m)
+                        fxc(m, sl-n, sl - k) = vc  ! fxc(-k, -n, m)
                     else
-                        fxc((sl - k) * sl * bw + (sl - n) * bw + m) = -vc  ! fxc(-k, -n, m)
+                        fxc(m, sl-n, sl - k) = -vc  ! fxc(-k, -n, m)
                     end if 
                 end if
             end if 
@@ -466,104 +463,18 @@ do k = 0, bw-1
     end do
 end do
 
+!!!!!!!!!!! needs to be corrected 
 ! compute cross correlation via fft 
 plan.inverse(fxc.data(), xc.data())
 
 ! find maximum correlation pixel in half the volume (glide plane make second half redundant)
 xcshape = shape(xc)
-xcMaxPos = maxpos(xc(0:xcshape(1)/2-1))
-! ind0 = std::distance(xc.cbegin(), std::max_element(xc.cbegin(), xc.cbegin() + xc.size() / 2));
-ind0 = xcMaxPos(1)
-k0 = ind0 / (sl * sl) ! k component of ind0
-ind0 = ind0 - k0 * sl * sl
-n0 = ind0 / sl  ! n component of ind0
-ind0 = ind0 - n0 * sl
-m0 = ind0  ! m component of ind0
+xcMaxPos = maxpos(xc(0:xcshape(1)-1,0:xcshape(2)-1,0:xcshape(3)/2-1))
 
-! the peak may have better alignment with the grid across the glide plane
-! need to check glide point and +x, +y, and +xy neighbors
-if (m0.lt.bw) then 
-    mg = m0 + bw - 1 
-else
-    mg = m0 - bw  ! m0 across glide plane
-end if
-if (n0.lt.bw) then 
-    ng  = n0 + bw - 1 
-else
-    ng = n0 - bw  ! n0 across glide plane
-end if
-kg  = sl - 1 - k0 ! k0 component across glide plane
-if ((mg+1).eq.sl) then
-    mg1 = 0
-else 
-    mg1 = mg + 1 ! get +x index using periodic boundary conditions
-end if
-if ((ng+1).eq.sl) then
-    ng1 = 0 
-else
-    ng1 = ng + 1 ! get +y index using periodic boundary conditions
-end if 
 
-! indices of possible maxima (faster to just check these 4 points than find the global maximum with both halves)
-indMax = (/ k0 * sl * sl + n0  * sl + m0, &  ! maximum in half searched
-            kg * sl * sl + ng  * sl + mg, &  ! glide point
-            kg * sl * sl + ng  * sl + mg1, & ! +x neighbor of glide point
-            kg * sl * sl + ng1 * sl + mg, &  ! +y neighbor of glide point
-            kg * sl * sl + ng1 * sl + mg1 /) ! +xy neighbor of glide point
 
-! select maximum cross correlation point and get index
-vMax = (/ xc(indMax(0)), xc(indMax(1)), xc(indMax(2)), xc(indMax(3)), xc(indMax(4) /)
-! indPeak = indMax(std::distance(vMax, std::max_element(vMax, vMax + 5))) ! index of maximum cross correlation in entire volume
-vMaxPos = maxpos(vMax)
-indPeak = indMax(vMaxPos(1))
 
-ik = indPeak / (sl * sl) ! k component of indPeak
-indPeak = indPeak - ik * sl * sl
-inn = indPeak / sl       ! n component of indPeak
-indPeak = indPeak - inn * sl
-im = indPeak             ! m component of indPeak
 
-! extract cross correlation for 3x3 grid surrounding maxima at indPeak
-if (im.eq.0) then
-    imm = sl - 1 
-else 
-    imm = im - 1  ! get previous m index with periodic boundary conditions
-end if
-if (inn.eq.0) then
-    inm = sl - 1 
-else 
-    inm = inn - 1  ! get previous n index with periodic boundary conditions
-end if
-if (ik.eq.0) then
-    ikm = sl - 1 
-else 
-    ikm = ik - 1  ! get previous k index with periodic boundary conditions
-end if
-if (im.eq.(sl-1)) then
-    imp = 0 
-else 
-    imp = im + 1  ! get next m index with periodic boundary conditions
-end if
-if (inn.eq.(sl-1)) then
-    inp = 0 
-else 
-    inp = inn + 1  ! get next n index with periodic boundary conditions
-end if
-if (ik.eq.(sl-1)) then 
-    ikp = 0 
-else
-    ikp = ik + 1 ! get next k index with periodic boundary conditions
-end if
-xCorr = reform( (/ &  ! z,y,x
-                xc(ikm*sl*sl + inm*sl + imm), xc(ikm*sl*sl + inm*sl + im ), xc(ikm*sl*sl + inm*sl + imp), &
-                xc(ikm*sl*sl + inn*sl + imm), xc(ikm*sl*sl + inn*sl + im ), xc(ikm*sl*sl + inn*sl + imp), &
-                xc(ikm*sl*sl + inp*sl + imm), xc(ikm*sl*sl + inp*sl + im ), xc(ikm*sl*sl + inp*sl + imp), &
-                xc(ik *sl*sl + inm*sl + imm), xc(ik *sl*sl + inm*sl + im ), xc(ik *sl*sl + inm*sl + imp), &
-                xc(ik *sl*sl + inn*sl + imm), xc(ik *sl*sl + inn*sl + im ), xc(ik *sl*sl + inn*sl + imp), &
-                xc(ik *sl*sl + inp*sl + imm), xc(ik *sl*sl + inp*sl + im ), xc(ik *sl*sl + inp*sl + imp), &
-                xc(ikp*sl*sl + inm*sl + imm), xc(ikp*sl*sl + inm*sl + im ), xc(ikp*sl*sl + inm*sl + imp), &
-                xc(ikp*sl*sl + inn*sl + imm), xc(ikp*sl*sl + inn*sl + im ), xc(ikp*sl*sl + inn*sl + imp), &
-                xc(ikp*sl*sl + inp*sl + imm), xc(ikp*sl*sl + inp*sl + im ), xc(ikp*sl*sl + inp*sl + imp) /), (/3,3,3/) )
 
 ! sub pixel interpolate peak using tri quadratic
 x = 0.D0 ! initial guess at maximum voxel (z,y,x)
