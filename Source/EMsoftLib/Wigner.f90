@@ -51,12 +51,23 @@
 !> @note: variable names are consistent with Gutman et. al. (see eq 12 for details) except 'j' is used in place of 'l'
 ! 
 !> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's C++ routines
+!> @date 02/14/19 MDG 1.1 tested against Mathematica WignerD function 
 !--------------------------------------------------------------------------
 module Wigner
 
 use local
 
 IMPLICIT NONE
+
+interface Wigner_d
+     module procedure Wigner_d3
+     module procedure Wigner_d5
+end interface
+
+interface Wigner_dTable
+    module procedure Wigner_dTable1
+    module procedure Wigner_dTable2
+end interface
 
 ! Quiet NAN, double precision.
 REAL(8), PARAMETER :: D_QNAN = TRANSFER((/ Z'00000000', Z'7FF80000' /),1.0_8)
@@ -202,15 +213,16 @@ integer(kind=ill),INTENT(IN)        :: m
 real(kind=dbl),INTENT(IN)           :: tc
 real(kind=dbl)                      :: ujkm0 
 
-ujkm0 = -tc * ((j - 1) * j) - (k * m - (j - 1) * j)
+ujkm0 = -tc * dble((j - 1) * j) - dble(k * m - (j - 1) * j)
 
 end function Wigner_u_jkm0
 
-recursive function Wigner_u_jkm1(k, m) result(ujkm1)
+recursive function Wigner_u_jkm1(j, k, m) result(ujkm1)
 !DEC$ ATTRIBUTES DLLEXPORT :: Wigner_u_jkm1
 
 IMPLICIT NONE
 
+integer(kind=ill),INTENT(IN)        :: j
 integer(kind=ill),INTENT(IN)        :: k
 integer(kind=ill),INTENT(IN)        :: m
 integer(kind=ill)                   :: ujkm1 
@@ -230,7 +242,7 @@ integer(kind=ill),INTENT(IN)        :: m
 real(kind=dbl),INTENT(IN)           :: t
 real(kind=dbl)                      :: ujkm2 
 
-ujkm2 = t  * ((j - 1) * j) -  k * m
+ujkm2 = t  * dble((j - 1) * j) -  dble(k * m)
 
 end function Wigner_u_jkm2
 
@@ -335,7 +347,7 @@ integer(kind=ill),INTENT(IN)        :: k
 integer(kind=ill),INTENT(IN)        :: m
 real(kind=dbl)                      :: ajkm1 
 
-ajkm1 = Wigner_w_jkm(j, k, m) * ( Wigner_u_jkm1(k, m) * dble(2*j-1) )
+ajkm1 = Wigner_w_jkm(j, k, m) * ( Wigner_u_jkm1(j, k, m) * dble(2*j-1) )
 
 end function Wigner_a_jkm1
 
@@ -564,7 +576,6 @@ integer(kind=ill)                       :: i
 
 ! require 0 <= m <= k <= j (handle with symmetry where possible)
 ! we'll reorganize the indices by means of recursive calls to itself...
-
 if ((k.lt.0).and.(m.lt.0)) then ! d^j_{-k,-m} = (-1)^(   k- m) d^j_{k,m}
     if (mod(k-m,2).eq.0) then 
         djkm =  Wigner_d3(j,-k,-m)
@@ -593,7 +604,7 @@ else
             end if
         else
             if (k.lt.m) then  ! d^j_{ m, k} = (-1)^(   k- m) d^j_{k,m}
-                if (mod(k-m,2).eq.2) then 
+                if (mod(k-m,2).eq.0) then 
                     djkm =  Wigner_d3(j,m,k)
                     RETURN
                 else
@@ -620,6 +631,7 @@ if (j.eq.k) then
     djkm = d_kkm
     RETURN
 end if
+
 d_k1km = d_kkm * Wigner_a_km1(k, m)
 if (j.eq.k+1) then
     djkm = d_k1km
@@ -711,7 +723,7 @@ else
                 end if
             else
                 if (k.lt.m) then    ! d^j_{ m, k}( beta) = (-1)^(   k- m) d^j_{k,m}(     beta)
-                    if (mod(k-m,2).eq.2) then 
+                    if (mod(k-m,2).eq.0) then 
                         djkm =  Wigner_d5(j, m, k, t, .FALSE.)
                         RETURN      ! equation 9
                     else
