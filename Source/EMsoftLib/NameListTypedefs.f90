@@ -1719,6 +1719,12 @@ type EMmdSTEMNameListType
         integer(kind=irg)       :: usenumd
         integer(kind=irg)       :: selnumd(4)
         integer(kind=irg)       :: discsize
+        real(kind=dbl)          :: stride
+        integer(kind=irg)       :: maxnumincell
+        logical                 :: hypslab
+        logical                 :: dwflag
+        real(kind=dbl)          :: thk
+
 end type EMmdSTEMNameListType
 
 end module NameListTypedefs
