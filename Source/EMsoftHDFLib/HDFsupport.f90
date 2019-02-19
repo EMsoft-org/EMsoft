@@ -7045,25 +7045,24 @@ recursive function HDF_getStringAttributeFromGroup(dataname, stratt, slen, HDF_h
 use ISO_C_BINDING
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: slen
+integer(SIZE_T),INTENT(IN)                              :: slen
 character(len=slen, KIND=c_char),INTENT(INOUT)          :: stratt 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg)                                       :: success
 
-integer(HID_T)                                          :: aspace_id, dset, atype_id, attr_id, memtype ! Handles
+integer(HID_T)                                          :: aspace_id, filetype, atype_id, attr_id, memtype ! Handles
 integer                                                 :: hdferr, rnk
 integer(SIZE_T)                                         :: attrlen
 INTEGER(HSIZE_T), DIMENSION(1:1)                        :: maxdims
-INTEGER(hsize_t), DIMENSION(1:1)                        :: dims = (/1/)
-TYPE(hvl_t), DIMENSION(1:1), TARGET                     :: rdata ! Pointer to vlen structures
+INTEGER(hsize_t), DIMENSION(1:1)                        :: dims
+CHARACTER(LEN=slen), DIMENSION(:), ALLOCATABLE, TARGET  :: rdata
+INTEGER(SIZE_T)                                         :: size
 
-TYPE vl
-     INTEGER, DIMENSION(:), POINTER                     :: data
-  END TYPE vl
-TYPE(vl), DIMENSION(:), ALLOCATABLE                     :: ptr
 INTEGER, DIMENSION(:), POINTER                          :: ptr_r 
 TYPE(C_PTR)                                             :: f_ptr
   
+
+dims(1) = slen
 
 success = 0
 
@@ -7071,32 +7070,40 @@ success = 0
   call h5aopen_f(HDF_head%objectID, cstringify(dataname), attr_id, hdferr)
   call HDFerror_check('HDF_getStringAttributeFromGroup:h5aopen_f:'//trim(dataname), hdferr)
 
-! Get dataspace and allocate memory for array of vlen structures.
-! This does not actually allocate memory for the vlen data, that
-! will be done by the library.
-!
-  CALL h5aget_space_f(attr_id, aspace_id, hdferr)
-  CALL h5sget_simple_extent_dims_f(aspace_id, dims, maxdims, hdferr)
+  ! Get the datatype and its size.
+  !
+  CALL H5Aget_type_f(attr_id, filetype, hdferr)
+  CALL H5Tget_size_f(filetype, size, hdferr)
+
+  ! Make sure the declared length is large enough
+  IF(size.GT.slen+1)THEN
+     PRINT*,'ERROR:HDFsupport:HDF_getStringAttributeFromGroup Character LEN is too small'
+     STOP
+  ENDIF
+  !
+  ! Get dataspace and allocate memory for read buffer.
+  ! 
+  CALL H5Aget_space_f(attr_id, aspace_id, hdferr)
+  CALL H5Sget_simple_extent_dims_f(aspace_id, dims, maxdims, hdferr)
+
+  ALLOCATE(rdata(1:dims(1)))
   !
   ! Create the memory datatype.
   !
-  CALL h5tvlen_create_f(H5T_NATIVE_INTEGER, memtype, hdferr)
+  CALL H5Tcopy_f(H5T_FORTRAN_S1, memtype, hdferr)
+  CALL H5Tset_size_f(memtype, slen, hdferr)
   !
   ! Read the data.
   !
-  f_ptr = C_LOC(rdata(1))
-  CALL h5aread_f(attr_id, memtype, f_ptr, hdferr)
-
-  CALL c_f_pointer(rdata(1)%p, ptr_r, [rdata(1)%len] )
-  do i=1,slen 
-    stratt(i:i) = char(ptr_r(i))
-  end do
-  success = 1
-
-  CALL h5dvlen_reclaim_f(memtype, aspace_id, H5P_DEFAULT_F, f_ptr, hdferr)
-  CALL h5aclose_f(attr_id, hdferr)
-  CALL h5sclose_f(aspace_id, hdferr)
-  CALL h5tclose_f(memtype, hdferr)
+  f_ptr = C_LOC(rdata(1)(1:1))
+  CALL H5Aread_f(attr_id, memtype, f_ptr, hdferr)
+  stratt = trim(rdata(1))
+  !
+  ! Close and release resources.
+  !
+  CALL H5Aclose_f(attr_id, hdferr)
+  CALL H5Sclose_f(aspace_id, hdferr)
+  CALL H5Tclose_f(memtype, hdferr)
 
 end function HDF_getStringAttributeFromGroup
 

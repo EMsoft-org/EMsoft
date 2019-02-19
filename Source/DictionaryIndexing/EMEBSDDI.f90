@@ -342,7 +342,7 @@ character(15)                                       :: tstre
 character(3)                                        :: vendor
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, fname, clname, ename, sourcefile, &
-                                                       datagroupname, dictfile
+                                                       datagroupname, dictfile, attname
 integer(hsize_t)                                    :: expwidth, expheight
 integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_size_t),target                            :: slength
@@ -374,7 +374,7 @@ integer(kind=irg)                                   :: NumLines
 character(fnlen)                                    :: TitleMessage, exectime
 character(100)                                      :: c
 character(1000)                                     :: charline
-character(4)                                        :: stratt
+character(3)                                        :: stratt
 
 type(HDFobjectStackType),pointer                    :: HDF_head
 
@@ -424,12 +424,16 @@ if (trim(dinl%indexingmode).eq.'static') then
     hdferr = HDF_openGroup(datagroupname, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EBSD')
 
-    hdferr = HDF_getStringAttributeFromGroup(datagroupname, stratt, 4, HDF_head)
+! test the HDF_FileVersion to make sure that the dictionary file is recent enough
+    attname = 'HDF_FileVersion'
+    hdferr = HDF_getStringAttributeFromGroup(attname, stratt, 3_SIZE_T, HDF_head)
 
-write(*,*) 'group attribute = ->',trim(stratt),'<-'
-if (trim(stratt).ne.'4.1') then
-    call FatalError('MasterSubroutine','Incompatible dictionary file; please rerun the EMEBSD program.')
-end if
+    if (stratt.eq.'4.0') then
+        call Message('The dictionary file was created with an older version of the EMEBSD program.')
+        call Message('This file can not be used by the present program; must be version 4.1 or higher.')
+        call Message('')
+        call FatalError('MasterSubroutine','Incompatible dictionary file; please rerun the EMEBSD program.')
+    end if
 
 
     ! we already have the xtalname string from the Monte Carlo name list
