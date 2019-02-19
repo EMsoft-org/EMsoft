@@ -49,6 +49,9 @@
 !> @date 04/01/18 MDG 2.0 added routine to preprocess EBSD patterns 
 !> @date 05/09/18 MDG 2.1 added .up1 TSL format 
 !> @date 11/30/18 MDG 2.2 added suport for TKD pattern preprocessing
+!> @date 02/19/19 MDG 3.0 corrects pattern orientation; manual indexing of patterns computed with EMEBSD
+!>                        revealed an unwanted upside down flip that was compensated by flipping the 
+!>                        exp. patterns; thus, all indexing runs thus far produced the correct results.
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -439,6 +442,8 @@ select case (itype)
 ! when the experimental patterns were only available in individual image file format. 
 ! This file would have been created using a Matlab or IDL routine.  We anticipate that 
 ! this format will not be used for much longer.
+! In view of the pattern flip resolution, the user must ensure that the Matlab script
+!  DOES NOT flip the pattern upside down !
       do jj=kkstart,kkend
         read(funit,rec=(liii-1)*lwd + jj) imageexpt
         exppatarray((jj-kkstart)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
@@ -467,10 +472,10 @@ select case (itype)
 ! then we need to place them in the exppatarray array 
       exppatarray = 0.0
       pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
-      do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI; remember to flip the patterns upside down !
+      do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI
         kspot = (kk-kkstart)*patsz
         do jj=1,dims3(2)
-          jspot = (dims3(2)-jj)*dims3(1) 
+          jspot = jj*dims3(1) 
           do ii=1,dims3(1)
             exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
             pixcnt = pixcnt + 1
@@ -502,7 +507,7 @@ select case (itype)
         do kk=kkstart,kkend
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
-                   z = float(EBSDpatint(ii,dims3(2)+1-jj,kk))
+                   z = float(EBSDpatint(ii,jj,kk))
                    if (z.lt.0.0) z = z+2.0**16
                    exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = z
                 end do 
@@ -537,8 +542,7 @@ select case (itype)
             EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
             do jj=1,dims3(2)
                 do ii=1,dims3(1) 
-                    ! Bruker patterns are stored upside down compared to the EMsoft convention...
-                    exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+                    exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
                 end do 
             end do 
         end do 
@@ -650,7 +654,7 @@ select case (itype)
         exppat = 0.0
         pixcnt = 1
         do jj=1,dims3(2)
-          jspot = (dims3(2)-jj)*dims3(1) 
+          jspot = jj*dims3(1) 
           do ii=1,dims3(1)
             exppat(jspot+ii) = float(pairs(pixcnt))
             pixcnt = pixcnt + 1
@@ -679,7 +683,7 @@ select case (itype)
         exppat = 0.0
         do jj=1,dims3(2)
             do ii=1,dims3(1)
-                  z = float(EBSDpatint(ii,dims3(2)+1-jj,1))
+                  z = float(EBSDpatint(ii,jj,1))
                   if (z.lt.0.0) z = z+2.0**16
                   exppat((jj-1)*dims3(1)+ii) = z
             end do 
@@ -711,8 +715,7 @@ select case (itype)
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
         do jj=1,dims3(2)
             do ii=1,dims3(1) 
-                ! Bruker patterns are stored upside down compared to the EMsoft convention...
-                exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+                exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
             end do 
         end do 
 

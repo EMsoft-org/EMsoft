@@ -280,6 +280,7 @@ end program EMEBSD
 !> @date 10/13/17  MDG 7.1 correction of deformation tensor code; tested for tetragonal, monoclinic and anorthic deformations
 !> @date 12/20/17  MDG 7.2 added switch to turn off realistic background intensity profile
 !> @date 04/03/18  MDG 8.0 rewrite with separated name lists and new more modular data structures
+!> @date 02/19/19  MDG 8.1 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 subroutine ComputeEBSDPatterns(enl, mcnl, mpnl, numangles, angles, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
@@ -517,12 +518,17 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EMData')
 ! create the EBSD group and add a HDF_FileVersion attribbute to it 
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EBSD')
-HDF_FileVersion = '4.0'
+! before Feb. 19, 2019, an undetected error caused all patterns to be upside down in the Kikuchi bands only,
+! not in the background intensity profile.  This was compensated by a pattern flip of all experimental 
+! patterns in the dictionary indexing program, but when taking individual patterns from this program, they
+! are actually upside down in all versions through HDF_FileVersion 4.0.  As of 4.1, the patterns are in the
+! correct orientation.  This was detected by manually indexing a simulated pattern.
+HDF_FileVersion = '4.1'
 attributename = SC_HDFFileVersion
 hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
 
 ! =====================================================
-! The following write commands constitute HDF_FileVersion = 4.0
+! The following write commands constitute HDF_FileVersion = 4.0 and above
 ! =====================================================
 dataset = SC_xtalname
 allocate(stringarray(1))
@@ -544,7 +550,7 @@ hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, numangles, HDF_he
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
 
 ! =====================================================
-! end of HDF_FileVersion = 4.0 write statements
+! end of HDF_FileVersion = 4.0 and above write statements
 ! =====================================================
 
 
@@ -731,6 +737,8 @@ end if
 ! for dictionary computations, the patterns are usually rather small, so perhaps the explicit 
 ! energy sums can be replaced by an averaged approximate approach, in which all the energy bins
 ! are added together from the start, and all the master patterns are totaled as well...
+
+! this option is obsolete and will be removed in a later version of the code.  [MDG 02/19/2019]
 if (enl%energyaverage.eq.1) then
   allocate(acc_array(enl%numsx,enl%numsy))
   acc_array = sum(EBSDdetector%accum_e_detector,1)
