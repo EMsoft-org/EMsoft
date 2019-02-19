@@ -1230,12 +1230,12 @@ deallocate(z)
   alpha = atan(enl%delta/enl%L/sqrt(sngl(cPi)))
   ipx = enl%numsx/2 + nint(enl%xpc)
   ipy = enl%numsy/2 + nint(enl%ypc)
-  pcvec = (/ EBSDdetector%rgx(ipx,elp-ipy), EBSDdetector%rgy(ipx,elp-ipy), EBSDdetector%rgz(ipx,elp-ipy) /)
+  pcvec = (/ EBSDdetector%rgx(ipx,ipy), EBSDdetector%rgy(ipx,ipy), EBSDdetector%rgz(ipx,ipy) /)
   calpha = cos(alpha)
   do i=1,enl%numsx
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
-       dc = (/ EBSDdetector%rgx(i,elp-j),EBSDdetector%rgy(i,elp-j),EBSDdetector%rgz(i,elp-j) /)
+       dc = (/ EBSDdetector%rgx(i,j),EBSDdetector%rgy(i,j),EBSDdetector%rgz(i,j) /)
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
 
@@ -1416,12 +1416,12 @@ if (present(bg)) then
   alpha = atan(enl%delta/L/sqrt(sngl(cPi)))
   ipx = nsx/2 + nint(xpc)
   ipy = nsy/2 + nint(ypc)
-  pcvec = (/ tgx(ipx,elp-ipy), tgy(ipx,elp-ipy), tgz(ipx,elp-ipy) /)
+  pcvec = (/ tgx(ipx,ipy), tgy(ipx,ipy), tgz(ipx,ipy) /)
   calpha = cos(alpha)
   do i=1,nsx
     do j=1,nsy
 ! do the coordinate transformation for this detector pixel
-       dc = (/ tgx(i,elp-j),tgy(i,elp-j),tgz(i,elp-j) /)
+       dc = (/ tgx(i,j),tgy(i,j),tgz(i,j) /)
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection

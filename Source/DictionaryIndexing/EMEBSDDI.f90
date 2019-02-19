@@ -44,6 +44,7 @@
 !> @date 03/10/16 MDG 1.3 added h5ebsd formatted output
 !> @date 11/14/16 MDG 1.4 added code to read dictionary patterns from h5 file
 !> @date 04/04/18 MDG 2.0 separated MC and MP name lists and data structures (all internal changes)
+!> @date 02/19/19 MDG 2.1 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 program EMEBSDDI
 

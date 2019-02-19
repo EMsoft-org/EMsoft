@@ -311,9 +311,9 @@ epl = ipar(3)+1
      end if
 ! make sure that these vectors are normalized !
      x = sqrt(rgx(j,epl-i)**2+rgy(j,epl-i)**2+rgz(j,epl-i)**2)
-     rgx(j,i) = rgx(j,epl-i) / x
-     rgy(j,i) = rgy(j,epl-i) / x
-     rgz(j,i) = rgz(j,epl-i) / x
+     rgx(j,epl-i) = rgx(j,epl-i) / x
+     rgy(j,epl-i) = rgy(j,epl-i) / x
+     rgz(j,epl-i) = rgz(j,epl-i) / x
     end do
   end do
 
@@ -356,14 +356,14 @@ epl = ipar(3)+1
              fpar(7)*ca*cw + pcxd*ca*sw - pcyd*sa/)
     pcvec = pcvec/NORM2(pcvec)
   else
-    pcvec = (/ rgx(ipx,epl-ipy), rgy(ipx,epl-ipy), rgz(ipx,epl-ipy) /)
+    pcvec = (/ rgx(ipx,ipy), rgy(ipx,ipy), rgz(ipx,ipy) /)
   end if
 
   calpha = cos(alpha)
   do i=1,ipar(2)
     do j=1,ipar(3)
 ! do the coordinate transformation for this detector pixel
-       dc = (/ rgx(i,epl-j), rgy(i,epl-j), rgz(i,epl-j) /)
+       dc = (/ rgx(i,j), rgy(i,j), rgz(i,j) /)
 
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc

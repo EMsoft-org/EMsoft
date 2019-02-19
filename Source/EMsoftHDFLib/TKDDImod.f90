@@ -374,13 +374,13 @@ deallocate(z)
              enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
     pcvec = pcvec/NORM2(pcvec)
   else
-    pcvec = (/ master%rgx(ipx,elp-ipy), master%rgy(ipx,elp-ipy), master%rgz(ipx,elp-ipy) /)
+    pcvec = (/ master%rgx(ipx,ipy), master%rgy(ipx,ipy), master%rgz(ipx,ipy) /)
   end if
 
   do i=1,enl%numsx
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
-       dc = (/ master%rgx(i,elp-j),master%rgy(i,elp-j),master%rgz(i,elp-j) /)
+       dc = (/ master%rgx(i,j),master%rgy(i,j),master%rgz(i,j) /)
 
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
@@ -399,9 +399,9 @@ deallocate(z)
 ! interpolate the intensity 
         do k=Emin,Emax 
           acc%accum_e_detector(k,i,elp-j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
-                                        acc%accum_e(k,nixp,niy) * dx * dym + &
-                                        acc%accum_e(k,nix,niyp) * dxm * dy + &
-                                        acc%accum_e(k,nixp,niyp) * dx * dy )
+                                                    acc%accum_e(k,nixp,niy) * dx * dym + &
+                                                    acc%accum_e(k,nix,niyp) * dxm * dy + &
+                                                    acc%accum_e(k,nixp,niyp) * dx * dy )
         end do
     end do
   end do 

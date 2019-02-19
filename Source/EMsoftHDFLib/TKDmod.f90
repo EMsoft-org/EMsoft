@@ -815,14 +815,14 @@ deallocate(z)
              enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
     pcvec = pcvec/NORM2(pcvec)
   else
-    pcvec = (/ master%rgx(ipx,epl-ipy), master%rgy(ipx,epl-ipy), master%rgz(ipx,epl-ipy) /)
+    pcvec = (/ master%rgx(ipx,ipy), master%rgy(ipx,ipy), master%rgz(ipx,ipy) /)
   end if
 
   calpha = cos(alpha)
   do i=1,enl%numsx
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
-       dc = (/ master%rgx(i,epl-j),master%rgy(i,epl-j),master%rgz(i,epl-j) /)
+       dc = (/ master%rgx(i,j),master%rgy(i,j),master%rgz(i,j) /)
 
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
@@ -1093,7 +1093,7 @@ real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
-integer(kind=irg)                       :: i, j, Emin, Emax, istat, k, ipx, ipy, ierr   
+integer(kind=irg)                       :: i, j, Emin, Emax, istat, k, ipx, ipy, ierr, epl   
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1122,7 +1122,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+epl = enl%numsy+1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -1132,14 +1132,14 @@ do j=1,enl%numsx
 
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
 
-   allocate(scintillator%detector(j,i)%lambdaEZ(1:enl%numEbins,1:enl%numzbins))
+   allocate(scintillator%detector(j,epl-i)%lambdaEZ(1:enl%numEbins,1:enl%numzbins))
 
-   scintillator%detector(j,i)%lambdaEZ = 0.D0
+   scintillator%detector(j,epl-i)%lambdaEZ = 0.D0
 
-   scintillator%detector(j,i)%dc = (/(scin_y(i) * ca + sa * Ls) * rhos, Lc * rhos,&
+   scintillator%detector(j,epl-i)%dc = (/(scin_y(i) * ca + sa * Ls) * rhos, Lc * rhos,&
                                     (-sa * scin_y(i) + ca * Ls) * rhos/)
 
-   scintillator%detector(j,i)%dc = scintillator%detector(j,i)%dc/NORM2(scintillator%detector(j,i)%dc)
+   scintillator%detector(j,epl-i)%dc = scintillator%detector(j,i)%dc/NORM2(scintillator%detector(j,epl-i)%dc)
 
 !  if (ierr .ne. 0) then
 !      call FatalError('TKDFullGenerateDetector:','Lambert Projection coordinate undefined')
