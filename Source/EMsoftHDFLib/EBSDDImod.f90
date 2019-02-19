@@ -597,6 +597,7 @@ end subroutine EBSDIndexingreadMasterfile
 !> @date 07/07/15   SS  1.2 correction to the omega tilt parameter; old version in the comments
 !> @date 01/26/16   SS  1.3 adjusted for EBSDIndexing
 !> @date 06/12/16  MDG  1.4 added correction for effetive detector pixel size w.r.t. equal area mapping
+!> @date 02/19/19  MDG  2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine EBSDIndexingGenerateDetector(enl, acc, master, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDIndexingGenerateDetector
@@ -621,7 +622,7 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp      ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp      ! various parameters
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp           ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -650,7 +651,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+elp = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -658,9 +659,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,enl%numsy
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   master%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   master%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   master%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   master%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   master%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   master%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -737,10 +738,10 @@ deallocate(z)
        end if
 ! interpolate the intensity 
        do k=Emin,Emax 
-          acc%accum_e_detector(k,i,j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
-                                        acc%accum_e(k,nixp,niy) * dx * dym + &
-                                        acc%accum_e(k,nix,niyp) * dxm * dy + &
-                                        acc%accum_e(k,nixp,niyp) * dx * dy )
+          acc%accum_e_detector(k,i,elp-j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
+                                                    acc%accum_e(k,nixp,niy) * dx * dym + &
+                                                    acc%accum_e(k,nix,niyp) * dxm * dy + &
+                                                    acc%accum_e(k,nixp,niyp) * dx * dy )
        end do
     end do
   end do 
@@ -769,6 +770,7 @@ end subroutine EBSDIndexingGenerateDetector
 !> @date 01/26/16   SS  1.3 adjusted for EBSDIndexing
 !> @date 06/12/16  MDG  1.4 added correction for effetive detector pixel size w.r.t. equal area mapping
 !> @date 07/06/17  MDG  2.0 split from regular routine for an N-line detector
+!> @date 02/19/19  MDG  3.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine EBSDFastIndexingGenerateDetector(enl, acc, master, nlines, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDFastIndexingGenerateDetector
@@ -794,7 +796,8 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, ystep, nixp, niyp   ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, ystep, nixp, &
+                                                   niyp, elp   ! various parameters
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -828,7 +831,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+elp = nlines + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -836,9 +839,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,nlines
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   master%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   master%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   master%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   master%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   master%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   master%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -915,10 +918,10 @@ deallocate(z)
         end if
 ! interpolate the intensity 
         do k=Emin,Emax 
-          acc%accum_e_detector(k,i,j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
-                                        acc%accum_e(k,nixp,niy) * dx * dym + &
-                                        acc%accum_e(k,nix,niyp) * dxm * dy + &
-                                        acc%accum_e(k,nixp,niyp) * dx * dy )
+          acc%accum_e_detector(k,i,elp-j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
+                                                    acc%accum_e(k,nixp,niy) * dx * dym + &
+                                                    acc%accum_e(k,nix,niyp) * dxm * dy + &
+                                                    acc%accum_e(k,nixp,niyp) * dx * dy )
         end do
     end do
   end do 

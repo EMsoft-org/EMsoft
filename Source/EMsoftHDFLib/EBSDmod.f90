@@ -1116,6 +1116,7 @@ end subroutine readEBSDMasterPatternFile
 !> @date 07/01/15   SS 1.1 added omega as the second tilt angle
 !> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
 !> @date 04/03/18  MDG 3.0 new version with split use of name list arrays
+!> @date 02/19/19  MDG 4.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: GenerateEBSDDetector
@@ -1141,7 +1142,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nsx, nsy  ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nsx, nsy, elp  ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1171,6 +1172,7 @@ sw = sin(mcnl%omega * dtor)
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
 
+elp = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -1178,9 +1180,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,enl%numsy
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   EBSDdetector%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   EBSDdetector%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   EBSDdetector%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   EBSDdetector%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   EBSDdetector%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   EBSDdetector%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -1228,12 +1230,12 @@ deallocate(z)
   alpha = atan(enl%delta/enl%L/sqrt(sngl(cPi)))
   ipx = enl%numsx/2 + nint(enl%xpc)
   ipy = enl%numsy/2 + nint(enl%ypc)
-  pcvec = (/ EBSDdetector%rgx(ipx,ipy), EBSDdetector%rgy(ipx,ipy), EBSDdetector%rgz(ipx,ipy) /)
+  pcvec = (/ EBSDdetector%rgx(ipx,elp-ipy), EBSDdetector%rgy(ipx,elp-ipy), EBSDdetector%rgz(ipx,elp-ipy) /)
   calpha = cos(alpha)
   do i=1,enl%numsx
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
-       dc = (/ EBSDdetector%rgx(i,j),EBSDdetector%rgy(i,j),EBSDdetector%rgz(i,j) /)
+       dc = (/ EBSDdetector%rgx(i,elp-j),EBSDdetector%rgy(i,elp-j),EBSDdetector%rgz(i,elp-j) /)
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
 
@@ -1264,7 +1266,7 @@ deallocate(z)
               EBSDMCdata%accum_e(k,nix+1,niy) * dx * dym + &
               EBSDMCdata%accum_e(k,nix,niy+1) * dxm * dy + &
               EBSDMCdata%accum_e(k,nix+1,niy+1) * dx * dy
-          EBSDdetector%accum_e_detector(k,i,j) = g * s
+          EBSDdetector%accum_e_detector(k,i,elp-j) = g * s
         end do
     end do
   end do 
@@ -1289,6 +1291,7 @@ end subroutine GenerateEBSDDetector
 !> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
 !> @date 02/22/18  MDG 1.3 forked from EBSDGenerateDetector; uses separate pattern center coordinates patcntr
 !> @date 04/03/18  MDG 2.0 updated with new name list and data structures
+!> @date 02/19/19  MDG 3.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine GeneratemyEBSDDetector(enl, mcnl, EBSDMCdata, nsx, nsy, numE, tgx, tgy, tgz, accum_e_detector, patcntr, bg)
 !DEC$ ATTRIBUTES DLLEXPORT :: GeneratemyEBSDDetector
@@ -1321,7 +1324,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny     ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp     ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1353,6 +1356,7 @@ sw = sin(mcnl%omega * dtor)
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
 
+elp = nsy + 1
 L2 = L * L
 do j=1,nsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -1360,9 +1364,9 @@ do j=1,nsx
   Lc = cw * scin_x(j) + L*sw
   do i=1,nsy
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   tgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   tgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   tgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   tgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   tgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   tgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -1412,12 +1416,12 @@ if (present(bg)) then
   alpha = atan(enl%delta/L/sqrt(sngl(cPi)))
   ipx = nsx/2 + nint(xpc)
   ipy = nsy/2 + nint(ypc)
-  pcvec = (/ tgx(ipx,ipy), tgy(ipx,ipy), tgz(ipx,ipy) /)
+  pcvec = (/ tgx(ipx,elp-ipy), tgy(ipx,elp-ipy), tgz(ipx,elp-ipy) /)
   calpha = cos(alpha)
   do i=1,nsx
     do j=1,nsy
 ! do the coordinate transformation for this detector pixel
-       dc = (/ tgx(i,j),tgy(i,j),tgz(i,j) /)
+       dc = (/ tgx(i,elp-j),tgy(i,elp-j),tgz(i,elp-j) /)
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
 ! convert these direction cosines to coordinates in the Rosca-Lambert projection
@@ -1446,7 +1450,7 @@ if (present(bg)) then
               EBSDMCdata%accum_e(k,nix+1,niy) * dx * dym + &
               EBSDMCdata%accum_e(k,nix,niy+1) * dxm * dy + &
               EBSDMCdata%accum_e(k,nix+1,niy+1) * dx * dy
-          accum_e_detector(k,i,j) = g * s
+          accum_e_detector(k,i,elp-j) = g * s
         end do
     end do
   end do 
@@ -1470,6 +1474,7 @@ end subroutine GeneratemyEBSDDetector
 !
 !> @date 03/17/16 MDG 1.0 original
 !> @date 09/26/17 MDG 1.1 added Umatrix argument to try out inclusion of lattice strains
+!> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,mask, &
                                                prefactor, Fmatrix, removebackground, applynoise)
@@ -1742,10 +1747,11 @@ end subroutine CalcEBSDPatternSingleFullFast
 !
 !> @param enl EBSD name list structure
 !
-!> @date 06/24/14  MDG 1.0 original
-!> @date 07/01/15   SS 1.1 added omega as the second tilt angle
-!> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
-!> @date 05/10/18  MDG 1.3 added arguments to clean up namelists 
+!> @date 06/24/14 MDG 1.0 original
+!> @date 07/01/15  SS 1.1 added omega as the second tilt angle
+!> @date 07/07/15  SS 1.2 correction to the omega tilt parameter; old version in the comments
+!> @date 05/10/18 MDG 1.3 added arguments to clean up namelists 
+!> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine EBSDFullGenerateDetector(enl, EBSDdetector, numEbins, numzbins, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDFullGenerateDetector
@@ -1770,7 +1776,7 @@ real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
-integer(kind=irg)                       :: i, j, Emin, Emax, istat, k, ipx, ipy, ierr   
+integer(kind=irg)                       :: i, j, Emin, Emax, istat, k, ipx, ipy, ierr, elp   
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1799,7 +1805,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+elp = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -1809,15 +1815,15 @@ do j=1,enl%numsx
 
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
 
-   allocate(EBSDdetector%detector(j,i)%lambdaEZ(1:numEbins,1:numzbins))
+   allocate(EBSDdetector%detector(j,elp-i)%lambdaEZ(1:numEbins,1:numzbins))
 
-   EBSDdetector%detector(j,i)%lambdaEZ = 0.D0
+   EBSDdetector%detector(j,elp-i)%lambdaEZ = 0.D0
 
-   EBSDdetector%detector(j,i)%dc = (/(scin_y(i) * ca + sa * Ls) * rhos, Lc * rhos,&
+   EBSDdetector%detector(j,elp-i)%dc = (/(scin_y(i) * ca + sa * Ls) * rhos, Lc * rhos,&
                                     (-sa * scin_y(i) + ca * Ls) * rhos/)
 
-   EBSDdetector%detector(j,i)%dc =  &
-         EBSDdetector%detector(j,i)%dc/NORM2(EBSDdetector%detector(j,i)%dc)
+   EBSDdetector%detector(j,elp-i)%dc =  &
+         EBSDdetector%detector(j,elp-i)%dc/NORM2(EBSDdetector%detector(j,elp-i)%dc)
 
 !  if (ierr .ne. 0) then
 !      call FatalError('EBSDFullGenerateDetector:','Lambert Projection coordinate undefined')
@@ -1830,20 +1836,20 @@ deallocate(scin_x, scin_y)
 alpha = atan(enl%delta/enl%L/sqrt(sngl(cPi)))
 ipx = nint(enl%numsx/2 + enl%xpc)
 ipy = nint(enl%numsy/2 + enl%ypc)
-pcvec = EBSDdetector%detector(ipx,ipy)%dc
+pcvec = EBSDdetector%detector(ipx,elp-ipy)%dc
 calpha = cos(alpha)
 
 do i = 1,enl%numsx
     do j = 1,enl%numsy
 
-        dc = EBSDdetector%detector(i,j)%dc 
+        dc = EBSDdetector%detector(i,elp-j)%dc 
         dp = DOT_PRODUCT(pcvec,dc)
         theta = acos(dp)
 
         if ((i.eq.ipx).and.(j.eq.ipy)) then
-          EBSDdetector%detector(i,j)%cfactor = 0.25 
+          EBSDdetector%detector(i,elp-j)%cfactor = 0.25 
         else
-          EBSDdetector%detector(i,j)%cfactor = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3)
+          EBSDdetector%detector(i,elp-j)%cfactor = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3)
         end if
 
     end do

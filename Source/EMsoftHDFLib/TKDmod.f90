@@ -693,8 +693,9 @@ end subroutine TKDreadMasterfile_overlap
 !> @param enl TKD name list structure
 !
 !> @date 06/24/14  MDG 1.0 original
-!> @date 07/01/15   SS  1.1 added omega as the second tilt angle
-!> @date 07/07/15   SS  1.2 correction to the omega tilt parameter; old version in the comments
+!> @date 07/01/15   SS 1.1 added omega as the second tilt angle
+!> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
+!> @date 02/19/19  MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine TKDGenerateDetector(enl, acc, master, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: TKDGenerateDetector
@@ -720,7 +721,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, nixp, niyp, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy     ! various parameters
+integer(kind=irg)                       :: nix, niy, nixp, niyp, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, epl     ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -749,7 +750,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+epl = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -757,9 +758,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,enl%numsy
 !  rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   master%rgx(j,i) = (scin_y(i) * ca + sa * Ls) 
-   master%rgy(j,i) = Lc 
-   master%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) 
+   master%rgx(j,epl-i) = (scin_y(i) * ca + sa * Ls) 
+   master%rgy(j,epl-i) = Lc 
+   master%rgz(j,epl-i) = (-sa * scin_y(i) + ca * Ls) 
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -803,6 +804,8 @@ deallocate(z)
   if (Emax.gt.enl%numEbins)  Emax=enl%numEbins
 
 ! correction of change in effective pixel area compared to equal-area Lambert projection
+
+! this needs to be verified after the pattern flip modification [MDG, 02/19/2019]
   alpha = atan(enl%delta/enl%L/sqrt(sngl(cPi)))
   ipx = enl%numsx/2 + nint(enl%xpc)
   ipy = enl%numsy/2 + nint(enl%ypc)
@@ -812,14 +815,14 @@ deallocate(z)
              enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
     pcvec = pcvec/NORM2(pcvec)
   else
-    pcvec = (/ master%rgx(ipx,ipy), master%rgy(ipx,ipy), master%rgz(ipx,ipy) /)
+    pcvec = (/ master%rgx(ipx,epl-ipy), master%rgy(ipx,epl-ipy), master%rgz(ipx,epl-ipy) /)
   end if
 
   calpha = cos(alpha)
   do i=1,enl%numsx
     do j=1,enl%numsy
 ! do the coordinate transformation for this detector pixel
-       dc = (/ master%rgx(i,j),master%rgy(i,j),master%rgz(i,j) /)
+       dc = (/ master%rgx(i,epl-j),master%rgy(i,epl-j),master%rgz(i,epl-j) /)
 
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
@@ -842,7 +845,7 @@ deallocate(z)
               acc%accum_e(k,nixp,niy) * dx * dym + &
               acc%accum_e(k,nix,niyp) * dxm * dy + &
               acc%accum_e(k,nixp,niyp) * dx * dy
-          acc%accum_e_detector(k,i,j) = g * s
+          acc%accum_e_detector(k,i,epl-j) = g * s
         end do
     end do
   end do 
