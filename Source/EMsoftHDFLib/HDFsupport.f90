@@ -7022,6 +7022,84 @@ call HDFerror_check('HDF_addStringAttribute:h5sclose_f:'//trim(dataname), hdferr
 
 end function HDF_addStringAttributeToGroup
 
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION:HDF_getStringAttributeFromGroup
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read a string attribute from the current level in the HDF file 
+!
+!> @note Note that this routine uses fortran-2003 options
+!
+!> @param dataname dataset name (string)
+!> @param fltval real 
+!> @param HDF_head
+!
+!> @date 07/11/18  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function HDF_getStringAttributeFromGroup(dataname, stratt, slen, HDF_head) result(success)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDF_getStringAttributeFromGroup
+
+use ISO_C_BINDING
+
+character(fnlen),INTENT(IN)                             :: dataname
+integer(kind=irg),INTENT(IN)                            :: slen
+character(len=slen, KIND=c_char),INTENT(INOUT)          :: stratt 
+type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+integer(kind=irg)                                       :: success
+
+integer(HID_T)                                          :: aspace_id, dset, atype_id, attr_id, memtype ! Handles
+integer                                                 :: hdferr, rnk
+integer(SIZE_T)                                         :: attrlen
+INTEGER(HSIZE_T), DIMENSION(1:1)                        :: maxdims
+INTEGER(hsize_t), DIMENSION(1:1)                        :: dims = (/1/)
+TYPE(hvl_t), DIMENSION(1:1), TARGET                     :: rdata ! Pointer to vlen structures
+
+TYPE vl
+     INTEGER, DIMENSION(:), POINTER                     :: data
+  END TYPE vl
+TYPE(vl), DIMENSION(:), ALLOCATABLE                     :: ptr
+INTEGER, DIMENSION(:), POINTER                          :: ptr_r 
+TYPE(C_PTR)                                             :: f_ptr
+  
+
+success = 0
+
+! open the attribute for this group
+  call h5aopen_f(HDF_head%objectID, cstringify(dataname), attr_id, hdferr)
+  call HDFerror_check('HDF_getStringAttributeFromGroup:h5aopen_f:'//trim(dataname), hdferr)
+
+! Get dataspace and allocate memory for array of vlen structures.
+! This does not actually allocate memory for the vlen data, that
+! will be done by the library.
+!
+  CALL h5aget_space_f(attr_id, aspace_id, hdferr)
+  CALL h5sget_simple_extent_dims_f(aspace_id, dims, maxdims, hdferr)
+  !
+  ! Create the memory datatype.
+  !
+  CALL h5tvlen_create_f(H5T_NATIVE_INTEGER, memtype, hdferr)
+  !
+  ! Read the data.
+  !
+  f_ptr = C_LOC(rdata(1))
+  CALL h5aread_f(attr_id, memtype, f_ptr, hdferr)
+
+  CALL c_f_pointer(rdata(1)%p, ptr_r, [rdata(1)%len] )
+  do i=1,slen 
+    stratt(i:i) = char(ptr_r(i))
+  end do
+  success = 1
+
+  CALL h5dvlen_reclaim_f(memtype, aspace_id, H5P_DEFAULT_F, f_ptr, hdferr)
+  CALL h5aclose_f(attr_id, hdferr)
+  CALL h5sclose_f(aspace_id, hdferr)
+  CALL h5tclose_f(memtype, hdferr)
+
+end function HDF_getStringAttributeFromGroup
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:HDF_read2DImage

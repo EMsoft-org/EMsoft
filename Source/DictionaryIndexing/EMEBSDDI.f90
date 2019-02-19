@@ -374,6 +374,7 @@ integer(kind=irg)                                   :: NumLines
 character(fnlen)                                    :: TitleMessage, exectime
 character(100)                                      :: c
 character(1000)                                     :: charline
+character(4)                                        :: stratt
 
 type(HDFobjectStackType),pointer                    :: HDF_head
 
@@ -422,6 +423,14 @@ if (trim(dinl%indexingmode).eq.'static') then
     datagroupname = 'EBSD'
     hdferr = HDF_openGroup(datagroupname, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EBSD')
+
+    hdferr = HDF_getStringAttributeFromGroup(datagroupname, stratt, 4, HDF_head)
+
+write(*,*) 'group attribute = ->',trim(stratt),'<-'
+if (trim(stratt).ne.'4.1') then
+    call FatalError('MasterSubroutine','Incompatible dictionary file; please rerun the EMEBSD program.')
+end if
+
 
     ! we already have the xtalname string from the Monte Carlo name list
     xtalname = trim(mcnl%xtalname)
