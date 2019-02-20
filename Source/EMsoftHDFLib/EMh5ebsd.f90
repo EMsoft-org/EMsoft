@@ -784,7 +784,8 @@ integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(
 real(kind=sgl)                                      :: isratio, io_real(1)
 type(HDFobjectStackType),pointer                    :: HDF_head
 
-
+! copy the dictionary euler angle array 
+eulerarray = dicteulerarray
 
 !=====================================================
 ! write the output in the format of an h5ebsd file
@@ -1021,7 +1022,7 @@ dataset = SC_Valid
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Valid')
   deallocate(valid)
 
-  dataset = SC_EulerAngles
+dataset = SC_EulerAngles
   call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
   allocate(eangles(3,ipar(3)),stat=istat)
   do ii = 1,ipar(3)

@@ -70,6 +70,7 @@ type EBSDDIdataType
   real(kind=sgl),allocatable    :: AverageOrientations(:,:)
   real(kind=sgl),allocatable    :: CI(:)
   real(kind=sgl),allocatable    :: EulerAngles(:,:)
+  real(kind=sgl),allocatable    :: DictionaryEulerAngles(:,:)
   real(kind=sgl),allocatable    :: Fit(:)
   real(kind=sgl),allocatable    :: IQ(:)
   real(kind=sgl),allocatable    :: KAM(:,:)
@@ -1361,7 +1362,7 @@ recursive subroutine readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, 
                                             getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
                                             getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
                                             getValid, getXPosition, getYPosition, getRefinedDotProducts, &
-                                            getRefinedEulerAngles, presentFolder)
+                                            getRefinedEulerAngles, getDictionaryEulerAngles, presentFolder)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDDotProductFile
 
 use local
@@ -1383,6 +1384,7 @@ logical,INTENT(IN),OPTIONAL                         :: getADP
 logical,INTENT(IN),OPTIONAL                         :: getAverageOrientations
 logical,INTENT(IN),OPTIONAL                         :: getCI
 logical,INTENT(IN),OPTIONAL                         :: getEulerAngles
+logical,INTENT(IN),OPTIONAL                         :: getDictionaryEulerAngles
 logical,INTENT(IN),OPTIONAL                         :: getFit
 logical,INTENT(IN),OPTIONAL                         :: getIQ
 logical,INTENT(IN),OPTIONAL                         :: getKAM
@@ -1693,6 +1695,13 @@ if (present(getEulerAngles)) then
   if (getEulerAngles.eqv..TRUE.) then
     dataset = SC_EulerAngles
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%EulerAngles)
+  end if 
+end if
+
+if (present(getDictionaryEulerAngles)) then
+  if (getDictionaryEulerAngles.eqv..TRUE.) then
+    dataset = 'DictionaryEulerAngles'
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%DictionaryEulerAngles)
   end if 
 end if
 
