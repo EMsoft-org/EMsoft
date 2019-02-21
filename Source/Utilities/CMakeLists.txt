@@ -189,6 +189,12 @@ Add_EMsoft_Executable(TARGET EMlistSG
                               SOLUTION_FOLDER EMsoftPublic/Utilities 
                               INSTALL_PROGRAM TRUE)
 
+Add_EMsoft_Executable(TARGET EMcuboMK
+                              SOURCES ${APP_DIR}/EMcuboMK.f90 
+                              LINK_LIBRARIES EMsoftLib
+                              SOLUTION_FOLDER EMsoftPublic/Utilities 
+                              INSTALL_PROGRAM TRUE)
+
 Add_EMSoft_Executable(TARGET EMOpenCLinfo 
                               SOURCES ${APP_DIR}/EMOpenCLinfo.f90 
                               LINK_LIBRARIES EMsoftLib
