@@ -54,9 +54,9 @@ use symmetry
 IMPLICIT NONE 
 
 character(fnlen)				:: progname, progdesc
-integer(kind=irg)				:: pgnum, FZorder, FZtype, nsteps, n, i, j, k, io_int(1), ntot
-real(kind=dbl)					:: sedge, delta, e, x, y, z, rod(4), tot
-real(kind=dbl),allocatable		:: misor(:), histogram(:)
+integer(kind=irg)				:: pgnum, FZorder, FZtype, nsteps, n, i, j, k, io_int(2), ntot, pgrotOrder
+real(kind=dbl)					:: sedge, delta, x, y, z, rod(4), tot, rho, ho2(3), ho1(3), vol
+real(kind=dbl),allocatable		:: misor(:), histogram(:), e(:), mk(:)
 logical 						:: b
 
 
@@ -70,13 +70,17 @@ call EMsoft(progname, progdesc)
 call ListPointGroups
 call ReadValue('Enter the desired point group number: ',io_int)
 pgnum = io_int(1)
+pgrotOrder = PGTHDorder(PGrot(pgnum))
 
 ! determine the Laue symmetry group and print it 
 call Message(' ')
-call Message(' Corresponding Laue group is '//trim(PGTHD(PGLaue(pgnum))) )
+call Message(' Corresponding pure rotational group is '//trim(PGTHD(PGrot(pgnum))) )
 
 ! get the fundamental zone parameters
 call getFZtypeandorder(pgnum, FZtype, FZorder)
+io_int(1) = FZtype
+io_int(2) = FZorder 
+call WriteValue(' FZ type and order :',io_int,2)
 
 ! ask the user for the number of steps along the cubochoric semi edge length
 call Message(' ')
@@ -84,7 +88,7 @@ call ReadValue('Enter the desired number of steps along the cubochoric semi-edge
 nsteps = io_int(1)
 
 ! allocate output arrays 
-allocate(misor(0:nsteps), histogram(0:nsteps))
+allocate(misor(0:nsteps), histogram(0:nsteps), e(0:nsteps), mk(0:nsteps))
 histogram = 0.D0
 
 ! set some auxiliary parameters
@@ -95,12 +99,13 @@ delta = sedge / dble(nsteps)
 do n = 0, nsteps 
 	if (n.eq.0) then 
 		misor(0) = 0.D0
-		histogram(0) = 1.D0 
+		e(0) = 0.D0
+		histogram(0) = 0.D0 
 	else ! loop over concentric cubes 
-		e = dble(n) * delta   ! semi-edge length of sub-cube
+		e(n) = dble(n) * delta   ! semi-edge length of sub-cube
 		! get the angle first 
 		if (n.lt.nsteps) then 
-			rod = cu2ro( (/ e, 0.D0, 0.D0 /) )
+			rod = cu2ro( (/ e(n), 0.D0, 0.D0 /) )
 			misor(n) = 2.D0 * atan(rod(4))
 		else
 			misor(n) = cPi
@@ -110,10 +115,10 @@ do n = 0, nsteps
 			y = dble(j) * delta
 			do k = -n, n
 				z = dble(k) * delta
-				rod = cu2ro( (/ e, y, z/) )
+				rod = cu2ro( (/ e(n), y, z/) )
 		        b = IsinsideFZ(rod,FZtype,FZorder)
 		        if (b) histogram(n) = histogram(n) + 1.D0
-				rod = cu2ro( (/ -e, y, z/) )
+				rod = cu2ro( (/ -e(n), y, z/) )
 		        b = IsinsideFZ(rod,FZtype,FZorder)
 		        if (b) histogram(n) = histogram(n) + 1.D0
 			end do 
@@ -123,10 +128,10 @@ do n = 0, nsteps
 			x = dble(i) * delta
 			do k = -n, n
 				z = dble(k) * delta
-				rod = cu2ro( (/ x, e, z/) )
+				rod = cu2ro( (/ x, e(n), z/) )
 		        b = IsinsideFZ(rod,FZtype,FZorder)
 		        if (b) histogram(n) = histogram(n) + 1.D0
-				rod = cu2ro( (/ x, -e, z/) )
+				rod = cu2ro( (/ x, -e(n), z/) )
 		        b = IsinsideFZ(rod,FZtype,FZorder)
 		        if (b) histogram(n) = histogram(n) + 1.D0
 			end do 
@@ -136,29 +141,30 @@ do n = 0, nsteps
 			x = dble(i) * delta
 			do j = -n+1, n-1
 				y = dble(j) * delta
-				rod = cu2ro( (/ x, y, e/) )
+				rod = cu2ro( (/ x, y, e(n)/) )
 		        b = IsinsideFZ(rod,FZtype,FZorder)
 		        if (b) histogram(n) = histogram(n) + 1.D0
-				rod = cu2ro( (/ x, y, -e/) )
+				rod = cu2ro( (/ x, y, -e(n)/) )
 		        b = IsinsideFZ(rod,FZtype,FZorder)
 		        if (b) histogram(n) = histogram(n) + 1.D0
 			end do 
 		end do 
+		histogram(n) = histogram(n) * sin(misor(n)*0.5D0)**2 / dble( 2.D0 + 24.D0 * n**2 )
 	end if
 end do
 
-! next we need to normalize number by dividing them all by the total number of points in the 
-! Fundamental Zone 
-tot = sum(histogram)
-histogram = histogram / tot 
+call getMacKenzieDistribution(pgnum, nsteps, misor, mk)
+
+! normalize 
+histogram =  pgrotOrder * (4.D0 * cPi) * (cPi / 180.D0) * histogram / ( 2.D0 * cPi**2 )
 misor = misor * 180.D0 / cPi
 
 ! and print the results to a text file
 open(unit=20,file='EMcuboMK.csv',status='unknown',form='formatted')
-write (20,"(A)") 'angle, frequency'
-write (20,"(I5,',',I5)") nsteps, nsteps
+write (20,"(A)") 'angle, sampled, theoretical'
+write (20,"(I5,',',I5,',',I5)") nsteps, nsteps, nsteps
 do n=0,nsteps
-  write (20,"(F12.8,',',F12.8)") misor(n), histogram(n)
+  write (20,"(F12.8,',',F12.8,',',F12.8)") misor(n), histogram(n), mk(n)
 end do 
 close(unit=20,status='keep')
 call Message('Results stored in EMcuboMK.csv file...')

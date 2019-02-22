@@ -439,6 +439,14 @@ character(5),parameter  :: PGTHD(36) =(/'    1','   -1','    2','    m','  2/m',
                                         ' -43m',' m-3m','  532','  822',' 1022',' 1222' /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHD
 
+!> 32 3D point group orders in International Tables order
+integer(kind=irg),parameter       :: PGTHDorder(32) = (/ 1, 2, 2, 2, 4, 4, 4, 8, 4, 8, &
+                                                         8, 8, 8, 8,16, 3, 6, 6, 6,12, &
+                                                         6,12,12,12,12,12,24,12,24,24, &
+                                                        24,32 /)
+!DEC$ ATTRIBUTES DLLEXPORT :: PGTHDorder
+
+
 !> 3D point groups : purely rotational point groups corresponding to each point group
 integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
                                                   18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33,34,35,36/)
