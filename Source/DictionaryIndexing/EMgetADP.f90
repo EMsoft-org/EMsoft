@@ -93,6 +93,7 @@ end program EMgetADP
 !> @param nmldeffile namelist filename
 !
 !> @date 02/17/18 MDG 1.1 extracted code from EMEBSDDI program
+!> @date 02/24/19 MDG 1.2 corrected initialization of ROIselected logical
 !--------------------------------------------------------------------------
 
 subroutine ADPSubroutine(adpnl, progname, nmldeffile)
@@ -194,6 +195,9 @@ end if
 ! determine the experimental and dictionary sizes in bytes
 recordsize_correct = correctsize*4
 patsz              = correctsize
+
+ROIselected = .FALSE.
+if (sum(adpnl%ROI).ne.0) ROIselected = .TRUE.
 
 !=========================================
 ! ALLOCATION AND INITIALIZATION OF ARRAYS
