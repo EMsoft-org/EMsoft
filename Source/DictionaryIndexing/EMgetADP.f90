@@ -94,6 +94,7 @@ end program EMgetADP
 !
 !> @date 02/17/18 MDG 1.1 extracted code from EMEBSDDI program
 !> @date 02/24/19 MDG 1.2 corrected initialization of ROIselected logical
+!> @date 02/25/19 MDG 1.3 fixes incorrect indexing of dpmap array
 !--------------------------------------------------------------------------
 
 subroutine ADPSubroutine(adpnl, progname, nmldeffile)
@@ -356,7 +357,7 @@ mi = minval(dpmap)
 
 do j=1,TIFF_ny
  do i=1,TIFF_nx
-  ii = j * TIFF_nx + i + 1
+  ii = (j-1) * TIFF_nx + i 
   TIFF_image(i,j) = int(255 * (dpmap(ii)-mi)/(ma-mi))
  end do
 end do
