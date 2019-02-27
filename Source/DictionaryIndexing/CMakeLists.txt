@@ -52,17 +52,10 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
  
-  Add_EMsoft_Executable(TARGET EMRefineOrientation
-                      SOURCES ${APP_DIR}/EMRefineOrientation.f90 
-                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                      TEMPLATE ${TMPLT_DIR}/EMRefineOrientation.template 
-                      SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
-                      INSTALL_PROGRAM TRUE)
- 
   Add_EMsoft_Executable(TARGET EMFitOrientation
                       SOURCES ${APP_DIR}/EMFitOrientation.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                      TEMPLATE ${TMPLT_DIR}/EMRefineOrientation.template 
+                      TEMPLATE ${TMPLT_DIR}/EMFitOrientation.template 
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
  

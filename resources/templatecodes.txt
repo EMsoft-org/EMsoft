@@ -60,9 +60,8 @@
 087EMConvertOrientations
 088EMODFMRC
 090EMPEDDI
-091EMRefineOrientation
+091EMFitOrientation
 092EMmultiphase
-093EMFitOrientationPS
 094PFInversion
 095EMTwoPhase
 096EMCBEDQC

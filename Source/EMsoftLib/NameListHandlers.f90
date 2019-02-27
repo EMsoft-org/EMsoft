@@ -6372,7 +6372,7 @@ END SUBROUTINE GetSTEMGeometryNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief read namelist file and fill enl structure (used by EMRefineOrientation.f90)
+!> @brief read namelist file and fill enl structure (used by EMFitOrientation.f90)
 !
 !> @param nmlfile namelist file name
 !> @param enl single name list structure
