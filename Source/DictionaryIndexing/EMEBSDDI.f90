@@ -178,6 +178,9 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
     enl%energymin = dinl%energymin
     enl%energymax = dinl%energymax
     call GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
+
+    ! also copy the sample tilt angle into the correct variable for writing to the dot product file
+    dinl%MCsig = mcnl%sig
 else    ! this is a static run using an existing dictionary
 ! we'll use the same MasterSubroutine so we need to at least allocate the input structures
 ! even though we will not make use of them in static mode
