@@ -484,7 +484,7 @@ if (trim(EMsoftpathname).eq.'tryEnvironmentVariable') then
     write (error_unit,"(A)") 'Unable to find definition for EMsoftpathname'
     status = 999001
     write (error_unit,"(' status = ',I10)") status
-    STOP status
+    STOP ! status     ! this would be a fortran 2018 extension...
   end if
 end if 
 
