@@ -127,6 +127,19 @@ CMP_MODULE_INCLUDE_DIRS (TARGET ${PROJECT_NAME} LIBVARS HDF5 Qt5Core)
 get_filename_component(TARGET_BINARY_DIR_PARENT ${H5Support_BINARY_DIR} PATH)
 get_filename_component(TARGET_SOURCE_DIR_PARENT ${H5Support_SOURCE_DIR} PATH)
 
+set(lib_type "static")
+if(BUILD_SHARED_LIBS)
+  set(lib_type "shared")
+endif()
+set(hdf5LinkLibs hdf5 hdf5_f90cstub hdf5_fortran hdf5_hl hdf5_hl_f90cstub hdf5_hl_fortran)
+set(comps ${hdf5LinkLibs})
+set(hdf5LinkLibs "")
+foreach(comp ${comps})
+  if(TARGET hdf5::${comp}-${lib_type})
+    set(hdf5LinkLibs ${hdf5LinkLibs} hdf5::${comp}-${lib_type})
+  endif() 
+endforeach()
+
 
 TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PUBLIC
                               $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
@@ -139,7 +152,8 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(${PROJECT_NAME} PUBLIC "-DH5Support_BUILT_AS_DYNAMIC_LIB")
   endif(WIN32)
 endif(BUILD_SHARED_LIBS)
-target_link_libraries(${PROJECT_NAME} ${HDF5_C_TARGET_NAME} Qt5::Core )
+
+target_link_libraries(${PROJECT_NAME} ${hdf5LinkLibs} Qt5::Core )
 
 
 set(install_dir "bin")
