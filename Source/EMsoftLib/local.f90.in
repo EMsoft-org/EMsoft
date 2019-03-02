@@ -109,7 +109,9 @@ use,intrinsic :: ISO_C_BINDING
 !> counter for non-fatal error messages in handling of environment variables;
 !> if this counter equals 0, then error warnings will be printed, otherwise not.
   integer(kind=irg)                     :: displayEMsoftWarningMessages = 0
+  integer(kind=irg)                     :: displayConfigFileMissingMessage = 0
 !DEC$ ATTRIBUTES DLLEXPORT :: displayEMsoftWarningMessages
+!DEC$ ATTRIBUTES DLLEXPORT :: displayConfigFileMissingMessage
 
 !> standard array size for all wrapper routine calls; applies to ipar, fpar, and spar arrays
   integer(c_int32_t),parameter          :: wraparraysize = 80
@@ -466,7 +468,7 @@ use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
 IMPLICIT NONE
 
 character(fnlen)                        :: EMsoftpathname, ep, envParam, envReturn
-integer                                 :: status
+integer                                 :: l, status
 
 ep = SC_EMsoftpathname
 EMsoftpathname = EMsoft_getJSONparameter(ep)
@@ -476,12 +478,13 @@ if (trim(EMsoftpathname).eq.'tryEnvironmentVariable') then
   call getenv(trim(envParam),envReturn)
   if (trim(envReturn).ne.'') then 
     EMsoftpathname = trim(envReturn)
+    l = len(trim(EMsoftpathname))
+    if (EMsoftpathname(l:l).ne.'/') EMsoftpathname = trim(EMsoftpathname)//'/'
   else
     write (error_unit,"(A)") 'Unable to find definition for EMsoftpathname'
     status = 999001
     write (error_unit,"(' status = ',I10)") status
     STOP status
-    ! call EXIT(status)
   end if
 end if 
 
@@ -509,7 +512,7 @@ use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
 IMPLICIT NONE
 
 character(fnlen)                        :: EMdatapathname, ep, envParam, envReturn
-integer                                 :: status
+integer                                 :: l
 
 ep = SC_EMdatapathname
 EMdatapathname = EMsoft_getJSONparameter(ep)
@@ -519,16 +522,17 @@ if (trim(EMdatapathname).eq.'tryEnvironmentVariable') then
   call getenv(trim(envParam),envReturn)
   if (trim(envReturn).ne.'') then 
     EMdatapathname = trim(envReturn)
+    l = len(trim(EMdatapathname))
+    if (EMdatapathname(l:l).ne.'/') EMdatapathname = trim(EMdatapathname)//'/'
   else
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(/A)") 'Unable to find definition for EMdatapathname'
-      write (error_unit,"(A/)") ' ----> using absolute path convention'
+      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMdatapathname'
+      write (error_unit,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
+    EMdatapathname = ''
   end if
 end if 
-
-
 
 end function EMsoft_getEMdatapathname
 
@@ -543,16 +547,37 @@ end function EMsoft_getEMdatapathname
 !> @param no input parameters
 !
 !> @date  08/15/17 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMXtalFolderpathname() result(EMXtalFolderpathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMXtalFolderpathname
 
+use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
+
 IMPLICIT NONE
 
-character(fnlen)                        :: EMXtalFolderpathname, ep
+character(fnlen)                        :: EMXtalFolderpathname, ep, envParam, envReturn
+integer                                 :: l
 
 ep = SC_EMXtalFolderpathname
 EMXtalFolderpathname = EMsoft_getJSONparameter(ep)
+
+if (trim(EMXtalFolderpathname).eq.'tryEnvironmentVariable') then 
+  envParam = 'EMXTALFOLDERPATHNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    EMXtalFolderpathname = trim(envReturn)
+    l = len(trim(EMXtalFolderpathname))
+    if (EMXtalFolderpathname(l:l).ne.'/') EMXtalFolderpathname = trim(EMXtalFolderpathname)//'/'
+  else
+    if (displayEMsoftWarningMessages.eq.0) then 
+      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
+      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
+    end if
+    EMXtalFolderpathname = ''
+  end if
+end if 
 
 end function EMsoft_getEMXtalFolderpathname
 
@@ -568,16 +593,37 @@ end function EMsoft_getEMXtalFolderpathname
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMtmppathname() result(EMtmppathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMtmppathname
 
+use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
+
 IMPLICIT NONE
 
-character(fnlen)                        :: EMtmppathname, ep
+character(fnlen)                        :: EMtmppathname, ep, envParam, envReturn
+integer                                 :: l
 
 ep = SC_EMtmppathname
 EMtmppathname = EMsoft_getJSONparameter(ep)
+
+if (trim(EMtmppathname).eq.'tryEnvironmentVariable') then 
+  envParam = 'EMTMPPATHNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    EMtmppathname = trim(envReturn)
+    l = len(trim(EMtmppathname))
+    if (EMtmppathname(l:l).ne.'/') EMtmppathname = trim(EMtmppathname)//'/'
+  else
+    if (displayEMsoftWarningMessages.eq.0) then 
+      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMtmppathname'
+      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
+    end if
+    EMtmppathname = ''
+  end if
+end if 
 
 end function EMsoft_getEMtmppathname
 
@@ -592,16 +638,28 @@ end function EMsoft_getEMtmppathname
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getUsername() result(username)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUsername
 
 IMPLICIT NONE
 
-character(fnlen)                        :: username, ep
+character(fnlen)                        :: username, ep, envParam, envReturn, loginname
 
 ep = SC_UserName
 username = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+if (trim(username).eq.'tryEnvironmentVariable') then 
+  envParam = 'USERNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    username = trim(envReturn)
+  else
+    call getlog(loginname)
+    username = trim(loginname)
+  end if
+end if 
 
 end function EMsoft_getUsername
 
@@ -616,16 +674,28 @@ end function EMsoft_getUsername
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getUserlocation() result(userlocation)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUserlocation
 
 IMPLICIT NONE
 
-character(fnlen)                        :: userlocation, ep
+character(fnlen)                        :: userlocation, ep, envParam, envReturn, hostname
 
 ep = SC_UserLocation
 userlocation = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+if (trim(userlocation).eq.'tryEnvironmentVariable') then 
+  envParam = 'USERlocation'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    userlocation = trim(envReturn)
+  else
+    call hostnm(hostname)
+    userlocation = trim(hostname)
+  end if
+end if 
 
 end function EMsoft_getUserlocation
 
@@ -641,6 +711,7 @@ end function EMsoft_getUserlocation
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getUseremail() result(useremail)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUseremail
@@ -648,10 +719,14 @@ recursive function EMsoft_getUseremail() result(useremail)
 
 IMPLICIT NONE
 
-character(fnlen)                        :: useremail, ep
+character(fnlen)                        :: useremail, ep, envParam, envReturn, hostname
 
 ep = SC_UserEmail
 useremail = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+if (trim(useremail).eq.'tryEnvironmentVariable') then 
+  useremail = 'undefined'
+end if
 
 end function EMsoft_getUseremail
 
@@ -803,12 +878,12 @@ if (jexists) then
     end if
   end if
 else
-    write(error_unit,'(A)') 'WARNING: file '//trim(jsonname)//' not found '
-!   write(error_unit,'(A)') 'Please execute the EMsoftinit program first! '
-!   stop
-    write(error_unit,'(A)') 'Trying environment variables first ... '
-
-    param = 'tryEnvironmentVariable'
+  if (displayConfigFileMissingMessage.eq.0) then 
+    write(error_unit,'(/A)') '  WARNING: file '//trim(jsonname)//' not found '
+    write(error_unit,'(A/)') '    -----> Trying environment variables first ... '
+    displayConfigFileMissingMessage = 1
+  end if
+  param = 'tryEnvironmentVariable'
 end if
 
 

@@ -220,7 +220,7 @@ call WriteValue('Total number of unique orientations generated = ',io_int,1,"(I1
 
 ! generate a list of all orientations in Euler angle format (if requested)
 if (doeu) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%euoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%euoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=20,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (20,"(A)") 'eu'
@@ -229,7 +229,7 @@ end if
 
 ! generate a list of all orientations in cubochoric format (if requested)
 if (docu) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%euoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%euoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=21,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (21,"(A)") 'cu'
@@ -238,7 +238,7 @@ end if
 
 ! generate a list of all orientations in homochoric format (if requested)
 if (doho) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%hooutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%hooutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=22,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (22,"(A)") 'ho'
@@ -247,7 +247,7 @@ end if
 
 ! generate a list of all orientations in quternion format (if requested)
 if (doqu) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%quoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%quoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=23,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (23,"(A)") 'qu'
@@ -256,7 +256,7 @@ end if
 
 ! generate a list of all orientations in Rodrigues format (if requested)
 if (doro) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%rooutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%rooutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=24,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (24,"(A)") 'ro'
@@ -265,7 +265,7 @@ end if
 
 ! generate a list of all orientations in orientation matrix format (if requested)
 if (doom) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%omoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%omoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=25,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (25,"(A)") 'om'
@@ -274,7 +274,7 @@ end if
 
 ! generate a list of all orientations in axis angle pair format (if requested)
 if (doax) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%axoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%axoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=26,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (26,"(A)") 'ax'
