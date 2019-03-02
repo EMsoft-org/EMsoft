@@ -33,32 +33,89 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include <iostream>
+#pragma once
 
-#include "H5Support/H5Lite.h"
+
 #include "H5Support/H5Utilities.h"
+#include "H5Support/H5Lite.h"
 
-int main(int argc, char** argv)
+#include "H5Support/H5Support.h"
+
+#if defined (H5Support_NAMESPACE)
+namespace H5Support_NAMESPACE
 {
-  std::cout << "Test starting" << std::endl;
-  hsize_t size = 5294967296ull;
-  unsigned char* data = reinterpret_cast<unsigned char*>(malloc(size));
+#endif
 
-  hid_t fileId = H5Utilities::createFile("/tmp/BIG_HDF5_DATASET.h5");
-  hid_t groupId = H5Utilities::createGroup(fileId, "big_data");
-  if(groupId < 0)
-  {
-    std::cout << "Error creating Group" << std::endl;
-    return EXIT_FAILURE;
-  }
 
-  hsize_t dims[2] = {size, 0};
-  herr_t err = H5Lite::writePointerDataset(groupId, "TEST", 1, dims, data);
-  if(err < 0)
-  {
-    return EXIT_FAILURE;
-  }
-  H5Utilities::closeHDF5Object(groupId);
-  H5Utilities::closeFile(fileId);
-  return EXIT_SUCCESS;
+/**
+ * @brief The HDF5FileSentinel class ensures the HDF5 file that is currently open
+ * is closed when the variable goes out of Scope
+ */
+class H5Support_EXPORT H5ScopedFileSentinel
+{
+  public:
+    H5ScopedFileSentinel(hid_t* fileId, bool turnOffErrors);
+    virtual ~H5ScopedFileSentinel();
+
+    void setFileId(hid_t* fileId);
+    hid_t* getFileId();
+    void addGroupId(hid_t* gid);
+
+  private:
+    hid_t* m_FileId;
+    bool m_TurnOffErrors;
+    std::vector<hid_t*> m_Groups;
+
+    herr_t (*_oldHDF_error_func)(hid_t, void*){};
+    void* _oldHDF_error_client_data{};
+};
+
+class H5Support_EXPORT H5ScopedGroupSentinel
+{
+  public:
+    H5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors);
+    virtual ~H5ScopedGroupSentinel();
+    void addGroupId(hid_t* gid);
+
+  private:
+    bool m_TurnOffErrors;
+    std::vector<hid_t*> m_Groups;
+
+    herr_t (*_oldHDF_error_func)(hid_t, void*){};
+    void* _oldHDF_error_client_data{};
+};
+
+
+class H5Support_EXPORT H5ScopedObjectSentinel
+{
+  public:
+    H5ScopedObjectSentinel(hid_t* gid, bool turnOffErrors);
+    virtual ~H5ScopedObjectSentinel();
+    void addGroupId(hid_t* gid);
+
+  private:
+    bool m_TurnOffErrors;
+    std::vector<hid_t*> m_Groups;
+
+    herr_t (*_oldHDF_error_func)(hid_t, void*){};
+    void* _oldHDF_error_client_data{};
+};
+
+class H5Support_EXPORT H5GroupAutoCloser
+{
+public:
+  H5GroupAutoCloser(hid_t* groupId);
+
+  virtual ~H5GroupAutoCloser();
+private:
+  hid_t* gid = nullptr;
+};
+
+
+#if defined (H5Support_NAMESPACE)
 }
+#endif
+
+
+
+

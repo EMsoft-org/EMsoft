@@ -1,5 +1,5 @@
 /* ============================================================================
-* Copyright (c) 2009-2016 BlueQuartz Software, LLC
+* Copyright (c) 2018 BlueQuartz Software, LLC
 *
 * Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
@@ -26,39 +26,25 @@
 * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include <iostream>
+#include "H5ScopedErrorHandler.h"
 
-#include "H5Support/H5Lite.h"
-#include "H5Support/H5Utilities.h"
 
-int main(int argc, char** argv)
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+H5ScopedErrorHandler::H5ScopedErrorHandler()
 {
-  std::cout << "Test starting" << std::endl;
-  hsize_t size = 5294967296ull;
-  unsigned char* data = reinterpret_cast<unsigned char*>(malloc(size));
+	H5Eget_auto(H5E_DEFAULT, &_oldHDF_error_func, &_oldHDF_error_client_data);
+	H5Eset_auto(H5E_DEFAULT, nullptr, nullptr);
+}
 
-  hid_t fileId = H5Utilities::createFile("/tmp/BIG_HDF5_DATASET.h5");
-  hid_t groupId = H5Utilities::createGroup(fileId, "big_data");
-  if(groupId < 0)
-  {
-    std::cout << "Error creating Group" << std::endl;
-    return EXIT_FAILURE;
-  }
-
-  hsize_t dims[2] = {size, 0};
-  herr_t err = H5Lite::writePointerDataset(groupId, "TEST", 1, dims, data);
-  if(err < 0)
-  {
-    return EXIT_FAILURE;
-  }
-  H5Utilities::closeHDF5Object(groupId);
-  H5Utilities::closeFile(fileId);
-  return EXIT_SUCCESS;
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+H5ScopedErrorHandler::~H5ScopedErrorHandler()
+{
+	H5Eset_auto(H5E_DEFAULT, _oldHDF_error_func, _oldHDF_error_client_data);
 }

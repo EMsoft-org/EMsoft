@@ -1,5 +1,5 @@
 /* ============================================================================
-* Copyright (c) 2009-2015 BlueQuartz Software, LLC
+* Copyright (c) 2009-2016 BlueQuartz Software, LLC
 *
 * Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _H5Functions_H_
-#define _H5Functions_H_
+#pragma once
 
 
 //-- HDF Headers
@@ -43,7 +42,6 @@
 #include "H5Support/H5Support.h"
 #include "H5Support/H5SupportDLLExport.h"
 
-//TODO: Add tests for the find* methods
 
 #define CloseH5A(aid, err, retError)\
   err = H5Aclose( attr_id );\
@@ -65,7 +63,7 @@
   herr_t (*_oldHDF_error_func)(hid_t, void *);\
   void *_oldHDF_error_client_data;\
   H5Eget_auto(H5E_DEFAULT, &_oldHDF_error_func, &_oldHDF_error_client_data);\
-  H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+  H5Eset_auto(H5E_DEFAULT, nullptr, nullptr);
 
 #define HDF_ERROR_HANDLER_ON  H5Eset_auto(H5E_DEFAULT, _oldHDF_error_func, _oldHDF_error_client_data);
 
@@ -93,5 +91,4 @@
 
 
 
-#endif /* _H5Functions_H_ */
 
