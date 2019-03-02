@@ -45,6 +45,9 @@
 
 #include "ui_SimulatedPatternDisplayWidget.h"
 
+class QActionGroup;
+
+
 class SimulatedPatternDisplayWidget : public QWidget, public Ui::SimulatedPatternDisplayWidget
 {
     Q_OBJECT

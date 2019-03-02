@@ -1,5 +1,5 @@
 /* ============================================================================
-* Copyright (c) 2009-2015 BlueQuartz Software, LLC
+* Copyright (c) 2009-2016 BlueQuartz Software, LLC
 *
 * Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _QH5Utilities_H_
-#define _QH5Utilities_H_
+#pragma once
 
 
 #include "H5Support/H5Support.h"
@@ -52,9 +51,6 @@
 
 /**
  * @brief General Utilities for working with the HDF5 data files and API
- * @author Mike Jackson/Shawn Nicholson
- * @date March 2007
- * @version $Revision: 1.2 $
  */
 class QH5Utilities
 {
@@ -78,7 +74,7 @@ class QH5Utilities
     * @param trim set to False to trim the path
     * @return  The path to the object relative to the objId
     */
-    static H5Support_EXPORT QString getObjectPath(hid_t objId, bool trim = false);
+    static H5Support_EXPORT QString getObjectPath(hid_t loc_id, bool trim = false);
 
     /**
     * @brief Returns the hdf object type
@@ -99,12 +95,35 @@ class QH5Utilities
     static H5Support_EXPORT herr_t objectNameAtIndex(hid_t fileId, int32_t idx, QString& name);
 
     /**
+    * @brief Returns the path to an object's parent
+    * @param objId The HDF5 id of the object
+    * @param trim set to False to trim the path
+    * @return  The path to the object relative to the objId
+    */
+    static H5Support_EXPORT QString getParentPath(hid_t objId);
+
+    /**
+    * @brief Returns the path to an object's parent
+    * @param objectPath The HDF5 path to the object
+    * @param trim set to False to trim the path
+    * @return  The path to the object relative to the objId
+    */
+    static H5Support_EXPORT QString getParentPath(const QString& objectPath);
+
+    /**
+    * @brief Returns the object name from the object's path
+    * @param objectPath The HDF5 path to the object
+    * @return  The object name
+    */
+    static H5Support_EXPORT QString getObjectNameFromPath(const QString& objectPath);
+
+    /**
     * @brief Returns if a given hdf5 object is a group
     * @param objId The hdf5 object that contains an object with name objName
     * @param objName The name of the object to check
     * @return True if the given hdf5 object id is a group
     */
-    static H5Support_EXPORT bool isGroup(hid_t objId, const QString& objName);
+    static H5Support_EXPORT bool isGroup(hid_t nodeId, const QString& objName);
 
 
     /**
@@ -113,14 +132,14 @@ class QH5Utilities
     * @param objectPath The path of the object to open
     * @return The hdf5 id of the opened object. Negative value is error.
     */
-    static H5Support_EXPORT hid_t openHDF5Object(hid_t locId, const QString& objectPath);
+    static H5Support_EXPORT hid_t openHDF5Object(hid_t loc_id, const QString& objName);
 
     /**
     * @brief Closes the object id
     * @param locId The object id to close
     * @return Negative value is error.
     */
-    static H5Support_EXPORT herr_t closeHDF5Object(hid_t locId);
+    static H5Support_EXPORT herr_t closeHDF5Object(hid_t obj_id);
 
 
     static H5Support_EXPORT QString HDFClassTypeAsStr(hid_t class_type);
@@ -129,7 +148,7 @@ class QH5Utilities
     * @brief prints the class type of the given class
     * @param classT The Class Type to print
     */
-    static H5Support_EXPORT void printHDFClassType(H5T_class_t classT);
+    static H5Support_EXPORT void printHDFClassType(H5T_class_t class_type);
 
     // -------------- HDF Group Methods ----------------------------
     /**
@@ -195,7 +214,7 @@ class QH5Utilities
     * @param names Variable to hold the list of attribute names
     * @return Negate value is error
     */
-    static H5Support_EXPORT herr_t getAllAttributeNames(hid_t objId, QList<QString>& names);
+    static H5Support_EXPORT herr_t getAllAttributeNames(hid_t obj_id, QList<QString>& names);
 
     /**
     * @brief Returns a list of all the attribute names
@@ -204,7 +223,7 @@ class QH5Utilities
     * @param names Variable to hold the list of attribute names
     * @return Negative value is error
     */
-    static H5Support_EXPORT herr_t getAllAttributeNames(hid_t objId, const QString& obj_name,
+    static H5Support_EXPORT herr_t getAllAttributeNames(hid_t loc_id, const QString& obj_name,
                                                         QList<QString>& names);
 
 
@@ -213,12 +232,11 @@ class QH5Utilities
 
 
   protected:
-    QH5Utilities() {} //This is just a bunch of Static methods
+    QH5Utilities() = default; // This is just a bunch of Static methods
 
   private:
     QH5Utilities(const QH5Utilities&);   //Copy Constructor Not Implemented
     void operator=(const QH5Utilities&); //Copy Assignment Not Implemented
 };
 
-#endif /* _QH5Utilities_H_ */
 

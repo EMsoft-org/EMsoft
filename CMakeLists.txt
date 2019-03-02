@@ -68,12 +68,26 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS False)
 
-
+#------------------------------------------------------------------------------
+# There are several different Release Types that we are going to use.
+# Official: This is an official release
+# Beta: This is a Beta release that has is getting ready to be officially released.
+# Development: This is currently in development and probably has bugs.
+get_property(EMsoft_RELEASE_TYPE GLOBAL PROPERTY PACKAGE_RELEASE_TYPE)
+if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
+  set(EMsoft_RELEASE_TYPE "Official")  # <============ SET THIS FOR RELEASE
+  set_property(GLOBAL PROPERTY PACKAGE_RELEASE_TYPE "${EMsoft_RELEASE_TYPE}")
+endif()
+#
+# Next up, Set the version of EMsoft that is used through out the project.
 set(EMsoft_VER_MAJOR "4")
-set(EMsoft_VER_MINOR "1")
-set(EMsoft_VER_PATCH "1")
+set(EMsoft_VER_MINOR "2")
+set(EMsoft_VER_PATCH "0")
+#------------------------------------------------------------------------------
+
 
 project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
+
 
 include(CMakeParseArguments)
 
@@ -160,16 +174,7 @@ set(EXE_DEBUG_EXTENSION "_debug")
 include(${CMP_SOURCE_DIR}/cmpProject.cmake)
 include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
 
-#------------------------------------------------------------------------------
-# There are several different Release Types that we are going to use.
-# Official: This is an official release from BlueQuartz Software
-# Beta: This is a Beta release that has is getting ready to be officially released.
-# Development: This is currently in development and probably has bugs.
-get_property(EMsoft_RELEASE_TYPE GLOBAL PROPERTY PACKAGE_RELEASE_TYPE)
-if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
-  set(EMsoft_RELEASE_TYPE "Development")
-  set_property(GLOBAL PROPERTY PACKAGE_RELEASE_TYPE "${EMsoft_RELEASE_TYPE}")
-endif()
+
 
 #------------------------------------------------------------------------------
 # Find the Git Package for Versioning. It should be ok if Git is NOT found

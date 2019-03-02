@@ -39,6 +39,8 @@
 
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QActionGroup>
 
 #include "Modules/PatternDisplayModule/PatternDisplay_UI.h"
 

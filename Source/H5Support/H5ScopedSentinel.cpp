@@ -1,5 +1,5 @@
 /* ============================================================================
-* Copyright (c) 2009-2015 BlueQuartz Software, LLC
+* Copyright (c) 2009-2016 BlueQuartz Software, LLC
 *
 * Redistribution and use in source and binary forms, with or without modification,
 * are permitted provided that the following conditions are met:
@@ -33,53 +33,51 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#include "HDF5ScopedFileSentinel.h"
-
-
+#include "H5ScopedSentinel.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HDF5ScopedFileSentinel::HDF5ScopedFileSentinel(hid_t* fileId, bool turnOffErrors) :
-  m_FileId(fileId),
-  m_TurnOffErrors(turnOffErrors)
+H5ScopedFileSentinel::H5ScopedFileSentinel(hid_t* fileId, bool turnOffErrors)
+: m_FileId(fileId)
+, m_TurnOffErrors(turnOffErrors)
 {
-  if (m_TurnOffErrors == true)
+  if(m_TurnOffErrors)
   {
     H5Eget_auto(H5E_DEFAULT, &_oldHDF_error_func, &_oldHDF_error_client_data);
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto(H5E_DEFAULT, nullptr, nullptr);
   }
-
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HDF5ScopedFileSentinel::~HDF5ScopedFileSentinel()
+H5ScopedFileSentinel::~H5ScopedFileSentinel()
 {
-  if (m_TurnOffErrors == true)
+  if(m_TurnOffErrors)
   {
     H5Eset_auto(H5E_DEFAULT, _oldHDF_error_func, _oldHDF_error_client_data);
   }
-  for(std::vector<hid_t*>::size_type i = 0; i < m_Groups.size(); ++i)
+  for(auto temp : m_Groups)
   {
-    hid_t* temp = m_Groups[i];
-    if (*temp > 0) { H5Gclose(*temp); *temp = -1; }
+    if(*temp > 0)
+    {
+      H5Gclose(*temp);
+      *temp = -1;
+    }
   }
 
-  if (*m_FileId > 0)
+  if(*m_FileId > 0)
   {
     H5Utilities::closeFile(*m_FileId);
     *m_FileId = -1;
   }
-
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void HDF5ScopedFileSentinel::setFileId(hid_t* fileId)
+void H5ScopedFileSentinel::setFileId(hid_t* fileId)
 {
   m_FileId = fileId;
 }
@@ -87,7 +85,7 @@ void HDF5ScopedFileSentinel::setFileId(hid_t* fileId)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-hid_t* HDF5ScopedFileSentinel::getFileId()
+hid_t* H5ScopedFileSentinel::getFileId()
 {
   return m_FileId;
 }
@@ -95,31 +93,23 @@ hid_t* HDF5ScopedFileSentinel::getFileId()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void HDF5ScopedFileSentinel::addGroupId(hid_t* gid)
+void H5ScopedFileSentinel::addGroupId(hid_t* gid)
 {
   m_Groups.push_back(gid);
 }
 
-
-
-
-
-
-
-
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-H5ScopedGroupSentinel::H5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors) :
-  m_TurnOffErrors(turnOffErrors)
+H5ScopedGroupSentinel::H5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors)
+: m_TurnOffErrors(turnOffErrors)
 {
   m_Groups.push_back(gid);
-  if (m_TurnOffErrors == true)
+  if(m_TurnOffErrors)
   {
     H5Eget_auto(H5E_DEFAULT, &_oldHDF_error_func, &_oldHDF_error_client_data);
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto(H5E_DEFAULT, nullptr, nullptr);
   }
-
 }
 
 // -----------------------------------------------------------------------------
@@ -127,16 +117,18 @@ H5ScopedGroupSentinel::H5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors) :
 // -----------------------------------------------------------------------------
 H5ScopedGroupSentinel::~H5ScopedGroupSentinel()
 {
-  if (m_TurnOffErrors == true)
+  if(m_TurnOffErrors)
   {
     H5Eset_auto(H5E_DEFAULT, _oldHDF_error_func, _oldHDF_error_client_data);
   }
-  for(std::vector<hid_t*>::size_type i = 0; i < m_Groups.size(); ++i)
+  for(auto temp : m_Groups)
   {
-    hid_t* temp = m_Groups[i];
-    if (*temp > 0) { H5Gclose(*temp); *temp = -1; }
+    if(*temp > 0)
+    {
+      H5Gclose(*temp);
+      *temp = -1;
+    }
   }
-
 }
 
 // -----------------------------------------------------------------------------
@@ -147,47 +139,64 @@ void H5ScopedGroupSentinel::addGroupId(hid_t* gid)
   m_Groups.push_back(gid);
 }
 
-
-
-
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HDF5ScopedObjectSentinel::HDF5ScopedObjectSentinel(hid_t* gid, bool turnOffErrors) :
-  m_TurnOffErrors(turnOffErrors)
+H5ScopedObjectSentinel::H5ScopedObjectSentinel(hid_t* gid, bool turnOffErrors)
+: m_TurnOffErrors(turnOffErrors)
 {
   m_Groups.push_back(gid);
-  if (m_TurnOffErrors == true)
+  if(m_TurnOffErrors)
   {
     H5Eget_auto(H5E_DEFAULT, &_oldHDF_error_func, &_oldHDF_error_client_data);
-    H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+    H5Eset_auto(H5E_DEFAULT, nullptr, nullptr);
   }
-
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HDF5ScopedObjectSentinel::~HDF5ScopedObjectSentinel()
+H5ScopedObjectSentinel::~H5ScopedObjectSentinel()
 {
-  if (m_TurnOffErrors == true)
+  if(m_TurnOffErrors)
   {
     H5Eset_auto(H5E_DEFAULT, _oldHDF_error_func, _oldHDF_error_client_data);
   }
-  for(std::vector<hid_t*>::size_type i = 0; i < m_Groups.size(); ++i)
+  for(auto temp : m_Groups)
   {
-    hid_t* temp = m_Groups[i];
-    if (*temp > 0) { H5Utilities::closeHDF5Object(*temp); *temp = -1; }
+    if(*temp > 0)
+    {
+      H5Utilities::closeHDF5Object(*temp);
+      *temp = -1;
+    }
   }
-
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void HDF5ScopedObjectSentinel::addGroupId(hid_t* gid)
+void H5ScopedObjectSentinel::addGroupId(hid_t* gid)
 {
   m_Groups.push_back(gid);
 }
 
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+H5GroupAutoCloser::H5GroupAutoCloser(hid_t* groupId)
+: gid(groupId)
+{
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+H5GroupAutoCloser::~H5GroupAutoCloser()
+{
+  if(*gid > 0)
+  {
+    H5Gclose(*gid);
+  }
+}
 
