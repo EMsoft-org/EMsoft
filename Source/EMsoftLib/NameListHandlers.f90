@@ -2955,8 +2955,8 @@ namelist  / EBSDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefi
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
-numsx           = 640           ! [dimensionless]
-numsy           = 480           ! [dimensionless]
+numsx           = 0             ! [dimensionless]
+numsy           = 0             ! [dimensionless]
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
 nthreads        = 1             ! number of OpenMP threads
@@ -3008,19 +3008,27 @@ if (.not.skipread) then
 
 ! check for required entries
  if (trim(energyfile).eq.'undefined') then
-  call FatalError('EMEBSD:',' energy file name is undefined in '//nmlfile)
+  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
  end if
 
  if (trim(anglefile).eq.'undefined') then
-  call FatalError('EMEBSD:',' angle file name is undefined in '//nmlfile)
+  call FatalError('GetEBSDNameList:',' angle file name is undefined in '//nmlfile)
  end if
 
  if (trim(masterfile).eq.'undefined') then
-  call FatalError('EMEBSD:',' master pattern file name is undefined in '//nmlfile)
+  call FatalError('GetEBSDNameList:',' master pattern file name is undefined in '//nmlfile)
  end if
 
  if (trim(datafile).eq.'undefined') then
-  call FatalError('EMEBSD:',' output file name is undefined in '//nmlfile)
+  call FatalError('GetEBSDNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDNameList:',' pattern size numsx is zero '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDNameList:',' pattern size numsy is zero '//nmlfile)
  end if
 end if
 
@@ -3127,8 +3135,8 @@ namelist  / TKDdata / stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefil
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
-numsx           = 640           ! [dimensionless]
-numsy           = 480           ! [dimensionless]
+numsx           = 0             ! [dimensionless]
+numsy           = 0             ! [dimensionless]
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
 nthreads        = 1             ! number of OpenMP threads
@@ -3180,6 +3188,14 @@ if (.not.skipread) then
 
  if (trim(datafile).eq.'undefined') then
   call FatalError('GetTKDNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetTKDNameList:',' pattern size numsx is zero '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetTKDNameList:',' pattern size numsy is zero '//nmlfile)
  end if
 end if
 
@@ -3458,8 +3474,8 @@ namelist  / TKDspots / ncubochoric, nthreads, numsx, numsy, voltage, dmin, thick
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 100
 nthreads        = 1
-numsx           = 640
-numsy           = 480
+numsx           = 0
+numsy           = 0
 voltage         = 20.0
 dmin            = 0.05
 thickness       = 50.0
@@ -3486,11 +3502,19 @@ if (.not.skipread) then
 
 ! check for required entries
  if (trim(xtalname).eq.'undefined') then
-  call FatalError('EMTKDspots:',' xtal input file is undefined in '//nmlfile)
+  call FatalError('GetTKDspotsNameList:',' xtal input file is undefined in '//nmlfile)
  end if
 
  if (trim(outname).eq.'undefined') then
-  call FatalError('EMTKDspots:',' output file name B is undefined in '//nmlfile)
+  call FatalError('GetTKDspotsNameList:',' output file name B is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetTKDspotsNameList:',' pattern size numsx is zero '//nmlfile)
+ end if
+
+ if (numsy.eq.0) then 
+  call FatalError('GetTKDspotsNameList:',' pattern size numsy is zero '//nmlfile)
  end if
 end if
 
@@ -4724,8 +4748,8 @@ namelist / EBSDDIpreviewdata / numsx, numsy, hipasswmax, hipasswnsteps, nregions
           ipf_ht, patternfile
 
 ! set the input parameters to default values
-numsx = 640
-numsy = 480
+numsx = 0
+numsy = 0
 hipasswmax = 0.5
 hipasswnsteps = 10
 nregionsmin = 1
@@ -4759,6 +4783,14 @@ if (.not.skipread) then
 
     if (trim(tifffile).eq.'undefined') then
         call FatalError('GetEBSDDIpreviewNameList:',' TIFF file name is undefined in '//nmlfile)
+    end if
+
+    if (numsx.eq.0) then 
+        call FatalError('GetEBSDDIpreviewNameList:',' pattern size numsx is zero in '//nmlfile)
+    end if
+
+    if (numsy.eq.0) then 
+        call FatalError('GetEBSDDIpreviewNameList:',' pattern size numsy is zero in '//nmlfile)
     end if
 end if
 
@@ -4890,8 +4922,8 @@ nnav            = 20
 nosm            = 20
 nism            = 5
 exptfile        = 'undefined'
-numsx           = 640           ! [dimensionless]
-numsy           = 480           ! [dimensionless]
+numsx           = 0             ! [dimensionless]
+numsy           = 0             ! [dimensionless]
 ROI             = (/ 0, 0, 0, 0 /)  ! Region of interest (/ x0, y0, w, h /)
 maskradius      = 240
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
@@ -4962,6 +4994,14 @@ if (.not.skipread) then
 
     if (trim(exptfile).eq.'undefined') then
         call FatalError('EMEBSDIndexing:',' experimental file name is undefined in '//nmlfile)
+    end if
+
+    if (numsx.eq.0) then 
+        call FatalError('EMEBSDIndexing:',' pattern size numsx is zero in '//nmlfile)
+    end if
+
+    if (numsy.eq.0) then 
+        call FatalError('EMEBSDIndexing:',' pattern size numsy is zero in '//nmlfile)
     end if
 
 end if
@@ -5091,8 +5131,8 @@ namelist  / getADP / numsx, numsy, nregions, maskpattern, nthreads, ipf_ht, ipf_
  maskradius = 240
  hipassw = 0.05
  nregions = 10
- numsx = 640
- numsy = 480
+ numsx = 0
+ numsy = 0
  ROI = (/ 0, 0, 0, 0 /)
  exptfile = 'undefined'
  inputtype = 'Binary'
@@ -5119,7 +5159,15 @@ if (.not.skipread) then
     if (trim(tiffname).eq.'undefined') then
         call FatalError('GetADPNameList:',' output tiff file name is undefined in '//nmlfile)
     end if
-end if
+
+    if (numsx.eq.0) then
+        call FatalError('GetADPNameList:',' patterns size numsx is zero in '//nmlfile)
+    end if
+
+    if (numsy.eq.0) then
+        call FatalError('GetADPNameList:',' patterns size numsy is zero in '//nmlfile)
+    end if
+ end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the enl fields
 adpnl%ipf_ht = ipf_ht
@@ -5241,8 +5289,8 @@ nnk             = 50
 nnav            = 20
 nosm            = 20
 exptfile        = 'undefined'
-numsx           = 640           ! [dimensionless]
-numsy           = 480           ! [dimensionless]
+numsx           = 0           ! [dimensionless]
+numsy           = 0           ! [dimensionless]
 maskradius      = 240
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
@@ -5307,10 +5355,15 @@ if (.not.skipread) then
     end if
 
     if (trim(exptfile).eq.'undefined') then
-        call FatalError('EMTKDIndexing:',' experimental file name is undefined in '//nmlfile)
     end if
 
+    if (numsx.eq.0) then
+        call FatalError('EMTKDIndexing:',' pattern size numsx is zero in '//nmlfile)
+    end if
 
+    if (numsy.eq.0) then
+        call FatalError('EMTKDIndexing:',' pattern size numsy is zero in '//nmlfile)
+    end if
 end if
 
 
@@ -5764,8 +5817,8 @@ L = 15000.0
 thetac = 10.0
 delta = 50.0
 omega = 0.0
-numsx = 640
-numsy = 480
+numsx = 0
+numsy = 0
 binning = 1
 xpc = 0.0
 ypc = 0.0
@@ -5822,6 +5875,13 @@ if (.not.skipread) then
         call FatalError('EMDPFit:',' experimental file name is undefined in '//nmlfile)
     end if
 
+    if (numsx.eq.0) then
+        call FatalError('EMDPFit:',' pattern size numsx is zero in '//nmlfile)
+    end if
+
+    if (numsy.eq.0) then
+        call FatalError('EMDPFit:',' pattern size numsy is zero in '//nmlfile)
+    end if
 end if
 
 enl%masterfile = masterfile 
@@ -5985,8 +6045,8 @@ step_phi2     = 2.0
 L             = 15000.0
 thetac        = 10.0
 delta         = 50.0
-numsx         = 640
-numsy         = 480
+numsx         = 0
+numsy         = 0
 binning       = 1
 xpc           = 0.0
 ypc           = 0.0
@@ -6033,6 +6093,13 @@ if (.not.skipread) then
         call FatalError('EMDPFit:',' experimental file name is undefined in '//nmlfile)
     end if
 
+    if (numsx.eq.0) then 
+        call FatalError('EMDPFit:',' pattern size numsx is zero in '//nmlfile)
+    end if
+
+    if (numsy.eq.0) then 
+        call FatalError('EMDPFit:',' pattern size numsy is zero in '//nmlfile)
+    end if
 end if
 
 enl%masterfile = masterfile 
@@ -7028,8 +7095,8 @@ xpc = 0.0                     ! units of pixel [dimensionless]
 ypc = 0.0                     ! units of pixel [dimensionless] 
 thetac = 10.0                 ! camera elevation [degrees]
 delta = 59.2                  ! physical size of detector pixel [micro m]
-numsx = 480                   ! number of pixel is x direction of scintillator
-numsy = 480                   ! number of pixel is y direction of scintillator
+numsx = 0                     ! number of pixel is x direction of scintillator
+numsy = 0                     ! number of pixel is y direction of scintillator
 binning = 1                   ! detector binning
 scalingmode = 'not'           ! intensity scaling in detector
 gammavalue = 0.34             ! intensity scaling factor
@@ -7065,6 +7132,14 @@ if (.not.skipread) then
 
  if (trim(datafile).eq.'undefined') then
   call FatalError('EMEBSD:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then
+  call FatalError('EMEBSD:',' pattern size numsx is zero in '//nmlfile)
+ end if
+
+ if (numsy.eq.0) then
+  call FatalError('EMEBSD:',' pattern size numsy is zero in '//nmlfile)
  end if
 end if
 

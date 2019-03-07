@@ -8,8 +8,8 @@
 ! CCD pixel size on the scintillator surface [microns]
  delta = 50.0,
 ! number of CCD pixels along x and y
- numsx = 640,
- numsy = 480,
+ numsx = 0,
+ numsy = 0,
 ! pattern center coordinates in units of pixels
  xpc = 0.0,
  ypc = 0.0,
