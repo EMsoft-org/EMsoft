@@ -36,7 +36,7 @@
 !
 !> @brief Generate MacKenzie histogram for a given rotational symmetry based on cubochoric sampling
 !
-!> @note This is a simple utility program to generate a histogram of a MacKanzie misorientation plot 
+!> @note This is a simple utility program to generate a histogram of a MacKenzie misorientation plot 
 !> for a given rotational symmetry group, based on a concentric sampling of cubochoric space.
 !
 !> @date 02/21/19 MDG 1.0 original
