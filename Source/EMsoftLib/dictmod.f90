@@ -527,6 +527,7 @@ end function WatsonMeanDirDensity
 !> @date 01/06/15 MDG 1.1 added optional argument full
 !> @date 02/06/15 MDG 1.2 removed full again after extensive testing; no need to use 2M operators
 !> @date 01/04/18 MDG 1.3 added icosahedral symmetry operator to handle quasi-crystal computations.
+!> @date 03/12/19 MDG 1.4 added 'sym' option to only generate the symmetry quaternions
 !--------------------------------------------------------------------------
 recursive subroutine DI_Init(dict,Dtype) 
 !DEC$ ATTRIBUTES DLLEXPORT :: DI_Init
@@ -539,10 +540,10 @@ use math
 IMPLICIT NONE
 
 type(dicttype),INTENT(INOUT)    :: dict
-character(3),INTENT(IN)                 :: Dtype
+character(3),INTENT(IN)         :: Dtype
 
-integer(kind=irg)                       :: i
-real(kind=dbl)                          :: y1, y2
+integer(kind=irg)               :: i
+real(kind=dbl)                  :: y1, y2
 
 
 ! here we need to analyze the rotational symmetry group, and copy the appropriate 
@@ -663,6 +664,7 @@ select case (dict%prot)
                 call FatalError('InitDictionaryIndexing','unknown rotational point group number')
 end select
 
+if (Dtype.ne.'sym') then ! generate the other parameters only if Dtype is not 'sym'
 ! von Mises-Fisher mode:
 ! the next part of the initial Matlab code computes a lookup table for the parameter Ap(u) (Appendix in paper)
 ! this lookup table is only used when the ratio of the BesselI functions is between 0 and 0.95; for the 
@@ -673,24 +675,25 @@ end select
 ! which case we use the standard ratio of Kummer functions:  Kummer[3/2,3,k]/Kummer[1/2,2,k]/k.  For
 ! larger kappa values, we have an expansion using the large argument behavior of the modified Bessel functions.
 ! 
-dict%Apnum = 35000
-allocate(dict%xAp(dict%Apnum), dict%yAp(dict%Apnum))
+  dict%Apnum = 35000
+  allocate(dict%xAp(dict%Apnum), dict%yAp(dict%Apnum))
 
-  ! define the xAp array
-dict%xAp = (/ (0.001D0+dble(i-1)*0.001D0,i=1,dict%Apnum)  /)
+    ! define the xAp array
+  dict%xAp = (/ (0.001D0+dble(i-1)*0.001D0,i=1,dict%Apnum)  /)
 
-if (Dtype.eq.'VMF') then ! von Mises-Fisher distribution
-  do i=1,dict%Apnum
-    dict%yAp(i) = BesselIn(dict%xAp(i), 2) / BesselI1(dict%xAp(i))
-  end do
-end if
+  if (Dtype.eq.'VMF') then ! von Mises-Fisher distribution
+    do i=1,dict%Apnum
+      dict%yAp(i) = BesselIn(dict%xAp(i), 2) / BesselI1(dict%xAp(i))
+    end do
+  end if
 
-if (Dtype.eq.'WAT') then ! Watson distribution
-  do i=1,dict%Apnum
-    y1 = BesselI1(dict%xAp(i)*0.5D0)
-    y2 = BesselI0(dict%xAp(i)*0.5D0)
-    dict%yAp(i) = y1 / (y2-y1) / dict%xAp(i)
-  end do
+  if (Dtype.eq.'WAT') then ! Watson distribution
+    do i=1,dict%Apnum
+      y1 = BesselI1(dict%xAp(i)*0.5D0)
+      y2 = BesselI0(dict%xAp(i)*0.5D0)
+      dict%yAp(i) = y1 / (y2-y1) / dict%xAp(i)
+    end do
+  end if
 end if
 
 end subroutine DI_Init
