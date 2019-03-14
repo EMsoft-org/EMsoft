@@ -946,18 +946,20 @@ real(kind=sgl)          :: lambdamax
 real(kind=dbl)          :: kappaVMF
 real(kind=dbl)          :: intfactor
 character(fnlen)        :: hdfname
+character(fnlen)        :: tiffname
 character(fnlen)        :: xtalname
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname,intfactor
+namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname, intfactor, tiffname
 
 npx = 500
 lambdamin = 0.10
 lambdamax = 0.16
-kappaVMF = 500
+kappaVMF = 50000.D0
 intfactor = 0.0001D0
 xtalname = 'undefined'
 hdfname = 'undefined'
+tiffname = 'undefined'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -985,6 +987,7 @@ lmnl%kappaVMF = kappaVMF
 lmnl%intfactor = intfactor
 lmnl%xtalname = xtalname
 lmnl%hdfname = hdfname
+lmnl%tiffname = tiffname 
 
 end subroutine GetLaueMasterNameList
 

@@ -6,11 +6,13 @@
 ! maximnum wave length [nm]
  lambdamax = 0.16,
 ! concentration parameter for von Mises-Fisher distribution
- kappaVMF = 500,
+ kappaVMF = 50000.D0,
 ! intensity truncation factor; any reflection with intensity less than intfactor * I(000) will be ignored
  intfactor = 0.0001D0,
 ! crystal structure file name
  xtalname = 'undefined',
-! output file name [relative to EMdatapathname]
+! output file name [relative to EMdatapathname, .h5 extension]
  hdfname = 'undefined',
+! output file name [relative to EMdatapathname, .tiff or .tif extension]
+ tiffname = 'undefined',
  /

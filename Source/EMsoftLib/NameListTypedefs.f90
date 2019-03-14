@@ -231,6 +231,7 @@ type LaueMasterNameListType
         real(kind=dbl)          :: kappaVMF
         real(kind=dbl)          :: intfactor
         character(fnlen)        :: hdfname
+        character(fnlen)        :: tiffname
         character(fnlen)        :: xtalname
 end type LaueMasterNameListType
 

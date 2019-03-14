@@ -532,6 +532,11 @@ line2(1) = knl%hdfname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueMasterNameList: unable to create hdfname dataset',.TRUE.)
 
+dataset = 'tiffname'
+line2(1) = knl%hdfname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueMasterNameList: unable to create tiffname dataset',.TRUE.)
+
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 

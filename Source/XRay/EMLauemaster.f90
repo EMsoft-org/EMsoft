@@ -274,7 +274,7 @@ call cpu_time(tstart)
 ! we save an image for the Northern hemisphere in stereographic projection
 
 ! output the master pattern as a tiff file 
-fname = trim(EMsoft_getEMdatapathname())//trim(lmnl%hdfname)//'.tiff'
+fname = trim(EMsoft_getEMdatapathname())//trim(lmnl%tiffname)
 fname = EMsoft_toNativePath(fname)
 TIFF_filename = trim(fname)
 
@@ -312,7 +312,6 @@ deallocate(TIFF_image)
   call h5open_EMsoft(hdferr)
 
 ! Open a new file
-  lmnl%hdfname = trim(lmnl%hdfname)//'.h5'
   hdfname = trim(EMsoft_getEMdatapathname())//trim(lmnl%hdfname)
   hdfname = EMsoft_toNativePath(hdfname)
   hdferr =  HDF_createFile(hdfname, HDF_head)
