@@ -118,8 +118,9 @@ type(unitcell),pointer                     :: cell
 type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp
 real(kind=sgl),allocatable                 :: mLPNH(:,:), mLPSH(:,:), masterSPNH(:,:), masterSPSH(:,:)
-integer(kind=irg)						   :: npx, npy, gcnt, ierr, nix, niy, nixp, niyp, i, j 
-real(kind=sgl)							   :: inten, xy(2), xyz(3), dx, dy, dxm, dym, Radius
+integer(kind=irg)						               :: npx, npy, gcnt, ierr, nix, niy, nixp, niyp, i, j 
+real(kind=sgl)							               :: inten, xy(2), xyz(3), dx, dy, dxm, dym, Radius
+real(kind=dbl)                             :: VMFnorm
 
 ! basic explanation: this is a really simple and fast Laue master pattern; we compute all the plane normals 
 ! that fall inside the extended Ewald sphere volume.  For each we compute the kinematic intensity
@@ -132,6 +133,7 @@ real(kind=sgl)							   :: inten, xy(2), xyz(3), dx, dy, dxm, dym, Radius
 ! lambdamin
 ! lambdamax
 ! IntFraction
+! kappaVMF
 
 
 nullify(HDF_head)
@@ -173,6 +175,8 @@ call cpu_time(tstart)
   mLPNH = 0.0
   mLPSH = 0.0
 
+  VMFnorm = lmnl%kappaVMF / (4.0 * sngl(cPi) * sinh(lmnl%kappaVMF))
+
   rltmp => reflist
   do i=1,gcnt
 ! locate the nearest Lambert pixel
@@ -182,9 +186,9 @@ call cpu_time(tstart)
 ! depending on the sign of xyz(3) we put this point in the Northern or Southern hemisphere, taking into account the
 ! special case of reflections along the equator which should appear in both hemisphere arrays.  The intensities are 
 ! computed on a small grid of w x w points on the Lambert projection, which are then interpolated from a Gaussian on
-! the sphere (von Mises distribution ?)
-
-
+! the sphere. we use the von Mises-Fisher distribution with p=3, so that the prefactor equals kappa / ( 4 pi sinh(kappa) )
+    call sampleVMF(sngl(rltmp%xyz), lmnl%kappaVMF, VMFnorm*dble(inten), npx, nix, niy, lmnl%w, mLPNH, mLPSH)
+! and go to the next point
     rltmp => rltmp%next
   end do 
 

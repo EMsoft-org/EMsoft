@@ -2712,5 +2712,66 @@ res(1:4,1:4) = m(1:4,1:4,nix,niy)*dxm*dym + m(1:4,1:4,nixp,niy)*dx*dym + &
 
 end function InterpolationLambert4DDouble4b4
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: sampleVMF
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief sample a p=3 von Mises-Fisher distribution for a Lambert grid patch around a given direction
+!
+!> @param xyz direction cosines
+!> @param kappa concentration parameter of VMF distribution
+!> @param inten intensity of this reflection (includes VMF normalization factor)
+!> @param npx semi-size of master patterns
+!> @param nix x-pixel coordinate in Lambert projection
+!> @param niy y-pixel coordinate in Lambert projection
+!> @param w semi-width parameter for sampling area in Lambert projection
+!> @param mLPNH Northern hemisphere of master pattern
+!> @param mLPSH Southern hemisphere of master pattern
+! 
+!> @date  03/14/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine sampleVMF(xyz, kappa, inten, npx, nix, niy, w, mLPNH, mLPSH) 
+!DEC$ ATTRIBUTES DLLEXPORT :: sampleVMF
+
+IMPLICIT NONE 
+
+real(kind=sgl),INTENT(IN)     :: mu(3)
+real(kind=sgl),INTENT(IN)     :: kappa
+real(kind=dbl),INTENT(IN)     :: inten
+integer(kind=irg),INTENT(IN)  :: npx
+integer(kind=irg),INTENT(IN)  :: nix
+integer(kind=irg),INTENT(IN)  :: niy
+integer(kind=irg),INTENT(IN)  :: w
+real(kind=sgl),INTENT(INOUT)  :: mLPNH(-npx:npx, -npx:npx)
+real(kind=sgl),INTENT(INOUT)  :: mLPSH(-npx:npx, -npx:npx)
+
+real(kind=sgl)                :: xyz(3), vmf 
+integer(kind=irg)             :: i, j 
+logical                       :: North, xN, yN  
+
+North = .TRUE.
+if (mu(3).lt.0.0) North = .FALSE.
+
+do i=-w, w 
+  ix = nix + i 
+  do j=-w, w 
+    iy = niy + j  
+! check the hemisphere and properly wrap where needed
+    xyz = HemiCheck(ix, iy, npx, North)
+! compute the VMF value
+    vmf = inten * exp( kappa * sum(mu * xyz) )
+! put this value in the correct array location
+    if (xyz(3).ge.0.0) then
+      mLPNH(ix, iy) = mLPNH(ix, iy) + vmf 
+    else
+      mLPSH(ix, iy) = mLPSH(ix, iy) + vmf 
+    end if
+  end do 
+end do 
+
+end subroutine sampleVMF
+
 end module Lambert
 
