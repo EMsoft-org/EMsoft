@@ -255,6 +255,164 @@ end if
 
 end subroutine Printrlp
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: Laue_Init_Reflist
+!
+!> @author Marc De Graef, Carnegie Melon University
+!
+!> @brief compute the list of all possible reciprocal lattice points for Laue XRD
+!
+!> @details compute the list of all possible reciprocal lattice points, along with their 
+!> components in the direct cartesian frame for the undistorted reference frame. If
+!> lattice distortions are present, then we can still use the same list, but we'll need
+!> to recompute at least the 2theta angle and the g-vector components for each 
+!> projection point.  For large distortions we may also need to recompute the scattered
+!> intensity, which will slow things down a little.  If there is distortion present, then we
+!> can no longer use the lattice symmetry to generate all the equivalent points; instead
+!> we must apply the distortion to the lattice points and recompute the structure factor
+!> that way...  That will be part of a different subroutine.
+! 
+!> @param verbose print output when .TRUE.
+!
+!> @date 03/14/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+subroutine Laue_Init_Reflist(cell, lmnl, reflist, gcnt, verbose)
+
+use local
+use io
+use crystal
+use error
+use symmetry
+use diffraction 
+use dynamical
+
+IMPLICIT NONE
+
+type(unitcell),pointer            :: cell
+type(LaueMasterNameListType),INTENT(INOUT) :: lmnl
+type(Laue_g_list),pointer         :: reflist                    ! linked list for allowed g-vector search 
+integer(kind=irg),INTENT(OUT)     :: gcnt
+logical,OPTIONAL,INTENT(IN)       :: verbose                    ! print output or not ?
+
+type(Laue_g_list),pointer         :: gtmp, gtail                ! linked list for allowed g-vector search 
+type(gnode)                       :: rlp
+
+real(kind=sgl)                    :: gmax                       !< diameter of limiting sphere
+real(kind=sgl)                    :: ghkl                       !< length of a reciprocal lattice vector
+integer(kind=irg)                 :: imh, imk, iml              !< maximum index along a*, b*, and c*
+real(kind=irg)                    :: g(3), tt                   !< g-vector and 2theta
+integer(kind=irg)                 :: io_int(3)                  !< io variable
+real(kind=sgl)                    :: io_real(1)                 !< io variable
+integer(kind=irg)                 :: istat, h, k, l, icnt       !< status variables and such
+real(kind=sgl),parameter          :: tdtr = 114.5915590262      !< 2 * 180.0 / pi
+real(kind=sgl)                    :: threshold, sfs             !< threshold for discarding allowed reflections, |F|^2
+
+! first get the range of Miller indices based on the lattice parameters and the xray wave length
+ gmax = 2.0 / lmnl%lambdamin      ! radius of the limiting sphere for smallest wave length  [nm^-1]
+ imh = 1
+ do   ! a* direction
+   imh = imh + 1
+   ghkl = CalcLength(cell,  (/float(imh) ,0.0_sgl,0.0_sgl/), 'r')
+   if (ghkl.gt.gmax) EXIT
+ end do
+ imk = 1
+ do  ! b* direction
+   imk = imk + 1
+   ghkl = CalcLength(cell, (/0.0_sgl,float(imk),0.0_sgl/), 'r')
+   if (ghkl.gt.gmax) EXIT
+ end do
+ iml = 1
+ do  ! c* direction
+   iml = iml + 1
+   ghkl = CalcLength(cell, (/0.0_sgl,0.0_sgl,float(iml)/), 'r')
+   if (ghkl.gt.gmax) EXIT
+ end do
+
+! output range
+if (present(verbose)) then 
+  if (verbose) then
+    io_int = (/ imh, imk ,iml /)
+    call WriteValue('Range of reflections along a*, b* and c* = ', io_int, 3)
+  end if
+end if 
+ 
+! next we make a list of all rlp's that satisfy the following conditions
+!  - rlp must be inside the limiting sphere;
+!  - rlp must not be a systematic extinction;
+!  - rlp must not be a symmetry-induced extinction (since everything is kinematical, I presume)
+! Since we don't know a-priori how many rlps will satisfy all
+! three conditions, we'll first create a linked list and then copy
+! that list into an allocatable array reflist
+ if (.not.associated(reflist)) then ! allocate the head and tail of the linked list
+   allocate(reflist,stat=istat)         ! allocate new value
+   if (istat.ne.0) call FatalError('Laue_Init_Reflist', 'unable to allocate reflist pointer')
+   gtail => reflist                     ! tail points to new value
+   nullify(gtail%next)                  ! nullify next in new value
+ end if
+
+! initialize the computation mode for CTEM_CU to X-Ray
+rlp%method = 'XR'
+
+! compute the intensity threshold parameter as a fraction of |F(000)|^2 
+call CalcUcg(cell, rlp, (/0, 0, 0/) )
+threshold = lmnl%IntFraction * cabs(rlp%Ucg)**2
+if (present(verbose)) then
+  if (verbose) then
+    io_real(1) = threshold 
+    call WriteValue(' Intensity Threshold value : ', io_real, 1)
+  end if
+end if
+
+! now loop over all g-vectors inside the imh, imk, iml range
+gcnt = 0
+icnt = 0
+do h=-imh,imh
+ do k=-imk,imk
+  do l=-iml,iml
+   icnt = icnt + 1
+    g =float( (/ h, k, l /) )
+! first of all, is this reflection inside the limiting sphere? (CalcLength)
+    ghkl = CalcLength(cell,g,'r')
+    if (ghkl.le.gmax) then 
+! then see if the reflection is allowed by systematic extinction (IsGAllowed)
+       if ( IsGAllowed( (/ h,k,l /) ) ) then    ! this is not a systematic extinction
+! does this reflection have a non-zero structure factor larger than the threshold?
+           call CalcUcg(cell, rlp, (/ h, k, l /) )
+           sfs = cabs(rlp % Ucg)**2
+           if (sfs.ge.threshold) then   ! count this reflection 
+             gcnt = gcnt + 1
+! and add it to the linked list
+             allocate(gtail%next,stat=istat)    ! allocate new value
+             if (istat.ne.0) call FatalError('Laue_Init_Reflist', 'unable to allocate new entry in ghead linked list')
+             gtail => gtail%next              ! gtail points to new value
+             nullify(gtail%next)              ! nullify next in new value
+! fill in the values
+             gtail % hkl = (/ h, k, l /)
+             call TransSpace(cell, dble(gtail % hkl), gtail % xyz, 'r', 'c')
+             call NormVec(cell, gtail%xyz, 'c')
+             gtail % tt = CalcDiffAngle(cell,h,k,l)
+             gtail % polar = (1.D0+ cos(2.D0*gtail%tt)**2)*0.5D0
+             gtail % sfs = sfs
+           end if
+         end if
+       end if
+    end if
+  end do
+ end do
+end do
+
+if (present(verbose)) then
+  if (verbose) then
+    io_int(1) = gcnt
+    io_int(2) = icnt
+    call WriteValue(' Total number of valid reflections/total tested = ', io_int, 2, "(I,'/',I)")
+  end if
+end if 
+
+end subroutine Laue_Init_Reflist
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE: Apply_BethePotentials

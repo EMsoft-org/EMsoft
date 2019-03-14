@@ -32,5 +32,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOLUTION_FOLDER EMsoftPublic/XRay
                       INSTALL_PROGRAM TRUE)
 
+  Add_EMsoft_Executable(TARGET EMLauemaster 
+                      SOURCES ${APP_DIR}/EMLauemaster.f90 
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${FORTRAN_LIBRARIES} 
+                      TEMPLATE ${TMPLT_DIR}/EMLauemaster.template
+                      SOLUTION_FOLDER EMsoftPublic/XRay
+                      INSTALL_PROGRAM TRUE)
+
 endif()
 
