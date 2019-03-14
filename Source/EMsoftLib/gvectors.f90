@@ -264,16 +264,6 @@ end subroutine Printrlp
 !
 !> @brief compute the list of all possible reciprocal lattice points for Laue XRD
 !
-!> @details compute the list of all possible reciprocal lattice points, along with their 
-!> components in the direct cartesian frame for the undistorted reference frame. If
-!> lattice distortions are present, then we can still use the same list, but we'll need
-!> to recompute at least the 2theta angle and the g-vector components for each 
-!> projection point.  For large distortions we may also need to recompute the scattered
-!> intensity, which will slow things down a little.  If there is distortion present, then we
-!> can no longer use the lattice symmetry to generate all the equivalent points; instead
-!> we must apply the distortion to the lattice points and recompute the structure factor
-!> that way...  That will be part of a different subroutine.
-! 
 !> @param verbose print output when .TRUE.
 !
 !> @date 03/14/19 MDG 1.0 original
@@ -286,7 +276,7 @@ use crystal
 use error
 use symmetry
 use diffraction 
-use dynamical
+use NameListTypedefs
 
 IMPLICIT NONE
 
@@ -306,8 +296,8 @@ real(kind=irg)                    :: g(3), tt                   !< g-vector and 
 integer(kind=irg)                 :: io_int(3)                  !< io variable
 real(kind=sgl)                    :: io_real(1)                 !< io variable
 integer(kind=irg)                 :: istat, h, k, l, icnt       !< status variables and such
-real(kind=sgl),parameter          :: tdtr = 114.5915590262      !< 2 * 180.0 / pi
-real(kind=sgl)                    :: threshold, sfs             !< threshold for discarding allowed reflections, |F|^2
+!real(kind=sgl),parameter          :: tdtr = 114.5915590262      !< 2 * 180.0 / pi
+real(kind=sgl)                    :: threshold, th, sfs         !< threshold for discarding allowed reflections, |F|^2
 
 ! first get the range of Miller indices based on the lattice parameters and the xray wave length
  gmax = 2.0 / lmnl%lambdamin      ! radius of the limiting sphere for smallest wave length  [nm^-1]
@@ -356,8 +346,8 @@ end if
 rlp%method = 'XR'
 
 ! compute the intensity threshold parameter as a fraction of |F(000)|^2 
-call CalcUcg(cell, rlp, (/0, 0, 0/) )
-threshold = lmnl%IntFraction * cabs(rlp%Ucg)**2
+ call CalcUcg(cell, rlp, (/0, 0, 0/) )
+ threshold = cabs(rlp%Ucg)**2
 if (present(verbose)) then
   if (verbose) then
     io_real(1) = threshold 
@@ -368,6 +358,7 @@ end if
 ! now loop over all g-vectors inside the imh, imk, iml range
 gcnt = 0
 icnt = 0
+th = lmnl%intfactor * threshold
 do h=-imh,imh
  do k=-imk,imk
   do l=-iml,iml
@@ -375,28 +366,27 @@ do h=-imh,imh
     g =float( (/ h, k, l /) )
 ! first of all, is this reflection inside the limiting sphere? (CalcLength)
     ghkl = CalcLength(cell,g,'r')
-    if (ghkl.le.gmax) then 
+    if ((ghkl.le.gmax).and.(ghkl.gt.0.0)) then 
 ! then see if the reflection is allowed by systematic extinction (IsGAllowed)
-       if ( IsGAllowed( (/ h,k,l /) ) ) then    ! this is not a systematic extinction
+       if ( IsGAllowed(cell, (/ h,k,l /) ) ) then    ! this is not a systematic extinction
 ! does this reflection have a non-zero structure factor larger than the threshold?
            call CalcUcg(cell, rlp, (/ h, k, l /) )
-           sfs = cabs(rlp % Ucg)**2
-           if (sfs.ge.threshold) then   ! count this reflection 
+           sfs = cabs(rlp % Ucg)**2 
+           if (sfs.ge.th) then   ! count this reflection 
              gcnt = gcnt + 1
-! and add it to the linked list
-             allocate(gtail%next,stat=istat)    ! allocate new value
-             if (istat.ne.0) call FatalError('Laue_Init_Reflist', 'unable to allocate new entry in ghead linked list')
-             gtail => gtail%next              ! gtail points to new value
-             nullify(gtail%next)              ! nullify next in new value
 ! fill in the values
              gtail % hkl = (/ h, k, l /)
              call TransSpace(cell, dble(gtail % hkl), gtail % xyz, 'r', 'c')
              call NormVec(cell, gtail%xyz, 'c')
              gtail % tt = CalcDiffAngle(cell,h,k,l)
              gtail % polar = (1.D0+ cos(2.D0*gtail%tt)**2)*0.5D0
-             gtail % sfs = sfs
+             gtail % sfs = sfs / threshold
+! and add it to the linked list
+             allocate(gtail%next,stat=istat)    ! allocate new value
+             if (istat.ne.0) call FatalError('Laue_Init_Reflist', 'unable to allocate new entry in ghead linked list')
+             gtail => gtail%next              ! gtail points to new value
+             nullify(gtail%next)              ! nullify next in new value
            end if
-         end if
        end if
     end if
   end do
@@ -406,8 +396,7 @@ end do
 if (present(verbose)) then
   if (verbose) then
     io_int(1) = gcnt
-    io_int(2) = icnt
-    call WriteValue(' Total number of valid reflections/total tested = ', io_int, 2, "(I,'/',I)")
+    call WriteValue(' Total number of reflections = ', io_int, 1)
   end if
 end if 
 

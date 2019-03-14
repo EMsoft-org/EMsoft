@@ -51,6 +51,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMEBSD2DQCmaster.template
   ${APP_DIR}/EMEBSDQCmaster.template
   ${APP_DIR}/EMECPQCmaster.template
+  ${APP_DIR}/EMLauemaster.template
 )
 
 if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")

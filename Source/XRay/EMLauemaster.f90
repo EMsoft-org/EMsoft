@@ -34,11 +34,16 @@
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief Basic program to compute a realistic Laue master pattern on the unit sphere
+!> @brief Basic program to compute a realistic Laue master pattern on the unit sphere (square Lambert and stereographic)
 !
-!> @date 03/14/19  MDG 1.0 original version
+!> @date 03/14/19  MDG 1.0 original version (tested on 3/14, appears to work correctly)
 !--------------------------------------------------------------------------
 program EMLauemaster
+
+use local
+use NameListTypedefs
+use NameListHandlers
+use files
 
 character(fnlen)                        :: nmldeffile, progname, progdesc
 type(LaueMasterNameListType)            :: lmnl
@@ -52,14 +57,14 @@ progdesc = 'realistic Laue master pattern computation'
 call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any
-call Interpret_Program_Arguments(nmldeffile,2,(/ 250, 0 /), progname)
+call Interpret_Program_Arguments(nmldeffile,1,(/ 250 /), progname)
 
 ! deal with the namelist stuff, either .nml or .json format
 res = index(nmldeffile,'.nml',kind=irg)
 if (res.eq.0) then
 !  call JSONreadEBSDmasterNameList(emnl, nmldeffile, error_cnt)
 else
-  call GetEBSDMasterNameList(nmldeffile,emnl)
+  call GetLaueMasterNameList(nmldeffile,lmnl)
 end if
 
 ! generate a realistic Laue master pattern
@@ -85,6 +90,7 @@ subroutine ComputeLaueMasterPattern(lmnl, progname, nmldeffile)
 
 use typedefs
 use NameListTypedefs
+use NameListHandlers
 use initializersHDF
 use initializers
 use symmetry
@@ -105,22 +111,38 @@ use ISO_C_BINDING
 use omp_lib
 use notifications
 use stringconstants
- 
+use image
+use, intrinsic :: iso_fortran_env
+
 IMPLICIT NONE
 
 type(LaueMasterNameListType),INTENT(INOUT) :: lmnl
 character(fnlen),INTENT(IN)                :: progname
 character(fnlen),INTENT(IN)                :: nmldeffile
 
-logical 								   :: verbose
+logical 								                   :: verbose
 type(HDFobjectStackType),pointer           :: HDF_head
 type(unitcell),pointer                     :: cell
 type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp
 real(kind=sgl),allocatable                 :: mLPNH(:,:), mLPSH(:,:), masterSPNH(:,:), masterSPSH(:,:)
-integer(kind=irg)						               :: npx, npy, gcnt, ierr, nix, niy, nixp, niyp, i, j 
-real(kind=sgl)							               :: inten, xy(2), xyz(3), dx, dy, dxm, dym, Radius
-real(kind=dbl)                             :: VMFnorm
+integer(kind=irg)						               :: npx, npy, gcnt, ierr, nix, niy, nixp, niyp, i, j, w, istat, TIFF_nx, TIFF_ny, &
+                                              hdferr
+real(kind=sgl)							               :: xy(2), xyz(3), dx, dy, dxm, dym, Radius, ma, tstart, tstop
+real(kind=dbl)                             :: VMFscale, inten
+character(fnlen)                           :: fname, TIFF_filename, attributename, groupname, datagroupname, dataset, &
+                                              HDF_FileVersion, hdfname
+
+! declare variables for use in object oriented image module
+integer                                    :: iostat
+character(len=128)                         :: iomsg
+logical                                    :: isInteger
+type(image_t)                              :: im
+integer(int8)                              :: i8 (3,4)
+integer(int8), allocatable                 :: TIFF_image(:,:)
+character(11)                              :: dstr
+character(15)                              :: tstrb
+character(15)                              :: tstre
 
 ! basic explanation: this is a really simple and fast Laue master pattern; we compute all the plane normals 
 ! that fall inside the extended Ewald sphere volume.  For each we compute the kinematic intensity
@@ -132,8 +154,8 @@ real(kind=dbl)                             :: VMFnorm
 ! xtalname
 ! lambdamin
 ! lambdamax
-! IntFraction
 ! kappaVMF
+! hdfname
 
 
 nullify(HDF_head)
@@ -163,6 +185,7 @@ call cpu_time(tstart)
 !=============================================
 !=============================================
 ! compute reflection list with kinematical intensities
+ nullify(reflist)
  call Laue_Init_Reflist(cell, lmnl, reflist, gcnt, verbose)
 
 !=============================================
@@ -175,23 +198,50 @@ call cpu_time(tstart)
   mLPNH = 0.0
   mLPSH = 0.0
 
-  VMFnorm = lmnl%kappaVMF / (4.0 * sngl(cPi) * sinh(lmnl%kappaVMF))
 
+! the von Mises-Fisher distribution is defined by 
+!
+!   vmf(x;mu,kappa) = ( kappa / (4 pi sinh(kappa) ) ) exp[ kappa mu.x ]
+!
+! and this is multiplied by the intensity;  since these can be really large numbers we 
+! we will work with the large kappa expansion as well as logarithms; first of all, the 
+! distribution becomes (for large kappa)
+!
+! vmf(x;mu,kappa) = ( kappa exp[ kappa (mu.x-1) ]/  (2 pi)    (for large kappa)
+!
+! multiplying this by the intensity I and taking the logarithm, we have
+!
+! log(vmf) = (-1 + mux) kappa + Log(Inten) - Log(Pi) + Log(kappa) - Log(2) 
+! 
+! we'll take the constant part of this and call it VMFscale
+
+  VMFscale = log(lmnl%kappaVMF) - log(2.D0) - log(cPi)
+
+! set the size of the patches in the square Lambert space that we need to evaluate the VMF distribution for
+  w = 5  ! this could become a part of the input namelist
+
+! go through the entire reflection list
   rltmp => reflist
   do i=1,gcnt
 ! locate the nearest Lambert pixel
-    call InterpolateLambert(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+    call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 ! intensity with polarization correction
-    inten = sngl(rltmp%sfs * rltmp%polar)
+    inten = rltmp%sfs * rltmp%polar
 ! depending on the sign of xyz(3) we put this point in the Northern or Southern hemisphere, taking into account the
 ! special case of reflections along the equator which should appear in both hemisphere arrays.  The intensities are 
-! computed on a small grid of w x w points on the Lambert projection, which are then interpolated from a Gaussian on
-! the sphere. we use the von Mises-Fisher distribution with p=3, so that the prefactor equals kappa / ( 4 pi sinh(kappa) )
-    call sampleVMF(sngl(rltmp%xyz), lmnl%kappaVMF, VMFnorm*dble(inten), npx, nix, niy, lmnl%w, mLPNH, mLPSH)
+! computed on a small grid of w x w points on the Lambert projection, which are then interpolated from a "Gaussian" on
+! the sphere. we use the von Mises-Fisher distribution with p=3
+    call sampleVMF(sngl(rltmp%xyz), lmnl%kappaVMF, VMFscale, inten, npx, nix, niy, w, mLPNH, mLPSH)
 ! and go to the next point
     rltmp => rltmp%next
   end do 
 
+! finally, make sure that the equator is copied into both arrays
+  mLPSH(-npx,-npx:npx) = mLPNH(-npx,-npx:npx)
+  mLPSH( npx,-npx:npx) = mLPNH( npx,-npx:npx)
+  mLPSH(-npx:npx,-npx) = mLPNH(-npx:npx,-npx)
+  mLPSH(-npx:npx, npx) = mLPNH(-npx:npx, npx)
+! that completes the computation of the master pattern
 
 !=============================================
 !=============================================
@@ -201,7 +251,7 @@ call cpu_time(tstart)
   masterSPNH = 0.0
   masterSPSH = 0.0
 
-! get stereographic projections (summed over the atomic positions)
+! get stereographic projections
   Radius = 1.0
   do i=-npx,npx 
     do j=-npx,npx 
@@ -218,16 +268,104 @@ call cpu_time(tstart)
     end do
   end do
 
+
+!=============================================
+!=============================================
+! we save an image for the Northern hemisphere in stereographic projection
+
+! output the master pattern as a tiff file 
+fname = trim(EMsoft_getEMdatapathname())//trim(lmnl%hdfname)//'.tiff'
+fname = EMsoft_toNativePath(fname)
+TIFF_filename = trim(fname)
+
+! allocate memory for image
+TIFF_nx = 2*npx+1
+TIFF_ny = 2*npx+1
+allocate(TIFF_image(TIFF_nx,TIFF_ny))
+
+! fill the image with whatever data you have (between 0 and 255)
+ma = maxval(masterSPNH)
+write(*,*) 'maximum intensity = ', ma 
+
+TIFF_image = int(255 * (masterSPNH/ma))
+
+! set up the image_t structure
+im = image_t(TIFF_image)
+if(im%empty()) call Message("ComputeLaueMasterPattern","failed to convert array to image")
+
+! create the file
+call im%write(trim(TIFF_filename), iostat, iomsg) ! format automatically detected from extension
+if(0.ne.iostat) then
+  call Message("failed to write image to file : "//iomsg)
+else  
+  call Message('image written to '//trim(TIFF_filename))
+end if 
+deallocate(TIFF_image)
+
 !=============================================
 !=============================================
 ! save everything to HDF5 file
+  call timestamp(datestring=dstr, timestring=tstre)
 
+  nullify(HDF_head)
+! Initialize FORTRAN interface.
+  call h5open_EMsoft(hdferr)
 
+! Open a new file
+  lmnl%hdfname = trim(lmnl%hdfname)//'.h5'
+  hdfname = trim(EMsoft_getEMdatapathname())//trim(lmnl%hdfname)
+  hdfname = EMsoft_toNativePath(hdfname)
+  hdferr =  HDF_createFile(hdfname, HDF_head)
 
+! write the EMheader to the file
+  datagroupname = 'Lauemaster'
+  call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
 
+! open or create a namelist group to write all the namelist files into
+groupname = SC_NMLfiles
+  hdferr = HDF_createGroup(groupname, HDF_head)
 
+! read the text file and write the array to the file
+dataset = SC_LauemasterNML
+  hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
+! leave this group
+  call HDF_pop(HDF_head)
 
+! create a namelist group to write all the namelist files into
+groupname = SC_NMLparameters
+  hdferr = HDF_createGroup(groupname, HDF_head)
+
+  call HDFwriteLaueMasterNameList(HDF_head, lmnl)
+
+! leave this group
+  call HDF_pop(HDF_head)
+
+! then the remainder of the data in a EMData group
+groupname = SC_EMData
+  hdferr = HDF_createGroup(groupname, HDF_head)
+
+! create the Lauemaster group and add a HDF_FileVersion attribbute to it 
+  hdferr = HDF_createGroup(datagroupname, HDF_head)
+  HDF_FileVersion = '4.0'
+  attributename = SC_HDFFileVersion
+  hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
+
+! now start writing the ouput arrays...
+dataset = SC_mLPNH
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, mLPNH, 2*npx+1, 2*npx+1, HDF_head)
+
+dataset = SC_mLPSH
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, mLPSH, 2*npx+1, 2*npx+1, HDF_head)
+
+dataset = SC_masterSPNH
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, masterSPNH, 2*npx+1, 2*npx+1, HDF_head)
+
+dataset = SC_masterSPSH
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, masterSPSH, 2*npx+1, 2*npx+1, HDF_head)
+
+! and close the file
+  call HDF_pop(HDF_head,.TRUE.)
 
 
 

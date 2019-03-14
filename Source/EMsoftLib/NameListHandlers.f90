@@ -916,6 +916,81 @@ end subroutine GetOMmasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetLaueMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mcnl structure (used by EMLauemaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param lmnl name list structure
+!
+!> @date 03/14/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetLaueMasterNameList(nmlfile, lmnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetLaueMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                   :: nmlfile
+type(LaueMasterNameListType),INTENT(INOUT)    :: lmnl
+logical,OPTIONAL,INTENT(IN)                   :: initonly
+
+logical                                       :: skipread = .FALSE.
+
+integer(kind=irg)       :: npx
+real(kind=sgl)          :: lambdamin
+real(kind=sgl)          :: lambdamax
+real(kind=dbl)          :: kappaVMF
+real(kind=dbl)          :: intfactor
+character(fnlen)        :: hdfname
+character(fnlen)        :: xtalname
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname,intfactor
+
+npx = 500
+lambdamin = 0.10
+lambdamax = 0.16
+kappaVMF = 500
+intfactor = 0.0001D0
+xtalname = 'undefined'
+hdfname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=LaueMasterData)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetLaueMasterNameList:',' structure file name is undefined in '//nmlfile)
+ end if
+ if (trim(hdfname).eq.'undefined') then
+  call FatalError('GetLaueMasterNameList:',' master output file name is undefined in '//nmlfile)
+ end if
+end if
+
+lmnl%npx = npx
+lmnl%lambdamin = lambdamin
+lmnl%lambdamax = lambdamax
+lmnl%kappaVMF = kappaVMF
+lmnl%intfactor = intfactor
+lmnl%xtalname = xtalname
+lmnl%hdfname = hdfname
+
+end subroutine GetLaueMasterNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetOMNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

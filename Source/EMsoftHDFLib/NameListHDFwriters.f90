@@ -471,6 +471,74 @@ end subroutine HDFwriteKosselMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteLaueMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist file into HDF file
+!
+!> @param HDF_head top of push stack
+!> @param knl name list structure
+!
+!> @date 09/06/17  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteLaueMasterNameList(HDF_head, knl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteLaueMasterNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(LaueMasterNameListType),INTENT(IN)               :: knl
+
+integer(kind=irg),parameter                           :: n_int = 1, n_real = 2, n_double = 2
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: io_double(n_double)
+character(20)                                         :: intlist(n_int), reallist(n_real), dbllist(n_double)
+character(fnlen)                                      :: dataset,groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_LauemasterNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ knl%npx /)
+intlist(1) = 'npx'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real = (/ knl%lambdamin, knl%lambdamax /)
+reallist(1) = 'lambdamin'
+reallist(2) = 'lambdamax'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! write all the double reals
+io_double = (/ knl%kappaVMF, knl%intfactor /)
+dbllist(1) = 'kappaVMF'
+dbllist(2) = 'intfactor'
+call HDF_writeNMLdbles(HDF_head, io_double, dbllist, n_double)
+
+! write all the strings
+dataset = SC_xtalname
+line2(1) = knl%xtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueMasterNameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = 'hdfname'
+line2(1) = knl%hdfname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueMasterNameList: unable to create hdfname dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteLaueMasterNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteOMmasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

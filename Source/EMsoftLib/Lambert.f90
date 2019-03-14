@@ -2422,7 +2422,7 @@ recursive subroutine LambertgetInterpolationDouble(dc, scl, npx, npy, nix, niy, 
 use local
 use io
 
-real(kind=dbl),INTENT(IN)           :: dc(3)
+real(kind=dbl),INTENT(INOUT)        :: dc(3)
 real(kind=dbl),INTENT(IN)           :: scl
 integer(kind=irg),INTENT(IN)        :: npx
 integer(kind=irg),INTENT(IN)        :: npy
@@ -2440,6 +2440,7 @@ real(kind=dbl)                      :: xy(2), x
 integer(kind=irg)                   :: istat
 
 ! Lambert sphere to square transformation
+dc = dc / norm2(dc)
 xy = scl * Lambert2DSquareInverseDouble( dc, istat )
 if (istat .ne. 0) then
   write (*,*) 'input direction cosines : ', dc
@@ -2722,6 +2723,7 @@ end function InterpolationLambert4DDouble4b4
 !
 !> @param xyz direction cosines
 !> @param kappa concentration parameter of VMF distribution
+!> @param VMFscale  logarithmic sclaing factor
 !> @param inten intensity of this reflection (includes VMF normalization factor)
 !> @param npx semi-size of master patterns
 !> @param nix x-pixel coordinate in Lambert projection
@@ -2732,13 +2734,14 @@ end function InterpolationLambert4DDouble4b4
 ! 
 !> @date  03/14/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine sampleVMF(xyz, kappa, inten, npx, nix, niy, w, mLPNH, mLPSH) 
+recursive subroutine sampleVMF(mu, kappa, VMFscale, inten, npx, nix, niy, w, mLPNH, mLPSH) 
 !DEC$ ATTRIBUTES DLLEXPORT :: sampleVMF
 
 IMPLICIT NONE 
 
 real(kind=sgl),INTENT(IN)     :: mu(3)
-real(kind=sgl),INTENT(IN)     :: kappa
+real(kind=dbl),INTENT(IN)     :: kappa
+real(kind=dbl),INTENT(IN)     :: VMFscale
 real(kind=dbl),INTENT(IN)     :: inten
 integer(kind=irg),INTENT(IN)  :: npx
 integer(kind=irg),INTENT(IN)  :: nix
@@ -2748,7 +2751,7 @@ real(kind=sgl),INTENT(INOUT)  :: mLPNH(-npx:npx, -npx:npx)
 real(kind=sgl),INTENT(INOUT)  :: mLPSH(-npx:npx, -npx:npx)
 
 real(kind=sgl)                :: xyz(3), vmf 
-integer(kind=irg)             :: i, j 
+integer(kind=irg)             :: i, j, ix, iy
 logical                       :: North, xN, yN  
 
 North = .TRUE.
@@ -2761,17 +2764,95 @@ do i=-w, w
 ! check the hemisphere and properly wrap where needed
     xyz = HemiCheck(ix, iy, npx, North)
 ! compute the VMF value
-    vmf = inten * exp( kappa * sum(mu * xyz) )
+    vmf = (-1.D0 + sum(mu*xyz)) * kappa + Log(inten) + VMFscale
 ! put this value in the correct array location
-    if (xyz(3).ge.0.0) then
-      mLPNH(ix, iy) = mLPNH(ix, iy) + vmf 
-    else
-      mLPSH(ix, iy) = mLPSH(ix, iy) + vmf 
-    end if
+!    if (xyz(3).ge.0.0) then
+      mLPNH(ix, iy) = mLPNH(ix, iy) + exp(vmf) 
+      mLPSH(-ix, -iy) = mLPSH(-ix, -iy) + exp(vmf) 
+!    end if
   end do 
 end do 
 
 end subroutine sampleVMF
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: HemiCheck
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief get the xyz belonging to an integer input point that may be Northern or Southern hemishpere...
+!
+!> @param ix, iy   pint in square Lambert array
+!> @param npx semi-size of master patterns
+!> @param North logical
+! 
+!> @date  03/14/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function HemiCheck(ix, iy, npx, North) result(xyz) 
+!DEC$ ATTRIBUTES DLLEXPORT :: HemiCheck
+
+IMPLICIT NONE 
+
+integer(kind=irg),INTENT(INOUT)     :: ix
+integer(kind=irg),INTENT(INOUT)     :: iy
+integer(kind=irg),INTENT(IN)        :: npx
+logical,INTENT(IN)                  :: North
+real(kind=sgl)                      :: xyz(3)
+
+real(kind=sgl)                      :: xy(2)
+integer(kind=irg)                   :: ierr 
+
+if ((abs(ix).le.npx).and.(abs(iy).le.npx)) then
+! regular case
+  xy = float( (/ ix, iy/) ) / float(npx)
+  xyz = LambertSquaretoSphere(xy, ierr)
+else 
+    if ((abs(ix).gt.npx).and.(abs(iy).gt.npx)) then 
+! corner case
+        if (ix.gt.0) then 
+          ix = 2*npx-ix
+        else
+          ix = -2*npx-ix
+        end if 
+        if (iy.gt.0) then 
+          iy = 2*npx-iy
+        else
+          iy = -2*npx-iy
+        end if 
+        xy = float( (/ ix, iy/) ) / float(npx)
+        xyz = LambertSquaretoSphere(xy, ierr)
+        if (North.eqv..TRUE.) xyz(3) = -xyz(3)
+     else
+! remaining cases
+        if ((abs(ix).gt.npx).and.(abs(iy).le.npx)) then 
+! edge case
+          if (ix.gt.0) then 
+            ix = 2*npx-ix
+          else
+            ix = -2*npx-ix
+          end if 
+          xy = float( (/ ix, iy/) ) / float(npx)
+          xyz = LambertSquaretoSphere(xy, ierr)
+          if (North.eqv..TRUE.) xyz(3) = -xyz(3)
+        end if
+        if ((abs(ix).le.npx).and.(abs(iy).gt.npx)) then 
+! edge case
+          if (iy.gt.0) then 
+            iy = 2*npx-iy
+          else
+            iy = -2*npx-iy
+          end if 
+          xy = float( (/ ix, iy/) ) / float(npx)
+          xyz = LambertSquaretoSphere(xy, ierr)
+          if (North.eqv..TRUE.) xyz(3) = -xyz(3)
+        end if
+    end if
+end if
+
+end function HemiCheck
+
 
 end module Lambert
 
