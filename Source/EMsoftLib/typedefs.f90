@@ -944,6 +944,22 @@ type refliststrongsubstype
     type(refliststrongsubstype),pointer     :: next ! only strong beams are considered
 end type refliststrongsubstype
 
+
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+! linked list for Laue XRD computations.
+type Laue_g_list  
+  integer(kind=irg)   :: hkl(3)       ! Miller indices
+  real(kind=dbl)      :: xyz(3)       ! Cartesian components of the plane normal
+  real(kind=dbl)      :: tt           ! 2theta value
+  real(kind=dbl)      :: polar        ! polarization factor
+  real(kind=dbl)      :: sfs          ! |structure factor|^2
+  type(Laue_g_list),pointer :: next   ! connection to next reflector
+end type Laue_g_list
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
