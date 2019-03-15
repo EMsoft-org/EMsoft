@@ -218,7 +218,7 @@ call cpu_time(tstart)
   VMFscale = log(lmnl%kappaVMF) - log(2.D0) - log(cPi)
 
 ! set the size of the patches in the square Lambert space that we need to evaluate the VMF distribution for
-  w = 5  ! this could become a part of the input namelist
+  w = lmnl%patchw  ! this could become a part of the input namelist
 
 ! go through the entire reflection list
   rltmp => reflist

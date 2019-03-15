@@ -1,6 +1,8 @@
  &LaueMasterData
 ! number of pixels along semi-edge of square Lambert pattern
  npx = 500,
+! number of pixels in semi-edge of sampling patch
+ patchw = 5,
 ! minimum wave length [nm]
  lambdamin = 0.10,
 ! maximnum wave length [nm]

@@ -226,6 +226,7 @@ end type OMNameListType
 ! namelist for the EMLauemaster program 
 type LaueMasterNameListType
         integer(kind=irg)       :: npx
+        integer(kind=irg)       :: patchw
         real(kind=sgl)          :: lambdamin
         real(kind=sgl)          :: lambdamax
         real(kind=dbl)          :: kappaVMF

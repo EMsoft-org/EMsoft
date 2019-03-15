@@ -492,7 +492,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(LaueMasterNameListType),INTENT(IN)               :: knl
 
-integer(kind=irg),parameter                           :: n_int = 1, n_real = 2, n_double = 2
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 2, n_double = 2
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_double(n_double)
@@ -505,8 +505,9 @@ groupname = SC_LauemasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ knl%npx /)
+io_int = (/ knl%npx, knl%patchw /)
 intlist(1) = 'npx'
+intlist(2) = 'patchw'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals

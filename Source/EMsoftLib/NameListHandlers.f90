@@ -941,6 +941,7 @@ logical,OPTIONAL,INTENT(IN)                   :: initonly
 logical                                       :: skipread = .FALSE.
 
 integer(kind=irg)       :: npx
+integer(kind=irg)       :: patchw
 real(kind=sgl)          :: lambdamin
 real(kind=sgl)          :: lambdamax
 real(kind=dbl)          :: kappaVMF
@@ -950,9 +951,11 @@ character(fnlen)        :: tiffname
 character(fnlen)        :: xtalname
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname, intfactor, tiffname
+namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname, &
+                             intfactor, tiffname, patchw
 
 npx = 500
+patchw = 5
 lambdamin = 0.10
 lambdamax = 0.16
 kappaVMF = 50000.D0
@@ -981,6 +984,7 @@ if (.not.skipread) then
 end if
 
 lmnl%npx = npx
+lmnl%patchw = patchw
 lmnl%lambdamin = lambdamin
 lmnl%lambdamax = lambdamax
 lmnl%kappaVMF = kappaVMF
