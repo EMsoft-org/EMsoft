@@ -448,8 +448,8 @@ integer(kind=irg),parameter       :: PGTHDorder(32) = (/ 1, 2, 2, 2, 4, 4, 4, 8,
 
 
 !> 3D point groups : purely rotational point groups corresponding to each point group
-integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
-                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33,34,35,36/)
+integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,1,3,6,3,6,9,3,9,12,9,6,12,16,16, &
+                                                  18,16,18,21,16,21,24,21,18,24,28,28,30,28,30,33,34,35,36/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGrot
 
 !> 3D point groups : Laue group number
