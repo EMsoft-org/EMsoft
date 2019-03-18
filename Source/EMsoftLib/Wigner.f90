@@ -50,8 +50,8 @@
 !
 !> @note: variable names are consistent with Gutman et. al. (see eq 12 for details) except 'j' is used in place of 'l'
 ! 
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's C++ routines
-!> @date 02/14/19 MDG 1.1 tested against Mathematica WignerD function 
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's C++ routines (wigner.hpp)
+!> @date 02/14/19 MDG 1.1 tested against Mathematica WignerD function [last coparison against wigner.hpp on 3/18/19, MDG]
 !--------------------------------------------------------------------------
 module Wigner
 

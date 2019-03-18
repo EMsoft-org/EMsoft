@@ -50,7 +50,7 @@
 !
 !> @note: variable names are consistent with Gutman et. al. (see eq 12 for details) except 'j' is used in place of 'l'
 ! 
-!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's C++ routines
+!> @date 01/29/19 MDG 1.0 original, based on Will Lenthe's C++ routines (sht_xcorr.hpp)
 !--------------------------------------------------------------------------
 module SHcorrelator
 
@@ -655,5 +655,351 @@ end if
 
 end function SH_correlate
 
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: SH_derivatives
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief   compute the first and second derivatives of the cross correlation at a single rotation
+!
+! @param flm: spherical harmonic coefficients for the first function
+! @param gln: spherical harmonic coefficients for the second function
+! @param eu : rotation to compute derivatives of cross correlation for as ZYZ euler angle
+! @param jac: location to write jacobian of cross correlation {d/(d eu[0]), d/(d eu[1]), d/(d eu[2])}
+! @param hes: location to write hessian (3x3 matrix as 9 component vector) of cross correlation hes_ij = d/(d eu[i]) * d/(d eu[j])
+! @param mBW: maximum bandwidth to use in calculation (must be <= bw)
+! @param fMr: true/false if there is/isn't a mirror plane in the first fuction
+! @param fNf: rotational symmetry about z axis in first function (1 for no rotational symmetry)
+! @return   : maximum cross correlation
+!
+!> @date 03/18/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!--------------------------------------------------------------------------
+recursive function SH_derivatives(SHCOR, flm, gln, eu, jac, hes, mBW, fMr, fNf) result(corr)
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_derivatives
+
+use constants
+use Wigner
+use FFTW3mod
+
+IMPLICIT NONE
+
+type(SH_correlatorType),INTENT(IN)      :: SHCOR
+complex(kind=dbl),INTENT(IN)            :: flm(:,:)
+complex(kind=dbl),INTENT(IN)            :: gln(:,:)
+real(kind=dbl),INTENT(INOUT)            :: eu(0:2)
+real(kind=dbl),INTENT(INOUT)            :: jac(0:2)
+real(kind=dbl),INTENT(INOUT)            :: hes(0:8)
+integer(kind=irg),INTENT(IN)            :: mBW 
+logical,INTENT(IN)                      :: fMr 
+integer(kind=irg),INTENT(IN)            :: fNf
+real(kind=dbl)                          :: corr 
+
+integer(kind=irg)                       :: fNf, glnFold, dJ, m, start
+real(kind=dbl)                          :: wrk(0:9), beta, tpi, sA, cA, sG, cG, t, csc, uA(0:2), tA(0:2), mm, mn, nn, sm, cm, &
+                                           uG, sG, uG(0:2), tG(0:2), sn, cn, sign, sgn, coef2_0a, coef2_0b, coef2_1a, coef1_0PP, &
+                                           coef1_0PN, coef2_0PP, coef2_0PN, coef2_1PP, coef2_1PN, d0P, d0N, d0P_1, d0N_1, d0P_2, &
+                                           d0N_2, rjm, coef2_2, d1P, d1N, d2P, d2N, xc(0:9), xp(0:9)
+complex(kind=dbl)                       :: expAlpha, expGamma, agP, agN, vp, vc, vcPP, vcPP0, vcPP1, vpPN, vpPN0, vpPN1
+logical                                 :: nB, fMir, gMir, mirror, bmirror, mFold0, nFold0, match, mir0 
+real(kind=dbl)                          :: dBeta(0:1,0:jMax-1,0:jMax-1,0:jMax-1)
+
+tpi = 2.D0 * cPi 
+
+! initialze terms with 0
+wrk = 0.D0 ! correlation, jacobian, hessian as 00, 11, 22, 01, 12, 20
+
+! bring middle Euler angle to [-pi,pi] for Wigner calculations
+beta = mod(eu(1), tpi)
+if (beta.gt.cPi) then
+    beta = beta - tpi
+else 
+    if (beta.lt.-cPi) then
+        beta = beta + tpi 
+    end if 
+end if
+
+! compute sin/cos of alpha/gamma once (multiple angles)
+sA = sin(eu(0)) ! sin(alpha)
+cA = cos(eu(0)) ! cos(alpha)
+sG = sin(eu(2)) ! sin(gamma)
+cG = cos(eu(2)) ! cos(gamma)
+
+! precompute some values for on the fly Wigner (uppercase) D calculation
+t = cos(beta)
+nB = .TRUE.
+if (beta.gt.0.D0) nB = .FALSE.   ! std::signbit(beta)
+csc = 1.D0 / sqrt(1.D0 - t * t) ! csc(beta), cot(beta) is csc * t
+if (nb.eqv..TRUE.) csc = -csc
+call Wigner_dTable2(mBW, t, nB, dBeta) ! ::wigner::dTable(mBW, t, nB, dBeta.data());//compute wigner (lowercase) d(beta) once
+
+! build symmetry information
+flmFold = fNf       ! rotational symmetry of flm about z axis (flm[m*bw+j] == 0 if m % flmFold != 0)
+glnFold = 1         ! rotational symmetry of gln about z axis (gln[n*bw+j] == 0 if n % glnFold != 0)
+fMir = fMr          ! true/false if (flm[m*bw+j] == 0 if (m+j) % 2 != 0)
+gMir = .FALSE.      ! true/false if (gln[n*bw+j] == 0 if (n+j) % 2 != 0)
+mirror = (fMir.or.gMir)     ! is there at least 1 mirror
+bMirror =(fMir.and.gMir)    ! do both functions have a mirror
+dJ = 2
+if (fMir.eqv..FALSE.) dJ = 1    ! dJ = fMir ? 2 : 1;
+
+
+!///////////////////////////////////////
+!/        loop over one order         //
+!///////////////////////////////////////
+uA = (/ 0.D0, sA * 2.D0, 1.D0 /)     ! recursion coefficients for chebyshev polynomial U_n(sin(alpha))
+tA = (/ 0.D0, cA       , 1.D0 /)     ! recursion coefficients for chebyshev polynomial T_n(cos(alpha))
+do  m = 0, mBW-1 
+    !///////////////////////////////////////
+    !/ efficiently compute exp(I m alpha) //
+    !///////////////////////////////////////
+    ! update chebyshev recursion and use to compute exp(I m alpha)
+    if (m.lt.2) then ! use seed values for chebyshev recursion
+        if (m.eq.0) then 
+            uA(0) = 0.D0
+            tA(0) = 1.D0
+        else
+            uA(0) = sA      ! sin(alpha * m)
+            tA(0) = cA      ! cos(alpha * m)
+        end if
+    else  ! use chebyshev recursion
+        ! compute chebyshev polynomials(m, alpha) and multiple angle sin/cos
+        uA(0) = sA * uA(1) * 2.D0 - uA(2)      ! U_m(x) = 2 * x * U_{m-1}(x) - U_{m-2}(x)
+        tA(0) = cA * tA(1) * 2.D0 - tA(2)      ! T_m(x) = 2 * x * T_{m-1}(x) - T_{m-2}(x)
+
+        mm = -1.D0
+        if (mod((m/2-1),2).eq.0) mm = 1.D0
+        nn = -1.D0 
+        if (mod((m-1)/2,2).eq.0) nn = 1.D0
+
+        ! sm = m % 2 == 0 ? uA[1] * cA * (((m/2)-1) % 2 == 0 ? 1 : -1) : (uA[0] - sA * uA[1]) * (((m-1)/2) % 2 == 0 ? 1 : -1);//cos(alpha * m)
+        if (mod(m,2).eq.0) then ! cos(alpha * m)            
+            sm = uA(1) * cA * mm
+        else 
+            sm = (uA(0) - sA * uA(1)) * nn
+        end if
+        cm = tA(0)      ! cos(alpha * m)
+
+        ! update recursion and store values of sin/cos(alpha * m)
+        uA(2) = uA(1)       ! 
+        uA(1) = uA(0)       ! update recursion coefficients for chebyshev polynomial of the first kind
+        tA(2) = tA(1)       ! 
+        tA(1) = tA(0)       ! update recursion coefficients for chebyshev polynomial of the second kind
+        uA(0) = sm          ! store multiple sin value for subsequent access
+        tA(0) = cm          ! store multiple cos value for subsequent access
+    end if
+
+    mFold0 = 0.ne.mod(m, flmFold)  ! there are systemic zeros from rotational symmetry in flm
+    if (mFold0.eqv..TRUE.) CYCLE  ! continue;//flm[m * bw + j] == 0 so there is nothing to accumulate (but we still needed to update the multiple angle recursion)
+    expAlpha = cmplx(tA(0), uA(0) ! exp(I m alpha) = cos(m * alpha) + I sin(m * alpha)
+
+    !///////////////////////////////////////
+    !/       loop over other order        //
+    !///////////////////////////////////////
+    Real uG(3) = (/ 0.D0, sG * 2.D0, 1.D0 /)  ! recursion coefficients for chebyshev polynomial U_n(sin(gamma))
+    Real tG(3) = (/ 0.D0, cG       , 1.D0 /)  ! recursion coefficients for chebyshev polynomial T_n(cos(gamma))
+
+    do n = 0, mBW-1 
+        !///////////////////////////////////////
+        !/ efficiently compute exp(I n gamma) //
+        !///////////////////////////////////////
+        ! update chebyshev recursion and use to compute exp(I n gamma)          
+        if (n.lt.2) then ! use seed values for chebyshev recursion
+            if (n.eq.0) then 
+                uG(0) = 0.D0
+                tG(0) = 1.D0
+            else
+                uG(0) = sG      ! sin(gamma * n)
+                tG(0) = cG      ! cos(gamma * n)
+            end if
+        else  ! use chebyshev recursion
+            ! compute chebyshev polynomials(n, gamma) and multiple angle sin/cos
+            uG(0) = sG * uG(1) * 2.D0 - uG(2)      ! U_m(x) = 2 * x * U_{m-1}(x) - U_{m-2}(x)
+            tG(0) = cG * tG(1) * 2.D0 - tG(2)      ! T_m(x) = 2 * x * T_{m-1}(x) - T_{m-2}(x)
+
+            mm = -1.D0
+            if (mod((n/2-1),2).eq.0) mm = 1.D0
+            nn = -1.D0 
+            if (mod((n-1)/2,2).eq.0) nn = 1.D0
+
+            ! sm = m % 2 == 0 ? uA[1] * cA * (((m/2)-1) % 2 == 0 ? 1 : -1) : (uA[0] - sA * uA[1]) * (((m-1)/2) % 2 == 0 ? 1 : -1);//cos(alpha * m)
+            if (mod(n,2).eq.0) then ! cos(alpha * m)            
+                sn = uG(1) * cG * mm
+            else 
+                sn = (uG(0) - sG * uG(1)) * nn
+            end if
+            cn = tA(0)      ! cos(alpha * m)
+
+            ! update recursion and store values of sin/cos(alpha * m)
+            uG(2) = uG(1)       ! 
+            uG(1) = uG(0)       ! update recursion coefficients for chebyshev polynomial of the first kind
+            tG(2) = tG(1)       ! 
+            tG(1) = tG(0)       ! update recursion coefficients for chebyshev polynomial of the second kind
+            uG(0) = sn          ! store multiple sin value for subsequent access
+            tG(0) = cn          ! store multiple cos value for subsequent access
+        end if
+
+        nFold0 = 0.ne.mod(n, flmFold) ! there are systemic zeros from rotational symmetry in flm
+        if (nFold0.eqv..TRUE.) CYCLE  ! flm[m * bw + j] == 0 so there is nothing to accumulate (but we still needed to update the multiple angle recursion)
+        expGamma = cmplx(tG(0), uG(0) ! exp(I n gamma) = cos(n * gamma) + I sin(n * gamma)
+
+        ! handle the case of 2 mirror planes with different parity
+        match .FALSE. 
+        if (mod(m + n, 2).eq.0) match = .TRUE. ! check if parity of m matches parity of n
+        mir0 = (bMirror.and.(.not.match))      ! there are systemic zeros if both functions have a mirror plane and a parity mismatch
+        if (mir0.eqv..TRUE.) CYCLE             ! flm * gln = 0 for any l (alternating between flm and gln being 0)
+
+        !///////////////////////////////////////
+        !/  compute degree independent terms  //
+        !///////////////////////////////////////
+        !/compute exp(I * +m * Alpha) * exp(I * +/-n * Gamma) for on the fly wigner (uppercase) D calculation
+        call SH_conjMult(expAlpha, expGamma, agP, agN)
+        sign = -1.D0
+        if (mod(n+m,2).eq.0) sign = 1.D0
+        sgn = -1.D0
+        if (mod(n,2).eq.0) sgn = 1.D0
+        agP = agP * sign
+        agN = agN * sign * sgn
+
+        ! compute some prefactors for calculating derivatives of d^j_{m,n}(beta)
+        mm = m * m
+        mn = m * n
+        nn = n * n
+        coef2_0a  =   t * t * mm + (nn - m)              
+        coef2_0b  =   t * n * (1 - 2 * m)                
+        coef2_1a  =   t *     (1 + 2 * m)                
+        coef1_0PP = ( t * m      - n       ) * csc       
+        coef1_0PN = ( t * m      + n       ) * csc       
+        coef2_0PP = (coef2_0a    + coef2_0b) * csc * csc 
+        coef2_0PN = (coef2_0a    - coef2_0b) * csc * csc 
+        coef2_1PP = (coef2_1a    - 2 * n   ) * csc       
+        coef2_1PN = (coef2_1a    + 2 * n   ) * csc       
+
+
+        !///////////////////////////////////////
+        !/   loop over degrees accumulating   //
+        !///////////////////////////////////////
+        start = maxval(m, n)
+        if (fMir.and.(mod(start + m, 2).ne.0) start = start + 1  ! if fm[start] == 0 skip to next value (first value is zero)
+        if (gMir.and.(mod(start + n, 2).ne.0) start = start + 1  ! if gn[start] == 0 skip to next value (first value is zero) [for double mirrors no change here since parities match]
+        do j = start, mBW-1, dJ ! increment by 1 for no mirror planes 2 if any are present
+            ! get wigner d^j_{m,+/-n} components
+            d0P    =  dBeta(0,j,n,m)      ! d^j_{m  ,n}(     beta)
+            d0N    =  dBeta[1,j,n,m)      ! d^j_{m  ,n}(pi - beta)
+            if (m.ge.j) then 
+                d0P_1 = 0.D0 
+                d0N_1 = 0.D0
+            else
+                d0P_1  = dBeta(0,j,n,m+1) ! d^j_{m+1,n}(     beta)
+                d0N_1  = dBeta(1,j,n,m+1) ! d^j_{m+1,n}(pi - beta)
+            end if
+            if ((m+1).ge.j) then 
+                d0P_2 = 0.D0 
+                d0N_2 = 0.D0
+            else
+                d0P_2 = dBeta(0,j,n,m+2) ! d^j_{m+2,n}(     beta)
+                d0P_2 = dBeta(0,j,n,m+2) ! d^j_{m+2,n}(pi - beta)
+            end if
+
+            ! compute derivatives of d^j_{m,+/-n}(beta)
+            rjm      = sqrt( dble( (j - m    ) * (j + m + 1) ) )
+            coef2_2  = sqrt( dble( (j - m - 1) * (j + m + 2) ) ) * rjm
+            d1P = d0P * coef1_0PP - d0P_1 * rjm                                ! first  derivative of d^j_{+m,+n}(beta) w.r.t. beta
+            d1N = d0N * coef1_0PN + d0N_1 * rjm                                ! first  derivative of d^j_{+m,-n}(beta) w.r.t. beta
+            d2P = d0P * coef2_0PP - d0P_1 * rjm * coef2_1PP + d0P_2 * coef2_2  ! second derivative of d^j_{+m,+n}(beta) w.r.t. beta
+            d2N = d0N * coef2_0PN + d0N_1 * rjm * coef2_1PN + d0N_2 * coef2_2  ! second derivative of d^j_{+m,-n}(beta) w.r.t. beta
+            
+            !compute f^l_m * g^l_n    \hat{f}^l_{+m} * hat{g}^l_{+n} and \hat{f}^l_{+m} * conj(hat{g}^l_{+n})
+            call SH_conjMult(flm(j,m), gln(j,n], vp, vc)  ! do complex multiplication components by hand to eliminate duplicate flops from multiplying with conjugate
+            if (mod(j+m,2).ne.0) vp = -vp
+
+            ! compute components of cross correlation and partials
+            vcPP  = vc   * agP  ! +n correlation term prefactor: \hat{f}^l_{+m} * conj(hat{g}^l_{+n}) * exp(I m alpha + I n gamma)
+            vcPP0 = vcPP * d0P  ! +n correlation term: \hat{f}^l_{+m} * conj(hat{g}^l_{+n}) * D^l_{+m,+n}(alpha, beta, gamma)
+            vcPP1 = vcPP * d1P  ! beta partial of +n correlation term
+            vpPN  = vp   * agN  ! +n correlation term prefactor: \hat{f}^l_{+m} * conj(hat{g}^l_{-n}) * exp(I m alpha - I n gamma)
+            vpPN0 = vpPN * d0N  ! -n correlation term: \hat{f}^l_{+m} * conj(hat{g}^l_{-n}) * D^l_{+m,-n}(alpha, beta, gamma)
+            vpPN1 = vpPN * d1N  ! beta partial of -n correlation term
+
+            ! compute contributions to cross correlation, jacobian, and hessian from +m,+n (the real part of contributions from -m,-n are the same for real functions)
+            xc = (/ real(vcPP0), &                                            ! cross correlation
+                    -m * aimag(vcPP0), real(vcPP1), -n * aimag(vcPP0),  &     ! alpha  , beta  , gamma   derivatives
+                    -mm * real(vcPP0), d2P * real(vcPP), -nn * real(vcPP0), & ! alpha^2, beta^2, gamma^2 derivatives
+                    -m * aimag(vcPP1), -n * aimag(vcPP1), -mn * real(vcPP0) /)! alpha beta, beta gamma, gamma alpha derivatives
+
+            ! compute contributions to cross correlation, jacobian, and hessian from +m,-n (the real part of contributions from -m,+n are the same for real functions)
+            xp = (/ real(vpPN0), &                                            ! cross correlation
+                    -m * aimag(vpPN0), real(vpPN1), n * aimag(vpPN0),  &      ! alpha  , beta  , gamma   derivatives
+                    -mm * real(vpPN0), d2N * real(vpPN), -nn * real(vpPN0), & ! alpha^2, beta^2, gamma^2 derivatives
+                    -m * aimag(vpPN1), n * aimag(vpPN1), mn * real(vpPN0) /)  ! alpha beta, beta gamma, gamma alpha derivatives
+
+            ! accumulate contributions
+            wrk = wrk + xc                          ! std::transform(wrk, wrk + 10, xc, wrk, std::plus<Real>());//+m,+n
+            if (n.gt.0) wrk = wrk + xp              ! std::transform(wrk, wrk + 10, xp, wrk, std::plus<Real>());//+m,-n
+            if (m.gt.0) then 
+                wrk = wrk + xp                      ! std::transform(wrk, wrk + 10, xp, wrk, std::plus<Real>());//-m,+n
+                if (n.gt.0) wrk = wrk + xc          ! std::transform(wrk, wrk + 10, xc, wrk, std::plus<Real>());//-m,-n
+            end if
+        end do
+    end do
+end do
+
+! copy result to outputs and return correlation
+jac = wrk(1:4)    ! std::copy(wrk + 1, wrk + 4, jac);
+
+hes(0) = wrk(4+0) 
+hes(1) = wrk(4+3)
+hes(2) = wrk(4+5)
+hes(4) = wrk(4+1) 
+hes(5) = wrk(4+4)
+hes(8) = wrk(4+2)
+hes(3) = hes(1)
+hes(6) = hes(2) 
+hes(7) = hes(5)
+
+corr = wrk(0)
+
+end function SH_derivatives
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: SH_conjMult
+!
+!> @author Will Lenthe/Marc De Graef, Carnegie Mellon University
+!
+!> @brief   compute product of ab * cd and ad * conj(cd) without duplicate flops 
+!
+! @param ab: first  complex number (a + bi)
+! @param cd: second complex number (c + di)
+! @param vp: location to write ab *      cd
+! @param vc: location to write ab * conj(cd)
+! @return  : agP, agN
+!
+!> @date 03/18/19 MDG 1.0 original, based on Will Lenthe's classes in sht_xcorr.hpp
+!--------------------------------------------------------------------------
+recursive subroutine SH_conjMult(ab, cd, vp, vc) 
+!DEC$ ATTRIBUTES DLLEXPORT :: SH_conjMult
+
+IMPLICIT NONE
+
+complex(kind=dbl),INTENT(IN)        :: ab
+complex(kind=dbl),INTENT(IN)        :: cd
+complex(kind=dbl),INTENT(INOUT)     :: vp
+complex(kind=dbl),INTENT(INOUT)     :: vn
+
+real(kind=dbl)                      :: rr, ri, ir, ii
+
+rr = real(ab) * real(cd)
+ri = real(ab) * aimag(cd)
+ir = aimag(ab) * real(cd)
+ii = aimag(ab) * aimag(cd)
+
+vp = cmplx( rr-ii, ir+ri)
+vc = cmplx( rr+ii, ir-ri)
+
+end subroutine SH_conjMult
 
 end module SHcorrelator
