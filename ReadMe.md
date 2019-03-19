@@ -1,8 +1,10 @@
-# EMsoft Version 4.2
+# EMsoft Version 4.3
 
 This package contains a series of programs along with a library, mostly written in fortran-90 with some OpenCL bits, for the computation and visualization of scanning electron microscopy diffraction patterns, notably EBSD, ECP, TKD, and EKP. The programs can be used as standalone command-line programs, and produce HDF5 output files that can then be visualized using an IDL virtual app (Interactive Data Language) or read and processed from any other package with HDF5 capability.
 
-This is the first release of version 4.2; this release does not provide many changes to the package buty mainly serves to create a reference point for a Dictionary Indexing tutorial paper that will likely appear in the journal **Integrating Materials and Manufacturing Innovation**. This EMsoft version 4.2 release has the following DOI (through Zenodo):  
+This is the first release of version 4.3; this release provides significant additions to the package and many changes under the hood. See below for a detailed list.  There is also an important change to the open source model: a portion of our source code is now licensed for commercial entities.  Academic and government users can continue to use the source under the BSD2 license, as before.
+
+The Dictionary Indexing tutorial paper has now been published in the journal **Integrating Materials and Manufacturing Innovation**. The EMsoft version that goes along with this paper is version 4.2; this release has the following DOI (through Zenodo):  
 
 ![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
 
@@ -42,6 +44,16 @@ Note that *somepath* should be replaced with wherever you installed the SDK.  Th
 
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
+## New features in 4.3
+- There are a few minor bug fixes
+- We now provide support for Python wrapping! Thanks to Saransh Singh (LLNL), we have slightly restructured our source code to allow for Python routines to call any of the EMsoft library routines. For an example, see XXX. There is also a new wiki page describing this wrapping process in more detail.
+- We introduce a new diffraction pattern indexing algorithm that we call **EMSphInx**. We have successfully indexed patterns from the following modalities: EBSD, TKD, ECP, transmission Laue. 
+- For TEM diffraction contrast we release a series of new programs that allow the user to simulate STEM-DCI images.  These are essentially 4-D data sets in which there is a 2-D convergent beam electron diffraction (EBSD) pattern for each pixel in a 2-D field of view. The new codes allow for the manual definition of a small number of idealized crystallographic defects (straight dislocations, perfect stacking faults, spherical inclusions and voids), or displacement field input from phase field computations (currently only for gamma-gamma' superalloy microstructures), discrete dislocation dynamics, or molecular dynamics.
+- EMsoft now has two additional ways to manage file paths; please check the descriptions in the *FilePathConventions.md* file.
+- We have a new forward model for polarized light microscopy, based on the Mueller matrix calculus. This includes a model for light scattering from uniaxial crystal structures (e.g., Ti). Work is underway to incorporate biaxial structures as well as an indexing algorithm to take input images from an optical microscope and return a partial orientation map (c-axis only for uniaxial crystals).
+- We have a simple forward model for Laue diffraction; as for the EBSD case, the algorithm produces a master pattern based on kinematical structure factors.  This can be used to generate transmission Laue patterns (reflection Laue will be added later); the user can also apply the new spherical indexing algorithm to automatically index large Laue pattern data sets.
+
+
 ## New features in 4.2
 - There are a few minor bug fixes
 - The main reason for this release is establishing a DOI number so that this version can be linked to a Dictionary Indexing tutorial paper that will be published in the journal **Integrating Materials and Manufacturing Innovation**
@@ -58,15 +70,9 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 -  We have added several C-callable routines to the *EMsoftWrapperLib* folders; these are versions of other library functions that have been made callable by C and C++ programs.  Documentation for all routines is underway and will be posted on the previously mentioned wiki pages. 
 - Unfortunately, work on the *EMsoftWorkbench* has come to a temporary stand-still due to lack of development funds. Hopefully we will be able to pick that thread back up at some point in the near future...
 
-## What's coming in 4.3? 
+## What's coming in 4.4? 
 - We are working on improvements to all underlying libraries.
-- We will have a new Monte Carlo program using the Discrete Losses Approximation (DLA) instead of the Continuous Slowing Down Approximation (CSDA).  DLA produces a better result than CSDA, in particular with respect to the zero-loss peak (which is pretty much absent with CSDA).  So, in principle, we should get even better agreement with experimental EBSD, ECP, and TKD patterns!
-- In July of 2018, we started working on a new pattern indexing technique that we call *SphInx*; this approach relies on a spherical fast Fourier transform of an EBSD, ECP, or TKD master pattern to index experimental patterns.  This will be significantly faster than the current version of dictionary indexing and we are really excited about this new approach!
-- On the TEM side, we will have a number of new programs for the computation of STEM-DCI (diffraction contrast) images, using displacement field input from phase field, molecular dynamics, and discrete dislocation dynamics simulations.  We will also extend this approach to the SEM-based ECCI modality, and introduce the capability to compute EBSD patterns for deformed materials (i.e., containing dislocation networks derived from discrete dislocation dynamics computations).
-- With financial support from the Naval Research Lab, BlueQuartz can continue work on the *EMsoftWorkbench*; expect a new and more powerful version in this release.
-- We hope to add a few programs for the computation of optical polarized light intensity curves based on a Mueller-matrix approach.
-- Some of our developers told us they have been working on python wrappers for *EMsoft* !!!  If they are willing to make these available to us, then we will make sure they become part of one of the next releases.
-- We hope to release version 4.3 sometime in the late Spring/early Summer of 2019.
+- We hope to release version 4.4 by the end of 2019.
 
 
 ## License ##
