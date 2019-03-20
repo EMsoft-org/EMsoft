@@ -68,7 +68,6 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/spsort.f
   ${EMsoftLib_SOURCE_DIR}/STEMmodule.f90
   ${EMsoftLib_SOURCE_DIR}/symmetry.f90
-  ${EMsoftLib_SOURCE_DIR}/sphfft.f90
   ${EMsoftLib_SOURCE_DIR}/tiff.f90
   ${EMsoftLib_SOURCE_DIR}/timing.f90
   ${EMsoftLib_SOURCE_DIR}/typedefs.f90
@@ -77,10 +76,6 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/bmp.f90
   ${EMsoftLib_SOURCE_DIR}/tif.f90
   ${EMsoftLib_SOURCE_DIR}/lzw.f90
-  ${EMsoftLib_SOURCE_DIR}/Ylm.f90
-  ${EMsoftLib_SOURCE_DIR}/DSHT.f90
-  ${EMsoftLib_SOURCE_DIR}/SHCorrelator.f90
-  ${EMsoftLib_SOURCE_DIR}/Wigner.f90
 
   ${EMsoftLib_Additional_SRCS}
 )

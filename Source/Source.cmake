@@ -19,9 +19,10 @@ get_property(EMsoft_PACKAGE_DEST_PREFIX GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREF
 
 include("${EMsoft_SOURCE_DIR}/Source/EMsoft_Functions.cmake")
 
-option(EMsoft_ENABLE_HDF5_SUPPORT "Enable HDF5 based I/O" ON)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftLib ${PROJECT_BINARY_DIR}/EMsoftLib)
+add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftSphInxLib ${PROJECT_BINARY_DIR}/EMsoftSphInxLib)
 
+option(EMsoft_ENABLE_HDF5_SUPPORT "Enable HDF5 based I/O" ON)
 if( ${EMsoft_ENABLE_HDF5_SUPPORT} )
   add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftHDFLib ${PROJECT_BINARY_DIR}/EMsoftHDFLib)
 endif()
@@ -30,6 +31,7 @@ set(MODALITY_DIRS
   DictionaryIndexing
   OM
   SEM
+  SphInx
   TEM
   QC
   Utilities
