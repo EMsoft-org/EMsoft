@@ -378,6 +378,7 @@ end function openExpPatternFile
 !> @date 02/21/18 MDG 1.1 added optional Region-of-Interest capability
 !> @date 04/12/18 MDG 1.2 added option for patterns that don't start at record boundaries in up2 format
 !> @date 05/10/18 MDG 1.3 completely reworked up1 and up2 reading by switching to STREAM access instead of DIRECT access
+!> @date 03/21/19 MDG 1.4 fixed off-by-one error in column labels for up1 and up2 file formats
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
@@ -475,7 +476,7 @@ select case (itype)
       do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI
         kspot = (kk-kkstart)*patsz
         do jj=1,dims3(2)
-          jspot = jj*dims3(1) 
+          jspot = (jj-1)*dims3(1) 
           do ii=1,dims3(1)
             exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
             pixcnt = pixcnt + 1
