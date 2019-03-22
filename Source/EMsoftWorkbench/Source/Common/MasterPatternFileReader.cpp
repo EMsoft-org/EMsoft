@@ -101,7 +101,7 @@ MasterPatternFileReader::MasterPatternData MasterPatternFileReader::readMasterPa
       m_Observer->processObserverMessage(QObject::tr("Error: Unable to open object at path '%1'").arg(objName));
     }
   }
-  HDF5ScopedGroupSentinel sentinel(&ebsdMasterHeaderId, true);
+  H5ScopedGroupSentinel sentinel(&ebsdMasterHeaderId, true);
 
   mpData.mpProgramName = readStringDataset(ebsdMasterHeaderId, EMsoft::Constants::ProgramName);
   mpData.mpVersionId = readStringDataset(ebsdMasterHeaderId, EMsoft::Constants::Version);

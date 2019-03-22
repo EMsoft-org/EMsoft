@@ -276,7 +276,7 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp      ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp      ! various parameters
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp           ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -305,7 +305,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+elp = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -313,9 +313,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,enl%numsy
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   master%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   master%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   master%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   master%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   master%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   master%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -364,6 +364,8 @@ deallocate(z)
 
 ! then get the direction cosines for the pattern center, keeping in mind that for TKD, 
 ! the pattern center need not lie on the detector
+
+! this needs to be verified since we have flipped the pattern upside down ... [MDG, 02/19/2019]
   ipx = enl%numsx/2+nint(enl%xpc)
   ipy = enl%numsy/2+nint(enl%ypc)
   if (abs(ipy).gt.enl%numsy) then 
@@ -396,10 +398,10 @@ deallocate(z)
         end if
 ! interpolate the intensity 
         do k=Emin,Emax 
-          acc%accum_e_detector(k,i,j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
-                                        acc%accum_e(k,nixp,niy) * dx * dym + &
-                                        acc%accum_e(k,nix,niyp) * dxm * dy + &
-                                        acc%accum_e(k,nixp,niyp) * dx * dy )
+          acc%accum_e_detector(k,i,elp-j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
+                                                    acc%accum_e(k,nixp,niy) * dx * dym + &
+                                                    acc%accum_e(k,nix,niyp) * dxm * dy + &
+                                                    acc%accum_e(k,nixp,niyp) * dx * dy )
         end do
     end do
   end do 

@@ -113,12 +113,17 @@ if( ${CMP_GENERATE_VERSION_STRING} )
         # Find Git executable
     Find_package(Git)
 
+    set(PROJECT_EXPORT_MACRO ${CMP_PROJECT_NAMESPACE}_EXPORT)
+    if( "${CMP_PROJECT_NAMESPACE}" STREQUAL "")
+      set(PROJECT_EXPORT_MACRO "")
+    endif()
+
     cmpRevisionString( GENERATED_HEADER_FILE_PATH "${CMP_VERSION_HEADER_FILE_NAME}"
                             GENERATED_SOURCE_FILE_PATH "${CMP_VERSION_SOURCE_FILE_NAME}"
                             GENERATED_MACRO_HEADER_PATH "${CMP_VERSION_MACRO_FILE_NAME}"
                             NAMESPACE "${CMP_PROJECT_NAMESPACE}"
                             PROJECT_NAME "${PROJECT_NAME}"
-                            EXPORT_MACRO "${CMP_PROJECT_NAMESPACE}_EXPORT")
+                            EXPORT_MACRO "${PROJECT_EXPORT_MACRO}")
    
 endif()
 

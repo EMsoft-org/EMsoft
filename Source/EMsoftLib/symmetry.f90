@@ -995,6 +995,39 @@ end subroutine GetSetting
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: ListPointGroups
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief list the crystallographic point groups in tabular form
+!
+!> @date  01/14/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine ListPointGroups
+!DEC$ ATTRIBUTES DLLEXPORT :: ListPointGroups
+
+use io 
+use typedefs
+
+IMPLICIT NONE
+
+integer(kind=irg)         :: i, j 
+
+call Message('Crystallographic Point Groups')
+call Message('-----------------------------')
+
+do i=1,32
+ if (mod(i,8).eq.0) then
+  write (6,"(1x,i3,':',A5,5x)") i,PGTHD(i)
+ else
+  write (6,"(1x,i3,':',A5,5x,$)") i,PGTHD(i)
+ end if
+end do
+
+end subroutine ListPointGroups
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: GetSpaceGroup
 !
 !> @author Marc De Graef, Carnegie Mellon University

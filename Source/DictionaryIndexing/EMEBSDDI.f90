@@ -44,6 +44,7 @@
 !> @date 03/10/16 MDG 1.3 added h5ebsd formatted output
 !> @date 11/14/16 MDG 1.4 added code to read dictionary patterns from h5 file
 !> @date 04/04/18 MDG 2.0 separated MC and MP name lists and data structures (all internal changes)
+!> @date 02/19/19 MDG 2.1 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 program EMEBSDDI
 
@@ -177,6 +178,9 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
     enl%energymin = dinl%energymin
     enl%energymax = dinl%energymax
     call GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
+
+    ! also copy the sample tilt angle into the correct variable for writing to the dot product file
+    dinl%MCsig = mcnl%sig
 else    ! this is a static run using an existing dictionary
 ! we'll use the same MasterSubroutine so we need to at least allocate the input structures
 ! even though we will not make use of them in static mode
@@ -341,7 +345,7 @@ character(15)                                       :: tstre
 character(3)                                        :: vendor
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, fname, clname, ename, sourcefile, &
-                                                       datagroupname, dictfile
+                                                       datagroupname, dictfile, attname
 integer(hsize_t)                                    :: expwidth, expheight
 integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_size_t),target                            :: slength
@@ -373,6 +377,7 @@ integer(kind=irg)                                   :: NumLines
 character(fnlen)                                    :: TitleMessage, exectime
 character(100)                                      :: c
 character(1000)                                     :: charline
+character(3)                                        :: stratt
 
 type(HDFobjectStackType),pointer                    :: HDF_head
 
@@ -421,6 +426,18 @@ if (trim(dinl%indexingmode).eq.'static') then
     datagroupname = 'EBSD'
     hdferr = HDF_openGroup(datagroupname, HDF_head)
     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup:EBSD')
+
+! test the HDF_FileVersion to make sure that the dictionary file is recent enough
+    attname = 'HDF_FileVersion'
+    hdferr = HDF_getStringAttributeFromGroup(attname, stratt, 3_SIZE_T, HDF_head)
+
+    if (stratt.eq.'4.0') then
+        call Message('The dictionary file was created with an older version of the EMEBSD program.')
+        call Message('This file can not be used by the present program; must be version 4.1 or higher.')
+        call Message('')
+        call FatalError('MasterSubroutine','Incompatible dictionary file; please rerun the EMEBSD program.')
+    end if
+
 
     ! we already have the xtalname string from the Monte Carlo name list
     xtalname = trim(mcnl%xtalname)

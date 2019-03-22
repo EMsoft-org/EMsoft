@@ -1,0 +1,20 @@
+ &LaueMasterData
+! number of pixels along semi-edge of square Lambert pattern
+ npx = 500,
+! number of pixels in semi-edge of sampling patch
+ patchw = 5,
+! minimum wave length [nm]
+ lambdamin = 0.10,
+! maximnum wave length [nm]
+ lambdamax = 0.16,
+! concentration parameter for von Mises-Fisher distribution
+ kappaVMF = 50000.D0,
+! intensity truncation factor; any reflection with intensity less than intfactor * I(000) will be ignored
+ intfactor = 0.0001D0,
+! crystal structure file name
+ xtalname = 'undefined',
+! output file name [relative to EMdatapathname, .h5 extension]
+ hdfname = 'undefined',
+! output file name [relative to EMdatapathname, .tiff or .tif extension]
+ tiffname = 'undefined',
+ /

@@ -196,6 +196,7 @@ end program EMTKD
 !> @date 11/15/16  MDG 6.7 added CrystalData output to HDF file and removed unused entries.
 !> @date 02/07/17  MDG 6.8 corrected bug when number of Euler angle triplets was smaller than requested number of threads
 !> @date 05/09/17  MDG 7.0 forked program for TKD pattern simulations...
+!> @date 02/19/19  MDG 7.1 updates HDFFileVersion to 4.1
 !--------------------------------------------------------------------------
 subroutine ComputeTKDpatterns(enl, angles, acc, master, progname, nmldeffile)
 
@@ -399,12 +400,17 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup EMData')
 ! create the TKD group and add a HDF_FileVersion attribbute to it 
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createGroup TKD')
-  HDF_FileVersion = '4.0'
+! before Feb. 19, 2019, an undetected error caused all patterns to be upside down in the Kikuchi bands only,
+! not in the background intensity profile.  This was compensated by a pattern flip of all experimental 
+! patterns in the dictionary indexing program, but when taking individual patterns from this program, they
+! are actually upside down in all versions through HDF_FileVersion 4.0.  As of 4.1, the patterns are in the
+! correct orientation.  This was detected by manually indexing a simulated pattern.
+  HDF_FileVersion = '4.1'
   attributename = SC_HDFFileVersion
   hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
 
 ! =====================================================
-! The following write commands constitute HDF_FileVersion = 4.0
+! The following write commands constitute HDF_FileVersion = 4.0 and above
 ! =====================================================
 
 dataset = SC_numangles
@@ -420,7 +426,7 @@ dataset = SC_Eulerangles
 hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerangles, 3, enl%numangles, HDF_head) 
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeDatasetFloatArray2D Eulerangles')
 ! =====================================================
-! end of HDF_FileVersion = 4.0 write statements
+! end of HDF_FileVersion = 4.0 and above write statements
 ! =====================================================
 
 ! and we leave this group open for further data output from the main program loop ... 

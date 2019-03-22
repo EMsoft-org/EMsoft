@@ -66,10 +66,11 @@ type EBSDDIdataType
   integer(kind=irg)             :: FZcnt
   integer(kind=irg)             :: Nexp
   integer(kind=irg)             :: pgnum
-  real(kind=sgl),allocatable    :: ADP(:)
+  integer(kind=sgl),allocatable :: ADP(:,:)
   real(kind=sgl),allocatable    :: AverageOrientations(:,:)
   real(kind=sgl),allocatable    :: CI(:)
   real(kind=sgl),allocatable    :: EulerAngles(:,:)
+  real(kind=sgl),allocatable    :: DictionaryEulerAngles(:,:)
   real(kind=sgl),allocatable    :: Fit(:)
   real(kind=sgl),allocatable    :: IQ(:)
   real(kind=sgl),allocatable    :: KAM(:,:)
@@ -597,6 +598,7 @@ end subroutine EBSDIndexingreadMasterfile
 !> @date 07/07/15   SS  1.2 correction to the omega tilt parameter; old version in the comments
 !> @date 01/26/16   SS  1.3 adjusted for EBSDIndexing
 !> @date 06/12/16  MDG  1.4 added correction for effetive detector pixel size w.r.t. equal area mapping
+!> @date 02/19/19  MDG  2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine EBSDIndexingGenerateDetector(enl, acc, master, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDIndexingGenerateDetector
@@ -621,7 +623,7 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp      ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp      ! various parameters
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp           ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -650,7 +652,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+elp = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -658,9 +660,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,enl%numsy
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   master%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   master%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   master%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   master%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   master%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   master%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -737,10 +739,10 @@ deallocate(z)
        end if
 ! interpolate the intensity 
        do k=Emin,Emax 
-          acc%accum_e_detector(k,i,j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
-                                        acc%accum_e(k,nixp,niy) * dx * dym + &
-                                        acc%accum_e(k,nix,niyp) * dxm * dy + &
-                                        acc%accum_e(k,nixp,niyp) * dx * dy )
+          acc%accum_e_detector(k,i,elp-j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
+                                                    acc%accum_e(k,nixp,niy) * dx * dym + &
+                                                    acc%accum_e(k,nix,niyp) * dxm * dy + &
+                                                    acc%accum_e(k,nixp,niyp) * dx * dy )
        end do
     end do
   end do 
@@ -769,6 +771,7 @@ end subroutine EBSDIndexingGenerateDetector
 !> @date 01/26/16   SS  1.3 adjusted for EBSDIndexing
 !> @date 06/12/16  MDG  1.4 added correction for effetive detector pixel size w.r.t. equal area mapping
 !> @date 07/06/17  MDG  2.0 split from regular routine for an N-line detector
+!> @date 02/19/19  MDG  3.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine EBSDFastIndexingGenerateDetector(enl, acc, master, nlines, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDFastIndexingGenerateDetector
@@ -794,7 +797,8 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, ystep, nixp, niyp   ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, ystep, nixp, &
+                                                   niyp, elp   ! various parameters
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -828,7 +832,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+elp = nlines + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -836,9 +840,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,nlines
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   master%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   master%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   master%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   master%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   master%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   master%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -915,10 +919,10 @@ deallocate(z)
         end if
 ! interpolate the intensity 
         do k=Emin,Emax 
-          acc%accum_e_detector(k,i,j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
-                                        acc%accum_e(k,nixp,niy) * dx * dym + &
-                                        acc%accum_e(k,nix,niyp) * dxm * dy + &
-                                        acc%accum_e(k,nixp,niyp) * dx * dy )
+          acc%accum_e_detector(k,i,elp-j) = gam * ( acc%accum_e(k,nix,niy) * dxm * dym + &
+                                                    acc%accum_e(k,nixp,niy) * dx * dym + &
+                                                    acc%accum_e(k,nix,niyp) * dxm * dy + &
+                                                    acc%accum_e(k,nixp,niyp) * dx * dy )
         end do
     end do
   end do 
@@ -1352,11 +1356,13 @@ end subroutine CalcEBSDPatternSingleApprox
 !> @param hdferr error code
 !
 !> @date 03/12/18 MDG 1.0 started new routine
+!> @date 02/05/19 MDG 1.1 added presentFolder optional keyword to turn off standard path handling
 !--------------------------------------------------------------------------
 recursive subroutine readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, getADP, getAverageOrientations, getCI, &
                                             getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
                                             getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
-                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, getRefinedEulerAngles)
+                                            getValid, getXPosition, getYPosition, getRefinedDotProducts, &
+                                            getRefinedEulerAngles, getDictionaryEulerAngles, presentFolder)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDDotProductFile
 
 use local
@@ -1378,6 +1384,7 @@ logical,INTENT(IN),OPTIONAL                         :: getADP
 logical,INTENT(IN),OPTIONAL                         :: getAverageOrientations
 logical,INTENT(IN),OPTIONAL                         :: getCI
 logical,INTENT(IN),OPTIONAL                         :: getEulerAngles
+logical,INTENT(IN),OPTIONAL                         :: getDictionaryEulerAngles
 logical,INTENT(IN),OPTIONAL                         :: getFit
 logical,INTENT(IN),OPTIONAL                         :: getIQ
 logical,INTENT(IN),OPTIONAL                         :: getKAM
@@ -1394,6 +1401,7 @@ logical,INTENT(IN),OPTIONAL                         :: getXPosition
 logical,INTENT(IN),OPTIONAL                         :: getYPosition
 logical,INTENT(IN),OPTIONAL                         :: getRefinedDotProducts
 logical,INTENT(IN),OPTIONAL                         :: getRefinedEulerAngles
+logical,INTENT(IN),OPTIONAL                         :: presentFolder 
 
 character(fnlen)                                    :: infile, groupname, dataset
 logical                                             :: stat, readonly, g_exists
@@ -1406,8 +1414,13 @@ character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 ! we assume that the calling program has opened the HDF interface
 
-infile = trim(EMsoft_getEMdatapathname())//trim(dpfile)
-infile = EMsoft_toNativePath(infile)
+! check to see if we are using the standard path handling or omitting the path completely
+if (present(presentFolder)) then 
+  infile = trim(dpfile)
+else 
+  infile = trim(EMsoft_getEMdatapathname())//trim(dpfile)
+  infile = EMsoft_toNativePath(infile)
+end if
 
 ! is this a proper HDF5 file ?
 call h5fis_hdf5_f(trim(infile), stat, hdferr)
@@ -1658,9 +1671,9 @@ dataset = SC_PointGroupNumber
 ! various optional arrays
 if (present(getADP)) then
   if (getADP.eqv..TRUE.) then
-!   dataset = SC_ADP
-!   call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%ADP)
-    call Message('ADP','reading the ADP variable is not yet implemented')
+   dataset = SC_AvDotProductMap
+   allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
+   call HDF_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
   end if 
 end if
 
@@ -1682,6 +1695,13 @@ if (present(getEulerAngles)) then
   if (getEulerAngles.eqv..TRUE.) then
     dataset = SC_EulerAngles
     call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%EulerAngles)
+  end if 
+end if
+
+if (present(getDictionaryEulerAngles)) then
+  if (getDictionaryEulerAngles.eqv..TRUE.) then
+    dataset = 'DictionaryEulerAngles'
+    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%DictionaryEulerAngles)
   end if 
 end if
 

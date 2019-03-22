@@ -61,6 +61,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                                     SOLUTION_FOLDER EMsoftPublic/Utilities 
                                     INSTALL_PROGRAM TRUE)
 
+     Add_EMsoft_Executable(TARGET EMlistTC
+                                    SOURCES ${APP_DIR}/EMlistTC.f90 
+                                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                                    SOLUTION_FOLDER EMsoftPublic/Utilities 
+                                    INSTALL_PROGRAM TRUE)
+
      Add_EMsoft_Executable(TARGET EMeqvPS
                                     SOURCES ${APP_DIR}/EMeqvPS.f90 
                                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
@@ -179,6 +185,12 @@ endif()
 
 Add_EMsoft_Executable(TARGET EMlistSG 
                               SOURCES ${APP_DIR}/EMlistSG.f90 
+                              LINK_LIBRARIES EMsoftLib
+                              SOLUTION_FOLDER EMsoftPublic/Utilities 
+                              INSTALL_PROGRAM TRUE)
+
+Add_EMsoft_Executable(TARGET EMcuboMK
+                              SOURCES ${APP_DIR}/EMcuboMK.f90 
                               LINK_LIBRARIES EMsoftLib
                               SOLUTION_FOLDER EMsoftPublic/Utilities 
                               INSTALL_PROGRAM TRUE)

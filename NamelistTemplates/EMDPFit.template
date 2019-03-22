@@ -70,8 +70,8 @@
  delta 			= 50.0,
 
 ! number of CCD pixels along x and y
- numsx 			= 640,
- numsy 			= 480,
+ numsx 			= 0,
+ numsy 			= 0,
 
 ! incident beam current [nA]
  beamcurrent 	= 150.0,

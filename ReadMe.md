@@ -1,10 +1,10 @@
-# EMsoft Version 4.1
+# EMsoft Version 4.2
 
 This package contains a series of programs along with a library, mostly written in fortran-90 with some OpenCL bits, for the computation and visualization of scanning electron microscopy diffraction patterns, notably EBSD, ECP, TKD, and EKP. The programs can be used as standalone command-line programs, and produce HDF5 output files that can then be visualized using an IDL virtual app (Interactive Data Language) or read and processed from any other package with HDF5 capability.
 
-This is the first release of version 4.1; once again, there have been substantial changes to how the package is configured, in particular the building of the EMsoft_SDK using the EMsoftSuperbuild repository. 
+This is the first release of version 4.2; this release does not provide many changes to the package buty mainly serves to create a reference point for a Dictionary Indexing tutorial paper that will likely appear in the journal **Integrating Materials and Manufacturing Innovation**. This EMsoft version 4.2 release has the following DOI (through Zenodo):  
 
-**You will need to rebuild your SDK using the updated EMsoftSuperbuild!!!**
+![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
 
 ## Financial Support 
 EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, ws started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of TKD and related modalities, including the creation of routines that can generate PoVRay visualization script files, was performed with support from an ONR Vannevar Bush Fellowship, N00014-­16-­1-­2821.
@@ -42,6 +42,9 @@ Note that *somepath* should be replaced with wherever you installed the SDK.  Th
 
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
+## New features in 4.2
+- There are a few minor bug fixes
+- The main reason for this release is establishing a DOI number so that this version can be linked to a Dictionary Indexing tutorial paper that will be published in the journal **Integrating Materials and Manufacturing Innovation**
 
 ## New features in 4.1
 - The EMsoft superbuild has been updated and made more robust, so you will need to rebuild your SDK if you are going to work with this release.
@@ -55,7 +58,7 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 -  We have added several C-callable routines to the *EMsoftWrapperLib* folders; these are versions of other library functions that have been made callable by C and C++ programs.  Documentation for all routines is underway and will be posted on the previously mentioned wiki pages. 
 - Unfortunately, work on the *EMsoftWorkbench* has come to a temporary stand-still due to lack of development funds. Hopefully we will be able to pick that thread back up at some point in the near future...
 
-## What's coming in 4.2? 
+## What's coming in 4.3? 
 - We are working on improvements to all underlying libraries.
 - We will have a new Monte Carlo program using the Discrete Losses Approximation (DLA) instead of the Continuous Slowing Down Approximation (CSDA).  DLA produces a better result than CSDA, in particular with respect to the zero-loss peak (which is pretty much absent with CSDA).  So, in principle, we should get even better agreement with experimental EBSD, ECP, and TKD patterns!
 - In July of 2018, we started working on a new pattern indexing technique that we call *SphInx*; this approach relies on a spherical fast Fourier transform of an EBSD, ECP, or TKD master pattern to index experimental patterns.  This will be significantly faster than the current version of dictionary indexing and we are really excited about this new approach!
@@ -63,7 +66,7 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 - With financial support from the Naval Research Lab, BlueQuartz can continue work on the *EMsoftWorkbench*; expect a new and more powerful version in this release.
 - We hope to add a few programs for the computation of optical polarized light intensity curves based on a Mueller-matrix approach.
 - Some of our developers told us they have been working on python wrappers for *EMsoft* !!!  If they are willing to make these available to us, then we will make sure they become part of one of the next releases.
-- We hope to release version 4.2 sometime in the late Spring of 2019.
+- We hope to release version 4.3 sometime in the late Spring/early Summer of 2019.
 
 
 ## License ##

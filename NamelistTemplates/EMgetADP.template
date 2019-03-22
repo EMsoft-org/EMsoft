@@ -22,8 +22,8 @@
 ! number of regions for adaptive histogram equalization
  nregions = 10,
 ! number of pattern pixels along x and y
- numsx = 640,
- numsy = 480,
+ numsx = 0,
+ numsy = 0,
 !
 !###################################################################
 ! INPUT FILE PARAMETERS

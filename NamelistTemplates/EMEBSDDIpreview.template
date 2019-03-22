@@ -4,8 +4,8 @@
 ! The values below are the default values for this program
 !
 ! number of pattern pixels along x and y
- numsx = 640,
- numsy = 480,
+ numsx = 0,
+ numsy = 0,
 ! number of patterns along x and y 
  ipf_wd = 100,
  ipf_ht = 100,

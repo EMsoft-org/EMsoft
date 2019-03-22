@@ -95,30 +95,41 @@ real(kind=dbl), parameter :: epsijkd = 1.D0
 ! rotations tutorial paper for an in-depth explanation.  These changes propagate
 ! to a number of files, notably quaternions.f90, and everywhere else that quaternions
 ! and rotations in general are used.
+!
+! Reference:  D.J. Rowenhorst, A.D. Rollett, G.S. Roher, M.A. Groeber, M.A. Jackson, 
+!  P.J. Konijnenberg, and M. De Graef. "Tutorial: consistent representations of and 
+!  conversions between 3D rotations". Modeling and Simulations in Materials Science 
+!  and Engineering, 23, 083501 (2015).
+!
 ! ****************************************************
 ! ****************************************************
 ! ****************************************************
 
 
 ! various physical constants
-!> cPi		= pi [dimensionless]
-!> cLight	= velocity of light [m/s]
-!> cPlanck	= Planck''s constant [Js]
+!> cPi		    = pi [dimensionless]
+!> cLight	    = velocity of light [m/s]
+!> cPlanck	    = Planck''s constant [Js]
 !> cBoltzmann	= Boltmann constant [J/K]
-!> cPermea	= permeability of vacuum [4pi 10^7 H/m]
-!> cPermit	= permittivity of vacuum [F/m]
-!> cCharge	= electron charge [C]
+!> cPermea	    = permeability of vacuum [4pi 10^7 H/m]
+!> cPermit	    = permittivity of vacuum [F/m]
+!> cCharge	    = electron charge [C]
 !> cRestmass	= electron rest mass [kg]
-!> cMoment	= electron magnetic moment [J/T]
-!> cJ2eV	= Joules per eV
+!> cMoment	    = electron magnetic moment [J/T]
+!> cJ2eV	    = Joules per eV
 !> cAvogadro	= Avogadro's constant [mol^-1]
-
+!
+! The values of several of these constants have been updated to the new SI 2019 exact values [MDG, 01/22/19]
+! The exact values below are the ones for cLight, cPlanck, cBoltzmann, cCharge; the others are derived using 
+! the standard relations in the 2019 SI units document.  In the derivation, we used 0.0072973525664D0 as the 
+! value for the hyperfine structure constant alpha. 
+!
 real(kind=dbl), parameter :: cPi=3.141592653589793238D0, cLight = 299792458.D0, &
-                             cPlanck = 6.62606957D-34, cBoltzmann = 1.3806488D-23,  &
-                             cPermea = 1.2566370614D-6, cPermit = 8.854187817D-12, &
-                             cCharge = 1.602176565D-19, cRestmass = 9.10938291D-31, &
-                             cMoment = 9.28476430D-24, cJ2eV = 1.602176565D-19, &
-                             cAvogadro = 6.02214129D23
+                             cPlanck = 6.62607015D-34, cBoltzmann = 1.380649D-23,  &
+                             cPermea = 1.2566370616D-6, cPermit = 8.8541878163D-12, &
+                             cCharge = 1.602176634D-19, cRestmass = 9.1093837090D-31, &
+                             cMoment = 9.2740100707D-24, cJ2eV = 1.602176565D-19, &
+                             cAvogadro = 6.02214076D23
 !DEC$ ATTRIBUTES DLLEXPORT :: cPi
 !DEC$ ATTRIBUTES DLLEXPORT :: cPlanck
 !DEC$ ATTRIBUTES DLLEXPORT :: cPermea

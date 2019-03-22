@@ -223,6 +223,18 @@ type OMNameListType
         character(fnlen)        :: tiffprefix
 end type OMNameListType
 
+! namelist for the EMLauemaster program 
+type LaueMasterNameListType
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: patchw
+        real(kind=sgl)          :: lambdamin
+        real(kind=sgl)          :: lambdamax
+        real(kind=dbl)          :: kappaVMF
+        real(kind=dbl)          :: intfactor
+        character(fnlen)        :: hdfname
+        character(fnlen)        :: tiffname
+        character(fnlen)        :: xtalname
+end type LaueMasterNameListType
 
 ! namelist for the EMMCLIPSS program ! PGC added 12/01/15
 type MCLIPSSNameListType

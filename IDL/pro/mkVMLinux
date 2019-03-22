@@ -1,0 +1,9 @@
+#!/bin/bash
+idl mkVM_CBEDgui.txt generateVM-Linux.txt
+idl mkVM_SEMgui.txt generateVM-Linux.txt
+idl mkVM_Efitgui.txt generateVM-Linux.txt
+
+rm *.sav
+
+cd /home/EMsoft/EMsoftBuild/Bin/IDL
+zip -q -r VMappsLinux.zip VMappsLinux

@@ -373,7 +373,7 @@ integer(kind=irg),parameter :: SGPG(32) =(/1,2,3,6,10,16,25,47,75,81,83,89,99,11
 integer(kind=irg),parameter :: SGsym(73) =(/1,2,3,5,6,8,10,12,16,21,22,23,25,35,38,42,44,47, &
                                             65,69,71,75,79,81,82,83,87,89,97,99,107,111,115, &
                                             119,121,123,139,143,146,147,148,149,150,155,156, &
-                                            157,160,162,164,165,168,174,175,177,183,187,189, &
+                                            157,160,162,164,166,168,174,175,177,183,187,189, &
                                             191,195,196,197,200,202,204,207,209,211,215,216, &
                                             217,221,225,229/)
 !DEC$ ATTRIBUTES DLLEXPORT :: SGsym
@@ -440,9 +440,17 @@ character(5),parameter  :: PGTHD(36) =(/'    1','   -1','    2','    m','  2/m',
                                         ' -43m',' m-3m','  532','  822',' 1022',' 1222' /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHD
 
+!> 32 3D point group orders in International Tables order
+integer(kind=irg),parameter       :: PGTHDorder(32) = (/ 1, 2, 2, 2, 4, 4, 4, 8, 4, 8, &
+                                                         8, 8, 8, 8,16, 3, 6, 6, 6,12, &
+                                                         6,12,12,12,12,12,24,12,24,24, &
+                                                        24,32 /)
+!DEC$ ATTRIBUTES DLLEXPORT :: PGTHDorder
+
+
 !> 3D point groups : purely rotational point groups corresponding to each point group
-integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
-                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33,34,35,36/)
+integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,1,3,6,3,6,9,3,9,12,9,6,12,16,16, &
+                                                  18,16,18,21,16,21,24,21,18,24,28,28,30,28,30,33,34,35,36/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGrot
 
 !> 3D point groups : Laue group number
@@ -936,6 +944,22 @@ type refliststrongsubstype
     integer(kind=irg)                       :: nns 
     type(refliststrongsubstype),pointer     :: next ! only strong beams are considered
 end type refliststrongsubstype
+
+
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+! linked list for Laue XRD computations.
+type Laue_g_list  
+  integer(kind=irg)   :: hkl(3)       ! Miller indices
+  real(kind=dbl)      :: xyz(3)       ! Cartesian components of the plane normal
+  real(kind=dbl)      :: tt           ! 2theta value
+  real(kind=dbl)      :: polar        ! polarization factor
+  real(kind=dbl)      :: sfs          ! |structure factor|^2
+  type(Laue_g_list),pointer :: next   ! connection to next reflector
+end type Laue_g_list
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------

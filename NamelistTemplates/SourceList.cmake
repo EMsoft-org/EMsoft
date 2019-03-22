@@ -40,7 +40,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMoSLERP.template
   ${APP_DIR}/EMfoil.template
   ${APP_DIR}/EMsampleRFZ.template
-  ${APP_DIR}/EMRefineOrientation.template
+  ${APP_DIR}/EMFitOrientation.template
   ${APP_DIR}/MDElectronProp.template
   ${APP_DIR}/EMTKDmaster.template
   ${APP_DIR}/EMTKD.template
@@ -51,6 +51,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMEBSD2DQCmaster.template
   ${APP_DIR}/EMEBSDQCmaster.template
   ${APP_DIR}/EMECPQCmaster.template
+  ${APP_DIR}/EMLauemaster.template
 )
 
 if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")

@@ -68,11 +68,11 @@ class H5Support_EXPORT HDF5ScopedFileSentinel
     void* _oldHDF_error_client_data;
 };
 
-class H5Support_EXPORT HDF5ScopedGroupSentinel
+class H5Support_EXPORT H5ScopedGroupSentinel
 {
   public:
-    HDF5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors);
-    virtual ~HDF5ScopedGroupSentinel();
+    H5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors);
+    virtual ~H5ScopedGroupSentinel();
     void addGroupId(hid_t* gid);
 
   private:

@@ -85,6 +85,7 @@ end program EMECP
 !> @date 08/27/14 SS 1.0 f90
 !> @date 13/10/15 SS 2.0 added detector model+new GetVectorCone routine+OpenMP+hdf5
 !> @date 09/13/18 MDG 2.1 fix off-by-one error in writing of pattern byte arrays (fixes issue 26)
+!> @date 02/19/19 MDG 2.2 updates HDF_FileVersion to 4.1
 !-------------------------------------------------------------------------------------
 subroutine ECpattern(ecpnl, progname, nmldeffile)
 
@@ -278,12 +279,17 @@ hdferr = HDF_createGroup(groupname, HDF_head)
 ! create the ECP group and add a HDF_FileVersion attribbute to it 
 groupname = SC_ECP
   hdferr = HDF_createGroup(groupname, HDF_head)
-  HDF_FileVersion = '4.0'
+! before Feb. 19, 2019, an undetected error caused all patterns to be upside down in the Kikuchi bands only,
+! not in the background intensity profile.  This was compensated by a pattern flip of all experimental 
+! patterns in the dictionary indexing program, but when taking individual patterns from this program, they
+! are actually upside down in all versions through HDF_FileVersion 4.0.  As of 4.1, the patterns are in the
+! correct orientation.  This was detected by manually indexing a simulated pattern.
+  HDF_FileVersion = '4.1'
   attributename = SC_HDFFileVersion
   hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
 
 ! =====================================================
-! The following write commands constitute HDF_FileVersion = 4.0
+! The following write commands constitute HDF_FileVersion = 4.0 and above
 ! =====================================================
 ! we need to write the image dimensions
 dataset = SC_npix
@@ -292,7 +298,7 @@ hdferr = HDF_writeDatasetInteger(dataset, ecpnl%npix, HDF_head)
 dataset = SC_numangledictionary
 hdferr = HDF_writeDatasetInteger(dataset, ecpnl%numangle_anglefile, HDF_head) 
 ! =====================================================
-! end of HDF_FileVersion = 4.0 write statements
+! end of HDF_FileVersion = 4.0 and above write statements
 ! =====================================================
 
 

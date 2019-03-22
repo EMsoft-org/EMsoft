@@ -28,6 +28,8 @@
 * during an MSVC build */
 #cmakedefine DREAM3D_DISABLE_MSVC_WARNINGS
 
+#define H5Support_USE_MUTEX
+
 #if (_MSC_VER >= 1)
 
   #pragma warning (error: 4715) /* Not all control points return a value */

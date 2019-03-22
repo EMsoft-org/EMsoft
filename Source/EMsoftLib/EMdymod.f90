@@ -176,7 +176,8 @@ contains
 !> @date 01/13/15 MDG 1.4 after split with EMsoftCgetEBSDPatterns subroutine, removed DREAM.3D interfacing stuff
 !> @date 07/10/16 MDG 1.5 added energy min/max parameters
 !> @date 08/03/16 MDG 1.6 corrected normalizing issue in rgx,y,z arrays that causes NANs to be returned from Lambert projection routines
-!> @date 08/R2516 MDG 1.7 added transfer optics barrel distortion to rgx,y,z arrays.
+!> @date 08/25/16 MDG 1.7 added transfer optics barrel distortion to rgx,y,z arrays.
+!> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine getEBSDPatterns(ipar, fpar, EBSDpattern, quats, accum_e, mLPNH, mLPSH)
 !DEC$ ATTRIBUTES DLLEXPORT :: getEBSDPatterns
@@ -238,7 +239,7 @@ real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, pcxd, pcyd, xx, yy     ! distances
-integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy, epl ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, gam, pcvec(3), dp, calpha           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -287,31 +288,32 @@ if (ipar(1).ge.1) then
 ! (rgx, rgy) to (rgx,rgy) * (1+alphaBD * (rgx^2+rgy^2))
 ! in other words, we pre-distort the sampling grid with the barrel distortion.
 
+epl = ipar(3)+1
   L2 = fpar(7) * fpar(7)
   do j=1,ipar(2)
     Ls = -sw * scin_x(j) + fpar(7) * cw
     Lc = cw * scin_x(j) + fpar(7) * sw
     do i=1,ipar(3)
 !    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-     rgx(j,i) = (scin_y(i) * ca + sa * Ls) ! * rhos
-     rgy(j,i) = Lc ! * rhos
-     rgz(j,i) = (-sa * scin_y(i) + ca * Ls) ! * rhos
+     rgx(j,epl-i) = (scin_y(i) * ca + sa * Ls) ! * rhos
+     rgy(j,epl-i) = Lc ! * rhos
+     rgz(j,epl-i) = (-sa * scin_y(i) + ca * Ls) ! * rhos
 ! apply Barrel Distortion ?
      if (fpar(10).ne.0.0) then
 ! shift the components to the detector center coordinate frame
-       xx = rgx(j,i)-pcyd
-       yy = rgy(j,i)+pcxd
+       xx = rgx(j,epl-i)-pcyd
+       yy = rgy(j,epl-i)+pcxd
 ! compute the distortion amount; the factor of 10^(-10) is inserted here...
        sx = 1.0 + 1.E-10 * fpar(10) * (xx**2+yy**2) 
 ! and shift them back to the pattern center reference frame
-       rgx(j,i) = xx*sx+pcyd
-       rgy(j,i) = yy*sx-pcxd
+       rgx(j,epl-i) = xx*sx+pcyd
+       rgy(j,epl-i) = yy*sx-pcxd
      end if
 ! make sure that these vectors are normalized !
-     x = sqrt(rgx(j,i)**2+rgy(j,i)**2+rgz(j,i)**2)
-     rgx(j,i) = rgx(j,i) / x
-     rgy(j,i) = rgy(j,i) / x
-     rgz(j,i) = rgz(j,i) / x
+     x = sqrt(rgx(j,epl-i)**2+rgy(j,epl-i)**2+rgz(j,epl-i)**2)
+     rgx(j,epl-i) = rgx(j,epl-i) / x
+     rgy(j,epl-i) = rgy(j,epl-i) / x
+     rgz(j,epl-i) = rgz(j,epl-i) / x
     end do
   end do
 
@@ -379,10 +381,10 @@ if (ipar(1).ge.1) then
 
 ! interpolate the intensity 
         do k= Emin, Emax
-          accum_e_detector(k,i,j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
-                                    accum_e(k,nixp,niy) * dx * dym + &
-                                    accum_e(k,nix,niyp) * dxm * dy + &
-                                    accum_e(k,nixp,niyp) * dx * dy)
+          accum_e_detector(k,i,epl-j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
+                                               accum_e(k,nixp,niy) * dx * dym + &
+                                               accum_e(k,nix,niyp) * dxm * dy + &
+                                               accum_e(k,nixp,niyp) * dx * dy)
         end do
     end do
   end do 
@@ -471,6 +473,7 @@ end subroutine getEBSDPatterns
 !> @date 08/03/16 MDG 1.6 corrected normalizing issue in rgx,y,z arrays that causes NANs to be returned from Lambert projection routines
 !> @date 08/25/16 MDG 1.7 added transfer optics barrel distortion to rgx,y,z arrays.
 !> @date 04/24/17 MDG 1.8 forked from original routine without SAVEd variables
+!> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine getEBSDPatterns2(ipar, fpar, EBSDpattern, quats, accum_e, mLPNHsum, mLPSHsum)
 !DEC$ ATTRIBUTES DLLEXPORT :: getEBSDPatterns2
@@ -531,7 +534,7 @@ real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, pcxd, pcyd, xx, yy     ! distances
-integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, ipx, ipy, elp ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, gam, pcvec(3), dp, calpha           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -566,31 +569,32 @@ real(kind=dbl),parameter                :: nAmpere = 6.241D+18
 ! (rgx, rgy) to (rgx,rgy) * (1+alphaBD * (rgx^2+rgy^2))
 ! in other words, we pre-distort the sampling grid with the barrel distortion.
 
+  elp = ipar(3)+1
   L2 = fpar(7) * fpar(7)
   do j=1,ipar(2)
     Ls = -sw * scin_x(j) + fpar(7) * cw
     Lc = cw * scin_x(j) + fpar(7) * sw
     do i=1,ipar(3)
 !    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-     rgx(j,i) = (scin_y(i) * ca + sa * Ls) ! * rhos
-     rgy(j,i) = Lc ! * rhos
-     rgz(j,i) = (-sa * scin_y(i) + ca * Ls) ! * rhos
+     rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) ! * rhos
+     rgy(j,elp-i) = Lc ! * rhos
+     rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) ! * rhos
 ! apply Barrel Distortion ?
      if (fpar(10).ne.0.0) then
 ! shift the components to the detector center coordinate frame
-       xx = rgx(j,i)-pcyd
-       yy = rgy(j,i)+pcxd
+       xx = rgx(j,elp-i)-pcyd
+       yy = rgy(j,elp-i)+pcxd
 ! compute the distortion amount; the factor of 10^(-10) is inserted here...
        sx = 1.0 + 1.E-10 * fpar(10) * (xx**2+yy**2) 
 ! and shift them back to the pattern center reference frame
-       rgx(j,i) = xx*sx+pcyd
-       rgy(j,i) = yy*sx-pcxd
+       rgx(j,elp-i) = xx*sx+pcyd
+       rgy(j,elp-i) = yy*sx-pcxd
      end if
 ! make sure that these vectors are normalized !
-     x = sqrt(rgx(j,i)**2+rgy(j,i)**2+rgz(j,i)**2)
-     rgx(j,i) = rgx(j,i) / x
-     rgy(j,i) = rgy(j,i) / x
-     rgz(j,i) = rgz(j,i) / x
+     x = sqrt(rgx(j,elp-i)**2+rgy(j,elp-i)**2+rgz(j,elp-i)**2)
+     rgx(j,i) = rgx(j,elp-i) / x
+     rgy(j,i) = rgy(j,elp-i) / x
+     rgz(j,i) = rgz(j,elp-i) / x
     end do
   end do
 
@@ -624,12 +628,12 @@ real(kind=dbl),parameter                :: nAmpere = 6.241D+18
   if (ipy .gt. ipar(3)) ipy = ipar(3)
   if (ipy .lt. 1) ipy = 1
   
-  pcvec = (/ rgx(ipx,ipy), rgy(ipx,ipy), rgz(ipx,ipy) /)
+  pcvec = (/ rgx(ipx,elp-ipy), rgy(ipx,elp-ipy), rgz(ipx,elp-ipy) /)
   calpha = cos(alpha)
   do i=1,ipar(2)
     do j=1,ipar(3)
 ! do the coordinate transformation for this detector pixel
-       dc = (/ rgx(i,j), rgy(i,j), rgz(i,j) /)
+       dc = (/ rgx(i,elp-j), rgy(i,elp-j), rgz(i,elp-j) /)
 
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
@@ -647,10 +651,10 @@ real(kind=dbl),parameter                :: nAmpere = 6.241D+18
 
 ! interpolate the intensity 
        do k= Emin, Emax
-         accum_e_detector(k,i,j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
-                                   accum_e(k,nixp,niy) * dx * dym + &
-                                   accum_e(k,nix,niyp) * dxm * dy + &
-                                   accum_e(k,nixp,niyp) * dx * dy)
+         accum_e_detector(k,i,elp-j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
+                                              accum_e(k,nixp,niy) * dx * dym + &
+                                              accum_e(k,nix,niyp) * dxm * dy + &
+                                              accum_e(k,nixp,niyp) * dx * dy)
        end do
     end do
   end do 

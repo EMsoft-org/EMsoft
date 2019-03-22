@@ -110,7 +110,7 @@ void HDF5ScopedFileSentinel::addGroupId(hid_t* gid)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HDF5ScopedGroupSentinel::HDF5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors) :
+H5ScopedGroupSentinel::H5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors) :
   m_TurnOffErrors(turnOffErrors)
 {
   m_Groups.push_back(gid);
@@ -125,7 +125,7 @@ HDF5ScopedGroupSentinel::HDF5ScopedGroupSentinel(hid_t* gid, bool turnOffErrors)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HDF5ScopedGroupSentinel::~HDF5ScopedGroupSentinel()
+H5ScopedGroupSentinel::~H5ScopedGroupSentinel()
 {
   if (m_TurnOffErrors == true)
   {
@@ -142,7 +142,7 @@ HDF5ScopedGroupSentinel::~HDF5ScopedGroupSentinel()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void HDF5ScopedGroupSentinel::addGroupId(hid_t* gid)
+void H5ScopedGroupSentinel::addGroupId(hid_t* gid)
 {
   m_Groups.push_back(gid);
 }

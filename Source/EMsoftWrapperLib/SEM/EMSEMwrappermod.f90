@@ -220,6 +220,7 @@ contains
 !> @date 06/12/16 MDG 2.2 correction for effective pixel area with respect to equal-area Lambert projection
 !> @date 07/01/16 MDG 2.3 correction of array subscripts in rgx/y/z arrays.
 !> @date 12/05/16 MDG 2.4 added option to pass in Euler angles instead of quaternions; quats array dimensions are unchanged
+!> @date 02/19/19 MDG 3.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine EMsoftCgetEBSDPatterns(ipar, fpar, EBSDpattern, quats, accum_e, mLPNH, mLPSH, cproc, objAddress, cancel) &
            bind(c, name='EMsoftCgetEBSDPatterns')    ! this routine is callable from a C/C++ program
@@ -285,7 +286,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw, quat(4)
 real(kind=sgl)                          :: L2, Ls, Lc     ! distances
 integer(kind=irg)                       :: nix, niy, binx, biny,  nixp, niyp, i, j, Emin, Emax, istat, k, ip, dn, cn, & 
-                                           ii, jj, binfac, ipx, ipy      ! various parameters
+                                           ii, jj, binfac, ipx, ipy, epl      ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, gam, pcvec(3), dp, calpha           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -347,6 +348,7 @@ CALL C_F_PROCPOINTER (cproc, proc)
 
   allocate(rgx(ipar(19),ipar(20)), rgy(ipar(19),ipar(20)), rgz(ipar(19),ipar(20)))
 
+  epl = ipar(20)+1
   L2 = fpar(19) * fpar(19)
   do j=1,ipar(19)
     sx = L2 + scin_x(j) * scin_x(j)
@@ -354,14 +356,14 @@ CALL C_F_PROCPOINTER (cproc, proc)
     Lc = cw * scin_x(j) + fpar(19) * sw
     do i=1,ipar(20)
 !   rhos = 1.0/sqrt(sx + scin_y(i)**2)
-     rgx(j,i) = (scin_y(i) * ca + sa * Ls) ! * rhos
-     rgy(j,i) = Lc ! * rhos
-     rgz(j,i) = (-sa * scin_y(i) + ca * Ls) ! * rhos
+     rgx(j,epl-i) = (scin_y(i) * ca + sa * Ls) ! * rhos
+     rgy(j,epl-i) = Lc ! * rhos
+     rgz(j,epl-i) = (-sa * scin_y(i) + ca * Ls) ! * rhos
 ! make sure that these vectors are normalized !
-     x = sqrt(rgx(j,i)**2+rgy(j,i)**2+rgz(j,i)**2)
-     rgx(j,i) = rgx(j,i) / x
-     rgy(j,i) = rgy(j,i) / x
-     rgz(j,i) = rgz(j,i) / x
+     x = sqrt(rgx(j,epl-i)**2+rgy(j,epl-i)**2+rgz(j,epl-i)**2)
+     rgx(j,epl-i) = rgx(j,epl-i) / x
+     rgy(j,epl-i) = rgy(j,epl-i) / x
+     rgz(j,epl-i) = rgz(j,epl-i) / x
     end do
   end do
 
@@ -417,10 +419,10 @@ CALL C_F_PROCPOINTER (cproc, proc)
         end if
 ! interpolate the intensity 
         do k= Emin, Emax
-          accum_e_detector(k,i,j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
-                                    accum_e(k,nix+1,niy) * dx * dym + &
-                                    accum_e(k,nix,niy+1) * dxm * dy + &
-                                    accum_e(k,nix+1,niy+1) * dx * dy)
+          accum_e_detector(k,i,epl-j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
+                                               accum_e(k,nix+1,niy) * dx * dym + &
+                                               accum_e(k,nix,niy+1) * dxm * dy + &
+                                               accum_e(k,nix+1,niy+1) * dx * dy)
         end do
     end do
   end do 

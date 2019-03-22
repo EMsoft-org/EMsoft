@@ -39,6 +39,7 @@
 
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QActionGroup>
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 

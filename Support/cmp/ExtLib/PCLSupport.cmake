@@ -75,6 +75,8 @@ function(AddPCLCopyInstallRules)
                                 )
             set_target_properties(ZZ_${pcl_LIBVAR}_DLL_${UpperBType}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/${BTYPE}/PCL)
             install(FILES ${pcl_DLL_LIB_PATH} DESTINATION "${pcl_INSTALL_DIR}" CONFIGURATIONS ${BTYPE} COMPONENT Applications)
+            get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+            set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${pcl_LIBVAR}_DLL_${UpperBType}-Copy)
           endif()
         endif()
 
@@ -103,6 +105,8 @@ function(AddPCLCopyInstallRules)
                                 )
             set_target_properties(ZZ_${pcl_LIBVAR}_SYMLINK_${UpperBType}-Copy PROPERTIES FOLDER ZZ_PCL_COPY_FILES/${BTYPE}/PCL)
             install(FILES ${SYMLINK_PATH} DESTINATION "${pcl_INSTALL_DIR}" CONFIGURATIONS ${BTYPE} COMPONENT Applications)
+            get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+            set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${pcl_LIBVAR}_SYMLINK_${UpperBType}-Copy)
           endif()
         endif()
         # End Linux Only Section
@@ -134,8 +138,6 @@ find_package(PCL)
 if (NOT PCL_FOUND)
   message(FATAL_ERROR "Unable to locate PCL")
 endif()
-include_directories(${PCL_INCLUDE_DIRS})
-
 
 # --------------------------------------------------------------------
 # If we are NOT on Apple platform then create the copy and install rules

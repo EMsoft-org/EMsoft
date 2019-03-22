@@ -8,9 +8,7 @@
 //                           FA8650-04-C-5229
 //
 
-#ifndef _H5Lite_H_
-#define _H5Lite_H_
-
+#pragma once
 
 //--C++ Headers
 #include <typeinfo>
@@ -20,6 +18,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <mutex>
 
 //-- HDF Headers
 #include <hdf5.h>
@@ -28,7 +27,14 @@
 #include "H5Support/H5Support.h"
 #include "H5Support/H5Macros.h"
 
+#ifdef H5Support_USE_MUTEX
+#define H5SUPPORT_MUTEX_LOCK()\
+  static std::mutex mutex;\
+  std::lock_guard<std::mutex> lock(mutex);
+#else
+#define H5SUPPORT_MUTEX_LOCK()
 
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -71,7 +77,7 @@ namespace H5Support_NAMESPACE
        * @param obj_type The HDF5_TYPE of object
        * @return Standard HDF5 Error Conditions
        */
-      static H5Support_EXPORT herr_t openId( hid_t loc_id, const std::string& obj_name, H5O_type_t obj_type);
+      static H5Support_EXPORT hid_t openId( hid_t loc_id, const std::string& obj_name, H5O_type_t obj_type);
 
       /**
        * @brief Opens an HDF5 Object
@@ -82,62 +88,26 @@ namespace H5Support_NAMESPACE
       static H5Support_EXPORT herr_t closeId( hid_t obj_id, int32_t obj_type );
 
       /**
+       * @brief StringForHDFClassType
+       * @param classType
+       * @return
+       */
+      static H5Support_EXPORT std::string StringForHDFClassType(H5T_class_t classType);
+
+      /**
        * @brief Given one of the HDF Types as a string, this will return the HDF Type
        * as an hid_t value.
        * @param value The HDF_Type as a string
        * @return the hid_t value for the given type. -1 if the string does not match a type.
        */
-      static hid_t HDFTypeFromString(const std::string& value)
-      {
-        if (value.compare("H5T_STRING") == 0) { return H5T_STRING; }
-
-        if (value.compare("H5T_NATIVE_INT8") == 0) { return H5T_NATIVE_INT8; }
-        if (value.compare("H5T_NATIVE_UINT8") == 0) { return H5T_NATIVE_UINT8; }
-
-        if (value.compare("H5T_NATIVE_INT16") == 0) { return H5T_NATIVE_INT16; }
-        if (value.compare("H5T_NATIVE_UINT16") == 0) { return H5T_NATIVE_UINT16; }
-
-        if (value.compare("H5T_NATIVE_INT32") == 0) { return H5T_NATIVE_INT32; }
-        if (value.compare("H5T_NATIVE_UINT32") == 0) { return H5T_NATIVE_UINT32; }
-
-        if (value.compare("H5T_NATIVE_INT64") == 0) { return H5T_NATIVE_INT64; }
-        if (value.compare("H5T_NATIVE_UINT64") == 0) { return H5T_NATIVE_UINT64; }
-
-        if (value.compare("H5T_NATIVE_FLOAT") == 0) { return H5T_NATIVE_FLOAT; }
-        if (value.compare("H5T_NATIVE_DOUBLE") == 0) { return H5T_NATIVE_DOUBLE; }
-
-        std::cout  << "Error: HDFTypeFromString - Unknown Type: " << value << std::endl;
-        return -1;
-      }
-
+      static H5Support_EXPORT hid_t HDFTypeFromString(const std::string& value);
 
       /**
        * @brief Returns a string version of the HDF Type
        * @param type The HDF5 Type to query
        * @return
        */
-      static std::string StringForHDFType(hid_t type)
-      {
-        if ( type == H5T_STRING) { return "H5T_STRING"; }
-
-        if (H5Tequal(type , H5T_NATIVE_INT8) ) { return "H5T_NATIVE_INT8"; }
-        if (H5Tequal(type , H5T_NATIVE_UINT8) ) { return "H5T_NATIVE_UINT8"; }
-
-        if (H5Tequal(type , H5T_NATIVE_INT16) ) { return "H5T_NATIVE_INT16"; }
-        if (H5Tequal(type , H5T_NATIVE_UINT16) ) { return "H5T_NATIVE_UINT16"; }
-
-        if (H5Tequal(type , H5T_NATIVE_INT32) ) { return "H5T_NATIVE_INT32"; }
-        if (H5Tequal(type , H5T_NATIVE_UINT32) ) { return "H5T_NATIVE_UINT32"; }
-
-        if (H5Tequal(type , H5T_NATIVE_INT64) ) { return "H5T_NATIVE_INT64"; }
-        if (H5Tequal(type , H5T_NATIVE_UINT64) ) { return "H5T_NATIVE_UINT64"; }
-
-        if (H5Tequal(type , H5T_NATIVE_FLOAT) ) { return "H5T_NATIVE_FLOAT"; }
-        if (H5Tequal(type , H5T_NATIVE_DOUBLE) ) { return "H5T_NATIVE_DOUBLE"; }
-
-        std::cout  << "Error: HDFTypeForPrimitiveAsStr - Unknown Type: " << std::endl;
-        return "Unknown";
-      }
+      static H5Support_EXPORT std::string StringForHDFType(hid_t dataTypeIdentifier);
 
       /**
       * @brief Returns the HDF Type for a given primitive value.
@@ -148,6 +118,8 @@ namespace H5Support_NAMESPACE
       template<typename T>
       static std::string HDFTypeForPrimitiveAsStr(T value)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         if (typeid(value) == typeid(int8_t)) { return "H5T_NATIVE_INT8"; }
         if (typeid(value) == typeid(uint8_t)) { return "H5T_NATIVE_UINT8"; }
 
@@ -178,6 +150,7 @@ namespace H5Support_NAMESPACE
       template<typename T>
       static hid_t HDFTypeForPrimitive(T value)
       {
+        H5SUPPORT_MUTEX_LOCK()
 
         if (typeid(value) == typeid(float)) { return H5T_NATIVE_FLOAT; }
         if (typeid(value) == typeid(double)) { return H5T_NATIVE_DOUBLE; }
@@ -232,7 +205,7 @@ namespace H5Support_NAMESPACE
 
         std::cout  << "Error: HDFTypeForPrimitive - Unknown Type: " << (typeid(value).name()) << std::endl;
         const char* name = typeid(value).name();
-        if (NULL != name && name[0] == 'l' )
+        if (nullptr != name && name[0] == 'l' )
         {
           std::cout << "You are using 'long int' as a type which is not 32/64 bit safe. Suggest you use one of the H5SupportTypes defined in <Common/H5SupportTypes.h> such as int32_t or uint32_t." << std::endl;
         }
@@ -255,7 +228,7 @@ namespace H5Support_NAMESPACE
        * @param name The dataset to search for
        * @return Standard HDF5 Error condition. Negative=DataSet
        */
-      static H5Support_EXPORT bool datasetExists( hid_t loc_id, const std::string& name );
+      static H5Support_EXPORT bool datasetExists( hid_t loc_id, const std::string& dsetName );
 
       /**
        * @brief Creates a Dataset with the given name at the location defined by loc_id
@@ -289,10 +262,13 @@ namespace H5Support_NAMESPACE
                                         std::vector<hsize_t>& dims,
                                         std::vector<T>& data)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         herr_t err = -1;
         hid_t did = -1;
         hid_t sid = -1;
         herr_t retErr = 0;
+        if(data.size() == 0) { return 0; }
         hid_t dataType = H5Lite::HDFTypeForPrimitive(data.front());
         if(dataType == -1)
         {
@@ -306,7 +282,7 @@ namespace H5Support_NAMESPACE
         {
           _dims[i] = static_cast<hsize_t>(dims[i]);
         }
-        sid = H5Screate_simple( static_cast<int>(size), &(_dims.front()), NULL );
+        sid = H5Screate_simple( static_cast<int>(size), &(_dims.front()), nullptr );
         if (sid < 0)
         {
           return -101;
@@ -358,13 +334,14 @@ namespace H5Support_NAMESPACE
                                          hsize_t* dims,
                                          T* data)
       {
+        H5SUPPORT_MUTEX_LOCK()
 
         herr_t err    = -1;
         hid_t did     = -1;
         hid_t sid     = -1;
         herr_t retErr = 0;
 
-        if(NULL == data) { return -2;}
+        if(nullptr == data) { return -2;}
         hid_t dataType = H5Lite::HDFTypeForPrimitive(data[0]);
         if(dataType == -1)
         {
@@ -378,8 +355,8 @@ namespace H5Support_NAMESPACE
         {
           _dims[i] = static_cast<hsize_t>(dims[i]);
         }
-//  sid = H5Screate_simple( size, &(_dims.front()), NULL );
-        sid = H5Screate_simple( rank, dims, NULL);
+//  sid = H5Screate_simple( size, &(_dims.front()), nullptr );
+        sid = H5Screate_simple( rank, dims, nullptr);
         if (sid < 0)
         {
           return sid;
@@ -426,6 +403,15 @@ namespace H5Support_NAMESPACE
         return retErr;
       }
 
+      /**
+       * @brief replacePointerDataset
+       * @param loc_id
+       * @param dsetName
+       * @param rank
+       * @param dims
+       * @param data
+       * @return
+       */
       template <typename T>
       static herr_t replacePointerDataset (hid_t loc_id,
                                            const std::string& dsetName,
@@ -433,6 +419,7 @@ namespace H5Support_NAMESPACE
                                            hsize_t* dims,
                                            T* data)
       {
+        H5SUPPORT_MUTEX_LOCK()
 
         herr_t err    = -1;
         hid_t did     = -1;
@@ -452,8 +439,8 @@ namespace H5Support_NAMESPACE
         {
           _dims[i] = static_cast<hsize_t>(dims[i]);
         }
-//  sid = H5Screate_simple( size, &(_dims.front()), NULL );
-        sid = H5Screate_simple( rank, dims, NULL);
+//  sid = H5Screate_simple( size, &(_dims.front()), nullptr );
+        sid = H5Screate_simple( rank, dims, nullptr);
         if (sid < 0)
         {
           return sid;
@@ -526,6 +513,8 @@ namespace H5Support_NAMESPACE
                                  hsize_t* dims,
                                  T* data)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         herr_t err = -1;
         hid_t did = -1;
         hid_t sid = -1;
@@ -536,7 +525,7 @@ namespace H5Support_NAMESPACE
           return -1;
         }
         //Create the DataSpace
-        sid = H5Screate_simple( rank, dims, NULL );
+        sid = H5Screate_simple( rank, dims, nullptr );
         if (sid < 0)
         {
           return sid;
@@ -588,6 +577,8 @@ namespace H5Support_NAMESPACE
                                         const std::string& dsetName,
                                         T& value)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         herr_t err = -1;
         hid_t did = -1;
         hid_t sid = -1;
@@ -600,7 +591,7 @@ namespace H5Support_NAMESPACE
           return -1;
         }
         //Create the DataSpace
-        sid = H5Screate_simple( rank, &(dims), NULL );
+        sid = H5Screate_simple( rank, &(dims), nullptr );
         if (sid < 0)
         {
           return sid;
@@ -689,6 +680,8 @@ namespace H5Support_NAMESPACE
                                           hsize_t* dims,
                                           T* data)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         hid_t      obj_id, sid, attr_id;
         int32_t        has_attr;
         H5O_info_t statbuf;
@@ -717,7 +710,7 @@ namespace H5Support_NAMESPACE
         }
 
         /* Create the data space for the attribute. */
-        hsize_t* dimsPtr = 0x0;
+        hsize_t* dimsPtr = nullptr;
 // size mismatch between hsize_t and size_t
         std::vector<hsize_t> _dims(rank, 0);
         for (int32_t i = 0; i < rank; ++i)
@@ -726,7 +719,7 @@ namespace H5Support_NAMESPACE
         }
         dimsPtr = &(_dims.front() );
 
-        sid = H5Screate_simple( rank, dimsPtr, NULL );
+        sid = H5Screate_simple( rank, dimsPtr, nullptr );
         if ( sid >= 0 )
         {
           /* Verify if the attribute already exists */
@@ -805,6 +798,8 @@ namespace H5Support_NAMESPACE
                                          std::vector<hsize_t>& dims,
                                          std::vector<T>& data )
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         hid_t      obj_id, sid, attr_id;
         //hsize_t    dim_size = data.size();
         int32_t        has_attr;
@@ -831,7 +826,7 @@ namespace H5Support_NAMESPACE
         }
 
         /* Create the data space for the attribute. */
-        hsize_t* dimsPtr = 0x0;
+        hsize_t* dimsPtr = nullptr;
         //size mismatch between hsize_t and size_t
         std::vector<uint64_t>::size_type _size = dims.size();
         //hsize_t _dims[ _size ];
@@ -842,7 +837,7 @@ namespace H5Support_NAMESPACE
         }
         dimsPtr = &(_dims.front() );
 
-        sid = H5Screate_simple( static_cast<int>(dims.size()), dimsPtr, NULL );
+        sid = H5Screate_simple( static_cast<int>(dims.size()), dimsPtr, nullptr );
         if ( sid >= 0 )
         {
           /* Verify if the attribute already exists */
@@ -943,6 +938,19 @@ namespace H5Support_NAMESPACE
       static H5Support_EXPORT herr_t writeStringAttributes(hid_t loc_id,
                                                            const std::string& objName,
                                                            const std::map<std::string, std::string>& attributes);
+
+      /**
+       * @brief Returns the total number of elements in the supplied dataset
+       * @param loc_id The parent location that contains the dataset to read
+       * @param dsetName The name of the dataset to read
+       * @param data A std::vector<T>. Note the vector WILL be resized to fit the data.
+       * The best idea is to just allocate the vector but not to size it. The method
+       * will size it for you.
+       * @return Number of elements in dataset
+       */
+      static H5Support_EXPORT hsize_t getNumberOfElements(hid_t loc_id,
+                                      const std::string& dsetName);
+
       /**
        * @brief Writes an attribute to the given object. This method is designed with
        * a Template parameter that represents a primitive value. If you need to write
@@ -959,6 +967,7 @@ namespace H5Support_NAMESPACE
                                           const std::string& attrName,
                                           T data )
       {
+        H5SUPPORT_MUTEX_LOCK()
 
         hid_t      obj_id, sid, attr_id;
         int32_t        has_attr;
@@ -988,7 +997,7 @@ namespace H5Support_NAMESPACE
         }
 
         /* Create the data space for the attribute. */
-        sid = H5Screate_simple( rank, &dims, NULL );
+        sid = H5Screate_simple( rank, &dims, nullptr );
         if ( sid >= 0 )
         {
           /* Verify if the attribute already exists */
@@ -1062,6 +1071,8 @@ namespace H5Support_NAMESPACE
                                        const std::string& dsetName,
                                        T* data)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         hid_t did;
         herr_t err = 0;
         herr_t retErr = 0;
@@ -1078,9 +1089,9 @@ namespace H5Support_NAMESPACE
           std::cout  << "loc_id was Negative: This is not allowed." << std::endl;
           return -2;
         }
-        if (NULL == data)
+        if (nullptr == data)
         {
-          std::cout  << "The Pointer to hold the data is NULL. This is NOT allowed." << std::endl;
+          std::cout  << "The Pointer to hold the data is nullptr. This is NOT allowed." << std::endl;
           return -3;
         }
         did = H5Dopen( loc_id, dsetName.c_str(), H5P_DEFAULT );
@@ -1107,7 +1118,6 @@ namespace H5Support_NAMESPACE
         return retErr;
       }
 
-
       /**
        * @brief Reads data from the HDF5 File into an std::vector<T> object. If the dataset
        * is very large this can be an expensive method to use. It is here for convenience
@@ -1124,6 +1134,8 @@ namespace H5Support_NAMESPACE
                                       const std::string& dsetName,
                                       std::vector<T>& data)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         hid_t   did;
         herr_t  err = 0;
         herr_t retErr = 0;
@@ -1135,13 +1147,10 @@ namespace H5Support_NAMESPACE
         {
           return -1;
         }
-        //std::cout << "HDF5 Data Type: " << H5Lite::HDFTypeForPrimitiveAsStr(test) << std::endl;
-        /* Open the dataset. */
-// std::cout << "  Opening " << dsetName << " for data Retrieval.  " << std::endl;
         did = H5Dopen( loc_id, dsetName.c_str(), H5P_DEFAULT);
         if ( did < 0 )
         {
-          std::cout << "H5Lite.h::readStringDataset(" << __LINE__ << ") Error opening Dataset at loc_id (" << loc_id << ") with object name (" << dsetName << ")" << std::endl;
+          std::cout << "H5Lite.h::readVectorDataset(" << __LINE__ << ") Error opening Dataset at loc_id (" << loc_id << ") with object name (" << dsetName << ")" << std::endl;
           return -1;
         }
         if ( did >= 0 )
@@ -1154,7 +1163,7 @@ namespace H5Support_NAMESPACE
             {
               std::vector<hsize_t> dims;
               dims.resize(rank);// Allocate enough room for the dims
-              err = H5Sget_simple_extent_dims(spaceId, &(dims.front()), NULL);
+              err = H5Sget_simple_extent_dims(spaceId, &(dims.front()), nullptr);
               hsize_t numElements = 1;
               for (std::vector<hsize_t>::iterator iter = dims.begin(); iter < dims.end(); ++iter )
               {
@@ -1205,10 +1214,12 @@ namespace H5Support_NAMESPACE
                                       const std::string& dsetName,
                                       T& data)
       {
-        hid_t   did;
-        herr_t  err = 0;
+        H5SUPPORT_MUTEX_LOCK()
+
+        hid_t did = 0;
+        herr_t err = 0;
         herr_t retErr = 0;
-        hid_t spaceId;
+        hid_t spaceId = 0;
 
         hid_t dataType = H5Lite::HDFTypeForPrimitive(data);
         if (dataType == -1)
@@ -1219,7 +1230,7 @@ namespace H5Support_NAMESPACE
         did = H5Dopen( loc_id, dsetName.c_str(), H5P_DEFAULT );
         if ( did < 0 )
         {
-          std::cout << "H5Lite.h::readStringDataset(" << __LINE__ << ") Error opening Dataset at loc_id (" << loc_id << ") with object name (" << dsetName << ")" << std::endl;
+          std::cout << "H5Lite.h::readScalarDataset(" << __LINE__ << ") Error opening Dataset at loc_id (" << loc_id << ") with object name (" << dsetName << ")" << std::endl;
           return -1;
         }
         if ( did >= 0 )
@@ -1227,24 +1238,13 @@ namespace H5Support_NAMESPACE
           spaceId = H5Dget_space(did);
           if ( spaceId > 0 )
           {
-            int32_t rank = H5Sget_simple_extent_ndims(spaceId);
-            if (rank > 0)
+            err = H5Dread(did, dataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data );
+            if (err < 0)
             {
-              std::vector<hsize_t> dims;
-              dims.resize(rank);// Allocate enough room for the dims
-              err = H5Sget_simple_extent_dims(spaceId, &(dims.front()), NULL);
-              hsize_t numElements = 1;
-              for (std::vector<hsize_t>::iterator iter = dims.begin(); iter < dims.end(); ++iter )
-              {
-                numElements = numElements * (*iter);
-              }
-              err = H5Dread(did, dataType, H5S_ALL, H5S_ALL, H5P_DEFAULT, &data );
-              if (err < 0)
-              {
-                std::cout << "Error Reading Data at loc_id (" << loc_id << ") with object name (" << dsetName << ")" << std::endl;
-                retErr = err;
-              }
+              std::cout << "Error Reading Data at loc_id (" << loc_id << ") with object name (" << dsetName << ")" << std::endl;
+              retErr = err;
             }
+
             err = H5Sclose(spaceId);
             if (err < 0 )
             {
@@ -1320,6 +1320,8 @@ namespace H5Support_NAMESPACE
                                         const std::string& attrName,
                                         std::vector<T>& data)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         /* identifiers */
         hid_t      obj_id;
         H5O_info_t statbuf;
@@ -1398,6 +1400,7 @@ namespace H5Support_NAMESPACE
                                          const std::string& attrName,
                                          T& data)
       {
+        H5SUPPORT_MUTEX_LOCK()
 
         /* identifiers */
         hid_t      obj_id;
@@ -1464,6 +1467,8 @@ namespace H5Support_NAMESPACE
                                          const std::string& attrName,
                                          T* data)
       {
+        H5SUPPORT_MUTEX_LOCK()
+
         /* identifiers */
         hid_t      obj_id;
         H5O_info_t statbuf;
@@ -1547,7 +1552,7 @@ namespace H5Support_NAMESPACE
        * @param attrName The name of the attribute
        * @param rank (out) Number of dimensions is store into this variable
        */
-      static H5Support_EXPORT hid_t getAttributeNDims(hid_t loc_id, const std::string& objName, const std::string& attrName, hid_t& rank);
+      static H5Support_EXPORT herr_t getAttributeNDims(hid_t loc_id, const std::string& objName, const std::string& attrName, hid_t& rank);
 
       /**
        * @brief Returns the number of dimensions for a given dataset
@@ -1555,7 +1560,7 @@ namespace H5Support_NAMESPACE
        * @param objName The name of the dataset
        * @param rank (out) Number of dimensions is store into this variable
        */
-      static H5Support_EXPORT hid_t getDatasetNDims(hid_t loc_id, const std::string& objName, hid_t& rank);
+      static H5Support_EXPORT herr_t getDatasetNDims(hid_t loc_id, const std::string& objName, hid_t& rank);
 
       /**
        * @brief Returns the H5T value for a given dataset.
@@ -1581,8 +1586,8 @@ namespace H5Support_NAMESPACE
       static H5Support_EXPORT herr_t getDatasetInfo( hid_t loc_id,
                                                      const std::string& dsetName,
                                                      std::vector<hsize_t>& dims,
-                                                     H5T_class_t& type_class,
-                                                     size_t& type_size );
+                                                     H5T_class_t& classType,
+                                                     size_t& sizeType );
 
       /**
        * @brief Returns the information about an attribute.
@@ -1600,11 +1605,11 @@ namespace H5Support_NAMESPACE
        */
       static H5Support_EXPORT herr_t getAttributeInfo(hid_t loc_id,
                                                       const std::string& objName,
-                                                      const std::string& attr_name,
+                                                      const std::string& attrName,
                                                       std::vector<hsize_t>& dims,
                                                       H5T_class_t& type_class,
                                                       size_t& type_size,
-                                                      hid_t& attr_type);
+                                                      hid_t& tid);
 
 
 
@@ -1624,4 +1629,3 @@ namespace H5Support_NAMESPACE
 }
 #endif
 
-#endif

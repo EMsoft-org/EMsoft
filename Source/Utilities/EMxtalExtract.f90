@@ -166,7 +166,7 @@ integer(kind=irg),parameter     :: tworig(24)=(/48,50,59,68,70,85,86,88,125,126,
    call Message('=========================')
    call Message('')
  else
-   write(dataunit,"(A)") trim(cell%source)
+   write(dataunit,"('''',A,'''')") trim(cell%source)
  end if 
 
  close(unit=dataunit,status='keep')

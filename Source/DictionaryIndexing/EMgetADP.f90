@@ -93,6 +93,8 @@ end program EMgetADP
 !> @param nmldeffile namelist filename
 !
 !> @date 02/17/18 MDG 1.1 extracted code from EMEBSDDI program
+!> @date 02/24/19 MDG 1.2 corrected initialization of ROIselected logical
+!> @date 02/25/19 MDG 1.3 fixes incorrect indexing of dpmap array
 !--------------------------------------------------------------------------
 
 subroutine ADPSubroutine(adpnl, progname, nmldeffile)
@@ -160,6 +162,7 @@ integer(kind=irg)                                   :: binx,biny,TID,nthreads
 integer(kind=irg)                                   :: correctsize
 logical                                             :: f_exists, ROIselected
 character(1000)                                     :: charline
+type(EBSDIndexingNameListType)                      :: dinl
 
 type(HDFobjectStackType),pointer                    :: HDF_head
 
@@ -193,6 +196,9 @@ end if
 ! determine the experimental and dictionary sizes in bytes
 recordsize_correct = correctsize*4
 patsz              = correctsize
+
+ROIselected = .FALSE.
+if (sum(adpnl%ROI).ne.0) ROIselected = .TRUE.
 
 !=========================================
 ! ALLOCATION AND INITIALIZATION OF ARRAYS
@@ -299,181 +305,19 @@ call h5open_EMsoft(hdferr)
 
 if (adpnl%usetmpfile.eq.'n') then
 
-! open the temporary file
-open(unit=itmpexpt,file=trim(fname),&
-     status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
+! copy the relevant adpnl parameters into the dinl structure
+  dinl%nthreads = adpnl%nthreads
+  dinl%hipassw = adpnl%hipassw
+  dinl%ROI = adpnl%ROI
+  dinl%ipf_wd = adpnl%ipf_wd
+  dinl%ipf_ht = adpnl%ipf_ht
+  dinl%tmpfile = adpnl%tmpfile
+  dinl%exptfile = adpnl%exptfile
+  dinl%inputtype = adpnl%inputtype
+  dinl%HDFstrings = adpnl%HDFstrings
+  dinl%nregions = adpnl%nregions
 
-! open the file with experimental patterns; depending on the inputtype parameter, this
-! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
-! pattern file produced by EMEBSD.f90; or a vendor binary or HDF5 file... in each case we need to 
-! open the file and leave it open, then use the getExpPatternRow() routine to read a row
-! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
-! properly close the experimental pattern file
-istat = openExpPatternFile(adpnl%exptfile, adpnl%ipf_wd, L, adpnl%inputtype, recordsize, iunitexpt, adpnl%HDFstrings)
-if (istat.ne.0) then
-    call patternmod_errormessage(istat)
-    call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
-end if
-
-! also, allocate the arrays used to create the average dot product map; this will require 
-! reading the actual EBSD HDF5 file to figure out how many rows and columns there
-! are in the region of interest.  For now we get those from the nml until we actually 
-! implement the HDF5 reading bit
-! this portion of code was first tested in IDL.
-allocate(EBSDpatterninteger(binx,biny))
-EBSDpatterninteger = 0
-allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
-EBSDpatternad = 0.0
-EBSDpatternintd = 0.0
-
-
-! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
-! Thread 0 reads one line worth of patterns from the input file, then all threads do 
-! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
-
-call OMP_SET_NUM_THREADS(adpnl%nthreads)
-io_int(1) = adpnl%nthreads
-call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
-
-! allocate the arrays that holds the experimental patterns from a single row of the region of interest
-allocate(exppatarray(patsz * adpnl%ipf_wd),stat=istat)
-if (istat .ne. 0) stop 'could not allocate exppatarray'
-
-! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate hpmask array'
-call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
-
-call Message('Starting processing of experimental patterns')
-call cpu_time(tstart)
-
-dims3 = (/ binx, biny, adpnl%ipf_wd /)
-
-if (sum(adpnl%ROI).ne.0) then
-  ROIselected = .TRUE.
-  iiistart = adpnl%ROI(2)
-  iiiend = adpnl%ROI(2)+adpnl%ROI(4)-1
-  jjend = adpnl%ROI(3)
-else
-  ROIselected = .FALSE.
-  iiistart = 1
-  iiiend = adpnl%ipf_ht
-  jjend = adpnl%ipf_wd
-end if
-
-! we do one row at a time
-prepexperimentalloop: do iii = iiistart,iiiend
-
-! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
-!$OMP& PRIVATE(imageexpt, tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
-
-! set the thread ID
-    TID = OMP_GET_THREAD_NUM()
-! initialize thread private variables
-    tmpimageexpt = 0.0
-    allocate(EBSDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
-
-    allocate(EBSDpint(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate EBSDpint array'
-
-    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
-
-    rrdata = 0.D0
-    ffdata = 0.D0
-
-! thread 0 reads the next row of patterns from the input file
-! we have to allow for all the different types of input files here...
-    if (TID.eq.0) then
-        offset3 = (/ 0, 0, (iii-1)*adpnl%ipf_wd /)
-        if (ROIselected.eqv..TRUE.) then
-          call getExpPatternRow(iii, adpnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
-                                adpnl%inputtype, adpnl%HDFstrings, exppatarray, adpnl%ROI)
-        else
-          call getExpPatternRow(iii, adpnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
-                                adpnl%inputtype, adpnl%HDFstrings, exppatarray)
-        end if
-    end if
-
-! other threads must wait until T0 is ready
-!$OMP BARRIER
-    jj=0
-
-! then loop in parallel over all patterns to perform the preprocessing steps
-!$OMP DO SCHEDULE(DYNAMIC)
-    do jj=1,jjend
-      if (adpnl%filterpattern == 'y') then
-! convert imageexpt to 2D EBSD Pattern array
-        do kk=1,biny
-          EBSDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
-        end do
-
-! Hi-Pass filter
-        rrdata = dble(EBSDPat)
-        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
-        EBSDPat = sngl(ffdata)
-
-! adaptive histogram equalization
-        ma = maxval(EBSDPat)
-        mi = minval(EBSDPat)
-    
-        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
-        EBSDPat = float(adhisteq(adpnl%nregions,binx,biny,EBSDpint))
-
-! convert back to 1D vector
-        do kk=1,biny
-          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = EBSDPat(1:binx,kk)
-        end do
-      end if
-
-! apply circular mask and normalize for the dot product computation
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
-        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
-        if (vlen.ne.0.0) then
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
-        else
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
-        end if
-    end do
-!$OMP END DO
-
-! thread 0 writes the row of patterns to the output file
-    if (TID.eq.0) then
-      do jj=1,jjend
-        write(itmpexpt,rec=(iii-iiistart)*jjend + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
-      end do
-    end if
-
-deallocate(EBSDPat, rrdata, ffdata, EBSDpint, inp, outp)
-!$OMP BARRIER
-!$OMP END PARALLEL
-
-! print an update of progress
-    if (mod(iii-iiistart+1,5).eq.0) then
-      if (ROIselected.eqv..TRUE.) then
-        io_int(1:2) = (/ iii-iiistart+1, adpnl%ROI(4) /)
-        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
-      else
-        io_int(1:2) = (/ iii-iiistart+1, adpnl%ipf_ht /)
-        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
-      end if
-    end if
-end do prepexperimentalloop
-
-call Message(' -> experimental patterns stored in tmp file')
-
-call closeExpPatternFile(adpnl%inputtype, iunitexpt)
-
-close(unit=itmpexpt,status='keep')
-
-! print some timing information
-call CPU_TIME(tstop)
-tstop = tstop - tstart
-io_real(1) = float(adpnl%nthreads) * float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+  call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt)
 
 end if
 
@@ -513,7 +357,7 @@ mi = minval(dpmap)
 
 do j=1,TIFF_ny
  do i=1,TIFF_nx
-  ii = j * TIFF_nx + i + 1
+  ii = (j-1) * TIFF_nx + i 
   TIFF_image(i,j) = int(255 * (dpmap(ii)-mi)/(ma-mi))
  end do
 end do

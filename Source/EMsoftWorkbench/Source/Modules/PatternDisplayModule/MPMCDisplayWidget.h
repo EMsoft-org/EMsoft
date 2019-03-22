@@ -43,6 +43,7 @@
 #include "ui_MPMCDisplayWidget.h"
 
 class PatternDisplay_UI;
+class QActionGroup;
 
 class MPMCDisplayWidget : public QWidget, public Ui::MPMCDisplayWidget
 {
