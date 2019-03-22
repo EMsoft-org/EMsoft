@@ -26,6 +26,8 @@ Support/Scripts/GMT/gmt.history
 /ExternalProjects
 UpdateCopyrightRange.pro
 
+/EMSphInx/
+
 /IDL/pro/*.sav
 *.bak
 
