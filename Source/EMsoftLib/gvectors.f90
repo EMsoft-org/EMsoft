@@ -269,6 +269,7 @@ end subroutine Printrlp
 !> @date 03/14/19 MDG 1.0 original
 !--------------------------------------------------------------------------
 subroutine Laue_Init_Reflist(cell, lmnl, reflist, gcnt, verbose)
+!DEC$ ATTRIBUTES DLLEXPORT :: Laue_Init_Reflist
 
 use local
 use io
