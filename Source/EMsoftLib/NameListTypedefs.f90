@@ -236,6 +236,20 @@ type LaueMasterNameListType
         character(fnlen)        :: xtalname
 end type LaueMasterNameListType
 
+! namelist for the EMLaue program 
+type LaueNameListType
+        integer(kind=irg)       :: numpx
+        integer(kind=irg)       :: numpy
+        integer(kind=irg)       :: patchw
+        real(kind=sgl)          :: pixelsize
+        real(kind=sgl)          :: pcx
+        real(kind=sgl)          :: pcy
+        real(kind=sgl)          :: beam(3)
+        real(kind=sgl)          :: SDdistance
+        character(fnlen)        :: MPfname
+        character(fnlen)        :: hdfname
+end type LaueNameListType
+
 ! namelist for the EMMCLIPSS program ! PGC added 12/01/15
 type MCLIPSSNameListType
         integer(kind=irg)       :: stdout

@@ -38,6 +38,7 @@ set(EMsoftHDFLib_SRCS
   ${EMsoftHDFLib_SOURCE_DIR}/utilities.f90
   ${EMsoftHDFLib_SOURCE_DIR}/QCmodHDF.f90
   ${EMsoftHDFLib_SOURCE_DIR}/InitializersQCHDF.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/Lauemod.f90
 
   ${EMsoftHDFLib_Additional_SRCS}
 )

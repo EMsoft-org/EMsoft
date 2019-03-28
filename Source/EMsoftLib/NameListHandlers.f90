@@ -995,6 +995,85 @@ lmnl%tiffname = tiffname
 
 end subroutine GetLaueMasterNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetLaueNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill lnl structure (used by EMLaue.f90)
+!
+!> @param nmlfile namelist file name
+!> @param lmnl name list structure
+!
+!> @date 03/28/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetLaueNameList(nmlfile, lnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetLaueNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                   :: nmlfile
+type(LaueNameListType),INTENT(INOUT)          :: lnl
+logical,OPTIONAL,INTENT(IN)                   :: initonly
+
+logical                                       :: skipread = .FALSE.
+
+integer(kind=irg)       :: numpx
+integer(kind=irg)       :: numpy
+real(kind=sgl)          :: pixelsize
+real(kind=sgl)          :: pcx
+real(kind=sgl)          :: pcy
+real(kind=sgl)          :: beam(3)
+real(kind=sgl)          :: SDdistance
+character(fnlen)        :: MPfname
+character(fnlen)        :: hdfname
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / LaueData / numpx, numpy, pixelsize, pcx, pcy, beam, SDdistance, MPfname, hdfname
+
+numpx = 1024
+numpy = 768
+pixelsize = 0.2     ! mm
+pcx = 0.0           ! in pixel units
+pcy = 0.0           ! in pixel units 
+beam = (/1.0, 0.0, 0.0 /)
+SDdistance = 100.0  ! mm
+MPfname = 'undefined'
+hdfname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=LaueData)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(hdfname).eq.'undefined') then
+  call FatalError('GetLaueNameList:',' output file name is undefined in '//nmlfile)
+ end if
+ if (trim(MPfname).eq.'undefined') then
+  call FatalError('GetLaueNameList:',' master pattern file name is undefined in '//nmlfile)
+ end if
+end if
+
+lnl%numpx = numpx
+lnl%numpy = numpy
+lnl%pixelsize = pixelsize
+lnl%pcx = pcx
+lnl%pcy = pcy
+lnl%beam = beam
+lnl%SDdistance = SDdistance  
+lnl%hdfname = hdfname
+lnl%MPfname = MPfname
+
+end subroutine GetLaueNameList
 
 !--------------------------------------------------------------------------
 !
