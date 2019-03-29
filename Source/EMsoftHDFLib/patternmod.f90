@@ -655,7 +655,7 @@ select case (itype)
         exppat = 0.0
         pixcnt = 1
         do jj=1,dims3(2)
-          jspot = jj*dims3(1) 
+          jspot = (jj-1)*dims3(1) 
           do ii=1,dims3(1)
             exppat(jspot+ii) = float(pairs(pixcnt))
             pixcnt = pixcnt + 1
