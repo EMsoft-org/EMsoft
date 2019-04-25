@@ -34,11 +34,9 @@
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief Extract a .ang file from a dot product HDF5 file; uses the same template as EMFitOrientation
+!> @brief Extract a .ang file from a dot product HDF5 file
 !
-!> @date 03/07/18 MDG 1.0 original
-!> @date 03/12/18 MDG 1.1 replaced dot product file reading with call to subroutine
-!> @date 07/19/18 MDG 1.2 add option to extract refined Euler angles instead of regular array (for now only for EBSD modality)
+!> @date 04/26/19 MDG 1.0 original based on EMgetCTF program
 !--------------------------------------------------------------------------
 program EMgetANG
 
@@ -176,10 +174,6 @@ call h5open_EMsoft(hdferr)
     CIlist(1:Nexp) = EBSDDIdata%CI(1:Nexp)
     deallocate(EBSDDIdata%CI)
 
-! the following arrays are kept in the EBSDDIdata structure
-!   OSMmap = EBSDDIdata%OSM
-!   IQmap = EBSDDIdata%IQ
-
     call Message('  --> dot product EBSD HDF5 file read')
 
 ! else if (trim(modalityname) .eq. 'ECP') then
@@ -236,8 +230,6 @@ call h5open_EMsoft(hdferr)
     allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
     indexmain = 0
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
-
-write (*,*) 'maxval euler array ',maxval(euler_best)
 
     if (dinl%angfile.ne.'undefined') then 
       call angebsd_writeFile(dinl,enl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%IQ,noindex=.TRUE.)
