@@ -1025,6 +1025,11 @@ type unitcell
   real(kind=dbl)                       :: voltage, mLambda, mRelcor, mSigma, mPsihat   ! voltage always in keV !
 end type unitcell
 
+! used to hold an array of pointers to multiple cell objects
+type multicell
+    class(unitcell), pointer :: cell
+end type multicell
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
