@@ -198,7 +198,7 @@ allocate(TIFF_image(ebsdnl%ipf_wd,ebsdnl%ipf_ht))
 ! fill the image with whatever data you have (between 0 and 255)
  do i=1,ebsdnl%ipf_wd
   do j=1,ebsdnl%ipf_ht
-   TIFF_image(i,j) = kam(i,ebsdnl%ipf_ht-j+1)
+   TIFF_image(i,j) = kam(i,j)
   end do
  end do
 

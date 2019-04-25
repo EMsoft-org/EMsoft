@@ -23,6 +23,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMECPZA.template
   ${APP_DIR}/EMECPmaster.template
   ${APP_DIR}/EMgetADP.template
+  ${APP_DIR}/EMgetANG.template
   ${APP_DIR}/EMgetCTF.template
   ${APP_DIR}/EMKAM.template
   ${APP_DIR}/EMKosselmaster.template

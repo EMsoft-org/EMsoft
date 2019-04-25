@@ -66,6 +66,15 @@ type CTFNameListType
         character(fnlen)        :: dotproductfile
 end type CTFNameListType
 
+! namelist for EMgetANG program
+type ANGNameListType
+        character(4)            :: modality
+        character(8)            :: angledataset   ! 'original' or 'refined'
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: newangfile
+        character(fnlen)        :: dotproductfile
+end type ANGNameListType
+
 ! namelist for EMGBO program
 type GBONameListType
         integer(kind=irg)       :: pgnum

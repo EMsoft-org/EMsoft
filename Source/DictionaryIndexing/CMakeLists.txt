@@ -59,28 +59,35 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
  
-   Add_EMsoft_Executable(TARGET EMgetCTF
+  Add_EMsoft_Executable(TARGET EMgetCTF
                       SOURCES ${APP_DIR}/EMgetCTF.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                       TEMPLATE ${TMPLT_DIR}/EMgetCTF.template 
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
+
+  Add_EMsoft_Executable(TARGET EMgetANG
+                      SOURCES ${APP_DIR}/EMgetANG.f90 
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      TEMPLATE ${TMPLT_DIR}/EMgetANG.template 
+                      SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
+                      INSTALL_PROGRAM TRUE)
  
-   Add_EMsoft_Executable(TARGET EMEBSDDIpreview
+  Add_EMsoft_Executable(TARGET EMEBSDDIpreview
                       SOURCES ${APP_DIR}/EMEBSDDIpreview.f90 
                       LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
                       TEMPLATE ${TMPLT_DIR}/EMEBSDDIpreview.template 
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
 
-   Add_EMsoft_Executable(TARGET EMEBSDDIchangesetting
+  Add_EMsoft_Executable(TARGET EMEBSDDIchangesetting
                       SOURCES ${APP_DIR}/EMEBSDDIchangesetting.f90 
                       LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
                       TEMPLATE ${TMPLT_DIR}/EMEBSDDIchangesetting.template 
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
 
-   Add_EMsoft_Executable(TARGET EMgetADP
+  Add_EMsoft_Executable(TARGET EMgetADP
                         SOURCES ${APP_DIR}/EMgetADP.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} ${FORTRAN_LIBRARIES}
                         TEMPLATE ${TMPLT_DIR}/EMgetADP.template 

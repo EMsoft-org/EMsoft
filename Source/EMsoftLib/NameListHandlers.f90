@@ -264,6 +264,80 @@ csnl%angledataset = trim(angledataset)
 
 end subroutine GetCTFNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetANGNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill csnl structure (used by EMgetCTF.f90)
+!
+!> @param nmlfile namelist file name
+!> @param csnl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 07/19/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetANGNameList(nmlfile, csnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetANGNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(ANGNameListType),INTENT(INOUT)         :: csnl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+character(4)            :: modality
+character(8)            :: angledataset   ! 'original' or 'refined'
+character(fnlen)        :: xtalname
+character(fnlen)        :: newangfile
+character(fnlen)        :: dotproductfile
+
+
+namelist /ANGlist/ modality, xtalname, angledataset, dotproductfile, newangfile
+
+dotproductfile = 'undefined'
+newangfile = 'undefined'
+xtalname = 'undefined'
+modality = 'EBSD'
+angledataset = 'original'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=ANGlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(dotproductfile).eq.'undefined') then
+  call FatalError('GetANGNameList:',' dotproductfile name is undefined in '//nmlfile)
+ end if
+
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetANGNameList:',' xtalname name is undefined in '//nmlfile)
+ end if
+
+ if (trim(newangfile).eq.'undefined') then
+  call FatalError('GetANGNameList:',' newangfile name is undefined in '//nmlfile)
+ end if
+end if
+
+csnl%dotproductfile = dotproductfile 
+csnl%newangfile = newangfile
+csnl%xtalname = xtalname
+csnl%modality = trim(modality)
+csnl%angledataset = trim(angledataset) 
+
+end subroutine GetANGNameList
+
 
 !--------------------------------------------------------------------------
 !
