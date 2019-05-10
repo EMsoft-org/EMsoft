@@ -303,7 +303,7 @@ select case (itype)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
         ! set offset to skip header
-        offset = 8_ill*npat*ht + 9_ill
+        ! offset = 8_ill*npat*ht + 9_ill
 
     case(6)  ! "OxfordHDF"
         call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
@@ -419,7 +419,8 @@ integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
-                                           kkstart, kkend, multfactor 
+                                           kkstart, kkend, multfactor
+integer(kind=8)                         :: patoffsets(wd)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -437,24 +438,18 @@ if (itype.eq.3) multfactor = 2_ill
 if (present(ROI)) then 
  kkstart = ROI(1)
  kkend = kkstart + ROI(3) - 1_ill 
-! for the TSL up1 and up2 and OI binary formats we need to skip the first ROI(2)-1 
+! for the TSL up1 and up2 formats we need to skip the first ROI(2)-1 
 ! rows and set the correct offset value (in bytes) 
- if (iii.eq.ROI(2)) then   ! make sure we do this only once ...
-   if ((itype.eq.2).or.(itype.eq.3)) then   ! TSL formats
-     do ii=1,ROI(2)-1
-        offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
-     end do
-   else if (itype.eq.5) then   ! OI binary format
-     do ii=1,ROI(2)-1
-        offset = offset + lwd * (lL + 34_ill)
-     end do
-   end if
+ if (((itype.eq.2).or.(itype.eq.3)).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
+   do ii=1,ROI(2)-1
+     offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
+   end do
  end if
-
 else
  kkstart = 1_ill
  kkend = dims3(3)
 end if
+! TODO: Check ROI works with oxford binary
 
 select case (itype)
     case(1)  ! "Binary"  
@@ -516,26 +511,27 @@ select case (itype)
 
     case(5)  ! "OxfordBinary"
 
-! generate a buffer of the correct size, with pat data and extra surrounding data
-      buffersize = lwd * (lL + 34_ill)
-      allocate(buffer(buffersize))
-! first we read the entire buffer as bytes
-      read(unit=funit, pos=offset, iostat=ios) buffer
+! read postion of patterns in file for a single row from the header
+      read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
 
-! then we convert the byte values into single byte integers
+! generate a buffer to load individial patterns into
+      buffersize = lL
+      allocate(buffer(buffersize))
+
+! allocate pairs to store all patterns in a row
       buffersize = lwd * lL
       allocate(pairs(buffersize))
-      jspot=0_ill  ! position in buffer
 
-      ! loop over patterns in a row
-      do kk=1_ill,lwd
-          jspot = jspot + 16_ill ! skip 16 bytes at beginnging of pattern
-          ! loop over pixels
-          do jj=1_ill,lL
-              pairs((kk - 1_ill)*lL + jj) = ichar(buffer(jspot + jj)) 
-          enddo
-          jspot = jspot + lL + 18_ill ! skip 18 bytes at end of pattern
-      enddo
+      do ii=1,lwd
+! read each pattern into buffer with the 16 bytes of metadata skipped
+        read(unit=funit, pos=patoffsets(ii)+17_8, iostat=ios) buffer
+
+! loop over pixels and convert the byte values into single byte integers
+        do jj=1_ill,lL
+          pairs((ii - 1)*lL + jj) = ichar(buffer(jj)) 
+        enddo
+
+      end do
 
       deallocate(buffer)
 
@@ -544,7 +540,7 @@ select case (itype)
       pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
       do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI
         kspot = (kk-kkstart)*patsz
-        do jj=dims3(2),1,-1  ! flip the image
+        do jj=1,dims3(2)
           jspot = (jj-1)*dims3(1) 
           do ii=1,dims3(1)
             exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
@@ -553,8 +549,6 @@ select case (itype)
         end do 
       end do 
 
-! increment the row offset parameter (in bytes)
-      offset = offset + lwd * (lL + 34_ill)
       deallocate(pairs)
 
 ! finally, correct for the fact that the original values were unsigned integers
