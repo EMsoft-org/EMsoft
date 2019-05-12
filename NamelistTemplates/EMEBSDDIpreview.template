@@ -20,6 +20,8 @@
  tifffile = 'undefined',
 ! name of pattern output file; will contain raw experimental pattern (tiff, pgm, bmp)
  patternfile = 'undefined',
+! number of patterns to average (0 for single pattern, non-zero for (2*numav+1) * (2*numav+1) average)
+ numav = 0,
 ! name of datafile where the patterns are stored; path relative to EMdatapathname
  exptfile = 'undefined',
 ! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF

@@ -1094,6 +1094,7 @@ type EBSDDIpreviewNameListType
         integer(kind=irg)       :: paty
         integer(kind=irg)       :: ipf_wd
         integer(kind=irg)       :: ipf_ht
+        integer(kind=irg)       :: numav
         real(kind=sgl)          :: hipasswmax
         character(fnlen)        :: patternfile
         character(fnlen)        :: tifffile
