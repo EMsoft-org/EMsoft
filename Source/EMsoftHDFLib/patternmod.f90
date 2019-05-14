@@ -449,7 +449,6 @@ else
  kkstart = 1_ill
  kkend = dims3(3)
 end if
-! TODO: Check ROI works with oxford binary
 
 select case (itype)
     case(1)  ! "Binary"  
