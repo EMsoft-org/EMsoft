@@ -201,7 +201,6 @@ end subroutine invert_ordering_arrays
 !> @param recsize  some formats need a record size
 !> @param funit logical unit for reading
 !> @param HDFstrings string array with group and dataset names for HDF5 input
-!> @param ht number of patterns in column in input file
 !
 !> @date 02/13/18 MDG 1.0 original
 !> @date 02/15/18 MDG 1.1 added record length correction for windows platform
@@ -212,7 +211,7 @@ end subroutine invert_ordering_arrays
 !> @date 06/21/18 SS  1.6 changed recorsize to L*4 instead of recsize (correctsize*4); recsize has padded 0's
 !> @date 05/01/19 MA  1.7 add support for Oxford Instruments binary pattern files
 !--------------------------------------------------------------------------
-recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings, ht) result(istat)
+recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
 
 use io
@@ -227,7 +226,6 @@ integer(kind=irg),INTENT(IN)            :: recsize
 integer(kind=irg),INTENT(IN)            :: funit
 integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
-integer(kind=irg),OPTIONAL,INTENT(IN)   :: ht
 
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
@@ -302,8 +300,6 @@ select case (itype)
             call WriteValue("File open error; error type ",io_int,1)
             call FatalError("openExpPatternFile","Cannot continue program")
         end if
-        ! set offset to skip header
-        ! offset = 8_ill*npat*ht + 9_ill
 
     case(6)  ! "OxfordHDF"
         call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
@@ -992,7 +988,7 @@ end if
 ! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
 istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, &
-                           ebsdnl%HDFstrings, ht=ebsdnl%ipf_ht)
+                           ebsdnl%HDFstrings)
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
     call FatalError("PreProcessPatterns:", "Fatal error handling experimental pattern file")
@@ -1281,7 +1277,7 @@ end if
 ! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
 istat = openExpPatternFile(tkdnl%exptfile, tkdnl%ipf_wd, L, tkdnl%inputtype, recordsize, iunitexpt, &
-                           tkdnl%HDFstrings, ht=tkdnl%ipf_ht)
+                           tkdnl%HDFstrings)
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
     call FatalError("PreProcessTKDPatterns:", "Fatal error handling experimental pattern file")
