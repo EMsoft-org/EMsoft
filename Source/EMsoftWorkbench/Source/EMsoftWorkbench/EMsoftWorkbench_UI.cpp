@@ -54,7 +54,7 @@
 #include "Common/QtSRecentFileList.h"
 #include "Common/QtSSettings.h"
 
-#include "EMsoftWorkbench/StandardEMsoftApplication.h"
+#include "EMsoftWorkbench/EMsoftApplication.h"
 #include "EMsoftWorkbench/StatusBarWidget.h"
 
 // -----------------------------------------------------------------------------
@@ -91,9 +91,7 @@ EMsoftWorkbench_UI::~EMsoftWorkbench_UI()
 // -----------------------------------------------------------------------------
 void EMsoftWorkbench_UI::setupGui()
 {
-#if defined(Q_OS_WIN)
-  setMenuBar(standardApp->getSIMPLViewMenuBar());
-#endif
+  createWorkbenchMenuSystem();
 
   setupIssuesTable();
 
@@ -411,6 +409,14 @@ void EMsoftWorkbench_UI::openSession(QJsonObject obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+void EMsoftWorkbench_UI::listenSaveSessionTriggered()
+{
+  saveSession();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 bool EMsoftWorkbench_UI::saveSession()
 {
   if(isWindowModified())
@@ -442,6 +448,14 @@ bool EMsoftWorkbench_UI::saveSession()
   }
 
   return true;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftWorkbench_UI::listenSaveSessionAsTriggered()
+{
+  saveSessionAs();
 }
 
 // -----------------------------------------------------------------------------
@@ -724,4 +738,75 @@ void EMsoftWorkbench_UI::writeWindowSettings(QtSSettings* prefs)
 void EMsoftWorkbench_UI::writeDockWidgetSettings(QtSSettings* prefs, QDockWidget* dw)
 {
   prefs->setValue(dw->objectName(), dw->isHidden());
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
+{
+  m_MenuBar = new QMenuBar();
+
+  m_MenuFile = new QMenu("File", m_MenuBar);
+  m_MenuEdit = new QMenu("Edit", m_MenuBar);
+  m_MenuView = new QMenu("View", m_MenuBar);
+  m_MenuRecentFiles = new QMenu("Recent Files", m_MenuBar);
+  m_MenuHelp = new QMenu("Help", m_MenuBar);
+
+  m_ActionNew = new QAction("New...", m_MenuBar);
+  m_ActionNew->setShortcut(QKeySequence::New);
+
+  m_ActionOpen = new QAction("Open...", m_MenuBar);
+  m_ActionOpen->setShortcut(QKeySequence::Open);
+
+  m_ActionSave = new QAction("Save", m_MenuBar);
+  m_ActionSave->setShortcut(QKeySequence::Save);
+
+  m_ActionSaveAs = new QAction("Save As...", m_MenuBar);
+  m_ActionSaveAs->setShortcut(QKeySequence::SaveAs);
+
+  m_ActionClearRecentFiles = new QAction("Clear Recent Files", m_MenuBar);
+
+  m_ActionAboutEMsoftWorkbench = new QAction("About " + QApplication::applicationName(), m_MenuBar);
+
+  m_ActionExit = new QAction("Exit " + QApplication::applicationName(), m_MenuBar);
+  m_ActionExit->setShortcut(QKeySequence::Quit);
+
+  m_ActionEditStyle = new QAction("Edit Style...", this);
+
+  connect(m_ActionNew, &QAction::triggered, emSoftApp, &EMsoftApplication::listenNewInstanceTriggered);
+  connect(m_ActionOpen, &QAction::triggered, emSoftApp, &EMsoftApplication::listenOpenTriggered);
+  connect(m_ActionSave, &QAction::triggered, this, &EMsoftWorkbench_UI::listenSaveSessionTriggered);
+  connect(m_ActionSaveAs, &QAction::triggered, this, &EMsoftWorkbench_UI::listenSaveSessionAsTriggered);
+  connect(m_ActionExit, &QAction::triggered, emSoftApp, &EMsoftApplication::listenExitApplicationTriggered);
+  connect(m_ActionClearRecentFiles, &QAction::triggered, emSoftApp, &EMsoftApplication::listenClearRecentFilesTriggered);
+//  connect(m_ActionAboutEMsoftWorkbench, &QAction::triggered, emSoftApp, &EMsoftApplication::listenAboutEMsoftWorkbenchTriggered);
+  connect(m_ActionEditStyle, &QAction::triggered, emSoftApp, &EMsoftApplication::listenEditStyleTriggered);
+
+  // Create File Menu
+  m_MenuBar->addMenu(m_MenuFile);
+  m_MenuFile->addAction(m_ActionNew);
+  m_MenuFile->addAction(m_ActionOpen);
+  m_MenuFile->addSeparator();
+  m_MenuFile->addAction(m_ActionSave);
+  m_MenuFile->addAction(m_ActionSaveAs);
+  m_MenuFile->addSeparator();
+  m_MenuFile->addAction(m_MenuRecentFiles->menuAction());
+  m_MenuRecentFiles->addSeparator();
+  m_MenuRecentFiles->addAction(m_ActionClearRecentFiles);
+  m_MenuFile->addSeparator();
+  m_MenuFile->addAction(m_ActionExit);
+
+  // Create Edit Menu
+  m_MenuBar->addMenu(m_MenuEdit);
+  m_MenuEdit->addAction(m_ActionEditStyle);
+
+  // Create View Menu
+  m_MenuBar->addMenu(m_MenuView);
+
+  // Create Help Menu
+  //  m_MenuHelp->addAction(m_ActionAboutEMsoftWorkbench);
+  //  m_MenuBar->addMenu(m_MenuHelp);
+
+  setMenuBar(m_MenuBar);
 }

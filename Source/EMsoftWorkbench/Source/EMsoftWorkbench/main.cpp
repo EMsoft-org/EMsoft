@@ -38,8 +38,7 @@
 
 #include <QtWidgets/QApplication>
 
-#include "MacEMsoftApplication.h"
-#include "StandardEMsoftApplication.h"
+#include "EMsoftApplication.h"
 
 int main(int argc, char* argv[])
 {
@@ -52,15 +51,7 @@ int main(int argc, char* argv[])
   QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 
-#if defined(Q_OS_MAC)
-  MacEMsoftApplication app(argc, argv);
-#else
-  StandardEMsoftApplication app(argc, argv);
-#endif
-
-#if defined(Q_OS_MAC)
-  emSoftApp->setQuitOnLastWindowClosed(false);
-#endif
+  EMsoftApplication app(argc, argv);
 
   QDir aPluginDir = QDir(qApp->applicationDirPath());
   qDebug() << aPluginDir;

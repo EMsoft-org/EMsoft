@@ -56,6 +56,8 @@ class EMsoftApplication : public QApplication
   Q_OBJECT
 
 public:
+  EMsoftApplication(int& argc, char** argv);
+
   ~EMsoftApplication() override;
 
   SIMPL_INSTANCE_PROPERTY(QString, OpenDialogLastDirectory)
@@ -64,37 +66,31 @@ public:
 
   void registerWorkbenchInstance(EMsoftWorkbench_UI* instance);
 
-  virtual void unregisterWorkbenchInstance(EMsoftWorkbench_UI* instance) = 0;
+  void unregisterWorkbenchInstance(EMsoftWorkbench_UI* instance);
 
   EMsoftWorkbench_UI* getNewWorkbenchInstance();
 
   EMsoftWorkbench_UI* getActiveWindow();
   void setActiveWindow(EMsoftWorkbench_UI* workbench);
 
-protected:
-  EMsoftApplication(int& argc, char** argv);
+public slots:
+  void listenNewInstanceTriggered();
+  void listenOpenTriggered();
+  void listenEditStyleTriggered();
+  void listenAboutEMsoftWorkbenchTriggered();
+  void listenClearRecentFilesTriggered();
+  void listenExitApplicationTriggered();
 
+protected:
   EMsoftWorkbench_UI* m_ActiveWindow;
 
   // This is a set of all EMsoftWorkbench_UI instances currently available
   QList<EMsoftWorkbench_UI*> m_WorkbenchInstances;
 
 protected slots:
-  void on_actionNew_triggered();
-  void on_actionOpen_triggered();
-  void on_actionSave_triggered();
-  void on_actionSaveAs_triggered();
-
-  void on_actionEditStyle_triggered();
-
-  void on_actionClearRecentFiles_triggered();
-  void on_actionCloseWindow_triggered();
-  void on_actionExit_triggered();
-  void on_actionAboutEMsoftWorkbench_triggered();
-
   void updateRecentFileList();
 
-  virtual void emSoftWindowChanged(EMsoftWorkbench_UI* instance) = 0;
+  void emSoftWindowChanged(EMsoftWorkbench_UI* instance);
 
 signals:
   void emSoftConfigurationChanged();
@@ -102,7 +98,40 @@ signals:
 private:
   StyleSheetEditor* styleSheetEditor;
 
-  EMsoftWorkbench_UI* newInstanceFromFile(const QString& filePath);
+  QMenuBar* m_DefaultMenuBar = nullptr;
+
+  QMenu* m_MenuFile = nullptr;
+  QMenu* m_MenuEdit = nullptr;
+  QMenu* m_MenuView = nullptr;
+  QMenu* m_MenuRecentFiles = nullptr;
+  QMenu* m_MenuHelp = nullptr;
+
+  QAction* m_ActionNew = nullptr;
+  QAction* m_ActionOpen = nullptr;
+  QAction* m_ActionSave = nullptr;
+  QAction* m_ActionSaveAs = nullptr;
+  QAction* m_ActionClearRecentFiles = nullptr;
+  QAction* m_ActionAboutEMsoftWorkbench = nullptr;
+  QAction* m_ActionExit = nullptr;
+  QAction* m_ActionEditStyle = nullptr;
+
+  /**
+   * @brief Creates the default menu bar that gets shown if there is no EMsoftWorkbench_UI window.
+   */
+  void createDefaultMenuBar();
+
+  /**
+   * @brief createCustomDockMenu
+   * @return
+   */
+  QMenu* createCustomDockMenu();
+
+  /**
+   * @brief newInstanceFromFile
+   * @param filePath
+   * @return
+   */
+  EMsoftWorkbench_UI* newInstanceFromFile(const QString &filePath);
 
 public:
   EMsoftApplication(const EMsoftApplication&) = delete;            // Copy Constructor Not Implemented
