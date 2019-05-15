@@ -1,77 +1,76 @@
 /* ============================================================================
-* Copyright (c) 2009-2016 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2016 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #include "EMsoftApplication.h"
 
 #include <iostream>
 
-#include <QtCore/QPluginLoader>
-#include <QtCore/QProcess>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
+#include <QtCore/QPluginLoader>
+#include <QtCore/QProcess>
 
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QSplashScreen>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QSplashScreen>
 
-#include <QtGui/QIcon>
-#include <QtGui/QBitmap>
-#include <QtGui/QDesktopServices>
 #include <QtGui/QBitmap>
 #include <QtGui/QClipboard>
+#include <QtGui/QDesktopServices>
+#include <QtGui/QIcon>
 
 #include "Modules/ModuleManager.h"
 
 #include "Common/Constants.h"
 #include "Common/EMsoftMenuItems.h"
 #include "Common/FileIOTools.h"
-#include "Common/QtSSettings.h"
-#include "Common/QtSRecentFileList.h"
 #include "Common/QtSFileUtils.h"
+#include "Common/QtSRecentFileList.h"
+#include "Common/QtSSettings.h"
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 
-#include "EMsoftWorkbench/StyleSheetEditor.h"
 #include "EMsoftWorkbench/EMsoftWorkbench_UI.h"
+#include "EMsoftWorkbench/StyleSheetEditor.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-EMsoftApplication::EMsoftApplication(int& argc, char** argv) :
-  QApplication(argc, argv),
-  m_OpenDialogLastDirectory(""),
-  m_ActiveWindow(nullptr)
+EMsoftApplication::EMsoftApplication(int& argc, char** argv)
+: QApplication(argc, argv)
+, m_OpenDialogLastDirectory("")
+, m_ActiveWindow(nullptr)
 {
   EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
 
@@ -108,15 +107,15 @@ EMsoftApplication::~EMsoftApplication()
 // -----------------------------------------------------------------------------
 bool EMsoftApplication::initialize(int argc, char* argv[])
 {
-  if (argc == 2)
+  if(argc == 2)
   {
     // Open EMsoftWorkbench from a compatible file
     char* two = argv[1];
     QString filePath = QString::fromLatin1(two);
-    if (!filePath.isEmpty())
+    if(!filePath.isEmpty())
     {
       EMsoftWorkbench_UI* instance = newInstanceFromFile(filePath);
-      if (instance != nullptr)
+      if(instance != nullptr)
       {
         instance->show();
       }
@@ -141,7 +140,7 @@ bool EMsoftApplication::initialize(int argc, char* argv[])
 void EMsoftApplication::on_actionNew_triggered()
 {
   EMsoftWorkbench_UI* ui = getNewWorkbenchInstance();
-  if (ui != nullptr)
+  if(ui != nullptr)
   {
     ui->show();
   }
@@ -153,14 +152,16 @@ void EMsoftApplication::on_actionNew_triggered()
 void EMsoftApplication::on_actionOpen_triggered()
 {
   QString proposedDir = m_OpenDialogLastDirectory;
-  QString filePath = QFileDialog::getOpenFileName(nullptr, tr("Open Module From File"),
-    proposedDir, tr("JSON File (*.json);;All Files (*.*)"));
-  if (filePath.isEmpty()) { return; }
+  QString filePath = QFileDialog::getOpenFileName(nullptr, tr("Open Module From File"), proposedDir, tr("JSON File (*.json);;All Files (*.*)"));
+  if(filePath.isEmpty())
+  {
+    return;
+  }
 
   filePath = QDir::toNativeSeparators(filePath);
 
   EMsoftWorkbench_UI* instance = newInstanceFromFile(filePath);
-  if (instance != nullptr)
+  if(instance != nullptr)
   {
     instance->show();
   }
@@ -169,7 +170,7 @@ void EMsoftApplication::on_actionOpen_triggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString &filePath)
+EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString& filePath)
 {
   QFileInfo fi(filePath);
   QFile inputFile(filePath);
@@ -190,15 +191,16 @@ EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString &filePa
 
   QJsonObject root = doc.object();
 
-  if (!root.contains(EMsoftWorkbenchConstants::StringConstants::Modules))
+  if(!root.contains(EMsoftWorkbenchConstants::StringConstants::Modules))
   {
-    QMessageBox::critical(nullptr, "JSON Read Error", tr("The contents of the JSON file\n\n\"%1\"\n\nis not formatted correctly for %2.").arg(filePath, QCoreApplication::applicationName()), QMessageBox::Ok);
+    QMessageBox::critical(nullptr, "JSON Read Error", tr("The contents of the JSON file\n\n\"%1\"\n\nis not formatted correctly for %2.").arg(filePath, QCoreApplication::applicationName()),
+                          QMessageBox::Ok);
     return nullptr;
   }
 
   QJsonObject modulesObj = root[EMsoftWorkbenchConstants::StringConstants::Modules].toObject();
 
-  if (modulesObj.empty())
+  if(modulesObj.empty())
   {
     QMessageBox::warning(nullptr, "JSON Read Warning", tr("The JSON file\n\n\"%1\"\n\ndoes not contain any modules.").arg(filePath), QMessageBox::Ok);
     return nullptr;
@@ -256,7 +258,7 @@ void EMsoftApplication::updateRecentFileList()
 // -----------------------------------------------------------------------------
 void EMsoftApplication::on_actionSave_triggered()
 {
-  if (nullptr != m_ActiveWindow)
+  if(nullptr != m_ActiveWindow)
   {
     m_ActiveWindow->saveSession();
   }
@@ -267,7 +269,7 @@ void EMsoftApplication::on_actionSave_triggered()
 // -----------------------------------------------------------------------------
 void EMsoftApplication::on_actionSaveAs_triggered()
 {
-  if (nullptr != m_ActiveWindow)
+  if(nullptr != m_ActiveWindow)
   {
     m_ActiveWindow->saveSessionAs();
   }
@@ -278,8 +280,8 @@ void EMsoftApplication::on_actionSaveAs_triggered()
 // -----------------------------------------------------------------------------
 void EMsoftApplication::on_actionAboutEMsoftWorkbench_triggered()
 {
-//  AboutSIMPLView d(nullptr);
-//  d.exec();
+  //  AboutSIMPLView d(nullptr);
+  //  d.exec();
 }
 
 // -----------------------------------------------------------------------------
@@ -358,7 +360,7 @@ EMsoftWorkbench_UI* EMsoftApplication::getActiveWindow()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::registerWorkbenchInstance(EMsoftWorkbench_UI *instance)
+void EMsoftApplication::registerWorkbenchInstance(EMsoftWorkbench_UI* instance)
 {
   m_WorkbenchInstances.push_back(instance);
 }
@@ -375,7 +377,7 @@ EMsoftWorkbench_UI* EMsoftApplication::getNewWorkbenchInstance()
 
   connect(workbench, &EMsoftWorkbench_UI::workbenchWindowChangedState, this, &EMsoftApplication::emSoftWindowChanged);
 
-  if (m_ActiveWindow != nullptr)
+  if(m_ActiveWindow != nullptr)
   {
     workbench->move(m_ActiveWindow->x() + 25, m_ActiveWindow->y() + 25);
   }
@@ -391,9 +393,3 @@ void EMsoftApplication::setActiveWindow(EMsoftWorkbench_UI* workbench)
 {
   m_ActiveWindow = workbench;
 }
-
-
-
-
-
-

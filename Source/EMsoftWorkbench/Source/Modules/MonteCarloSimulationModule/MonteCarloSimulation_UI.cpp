@@ -1,48 +1,48 @@
 /* ============================================================================
-* Copyright (c) 2009-2017 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2017 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "MonteCarloSimulation_UI.h"
 
-#if defined (_MSC_VER)
+#if defined(_MSC_VER)
 #define _MATH_DEFINES_DEFINED
 #endif
 
-#include <QtCore/QJsonDocument>
+#include <QtCore/QDir>
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
-#include <QtCore/QDir>
+#include <QtCore/QJsonDocument>
 #include <QtCore/QThreadPool>
 
 #include <QtConcurrent>
@@ -50,23 +50,23 @@
 
 #include <QtWidgets/QFileDialog>
 
-#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 #include "EMsoftLib/EMsoftStringConstants.h"
+#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 
 #include "Common/Constants.h"
-#include "Common/QtSSettings.h"
-#include "Common/PatternTools.h"
 #include "Common/FileIOTools.h"
+#include "Common/PatternTools.h"
+#include "Common/QtSSettings.h"
 
 namespace ioConstants = EMsoftWorkbenchConstants::IOStrings;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloSimulation_UI::MonteCarloSimulation_UI(QWidget* parent) :
-  IModuleUI(parent)
+MonteCarloSimulation_UI::MonteCarloSimulation_UI(QWidget* parent)
+: IModuleUI(parent)
 {
   setupUi(this);
 
@@ -84,7 +84,7 @@ MonteCarloSimulation_UI::~MonteCarloSimulation_UI() = default;
 //
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::setupGui()
-{  
+{
   // Create and set the validators on all the line edits
   createValidators();
 
@@ -101,21 +101,19 @@ void MonteCarloSimulation_UI::setupGui()
 
   QStringList choices = m_Controller->getPlatformInfo();
   gpuPlatformCB->insertItems(0, choices);
-  if (gpuPlatformCB->count() > 0) 
+  if(gpuPlatformCB->count() > 0)
   {
-     gpuPlatformCB->setCurrentIndex(0); 
+    gpuPlatformCB->setCurrentIndex(0);
   }
 
   // Grab the first device as a default
   choices = m_Controller->getDeviceInfo(1);
   gpuDeviceCB->insertItems(0, choices);
-  if (gpuDeviceCB->count() > 0)
+  if(gpuDeviceCB->count() > 0)
   {
     gpuDeviceCB->setCurrentIndex(0);
   }
-
 }
-
 
 // -----------------------------------------------------------------------------
 //
@@ -125,7 +123,7 @@ void MonteCarloSimulation_UI::on_gpuPlatformCB_currentIndexChanged(int index)
   QStringList choices = m_Controller->getDeviceInfo(index + 1);
   gpuDeviceCB->clear();
   gpuDeviceCB->insertItems(0, choices);
-  if (gpuDeviceCB->count() > 0) 
+  if(gpuDeviceCB->count() > 0)
   {
     gpuDeviceCB->setCurrentIndex(0);
   }
@@ -136,8 +134,8 @@ void MonteCarloSimulation_UI::on_gpuPlatformCB_currentIndexChanged(int index)
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::createValidators()
 {
-//  QDoubleValidator* doubleValidator = new QDoubleValidator(scintillatorPixelSize);
-//  scintillatorPixelSize->setValidator(doubleValidator);
+  //  QDoubleValidator* doubleValidator = new QDoubleValidator(scintillatorPixelSize);
+  //  scintillatorPixelSize->setValidator(doubleValidator);
 }
 
 // -----------------------------------------------------------------------------
@@ -147,25 +145,25 @@ void MonteCarloSimulation_UI::createModificationConnections()
 {
   // Spin Boxes
   connect(sampleTiltAngleSigSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
-  connect(sampleRotAngleOmegaSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(sampleStartTiltAngleSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(sampleEndTiltAngleSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(sampleTiltStepSizeSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(acceleratingVoltageSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(minEnergyConsiderSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(energyBinSizeSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(maxDepthConsiderSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(depthStepSizeSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(numOfPixelsNSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(numOfEPerWorkitemSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(totalNumOfEConsideredSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(multiplierForTotalNumOfESB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged();  });
-  connect(gpuPlatformCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged();  });
-  connect(gpuDeviceCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged();  });
-  connect(globalWorkGroupSizeSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged();  });
+  connect(sampleRotAngleOmegaSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(sampleStartTiltAngleSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(sampleEndTiltAngleSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(sampleTiltStepSizeSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(acceleratingVoltageSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(minEnergyConsiderSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(energyBinSizeSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(maxDepthConsiderSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(depthStepSizeSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(numOfPixelsNSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(numOfEPerWorkitemSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(totalNumOfEConsideredSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(multiplierForTotalNumOfESB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged(); });
+  connect(gpuPlatformCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged(); });
+  connect(gpuDeviceCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged(); });
+  connect(globalWorkGroupSizeSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged(); });
 
   // Combo Boxes
-  connect(mcModeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged();  });
+  connect(mcModeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged(); });
 
   // Line Edits
   connect(csFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
@@ -182,7 +180,7 @@ void MonteCarloSimulation_UI::createWidgetConnections()
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
   connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(appendToStdOut(const QString &)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
 
   connect(m_Controller, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
 
@@ -241,7 +239,7 @@ bool MonteCarloSimulation_UI::validateData()
   clearModuleIssues();
 
   MonteCarloSimulationController::MonteCarloSimulationData data = getCreationData();
-  if (m_Controller->validateMonteCarloValues(data))
+  if(m_Controller->validateMonteCarloValues(data))
   {
     createMonteCarloBtn->setEnabled(true);
     return true;
@@ -256,7 +254,7 @@ bool MonteCarloSimulation_UI::validateData()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
 {
-  if (createMonteCarloBtn->text() == "Cancel")
+  if(createMonteCarloBtn->text() == "Cancel")
   {
     m_Controller->setCancel(true);
     setRunning(false);
@@ -276,7 +274,7 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
 
   // Single-threaded for now, but we can multi-thread later if needed
   //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-  for (int i = 0; i < 1; i++)
+  for(int i = 0; i < 1; i++)
   {
     m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
     connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
@@ -308,7 +306,7 @@ void MonteCarloSimulation_UI::threadFinished()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::changeEvent(QEvent* event)
 {
-  if (event->type() == QEvent::ActivationChange)
+  if(event->type() == QEvent::ActivationChange)
   {
     emit moduleChangedState(this);
   }
@@ -317,7 +315,7 @@ void MonteCarloSimulation_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::readModuleSession(QJsonObject &obj)
+void MonteCarloSimulation_UI::readModuleSession(QJsonObject& obj)
 {
   readMonteCarloParameters(obj);
   readGPUParameters(obj);
@@ -331,11 +329,11 @@ void MonteCarloSimulation_UI::readModuleSession(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject &obj)
+void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject& obj)
 {
   QJsonObject monteCarloObj = obj[ioConstants::MonteCarlo].toObject();
 
-  if (!monteCarloObj.isEmpty())
+  if(!monteCarloObj.isEmpty())
   {
     sampleTiltAngleSigSB->blockSignals(true);
     sampleRotAngleOmegaSB->blockSignals(true);
@@ -379,11 +377,11 @@ void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::readGPUParameters(QJsonObject &obj)
+void MonteCarloSimulation_UI::readGPUParameters(QJsonObject& obj)
 {
   QJsonObject gpuObj = obj[ioConstants::GPU].toObject();
 
-  if (!gpuObj.isEmpty())
+  if(!gpuObj.isEmpty())
   {
     numOfEPerWorkitemSB->blockSignals(true);
     totalNumOfEConsideredSB->blockSignals(true);
@@ -411,8 +409,8 @@ void MonteCarloSimulation_UI::readGPUParameters(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::writeModuleSession(QJsonObject &obj)
-{ 
+void MonteCarloSimulation_UI::writeModuleSession(QJsonObject& obj)
+{
   QJsonObject monteCarloObj;
   QJsonObject gpuObj;
 
@@ -428,7 +426,7 @@ void MonteCarloSimulation_UI::writeModuleSession(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject &obj)
+void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject& obj)
 {
   obj[ioConstants::MonteCarloMode] = mcModeCB->currentIndex();
   obj[ioConstants::SampleTiltAngleSigma] = sampleTiltAngleSigSB->value();
@@ -447,7 +445,7 @@ void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::writeGPUParameters(QJsonObject &obj)
+void MonteCarloSimulation_UI::writeGPUParameters(QJsonObject& obj)
 {
   obj[ioConstants::NumberOfElectronsPerWorkitem] = numOfEPerWorkitemSB->value();
   obj[ioConstants::TotalNumOfElectronsToBeConsidered] = totalNumOfEConsideredSB->value();
@@ -475,14 +473,14 @@ void MonteCarloSimulation_UI::on_mcModeCB_currentIndexChanged(int index)
 
   MonteCarloSimulationController::MonteCarloMode mcMode = static_cast<MonteCarloSimulationController::MonteCarloMode>(index);
 
-  if (mcMode == MonteCarloSimulationController::MonteCarloMode::EBSD)
+  if(mcMode == MonteCarloSimulationController::MonteCarloMode::EBSD)
   {
     sampleTiltAngleSigLabel->show();
     sampleTiltAngleSigSB->show();
     sampleRotAngleOmegaLabel->show();
     sampleRotAngleOmegaSB->show();
   }
-  else if (mcMode == MonteCarloSimulationController::MonteCarloMode::ECP)
+  else if(mcMode == MonteCarloSimulationController::MonteCarloMode::ECP)
   {
     sampleStartTiltAngleLabel->show();
     sampleStartTiltAngleSB->show();
@@ -521,4 +519,3 @@ MonteCarloSimulationController::MonteCarloSimulationData MonteCarloSimulation_UI
   data.outputFilePath = mcFilePathLE->text();
   return data;
 }
-

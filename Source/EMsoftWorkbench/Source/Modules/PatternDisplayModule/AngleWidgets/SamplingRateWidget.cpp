@@ -1,37 +1,37 @@
 /* ============================================================================
-* Copyright (c) 2009-2016 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2016 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "SamplingRateWidget.h"
 
@@ -44,8 +44,8 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SamplingRateWidget::SamplingRateWidget(QWidget *parent, Qt::WindowFlags windowFlags) :
-  AbstractAngleWidget(parent, windowFlags)
+SamplingRateWidget::SamplingRateWidget(QWidget* parent, Qt::WindowFlags windowFlags)
+: AbstractAngleWidget(parent, windowFlags)
 {
   setupUi(this);
 
@@ -64,51 +64,51 @@ void SamplingRateWidget::setupGui()
 {
   QDoubleValidator* dblValidator = new QDoubleValidator(phi1StartLineEdit);
   phi1StartLineEdit->setValidator(dblValidator);
-  connect(phi1StartLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi1StartLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phi1MStepLineEdit);
   phi1MStepLineEdit->setValidator(dblValidator);
-  connect(phi1MStepLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi1MStepLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phi1EndLineEdit);
   phi1EndLineEdit->setValidator(dblValidator);
-  connect(phi1EndLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi1EndLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phiStartLineEdit);
   phiStartLineEdit->setValidator(dblValidator);
-  connect(phiStartLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phiStartLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phiMStepLineEdit);
   phiMStepLineEdit->setValidator(dblValidator);
-  connect(phiMStepLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phiMStepLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phiEndLineEdit);
   phiEndLineEdit->setValidator(dblValidator);
-  connect(phiEndLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phiEndLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phi2StartLineEdit);
   phi2StartLineEdit->setValidator(dblValidator);
-  connect(phi2StartLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi2StartLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phi2MStepLineEdit);
   phi2MStepLineEdit->setValidator(dblValidator);
-  connect(phi2MStepLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi2MStepLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phi2EndLineEdit);
   phi2EndLineEdit->setValidator(dblValidator);
-  connect(phi2EndLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi2EndLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phi1AngleLineEdit);
   phi1AngleLineEdit->setValidator(dblValidator);
-  connect(phi1AngleLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi1AngleLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phiAngleLineEdit);
   phiAngleLineEdit->setValidator(dblValidator);
-  connect(phiAngleLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phiAngleLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   dblValidator = new QDoubleValidator(phi2AngleLineEdit);
   phi2AngleLineEdit->setValidator(dblValidator);
-  connect(phi2AngleLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(lineEditChanged(const QString &)));
+  connect(phi2AngleLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
 
   connect(phi1CB, SIGNAL(stateChanged(int)), this, SLOT(checkBoxChanged(int)));
   connect(phiCB, SIGNAL(stateChanged(int)), this, SLOT(checkBoxChanged(int)));
@@ -120,7 +120,7 @@ void SamplingRateWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::lineEditChanged(const QString &text)
+void SamplingRateWidget::lineEditChanged(const QString& text)
 {
   Q_UNUSED(text)
 
@@ -144,7 +144,7 @@ void SamplingRateWidget::valuesChanged()
 {
   FloatArrayType::Pointer eulerAngles = getEulerAngles();
 
-  if (eulerAngles == FloatArrayType::NullPointer())
+  if(eulerAngles == FloatArrayType::NullPointer())
   {
     numOfAnglesLineEdit->setText("0");
   }
@@ -167,7 +167,7 @@ bool SamplingRateWidget::hasValidAngles()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::readSession(QJsonObject &obj)
+void SamplingRateWidget::readSession(QJsonObject& obj)
 {
   QJsonObject phi1Obj = obj[EMsoftWorkbenchConstants::IOStrings::Phi1].toObject();
   phi1StartLineEdit->setText(QString::number(phi1Obj[EMsoftWorkbenchConstants::IOStrings::Start].toDouble()));
@@ -196,7 +196,7 @@ void SamplingRateWidget::readSession(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::writeSession(QJsonObject &obj)
+void SamplingRateWidget::writeSession(QJsonObject& obj)
 {
   QJsonObject phi1Obj;
   phi1Obj[EMsoftWorkbenchConstants::IOStrings::Start] = phi1StartLineEdit->text().toDouble();
@@ -269,26 +269,26 @@ FloatArrayType::Pointer SamplingRateWidget::getEulerAngles()
   double phi2MStep = phi2MStepLineEdit->text().toDouble();
   double phi2End = phi2EndLineEdit->text().toDouble();
 
-  if (!phi1CB->isChecked())
+  if(!phi1CB->isChecked())
   {
     phi1Start = phi1AngleLineEdit->text().toDouble();
     phi1End = phi1AngleLineEdit->text().toDouble();
     phi1MStep = 1;
   }
-  if (!phiCB->isChecked())
+  if(!phiCB->isChecked())
   {
     phiStart = phiAngleLineEdit->text().toDouble();
     phiEnd = phiAngleLineEdit->text().toDouble();
     phiMStep = 1;
   }
-  if (!phi2CB->isChecked())
+  if(!phi2CB->isChecked())
   {
     phi2Start = phi2AngleLineEdit->text().toDouble();
     phi2End = phi2AngleLineEdit->text().toDouble();
     phi2MStep = 1;
   }
 
-  if (phi1MStep == 0 || phiMStep == 0 || phi2MStep == 0)
+  if(phi1MStep == 0 || phiMStep == 0 || phi2MStep == 0)
   {
     return FloatArrayType::NullPointer();
   }
@@ -297,21 +297,21 @@ FloatArrayType::Pointer SamplingRateWidget::getEulerAngles()
   int phiDim = ((phiEnd - phiStart) / phiMStep) + 1;
   int phi2Dim = ((phi2End - phi2Start) / phi2MStep) + 1;
 
-  FloatArrayType::Pointer floatArray = FloatArrayType::CreateArray(phi1Dim*phiDim*phi2Dim, QVector<size_t>(1, 3), "Euler Angles");
+  FloatArrayType::Pointer floatArray = FloatArrayType::CreateArray(phi1Dim * phiDim * phi2Dim, QVector<size_t>(1, 3), "Euler Angles");
 
   int index = 0;
-  for (int i = phi1Start; i <= phi1End; i = i + phi1MStep)
+  for(int i = phi1Start; i <= phi1End; i = i + phi1MStep)
   {
-    for (int j = phiStart; j <= phiEnd; j = j + phiMStep)
+    for(int j = phiStart; j <= phiEnd; j = j + phiMStep)
     {
-      for (int k = phi2Start; k <= phi2End; k = k + phi2MStep)
+      for(int k = phi2Start; k <= phi2End; k = k + phi2MStep)
       {
         float val1 = static_cast<float>(i);
         float val2 = static_cast<float>(j);
         float val3 = static_cast<float>(k);
 
         // Convert to radians, if necessary
-        if (degreesRB->isChecked())
+        if(degreesRB->isChecked())
         {
           val1 = val1 * k_PiOver180;
           val2 = val2 * k_PiOver180;
@@ -364,7 +364,3 @@ void SamplingRateWidget::on_phi2CB_stateChanged(int state)
   phi2EndLineEdit->setEnabled(enabled);
   phi2AngleLineEdit->setDisabled(enabled);
 }
-
-
-
-

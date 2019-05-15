@@ -1,65 +1,65 @@
 /* ============================================================================
-* Copyright (c) 2009-2017 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2017 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "MonteCarloSimulationController.h"
 
 #include <cmath>
 
-#include <iostream>
 #include <functional>
+#include <iostream>
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
-#include <QtCore/QFileInfo>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 #include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
-#include <QtCore/QDateTime>
-#include <QtCore/QCoreApplication>
 
 #include <QtNetwork/QHostInfo>
 
 #include "Common/Constants.h"
-#include "Common/XtalFileReader.h"
 #include "Common/EMsoftFileWriter.h"
+#include "Common/XtalFileReader.h"
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 
-#include "H5Support/QH5Utilities.h"
 #include "H5Support/HDF5ScopedFileSentinel.h"
 #include "H5Support/QH5Lite.h"
+#include "H5Support/QH5Utilities.h"
 
 #include "Modules/MonteCarloSimulationModule/cl.hpp"
 
@@ -80,26 +80,26 @@ static QMap<size_t, MonteCarloSimulationController*> s_ControllerInstances;
 void MonteCarloSimulationControllerProgress(size_t instance, int loopCompleted, int totalLoops, float bseYield)
 {
   MonteCarloSimulationController* obj = s_ControllerInstances[instance];
-  if(nullptr != obj) {
-    obj->setUpdateProgress(loopCompleted,totalLoops, bseYield);
+  if(nullptr != obj)
+  {
+    obj->setUpdateProgress(loopCompleted, totalLoops, bseYield);
   }
-
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloSimulationController::MonteCarloSimulationController(QObject* parent) :
-  QObject(parent),
-  m_Cancel(false)
+MonteCarloSimulationController::MonteCarloSimulationController(QObject* parent)
+: QObject(parent)
+, m_Cancel(false)
 {
   m_XtalReader = new XtalFileReader();
-  connect(m_XtalReader, &XtalFileReader::errorMessageGenerated, [=] (const QString &msg) { emit errorMessageGenerated(msg); });
+  connect(m_XtalReader, &XtalFileReader::errorMessageGenerated, [=](const QString& msg) { emit errorMessageGenerated(msg); });
 
   int numberOfStrings = EMsoftWorkbenchConstants::Constants::SParSize;
   int stringSize = EMsoftWorkbenchConstants::Constants::SParStringSize;
-  m_SPar = new char[numberOfStrings*stringSize];
-  std::memset(m_SPar, '\0', numberOfStrings*stringSize);
+  m_SPar = new char[numberOfStrings * stringSize];
+  std::memset(m_SPar, '\0', numberOfStrings * stringSize);
 }
 
 // -----------------------------------------------------------------------------
@@ -163,23 +163,26 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   QString inputFilePath = simData.inputFilePath;
 
   QFileInfo fi(inputFilePath);
-  if (fi.suffix().compare("") == 0)
+  if(fi.suffix().compare("") == 0)
   {
     inputFilePath.append(".xtal");
   }
 
   // If we couldn't read the crystal structure file, then bail
-  if (!m_XtalReader->openFile(inputFilePath)) {
+  if(!m_XtalReader->openFile(inputFilePath))
+  {
     return;
   }
 
   Int32ArrayType::Pointer iParPtr = getIParPtr(simData);
-  if (iParPtr == Int32ArrayType::NullPointer()) {
+  if(iParPtr == Int32ArrayType::NullPointer())
+  {
     return;
   }
 
   FloatArrayType::Pointer fParPtr = getFParPtr(simData);
-  if (fParPtr == FloatArrayType::NullPointer()) {
+  if(fParPtr == FloatArrayType::NullPointer())
+  {
     return;
   }
 
@@ -205,9 +208,8 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   std::vector<int32_t> atomTypes;
 
   // If we couldn't get these three variables, then bail
-  if (!m_XtalReader->getAtomPos(atomPos) ||
-      !m_XtalReader->getAtomTypes(atomTypes) ||
-      !m_XtalReader->getLatticeParameters(latParm)) {
+  if(!m_XtalReader->getAtomPos(atomPos) || !m_XtalReader->getAtomTypes(atomTypes) || !m_XtalReader->getLatticeParameters(latParm))
+  {
     return;
   }
 
@@ -217,14 +219,14 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   emit stdOutputMessageGenerated(tr("dir: %1").arg(dir.absolutePath()));
   std::cout << "dir: " << dir.absolutePath().toStdString() << std::endl;
 
-  QString openCLPath =  dir.absolutePath(); // Initialize to SOMETHING other than empty.
+  QString openCLPath = dir.absolutePath(); // Initialize to SOMETHING other than empty.
 
   // Look to see if we are inside an .app package or inside the 'tools' directory
 #if defined(Q_OS_MAC)
   if(dir.dirName() == "MacOS")
   {
     dir.cdUp();
-    if (dir.cd("bin"))
+    if(dir.cd("bin"))
     {
       openCLPath = dir.absolutePath();
     }
@@ -241,7 +243,7 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     openCLPath = dir.absolutePath();
   }
 
-  if (!dir.cd("opencl"))
+  if(!dir.cd("opencl"))
   {
     std::cout << "Unable to find opencl folder at path" << std::endl;
     // We are not able to find the opencl folder, so throw an error and bail
@@ -257,7 +259,7 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   openCLPath.append(QDir::separator());
   openCLPath.append("opencl");
 
-  if (!dir.cd("resources"))
+  if(!dir.cd("resources"))
   {
     // We are not able to find the resources folder, so throw an error and bail
     errorMessageGenerated(tr("Unable to find resources folder at path '%1'").arg(randomSeedsPath));
@@ -272,44 +274,41 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   randomSeedsPath.append(QDir::separator());
   randomSeedsPath.append("RandomSeeds.data");
 
-//  static const size_t k_BufferSize = 255;
-//  char string[k_BufferSize];
+  //  static const size_t k_BufferSize = 255;
+  //  char string[k_BufferSize];
 
-//  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
+  //  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
 
-  if (!setSParValue(StringType::OpenCLFolder, openCLPath))
+  if(!setSParValue(StringType::OpenCLFolder, openCLPath))
   {
     return;
   }
 
-  if (!setSParValue(StringType::RandomSeedsFile, randomSeedsPath))
+  if(!setSParValue(StringType::RandomSeedsFile, randomSeedsPath))
   {
     return;
   }
 
-//  for (int i = 0; i < EMsoftWorkbenchConstants::Constants::SParSize; i++)
-//  {
-//    for (int j = 0; j < EMsoftWorkbenchConstants::Constants::SParStringSize; j++)
-//    {
-//      printf("%x ", m_SPar[i*EMsoftWorkbenchConstants::Constants::SParStringSize + j]);
-//    }
-//    printf("\n");
-//  }
+  //  for (int i = 0; i < EMsoftWorkbenchConstants::Constants::SParSize; i++)
+  //  {
+  //    for (int j = 0; j < EMsoftWorkbenchConstants::Constants::SParStringSize; j++)
+  //    {
+  //      printf("%x ", m_SPar[i*EMsoftWorkbenchConstants::Constants::SParStringSize + j]);
+  //    }
+  //    printf("\n");
+  //  }
 
-  EMsoftCgetMCOpenCL(
-      iParPtr->getPointer(0), fParPtr->getPointer(0), m_SPar,
-      atomPos.data(), atomTypes.data(), latParm.data(),
-      m_GenericAccumePtr->getPointer(0), m_GenericAccumzPtr->getPointer(0),
-      &MonteCarloSimulationControllerProgress, m_InstanceKey, &m_Cancel);
+  EMsoftCgetMCOpenCL(iParPtr->getPointer(0), fParPtr->getPointer(0), m_SPar, atomPos.data(), atomTypes.data(), latParm.data(), m_GenericAccumePtr->getPointer(0), m_GenericAccumzPtr->getPointer(0),
+                     &MonteCarloSimulationControllerProgress, m_InstanceKey, &m_Cancel);
 
   s_ControllerInstances.remove(m_InstanceKey);
 
   // do we need to write this accumulator data into an EMsoft .h5 file?
   // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
-  if (!m_Cancel)
+  if(!m_Cancel)
   {
     bool success = writeEMsoftHDFFile(simData);
-    if (!success)
+    if(!success)
     {
       emit stdOutputMessageGenerated("Monte Carlo File Generation Failed");
       return;
@@ -327,10 +326,10 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool MonteCarloSimulationController::setSParValue(StringType type, const QString &value)
+bool MonteCarloSimulationController::setSParValue(StringType type, const QString& value)
 {
   int stringSize = EMsoftWorkbenchConstants::Constants::SParStringSize;
-  if (value.size() > stringSize)
+  if(value.size() > stringSize)
   {
     errorMessageGenerated(tr("The string '%1' is longer than %2 characters").arg(value).arg(EMsoftWorkbenchConstants::Constants::SParStringSize));
     return false;
@@ -339,19 +338,19 @@ bool MonteCarloSimulationController::setSParValue(StringType type, const QString
   int index = static_cast<int>(type);
 
   char* valueArray = value.toLatin1().data();
-  std::memcpy(m_SPar + (index*stringSize), valueArray, value.size());
+  std::memcpy(m_SPar + (index * stringSize), valueArray, value.size());
   return true;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulationController::convertToFortran(char *fstring, size_t fstring_len, const char* cstring)
+void MonteCarloSimulationController::convertToFortran(char* fstring, size_t fstring_len, const char* cstring)
 {
   std::size_t inlen = std::strlen(cstring);
   std::size_t cpylen = std::min(inlen, fstring_len);
 
-  if (inlen > fstring_len)
+  if(inlen > fstring_len)
   {
     // TODO: truncation error or warning
   }
@@ -369,28 +368,29 @@ void MonteCarloSimulationController::initializeData(MonteCarloSimulationControll
   {
     // allocate space for the Accume and Accumz arrays, which will subsequently be filled by the EMsoftCgetMCOpenCL code.
     QVector<size_t> cDims(3);
-    cDims[0] = static_cast<int>((data.acceleratingVoltage-data.minEnergyConsider)/data.energyBinSize+1);
+    cDims[0] = static_cast<int>((data.acceleratingVoltage - data.minEnergyConsider) / data.energyBinSize + 1);
     cDims[1] = data.numOfPixelsN;
     cDims[2] = data.numOfPixelsN;
 
     m_GenericAccumePtr = Int32ArrayType::CreateArray(1, cDims, "genericAccume");
-	m_GenericAccumePtr->initializeWithZeros();
+    m_GenericAccumePtr->initializeWithZeros();
     m_GenericAccumePtr->setInitValue(0);
 
     cDims.resize(4);
-    if (data.mcMode == 1) {
+    if(data.mcMode == 1)
+    {
       cDims[0] = static_cast<int>((data.acceleratingVoltage - data.minEnergyConsider) / data.energyBinSize + 1);
     }
     else
     {
       cDims[0] = static_cast<size_t>((data.sampleEndTiltAngle - data.sampleStartTiltAngle) / data.sampleTiltStepSize + 1);
     }
-    cDims[1] = static_cast<int>(data.maxDepthConsider / data.depthStepSize +1);
+    cDims[1] = static_cast<int>(data.maxDepthConsider / data.depthStepSize + 1);
     cDims[2] = (data.numOfPixelsN - 1) / 10 + 1;
     cDims[3] = (data.numOfPixelsN - 1) / 10 + 1;
 
     m_GenericAccumzPtr = Int32ArrayType::CreateArray(1, cDims, "genericAccumz");
-	m_GenericAccumzPtr->initializeWithZeros();
+    m_GenericAccumzPtr->initializeWithZeros();
     m_GenericAccumzPtr->setInitValue(0);
 
     // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
@@ -411,7 +411,7 @@ void MonteCarloSimulationController::initializeData(MonteCarloSimulationControll
 // -----------------------------------------------------------------------------
 bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulationController::MonteCarloSimulationData data)
 {
-  if (data.inputFilePath.isEmpty())
+  if(data.inputFilePath.isEmpty())
   {
     QString ss = QObject::tr("The crystal structure input file path must be set.");
     emit errorMessageGenerated(ss);
@@ -422,13 +422,13 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
     QString inputFilePath = data.inputFilePath;
 
     QFileInfo fi(inputFilePath);
-    if (fi.completeSuffix() != "xtal")
+    if(fi.completeSuffix() != "xtal")
     {
       QString ss = QObject::tr("The crystal structure input file at path '%1' needs a '.xtal' suffix.").arg(inputFilePath);
       emit errorMessageGenerated(ss);
       return false;
     }
-    if (!fi.exists())
+    if(!fi.exists())
     {
       QString ss = QObject::tr("The crystal structure input file at path '%1' does not exist.").arg(inputFilePath);
       emit errorMessageGenerated(ss);
@@ -436,7 +436,7 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
     }
   }
 
-  if (data.outputFilePath.isEmpty())
+  if(data.outputFilePath.isEmpty())
   {
     QString ss = QObject::tr("The monte carlo output file path must be set.");
     emit errorMessageGenerated(ss);
@@ -445,26 +445,26 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
 
   QString outputFilePath = data.outputFilePath;
   QFileInfo fi(outputFilePath);
-  if (fi.completeSuffix() != "h5")
+  if(fi.completeSuffix() != "h5")
   {
     QString ss = QObject::tr("The monte carlo output file at path '%1' needs a '.h5' suffix.").arg(outputFilePath);
     emit errorMessageGenerated(ss);
     return false;
   }
 
-  if ( (data.totalNumOfEConsidered > INT_MAX) || (data.totalNumOfEConsidered < 0) )
+  if((data.totalNumOfEConsidered > INT_MAX) || (data.totalNumOfEConsidered < 0))
   {
     data.totalNumOfEConsidered = 2000000000;
   }
 
   // test sample tilt angles for EBSD
-  if ( (data.sampleTiltAngleSig < 0) || (data.sampleTiltAngleSig >= 90) )
+  if((data.sampleTiltAngleSig < 0) || (data.sampleTiltAngleSig >= 90))
   {
     QString ss = QObject::tr("Sample TD tilt angle must be in interval [0,90[");
     emit errorMessageGenerated(ss);
     return false;
   }
-  if ( (data.sampleRotAngleOmega < -45) || (data.sampleRotAngleOmega > 45) )
+  if((data.sampleRotAngleOmega < -45) || (data.sampleRotAngleOmega > 45))
   {
     QString ss = QObject::tr("Sample RD tilt angle must be in interval [-45,45]");
     emit errorMessageGenerated(ss);
@@ -472,21 +472,19 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
   }
 
   // test sample tilt angles for ECP
-  if ( (data.sampleStartTiltAngle < 0) || (data.sampleStartTiltAngle > data.sampleEndTiltAngle)
-       || (data.sampleStartTiltAngle > 90) )
+  if((data.sampleStartTiltAngle < 0) || (data.sampleStartTiltAngle > data.sampleEndTiltAngle) || (data.sampleStartTiltAngle > 90))
   {
     QString ss = QObject::tr("Sample start tilt angle must be in interval [0,endangle]");
     emit errorMessageGenerated(ss);
     return false;
   }
-  if ( (data.sampleEndTiltAngle < data.sampleStartTiltAngle) || (data.sampleEndTiltAngle > 90) )
+  if((data.sampleEndTiltAngle < data.sampleStartTiltAngle) || (data.sampleEndTiltAngle > 90))
   {
     QString ss = QObject::tr("Sample end tilt angle must be in interval [startangle,90]");
     emit errorMessageGenerated(ss);
     return false;
   }
-  if ( (data.sampleTiltStepSize < 0)
-       || (data.sampleTiltStepSize > data.sampleEndTiltAngle - data.sampleStartTiltAngle) )
+  if((data.sampleTiltStepSize < 0) || (data.sampleTiltStepSize > data.sampleEndTiltAngle - data.sampleStartTiltAngle))
   {
     QString ss = QObject::tr("Sample tilt step size must be positive, with at least one step in the [start,end] interval.");
     emit errorMessageGenerated(ss);
@@ -494,19 +492,19 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
   }
 
   // test voltage and step size
-  if (data.acceleratingVoltage < 0)
+  if(data.acceleratingVoltage < 0)
   {
     QString ss = QObject::tr("Microscope accelerating voltage must be positive");
     emit errorMessageGenerated(ss);
     return false;
   }
-  if ((data.minEnergyConsider < 0) || data.minEnergyConsider > data.acceleratingVoltage)
+  if((data.minEnergyConsider < 0) || data.minEnergyConsider > data.acceleratingVoltage)
   {
     QString ss = QObject::tr("Voltage must be positive and less than the accelerating voltage");
     emit errorMessageGenerated(ss);
     return false;
   }
-  if ((data.energyBinSize < 0) || data.energyBinSize > data.acceleratingVoltage - data.minEnergyConsider)
+  if((data.energyBinSize < 0) || data.energyBinSize > data.acceleratingVoltage - data.minEnergyConsider)
   {
     QString ss = QObject::tr("Voltage step size must be positive, with at least one bin.");
     emit errorMessageGenerated(ss);
@@ -514,13 +512,13 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
   }
 
   // test depth parameters
-  if (data.maxDepthConsider <= 0)
+  if(data.maxDepthConsider <= 0)
   {
     QString ss = QObject::tr("Maximum depth must be strictly positive");
     emit errorMessageGenerated(ss);
     return false;
   }
-  if ((data.depthStepSize <= 0)||(data.depthStepSize > data.maxDepthConsider))
+  if((data.depthStepSize <= 0) || (data.depthStepSize > data.maxDepthConsider))
   {
     QString ss = QObject::tr("Depth step size must be strictly positive, with at least one bin.");
     emit errorMessageGenerated(ss);
@@ -528,7 +526,8 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
   }
 
   // numsx must be an odd number ...
-  if((data.numOfPixelsN % 2) == 0){
+  if((data.numOfPixelsN % 2) == 0)
+  {
     QString ss = QObject::tr("Number of points must be odd.");
     emit errorMessageGenerated(ss);
     return false;
@@ -543,48 +542,49 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
   }
 */
   // make sure the multiplier is strictly positive
-  if (data.multiplierForTotalNumOfE < 1) {
+  if(data.multiplierForTotalNumOfE < 1)
+  {
     QString ss = QObject::tr("Multiplier must be at least 1");
     emit errorMessageGenerated(ss);
     return false;
   }
 
-//  // platid and devid must be strictly positive integers; we also check on the upper bounds
-//  {
-//    int pID = getnumCLPlatforms();
-//    int platformID = data.gpuPlatformID;
-//    int dID = getnumCLDevices(platformID);
+  //  // platid and devid must be strictly positive integers; we also check on the upper bounds
+  //  {
+  //    int pID = getnumCLPlatforms();
+  //    int platformID = data.gpuPlatformID;
+  //    int dID = getnumCLDevices(platformID);
 
-//    if(platformID < 1) {
-//      QString ss = QObject::tr("Platform ID must be at least 1");
-//      emit errorMessageGenerated(ss);
-//      writePlatformInfo();
-//      return false;
-//    }
+  //    if(platformID < 1) {
+  //      QString ss = QObject::tr("Platform ID must be at least 1");
+  //      emit errorMessageGenerated(ss);
+  //      writePlatformInfo();
+  //      return false;
+  //    }
 
-//    if(platformID > pID) {
-//      QString ss = QObject::tr("Platform ID exceeds number of platforms (%1) available on this system.").arg(QString::number(pID));
-//      emit errorMessageGenerated(ss);
-//      writePlatformInfo();
-//      return false;
-//    }
+  //    if(platformID > pID) {
+  //      QString ss = QObject::tr("Platform ID exceeds number of platforms (%1) available on this system.").arg(QString::number(pID));
+  //      emit errorMessageGenerated(ss);
+  //      writePlatformInfo();
+  //      return false;
+  //    }
 
-//    if (data.gpuDeviceID < 1) {
-//      QString ss = QObject::tr("Device ID must be at least 1");
-//      emit errorMessageGenerated(ss);
-//      writeDeviceInfo(platformID);
-//      return false;
-//    }
+  //    if (data.gpuDeviceID < 1) {
+  //      QString ss = QObject::tr("Device ID must be at least 1");
+  //      emit errorMessageGenerated(ss);
+  //      writeDeviceInfo(platformID);
+  //      return false;
+  //    }
 
-//    if (dID != -1000) {
-//      if (data.gpuDeviceID > dID) {
-//        QString ss = QObject::tr("Device ID exceeds number of devices (%1) available on this platform on this system.").arg(QString::number(dID));
-//        emit errorMessageGenerated(ss);
-//        writeDeviceInfo(platformID);
-//        return false;
-//      }
-//    }
-//  }
+  //    if (dID != -1000) {
+  //      if (data.gpuDeviceID > dID) {
+  //        QString ss = QObject::tr("Device ID exceeds number of devices (%1) available on this platform on this system.").arg(QString::number(dID));
+  //        emit errorMessageGenerated(ss);
+  //        writeDeviceInfo(platformID);
+  //        return false;
+  //      }
+  //    }
+  //  }
 
   return true;
 }
@@ -606,13 +606,13 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 {
   {
     QFileInfo inputFi(simData.inputFilePath);
-    if (inputFi.suffix().compare("") == 0)
+    if(inputFi.suffix().compare("") == 0)
     {
       simData.inputFilePath.append(".xtal");
     }
 
     QFileInfo outputFi(simData.outputFilePath);
-    if (outputFi.suffix().compare("") == 0)
+    if(outputFi.suffix().compare("") == 0)
     {
       simData.outputFilePath.append(".h5");
     }
@@ -630,24 +630,17 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   int sgNumber;
   int sgSetting;
 
-  if (!m_XtalReader->getCreationDate(creationDate) ||
-      !m_XtalReader->getCreationTime(creationTime) ||
-      !m_XtalReader->getCreator(creator) ||
-      !m_XtalReader->getProgramName(programName) ||
-      !m_XtalReader->getAtomPos(atomPos) ||
-      !m_XtalReader->getAtomTypes(atomTypes) ||
-      !m_XtalReader->getCrystalSystem(crystalSystem) ||
-      !m_XtalReader->getLatticeParameters(latParam) ||
-      !m_XtalReader->getNatomTypes(natomTypes) ||
-      !m_XtalReader->getSpaceGroupNumber(sgNumber) ||
-      !m_XtalReader->getSpaceGroupSetting(sgSetting)) {
+  if(!m_XtalReader->getCreationDate(creationDate) || !m_XtalReader->getCreationTime(creationTime) || !m_XtalReader->getCreator(creator) || !m_XtalReader->getProgramName(programName) ||
+     !m_XtalReader->getAtomPos(atomPos) || !m_XtalReader->getAtomTypes(atomTypes) || !m_XtalReader->getCrystalSystem(crystalSystem) || !m_XtalReader->getLatticeParameters(latParam) ||
+     !m_XtalReader->getNatomTypes(natomTypes) || !m_XtalReader->getSpaceGroupNumber(sgNumber) || !m_XtalReader->getSpaceGroupSetting(sgSetting))
+  {
     return false;
   }
 
   Int32ArrayType::Pointer iParPtr = m_XtalReader->getIParPtr();
   FloatArrayType::Pointer fParPtr = m_XtalReader->getFParPtr();
-  if (iParPtr == Int32ArrayType::NullPointer() ||
-      fParPtr == FloatArrayType::NullPointer()) {
+  if(iParPtr == Int32ArrayType::NullPointer() || fParPtr == FloatArrayType::NullPointer())
+  {
     return false;
   }
 
@@ -662,9 +655,9 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   QFileInfo outputFi(outputFilePath);
   QFileInfo tmpFi(tmpOutputFilePath);
 
-  if (tmpFi.exists())
+  if(tmpFi.exists())
   {
-    if (!QFile::remove(tmpOutputFilePath))
+    if(!QFile::remove(tmpOutputFilePath))
     {
       QString ss = QObject::tr("Error creating temporary output file at path '%1'").arg(tmpOutputFilePath);
       emit errorMessageGenerated(ss);
@@ -672,7 +665,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     }
   }
 
-  if (!QFile::copy(inputFilePath, tmpOutputFilePath))
+  if(!QFile::copy(inputFilePath, tmpOutputFilePath))
   {
     QString ss = QObject::tr("Error creating temporary output file at path '%1'").arg(tmpOutputFilePath);
     emit errorMessageGenerated(ss);
@@ -682,10 +675,10 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   emit stdOutputMessageGenerated(tr("Writing Monte Carlo File '%1'...").arg(outputFi.fileName()));
 
   QSharedPointer<EMsoftFileWriter> writer = QSharedPointer<EMsoftFileWriter>(new EMsoftFileWriter());
-  connect(writer.data(), &EMsoftFileWriter::errorMessageGenerated, [=] (const QString &msg) { emit errorMessageGenerated(msg); });
+  connect(writer.data(), &EMsoftFileWriter::errorMessageGenerated, [=](const QString& msg) { emit errorMessageGenerated(msg); });
 
   // Open the HDF5 file
-  if (!writer->openFile(tmpOutputFilePath))
+  if(!writer->openFile(tmpOutputFilePath))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -693,14 +686,14 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // Create the EMData group
-  if (!writer->openGroup(EMsoft::Constants::EMData))
+  if(!writer->openGroup(EMsoft::Constants::EMData))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Create the MCOpenCL group
-  if (!writer->openGroup(EMsoft::Constants::MCOpenCL))
+  if(!writer->openGroup(EMsoft::Constants::MCOpenCL))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -709,15 +702,18 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   // write the accum_e array
   {
     QVector<hsize_t> dims(3);
-    if (simData.mcMode == 1) {
-      dims[2] = static_cast<int>((simData.acceleratingVoltage-simData.minEnergyConsider)/simData.energyBinSize+1);
-    } else {
-      dims[2] = static_cast<size_t>((simData.sampleEndTiltAngle-simData.sampleStartTiltAngle)/simData.sampleTiltAngleSig+1);
+    if(simData.mcMode == 1)
+    {
+      dims[2] = static_cast<int>((simData.acceleratingVoltage - simData.minEnergyConsider) / simData.energyBinSize + 1);
+    }
+    else
+    {
+      dims[2] = static_cast<size_t>((simData.sampleEndTiltAngle - simData.sampleStartTiltAngle) / simData.sampleTiltAngleSig + 1);
     }
     dims[1] = simData.numOfPixelsN;
     dims[0] = simData.numOfPixelsN;
 
-    if (!writer->writePointerDataset(EMsoft::Constants::accume, m_GenericAccumePtr->getPointer(0), dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::accume, m_GenericAccumePtr->getPointer(0), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -727,16 +723,19 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   // write the accum_z array
   {
     QVector<hsize_t> dims(4);
-    if (simData.mcMode == 1) {
-      dims[3] = static_cast<int>((simData.acceleratingVoltage-simData.minEnergyConsider)/simData.energyBinSize+1);
-    } else {
-      dims[3] = static_cast<size_t>((simData.sampleEndTiltAngle-simData.sampleStartTiltAngle)/simData.sampleTiltAngleSig+1);
+    if(simData.mcMode == 1)
+    {
+      dims[3] = static_cast<int>((simData.acceleratingVoltage - simData.minEnergyConsider) / simData.energyBinSize + 1);
     }
-    dims[2] = static_cast<int>(simData.maxDepthConsider/simData.depthStepSize+1);
-    dims[1] = (simData.numOfPixelsN-1)/10+1;
-    dims[0] = (simData.numOfPixelsN-1)/10+1;
+    else
+    {
+      dims[3] = static_cast<size_t>((simData.sampleEndTiltAngle - simData.sampleStartTiltAngle) / simData.sampleTiltAngleSig + 1);
+    }
+    dims[2] = static_cast<int>(simData.maxDepthConsider / simData.depthStepSize + 1);
+    dims[1] = (simData.numOfPixelsN - 1) / 10 + 1;
+    dims[0] = (simData.numOfPixelsN - 1) / 10 + 1;
 
-    if (!writer->writePointerDataset(EMsoft::Constants::accumz, m_GenericAccumzPtr->getPointer(0), dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::accumz, m_GenericAccumzPtr->getPointer(0), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -746,9 +745,9 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   int32_t* genericIPar = iParPtr->getPointer(0);
 
   // and a few constants
-  if (simData.mcMode == 1)
+  if(simData.mcMode == 1)
   {
-    if (!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIPar[11]))
+    if(!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIPar[11]))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -756,37 +755,37 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
   else
   {
-    if (!writer->writeScalarDataset(EMsoft::Constants::numangle, genericIPar[11]))
+    if(!writer->writeScalarDataset(EMsoft::Constants::numangle, genericIPar[11]))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  if (!writer->writeScalarDataset(EMsoft::Constants::numzbins, genericIPar[12]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::numzbins, genericIPar[12]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Close the groups
-  if (!writer->closeGroup())
+  if(!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (!writer->closeGroup())
+  if(!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -795,14 +794,14 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   //--------------------------------
   // Create the EMheader group; this is common to all EMsoft output files, so in the future
   // we will move this to the EMsoftToolboxPlugin.cpp file
-  if (!writer->openGroup(EMsoft::Constants::EMheader))
+  if(!writer->openGroup(EMsoft::Constants::EMheader))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Create the MCOpenCL group
-  if (!writer->openGroup(EMsoft::Constants::MCOpenCL))
+  if(!writer->openGroup(EMsoft::Constants::MCOpenCL))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -810,14 +809,14 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // Date  (use QDateTime)
   QString date = QDateTime::currentDateTime().date().toString();
-  if (!writer->writeStringDataset(EMsoft::Constants::Date, date))
+  if(!writer->writeStringDataset(EMsoft::Constants::Date, date))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // StartTime, already defined in Execute()
-  if (!writer->writeStringDataset(EMsoft::Constants::StartTime, m_StartTime))
+  if(!writer->writeStringDataset(EMsoft::Constants::StartTime, m_StartTime))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -825,7 +824,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // StopTime
   QString time = QDateTime::currentDateTime().time().toString();
-  if (!writer->writeStringDataset(EMsoft::Constants::StopTime, time))
+  if(!writer->writeStringDataset(EMsoft::Constants::StopTime, time))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -833,7 +832,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // Hostname
   QString localHost = QHostInfo::localHostName();
-  if (!writer->writeStringDataset(EMsoft::Constants::HostName, localHost))
+  if(!writer->writeStringDataset(EMsoft::Constants::HostName, localHost))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -841,28 +840,28 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // programName
   programName = "EMsoftWorkbench Monte Carlo Simulation Module";
-  if (!writer->writeStringDataset(EMsoft::Constants::ProgramName, programName))
+  if(!writer->writeStringDataset(EMsoft::Constants::ProgramName, programName))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // UserName
-  if (!writer->writeStringDataset(EMsoft::Constants::UserName, getEMsoftUserName()))
+  if(!writer->writeStringDataset(EMsoft::Constants::UserName, getEMsoftUserName()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // UserEmail
-  if (!writer->writeStringDataset(EMsoft::Constants::UserEmail, getEMsoftUserEmail()))
+  if(!writer->writeStringDataset(EMsoft::Constants::UserEmail, getEMsoftUserEmail()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // UserLocation
-  if (!writer->writeStringDataset(EMsoft::Constants::UserLocation, getEMsoftUserLocation()))
+  if(!writer->writeStringDataset(EMsoft::Constants::UserLocation, getEMsoftUserLocation()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -870,7 +869,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // Version
   QString version = "EMsoft 3.1.0";
-  if (!writer->writeStringDataset(EMsoft::Constants::Version, version))
+  if(!writer->writeStringDataset(EMsoft::Constants::Version, version))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -879,20 +878,20 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   // add the FixedLength identifier to this header
   // FixedLength
   int i = 1;
-  if (!writer->writeScalarDataset(EMsoft::Constants::FixedLength, i))
+  if(!writer->writeScalarDataset(EMsoft::Constants::FixedLength, i))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Close the groups
-  if (!writer->closeGroup())
+  if(!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (!writer->closeGroup())
+  if(!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -900,7 +899,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // here we create a JSONfiles group that contains the jsonobject in its entirety
-  if (!writer->openGroup(EMsoft::Constants::JSONfiles))
+  if(!writer->openGroup(EMsoft::Constants::JSONfiles))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -909,11 +908,14 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   {
     QJsonObject topObject;
     QJsonObject rootObject;
-    if (simData.mcMode == 1) {
+    if(simData.mcMode == 1)
+    {
       rootObject.insert(EMsoft::Constants::mode, EMsoft::Constants::full);
       rootObject.insert(EMsoft::Constants::sig, simData.sampleTiltAngleSig);
       rootObject.insert(EMsoft::Constants::sig, simData.sampleRotAngleOmega);
-    } else {
+    }
+    else
+    {
       rootObject.insert(EMsoft::Constants::mode, EMsoft::Constants::bse1);
       rootObject.insert(EMsoft::Constants::sigstart, simData.sampleStartTiltAngle);
       rootObject.insert(EMsoft::Constants::sigend, simData.sampleEndTiltAngle);
@@ -930,7 +932,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     rootObject.insert(EMsoft::Constants::totnumel, simData.totalNumOfEConsidered);
     rootObject.insert(EMsoft::Constants::multiplier, simData.multiplierForTotalNumOfE);
     rootObject.insert(EMsoft::Constants::EkeV, simData.acceleratingVoltage);
-    rootObject.insert(EMsoft::Constants::Ehistmin,simData.minEnergyConsider);
+    rootObject.insert(EMsoft::Constants::Ehistmin, simData.minEnergyConsider);
     rootObject.insert(EMsoft::Constants::Ebinsize, simData.energyBinSize);
     rootObject.insert(EMsoft::Constants::depthmax, simData.maxDepthConsider);
     rootObject.insert(EMsoft::Constants::depthstep, simData.depthStepSize);
@@ -939,7 +941,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QJsonDocument doc(topObject);
     QString strJson(doc.toJson(QJsonDocument::Compact));
 
-    if (!writer->writeStringDataset(EMsoft::Constants::MCOpenCLJSON, strJson))
+    if(!writer->writeStringDataset(EMsoft::Constants::MCOpenCLJSON, strJson))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -947,7 +949,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
 
   // Close the group
-  if (!writer->closeGroup())
+  if(!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -955,7 +957,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // Create the NMLparameters group
-  if (!writer->openGroup(EMsoft::Constants::NMLparameters))
+  if(!writer->openGroup(EMsoft::Constants::NMLparameters))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -963,7 +965,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // Create the MCCLNameList group
-  if (!writer->openGroup(EMsoft::Constants::MCCLNameList))
+  if(!writer->openGroup(EMsoft::Constants::MCCLNameList))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -971,55 +973,55 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   float* genericFPar = fParPtr->getPointer(0);
 
-  if (!writer->writeScalarDataset(EMsoft::Constants::Ebinsize, static_cast<double>(genericFPar[4])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::Ebinsize, static_cast<double>(genericFPar[4])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::Ehistmin, static_cast<double>(genericFPar[3])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::Ehistmin, static_cast<double>(genericFPar[3])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::EkeV, static_cast<double>(genericFPar[2])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::EkeV, static_cast<double>(genericFPar[2])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeStringDataset(EMsoft::Constants::MCmode, "CSDA"))
+  if(!writer->writeStringDataset(EMsoft::Constants::MCmode, "CSDA"))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeStringDataset(EMsoft::Constants::dataname, simData.outputFilePath))
+  if(!writer->writeStringDataset(EMsoft::Constants::dataname, simData.outputFilePath))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::depthmax, static_cast<double>(genericFPar[5])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::depthmax, static_cast<double>(genericFPar[5])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::depthstep, static_cast<double>(genericFPar[6])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::depthstep, static_cast<double>(genericFPar[6])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::devid, genericIPar[5]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::devid, genericIPar[5]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::globalworkgrpsz, genericIPar[1]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::globalworkgrpsz, genericIPar[1]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (genericIPar[13] == 1)
+  if(genericIPar[13] == 1)
   {
-    if (!writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::full))
+    if(!writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::full))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -1027,43 +1029,43 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
   else
   {
-    if (!writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::bse1))
+    if(!writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::bse1))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  if (!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::num_el, genericIPar[2]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::num_el, genericIPar[2]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  int iv = 2*genericIPar[0]+1;
-  if (!writer->writeScalarDataset(EMsoft::Constants::numsx, iv))
+  int iv = 2 * genericIPar[0] + 1;
+  if(!writer->writeScalarDataset(EMsoft::Constants::numsx, iv))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::omega, static_cast<double>(genericFPar[1])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::omega, static_cast<double>(genericFPar[1])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::platid, genericIPar[6]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::platid, genericIPar[6]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (simData.mcMode == 1)
+  if(simData.mcMode == 1)
   {
-    if (!writer->writeScalarDataset(EMsoft::Constants::sig, static_cast<double>(genericFPar[0])))
+    if(!writer->writeScalarDataset(EMsoft::Constants::sig, static_cast<double>(genericFPar[0])))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -1071,63 +1073,63 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
   else
   {
-    if (!writer->writeScalarDataset(EMsoft::Constants::sigstart, simData.sampleStartTiltAngle))
+    if(!writer->writeScalarDataset(EMsoft::Constants::sigstart, simData.sampleStartTiltAngle))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
-    if (!writer->writeScalarDataset(EMsoft::Constants::sigend, simData.sampleEndTiltAngle))
+    if(!writer->writeScalarDataset(EMsoft::Constants::sigend, simData.sampleEndTiltAngle))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
-    if (!writer->writeScalarDataset(EMsoft::Constants::sigstep, simData.sampleTiltStepSize))
+    if(!writer->writeScalarDataset(EMsoft::Constants::sigstep, simData.sampleTiltStepSize))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  if (!writer->writeScalarDataset(EMsoft::Constants::Stdout, m_InstanceKey))
+  if(!writer->writeScalarDataset(EMsoft::Constants::Stdout, m_InstanceKey))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
   QFileInfo simDataInputFileInfo(simData.inputFilePath);
-  if (!writer->writeStringDataset(EMsoft::Constants::xtalname, simDataInputFileInfo.fileName()))
+  if(!writer->writeStringDataset(EMsoft::Constants::xtalname, simDataInputFileInfo.fileName()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Close the groups
-  if (!writer->closeGroup())
+  if(!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (!writer->closeGroup())
+  if(!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (!writer->closeFile())
+  if(!writer->closeFile())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   QFileInfo outFi(outputFilePath);
-  if (outFi.exists())
+  if(outFi.exists())
   {
-    if (!QFile::remove(outputFilePath))
+    if(!QFile::remove(outputFilePath))
     {
       QString ss = QObject::tr("Error replacing output file '%1'").arg(outFi.fileName());
       emit errorMessageGenerated(ss);
@@ -1136,7 +1138,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     }
   }
 
-  if (!QFile::rename(tmpOutputFilePath, outputFilePath))
+  if(!QFile::rename(tmpOutputFilePath, outputFilePath))
   {
     QString ss = QObject::tr("Error replacing output file '%1'").arg(outFi.fileName());
     emit errorMessageGenerated(ss);
@@ -1155,7 +1157,7 @@ int MonteCarloSimulationController::getnumCLPlatforms()
   std::vector<cl::Platform> platforms;
   cl::Platform::get(&platforms);
 
-  return int (platforms.size());
+  return int(platforms.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -1189,12 +1191,13 @@ void MonteCarloSimulationController::writePlatformInfo()
   std::vector<cl::Platform> platforms;
   cl::Platform::get(&platforms);
 
-  for(size_t i=0; i<platforms.size(); i++){
+  for(size_t i = 0; i < platforms.size(); i++)
+  {
     cl::Platform curPlat = platforms[i];
-    QString ss = QObject::tr("Platform %1 info: ").arg(QString::number(i+1));
+    QString ss = QObject::tr("Platform %1 info: ").arg(QString::number(i + 1));
     QString tt = QString::fromStdString(curPlat.getInfo<CL_PLATFORM_NAME>());
     ss.append(tt);
-   // std::cout << ss.toStdString();
+    // std::cout << ss.toStdString();
   }
 }
 
@@ -1205,14 +1208,15 @@ int MonteCarloSimulationController::getnumCLDevices(int platformID)
 {
   std::vector<cl::Platform> platforms;
   cl::Platform::get(&platforms);
-  if (platformID > platforms.size()) {
+  if(platformID > platforms.size())
+  {
     return -1000;
   }
   cl::Platform selectedPlatform = platforms[platformID - 1];
 
   std::vector<cl::Device> devices;
   selectedPlatform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
-  return int (devices.size());
+  return int(devices.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -1222,16 +1226,17 @@ void MonteCarloSimulationController::writeDeviceInfo(int platformID)
 {
   std::vector<cl::Platform> platforms;
   cl::Platform::get(&platforms);
-  cl::Platform selectedPlatform = platforms[platformID-1];
+  cl::Platform selectedPlatform = platforms[platformID - 1];
 
   std::vector<cl::Device> devices;
   selectedPlatform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
-  for(int i=0; i<devices.size(); i++){
+  for(int i = 0; i < devices.size(); i++)
+  {
     cl::Device curDev = devices[i];
-    QString ss = QObject::tr("Device %1 info: ").arg(QString::number(i+1));
+    QString ss = QObject::tr("Device %1 info: ").arg(QString::number(i + 1));
     QString tt = QString::fromStdString(curDev.getInfo<CL_DEVICE_NAME>());
     ss.append(tt);
-    //std::cout << ss.toStdString();
+    // std::cout << ss.toStdString();
   }
 }
 
@@ -1257,8 +1262,8 @@ QStringList MonteCarloSimulationController::getDeviceInfo(int platformID)
     QString tt = QString::fromStdString(curDev.getInfo<CL_DEVICE_NAME>());
     ss.append(tt);
     deviceInfos.push_back(ss);
-    }
-    return deviceInfos;
+  }
+  return deviceInfos;
 }
 
 // -----------------------------------------------------------------------------
@@ -1268,7 +1273,7 @@ QString MonteCarloSimulationController::getEMsoftUserName()
 {
   // get the UserName
   std::string homeFolder = QDir::homePath().toStdString();
-  std::string configFile = homeFolder+"/.config/EMsoft/EMsoftConfig.json";
+  std::string configFile = homeFolder + "/.config/EMsoft/EMsoftConfig.json";
   QString val;
   QFile envFile(QString::fromStdString(configFile));
   envFile.open(QIODevice::ReadOnly);
@@ -1278,7 +1283,7 @@ QString MonteCarloSimulationController::getEMsoftUserName()
   QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
   QJsonObject s = d.object();
   QJsonValue EMdatapathname = s.value(QString("UserName"));
-  return QString (EMdatapathname.toString());
+  return QString(EMdatapathname.toString());
 }
 
 // -----------------------------------------------------------------------------
@@ -1288,7 +1293,7 @@ QString MonteCarloSimulationController::getEMsoftUserEmail()
 {
   // get the UserEmail
   std::string homeFolder = QDir::homePath().toStdString();
-  std::string configFile = homeFolder+"/.config/EMsoft/EMsoftConfig.json";
+  std::string configFile = homeFolder + "/.config/EMsoft/EMsoftConfig.json";
   QString val;
   QFile envFile(QString::fromStdString(configFile));
   envFile.open(QIODevice::ReadOnly);
@@ -1298,7 +1303,7 @@ QString MonteCarloSimulationController::getEMsoftUserEmail()
   QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
   QJsonObject s = d.object();
   QJsonValue EMdatapathname = s.value(QString("UserEmail"));
-  return QString (EMdatapathname.toString());
+  return QString(EMdatapathname.toString());
 }
 
 // -----------------------------------------------------------------------------
@@ -1308,7 +1313,7 @@ QString MonteCarloSimulationController::getEMsoftUserLocation()
 {
   // get the UserLocation
   std::string homeFolder = QDir::homePath().toStdString();
-  std::string configFile = homeFolder+"/.config/EMsoft/EMsoftConfig.json";
+  std::string configFile = homeFolder + "/.config/EMsoft/EMsoftConfig.json";
   QString val;
   QFile envFile(QString::fromStdString(configFile));
   envFile.open(QIODevice::ReadOnly);
@@ -1318,7 +1323,7 @@ QString MonteCarloSimulationController::getEMsoftUserLocation()
   QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
   QJsonObject s = d.object();
   QJsonValue EMdatapathname = s.value(QString("UserLocation"));
-  return QString (EMdatapathname.toString());
+  return QString(EMdatapathname.toString());
 }
 
 // -----------------------------------------------------------------------------
@@ -1329,29 +1334,29 @@ Int32ArrayType::Pointer MonteCarloSimulationController::getIParPtr(MonteCarloSim
   Int32ArrayType::Pointer iParPtr = m_XtalReader->getIParPtr();
   int32_t* iPar = iParPtr->getPointer(0);
 
-  iPar[0] = static_cast<int>((simData.numOfPixelsN-1)/2);     // number of pixels along x
-  iPar[1] = static_cast<int>(simData.globalWorkGroupSize); // global work group size
-  iPar[2] = static_cast<int>(simData.numOfEPerWorkitem);           // number of electrons in work group
-  iPar[3] = static_cast<int>(simData.totalNumOfEConsidered);        // total number of electrons in single MCstep
-  iPar[4] = static_cast<int>(simData.multiplierForTotalNumOfE);      // multiplier for # of electrons
-  iPar[5] = static_cast<int>(simData.gpuDeviceID + 1);           // OpenCL device ID
-  iPar[6] = static_cast<int>(simData.gpuPlatformID + 1);          // OpenCL platform ID
-  iPar[12] = static_cast<int>(simData.maxDepthConsider/simData.depthStepSize+1);              // num z bins
-  iPar[13] = simData.mcMode; // simulation mode (1=full, 2=bse1)
+  iPar[0] = static_cast<int>((simData.numOfPixelsN - 1) / 2);                        // number of pixels along x
+  iPar[1] = static_cast<int>(simData.globalWorkGroupSize);                           // global work group size
+  iPar[2] = static_cast<int>(simData.numOfEPerWorkitem);                             // number of electrons in work group
+  iPar[3] = static_cast<int>(simData.totalNumOfEConsidered);                         // total number of electrons in single MCstep
+  iPar[4] = static_cast<int>(simData.multiplierForTotalNumOfE);                      // multiplier for # of electrons
+  iPar[5] = static_cast<int>(simData.gpuDeviceID + 1);                               // OpenCL device ID
+  iPar[6] = static_cast<int>(simData.gpuPlatformID + 1);                             // OpenCL platform ID
+  iPar[12] = static_cast<int>(simData.maxDepthConsider / simData.depthStepSize + 1); // num z bins
+  iPar[13] = simData.mcMode;                                                         // simulation mode (1=full, 2=bse1)
 
   // this next pair of values is a bit tricky since we use the accum_e and accum_z arrays for
   // two different cases, 'full' and 'bse1'
-  if (iPar[13] == 1)
+  if(iPar[13] == 1)
   {
-    iPar[11] = static_cast<int>((simData.acceleratingVoltage-simData.minEnergyConsider)/simData.energyBinSize + 1); // num E bins
-    iPar[14] = 1;    // only one major loop to be executed
+    iPar[11] = static_cast<int>((simData.acceleratingVoltage - simData.minEnergyConsider) / simData.energyBinSize + 1); // num E bins
+    iPar[14] = 1;                                                                                                       // only one major loop to be executed
   }
   else
   {
-    iPar[11] = static_cast<int>((simData.sampleEndTiltAngle-simData.sampleStartTiltAngle)/simData.sampleTiltStepSize+1); // number of bse1 angles
+    iPar[11] = static_cast<int>((simData.sampleEndTiltAngle - simData.sampleStartTiltAngle) / simData.sampleTiltStepSize + 1); // number of bse1 angles
     iPar[14] = iPar[11];
   }
-  iPar[15] = static_cast<int>((simData.numOfPixelsN-1)/20);   // number of depth bins along x
+  iPar[15] = static_cast<int>((simData.numOfPixelsN - 1) / 20); // number of depth bins along x
 
   return iParPtr;
 }
@@ -1364,16 +1369,16 @@ FloatArrayType::Pointer MonteCarloSimulationController::getFParPtr(MonteCarloSim
   FloatArrayType::Pointer fParPtr = m_XtalReader->getFParPtr();
   float* fPar = fParPtr->getPointer(0);
 
-  fPar[0] = simData.sampleTiltAngleSig;      // sample tilt angle
-  fPar[1] = simData.sampleRotAngleOmega;    // omega sample tilt angle
-  fPar[2] = simData.acceleratingVoltage;     // accelerating voltage
-  fPar[3] = simData.minEnergyConsider; // Energy minimum in histogram
-  fPar[4] = simData.energyBinSize; // Energy histogram bin size
-  fPar[5] = simData.maxDepthConsider; // maximum depth to store
-  fPar[6] = simData.depthStepSize;// depth step size
+  fPar[0] = simData.sampleTiltAngleSig;   // sample tilt angle
+  fPar[1] = simData.sampleRotAngleOmega;  // omega sample tilt angle
+  fPar[2] = simData.acceleratingVoltage;  // accelerating voltage
+  fPar[3] = simData.minEnergyConsider;    // Energy minimum in histogram
+  fPar[4] = simData.energyBinSize;        // Energy histogram bin size
+  fPar[5] = simData.maxDepthConsider;     // maximum depth to store
+  fPar[6] = simData.depthStepSize;        // depth step size
   fPar[7] = simData.sampleStartTiltAngle; // get starting angle
   fPar[8] = simData.sampleEndTiltAngle;   // end angle
-  fPar[9] = simData.sampleTiltStepSize;  // angle step size
+  fPar[9] = simData.sampleTiltStepSize;   // angle step size
 
   return fParPtr;
 }
@@ -1387,5 +1392,3 @@ void MonteCarloSimulationController::setUpdateProgress(int loopCompleted, int to
   emit stdOutputMessageGenerated(ss);
   emit updateMCProgress(loopCompleted, totalLoops, bseYield);
 }
-
-

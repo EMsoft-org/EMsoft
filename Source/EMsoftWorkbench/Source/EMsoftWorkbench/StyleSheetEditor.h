@@ -57,22 +57,22 @@
 // Provides a way of changing and dynamically editing styles while the app is running
 class StyleSheetEditor : public QDialog, private Ui::StyleSheetEditor
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    StyleSheetEditor(QWidget *parent = nullptr);
+  StyleSheetEditor(QWidget* parent = nullptr);
 
 private slots:
-    void on_styleSheetCombo_activated(const QString &styleSheetName);
-    void on_styleTextEdit_textChanged();
-    void on_applyButton_clicked();
+  void on_styleSheetCombo_activated(const QString& styleSheetName);
+  void on_styleTextEdit_textChanged();
+  void on_applyButton_clicked();
 
 private:
-    void loadStyleSheet(const QString &sheetName);
+  void loadStyleSheet(const QString& sheetName);
 
-  public:
-    StyleSheetEditor(const StyleSheetEditor&) = delete; // Copy Constructor Not Implemented
-    StyleSheetEditor(StyleSheetEditor&&) = delete;      // Move Constructor Not Implemented
-    StyleSheetEditor& operator=(const StyleSheetEditor&) = delete; // Copy Assignment Not Implemented
-    StyleSheetEditor& operator=(StyleSheetEditor&&) = delete;      // Move Assignment Not Implemented
+public:
+  StyleSheetEditor(const StyleSheetEditor&) = delete;            // Copy Constructor Not Implemented
+  StyleSheetEditor(StyleSheetEditor&&) = delete;                 // Move Constructor Not Implemented
+  StyleSheetEditor& operator=(const StyleSheetEditor&) = delete; // Copy Assignment Not Implemented
+  StyleSheetEditor& operator=(StyleSheetEditor&&) = delete;      // Move Assignment Not Implemented
 };

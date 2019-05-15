@@ -1,70 +1,70 @@
 /* ============================================================================
-* Copyright (c) 2009-2017 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2017 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "PatternDisplayController.h"
 
 #include <initializer_list>
 
-#include <QtCore/QFileInfo>
 #include <QtConcurrent>
+#include <QtCore/QFileInfo>
 
+#include "Common/ImageGenerator.h"
 #include "Common/PatternTools.h"
 #include "Common/ProjectionConversions.hpp"
-#include "Common/ImageGenerator.h"
 
 #include "Modules/PatternDisplayModule/PatternListModel.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternDisplayController::PatternDisplayController(QObject* parent) :
-  QObject(parent),
-  m_Observer(nullptr),
-  m_NumOfFinishedPatternsLock(1),
-  m_CurrentOrderLock(1),
-  m_MasterLPNHImageGenLock(1),
-  m_MasterLPSHImageGenLock(1),
-  m_MasterCircleImageGenLock(1),
-  m_MasterStereoImageGenLock(1),
-  m_MCSquareImageGenLock(1),
-  m_MCCircleImageGenLock(1),
-  m_MCStereoImageGenLock(1)
+PatternDisplayController::PatternDisplayController(QObject* parent)
+: QObject(parent)
+, m_Observer(nullptr)
+, m_NumOfFinishedPatternsLock(1)
+, m_CurrentOrderLock(1)
+, m_MasterLPNHImageGenLock(1)
+, m_MasterLPSHImageGenLock(1)
+, m_MasterCircleImageGenLock(1)
+, m_MasterStereoImageGenLock(1)
+, m_MCSquareImageGenLock(1)
+, m_MCCircleImageGenLock(1)
+, m_MCStereoImageGenLock(1)
 {
   // Connection to allow the pattern list to redraw itself
   PatternListModel* model = PatternListModel::Instance();
-  connect(this, SIGNAL(rowDataChanged(const QModelIndex &, const QModelIndex &)), model, SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)), Qt::QueuedConnection);
+  connect(this, SIGNAL(rowDataChanged(const QModelIndex&, const QModelIndex&)), model, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), Qt::QueuedConnection);
 }
 
 // -----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ PatternDisplayController::~PatternDisplayController() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::setMasterFilePath(const QString &masterFilePath)
+void PatternDisplayController::setMasterFilePath(const QString& masterFilePath)
 {
   m_MasterFilePath = masterFilePath;
 
@@ -88,7 +88,10 @@ void PatternDisplayController::setMasterFilePath(const QString &masterFilePath)
   MasterPatternFileReader reader(masterFilePath, m_Observer);
   m_MP_Data = reader.readMasterPatternData();
 
-  if (m_MP_Data.ekevs == FloatArrayType::NullPointer()) { return; }
+  if(m_MP_Data.ekevs == FloatArrayType::NullPointer())
+  {
+    return;
+  }
   emit minMaxEnergyLevelsChanged(m_MP_Data.ekevs);
 
   createMasterPatternImageGenerators();
@@ -117,10 +120,10 @@ void PatternDisplayController::createMasterPatternImageGenerators()
   emit stdOutputMessageGenerated(tr("Number Of Energy Bins: %1\n").arg(QString::number(m_MP_Data.numMPEnergyBins)));
 
   QString mpDimStr = "";
-  for (int i = 0; i < m_MP_Data.mLPNH_dims.size(); i++)
+  for(int i = 0; i < m_MP_Data.mLPNH_dims.size(); i++)
   {
     mpDimStr.append(QString::number(m_MP_Data.mLPNH_dims[i]));
-    if (i < m_MP_Data.mLPNH_dims.size() - 1)
+    if(i < m_MP_Data.mLPNH_dims.size() - 1)
     {
       mpDimStr.append(" x ");
     }
@@ -131,30 +134,27 @@ void PatternDisplayController::createMasterPatternImageGenerators()
   // Create the master pattern northern hemisphere generators
   m_MasterLPNHImageGenerators.resize(mp_zDim);
   emit stdOutputMessageGenerated(tr("Reading Master Pattern data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createImageGeneratorTasks<float>(m_MP_Data.masterLPNHData, m_MP_Data.mLPNH_dims[3],
-      m_MP_Data.mLPNH_dims[2], mp_zDim, m_MasterLPNHImageGenerators, m_MasterLPNHImageGenLock);
+  createImageGeneratorTasks<float>(m_MP_Data.masterLPNHData, m_MP_Data.mLPNH_dims[3], m_MP_Data.mLPNH_dims[2], mp_zDim, m_MasterLPNHImageGenerators, m_MasterLPNHImageGenLock);
   currentCount++;
 
   // Create the master pattern southern hemisphere generators
   m_MasterLPSHImageGenerators.resize(mp_zDim);
   emit stdOutputMessageGenerated(tr("Reading Master Pattern data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createImageGeneratorTasks<float>(m_MP_Data.masterLPSHData, m_MP_Data.mLPSH_dims[3],
-      m_MP_Data.mLPSH_dims[2], mp_zDim, m_MasterLPSHImageGenerators, m_MasterLPSHImageGenLock);
+  createImageGeneratorTasks<float>(m_MP_Data.masterLPSHData, m_MP_Data.mLPSH_dims[3], m_MP_Data.mLPSH_dims[2], mp_zDim, m_MasterLPSHImageGenerators, m_MasterLPSHImageGenLock);
   currentCount++;
 
   // Convert to Master Pattern Lambert Circle projection data and create generators
   m_MasterCircleImageGenerators.resize(mp_zDim);
   emit stdOutputMessageGenerated(tr("Reading Master Pattern data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createProjectionConversionTasks<float, float>(m_MP_Data.masterLPNHData, m_MP_Data.mLPNH_dims[3],
-      m_MP_Data.mLPNH_dims[2], mp_zDim, m_MP_Data.mLPNH_dims[3], ModifiedLambertProjection::ProjectionType::Circular, ModifiedLambertProjection::Square::NorthSquare,
-      m_MasterCircleImageGenerators, m_MasterCircleImageGenLock);
+  createProjectionConversionTasks<float, float>(m_MP_Data.masterLPNHData, m_MP_Data.mLPNH_dims[3], m_MP_Data.mLPNH_dims[2], mp_zDim, m_MP_Data.mLPNH_dims[3],
+                                                ModifiedLambertProjection::ProjectionType::Circular, ModifiedLambertProjection::Square::NorthSquare, m_MasterCircleImageGenerators,
+                                                m_MasterCircleImageGenLock);
   currentCount++;
 
   // Create the master pattern stereographic projection generators
   m_MasterStereoImageGenerators.resize(mp_zDim);
   emit stdOutputMessageGenerated(tr("Reading Master Pattern data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createImageGeneratorTasks<float>(m_MP_Data.masterSPNHData, m_MP_Data.masterSPNH_dims[2],
-      m_MP_Data.masterSPNH_dims[1], mp_zDim, m_MasterStereoImageGenerators, m_MasterStereoImageGenLock);
+  createImageGeneratorTasks<float>(m_MP_Data.masterSPNHData, m_MP_Data.masterSPNH_dims[2], m_MP_Data.masterSPNH_dims[1], mp_zDim, m_MasterStereoImageGenerators, m_MasterStereoImageGenLock);
 
   emit stdOutputMessageGenerated(tr("Reading Master Pattern data sets complete!\n"));
 }
@@ -182,30 +182,29 @@ void PatternDisplayController::createMonteCarloImageGenerators()
   // Generate Monte Carlo square projection data
   m_MCSquareImageGenerators.resize(mc_zDim);
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createImageGeneratorTasks<int32_t>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0],
-      m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MCSquareImageGenerators, m_MCSquareImageGenLock);
+  createImageGeneratorTasks<int32_t>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MCSquareImageGenerators, m_MCSquareImageGenLock);
   currentCount++;
 
   // Generate Monte Carlo circular projection data
   m_MCCircleImageGenerators.resize(mc_zDim);
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0],
-      m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0], ModifiedLambertProjection::ProjectionType::Circular, ModifiedLambertProjection::Square::NorthSquare,
-      m_MCCircleImageGenerators, m_MCCircleImageGenLock, false, true);
+  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0],
+                                                  ModifiedLambertProjection::ProjectionType::Circular, ModifiedLambertProjection::Square::NorthSquare, m_MCCircleImageGenerators,
+                                                  m_MCCircleImageGenLock, false, true);
   currentCount++;
 
   // Generate Monte Carlo stereographic projection data
   m_MCStereoImageGenerators.resize(mc_zDim);
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0],
-      m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0], ModifiedLambertProjection::ProjectionType::Stereographic, ModifiedLambertProjection::Square::NorthSquare,
-      m_MCStereoImageGenerators, m_MCStereoImageGenLock, false, true);
+  createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0],
+                                                  ModifiedLambertProjection::ProjectionType::Stereographic, ModifiedLambertProjection::Square::NorthSquare, m_MCStereoImageGenerators,
+                                                  m_MCStereoImageGenLock, false, true);
 
   QString mcDimStr = "";
-  for (int i = 0; i < m_MP_Data.monteCarlo_dims.size(); i++)
+  for(int i = 0; i < m_MP_Data.monteCarlo_dims.size(); i++)
   {
     mcDimStr.append(QString::number(m_MP_Data.monteCarlo_dims[i]));
-    if (i < m_MP_Data.monteCarlo_dims.size() - 1)
+    if(i < m_MP_Data.monteCarlo_dims.size() - 1)
     {
       mcDimStr.append(" x ");
     }
@@ -239,15 +238,18 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 {
   PatternListModel* model = PatternListModel::Instance();
 
-  while (!m_CurrentOrder.empty())
+  while(!m_CurrentOrder.empty())
   {
-    if (m_Cancel) { return; }
+    if(m_Cancel)
+    {
+      return;
+    }
 
     // Load the next image
-    if (m_CurrentOrderLock.tryAcquire())
+    if(m_CurrentOrderLock.tryAcquire())
     {
       int index;
-      if (!m_PriorityOrder.empty())
+      if(!m_PriorityOrder.empty())
       {
         // An index in this thread has been given priority
         index = m_PriorityOrder.front();
@@ -291,7 +293,8 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
       fParValues.dwellTime = detectorData.dwellTime;
       fParValues.gammaValue = patternData.gammaValue;
 
-      FloatArrayType::Pointer pattern = PatternTools::GeneratePattern(iParValues, fParValues, m_MP_Data.masterLPNHData, m_MP_Data.masterLPSHData, m_MP_Data.monteCarloSquareData, patternData.angles, index, m_Cancel);
+      FloatArrayType::Pointer pattern =
+          PatternTools::GeneratePattern(iParValues, fParValues, m_MP_Data.masterLPNHData, m_MP_Data.masterLPSHData, m_MP_Data.monteCarloSquareData, patternData.angles, index, m_Cancel);
 
       hsize_t xDim = static_cast<hsize_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
       hsize_t yDim = static_cast<hsize_t>(iParValues.numOfPixelsY / iParValues.detectorBinningValue);
@@ -301,7 +304,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 
       m_PatternDisplayWidget->loadImage(index, imageData);
 
-      if (success)
+      if(success)
       {
         model->setPatternStatus(index, PatternListItem::PatternStatus::Loaded);
       }
@@ -323,7 +326,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData &imageData, const FloatArrayType::Pointer &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
+bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const FloatArrayType::Pointer& pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
 {
   AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, zValue);
   imgGen->createImage();
@@ -340,8 +343,8 @@ bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData &
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, const PatternDisplayController::DetectorData &detectorData)
-{ 
+void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, const PatternDisplayController::DetectorData& detectorData)
+{
   m_NumOfFinishedPatterns = 0;
   m_NumOfFinishedPatternThreads = 0;
   m_CurrentOrder.clear();
@@ -353,10 +356,10 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
   emit newProgressBarMaximumValue(angleCount);
 
   PatternListModel* model = PatternListModel::Instance();
-  for (int i = 0; i < angleCount; i++)
+  for(int i = 0; i < angleCount; i++)
   {
     model->setPatternStatus(i, PatternListItem::PatternStatus::WaitingToLoad);
-    if (i == patternData.currentRow)
+    if(i == patternData.currentRow)
     {
       // We want to render the current index first
       m_CurrentOrder.push_front(i);
@@ -368,7 +371,7 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
   }
 
   size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-  for (int i = 0; i < threads; i++)
+  for(int i = 0; i < threads; i++)
   {
     QSharedPointer<QFutureWatcher<void>> watcher(new QFutureWatcher<void>());
     connect(watcher.data(), SIGNAL(finished()), this, SLOT(patternThreadFinished()));
@@ -400,9 +403,9 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
   float keV;
 
   // If any of the arrays are going to go out of bounds, set a blank image with blank data
-  if ((mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square && energyBin > m_MasterLPNHImageGenerators.size())
-      || (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle && energyBin > m_MasterCircleImageGenerators.size())
-      || (mode == MPMCDisplayWidget::ProjectionMode::Stereographic && energyBin > m_MasterStereoImageGenerators.size()))
+  if((mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square && energyBin > m_MasterLPNHImageGenerators.size()) ||
+     (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle && energyBin > m_MasterCircleImageGenerators.size()) ||
+     (mode == MPMCDisplayWidget::ProjectionMode::Stereographic && energyBin > m_MasterStereoImageGenerators.size()))
   {
     image = QImage();
     variantPair.first = 0;
@@ -411,19 +414,19 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
   }
   else
   {
-    if (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square)
+    if(mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square)
     {
       AbstractImageGenerator::Pointer imageGen = m_MasterLPNHImageGenerators[energyBin - 1];
       image = imageGen->getGeneratedImage();
       variantPair = imageGen->getMinMaxPair();
     }
-    else if (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle)
+    else if(mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle)
     {
       AbstractImageGenerator::Pointer imageGen = m_MasterCircleImageGenerators[energyBin - 1];
       image = imageGen->getGeneratedImage();
       variantPair = imageGen->getMinMaxPair();
     }
-    else if (mode == MPMCDisplayWidget::ProjectionMode::Stereographic)
+    else if(mode == MPMCDisplayWidget::ProjectionMode::Stereographic)
     {
       AbstractImageGenerator::Pointer imageGen = m_MasterStereoImageGenerators[energyBin - 1];
       image = imageGen->getGeneratedImage();
@@ -455,9 +458,9 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
   float keV;
 
   // If any of the arrays are going to go out of bounds, set a blank image with blank data
-  if ((mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square && energyBin > m_MCSquareImageGenerators.size())
-      || (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle && energyBin > m_MCCircleImageGenerators.size())
-      || (mode == MPMCDisplayWidget::ProjectionMode::Stereographic && energyBin > m_MCStereoImageGenerators.size()))
+  if((mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square && energyBin > m_MCSquareImageGenerators.size()) ||
+     (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle && energyBin > m_MCCircleImageGenerators.size()) ||
+     (mode == MPMCDisplayWidget::ProjectionMode::Stereographic && energyBin > m_MCStereoImageGenerators.size()))
   {
     image = QImage();
     variantPair.first = 0;
@@ -466,19 +469,19 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
   }
   else
   {
-    if (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square)
+    if(mode == MPMCDisplayWidget::ProjectionMode::Lambert_Square)
     {
       AbstractImageGenerator::Pointer imageGen = m_MCSquareImageGenerators[energyBin - 1];
       image = imageGen->getGeneratedImage();
       variantPair = imageGen->getMinMaxPair();
     }
-    else if (mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle)
+    else if(mode == MPMCDisplayWidget::ProjectionMode::Lambert_Circle)
     {
       AbstractImageGenerator::Pointer imageGen = m_MCCircleImageGenerators[energyBin - 1];
       image = imageGen->getGeneratedImage();
       variantPair = imageGen->getMinMaxPair();
     }
-    else if (mode == MPMCDisplayWidget::ProjectionMode::Stereographic)
+    else if(mode == MPMCDisplayWidget::ProjectionMode::Stereographic)
     {
       AbstractImageGenerator::Pointer imageGen = m_MCStereoImageGenerators[energyBin - 1];
       image = imageGen->getGeneratedImage();
@@ -503,7 +506,7 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
 void PatternDisplayController::patternThreadFinished()
 {
   m_NumOfFinishedPatternThreads++;
-  if (m_NumOfFinishedPatternThreads == QThreadPool::globalInstance()->maxThreadCount())
+  if(m_NumOfFinishedPatternThreads == QThreadPool::globalInstance()->maxThreadCount())
   {
     m_Cancel = false;
     emit patternGenerationFinished();
@@ -515,21 +518,21 @@ void PatternDisplayController::patternThreadFinished()
 // -----------------------------------------------------------------------------
 bool PatternDisplayController::validateDetectorValues(PatternDisplayController::DetectorData data)
 {
-  if (data.masterFilePath.isEmpty())
+  if(data.masterFilePath.isEmpty())
   {
     QString ss = QObject::tr("The master file path must be set.");
     emit errorMessageGenerated(ss);
     return false;
   }
   QFileInfo fi(data.masterFilePath);
-  if (!fi.exists())
+  if(!fi.exists())
   {
     QString ss = QObject::tr("The master file path '%1' does not exist.").arg(data.masterFilePath);
     emit errorMessageGenerated(ss);
     return false;
   }
   QString suffix = fi.completeSuffix();
-  if (suffix != "h5" && suffix != "dream3d")
+  if(suffix != "h5" && suffix != "dream3d")
   {
     QString ss = QObject::tr("The master file path '%1' is not an HDF5 file.").arg(data.masterFilePath);
     emit errorMessageGenerated(ss);
@@ -546,4 +549,3 @@ void PatternDisplayController::cancelGeneration()
 {
   m_Cancel = true;
 }
-
