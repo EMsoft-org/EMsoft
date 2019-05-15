@@ -55,10 +55,7 @@ SingleAngleWidget::SingleAngleWidget(QWidget *parent, Qt::WindowFlags windowFlag
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SingleAngleWidget::~SingleAngleWidget()
-{
-
-}
+SingleAngleWidget::~SingleAngleWidget() = default;
 
 // -----------------------------------------------------------------------------
 //

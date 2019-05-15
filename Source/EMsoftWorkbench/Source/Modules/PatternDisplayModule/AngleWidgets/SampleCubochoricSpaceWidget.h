@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef samplecubochoricspacewidget_h
-#define samplecubochoricspacewidget_h
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -53,7 +52,7 @@ public:
     SIMPL_STATIC_NEW_MACRO(SampleCubochoricSpaceWidget)
 
     SampleCubochoricSpaceWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~SampleCubochoricSpaceWidget();
+    ~SampleCubochoricSpaceWidget() override;
 
     /**
      * @brief setupGui
@@ -64,29 +63,29 @@ public:
      * @brief getEulerAngles
      * @return
      */
-    virtual FloatArrayType::Pointer getEulerAngles();
+    virtual FloatArrayType::Pointer getEulerAngles() override;
 
     /**
      * @brief hasValidAngles
      * @return
      */
-    virtual bool hasValidAngles();
+    virtual bool hasValidAngles() override;
 
     /**
      * @brief readSession
      */
-    virtual void readSession(QJsonObject &obj);
+    virtual void readSession(QJsonObject &obj) override;
 
     /**
      * @brief writeSession
      */
-    virtual void writeSession(QJsonObject &obj);
+    virtual void writeSession(QJsonObject &obj) override;
 
     /**
      * @brief createModificationConnections
      * @param ui
      */
-    virtual void createModificationConnections(PatternDisplay_UI* ui);
+    virtual void createModificationConnections(PatternDisplay_UI* ui) override;
 
   protected slots:
     void on_samplingModeCB_currentIndexChanged(int index);
@@ -98,15 +97,16 @@ private:
 
     void valuesChanged();
 
-    void RodriguesComposition(DOrientArrayType sigma, DOrientArrayType &rod);
+    void RodriguesComposition(const DOrientArrayType &sigma, DOrientArrayType &rod);
 
     bool IsinsideFZ(double* rod, int FZtype, int FZorder);
-    bool insideCyclicFZ(double* rod, int order);
-    bool insideDihedralFZ(double* rod, int order);
-    bool insideCubicFZ(double* rod, int ot);
+    bool insideCyclicFZ(const double* rod, int order);
+    bool insideDihedralFZ(const double* rod, int order);
+    bool insideCubicFZ(const double* rod, int ot);
 
-    SampleCubochoricSpaceWidget(const SampleCubochoricSpaceWidget&);    // Copy Constructor Not Implemented
-    void operator=(const SampleCubochoricSpaceWidget&);  // Operator '=' Not Implemented
+  public:
+    SampleCubochoricSpaceWidget(const SampleCubochoricSpaceWidget&) = delete; // Copy Constructor Not Implemented
+    SampleCubochoricSpaceWidget(SampleCubochoricSpaceWidget&&) = delete;      // Move Constructor Not Implemented
+    SampleCubochoricSpaceWidget& operator=(const SampleCubochoricSpaceWidget&) = delete; // Copy Assignment Not Implemented
+    SampleCubochoricSpaceWidget& operator=(SampleCubochoricSpaceWidget&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* samplecubochoricspacewidget_h */

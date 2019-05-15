@@ -78,10 +78,7 @@ MonteCarloSimulation_UI::MonteCarloSimulation_UI(QWidget* parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloSimulation_UI::~MonteCarloSimulation_UI()
-{
-
-}
+MonteCarloSimulation_UI::~MonteCarloSimulation_UI() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -192,7 +189,7 @@ void MonteCarloSimulation_UI::createWidgetConnections()
   connect(csSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
     QString filePath = FileIOTools::GetOpenPathFromDialog("Select Input File", "Crystal Structure File (*.xtal);;All Files (*.*)", proposedFile);
-    if(true == filePath.isEmpty())
+    if(filePath.isEmpty())
     {
       return;
     }
@@ -206,7 +203,7 @@ void MonteCarloSimulation_UI::createWidgetConnections()
   connect(mcSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";
     QString filePath = FileIOTools::GetSavePathFromDialog("Select Output File", "Monte Carlo File (*.h5);;All Files (*.*)", proposedFile);
-    if(true == filePath.isEmpty())
+    if(filePath.isEmpty())
     {
       return;
     }
@@ -244,16 +241,14 @@ bool MonteCarloSimulation_UI::validateData()
   clearModuleIssues();
 
   MonteCarloSimulationController::MonteCarloSimulationData data = getCreationData();
-  if (m_Controller->validateMonteCarloValues(data) == true)
+  if (m_Controller->validateMonteCarloValues(data))
   {
     createMonteCarloBtn->setEnabled(true);
     return true;
   }
-  else
-  {
-    createMonteCarloBtn->setDisabled(true);
-    return false;
-  }
+
+  createMonteCarloBtn->setDisabled(true);
+  return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -267,29 +262,27 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
     setRunning(false);
     return;
   }
-  else
+
+  setRunning(true);
+  clearModuleIssues();
+
+  MonteCarloSimulationController::MonteCarloSimulationData data = getCreationData();
+
+  createMonteCarloBtn->setText("Cancel");
+  inputGrpBox->setDisabled(true);
+  monteCarloGrpBox->setDisabled(true);
+  gpuGrpBox->setDisabled(true);
+  outputGrpBox->setDisabled(true);
+
+  // Single-threaded for now, but we can multi-thread later if needed
+  //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
+  for (int i = 0; i < 1; i++)
   {
-    setRunning(true);
-    clearModuleIssues();
+    m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
+    connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
 
-    MonteCarloSimulationController::MonteCarloSimulationData data = getCreationData();
-
-    createMonteCarloBtn->setText("Cancel");
-    inputGrpBox->setDisabled(true);
-    monteCarloGrpBox->setDisabled(true);
-    gpuGrpBox->setDisabled(true);
-    outputGrpBox->setDisabled(true);
-
-    // Single-threaded for now, but we can multi-thread later if needed
-    //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-    for (int i = 0; i < 1; i++)
-    {
-      m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-      connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
-
-      QFuture<void> future = QtConcurrent::run(m_Controller, &MonteCarloSimulationController::createMonteCarlo, data);
-      m_Watcher->setFuture(future);
-    }
+    QFuture<void> future = QtConcurrent::run(m_Controller, &MonteCarloSimulationController::createMonteCarlo, data);
+    m_Watcher->setFuture(future);
   }
 }
 
@@ -342,7 +335,7 @@ void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject &obj)
 {
   QJsonObject monteCarloObj = obj[ioConstants::MonteCarlo].toObject();
 
-  if (monteCarloObj.isEmpty() == false)
+  if (!monteCarloObj.isEmpty())
   {
     sampleTiltAngleSigSB->blockSignals(true);
     sampleRotAngleOmegaSB->blockSignals(true);
@@ -390,7 +383,7 @@ void MonteCarloSimulation_UI::readGPUParameters(QJsonObject &obj)
 {
   QJsonObject gpuObj = obj[ioConstants::GPU].toObject();
 
-  if (gpuObj.isEmpty() == false)
+  if (!gpuObj.isEmpty())
   {
     numOfEPerWorkitemSB->blockSignals(true);
     totalNumOfEConsideredSB->blockSignals(true);

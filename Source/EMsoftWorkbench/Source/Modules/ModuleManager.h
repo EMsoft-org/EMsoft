@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _ModuleManager_h_
-#define _ModuleManager_h_
+#pragma once
 
 #include <QtCore/QStringList>
 
@@ -51,8 +50,8 @@ class ModuleManager
   public:
     virtual ~ModuleManager();
 
-    typedef QMap<QString, IModuleFactory::Pointer> Collection;
-    typedef QMapIterator<QString, IModuleFactory::Pointer> CollectionIterator;
+    using Collection = QMap<QString, IModuleFactory::Pointer>;
+    using CollectionIterator = QMapIterator<QString, IModuleFactory::Pointer>;
 
     /**
      * @brief Static instance to retrieve the global instance of this class
@@ -62,10 +61,10 @@ class ModuleManager
 
     /**
      * @brief addModuleFactory
-     * @param name
-     * @param module
+     * @param moduleName
+     * @param moduleFactory
      */
-    void addModuleFactory(const QString &moduleName, IModuleFactory::Pointer moduleFactory);
+    void addModuleFactory(const QString &moduleName, const IModuleFactory::Pointer &moduleFactory);
 
     /**
      * @brief ModuleManager::printModuleNames
@@ -88,9 +87,11 @@ class ModuleManager
     /**
      * @brief getModuleFromName
      * @param moduleName
+     * @param initObj
+     * @param parent
      * @return
      */
-    IModuleUI* getModuleFromName(const QString &moduleName, QJsonObject initObj = QJsonObject(), QWidget *parent = nullptr);
+    IModuleUI* getModuleFromName(const QString &moduleName, const QJsonObject &initObj = QJsonObject(), QWidget *parent = nullptr);
 
   protected:
     ModuleManager();
@@ -100,9 +101,10 @@ class ModuleManager
 
     Collection m_Factories;
 
-    ModuleManager(const ModuleManager&); // Copy Constructor Not Implemented
-    void operator=(const ModuleManager&); // Operator '=' Not Implemented
+  public:
+    ModuleManager(const ModuleManager&) = delete; // Copy Constructor Not Implemented
+    ModuleManager(ModuleManager&&) = delete;      // Move Constructor Not Implemented
+    ModuleManager& operator=(const ModuleManager&) = delete; // Copy Assignment Not Implemented
+    ModuleManager& operator=(ModuleManager&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _ModuleManager_H_ */
 

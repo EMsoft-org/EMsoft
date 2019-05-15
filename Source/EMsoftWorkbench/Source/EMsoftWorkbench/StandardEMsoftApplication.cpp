@@ -55,10 +55,7 @@ StandardEMsoftApplication::StandardEMsoftApplication(int& argc, char** argv) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-StandardEMsoftApplication::~StandardEMsoftApplication()
-{
-
-}
+StandardEMsoftApplication::~StandardEMsoftApplication() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -78,7 +75,7 @@ void StandardEMsoftApplication::unregisterWorkbenchInstance(EMsoftWorkbench_UI *
 {
   m_WorkbenchInstances.removeAll(instance);
 
-  if (m_WorkbenchInstances.size() <= 0)
+  if (m_WorkbenchInstances.empty())
   {
     quit();
   }

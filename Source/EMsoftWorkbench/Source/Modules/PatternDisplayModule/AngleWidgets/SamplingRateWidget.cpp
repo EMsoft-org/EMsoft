@@ -55,10 +55,7 @@ SamplingRateWidget::SamplingRateWidget(QWidget *parent, Qt::WindowFlags windowFl
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SamplingRateWidget::~SamplingRateWidget()
-{
-
-}
+SamplingRateWidget::~SamplingRateWidget() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -272,19 +269,19 @@ FloatArrayType::Pointer SamplingRateWidget::getEulerAngles()
   double phi2MStep = phi2MStepLineEdit->text().toDouble();
   double phi2End = phi2EndLineEdit->text().toDouble();
 
-  if (phi1CB->isChecked() == false)
+  if (!phi1CB->isChecked())
   {
     phi1Start = phi1AngleLineEdit->text().toDouble();
     phi1End = phi1AngleLineEdit->text().toDouble();
     phi1MStep = 1;
   }
-  if (phiCB->isChecked() == false)
+  if (!phiCB->isChecked())
   {
     phiStart = phiAngleLineEdit->text().toDouble();
     phiEnd = phiAngleLineEdit->text().toDouble();
     phiMStep = 1;
   }
-  if (phi2CB->isChecked() == false)
+  if (!phi2CB->isChecked())
   {
     phi2Start = phi2AngleLineEdit->text().toDouble();
     phi2End = phi2AngleLineEdit->text().toDouble();

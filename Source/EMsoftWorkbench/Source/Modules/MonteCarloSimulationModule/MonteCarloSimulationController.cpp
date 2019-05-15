@@ -35,7 +35,7 @@
 
 #include "MonteCarloSimulationController.h"
 
-#include <math.h>
+#include <cmath>
 
 #include <iostream>
 #include <functional>
@@ -121,7 +121,7 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   //     * @brief save the entries in a json file for EMMCOpenCL reading.
   //     * @return
   //     */
-  //    if (getwriteJSON() == true)
+  //    if (getwriteJSON())
   //    {
   //        EMsoftToolboxPlugin p;
   //        QString EMDataPathName = p.getEMdatapathname();
@@ -248,11 +248,9 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     errorMessageGenerated(tr("Unable to find opencl folder at path '%1'").arg(openCLPath));
     return;
   }
-  else
-  {
-    emit stdOutputMessageGenerated(tr("Found opencl folder path: %1").arg(dir.absolutePath()));
-    dir.cdUp();
-  }
+
+  emit stdOutputMessageGenerated(tr("Found opencl folder path: %1").arg(dir.absolutePath()));
+  dir.cdUp();
 
   QString randomSeedsPath = openCLPath;
 
@@ -265,11 +263,9 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     errorMessageGenerated(tr("Unable to find resources folder at path '%1'").arg(randomSeedsPath));
     return;
   }
-  else
-  {
-    emit stdOutputMessageGenerated(tr("Found resources folder path: %1").arg(dir.absolutePath()));
-    dir.cdUp();
-  }
+
+  emit stdOutputMessageGenerated(tr("Found resources folder path: %1").arg(dir.absolutePath()));
+  dir.cdUp();
 
   randomSeedsPath.append(QDir::separator());
   randomSeedsPath.append("resources");
@@ -281,12 +277,12 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
 
 //  convertToFortran(string, k_BufferSize, thePath.toLatin1().data());
 
-  if (setSParValue(StringType::OpenCLFolder, openCLPath) == false)
+  if (!setSParValue(StringType::OpenCLFolder, openCLPath))
   {
     return;
   }
 
-  if (setSParValue(StringType::RandomSeedsFile, randomSeedsPath) == false)
+  if (!setSParValue(StringType::RandomSeedsFile, randomSeedsPath))
   {
     return;
   }
@@ -310,10 +306,10 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
 
   // do we need to write this accumulator data into an EMsoft .h5 file?
   // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
-  if (m_Cancel == false)
+  if (!m_Cancel)
   {
     bool success = writeEMsoftHDFFile(simData);
-    if (success == false)
+    if (!success)
     {
       emit stdOutputMessageGenerated("Monte Carlo File Generation Failed");
       return;
@@ -432,7 +428,7 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
       emit errorMessageGenerated(ss);
       return false;
     }
-    else if (fi.exists() == false)
+    if (!fi.exists())
     {
       QString ss = QObject::tr("The crystal structure input file at path '%1' does not exist.").arg(inputFilePath);
       emit errorMessageGenerated(ss);
@@ -532,7 +528,7 @@ bool MonteCarloSimulationController::validateMonteCarloValues(MonteCarloSimulati
   }
 
   // numsx must be an odd number ...
-  if(!(data.numOfPixelsN % 2)){
+  if((data.numOfPixelsN % 2) == 0){
     QString ss = QObject::tr("Number of points must be odd.");
     emit errorMessageGenerated(ss);
     return false;
@@ -666,7 +662,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   QFileInfo outputFi(outputFilePath);
   QFileInfo tmpFi(tmpOutputFilePath);
 
-  if (tmpFi.exists() == true)
+  if (tmpFi.exists())
   {
     if (!QFile::remove(tmpOutputFilePath))
     {
@@ -689,7 +685,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   connect(writer.data(), &EMsoftFileWriter::errorMessageGenerated, [=] (const QString &msg) { emit errorMessageGenerated(msg); });
 
   // Open the HDF5 file
-  if (writer->openFile(tmpOutputFilePath) == false)
+  if (!writer->openFile(tmpOutputFilePath))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -697,14 +693,14 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // Create the EMData group
-  if (writer->openGroup(EMsoft::Constants::EMData) == false)
+  if (!writer->openGroup(EMsoft::Constants::EMData))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Create the MCOpenCL group
-  if (writer->openGroup(EMsoft::Constants::MCOpenCL) == false)
+  if (!writer->openGroup(EMsoft::Constants::MCOpenCL))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -721,7 +717,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     dims[1] = simData.numOfPixelsN;
     dims[0] = simData.numOfPixelsN;
 
-    if (writer->writePointerDataset(EMsoft::Constants::accume, m_GenericAccumePtr->getPointer(0), dims) == false)
+    if (!writer->writePointerDataset(EMsoft::Constants::accume, m_GenericAccumePtr->getPointer(0), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -740,7 +736,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     dims[1] = (simData.numOfPixelsN-1)/10+1;
     dims[0] = (simData.numOfPixelsN-1)/10+1;
 
-    if (writer->writePointerDataset(EMsoft::Constants::accumz, m_GenericAccumzPtr->getPointer(0), dims) == false)
+    if (!writer->writePointerDataset(EMsoft::Constants::accumz, m_GenericAccumzPtr->getPointer(0), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -752,7 +748,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   // and a few constants
   if (simData.mcMode == 1)
   {
-    if (writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIPar[11]) == false)
+    if (!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIPar[11]))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -760,37 +756,37 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
   else
   {
-    if (writer->writeScalarDataset(EMsoft::Constants::numangle, genericIPar[11]) == false)
+    if (!writer->writeScalarDataset(EMsoft::Constants::numangle, genericIPar[11]))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  if (writer->writeScalarDataset(EMsoft::Constants::numzbins, genericIPar[12]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::numzbins, genericIPar[12]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Close the groups
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -799,14 +795,14 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   //--------------------------------
   // Create the EMheader group; this is common to all EMsoft output files, so in the future
   // we will move this to the EMsoftToolboxPlugin.cpp file
-  if (writer->openGroup(EMsoft::Constants::EMheader) == false)
+  if (!writer->openGroup(EMsoft::Constants::EMheader))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Create the MCOpenCL group
-  if (writer->openGroup(EMsoft::Constants::MCOpenCL) == false)
+  if (!writer->openGroup(EMsoft::Constants::MCOpenCL))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -814,14 +810,14 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // Date  (use QDateTime)
   QString date = QDateTime::currentDateTime().date().toString();
-  if (writer->writeStringDataset(EMsoft::Constants::Date, date) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::Date, date))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // StartTime, already defined in Execute()
-  if (writer->writeStringDataset(EMsoft::Constants::StartTime, m_StartTime) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::StartTime, m_StartTime))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -829,7 +825,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // StopTime
   QString time = QDateTime::currentDateTime().time().toString();
-  if (writer->writeStringDataset(EMsoft::Constants::StopTime, time) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::StopTime, time))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -837,7 +833,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // Hostname
   QString localHost = QHostInfo::localHostName();
-  if (writer->writeStringDataset(EMsoft::Constants::HostName, localHost) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::HostName, localHost))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -845,28 +841,28 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // programName
   programName = "EMsoftWorkbench Monte Carlo Simulation Module";
-  if (writer->writeStringDataset(EMsoft::Constants::ProgramName, programName) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::ProgramName, programName))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // UserName
-  if (writer->writeStringDataset(EMsoft::Constants::UserName, getEMsoftUserName()) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::UserName, getEMsoftUserName()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // UserEmail
-  if (writer->writeStringDataset(EMsoft::Constants::UserEmail, getEMsoftUserEmail()) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::UserEmail, getEMsoftUserEmail()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // UserLocation
-  if (writer->writeStringDataset(EMsoft::Constants::UserLocation, getEMsoftUserLocation()) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::UserLocation, getEMsoftUserLocation()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -874,7 +870,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   // Version
   QString version = "EMsoft 3.1.0";
-  if (writer->writeStringDataset(EMsoft::Constants::Version, version) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::Version, version))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -883,20 +879,20 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   // add the FixedLength identifier to this header
   // FixedLength
   int i = 1;
-  if (writer->writeScalarDataset(EMsoft::Constants::FixedLength, i) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::FixedLength, i))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Close the groups
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -904,7 +900,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // here we create a JSONfiles group that contains the jsonobject in its entirety
-  if (writer->openGroup(EMsoft::Constants::JSONfiles) == false)
+  if (!writer->openGroup(EMsoft::Constants::JSONfiles))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -943,7 +939,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QJsonDocument doc(topObject);
     QString strJson(doc.toJson(QJsonDocument::Compact));
 
-    if (writer->writeStringDataset(EMsoft::Constants::MCOpenCLJSON, strJson) == false)
+    if (!writer->writeStringDataset(EMsoft::Constants::MCOpenCLJSON, strJson))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -951,7 +947,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
 
   // Close the group
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -959,7 +955,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // Create the NMLparameters group
-  if (writer->openGroup(EMsoft::Constants::NMLparameters) == false)
+  if (!writer->openGroup(EMsoft::Constants::NMLparameters))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -967,7 +963,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   //--------------------------------
   // Create the MCCLNameList group
-  if (writer->openGroup(EMsoft::Constants::MCCLNameList) == false)
+  if (!writer->openGroup(EMsoft::Constants::MCCLNameList))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -975,47 +971,47 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   float* genericFPar = fParPtr->getPointer(0);
 
-  if (writer->writeScalarDataset(EMsoft::Constants::Ebinsize, static_cast<double>(genericFPar[4])) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::Ebinsize, static_cast<double>(genericFPar[4])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::Ehistmin, static_cast<double>(genericFPar[3])) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::Ehistmin, static_cast<double>(genericFPar[3])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::EkeV, static_cast<double>(genericFPar[2])) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::EkeV, static_cast<double>(genericFPar[2])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeStringDataset(EMsoft::Constants::MCmode, "CSDA") == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::MCmode, "CSDA"))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeStringDataset(EMsoft::Constants::dataname, simData.outputFilePath) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::dataname, simData.outputFilePath))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::depthmax, static_cast<double>(genericFPar[5])) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::depthmax, static_cast<double>(genericFPar[5])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::depthstep, static_cast<double>(genericFPar[6])) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::depthstep, static_cast<double>(genericFPar[6])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::devid, genericIPar[5]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::devid, genericIPar[5]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::globalworkgrpsz, genericIPar[1]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::globalworkgrpsz, genericIPar[1]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1023,7 +1019,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   if (genericIPar[13] == 1)
   {
-    if (writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::full) == false)
+    if (!writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::full))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -1031,35 +1027,35 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
   else
   {
-    if (writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::bse1) == false)
+    if (!writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::bse1))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  if (writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::num_el, genericIPar[2]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::num_el, genericIPar[2]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
   int iv = 2*genericIPar[0]+1;
-  if (writer->writeScalarDataset(EMsoft::Constants::numsx, iv) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::numsx, iv))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::omega, static_cast<double>(genericFPar[1])) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::omega, static_cast<double>(genericFPar[1])))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::platid, genericIPar[6]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::platid, genericIPar[6]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1067,7 +1063,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   if (simData.mcMode == 1)
   {
-    if (writer->writeScalarDataset(EMsoft::Constants::sig, static_cast<double>(genericFPar[0])) == false)
+    if (!writer->writeScalarDataset(EMsoft::Constants::sig, static_cast<double>(genericFPar[0])))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -1075,61 +1071,61 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
   else
   {
-    if (writer->writeScalarDataset(EMsoft::Constants::sigstart, simData.sampleStartTiltAngle) == false)
+    if (!writer->writeScalarDataset(EMsoft::Constants::sigstart, simData.sampleStartTiltAngle))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
-    if (writer->writeScalarDataset(EMsoft::Constants::sigend, simData.sampleEndTiltAngle) == false)
+    if (!writer->writeScalarDataset(EMsoft::Constants::sigend, simData.sampleEndTiltAngle))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
-    if (writer->writeScalarDataset(EMsoft::Constants::sigstep, simData.sampleTiltStepSize) == false)
+    if (!writer->writeScalarDataset(EMsoft::Constants::sigstep, simData.sampleTiltStepSize))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  if (writer->writeScalarDataset(EMsoft::Constants::Stdout, m_InstanceKey) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::Stdout, m_InstanceKey))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
   QFileInfo simDataInputFileInfo(simData.inputFilePath);
-  if (writer->writeStringDataset(EMsoft::Constants::xtalname, simDataInputFileInfo.fileName()) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::xtalname, simDataInputFileInfo.fileName()))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   // Close the groups
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if (writer->closeFile() == false)
+  if (!writer->closeFile())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
   QFileInfo outFi(outputFilePath);
-  if (outFi.exists() == true)
+  if (outFi.exists())
   {
     if (!QFile::remove(outputFilePath))
     {

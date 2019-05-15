@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patterndisplay_ui_H_
-#define _patterndisplay_ui_H_
+#pragma once
 
 #include <QtCore/QObject>
 
@@ -43,7 +42,7 @@
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 #include "Modules/IModuleUI.h"
 #include "Modules/PatternDisplayModule/PatternDisplayController.h"
 #include "Modules/PatternDisplayModule/SimulatedPatternDisplayWidget.h"
@@ -67,9 +66,9 @@ class PatternDisplay_UI : public IModuleUI, public Ui::PatternDisplay_UI
      * @brief PatternDisplay_UI
      * @param parent
      */
-    PatternDisplay_UI(QWidget* parent = 0);
+    PatternDisplay_UI(QWidget* parent = nullptr);
 
-    ~PatternDisplay_UI();
+    ~PatternDisplay_UI() override;
 
     SIMPL_INSTANCE_PROPERTY(PatternDisplayController*, Controller)
 
@@ -99,13 +98,13 @@ class PatternDisplay_UI : public IModuleUI, public Ui::PatternDisplay_UI
      * @brief readModuleSession
      * @param obj
      */
-    void readModuleSession(QJsonObject &obj);
+    void readModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief writeModuleSession
      * @param obj
      */
-    void writeModuleSession(QJsonObject &obj);
+    void writeModuleSession(QJsonObject &obj) override;
 
   protected:
     /**
@@ -117,7 +116,7 @@ class PatternDisplay_UI : public IModuleUI, public Ui::PatternDisplay_UI
      * @brief changeEvent
      * @param event
      */
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
   protected slots:
 
@@ -147,7 +146,7 @@ class PatternDisplay_UI : public IModuleUI, public Ui::PatternDisplay_UI
      * @brief setMinAndMaxEnergyLevelChoices
      * @param ekeVs
      */
-    void setMinAndMaxEnergyLevelChoices(FloatArrayType::Pointer ekeVs);
+    void setMinAndMaxEnergyLevelChoices(const FloatArrayType::Pointer &ekeVs);
 
     /**
      * @brief setGenerateButtonAvailability
@@ -213,10 +212,11 @@ class PatternDisplay_UI : public IModuleUI, public Ui::PatternDisplay_UI
     /**
      * @brief validateData
      */
-    bool validateData();
+    bool validateData() override;
 
-    PatternDisplay_UI(const PatternDisplay_UI&);    // Copy Constructor Not Implemented
-    void operator=(const PatternDisplay_UI&);  // Operator '=' Not Implemented
+  public:
+    PatternDisplay_UI(const PatternDisplay_UI&) = delete; // Copy Constructor Not Implemented
+    PatternDisplay_UI(PatternDisplay_UI&&) = delete;      // Move Constructor Not Implemented
+    PatternDisplay_UI& operator=(const PatternDisplay_UI&) = delete; // Copy Assignment Not Implemented
+    PatternDisplay_UI& operator=(PatternDisplay_UI&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

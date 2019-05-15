@@ -55,10 +55,7 @@ PatternDisplayModule::PatternDisplayModule(QWidget* parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternDisplayModule::~PatternDisplayModule()
-{
-
-}
+PatternDisplayModule::~PatternDisplayModule() = default;
 
 // -----------------------------------------------------------------------------
 //

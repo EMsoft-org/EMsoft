@@ -53,10 +53,7 @@ MonteCarloSimulationModule::MonteCarloSimulationModule(QWidget* parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloSimulationModule::~MonteCarloSimulationModule()
-{
-
-}
+MonteCarloSimulationModule::~MonteCarloSimulationModule() = default;
 
 // -----------------------------------------------------------------------------
 //

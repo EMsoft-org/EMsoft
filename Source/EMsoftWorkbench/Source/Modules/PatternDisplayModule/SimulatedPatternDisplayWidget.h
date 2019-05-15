@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patterndisplaywidget_h_
-#define _patterndisplaywidget_h_
+#pragma once
 
 #include <QtCore/QObject>
 
@@ -47,14 +46,13 @@
 
 class QActionGroup;
 
-
 class SimulatedPatternDisplayWidget : public QWidget, public Ui::SimulatedPatternDisplayWidget
 {
     Q_OBJECT
 
   public:
-    SimulatedPatternDisplayWidget(QWidget* parent = 0, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~SimulatedPatternDisplayWidget();
+    SimulatedPatternDisplayWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+    ~SimulatedPatternDisplayWidget() override;
 
     struct PatternDisplayData
     {
@@ -91,7 +89,7 @@ class SimulatedPatternDisplayWidget : public QWidget, public Ui::SimulatedPatter
      * @brief setExpectedPatterns
      * @param eulerAngles
      */
-    void setExpectedPatterns(FloatArrayType::Pointer eulerAngles);
+    void setExpectedPatterns(const FloatArrayType::Pointer &eulerAngles);
 
     /**
      * @brief displayImage
@@ -116,7 +114,7 @@ class SimulatedPatternDisplayWidget : public QWidget, public Ui::SimulatedPatter
      * @param index
      * @param data
      */
-    void loadImage(int index, GLImageViewer::GLImageData data);
+    void loadImage(int index, const GLImageViewer::GLImageData &data);
 
     /**
      * @brief setProgressValue
@@ -158,7 +156,7 @@ class SimulatedPatternDisplayWidget : public QWidget, public Ui::SimulatedPatter
      * @brief closeEvent
      * @param event
      */
-    void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
   protected slots:
     /**
@@ -254,10 +252,11 @@ class SimulatedPatternDisplayWidget : public QWidget, public Ui::SimulatedPatter
 
     PatternDisplayData getPatternDisplayData();
 
-    SimulatedPatternDisplayWidget(const SimulatedPatternDisplayWidget&);    // Copy Constructor Not Implemented
-    void operator=(const SimulatedPatternDisplayWidget&);  // Operator '=' Not Implemented
+  public:
+    SimulatedPatternDisplayWidget(const SimulatedPatternDisplayWidget&) = delete; // Copy Constructor Not Implemented
+    SimulatedPatternDisplayWidget(SimulatedPatternDisplayWidget&&) = delete;      // Move Constructor Not Implemented
+    SimulatedPatternDisplayWidget& operator=(const SimulatedPatternDisplayWidget&) = delete; // Copy Assignment Not Implemented
+    SimulatedPatternDisplayWidget& operator=(SimulatedPatternDisplayWidget&&) = delete;      // Move Assignment Not Implemented
 };
 
 Q_DECLARE_METATYPE(SimulatedPatternDisplayWidget::PatternDisplayData)
-
-#endif /* _patterndisplaywidget_h_ */

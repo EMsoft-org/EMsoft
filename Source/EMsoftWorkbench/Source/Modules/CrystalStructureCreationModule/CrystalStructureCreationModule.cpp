@@ -53,10 +53,7 @@ CrystalStructureCreationModule::CrystalStructureCreationModule(QWidget* parent) 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-CrystalStructureCreationModule::~CrystalStructureCreationModule()
-{
-
-}
+CrystalStructureCreationModule::~CrystalStructureCreationModule() = default;
 
 // -----------------------------------------------------------------------------
 //

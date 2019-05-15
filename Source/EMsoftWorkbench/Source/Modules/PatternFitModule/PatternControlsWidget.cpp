@@ -53,10 +53,7 @@ PatternControlsWidget::PatternControlsWidget(QWidget* parent, Qt::WindowFlags wi
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternControlsWidget::~PatternControlsWidget()
-{
-
-}
+PatternControlsWidget::~PatternControlsWidget() = default;
 
 // -----------------------------------------------------------------------------
 //

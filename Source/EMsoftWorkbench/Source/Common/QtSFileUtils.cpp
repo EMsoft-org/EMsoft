@@ -72,7 +72,7 @@ QString QtSFileUtils::GenerateFileSystemPath(QString pathEnding)
 #else
   // We are on Linux - I think
   QFileInfo fi(dir.absolutePath() + pathEnding);
-  if(fi.exists() == false)
+  if(!fi.exists())
   {
     // The help file does not exist at the default location because we are probably running from the build tree.
     // Try up one more directory
@@ -82,7 +82,7 @@ QString QtSFileUtils::GenerateFileSystemPath(QString pathEnding)
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
   QFileInfo fi(dir.absolutePath() + pathEnding);
-  if(fi.exists() == false)
+  if(!fi.exists())
   {
     // Try up one more directory
     dir.cdUp();

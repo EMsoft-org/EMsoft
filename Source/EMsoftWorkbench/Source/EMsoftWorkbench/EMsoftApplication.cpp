@@ -173,7 +173,7 @@ EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString &filePa
 {
   QFileInfo fi(filePath);
   QFile inputFile(filePath);
-  if(inputFile.open(QIODevice::ReadOnly) == false)
+  if(!inputFile.open(QIODevice::ReadOnly))
   {
     QMessageBox::critical(nullptr, "JSON Read Error", tr("The JSON file\n\n\"%1\"\n\ncould not be opened.").arg(filePath), QMessageBox::Ok);
     return nullptr;
@@ -190,15 +190,15 @@ EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString &filePa
 
   QJsonObject root = doc.object();
 
-  if (root.contains(EMsoftWorkbenchConstants::StringConstants::Modules) == false)
+  if (!root.contains(EMsoftWorkbenchConstants::StringConstants::Modules))
   {
-    QMessageBox::critical(nullptr, "JSON Read Error", tr("The contents of the JSON file\n\n\"%1\"\n\nis not formatted correctly for %2.").arg(filePath).arg(QCoreApplication::applicationName()), QMessageBox::Ok);
+    QMessageBox::critical(nullptr, "JSON Read Error", tr("The contents of the JSON file\n\n\"%1\"\n\nis not formatted correctly for %2.").arg(filePath, QCoreApplication::applicationName()), QMessageBox::Ok);
     return nullptr;
   }
 
   QJsonObject modulesObj = root[EMsoftWorkbenchConstants::StringConstants::Modules].toObject();
 
-  if (modulesObj.size() <= 0)
+  if (modulesObj.empty())
   {
     QMessageBox::warning(nullptr, "JSON Read Warning", tr("The JSON file\n\n\"%1\"\n\ndoes not contain any modules.").arg(filePath), QMessageBox::Ok);
     return nullptr;
@@ -209,7 +209,7 @@ EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString &filePa
   instance->openSession(modulesObj);
   instance->setOpenedFilePath(filePath);
   instance->setWindowModified(false);
-  instance->setWindowTitle(QObject::tr("[*]%1 - %2").arg(fi.baseName()).arg(QCoreApplication::applicationName()));
+  instance->setWindowTitle(QObject::tr("[*]%1 - %2").arg(fi.baseName(), QCoreApplication::applicationName()));
 
   QtSRecentFileList* list = QtSRecentFileList::instance();
   list->addFile(filePath);
@@ -238,7 +238,7 @@ void EMsoftApplication::updateRecentFileList()
   QStringList files = QtSRecentFileList::instance()->fileList();
   foreach(QString file, files)
   {
-    QAction* action = recentFilesMenu->addAction(QtSRecentFileList::instance()->parentAndFileName(file));
+    QAction* action = recentFilesMenu->addAction(QtSRecentFileList::parentAndFileName(file));
     action->setData(file);
     action->setVisible(true);
     connect(action, &QAction::triggered, this, [=] {
@@ -330,19 +330,18 @@ void EMsoftApplication::on_actionClearRecentFiles_triggered()
 void EMsoftApplication::on_actionExit_triggered()
 {
   bool shouldReallyClose = true;
-  for(int i = 0; i < m_WorkbenchInstances.size(); i++)
+  for(EMsoftWorkbench_UI* workbench : m_WorkbenchInstances)
   {
-    EMsoftWorkbench_UI* workbench = m_WorkbenchInstances[i];
     if(nullptr != workbench)
     {
-      if(workbench->close() == false)
+      if(!workbench->close())
       {
         shouldReallyClose = false;
       }
     }
   }
 
-  if(shouldReallyClose == true)
+  if(shouldReallyClose)
   {
     quit();
   }
@@ -372,11 +371,11 @@ EMsoftWorkbench_UI* EMsoftApplication::getNewWorkbenchInstance()
   // Create new EMsoftWorkbench instance
   EMsoftWorkbench_UI* workbench = new EMsoftWorkbench_UI();
   workbench->setAttribute(Qt::WA_DeleteOnClose);
-  workbench->setWindowTitle(QObject::tr("[*]%1 - %2").arg("Untitled").arg(QCoreApplication::applicationName()));
+  workbench->setWindowTitle(QObject::tr("[*]%1 - %2").arg("Untitled", QCoreApplication::applicationName()));
 
   connect(workbench, &EMsoftWorkbench_UI::workbenchWindowChangedState, this, &EMsoftApplication::emSoftWindowChanged);
 
-  if (m_ActiveWindow)
+  if (m_ActiveWindow != nullptr)
   {
     workbench->move(m_ActiveWindow->x() + 25, m_ActiveWindow->y() + 25);
   }

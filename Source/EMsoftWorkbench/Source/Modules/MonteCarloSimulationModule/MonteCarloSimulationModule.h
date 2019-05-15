@@ -33,12 +33,11 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _montecarlosimulationmodule_h_
-#define _montecarlosimulationmodule_h_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 
 class MonteCarloSimulationModule : public IWorkbenchModule
 {
@@ -49,17 +48,18 @@ class MonteCarloSimulationModule : public IWorkbenchModule
     SIMPL_TYPE_MACRO(MonteCarloSimulationModule)
     SIMPL_STATIC_NEW_MACRO(MonteCarloSimulationModule)
 
-    ~MonteCarloSimulationModule();
+    ~MonteCarloSimulationModule() override;
 
-    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr);
+    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
 
   protected:
-    MonteCarloSimulationModule(QWidget* parent = 0);
+    MonteCarloSimulationModule(QWidget* parent = nullptr);
 
   private:
 
-    MonteCarloSimulationModule(const MonteCarloSimulationModule&);    // Copy Constructor Not Implemented
-    void operator=(const MonteCarloSimulationModule&);  // Operator '=' Not Implemented
+  public:
+    MonteCarloSimulationModule(const MonteCarloSimulationModule&) = delete; // Copy Constructor Not Implemented
+    MonteCarloSimulationModule(MonteCarloSimulationModule&&) = delete;      // Move Constructor Not Implemented
+    MonteCarloSimulationModule& operator=(const MonteCarloSimulationModule&) = delete; // Copy Assignment Not Implemented
+    MonteCarloSimulationModule& operator=(MonteCarloSimulationModule&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

@@ -33,12 +33,11 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patterndisplaymodule_H_
-#define _patterndisplaymodule_H_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 
 class PatternDisplayModule : public IWorkbenchModule
 {
@@ -49,17 +48,18 @@ class PatternDisplayModule : public IWorkbenchModule
     SIMPL_TYPE_MACRO(PatternDisplayModule)
     SIMPL_STATIC_NEW_MACRO(PatternDisplayModule)
 
-    ~PatternDisplayModule();
+    ~PatternDisplayModule() override;
 
-    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr);
+    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
 
   protected:
-    PatternDisplayModule(QWidget* parent = 0);
+    PatternDisplayModule(QWidget* parent = nullptr);
 
   private:
 
-    PatternDisplayModule(const PatternDisplayModule&);    // Copy Constructor Not Implemented
-    void operator=(const PatternDisplayModule&);  // Operator '=' Not Implemented
+  public:
+    PatternDisplayModule(const PatternDisplayModule&) = delete; // Copy Constructor Not Implemented
+    PatternDisplayModule(PatternDisplayModule&&) = delete;      // Move Constructor Not Implemented
+    PatternDisplayModule& operator=(const PatternDisplayModule&) = delete; // Copy Assignment Not Implemented
+    PatternDisplayModule& operator=(PatternDisplayModule&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

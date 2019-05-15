@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _emsoftapplication_h_
-#define _emsoftapplication_h_
+#pragma once
 
 #include <QtCore/QSet>
 #include <QtCore/QSharedPointer>
@@ -57,7 +56,7 @@ class EMsoftApplication : public QApplication
   Q_OBJECT
 
 public:
-  ~EMsoftApplication();
+  ~EMsoftApplication() override;
 
   SIMPL_INSTANCE_PROPERTY(QString, OpenDialogLastDirectory)
 
@@ -105,8 +104,9 @@ private:
 
   EMsoftWorkbench_UI* newInstanceFromFile(const QString &filePath);
 
-  EMsoftApplication(const EMsoftApplication&); // Copy Constructor Not Implemented
-  void operator=(const EMsoftApplication&);       // Operator '=' Not Implemented
+public:
+  EMsoftApplication(const EMsoftApplication&) = delete; // Copy Constructor Not Implemented
+  EMsoftApplication(EMsoftApplication&&) = delete;      // Move Constructor Not Implemented
+  EMsoftApplication& operator=(const EMsoftApplication&) = delete; // Copy Assignment Not Implemented
+  EMsoftApplication& operator=(EMsoftApplication&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _emsoftapplication_h_ */

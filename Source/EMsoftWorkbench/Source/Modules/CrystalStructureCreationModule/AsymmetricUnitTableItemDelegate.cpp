@@ -48,9 +48,7 @@ AsymmetricUnitTableItemDelegate::AsymmetricUnitTableItemDelegate(QObject* parent
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableItemDelegate::~AsymmetricUnitTableItemDelegate()
-{
-}
+AsymmetricUnitTableItemDelegate::~AsymmetricUnitTableItemDelegate() = default;
 
 // -----------------------------------------------------------------------------
 //

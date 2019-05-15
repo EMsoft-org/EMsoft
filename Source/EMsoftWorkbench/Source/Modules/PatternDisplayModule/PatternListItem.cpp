@@ -41,8 +41,8 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternListItem::PatternListItem(const QString &name, PatternListItem* parent) :
-  m_ItemName(name)
+PatternListItem::PatternListItem(QString name, PatternListItem* parent) :
+  m_ItemName(std::move(name))
 , m_ItemTooltip("")
 , m_Icon(QIcon())
 {
@@ -78,7 +78,7 @@ int PatternListItem::childCount() const
 // -----------------------------------------------------------------------------
 int PatternListItem::childNumber() const
 {
-  if(m_ParentItem)
+  if(m_ParentItem != nullptr)
   {
     return m_ParentItem->m_ChildItems.indexOf(const_cast<PatternListItem*>(this));
   }

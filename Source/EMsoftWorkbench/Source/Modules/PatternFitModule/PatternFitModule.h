@@ -33,12 +33,11 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patternfitmodule_H_
-#define _patternfitmodule_H_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 
 class PatternFitModule : public IWorkbenchModule
 {
@@ -49,17 +48,18 @@ class PatternFitModule : public IWorkbenchModule
     SIMPL_TYPE_MACRO(PatternFitModule)
     SIMPL_STATIC_NEW_MACRO(PatternFitModule)
 
-    ~PatternFitModule();
+    ~PatternFitModule() override;
 
-    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr);
+    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
 
   protected:
-    PatternFitModule(QWidget* parent = 0);
+    PatternFitModule(QWidget* parent = nullptr);
 
   private:
 
-    PatternFitModule(const PatternFitModule&);    // Copy Constructor Not Implemented
-    void operator=(const PatternFitModule&);  // Operator '=' Not Implemented
+  public:
+    PatternFitModule(const PatternFitModule&) = delete; // Copy Constructor Not Implemented
+    PatternFitModule(PatternFitModule&&) = delete;      // Move Constructor Not Implemented
+    PatternFitModule& operator=(const PatternFitModule&) = delete; // Copy Assignment Not Implemented
+    PatternFitModule& operator=(PatternFitModule&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

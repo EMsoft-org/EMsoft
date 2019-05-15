@@ -79,7 +79,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   QString tmpOutputFilePath = outputFilePath + ".tmp";
   QFileInfo tmpFi(tmpOutputFilePath);
 
-  if (tmpFi.exists() == true)
+  if (tmpFi.exists())
   {
     if (!QFile::remove(tmpOutputFilePath))
     {
@@ -103,14 +103,14 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   connect(writer.data(), &EMsoftFileWriter::errorMessageGenerated, [=] (const QString &msg) { emit errorMessageGenerated(msg); });
 
   // open the crystal structure HDF5 file
-  if (writer->openFile(tmpOutputFilePath) == false)
+  if (!writer->openFile(tmpOutputFilePath))
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // Create the CrystalData group
-  if (writer->openGroup(EMsoft::Constants::CrystalData) == false)
+  if (!writer->openGroup(EMsoft::Constants::CrystalData))
   {
     QFile::remove(tmpOutputFilePath);
     return;
@@ -124,7 +124,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   if (iv < 5) {
       iv +=1;
   }
-  if (writer->writeScalarDataset(EMsoft::Constants::CrystalSystem, iv) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::CrystalSystem, iv))
   {
     QFile::remove(tmpOutputFilePath);
     return;
@@ -191,7 +191,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
 //  default : ;
   }
 
-  if (writer->writeVectorDataset(EMsoft::Constants::LatticeParameters, lp, dims) == false)
+  if (!writer->writeVectorDataset(EMsoft::Constants::LatticeParameters, lp, dims))
   {
     QFile::remove(tmpOutputFilePath);
     return;
@@ -199,7 +199,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
 
   // CreationDate  (use QDataTime)
   QString date = QDateTime::currentDateTime().date().toString();
-  if (writer->writeStringDataset(EMsoft::Constants::CreationDate, date) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::CreationDate, date))
   {
     QFile::remove(tmpOutputFilePath);
     return;
@@ -207,42 +207,42 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
 
   // CreationTime
   QString time = QDateTime::currentDateTime().time().toString();
-  if (writer->writeStringDataset(EMsoft::Constants::CreationTime, time) == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::CreationTime, time))
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // Creator
-  if (writer->writeStringDataset(EMsoft::Constants::Creator, "EMsoftWorkbench") == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::Creator, "EMsoftWorkbench"))
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // ProgramName
-  if (writer->writeStringDataset(EMsoft::Constants::ProgramName, "EMsoftWorkbench - Crystal Structure Creation Module") == false)
+  if (!writer->writeStringDataset(EMsoft::Constants::ProgramName, "EMsoftWorkbench - Crystal Structure Creation Module"))
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // SpaceGroupNumber
-  if (writer->writeScalarDataset(EMsoft::Constants::SpaceGroupNumber, data.spaceGroupNumber) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::SpaceGroupNumber, data.spaceGroupNumber))
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // SpaceGroupSetting
-  if (writer->writeScalarDataset(EMsoft::Constants::SpaceGroupSetting, data.spaceGroupSetting) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::SpaceGroupSetting, data.spaceGroupSetting))
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // Natomtypes
-  if (writer->writeScalarDataset(EMsoft::Constants::Natomtypes, data.atomCoordinates.size()) == false)
+  if (!writer->writeScalarDataset(EMsoft::Constants::Natomtypes, data.atomCoordinates.size()))
   {
     QFile::remove(tmpOutputFilePath);
     return;
@@ -257,7 +257,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   for (int i=0; i<numOfAtoms; i++) {
       atps[i] = (int)td[i][0];
   }
-  if (writer->writeVectorDataset(EMsoft::Constants::Atomtypes, atps, dims2) == false)
+  if (!writer->writeVectorDataset(EMsoft::Constants::Atomtypes, atps, dims2))
   {
     QFile::remove(tmpOutputFilePath);
     return;
@@ -280,26 +280,26 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   QVector<hsize_t> dims3;
   dims3.push_back(5);
   dims3.push_back(numOfAtoms);
-  if (writer->writeVectorDataset(EMsoft::Constants::AtomData, apos, dims3) == false)
+  if (!writer->writeVectorDataset(EMsoft::Constants::AtomData, apos, dims3))
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
-  if (writer->closeGroup() == false)
+  if (!writer->closeGroup())
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
-  if (writer->closeFile() == false)
+  if (!writer->closeFile())
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   QFileInfo outFi(outputFilePath);
-  if (outFi.exists() == true)
+  if (outFi.exists())
   {
     if (!QFile::remove(outputFilePath))
     {

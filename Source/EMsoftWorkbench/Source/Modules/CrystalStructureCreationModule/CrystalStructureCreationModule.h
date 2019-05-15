@@ -33,12 +33,11 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _crystalstructurecreationmodule_h_
-#define _crystalstructurecreationmodule_h_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 
 class CrystalStructureCreationModule : public IWorkbenchModule
 {
@@ -49,17 +48,18 @@ class CrystalStructureCreationModule : public IWorkbenchModule
     SIMPL_TYPE_MACRO(CrystalStructureCreationModule)
     SIMPL_STATIC_NEW_MACRO(CrystalStructureCreationModule)
 
-    ~CrystalStructureCreationModule();
+    ~CrystalStructureCreationModule() override;
 
-    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget *parent = nullptr);
+    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget *parent = nullptr) override;
 
   protected:
-    CrystalStructureCreationModule(QWidget* parent = 0);
+    CrystalStructureCreationModule(QWidget* parent = nullptr);
 
   private:
 
-    CrystalStructureCreationModule(const CrystalStructureCreationModule&);    // Copy Constructor Not Implemented
-    void operator=(const CrystalStructureCreationModule&);  // Operator '=' Not Implemented
+  public:
+    CrystalStructureCreationModule(const CrystalStructureCreationModule&) = delete; // Copy Constructor Not Implemented
+    CrystalStructureCreationModule(CrystalStructureCreationModule&&) = delete;      // Move Constructor Not Implemented
+    CrystalStructureCreationModule& operator=(const CrystalStructureCreationModule&) = delete; // Copy Assignment Not Implemented
+    CrystalStructureCreationModule& operator=(CrystalStructureCreationModule&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

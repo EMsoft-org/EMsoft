@@ -54,7 +54,7 @@ class EMsoftFileWriter : public QObject
 
   public:
     EMsoftFileWriter();
-    ~EMsoftFileWriter();
+    ~EMsoftFileWriter() override;
 
     /**
      * @brief openFile

@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _MasterPatternSimulation_UI_h_
-#define _MasterPatternSimulation_UI_h_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -57,9 +56,9 @@ class MasterPatternSimulation_UI : public IModuleUI, public Ui::MasterPatternSim
      * @brief MasterPatternSimulation_UI
      * @param parent
      */
-    MasterPatternSimulation_UI(QWidget* parent = 0);
+    MasterPatternSimulation_UI(QWidget* parent = nullptr);
 
-    ~MasterPatternSimulation_UI();
+    ~MasterPatternSimulation_UI() override;
 
     SIMPL_INSTANCE_PROPERTY(MasterPatternSimulationController*, Controller)
 
@@ -67,18 +66,18 @@ class MasterPatternSimulation_UI : public IModuleUI, public Ui::MasterPatternSim
      * @brief readModuleSession
      * @param obj
      */
-    void readModuleSession(QJsonObject &obj);
+    void readModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief writeModuleSession
      * @param obj
      */
-    void writeModuleSession(QJsonObject &obj);
+    void writeModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief validateData
      */
-    bool validateData();
+    bool validateData() override;
 
   protected:
     /**
@@ -90,7 +89,7 @@ class MasterPatternSimulation_UI : public IModuleUI, public Ui::MasterPatternSim
      * @brief changeEvent
      * @param event
      */
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
   protected slots:
     void slot_simulateBtn_clicked();
@@ -101,8 +100,8 @@ class MasterPatternSimulation_UI : public IModuleUI, public Ui::MasterPatternSim
     void threadFinished();
 
   private:
-    QString                                                             m_LastFilePath = "";
-    QSharedPointer<QFutureWatcher<void>>        m_Watcher;
+    QString m_LastFilePath = "";
+    QSharedPointer<QFutureWatcher<void>> m_Watcher;
 
     /**
      * @brief readCrystalSystemParameters
@@ -137,8 +136,9 @@ class MasterPatternSimulation_UI : public IModuleUI, public Ui::MasterPatternSim
      */
     MasterPatternSimulationController::MasterPatternSimulationData getSimulationData();
 
-    MasterPatternSimulation_UI(const MasterPatternSimulation_UI&);    // Copy Constructor Not Implemented
-    void operator=(const MasterPatternSimulation_UI&);  // Operator '=' Not Implemented
+  public:
+    MasterPatternSimulation_UI(const MasterPatternSimulation_UI&) = delete; // Copy Constructor Not Implemented
+    MasterPatternSimulation_UI(MasterPatternSimulation_UI&&) = delete;      // Move Constructor Not Implemented
+    MasterPatternSimulation_UI& operator=(const MasterPatternSimulation_UI&) = delete; // Copy Assignment Not Implemented
+    MasterPatternSimulation_UI& operator=(MasterPatternSimulation_UI&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

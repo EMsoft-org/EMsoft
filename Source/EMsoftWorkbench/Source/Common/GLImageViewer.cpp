@@ -87,7 +87,7 @@ void GLImageViewer::zoomIn()
 {
   if (m_CurrentImage.isNull()) { return; }
 
-  if (isZoomable() == true)
+  if (isZoomable())
   {
     m_ZoomFactor += zoomOffset;
     m_DefaultControls = false;
@@ -103,7 +103,7 @@ void GLImageViewer::zoomOut()
 {
   if (m_CurrentImage.isNull()) { return; }
 
-  if (isZoomable() == true)
+  if (isZoomable())
   {
     m_ZoomFactor -= zoomOffset;
     m_DefaultControls = false;
@@ -120,7 +120,7 @@ void GLImageViewer::resizeEvent(QResizeEvent* event)
   m_ViewportWidth = event->size().width();
   m_ViewportHeight = event->size().height();
 
-  if (m_DefaultControls == true)
+  if (m_DefaultControls)
   {
     fitToScreen();
   }
@@ -204,7 +204,7 @@ void GLImageViewer::paintGL()
 //  int xCoord = std::abs(std::abs(static_cast<int>(m_PrevDx)) - mouseCoords.x());
 //  int yCoord = std::abs(std::abs(static_cast<int>(m_PrevDy)) - mouseCoords.y());
 
-  if (m_DefaultControls == false)
+  if (!m_DefaultControls)
   {
     if (m_ZoomFactor > maxZoomFactor)
     {
@@ -237,7 +237,7 @@ void GLImageViewer::paintGL()
     y = 0;
 
     m_IsPannable = true;
-    if (m_IsDragging == true)
+    if (m_IsDragging)
     {
       setCursor(Qt::ClosedHandCursor);
 
@@ -318,7 +318,7 @@ void GLImageViewer::paintGL()
 
   painter.drawImage(x, y, image, sx, sy, newWidth, newHeight);
 
-  if (m_UseStatsOverlay == true)
+  if (m_UseStatsOverlay)
   {
     // Get the minimum, maximum, and keV values as strings
     int statsStartingHeightOffset = 40;
@@ -326,7 +326,7 @@ void GLImageViewer::paintGL()
     QString minStr = QObject::tr("Min: %1").arg(QString::number(m_MinValue, 'g', 4));
     QString maxStr = QObject::tr("Max: %1").arg(QString::number(m_MaxValue, 'g', 4));
     QString kevStr = "";
-    if (m_HasKevValue == true)
+    if (m_HasKevValue)
     {
       kevStr = QObject::tr("keV: %1").arg(QString::number(m_keVValue));
       statsStartingHeightOffset = statsStartingHeightOffset + statsHeightSpacing;
@@ -349,7 +349,7 @@ void GLImageViewer::paintGL()
     painter.fillRect(statsX - 10, size().height() - statsStartingHeightOffset - 20, maxStrLen*8 + 5, statsStartingHeightOffset + 10, QBrush(QColor(Qt::black)));
     painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset), minStr);
     painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + statsHeightSpacing), maxStr);
-    if (m_HasKevValue == true)
+    if (m_HasKevValue)
     {
       painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + (statsHeightSpacing*2)), kevStr);
     }
@@ -357,7 +357,7 @@ void GLImageViewer::paintGL()
 
   painter.end();
 
-  if (needsRepaint == true)
+  if (needsRepaint)
   {
     update();
   }
@@ -373,7 +373,7 @@ void GLImageViewer::loadImage(GLImageData data)
   m_MinValue = data.minValue;
   m_MaxValue = data.maxValue;
 
-  if (m_HasKevValue == true)
+  if (m_HasKevValue)
   {
     m_keVValue = data.keVValue;
   }
@@ -397,11 +397,11 @@ QImage GLImageViewer::getCurrentImage()
 // -----------------------------------------------------------------------------
 void GLImageViewer::enterEvent(QEvent* event)
 {
-  if (m_IsDragging == true)
+  if (m_IsDragging)
   {
     setCursor(Qt::ClosedHandCursor);
   }
-  else if (m_IsPannable == true)
+  else if (m_IsPannable)
   {
     setCursor(Qt::OpenHandCursor);
   }
@@ -429,7 +429,7 @@ void GLImageViewer::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    if (m_IsPannable == true)
+    if (m_IsPannable)
     {
       m_LastPos = event->pos();
       setCursor(Qt::ClosedHandCursor);
@@ -442,7 +442,7 @@ void GLImageViewer::mousePressEvent(QMouseEvent *event)
 // -----------------------------------------------------------------------------
 void GLImageViewer::mouseMoveEvent(QMouseEvent *event)
 {
-  if (!(event->buttons() & Qt::LeftButton) || m_IsPannable == false)
+  if (!!(event->buttons() & Qt::LeftButton) || m_IsPannable)
   {
     return;
   }
@@ -512,7 +512,7 @@ void GLImageViewer::dragMoveEvent(QDragMoveEvent *event)
 void GLImageViewer::dropEvent(QDropEvent *event)
 {
   m_IsDragging = false;
-  if (m_IsPannable == true)
+  if (m_IsPannable)
   {
     setCursor(Qt::OpenHandCursor);
   }
@@ -531,7 +531,7 @@ void GLImageViewer::dropEvent(QDropEvent *event)
 // -----------------------------------------------------------------------------
 void GLImageViewer::wheelEvent(QWheelEvent* event)
 {
-  if (isZoomable() == true)
+  if (isZoomable())
   {
     m_DefaultControls = false;
     if (event->pixelDelta().y() > 0)

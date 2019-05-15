@@ -75,10 +75,7 @@ MasterPatternSimulation_UI::MasterPatternSimulation_UI(QWidget* parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MasterPatternSimulation_UI::~MasterPatternSimulation_UI()
-{
-
-}
+MasterPatternSimulation_UI::~MasterPatternSimulation_UI() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -139,17 +136,17 @@ void MasterPatternSimulation_UI::createWidgetConnections()
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &MasterPatternSimulationController::errorMessageGenerated, this, &MasterPatternSimulation_UI::notifyErrorMessage);
   connect(m_Controller, &MasterPatternSimulationController::warningMessageGenerated, this, &MasterPatternSimulation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(appendToStdOut(const QString &)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString&)), this, SLOT(appendToStdOut(QString&)));
 
   connect(mcSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";
-    if (mcFilePathLE->text().isEmpty() == false)
+    if (!mcFilePathLE->text().isEmpty())
     {
       proposedFile = mcFilePathLE->text();
     }
 
     QString filePath = FileIOTools::GetOpenPathFromDialog("Select Monte Carlo File", "Monte Carlo File (*.h5);;All Files (*.*)", proposedFile);
-    if(true == filePath.isEmpty())
+    if(filePath.isEmpty())
     {
       return;
     }
@@ -162,13 +159,13 @@ void MasterPatternSimulation_UI::createWidgetConnections()
 
   connect(mpSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";
-    if (mpFilePathLE->text().isEmpty() == false)
+    if (!mpFilePathLE->text().isEmpty())
     {
       proposedFile = mpFilePathLE->text();
     }
 
     QString filePath = FileIOTools::GetSavePathFromDialog("Select Master Pattern File", "Master Pattern File (*.h5);;All Files (*.*)", proposedFile);
-    if(true == filePath.isEmpty())
+    if(filePath.isEmpty())
     {
       return;
     }
@@ -191,28 +188,26 @@ void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
     setRunning(false);
     return;
   }
-  else
+
+  setRunning(true);
+  clearModuleIssues();
+
+  MasterPatternSimulationController::MasterPatternSimulationData data = getSimulationData();
+
+  simulateBtn->setText("Cancel");
+  inputGrpBox->setDisabled(true);
+  compParamGrpBox->setDisabled(true);
+  outputGrpBox->setDisabled(true);
+
+  // Single-threaded for now, but we can multi-thread later if needed
+  //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
+  for (int i = 0; i < 1; i++)
   {
-    setRunning(true);
-    clearModuleIssues();
+    m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
+    connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
 
-    MasterPatternSimulationController::MasterPatternSimulationData data = getSimulationData();
-
-    simulateBtn->setText("Cancel");
-    inputGrpBox->setDisabled(true);
-    compParamGrpBox->setDisabled(true);
-    outputGrpBox->setDisabled(true);
-
-    // Single-threaded for now, but we can multi-thread later if needed
-    //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-    for (int i = 0; i < 1; i++)
-    {
-      m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-      connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
-
-      QFuture<void> future = QtConcurrent::run(m_Controller, &MasterPatternSimulationController::createMasterPattern, data);
-      m_Watcher->setFuture(future);
-    }
+    QFuture<void> future = QtConcurrent::run(m_Controller, &MasterPatternSimulationController::createMasterPattern, data);
+    m_Watcher->setFuture(future);
   }
 }
 
@@ -249,16 +244,14 @@ bool MasterPatternSimulation_UI::validateData()
   clearModuleIssues();
 
   MasterPatternSimulationController::MasterPatternSimulationData data = getSimulationData();
-  if (m_Controller->validateMasterPatternValues(data) == true)
+  if (m_Controller->validateMasterPatternValues(data))
   {
     simulateBtn->setEnabled(true);
     return true;
   }
-  else
-  {
-    simulateBtn->setDisabled(true);
-    return false;
-  }
+
+  simulateBtn->setDisabled(true);
+  return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -292,7 +285,7 @@ void MasterPatternSimulation_UI::readComputationalParameters(QJsonObject &obj)
 {
   QJsonObject compParamObj = obj[ioConstants::CompParam].toObject();
 
-  if (compParamObj.isEmpty() == false)
+  if (!compParamObj.isEmpty())
   {
     smallestDSpacingSB->blockSignals(true);
     numOfMPPixelsSB->blockSignals(true);

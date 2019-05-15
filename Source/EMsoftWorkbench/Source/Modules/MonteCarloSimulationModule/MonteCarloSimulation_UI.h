@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _montecarlosimulation_ui_h_
-#define _montecarlosimulation_ui_h_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -57,9 +56,9 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
      * @brief MonteCarloSimulation_UI
      * @param parent
      */
-    MonteCarloSimulation_UI(QWidget* parent = 0);
+    MonteCarloSimulation_UI(QWidget* parent = nullptr);
 
-    ~MonteCarloSimulation_UI();
+    ~MonteCarloSimulation_UI() override;
 
     SIMPL_INSTANCE_PROPERTY(MonteCarloSimulationController*, Controller)
 
@@ -67,18 +66,18 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
      * @brief readModuleSession
      * @param obj
      */
-    void readModuleSession(QJsonObject &obj);
+    void readModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief writeModuleSession
      * @param obj
      */
-    void writeModuleSession(QJsonObject &obj);
+    void writeModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief validateData
      */
-    bool validateData();
+    bool validateData() override;
 
   protected:
     /**
@@ -90,7 +89,7 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
      * @brief changeEvent
      * @param event
      */
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
   protected slots:
     void on_mcModeCB_currentIndexChanged(int index);
@@ -107,8 +106,8 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
     void threadFinished();
 
   private:
-    QString                                                             m_LastFilePath = "";
-    QSharedPointer<QFutureWatcher<void>>        m_Watcher;
+    QString m_LastFilePath = "";
+    QSharedPointer<QFutureWatcher<void>> m_Watcher;
 
     /**
      * @brief readCrystalSystemParameters
@@ -155,8 +154,9 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
      */
     MonteCarloSimulationController::MonteCarloSimulationData getCreationData();
 
-    MonteCarloSimulation_UI(const MonteCarloSimulation_UI&);    // Copy Constructor Not Implemented
-    void operator=(const MonteCarloSimulation_UI&);  // Operator '=' Not Implemented
+  public:
+    MonteCarloSimulation_UI(const MonteCarloSimulation_UI&) = delete; // Copy Constructor Not Implemented
+    MonteCarloSimulation_UI(MonteCarloSimulation_UI&&) = delete;      // Move Constructor Not Implemented
+    MonteCarloSimulation_UI& operator=(const MonteCarloSimulation_UI&) = delete; // Copy Assignment Not Implemented
+    MonteCarloSimulation_UI& operator=(MonteCarloSimulation_UI&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

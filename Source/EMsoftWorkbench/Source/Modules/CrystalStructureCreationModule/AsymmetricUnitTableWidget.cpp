@@ -32,6 +32,7 @@
 *    United States Prime Contract Navy N00173-07-C-2068
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 #include "AsymmetricUnitTableWidget.h"
 
 #include <QtCore/QMetaProperty>
@@ -60,10 +61,7 @@ AsymmetricUnitTableWidget::AsymmetricUnitTableWidget(QWidget* parent)
 // -----------------------------------------------------------------------------
 AsymmetricUnitTableWidget::~AsymmetricUnitTableWidget()
 {
-  if(m_ItemDelegate)
-  {
-    delete m_ItemDelegate;
-  }
+  delete m_ItemDelegate;
 }
 
 // -----------------------------------------------------------------------------
@@ -110,7 +108,7 @@ std::vector<std::vector<double>> AsymmetricUnitTableWidget::getData()
       }
       data[row][col] = item->data(Qt::DisplayRole).toDouble(&ok);
 
-      if(ok == false)
+      if(!ok)
       {
         qDebug() << "Could not set the model data into the DynamicTableData object.";
         data.clear();
@@ -130,9 +128,11 @@ void AsymmetricUnitTableWidget::on_addRowBtn_clicked()
   int row = dynamicTable->rowCount();
 
   std::vector<double> columnData;
-  for (int i = 0; i < dynamicTable->columnCount(); i++)
+  int columnCount = dynamicTable->columnCount();
+  columnData.reserve(columnCount);
+  for (int i = 0; i < columnCount; i++)
   {
-    columnData.push_back(0);
+    columnData[i] = 0;
   }
 
   insertRow(row, columnData);

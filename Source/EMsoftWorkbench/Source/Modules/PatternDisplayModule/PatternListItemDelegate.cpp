@@ -54,9 +54,7 @@ PatternListItemDelegate::PatternListItemDelegate(QObject* parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternListItemDelegate::~PatternListItemDelegate()
-{
-}
+PatternListItemDelegate::~PatternListItemDelegate() = default;
 
 // -----------------------------------------------------------------------------
 //

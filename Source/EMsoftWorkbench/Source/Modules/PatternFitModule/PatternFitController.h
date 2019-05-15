@@ -33,10 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patternfitcontroller_h_
-#define _patternfitcontroller_h_
-
-
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QPair>
@@ -62,7 +59,7 @@ class PatternFitController : public QObject
 
   public:
     PatternFitController(QObject *parent = nullptr);
-    ~PatternFitController();
+    ~PatternFitController() override;
 
     SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
     SIMPL_INSTANCE_PROPERTY(MasterPatternFileReader::MasterPatternData, MPFileData)
@@ -111,7 +108,7 @@ class PatternFitController : public QObject
      * @param yDim
      * @return
      */
-    GLImageViewer::GLImageData generatePatternImage(FloatArrayType::Pointer patternData, size_t xDim, size_t yDim, size_t zValue = 0);
+    GLImageViewer::GLImageData generatePatternImage(const FloatArrayType::Pointer &patternData, size_t xDim, size_t yDim, size_t zValue = 0);
 
     /**
      * @brief validateSimulationValues
@@ -125,11 +122,11 @@ class PatternFitController : public QObject
      * into the EMsoftController
      * @param masterFilePath
      */
-    void setMasterFilePath(QString masterFilePath);
+    void setMasterFilePath(const QString &masterFilePath);
 
-    typedef QPair<QVariant, QVariant> VariantPair;
-    typedef QPair<float, float> FloatPair;
-    typedef QPair<int, int> IntPair;
+    using VariantPair = QPair<QVariant, QVariant>;
+    using FloatPair = QPair<float, float>;
+    using IntPair = QPair<int, int>;
 
   signals:
     void updateEkeVs(FloatArrayType::Pointer ekeVs);
@@ -154,10 +151,11 @@ class PatternFitController : public QObject
 
     QVector< QSharedPointer<QFutureWatcher<void>> >           m_Watchers;
 
-    PatternFitController(const PatternFitController&);    // Copy Constructor Not Implemented
-    void operator=(const PatternFitController&);  // Operator '=' Not Implemented
+  public:
+    PatternFitController(const PatternFitController&) = delete; // Copy Constructor Not Implemented
+    PatternFitController(PatternFitController&&) = delete;      // Move Constructor Not Implemented
+    PatternFitController& operator=(const PatternFitController&) = delete; // Copy Assignment Not Implemented
+    PatternFitController& operator=(PatternFitController&&) = delete;      // Move Assignment Not Implemented
 };
 
 Q_DECLARE_METATYPE(PatternFitController::SimulationData)
-
-#endif /* _patternfitcontroller_h_ */

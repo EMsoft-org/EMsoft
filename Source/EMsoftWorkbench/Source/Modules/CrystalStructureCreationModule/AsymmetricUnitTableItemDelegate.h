@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _AsymmetricUnitTableItemDelegate_h_
-#define _AsymmetricUnitTableItemDelegate_h_
+#pragma once
 
 #include <QtCore/QModelIndex>
 
@@ -47,21 +46,22 @@ class AsymmetricUnitTableItemDelegate : public QStyledItemDelegate
     Q_OBJECT
 
   public:
-    explicit AsymmetricUnitTableItemDelegate(QObject* parent = 0);
+    explicit AsymmetricUnitTableItemDelegate(QObject* parent = nullptr);
 
-    virtual ~AsymmetricUnitTableItemDelegate();
+    ~AsymmetricUnitTableItemDelegate() override;
 
   protected:
-    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-    void setEditorData(QWidget* editor, const QModelIndex& index) const;
-    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const;
-    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
   private:
 
-    AsymmetricUnitTableItemDelegate(const AsymmetricUnitTableItemDelegate&); // Copy Constructor Not Implemented
-    void operator=(const AsymmetricUnitTableItemDelegate&); // Operator '=' Not Implemented
+  public:
+    AsymmetricUnitTableItemDelegate(const AsymmetricUnitTableItemDelegate&) = delete; // Copy Constructor Not Implemented
+    AsymmetricUnitTableItemDelegate(AsymmetricUnitTableItemDelegate&&) = delete;      // Move Constructor Not Implemented
+    AsymmetricUnitTableItemDelegate& operator=(const AsymmetricUnitTableItemDelegate&) = delete; // Copy Assignment Not Implemented
+    AsymmetricUnitTableItemDelegate& operator=(AsymmetricUnitTableItemDelegate&&) = delete;      // Move Assignment Not Implemented
 
 };
-
-#endif // _AsymmetricUnitTableItemDelegate_H

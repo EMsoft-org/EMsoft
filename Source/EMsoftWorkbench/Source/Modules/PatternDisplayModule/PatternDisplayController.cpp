@@ -70,15 +70,12 @@ PatternDisplayController::PatternDisplayController(QObject* parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternDisplayController::~PatternDisplayController()
-{
-
-}
+PatternDisplayController::~PatternDisplayController() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::setMasterFilePath(QString masterFilePath)
+void PatternDisplayController::setMasterFilePath(const QString &masterFilePath)
 {
   m_MasterFilePath = masterFilePath;
 
@@ -222,7 +219,7 @@ void PatternDisplayController::createMonteCarloImageGenerators()
 // -----------------------------------------------------------------------------
 void PatternDisplayController::checkImageGenerationCompletion()
 {
-  if(QThreadPool::globalInstance()->activeThreadCount())
+  if(QThreadPool::globalInstance()->activeThreadCount() > 0)
   {
     QTimer::singleShot(100, this, SLOT(checkImageGenerationCompletion()));
   }
@@ -242,15 +239,15 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 {
   PatternListModel* model = PatternListModel::Instance();
 
-  while (m_CurrentOrder.size() > 0)
+  while (!m_CurrentOrder.empty())
   {
-    if (m_Cancel == true) { return; }
+    if (m_Cancel) { return; }
 
     // Load the next image
-    if (m_CurrentOrderLock.tryAcquire() == true)
+    if (m_CurrentOrderLock.tryAcquire())
     {
       int index;
-      if (m_PriorityOrder.size() > 0)
+      if (!m_PriorityOrder.empty())
       {
         // An index in this thread has been given priority
         index = m_PriorityOrder.front();
@@ -304,7 +301,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 
       m_PatternDisplayWidget->loadImage(index, imageData);
 
-      if (success == true)
+      if (success)
       {
         model->setPatternStatus(index, PatternListItem::PatternStatus::Loaded);
       }
@@ -326,7 +323,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData &imageData, FloatArrayType::Pointer pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
+bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData &imageData, const FloatArrayType::Pointer &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
 {
   AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, zValue);
   imgGen->createImage();
@@ -343,7 +340,7 @@ bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData &
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData)
+void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, const PatternDisplayController::DetectorData &detectorData)
 { 
   m_NumOfFinishedPatterns = 0;
   m_NumOfFinishedPatternThreads = 0;
@@ -525,7 +522,7 @@ bool PatternDisplayController::validateDetectorValues(PatternDisplayController::
     return false;
   }
   QFileInfo fi(data.masterFilePath);
-  if (fi.exists() == false)
+  if (!fi.exists())
   {
     QString ss = QObject::tr("The master file path '%1' does not exist.").arg(data.masterFilePath);
     emit errorMessageGenerated(ss);

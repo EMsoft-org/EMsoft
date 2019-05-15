@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _PatternFit_UI_H_
-#define _PatternFit_UI_H_
+#pragma once
 
 #include <QtCore/QObject>
 
@@ -62,9 +61,9 @@ class PatternFit_UI : public IModuleUI, public Ui::PatternFit_UI, public IObserv
      * @brief PatternFit_UI
      * @param parent
      */
-    PatternFit_UI(QWidget* parent = 0);
+    PatternFit_UI(QWidget* parent = nullptr);
 
-    ~PatternFit_UI();
+    ~PatternFit_UI() override;
 
     SIMPL_INSTANCE_PROPERTY(PatternControlsWidget::PatternChoice, CurrentPatternChoice)
     SIMPL_INSTANCE_PROPERTY(PatternFitController*, Controller)
@@ -82,13 +81,13 @@ class PatternFit_UI : public IModuleUI, public Ui::PatternFit_UI, public IObserv
      * @brief readModuleSession
      * @param obj
      */
-    void readModuleSession(QJsonObject &obj);
+    void readModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief writeModuleSession
      * @param obj
      */
-    void writeModuleSession(QJsonObject &obj);
+    void writeModuleSession(QJsonObject &obj) override;
 
   protected:
     /**
@@ -100,7 +99,7 @@ class PatternFit_UI : public IModuleUI, public Ui::PatternFit_UI, public IObserv
      * @brief changeEvent
      * @param event
      */
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
   private slots:
     /**
@@ -282,10 +281,11 @@ class PatternFit_UI : public IModuleUI, public Ui::PatternFit_UI, public IObserv
     /**
      * @brief validateData
      */
-    bool validateData();
+    bool validateData() override;
 
-    PatternFit_UI(const PatternFit_UI&);    // Copy Constructor Not Implemented
-    void operator=(const PatternFit_UI&);  // Operator '=' Not Implemented
+  public:
+    PatternFit_UI(const PatternFit_UI&) = delete; // Copy Constructor Not Implemented
+    PatternFit_UI(PatternFit_UI&&) = delete;      // Move Constructor Not Implemented
+    PatternFit_UI& operator=(const PatternFit_UI&) = delete; // Copy Assignment Not Implemented
+    PatternFit_UI& operator=(PatternFit_UI&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

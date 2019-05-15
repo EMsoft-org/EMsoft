@@ -32,9 +32,8 @@
 *    United States Prime Contract Navy N00173-07-C-2068
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#ifndef _AsymmetricUnitTableWidget_h_
-#define _AsymmetricUnitTableWidget_h_
 
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
@@ -62,7 +61,7 @@ class AsymmetricUnitTableWidget : public QFrame, private Ui::AsymmetricUnitTable
     */
     AsymmetricUnitTableWidget(QWidget* parent = nullptr);
 
-    virtual ~AsymmetricUnitTableWidget();
+    ~AsymmetricUnitTableWidget() override;
 
     /**
     * @brief This method does additional GUI widget connections
@@ -96,9 +95,10 @@ class AsymmetricUnitTableWidget : public QFrame, private Ui::AsymmetricUnitTable
 
     void insertRow(int idx, std::vector<double> columnData);
 
-    AsymmetricUnitTableWidget(const AsymmetricUnitTableWidget&); // Copy Constructor Not Implemented
-    void operator=(const AsymmetricUnitTableWidget&); // Operator '=' Not Implemented
+  public:
+    AsymmetricUnitTableWidget(const AsymmetricUnitTableWidget&) = delete; // Copy Constructor Not Implemented
+    AsymmetricUnitTableWidget(AsymmetricUnitTableWidget&&) = delete;      // Move Constructor Not Implemented
+    AsymmetricUnitTableWidget& operator=(const AsymmetricUnitTableWidget&) = delete; // Copy Assignment Not Implemented
+    AsymmetricUnitTableWidget& operator=(AsymmetricUnitTableWidget&&) = delete;      // Move Assignment Not Implemented
 
 };
-
-#endif /* _AsymmetricUnitTableWidget_H_ */

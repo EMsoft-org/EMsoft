@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patternlistitem_h_
-#define _patternlistitem_h_
+#pragma once
 
 #include <QtCore/QList>
 #include <QtCore/QVariant>
@@ -47,7 +46,7 @@
 class PatternListItem
 {
   public:
-    PatternListItem(const QString &name, PatternListItem* parent = 0);
+    PatternListItem(QString name, PatternListItem* parent = nullptr);
     virtual ~PatternListItem();
 
     using EnumType = unsigned int;
@@ -93,8 +92,9 @@ class PatternListItem
     QString                                             m_ItemTooltip = "";
     QIcon                                               m_Icon;
 
-    PatternListItem(const PatternListItem&);    // Copy Constructor Not Implemented
-    void operator=(const PatternListItem&);  // Operator '=' Not Implemented
+  public:
+    PatternListItem(const PatternListItem&) = delete; // Copy Constructor Not Implemented
+    PatternListItem(PatternListItem&&) = delete;      // Move Constructor Not Implemented
+    PatternListItem& operator=(const PatternListItem&) = delete; // Copy Assignment Not Implemented
+    PatternListItem& operator=(PatternListItem&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif // _patternlistitem_h_

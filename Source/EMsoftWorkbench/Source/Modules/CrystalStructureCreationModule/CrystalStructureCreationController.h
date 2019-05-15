@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _crystalstructurecreationcontroller_h_
-#define _crystalstructurecreationcontroller_h_
+#pragma once
 
 #include <QtCore/QObject>
 
@@ -43,8 +42,8 @@ class CrystalStructureCreationController : public QObject
     Q_OBJECT
 
   public:
-    CrystalStructureCreationController(QObject *parent = nullptr);
-    ~CrystalStructureCreationController();
+    CrystalStructureCreationController(QObject* parent = nullptr);
+    ~CrystalStructureCreationController() override;
 
     using EnumType = unsigned int;
 
@@ -93,10 +92,9 @@ class CrystalStructureCreationController : public QObject
     void warningMessageGenerated(const QString &msg);
     void stdOutputMessageGenerated(const QString &msg);
 
-  private:
-
-    CrystalStructureCreationController(const CrystalStructureCreationController&);    // Copy Constructor Not Implemented
-    void operator=(const CrystalStructureCreationController&);  // Operator '=' Not Implemented
+  public:
+    CrystalStructureCreationController(const CrystalStructureCreationController&) = delete; // Copy Constructor Not Implemented
+    CrystalStructureCreationController(CrystalStructureCreationController&&) = delete;      // Move Constructor Not Implemented
+    CrystalStructureCreationController& operator=(const CrystalStructureCreationController&) = delete; // Copy Assignment Not Implemented
+    CrystalStructureCreationController& operator=(CrystalStructureCreationController&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _crystalstructurecreationcontroller_h_ */

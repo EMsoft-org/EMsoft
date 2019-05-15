@@ -81,10 +81,7 @@ SimulatedPatternDisplayWidget::SimulatedPatternDisplayWidget(QWidget* parent, Qt
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SimulatedPatternDisplayWidget::~SimulatedPatternDisplayWidget()
-{
-
-}
+SimulatedPatternDisplayWidget::~SimulatedPatternDisplayWidget() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -379,7 +376,7 @@ void SimulatedPatternDisplayWidget::on_saveBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::setExpectedPatterns(FloatArrayType::Pointer eulerAngles)
+void SimulatedPatternDisplayWidget::setExpectedPatterns(const FloatArrayType::Pointer &eulerAngles)
 {
   PatternListModel* model = PatternListModel::Instance();
 
@@ -429,7 +426,7 @@ void SimulatedPatternDisplayWidget::setProgressBarMaximum(int value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::loadImage(int index, GLImageViewer::GLImageData data)
+void SimulatedPatternDisplayWidget::loadImage(int index, const GLImageViewer::GLImageData &data)
 {
   if (index > m_LoadedImageData.size() - 1 || index < 0) { return; }
 
@@ -456,7 +453,7 @@ void SimulatedPatternDisplayWidget::displayImage(GLImageViewer::GLImageData imag
 {
   PatternDisplayData displayData = getPatternDisplayData();
 
-  if (imageData.image.isNull() == false)
+  if (!imageData.image.isNull())
   {
     if (displayData.patternOrigin == SimulatedPatternDisplayWidget::UpperLeftOrigin)
     {
@@ -551,7 +548,7 @@ size_t SimulatedPatternDisplayWidget::getDetectorBinningValue()
   {
     bool ok = false;
     value = checkedAction->text().toInt(&ok);
-    if (ok == false) { value = 0; }
+    if (!ok) { value = 0; }
   }
 
   return value;

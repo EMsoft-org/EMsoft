@@ -62,10 +62,7 @@ MPMCDisplayWidget::MPMCDisplayWidget(QWidget* parent, Qt::WindowFlags windowFlag
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MPMCDisplayWidget::~MPMCDisplayWidget()
-{
-
-}
+MPMCDisplayWidget::~MPMCDisplayWidget() = default;
 
 // -----------------------------------------------------------------------------
 //

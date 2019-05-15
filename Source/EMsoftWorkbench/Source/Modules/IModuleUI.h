@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _imoduleui_H_
-#define _imoduleui_H_
+#pragma once
 
 #include <QtWidgets/QWidget>
 
@@ -46,11 +45,10 @@ class IModuleUI : public QWidget
 
   public:
     SIMPL_SHARED_POINTERS(IModuleUI)
-    SIMPL_TYPE_MACRO(IModuleUI)
 
     SIMPL_BOOL_PROPERTY(Running)
 
-    ~IModuleUI();
+    ~IModuleUI() override;
 
     using EnumType = unsigned int;
 
@@ -111,7 +109,7 @@ class IModuleUI : public QWidget
     * @param val
     * @return
     */
-    void setOpenedFilePath(QString val);
+    void setOpenedFilePath(const QString &val);
 
     /**
      * @brief clearModuleIssues
@@ -144,8 +142,9 @@ class IModuleUI : public QWidget
   private:
     QString                         m_OpenedFilePath = "";
 
-    IModuleUI(const IModuleUI&);    // Copy Constructor Not Implemented
-    void operator=(const IModuleUI&);  // Operator '=' Not Implemented
+  public:
+    IModuleUI(const IModuleUI&) = delete; // Copy Constructor Not Implemented
+    IModuleUI(IModuleUI&&) = delete;      // Move Constructor Not Implemented
+    IModuleUI& operator=(const IModuleUI&) = delete; // Copy Assignment Not Implemented
+    IModuleUI& operator=(IModuleUI&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

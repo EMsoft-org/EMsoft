@@ -60,10 +60,7 @@ IModuleUI::IModuleUI(QWidget *parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI::~IModuleUI()
-{
-
-}
+IModuleUI::~IModuleUI() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -76,7 +73,7 @@ QString IModuleUI::getOpenedFilePath()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void IModuleUI::setOpenedFilePath(QString val)
+void IModuleUI::setOpenedFilePath(const QString &val)
 {
   m_OpenedFilePath = val;
 }
@@ -87,7 +84,7 @@ void IModuleUI::setOpenedFilePath(QString val)
 void IModuleUI::appendToStdOut(const QString &msg)
 {
   QString output = msg;
-  if (m_StdOutput.isEmpty() == false)
+  if (!m_StdOutput.isEmpty())
   {
     output.prepend("\n");
   }

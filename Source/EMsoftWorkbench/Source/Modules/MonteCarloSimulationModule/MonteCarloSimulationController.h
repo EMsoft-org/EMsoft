@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _montecarlosimulationcontroller_h_
-#define _montecarlosimulationcontroller_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QFutureWatcher>
@@ -50,7 +49,7 @@ class MonteCarloSimulationController : public QObject
 
   public:
     MonteCarloSimulationController(QObject *parent = nullptr);
-    ~MonteCarloSimulationController();
+    ~MonteCarloSimulationController() override;
 
     using EnumType = unsigned int;
 
@@ -231,8 +230,9 @@ class MonteCarloSimulationController : public QObject
      */
     void convertToFortran(char* fstring, size_t fstring_len, const char* cstring);
 
-    MonteCarloSimulationController(const MonteCarloSimulationController&);    // Copy Constructor Not Implemented
-    void operator=(const MonteCarloSimulationController&);  // Operator '=' Not Implemented
+  public:
+    MonteCarloSimulationController(const MonteCarloSimulationController&) = delete; // Copy Constructor Not Implemented
+    MonteCarloSimulationController(MonteCarloSimulationController&&) = delete;      // Move Constructor Not Implemented
+    MonteCarloSimulationController& operator=(const MonteCarloSimulationController&) = delete; // Copy Assignment Not Implemented
+    MonteCarloSimulationController& operator=(MonteCarloSimulationController&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _montecarlosimulationcontroller_h_ */

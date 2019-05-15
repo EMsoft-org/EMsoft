@@ -60,7 +60,7 @@ QString FileIOTools::GetOpenPathFromDialog(const QString &title, const QString &
 {
   QString proposedDir = openDialogLastDirectory;
   QString filePath = QFileDialog::getOpenFileName(nullptr, title, proposedDir, filters);
-  if (filePath.isEmpty() == false) { openDialogLastDirectory = filePath; }
+  if (!filePath.isEmpty()) { openDialogLastDirectory = filePath; }
 
   return filePath;
 }
@@ -72,7 +72,7 @@ QString FileIOTools::GetSavePathFromDialog(const QString &title, const QString &
 {
   QString proposedDir = openDialogLastDirectory;
   QString filePath = QFileDialog::getSaveFileName(nullptr, title, proposedDir, filters);
-  if (filePath.isEmpty() == false) { openDialogLastDirectory = filePath; }
+  if (!filePath.isEmpty()) { openDialogLastDirectory = filePath; }
 
   return filePath;
 }

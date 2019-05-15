@@ -53,9 +53,7 @@ StatusBarWidget::StatusBarWidget(QWidget* parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-StatusBarWidget::~StatusBarWidget()
-{
-}
+StatusBarWidget::~StatusBarWidget() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -212,6 +210,8 @@ void StatusBarWidget::setButtonAction(QDockWidget* dock, Button btn)
       connect(stdOutputBtn, SIGNAL(toggled(bool)), dock, SLOT(setVisible(bool)));
       connect(dock, SIGNAL(visibilityChanged(bool)), this, SLOT(stdOutputVisibilityChanged(bool)));
       break;
+    default:
+      break;
   }
 }
 
@@ -225,6 +225,8 @@ void StatusBarWidget::setButtonAction(QToolBar* toolBar, Button btn)
     case Button::ModuleNavigator:
       connect(navigatorBtn, SIGNAL(toggled(bool)), toolBar, SLOT(setVisible(bool)));
       connect(toolBar, SIGNAL(visibilityChanged(bool)), this, SLOT(navigatorVisibilityChanged(bool)));
+      break;
+    default:
       break;
   }
 }

@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _MasterPatternSimulationController_h_
-#define _MasterPatternSimulationController_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QFutureWatcher>
@@ -51,7 +50,7 @@ class MasterPatternSimulationController : public QObject
 
   public:
     MasterPatternSimulationController(QObject *parent = nullptr);
-    ~MasterPatternSimulationController();
+    ~MasterPatternSimulationController() override;
 
     using EnumType = unsigned int;
 
@@ -215,8 +214,9 @@ class MasterPatternSimulationController : public QObject
      */
     FloatArrayType::Pointer getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
 
-    MasterPatternSimulationController(const MasterPatternSimulationController&);    // Copy Constructor Not Implemented
-    void operator=(const MasterPatternSimulationController&);  // Operator '=' Not Implemented
+  public:
+    MasterPatternSimulationController(const MasterPatternSimulationController&) = delete; // Copy Constructor Not Implemented
+    MasterPatternSimulationController(MasterPatternSimulationController&&) = delete;      // Move Constructor Not Implemented
+    MasterPatternSimulationController& operator=(const MasterPatternSimulationController&) = delete; // Copy Assignment Not Implemented
+    MasterPatternSimulationController& operator=(MasterPatternSimulationController&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _MasterPatternSimulationController_h_ */

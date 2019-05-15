@@ -66,7 +66,9 @@ StyleSheetEditor::StyleSheetEditor(QWidget *parent) :
   QRegularExpressionMatch match = regExp.match(defaultStyle);
 
   if (match.hasMatch())
+  {
     defaultStyle = match.captured(1);
+  }
 
   styleSheetCombo->setCurrentIndex(styleSheetCombo->findText("light"));
   loadStyleSheet("light");

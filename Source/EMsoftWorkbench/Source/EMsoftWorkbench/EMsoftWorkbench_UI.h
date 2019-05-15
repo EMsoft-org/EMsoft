@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _emsoftworkbench_ui_h_
-#define _emsoftworkbench_ui_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QPropertyAnimation>
@@ -55,8 +54,8 @@ class EMsoftWorkbench_UI : public QMainWindow, public Ui::EMsoftWorkbench_UI
     Q_OBJECT
 
   public:
-    EMsoftWorkbench_UI(QWidget* parent = 0);
-    ~EMsoftWorkbench_UI();
+    EMsoftWorkbench_UI(QWidget* parent = nullptr);
+    ~EMsoftWorkbench_UI() override;
 
     SIMPL_INSTANCE_PROPERTY(QString, OpenedFilePath)
 
@@ -97,13 +96,13 @@ class EMsoftWorkbench_UI : public QMainWindow, public Ui::EMsoftWorkbench_UI
      * @brief changeEvent
      * @param event
      */
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
     /**
      * @brief closeEvent
      * @param event
      */
-    void closeEvent(QCloseEvent* event);
+    void closeEvent(QCloseEvent* event) override;
 
     /**
      * @brief checkDirtyDocument
@@ -191,8 +190,9 @@ class EMsoftWorkbench_UI : public QMainWindow, public Ui::EMsoftWorkbench_UI
      */
     bool writeModulesToFile(const QString &filePath);
 
-    EMsoftWorkbench_UI(const EMsoftWorkbench_UI&);    // Copy Constructor Not Implemented
-    void operator=(const EMsoftWorkbench_UI&);  // Operator '=' Not Implemented
+  public:
+    EMsoftWorkbench_UI(const EMsoftWorkbench_UI&) = delete; // Copy Constructor Not Implemented
+    EMsoftWorkbench_UI(EMsoftWorkbench_UI&&) = delete;      // Move Constructor Not Implemented
+    EMsoftWorkbench_UI& operator=(const EMsoftWorkbench_UI&) = delete; // Copy Assignment Not Implemented
+    EMsoftWorkbench_UI& operator=(EMsoftWorkbench_UI&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _emsoftworkbench_ui_h_ */

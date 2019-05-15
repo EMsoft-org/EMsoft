@@ -33,14 +33,12 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _imodulefactory_H_
-#define _imodulefactory_H_
+#pragma once
 
 #include "SIMPLib/SIMPLib.h"
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 
 /**
  * @brief This class serves as a base class to create Factory classes that can
@@ -52,7 +50,7 @@ class IModuleFactory
     SIMPL_SHARED_POINTERS(IModuleFactory)
     SIMPL_TYPE_MACRO(IModuleFactory)
 
-    virtual ~IModuleFactory() {}
+    virtual ~IModuleFactory() = default;
 
     /**
      * @brief createModule
@@ -61,13 +59,12 @@ class IModuleFactory
     virtual IWorkbenchModule::Pointer createModule() = 0;
 
   protected:
-    IModuleFactory() { }
+    IModuleFactory() = default;
 
-  private:
-
-    IModuleFactory(const IModuleFactory&); // Copy Constructor Not Implemented
-    void operator=(const IModuleFactory&); // Operator '=' Not Implemented
+  public:
+    IModuleFactory(const IModuleFactory&) = delete; // Copy Constructor Not Implemented
+    IModuleFactory(IModuleFactory&&) = delete;      // Move Constructor Not Implemented
+    IModuleFactory& operator=(const IModuleFactory&) = delete; // Copy Assignment Not Implemented
+    IModuleFactory& operator=(IModuleFactory&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _IModuleFactory_H_ */
 

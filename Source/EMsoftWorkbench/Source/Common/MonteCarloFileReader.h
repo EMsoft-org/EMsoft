@@ -55,7 +55,7 @@ class MonteCarloFileReader : public XtalFileReader
 
   public:
     MonteCarloFileReader();
-    ~MonteCarloFileReader();
+    ~MonteCarloFileReader() override;
 
     /**
      * @brief closeFile

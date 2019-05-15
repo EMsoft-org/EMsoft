@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _PatternFitViewer_h_
-#define _PatternFitViewer_h_
+#pragma once
 
 #include "Common/GLImageViewer.h"
 
@@ -49,8 +48,8 @@ class PatternFitViewer : public QWidget, public Ui::PatternFitViewer
     Q_OBJECT
 
   public:
-    PatternFitViewer(QWidget* parent = 0, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~PatternFitViewer();
+    PatternFitViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+    ~PatternFitViewer() override;
 
     void loadImage(GLImageViewer::GLImageData imageData);
 
@@ -90,10 +89,11 @@ class PatternFitViewer : public QWidget, public Ui::PatternFitViewer
   private:
     QImage                m_CurrentImage;
 
-    PatternFitViewer(const PatternFitViewer&);    // Copy Constructor Not Implemented
-    void operator=(const PatternFitViewer&);  // Operator '=' Not Implemented
+  public:
+    PatternFitViewer(const PatternFitViewer&) = delete; // Copy Constructor Not Implemented
+    PatternFitViewer(PatternFitViewer&&) = delete;      // Move Constructor Not Implemented
+    PatternFitViewer& operator=(const PatternFitViewer&) = delete; // Copy Assignment Not Implemented
+    PatternFitViewer& operator=(PatternFitViewer&&) = delete;      // Move Assignment Not Implemented
 };
 
 Q_DECLARE_METATYPE(PatternControlsWidget::PatternChoice)
-
-#endif /* _PatternFitViewer_h_ */

@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _mpmcdisplaywidget_h_
-#define _mpmcdisplaywidget_h_
-
+#pragma once
 #include <QtCore/QObject>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
@@ -50,8 +48,8 @@ class MPMCDisplayWidget : public QWidget, public Ui::MPMCDisplayWidget
     Q_OBJECT
 
   public:
-    MPMCDisplayWidget(QWidget* parent = 0, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~MPMCDisplayWidget();
+    MPMCDisplayWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+    ~MPMCDisplayWidget() override;
 
     SIMPL_INSTANCE_PROPERTY(std::vector<QImage>, ImageVector)
 
@@ -145,10 +143,12 @@ class MPMCDisplayWidget : public QWidget, public Ui::MPMCDisplayWidget
     QAction*            m_StereographicAction = nullptr;
     ProjectionMode      m_ProjectionMode = ProjectionMode::Lambert_Square;
 
-    MPMCDisplayWidget(const MPMCDisplayWidget&);    // Copy Constructor Not Implemented
-    void operator=(const MPMCDisplayWidget&);  // Operator '=' Not Implemented
+  public:
+    MPMCDisplayWidget(const MPMCDisplayWidget&) = delete; // Copy Constructor Not Implemented
+    MPMCDisplayWidget(MPMCDisplayWidget&&) = delete;      // Move Constructor Not Implemented
+    MPMCDisplayWidget& operator=(const MPMCDisplayWidget&) = delete; // Copy Assignment Not Implemented
+    MPMCDisplayWidget& operator=(MPMCDisplayWidget&&) = delete;      // Move Assignment Not Implemented
 };
 
 Q_DECLARE_METATYPE(MPMCDisplayWidget::MPMCData)
 
-#endif /* _mpmcdisplaywidget_h_ */

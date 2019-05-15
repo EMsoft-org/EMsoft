@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _macemsoftapplication_h_
-#define _macemsoftapplication_h_
+#pragma once
 
 #include <QtCore/QSignalMapper>
 
@@ -51,9 +50,9 @@ class MacEMsoftApplication : public EMsoftApplication
 
   public:
     MacEMsoftApplication(int& argc, char** argv);
-    virtual ~MacEMsoftApplication();
+    ~MacEMsoftApplication() override;
 
-    virtual void unregisterWorkbenchInstance(EMsoftWorkbench_UI *instance);
+    void unregisterWorkbenchInstance(EMsoftWorkbench_UI* instance) override;
 
     void toWorkbenchMenuState();
     void toEmptyMenuState();
@@ -61,9 +60,9 @@ class MacEMsoftApplication : public EMsoftApplication
 protected slots:
 
     /**
-  * @brief activeWindowChanged
-  */
-    virtual void emSoftWindowChanged(EMsoftWorkbench_UI *instance);
+    * @brief activeWindowChanged
+    */
+    void emSoftWindowChanged(EMsoftWorkbench_UI* instance) override;
 
 private:
   // The global menu
@@ -76,8 +75,9 @@ private:
 
   QMenu* createCustomDockMenu();
 
-  MacEMsoftApplication(const MacEMsoftApplication&); // Copy Constructor Not Implemented
-  void operator=(const MacEMsoftApplication&); // Operator '=' Not Implemented
+public:
+  MacEMsoftApplication(const MacEMsoftApplication&) = delete; // Copy Constructor Not Implemented
+  MacEMsoftApplication(MacEMsoftApplication&&) = delete;      // Move Constructor Not Implemented
+  MacEMsoftApplication& operator=(const MacEMsoftApplication&) = delete; // Copy Assignment Not Implemented
+  MacEMsoftApplication& operator=(MacEMsoftApplication&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _macemsoftapplication_h_ */

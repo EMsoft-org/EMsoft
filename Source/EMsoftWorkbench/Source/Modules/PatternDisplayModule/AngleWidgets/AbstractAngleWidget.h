@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef AbstractAngleWidget_h
-#define AbstractAngleWidget_h
+#pragma once
 
 #include <QtWidgets/QWidget>
 
@@ -52,7 +51,7 @@ public:
     SIMPL_SHARED_POINTERS(AbstractAngleWidget)
 
     AbstractAngleWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~AbstractAngleWidget();
+    ~AbstractAngleWidget() override;
 
     static constexpr const float k_PiOver180 = static_cast<float>(M_PI / 180.0);
     static constexpr const float k_180OverPi = static_cast<float>(180.0f / M_PI);
@@ -88,8 +87,9 @@ public:
 
 private:
 
-    AbstractAngleWidget(const AbstractAngleWidget&);    // Copy Constructor Not Implemented
-    void operator=(const AbstractAngleWidget&);  // Operator '=' Not Implemented
+public:
+  AbstractAngleWidget(const AbstractAngleWidget&) = delete; // Copy Constructor Not Implemented
+  AbstractAngleWidget(AbstractAngleWidget&&) = delete;      // Move Constructor Not Implemented
+  AbstractAngleWidget& operator=(const AbstractAngleWidget&) = delete; // Copy Assignment Not Implemented
+  AbstractAngleWidget& operator=(AbstractAngleWidget&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* AbstractAngleWidget_h */

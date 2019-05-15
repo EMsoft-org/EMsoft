@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _statusBarWidget_h_
-#define _statusBarWidget_h_
+#pragma once
 
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QFrame>
@@ -50,7 +49,7 @@ class StatusBarWidget : public QFrame, private Ui::StatusBarWidget
 
   public:
     StatusBarWidget(QWidget* parent = 0);
-    virtual ~StatusBarWidget();
+    virtual ~StatusBarWidget() override;
 
 
     using EnumType = unsigned int;
@@ -127,8 +126,10 @@ class StatusBarWidget : public QFrame, private Ui::StatusBarWidget
     void setupGui();
 
   private:
-    StatusBarWidget(const StatusBarWidget&); // Copy Constructor Not Implemented
-    void operator=(const StatusBarWidget&); // Operator '=' Not Implemented
-};
 
-#endif /* _statusBarWidget_H_ */
+  public:
+    StatusBarWidget(const StatusBarWidget&) = delete; // Copy Constructor Not Implemented
+    StatusBarWidget(StatusBarWidget&&) = delete;      // Move Constructor Not Implemented
+    StatusBarWidget& operator=(const StatusBarWidget&) = delete; // Copy Assignment Not Implemented
+    StatusBarWidget& operator=(StatusBarWidget&&) = delete;      // Move Assignment Not Implemented
+};

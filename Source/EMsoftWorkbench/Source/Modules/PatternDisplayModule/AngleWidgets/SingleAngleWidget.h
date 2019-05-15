@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef singleanglewidget_h
-#define singleanglewidget_h
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -50,7 +49,7 @@ public:
     SIMPL_STATIC_NEW_MACRO(SingleAngleWidget)
 
     SingleAngleWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~SingleAngleWidget();
+    ~SingleAngleWidget() override;
 
     /**
      * @brief setupGui
@@ -61,34 +60,35 @@ public:
      * @brief getEulerAngles
      * @return
      */
-    virtual FloatArrayType::Pointer getEulerAngles();
+    virtual FloatArrayType::Pointer getEulerAngles() override;
 
     /**
      * @brief hasValidAngles
      * @return
      */
-    virtual bool hasValidAngles();
+    virtual bool hasValidAngles() override;
 
     /**
      * @brief readSession
      */
-    virtual void readSession(QJsonObject &obj);
+    virtual void readSession(QJsonObject &obj) override;
 
     /**
      * @brief writeSession
      */
-    virtual void writeSession(QJsonObject &obj);
+    virtual void writeSession(QJsonObject &obj) override;
 
     /**
      * @brief createModificationConnections
      * @param ui
      */
-    virtual void createModificationConnections(PatternDisplay_UI* ui);
+    virtual void createModificationConnections(PatternDisplay_UI* ui) override;
 
 private:
 
-    SingleAngleWidget(const SingleAngleWidget&);    // Copy Constructor Not Implemented
-    void operator=(const SingleAngleWidget&);  // Operator '=' Not Implemented
+public:
+  SingleAngleWidget(const SingleAngleWidget&) = delete; // Copy Constructor Not Implemented
+  SingleAngleWidget(SingleAngleWidget&&) = delete;      // Move Constructor Not Implemented
+  SingleAngleWidget& operator=(const SingleAngleWidget&) = delete; // Copy Assignment Not Implemented
+  SingleAngleWidget& operator=(SingleAngleWidget&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* singleanglewidget_h */

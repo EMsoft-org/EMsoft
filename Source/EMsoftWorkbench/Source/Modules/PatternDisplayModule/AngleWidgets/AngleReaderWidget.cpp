@@ -58,10 +58,7 @@ AngleReaderWidget::AngleReaderWidget(QWidget *parent, Qt::WindowFlags windowFlag
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AngleReaderWidget::~AngleReaderWidget()
-{
-
-}
+AngleReaderWidget::~AngleReaderWidget() = default;
 
 // -----------------------------------------------------------------------------
 //

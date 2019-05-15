@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _PatternListItemDelegate_h_
-#define _PatternListItemDelegate_h_
+#pragma once
 
 #include <QtCore/QModelIndex>
 
@@ -45,18 +44,19 @@ class PatternListItemDelegate : public QStyledItemDelegate
     Q_OBJECT
 
   public:
-    explicit PatternListItemDelegate(QObject* parent = 0);
+    explicit PatternListItemDelegate(QObject* parent = nullptr);
 
-    virtual ~PatternListItemDelegate();
+    ~PatternListItemDelegate() override;
 
   protected:
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const Q_DECL_OVERRIDE;
 
   private:
 
-    PatternListItemDelegate(const PatternListItemDelegate&); // Copy Constructor Not Implemented
-    void operator=(const PatternListItemDelegate&); // Operator '=' Not Implemented
+  public:
+    PatternListItemDelegate(const PatternListItemDelegate&) = delete; // Copy Constructor Not Implemented
+    PatternListItemDelegate(PatternListItemDelegate&&) = delete;      // Move Constructor Not Implemented
+    PatternListItemDelegate& operator=(const PatternListItemDelegate&) = delete; // Copy Assignment Not Implemented
+    PatternListItemDelegate& operator=(PatternListItemDelegate&&) = delete;      // Move Assignment Not Implemented
 
 };
-
-#endif // _PatternListItemDelegate_h_

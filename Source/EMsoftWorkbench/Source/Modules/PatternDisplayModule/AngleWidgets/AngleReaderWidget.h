@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef anglereaderwidget_h
-#define anglereaderwidget_h
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -51,7 +50,7 @@ public:
     SIMPL_STATIC_NEW_MACRO(AngleReaderWidget)
 
     AngleReaderWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~AngleReaderWidget();
+    ~AngleReaderWidget() override;
 
     SIMPL_INSTANCE_PROPERTY(QString, OpenDialogLastDirectory)
 
@@ -64,29 +63,29 @@ public:
      * @brief getEulerAngles
      * @return
      */
-    virtual FloatArrayType::Pointer getEulerAngles();
+    virtual FloatArrayType::Pointer getEulerAngles() override;
 
     /**
      * @brief hasValidAngles
      * @return
      */
-    virtual bool hasValidAngles();
+    virtual bool hasValidAngles() override;
 
     /**
      * @brief readSession
      */
-    virtual void readSession(QJsonObject &obj);
+    virtual void readSession(QJsonObject &obj) override;
 
     /**
      * @brief writeSession
      */
-    virtual void writeSession(QJsonObject &obj);
+    virtual void writeSession(QJsonObject &obj) override;
 
     /**
      * @brief createModificationConnections
      * @param ui
      */
-    virtual void createModificationConnections(PatternDisplay_UI* ui);
+    virtual void createModificationConnections(PatternDisplay_UI* ui) override;
 
   protected slots:
     /**
@@ -123,8 +122,9 @@ private:
     QString                                   m_LoadedFilePath = "";
     size_t                                    m_FileAngleCount = 0;
 
-    AngleReaderWidget(const AngleReaderWidget&);    // Copy Constructor Not Implemented
-    void operator=(const AngleReaderWidget&);  // Operator '=' Not Implemented
+  public:
+    AngleReaderWidget(const AngleReaderWidget&) = delete; // Copy Constructor Not Implemented
+    AngleReaderWidget(AngleReaderWidget&&) = delete;      // Move Constructor Not Implemented
+    AngleReaderWidget& operator=(const AngleReaderWidget&) = delete; // Copy Assignment Not Implemented
+    AngleReaderWidget& operator=(AngleReaderWidget&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* anglereaderwidget_h */

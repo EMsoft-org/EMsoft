@@ -100,7 +100,7 @@ void PatternFit_UI::setupGui()
 
     displayImage();
 
-    if (m_FlickerIsChecked == true)
+    if (m_FlickerIsChecked)
     {
       m_FlickerTimer->start(patternFitViewer->getFlickerInterval());
     }
@@ -293,7 +293,7 @@ void PatternFit_UI::createParametersChangedConnections()
 
   // Checkboxes
   connect(hipassFilter, &QCheckBox::stateChanged, [=] (int state) {
-    hipassFilterLowCutOff->setEnabled(state);
+    hipassFilterLowCutOff->setEnabled(state == Qt::Checked);
     parametersChanged();
   });
   connect(linearRampSubtraction, &QCheckBox::stateChanged, [=] { parametersChanged(); });
@@ -405,7 +405,7 @@ void PatternFit_UI::createWidgetConnections()
   connect(patternFitViewer, &PatternFitViewer::flickerBoxChecked, this, [=] (int state) {
     m_FlickerIsChecked = static_cast<bool>(state);
 
-    if (m_FlickerIsChecked == true)
+    if (m_FlickerIsChecked)
     {
       m_BeforeFlickerChoice = m_CurrentPatternChoice;
 
@@ -505,7 +505,7 @@ void PatternFit_UI::slot_patternChoiceChanged(int index)
 {
   PatternControlsWidget::PatternChoice choice = static_cast<PatternControlsWidget::PatternChoice>(index);
 
-  if (m_FlickerIsChecked == true)
+  if (m_FlickerIsChecked)
   {
     m_BeforeFlickerChoice = choice;
   }
@@ -524,7 +524,7 @@ void PatternFit_UI::on_mpSelectBtn_clicked()
   QString lastDir = emSoftApp->getOpenDialogLastDirectory();
   QString filePath = FileIOTools::GetOpenPathFromDialog("Load Master File", "HDF5 File (*.h5);;All Files (*.*)", lastDir);
 
-  if (filePath.isEmpty() == false)
+  if (!filePath.isEmpty())
   {
     setMasterFilePath(filePath);
   }
@@ -538,7 +538,7 @@ void PatternFit_UI::on_expPatternSelectBtn_clicked()
   QString lastDir = emSoftApp->getOpenDialogLastDirectory();
   QString filePath = FileIOTools::GetOpenPathFromDialog("Load Experimental Pattern File", "PNG File (*.png);;TIF File (*.tif);;JPEG File (*.jpeg);;All Files (*.*)", lastDir);
 
-  if (filePath.isEmpty() == false)
+  if (!filePath.isEmpty())
   {
     setExperimentalPatternFilePath(filePath);
   }
@@ -552,16 +552,14 @@ bool PatternFit_UI::validateData()
   clearModuleIssues();
 
   PatternFitController::SimulationData data = getSimulationData();
-  if (m_Controller->validateSimulationValues(data) == true)
+  if (m_Controller->validateSimulationValues(data))
   {
     startFitBtn->setEnabled(true);
     return true;
   }
-  else
-  {
-    startFitBtn->setDisabled(true);
-    return false;
-  }
+
+  startFitBtn->setDisabled(true);
+  return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -583,7 +581,7 @@ void PatternFit_UI::setExperimentalPatternFilePath(const QString &filePath)
 
   m_ReferencePattern.image = refPattern;
 
-  if (mpLabel->text().isEmpty() == false)
+  if (!mpLabel->text().isEmpty())
   {
     nonRefinableParamsGB->setEnabled(true);
     fitParamsGB->setEnabled(true);
@@ -607,7 +605,7 @@ void PatternFit_UI::setMasterFilePath(const QString &filePath)
   mpLabel->setText(filePath);
   m_Controller->setMasterFilePath(filePath);
 
-  if (expPatternLabel->text().isEmpty() == false)
+  if (!expPatternLabel->text().isEmpty())
   {
     nonRefinableParamsGB->setEnabled(true);
     fitParamsGB->setEnabled(true);
@@ -765,7 +763,7 @@ void PatternFit_UI::on_linearRampSubtraction_toggled(bool checked)
 void PatternFit_UI::displayImage()
 {
   GLImageViewer::GLImageData processedPattern;
-  if (m_CurrentPatternChoice == PatternControlsWidget::PatternChoice::Experimental && m_ReferencePattern.image.isNull() == false)
+  if (m_CurrentPatternChoice == PatternControlsWidget::PatternChoice::Experimental && !m_ReferencePattern.image.isNull())
   {
     processedPattern = m_ReferencePattern;
 
@@ -786,7 +784,7 @@ void PatternFit_UI::displayImage()
 
     if (hipassFilter->isChecked())
     {
-      if (m_HiPassDataInitialized == false)
+      if (!m_HiPassDataInitialized)
       {
         initializeHipassFilterValues();
         m_HiPassDataInitialized = true;
@@ -856,9 +854,9 @@ void PatternFit_UI::generateSimulatedPatternImage()
   m_SimulatedPatternDims.push_back(data.numOfPixelsX);
   m_SimulatedPatternDims.push_back(data.numOfPixelsY);
 
-  if (m_HiPassValuesChanged == true)
+  if (m_HiPassValuesChanged)
   {
-    if (m_HiPassDataInitialized == true)
+    if (m_HiPassDataInitialized)
     {
       destroyHipassFilterValues();
     }
@@ -867,7 +865,7 @@ void PatternFit_UI::generateSimulatedPatternImage()
     m_HiPassDataInitialized = true;
   }
 
-  if (m_FlickerIsChecked == false)
+  if (!m_FlickerIsChecked)
   {
     displayImage();
   }
@@ -898,12 +896,12 @@ void PatternFit_UI::readModuleSession(QJsonObject &obj)
   QJsonObject controlsObj = obj[EMsoftWorkbenchConstants::IOStrings::PatternControls].toObject();
   QJsonObject patternFitViewerObj = obj[EMsoftWorkbenchConstants::IOStrings::PatternFitViewer].toObject();
 
-  if (controlsObj.isEmpty() == false)
+  if (!controlsObj.isEmpty())
   {
     patternControlsWidget->readSession(controlsObj);
   }
 
-  if (patternFitViewerObj.isEmpty() == false)
+  if (!patternFitViewerObj.isEmpty())
   {
     patternFitViewer->readSession(patternFitViewerObj);
   }
@@ -926,13 +924,13 @@ void PatternFit_UI::readNonRefinableParameters(QJsonObject &obj)
 {
   QJsonObject nonRefParamObj = obj[EMsoftWorkbenchConstants::IOStrings::NonRefinableParameters].toObject();
 
-  if (nonRefParamObj.isEmpty() == false)
+  if (!nonRefParamObj.isEmpty())
   {
     scintillatorPixelSize->setText(QString::number(nonRefParamObj[EMsoftWorkbenchConstants::IOStrings::ScintillatorPixelSize].toDouble()));
     beamCurrent->setText(QString::number(nonRefParamObj[EMsoftWorkbenchConstants::IOStrings::BeamCurrent].toDouble()));
 
     QJsonObject numberOfPixelsObj = nonRefParamObj[EMsoftWorkbenchConstants::IOStrings::NumberOfPixels].toObject();
-    if (numberOfPixelsObj.isEmpty() == false)
+    if (!numberOfPixelsObj.isEmpty())
     {
       numOfPixelsX->setText(QString::number(numberOfPixelsObj[EMsoftWorkbenchConstants::IOStrings::X].toInt()));
       numOfPixelsY->setText(QString::number(numberOfPixelsObj[EMsoftWorkbenchConstants::IOStrings::Y].toInt()));
@@ -954,10 +952,10 @@ void PatternFit_UI::readRefinableDetectorParameters(QJsonObject &obj)
 {
   QJsonObject refDetectorParamObj = obj[EMsoftWorkbenchConstants::IOStrings::RefinableDetectorParameters].toObject();
 
-  if (refDetectorParamObj.isEmpty() == false)
+  if (!refDetectorParamObj.isEmpty())
   {
     QJsonObject scintillatorDistObj = refDetectorParamObj[EMsoftWorkbenchConstants::IOStrings::ScintillatorDistance].toObject();
-    if (scintillatorDistObj.isEmpty() == false)
+    if (!scintillatorDistObj.isEmpty())
     {
     scintillatorDistCB->setChecked(scintillatorDistObj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
     scintillatorDist->setValue(scintillatorDistObj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -966,7 +964,7 @@ void PatternFit_UI::readRefinableDetectorParameters(QJsonObject &obj)
     }
 
     QJsonObject omegaObj = refDetectorParamObj[EMsoftWorkbenchConstants::IOStrings::SampleOmegaAngle].toObject();
-    if (omegaObj.isEmpty() == false)
+    if (!omegaObj.isEmpty())
     {
     omegaCB->setChecked(omegaObj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
     omega->setValue(omegaObj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -975,7 +973,7 @@ void PatternFit_UI::readRefinableDetectorParameters(QJsonObject &obj)
     }
 
     QJsonObject centerXObj = refDetectorParamObj[EMsoftWorkbenchConstants::IOStrings::PatternCenterX].toObject();
-    if (centerXObj.isEmpty() == false)
+    if (!centerXObj.isEmpty())
     {
     centerXCB->setChecked(centerXObj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
     patternCenterX->setValue(centerXObj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -984,7 +982,7 @@ void PatternFit_UI::readRefinableDetectorParameters(QJsonObject &obj)
     }
 
     QJsonObject centerYObj = refDetectorParamObj[EMsoftWorkbenchConstants::IOStrings::PatternCenterY].toObject();
-    if (centerYObj.isEmpty() == false)
+    if (!centerYObj.isEmpty())
     {
     centerYCB->setChecked(centerYObj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
     patternCenterY->setValue(centerYObj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -993,7 +991,7 @@ void PatternFit_UI::readRefinableDetectorParameters(QJsonObject &obj)
     }
 
     QJsonObject detectorTiltAngleObj = refDetectorParamObj[EMsoftWorkbenchConstants::IOStrings::DetectorTiltAngle].toObject();
-    if (detectorTiltAngleObj.isEmpty() == false)
+    if (!detectorTiltAngleObj.isEmpty())
     {
     detectorTiltAngleCB->setChecked(detectorTiltAngleObj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
     detectorTiltAngle->setValue(detectorTiltAngleObj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -1010,10 +1008,10 @@ void PatternFit_UI::readRefinableSampleParameters(QJsonObject &obj)
 {
   QJsonObject refSampleParamObj = obj[EMsoftWorkbenchConstants::IOStrings::RefinableSampleParameters].toObject();
 
-  if (refSampleParamObj.isEmpty() == false)
+  if (!refSampleParamObj.isEmpty())
   {
     QJsonObject intensityGammaObj = refSampleParamObj[EMsoftWorkbenchConstants::IOStrings::IntensityGamma].toObject();
-    if (intensityGammaObj.isEmpty() == false)
+    if (!intensityGammaObj.isEmpty())
     {
       intensityGammaCB->setChecked(intensityGammaObj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
       intensityGamma->setValue(intensityGammaObj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -1022,7 +1020,7 @@ void PatternFit_UI::readRefinableSampleParameters(QJsonObject &obj)
     }
 
     QJsonObject phi1Obj = refSampleParamObj[EMsoftWorkbenchConstants::IOStrings::Phi1].toObject();
-    if (phi1Obj.isEmpty() == false)
+    if (!phi1Obj.isEmpty())
     {
       phi1CB->setChecked(phi1Obj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
       phi1->setValue(phi1Obj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -1031,7 +1029,7 @@ void PatternFit_UI::readRefinableSampleParameters(QJsonObject &obj)
     }
 
     QJsonObject phiObj = refSampleParamObj[EMsoftWorkbenchConstants::IOStrings::Phi].toObject();
-    if (phiObj.isEmpty() == false)
+    if (!phiObj.isEmpty())
     {
       phiCB->setChecked(phiObj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
       phi->setValue(phiObj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -1040,7 +1038,7 @@ void PatternFit_UI::readRefinableSampleParameters(QJsonObject &obj)
     }
 
     QJsonObject phi2Obj = refSampleParamObj[EMsoftWorkbenchConstants::IOStrings::Phi2].toObject();
-    if (phi2Obj.isEmpty() == false)
+    if (!phi2Obj.isEmpty())
     {
       phi2CB->setChecked(phi2Obj[EMsoftWorkbenchConstants::IOStrings::IsChecked].toBool());
       phi2->setValue(phi2Obj[EMsoftWorkbenchConstants::IOStrings::Value].toDouble());
@@ -1057,7 +1055,7 @@ void PatternFit_UI::readFitParameters(QJsonObject &obj)
 {
   QJsonObject fitParamObj = obj[EMsoftWorkbenchConstants::IOStrings::FitParameters].toObject();
 
-  if (fitParamObj.isEmpty() == false)
+  if (!fitParamObj.isEmpty())
   {
     fitCriterionCB->setCurrentText(fitParamObj[EMsoftWorkbenchConstants::IOStrings::FitCriterion].toString());
     fitModeCB->setCurrentText(fitParamObj[EMsoftWorkbenchConstants::IOStrings::FitMode].toString());

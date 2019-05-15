@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _crystalstructurecreation_ui_h_
-#define _crystalstructurecreation_ui_h_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -57,9 +56,9 @@ class CrystalStructureCreation_UI : public IModuleUI, public Ui::CrystalStructur
      * @brief CrystalStructureCreation_UI
      * @param parent
      */
-    CrystalStructureCreation_UI(QWidget* parent = 0);
+    CrystalStructureCreation_UI(QWidget* parent = nullptr);
 
-    ~CrystalStructureCreation_UI();
+    ~CrystalStructureCreation_UI() override;
 
     SIMPL_INSTANCE_PROPERTY(CrystalStructureCreationController*, Controller)
 
@@ -67,18 +66,18 @@ class CrystalStructureCreation_UI : public IModuleUI, public Ui::CrystalStructur
      * @brief readModuleSession
      * @param obj
      */
-    void readModuleSession(QJsonObject &obj);
+    void readModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief writeModuleSession
      * @param obj
      */
-    void writeModuleSession(QJsonObject &obj);
+    void writeModuleSession(QJsonObject &obj) override;
 
     /**
      * @brief validateData
      */
-    bool validateData();
+    bool validateData() override;
 
   protected:
     /**
@@ -90,7 +89,7 @@ class CrystalStructureCreation_UI : public IModuleUI, public Ui::CrystalStructur
      * @brief changeEvent
      * @param event
      */
-    void changeEvent(QEvent* event);
+    void changeEvent(QEvent* event) override;
 
   protected slots:
     void on_csCB_currentIndexChanged(int index);
@@ -145,8 +144,9 @@ class CrystalStructureCreation_UI : public IModuleUI, public Ui::CrystalStructur
      */
     CrystalStructureCreationController::CrystalStructureCreationData getCreationData();
 
-    CrystalStructureCreation_UI(const CrystalStructureCreation_UI&);    // Copy Constructor Not Implemented
-    void operator=(const CrystalStructureCreation_UI&);  // Operator '=' Not Implemented
+  public:
+    CrystalStructureCreation_UI(const CrystalStructureCreation_UI&) = delete; // Copy Constructor Not Implemented
+    CrystalStructureCreation_UI(CrystalStructureCreation_UI&&) = delete;      // Move Constructor Not Implemented
+    CrystalStructureCreation_UI& operator=(const CrystalStructureCreation_UI&) = delete; // Copy Assignment Not Implemented
+    CrystalStructureCreation_UI& operator=(CrystalStructureCreation_UI&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

@@ -51,10 +51,7 @@ AbstractAngleWidget::AbstractAngleWidget(QWidget *parent, Qt::WindowFlags window
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AbstractAngleWidget::~AbstractAngleWidget()
-{
-
-}
+AbstractAngleWidget::~AbstractAngleWidget() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -71,7 +68,3 @@ float AbstractAngleWidget::ConvertToDegrees(float value)
 {
   return value * AbstractAngleWidget::k_180OverPi;   // Convert to degrees
 }
-
-
-
-

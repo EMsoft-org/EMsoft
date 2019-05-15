@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patterncontrolswidget_h_
-#define _patterncontrolswidget_h_
+#pragma once
 
 #include "ui_PatternControlsWidget.h"
 
@@ -43,8 +42,8 @@ class PatternControlsWidget : public QWidget, public Ui::PatternControlsWidget
     Q_OBJECT
 
   public:
-    PatternControlsWidget(QWidget* parent = 0, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~PatternControlsWidget();
+    PatternControlsWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+    ~PatternControlsWidget() override;
 
     using EnumType = unsigned int;
 
@@ -119,8 +118,9 @@ class PatternControlsWidget : public QWidget, public Ui::PatternControlsWidget
 
     void createWidgetConnections();
 
-    PatternControlsWidget(const PatternControlsWidget&);    // Copy Constructor Not Implemented
-    void operator=(const PatternControlsWidget&);  // Operator '=' Not Implemented
+  public:
+    PatternControlsWidget(const PatternControlsWidget&) = delete; // Copy Constructor Not Implemented
+    PatternControlsWidget(PatternControlsWidget&&) = delete;      // Move Constructor Not Implemented
+    PatternControlsWidget& operator=(const PatternControlsWidget&) = delete; // Copy Assignment Not Implemented
+    PatternControlsWidget& operator=(PatternControlsWidget&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _patterncontrolswidget_h_ */

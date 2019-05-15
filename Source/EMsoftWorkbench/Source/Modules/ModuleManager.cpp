@@ -77,10 +77,7 @@ ModuleManager::ModuleManager()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ModuleManager::~ModuleManager()
-{
-  //  qDebug() << "~ModuleManager()" << this;
-}
+ModuleManager::~ModuleManager() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -98,7 +95,7 @@ ModuleManager* ModuleManager::Instance()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ModuleManager::addModuleFactory(const QString &moduleName, IModuleFactory::Pointer moduleFactory)
+void ModuleManager::addModuleFactory(const QString &moduleName, const IModuleFactory::Pointer &moduleFactory)
 {
   m_Factories.insert(moduleName, moduleFactory);
 }
@@ -140,7 +137,7 @@ IModuleFactory::Pointer ModuleManager::getFactoryForModule(const QString& module
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* ModuleManager::getModuleFromName(const QString &moduleName, QJsonObject initObj, QWidget* parent)
+IModuleUI* ModuleManager::getModuleFromName(const QString &moduleName, const QJsonObject &initObj, QWidget* parent)
 {
   IModuleFactory::Pointer moduleFactory = getFactoryForModule(moduleName);
   if (moduleFactory != IModuleFactory::NullPointer())

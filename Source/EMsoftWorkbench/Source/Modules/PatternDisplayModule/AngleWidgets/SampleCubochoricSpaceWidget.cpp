@@ -44,8 +44,8 @@
 #include "OrientationLib/OrientationLibConstants.h"
 #include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
 
-typedef std::list<DOrientArrayType> OrientationListArrayType;
-typedef OrientationTransforms<DOrientArrayType, double> OrientationTransformsType;
+using OrientationListArrayType = std::list<DOrientArrayType>;
+using OrientationTransformsType = OrientationTransforms<DOrientArrayType, double>;
 
 // -----------------------------------------------------------------------------
 //
@@ -61,10 +61,7 @@ SampleCubochoricSpaceWidget::SampleCubochoricSpaceWidget(QWidget *parent, Qt::Wi
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SampleCubochoricSpaceWidget::~SampleCubochoricSpaceWidget()
-{
-
-}
+SampleCubochoricSpaceWidget::~SampleCubochoricSpaceWidget() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -247,7 +244,7 @@ void SampleCubochoricSpaceWidget::on_samplingModeCB_currentIndexChanged(int inde
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::RodriguesComposition(DOrientArrayType sigma, DOrientArrayType &rod)
+void SampleCubochoricSpaceWidget::RodriguesComposition(const DOrientArrayType &sigma, DOrientArrayType &rod)
 {
     DOrientArrayType rho(3), rhomis(3);
     rho[0] = -rod[0] * rod[3];
@@ -303,13 +300,22 @@ bool SampleCubochoricSpaceWidget::IsinsideFZ(double* rod, int FZtype, int FZorde
       insideFZ = insideCyclicFZ(rod,FZorder);      // infinity is checked inside this function
       break;
     case EMsoftWorkbenchConstants::Constants::DihedralType:
-      if (rod[3] != std::numeric_limits<double>::infinity()) insideFZ = insideDihedralFZ(rod,FZorder);
+      if (rod[3] != std::numeric_limits<double>::infinity())
+      {
+        insideFZ = insideDihedralFZ(rod,FZorder);
+      }
       break;
     case EMsoftWorkbenchConstants::Constants::TetrahedralType:
-      if (rod[3] != std::numeric_limits<double>::infinity()) insideFZ = insideCubicFZ(rod,EMsoftWorkbenchConstants::Constants::TetrahedralType);
+      if (rod[3] != std::numeric_limits<double>::infinity())
+      {
+        insideFZ = insideCubicFZ(rod,EMsoftWorkbenchConstants::Constants::TetrahedralType);
+      }
       break;
     case EMsoftWorkbenchConstants::Constants::OctahedralType:
-      if (rod[3] != std::numeric_limits<double>::infinity()) insideFZ = insideCubicFZ(rod,EMsoftWorkbenchConstants::Constants::OctahedralType);
+      if (rod[3] != std::numeric_limits<double>::infinity())
+      {
+        insideFZ = insideCubicFZ(rod,EMsoftWorkbenchConstants::Constants::OctahedralType);
+      }
       break;
     default:
       insideFZ = false;
@@ -322,7 +328,7 @@ bool SampleCubochoricSpaceWidget::IsinsideFZ(double* rod, int FZtype, int FZorde
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::insideCyclicFZ(double* rod, int order)
+bool SampleCubochoricSpaceWidget::insideCyclicFZ(const double* rod, int order)
 {
 
   bool insideFZ = false;
@@ -342,7 +348,7 @@ bool SampleCubochoricSpaceWidget::insideCyclicFZ(double* rod, int order)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::insideDihedralFZ(double* rod, int order)
+bool SampleCubochoricSpaceWidget::insideDihedralFZ(const double* rod, int order)
 {
 
   bool res = false, c1 = false, c2 = false;
@@ -390,7 +396,7 @@ bool SampleCubochoricSpaceWidget::insideDihedralFZ(double* rod, int order)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::insideCubicFZ(double* rod, int ot)
+bool SampleCubochoricSpaceWidget::insideCubicFZ(const double* rod, int ot)
 {
   bool res = false, c1 = false, c2 = false;
   std::vector<double> r(3);
@@ -402,7 +408,7 @@ bool SampleCubochoricSpaceWidget::insideCubicFZ(double* rod, int ot)
   // primary cube planes (only needed for octahedral case)
   if (ot == EMsoftWorkbenchConstants::Constants::OctahedralType) {
 
-    typedef OrientationTransforms<std::vector<double>, double> OrientationTransformsType;
+    using OrientationTransformsType = OrientationTransforms<std::vector<double>, double>;
 
     c1 = OrientationTransformsType::OMHelperType::maxval(OrientationTransformsType::OMHelperType::absValue(r)) <= LPs::BP[3];
 
@@ -682,7 +688,7 @@ FloatArrayType::Pointer SampleCubochoricSpaceWidget::getEulerAngles()
 
   // copy the Rodrigues vectors as Euler angles into the eulerAngles array; convert doubles to floats along the way
   int j = -1;
-  for( DOrientArrayType rod : FZlist)
+  for( const DOrientArrayType &rod : FZlist)
   {
     j += 1;
     DOrientArrayType eu(3,0.0f);

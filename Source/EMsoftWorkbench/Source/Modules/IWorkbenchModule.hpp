@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _iworkbenchmodule_H_
-#define _iworkbenchmodule_H_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QJsonObject>
@@ -49,9 +48,8 @@ class IWorkbenchModule : public QObject
 
   public:
     SIMPL_SHARED_POINTERS(IWorkbenchModule)
-    SIMPL_TYPE_MACRO(IWorkbenchModule)
 
-    ~IWorkbenchModule() { }
+    ~IWorkbenchModule() override = default;
 
     virtual IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) = 0;
 
@@ -62,10 +60,9 @@ class IWorkbenchModule : public QObject
 
     }
 
-  private:
-
-    IWorkbenchModule(const IWorkbenchModule&);    // Copy Constructor Not Implemented
-    void operator=(const IWorkbenchModule&);  // Operator '=' Not Implemented
+  public:
+    IWorkbenchModule(const IWorkbenchModule&) = delete; // Copy Constructor Not Implemented
+    IWorkbenchModule(IWorkbenchModule&&) = delete;      // Move Constructor Not Implemented
+    IWorkbenchModule& operator=(const IWorkbenchModule&) = delete; // Copy Assignment Not Implemented
+    IWorkbenchModule& operator=(IWorkbenchModule&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

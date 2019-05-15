@@ -48,7 +48,7 @@ class EMsoftMenuItems : public QObject
     Q_OBJECT
 
   public:
-    virtual ~EMsoftMenuItems();
+    virtual ~EMsoftMenuItems() override;
 
     static EMsoftMenuItems* Instance();
 

@@ -33,14 +33,12 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _ModuleFactory_H_
-#define _ModuleFactory_H_
+#pragma once
 
 #include "SIMPLib/SIMPLib.h"
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 #include "Modules/IModuleFactory.hpp"
 
 template <class Module>
@@ -56,22 +54,21 @@ class ModuleFactory : public IModuleFactory
      * a parent  OR take responsibility for deleting this object.
      * @return
      */
-    IWorkbenchModule::Pointer createModule()
+    IWorkbenchModule::Pointer createModule() override
     {
       typename Module::Pointer w = Module::New();
       return w;
     }
 
   protected:
-    ModuleFactory()
-    {
-
-    }
+    ModuleFactory() = default;
 
   private:
 
-    ModuleFactory(const ModuleFactory&); // Copy Constructor Not Implemented
-    void operator=(const ModuleFactory&); // Operator '=' Not Implemented
+  public:
+    ModuleFactory(const ModuleFactory&) = delete; // Copy Constructor Not Implemented
+    ModuleFactory(ModuleFactory&&) = delete;      // Move Constructor Not Implemented
+    ModuleFactory& operator=(const ModuleFactory&) = delete; // Copy Assignment Not Implemented
+    ModuleFactory& operator=(ModuleFactory&&) = delete;      // Move Assignment Not Implemented
 };
-#endif /* ModuleFactory_H_ */
 

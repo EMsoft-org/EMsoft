@@ -57,10 +57,7 @@ PatternFitViewer::PatternFitViewer(QWidget* parent, Qt::WindowFlags windowFlags)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternFitViewer::~PatternFitViewer()
-{
-
-}
+PatternFitViewer::~PatternFitViewer() = default;
 
 // -----------------------------------------------------------------------------
 //

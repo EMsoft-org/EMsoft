@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef samplingratewidget_h
-#define samplingratewidget_h
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -51,7 +50,7 @@ public:
     SIMPL_STATIC_NEW_MACRO(SamplingRateWidget)
 
     SamplingRateWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~SamplingRateWidget();
+    ~SamplingRateWidget() override;
 
     /**
      * @brief setupGui
@@ -62,29 +61,29 @@ public:
      * @brief getEulerAngles
      * @return
      */
-    virtual FloatArrayType::Pointer getEulerAngles();
+    virtual FloatArrayType::Pointer getEulerAngles() override;
 
     /**
      * @brief hasValidAngles
      * @return
      */
-    virtual bool hasValidAngles();
+    virtual bool hasValidAngles() override;
 
     /**
      * @brief readSession
      */
-    virtual void readSession(QJsonObject &obj);
+    virtual void readSession(QJsonObject &obj) override;
 
     /**
      * @brief writeSession
      */
-    virtual void writeSession(QJsonObject &obj);
+    virtual void writeSession(QJsonObject &obj) override;
 
     /**
      * @brief createModificationConnections
      * @param ui
      */
-    virtual void createModificationConnections(PatternDisplay_UI* ui);
+    virtual void createModificationConnections(PatternDisplay_UI* ui) override;
 
   protected slots:
     void on_phi1CB_stateChanged(int state);
@@ -98,8 +97,9 @@ private:
 
     void valuesChanged();
 
-    SamplingRateWidget(const SamplingRateWidget&);    // Copy Constructor Not Implemented
-    void operator=(const SamplingRateWidget&);  // Operator '=' Not Implemented
+  public:
+    SamplingRateWidget(const SamplingRateWidget&) = delete; // Copy Constructor Not Implemented
+    SamplingRateWidget(SamplingRateWidget&&) = delete;      // Move Constructor Not Implemented
+    SamplingRateWidget& operator=(const SamplingRateWidget&) = delete; // Copy Assignment Not Implemented
+    SamplingRateWidget& operator=(SamplingRateWidget&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* samplingratewidget_h */

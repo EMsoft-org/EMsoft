@@ -85,7 +85,7 @@ AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols, QStringList rHeaders, QStringList cHeaders) :
+AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols, const QStringList &rHeaders, const QStringList &cHeaders) :
   m_DynamicRows(false),
   m_DynamicCols(false),
   m_MinRows(0),
@@ -106,7 +106,7 @@ AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols, QStringLi
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::AsymmetricUnitTableData(std::vector<std::vector<double>> data, QStringList rHeaders, QStringList cHeaders) :
+AsymmetricUnitTableData::AsymmetricUnitTableData(const std::vector<std::vector<double>> &data, const QStringList &rHeaders, const QStringList &cHeaders) :
   m_DynamicRows(false),
   m_DynamicCols(false),
   m_MinRows(0),
@@ -125,23 +125,14 @@ AsymmetricUnitTableData::AsymmetricUnitTableData(std::vector<std::vector<double>
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::~AsymmetricUnitTableData()
-{
-}
+AsymmetricUnitTableData::~AsymmetricUnitTableData() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 bool AsymmetricUnitTableData::isEmpty()
 {
-  if(m_TableData.size() > 0 || m_RowHeaders.size() > 0 || m_ColHeaders.size() > 0)
-  {
-    return false;
-  }
-  else
-  {
-    return true;
-  }
+  return (!m_TableData.empty() || !m_RowHeaders.empty() || !m_ColHeaders.empty());
 }
 
 // -----------------------------------------------------------------------------
@@ -152,7 +143,7 @@ void AsymmetricUnitTableData::checkAndAdjustDimensions()
   QSize dataSize(m_TableData.size(), 0);
   QSize headerSize(m_RowHeaders.size(), m_ColHeaders.size());
 
-  if(m_TableData.size() > 0)
+  if(!m_TableData.empty())
   {
     dataSize.setHeight(m_TableData[0].size());
   }
@@ -161,30 +152,28 @@ void AsymmetricUnitTableData::checkAndAdjustDimensions()
   {
     return;
   }
-  else
-  {
-    /* The header dimensions do not equal the data dimensions.
+
+  /* The header dimensions do not equal the data dimensions.
        The data dimensions will be used and will overwrite the current header dimensions.
        This may result in data loss.
     */
-    int nRows = dataSize.width();
-    int nCols = dataSize.height();
+  int nRows = dataSize.width();
+  int nCols = dataSize.height();
 
-    // If row header dimension is greater than default row dimension, remove the extra headers
-    if(m_RowHeaders.size() > nRows)
+  // If row header dimension is greater than default row dimension, remove the extra headers
+  if(m_RowHeaders.size() > nRows)
+  {
+    while(m_RowHeaders.size() > nRows)
     {
-      while(m_RowHeaders.size() > nRows)
-      {
-        m_RowHeaders.pop_back();
-      }
+      m_RowHeaders.pop_back();
     }
-    // If column header dimension is greater than default column dimension, remove the extra headers
-    if(m_ColHeaders.size() > nCols)
+  }
+  // If column header dimension is greater than default column dimension, remove the extra headers
+  if(m_ColHeaders.size() > nCols)
+  {
+    while(m_ColHeaders.size() > nCols)
     {
-      while(m_ColHeaders.size() > nCols)
-      {
-        m_ColHeaders.pop_back();
-      }
+      m_ColHeaders.pop_back();
     }
   }
 }
@@ -197,11 +186,11 @@ QString AsymmetricUnitTableData::serializeData(char delimiter) const
   QString str;
   QTextStream ss(&str);
 
-  for(int row = 0; row < m_TableData.size(); row++)
+  for(const auto &rowIter : m_TableData)
   {
-    for(int col = 0; col < m_TableData[row].size(); col++)
+    for(double value : rowIter)
     {
-      ss << m_TableData[row][col] << delimiter;
+      ss << value << delimiter;
     }
   }
   str.chop(1); // Get rid of the last, unnecessary delimiter
@@ -212,7 +201,7 @@ QString AsymmetricUnitTableData::serializeData(char delimiter) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<std::vector<double>> AsymmetricUnitTableData::DeserializeData(QString dataStr, int nRows, int nCols, char delimiter)
+std::vector<std::vector<double>> AsymmetricUnitTableData::DeserializeData(const QString &dataStr, int nRows, int nCols, char delimiter)
 {
   std::vector<std::vector<double>> data(nRows, std::vector<double>(nCols));
   int row = 0, col = 0;
@@ -283,7 +272,7 @@ QString AsymmetricUnitTableData::serializeColumnHeaders(char delimiter) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QStringList AsymmetricUnitTableData::DeserializeHeaders(QString headersStr, char delimiter)
+QStringList AsymmetricUnitTableData::DeserializeHeaders(const QString &headersStr, char delimiter)
 {
   QStringList headers;
 
@@ -384,7 +373,7 @@ void AsymmetricUnitTableData::writeJson(QJsonObject& json) const
 // -----------------------------------------------------------------------------
 bool AsymmetricUnitTableData::readJson(QJsonObject& json)
 {
-  if(json.contains("Dynamic Table Data") == true)
+  if(json.contains("Dynamic Table Data"))
   {
     QJsonObject obj = json["Dynamic Table Data"].toObject();
     m_TableData = readData(obj);
@@ -487,7 +476,7 @@ std::vector<std::vector<double>> AsymmetricUnitTableData::getTableData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableData::setTableData(std::vector<std::vector<double>> data)
+void AsymmetricUnitTableData::setTableData(const std::vector<std::vector<double>> &data)
 {
   m_TableData = data;
 
@@ -508,14 +497,12 @@ int AsymmetricUnitTableData::getNumRows() const
 // -----------------------------------------------------------------------------
 int AsymmetricUnitTableData::getNumCols() const
 {
-  if(m_TableData.size() > 0)
+  if(!m_TableData.empty())
   {
     return m_TableData[0].size();
   }
-  else
-  {
-    return 0;
-  }
+
+  return 0;
 }
 
 // -----------------------------------------------------------------------------

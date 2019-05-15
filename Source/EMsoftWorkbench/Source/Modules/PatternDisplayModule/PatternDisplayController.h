@@ -33,10 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _patterndisplaycontroller_h_
-#define _patterndisplaycontroller_h_
-
-
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QPair>
@@ -68,7 +65,7 @@ class PatternDisplayController : public QObject
 
   public:
     PatternDisplayController(QObject *parent = nullptr);
-    ~PatternDisplayController();
+    ~PatternDisplayController() override;
 
     SIMPL_INSTANCE_PROPERTY(SimulatedPatternDisplayWidget*, PatternDisplayWidget)
     SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
@@ -107,11 +104,11 @@ class PatternDisplayController : public QObject
      * into the EMsoftController
      * @param masterFilePath
      */
-    void setMasterFilePath(QString masterFilePath);
+    void setMasterFilePath(const QString &masterFilePath);
 
-    typedef QPair<QVariant, QVariant> VariantPair;
-    typedef QPair<float, float> FloatPair;
-    typedef QPair<int, int> IntPair;
+    using VariantPair = QPair<QVariant, QVariant>;
+    using FloatPair = QPair<float, float>;
+    using IntPair = QPair<int, int>;
 
   public slots:
     /**
@@ -119,7 +116,7 @@ class PatternDisplayController : public QObject
      * @param patternData
      * @param detectorData
      */
-    void generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData);
+    void generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, const DetectorData &detectorData);
 
     /**
      * @brief addPriorityIndex
@@ -290,12 +287,13 @@ class PatternDisplayController : public QObject
      * @param zValue
      * @return
      */
-    bool generatePatternImage(GLImageViewer::GLImageData &imageData, FloatArrayType::Pointer pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue);
+    bool generatePatternImage(GLImageViewer::GLImageData &imageData, const FloatArrayType::Pointer &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue);
 
-    PatternDisplayController(const PatternDisplayController&);    // Copy Constructor Not Implemented
-    void operator=(const PatternDisplayController&);  // Operator '=' Not Implemented
+  public:
+    PatternDisplayController(const PatternDisplayController&) = delete; // Copy Constructor Not Implemented
+    PatternDisplayController(PatternDisplayController&&) = delete;      // Move Constructor Not Implemented
+    PatternDisplayController& operator=(const PatternDisplayController&) = delete; // Copy Assignment Not Implemented
+    PatternDisplayController& operator=(PatternDisplayController&&) = delete;      // Move Assignment Not Implemented
 };
 
 Q_DECLARE_METATYPE(PatternDisplayController::DetectorData)
-
-#endif /* _patterndisplaycontroller_h_ */

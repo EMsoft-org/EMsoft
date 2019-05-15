@@ -33,12 +33,11 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _MasterPatternSimulationModule_h_
-#define _MasterPatternSimulationModule_h_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 
 class MasterPatternSimulationModule : public IWorkbenchModule
 {
@@ -49,17 +48,18 @@ class MasterPatternSimulationModule : public IWorkbenchModule
     SIMPL_TYPE_MACRO(MasterPatternSimulationModule)
     SIMPL_STATIC_NEW_MACRO(MasterPatternSimulationModule)
 
-    ~MasterPatternSimulationModule();
+    ~MasterPatternSimulationModule() override;
 
-    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr);
+    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
 
   protected:
-    MasterPatternSimulationModule(QWidget* parent = 0);
+    MasterPatternSimulationModule(QWidget* parent = nullptr);
 
   private:
 
-    MasterPatternSimulationModule(const MasterPatternSimulationModule&);    // Copy Constructor Not Implemented
-    void operator=(const MasterPatternSimulationModule&);  // Operator '=' Not Implemented
+  public:
+    MasterPatternSimulationModule(const MasterPatternSimulationModule&) = delete; // Copy Constructor Not Implemented
+    MasterPatternSimulationModule(MasterPatternSimulationModule&&) = delete;      // Move Constructor Not Implemented
+    MasterPatternSimulationModule& operator=(const MasterPatternSimulationModule&) = delete; // Copy Assignment Not Implemented
+    MasterPatternSimulationModule& operator=(MasterPatternSimulationModule&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif

@@ -261,7 +261,7 @@ void PatternDisplay_UI::setGenerateButtonAvailability(bool value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(FloatArrayType::Pointer ekeVs)
+void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(const FloatArrayType::Pointer &ekeVs)
 {
   energyMinCB->clear();
   energyMaxCB->clear();
@@ -324,7 +324,7 @@ void PatternDisplay_UI::on_mpSelectBtn_clicked()
   QString lastDir = emSoftApp->getOpenDialogLastDirectory();
   QString filePath = FileIOTools::GetOpenPathFromDialog("Load Master File", "HDF5 File (*.h5);;All Files (*.*)", lastDir);
 
-  if (filePath.isEmpty() == false)
+  if (!filePath.isEmpty())
   {
     mpLabel->setText(filePath);
 
@@ -357,10 +357,10 @@ void PatternDisplay_UI::on_angleTypeCB_currentIndexChanged(int index)
   PatternDisplay_UI::AngleTypeMode mode = static_cast<PatternDisplay_UI::AngleTypeMode>(index);
 
   QLayoutItem* item = angleWidgetLayout->takeAt(0);
-  if (item)
+  if (item != nullptr)
   {
     QWidget* w = item->widget();
-    if (w)
+    if (w != nullptr)
     {
       w->hide();
       w->setParent(nullptr);
@@ -407,16 +407,14 @@ bool PatternDisplay_UI::validateData()
   clearModuleIssues();
 
   PatternDisplayController::DetectorData data = getDetectorData();
-  if (m_Controller->validateDetectorValues(data) == true)
+  if (m_Controller->validateDetectorValues(data))
   {
     generateBtn->setEnabled(true);
     return true;
   }
-  else
-  {
-    generateBtn->setDisabled(true);
-    return false;
-  }
+
+  generateBtn->setDisabled(true);
+  return false;
 }
 
 // -----------------------------------------------------------------------------

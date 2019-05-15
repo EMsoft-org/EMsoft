@@ -53,7 +53,7 @@ class XtalFileReader : public QObject
 
   public:
     XtalFileReader();
-    ~XtalFileReader();
+    ~XtalFileReader() override;
 
     /**
      * @brief openFile

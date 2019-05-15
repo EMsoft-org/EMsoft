@@ -32,8 +32,8 @@
 *    United States Prime Contract Navy N00173-07-C-2068
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#ifndef _AsymmetricUnitTableData_h_
-#define _AsymmetricUnitTableData_h_
+
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QPointer>
@@ -55,10 +55,10 @@ class AsymmetricUnitTableData : public QObject
   public:
     AsymmetricUnitTableData();
     AsymmetricUnitTableData(int nRows, int nCols);
-    AsymmetricUnitTableData(int nRows, int nCols, QStringList rHeaders, QStringList cHeaders);
-    AsymmetricUnitTableData(std::vector<std::vector<double> > data, QStringList rHeaders = QStringList(), QStringList cHeaders = QStringList());
+    AsymmetricUnitTableData(int nRows, int nCols, const QStringList &rHeaders, const QStringList &cHeaders);
+    AsymmetricUnitTableData(const std::vector<std::vector<double> > &data, const QStringList &rHeaders = QStringList(), const QStringList &cHeaders = QStringList());
 
-    virtual ~AsymmetricUnitTableData();
+    ~AsymmetricUnitTableData() override;
 
     SIMPL_INSTANCE_PROPERTY(QStringList, ColHeaders)
     SIMPL_INSTANCE_PROPERTY(QStringList, RowHeaders)
@@ -72,7 +72,7 @@ class AsymmetricUnitTableData : public QObject
     /**
     * @brief This deserializes a string of data and returns the original 2D array.
     */
-    static std::vector<std::vector<double> > DeserializeData(QString dataStr, int nRows, int nCols, char delimiter);
+    static std::vector<std::vector<double> > DeserializeData(const QString &dataStr, int nRows, int nCols, char delimiter);
 
     /**
     * @brief This does the reverse of the flattenData function.  It expands the data back into a 2D array.
@@ -82,7 +82,7 @@ class AsymmetricUnitTableData : public QObject
     /**
     * @brief This deserializes a string of headers and returns the original QStringList.
     */
-    static QStringList DeserializeHeaders(QString headersStr, char delimiter);
+    static QStringList DeserializeHeaders(const QString &headersStr, char delimiter);
 
     /**
     * @brief This returns a serialized string of the data, iterating through columns first.
@@ -122,7 +122,7 @@ class AsymmetricUnitTableData : public QObject
     * @brief Table data getter and setter
     */
     std::vector<std::vector<double> > getTableData();
-    void setTableData(const std::vector<std::vector<double> > data);
+    void setTableData(const std::vector<std::vector<double> > &data);
 
     /**
     * @brief Calculates and returns the number of rows
@@ -169,5 +169,3 @@ class AsymmetricUnitTableData : public QObject
 };
 
 Q_DECLARE_METATYPE(AsymmetricUnitTableData)
-
-#endif /* _DynamicTableWidget_H_ */

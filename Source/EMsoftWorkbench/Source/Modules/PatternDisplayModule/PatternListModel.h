@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _PatternListModel_h_
-#define _PatternListModel_h_
+#pragma once
 
 #include <QtCore/QAbstractListModel>
 #include <QtCore/QModelIndex>
@@ -57,7 +56,7 @@ class PatternListModel : public QAbstractListModel
   public:
     SIMPL_TYPE_MACRO(PatternListModel)
 
-    ~PatternListModel();
+    ~PatternListModel() override;
 
     static PatternListModel* Instance();
 
@@ -78,7 +77,7 @@ class PatternListModel : public QAbstractListModel
     bool insertRows(int position, int rows, const QModelIndex& parent = QModelIndex()) Q_DECL_OVERRIDE;
     bool removeRows(int position, int rows, const QModelIndex& parent = QModelIndex()) Q_DECL_OVERRIDE;
 
-    PatternListItem* insertItem(const int row, const QString &displayName);
+    PatternListItem* insertItem(int row, const QString &displayName);
 
     bool moveRows(const QModelIndex & sourceParent, int sourceRow, int count, const QModelIndex & destinationParent, int destinationChild) Q_DECL_OVERRIDE;
 
@@ -86,12 +85,12 @@ class PatternListModel : public QAbstractListModel
 
     bool setData(const QModelIndex& index, const QVariant& value, int role) Q_DECL_OVERRIDE;
 
-    bool setPatternStatus(const int row, const PatternListItem::PatternStatus status);
+    bool setPatternStatus(int row, PatternListItem::PatternStatus status);
 
     PatternListItem* getRootItem();
 
   protected:
-    PatternListModel(QObject* parent = 0);
+    PatternListModel(QObject* parent = nullptr);
 
   private:
     PatternListItem*                    m_RootItem;
@@ -102,10 +101,11 @@ class PatternListModel : public QAbstractListModel
 
     QModelIndex getIndex(const PatternListItem* item) const;
 
-    void removeItem(const int row);
+    void removeItem(int row);
 
-    PatternListModel(const PatternListModel&);    // Copy Constructor Not Implemented
-    void operator=(const PatternListModel&);  // Operator '=' Not Implemented
+  public:
+    PatternListModel(const PatternListModel&) = delete; // Copy Constructor Not Implemented
+    PatternListModel(PatternListModel&&) = delete;      // Move Constructor Not Implemented
+    PatternListModel& operator=(const PatternListModel&) = delete; // Copy Assignment Not Implemented
+    PatternListModel& operator=(PatternListModel&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif // _PatternListModel_h_

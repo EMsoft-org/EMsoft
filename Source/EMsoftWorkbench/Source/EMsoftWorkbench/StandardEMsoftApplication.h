@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _standardemsoftapplication_h_
-#define _standardemsoftapplication_h_
+#pragma once
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 
@@ -46,9 +45,9 @@ class StandardEMsoftApplication : public EMsoftApplication
 
   public:
     StandardEMsoftApplication(int& argc, char** argv);
-    virtual ~StandardEMsoftApplication();
+    ~StandardEMsoftApplication() override;
 
-    virtual void unregisterWorkbenchInstance(EMsoftWorkbench_UI *instance);
+    void unregisterWorkbenchInstance(EMsoftWorkbench_UI *instance) override;
 
     /**
      * @brief getSIMPLViewMenuBar Creates the QMenuBar that should be used for
@@ -64,13 +63,14 @@ class StandardEMsoftApplication : public EMsoftApplication
     /**
     * @brief activeWindowChanged
     */
-    virtual void emSoftWindowChanged(EMsoftWorkbench_UI *instance);
+    void emSoftWindowChanged(EMsoftWorkbench_UI *instance) override;
 
   private:
 
-    StandardEMsoftApplication(const StandardEMsoftApplication&); // Copy Constructor Not Implemented
-    void operator=(const StandardEMsoftApplication&); // Operator '=' Not Implemented
+  public:
+    StandardEMsoftApplication(const StandardEMsoftApplication&) = delete; // Copy Constructor Not Implemented
+    StandardEMsoftApplication(StandardEMsoftApplication&&) = delete;      // Move Constructor Not Implemented
+    StandardEMsoftApplication& operator=(const StandardEMsoftApplication&) = delete; // Copy Assignment Not Implemented
+    StandardEMsoftApplication& operator=(StandardEMsoftApplication&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _standardemsoftapplication_h_ */
 

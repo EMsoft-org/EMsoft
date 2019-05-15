@@ -70,10 +70,7 @@ CrystalStructureCreation_UI::CrystalStructureCreation_UI(QWidget* parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-CrystalStructureCreation_UI::~CrystalStructureCreation_UI()
-{
-
-}
+CrystalStructureCreation_UI::~CrystalStructureCreation_UI() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -168,12 +165,12 @@ void CrystalStructureCreation_UI::createWidgetConnections()
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &CrystalStructureCreationController::errorMessageGenerated, this, &CrystalStructureCreation_UI::notifyErrorMessage);
   connect(m_Controller, &CrystalStructureCreationController::warningMessageGenerated, this, &CrystalStructureCreation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(appendToStdOut(const QString &)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString&)), this, SLOT(appendToStdOut(QString&)));
 
   connect(selectOutputFileBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
     QString filePath = FileIOTools::GetSavePathFromDialog("Select Output File", "Crystal Structure File (*.xtal);;All Files (*.*)", proposedFile);
-    if(true == filePath.isEmpty())
+    if(filePath.isEmpty())
     {
       return;
     }
@@ -200,16 +197,14 @@ bool CrystalStructureCreation_UI::validateData()
   clearModuleIssues();
 
   CrystalStructureCreationController::CrystalStructureCreationData data = getCreationData();
-  if (m_Controller->validateCrystalStructureValues(data) == true)
+  if (m_Controller->validateCrystalStructureValues(data))
   {
     createCrystalStructureBtn->setEnabled(true);
     return true;
   }
-  else
-  {
-    createCrystalStructureBtn->setDisabled(true);
-    return false;
-  }
+
+  createCrystalStructureBtn->setDisabled(true);
+  return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -232,12 +227,12 @@ void CrystalStructureCreation_UI::readModuleSession(QJsonObject &obj)
   QJsonObject spaceGrpObj = obj[ioConstants::SpaceGroup].toObject();
   QJsonObject atomCoordsParamObj = obj[ioConstants::AtomCoordinates].toObject();
 
-  if (csObj.isEmpty() == false)
+  if (!csObj.isEmpty())
   {
     readCrystalSystemParameters(obj);
   }
 
-  if (spaceGrpObj.isEmpty() == false)
+  if (!spaceGrpObj.isEmpty())
   {
     readSpaceGroupParameters(obj);
   }
@@ -256,7 +251,7 @@ void CrystalStructureCreation_UI::readCrystalSystemParameters(QJsonObject &obj)
 {
   QJsonObject crystalSystemParamObj = obj[ioConstants::CrystalSystem].toObject();
 
-  if (crystalSystemParamObj.isEmpty() == false)
+  if (!crystalSystemParamObj.isEmpty())
   {
     csCB->setCurrentIndex(crystalSystemParamObj[ioConstants::CrystalSystemSelection].toInt());
     aLE->setText(crystalSystemParamObj[ioConstants::A].toString());
@@ -275,7 +270,7 @@ void CrystalStructureCreation_UI::readSpaceGroupParameters(QJsonObject &obj)
 {
   QJsonObject spaceGroupParamObj = obj[ioConstants::SpaceGroup].toObject();
 
-  if (spaceGroupParamObj.isEmpty() == false)
+  if (!spaceGroupParamObj.isEmpty())
   {
     spaceGrpNumberSB->setValue(spaceGroupParamObj[ioConstants::SpaceGroupNumber].toInt());
     spaceGrpSettingCB->setCurrentIndex(spaceGroupParamObj[ioConstants::SpaceGroupSetting].toInt());
@@ -478,7 +473,7 @@ void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index)
 }
 
 // print out all the relevant space group names and numbers        
- if (skip == false) {
+ if (!skip) {
   call Message(' ', frm = "(/A/)")
   for(int i=sgmin;i < sgmax; i++) {
    j=i-sgmin+1;

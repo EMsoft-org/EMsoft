@@ -64,15 +64,12 @@ PatternFitController::PatternFitController(QObject* parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternFitController::~PatternFitController()
-{
-
-}
+PatternFitController::~PatternFitController() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFitController::setMasterFilePath(QString masterFilePath)
+void PatternFitController::setMasterFilePath(const QString &masterFilePath)
 {
   m_MasterFilePath = masterFilePath;
 
@@ -143,7 +140,7 @@ GLImageViewer::GLImageData PatternFitController::generatePatternImage(PatternFit
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-GLImageViewer::GLImageData PatternFitController::generatePatternImage(FloatArrayType::Pointer patternData, size_t xDim, size_t yDim, size_t zValue)
+GLImageViewer::GLImageData PatternFitController::generatePatternImage(const FloatArrayType::Pointer &patternData, size_t xDim, size_t yDim, size_t zValue)
 {
   GLImageViewer::GLImageData imageData;
 
@@ -177,7 +174,7 @@ bool PatternFitController::validateSimulationValues(PatternFitController::Simula
     emit errorMessageGenerated(ss);
     return false;
   }
-  if (fi.exists() == false)
+  if (!fi.exists())
   {
     QString ss = QObject::tr("The master file path '%1' does not exist.").arg(data.masterFilePath);
     emit errorMessageGenerated(ss);
@@ -198,7 +195,7 @@ bool PatternFitController::validateSimulationValues(PatternFitController::Simula
     emit errorMessageGenerated(ss);
     return false;
   }
-  if (fi.exists() == false)
+  if (!fi.exists())
   {
     QString ss = QObject::tr("The experimental pattern file path '%1' does not exist.").arg(data.masterFilePath);
     emit errorMessageGenerated(ss);

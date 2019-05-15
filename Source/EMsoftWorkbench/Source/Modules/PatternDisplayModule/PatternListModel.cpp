@@ -123,38 +123,34 @@ QVariant PatternListModel::data(const QModelIndex& index, int role) const
   {
     return item->getItemName();
   }
-  else if(role == Qt::ToolTipRole)
+  if(role == Qt::ToolTipRole)
   {
     return item->getItemName();
   }
-  else if(role == Qt::DecorationRole)
+  if(role == Qt::DecorationRole)
   {
-      PatternListItem* item = getItem(index);
-      if (item->getPatternStatus() == PatternListItem::PatternStatus::Loading)
-      {
-        return m_LoadingSpinner->currentImage();
-      }
-      else if (item->getPatternStatus() == PatternListItem::PatternStatus::WaitingToLoad)
-      {
-        return QImage(":/bullet_ball_red.png");
-      }
-      else if (item->getPatternStatus() == PatternListItem::PatternStatus::Priority)
-      {
-        return QImage(":/bullet_ball_yellow.png");
-      }
-      else if (item->getPatternStatus() == PatternListItem::PatternStatus::Loaded)
-      {
-        return QImage(":/bullet_ball_green.png");
-      }
-      else
-      {
-        return QImage(":/delete.png");
-      }
+    PatternListItem* item = getItem(index);
+    if (item->getPatternStatus() == PatternListItem::PatternStatus::Loading)
+    {
+      return m_LoadingSpinner->currentImage();
+    }
+    if (item->getPatternStatus() == PatternListItem::PatternStatus::WaitingToLoad)
+    {
+      return QImage(":/bullet_ball_red.png");
+    }
+    if (item->getPatternStatus() == PatternListItem::PatternStatus::Priority)
+    {
+      return QImage(":/bullet_ball_yellow.png");
+    }
+    if (item->getPatternStatus() == PatternListItem::PatternStatus::Loaded)
+    {
+      return QImage(":/bullet_ball_green.png");
+    }
+
+    return QImage(":/delete.png");
   }
-  else
-  {
-    return QVariant();
-  }
+
+  return QVariant();
 }
 
 // -----------------------------------------------------------------------------
@@ -167,11 +163,9 @@ bool PatternListModel::setPatternStatus(const int row, const PatternListItem::Pa
   {
     return false;
   }
-  else
-  {
-    item->setPatternStatus(status);
-    return true;
-  }
+
+  item->setPatternStatus(status);
+  return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -179,7 +173,7 @@ bool PatternListModel::setPatternStatus(const int row, const PatternListItem::Pa
 // -----------------------------------------------------------------------------
 QString PatternListModel::itemName(const QModelIndex &index)
 {
-  if (index.isValid() == true)
+  if (index.isValid())
   {
     PatternListItem* item = getItem(index);
     return item->getItemName();
@@ -195,7 +189,7 @@ Qt::ItemFlags PatternListModel::flags(const QModelIndex& index) const
 {
   if(!index.isValid())
   {
-    return 0;
+    return nullptr;
   }
 
   return (Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemNeverHasChildren);
@@ -209,7 +203,7 @@ PatternListItem* PatternListModel::getItem(const QModelIndex& index) const
   if(index.isValid())
   {
     PatternListItem* item = static_cast<PatternListItem*>(index.internalPointer());
-    if(item)
+    if(item != nullptr)
     {
       return item;
     }
@@ -233,7 +227,8 @@ QModelIndex PatternListModel::getIndex(const PatternListItem* item) const
     }
   }
 
-  return QModelIndex();
+  QModelIndex index;
+  return {index};
 }
 
 // -----------------------------------------------------------------------------
@@ -254,20 +249,19 @@ QVariant PatternListModel::headerData(int section, Qt::Orientation orientation, 
 // -----------------------------------------------------------------------------
 QModelIndex PatternListModel::index(int row, int column, const QModelIndex& parent) const
 {
+  QModelIndex index;
   if(parent.isValid() && parent.column() != PatternListItem::DefaultColumn)
   {
-    return QModelIndex();
+    return {index};
   }
 
   PatternListItem* childItem = m_RootItem->child(row);
-  if(childItem)
+  if(childItem != nullptr)
   {
-    return createIndex(row, column, childItem);
+    index = createIndex(row, column, childItem);
   }
-  else
-  {
-    return QModelIndex();
-  }
+
+  return {index};
 }
 
 // -----------------------------------------------------------------------------
@@ -330,20 +324,21 @@ bool PatternListModel::moveRows(const QModelIndex& sourceParent, int sourceRow, 
 // -----------------------------------------------------------------------------
 QModelIndex PatternListModel::parent(const QModelIndex& index) const
 {
+  QModelIndex parent;
   if(!index.isValid())
   {
-    return QModelIndex();
+    return {parent};
   }
 
   PatternListItem* childItem = getItem(index);
   PatternListItem* parentItem = childItem->parent();
 
-  if(parentItem == m_RootItem)
+  if(parentItem != m_RootItem)
   {
-    return QModelIndex();
+    parent = createIndex(parentItem->childNumber(), 0, parentItem);
   }
 
-  return createIndex(parentItem->childNumber(), 0, parentItem);
+  return {parent};
 }
 
 // -----------------------------------------------------------------------------
@@ -394,9 +389,5 @@ PatternListItem* PatternListModel::getRootItem()
 // -----------------------------------------------------------------------------
 bool PatternListModel::isEmpty()
 {
-  if(rowCount(QModelIndex()) <= 0)
-  {
-    return true;
-  }
-  return false;
+  return (rowCount(QModelIndex()) <= 0);
 }
