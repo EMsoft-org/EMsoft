@@ -442,7 +442,7 @@ void GLImageViewer::mousePressEvent(QMouseEvent *event)
 // -----------------------------------------------------------------------------
 void GLImageViewer::mouseMoveEvent(QMouseEvent *event)
 {
-  if (!!(event->buttons() & Qt::LeftButton) || m_IsPannable)
+  if (!(event->buttons() & Qt::LeftButton) || !m_IsPannable)
   {
     return;
   }
