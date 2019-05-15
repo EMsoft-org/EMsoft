@@ -1724,6 +1724,7 @@ type EMmdSTEMNameListType
         logical                 :: hypslab
         logical                 :: dwflag
         real(kind=dbl)          :: thk
+        logical                 :: presorted
 
 end type EMmdSTEMNameListType
 

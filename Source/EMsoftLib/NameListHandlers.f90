@@ -7819,13 +7819,14 @@ character(3)            :: eulerconvention
 integer(kind=irg)       :: platid, devid, discsize, usenumd, selnumd(4), maxnumincell
 real(kind=sgl)          :: voltage, dmin, eu(3), convergence, scalefactor(6), stride
 real(kind=dbl)          :: phi1, phi2, phi3, thk 
+logical                 :: presorted
 
 
 
 
 namelist /MDSTEMlist/ xtalname, datafile, eu, eulerconvention, phi1, phi2, phi3, dmin, &
   voltage, convergence, platid, devid, inputfilename, scalefactor, usenumd, selnumd, &
-  discsize, stride, maxnumincell, hypslab, dwflag, thk
+  discsize, stride, maxnumincell, hypslab, dwflag, thk, presorted
 
 
 datafile            = 'undefined' ! output filename
@@ -7845,6 +7846,7 @@ maxnumincell        = 8
 hypslab             = .TRUE. ! keep this
 dwflag              = .TRUE. ! keep this
 thk                 = 1.0
+presorted           = .False.
 
 
 if (present(initonly)) then
@@ -7886,6 +7888,7 @@ msnml%maxnumincell         = maxnumincell
 msnml%hypslab              = hypslab
 msnml%dwflag               = dwflag
 msnml%thk                  = thk
+msnml%presorted            = presorted
 
 
 end subroutine GetEMmdSTEMNameList
