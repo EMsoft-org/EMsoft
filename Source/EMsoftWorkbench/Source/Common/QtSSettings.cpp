@@ -141,7 +141,7 @@ bool QtSSettings::beginGroup(const QString& prefix)
   {
     return false;
   }
-  else if(m_Stack.isEmpty() == false && m_Stack.top()->group.contains(prefix) == true && m_Stack.top()->group[prefix].isObject())
+  else if(!m_Stack.isEmpty() && m_Stack.top()->group.contains(prefix) && m_Stack.top()->group[prefix].isObject())
   {
     SIMPLViewSettingsGroup::Pointer newGroup = SIMPLViewSettingsGroup::Pointer(new SIMPLViewSettingsGroup(prefix, m_Stack.top()->group[prefix].toObject()));
     m_Stack.push(newGroup);
