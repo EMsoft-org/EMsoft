@@ -119,6 +119,11 @@ protected:
    */
   QMessageBox::StandardButton checkDirtyDocument();
 
+  /**
+   * @brief Slot that gets called when a toolbar button gets clicked on
+   */
+  void updateModuleWidgetSelection(int index);
+
 protected slots:
   void listenSaveSessionTriggered();
   void listenSaveSessionAsTriggered();

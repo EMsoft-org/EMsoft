@@ -154,6 +154,12 @@ set(${PROJECT_NAME}_PROJECT_SRCS
   ${EMsoftWorkbench_MasterPatternSimulationModule_SRCS}
   ${EMsoftWorkbench_MasterPatternSimulationModule_Generated_MOC_SRCS}
   ${EMsoftWorkbench_MasterPatternSimulationModule_Generated_UI_HDRS}
+
+  ${EMsoftWorkbench_AverageDotProductMapModule_Moc_HDRS}
+  ${EMsoftWorkbench_AverageDotProductMapModule_HDRS}
+  ${EMsoftWorkbench_AverageDotProductMapModule_SRCS}
+  ${EMsoftWorkbench_AverageDotProductMapModule_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_AverageDotProductMapModule_Generated_UI_HDRS}
   )
 
 include_directories(${HDF5_INCLUDE_DIR})

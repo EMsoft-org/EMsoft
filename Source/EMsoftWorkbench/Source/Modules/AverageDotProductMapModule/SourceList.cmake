@@ -33,57 +33,64 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-set(SUBDIR_NAME Modules)
+set(MODULE_NAME AverageDotProductMapModule)
 
-set(${SUBDIR_NAME}_DIR "${EMsoftWorkbench_SOURCE_DIR}/Source/${SUBDIR_NAME}")
+set(${MODULE_NAME}_DIR "${${SUBDIR_NAME}_DIR}/${MODULE_NAME}")
+
+include_directories(${${MODULE_NAME}_DIR})
 
 # --------------------------------------------------------------------
 # Any Class that inherits from QObject, either directly or through the heirarchy needs to have its header listed here
-set(EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS
-  ${${SUBDIR_NAME}_DIR}/IModuleUI.h
-  ${${SUBDIR_NAME}_DIR}/IWorkbenchModule.hpp
+set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
+  ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.h
+  ${${MODULE_NAME}_DIR}/AverageDotProductMapController.h
+  ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.h
 )
 
 # --------------------------------------------------------------------
 # Run Qts automoc program to generate some source files that get compiled
-QT5_WRAP_CPP( EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS ${EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS})
-set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS} PROPERTIES GENERATED TRUE)
-#set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS} PROPERTIES HEADER_FILE_ONLY TRUE)
+QT5_WRAP_CPP( EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS ${EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS})
+set_source_files_properties( ${EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS} PROPERTIES GENERATED TRUE)
+#set_source_files_properties( ${EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
-set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
-  ${${SUBDIR_NAME}_DIR}/IModuleFactory.hpp
-  ${${SUBDIR_NAME}_DIR}/ModuleFactory.hpp
-  ${${SUBDIR_NAME}_DIR}/ModuleManager.h
+set(EMsoftWorkbench_${MODULE_NAME}_HDRS
+  ${${MODULE_NAME}_DIR}/Constants.h
 )
 
 
-set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
-  ${${SUBDIR_NAME}_DIR}/IModuleUI.cpp
-  ${${SUBDIR_NAME}_DIR}/ModuleManager.cpp
+set(EMsoftWorkbench_${MODULE_NAME}_SRCS
+  ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.cpp
+  ${${MODULE_NAME}_DIR}/AverageDotProductMapController.cpp
+  ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.cpp
 )
 
-set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
-  ${EMsoftWorkbench_${SUBDIR_NAME}_HDRS}
-  ${EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS}  # Add the headers that get Moc'ed here so they show up in solutions/IDEs/Project files
-)
-cmp_IDE_SOURCE_PROPERTIES( "${SUBDIR_NAME}" "${EMsoftWorkbench_${SUBDIR_NAME}_HDRS};${EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS}" "${EMsoftWorkbench_${SUBDIR_NAME}_SRCS}" "${PROJECT_INSTALL_HEADERS}")
-cmp_IDE_GENERATED_PROPERTIES( "Generated/Qt_Moc" "" "${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS}" "0")
-
-set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
-  ${EMsoftWorkbench_${SUBDIR_NAME}_SRCS}
-  ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS}
-)
-
-
-
+set(EMsoftWorkbench_${MODULE_NAME}_UIS
+  ${${MODULE_NAME}_DIR}/UI_Files/AverageDotProductMap_UI.ui
+  )
 # --------------------------------------------------------------------
-# Include all of our modules
-include(${${SUBDIR_NAME}_DIR}/PatternDisplayModule/SourceList.cmake)
-include(${${SUBDIR_NAME}_DIR}/PatternFitModule/SourceList.cmake)
-include(${${SUBDIR_NAME}_DIR}/CrystalStructureCreationModule/SourceList.cmake)
-include(${${SUBDIR_NAME}_DIR}/MonteCarloSimulationModule/SourceList.cmake)
-include(${${SUBDIR_NAME}_DIR}/MasterPatternSimulationModule/SourceList.cmake)
-include(${${SUBDIR_NAME}_DIR}/AverageDotProductMapModule/SourceList.cmake)
+# Continue on with our Qt4 section
+QT5_WRAP_UI( EMsoftWorkbench_${MODULE_NAME}_Generated_UI_HDRS   
+  ${EMsoftWorkbench_${MODULE_NAME}_UIS}
+)
+
+cmp_IDE_SOURCE_PROPERTIES( "Modules/${MODULE_NAME}/UI_Files" "${EMsoftWorkbench_${MODULE_NAME}_UIS}" "" "${PROJECT_INSTALL_HEADERS}")
+
+set(EMsoftWorkbench_${MODULE_NAME}_HDRS
+  ${EMsoftWorkbench_${MODULE_NAME}_HDRS}
+  ${EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS}  # Add the headers that get Moc'ed here so they show up in solutions/IDEs/Project files
+)
+
+
+
+cmp_IDE_SOURCE_PROPERTIES( "Modules/${MODULE_NAME}" "${EMsoftWorkbench_${MODULE_NAME}_HDRS};${EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS}" "${EMsoftWorkbench_${MODULE_NAME}_SRCS}" "${PROJECT_INSTALL_HEADERS}")
+cmp_IDE_GENERATED_PROPERTIES( "Generated/${MODULE_NAME}" "" "${EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS}" "0")
+cmp_IDE_GENERATED_PROPERTIES( "Generated/${MODULE_NAME}/Qt_Uic" "${EMsoftWorkbench_${MODULE_NAME}_Generated_UI_HDRS}" "" "0")
+
+
+set(EMsoftWorkbench_${MODULE_NAME}_SRCS
+  ${EMsoftWorkbench_${MODULE_NAME}_SRCS}
+  ${EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS}
+  )
 
 # -- Add the binary directory for this subdirectory to the include path which is where the moc files are generated
 include_directories( ${EMsoftWorkbench_BINARY_DIR})

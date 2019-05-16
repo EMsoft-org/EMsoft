@@ -46,6 +46,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QToolButton>
 
+#include "Modules/AverageDotProductMapModule/Constants.h"
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreation_UI.h"
 #include "Modules/ModuleManager.h"
 
@@ -189,6 +190,7 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::MasterPatternSimulation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternDisplay);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternFit);
+  m_ModuleNamesOrder.append(AverageDotProductMapModuleConstants::ModuleName);
 
   m_ToolbarButtonGroup = new QActionGroup(this);
 
@@ -210,47 +212,7 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
     connect(toolbarAction, &QAction::triggered, [=] {
       QList<QAction*> toolbarActions = mainToolbar->actions();
       int idx = toolbarActions.indexOf(toolbarAction);
-
-      if(dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(idx)) == nullptr)
-      {
-        // This module doesn't exist yet, so create it
-        IModuleUI* module_ui = manager->getModuleFromName(m_ModuleNamesOrder[idx], QJsonObject(), this);
-        if(module_ui != nullptr)
-        {
-          connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=](IModuleUI* module_ui) {
-            for(int i = 0; i < moduleStackedWidget->count(); i++)
-            {
-              IModuleUI* ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
-              if(ui != nullptr && ui != module_ui)
-              {
-                ui->validateData();
-              }
-            }
-          });
-
-          // Delete the placeholder
-          QWidget* placeholder = moduleStackedWidget->widget(idx);
-          moduleStackedWidget->removeWidget(placeholder);
-          delete placeholder;
-
-          // Insert the module widget into its proper place in the stacked widget
-          moduleStackedWidget->insertWidget(idx, module_ui);
-          moduleStackedWidget->setCurrentIndex(idx);
-          m_CurrentStackedWidgetIdx = idx;
-        }
-        else
-        {
-          // The user didn't give the module the information it needed to create itself, or there was an error.
-          // Restore the toolbar back to its previous selection
-          toolbarActions[m_CurrentStackedWidgetIdx]->setChecked(true);
-        }
-      }
-      else
-      {
-        // The module widget already exists in the stacked widget, so set its index as the current index
-        moduleStackedWidget->setCurrentIndex(idx);
-        m_CurrentStackedWidgetIdx = idx;
-      }
+      updateModuleWidgetSelection(idx);
     }); // End connect
   }
 
@@ -259,6 +221,57 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
   if(!toolbarActions.empty())
   {
     toolbarActions[0]->trigger();
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftWorkbench_UI::updateModuleWidgetSelection(int index)
+{
+  ModuleManager* manager = ModuleManager::Instance();
+  QList<QAction*> toolbarActions = mainToolbar->actions();
+
+  IModuleUI* module_ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(index));
+  if(module_ui == nullptr)
+  {
+    // This module doesn't exist yet, so create it
+    module_ui = manager->getModuleFromName(m_ModuleNamesOrder[index], QJsonObject(), this);
+    if(module_ui != nullptr)
+    {
+      connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=](IModuleUI* module_ui) {
+        for(int i = 0; i < moduleStackedWidget->count(); i++)
+        {
+          IModuleUI* ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
+          if(ui != nullptr && ui != module_ui)
+          {
+            ui->validateData();
+          }
+        }
+      });
+
+      // Delete the placeholder
+      QWidget* placeholder = moduleStackedWidget->widget(index);
+      moduleStackedWidget->removeWidget(placeholder);
+      delete placeholder;
+
+      // Insert the module widget into its proper place in the stacked widget
+      moduleStackedWidget->insertWidget(index, module_ui);
+      moduleStackedWidget->setCurrentIndex(index);
+      m_CurrentStackedWidgetIdx = index;
+    }
+    else
+    {
+      // The user didn't give the module the information it needed to create itself, or there was an error.
+      // Restore the toolbar back to its previous selection
+      toolbarActions[m_CurrentStackedWidgetIdx]->setChecked(true);
+    }
+  }
+  else
+  {
+    // The module widget already exists in the stacked widget, so set its index as the current index
+    moduleStackedWidget->setCurrentIndex(index);
+    m_CurrentStackedWidgetIdx = index;
   }
 }
 
