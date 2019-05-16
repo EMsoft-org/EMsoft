@@ -34,8 +34,6 @@
  eulerconvention = 'tsl',
 ! name of EBSD master output file; path relative to EMdatapathname
  masterfile = 'master.h5',
-! name of Monte Carlo output file; path relative to EMdatapathname
- energyfile = 'MC.h5',
 ! name of output file; path relative to EMdatapathname
  datafile = 'EBSDout.h5',
 ! bitdepth '8bit' for [0..255] bytes; 'float' for 32-bit reals; '##int' for 32-bit integers with ##-bit dynamic range

@@ -3128,6 +3128,7 @@ end subroutine GetkinematicalNameList
 !> @param enl EBSD name list structure
 !
 !> @date 06/23/14  MDG 1.0 new routine
+!> @date 05/16/19  MDG 1.1 disable energyfile parameter from namelist file
 !--------------------------------------------------------------------------
 recursive subroutine GetEBSDNameList(nmlfile, enl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDNameList
@@ -3136,8 +3137,8 @@ use error
 
 IMPLICIT NONE
 
-character(fnlen),INTENT(IN)               :: nmlfile
-type(EBSDNameListType),INTENT(INOUT)      :: enl
+character(fnlen),INTENT(IN)             :: nmlfile
+type(EBSDNameListType),INTENT(INOUT)    :: enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -3178,7 +3179,7 @@ character(5)            :: bitdepth
 character(fnlen)        :: anglefile
 character(fnlen)        :: anglefiletype
 character(fnlen)        :: masterfile
-character(fnlen)        :: energyfile 
+character(fnlen)        :: energyfile  ! removed from template file 05/16/19 [MDG]
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
@@ -3242,9 +3243,12 @@ if (.not.skipread) then
  close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
- if (trim(energyfile).eq.'undefined') then
-  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
- end if
+
+! we no longer require the energyfile parameter, but for backwards compatibility
+! we still allow the user to include it (it doesn't do anything though)
+! if (trim(energyfile).eq.'undefined') then
+!  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
+! end if
 
  if (trim(anglefile).eq.'undefined') then
   call FatalError('GetEBSDNameList:',' angle file name is undefined in '//nmlfile)
@@ -3302,7 +3306,9 @@ enl%bitdepth = bitdepth
 enl%anglefile = anglefile
 enl%anglefiletype = anglefiletype
 enl%masterfile = masterfile
-enl%energyfile = energyfile
+! we require energyfile to be identical to masterfile, so the 
+! user definition, if any, in the namelist file is overwritten here...
+enl%energyfile = enl%masterfile       ! changed on 05/16/19 [MDG]
 enl%datafile = datafile
 enl%omega = omega
 enl%spatialaverage = spatialaverage
