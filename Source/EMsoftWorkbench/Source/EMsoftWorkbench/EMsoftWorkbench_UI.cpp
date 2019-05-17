@@ -170,7 +170,7 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
 
       // Connect the module's std output messages so that they can be displayed in the std output pane.
       // This must be done using the old-style signal/slot connection because it may cross threads
-      connect(newModule, SIGNAL(stdOutputMessageGenerated(QString&)), this, SLOT(slot_StdOutputMsgReceived(QString&)));
+      connect(newModule, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(slot_StdOutputMsgReceived(QString)));
 
       // Set the widget into the frame
       QList<IModuleUI::ModuleIssue> issues = newModule->getModuleIssues();

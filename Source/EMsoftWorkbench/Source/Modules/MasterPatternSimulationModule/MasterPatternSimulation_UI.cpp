@@ -135,7 +135,7 @@ void MasterPatternSimulation_UI::createWidgetConnections()
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &MasterPatternSimulationController::errorMessageGenerated, this, &MasterPatternSimulation_UI::notifyErrorMessage);
   connect(m_Controller, &MasterPatternSimulationController::warningMessageGenerated, this, &MasterPatternSimulation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString&)), this, SLOT(appendToStdOut(QString&)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
   connect(mcSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";

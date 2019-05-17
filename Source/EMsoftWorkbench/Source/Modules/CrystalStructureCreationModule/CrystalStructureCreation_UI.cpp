@@ -165,7 +165,7 @@ void CrystalStructureCreation_UI::createWidgetConnections()
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &CrystalStructureCreationController::errorMessageGenerated, this, &CrystalStructureCreation_UI::notifyErrorMessage);
   connect(m_Controller, &CrystalStructureCreationController::warningMessageGenerated, this, &CrystalStructureCreation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString&)), this, SLOT(appendToStdOut(QString&)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
   connect(selectOutputFileBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
