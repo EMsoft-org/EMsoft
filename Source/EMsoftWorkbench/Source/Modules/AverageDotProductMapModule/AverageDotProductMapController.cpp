@@ -45,12 +45,16 @@
 
 #include "Common/Constants.h"
 
+#include "Constants.h"
+
 #include "EMsoftLib/EMsoftStringConstants.h"
 
 #define CL_VECTOR std::vector
 
 static size_t k_InstanceKey = 0;
 static QMap<size_t, AverageDotProductMapController*> instances;
+
+namespace SizeConstants = AverageDotProductMapModuleConstants::ArraySizes;
 
 /**
  * @brief AverageDotProductMapControllerProgress
@@ -95,14 +99,14 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
 
   SizeTArrayType::Pointer iParPtr = data.getIParPtr();
   FloatArrayType::Pointer fParPtr = data.getFParPtr();
-  StringDataArray::Pointer sParPtr = data.getSParPtr();
+  std::vector<char> sParVector = data.getSParVector();
 
   size_t* iPar = iParPtr->getPointer(0);
   float* fPar = fParPtr->getPointer(0);
-  char* sPar = nullptr;
+  char* sPar = sParVector.data();
 
   QVector<size_t> numTuples(1, 1);
-  QVector<size_t> cDims(4, 0);
+  QVector<size_t> cDims(1, data.patternHeight * data.patternWidth);
 
   // Create a new Mask Array
   m_OutputMaskPtr = FloatArrayType::CreateArray(numTuples, cDims, "Mask", true);
@@ -166,7 +170,7 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
   QString inputPath = data.patternDataFile;
   if (inputPath.isEmpty())
   {
-    QString ss = QObject::tr("The input pattern data file path is empty.").arg(inputPath);
+    QString ss = QObject::tr("The input pattern data file path is empty.");
     emit errorMessageGenerated(ss);
     return false;
   }
@@ -181,7 +185,7 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
 
   QMimeDatabase db;
   QMimeType mime = db.mimeTypeForFile(inputPath);
-  if (!mime.inherits("application/x-hdf5"))
+  if (!mime.inherits("application/x-hdf5") && !mime.inherits("application/x-hdf"))
   {
     QString ss = QObject::tr("The input pattern data file at path '%1' is not an HDF5 file.").arg(inputPath);
     emit errorMessageGenerated(ss);
@@ -226,7 +230,7 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
 SizeTArrayType::Pointer AverageDotProductMapController::ADPMapData::getIParPtr() const
 {
   // allocate space for the iPar array, which will be used to communicate parameters with the EMsoftCpreprocessEBSDPatterns routine.
-  size_t iParSize = static_cast<size_t>(EMsoftWorkbenchConstants::Constants::IParSize);
+  size_t iParSize = static_cast<size_t>(SizeConstants::IParSize);
   QVector<size_t> cDims = { iParSize };
 
   SizeTArrayType::Pointer iParPtr = SizeTArrayType::CreateArray(QVector<size_t>(1, 1), cDims, "iPar", true);
@@ -268,7 +272,7 @@ SizeTArrayType::Pointer AverageDotProductMapController::ADPMapData::getIParPtr()
 // -----------------------------------------------------------------------------
 FloatArrayType::Pointer AverageDotProductMapController::ADPMapData::getFParPtr() const
 {
-  QVector<size_t> cDims = { EMsoftWorkbenchConstants::Constants::FParSize };
+  QVector<size_t> cDims = { SizeConstants::FParSize };
 
   // allocate space for the fPar array, which will be used to communicate parameters with the EMsoftCpreprocessEBSDPatterns routine.
   FloatArrayType::Pointer fParPtr = FloatArrayType::CreateArray(QVector<size_t>(1, 1), cDims, "fPar", true);
@@ -285,17 +289,30 @@ FloatArrayType::Pointer AverageDotProductMapController::ADPMapData::getFParPtr()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-StringDataArray::Pointer AverageDotProductMapController::ADPMapData::getSParPtr() const
+std::vector<char> AverageDotProductMapController::ADPMapData::getSParVector() const
 {
-  QVector<size_t> cDims = { EMsoftWorkbenchConstants::Constants::SParSize };
+  // Move each string from the string array into the char array.  Each string has SParStringSize as its max size.
+  std::vector<char> sParVector(SizeConstants::SParSize * SizeConstants::SParStringSize, 0);
+  char* sPar = sParVector.data();
 
-  // allocate space for the fPar array, which will be used to communicate parameters with the EMsoftCpreprocessEBSDPatterns routine.
-  StringDataArray::Pointer sParPtr = StringDataArray::CreateArray(1, cDims, "sPar", true);
-  sParPtr->initializeWithZeros();
+  // Move Output File Path into the vector
+  const char* charArray = outputFilePath.toStdString().c_str();
+  std::memcpy(sPar + (31 * SizeConstants::SParStringSize), charArray, outputFilePath.size());
 
-  // Fill the string array
+  // Move Pattern Data File into the vector
+  charArray = patternDataFile.toStdString().c_str();
+  std::memcpy(sPar + (32 * SizeConstants::SParStringSize), charArray, patternDataFile.size());
 
-  return sParPtr;
+  // Move HDF Strings into the vector
+  int count = 41;
+  for (const QString &hdfString : hdfStrings)
+  {
+    charArray = hdfString.toStdString().c_str();
+    std::memcpy(sPar + (count * SizeConstants::SParStringSize), charArray, hdfString.size());
+    count++;
+  }
+
+  return sParVector;
 }
 
 // -----------------------------------------------------------------------------

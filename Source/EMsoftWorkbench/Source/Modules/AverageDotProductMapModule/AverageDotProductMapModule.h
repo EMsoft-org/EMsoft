@@ -37,7 +37,7 @@
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/IWorkbenchModule.h"
+#include "Modules/IWorkbenchModule.hpp"
 
 class AverageDotProductMapModule : public IWorkbenchModule
 {

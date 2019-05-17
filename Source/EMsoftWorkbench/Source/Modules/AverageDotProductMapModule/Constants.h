@@ -44,6 +44,14 @@ namespace AverageDotProductMapModuleConstants
 {
   const QString ModuleName("Average Dot Product Map");
 
+  namespace ArraySizes
+  {
+    static const size_t IParSize = 80;
+    static const size_t FParSize = 80;
+    static const size_t SParSize = 80;
+    static const size_t SParStringSize = 512;
+  }
+
   namespace IOStrings
   {
     const QString InputParam = "Input Parameters";

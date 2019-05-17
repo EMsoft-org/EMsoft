@@ -94,6 +94,12 @@ protected slots:
   void listenGenerateBtnPressed();
 
   /**
+   * @brief listenROICheckboxStateChanged
+   * @param state
+   */
+  void listenROICheckboxStateChanged(int state);
+
+  /**
    * @brief listenPatternSelectBtnClicked
    */
   void listenPatternSelectBtnClicked();
@@ -159,6 +165,11 @@ private:
    * @brief createParametersChangedConnections
    */
   void createModificationConnections();
+
+  /**
+   * @brief initializeSpinBoxLimits
+   */
+  void initializeSpinBoxLimits();
 
   /**
    * @brief createWidgetConnections

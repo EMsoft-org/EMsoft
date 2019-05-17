@@ -93,7 +93,7 @@ public:
 
     FloatArrayType::Pointer getFParPtr() const;
 
-    StringDataArray::Pointer getSParPtr() const;
+    std::vector<char> getSParVector() const;
   };
 
   /**

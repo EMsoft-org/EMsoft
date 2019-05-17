@@ -81,6 +81,9 @@ AverageDotProductMap_UI::~AverageDotProductMap_UI() = default;
 // -----------------------------------------------------------------------------
 void AverageDotProductMap_UI::setupGui()
 {
+  // Add limits to all spinboxes
+  initializeSpinBoxLimits();
+
   // Create and set the validators on all the line edits
   createValidators();
 
@@ -91,8 +94,60 @@ void AverageDotProductMap_UI::setupGui()
   createModificationConnections();
 
   validateData();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMap_UI::initializeSpinBoxLimits()
+{
+  m_Ui->ipfHeightSB->setMinimum(1);
+  m_Ui->ipfHeightSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->ipfWidthSB->setMinimum(1);
+  m_Ui->ipfWidthSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->patternHeightSB->setMinimum(1);
+  m_Ui->patternHeightSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->patternWidthSB->setMinimum(1);
+  m_Ui->patternWidthSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->roiSB_1->setMinimum(0);
+  m_Ui->roiSB_1->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->roiSB_2->setMinimum(0);
+  m_Ui->roiSB_2->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->roiSB_3->setMinimum(0);
+  m_Ui->roiSB_3->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->roiSB_4->setMinimum(0);
+  m_Ui->roiSB_4->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->binningFactorSB->setMinimum(1);
+  m_Ui->binningFactorSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->binningXSB->setMinimum(1);
+  m_Ui->binningXSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->binningYSB->setMinimum(1);
+  m_Ui->binningYSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->maskPatternSB->setMinimum(0);
+  m_Ui->maskPatternSB->setMaximum(std::numeric_limits<int>::max());
+
+  m_Ui->maskRadiusSB->setMinimum(0.0f);
+  m_Ui->maskRadiusSB->setMaximum(std::numeric_limits<float>::max());
+
+  m_Ui->hipassSB->setMinimum(0.0f);
+  m_Ui->hipassSB->setMaximum(std::numeric_limits<float>::max());
+
+  m_Ui->numOfRegionsSB->setMinimum(0);
+  m_Ui->numOfRegionsSB->setMaximum(std::numeric_limits<int>::max());
 
   int numOfCores = m_Controller->getNumCPUCores();
+  m_Ui->numOfThreadsSB->setMinimum(1);
   m_Ui->numOfThreadsSB->setMaximum(numOfCores);
   m_Ui->numOfThreadsSB->setValue(numOfCores);
   m_Ui->numOfThreadsSB->blockSignals(false);
@@ -148,11 +203,27 @@ void AverageDotProductMap_UI::createWidgetConnections()
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &AverageDotProductMapController::errorMessageGenerated, this, &AverageDotProductMap_UI::notifyErrorMessage);
   connect(m_Controller, &AverageDotProductMapController::warningMessageGenerated, this, &AverageDotProductMap_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString&)), this, SLOT(appendToStdOut(QString&)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
   connect(m_Ui->patternSelectBtn, &QPushButton::clicked, this, &AverageDotProductMap_UI::listenPatternSelectBtnClicked);
 
   connect(m_Ui->outputSelectBtn, &QPushButton::clicked, this, &AverageDotProductMap_UI::listenOutputFileSelectBtnClicked);
+
+  connect(m_Ui->roiCB, &QCheckBox::stateChanged, this, &AverageDotProductMap_UI::listenROICheckboxStateChanged);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMap_UI::listenROICheckboxStateChanged(int state)
+{
+  Qt::CheckState checkState = static_cast<Qt::CheckState>(state);
+  m_Ui->roiSB_1->setEnabled(checkState == Qt::Checked);
+  m_Ui->roiSB_2->setEnabled(checkState == Qt::Checked);
+  m_Ui->roiSB_3->setEnabled(checkState == Qt::Checked);
+  m_Ui->roiSB_4->setEnabled(checkState == Qt::Checked);
+
+  parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
