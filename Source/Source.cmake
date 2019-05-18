@@ -31,6 +31,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/Source/EMSphInx)
   add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMSphInx/EMSphInxLib ${PROJECT_BINARY_DIR}/EMsoftSphInxLib)
   set(MODALITY_DIRS
     DictionaryIndexing
+    OLIO
     OM
     SEM
     EMSphInx/EMSphInxSrc
@@ -42,6 +43,7 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/Source/EMSphInx)
 else()
   set(MODALITY_DIRS
     DictionaryIndexing
+    OLIO
     OM
     SEM
     TEM

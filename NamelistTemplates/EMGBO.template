@@ -1,0 +1,22 @@
+&GBOlist
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the crystal input file MUST be specified (full pathname)
+ pgnum = 32,
+! number of samples to compute 
+ numsamples = 100000,
+! number of histogram bins
+ numbins = 180,
+! number of threads for parallel computation
+ nthreads = 1,
+! CSLtype
+ CSLtype = '',
+! fix A/B boundary ?
+fixedAB = .FALSE.,
+! output will be stored in this text file (EMsoft relative pathname)
+ outname = 'undefined'
+! this last line must be present!
+/

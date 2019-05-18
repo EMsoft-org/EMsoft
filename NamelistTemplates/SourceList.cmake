@@ -25,6 +25,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMgetADP.template
   ${APP_DIR}/EMgetANG.template
   ${APP_DIR}/EMgetCTF.template
+  ${APP_DIR}/EMGBO.template
   ${APP_DIR}/EMKAM.template
   ${APP_DIR}/EMKosselmaster.template
   ${APP_DIR}/EMLACBED.template
