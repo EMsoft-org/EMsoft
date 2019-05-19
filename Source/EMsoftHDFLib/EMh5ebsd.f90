@@ -737,6 +737,7 @@ end subroutine h5ebsd_writePhaseGroup
 !> @param ebsdnl input name list
 !
 !> @date 03/10/16 MDG 1.0 original
+!> @date 05/19/19 MDG 1.1 disable option to compute orientation average map
 !--------------------------------------------------------------------------
 subroutine h5ebsd_writeFile(vendor, ebsdnl, xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, dicteulerarray, &
                             dpmap, progname, nmldeffile, OSMmap)
@@ -857,25 +858,26 @@ dataset = SC_Fit
   deallocate(eangle)
 
 !=====================================================
+! this option is disabled starting in version 4.3 [05/19/19, MDG]; code block can be deleted
 ! Averaged Orientation Map (using near-match list and quaternion logarithm averaging)
 ! define the ipar2 entries
-  allocate(avEuler(3,ipar(3)))
-  ipar2(1) = ipar(6)
-  ipar2(2) = ipar(5)
-  ipar2(3) = ipar(3)
-  ipar2(4) = ipar(1)
-  ipar2(5) = ipar(2)
-  ipar2(6) = ebsdnl%nnav
-! get the avEuler array
-  eulerarray = eulerarray * sngl(cPi)/180.0
-  call EBSDgetAverageOrientations(ipar2, eulerarray, indexmain(1:ipar2(4),1:ipar2(5)), resultmain(1:ipar2(4),1:ipar2(5)), &
-                                  avEuler)
-  eulerarray = eulerarray * 180.0/sngl(cPi)
+!   allocate(avEuler(3,ipar(3)))
+!   ipar2(1) = ipar(6)
+!   ipar2(2) = ipar(5)
+!   ipar2(3) = ipar(3)
+!   ipar2(4) = ipar(1)
+!   ipar2(5) = ipar(2)
+!   ipar2(6) = ebsdnl%nnav
+! ! get the avEuler array
+!   eulerarray = eulerarray * sngl(cPi)/180.0
+!   call EBSDgetAverageOrientations(ipar2, eulerarray, indexmain(1:ipar2(4),1:ipar2(5)), resultmain(1:ipar2(4),1:ipar2(5)), &
+!                                   avEuler)
+!   eulerarray = eulerarray * 180.0/sngl(cPi)
 
-! and write it to the HDF file
-dataset = SC_AverageOrientations
-  hdferr = HDF_writeDatasetFloatArray2D(dataset, avEuler, 3, ipar(3), HDF_head)
-  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset AverageOrientations')
+! ! and write it to the HDF file
+! dataset = SC_AverageOrientations
+!   hdferr = HDF_writeDatasetFloatArray2D(dataset, avEuler, 3, ipar(3), HDF_head)
+!   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset AverageOrientations')
 
 ! get the nearest neighbor Kernel Average Misorientation Map (KAM)
   allocate(eulers(3,ipar(3)))
@@ -915,27 +917,28 @@ dataset = SC_OSM
   end if
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset OSM')
 
+! this option is disabled starting in version 4.3 [05/1/19, MDG]; code can be deleted
 ! also create a second ctf file, if requested
-  if (trim(ebsdnl%avctffile).ne.'undefined') then
-    savefile = ebsdnl%ctffile
-    ebsdnl%ctffile = ebsdnl%avctffile
-    ipar2(1:6) = ipar(1:6)
-    ipar(1) = 1
-    ipar(2) = ipar2(3)
-    ipar(3) = ipar2(3)
-    ipar(4) = ipar2(3)
+  ! if (trim(ebsdnl%avctffile).ne.'undefined') then
+  !   savefile = ebsdnl%ctffile
+  !   ebsdnl%ctffile = ebsdnl%avctffile
+  !   ipar2(1:6) = ipar(1:6)
+  !   ipar(1) = 1
+  !   ipar(2) = ipar2(3)
+  !   ipar(3) = ipar2(3)
+  !   ipar(4) = ipar2(3)
   
-    allocate(lindexmain(1,ipar2(3)), lresultmain(1,ipar2(3)))
-    lindexmain = 0
-    lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
-    noindex = .TRUE.
+  !   allocate(lindexmain(1,ipar2(3)), lresultmain(1,ipar2(3)))
+  !   lindexmain = 0
+  !   lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
+  !   noindex = .TRUE.
 
-    call ctfebsd_writeFile(ebsdnl,xtalname,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
-    call Message('Average orientation data stored in ctf file : '//trim(ebsdnl%avctffile))
-    ebsdnl%ctffile = savefile
-    ipar(1:6) = ipar2(1:6)
-    deallocate(lindexmain, lresultmain)
-  end if
+  !   call ctfebsd_writeFile(ebsdnl,xtalname,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
+  !   call Message('Average orientation data stored in ctf file : '//trim(ebsdnl%avctffile))
+  !   ebsdnl%ctffile = savefile
+  !   ipar(1:6) = ipar2(1:6)
+  !   deallocate(lindexmain, lresultmain)
+  ! end if
 
 ! we also insert a visual map of the Confidence Index, resampled on a rectangular array
 ! dataset = 'FitMap'

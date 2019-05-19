@@ -45,6 +45,7 @@
 !> @date 11/14/16 MDG 1.4 added code to read dictionary patterns from h5 file
 !> @date 04/04/18 MDG 2.0 separated MC and MP name lists and data structures (all internal changes)
 !> @date 02/19/19 MDG 2.1 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
+!> @date 05/19/19 MDG 2.2 removes superfluous code for various types of averaging
 !--------------------------------------------------------------------------
 program EMEBSDDI
 
@@ -227,6 +228,7 @@ end program EMEBSDDI
 !> @date 02/22/18 MDG 2.3 added support for Region-of-Interest (ROI) selection
 !> @date 04/04/18 MDG 3.0 revised name list use as well as MC and MP data structures
 !> @date 11/10/18 MDG 3.1 added EDAX/TSL .ang output format
+!> @date 05/19/19 MDG 3.2 removes several averaging routines that were never used
 !--------------------------------------------------------------------------
 subroutine MasterSubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
 
@@ -562,34 +564,35 @@ bindx = 1.0/float(dinl%binning)**2
 ! this code will be removed in a later version [post 3.1]
 npy = mpnl%npx
 if (trim(dinl%indexingmode).eq.'dynamic') then
-    if (dinl%energyaverage .eq. 0) then
+! energyaverage option disabled on 05/19/19 [MDG]; commented code can be deleted
+!    if (dinl%energyaverage .eq. 0) then
             allocate(mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
             allocate(mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
             allocate(accum_e_MC(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy),stat=istat)
             accum_e_MC = EBSDdetector%accum_e_detector
             mLPNH = EBSDMPdata%mLPNH
             mLPSH = EBSDMPdata%mLPSH
-    else if (dinl%energyaverage .eq. 1) then
-            allocate(mLPNH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
-            allocate(mLPSH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
-            allocate(wf(EBSDMCdata%numEbins))
-            allocate(acc_array(dinl%numsx,dinl%numsy))
-            acc_array = sum(EBSDdetector%accum_e_detector,1)
-            wf = sum(sum(EBSDdetector%accum_e_detector,2),2)
-            wf = wf/sum(wf)
-            do ii=Emin,Emax
-                EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
-                EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
+    ! else if (dinl%energyaverage .eq. 1) then
+    !         allocate(mLPNH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
+    !         allocate(mLPSH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
+    !         allocate(wf(EBSDMCdata%numEbins))
+    !         allocate(acc_array(dinl%numsx,dinl%numsy))
+    !         acc_array = sum(EBSDdetector%accum_e_detector,1)
+    !         wf = sum(sum(EBSDdetector%accum_e_detector,2),2)
+    !         wf = wf/sum(wf)
+    !         do ii=Emin,Emax
+    !             EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
+    !             EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
 
-                EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
-                EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
+    !             EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
+    !             EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
 
-            end do
-            mLPNH_simple = sum(EBSDMPdata%mLPNH,3)
-            mLPSH_simple = sum(EBSDMPdata%mLPNH,3)
-    else
-            stop 'Invalid value of energyaverage parameter'
-    end if
+    !         end do
+    !         mLPNH_simple = sum(EBSDMPdata%mLPNH,3)
+    !         mLPSH_simple = sum(EBSDMPdata%mLPNH,3)
+    ! else
+    !         stop 'Invalid value of energyaverage parameter'
+    ! end if
 end if
 
 !=====================================================
@@ -1085,15 +1088,16 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
        binned = 0.0
        quat = ro2qu(FZarray(1:4,(ii-1)*Nd+pp))
 
-       if (dinl%energyaverage .eq. 0) then
+! energyaverage option disabled on 05/19/19 [MDG]; commented code can be deleted
+!       if (dinl%energyaverage .eq. 0) then
          call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,EBSDdetector%rgx,&
                                         EBSDdetector%rgy,EBSDdetector%rgz,binned,Emin,Emax,mask,prefactor)
-       else if (dinl%energyaverage .eq. 1) then 
-         call CalcEBSDPatternSingleApprox(jpar,quat,acc_array,mLPNH_simple,mLPSH_simple,EBSDdetector%rgx,&
-                                                   EBSDdetector%rgy,EBSDdetector%rgz,binned,mask,prefactor)
-       else
-         stop 'Invalid value of energyaverage'
-       end if
+       ! else if (dinl%energyaverage .eq. 1) then 
+       !   call CalcEBSDPatternSingleApprox(jpar,quat,acc_array,mLPNH_simple,mLPSH_simple,EBSDdetector%rgx,&
+       !                                             EBSDdetector%rgy,EBSDdetector%rgz,binned,mask,prefactor)
+       ! else
+       !   stop 'Invalid value of energyaverage'
+       ! end if
 
        if (dinl%scalingmode .eq. 'gam') then
          binned = binned**dinl%gammavalue
