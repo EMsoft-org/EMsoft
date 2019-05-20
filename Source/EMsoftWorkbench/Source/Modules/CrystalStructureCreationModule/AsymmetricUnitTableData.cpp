@@ -1,37 +1,37 @@
 /* ============================================================================
-* Copyright (c) 2009-2016 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2016 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "AsymmetricUnitTableData.h"
 
@@ -41,27 +41,26 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::AsymmetricUnitTableData() :
-  m_DynamicRows(false),
-  m_DynamicCols(false),
-  m_MinRows(0),
-  m_MinCols(0),
-  m_DefaultRowCount(0),
-  m_DefaultColCount(0)
+AsymmetricUnitTableData::AsymmetricUnitTableData()
+: m_DynamicRows(false)
+, m_DynamicCols(false)
+, m_MinRows(0)
+, m_MinCols(0)
+, m_DefaultRowCount(0)
+, m_DefaultColCount(0)
 {
-
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols) :
-  m_DynamicRows(false),
-  m_DynamicCols(false),
-  m_MinRows(0),
-  m_MinCols(0),
-  m_DefaultRowCount(0),
-  m_DefaultColCount(0)
+AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols)
+: m_DynamicRows(false)
+, m_DynamicCols(false)
+, m_MinRows(0)
+, m_MinCols(0)
+, m_DefaultRowCount(0)
+, m_DefaultColCount(0)
 {
   std::vector<std::vector<double>> data(nRows, std::vector<double>(nCols, 0));
   m_TableData = data;
@@ -85,13 +84,13 @@ AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols, QStringList rHeaders, QStringList cHeaders) :
-  m_DynamicRows(false),
-  m_DynamicCols(false),
-  m_MinRows(0),
-  m_MinCols(0),
-  m_DefaultRowCount(0),
-  m_DefaultColCount(0)
+AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols, const QStringList& rHeaders, const QStringList& cHeaders)
+: m_DynamicRows(false)
+, m_DynamicCols(false)
+, m_MinRows(0)
+, m_MinCols(0)
+, m_DefaultRowCount(0)
+, m_DefaultColCount(0)
 {
   std::vector<std::vector<double>> data(nRows, std::vector<double>(nCols, 0));
   m_TableData = data;
@@ -106,13 +105,13 @@ AsymmetricUnitTableData::AsymmetricUnitTableData(int nRows, int nCols, QStringLi
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::AsymmetricUnitTableData(std::vector<std::vector<double>> data, QStringList rHeaders, QStringList cHeaders) :
-  m_DynamicRows(false),
-  m_DynamicCols(false),
-  m_MinRows(0),
-  m_MinCols(0),
-  m_DefaultRowCount(0),
-  m_DefaultColCount(0)
+AsymmetricUnitTableData::AsymmetricUnitTableData(const std::vector<std::vector<double>>& data, const QStringList& rHeaders, const QStringList& cHeaders)
+: m_DynamicRows(false)
+, m_DynamicCols(false)
+, m_MinRows(0)
+, m_MinCols(0)
+, m_DefaultRowCount(0)
+, m_DefaultColCount(0)
 {
   m_TableData = data;
   m_RowHeaders = rHeaders;
@@ -125,23 +124,14 @@ AsymmetricUnitTableData::AsymmetricUnitTableData(std::vector<std::vector<double>
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableData::~AsymmetricUnitTableData()
-{
-}
+AsymmetricUnitTableData::~AsymmetricUnitTableData() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 bool AsymmetricUnitTableData::isEmpty()
 {
-  if(m_TableData.size() > 0 || m_RowHeaders.size() > 0 || m_ColHeaders.size() > 0)
-  {
-    return false;
-  }
-  else
-  {
-    return true;
-  }
+  return (!m_TableData.empty() || !m_RowHeaders.empty() || !m_ColHeaders.empty());
 }
 
 // -----------------------------------------------------------------------------
@@ -152,7 +142,7 @@ void AsymmetricUnitTableData::checkAndAdjustDimensions()
   QSize dataSize(m_TableData.size(), 0);
   QSize headerSize(m_RowHeaders.size(), m_ColHeaders.size());
 
-  if(m_TableData.size() > 0)
+  if(!m_TableData.empty())
   {
     dataSize.setHeight(m_TableData[0].size());
   }
@@ -161,30 +151,28 @@ void AsymmetricUnitTableData::checkAndAdjustDimensions()
   {
     return;
   }
-  else
-  {
-    /* The header dimensions do not equal the data dimensions.
+
+  /* The header dimensions do not equal the data dimensions.
        The data dimensions will be used and will overwrite the current header dimensions.
        This may result in data loss.
     */
-    int nRows = dataSize.width();
-    int nCols = dataSize.height();
+  int nRows = dataSize.width();
+  int nCols = dataSize.height();
 
-    // If row header dimension is greater than default row dimension, remove the extra headers
-    if(m_RowHeaders.size() > nRows)
+  // If row header dimension is greater than default row dimension, remove the extra headers
+  if(m_RowHeaders.size() > nRows)
+  {
+    while(m_RowHeaders.size() > nRows)
     {
-      while(m_RowHeaders.size() > nRows)
-      {
-        m_RowHeaders.pop_back();
-      }
+      m_RowHeaders.pop_back();
     }
-    // If column header dimension is greater than default column dimension, remove the extra headers
-    if(m_ColHeaders.size() > nCols)
+  }
+  // If column header dimension is greater than default column dimension, remove the extra headers
+  if(m_ColHeaders.size() > nCols)
+  {
+    while(m_ColHeaders.size() > nCols)
     {
-      while(m_ColHeaders.size() > nCols)
-      {
-        m_ColHeaders.pop_back();
-      }
+      m_ColHeaders.pop_back();
     }
   }
 }
@@ -197,11 +185,11 @@ QString AsymmetricUnitTableData::serializeData(char delimiter) const
   QString str;
   QTextStream ss(&str);
 
-  for(int row = 0; row < m_TableData.size(); row++)
+  for(const auto& rowIter : m_TableData)
   {
-    for(int col = 0; col < m_TableData[row].size(); col++)
+    for(double value : rowIter)
     {
-      ss << m_TableData[row][col] << delimiter;
+      ss << value << delimiter;
     }
   }
   str.chop(1); // Get rid of the last, unnecessary delimiter
@@ -212,7 +200,7 @@ QString AsymmetricUnitTableData::serializeData(char delimiter) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<std::vector<double>> AsymmetricUnitTableData::DeserializeData(QString dataStr, int nRows, int nCols, char delimiter)
+std::vector<std::vector<double>> AsymmetricUnitTableData::DeserializeData(const QString& dataStr, int nRows, int nCols, char delimiter)
 {
   std::vector<std::vector<double>> data(nRows, std::vector<double>(nCols));
   int row = 0, col = 0;
@@ -283,7 +271,7 @@ QString AsymmetricUnitTableData::serializeColumnHeaders(char delimiter) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QStringList AsymmetricUnitTableData::DeserializeHeaders(QString headersStr, char delimiter)
+QStringList AsymmetricUnitTableData::DeserializeHeaders(const QString& headersStr, char delimiter)
 {
   QStringList headers;
 
@@ -384,7 +372,7 @@ void AsymmetricUnitTableData::writeJson(QJsonObject& json) const
 // -----------------------------------------------------------------------------
 bool AsymmetricUnitTableData::readJson(QJsonObject& json)
 {
-  if(json.contains("Dynamic Table Data") == true)
+  if(json.contains("Dynamic Table Data"))
   {
     QJsonObject obj = json["Dynamic Table Data"].toObject();
     m_TableData = readData(obj);
@@ -487,7 +475,7 @@ std::vector<std::vector<double>> AsymmetricUnitTableData::getTableData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableData::setTableData(std::vector<std::vector<double>> data)
+void AsymmetricUnitTableData::setTableData(const std::vector<std::vector<double>>& data)
 {
   m_TableData = data;
 
@@ -508,14 +496,12 @@ int AsymmetricUnitTableData::getNumRows() const
 // -----------------------------------------------------------------------------
 int AsymmetricUnitTableData::getNumCols() const
 {
-  if(m_TableData.size() > 0)
+  if(!m_TableData.empty())
   {
     return m_TableData[0].size();
   }
-  else
-  {
-    return 0;
-  }
+
+  return 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -555,9 +541,8 @@ void AsymmetricUnitTableData::operator=(const AsymmetricUnitTableData& rhs)
 // -----------------------------------------------------------------------------
 bool AsymmetricUnitTableData::operator==(const AsymmetricUnitTableData& rhs) const
 {
-  if(m_RowHeaders == rhs.m_RowHeaders && m_ColHeaders == rhs.m_ColHeaders && m_DynamicRows == rhs.m_DynamicRows
-     && m_DynamicCols == rhs.m_DynamicCols && m_MinRows == rhs.m_MinRows && m_MinCols == rhs.m_MinCols
-     && m_DefaultRowCount == rhs.m_DefaultRowCount && m_DefaultColCount == rhs.m_DefaultColCount)
+  if(m_RowHeaders == rhs.m_RowHeaders && m_ColHeaders == rhs.m_ColHeaders && m_DynamicRows == rhs.m_DynamicRows && m_DynamicCols == rhs.m_DynamicCols && m_MinRows == rhs.m_MinRows &&
+     m_MinCols == rhs.m_MinCols && m_DefaultRowCount == rhs.m_DefaultRowCount && m_DefaultColCount == rhs.m_DefaultColCount)
   {
     for(int i = 0; i < m_TableData.size(); i++)
     {
@@ -580,9 +565,8 @@ bool AsymmetricUnitTableData::operator==(const AsymmetricUnitTableData& rhs) con
 // -----------------------------------------------------------------------------
 bool AsymmetricUnitTableData::operator!=(const AsymmetricUnitTableData& rhs) const
 {
-  if(m_RowHeaders == rhs.m_RowHeaders && m_ColHeaders == rhs.m_ColHeaders && m_DynamicRows == rhs.m_DynamicRows
-     && m_DynamicCols == rhs.m_DynamicCols && m_MinRows == rhs.m_MinRows && m_MinCols == rhs.m_MinCols
-     && m_DefaultRowCount == rhs.m_DefaultRowCount && m_DefaultColCount == rhs.m_DefaultColCount)
+  if(m_RowHeaders == rhs.m_RowHeaders && m_ColHeaders == rhs.m_ColHeaders && m_DynamicRows == rhs.m_DynamicRows && m_DynamicCols == rhs.m_DynamicCols && m_MinRows == rhs.m_MinRows &&
+     m_MinCols == rhs.m_MinCols && m_DefaultRowCount == rhs.m_DefaultRowCount && m_DefaultColCount == rhs.m_DefaultColCount)
   {
     for(int i = 0; i < m_TableData.size(); i++)
     {

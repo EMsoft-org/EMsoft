@@ -47,7 +47,7 @@ class GLImageViewer : public QOpenGLWidget
     Q_OBJECT
 public:
     GLImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~GLImageViewer();
+    ~GLImageViewer() override;
 
     struct GLImageData
     {

@@ -59,7 +59,7 @@ class  QtSStyles : public QObject
 
 
     QtSStyles();
-    virtual ~QtSStyles();
+    virtual ~QtSStyles() override;
 
 
     /**

@@ -50,14 +50,14 @@
 
 #include <QtWidgets>
 
-#include "StyleSheetEditor.h"
 #include "Common/QtSStyles.h"
+#include "StyleSheetEditor.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-StyleSheetEditor::StyleSheetEditor(QWidget *parent) :
-  QDialog(parent)
+StyleSheetEditor::StyleSheetEditor(QWidget* parent)
+: QDialog(parent)
 {
   setupUi(this);
 
@@ -65,8 +65,10 @@ StyleSheetEditor::StyleSheetEditor(QWidget *parent) :
   QString defaultStyle = QApplication::style()->metaObject()->className();
   QRegularExpressionMatch match = regExp.match(defaultStyle);
 
-  if (match.hasMatch())
+  if(match.hasMatch())
+  {
     defaultStyle = match.captured(1);
+  }
 
   styleSheetCombo->setCurrentIndex(styleSheetCombo->findText("light"));
   loadStyleSheet("light");
@@ -75,7 +77,7 @@ StyleSheetEditor::StyleSheetEditor(QWidget *parent) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void StyleSheetEditor::on_styleSheetCombo_activated(const QString &sheetName)
+void StyleSheetEditor::on_styleSheetCombo_activated(const QString& sheetName)
 {
   loadStyleSheet(sheetName);
 }
@@ -100,7 +102,7 @@ void StyleSheetEditor::on_applyButton_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void StyleSheetEditor::loadStyleSheet(const QString &sheetName)
+void StyleSheetEditor::loadStyleSheet(const QString& sheetName)
 {
   QFile file(":/" + sheetName.toLower() + ".qss");
   file.open(QFile::ReadOnly);

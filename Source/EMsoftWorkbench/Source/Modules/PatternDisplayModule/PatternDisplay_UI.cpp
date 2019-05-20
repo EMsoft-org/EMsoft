@@ -1,37 +1,37 @@
 /* ============================================================================
-* Copyright (c) 2009-2017 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2017 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "PatternDisplay_UI.h"
 
@@ -45,15 +45,15 @@
 
 #include "Modules/PatternDisplayModule/MPMCDisplayWidget.h"
 
-#include "Common/QtSSettings.h"
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
+#include "Common/QtSSettings.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternDisplay_UI::PatternDisplay_UI(QWidget* parent) :
-  IModuleUI(parent)
+PatternDisplay_UI::PatternDisplay_UI(QWidget* parent)
+: IModuleUI(parent)
 {
   setupUi(this);
 
@@ -75,13 +75,9 @@ PatternDisplay_UI::~PatternDisplay_UI()
 void PatternDisplay_UI::setupGui()
 {
   m_PatternDisplayWidget = new SimulatedPatternDisplayWidget();
-  connect(m_PatternDisplayWidget, &SimulatedPatternDisplayWidget::generationStarted, [=] {
-    setRunning(true);
-  });
+  connect(m_PatternDisplayWidget, &SimulatedPatternDisplayWidget::generationStarted, [=] { setRunning(true); });
 
-  connect(m_PatternDisplayWidget, &SimulatedPatternDisplayWidget::generationFinished, [=] {
-    setRunning(false);
-  });
+  connect(m_PatternDisplayWidget, &SimulatedPatternDisplayWidget::generationFinished, [=] { setRunning(false); });
 
   m_Controller = new PatternDisplayController(this);
   m_Controller->setPatternDisplayWidget(m_PatternDisplayWidget);
@@ -174,19 +170,19 @@ void PatternDisplay_UI::createWidgetConnections()
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &PatternDisplayController::errorMessageGenerated, this, &PatternDisplay_UI::notifyErrorMessage);
   connect(m_Controller, &PatternDisplayController::warningMessageGenerated, this, &PatternDisplay_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(appendToStdOut(const QString &)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
 
   // Connections to display messages to the PatternDisplay_UI status bar.  These messages also go in the log.
-  connect(masterPatternDisplayWidget, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(appendToStdOut(const QString &)));
-  connect(monteCarloDisplayWidget, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(appendToStdOut(const QString &)));
+  connect(masterPatternDisplayWidget, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
+  connect(monteCarloDisplayWidget, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
 
   // Connections to display master pattern and monte carlo images in their respective image viewers
   connect(m_Controller, SIGNAL(mpImageNeedsDisplayed(GLImageViewer::GLImageData)), masterPatternDisplayWidget, SLOT(loadImage(GLImageViewer::GLImageData)));
   connect(m_Controller, SIGNAL(mcImageNeedsDisplayed(GLImageViewer::GLImageData)), monteCarloDisplayWidget, SLOT(loadImage(GLImageViewer::GLImageData)));
 
   // Connections to allow the controller to tell the image viewers that the image spin box range has changed
-  connect(m_Controller, SIGNAL(imageRangeChanged(int,int)), masterPatternDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int, int)));
-  connect(m_Controller, SIGNAL(imageRangeChanged(int,int)), monteCarloDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int, int)));
+  connect(m_Controller, SIGNAL(imageRangeChanged(int, int)), masterPatternDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int, int)));
+  connect(m_Controller, SIGNAL(imageRangeChanged(int, int)), monteCarloDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int, int)));
 
   // Connections to allow the controller to tell the workbench parameters section that it has new ekeVs values
   connect(m_Controller, SIGNAL(minMaxEnergyLevelsChanged(FloatArrayType::Pointer)), this, SLOT(setMinAndMaxEnergyLevelChoices(FloatArrayType::Pointer)));
@@ -197,7 +193,8 @@ void PatternDisplay_UI::createWidgetConnections()
   connect(m_PatternDisplayWidget, SIGNAL(dataChanged(SimulatedPatternDisplayWidget::PatternDisplayData)), this, SLOT(generateEBSDPatternImage(SimulatedPatternDisplayWidget::PatternDisplayData)));
 
   // Connection to allow the PatternDisplay_UI to tell the controller that it needs to generate new pattern images
-  connect(this, SIGNAL(patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData, PatternDisplayController::DetectorData)), m_Controller, SLOT(generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData, PatternDisplayController::DetectorData)));
+  connect(this, SIGNAL(patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData, PatternDisplayController::DetectorData)), m_Controller,
+          SLOT(generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData, PatternDisplayController::DetectorData)));
 }
 
 // -----------------------------------------------------------------------------
@@ -261,13 +258,13 @@ void PatternDisplay_UI::setGenerateButtonAvailability(bool value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(FloatArrayType::Pointer ekeVs)
+void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(const FloatArrayType::Pointer& ekeVs)
 {
   energyMinCB->clear();
   energyMaxCB->clear();
 
   QStringList energies;
-  for (int i = 0; i < ekeVs->getNumberOfTuples(); i++)
+  for(int i = 0; i < ekeVs->getNumberOfTuples(); i++)
   {
     int energyLevel = static_cast<int>(ekeVs->getValue(i));
     energyMinCB->addItem(QString::number(energyLevel));
@@ -324,7 +321,7 @@ void PatternDisplay_UI::on_mpSelectBtn_clicked()
   QString lastDir = emSoftApp->getOpenDialogLastDirectory();
   QString filePath = FileIOTools::GetOpenPathFromDialog("Load Master File", "HDF5 File (*.h5);;All Files (*.*)", lastDir);
 
-  if (filePath.isEmpty() == false)
+  if(!filePath.isEmpty())
   {
     mpLabel->setText(filePath);
 
@@ -339,7 +336,7 @@ void PatternDisplay_UI::on_mpSelectBtn_clicked()
 // -----------------------------------------------------------------------------
 void PatternDisplay_UI::on_generateBtn_clicked()
 {
-  if (mpLabel->text().isEmpty())
+  if(mpLabel->text().isEmpty())
   {
     return;
   }
@@ -357,35 +354,35 @@ void PatternDisplay_UI::on_angleTypeCB_currentIndexChanged(int index)
   PatternDisplay_UI::AngleTypeMode mode = static_cast<PatternDisplay_UI::AngleTypeMode>(index);
 
   QLayoutItem* item = angleWidgetLayout->takeAt(0);
-  if (item)
+  if(item != nullptr)
   {
     QWidget* w = item->widget();
-    if (w)
+    if(w != nullptr)
     {
       w->hide();
       w->setParent(nullptr);
     }
   }
 
-  if (mode == PatternDisplay_UI::AngleTypeMode::SingleAngle)
+  if(mode == PatternDisplay_UI::AngleTypeMode::SingleAngle)
   {
     angleWidgetLayout->addWidget(m_SingleAngleWidget.get());
     m_CurrentAngleWidget = m_SingleAngleWidget.get();
     m_SingleAngleWidget->show();
   }
-  else if (mode == PatternDisplay_UI::AngleTypeMode::ReadFile)
+  else if(mode == PatternDisplay_UI::AngleTypeMode::ReadFile)
   {
     angleWidgetLayout->addWidget(m_AngleReaderWidget.get());
     m_CurrentAngleWidget = m_AngleReaderWidget.get();
     m_AngleReaderWidget->show();
   }
-  else if (mode == PatternDisplay_UI::AngleTypeMode::SamplingRate)
+  else if(mode == PatternDisplay_UI::AngleTypeMode::SamplingRate)
   {
     angleWidgetLayout->addWidget(m_SamplingRateWidget.get());
     m_CurrentAngleWidget = m_SamplingRateWidget.get();
     m_SamplingRateWidget->show();
   }
-  else if (mode == PatternDisplay_UI::AngleTypeMode::SampleCubochoricSpace)
+  else if(mode == PatternDisplay_UI::AngleTypeMode::SampleCubochoricSpace)
   {
     angleWidgetLayout->addWidget(m_SampleCubochoricSpaceWidget.get());
     m_CurrentAngleWidget = m_SampleCubochoricSpaceWidget.get();
@@ -407,16 +404,14 @@ bool PatternDisplay_UI::validateData()
   clearModuleIssues();
 
   PatternDisplayController::DetectorData data = getDetectorData();
-  if (m_Controller->validateDetectorValues(data) == true)
+  if(m_Controller->validateDetectorValues(data))
   {
     generateBtn->setEnabled(true);
     return true;
   }
-  else
-  {
-    generateBtn->setDisabled(true);
-    return false;
-  }
+
+  generateBtn->setDisabled(true);
+  return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -424,7 +419,7 @@ bool PatternDisplay_UI::validateData()
 // -----------------------------------------------------------------------------
 void PatternDisplay_UI::changeEvent(QEvent* event)
 {
-  if (event->type() == QEvent::ActivationChange)
+  if(event->type() == QEvent::ActivationChange)
   {
     emit moduleChangedState(this);
   }
@@ -448,20 +443,21 @@ void PatternDisplay_UI::readWindowSettings(QtSSettings* prefs)
 {
   bool ok = false;
   prefs->beginGroup("WindowSettings");
-  if (prefs->contains(QString("MainWindowGeometry")))
+  if(prefs->contains(QString("MainWindowGeometry")))
   {
     QByteArray geo_data = prefs->value("MainWindowGeometry", QByteArray());
     ok = restoreGeometry(geo_data);
-    if (!ok)
+    if(!ok)
     {
-      qDebug() << "Error Restoring the Window Geometry" << "\n";
+      qDebug() << "Error Restoring the Window Geometry"
+               << "\n";
     }
   }
 
-  if (prefs->contains(QString("MainWindowState")))
+  if(prefs->contains(QString("MainWindowState")))
   {
     QByteArray layout_data = prefs->value("MainWindowState", QByteArray());
-//    restoreState(layout_data);
+    //    restoreState(layout_data);
   }
 
   prefs->endGroup();
@@ -474,9 +470,9 @@ void PatternDisplay_UI::writeWindowSettings(QtSSettings* prefs)
 {
   prefs->beginGroup("WindowSettings");
   QByteArray geo_data = saveGeometry();
-//  QByteArray layout_data = saveState();
+  //  QByteArray layout_data = saveState();
   prefs->setValue(QString("MainWindowGeometry"), geo_data);
-//  prefs->setValue(QString("MainWindowState"), layout_data);
+  //  prefs->setValue(QString("MainWindowState"), layout_data);
 
   prefs->endGroup();
 }
@@ -484,7 +480,7 @@ void PatternDisplay_UI::writeWindowSettings(QtSSettings* prefs)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::readModuleSession(QJsonObject &obj)
+void PatternDisplay_UI::readModuleSession(QJsonObject& obj)
 {
   QString masterFilePath = obj[EMsoftWorkbenchConstants::IOStrings::MasterPatternFilePath].toString();
   mpLabel->setText(masterFilePath);
@@ -512,7 +508,7 @@ void PatternDisplay_UI::readModuleSession(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::readDetectorAndMicroscopeParameters(QJsonObject &obj)
+void PatternDisplay_UI::readDetectorAndMicroscopeParameters(QJsonObject& obj)
 {
   scintillatorDist->setText(QString::number(obj[EMsoftWorkbenchConstants::IOStrings::ScintillatorDistance].toDouble()));
   detectorTiltAngle->setText(QString::number(obj[EMsoftWorkbenchConstants::IOStrings::DetectorTiltAngle].toDouble()));
@@ -547,7 +543,7 @@ void PatternDisplay_UI::readDetectorAndMicroscopeParameters(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::writeModuleSession(QJsonObject &obj)
+void PatternDisplay_UI::writeModuleSession(QJsonObject& obj)
 {
   obj[EMsoftWorkbenchConstants::IOStrings::MasterPatternFilePath] = mpLabel->text();
 
@@ -576,7 +572,7 @@ void PatternDisplay_UI::writeModuleSession(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::writeDetectorAndMicroscopeParameters(QJsonObject &obj)
+void PatternDisplay_UI::writeDetectorAndMicroscopeParameters(QJsonObject& obj)
 {
   obj[EMsoftWorkbenchConstants::IOStrings::ScintillatorDistance] = scintillatorDist->text().toDouble();
   obj[EMsoftWorkbenchConstants::IOStrings::DetectorTiltAngle] = detectorTiltAngle->text().toDouble();
@@ -612,4 +608,3 @@ void PatternDisplay_UI::writeDetectorAndMicroscopeParameters(QJsonObject &obj)
   energyObj[EMsoftWorkbenchConstants::IOStrings::Maximum] = energyMaxCB->currentText().toInt();
   obj[EMsoftWorkbenchConstants::IOStrings::Energy] = energyObj;
 }
-

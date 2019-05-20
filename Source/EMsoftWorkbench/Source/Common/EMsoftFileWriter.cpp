@@ -152,7 +152,7 @@ bool EMsoftFileWriter::openGroup(const QString &groupName)
 // -----------------------------------------------------------------------------
 bool EMsoftFileWriter::closeGroup()
 {
-  if (m_IdStack.isEmpty() == true)
+  if (m_IdStack.isEmpty())
   {
     QString ss = QObject::tr("Error closing HDF5 group: no groups are open.'");
     emit errorMessageGenerated(ss, -10006);

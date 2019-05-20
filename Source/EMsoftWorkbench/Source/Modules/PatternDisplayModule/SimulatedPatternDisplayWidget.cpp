@@ -1,52 +1,52 @@
 /* ============================================================================
-* Copyright (c) 2009-2017 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2017 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "SimulatedPatternDisplayWidget.h"
 
 #include <QtCore/QSignalMapper>
 
-#include <QtWidgets/QMenu>
-#include <QtWidgets/QFileDialog>
 #include <QtWidgets/QActionGroup>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMenu>
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 
-#include "Common/PatternTools.h"
 #include "Common/FileIOTools.h"
+#include "Common/PatternTools.h"
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 #include "Modules/PatternDisplayModule/PatternListModel.h"
@@ -70,8 +70,8 @@ const QString SimulatedPatternDisplayWidget::CancelText = "Cancel...";
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SimulatedPatternDisplayWidget::SimulatedPatternDisplayWidget(QWidget* parent, Qt::WindowFlags windowFlags) :
-  QWidget(parent, windowFlags)
+SimulatedPatternDisplayWidget::SimulatedPatternDisplayWidget(QWidget* parent, Qt::WindowFlags windowFlags)
+: QWidget(parent, windowFlags)
 {
   setupUi(this);
 
@@ -81,10 +81,7 @@ SimulatedPatternDisplayWidget::SimulatedPatternDisplayWidget(QWidget* parent, Qt
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SimulatedPatternDisplayWidget::~SimulatedPatternDisplayWidget()
-{
-
-}
+SimulatedPatternDisplayWidget::~SimulatedPatternDisplayWidget() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -94,9 +91,10 @@ void SimulatedPatternDisplayWidget::setupGui()
   PatternListModel* model = PatternListModel::Instance();
   patternListView->setModel(model);
 
-  connect(patternListView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(patternListView_itemSelectionChanged(const QItemSelection &, const QItemSelection &)));
+  connect(patternListView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this,
+          SLOT(patternListView_itemSelectionChanged(const QItemSelection&, const QItemSelection&)));
 
-  connect(patternListView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(patternListView_doubleClicked(const QModelIndex &)));
+  connect(patternListView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(patternListView_doubleClicked(const QModelIndex&)));
 
   m_MinSBValue = gammaSpinBox->minimum();
   m_MaxSBValue = gammaSpinBox->maximum();
@@ -183,7 +181,7 @@ void SimulatedPatternDisplayWidget::setupGui()
   connect(zoomOut, &QPushButton::pressed, [=] { imageWidget->zoomOut(); });
   connect(fitToScreen, &QPushButton::pressed, [=] { imageWidget->fitToScreen(); });
 
-  connect(overlayCB, &QCheckBox::stateChanged, [=] (int state) {
+  connect(overlayCB, &QCheckBox::stateChanged, [=](int state) {
     imageWidget->setUseStatsOverlay(state == Qt::Checked);
     imageWidget->update();
   });
@@ -206,7 +204,7 @@ void SimulatedPatternDisplayWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::closeEvent(QCloseEvent *event)
+void SimulatedPatternDisplayWidget::closeEvent(QCloseEvent* event)
 {
   emit cancelRequested();
 
@@ -228,7 +226,7 @@ void SimulatedPatternDisplayWidget::detectorBinning_selectionChanged()
 //
 // -----------------------------------------------------------------------------
 void SimulatedPatternDisplayWidget::patternOrigin_selectionChanged()
-{  
+{
   QString patternOrigin = getPatternOriginValue();
   patternOriginBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternOriginLabel).arg(patternOrigin));
 
@@ -264,25 +262,25 @@ void SimulatedPatternDisplayWidget::generateImages()
 SimulatedPatternDisplayWidget::PatternDisplayData SimulatedPatternDisplayWidget::getPatternDisplayData()
 {
   size_t detectorBinningValue = getDetectorBinningValue();
-  if (detectorBinningValue == 0)
+  if(detectorBinningValue == 0)
   {
     // Error: Invalid detector binning value
   }
 
   QString patternOrigin = getPatternOriginValue();
-  if (patternOrigin.isEmpty())
+  if(patternOrigin.isEmpty())
   {
     // Error: Invalid pattern origin
   }
 
   QString patternScaling = getPatternScalingValue();
-  if (patternScaling.isEmpty())
+  if(patternScaling.isEmpty())
   {
     // Error: Invalid pattern scaling
   }
 
   double gamma;
-  if (patternScaling == SimulatedPatternDisplayWidget::LinearScaling)
+  if(patternScaling == SimulatedPatternDisplayWidget::LinearScaling)
   {
     gamma = 1;
     gammaLabel->setDisabled(true);
@@ -310,7 +308,7 @@ SimulatedPatternDisplayWidget::PatternDisplayData SimulatedPatternDisplayWidget:
 // -----------------------------------------------------------------------------
 void SimulatedPatternDisplayWidget::on_generateBtn_clicked()
 {
-  if (generateBtn->text() == GenerateText)
+  if(generateBtn->text() == GenerateText)
   {
     emit generationStarted();
     PatternListModel* model = PatternListModel::Instance();
@@ -363,12 +361,15 @@ void SimulatedPatternDisplayWidget::on_saveBtn_clicked()
   parentPath = parentPath + "/Untitled.jpeg";
   parentPath = QDir::toNativeSeparators(parentPath);
   QString filePath = FileIOTools::GetSavePathFromDialog("Save Pattern Image", "JPEG File (*.jpeg);;PNG File(*.png);;TIFF File(*.tiff);;All Files (*.*)", parentPath);
-  if (filePath.isEmpty()) { return; }
+  if(filePath.isEmpty())
+  {
+    return;
+  }
 
   QImage image = imageWidget->getCurrentImage();
-  if (!image.save(filePath))
+  if(!image.save(filePath))
   {
-//    emit stdOutputMessageGenerated(tr("Error: Unable to save image to file path '%1'").arg(filePath));
+    //    emit stdOutputMessageGenerated(tr("Error: Unable to save image to file path '%1'").arg(filePath));
   }
   else
   {
@@ -379,7 +380,7 @@ void SimulatedPatternDisplayWidget::on_saveBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::setExpectedPatterns(FloatArrayType::Pointer eulerAngles)
+void SimulatedPatternDisplayWidget::setExpectedPatterns(const FloatArrayType::Pointer& eulerAngles)
 {
   PatternListModel* model = PatternListModel::Instance();
 
@@ -389,7 +390,7 @@ void SimulatedPatternDisplayWidget::setExpectedPatterns(FloatArrayType::Pointer 
   m_LoadedImageData.clear();
   m_LoadedImageData.resize(eulerAngles->getNumberOfTuples());
 
-  for (int i = 0; i < eulerAngles->getNumberOfTuples(); i++)
+  for(int i = 0; i < eulerAngles->getNumberOfTuples(); i++)
   {
     float a1 = eulerAngles->getComponent(i, 0);
     float a2 = eulerAngles->getComponent(i, 1);
@@ -398,7 +399,7 @@ void SimulatedPatternDisplayWidget::setExpectedPatterns(FloatArrayType::Pointer 
     a2 = AbstractAngleWidget::ConvertToDegrees(a2);
     a3 = AbstractAngleWidget::ConvertToDegrees(a3);
 
-    QString name = tr("Pattern %1: (%2, %3, %4)").arg(QString::number(i+1), QString::number(a1), QString::number(a2), QString::number(a3));
+    QString name = tr("Pattern %1: (%2, %3, %4)").arg(QString::number(i + 1), QString::number(a1), QString::number(a2), QString::number(a3));
 
     model->insertItem(i, name);
   }
@@ -429,13 +430,16 @@ void SimulatedPatternDisplayWidget::setProgressBarMaximum(int value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::loadImage(int index, GLImageViewer::GLImageData data)
+void SimulatedPatternDisplayWidget::loadImage(int index, const GLImageViewer::GLImageData& data)
 {
-  if (index > m_LoadedImageData.size() - 1 || index < 0) { return; }
+  if(index > m_LoadedImageData.size() - 1 || index < 0)
+  {
+    return;
+  }
 
   m_LoadedImageData[index] = data;
 
-  if (patternListView->currentIndex().row() == index)
+  if(patternListView->currentIndex().row() == index)
   {
     displayImage(index);
   }
@@ -456,22 +460,22 @@ void SimulatedPatternDisplayWidget::displayImage(GLImageViewer::GLImageData imag
 {
   PatternDisplayData displayData = getPatternDisplayData();
 
-  if (imageData.image.isNull() == false)
+  if(!imageData.image.isNull())
   {
-    if (displayData.patternOrigin == SimulatedPatternDisplayWidget::UpperLeftOrigin)
+    if(displayData.patternOrigin == SimulatedPatternDisplayWidget::UpperLeftOrigin)
     {
       imageData.image = imageData.image.mirrored();
     }
-    else if (displayData.patternOrigin == SimulatedPatternDisplayWidget::UpperRightOrigin)
+    else if(displayData.patternOrigin == SimulatedPatternDisplayWidget::UpperRightOrigin)
     {
       imageData.image = imageData.image.mirrored(true, true);
     }
-    else if (displayData.patternOrigin == SimulatedPatternDisplayWidget::LowerRightOrigin)
+    else if(displayData.patternOrigin == SimulatedPatternDisplayWidget::LowerRightOrigin)
     {
       imageData.image = imageData.image.mirrored(true, false);
     }
 
-    if (useCircularMask->isChecked())
+    if(useCircularMask->isChecked())
     {
       imageData.image = PatternTools::ApplyCircularMask(imageData.image);
     }
@@ -485,11 +489,11 @@ void SimulatedPatternDisplayWidget::displayImage(GLImageViewer::GLImageData imag
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::patternListView_itemSelectionChanged(const QItemSelection &current, const QItemSelection &previous)
+void SimulatedPatternDisplayWidget::patternListView_itemSelectionChanged(const QItemSelection& current, const QItemSelection& previous)
 {
   Q_UNUSED(previous)
 
-  if (current.indexes().size() == 1)
+  if(current.indexes().size() == 1)
   {
     GLImageViewer::GLImageData imageData = m_LoadedImageData[current.indexes()[0].row()];
     displayImage(imageData);
@@ -499,7 +503,7 @@ void SimulatedPatternDisplayWidget::patternListView_itemSelectionChanged(const Q
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::patternListView_doubleClicked(const QModelIndex &index)
+void SimulatedPatternDisplayWidget::patternListView_doubleClicked(const QModelIndex& index)
 {
   PatternListModel* model = PatternListModel::Instance();
   model->setPatternStatus(index.row(), PatternListItem::PatternStatus::Priority);
@@ -515,7 +519,7 @@ QString SimulatedPatternDisplayWidget::getPatternOriginValue()
   QAction* checkedAction = m_PatternOriginMenuActionGroup->checkedAction();
   QString value = "";
 
-  if (checkedAction != nullptr)
+  if(checkedAction != nullptr)
   {
     value = checkedAction->text();
   }
@@ -531,7 +535,7 @@ QString SimulatedPatternDisplayWidget::getPatternScalingValue()
   QAction* checkedAction = m_PatternScalingMenuActionGroup->checkedAction();
   QString value = "";
 
-  if (checkedAction != nullptr)
+  if(checkedAction != nullptr)
   {
     value = checkedAction->text();
   }
@@ -547,11 +551,14 @@ size_t SimulatedPatternDisplayWidget::getDetectorBinningValue()
   QAction* checkedAction = m_DetectorBinningMenuActionGroup->checkedAction();
   size_t value = 0;
 
-  if (checkedAction != nullptr)
+  if(checkedAction != nullptr)
   {
     bool ok = false;
     value = checkedAction->text().toInt(&ok);
-    if (ok == false) { value = 0; }
+    if(!ok)
+    {
+      value = 0;
+    }
   }
 
   return value;
@@ -575,4 +582,3 @@ void SimulatedPatternDisplayWidget::patternGenerationFinished()
   generateBtn->setText(GenerateText);
   emit generationFinished();
 }
-

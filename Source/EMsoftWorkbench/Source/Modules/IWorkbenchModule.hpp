@@ -35,65 +35,33 @@
 
 #pragma once
 
-#include "Common/GLImageViewer.h"
+#include <QtCore/QJsonObject>
+#include <QtCore/QObject>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Modules/PatternFitModule/PatternControlsWidget.h"
+#include "Modules/IModuleUI.h"
 
-#include "ui_PatternFitViewer.h"
-
-class PatternFitViewer : public QWidget, public Ui::PatternFitViewer
+class IWorkbenchModule : public QObject
 {
   Q_OBJECT
 
 public:
-  PatternFitViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-  ~PatternFitViewer() override;
+  SIMPL_SHARED_POINTERS(IWorkbenchModule)
 
-  void loadImage(GLImageViewer::GLImageData imageData);
+  ~IWorkbenchModule() override = default;
 
-  void clearImage();
-
-  int getFlickerInterval();
-
-  /**
-   * @brief readSession
-   * @param obj
-   */
-  void readSession(QJsonObject& obj);
-
-  /**
-   * @brief writeSession
-   * @param obj
-   */
-  void writeSession(QJsonObject& obj);
-
-protected slots:
-  /**
-   * @brief on_saveBtn_clicked
-   */
-  void on_saveBtn_clicked();
+  virtual IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) = 0;
 
 protected:
-  /**
-   * @brief setupGui
-   */
-  void setupGui();
-
-signals:
-  void flickerBoxChecked(int state);
-
-  void controlsChanged();
-
-private:
-  QImage m_CurrentImage;
+  IWorkbenchModule(QObject* parent)
+  : QObject(parent)
+  {
+  }
 
 public:
-  PatternFitViewer(const PatternFitViewer&) = delete;            // Copy Constructor Not Implemented
-  PatternFitViewer(PatternFitViewer&&) = delete;                 // Move Constructor Not Implemented
-  PatternFitViewer& operator=(const PatternFitViewer&) = delete; // Copy Assignment Not Implemented
-  PatternFitViewer& operator=(PatternFitViewer&&) = delete;      // Move Assignment Not Implemented
+  IWorkbenchModule(const IWorkbenchModule&) = delete;            // Copy Constructor Not Implemented
+  IWorkbenchModule(IWorkbenchModule&&) = delete;                 // Move Constructor Not Implemented
+  IWorkbenchModule& operator=(const IWorkbenchModule&) = delete; // Copy Assignment Not Implemented
+  IWorkbenchModule& operator=(IWorkbenchModule&&) = delete;      // Move Assignment Not Implemented
 };
-
-Q_DECLARE_METATYPE(PatternControlsWidget::PatternChoice)

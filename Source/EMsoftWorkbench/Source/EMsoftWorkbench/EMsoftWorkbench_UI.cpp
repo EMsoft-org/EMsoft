@@ -1,37 +1,37 @@
 /* ============================================================================
-* Copyright (c) 2009-2017 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2017 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "EMsoftWorkbench_UI.h"
 
@@ -45,14 +45,14 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QToolButton>
 
-#include "Modules/ModuleManager.h"
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreation_UI.h"
+#include "Modules/ModuleManager.h"
 
 #include "Common/Constants.h"
 #include "Common/EMsoftMenuItems.h"
 #include "Common/FileIOTools.h"
-#include "Common/QtSSettings.h"
 #include "Common/QtSRecentFileList.h"
+#include "Common/QtSSettings.h"
 
 #include "EMsoftWorkbench/StandardEMsoftApplication.h"
 #include "EMsoftWorkbench/StatusBarWidget.h"
@@ -60,8 +60,8 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-EMsoftWorkbench_UI::EMsoftWorkbench_UI(QWidget* parent) :
-  QMainWindow(parent)
+EMsoftWorkbench_UI::EMsoftWorkbench_UI(QWidget* parent)
+: QMainWindow(parent)
 {
   setupUi(this);
 
@@ -80,7 +80,7 @@ EMsoftWorkbench_UI::~EMsoftWorkbench_UI()
 
   emSoftApp->unregisterWorkbenchInstance(this);
 
-  if (emSoftApp->activeWindow() == this)
+  if(emSoftApp->activeWindow() == this)
   {
     emSoftApp->setActiveWindow(nullptr);
   }
@@ -90,8 +90,8 @@ EMsoftWorkbench_UI::~EMsoftWorkbench_UI()
 //
 // -----------------------------------------------------------------------------
 void EMsoftWorkbench_UI::setupGui()
-{  
-#if defined (Q_OS_WIN)
+{
+#if defined(Q_OS_WIN)
   setMenuBar(standardApp->getSIMPLViewMenuBar());
 #endif
 
@@ -128,69 +128,59 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
   // If the current index in the module stacked widget changes: clear the issues table and standard output window,
   // disconnect all signals/slots from old module, connect all signals/slots for new module, and populate
   // the issues table and standard output window with the new module's existing issues and messages
-  connect(moduleStackedWidget, &QStackedWidget::currentChanged, [=] (int index) {
+  connect(moduleStackedWidget, &QStackedWidget::currentChanged, [=](int index) {
     clearIssuesTable();
     stdOutTE->clear();
 
     IModuleUI* oldModule = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(m_CurrentStackedWidgetIdx));
     IModuleUI* newModule = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(index));
 
-    if (oldModule != nullptr)
+    if(oldModule != nullptr)
     {
       // Connect the module's warning messages so that they can be displayed in the issues table
-      disconnect(oldModule, &IModuleUI::issuesCleared, 0, 0);
+      disconnect(oldModule, &IModuleUI::issuesCleared, nullptr, nullptr);
 
       // Connect the module's warning messages so that they can be displayed in the issues table
-      disconnect(oldModule, &IModuleUI::moduleParametersChanged, 0, 0);
+      disconnect(oldModule, &IModuleUI::moduleParametersChanged, nullptr, nullptr);
 
       // Connect the module's error messages so that they can be displayed in the issues table
-      disconnect(oldModule, &IModuleUI::errorMessageGenerated, 0, 0);
+      disconnect(oldModule, &IModuleUI::errorMessageGenerated, nullptr, nullptr);
 
       // Connect the module's warning messages so that they can be displayed in the issues table
-      disconnect(oldModule, &IModuleUI::warningMessageGenerated, 0, 0);
+      disconnect(oldModule, &IModuleUI::warningMessageGenerated, nullptr, nullptr);
 
       // Connect the module's std output messages so that they can be displayed in the std output pane.
       // This must be done using the old-style signal/slot connection because it may cross threads
-      disconnect(oldModule, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(slot_StdOutputMsgReceived(const QString &)));
+      disconnect(oldModule, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(slot_StdOutputMsgReceived(const QString&)));
     }
 
-    if (newModule != nullptr)
+    if(newModule != nullptr)
     {
       // Connect the module's warning messages so that they can be displayed in the issues table
-      connect(newModule, &IModuleUI::issuesCleared, [=] {
-        clearIssuesTable();
-      });
+      connect(newModule, &IModuleUI::issuesCleared, [=] { clearIssuesTable(); });
 
       // Connect the module's warning messages so that they can be displayed in the issues table
-      connect(newModule, &IModuleUI::moduleParametersChanged, [=] {
-        setWindowModified(true);
-      });
+      connect(newModule, &IModuleUI::moduleParametersChanged, [=] { setWindowModified(true); });
 
       // Connect the module's error messages so that they can be displayed in the issues table
-      connect(newModule, &IModuleUI::errorMessageGenerated, [=] (const QString &msg) {
-          addIssue(msg, IModuleUI::IssueType::Error);
-      });
+      connect(newModule, &IModuleUI::errorMessageGenerated, [=](const QString& msg) { addIssue(msg, IModuleUI::IssueType::Error); });
 
       // Connect the module's warning messages so that they can be displayed in the issues table
-      connect(newModule, &IModuleUI::warningMessageGenerated, [=] (const QString &msg) {
-        addIssue(msg, IModuleUI::IssueType::Warning);
-      });
+      connect(newModule, &IModuleUI::warningMessageGenerated, [=](const QString& msg) { addIssue(msg, IModuleUI::IssueType::Warning); });
 
       // Connect the module's std output messages so that they can be displayed in the std output pane.
       // This must be done using the old-style signal/slot connection because it may cross threads
-      connect(newModule, SIGNAL(stdOutputMessageGenerated(const QString &)), this, SLOT(slot_StdOutputMsgReceived(const QString &)));
+      connect(newModule, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(slot_StdOutputMsgReceived(QString)));
 
       // Set the widget into the frame
       QList<IModuleUI::ModuleIssue> issues = newModule->getModuleIssues();
-      for (int i = 0; i < issues.size(); i++)
+      for(const IModuleUI::ModuleIssue& issue : issues)
       {
-        IModuleUI::ModuleIssue issue = issues[i];
         addIssue(issue.msg, issue.msgType);
       }
 
       stdOutTE->setText(newModule->getStdOutput());
     }
-
   }); // End connect
 
   // Create the order that the modules will be displayed in the user interface.  This order
@@ -204,11 +194,11 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
 
   m_ToolbarButtonGroup = new QActionGroup(this);
 
-  for (int i = 0; i < m_ModuleNamesOrder.size(); i++)
+  for(int i = 0; i < m_ModuleNamesOrder.size(); i++)
   {
     // Create a toolbar action labeled with the module name
     QString moduleName = m_ModuleNamesOrder[i];
-    QAction* toolbarAction = mainToolbar->addAction(tr("%1. %2").arg(QString::number(i + 1)).arg(moduleName));   // Create toolbar action
+    QAction* toolbarAction = mainToolbar->addAction(tr("%1. %2").arg(QString::number(i + 1), moduleName)); // Create toolbar action
     toolbarAction->setCheckable(true);
     m_ToolbarButtonGroup->addAction(toolbarAction);
 
@@ -223,17 +213,17 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
       QList<QAction*> toolbarActions = mainToolbar->actions();
       int idx = toolbarActions.indexOf(toolbarAction);
 
-      if (dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(idx)) == nullptr)
+      if(dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(idx)) == nullptr)
       {
         // This module doesn't exist yet, so create it
         IModuleUI* module_ui = manager->getModuleFromName(m_ModuleNamesOrder[idx], QJsonObject(), this);
-        if (module_ui != nullptr)
+        if(module_ui != nullptr)
         {
-          connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=] (IModuleUI* module_ui) {
-            for (int i = 0; i < moduleStackedWidget->count(); i++)
+          connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=](IModuleUI* module_ui) {
+            for(int i = 0; i < moduleStackedWidget->count(); i++)
             {
               IModuleUI* ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
-              if (ui != nullptr && ui != module_ui)
+              if(ui != nullptr && ui != module_ui)
               {
                 ui->validateData();
               }
@@ -263,12 +253,12 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
         moduleStackedWidget->setCurrentIndex(idx);
         m_CurrentStackedWidgetIdx = idx;
       }
-    });  // End connect
+    }); // End connect
   }
 
   // Trigger the first toolbar action so that it displays first by default
   QList<QAction*> toolbarActions = mainToolbar->actions();
-  if (toolbarActions.size() > 0)
+  if(!toolbarActions.empty())
   {
     toolbarActions[0]->trigger();
   }
@@ -290,7 +280,6 @@ void EMsoftWorkbench_UI::setupIssuesTable()
 // -----------------------------------------------------------------------------
 void EMsoftWorkbench_UI::createWidgetConnections()
 {
-
 }
 
 // -----------------------------------------------------------------------------
@@ -298,10 +287,10 @@ void EMsoftWorkbench_UI::createWidgetConnections()
 // -----------------------------------------------------------------------------
 void EMsoftWorkbench_UI::closeEvent(QCloseEvent* event)
 {
-  for (int i = 0; i < moduleStackedWidget->count(); i++)
+  for(int i = 0; i < moduleStackedWidget->count(); i++)
   {
     IModuleUI* module_ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
-    if (module_ui != nullptr && module_ui->isRunning() == true)
+    if(module_ui != nullptr && module_ui->isRunning())
     {
       QString moduleName = m_ModuleNamesOrder[i];
       QMessageBox runningPipelineBox;
@@ -330,32 +319,35 @@ void EMsoftWorkbench_UI::closeEvent(QCloseEvent* event)
 // -----------------------------------------------------------------------------
 QMessageBox::StandardButton EMsoftWorkbench_UI::checkDirtyDocument()
 {
-  if(this->isWindowModified() == true)
+  QMessageBox::StandardButton stdBtn = QMessageBox::Ignore;
+
+  if(this->isWindowModified())
   {
     int r = QMessageBox::warning(this, QCoreApplication::applicationName(), tr("The Workbench has been modified.\nDo you want to save your changes?"), QMessageBox::Save | QMessageBox::Default,
                                  QMessageBox::Discard, QMessageBox::Cancel | QMessageBox::Escape);
+
     if(r == QMessageBox::Save)
     {
-      if(saveSession() == true)
+      if(saveSession())
       {
-        return QMessageBox::Save;
+        stdBtn = QMessageBox::Save;
       }
       else
       {
-        return QMessageBox::Cancel;
+        stdBtn = QMessageBox::Cancel;
       }
     }
     else if(r == QMessageBox::Discard)
     {
-      return QMessageBox::Discard;
+      stdBtn = QMessageBox::Discard;
     }
     else if(r == QMessageBox::Cancel)
     {
-      return QMessageBox::Cancel;
+      stdBtn = QMessageBox::Cancel;
     }
   }
 
-  return QMessageBox::Ignore;
+  return stdBtn;
 }
 
 // -----------------------------------------------------------------------------
@@ -364,13 +356,15 @@ QMessageBox::StandardButton EMsoftWorkbench_UI::checkDirtyDocument()
 void EMsoftWorkbench_UI::on_saveBtn_clicked()
 {
   QString proposedDir = emSoftApp->getOpenDialogLastDirectory();
-  QString filePath = QFileDialog::getSaveFileName(this, tr("Save Standard Output"),
-    proposedDir, tr("Log File (*.log);;Text File (*.txt);;All Files (*.*)"));
+  QString filePath = QFileDialog::getSaveFileName(this, tr("Save Standard Output"), proposedDir, tr("Log File (*.log);;Text File (*.txt);;All Files (*.*)"));
   emSoftApp->setOpenDialogLastDirectory(filePath);
-  if (filePath.isEmpty()) { return; }
+  if(filePath.isEmpty())
+  {
+    return;
+  }
 
   QFile file(filePath);
-  if (file.open(QIODevice::WriteOnly))
+  if(file.open(QIODevice::WriteOnly))
   {
     QTextStream stream(&file);
 
@@ -385,28 +379,28 @@ void EMsoftWorkbench_UI::openSession(QJsonObject obj)
 {
   ModuleManager* manager = ModuleManager::Instance();
 
-  for (int i = 0; i < m_ModuleNamesOrder.size(); i++)
+  for(int i = 0; i < m_ModuleNamesOrder.size(); i++)
   {
     QString moduleName = m_ModuleNamesOrder[i];
     QJsonObject moduleObj = obj[moduleName].toObject();
-    if (moduleObj.isEmpty() == false)
+    if(!moduleObj.isEmpty())
     {
       IModuleUI* module_ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
-      if (module_ui == nullptr)
+      if(module_ui == nullptr)
       {
         module_ui = manager->getModuleFromName(moduleName, moduleObj, this);
-        connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=] (IModuleUI* module_ui) {
-          for (int i = 0; i < moduleStackedWidget->count(); i++)
+        connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=](IModuleUI* module_ui) {
+          for(int i = 0; i < moduleStackedWidget->count(); i++)
           {
             IModuleUI* ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
-            if (ui != nullptr && ui != module_ui)
+            if(ui != nullptr && ui != module_ui)
             {
               ui->validateData();
             }
           }
         });
 
-        moduleStackedWidget->insertWidget(i, module_ui);     // Add module to stacked widget
+        moduleStackedWidget->insertWidget(i, module_ui); // Add module to stacked widget
       }
 
       module_ui->readModuleSession(moduleObj);
@@ -419,7 +413,7 @@ void EMsoftWorkbench_UI::openSession(QJsonObject obj)
 // -----------------------------------------------------------------------------
 bool EMsoftWorkbench_UI::saveSession()
 {
-  if(isWindowModified() == true)
+  if(isWindowModified())
   {
     QString filePath;
     if(m_OpenedFilePath.isEmpty())
@@ -428,10 +422,8 @@ bool EMsoftWorkbench_UI::saveSession()
       bool didSave = saveSessionAs();
       return didSave;
     }
-    else
-    {
-      filePath = m_OpenedFilePath;
-    }
+
+    filePath = m_OpenedFilePath;
 
     // Fix the separators
     filePath = QDir::toNativeSeparators(filePath);
@@ -459,7 +451,7 @@ bool EMsoftWorkbench_UI::saveSessionAs()
 {
   QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.json";
   QString filePath = FileIOTools::GetSavePathFromDialog("Save Session", "Json File (*.json);;All Files (*.*)", proposedFile);
-  if(true == filePath.isEmpty())
+  if(filePath.isEmpty())
   {
     return false;
   }
@@ -477,10 +469,10 @@ bool EMsoftWorkbench_UI::saveSessionAs()
   // Write the modules to the file
   bool success = writeModulesToFile(filePath);
 
-  if(success == true)
+  if(success)
   {
     // Set window title and save flag
-    setWindowTitle(QObject::tr("[*]%1 - %2").arg(fi.baseName()).arg(QCoreApplication::applicationName()));
+    setWindowTitle(QObject::tr("[*]%1 - %2").arg(fi.baseName(), QCoreApplication::applicationName()));
     setWindowModified(false);
 
     // Add file to the recent files list
@@ -503,17 +495,17 @@ bool EMsoftWorkbench_UI::saveSessionAs()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool EMsoftWorkbench_UI::writeModulesToFile(const QString &filePath)
+bool EMsoftWorkbench_UI::writeModulesToFile(const QString& filePath)
 {
   // Write the contents
-  if(filePath.isEmpty() == false)
+  if(!filePath.isEmpty())
   {
     QFile outputFile(filePath);
     QFileInfo info(outputFile);
     QString parentPath = info.absolutePath();
     QDir parentDir(parentPath);
 
-    if(parentDir.exists() == false)
+    if(!parentDir.exists())
     {
       parentDir.mkpath(parentPath);
     }
@@ -521,10 +513,10 @@ bool EMsoftWorkbench_UI::writeModulesToFile(const QString &filePath)
     QJsonObject root;
     QJsonObject modulesObj;
 
-    for (int i = 0; i < moduleStackedWidget->count(); i++)
+    for(int i = 0; i < moduleStackedWidget->count(); i++)
     {
       IModuleUI* module = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
-      if (module != nullptr)
+      if(module != nullptr)
       {
         QString moduleName = m_ModuleNamesOrder[i];
 
@@ -539,7 +531,7 @@ bool EMsoftWorkbench_UI::writeModulesToFile(const QString &filePath)
 
     QJsonDocument doc(root);
 
-    if(outputFile.exists() == true)
+    if(outputFile.exists())
     {
       outputFile.remove();
     }
@@ -557,14 +549,14 @@ bool EMsoftWorkbench_UI::writeModulesToFile(const QString &filePath)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftWorkbench_UI::addIssue(const QString &msg, IModuleUI::IssueType type)
+void EMsoftWorkbench_UI::addIssue(const QString& msg, IModuleUI::IssueType type)
 {
   int row = errorTableWidget->rowCount();
   errorTableWidget->insertRow(row);
 
   QTableWidgetItem* msgItem = new QTableWidgetItem(msg);
   QTableWidgetItem* typeItem;
-  if (type == IModuleUI::IssueType::Error)
+  if(type == IModuleUI::IssueType::Error)
   {
     typeItem = new QTableWidgetItem("Error");
     typeItem->setData(Qt::BackgroundColorRole, QColor(255, 191, 193));
@@ -585,7 +577,7 @@ void EMsoftWorkbench_UI::addIssue(const QString &msg, IModuleUI::IssueType type)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftWorkbench_UI::slot_StdOutputMsgReceived(const QString &msg)
+void EMsoftWorkbench_UI::slot_StdOutputMsgReceived(const QString& msg)
 {
   // Only add the standard output message to the standard output pane if the module
   // that sent the std output message is active
@@ -597,7 +589,7 @@ void EMsoftWorkbench_UI::slot_StdOutputMsgReceived(const QString &msg)
 // -----------------------------------------------------------------------------
 void EMsoftWorkbench_UI::changeEvent(QEvent* event)
 {
-  if (event->type() == QEvent::ActivationChange)
+  if(event->type() == QEvent::ActivationChange)
   {
     emit workbenchWindowChangedState(this);
   }
@@ -609,7 +601,7 @@ void EMsoftWorkbench_UI::changeEvent(QEvent* event)
 void EMsoftWorkbench_UI::clearIssuesTable()
 {
   errorTableWidget->clearContents();
-  while (errorTableWidget->rowCount() > 0)
+  while(errorTableWidget->rowCount() > 0)
   {
     errorTableWidget->removeRow(0);
   }
@@ -682,7 +674,6 @@ void EMsoftWorkbench_UI::readDockWidgetSettings(QtSSettings* prefs, QDockWidget*
 {
   restoreDockWidget(dw);
 
-  QString name = dw->objectName();
   bool b = prefs->value(dw->objectName(), QVariant(false)).toBool();
   dw->setHidden(b);
 }
@@ -734,6 +725,3 @@ void EMsoftWorkbench_UI::writeDockWidgetSettings(QtSSettings* prefs, QDockWidget
 {
   prefs->setValue(dw->objectName(), dw->isHidden());
 }
-
-
-

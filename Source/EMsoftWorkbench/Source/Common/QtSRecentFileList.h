@@ -143,7 +143,7 @@ class QtSRecentFileList: public QObject
     bool contains(const QString& file);
 
   private:
-    ~QtSRecentFileList();
+    ~QtSRecentFileList() override;
 
     QStringList recentFiles;
 

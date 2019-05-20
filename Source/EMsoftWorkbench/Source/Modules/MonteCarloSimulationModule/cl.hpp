@@ -747,7 +747,7 @@ public:
     {
         if (size_ != 0) {
             --size_;
-            data_[size_].~T();
+            data_[size_].~T() override;
         } else {
             detail::errHandler(CL_MEM_OBJECT_ALLOCATION_FAILURE, __VECTOR_CAPACITY_ERR);
         }
@@ -860,7 +860,7 @@ public:
             while (size_ > newSize)
             {
                 --size_;
-                data_[size_].~T();
+                data_[size_].~T() override;
             }
         }
     }

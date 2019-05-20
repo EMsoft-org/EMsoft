@@ -53,7 +53,7 @@ class MasterPatternFileReader
 {
   public:
     MasterPatternFileReader(const QString &filePath, IObserver* obs);
-    ~MasterPatternFileReader();
+    virtual ~MasterPatternFileReader();
 
     SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
 
