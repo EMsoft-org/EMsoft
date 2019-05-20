@@ -2,7 +2,7 @@
 
 This package contains a series of programs along with a library, mostly written in fortran-90 with some OpenCL bits, for the computation and visualization of scanning electron microscopy diffraction patterns, notably EBSD, ECP, TKD, and EKP. The programs can be used as standalone command-line programs, and produce HDF5 output files that can then be visualized using an IDL virtual app (Interactive Data Language) or read and processed from any other package with HDF5 capability.
 
-This is the first release of version 4.2; this release does not provide many changes to the package but mainly serves to create a reference point for a Dictionary Indexing tutorial paper that will appear in the journal **Integrating Materials and Manufacturing Innovation**. This EMsoft version 4.2 release has the following DOI (through Zenodo):  
+This is the first release of version 4.2; this release does not provide many changes to the package but mainly serves to create a reference point for a Dictionary Indexing tutorial paper that can be found in the journal [**Integrating Materials and Manufacturing Innovation**](http://link.springer.com/article/10.1007/s40192-019-00137-4). This EMsoft version 4.2 release has the following DOI (through Zenodo):  
 
 ![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
 
