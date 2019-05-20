@@ -209,6 +209,7 @@ end subroutine invert_ordering_arrays
 !> @date 04/12/18 MDG 1.4 added option for patterns that don't start at record boundaries in up2 format
 !> @date 05/10/18 MDG 1.5 changed .up2 access mode to STREAM to facilitate record positioning
 !> @date 06/21/18 SS  1.6 changed recorsize to L*4 instead of recsize (correctsize*4); recsize has padded 0's
+!> @date 05/01/19 MA  1.7 add support for Oxford Instruments binary pattern files
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -292,8 +293,13 @@ select case (itype)
         end if
 
     case(5)  ! "OxfordBinary"
-        call FatalError("openExpPatternFile","OxfordBinary input format not yet implemented")
-
+        ! open the file in STREAM access mode to allow for byte-level access
+        open(unit=funit,file=trim(ename), status='old',access='stream',iostat=ios)
+        if (ios.ne.0) then
+            io_int(1) = ios
+            call WriteValue("File open error; error type ",io_int,1)
+            call FatalError("openExpPatternFile","Cannot continue program")
+        end if
 
     case(6)  ! "OxfordHDF"
         call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
@@ -379,6 +385,7 @@ end function openExpPatternFile
 !> @date 04/12/18 MDG 1.2 added option for patterns that don't start at record boundaries in up2 format
 !> @date 05/10/18 MDG 1.3 completely reworked up1 and up2 reading by switching to STREAM access instead of DIRECT access
 !> @date 03/21/19 MDG 1.4 fixed off-by-one error in column labels for up1 and up2 file formats
+!> @date 05/01/19 MA  1.5 add support for Oxford Instruments binary pattern files
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
@@ -408,7 +415,8 @@ integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
-                                           kkstart, kkend, multfactor 
+                                           kkstart, kkend, multfactor
+integer(kind=8)                         :: patoffsets(wd)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -426,10 +434,11 @@ if (itype.eq.3) multfactor = 2_ill
 if (present(ROI)) then 
  kkstart = ROI(1)
  kkend = kkstart + ROI(3) - 1_ill 
-! for the TSL up1 and up2 formats we need to skip the first ROI(2)-1 rows and set the correct offset value (in bytes) 
+! for the TSL up1 and up2 formats we need to skip the first ROI(2)-1 
+! rows and set the correct offset value (in bytes) 
  if (((itype.eq.2).or.(itype.eq.3)).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
    do ii=1,ROI(2)-1
-      offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
+     offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
    end do
  end if
 else
@@ -496,6 +505,49 @@ select case (itype)
       end if
 
     case(5)  ! "OxfordBinary"
+
+! read postion of patterns in file for a single row from the header
+      read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
+
+! generate a buffer to load individial patterns into
+      buffersize = lL
+      allocate(buffer(buffersize))
+
+! allocate pairs to store all patterns in a row
+      buffersize = lwd * lL
+      allocate(pairs(buffersize))
+
+      do ii=1,lwd
+! read each pattern into buffer with the 16 bytes of metadata skipped
+        read(unit=funit, pos=patoffsets(ii)+17_8, iostat=ios) buffer
+
+! loop over pixels and convert the byte values into single byte integers
+        do jj=1_ill,lL
+          pairs((ii - 1)*lL + jj) = ichar(buffer(jj)) 
+        enddo
+
+      end do
+
+      deallocate(buffer)
+
+ ! then we need to place them in the exppatarray array 
+      exppatarray = 0.0
+      pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
+      do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI
+        kspot = (kk-kkstart)*patsz
+        do jj=1,dims3(2)
+          jspot = (jj-1)*dims3(1) 
+          do ii=1,dims3(1)
+            exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
+            pixcnt = pixcnt + 1
+          end do 
+        end do 
+      end do 
+
+      deallocate(pairs)
+
+! finally, correct for the fact that the original values were unsigned integers
+      where(exppatarray.lt.0.0) exppatarray = exppatarray + 256.0
 
     case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
@@ -671,6 +723,7 @@ select case (itype)
         end if
 
     case(5)  ! "OxfordBinary"
+        call FatalError("getSingleExpPattern","input format not yet implemented")
 
     case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
@@ -764,7 +817,7 @@ select case (itype)
         nullify(pmHDF_head)
 
     case(5)  ! "OxfordBinary"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
+        close(unit=funit,status='keep')
 
     case(6)  ! "OxfordHDF"
         call FatalError("closeExpPatternFile","input format not yet implemented")
@@ -934,7 +987,8 @@ end if
 ! open the file and leave it open, then use the getExpPatternRow() routine to read a row
 ! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
-istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
+istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, &
+                           ebsdnl%HDFstrings)
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
     call FatalError("PreProcessPatterns:", "Fatal error handling experimental pattern file")
@@ -1222,7 +1276,8 @@ end if
 ! open the file and leave it open, then use the getExpPatternRow() routine to read a row
 ! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
-istat = openExpPatternFile(tkdnl%exptfile, tkdnl%ipf_wd, L, tkdnl%inputtype, recordsize, iunitexpt, tkdnl%HDFstrings)
+istat = openExpPatternFile(tkdnl%exptfile, tkdnl%ipf_wd, L, tkdnl%inputtype, recordsize, iunitexpt, &
+                           tkdnl%HDFstrings)
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
     call FatalError("PreProcessTKDPatterns:", "Fatal error handling experimental pattern file")
