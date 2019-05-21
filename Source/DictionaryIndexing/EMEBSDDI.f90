@@ -561,38 +561,15 @@ bindx = 1.0/float(dinl%binning)**2
 ! are added together from the start, and all the master patterns are totaled as well...
 ! this is a straightforward sum; we should probably do a weighted sum instead
 
-! this code will be removed in a later version [post 3.1]
+! allocate the square-Lambert arrays
 npy = mpnl%npx
 if (trim(dinl%indexingmode).eq.'dynamic') then
-! energyaverage option disabled on 05/19/19 [MDG]; commented code can be deleted
-!    if (dinl%energyaverage .eq. 0) then
-            allocate(mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
-            allocate(mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
-            allocate(accum_e_MC(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy),stat=istat)
-            accum_e_MC = EBSDdetector%accum_e_detector
-            mLPNH = EBSDMPdata%mLPNH
-            mLPSH = EBSDMPdata%mLPSH
-    ! else if (dinl%energyaverage .eq. 1) then
-    !         allocate(mLPNH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
-    !         allocate(mLPSH_simple(-mpnl%npx:mpnl%npx,-npy:npy))
-    !         allocate(wf(EBSDMCdata%numEbins))
-    !         allocate(acc_array(dinl%numsx,dinl%numsy))
-    !         acc_array = sum(EBSDdetector%accum_e_detector,1)
-    !         wf = sum(sum(EBSDdetector%accum_e_detector,2),2)
-    !         wf = wf/sum(wf)
-    !         do ii=Emin,Emax
-    !             EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
-    !             EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
-
-    !             EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) = &
-    !             EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,ii) * wf(ii)
-
-    !         end do
-    !         mLPNH_simple = sum(EBSDMPdata%mLPNH,3)
-    !         mLPSH_simple = sum(EBSDMPdata%mLPNH,3)
-    ! else
-    !         stop 'Invalid value of energyaverage parameter'
-    ! end if
+  allocate(mLPNH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
+  allocate(mLPSH(-mpnl%npx:mpnl%npx,-npy:npy,EBSDMCdata%numEbins))
+  allocate(accum_e_MC(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy),stat=istat)
+  accum_e_MC = EBSDdetector%accum_e_detector
+  mLPNH = EBSDMPdata%mLPNH
+  mLPSH = EBSDMPdata%mLPSH
 end if
 
 !=====================================================
@@ -1088,16 +1065,8 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
        binned = 0.0
        quat = ro2qu(FZarray(1:4,(ii-1)*Nd+pp))
 
-! energyaverage option disabled on 05/19/19 [MDG]; commented code can be deleted
-!       if (dinl%energyaverage .eq. 0) then
-         call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,EBSDdetector%rgx,&
-                                        EBSDdetector%rgy,EBSDdetector%rgz,binned,Emin,Emax,mask,prefactor)
-       ! else if (dinl%energyaverage .eq. 1) then 
-       !   call CalcEBSDPatternSingleApprox(jpar,quat,acc_array,mLPNH_simple,mLPSH_simple,EBSDdetector%rgx,&
-       !                                             EBSDdetector%rgy,EBSDdetector%rgz,binned,mask,prefactor)
-       ! else
-       !   stop 'Invalid value of energyaverage'
-       ! end if
+       call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,EBSDdetector%rgx,&
+                                      EBSDdetector%rgy,EBSDdetector%rgz,binned,Emin,Emax,mask,prefactor)
 
        if (dinl%scalingmode .eq. 'gam') then
          binned = binned**dinl%gammavalue
@@ -1107,7 +1076,6 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
 !      rdata = dble(binned)
 !      fdata = HiPassFilter(rdata,dims,w)
 !      binned = sngl(fdata)
-
 
 ! adaptive histogram equalization
        ma = maxval(binned)

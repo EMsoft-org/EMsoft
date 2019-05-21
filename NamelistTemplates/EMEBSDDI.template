@@ -72,9 +72,6 @@
  energymin = 10.0,
  energymax = 20.0,
 ! the following option has been disabled starting version 4.3
-! energy averaging method (0 for exact, 1 for approximate)
-! energyaverage = 0,
-! the following option has been disabled starting version 4.3
 ! spatial averaging method ('y' or 'n' ;can't be used with approximate energy average)
 ! spatialaverage = 'n',
 ! incident beam current [nA]

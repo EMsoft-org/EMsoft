@@ -5059,11 +5059,11 @@ end subroutine GetEBSDDIpreviewNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:GetBSDIndxNameList
+! SUBROUTINE:GetEBSDIndxNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief read namelist file and fill enl structure (used by EMDynamicEBSDIndeixing.f90)
+!> @brief read namelist file and fill enl structure (used by EMEBSDI.f90)
 !
 !> @param nmlfile namelist file name
 !> @param enl EBSD indexing name list structure
@@ -5172,7 +5172,8 @@ ROI             = (/ 0, 0, 0, 0 /)  ! Region of interest (/ x0, y0, w, h /)
 maskradius      = 240
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
 L               = 20000.0       ! [microns]
-energyaverage   = 1             ! apply energy averaging (1) or not (0); useful for dictionary computations
+! the following parameter is no longer used but can still be in older namelist files
+energyaverage   = -1            ! apply energy averaging (1) or not (0); useful for dictionary computations
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
 xpc             = 0.0           ! [pixels]
@@ -5248,6 +5249,10 @@ if (.not.skipread) then
         call FatalError('EMEBSDIndexing:',' pattern size numsy is zero in '//nmlfile)
     end if
 
+    if (energyaverage.ne.-1) then
+        call Message('EMEBSDIndexing Warning: energyaverage parameter is no longer used;')
+        call Message('   ------> parameter value will be ignored during program run ')
+    end if 
 end if
 
 
@@ -5296,7 +5301,8 @@ enl%numsx         = numsx
 enl%numsy         = numsy
 enl%ROI           = ROI
 enl%binning       = binning
-enl%energyaverage = energyaverage
+! following parameter is no longer used but may be present in older nm files.
+enl%energyaverage = -1 ! energyaverage
 enl%thetac        = thetac
 enl%delta         = delta
 enl%xpc           = xpc
