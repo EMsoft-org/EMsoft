@@ -5076,6 +5076,7 @@ recursive subroutine GetEBSDIndexingNameList(nmlfile, enl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDIndexingNameList
 
 use error
+use io
 
 IMPLICIT NONE
 
