@@ -92,6 +92,12 @@ public:
    */
   void setDatasetSelectionEnabled(bool enabled);
 
+  /**
+   * @brief setOneSelectionOnly
+   * @param value
+   */
+  void setOneSelectionOnly(bool value);
+
 public slots:
 
   /**
@@ -190,6 +196,7 @@ private:
   QPixmap m_Icon = QPixmap(QLatin1String(":/SIMPL/icons/images/caret-bottom.png"));
   QAction* m_ShowFileAction = nullptr;
   QString m_CurrentText = "";
+  bool m_OneSelectionOnly = false;
 
   /**
    * @brief Updates the QGraphicsView based on the current Data Dimension and Data record values

@@ -127,6 +127,16 @@ bool HDF5FileTreeModel::setData(const QModelIndex& index, const QVariant& value,
     QString hdf5Path = item->generateHDFPath();
     if(checkState == Qt::Checked)
     {
+      if (m_OneSelectionOnly && !m_SelectedHDF5Paths.isEmpty())
+      {
+        while (!m_SelectedHDF5Paths.isEmpty())
+        {
+          QString selectedPath = m_SelectedHDF5Paths[0];
+          QModelIndex selectedIndex = hdf5PathToIndex(selectedPath);
+          setData(selectedIndex, Qt::Unchecked, Qt::CheckStateRole);
+        }
+      }
+
       m_SelectedHDF5Paths.push_back(hdf5Path);
     }
     else if(checkState == Qt::Unchecked)
@@ -355,4 +365,12 @@ HDF5FileTreeModelItem* HDF5FileTreeModel::getItem(const QModelIndex& index) cons
 QStringList HDF5FileTreeModel::getSelectedHDF5Paths()
 {
   return m_SelectedHDF5Paths;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void HDF5FileTreeModel::setOneSelectionOnly(bool value)
+{
+  m_OneSelectionOnly = value;
 }

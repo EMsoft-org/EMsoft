@@ -144,6 +144,12 @@ public:
    */
   QStringList getSelectedHDF5Paths();
 
+  /**
+   * @brief setOneSelectionOnly
+   * @param value
+   */
+  void setOneSelectionOnly(bool value);
+
 signals:
   void selectedHDF5PathsChanged();
 
@@ -152,6 +158,7 @@ private:
   hid_t m_FileId;
   QFileIconProvider m_IconProvider;
   QList<QString> m_SelectedHDF5Paths;
+  bool m_OneSelectionOnly = false;
 
   /**
    * @brief getItem

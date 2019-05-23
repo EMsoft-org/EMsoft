@@ -87,6 +87,7 @@ AverageDotProductMap_UI::~AverageDotProductMap_UI() = default;
 void AverageDotProductMap_UI::setupGui()
 {
   m_Ui->hdf5SelectionWidget->setInputFileLabelText("Pattern Data File");
+  m_Ui->hdf5SelectionWidget->setOneSelectionOnly(true);
 
   // Add limits to all spinboxes
   initializeSpinBoxLimits();

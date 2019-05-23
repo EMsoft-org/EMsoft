@@ -464,6 +464,7 @@ bool HDF5DatasetSelectionWidget::initWithFile(const QString& hdf5File)
 
   // Get the HDF5FileTreeModel and set the Root Node
   HDF5FileTreeModel* treeModel = new HDF5FileTreeModel(m_FileId, m_Ui->hdfTreeView);
+  treeModel->setOneSelectionOnly(m_OneSelectionOnly);
   connect(treeModel, SIGNAL(selectedHDF5PathsChanged()), this, SIGNAL(parametersChanged()));
   m_Ui->hdfTreeView->setModel(treeModel);
 #if defined(Q_OS_MAC)
@@ -968,4 +969,18 @@ void HDF5DatasetSelectionWidget::setDatasetSelectionEnabled(bool enabled)
 {
   m_Ui->hdfTreeView->setEnabled(enabled);
   m_Ui->importHDF5DatasetTabWidget->setEnabled(enabled);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void HDF5DatasetSelectionWidget::setOneSelectionOnly(bool value)
+{
+  HDF5FileTreeModel* model = dynamic_cast<HDF5FileTreeModel*>(m_Ui->hdfTreeView->model());
+  if (model != nullptr)
+  {
+    model->setOneSelectionOnly(value);
+  }
+
+  m_OneSelectionOnly = value;
 }
