@@ -75,6 +75,16 @@ type ANGNameListType
         character(fnlen)        :: dotproductfile
 end type ANGNameListType
 
+! namelist for EMgetEulers program
+type EulersNameListType
+        character(8)            :: angledataset   ! 'original' or 'refined'
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: txtfile
+        character(fnlen)        :: datafile
+        character(fnlen)        :: EMEBSDnmlfile
+        character(fnlen)        :: dotproductfile
+end type EulersNameListType
+
 ! namelist for EMGBO program
 type GBONameListType
         integer(kind=irg)       :: pgnum

@@ -270,7 +270,7 @@ end subroutine GetCTFNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief read namelist file and fill csnl structure (used by EMgetCTF.f90)
+!> @brief read namelist file and fill csnl structure (used by EMgetANG.f90)
 !
 !> @param nmlfile namelist file name
 !> @param csnl name list structure
@@ -338,6 +338,86 @@ csnl%angledataset = trim(angledataset)
 
 end subroutine GetANGNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEulersNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill csnl structure (used by EMgetEulers.f90)
+!
+!> @param nmlfile namelist file name
+!> @param csnl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 05/22/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEulersNameList(nmlfile, csnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEulersNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(EulersNameListType),INTENT(INOUT)      :: csnl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+character(8)            :: angledataset   ! 'original' or 'refined'
+character(fnlen)        :: xtalname
+character(fnlen)        :: txtfile
+character(fnlen)        :: datafile
+character(fnlen)        :: EMEBSDnmlfile
+character(fnlen)        :: dotproductfile
+
+
+namelist /Eulerslist/ xtalname, datafile, txtfile, angledataset, dotproductfile, EMEBSDnmlfile
+
+dotproductfile = 'undefined'
+txtfile = 'undefined'
+datafile = 'undefined'
+EMEBSDnmlfile = 'undefined'
+xtalname = 'undefined'
+angledataset = 'original'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=Eulerslist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(dotproductfile).eq.'undefined') then
+  call FatalError('GetEulersNameList:',' dotproductfile name is undefined in '//nmlfile)
+ end if
+
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetEulersNameList:',' xtalname name is undefined in '//nmlfile)
+ end if
+
+ if (trim(txtfile).eq.'undefined') then
+  call FatalError('GetEulersNameList:',' txtfile name is undefined in '//nmlfile)
+ end if
+
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('GetEulersNameList:',' datafile name is undefined in '//nmlfile)
+ end if
+end if
+
+csnl%dotproductfile = dotproductfile 
+csnl%txtfile = txtfile
+csnl%datafile = datafile
+csnl%EMEBSDnmlfile = EMEBSDnmlfile
+csnl%xtalname = xtalname
+csnl%angledataset = trim(angledataset) 
+
+end subroutine GetEulersNameList
 
 !--------------------------------------------------------------------------
 !

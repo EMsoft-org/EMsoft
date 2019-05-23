@@ -72,6 +72,13 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       TEMPLATE ${TMPLT_DIR}/EMgetANG.template 
                       SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
                       INSTALL_PROGRAM TRUE)
+
+  Add_EMsoft_Executable(TARGET EMgetEulers
+                      SOURCES ${APP_DIR}/EMgetEulers.f90 
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      TEMPLATE ${TMPLT_DIR}/EMgetEulers.template 
+                      SOLUTION_FOLDER EMsoftPublic/Dictionaryindexing
+                      INSTALL_PROGRAM TRUE)
  
   Add_EMsoft_Executable(TARGET EMEBSDDIpreview
                       SOURCES ${APP_DIR}/EMEBSDDIpreview.f90 
