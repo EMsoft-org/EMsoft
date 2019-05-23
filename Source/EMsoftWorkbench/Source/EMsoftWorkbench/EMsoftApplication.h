@@ -89,6 +89,11 @@ public slots:
   void listenClearRecentFilesTriggered() const;
   void listenExitApplicationTriggered() const;
 
+  /**
+   * @brief createThemeMenu
+   */
+  QMenu* createThemeMenu(QActionGroup* actionGroup, QWidget* parent = nullptr);
+
 protected:
   EMsoftWorkbench_UI* m_ActiveWindow;
 

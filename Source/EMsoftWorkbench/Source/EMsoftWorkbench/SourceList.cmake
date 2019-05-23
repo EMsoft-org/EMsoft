@@ -53,7 +53,7 @@ set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS
 #set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
-  
+  ${EMsoftWorkbench_SOURCE_DIR}/Resources/BrandedStrings.h
 )
 
 

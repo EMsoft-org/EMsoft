@@ -36,6 +36,8 @@
 
 #include <iostream>
 
+#include "EMsoftWorkbench/Resources/BrandedStrings.h"
+
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QPluginLoader>
@@ -484,3 +486,36 @@ QString EMsoftApplication::getOpenDialogLastDirectory() const
   return m_OpenDialogLastDirectory;
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QMenu* EMsoftApplication::createThemeMenu(QActionGroup* actionGroup, QWidget* parent)
+{
+  SVStyle* style = SVStyle::Instance();
+
+  QMenu* menuThemes = new QMenu("Themes", parent);
+
+  QString themePath = ":/SIMPL/StyleSheets/Default.json";
+  QAction* action = menuThemes->addAction("Default", [=] { style->loadStyleSheet(themePath); });
+  action->setCheckable(true);
+  if(themePath == style->getCurrentThemeFilePath())
+  {
+    action->setChecked(true);
+  }
+  actionGroup->addAction(action);
+
+  QStringList themeNames = BrandedStrings::LoadedThemeNames;
+  for(int i = 0; i < themeNames.size(); i++)
+  {
+    QString themePath = BrandedStrings::DefaultStyleDirectory + QDir::separator() + themeNames[i] + ".json";
+    QAction* action = menuThemes->addAction(themeNames[i], [=] { style->loadStyleSheet(themePath); });
+    action->setCheckable(true);
+    if(themePath == style->getCurrentThemeFilePath())
+    {
+      action->setChecked(true);
+    }
+    actionGroup->addAction(action);
+  }
+
+  return menuThemes;
+}
