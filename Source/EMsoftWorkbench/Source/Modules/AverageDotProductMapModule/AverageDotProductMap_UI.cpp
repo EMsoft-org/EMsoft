@@ -51,11 +51,16 @@
 
 #include "Common/FileIOTools.h"
 #include "Common/PatternTools.h"
-#include "Common/QtSSettings.h"
+
+#include "QtSupport/QtSSettings.h"
+
+#include "H5Support/QH5Utilities.h"
 
 #include "Modules/AverageDotProductMapModule/Constants.h"
 
 namespace ioConstants = AverageDotProductMapModuleConstants::IOStrings;
+
+using InputType = AverageDotProductMapController::ADPMapData::InputType;
 
 // -----------------------------------------------------------------------------
 //
@@ -81,6 +86,8 @@ AverageDotProductMap_UI::~AverageDotProductMap_UI() = default;
 // -----------------------------------------------------------------------------
 void AverageDotProductMap_UI::setupGui()
 {
+  m_Ui->hdf5SelectionWidget->setInputFileLabelText("Pattern Data File");
+
   // Add limits to all spinboxes
   initializeSpinBoxLimits();
 
@@ -185,11 +192,15 @@ void AverageDotProductMap_UI::createModificationConnections()
   connect(m_Ui->maskRadiusSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
   connect(m_Ui->hipassSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
 
+  // Checkboxes
+  connect(m_Ui->roiCB, &QCheckBox::stateChanged, this, &AverageDotProductMap_UI::listenROICheckboxStateChanged);
+
   // Combo Boxes
-  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { parametersChanged(); });
+  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &AverageDotProductMap_UI::listenInputTypeChanged);
 
   // Line Edits
-  connect(m_Ui->patternFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
+  connect(m_Ui->hdf5SelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, [=] { parametersChanged(); });
+
   connect(m_Ui->outputFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
 }
 
@@ -205,11 +216,27 @@ void AverageDotProductMap_UI::createWidgetConnections()
   connect(m_Controller, &AverageDotProductMapController::warningMessageGenerated, this, &AverageDotProductMap_UI::notifyWarningMessage);
   connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
-  connect(m_Ui->patternSelectBtn, &QPushButton::clicked, this, &AverageDotProductMap_UI::listenPatternSelectBtnClicked);
-
   connect(m_Ui->outputSelectBtn, &QPushButton::clicked, this, &AverageDotProductMap_UI::listenOutputFileSelectBtnClicked);
+}
 
-  connect(m_Ui->roiCB, &QCheckBox::stateChanged, this, &AverageDotProductMap_UI::listenROICheckboxStateChanged);
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMap_UI::listenInputTypeChanged(int index)
+{
+  InputType inputType = static_cast<InputType>(index + 1);
+  switch(inputType)
+  {
+    case InputType::TSLHDF:
+    case InputType::BrukerHDF:
+    case InputType::OxfordHDF:
+      m_Ui->hdf5SelectionWidget->setEnabled(true);
+    default:
+      m_Ui->hdf5SelectionWidget->setDisabled(true);
+      break;
+  }
+
+  parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
@@ -224,29 +251,6 @@ void AverageDotProductMap_UI::listenROICheckboxStateChanged(int state)
   m_Ui->roiSB_4->setEnabled(checkState == Qt::Checked);
 
   parametersChanged();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::listenPatternSelectBtnClicked()
-{
-  QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";
-  if(!m_Ui->patternFilePathLE->text().isEmpty())
-  {
-    proposedFile = m_Ui->patternFilePathLE->text();
-  }
-
-  QString filePath = FileIOTools::GetOpenPathFromDialog("Select Pattern Data File", "Pattern Data File (*.h5);;All Files (*.*)", proposedFile);
-  if(filePath.isEmpty())
-  {
-    return;
-  }
-
-  filePath = QDir::toNativeSeparators(filePath);
-  emSoftApp->setOpenDialogLastDirectory(filePath);
-
-  m_Ui->patternFilePathLE->setText(filePath);
 }
 
 // -----------------------------------------------------------------------------
@@ -381,14 +385,11 @@ void AverageDotProductMap_UI::readInputParameters(QJsonObject& obj)
 {
   QJsonObject inputParamObj = obj[ioConstants::InputParam].toObject();
 
-  m_Ui->patternFilePathLE->blockSignals(true);
   m_Ui->inputTypeCB->blockSignals(true);
-
-  m_Ui->patternFilePathLE->setText(inputParamObj[ioConstants::PatternDataFile].toString());
   m_Ui->inputTypeCB->setCurrentIndex(inputParamObj[ioConstants::InputType].toInt());
-
-  m_Ui->patternFilePathLE->blockSignals(false);
   m_Ui->inputTypeCB->blockSignals(false);
+
+  m_Ui->hdf5SelectionWidget->readParameters(inputParamObj);
 }
 
 // -----------------------------------------------------------------------------
@@ -493,8 +494,9 @@ void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 void AverageDotProductMap_UI::writeInputParameters(QJsonObject& obj)
 {
-  obj[ioConstants::PatternDataFile] = m_Ui->patternFilePathLE->text();
   obj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
+
+  m_Ui->hdf5SelectionWidget->writeParameters(obj);
 }
 
 // -----------------------------------------------------------------------------
@@ -554,6 +556,6 @@ AverageDotProductMapController::ADPMapData AverageDotProductMap_UI::getData()
   data.binningFactor = m_Ui->binningFactorSB->value();
   data.patternHeight = m_Ui->patternHeightSB->value();
   data.outputFilePath = m_Ui->outputFilePathLE->text();
-  data.patternDataFile = m_Ui->patternFilePathLE->text();
+  data.patternDataFile = m_Ui->hdf5SelectionWidget->getCurrentFile();
   return data;
 }

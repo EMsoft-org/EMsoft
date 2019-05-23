@@ -1,5 +1,6 @@
 /* ============================================================================
- * Copyright (c) 2009-2016 BlueQuartz Software, LLC
+ * Copyright (c) 2017 BlueQuartz Software, LLC
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -11,9 +12,9 @@
  * list of conditions and the following disclaimer in the documentation and/or
  * other materials provided with the distribution.
  *
- * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
- * contributors may be used to endorse or promote products derived from this software
- * without specific prior written permission.
+ * Neither the names of any of the BlueQuartz Software contributors
+ * may be used to endorse or promote products derived from this software without
+ * specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -26,68 +27,94 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- * The code contained herein was partially funded by the followig contracts:
- *    United States Air Force Prime Contract FA8650-07-D-5800
- *    United States Air Force Prime Contract FA8650-10-D-5210
- *    United States Prime Contract Navy N00173-07-C-2068
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "AsymmetricUnitTableItemDelegate.h"
+#include "SIMPLDataPathValidator.h"
 
-#include <QtWidgets/QLineEdit>
+#include <QtCore/QDir>
+#include <QtCore/QCoreApplication>
+
+SIMPLDataPathValidator* SIMPLDataPathValidator::m_Self = nullptr;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableItemDelegate::AsymmetricUnitTableItemDelegate(QObject* parent)
-: QStyledItemDelegate(parent)
+SIMPLDataPathValidator::SIMPLDataPathValidator()
 {
+  // Default data directory for Macs with choosable data directory turned on (generally for Release builds)
+  m_SIMPLDataDirectory = QDir::homePath() + QDir::separator() + tr("%1Data").arg(QCoreApplication::applicationName());
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AsymmetricUnitTableItemDelegate::~AsymmetricUnitTableItemDelegate() = default;
+SIMPLDataPathValidator::~SIMPLDataPathValidator() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QWidget* AsymmetricUnitTableItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+SIMPLDataPathValidator* SIMPLDataPathValidator::Instance()
 {
-  QLineEdit* editor = new QLineEdit(parent);
-  editor->setAlignment(Qt::AlignCenter);
-  QDoubleValidator* validator = new QDoubleValidator();
-  validator->setDecimals(5);
-  validator->setNotation(QDoubleValidator::StandardNotation);
-  editor->setValidator(validator);
-  return editor;
+  if(m_Self == nullptr)
+  {
+    m_Self = new SIMPLDataPathValidator();
+  }
+
+  return m_Self;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
+QString SIMPLDataPathValidator::convertToAbsolutePath(const QString &path)
 {
-  QString value = index.model()->data(index, Qt::EditRole).toString();
-  QLineEdit* line = static_cast<QLineEdit*>(editor);
-  line->setText(value);
+  QString absolutePath = path;
+  QFileInfo fi(absolutePath);
+  if (fi.isRelative())
+  {
+    QDir dir = QDir(qApp->applicationDirPath());
+
+	  QString parentPath;
+
+#if defined(SIMPL_RELATIVE_PATH_CHECK)
+	  parentPath = m_SIMPLDataDirectory;
+#else
+  #if defined (Q_OS_MAC)
+    if(dir.dirName() == "MacOS")
+    {
+      dir.cdUp();
+      dir.cdUp();
+      dir.cdUp();
+    }
+  #elif defined(Q_OS_LINUX)
+    dir.cdUp();
+  #endif
+
+    parentPath = dir.absolutePath();
+#endif
+
+    if(!path.startsWith(QDir::separator()) && !parentPath.endsWith(QDir::separator()))
+    {
+      absolutePath.prepend(QDir::separator());
+    }
+    absolutePath.prepend(parentPath);
+    absolutePath = QDir::toNativeSeparators(absolutePath);
+    //macOS and Linux do not like to have a ":" character in the path names
+    #if !defined (Q_OS_WIN)
+    absolutePath.replace(":", "");
+    #endif
+  }
+
+  return absolutePath;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
+void SIMPLDataPathValidator::setSIMPLDataDirectory(const QString &path)
 {
-  QLineEdit* line = static_cast<QLineEdit*>(editor);
-  QString value = line->text();
-  model->setData(index, value);
-}
+  m_SIMPLDataDirectory = path;
 
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void AsymmetricUnitTableItemDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
-  editor->setGeometry(option.rect);
+  emit dataDirectoryChanged(path);
 }

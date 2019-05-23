@@ -103,10 +103,7 @@ include(${EMsoftWorkbench_SOURCE_DIR}/Source/Modules/SourceList.cmake)
 set(${PROJECT_NAME}_PROJECT_SRCS
   ${EMsoftWorkbench_Generated_RC_SRCS}
 
-  ${EMsoftWorkbench_Common_Moc_HDRS}
-  ${EMsoftWorkbench_Common_HDRS}
-  ${EMsoftWorkbench_Common_SRCS}
-  ${EMsoftWorkbench_Common_Generated_MOC_SRCS}
+  ${EMsoftWorkbench_Common_SOURCES}
 
   ${EMsoftWorkbench_EMsoftWorkbench_Moc_HDRS}
   ${EMsoftWorkbench_EMsoftWorkbench_HDRS}
@@ -205,7 +202,7 @@ BuildQtAppBundle(
     VERSION_MINOR ${EMsoft_VERSION_MINOR}
     VERSION_PATCH ${EMsoft_VERSION_PATCH}
     BINARY_DIR    ${${PROJECT_NAME}_BINARY_DIR}
-    LINK_LIBRARIES ${OPENGL_LIBRARIES} ${EXE_LINK_LIBRARIES} H5Support OrientationLib EMsoftLib EMsoftWrapperLib
+    LINK_LIBRARIES ${OPENGL_LIBRARIES} ${EXE_LINK_LIBRARIES} H5Support OrientationLib QtSupport EMsoftLib EMsoftWrapperLib
     LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     QT_PLUGINS    ${QT_PLUGINS}
     QT5_MODULES   Core Gui Widgets OpenGL Network Concurrent

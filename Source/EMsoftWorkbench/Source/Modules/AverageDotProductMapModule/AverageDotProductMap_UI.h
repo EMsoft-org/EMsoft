@@ -59,7 +59,7 @@ public:
 
   ~AverageDotProductMap_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(AverageDotProductMapController*, Controller)
+  SIMPL_POINTER_PROPERTY(AverageDotProductMapController, Controller)
 
   /**
    * @brief readModuleSession
@@ -94,15 +94,15 @@ protected slots:
   void listenGenerateBtnPressed();
 
   /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(int index);
+
+  /**
    * @brief listenROICheckboxStateChanged
    * @param state
    */
   void listenROICheckboxStateChanged(int state);
-
-  /**
-   * @brief listenPatternSelectBtnClicked
-   */
-  void listenPatternSelectBtnClicked();
 
   /**
    * @brief listenOutputFileSelectBtnClicked
@@ -116,6 +116,9 @@ private slots:
 
 private:
   QSharedPointer<Ui::AverageDotProductMap_UI> m_Ui;
+
+  hid_t m_FileId;
+  QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
   QSharedPointer<QFutureWatcher<void>> m_Watcher;

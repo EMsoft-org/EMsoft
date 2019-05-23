@@ -33,11 +33,10 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _constants_h_
-#define _constants_h_
+#pragma once
 
-#if defined (_MSC_VER)
-#define WIN32_LEAN_AND_MEAN   // Exclude rarely-used stuff from Windows headers
+#if defined(_MSC_VER)
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 #endif
 
 #include <limits>
@@ -92,11 +91,15 @@ namespace SIMPL
     const QString UInt32("uint32_t");
     const QString Int64("int64_t");
     const QString UInt64("uint64_t");
+    const QString SizeT("size_t");
+    const QString String("string");
     const QString StatsDataArray("StatsDataArray");
     const QString NeighborList("NeighborList<T>");
     const QString StringArray("StringDataArray");
     const QString Unknown("Unknown");
-    const QString SupportedTypeList(TypeNames::StringArray + ", " + TypeNames::Int8 + ", " + TypeNames::UInt8 + ", " + TypeNames::Int16 + ", " + TypeNames::UInt16 + ", " + TypeNames::Int32 + ", " + TypeNames::UInt32 + ", " + TypeNames::Int64 + ", " + TypeNames::UInt64 + ", " + TypeNames::Float + ", " + TypeNames::Double);
+    const QString SupportedTypeList(TypeNames::Bool + ", " + TypeNames::StringArray + ", " + TypeNames::Int8 + ", " + TypeNames::UInt8 + ", " + TypeNames::Int16 + ", " + TypeNames::UInt16 + ", " +
+                                    TypeNames::Int32 + ", " + TypeNames::UInt32 + ", " + TypeNames::Int64 + ", " + TypeNames::UInt64 + ", " + TypeNames::Float + ", " + TypeNames::Double + ", " +
+                                    TypeNames::SizeT);
   }
 
   namespace TypeEnums
@@ -112,9 +115,82 @@ namespace SIMPL
     static const int Float = 8;
     static const int Double = 9;
     static const int Bool = 10;
+    static const int SizeT = 11;
 
-    static const int UnknownType = 11;
-    const QString SupportedTypeList(TypeNames::Int8 + ", " + TypeNames::UInt8 + ", " + TypeNames::Int16 + ", " + TypeNames::UInt16 + ", " + TypeNames::Int32 + ", " + TypeNames::UInt32 + ", " + TypeNames::Int64 + ", " + TypeNames::UInt64 + ", " + TypeNames::Float + ", " + TypeNames::Double);
+    static const int UnknownType = 12;
+    const QString SupportedTypeList(TypeNames::Bool + ", " + TypeNames::Int8 + ", " + TypeNames::UInt8 + ", " + TypeNames::Int16 + ", " + TypeNames::UInt16 + ", " + TypeNames::Int32 + ", " +
+                                    TypeNames::UInt32 + ", " + TypeNames::Int64 + ", " + TypeNames::UInt64 + ", " + TypeNames::Float + ", " + TypeNames::Double + ", " + TypeNames::SizeT);
+  }
+
+  namespace NumericTypes
+  {
+    namespace Names
+    {
+      const QString Int8("signed   int 8  bit");
+      const QString UInt8("unsigned int 8  bit");
+      const QString Int16("signed   int 16 bit");
+      const QString UInt16("unsigned int 16 bit");
+      const QString Int32("signed   int 32 bit");
+      const QString UInt32("unsigned int 32 bit");
+      const QString Int64("signed   int 64 bit");
+      const QString UInt64("unsigned int 64 bit");
+      const QString Float("       Float 32 bit");
+      const QString Double("      Double 64 bit");
+      const QString Bool("Bool");
+      const QString SizeT("size_t");
+    }
+
+    enum class Type : int
+    {
+      Int8 = 0,
+      UInt8,
+      Int16,
+      UInt16,
+      Int32,
+      UInt32,
+      Int64,
+      UInt64,
+      Float,
+      Double,
+      Bool,
+      SizeT,
+      UnknownNumType
+    };
+
+    const QString SupportedTypeList(NumericTypes::Names::Int8 + ", " + NumericTypes::Names::UInt8 + ", " + NumericTypes::Names::Int16 + ", " + NumericTypes::Names::UInt16 + ", " +
+                                    NumericTypes::Names::Int32 + ", " + NumericTypes::Names::UInt32 + ", " + NumericTypes::Names::Int64 + ", " + NumericTypes::Names::UInt64 + ", " +
+                                    NumericTypes::Names::Float + ", " + NumericTypes::Names::Double + ", " + NumericTypes::Names::Bool + ", " + NumericTypes::Names::SizeT);
+  }
+
+  namespace DelimiterTypes
+  {
+    enum class Type : int
+    {
+      Comma = 0,
+      Semicolon = 1,
+      Colon = 2,
+      Tab = 3,
+      Space = 4
+    };
+  }
+
+  namespace ScalarTypes
+  {
+  enum class Type : int
+  {
+    Int8 = 0,
+    UInt8,
+    Int16,
+    UInt16,
+    Int32,
+    UInt32,
+    Int64,
+    UInt64,
+    Float,
+    Double,
+    Bool,
+    SizeT
+  };
   }
 
   namespace IO
@@ -141,6 +217,7 @@ namespace SIMPL
     const QString TriangleDataContainerName("TriangleDataContainer");
     const QString QuadDataContainerName("QuadDataContainer");
     const QString TetrahedralDataContainerName("TetrahedralDataContainer");
+    const QString HexahedralDataContainerName("HexahedralDataContainer");
 
     const QString VertexDataContainerName("VertexDataContainer");
     const QString VertexAttributeMatrixName("VertexData");
@@ -190,20 +267,17 @@ namespace SIMPL
 
   namespace FilterGroups
   {
-    const QString GenericFilters("Generic");
-    const QString OrientationAnalysisFilters("Orientation Analysis");
+    const QString CoreFilters("Core");
+    const QString Generic("Generic");
     const QString IOFilters("IO");
     const QString ProcessingFilters("Processing");
     const QString ReconstructionFilters("Reconstruction");
     const QString SamplingFilters("Sampling");
-    const QString StatisticsFilters("Statistics");
-    const QString CustomFilters("Custom");
+    const QString StatisticsFilters("Statistics");    
     const QString SyntheticBuildingFilters("Synthetic Building");
     const QString SurfaceMeshingFilters("Surface Meshing");
-    const QString SolidMeshingFilters("Solid Meshing");
-    const QString TestFilters("Test");
-    const QString CoreFilters("Core");
     const QString Utilities("Utilities");
+    const QString CustomFilters("Custom");
     const QString Unsupported("Unsupported");
   }
 
@@ -228,9 +302,8 @@ namespace SIMPL
     const QString GroupingFilters("Grouping");
     const QString CropCutFilters("Croping/Cutting");
     const QString RotationTransformationFilters("Rotating/Transforming");
-    const QString ResolutionFilters("Resolution");
+    const QString ResolutionFilters("Spacing");
     const QString MorphologicalFilters("Morphological");
-    const QString CrystallographicFilters("Crystallographic");
     const QString PackingFilters("Packing");
     const QString CrystallographyFilters("Crystallography");
     const QString GenerationFilters("Generation");
@@ -240,6 +313,8 @@ namespace SIMPL
     const QString MappingFilters("Mapping");
     const QString MiscFilters("Misc");
     const QString GeometryFilters("Geometry");
+    const QString ImportFilters("Import");
+    const QString ExportFilters("Export");
   }
 
   namespace GeneralData
@@ -267,6 +342,7 @@ namespace SIMPL
     const QString FitQuality("FitQuality");
     const QString FlatImageData("FlatImageData");
     const QString GBEuclideanDistances("GBEuclideanDistances");
+    const QString GBManhattanDistances("GBManhattanDistances");
     const QString GlobAlpha("GlobAlpha");
     const QString GoodVoxels("GoodVoxels");
     const QString FeatureIds("FeatureIds");
@@ -292,6 +368,7 @@ namespace SIMPL
     const QString ProjectedImageStd("ProjectedImageStd");
     const QString ProjectedImageVar("ProjectedImageVar");
     const QString QPEuclideanDistances("QPEuclideanDistances");
+    const QString QPManhattanDistances("QPManhattanDistances");
     const QString Quats("Quats");
     const QString RodriguesColor("RodriguesColor");
     const QString RodriguesVectors("RodriguesVectors");
@@ -301,6 +378,7 @@ namespace SIMPL
     const QString Speed("Speed");
     const QString SurfaceMeshCells("SurfaceMeshCells");
     const QString BoundaryCells("BoundaryCells");
+    const QString TJManhattanDistances("TJManhattanDistances");
     const QString TJEuclideanDistances("TJEuclideanDistances");
     const QString VectorColor("VectorColor");
     const QString VectorData("VectorData");
@@ -457,8 +535,14 @@ namespace SIMPL
     const QString NumFilters("Number_Filters");
     const QString PipelineName("Name");
     const QString FilterName("Filter_Name");
+    const QString FilterUuid("Filter_Uuid");
     const QString FilterVersion("FilterVersion");
     const QString HumanLabel("Filter_Human_Label");
+    const QString FilterEnabled("Filter_Enabled");
+    const QString GroupName("GroupName");
+    const QString SubGroupName("SubGroupName");
+    const QString BrandingString("BrandingString");
+    const QString CompiledLibraryName("CompiledLibraryName");
     const QString Version("Version");
     const QString PipelineBuilderGeomertry("PipelineBuilderGeometry");
   }
@@ -539,6 +623,12 @@ namespace SIMPL
     const QString TetsContainingVert("TetrahedraContainingVerts");
     const QString TetCentroids("TetrahedralCentroids");
     const QString TetVolumes("TetrahedralVolumes");
+
+    const QString HexasName("Hexahedra");
+    const QString HexNeighbors("HexahedralNeighbors");
+    const QString HexasContainingVert("HexahedraContainingVerts");
+    const QString HexCentroids("HexahedralCentroids");
+    const QString HexVolumes("HexahedralVolumes");
 
     const QString VoxelSizes("VoxelSizes");
     const QString VertexSizes("VertexSizes");
@@ -757,36 +847,80 @@ namespace SIMPL
 //    const unsigned int Any = 3;
 //  }
 
-  namespace Geometry
-  {
-    const QString Geometry("_SIMPL_GEOMETRY");
-    const QString GeometryName("GeometryName");
-    const QString GeometryType("GeometryType");
-    const QString GeometryTypeName("GeometryTypeName");
-    const QString NumberOfTuples("NumberOfTuples");
-    const QString UnitDimensionality("UnitDimensionality");
-    const QString SpatialDimensionality("SpatialDimensionality");
+namespace Geometry
+{
+  const QString Geometry("_SIMPL_GEOMETRY");
+  const QString GeometryName("GeometryName");
+  const QString GeometryType("GeometryType");
+  const QString GeometryTypeName("GeometryTypeName");
+  const QString NumberOfTuples("NumberOfTuples");
+  const QString UnitDimensionality("UnitDimensionality");
+  const QString SpatialDimensionality("SpatialDimensionality");
 
-    const QString UnknownGeometry("UnkownGeometry");
-    const QString ImageGeometry("ImageGeometry");
-    const QString RectGridGeometry("RectGridGeometry");
-    const QString VertexGeometry("VertexGeometry");
-    const QString EdgeGeometry("EdgeGeometry");
-    const QString TriangleGeometry("TriangleGeometry");
-    const QString QuadGeometry("QuadrilateralGeometry");
-    const QString TetrahedralGeometry("TetrahedralGeometry");
+  const QString AnyGeometry("AnyGeometry");
+  const QString UnknownGeometry("UnkownGeometry");
+  const QString ImageGeometry("ImageGeometry");
+  const QString RectGridGeometry("RectGridGeometry");
+  const QString VertexGeometry("VertexGeometry");
+  const QString EdgeGeometry("EdgeGeometry");
+  const QString TriangleGeometry("TriangleGeometry");
+  const QString QuadGeometry("QuadrilateralGeometry");
+  const QString TetrahedralGeometry("TetrahedralGeometry");
+  const QString HexahedralGeometry("HexahedralGeometry");
 
-    const QString xBoundsList("xBounds");
-    const QString yBoundsList("yBounds");
-    const QString zBoundsList("zBounds");
-    const QString SharedVertexList("SharedVertexList");
-    const QString SharedEdgeList("SharedEdgeList");
-    const QString SharedTriList("SharedTriList");
-    const QString SharedQuadList("SharedQuadList");
-    const QString SharedTetList("SharedTetList");
-    const QString UnsharedEdgeList("UnsharedEdgeList");
-    const QString UnsharedFaceList("UnsharedFaceList");
-  }
+  const QString xBoundsList("xBounds");
+  const QString yBoundsList("yBounds");
+  const QString zBoundsList("zBounds");
+  const QString SharedVertexList("SharedVertexList");
+  const QString SharedEdgeList("SharedEdgeList");
+  const QString SharedTriList("SharedTriList");
+  const QString SharedQuadList("SharedQuadList");
+  const QString SharedTetList("SharedTetList");
+  const QString SharedHexList("SharedHexList");
+  const QString UnsharedEdgeList("UnsharedEdgeList");
+  const QString UnsharedFaceList("UnsharedFaceList");
+
+  const QString TransformContainerGroup("TransformContainerGroup");
+  const QString TransformContainer("TransformContainer");
+  const QString CompositeTransformContainer("CompositeTransformContainer");
+  const QString TransformContainerTypeName("TransformContainerTypeName");
+  const QString UnknownTransformContainer("UnknownTransformContainer");
+  const QString TransformContainerParameters("TransformParameters");
+  const QString TransformContainerFixedParameters("TransformFixedParameters");
+  const QString TransformContainerTypeAsString("TransformType");
+  const QString TransformContainerMovingName("TransformMovingName");
+  const QString TransformContainerReferenceName("TransformReferenceName");
+
+  const QString k_Yoctometer("Yoctometer");
+  const QString k_Zeptometer("Zeptometer");
+  const QString k_Attometer("Attometer");
+  const QString k_Femtometer("Femtometer");
+  const QString k_Picometer("Picometer");
+  const QString k_Nanometer("Nanometer");
+  const QString k_Micrometer("Micrometer");
+  const QString k_Millimeter("Millimeter");
+  const QString k_Centimeter("Centimeter");
+  const QString k_Decimeter("Decimeter");
+  const QString k_Meter("Meter");
+  const QString k_Decameter("Decameter");
+  const QString k_Hectometer("Hectometer");
+  const QString k_Kilometer("Kilometer");
+  const QString k_Megameter("Megameter");
+  const QString k_Gigameter("Gigameter");
+  const QString k_Terameter("Terameter");
+  const QString k_Petameter("Petameter");
+  const QString k_Exameter("Exameter");
+  const QString k_Zettameter("Zettameter");
+  const QString k_Yottameter("Yottameter");
+  const QString k_Angstrom("Angstrom");
+  const QString k_Mil("Mil");
+  const QString k_Inch("Inch");
+  const QString k_Foot("Foot");
+  const QString k_Mile("Mile");
+  const QString k_Fathom("Fathom");
+  const QString k_Unspecified("Unspecified");
+  const QString k_Unknown("Unknown");
+}
 
 //  namespace GeometryType
 //  {
@@ -800,146 +934,162 @@ namespace SIMPL
 //    const unsigned int UnknownGeometry = 999;
 //  }
 
-  namespace XdmfGridType
-  {
-    const unsigned int PolyData = 0;
-    const unsigned int RectilinearGrid = 1;
-  }
+namespace XdmfGridType
+{
+const unsigned int PolyData = 0;
+const unsigned int RectilinearGrid = 1;
+const unsigned int UnknownGrid = 0xFFFFFFFF;
+}
 
-  namespace XdmfCenterType
-  {
-    const QString Node("Node");
-    const QString Edge("Edge");
-    const QString Face("Face");
-    const QString Cell("Cell");
-    const QString Grid("Grid");
-  }
+namespace XdmfCenterType
+{
+const QString Node("Node");
+const QString Edge("Edge");
+const QString Face("Face");
+const QString Cell("Cell");
+const QString Grid("Grid");
+}
 
-  //namespace ShapeType
-  //{
-  //  const unsigned int EllipsoidShape = 0; //!<
-  //  const unsigned int SuperEllipsoidShape = 1; //!<
-  //  const unsigned int CubeOctahedronShape = 2; //!<
-  //  const unsigned int CylinderAShape = 3; //!<
-  //  const unsigned int CylinderBShape = 4; //!<
-  //  const unsigned int CylinderCShape = 5; //!<
-  //  const unsigned int ShapeTypeEnd = 6;
-  //  const unsigned int UnknownShapeType = 999; //!<
-  //}
+// namespace ShapeType
+//{
+//  const unsigned int EllipsoidShape = 0; //!<
+//  const unsigned int SuperEllipsoidShape = 1; //!<
+//  const unsigned int CubeOctahedronShape = 2; //!<
+//  const unsigned int CylinderAShape = 3; //!<
+//  const unsigned int CylinderBShape = 4; //!<
+//  const unsigned int CylinderCShape = 5; //!<
+//  const unsigned int ShapeTypeEnd = 6;
+//  const unsigned int UnknownShapeType = 999; //!<
+//}
 
-  enum class Precipitates : unsigned int
-  {
-    NoPrecipitates = 0, //!<
-    BoundaryPrecipitates = 1, //!<
-    BulkPrecipitates = 2, //!<
-    UnknownPrecipitates = 999 //!<
-  };
+enum class Precipitates : unsigned int
+{
+  NoPrecipitates = 0,       //!<
+  BoundaryPrecipitates = 1, //!<
+  BulkPrecipitates = 2,     //!<
+  UnknownPrecipitates = 999 //!<
+};
 
-  namespace Reconstruction
-  {
-    /*    Reconstruction related */
-    const QString H5VoxelFile("VoxelData.h5voxel");
+namespace Reconstruction
+{
+/*    Reconstruction related */
+const QString H5VoxelFile("VoxelData.h5voxel");
 
-    const QString VisualizationVizFile("Visualization.vtk");//11
-    const QString DownSampledVizFile("DownSampled_Visualization.vtk");//11
-    const QString HDF5FeatureFile("Features.h5feature");
-  }
+const QString VisualizationVizFile("Visualization.vtk");           // 11
+const QString DownSampledVizFile("DownSampled_Visualization.vtk"); // 11
+const QString HDF5FeatureFile("Features.h5feature");
+}
 
-  namespace SyntheticBuilder
-  {
-    const QString FeatureDataFile("FeatureData.csv");
-    const QString H5VoxelFile("VoxelData.h5voxel");
+namespace SyntheticBuilder
+{
+const QString FeatureDataFile("FeatureData.csv");
+const QString H5VoxelFile("VoxelData.h5voxel");
 
-    const QString VisualizationVizFile("Visualization.vtk");
-    const QString HDF5FeatureFile("Features.h5feature");
+const QString VisualizationVizFile("Visualization.vtk");
+const QString HDF5FeatureFile("Features.h5feature");
 
-    const QString ErrorFile("Error.txt");
-    const QString VtkFile("Test.vtk");
-  }
+const QString ErrorFile("Error.txt");
+const QString VtkFile("Test.vtk");
+}
 
-  /*   Surface Meshing Related   */
-  namespace SurfaceMesh
-  {
-    namespace NodeType
-    {
-      const signed char Unused = 0;
-      const signed char Default = 2;
-      const signed char TriplePoint = 3;
-      const signed char QuadPoint = 4;
-      const signed char SurfaceDefault = 12;
-      const signed char SurfaceTriplePoint = 13;
-      const signed char SurfaceQuadPoint = 14;
-    }
-    namespace NodeId
-    {
-      const signed char Unused = -1;
-    }
-  }
+/*   Surface Meshing Related   */
+namespace SurfaceMesh
+{
+namespace NodeType
+{
+const signed char Unused = 0;
+const signed char Default = 2;
+const signed char TriplePoint = 3;
+const signed char QuadPoint = 4;
+const signed char SurfaceDefault = 12;
+const signed char SurfaceTriplePoint = 13;
+const signed char SurfaceQuadPoint = 14;
+}
+namespace NodeId
+{
+const signed char Unused = -1;
+}
+}
 
-  namespace SolidMeshing
-  {
-    /* Solid Meshing Related */
-    const QString MeshFile("solid_mesh_v5_1.vtk");
-    const QString MeshFile2("solid_mesh_v5_2.vtk");
-    const QString ElementQualityFile("element_quality_measures_v5.txt");
-    const QString VoxelsFile("voxels_v5.txt");
-  }
+namespace SolidMeshing
+{
+/* Solid Meshing Related */
+const QString MeshFile("solid_mesh_v5_1.vtk");
+const QString MeshFile2("solid_mesh_v5_2.vtk");
+const QString ElementQualityFile("element_quality_measures_v5.txt");
+const QString VoxelsFile("voxels_v5.txt");
+}
 
-  namespace Comparison
-  {
-    namespace Strings
-    {
-      const QString LessThan("<");
-      const QString GreaterThan(">");
-      const QString Equal("=");
-    }
-    enum Enumeration
-    {
-      Operator_LessThan = 0,
-      Operator_GreaterThan,
-      Operator_Equal,
-      Operator_Unknown
-    };
+namespace Union
+{
+namespace Strings
+{
+const QString And("And");
+const QString Or("Or");
+}
+enum Enumeration
+{
+  Operator_And = 0,
+  Operator_Or,
+  Operator_Unknown
+};
+}
 
-  }
+namespace Comparison
+{
+namespace Strings
+{
+const QString LessThan("<");
+const QString GreaterThan(">");
+const QString Equal("=");
+const QString NotEqual("!=");
+}
+enum Enumeration
+{
+  Operator_LessThan = 0,
+  Operator_GreaterThan,
+  Operator_Equal,
+  Operator_NotEqual,
+  Operator_Unknown
+};
+}
 
-  namespace Layout
-  {
-    const signed int Horizontal = 0;
-    const signed int Vertical = 1;
-    const signed int Square = 2;
-  };
-
+namespace Layout
+{
+const signed int Horizontal = 0;
+const signed int Vertical = 1;
+const signed int Square = 2;
+};
 }
 
 namespace Core
 {
-  const QString CoreBaseName("Core");
+const QString CoreBaseName("Core");
 }
 
 namespace Test
 {
-  const QString TestPluginFile("TestPlugin");
-  const QString TestPluginDisplayName("TestPlugin");
-  const QString TestBaseName("TestPlugin");
+const QString TestPluginFile("TestPlugin");
+const QString TestPluginDisplayName("Test Plugin");
+const QString TestBaseName("Test");
 }
 
+Q_DECLARE_METATYPE(SIMPL::NumericTypes::Type)
+Q_DECLARE_METATYPE(SIMPL::ScalarTypes::Type)
+Q_DECLARE_METATYPE(SIMPL::DelimiterTypes::Type)
 
 #if 0
 namespace Generic
 {
   const QString GenericPluginFile("GenericPlugin");
-  const QString GenericPluginDisplayName("GenericPlugin");
-  const QString GenericBaseName("GenericPlugin");
+  const QString GenericPluginDisplayName("Generic Plugin");
+  const QString GenericBaseName("Generic");
 }
 
 namespace IO
 {
   const QString IOPluginFile("IOPlugin");
-  const QString IOPluginDisplayName("IOPlugin");
-  const QString IOBaseName("IOPlugin");
+  const QString IOPluginDisplayName("IO Plugin");
+  const QString IOBaseName("IO");
 }
 #endif
-
-#endif /* _SIMPLib_CONSTANTS_H_ */
-

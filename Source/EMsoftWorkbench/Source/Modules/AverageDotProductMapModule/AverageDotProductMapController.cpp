@@ -195,7 +195,7 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
   QString outputPath = data.outputFilePath;
   if (outputPath.isEmpty())
   {
-    QString ss = QObject::tr("The output image file path is empty.").arg(inputPath);
+    QString ss = QObject::tr("The output image file at path '%1' is empty.").arg(inputPath);
     emit errorMessageGenerated(ss);
     return false;
   }

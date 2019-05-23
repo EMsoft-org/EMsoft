@@ -290,6 +290,9 @@ namespace EMsoftWorkbenchConstants
 
     const QString FitCriterion = "Fit Criterion";
     const QString FitMode = "Fit Mode";
+
+    const QString HDF5DatasetSelectionSettings = "HDF5 Dataset Selection Settings";
+    const QString HDF5DatasetSelectionInputFile = "HDF5 Dataset Selection Input File";
   }
 }
 

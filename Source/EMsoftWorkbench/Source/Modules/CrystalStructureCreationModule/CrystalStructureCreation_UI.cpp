@@ -50,7 +50,8 @@
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
 #include "Common/PatternTools.h"
-#include "Common/QtSSettings.h"
+
+#include "QtSupport/QtSSettings.h"
 
 namespace ioConstants = EMsoftWorkbenchConstants::IOStrings;
 

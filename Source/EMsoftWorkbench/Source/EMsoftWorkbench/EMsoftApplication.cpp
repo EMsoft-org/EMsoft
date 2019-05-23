@@ -56,9 +56,11 @@
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
-#include "Common/QtSFileUtils.h"
-#include "Common/QtSRecentFileList.h"
-#include "Common/QtSSettings.h"
+#include "Common/SVStyle.h"
+
+#include "QtSupport/QtSFileUtils.h"
+#include "QtSupport/QtSRecentFileList.h"
+#include "QtSupport/QtSSettings.h"
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 

@@ -138,7 +138,7 @@ public:
    * into the EMsoftController
    * @param masterFilePath
    */
-  void setMasterFilePath(const QString& masterFilePath);
+  void setMasterFilePath(const QString &masterFilePath);
 
   using VariantPair = QPair<QVariant, QVariant>;
   using FloatPair = QPair<float, float>;
@@ -170,11 +170,8 @@ private:
 
   QVector<QSharedPointer<QFutureWatcher<void>>> m_Watchers;
 
-public:
-  PatternFitController(const PatternFitController&) = delete;            // Copy Constructor Not Implemented
-  PatternFitController(PatternFitController&&) = delete;                 // Move Constructor Not Implemented
-  PatternFitController& operator=(const PatternFitController&) = delete; // Copy Assignment Not Implemented
-  PatternFitController& operator=(PatternFitController&&) = delete;      // Move Assignment Not Implemented
+  PatternFitController(const PatternFitController&); // Copy Constructor Not Implemented
+  void operator=(const PatternFitController&);       // Operator '=' Not Implemented
 };
 
 Q_DECLARE_METATYPE(PatternFitController::SimulationData)

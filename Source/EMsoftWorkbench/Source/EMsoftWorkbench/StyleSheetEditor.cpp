@@ -50,8 +50,9 @@
 
 #include <QtWidgets>
 
-#include "Common/QtSStyles.h"
 #include "StyleSheetEditor.h"
+
+#include "Common/SVStyle.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -111,7 +112,8 @@ void StyleSheetEditor::loadStyleSheet(const QString& sheetName)
 
   styleTextEdit->setPlainText(styleSheet);
   //    qDebug() << "style sheet name: "  << sheetName;
-  QtSStyles::setStyleSheetName(sheetName);
+  SVStyle* svStyle = SVStyle::Instance();
+  svStyle->loadStyleSheet(filePath);
   qApp->setStyleSheet(styleSheet);
   applyButton->setEnabled(false);
 }

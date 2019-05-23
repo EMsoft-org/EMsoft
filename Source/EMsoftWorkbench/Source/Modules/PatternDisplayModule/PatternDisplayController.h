@@ -120,7 +120,7 @@ public:
    * into the EMsoftController
    * @param masterFilePath
    */
-  void setMasterFilePath(const QString& masterFilePath);
+  void setMasterFilePath(const QString &masterFilePath);
 
   using VariantPair = QPair<QVariant, QVariant>;
   using FloatPair = QPair<float, float>;
@@ -132,7 +132,7 @@ public slots:
    * @param patternData
    * @param detectorData
    */
-  void generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, const DetectorData& detectorData);
+  void generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData patternData, const PatternDisplayController::DetectorData &detectorData);
 
   /**
    * @brief addPriorityIndex

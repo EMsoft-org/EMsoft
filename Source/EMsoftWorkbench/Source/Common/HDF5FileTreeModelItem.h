@@ -1,5 +1,5 @@
 /* ============================================================================
- * Copyright (c) 2017 BlueQuartz Softwae, LLC
+ * Copyright (c) 2017 BlueQuartz Software, LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -32,55 +32,64 @@
 
 #pragma once
 
-#include <QtCore/QString>
-#include <QtWidgets/QWidget>
+#include <QtCore/QList>
+#include <QtCore/QVariant>
+#include <QtGui/QIcon>
 
-/**
- * @brief The QtSFileUtils class
- */
-class QtSFileUtils
+#include <hdf5.h>
+
+#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
+
+class HDF5FileTreeModelItem
 {
-  public:
-    QtSFileUtils();
-    virtual ~QtSFileUtils();
+public:
+  HDF5FileTreeModelItem(hid_t fileId, const QString& data, HDF5FileTreeModelItem* parent = 0);
+  ~HDF5FileTreeModelItem();
 
-    /**
-     * @brief Generates a native file system path from the relative path given
-     * @param pathEnding
-     * @return
-     */
-    static QString GenerateFileSystemPath(const QString &pathEnding);
+  SIMPL_INSTANCE_PROPERTY(bool, HasErrors)
 
-    /**
-     * @brief Reveals the path in the operating systems UI shell (Windows Explorer or macOS Finder)
-     * @param path The path to reveal
-     */
-    static void ShowPathInGui(QWidget* parent, const QString &path);
+  void appendChild(HDF5FileTreeModelItem* child);
 
-    /**
-     * @brief GetPathSeperator
-     * @return Returns the separator character used in the PATH environment variable
-     */
-    static QString GetPathSeperator();
+  HDF5FileTreeModelItem* child(int row);
+  int childCount();
+  int columnCount();
+  QVariant data(int column);
+  int row();
+  HDF5FileTreeModelItem* parent();
 
-    /**
-     * @brief Finds an executable in the PATH
-     * @param exe The executable to find
-     * @return The absolute path to the executable or empty if it is not found
-     */
-    static QString FindInPath(const QString &exe);
+  QString generateHDFPath();
 
-    /**
-     * @brief Returns an environment variable
-     * @param evnVar
-     * @return
-     */
-    static QStringList GetEnvVar(const QString &evnVar);
+  bool isGroup();
+  bool isImage();
+  bool isTable();
+  bool isString();
+  Qt::CheckState getCheckState();
 
-  public:
-    QtSFileUtils(const QtSFileUtils&) = delete; // Copy Constructor Not Implemented
-    QtSFileUtils(QtSFileUtils&&) = delete;      // Move Constructor Not Implemented
-    QtSFileUtils& operator=(const QtSFileUtils&) = delete; // Copy Assignment Not Implemented
-    QtSFileUtils& operator=(QtSFileUtils&&) = delete;      // Move Assignment Not Implemented
+  void setCheckState(Qt::CheckState checkState);
 
+  int numAttributes();
+  int numDimensions();
+
+  QIcon icon();
+
+protected:
+  void initializeChildItems();
+  void initializeChildCount();
+
+private:
+  QList<HDF5FileTreeModelItem*> m_ChildItems;
+  int m_ChildItemsInitialized = 0;
+  int m_ChildCount = -1;
+  QVariant m_ItemData;
+  HDF5FileTreeModelItem* m_ParentItem;
+  hid_t m_FileId;
+  int m_NumAttrs = -1;
+  int m_NumDims = -1;
+  bool m_IsGroup = false;
+  bool m_IsImage = false;
+  bool m_IsTable = false;
+  bool m_IsString = false;
+  std::string m_DataType = "";
+  Qt::CheckState m_CheckState = Qt::Unchecked;
 };
+

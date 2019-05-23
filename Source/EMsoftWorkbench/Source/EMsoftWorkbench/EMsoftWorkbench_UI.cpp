@@ -52,8 +52,9 @@
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
-#include "Common/QtSRecentFileList.h"
-#include "Common/QtSSettings.h"
+
+#include "QtSupport/QtSRecentFileList.h"
+#include "QtSupport/QtSSettings.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 #include "EMsoftWorkbench/StatusBarWidget.h"
