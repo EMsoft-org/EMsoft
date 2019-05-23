@@ -562,5 +562,16 @@ AverageDotProductMapController::ADPMapData AverageDotProductMap_UI::getData()
   data.patternHeight = m_Ui->patternHeightSB->value();
   data.outputFilePath = m_Ui->outputFilePathLE->text();
   data.patternDataFile = m_Ui->hdf5SelectionWidget->getCurrentFile();
+
+  QStringList selectedHDF5Paths = m_Ui->hdf5SelectionWidget->getSelectedHDF5Paths();
+  if (m_Ui->hdf5SelectionWidget->isDatasetSelectionEnabled() && !selectedHDF5Paths.isEmpty())
+  {
+    QStringList hdfTokens = selectedHDF5Paths[0].split('/', QString::SplitBehavior::SkipEmptyParts);
+    for (QString hdfToken : hdfTokens)
+    {
+      data.hdfStrings.push_back(hdfToken);
+    }
+  }
+
   return data;
 }

@@ -965,6 +965,14 @@ void HDF5DatasetSelectionWidget::setInputFileLabelText(const QString &text)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+bool HDF5DatasetSelectionWidget::isDatasetSelectionEnabled() const
+{
+  return (m_Ui->hdfTreeView->isEnabled() && m_Ui->importHDF5DatasetTabWidget->isEnabled());
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void HDF5DatasetSelectionWidget::setDatasetSelectionEnabled(bool enabled)
 {
   m_Ui->hdfTreeView->setEnabled(enabled);
@@ -983,4 +991,19 @@ void HDF5DatasetSelectionWidget::setOneSelectionOnly(bool value)
   }
 
   m_OneSelectionOnly = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QStringList HDF5DatasetSelectionWidget::getSelectedHDF5Paths() const
+{
+  QStringList hdf5Paths;
+  HDF5FileTreeModel* model = dynamic_cast<HDF5FileTreeModel*>(m_Ui->hdfTreeView->model());
+  if (model != nullptr)
+  {
+    hdf5Paths = model->getSelectedHDF5Paths();
+  }
+
+  return hdf5Paths;
 }
