@@ -960,3 +960,12 @@ void HDF5DatasetSelectionWidget::setInputFileLabelText(const QString &text)
 {
   m_Ui->inputFileLabel->setText(text);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void HDF5DatasetSelectionWidget::setDatasetSelectionEnabled(bool enabled)
+{
+  m_Ui->hdfTreeView->setEnabled(enabled);
+  m_Ui->importHDF5DatasetTabWidget->setEnabled(enabled);
+}

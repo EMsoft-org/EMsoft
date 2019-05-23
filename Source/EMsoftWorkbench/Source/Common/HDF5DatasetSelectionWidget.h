@@ -86,6 +86,12 @@ public:
    */
   void writeParameters(QJsonObject& obj);
 
+  /**
+   * @brief setDatasetSelectionEnabled
+   * @param enabled
+   */
+  void setDatasetSelectionEnabled(bool enabled);
+
 public slots:
 
   /**

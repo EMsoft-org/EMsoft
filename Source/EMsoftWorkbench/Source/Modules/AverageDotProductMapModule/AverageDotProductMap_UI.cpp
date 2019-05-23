@@ -101,6 +101,9 @@ void AverageDotProductMap_UI::setupGui()
   createModificationConnections();
 
   validateData();
+
+  // Run this once so that the HDF5 widget can be either disabled or enabled
+  listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
 }
 
 // -----------------------------------------------------------------------------
@@ -230,9 +233,10 @@ void AverageDotProductMap_UI::listenInputTypeChanged(int index)
     case InputType::TSLHDF:
     case InputType::BrukerHDF:
     case InputType::OxfordHDF:
-      m_Ui->hdf5SelectionWidget->setEnabled(true);
+      m_Ui->hdf5SelectionWidget->setDatasetSelectionEnabled(true);
+      break;
     default:
-      m_Ui->hdf5SelectionWidget->setDisabled(true);
+      m_Ui->hdf5SelectionWidget->setDatasetSelectionEnabled(false);
       break;
   }
 
