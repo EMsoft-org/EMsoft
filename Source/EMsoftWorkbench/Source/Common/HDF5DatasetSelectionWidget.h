@@ -100,6 +100,12 @@ public:
    */
   QStringList getSelectedHDF5Paths() const;
 
+  /**
+   * @brief setOneSelectionOnly
+   * @param value
+   */
+  void setOneSelectionOnly(bool value);
+
 public slots:
 
   /**
