@@ -101,10 +101,22 @@ public:
   QStringList getSelectedHDF5Paths() const;
 
   /**
+   * @brief isDatasetSelectionEnabled
+   * @return
+   */
+  bool isDatasetSelectionEnabled() const;
+
+  /**
    * @brief setOneSelectionOnly
    * @param value
    */
   void setOneSelectionOnly(bool value);
+
+  /**
+   * @brief getSelectedHDF5Paths
+   * @return
+   */
+  QStringList getSelectedHDF5Paths() const;
 
 public slots:
 
