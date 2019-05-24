@@ -53,7 +53,6 @@
 #include "Modules/ModuleManager.h"
 
 #include "Common/Constants.h"
-#include "Common/EMsoftMenuItems.h"
 #include "Common/FileIOTools.h"
 #include "Common/QtSFileUtils.h"
 #include "Common/QtSRecentFileList.h"
@@ -239,18 +238,14 @@ EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString& filePa
 // -----------------------------------------------------------------------------
 void EMsoftApplication::updateRecentFileList()
 {
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
-  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
-  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
-
   // Clear the Recent Items Menu
-  recentFilesMenu->clear();
+  m_MenuRecentFiles->clear();
 
   // Get the list from the static object
   QStringList files = QtSRecentFileList::instance()->fileList();
   foreach(QString file, files)
   {
-    QAction* action = recentFilesMenu->addAction(QtSRecentFileList::parentAndFileName(file));
+    QAction* action = m_MenuRecentFiles->addAction(QtSRecentFileList::parentAndFileName(file));
     action->setData(file);
     action->setVisible(true);
     connect(action, &QAction::triggered, this, [=] {
@@ -259,8 +254,8 @@ void EMsoftApplication::updateRecentFileList()
     });
   }
 
-  recentFilesMenu->addSeparator();
-  recentFilesMenu->addAction(clearRecentFilesAction);
+  m_MenuRecentFiles->addSeparator();
+  m_MenuRecentFiles->addAction(m_ActionClearRecentFiles);
 }
 
 // -----------------------------------------------------------------------------
@@ -287,15 +282,10 @@ void EMsoftApplication::listenEditStyleTriggered()
 // -----------------------------------------------------------------------------
 void EMsoftApplication::listenClearRecentFilesTriggered()
 {
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
-
-  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
-  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
-
   // Clear the Recent Items Menu
-  recentFilesMenu->clear();
-  recentFilesMenu->addSeparator();
-  recentFilesMenu->addAction(clearRecentFilesAction);
+  m_MenuRecentFiles->clear();
+  m_MenuRecentFiles->addSeparator();
+  m_MenuRecentFiles->addAction(m_ActionClearRecentFiles);
 
   // Clear the actual list
   QtSRecentFileList* recentsList = QtSRecentFileList::instance();
@@ -400,10 +390,8 @@ void EMsoftApplication::setActiveWindow(EMsoftWorkbench_UI* workbench)
 // -----------------------------------------------------------------------------
 QMenu* EMsoftApplication::createCustomDockMenu()
 {
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
-
   QMenu* dockMenu = new QMenu();
-  dockMenu->addAction(menuItems->getActionOpen());
+  dockMenu->addAction(m_ActionOpen);
 
   return dockMenu;
 }

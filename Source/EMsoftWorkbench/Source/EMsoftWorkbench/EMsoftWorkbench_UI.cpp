@@ -49,7 +49,6 @@
 #include "Modules/ModuleManager.h"
 
 #include "Common/Constants.h"
-#include "Common/EMsoftMenuItems.h"
 #include "Common/FileIOTools.h"
 #include "Common/QtSRecentFileList.h"
 #include "Common/QtSSettings.h"
