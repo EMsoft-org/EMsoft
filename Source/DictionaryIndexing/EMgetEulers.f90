@@ -93,6 +93,7 @@ end program EMgetEulers
 !> @param nmldeffile namelist filename
 !
 !> @date 05/22/19 MDG 1.1 first version
+!> @date 05/24/19 MDG 1.2 added raddeg option
 !--------------------------------------------------------------------------
 
 subroutine EulerSubroutine(eunl, progname, nmldeffile)
@@ -154,13 +155,21 @@ if (istat .ne. 0) then
 end if 
 euler_best = 0.0
 if (refined.eqv..TRUE.) then
+  if (eunl%raddeg.eq.'deg') then 
     euler_best(1:3,1:Nexp) = EBSDDIdata%RefinedEulerAngles(1:3,1:Nexp)*180.0/cPi
-    deallocate(EBSDDIdata%RefinedEulerAngles)
-    call Message(' Extracting refined Euler angles from dot product file')
+  else 
+    euler_best(1:3,1:Nexp) = EBSDDIdata%RefinedEulerAngles(1:3,1:Nexp)
+  end if 
+  deallocate(EBSDDIdata%RefinedEulerAngles)
+  call Message(' Extracting refined Euler angles from dot product file')
 else
+  if (eunl%raddeg.eq.'deg') then 
     euler_best(1:3,1:Nexp) = EBSDDIdata%EulerAngles(1:3,1:Nexp)
-    deallocate(EBSDDIdata%EulerAngles)
-    call Message(' Extracting Euler angles from dot product file')
+  else
+    euler_best(1:3,1:Nexp) = EBSDDIdata%EulerAngles(1:3,1:Nexp)*cPi/180.0
+  end if 
+  deallocate(EBSDDIdata%EulerAngles)
+  call Message(' Extracting Euler angles from dot product file')
 end if 
 
 call Message('  --> dot product EBSD HDF5 file read')
@@ -181,7 +190,7 @@ do j=1,Nexp
 end do
 
 close(unit=dataunit,status='keep')
-call Message(' --> closed Euler angle text file '//trim(ename))
+call Message('  --> closed Euler angle text file '//trim(ename))
 
 !==============================
 ! if requested, also prepare an EMEBSD.nml file.
@@ -222,11 +231,11 @@ if (trim(eunl%EMEBSDnmlfile).ne.'undefined') then
   write (dataunit,"(A2)") ' /'
   close(UNIT=dataunit,STATUS='keep')
   call Message('')
-  call Message('You may need to edit the namelist file to make sure that the')
-  call Message('file paths are correct, or to change any other parameters before')
-  call Message('running the EMEBSD program with this input file.')
+  call Message('      You may need to edit the namelist file to make sure that the')
+  call Message('      file paths are correct, or to change any other parameters before')
+  call Message('      running the EMEBSD program with this input file.')
   call Message('')
-  call Message(' --> closed EMEBSD name list file '//trim(nmlname))
+  call Message('  --> closed EMEBSD name list file '//trim(nmlname))
 end if
 
 end subroutine EulerSubroutine

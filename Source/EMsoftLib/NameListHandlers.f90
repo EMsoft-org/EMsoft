@@ -366,6 +366,7 @@ logical,OPTIONAL,INTENT(IN)                 :: initonly
 logical                                     :: skipread = .FALSE.
 
 character(8)            :: angledataset   ! 'original' or 'refined'
+character(3)            :: raddeg         ! 'rad' or 'deg'
 character(fnlen)        :: xtalname
 character(fnlen)        :: txtfile
 character(fnlen)        :: datafile
@@ -373,7 +374,7 @@ character(fnlen)        :: EMEBSDnmlfile
 character(fnlen)        :: dotproductfile
 
 
-namelist /Eulerslist/ xtalname, datafile, txtfile, angledataset, dotproductfile, EMEBSDnmlfile
+namelist /Eulerslist/ xtalname, datafile, txtfile, angledataset, dotproductfile, EMEBSDnmlfile, raddeg
 
 dotproductfile = 'undefined'
 txtfile = 'undefined'
@@ -381,6 +382,7 @@ datafile = 'undefined'
 EMEBSDnmlfile = 'undefined'
 xtalname = 'undefined'
 angledataset = 'original'
+raddeg = 'deg'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -416,6 +418,7 @@ csnl%datafile = datafile
 csnl%EMEBSDnmlfile = EMEBSDnmlfile
 csnl%xtalname = xtalname
 csnl%angledataset = trim(angledataset) 
+csnl%raddeg = raddeg
 
 end subroutine GetEulersNameList
 
