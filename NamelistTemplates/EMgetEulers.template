@@ -1,6 +1,4 @@
  &Eulerslist
-! crystal structure filename
- xtalname = 'undefined'
 ! which Euler angle data set do you want to use? 'original' or 'refined'
  angledataset = 'original',
 ! use radians (rad) or degrees (deg) for the Euler angle file

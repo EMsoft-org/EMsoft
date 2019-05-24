@@ -56,7 +56,7 @@ IMPLICIT NONE
 
 character(fnlen)                            :: nmldeffile, progname, progdesc
 type(EulersNameListType)                    :: eunl
-integer(kind=irg)                           :: istat, res
+integer(kind=irg)                           :: res
 
 nmldeffile = 'EMgetEulers.nml'
 progname = 'EMgetEulers.f90'
@@ -123,14 +123,11 @@ type(EulersNameListType)                :: eunl
 type(EBSDDIdataType)                    :: EBSDDIdata
 type(EBSDIndexingNameListType)          :: dinl
 
-logical                                 :: stat, readonly, noindex, refined 
+logical                                 :: refined 
 character(fnlen)                        :: ename, nmlname
-integer(kind=irg)                       :: hdferr, ii, j, kk, iii, istat
+integer(kind=irg)                       :: hdferr, j, istat, Nexp
 
 real(kind=sgl),allocatable              :: euler_best(:,:)                                   
-
-real(kind=sgl)                          :: quat(4), ma, mi, dp, tstart, tstop, io_real(1), tmp, totnum_el, genfloat, vlen
-integer(kind=irg)                       :: Nexp, pgnum
 
 ! open the fortran HDF interface
 call h5open_EMsoft(hdferr)
@@ -173,8 +170,6 @@ else
 end if 
 
 call Message('  --> dot product EBSD HDF5 file read')
-
-pgnum = GetPointGroup(eunl%xtalname,NoHDFInterfaceOpen=.FALSE.)
 
 !==============================
 ! and prepare the Euler angle text file 

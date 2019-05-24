@@ -79,7 +79,6 @@ end type ANGNameListType
 type EulersNameListType
         character(8)            :: angledataset   ! 'original' or 'refined'
         character(3)            :: raddeg         ! 'rad' or 'deg'
-        character(fnlen)        :: xtalname
         character(fnlen)        :: txtfile
         character(fnlen)        :: datafile
         character(fnlen)        :: EMEBSDnmlfile

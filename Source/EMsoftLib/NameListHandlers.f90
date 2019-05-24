@@ -367,20 +367,18 @@ logical                                     :: skipread = .FALSE.
 
 character(8)            :: angledataset   ! 'original' or 'refined'
 character(3)            :: raddeg         ! 'rad' or 'deg'
-character(fnlen)        :: xtalname
 character(fnlen)        :: txtfile
 character(fnlen)        :: datafile
 character(fnlen)        :: EMEBSDnmlfile
 character(fnlen)        :: dotproductfile
 
 
-namelist /Eulerslist/ xtalname, datafile, txtfile, angledataset, dotproductfile, EMEBSDnmlfile, raddeg
+namelist /Eulerslist/ datafile, txtfile, angledataset, dotproductfile, EMEBSDnmlfile, raddeg
 
 dotproductfile = 'undefined'
 txtfile = 'undefined'
 datafile = 'undefined'
 EMEBSDnmlfile = 'undefined'
-xtalname = 'undefined'
 angledataset = 'original'
 raddeg = 'deg'
 
@@ -399,10 +397,6 @@ if (.not.skipread) then
   call FatalError('GetEulersNameList:',' dotproductfile name is undefined in '//nmlfile)
  end if
 
- if (trim(xtalname).eq.'undefined') then
-  call FatalError('GetEulersNameList:',' xtalname name is undefined in '//nmlfile)
- end if
-
  if (trim(txtfile).eq.'undefined') then
   call FatalError('GetEulersNameList:',' txtfile name is undefined in '//nmlfile)
  end if
@@ -416,7 +410,6 @@ csnl%dotproductfile = dotproductfile
 csnl%txtfile = txtfile
 csnl%datafile = datafile
 csnl%EMEBSDnmlfile = EMEBSDnmlfile
-csnl%xtalname = xtalname
 csnl%angledataset = trim(angledataset) 
 csnl%raddeg = raddeg
 
