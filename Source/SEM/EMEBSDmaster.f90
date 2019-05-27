@@ -303,7 +303,7 @@ call WriteValue(' --> total number of BSE electrons in MC data set ', io_int, 1)
 ! check the crystal system and setting; abort the program for trigonal with rhombohedral setting with
 ! an explanation for the user
 
-if (cell%xtal_system.eq.5) then 
+if ((cell%xtal_system.eq.5).and.(cell%b.eq.cell%c)) then 
     call Message('')
     call Message(' ========Program Aborted========')
     call Message(' The EBSD master pattern simulation for rhombohedral/trigonal structures')
