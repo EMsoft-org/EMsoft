@@ -152,6 +152,7 @@ end program EMEBSDmaster
 !> @date 04/02/18  MDG 7.0 replaced MC file reading by new routine in EBSDmod
 !> @date 04/03/18  MDG 7.1 replaced all regular MC variables by mcnl structure components
 !> @date 01/07/19  MDG 7.2 added Legendre lattitudinal grid mode (used for spherical indexing)
+!> @date 05/26/19  MDG 7.3 added warning about trigonal structures requiring hexagonal setting 
 !--------------------------------------------------------------------------
 subroutine ComputeMasterPattern(emnl, progname, nmldeffile)
 
@@ -298,6 +299,21 @@ call WriteValue(' --> total number of BSE electrons in MC data set ', io_int, 1)
  allocate(cell)
  verbose = .TRUE.
  call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+
+! check the crystal system and setting; abort the program for trigonal with rhombohedral setting with
+! an explanation for the user
+
+if (cell%xtal_system.eq.5) then 
+    call Message('')
+    call Message(' ========Program Aborted========')
+    call Message(' The EBSD master pattern simulation for rhombohedral/trigonal structures')
+    call Message(' requires that the structure be described using the hexagonal reference')
+    call Message(' frame.  Please re-enter the crystal structure in this setting and re-run')
+    call Message(' the Monte Carlo calculation and this master pattern program.')
+    call Message('')
+    stop
+end if
+
 
 ! then calculate density, average atomic number and average atomic weight
  call CalcDensity(cell, dens, avZ, avA, Z2percent)
