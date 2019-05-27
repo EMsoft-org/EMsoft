@@ -40,7 +40,6 @@ set(${SUBDIR_NAME}_DIR "${EMsoftWorkbench_SOURCE_DIR}/Source/${SUBDIR_NAME}")
 # --------------------------------------------------------------------
 # Any Class that inherits from QObject, either directly or through the heirarchy needs to have its header listed here
 set(EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS
-  ${${SUBDIR_NAME}_DIR}/EMsoftMenuItems.h
   ${${SUBDIR_NAME}_DIR}/GLImageViewer.h
   ${${SUBDIR_NAME}_DIR}/MonteCarloFileReader.h
   ${${SUBDIR_NAME}_DIR}/ProjectionConversions.hpp
@@ -74,7 +73,6 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
   ${${SUBDIR_NAME}_DIR}/EigenConversions.cpp
-  ${${SUBDIR_NAME}_DIR}/EMsoftMenuItems.cpp
   ${${SUBDIR_NAME}_DIR}/FileIOTools.cpp
   ${${SUBDIR_NAME}_DIR}/GLImageViewer.cpp
   ${${SUBDIR_NAME}_DIR}/ImageGenerationTask.cpp

@@ -53,7 +53,6 @@
 #include "Modules/ModuleManager.h"
 
 #include "Common/Constants.h"
-#include "Common/EMsoftMenuItems.h"
 #include "Common/FileIOTools.h"
 #include "Common/QtSFileUtils.h"
 #include "Common/QtSRecentFileList.h"
@@ -72,16 +71,15 @@ EMsoftApplication::EMsoftApplication(int& argc, char** argv)
 , m_OpenDialogLastDirectory("")
 , m_ActiveWindow(nullptr)
 {
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
+  // Create the default menu bar that gets displayed if there is no EMsoftWorkbench_UI instance (MacOS only)
+  createDefaultMenuBar();
 
-  connect(menuItems->getActionNew(), SIGNAL(triggered()), this, SLOT(on_actionNew_triggered()));
-  connect(menuItems->getActionOpen(), SIGNAL(triggered()), this, SLOT(on_actionOpen_triggered()));
-  connect(menuItems->getActionSave(), SIGNAL(triggered()), this, SLOT(on_actionSave_triggered()));
-  connect(menuItems->getActionSaveAs(), SIGNAL(triggered()), this, SLOT(on_actionSaveAs_triggered()));
-  connect(menuItems->getActionExit(), SIGNAL(triggered()), this, SLOT(on_actionExit_triggered()));
-  connect(menuItems->getActionClearRecentFiles(), SIGNAL(triggered()), this, SLOT(on_actionClearRecentFiles_triggered()));
-  connect(menuItems->getActionAboutEMsoftWorkbench(), SIGNAL(triggered()), this, SLOT(on_actionAboutEMsoftWorkbench_triggered()));
-  connect(menuItems->getActionEditStyle(), SIGNAL(triggered()), this, SLOT(on_actionEditStyle_triggered()));
+  // If on Mac, add custom actions to a dock menu
+#if defined(Q_OS_MAC)
+  createCustomDockMenu();
+
+  setQuitOnLastWindowClosed(false);
+#endif
 
   // Connection to update the recent files list on all windows when it changes
   QtSRecentFileList* recentsList = QtSRecentFileList::instance();
@@ -137,7 +135,18 @@ bool EMsoftApplication::initialize(int argc, char* argv[])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionNew_triggered()
+void EMsoftApplication::emSoftWindowChanged(EMsoftWorkbench_UI* instance)
+{
+  if (instance->isActiveWindow())
+  {
+    m_ActiveWindow = instance;
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::listenNewInstanceTriggered()
 {
   EMsoftWorkbench_UI* ui = getNewWorkbenchInstance();
   if(ui != nullptr)
@@ -149,7 +158,7 @@ void EMsoftApplication::on_actionNew_triggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionOpen_triggered()
+void EMsoftApplication::listenOpenTriggered()
 {
   QString proposedDir = m_OpenDialogLastDirectory;
   QString filePath = QFileDialog::getOpenFileName(nullptr, tr("Open Module From File"), proposedDir, tr("JSON File (*.json);;All Files (*.*)"));
@@ -229,18 +238,14 @@ EMsoftWorkbench_UI* EMsoftApplication::newInstanceFromFile(const QString& filePa
 // -----------------------------------------------------------------------------
 void EMsoftApplication::updateRecentFileList()
 {
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
-  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
-  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
-
   // Clear the Recent Items Menu
-  recentFilesMenu->clear();
+  m_MenuRecentFiles->clear();
 
   // Get the list from the static object
   QStringList files = QtSRecentFileList::instance()->fileList();
   foreach(QString file, files)
   {
-    QAction* action = recentFilesMenu->addAction(QtSRecentFileList::parentAndFileName(file));
+    QAction* action = m_MenuRecentFiles->addAction(QtSRecentFileList::parentAndFileName(file));
     action->setData(file);
     action->setVisible(true);
     connect(action, &QAction::triggered, this, [=] {
@@ -249,36 +254,14 @@ void EMsoftApplication::updateRecentFileList()
     });
   }
 
-  recentFilesMenu->addSeparator();
-  recentFilesMenu->addAction(clearRecentFilesAction);
+  m_MenuRecentFiles->addSeparator();
+  m_MenuRecentFiles->addAction(m_ActionClearRecentFiles);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionSave_triggered()
-{
-  if(nullptr != m_ActiveWindow)
-  {
-    m_ActiveWindow->saveSession();
-  }
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionSaveAs_triggered()
-{
-  if(nullptr != m_ActiveWindow)
-  {
-    m_ActiveWindow->saveSessionAs();
-  }
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionAboutEMsoftWorkbench_triggered()
+void EMsoftApplication::listenAboutEMsoftWorkbenchTriggered()
 {
   //  AboutSIMPLView d(nullptr);
   //  d.exec();
@@ -287,15 +270,7 @@ void EMsoftApplication::on_actionAboutEMsoftWorkbench_triggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionCloseWindow_triggered()
-{
-  m_ActiveWindow->close();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionEditStyle_triggered()
+void EMsoftApplication::listenEditStyleTriggered()
 {
   styleSheetEditor->setGeometry(40, 40, 500, 800);
   styleSheetEditor->show();
@@ -305,17 +280,12 @@ void EMsoftApplication::on_actionEditStyle_triggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionClearRecentFiles_triggered()
+void EMsoftApplication::listenClearRecentFilesTriggered()
 {
-  EMsoftMenuItems* menuItems = EMsoftMenuItems::Instance();
-
-  QMenu* recentFilesMenu = menuItems->getMenuRecentFiles();
-  QAction* clearRecentFilesAction = menuItems->getActionClearRecentFiles();
-
   // Clear the Recent Items Menu
-  recentFilesMenu->clear();
-  recentFilesMenu->addSeparator();
-  recentFilesMenu->addAction(clearRecentFilesAction);
+  m_MenuRecentFiles->clear();
+  m_MenuRecentFiles->addSeparator();
+  m_MenuRecentFiles->addAction(m_ActionClearRecentFiles);
 
   // Clear the actual list
   QtSRecentFileList* recentsList = QtSRecentFileList::instance();
@@ -329,7 +299,7 @@ void EMsoftApplication::on_actionClearRecentFiles_triggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::on_actionExit_triggered()
+void EMsoftApplication::listenExitApplicationTriggered()
 {
   bool shouldReallyClose = true;
   for(EMsoftWorkbench_UI* workbench : m_WorkbenchInstances)
@@ -368,6 +338,27 @@ void EMsoftApplication::registerWorkbenchInstance(EMsoftWorkbench_UI* instance)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+void EMsoftApplication::unregisterWorkbenchInstance(EMsoftWorkbench_UI* instance)
+{
+  m_WorkbenchInstances.removeAll(instance);
+
+  if (m_WorkbenchInstances.isEmpty())
+  {
+    m_ActiveWindow = nullptr;
+  }
+
+#if defined(Q_OS_MAC)
+#else
+  if (m_WorkbenchInstances.size() <= 0)
+  {
+    quit();
+  }
+#endif
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 EMsoftWorkbench_UI* EMsoftApplication::getNewWorkbenchInstance()
 {
   // Create new EMsoftWorkbench instance
@@ -392,4 +383,87 @@ EMsoftWorkbench_UI* EMsoftApplication::getNewWorkbenchInstance()
 void EMsoftApplication::setActiveWindow(EMsoftWorkbench_UI* workbench)
 {
   m_ActiveWindow = workbench;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QMenu* EMsoftApplication::createCustomDockMenu()
+{
+  QMenu* dockMenu = new QMenu();
+  dockMenu->addAction(m_ActionOpen);
+
+  return dockMenu;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::createDefaultMenuBar()
+{
+  m_DefaultMenuBar = new QMenuBar();
+
+  m_MenuFile = new QMenu("File", m_DefaultMenuBar);
+  m_MenuEdit = new QMenu("Edit", m_DefaultMenuBar);
+  m_MenuView = new QMenu("View", m_DefaultMenuBar);
+  m_MenuRecentFiles = new QMenu("Recent Files", m_DefaultMenuBar);
+  m_MenuHelp = new QMenu("Help", m_DefaultMenuBar);
+
+  m_ActionNew = new QAction("New...", m_DefaultMenuBar);
+  m_ActionNew->setShortcut(QKeySequence::New);
+
+  m_ActionOpen = new QAction("Open...", m_DefaultMenuBar);
+  m_ActionOpen->setShortcut(QKeySequence::Open);
+
+  m_ActionSave = new QAction("Save", m_DefaultMenuBar);
+  m_ActionSave->setShortcut(QKeySequence::Save);
+
+  m_ActionSaveAs = new QAction("Save As...", m_DefaultMenuBar);
+  m_ActionSaveAs->setShortcut(QKeySequence::SaveAs);
+
+  m_ActionClearRecentFiles = new QAction("Clear Recent Files", m_DefaultMenuBar);
+
+  m_ActionAboutEMsoftWorkbench = new QAction("About " + QApplication::applicationName(), m_DefaultMenuBar);
+
+  m_ActionExit = new QAction("Exit " + QApplication::applicationName(), m_DefaultMenuBar);
+  m_ActionExit->setShortcut(QKeySequence::Quit);
+
+  m_ActionEditStyle = new QAction("Edit Style...", this);
+
+  connect(m_ActionNew, SIGNAL(triggered()), this, SLOT(listenNewInstanceTriggered()));
+  connect(m_ActionOpen, SIGNAL(triggered()), this, SLOT(listenOpenTriggered()));
+//  connect(m_ActionSave, SIGNAL(triggered()), this, SLOT(on_actionSave_triggered()));
+//  connect(m_ActionSaveAs, SIGNAL(triggered()), this, SLOT(on_actionSaveAs_triggered()));
+  connect(m_ActionExit, SIGNAL(triggered()), this, SLOT(listenExitApplicationTriggered()));
+  connect(m_ActionClearRecentFiles, SIGNAL(triggered()), this, SLOT(listenClearRecentFilesTriggered()));
+//  connect(m_ActionAboutEMsoftWorkbench, SIGNAL(triggered()), this, SLOT(on_actionAboutEMsoftWorkbench_triggered()));
+  connect(m_ActionEditStyle, SIGNAL(triggered()), this, SLOT(listenEditStyleTriggered()));
+
+  m_ActionSave->setDisabled(true);
+  m_ActionSaveAs->setDisabled(true);
+
+  // Create File Menu
+  m_DefaultMenuBar->addMenu(m_MenuFile);
+  m_MenuFile->addAction(m_ActionNew);
+  m_MenuFile->addAction(m_ActionOpen);
+  m_MenuFile->addSeparator();
+  m_MenuFile->addAction(m_ActionSave);
+  m_MenuFile->addAction(m_ActionSaveAs);
+  m_MenuFile->addSeparator();
+  m_MenuFile->addAction(m_MenuRecentFiles->menuAction());
+  m_MenuRecentFiles->addSeparator();
+  m_MenuRecentFiles->addAction(m_ActionClearRecentFiles);
+  m_MenuFile->addSeparator();
+  m_MenuFile->addAction(m_ActionExit);
+
+  // Create Edit Menu
+  m_DefaultMenuBar->addMenu(m_MenuEdit);
+  m_MenuEdit->addAction(m_ActionEditStyle);
+
+  // Create View Menu
+  m_DefaultMenuBar->addMenu(m_MenuView);
+
+  // Create Help Menu
+//  m_MenuHelp->addAction(m_ActionAboutEMsoftWorkbench);
+//  m_DefaultMenuBar->addMenu(m_MenuHelp);
 }

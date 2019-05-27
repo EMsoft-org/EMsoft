@@ -42,8 +42,6 @@ set(${SUBDIR_NAME}_DIR "${EMsoftWorkbench_SOURCE_DIR}/Source/${SUBDIR_NAME}")
 set(EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS
   ${${SUBDIR_NAME}_DIR}/EMsoftApplication.h
   ${${SUBDIR_NAME}_DIR}/EMsoftWorkbench_UI.h
-  ${${SUBDIR_NAME}_DIR}/MacEMsoftApplication.h
-  ${${SUBDIR_NAME}_DIR}/StandardEMsoftApplication.h
   ${${SUBDIR_NAME}_DIR}/StatusBarWidget.h
   ${${SUBDIR_NAME}_DIR}/StyleSheetEditor.h
 )
@@ -62,9 +60,7 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
 set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
   ${${SUBDIR_NAME}_DIR}/EMsoftApplication.cpp
   ${${SUBDIR_NAME}_DIR}/EMsoftWorkbench_UI.cpp
-  ${${SUBDIR_NAME}_DIR}/MacEMsoftApplication.cpp
   ${${SUBDIR_NAME}_DIR}/main.cpp
-  ${${SUBDIR_NAME}_DIR}/StandardEMsoftApplication.cpp
   ${${SUBDIR_NAME}_DIR}/StatusBarWidget.cpp
   ${${SUBDIR_NAME}_DIR}/StyleSheetEditor.cpp
 )
