@@ -849,7 +849,7 @@ dataset = SC_CIMap
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset CImap')
 
 !=====================================================
-! Fit (to be completed with Farangis' code)
+! Fit 
 dataset = SC_Fit
   allocate(eangle(ipar(3)),stat=istat)
   eangle = 1.0
@@ -862,12 +862,12 @@ dataset = SC_Fit
 ! Averaged Orientation Map (using near-match list and quaternion logarithm averaging)
 ! define the ipar2 entries
 !   allocate(avEuler(3,ipar(3)))
-!   ipar2(1) = ipar(6)
-!   ipar2(2) = ipar(5)
-!   ipar2(3) = ipar(3)
-!   ipar2(4) = ipar(1)
-!   ipar2(5) = ipar(2)
-!   ipar2(6) = ebsdnl%nnav
+  ipar2(1) = ipar(6)
+  ipar2(2) = ipar(5)
+  ipar2(3) = ipar(3)
+  ipar2(4) = ipar(1)
+  ipar2(5) = ipar(2)
+  ipar2(6) = ebsdnl%nnav
 ! ! get the avEuler array
 !   eulerarray = eulerarray * sngl(cPi)/180.0
 !   call EBSDgetAverageOrientations(ipar2, eulerarray, indexmain(1:ipar2(4),1:ipar2(5)), resultmain(1:ipar2(4),1:ipar2(5)), &
@@ -1118,6 +1118,7 @@ dataset = SC_YPos
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Y position')
   deallocate(results)
  
+
 !=====================================================
 !=====================================================
 ! this concludes the standard data sets in the Data group
@@ -1193,7 +1194,6 @@ dataset = SC_CameraElevationAngle
   hdferr = HDF_writeDatasetFloat(dataset, ebsdnl%thetac, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopMatchIndices')
  
-
 !=====================================================
 ! Coordinate System group
   call h5ebsd_writeCoordinateSystemGroup(HDF_head)
@@ -1244,7 +1244,6 @@ groupname = "1"
 
 ! close the Phase group
   call HDF_pop(HDF_head)
-
 
 !=====================================================
 ! Sample ID
