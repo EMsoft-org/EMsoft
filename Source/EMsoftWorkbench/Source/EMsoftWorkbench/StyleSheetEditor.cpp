@@ -72,7 +72,7 @@ StyleSheetEditor::StyleSheetEditor(QWidget* parent)
   }
 
   styleSheetCombo->setCurrentIndex(styleSheetCombo->findText("light"));
-  loadStyleSheet("default");
+  loadStyleSheet("light");
 }
 
 // -----------------------------------------------------------------------------
@@ -105,8 +105,7 @@ void StyleSheetEditor::on_applyButton_clicked()
 // -----------------------------------------------------------------------------
 void StyleSheetEditor::loadStyleSheet(const QString& sheetName)
 {
-  QString filePath = ":/" + sheetName.toLower() + ".qss";
-  QFile file(filePath);
+  QFile file(":/" + sheetName.toLower() + ".qss");
   file.open(QFile::ReadOnly);
   QString styleSheet = QString::fromLatin1(file.readAll());
 

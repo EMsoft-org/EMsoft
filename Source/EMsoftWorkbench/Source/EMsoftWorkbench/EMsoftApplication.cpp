@@ -36,8 +36,6 @@
 
 #include <iostream>
 
-#include "EMsoftWorkbench/Resources/BrandedStrings.h"
-
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
 #include <QtCore/QPluginLoader>
