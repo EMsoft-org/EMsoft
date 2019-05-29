@@ -1,0 +1,459 @@
+/* Widgets are listed in alphabetical order with the exception of a few
+   styles applied to multiple widgets at the top */
+
+.QWidget QFrame{
+   background-color:  #445964;
+   border-style: none;
+}
+
+QWidget#centralWidget  {
+     background-color:  #445964;
+}
+
+QRadioButton
+{
+  color: white;
+}
+
+QCheckBox
+{
+  color:white;
+}
+
+QComboBox
+{
+  color: black;
+}
+
+
+/* Custom FilterParameter control styling */
+FilterParameterHeader {
+    font-family: "Lato-Bold";
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+    background-color:  #445964;
+}
+FilterParameterDescription {
+    font-family: "Lato";
+    font-size: 14px;
+    color:  #c3d5df;
+    background-color:  #445964;
+}
+FilterParameterSubHeader {
+    font-family: "Lato-Bold";
+    font-size: 14px;
+    font-weight: bold;
+    color:  white;
+    background-color:  #445964;
+}
+FilterParameterLabel {
+    font-family: "Lato-Thin";
+    font-size: 11px;
+    color: white;
+    background-color:  #445964;
+}
+FilterParameterLineEdit {
+    font-family: "Lato";
+    font-size: 12px;
+    color: black;
+    background-color: #c3d5df;
+    border: 1px solid darkgrey;
+    min-height: 26px;
+}
+FilterParameterLineEditOverlay {
+    font-family: "Lato";
+    font-size: 12px;
+    color: red;
+    background-color: #c3d5df;
+    border: 1px solid red;
+    min-height: 20px;
+}
+
+
+
+/* For the QDockWidget border style, see QMainWindow::separator */
+QDockWidget {
+    border: 1px solid  darkgray;
+    font-family: "Lato";
+    font-size: 13px;
+    font-weight: bold;
+    color: black;
+    titlebar-close-icon: url(:/Resources/Images/widgets/dark/close-dark-normal.png);
+    titlebar-normal-icon: url(:/Resources/Images/widgets/dark/minimize-dark-normal.png);
+}
+QDockWidget::title {
+    background: #c3d5df;
+    color: black;
+    padding: 5px;
+}
+QDockWidget::close-button:hover {
+    titlebar-close-icon: url(:/Resources/Images/widgets/close-mouseover.png);
+}
+QDockWidget::close-button:pressed, QDockWidget::float-button:pushed {
+     titlebar-close-icon: url(:/Resources/Images/widgets/close-pressed.png);
+}
+QDockWidget::close-button:pressed, QDockWidget::float-button:pressed {
+    padding: 1px -1px -1px 1px;
+}
+QDockWidget::close-button {
+    subcontrol-position: top right;
+    subcontrol-origin: margin;
+    position: absolute;
+    top: 2px; right: 8px; bottom: 0px;
+    width: 20px;
+    height: 20px;
+}
+QDockWidget::float-button {
+    subcontrol-position: top right;
+    subcontrol-origin: margin;
+    position: absolute;
+    top: 2px; right: 30px; bottom: 0px;
+    width: 20px;
+    height: 20px;
+}
+/* These icon settings are ignored....
+QDockWidget::close-button:hover {
+    titlebar-close-icon: url(:/Resources/Images/widgets/dark/close-dark-mouseover.png);
+}
+QDockWidget::close-button:pressed {
+     titlebar-close-icon: url(:/Resources/Images/widgets/dark/close-dark-pushed.png);
+}
+QDockWidget::float-button:hover {
+    titlebar-normal-icon: url(:/Resources/Images/widgets/dark/minimize-dark-mouseover.png);
+}
+QDockWidget::float-button:pressed  {
+     titlebar-normal-icon: url(:/Resources/Images/widgets/dark/minimize-dark-pushed.png);
+} */
+
+
+
+/* Frame underneath the QTabWidget on the Filter Library Widget */
+QFrame#filterToolboxFrame {
+  background: #c3d5df;
+  border: 0px solid transparent;
+}
+
+
+
+/* header in the pipeline issues QTableWidget */
+QHeaderView::section {
+    background-color: #77a2b9;
+    padding: 4px;
+    border: 1px solid #445964;
+    font-size: 10pt;
+    color: white;
+}
+
+
+
+QListView {
+    color: white;
+    font-size: 16px;
+    background-color: #445964;
+    border-style: none;
+    outline: none; /* removes the "focus rect" */
+}
+QListView::item {
+   padding-bottom: 2px;
+   padding-top: 2px;
+   border-top-color: transparent;
+   border-bottom-color: transparent;
+   border: 0px solid transparent;
+}
+QListView::item:hover {
+    background:  #526975;
+    border: 0px;
+    color: white;
+}
+QListView::item:selected {
+    background: #77a2b9;
+    color: white;
+}
+
+
+
+
+/* This is a bizzre one. The separator is the border that
+   is drawn around the QDockWidgets */
+QMainWindow::separator {
+    background: #678499;
+    width: 1px;
+    height: 1px;
+}
+
+ /* QMenuBar is the top level menu while QMenu is used for 'sub menus' */
+QMenuBar {
+    background-color: #6d7f89;
+}
+QMenuBar::item {
+    color: white;
+}
+QMenuBar::item:pressed {
+    background:  #50616b;
+}
+QMenuBar::item:selected {
+   background: #50616b;
+   color: white;
+}
+QMenu {
+    background-color: #6d7f89;
+    color: white;
+    margin: 2px; /* some spacing around the menu */
+}
+QMenu::item:selected { /* when user selects or hovers */
+   background-color: #50616b;
+   color: white;
+}
+
+
+
+/* We provide a min-width and min-height for push buttons
+   so that they look elegant regardless of the width of the text. */
+QPushButton {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #fbfeff, stop:1 #eaf8ff);
+    border-width: 1px;
+    border-color: #87aabe;
+    border-style: solid;
+    border-radius: 4px;
+    font-family: "Lato";
+    font-size: 14px;
+    min-height: 20px;
+    min-width: 48px;
+}
+QPushButton:hover {
+   background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f6fcff, stop:1 #c8ecff);
+}
+/* Increase the padding, so the text is shifted when the button is
+   pressed. */
+QPushButton:pressed {
+    padding-left: 2px;
+    padding-top: 2px;
+    background-color: #c8ecff;
+    border-color: grey;
+    border-style: inset;
+}
+/* Button styles specific to the startPipelineBtn */
+QPushButton#startPipelineBtn:enabled {
+     background-color: #6cbf3a;
+     color: white;
+     border-width: 1px;
+     border-color: transparent;
+     border-style: solid;
+     border-radius: 3px;
+     font-family: "Lato";
+     font-weight:  bold;
+     font-size: 14px;
+     min-height: 46px;
+     margin: 4px;
+}
+QPushButton#startPipelineBtn:disabled {
+    background-color: #e1e1e1;
+    color: rgb(160, 160, 160);
+    border-radius: 3px;
+    border-color: rgb(160, 160, 160);
+    font-family: "Lato";
+    font-weight:  bold;
+    font-size: 14px;
+    min-height: 46px;
+    margin: 4px;
+}
+
+
+/* The central widget scroll area */
+/* If we set the QScrollArea globally, then we must also style all of the scroll bars */
+QScrollArea#scrollArea  {
+    background-color: transparent;
+}
+#scrollAreaWidgetContents  {
+    background-color: transparent;
+}
+
+
+
+QStatusBar {
+    background: #6d7f89;
+    border: 1px solid  #6d7f89;
+    min-height: 26px;
+    color: white;
+}
+
+
+
+/* See QHeaderView on how to style the QTableWidget header */
+QTableWidget {
+    font-size: 14px;
+    color: white;
+}
+
+
+
+QTabWidget {
+   border-style: none;
+}
+QTabWidget::pane { /* The tab widget frame */
+    border-bottom: 0px solid #445964;
+}
+QTabBar::tab {
+    background: #77a2b9;
+    color: white;
+    margin-left: 1px;
+    margin-right: 1px;
+    min-width: 100px;
+    min-height: 22px;
+    font-family: "Lato";
+    font-weight: bold;
+    font-size: 13px;
+    border: 1px solid #678499;
+    padding: 2px;
+}
+QTabBar::tab:!selected {
+    margin-top: 1px;
+}
+QTabBar::tab::bottom {
+   border-width: 1px;
+   border-top-color: #77a2b9;
+   border-bottom-color: white;
+   border-left-color: white;
+   border-right-color: white;
+}
+QTabBar::tab::top {
+    border-bottom: 2px solid #77a2b9;
+}
+QTabBar::tab:hover {
+    background: #75bfe8;
+}
+QTabBar::tab::selected {
+    background: #445964;
+    color: white;
+    min-width: 100px;
+    min-height: 22px;
+}
+QTabBar::tab::selected:bottom{
+     border-top-color: #445964;
+     border-bottom-color: #678499;
+     border-left-color: #678499;
+     border-right-color: #678499;
+}
+QTabBar::tab::selected:top{
+   border-color: #445964;
+}
+QTabBar::scroller {
+   width: 16px;   /* 16px appears to be the max width */
+}
+QTabBar QToolButton {
+    border: 1px solid #678499;
+    background-color: #e6f6ff;
+    border-radius: 0px;
+    margin: 0px;
+    min-height: 28;
+    max-height: 28;
+    min-width: 16px;
+    max-height: 16px;
+}
+QTabBar QToolButton::right-arrow {
+   image: url(:/Resources/Images/widgets/tab-next_normal.png);
+}
+QTabBar QToolButton::left-arrow {
+   image: url(:/Resources/Images/widgets/tab-previous_normal.png);
+}
+QTabBar QToolButton::right-arrow:disabled {
+   image: url(:/Resources/Images/widgets/tab-next_disabled.png);
+}
+QTabBar QToolButton::left-arrow:disabled {
+   image: url(:/Resources/Images/widgets/tab-previous_disabled.png);
+}
+
+
+
+
+QTextEdit {
+   color: white;
+   background: #445964;
+   font-size: 14px;
+}
+
+
+
+QToolBar {
+    spacing: 12px;
+    min-height: 40px;
+    background-color:  #50616b;
+    border-bottom: 1px solid #2b3c45;
+}
+QToolButton { /* all types of tool button */
+    border: 1px solid #8f8f91; /* using #000000 with opacity > 1.0 does look 3d */
+    border-radius: 5px;
+    background-color:  #dee6eb;
+    margin: 2px;
+    font-family: "Lato";
+    font-weight: bold;
+    font-size: 13px;
+    color: black;
+    min-height: 28;
+    max-height: 28;;
+    min-width: 110;
+    border-style: raised;
+}
+QToolButton:checked {
+    border: 1px solid rgb(0,0,0,25%); /* does look 3d without using a gradient */
+    border-radius: 5px;
+    background-color: #179ac5;
+    margin: 2px;
+    color: white;
+    min-width: 110;
+    border-style: inset;
+}
+/* does not look good
+QToolButton:hover {
+  color: black;
+  background-color: #bee9ff;
+} */
+
+
+QTreeView {
+    show-decoration-selected: 1;
+    font-size: 16px;
+    background-color: #445964;
+    border-style: none;
+    outline: none;  /* removes the "focus rect" */
+
+}
+QTreeView::item {
+    padding-bottom: 2px ;
+    padding-top: 2px ;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+    font-size: 16px;
+    color: white;
+}
+QTreeView::item:hover {
+    background:  #526975;
+    border: 0px;
+    color: white;
+}
+QTreeView::item:selected {
+    background: #77a2b9;
+    color: white;
+}
+QTreeView::branch:has-children:!has-siblings:closed,
+QTreeView::branch:closed:has-children:has-siblings {
+    border-image: none;
+    image: url(:/Resources/Images/widgets/collapsed-normal.png);
+}
+QTreeView::branch:open:has-children:!has-siblings,
+QTreeView::branch:open:has-children:has-siblings  {
+    border-image: none;
+    image: url(:/Resources/Images/widgets/expanded-normal.png);
+}
+QTreeView::branch:hover {
+   background: #526975;
+    border: 0px;
+}
+QTreeView::branch:selected{
+   background: #77a2b9;
+    border: 0px;
+
+}
+
+
