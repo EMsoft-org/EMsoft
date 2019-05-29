@@ -127,3 +127,68 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                     SOLUTION_FOLDER EMsoftPublic/Test)
 
 endif()
+
+#------------------------------------------------------------------------------
+# Create CTest entries for a basic indexing workflow
+#------------------------------------------------------------------------------
+# Use multiple CPU cores to Test
+include(ProcessorCount)
+ProcessorCount(EMsoft_TEST_CPU_COUNT)
+
+set(EXE_EXT "")
+if(WIN32)
+  set(EXE_EXT ".exe")
+endif()
+
+#------------------------------------------------------------------------------
+# 1: The Ni.xtal file should have been copied into the proper spot via some other external means
+# We are just going to have to trust that it is there.
+set(test_index  "1")
+
+#------------------------------------------------------------------------------
+# 2: Setup the EMMCOpenCL executable
+math(EXPR test_index "${test_index} + 1")
+set(TEST_EXE_NAME EMMCOpenCL)
+configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+)
+add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+#------------------------------------------------------------------------------
+# 3: Setup the EMEBSDmaster executable
+math(EXPR test_index "${test_index} + 1")
+set(TEST_EXE_NAME EMEBSDmaster)
+configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+)
+configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/BetheParameters.nml.in
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/BetheParameters.nml
+)
+add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+#------------------------------------------------------------------------------
+# 4: Setup the ADP executable
+math(EXPR test_index "${test_index} + 1")
+set(TEST_EXE_NAME EMgetADP)
+configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+)
+add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+#------------------------------------------------------------------------------
+# 5: Setup the EMEBSDDIpreview executable
+math(EXPR test_index "${test_index} + 1")
+set(TEST_EXE_NAME EMEBSDDIpreview)
+configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
+              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+)
+add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
