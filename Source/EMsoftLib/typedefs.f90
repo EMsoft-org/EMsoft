@@ -1787,8 +1787,8 @@ type SH_correlatorType
    integer(kind=sgl)                    :: sl             ! side length of grid in euler space (2 * bandWidth - 1)
    integer(kind=irg)                    :: bwP            ! bandwidth of padded sidelength
    integer(kind=sgl)                    :: slP            ! sidelength padded to a fast FFT size
-   complex(kind=dbl),allocatable        :: wigD (:,:,:  ) ! lookup table for wigner d functions
-   type(fftwPlanPtr)                    :: plan           ! array of pointer structures to fftw plans
+   real   (kind=dbl),allocatable        :: wigD (:,:,:  ) ! lookup table for wigner d functions
+   type(C_ptr)                          :: plan           ! array of pointer structures to fftw plans
 
    ! these members are working space that is modified
    complex(kind=dbl)        ,allocatable :: fm   (:,:    ) ! 2d lookup table to hold \hat{f}(j,m) * d^j_{m, k} for all j and m (for any given k)
