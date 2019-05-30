@@ -35,6 +35,8 @@
 
 #include "SVStyle.h"
 
+#include <iostream>
+
 #include <QtCore/QDebug>
 #include <QtCore/QMetaProperty>
 #include <QtCore/QJsonDocument>
@@ -43,6 +45,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QTextStream>
 #include <QtCore/QJsonValue>
+#include <QtCore/QMimeDatabase>
 
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QLineEdit>
@@ -110,22 +113,52 @@ void SVStyle::invalidateColorProperties()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SVStyle::loadStyleSheet(const QString &jsonFilePath)
+bool SVStyle::loadStyleSheet(const QString &filePath)
 {
 //  qDebug() << "SVStyle::loadStyleSheet() " << jsonFilePath;
   invalidateColorProperties();
 
-  bool success = true;
-  
-  QFileInfo jsonFileInfo(jsonFilePath);
-  
-  QFile jsonFile(jsonFilePath);
-  if(!jsonFile.open(QFile::ReadOnly))
+  bool success;
+
+  QFileInfo fi(filePath);
+  if (fi.completeSuffix() == "qss")
   {
-    qDebug() << "Could not open JSON File " << jsonFilePath;
-    return false; 
+    QFile file(filePath);
+    file.open(QFile::ReadOnly);
+    QString styleSheet = QString::fromLatin1(file.readAll());
+
+    // FINALLY, Set the style sheet into the app object
+    m_CurrentThemeFilePath = filePath;
+    qApp->setStyleSheet(styleSheet);
+    emit styleSheetLoaded(filePath);
+    success = true;
+  }
+  else if (fi.completeSuffix() == "json")
+  {
+    success = loadStyleSheetFromJson(filePath);
+  }
+  else
+  {
+    std::cout << tr("Style sheet with path '%1' could not be loaded because the file extension is not .qss or .json.").arg(filePath).toStdString();
+    success = false;
   }
   
+  return success;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool SVStyle::loadStyleSheetFromJson(const QString &filePath)
+{
+  QFileInfo fi(filePath);
+  QFile jsonFile(filePath);
+  if(!jsonFile.open(QFile::ReadOnly))
+  {
+    qDebug() << "Could not open JSON File " << filePath;
+    return false;
+  }
+
   QByteArray jsonContent = jsonFile.readAll();
   QJsonParseError parseError;
   QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonContent, &parseError);
@@ -136,22 +169,22 @@ bool SVStyle::loadStyleSheet(const QString &jsonFilePath)
     return false;
   }
   QJsonObject rootObj = jsonDoc.object();
-  
+
   // Create the CSS File Path and try to read the CSS template file
   QString cssFileName = rootObj["CSS_File_Name"].toString();
-  cssFileName = QString("%1/%2").arg(jsonFileInfo.absolutePath(), 1).arg(cssFileName, 2);
-  
+  cssFileName = QString("%1/%2").arg(fi.absolutePath(), 1).arg(cssFileName, 2);
+
   QFile cssFile(cssFileName);
   if(!cssFile.open(QFile::ReadOnly))
   {
     qDebug() << "Could not open CSS File " << cssFileName;
-    return false; 
+    return false;
   }
   QString cssContent = QString::fromLatin1(cssFile.readAll());
-  
+
   // Read the variable mapping from the JSON file
   QJsonObject varMapping = rootObj["Named_Variables"].toObject();
-  
+
   // Get the CSS Replacements that need to be made
   QJsonObject cssRepl = rootObj["CSS_Replacements"].toObject();
   QStringList keys = cssRepl.keys();
@@ -192,7 +225,7 @@ bool SVStyle::loadStyleSheet(const QString &jsonFilePath)
       }
     }
   }
-  
+
   //
   //
   keys.clear();
@@ -207,7 +240,7 @@ bool SVStyle::loadStyleSheet(const QString &jsonFilePath)
     {
       value = varMapping[value].toString();
     }
-    
+
     if(value.startsWith("#"))
     {
       this->setProperty( key.toLocal8Bit().constData(), QColor(value));
@@ -232,20 +265,20 @@ bool SVStyle::loadStyleSheet(const QString &jsonFilePath)
       }
     }
   }
-  
+
   keys.clear();
 
   // Get the CSS Font replacements that need to be made
   QJsonObject fontRepl = rootObj["Font_Replacements"].toObject();
   keys = fontRepl.keys();
-  #if defined(Q_OS_MAC)
+#if defined(Q_OS_MAC)
   QString os("macOS");
 #elif defined(Q_OS_WIN)
   QString os("Windows");
 #else
   QString os("Linux");
 #endif
-  
+
   QJsonObject osFontRepl = fontRepl[os].toObject();
   keys = osFontRepl.keys();
   for (constIterator = keys.constBegin(); constIterator != keys.constEnd(); ++constIterator)
@@ -254,13 +287,14 @@ bool SVStyle::loadStyleSheet(const QString &jsonFilePath)
     QString value = osFontRepl[key].toString();
     cssContent = cssContent.replace(key, value);
   }
-  
-  m_CurrentThemeFilePath = jsonFilePath;
-  
+
+  m_CurrentThemeFilePath = filePath;
+
   // FINALLY, Set the style sheet into the app object
   qApp->setStyleSheet(cssContent);
-  emit styleSheetLoaded(jsonFilePath);
-  return success;
+  emit styleSheetLoaded(filePath);
+
+  return true;
 }
 
 // -----------------------------------------------------------------------------

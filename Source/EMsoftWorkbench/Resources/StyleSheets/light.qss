@@ -63,8 +63,8 @@ QDockWidget {
     font-size: 13px;
     font-weight: bold;
     color: white;
-    titlebar-close-icon: url(:/Resources/Images/widgets/close-normal.png);
-    titlebar-normal-icon: url(:/Resources/Images/widgets/minimize-normal.png);
+    titlebar-close-icon: url(:/widgets/close-normal.png);
+    titlebar-normal-icon: url(:/widgets/minimize-normal.png);
 }
 QDockWidget::title {
     background: #407795;
@@ -89,16 +89,16 @@ QDockWidget::float-button {
 }
 /* These icon settings are ignored....
 QDockWidget::close-button:hover {
-    titlebar-close-icon: url(:/Resources/Images/widgets/close-mouseover.png);
+    titlebar-close-icon: url(:/widgets/close-mouseover.png);
 }
 QDockWidget::close-button:pressed {
-     titlebar-close-icon: url(:/Resources/Images/widgets/close-pushed.png);
+     titlebar-close-icon: url(:/widgets/close-pushed.png);
 }
 QDockWidget::float-button:hover {
-    titlebar-normal-icon: url(:/Resources/Images/widgets/minimize-mouseover.png);
+    titlebar-normal-icon: url(:/widgets/minimize-mouseover.png);
 }
 QDockWidget::float-button:pressed  {
-     titlebar-normal-icon: url(:/Resources/Images/widgets/minimize-pushed.png);
+     titlebar-normal-icon: url(:/widgets/minimize-pushed.png);
 } */
 
 
@@ -371,16 +371,16 @@ QTabBar QToolButton {
 
 }
 QTabBar QToolButton::right-arrow {
-   image: url(:/Resources/Images/widgets/tab-next_normal.png);
+   image: url(:/widgets/tab-next_normal.png);
 }
 QTabBar QToolButton::left-arrow {
-   image: url(:/Resources/Images/widgets/tab-previous_normal.png);
+   image: url(:/widgets/tab-previous_normal.png);
 }
 QTabBar QToolButton::right-arrow:disabled {
-   image: url(:/Resources/Images/widgets/tab-next_disabled.png);
+   image: url(:/widgets/tab-next_disabled.png);
 }
 QTabBar QToolButton::left-arrow:disabled {
-   image: url(:/Resources/Images/widgets/tab-previous_disabled.png);
+   image: url(:/widgets/tab-previous_disabled.png);
 }
 
 
@@ -478,12 +478,12 @@ QTreeView::branch{
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
     border-image: none;
-    image: url(:/Resources/Images/widgets/collapsed-normal.png);
+    image: url(:/widgets/collapsed-normal.png);
 }
 QTreeView::branch:open:has-children:!has-siblings,
 QTreeView::branch:open:has-children:has-siblings  {
     border-image: none;
-    image: url(:/Resources/Images/widgets/expanded-normal.png);
+    image: url(:/widgets/expanded-normal.png);
 }
 QTreeView::branch:hover {
    background:  #e9f7fe;

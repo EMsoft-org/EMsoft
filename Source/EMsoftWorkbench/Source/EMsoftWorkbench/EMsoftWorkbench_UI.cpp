@@ -762,8 +762,9 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   m_MenuBar = new QMenuBar();
 
   m_MenuFile = new QMenu("File", m_MenuBar);
-  m_MenuEdit = new QMenu("Edit", m_MenuBar);
+//  m_MenuEdit = new QMenu("Edit", m_MenuBar);
   m_MenuView = new QMenu("View", m_MenuBar);
+  m_MenuThemes = emSoftApp->createThemeMenu(m_MenuView);
   m_MenuRecentFiles = new QMenu("Recent Files", m_MenuBar);
   m_MenuHelp = new QMenu("Help", m_MenuBar);
 
@@ -786,7 +787,7 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   m_ActionExit = new QAction("Exit " + QApplication::applicationName(), m_MenuBar);
   m_ActionExit->setShortcut(QKeySequence::Quit);
 
-  m_ActionEditStyle = new QAction("Edit Style...", this);
+//  m_ActionEditStyle = new QAction("Edit Style...", this);
 
   connect(m_ActionNew, &QAction::triggered, emSoftApp, &EMsoftApplication::listenNewInstanceTriggered);
   connect(m_ActionOpen, &QAction::triggered, emSoftApp, &EMsoftApplication::listenOpenTriggered);
@@ -795,7 +796,7 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   connect(m_ActionExit, &QAction::triggered, emSoftApp, &EMsoftApplication::listenExitApplicationTriggered);
   connect(m_ActionClearRecentFiles, &QAction::triggered, emSoftApp, &EMsoftApplication::listenClearRecentFilesTriggered);
 //  connect(m_ActionAboutEMsoftWorkbench, &QAction::triggered, emSoftApp, &EMsoftApplication::listenAboutEMsoftWorkbenchTriggered);
-  connect(m_ActionEditStyle, &QAction::triggered, emSoftApp, &EMsoftApplication::listenEditStyleTriggered);
+//  connect(m_ActionEditStyle, &QAction::triggered, emSoftApp, &EMsoftApplication::listenEditStyleTriggered);
 
   // Create File Menu
   m_MenuBar->addMenu(m_MenuFile);
@@ -812,10 +813,11 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   m_MenuFile->addAction(m_ActionExit);
 
   // Create Edit Menu
-  m_MenuBar->addMenu(m_MenuEdit);
-  m_MenuEdit->addAction(m_ActionEditStyle);
+//  m_MenuBar->addMenu(m_MenuEdit);
+//  m_MenuEdit->addAction(m_ActionEditStyle);
 
   // Create View Menu
+  m_MenuView->addMenu(m_MenuThemes);
   m_MenuBar->addMenu(m_MenuView);
 
   // Create Help Menu

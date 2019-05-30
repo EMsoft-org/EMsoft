@@ -73,6 +73,9 @@ EMsoftApplication::EMsoftApplication(int& argc, char** argv)
 , m_OpenDialogLastDirectory("")
 , m_ActiveWindow(nullptr)
 {
+  SVStyle* style = SVStyle::Instance();
+  style->loadStyleSheet(":/light.qss");
+
   // Create the default menu bar that gets displayed if there is no EMsoftWorkbench_UI instance (MacOS only)
   createDefaultMenuBar();
 
@@ -129,7 +132,7 @@ bool EMsoftApplication::initialize(int argc, char* argv[])
   }
 
   // Create the style sheet editor and apply the style sheet
-  styleSheetEditor = new StyleSheetEditor();
+//  styleSheetEditor = new StyleSheetEditor();
 
   return true;
 }
@@ -406,8 +409,9 @@ void EMsoftApplication::createDefaultMenuBar()
   m_DefaultMenuBar = new QMenuBar();
 
   m_MenuFile = new QMenu("File", m_DefaultMenuBar);
-  m_MenuEdit = new QMenu("Edit", m_DefaultMenuBar);
+//  m_MenuEdit = new QMenu("Edit", m_DefaultMenuBar);
   m_MenuView = new QMenu("View", m_DefaultMenuBar);
+  m_MenuThemes = createThemeMenu(m_MenuView);
   m_MenuRecentFiles = new QMenu("Recent Files", m_DefaultMenuBar);
   m_MenuHelp = new QMenu("Help", m_DefaultMenuBar);
 
@@ -430,7 +434,7 @@ void EMsoftApplication::createDefaultMenuBar()
   m_ActionExit = new QAction("Exit " + QApplication::applicationName(), m_DefaultMenuBar);
   m_ActionExit->setShortcut(QKeySequence::Quit);
 
-  m_ActionEditStyle = new QAction("Edit Style...", this);
+//  m_ActionEditStyle = new QAction("Edit Style...", this);
 
   connect(m_ActionNew, SIGNAL(triggered()), this, SLOT(listenNewInstanceTriggered()));
   connect(m_ActionOpen, SIGNAL(triggered()), this, SLOT(listenOpenTriggered()));
@@ -439,7 +443,7 @@ void EMsoftApplication::createDefaultMenuBar()
   connect(m_ActionExit, SIGNAL(triggered()), this, SLOT(listenExitApplicationTriggered()));
   connect(m_ActionClearRecentFiles, SIGNAL(triggered()), this, SLOT(listenClearRecentFilesTriggered()));
 //  connect(m_ActionAboutEMsoftWorkbench, SIGNAL(triggered()), this, SLOT(on_actionAboutEMsoftWorkbench_triggered()));
-  connect(m_ActionEditStyle, SIGNAL(triggered()), this, SLOT(listenEditStyleTriggered()));
+//  connect(m_ActionEditStyle, SIGNAL(triggered()), this, SLOT(listenEditStyleTriggered()));
 
   m_ActionSave->setDisabled(true);
   m_ActionSaveAs->setDisabled(true);
@@ -459,10 +463,11 @@ void EMsoftApplication::createDefaultMenuBar()
   m_MenuFile->addAction(m_ActionExit);
 
   // Create Edit Menu
-  m_DefaultMenuBar->addMenu(m_MenuEdit);
-  m_MenuEdit->addAction(m_ActionEditStyle);
+//  m_DefaultMenuBar->addMenu(m_MenuEdit);
+//  m_MenuEdit->addAction(m_ActionEditStyle);
 
   // Create View Menu
+  m_MenuView->addMenu(m_MenuThemes);
   m_DefaultMenuBar->addMenu(m_MenuView);
 
   // Create Help Menu
@@ -489,32 +494,36 @@ QString EMsoftApplication::getOpenDialogLastDirectory() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QMenu* EMsoftApplication::createThemeMenu(QActionGroup* actionGroup, QWidget* parent)
+QMenu* EMsoftApplication::createThemeMenu(QWidget* parent)
 {
   SVStyle* style = SVStyle::Instance();
 
+  QActionGroup* themeActionGroup = new QActionGroup(parent);
+
   QMenu* menuThemes = new QMenu("Themes", parent);
 
-  QString themePath = ":/SIMPL/StyleSheets/Default.json";
+  QString themePath = ":/default.qss";
+
   QAction* action = menuThemes->addAction("Default", [=] { style->loadStyleSheet(themePath); });
   action->setCheckable(true);
   if(themePath == style->getCurrentThemeFilePath())
   {
     action->setChecked(true);
   }
-  actionGroup->addAction(action);
+  themeActionGroup->addAction(action);
 
-  QStringList themeNames = BrandedStrings::LoadedThemeNames;
-  for(int i = 0; i < themeNames.size(); i++)
+  QStringList themeNames = { "Light", "Dark" };
+  for(const QString &themeName : themeNames)
   {
-    QString themePath = BrandedStrings::DefaultStyleDirectory + QDir::separator() + themeNames[i] + ".json";
-    QAction* action = menuThemes->addAction(themeNames[i], [=] { style->loadStyleSheet(themePath); });
+    QString themePath = ":/" + themeName.toLower() + ".qss";
+    QAction* action = menuThemes->addAction(themeName, [=] { style->loadStyleSheet(themePath); });
     action->setCheckable(true);
     if(themePath == style->getCurrentThemeFilePath())
     {
       action->setChecked(true);
     }
-    actionGroup->addAction(action);
+
+    themeActionGroup->addAction(action);
   }
 
   return menuThemes;

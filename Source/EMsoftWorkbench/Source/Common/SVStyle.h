@@ -470,10 +470,10 @@ class SVStyle : public QObject
         
     /**
      * @brief loadStyleSheet
-     * @param jsonFilePath
+     * @param filePath
      * @return
      */
-    bool loadStyleSheet(const QString &jsonFilePath);
+    bool loadStyleSheet(const QString &filePath);
     
     /**
      * @brief
@@ -600,6 +600,12 @@ class SVStyle : public QObject
      * @brief invalidateColorProperties
      */
     void invalidateColorProperties();
+
+    /**
+     * @brief loadStyleSheetFromJson
+     * @param filePath
+     */
+    bool loadStyleSheetFromJson(const QString &filePath);
 
     /**
      * @brief loadStringProperty

@@ -149,8 +149,9 @@ private:
   QMenuBar* m_MenuBar = nullptr;
 
   QMenu* m_MenuFile = nullptr;
-  QMenu* m_MenuEdit = nullptr;
+//  QMenu* m_MenuEdit = nullptr;
   QMenu* m_MenuView = nullptr;
+  QMenu* m_MenuThemes = nullptr;
   QMenu* m_MenuRecentFiles = nullptr;
   QMenu* m_MenuHelp = nullptr;
 
@@ -161,7 +162,7 @@ private:
   QAction* m_ActionClearRecentFiles = nullptr;
   QAction* m_ActionAboutEMsoftWorkbench = nullptr;
   QAction* m_ActionExit = nullptr;
-  QAction* m_ActionEditStyle = nullptr;
+//  QAction* m_ActionEditStyle = nullptr;
 
   /**
    * @brief Create the menu system for the workbench
