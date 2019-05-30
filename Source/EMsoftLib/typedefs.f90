@@ -1787,15 +1787,16 @@ type SH_correlatorType
    integer(kind=sgl)                    :: sl             ! side length of grid in euler space (2 * bandWidth - 1)
    integer(kind=irg)                    :: bwP            ! bandwidth of padded sidelength
    integer(kind=sgl)                    :: slP            ! sidelength padded to a fast FFT size
-   complex(kind=dbl),allocatable        :: wigD (:,:,:  ) ! lookup table for wigner d functions
-   type(fftwPlanPtr)                    :: plan           ! array of pointer structures to fftw plans
+   real   (kind=dbl),allocatable        :: wigD (:,:,:  ) ! lookup table for wigner d functions
+   type(C_ptr)                          :: plan           ! array of pointer structures to fftw plans
 
    ! these members are working space that is modified
-   complex(kind=dbl),allocatable        :: fm   (:,:    ) ! 2d lookup table to hold \hat{f}(j,m) * d^j_{m, k} for all j and m (for any given k)
-   complex(kind=dbl),allocatable        :: gn   (:      ) ! 1d lookup table to hold \bar{\hat{g}(j,n)} * d^j_{k,n} for all j (for any given k and n)
-   complex(kind=dbl),allocatable        :: fxc  (:,:,:  ) ! fft of cross correlation (in fftw multi dimensional real format)
-   real   (kind=dbl),allocatable        :: xc   (:,:,:  ) ! real space cross correlation (this is what we're after)
-   real   (kind=dbl),allocatable        :: dBeta(:,:,:,:) ! wigner (lowercase) d lookup table for arbitrary beta (for refinement)
+   complex(kind=dbl)        ,allocatable :: fm   (:,:    ) ! 2d lookup table to hold \hat{f}(j,m) * d^j_{m, k} for all j and m (for any given k)
+   complex(kind=dbl)        ,allocatable :: gn   (:      ) ! 1d lookup table to hold \bar{\hat{g}(j,n)} * d^j_{k,n} for all j (for any given k and n)
+   type   (C_PTR)                        :: pFxc, pXc      ! c pointers for allocation of fxc and xc
+   complex(C_DOUBLE_COMPLEX),pointer     :: fxc  (:,:,:  ) ! fft of cross correlation (in fftw multi dimensional real format)
+   real   (C_DOUBLE)        ,pointer     :: xc   (:,:,:  ) ! real space cross correlation (this is what we're after)
+   real   (kind=dbl)        ,allocatable :: dBeta(:,:,:,:) ! wigner (lowercase) d lookup table for arbitrary beta (for refinement)
 end type SH_correlatorType
 
 
