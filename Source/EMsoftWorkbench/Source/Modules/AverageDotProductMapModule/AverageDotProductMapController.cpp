@@ -77,7 +77,6 @@ void AverageDotProductMapControllerProgress(size_t instance, int loopCompleted, 
 // -----------------------------------------------------------------------------
 AverageDotProductMapController::AverageDotProductMapController(QObject* parent)
 : QObject(parent)
-, m_Cancel(false)
 {
   m_InstanceKey = ++k_InstanceKey;
 }
@@ -97,29 +96,21 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
 {
   initializeData();
 
-  SizeTArrayType::Pointer iParPtr = data.getIParPtr();
-  FloatArrayType::Pointer fParPtr = data.getFParPtr();
+  std::vector<size_t> iParVector = data.getIParVector();
+  std::vector<float> fParVector = data.getFParVector();
   std::vector<char> sParVector = data.getSParVector();
 
-  size_t* iPar = iParPtr->getPointer(0);
-  float* fPar = fParPtr->getPointer(0);
-  char* sPar = sParVector.data();
-
-  QVector<size_t> numTuples(1, 1);
-  QVector<size_t> cDims(1, data.patternHeight * data.patternWidth);
-
   // Create a new Mask Array
-  m_OutputMaskPtr = FloatArrayType::CreateArray(numTuples, cDims, "Mask", true);
+  m_OutputMaskVector.resize(data.patternHeight * data.patternWidth);
+  std::fill(m_OutputMaskVector.begin(), m_OutputMaskVector.end(), 0.0f);
 
   // Create a new IQ Map Array
-  m_OutputIQMapPtr = FloatArrayType::CreateArray(numTuples, cDims, "IQ Map", true);
+  m_OutputIQMapVector.resize(data.patternHeight * data.patternWidth);
+  std::fill(m_OutputIQMapVector.begin(), m_OutputIQMapVector.end(), 0.0f);
 
   // Create a new ADP Map Array
-  m_OutputADPMapPtr = FloatArrayType::CreateArray(numTuples, cDims, "ADP Map", true);
-
-  float* outputMask = m_OutputMaskPtr->getPointer(0);
-  float* outputIQMap = m_OutputIQMapPtr->getPointer(0);
-  float* outputADPMap = m_OutputADPMapPtr->getPointer(0);
+  m_OutputADPMapVector.resize(data.patternHeight * data.patternWidth);
+  std::fill(m_OutputADPMapVector.begin(), m_OutputADPMapVector.end(), 0.0f);
 
   // Set the start time for this run (m_StartTime)
   m_StartTime = QDateTime::currentDateTime().time().toString();
@@ -133,7 +124,7 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
   // incorrect interactions between the callback routines.
   m_Executing = true;
   instances[m_InstanceKey] = this;
-  EMsoftCpreprocessEBSDPatterns(iPar, fPar, sPar, outputMask, outputIQMap, outputADPMap, &AverageDotProductMapControllerProgress, m_InstanceKey, &m_Cancel);
+  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &AverageDotProductMapControllerProgress, m_InstanceKey, &m_Cancel);
   m_Executing = false;
   instances.remove(m_InstanceKey);
 
@@ -154,9 +145,9 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
 // -----------------------------------------------------------------------------
 void AverageDotProductMapController::initializeData()
 {
-  m_OutputMaskPtr.reset();
-  m_OutputIQMapPtr.reset();
-  m_OutputADPMapPtr.reset();
+  m_OutputMaskVector.clear();
+  m_OutputIQMapVector.clear();
+  m_OutputADPMapVector.clear();
   m_StartTime = "";
   m_Executing = false;
   m_Cancel = false;
@@ -227,63 +218,51 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SizeTArrayType::Pointer AverageDotProductMapController::ADPMapData::getIParPtr() const
+std::vector<size_t> AverageDotProductMapController::ADPMapData::getIParVector() const
 {
   // allocate space for the iPar array, which will be used to communicate parameters with the EMsoftCpreprocessEBSDPatterns routine.
-  size_t iParSize = static_cast<size_t>(SizeConstants::IParSize);
-  QVector<size_t> cDims = { iParSize };
+  std::vector<size_t> iParVector(SizeConstants::IParSize, 0);
 
-  SizeTArrayType::Pointer iParPtr = SizeTArrayType::CreateArray(QVector<size_t>(1, 1), cDims, "iPar", true);
-  iParPtr->initializeWithZeros();
-
-  size_t* iPar = iParPtr->getPointer(0);
-
-  iPar[18] = numOfThreads;
-  iPar[19] = patternWidth;
-  iPar[20] = patternHeight;
-  iPar[22] = binningFactor;
-  iPar[23] = binningX;
-  iPar[24] = binningY;
-  iPar[26] = ipfWidth;
-  iPar[27] = ipfHeight;
-  iPar[28] = numOfRegions;
-  iPar[29] = maskPattern;
+  iParVector.at(18) = numOfThreads;
+  iParVector.at(19) = patternWidth;
+  iParVector.at(20) = patternHeight;
+  iParVector.at(22) = binningFactor;
+  iParVector.at(23) = binningX;
+  iParVector.at(24) = binningY;
+  iParVector.at(26) = ipfWidth;
+  iParVector.at(27) = ipfHeight;
+  iParVector.at(28) = numOfRegions;
+  iParVector.at(29) = maskPattern;
 
   if (useROI)
   {
-    iPar[30] = 1;
+    iParVector.at(30) = 1;
   }
   else
   {
-    iPar[30] = 0;
+    iParVector.at(30) = 0;
   }
 
-  iPar[31] = roi_1;
-  iPar[32] = roi_2;
-  iPar[33] = roi_3;
-  iPar[34] = roi_4;
-  iPar[35] = static_cast<int>(inputType);
+  iParVector.at(31) = roi_1;
+  iParVector.at(32) = roi_2;
+  iParVector.at(33) = roi_3;
+  iParVector.at(34) = roi_4;
+  iParVector.at(35) = static_cast<int>(inputType);
 
-  return iParPtr;
+  return iParVector;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer AverageDotProductMapController::ADPMapData::getFParPtr() const
+std::vector<float> AverageDotProductMapController::ADPMapData::getFParVector() const
 {
-  QVector<size_t> cDims = { SizeConstants::FParSize };
+  std::vector<float> fParVector(SizeConstants::FParSize, 0.0f);
 
-  // allocate space for the fPar array, which will be used to communicate parameters with the EMsoftCpreprocessEBSDPatterns routine.
-  FloatArrayType::Pointer fParPtr = FloatArrayType::CreateArray(QVector<size_t>(1, 1), cDims, "fPar", true);
-  fParPtr->initializeWithZeros();
+  fParVector.at(23) = maskRadius;
+  fParVector.at(24) = hipassFilter;
 
-  float* fPar = fParPtr->getPointer(0);
-
-  fPar[23] = maskRadius;
-  fPar[24] = hipassFilter;
-
-  return fParPtr;
+  return fParVector;
 }
 
 // -----------------------------------------------------------------------------

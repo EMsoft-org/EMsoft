@@ -38,8 +38,6 @@
 #include <QtCore/QObject>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
-#include "SIMPLib/DataArrays/StringDataArray.hpp"
 
 class AverageDotProductMapController : public QObject
 {
@@ -89,9 +87,9 @@ public:
     QString outputFilePath;
     QStringList hdfStrings;
 
-    SizeTArrayType::Pointer getIParPtr() const;
+    std::vector<size_t> getIParVector() const;
 
-    FloatArrayType::Pointer getFParPtr() const;
+    std::vector<float> getFParVector() const;
 
     std::vector<char> getSParVector() const;
   };
@@ -130,9 +128,9 @@ signals:
 private:
   QString m_StartTime = "";
 
-  FloatArrayType::Pointer m_OutputMaskPtr;
-  FloatArrayType::Pointer m_OutputIQMapPtr;
-  FloatArrayType::Pointer m_OutputADPMapPtr;
+  std::vector<float> m_OutputMaskVector;
+  std::vector<float> m_OutputIQMapVector;
+  std::vector<float> m_OutputADPMapVector;
 
   size_t m_InstanceKey = 0;
   bool m_Executing = false;
