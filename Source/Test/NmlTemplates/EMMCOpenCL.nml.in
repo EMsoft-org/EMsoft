@@ -33,5 +33,5 @@
 ! should the user be notified by email or Slack that the program has completed its run?
  Notify = 'Off',
 ! output data file name; pathname is relative to the EMdatapathname path !!!
- dataname = '@EMsoft_TEST_OUTPUT_FILE@'
+ dataname = 'UnitTest/Ni-Master-20kv.h5'
  /

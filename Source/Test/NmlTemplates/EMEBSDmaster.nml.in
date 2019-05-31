@@ -11,7 +11,7 @@
  copyfromenergyfile = 'undefined',
 ! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
 ! this file will also contain the output data of the master program
- energyfile = '@EMsoft_TEST_OUTPUT_FILE@',
+ energyfile = 'UnitTest/Ni-Master-20kv.h5',
 ! number of OpenMP threads
  nthreads = @EMsoft_TEST_CPU_COUNT@,
 ! do you wish to receive a notification (Email or Slack) when the program completes ?

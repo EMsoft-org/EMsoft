@@ -21,7 +21,7 @@
 ! name of pattern output file; will contain raw experimental pattern (tiff, pgm, bmp)
  patternfile = 'UnitTest/Reference.tiff',
 ! name of datafile where the patterns are stored; path relative to EMdatapathname
- exptfile = 'InputData/LEROY_0089_Section_800.h5',
+ exptfile = 'UnitTest/InputData/LEROY_0089_Section_800.h5',
 ! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
  inputtype = 'BrukerHDF',
 ! here we enter the HDF group names and data set names as individual strings (up to 10)
