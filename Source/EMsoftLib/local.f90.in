@@ -368,7 +368,7 @@ end function EMsoft_getEMsoftTestingPath
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief returns the EMsoftplatform
+!> @brief returns the Version Information
 !
 !> @param no input parameters
 !
@@ -384,6 +384,53 @@ character(20) :: version
 version = "@EMsoft_VER_MAJOR@_@EMsoft_VER_MINOR@_@EMsoft_VER_PATCH@_@EMsoft_VERSION_TWEAK@"
 
 end function EMsoft_getEMsoftversion
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getEMsoftRevision
+!
+!> @author 
+!
+!> @brief returns the Git Hash of the current commit.
+!
+!> @param no input parameters
+!
+!> @date  
+!--------------------------------------------------------------------------
+recursive function EMsoft_getEMsoftRevision() result(revision)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMsoftRevision
+
+IMPLICIT NONE
+
+character(40) :: revision
+
+revision = "@EMsoft_GIT_HASH@"
+
+end function EMsoft_getEMsoftRevision
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getEMsoftBuildDate
+!
+!> @author 
+!
+!> @brief returns the Git Hash of the current commit.
+!
+!> @param no input parameters
+!
+!> @date  
+!--------------------------------------------------------------------------
+recursive function EMsoft_getEMsoftBuildDate() result(buildDate)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMsoftBuildDate
+
+IMPLICIT NONE
+
+character(24) :: buildDate
+
+buildDate = "@EMsoft_BUILD_TIMESTAMP@"
+
+end function EMsoft_getEMsoftBuildDate
 
 
 !--------------------------------------------------------------------------
@@ -1230,7 +1277,9 @@ end if
  write (std,"(1x,'Program name         : ',A)") trim(progname)
  write (std,"(1x,'Purpose              : ',A)") trim(progdesc)
  write (std,"(1x,'Platform             : ',A)") "@CMAKE_SYSTEM_NAME@"
- write (std,"(1x,'Source code version  : ',A/)") trim(EMsoft_getEMsoftversion())
+ write (std,"(1x,'Source code version  : ',A)") trim(EMsoft_getEMsoftversion())
+ write (std,"(1x,'Source code Revision : ',A)") trim(EMsoft_getEMsoftRevision())
+ write (std,"(1x,'Build Date/Time      : ',A/)") trim(EMsoft_getEMsoftBuildDate())
 
  write (std,"(1x,'See https://github.com/EMsoft-org/EMsoft/wiki for selected help pages.'/)")
 
