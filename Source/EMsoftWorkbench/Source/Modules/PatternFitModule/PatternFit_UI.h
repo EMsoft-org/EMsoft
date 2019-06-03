@@ -148,8 +148,8 @@ private slots:
 private:
   GLImageViewer::GLImageData m_ReferencePattern;
 
-  FloatArrayType::Pointer m_SimulatedPatternData;
-  QVector<size_t> m_SimulatedPatternDims;
+  std::vector<float> m_SimulatedPatternData;
+  std::vector<size_t> m_SimulatedPatternDims;
 
   QuaternionMath<double>::Quaternion m_NavigationQuatX;
   QuaternionMath<double>::Quaternion m_NavigationQuatY;
@@ -160,7 +160,7 @@ private:
 
   bool m_HiPassDataInitialized = false;
   bool m_HiPassValuesChanged = false;
-  DoubleArrayType::Pointer m_HiPassData;
+  std::vector<double> m_HiPassData;
 
   double m_Opacity = 0.5;
   QTimer* m_FlickerTimer;

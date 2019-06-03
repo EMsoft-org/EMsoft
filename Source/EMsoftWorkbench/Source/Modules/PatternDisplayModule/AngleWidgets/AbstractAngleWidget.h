@@ -38,7 +38,6 @@
 #include <QtWidgets/QWidget>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 class PatternDisplay_UI;
@@ -59,7 +58,7 @@ public:
   static const QString UnknownStr;
   static const QString EulerId;
 
-  virtual FloatArrayType::Pointer getEulerAngles() = 0;
+  virtual std::vector<float> getEulerAngles() = 0;
 
   static float ConvertToRadians(float value);
   static float ConvertToDegrees(float value);

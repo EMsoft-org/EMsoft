@@ -39,7 +39,6 @@
 #include <QtCore/QObject>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 class MonteCarloFileReader;
 class EMsoftFileWriter;
@@ -127,9 +126,9 @@ private:
 
   QString m_StartTime = "";
 
-  Int32ArrayType::Pointer m_GenericAccumzPtr;
-  FloatArrayType::Pointer m_GenericLPNHPtr;
-  FloatArrayType::Pointer m_GenericLPSHPtr;
+  std::vector<int32_t> m_GenericAccumzPtr;
+  std::vector<float> m_GenericLPNHPtr;
+  std::vector<float> m_GenericLPSHPtr;
 
   std::vector<float> m_Atompos;
   std::vector<int32_t> m_Atomtypes;
@@ -206,13 +205,13 @@ private:
    * @brief getIParPtr
    * @return
    */
-  Int32ArrayType::Pointer getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  std::vector<int32_t> getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
 
   /**
    * @brief getFParPtr
    * @return
    */
-  FloatArrayType::Pointer getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  std::vector<float> getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
 
 public:
   MasterPatternSimulationController(const MasterPatternSimulationController&) = delete;            // Copy Constructor Not Implemented

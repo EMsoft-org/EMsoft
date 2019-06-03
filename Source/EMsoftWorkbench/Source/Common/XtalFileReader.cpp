@@ -97,8 +97,8 @@ void XtalFileReader::initializeData()
   m_SpaceGroupNumber = -1;
   m_SpaceGroupSetting = -1;
 
-  m_IParPtr = Int32ArrayType::NullPointer();
-  m_FParPtr = FloatArrayType::NullPointer();
+  m_IParVector.clear();
+  m_FParVector.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -127,14 +127,10 @@ hid_t XtalFileReader::getFileId()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer XtalFileReader::getIParPtr()
+std::vector<int32_t> XtalFileReader::getIParPtr()
 {
-  if (m_IParPtr == Int32ArrayType::NullPointer())
+  if (m_IParVector.empty())
   {
-    // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
-    size_t iParSize = static_cast<size_t>(EMsoftWorkbenchConstants::Constants::IParSize);
-    QVector<size_t> cDims = { iParSize };
-
     int crystalSystem = 0;
     int natomTypes = 0;
     int spaceGroupNumber = 0;
@@ -143,38 +139,37 @@ Int32ArrayType::Pointer XtalFileReader::getIParPtr()
     if (!getCrystalSystem(crystalSystem) || !getNatomTypes(natomTypes) ||
         !getSpaceGroupNumber(spaceGroupNumber) ||
         !getSpaceGroupSetting(spaceGroupSetting)) {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    m_IParPtr = Int32ArrayType::CreateArray(QVector<size_t>(1, 1), cDims, "genericIPar", true);
-    m_IParPtr->initializeWithZeros();
+    m_IParVector.resize(EMsoftWorkbenchConstants::Constants::IParSize);
+    std::fill(m_IParVector.begin(), m_IParVector.end(), 0);
 
-    int32_t* iPar = m_IParPtr->getPointer(0);
-
-    iPar[7] = crystalSystem;      // crystal system ID
-    iPar[8] = natomTypes;         // # atoms in asymmetric unit
-    iPar[9] = spaceGroupNumber;   // # space group
-    iPar[10] = spaceGroupSetting; // space group origin setting
+    m_IParVector.at(7) = crystalSystem;      // crystal system ID
+    m_IParVector.at(8) = natomTypes;         // # atoms in asymmetric unit
+    m_IParVector.at(9) = spaceGroupNumber;   // # space group
+    m_IParVector.at(10) = spaceGroupSetting; // space group origin setting
   }
 
-  return m_IParPtr;
+  return m_IParVector;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer XtalFileReader::getFParPtr()
+std::vector<float> XtalFileReader::getFParPtr()
 {
-  if (m_FParPtr == FloatArrayType::NullPointer())
+  if (m_FParVector.empty())
   {
-    // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
     QVector<size_t> cDims = { EMsoftWorkbenchConstants::Constants::FParSize };
 
-    m_FParPtr = FloatArrayType::CreateArray(QVector<size_t>(1, 1), cDims, "genericFPar", true);
-    m_FParPtr->initializeWithZeros();
+    m_FParVector.resize(EMsoftWorkbenchConstants::Constants::FParSize);
+    std::fill(m_FParVector.begin(), m_FParVector.end(), 0.0f);
+
+    // Fill the fPar vector with values
   }
 
-  return m_FParPtr;
+  return m_FParVector;
 }
 
 // -----------------------------------------------------------------------------

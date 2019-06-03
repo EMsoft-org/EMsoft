@@ -42,7 +42,6 @@
 #include <H5Support/QH5Lite.h>
 #include <H5Support/QH5Utilities.h>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include <hdf5.h>
@@ -80,8 +79,8 @@ class XtalFileReader : public QObject
     bool getNatomTypes(int &natomTypes);
     bool getSpaceGroupNumber(int &spaceGroupNumber);
     bool getSpaceGroupSetting(int &spaceGroupSetting);
-    Int32ArrayType::Pointer getIParPtr();
-    FloatArrayType::Pointer getFParPtr();
+    std::vector<int32_t> getIParPtr();
+    std::vector<float> getFParPtr();
 
   signals:
     void errorMessageGenerated(const QString &msg, int code);
@@ -103,8 +102,8 @@ class XtalFileReader : public QObject
     int                             m_SpaceGroupNumber = -1;
     int                             m_SpaceGroupSetting = -1;
 
-    Int32ArrayType::Pointer         m_IParPtr = Int32ArrayType::NullPointer();
-    FloatArrayType::Pointer         m_FParPtr = FloatArrayType::NullPointer();
+    std::vector<int32_t> m_IParVector;
+    std::vector<float> m_FParVector;
 
     /**
      * @brief initializeData

@@ -88,7 +88,7 @@ void PatternDisplayController::setMasterFilePath(const QString& masterFilePath)
   MasterPatternFileReader reader(masterFilePath, m_Observer);
   m_MP_Data = reader.readMasterPatternData();
 
-  if(m_MP_Data.ekevs == FloatArrayType::NullPointer())
+  if(m_MP_Data.ekevs.empty())
   {
     return;
   }
@@ -177,7 +177,7 @@ void PatternDisplayController::createMonteCarloImageGenerators()
   emit stdOutputMessageGenerated(tr("Version Identifier: %1").arg(m_MP_Data.mcVersionId));
 
   emit stdOutputMessageGenerated(tr("Dehyperslabbing Monte Carlo square data..."));
-  Int32ArrayType::Pointer monteCarloSquare_data = deHyperSlabData<int32_t>(m_MP_Data.monteCarloSquareData, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], m_MP_Data.monteCarlo_dims[2]);
+  std::vector<int32_t> monteCarloSquare_data = deHyperSlabData<int32_t>(m_MP_Data.monteCarloSquareData, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], m_MP_Data.monteCarlo_dims[2]);
 
   // Generate Monte Carlo square projection data
   m_MCSquareImageGenerators.resize(mc_zDim);
@@ -293,7 +293,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
       fParValues.dwellTime = detectorData.dwellTime;
       fParValues.gammaValue = patternData.gammaValue;
 
-      FloatArrayType::Pointer pattern =
+      std::vector<float> pattern =
           PatternTools::GeneratePattern(iParValues, fParValues, m_MP_Data.masterLPNHData, m_MP_Data.masterLPSHData, m_MP_Data.monteCarloSquareData, patternData.angles, index, m_Cancel);
 
       hsize_t xDim = static_cast<hsize_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
@@ -326,7 +326,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const FloatArrayType::Pointer& pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
+bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
 {
   AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, zValue);
   imgGen->createImage();
@@ -351,8 +351,8 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
   m_PriorityOrder.clear();
   m_PatternWatchers.clear();
 
-  FloatArrayType::Pointer eulerAngles = patternData.angles;
-  size_t angleCount = eulerAngles->getNumberOfTuples();
+  std::vector<float> eulerAngles = patternData.angles;
+  size_t angleCount = eulerAngles.size() / 3;
   emit newProgressBarMaximumValue(angleCount);
 
   PatternListModel* model = PatternListModel::Instance();
@@ -433,7 +433,7 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
       variantPair = imageGen->getMinMaxPair();
     }
 
-    keV = m_MP_Data.ekevs->getValue(energyBin - 1);
+    keV = m_MP_Data.ekevs.at(energyBin - 1);
   }
 
   GLImageViewer::GLImageData imageData;
@@ -488,7 +488,7 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
       variantPair = imageGen->getMinMaxPair();
     }
 
-    keV = m_MP_Data.ekevs->getValue(energyBin - 1);
+    keV = m_MP_Data.ekevs.at(energyBin - 1);
   }
 
   GLImageViewer::GLImageData imageData;

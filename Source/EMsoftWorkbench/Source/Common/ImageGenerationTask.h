@@ -51,7 +51,7 @@ class ImageGenerationTask : public QRunnable
     SIMPL_SHARED_POINTERS(ImageGenerationTask)
     SIMPL_TYPE_MACRO(ImageGenerationTask)
 
-    ImageGenerationTask(typename DataArray<T>::Pointer data, size_t xDim, size_t yDim, size_t zSlice, QVector<AbstractImageGenerator::Pointer> &imageGenerators,
+    ImageGenerationTask(std::vector<T> data, size_t xDim, size_t yDim, size_t zSlice, QVector<AbstractImageGenerator::Pointer> &imageGenerators,
                         QSemaphore &sem, size_t listIdx, bool horizontalMirror = false, bool verticalMirror = false) :
       QRunnable(),
       m_Data(data),
@@ -103,27 +103,27 @@ class ImageGenerationTask : public QRunnable
 
     }
 
-    void setImageData(typename DataArray<T>::Pointer data)
+    void setImageData(const std::vector<T> &data)
     {
       m_Data = data;
     }
 
-    size_t getVectorIndex()
+    size_t getVectorIndex() const
     {
       return m_VectorIdx;
     }
 
   private:
-    typename DataArray<T>::Pointer                        m_Data;
+    typename std::vector<T> m_Data;
 
-    size_t                                                m_zSlice;
-    size_t                                                m_VectorIdx;
-    size_t                                                m_xDim;
-    size_t                                                m_yDim;
-    bool                                                  m_HorizontalMirror;
-    bool                                                  m_VerticalMirror;
-    QVector<AbstractImageGenerator::Pointer>*             m_ImageGenerators;
-    QSemaphore*                                           m_Semaphore;
+    size_t m_zSlice;
+    size_t m_VectorIdx;
+    size_t m_xDim;
+    size_t m_yDim;
+    bool m_HorizontalMirror;
+    bool m_VerticalMirror;
+    QVector<AbstractImageGenerator::Pointer>* m_ImageGenerators;
+    QSemaphore* m_Semaphore;
 
     ImageGenerationTask(const ImageGenerationTask&); // Copy Constructor Not Implemented
     void operator=(const ImageGenerationTask&); // Operator '=' Not Implemented

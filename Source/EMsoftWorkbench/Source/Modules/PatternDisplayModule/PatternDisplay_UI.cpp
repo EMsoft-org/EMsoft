@@ -258,15 +258,15 @@ void PatternDisplay_UI::setGenerateButtonAvailability(bool value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(const FloatArrayType::Pointer& ekeVs)
+void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(const std::vector<float> &ekeVs)
 {
   energyMinCB->clear();
   energyMaxCB->clear();
 
   QStringList energies;
-  for(int i = 0; i < ekeVs->getNumberOfTuples(); i++)
+  for(float energyLevelFloat : ekeVs)
   {
-    int energyLevel = static_cast<int>(ekeVs->getValue(i));
+    int energyLevel = static_cast<int>(energyLevelFloat);
     energyMinCB->addItem(QString::number(energyLevel));
     energyMaxCB->addItem(QString::number(energyLevel));
   }

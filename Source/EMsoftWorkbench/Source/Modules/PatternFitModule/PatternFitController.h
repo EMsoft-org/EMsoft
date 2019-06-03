@@ -48,7 +48,6 @@
 #include "Common/MasterPatternFileReader.h"
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "Modules/PatternFitModule/PatternFitViewer.h"
@@ -76,7 +75,7 @@ public:
     double beamCurrent;
     double dwellTime;
     double sampleOmegaAngle;
-    FloatArrayType::Pointer angles;
+    std::vector<float> angles;
     double gammaValue;
     bool useCircularMask;
     bool useHipassFilter;
@@ -92,7 +91,7 @@ public:
    * @param detectorData
    * @return
    */
-  FloatArrayType::Pointer generatePattern(PatternFitController::SimulationData detectorData);
+  std::vector<float> generatePattern(PatternFitController::SimulationData detectorData);
 
   /**
    * @brief generatePatternImage
@@ -108,7 +107,7 @@ public:
    * @param yDim
    * @return
    */
-  GLImageViewer::GLImageData generatePatternImage(const FloatArrayType::Pointer& patternData, size_t xDim, size_t yDim, size_t zValue = 0);
+  GLImageViewer::GLImageData generatePatternImage(const std::vector<float> &patternData, size_t xDim, size_t yDim, size_t zValue = 0);
 
   /**
    * @brief validateSimulationValues
@@ -129,7 +128,7 @@ public:
   using IntPair = QPair<int, int>;
 
 signals:
-  void updateEkeVs(FloatArrayType::Pointer ekeVs);
+  void updateEkeVs(std::vector<float> ekeVs);
   void mpImageNeedsDisplayed(GLImageViewer::GLImageData);
   void mcImageNeedsDisplayed(GLImageViewer::GLImageData);
   void mpKeVNeedsDisplayed(float keV);

@@ -42,7 +42,6 @@
 #include <H5Support/QH5Lite.h>
 #include <H5Support/QH5Utilities.h>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Common/IObserver.h"
@@ -70,18 +69,18 @@ class MasterPatternFileReader
       // EMData/EBSDmaster
       int numMPEnergyBins;
       int numset;
-      FloatArrayType::Pointer ekevs;
-      FloatArrayType::Pointer masterLPNHData;
+      std::vector<float> ekevs;
+      std::vector<float> masterLPNHData;
       std::vector<hsize_t>    mLPNH_dims;
-      FloatArrayType::Pointer masterLPSHData;
+      std::vector<float> masterLPSHData;
       std::vector<hsize_t>    mLPSH_dims;
-      FloatArrayType::Pointer masterSPNHData;
+      std::vector<float> masterSPNHData;
       std::vector<hsize_t>    masterSPNH_dims;
 
       // EMData/MCOpenCL
       int numDepthBins;
       int numMCEnergyBins;
-      Int32ArrayType::Pointer monteCarloSquareData;
+      std::vector<int32_t> monteCarloSquareData;
       std::vector<hsize_t>    monteCarlo_dims;
 
       // NMLparameters/EBSDMasterNameList
@@ -109,10 +108,10 @@ class MasterPatternFileReader
     MasterPatternFileReader::MasterPatternData readMasterPatternData();
 
   private:
-    hid_t                           m_FileId = -1;
+    hid_t m_FileId = -1;
 
-    QString                         m_ErrorMessage = "";
-    int                             m_ErrorCode = 0;
+    QString m_ErrorMessage = "";
+    int m_ErrorCode = 0;
 
     /**
      * @brief readDatasetDimensions
@@ -166,10 +165,10 @@ class MasterPatternFileReader
      * @return
      */
     template <typename T>
-    typename DataArray<T>::Pointer readArrayDataset(hid_t parentId, QString objectName)
+    typename std::vector<T> readArrayDataset(hid_t parentId, QString objectName)
     {
       std::vector<hsize_t> dims = readDatasetDimensions(parentId, objectName);
-      if (dims.size() <= 0) { return DataArray<T>::NullPointer(); }
+      if (dims.size() <= 0) { return std::vector<T>(); }
 
       size_t numTuples = dims[0];
       for (int i = 1; i < dims.size(); i++)
@@ -177,12 +176,12 @@ class MasterPatternFileReader
         numTuples = numTuples * dims[i];
       }
 
-      typename DataArray<T>::Pointer dataArray = DataArray<T>::CreateArray(numTuples, QVector<size_t>(1, 1), objectName);
-      herr_t mLPNH_id = QH5Lite::readPointerDataset(parentId, objectName, dataArray->getPointer(0));
+      typename std::vector<T> dataArray = std::vector<T>(numTuples);
+      herr_t mLPNH_id = QH5Lite::readPointerDataset(parentId, objectName, dataArray.data());
       if (mLPNH_id < 0)
       {
 //        emit stdOutputMessageGenerated(tr("Error: Could not read object '%1'").arg(objectName));
-        return DataArray<T>::NullPointer();
+        return std::vector<T>();
       }
 
       return dataArray;

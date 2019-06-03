@@ -39,7 +39,6 @@
 #include <QtCore/QObject>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 class XtalFileReader;
 
@@ -135,10 +134,10 @@ private:
   XtalFileReader* m_XtalReader = nullptr;
   QString m_StartTime = "";
 
-  Int32ArrayType::Pointer m_GenericAccumePtr;
-  Int32ArrayType::Pointer m_GenericAccumzPtr;
-  UInt8ArrayType::Pointer m_GenericXtalPtr;
-  UInt8ArrayType::Pointer m_GenericMCPtr;
+  std::vector<int32_t> m_GenericAccumePtr;
+  std::vector<int32_t> m_GenericAccumzPtr;
+  std::vector<uint8_t> m_GenericXtalPtr;
+  std::vector<uint8_t> m_GenericMCPtr;
 
   size_t m_InstanceKey;
 
@@ -205,13 +204,13 @@ private:
    * @brief getIParPtr
    * @return
    */
-  Int32ArrayType::Pointer getIParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData);
+  std::vector<int32_t> getIParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData);
 
   /**
    * @brief getFParPtr
    * @return
    */
-  FloatArrayType::Pointer getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData);
+  std::vector<float> getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData);
 
   /**
    * @brief setSParValue

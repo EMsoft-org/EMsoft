@@ -51,7 +51,6 @@
 #include "Common/ProjectionConversionTask.h"
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "OrientationLib/Utilities/ModifiedLambertProjection.h"
@@ -125,7 +124,7 @@ public slots:
   void addPriorityIndex(size_t index);
 
 signals:
-  void minMaxEnergyLevelsChanged(FloatArrayType::Pointer ekeVs);
+  void minMaxEnergyLevelsChanged(const std::vector<float> &ekeVs);
   void mpImageNeedsDisplayed(GLImageViewer::GLImageData);
   void mcImageNeedsDisplayed(GLImageViewer::GLImageData);
   void energyMinChanged(int min);
@@ -217,7 +216,7 @@ private:
    * @param verticalMirror
    */
   template <typename T>
-  void createImageGeneratorTasks(typename DataArray<T>::Pointer data, size_t xDim, size_t yDim, size_t zDim, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem,
+  void createImageGeneratorTasks(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zDim, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem,
                                  bool horizontalMirror = false, bool verticalMirror = false)
   {
     for(int z = 0; z < zDim; z++)
@@ -229,7 +228,7 @@ private:
   }
 
   template <typename T, typename U>
-  void createProjectionConversionTasks(typename DataArray<T>::Pointer data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
+  void createProjectionConversionTasks(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
                                        ModifiedLambertProjection::Square square, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false,
                                        bool verticalMirror = false)
   {
@@ -246,9 +245,9 @@ private:
    * @param data
    */
   template <typename T>
-  typename DataArray<T>::Pointer deHyperSlabData(typename DataArray<T>::Pointer data, hsize_t xDim, hsize_t yDim, hsize_t zDim)
+  std::vector<T> deHyperSlabData(const std::vector<T> &data, hsize_t xDim, hsize_t yDim, hsize_t zDim)
   {
-    typename DataArray<T>::Pointer newData = std::dynamic_pointer_cast<DataArray<T>>(data->deepCopy());
+    std::vector<T> newData = data;
     size_t currentIdx = 0;
 
     for(int z = 0; z < zDim; z++)
@@ -258,8 +257,8 @@ private:
         for(int x = 0; x < xDim; x++)
         {
           int index = (xDim * zDim * y) + (zDim * x) + z;
-          T value = data->getValue(index);
-          newData->setValue(currentIdx, value);
+          T value = data.at(index);
+          newData.at(currentIdx) = value;
           currentIdx++;
         }
       }
@@ -285,7 +284,7 @@ private:
    * @param zValue
    * @return
    */
-  bool generatePatternImage(GLImageViewer::GLImageData& imageData, const FloatArrayType::Pointer& pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue);
+  bool generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue);
 
 public:
   PatternDisplayController(const PatternDisplayController&) = delete;            // Copy Constructor Not Implemented

@@ -146,7 +146,7 @@ protected slots:
    * @brief setMinAndMaxEnergyLevelChoices
    * @param ekeVs
    */
-  void setMinAndMaxEnergyLevelChoices(const FloatArrayType::Pointer& ekeVs);
+  void setMinAndMaxEnergyLevelChoices(const std::vector<float> &ekeVs);
 
   /**
    * @brief setGenerateButtonAvailability

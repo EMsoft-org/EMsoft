@@ -84,9 +84,9 @@ void MonteCarloFileReader::initializeData()
   m_GlobalWorkGroupSize = -1;
   m_MonteCarloMode = -1;
   m_XtalFileName = "";
-  m_AccumzPtr = Int32ArrayType::NullPointer();
-  m_IParPtr = Int32ArrayType::NullPointer();
-  m_FParPtr = FloatArrayType::NullPointer();
+  m_AccumzPtr.clear();
+  m_IParVector.clear();
+  m_FParVector.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -106,9 +106,9 @@ bool MonteCarloFileReader::closeFile()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MonteCarloFileReader::getIParPtr()
+std::vector<int32_t> MonteCarloFileReader::getIParPtr()
 {
-  if (m_IParPtr == Int32ArrayType::NullPointer())
+  if (m_IParVector.empty())
   {
     int numOfPixelsN = 0;
     int globalWorkGrpSize = 0;
@@ -137,64 +137,62 @@ Int32ArrayType::Pointer MonteCarloFileReader::getIParPtr()
         !getMaximumDepthToConsider(maxDepth) ||
         !getDepthStepSize(depthStepSize) || !getMonteCarloMode(mcMode))
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // Get 'full' mode values, otherwise bail
     if (mcMode == 1 && (!getAcceleratingVoltage(accelVoltage) || !getMinimumEnergyToConsider(minEnergy) || !getEnergyBinSize(energyBinSize)))
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // Get 'bse1' mode values, otherwise bail
     if (mcMode != 1 && (!getSampleEndTiltAngle(sampleEndTiltAngle) || !getSampleStartTiltAngle(sampleStartTiltAngle) ||
                         !getSampleTiltStepSize(sampleTiltStepSize)))
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    m_IParPtr = XtalFileReader::getIParPtr();
-    if (m_IParPtr == Int32ArrayType::NullPointer())
+    m_IParVector = XtalFileReader::getIParPtr();
+    if (m_IParVector.empty())
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    int32_t* iPar = m_IParPtr->getPointer(0);
-
-    iPar[0] = static_cast<int>((numOfPixelsN - 1) / 2); // number of pixels along x
-    iPar[1] = globalWorkGrpSize;                  // global work group size
-    iPar[2] = numOfEPerWorkitem; // number of electrons in work group
-    iPar[3] = totEConsidered;    // total number of electrons in single MCstep
-    iPar[4] = multiplier;        // multiplier for # of electrons
-    iPar[5] = gpuDeviceID + 1;   // OpenCL device ID
-    iPar[6] = gpuPlatformID + 1; // OpenCL platform ID
-    iPar[12] = static_cast<int>(maxDepth / depthStepSize + 1); // num z bins
-    iPar[13] = mcMode; // simulation mode (1=full, 2=bse1)
+    m_IParVector.at(0) = static_cast<int>((numOfPixelsN - 1) / 2); // number of pixels along x
+    m_IParVector.at(1) = globalWorkGrpSize;                  // global work group size
+    m_IParVector.at(2) = numOfEPerWorkitem; // number of electrons in work group
+    m_IParVector.at(3) = totEConsidered;    // total number of electrons in single MCstep
+    m_IParVector.at(4) = multiplier;        // multiplier for # of electrons
+    m_IParVector.at(5) = gpuDeviceID + 1;   // OpenCL device ID
+    m_IParVector.at(6) = gpuPlatformID + 1; // OpenCL platform ID
+    m_IParVector.at(12) = static_cast<int>(maxDepth / depthStepSize + 1); // num z bins
+    m_IParVector.at(13) = mcMode; // simulation mode (1=full, 2=bse1)
 
     // this next pair of values is a bit tricky since we use the accum_e and accum_z arrays for
     // two different cases, 'full' and 'bse1'
-    if (iPar[13] == 1)
+    if (m_IParVector.at(13) == 1)
     {
-      iPar[11] = static_cast<int>((accelVoltage - minEnergy) / energyBinSize + 1); // num E bins
-      iPar[14] = 1;    // only one major loop to be executed
+      m_IParVector.at(11) = static_cast<int>((accelVoltage - minEnergy) / energyBinSize + 1); // num E bins
+      m_IParVector.at(14) = 1;    // only one major loop to be executed
     }
     else
     {
-      iPar[11] = static_cast<int>((sampleEndTiltAngle - sampleStartTiltAngle) / sampleTiltStepSize + 1); // number of bse1 angles
-      iPar[14] = iPar[11];
+      m_IParVector.at(11) = static_cast<int>((sampleEndTiltAngle - sampleStartTiltAngle) / sampleTiltStepSize + 1); // number of bse1 angles
+      m_IParVector.at(14) = m_IParVector.at(11);
     }
-    iPar[15] = static_cast<int>((numOfPixelsN - 1) / 20); // number of depth bins along x
+    m_IParVector.at(15) = static_cast<int>((numOfPixelsN - 1) / 20); // number of depth bins along x
   }
 
-  return m_IParPtr;
+  return m_IParVector;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer MonteCarloFileReader::getFParPtr()
+std::vector<float> MonteCarloFileReader::getFParPtr()
 {
-  if (m_FParPtr == FloatArrayType::NullPointer()) {
+  if (m_FParVector.empty()) {
     double maxDepth = 0.0;
     double depthStepSize = 0.0;
     double accelVoltage = 0.0;
@@ -217,26 +215,25 @@ FloatArrayType::Pointer MonteCarloFileReader::getFParPtr()
 //        !getSampleTiltStepSize(sampleTiltStepSize) ||
         !getSampleRotationalAngleOmega(sampleRotAngleOmega))
     {
-      return FloatArrayType::NullPointer();
+      return std::vector<float>();
     }
 
-    m_FParPtr = XtalFileReader::getFParPtr();
-    float* fPar = m_FParPtr->getPointer(0);
+    m_FParVector = XtalFileReader::getFParPtr();
 
     // fill the m_GenericFPar array
-    fPar[0] = sampleTiltAngleSigma; // sample tilt angle
-    fPar[1] = sampleRotAngleOmega;  // omega sample tilt angle
-    fPar[2] = accelVoltage;         // accelerating voltage
-    fPar[3] = minEnergy;            // Energy minimum in histogram
-    fPar[4] = energyBinSize;        // Energy histogram bin size
-    fPar[5] = maxDepth;             // maximum depth to store
-    fPar[6] = depthStepSize;        // depth step size
-//    fPar[7] = sampleStartTiltAngle; // get starting angle
-//    fPar[8] = sampleEndTiltAngle;   // end angle
-//    fPar[9] = sampleTiltStepSize;   // angle step size
+    m_FParVector.at(0) = sampleTiltAngleSigma; // sample tilt angle
+    m_FParVector.at(1) = sampleRotAngleOmega;  // omega sample tilt angle
+    m_FParVector.at(2) = accelVoltage;         // accelerating voltage
+    m_FParVector.at(3) = minEnergy;            // Energy minimum in histogram
+    m_FParVector.at(4) = energyBinSize;        // Energy histogram bin size
+    m_FParVector.at(5) = maxDepth;             // maximum depth to store
+    m_FParVector.at(6) = depthStepSize;        // depth step size
+//    m_FParVector.at(7) = sampleStartTiltAngle; // get starting angle
+//    m_FParVector.at(8) = sampleEndTiltAngle;   // end angle
+//    m_FParVector.at(9) = sampleTiltStepSize;   // angle step size
   }
 
-  return m_FParPtr;
+  return m_FParVector;
 }
 
 // -----------------------------------------------------------------------------
@@ -695,9 +692,9 @@ bool MonteCarloFileReader::getXtalFileName(QString &xtalFileName)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
+std::vector<int32_t> MonteCarloFileReader::getAccumePtr()
 {
-  if (m_AccumePtr == Int32ArrayType::NullPointer())
+  if (m_AccumePtr.empty())
   {
     //--------------------------
     // read a bunch of data from the Monte Carlo group (used to be a separate file in previous version)
@@ -711,7 +708,7 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20019);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // get the array dimensions
@@ -725,26 +722,17 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20020);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    // convert this array to the m_GenericAccumz data array
-    // adjust the size of the m_GenericAccumz array to the correct one, since we did not have access
-    // to the dimensions in the datacheck() routine
-    QVector<size_t> numTuples(1,1);
-    QVector<size_t>  cDims(4);
-    cDims[0] = static_cast<size_t>(dims[3]);
-    cDims[1] = static_cast<size_t>(dims[2]);
-    cDims[2] = static_cast<size_t>(dims[1]);
-    cDims[3] = static_cast<size_t>(dims[0]);
-
     // Create a new GenericAccumz Array
-    m_AccumePtr = Int32ArrayType::CreateArray(numTuples, cDims, "Accume", true);
-    int32_t* accumePtr = m_AccumePtr->getPointer(0);
+    int size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<hsize_t>());
+    m_AccumePtr.resize(size);
+    std::fill(m_AccumePtr.begin(), m_AccumePtr.end(), 0);
 
-    for(size_t i = 0; i < accum_e.size(); i++)
+    for(size_t i = 0; i < m_AccumePtr.size(); i++)
     {
-      accumePtr[i] = accum_e[i];
+      m_AccumePtr.at(i) = accum_e.at(i);
     }
   }
 
@@ -754,9 +742,9 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MonteCarloFileReader::getAccumzPtr()
+std::vector<int32_t> MonteCarloFileReader::getAccumzPtr()
 {
-  if (m_AccumzPtr == Int32ArrayType::NullPointer())
+  if (m_AccumzPtr.empty())
   {
     //--------------------------
     // read a bunch of data from the Monte Carlo group (used to be a separate file in previous version)
@@ -770,7 +758,7 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumzPtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20021);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // get the array dimensions
@@ -784,26 +772,17 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumzPtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20022);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    // convert this array to the m_GenericAccumz data array
-    // adjust the size of the m_GenericAccumz array to the correct one, since we did not have access
-    // to the dimensions in the datacheck() routine
-    QVector<size_t> numTuples(1,1);
-    QVector<size_t>  cDims(4);
-    cDims[0] = static_cast<size_t>(dims[3]);
-    cDims[1] = static_cast<size_t>(dims[2]);
-    cDims[2] = static_cast<size_t>(dims[1]);
-    cDims[3] = static_cast<size_t>(dims[0]);
-
     // Create a new GenericAccumz Array
-    m_AccumzPtr = Int32ArrayType::CreateArray(numTuples, cDims, "Accumz", true);
-    int32_t* accumzPtr = m_AccumzPtr->getPointer(0);
+    int size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<hsize_t>());
+    m_AccumzPtr.resize(size);
+    std::fill(m_AccumzPtr.begin(), m_AccumzPtr.end(), 0);
 
     for(size_t i = 0; i < accum_z.size(); i++)
     {
-      accumzPtr[i] = accum_z[i];
+      m_AccumzPtr[i] = accum_z[i];
     }
   }
 

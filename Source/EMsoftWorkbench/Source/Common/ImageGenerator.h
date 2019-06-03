@@ -39,10 +39,11 @@
 
 #include <QtGui/QImage>
 
+#include <H5public.h>
+
 #include "Common/AbstractImageGenerator.h"
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 template <typename T>
 class ImageGenerator : public AbstractImageGenerator
@@ -51,7 +52,7 @@ class ImageGenerator : public AbstractImageGenerator
     SIMPL_SHARED_POINTERS(ImageGenerator<T>)
     SIMPL_TYPE_MACRO(ImageGenerator<T>)
 
-    static Pointer New(typename DataArray<T>::Pointer data, hsize_t xDim, hsize_t yDim, int zSlice,
+    static Pointer New(const std::vector<T> data, hsize_t xDim, hsize_t yDim, int zSlice,
                        bool mirroredHorizontal = false, bool mirroredVertical = false)
     {
       Pointer sharedPtr (new ImageGenerator(data, xDim, yDim, zSlice, mirroredHorizontal, mirroredVertical));
@@ -62,10 +63,8 @@ class ImageGenerator : public AbstractImageGenerator
 
     void createImage()
     {
-      T* dataPtr = m_Data->getPointer(0);
-
       m_GeneratedImage = QImage(m_XDim, m_YDim, QImage::Format_Indexed8);
-      if (m_Data->getNumberOfTuples() <= 0) { return; }
+      if (m_Data.size() <= 0) { return; }
 
       QVector<QRgb> colorTable;
       for (int i = 0; i <= 255; i++)
@@ -80,14 +79,14 @@ class ImageGenerator : public AbstractImageGenerator
       T min = std::numeric_limits<T>::max(), max = std::numeric_limits<T>::min();
       for (int i = firstIndex; i <= lastIndex; i++)
       {
-        T value = dataPtr[i];
+        T value = m_Data.at(i);
         if (value < min)
         {
-          min = dataPtr[i];
+          min = m_Data.at(i);
         }
         if (value > max)
         {
-          max = dataPtr[i];
+          max = m_Data.at(i);
         }
       }
 
@@ -99,7 +98,7 @@ class ImageGenerator : public AbstractImageGenerator
         for (int x = 0; x < m_XDim; x++)
         {
           int index = m_YDim*m_XDim*m_ZSlice + m_XDim*y + x;
-          T value = m_Data->getValue(index);
+          T value = m_Data.at(index);
           if (max == min)
           {
             m_GeneratedImage.setPixel(x, y, value);
@@ -117,7 +116,7 @@ class ImageGenerator : public AbstractImageGenerator
     }
 
   protected:
-    ImageGenerator(typename DataArray<T>::Pointer data, hsize_t xDim, hsize_t yDim, int zSlice,
+    ImageGenerator(typename std::vector<T> data, hsize_t xDim, hsize_t yDim, int zSlice,
                    bool mirroredHorizontal = false, bool mirroredVertical = false) :
       AbstractImageGenerator(),
       m_Data(data),
@@ -131,12 +130,12 @@ class ImageGenerator : public AbstractImageGenerator
     }
 
   private:
-    typename DataArray<T>::Pointer                        m_Data;
-    hsize_t                                               m_XDim;
-    hsize_t                                               m_YDim;
-    int                                                   m_ZSlice;
-    bool                                                  m_MirroredHorizontal;
-    bool                                                  m_MirroredVertical;
+    std::vector<T> m_Data;
+    hsize_t m_XDim;
+    hsize_t m_YDim;
+    int m_ZSlice;
+    bool m_MirroredHorizontal;
+    bool m_MirroredVertical;
 
     ImageGenerator(const ImageGenerator&); // Copy Constructor Not Implemented
     void operator=(const ImageGenerator&); // Operator '=' Not Implemented

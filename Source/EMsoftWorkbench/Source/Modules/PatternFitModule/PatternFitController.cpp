@@ -43,8 +43,6 @@
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
-#include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
-
 #include "Common/ImageGenerator.h"
 #include "Common/PatternTools.h"
 #include "Common/ProjectionConversions.hpp"
@@ -81,7 +79,7 @@ void PatternFitController::setMasterFilePath(const QString& masterFilePath)
   MasterPatternFileReader reader(masterFilePath, m_Observer);
   m_MPFileData = reader.readMasterPatternData();
 
-  if(m_MPFileData.ekevs == FloatArrayType::NullPointer())
+  if(m_MPFileData.ekevs.empty())
   {
     return;
   }
@@ -91,7 +89,7 @@ void PatternFitController::setMasterFilePath(const QString& masterFilePath)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternFitController::generatePattern(PatternFitController::SimulationData detectorData)
+std::vector<float> PatternFitController::generatePattern(PatternFitController::SimulationData detectorData)
 {
   // Build up the iParValues object
   PatternTools::IParValues iParValues;
@@ -119,7 +117,7 @@ FloatArrayType::Pointer PatternFitController::generatePattern(PatternFitControll
   fParValues.dwellTime = detectorData.dwellTime;
   fParValues.gammaValue = detectorData.gammaValue;
 
-  FloatArrayType::Pointer pattern =
+  std::vector<float> pattern =
       PatternTools::GeneratePattern(iParValues, fParValues, m_MPFileData.masterLPNHData, m_MPFileData.masterLPSHData, m_MPFileData.monteCarloSquareData, detectorData.angles, 0, m_Cancel);
   return pattern;
 }
@@ -129,7 +127,7 @@ FloatArrayType::Pointer PatternFitController::generatePattern(PatternFitControll
 // -----------------------------------------------------------------------------
 GLImageViewer::GLImageData PatternFitController::generatePatternImage(PatternFitController::SimulationData detectorData)
 {
-  FloatArrayType::Pointer patternData = generatePattern(detectorData);
+  std::vector<float> patternData = generatePattern(detectorData);
 
   QVector<size_t> tDims;
   tDims.push_back(detectorData.numOfPixelsX);
@@ -143,7 +141,7 @@ GLImageViewer::GLImageData PatternFitController::generatePatternImage(PatternFit
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-GLImageViewer::GLImageData PatternFitController::generatePatternImage(const FloatArrayType::Pointer& patternData, size_t xDim, size_t yDim, size_t zValue)
+GLImageViewer::GLImageData PatternFitController::generatePatternImage(const std::vector<float>& patternData, size_t xDim, size_t yDim, size_t zValue)
 {
   GLImageViewer::GLImageData imageData;
 

@@ -380,7 +380,7 @@ void SimulatedPatternDisplayWidget::on_saveBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::setExpectedPatterns(const FloatArrayType::Pointer& eulerAngles)
+void SimulatedPatternDisplayWidget::setExpectedPatterns(const std::vector<float> &eulerAngles)
 {
   PatternListModel* model = PatternListModel::Instance();
 
@@ -388,20 +388,22 @@ void SimulatedPatternDisplayWidget::setExpectedPatterns(const FloatArrayType::Po
   model->clear();
 
   m_LoadedImageData.clear();
-  m_LoadedImageData.resize(eulerAngles->getNumberOfTuples());
+  m_LoadedImageData.resize(eulerAngles.size() / 3);
 
-  for(int i = 0; i < eulerAngles->getNumberOfTuples(); i++)
+  int index = 0;
+  for(std::vector<float>::const_iterator iter = eulerAngles.begin(); iter < eulerAngles.end(); iter + 3)
   {
-    float a1 = eulerAngles->getComponent(i, 0);
-    float a2 = eulerAngles->getComponent(i, 1);
-    float a3 = eulerAngles->getComponent(i, 2);
+    float a1 = eulerAngles.at(*(iter + 0));
+    float a2 = eulerAngles.at(*(iter + 1));
+    float a3 = eulerAngles.at(*(iter + 2));
     a1 = AbstractAngleWidget::ConvertToDegrees(a1);
     a2 = AbstractAngleWidget::ConvertToDegrees(a2);
     a3 = AbstractAngleWidget::ConvertToDegrees(a3);
 
-    QString name = tr("Pattern %1: (%2, %3, %4)").arg(QString::number(i + 1), QString::number(a1), QString::number(a2), QString::number(a3));
+    QString name = tr("Pattern %1: (%2, %3, %4)").arg(QString::number(index + 1), QString::number(a1), QString::number(a2), QString::number(a3));
 
-    model->insertItem(i, name);
+    model->insertItem(index, name);
+    index++;
   }
 
   patternListView->setCurrentIndex(model->index(0, PatternListItem::DefaultColumn));

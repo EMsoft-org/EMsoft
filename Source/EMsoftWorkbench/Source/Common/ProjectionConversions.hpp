@@ -38,8 +38,6 @@
 
 #include <QtCore/QObject>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
-
 #include "OrientationLib/Utilities/ModifiedLambertProjection.h"
 
 class ProjectionConversions : public QObject
@@ -51,7 +49,7 @@ public:
     ~ProjectionConversions() {}
 
     template <typename T>
-    FloatArrayType::Pointer convertLambertSquareData(typename DataArray<T>::Pointer lsData, size_t dim,
+    std::vector<float> convertLambertSquareData(typename std::vector<T> lsData, size_t dim,
                                                        ModifiedLambertProjection::ProjectionType projType, size_t zValue = 0,
                                                        ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare)
     {
@@ -64,11 +62,11 @@ public:
         {
           size_t index = dim*dim*zValue + dim*y + x;
           size_t projIdx = dim*y + x;
-          lambertProjection->setValue(square, projIdx, static_cast<double>(lsData->getValue(index)));
+          lambertProjection->setValue(square, projIdx, static_cast<double>(lsData.at(index)));
         }
       }
 
-      FloatArrayType::Pointer stereoProj = lambertProjection->createProjection(dim, projType);
+      std::vector<float> stereoProj = lambertProjection->createProjection(dim, projType);
       return stereoProj;
     }
 

@@ -37,17 +37,17 @@
 #ifndef _projectionconversiontask_h_
 #define _projectionconversiontask_h_
 
-#include "OrientationLib/Utilities/ModifiedLambertProjection.h"
-
 #include "Common/ImageGenerationTask.h"
 #include "Common/ProjectionConversions.hpp"
+
+#include "OrientationLib/Utilities/ModifiedLambertProjection.h"
 
 template <typename P, typename I>
 class ProjectionConversionTask : public ImageGenerationTask<I>
 {
   public:
-    ProjectionConversionTask(typename DataArray<P>::Pointer data, size_t xDim, size_t yDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
-                        size_t zValue, ModifiedLambertProjection::Square square, QVector<AbstractImageGenerator::Pointer> &imageGenerators, QSemaphore &sem,
+    ProjectionConversionTask(typename std::vector<P> data, size_t xDim, size_t yDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
+                             size_t zValue, ModifiedLambertProjection::Square square, QVector<AbstractImageGenerator::Pointer> &imageGenerators, QSemaphore &sem,
                              size_t vectorIdx, bool horizontalMirror = false, bool verticalMirror = false) :
       ImageGenerationTask<I>(xDim, yDim, zValue, imageGenerators, sem, vectorIdx, horizontalMirror, verticalMirror),
       m_Data(data),
@@ -63,15 +63,15 @@ class ProjectionConversionTask : public ImageGenerationTask<I>
     void beforeImageGeneration()
     {
       ProjectionConversions projConversion;
-      FloatArrayType::Pointer ptr = projConversion.convertLambertSquareData<P>(m_Data, m_ProjDim, m_ProjType, this->getVectorIndex(), m_Square);
+      std::vector<float> ptr = projConversion.convertLambertSquareData<P>(m_Data, m_ProjDim, m_ProjType, this->getVectorIndex(), m_Square);
       this->setImageData(ptr);
     }
 
   private:
-    typename DataArray<P>::Pointer                        m_Data;
-    size_t                                                m_ProjDim;
-    ModifiedLambertProjection::ProjectionType             m_ProjType;
-    ModifiedLambertProjection::Square                     m_Square = ModifiedLambertProjection::Square::NorthSquare;
+    typename std::vector<P> m_Data;
+    size_t m_ProjDim;
+    ModifiedLambertProjection::ProjectionType m_ProjType;
+    ModifiedLambertProjection::Square m_Square = ModifiedLambertProjection::Square::NorthSquare;
 
     ProjectionConversionTask(const ProjectionConversionTask&); // Copy Constructor Not Implemented
     void operator=(const ProjectionConversionTask&); // Operator '=' Not Implemented

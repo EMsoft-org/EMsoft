@@ -38,7 +38,6 @@
 #include <QtCore/QObject>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 #include "Common/GLImageViewer.h"
 
@@ -62,7 +61,7 @@ public:
     QString patternScaling;
     double gammaValue;
     bool useCircularMask;
-    FloatArrayType::Pointer angles;
+    std::vector<float> angles;
   };
 
   static const QString UpperLeftOrigin;
@@ -89,7 +88,7 @@ public:
    * @brief setExpectedPatterns
    * @param eulerAngles
    */
-  void setExpectedPatterns(const FloatArrayType::Pointer& eulerAngles);
+  void setExpectedPatterns(const std::vector<float>& eulerAngles);
 
   /**
    * @brief displayImage

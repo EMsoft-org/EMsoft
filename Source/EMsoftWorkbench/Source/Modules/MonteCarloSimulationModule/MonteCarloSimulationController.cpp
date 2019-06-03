@@ -174,14 +174,14 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
     return;
   }
 
-  Int32ArrayType::Pointer iParPtr = getIParPtr(simData);
-  if(iParPtr == Int32ArrayType::NullPointer())
+  std::vector<int32_t> iParPtr = getIParPtr(simData);
+  if(iParPtr.empty())
   {
     return;
   }
 
-  FloatArrayType::Pointer fParPtr = getFParPtr(simData);
-  if(fParPtr == FloatArrayType::NullPointer())
+  std::vector<float> fParPtr = getFParPtr(simData);
+  if(fParPtr.empty())
   {
     return;
   }
@@ -298,7 +298,7 @@ void MonteCarloSimulationController::createMonteCarlo(MonteCarloSimulationContro
   //    printf("\n");
   //  }
 
-  EMsoftCgetMCOpenCL(iParPtr->getPointer(0), fParPtr->getPointer(0), m_SPar, atomPos.data(), atomTypes.data(), latParm.data(), m_GenericAccumePtr->getPointer(0), m_GenericAccumzPtr->getPointer(0),
+  EMsoftCgetMCOpenCL(iParPtr.data(), fParPtr.data(), m_SPar, atomPos.data(), atomTypes.data(), latParm.data(), m_GenericAccumePtr.data(), m_GenericAccumzPtr.data(),
                      &MonteCarloSimulationControllerProgress, m_InstanceKey, &m_Cancel);
 
   s_ControllerInstances.remove(m_InstanceKey);
@@ -367,42 +367,35 @@ void MonteCarloSimulationController::initializeData(MonteCarloSimulationControll
   // allocate space for the required DataArrays
   {
     // allocate space for the Accume and Accumz arrays, which will subsequently be filled by the EMsoftCgetMCOpenCL code.
-    QVector<size_t> cDims(3);
-    cDims[0] = static_cast<int>((data.acceleratingVoltage - data.minEnergyConsider) / data.energyBinSize + 1);
-    cDims[1] = data.numOfPixelsN;
-    cDims[2] = data.numOfPixelsN;
+    size_t size = 1;
+    size = size * static_cast<int>((data.acceleratingVoltage - data.minEnergyConsider) / data.energyBinSize + 1);
+    size = size * data.numOfPixelsN;
+    size = size * data.numOfPixelsN;
 
-    m_GenericAccumePtr = Int32ArrayType::CreateArray(1, cDims, "genericAccume");
-    m_GenericAccumePtr->initializeWithZeros();
-    m_GenericAccumePtr->setInitValue(0);
+    m_GenericAccumePtr.resize(size);
+    std::fill(m_GenericAccumePtr.begin(), m_GenericAccumePtr.end(), 0);
 
-    cDims.resize(4);
+    size = 1;
     if(data.mcMode == 1)
     {
-      cDims[0] = static_cast<int>((data.acceleratingVoltage - data.minEnergyConsider) / data.energyBinSize + 1);
+      size = size * static_cast<int>((data.acceleratingVoltage - data.minEnergyConsider) / data.energyBinSize + 1);
     }
     else
     {
-      cDims[0] = static_cast<size_t>((data.sampleEndTiltAngle - data.sampleStartTiltAngle) / data.sampleTiltStepSize + 1);
+      size = size * static_cast<size_t>((data.sampleEndTiltAngle - data.sampleStartTiltAngle) / data.sampleTiltStepSize + 1);
     }
-    cDims[1] = static_cast<int>(data.maxDepthConsider / data.depthStepSize + 1);
-    cDims[2] = (data.numOfPixelsN - 1) / 10 + 1;
-    cDims[3] = (data.numOfPixelsN - 1) / 10 + 1;
+    size = size * static_cast<int>(data.maxDepthConsider / data.depthStepSize + 1);
+    size = size * (data.numOfPixelsN - 1) / 10 + 1;
+    size = size * (data.numOfPixelsN - 1) / 10 + 1;
 
-    m_GenericAccumzPtr = Int32ArrayType::CreateArray(1, cDims, "genericAccumz");
-    m_GenericAccumzPtr->initializeWithZeros();
-    m_GenericAccumzPtr->setInitValue(0);
+    m_GenericAccumzPtr.resize(size);
+    std::fill(m_GenericAccumzPtr.begin(), m_GenericAccumzPtr.end(), 0);
 
-    // allocate space for the IPar and FPar arrays, which will be used to communicate parameters with the EMsoftMCOpenCL routine.
-    cDims.resize(1);
+    m_GenericXtalPtr.resize(data.inputFilePath.length());
+    std::fill(m_GenericXtalPtr.begin(), m_GenericXtalPtr.end(), 0);
 
-    cDims[0] = data.inputFilePath.length();
-    m_GenericXtalPtr = UInt8ArrayType::CreateArray(1, cDims, "genericXtal");
-    m_GenericXtalPtr->setInitValue(0);
-
-    cDims[0] = data.outputFilePath.length();
-    m_GenericMCPtr = UInt8ArrayType::CreateArray(1, cDims, "genericMC");
-    m_GenericMCPtr->setInitValue(0);
+    m_GenericMCPtr.resize(data.outputFilePath.length());
+    std::fill(m_GenericMCPtr.begin(), m_GenericMCPtr.end(), 0);
   }
 }
 
@@ -618,28 +611,9 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     }
   }
 
-  QString creationDate;
-  QString creationTime;
-  QString creator;
-  QString programName;
-  std::vector<float> atomPos;
-  std::vector<int32_t> atomTypes;
-  int crystalSystem;
-  std::vector<float> latParam;
-  int natomTypes;
-  int sgNumber;
-  int sgSetting;
-
-  if(!m_XtalReader->getCreationDate(creationDate) || !m_XtalReader->getCreationTime(creationTime) || !m_XtalReader->getCreator(creator) || !m_XtalReader->getProgramName(programName) ||
-     !m_XtalReader->getAtomPos(atomPos) || !m_XtalReader->getAtomTypes(atomTypes) || !m_XtalReader->getCrystalSystem(crystalSystem) || !m_XtalReader->getLatticeParameters(latParam) ||
-     !m_XtalReader->getNatomTypes(natomTypes) || !m_XtalReader->getSpaceGroupNumber(sgNumber) || !m_XtalReader->getSpaceGroupSetting(sgSetting))
-  {
-    return false;
-  }
-
-  Int32ArrayType::Pointer iParPtr = m_XtalReader->getIParPtr();
-  FloatArrayType::Pointer fParPtr = m_XtalReader->getFParPtr();
-  if(iParPtr == Int32ArrayType::NullPointer() || fParPtr == FloatArrayType::NullPointer())
+  std::vector<int32_t> iParPtr = getIParPtr(simData);
+  std::vector<float> fParPtr = getFParPtr(simData);
+  if(iParPtr.empty() || fParPtr.empty())
   {
     return false;
   }
@@ -713,7 +687,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     dims[1] = simData.numOfPixelsN;
     dims[0] = simData.numOfPixelsN;
 
-    if(!writer->writePointerDataset(EMsoft::Constants::accume, m_GenericAccumePtr->getPointer(0), dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::accume, m_GenericAccumePtr.data(), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -735,19 +709,17 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     dims[1] = (simData.numOfPixelsN - 1) / 10 + 1;
     dims[0] = (simData.numOfPixelsN - 1) / 10 + 1;
 
-    if(!writer->writePointerDataset(EMsoft::Constants::accumz, m_GenericAccumzPtr->getPointer(0), dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::accumz, m_GenericAccumzPtr.data(), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  int32_t* genericIPar = iParPtr->getPointer(0);
-
   // and a few constants
   if(simData.mcMode == 1)
   {
-    if(!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIPar[11]))
+    if(!writer->writeScalarDataset(EMsoft::Constants::numEbins, iParPtr.at(11)))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -755,24 +727,24 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
   else
   {
-    if(!writer->writeScalarDataset(EMsoft::Constants::numangle, genericIPar[11]))
+    if(!writer->writeScalarDataset(EMsoft::Constants::numangle, iParPtr.at(11)))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
     }
   }
 
-  if(!writer->writeScalarDataset(EMsoft::Constants::numzbins, genericIPar[12]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::numzbins, iParPtr.at(12)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::totnumel, iParPtr.at(3)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::multiplier, iParPtr.at(4)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -839,7 +811,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
   }
 
   // programName
-  programName = "EMsoftWorkbench Monte Carlo Simulation Module";
+  QString programName = "EMsoftWorkbench Monte Carlo Simulation Module";
   if(!writer->writeStringDataset(EMsoft::Constants::ProgramName, programName))
   {
     QFile::remove(tmpOutputFilePath);
@@ -971,19 +943,17 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     return false;
   }
 
-  float* genericFPar = fParPtr->getPointer(0);
-
-  if(!writer->writeScalarDataset(EMsoft::Constants::Ebinsize, static_cast<double>(genericFPar[4])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::Ebinsize, static_cast<double>(fParPtr.at(4))))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::Ehistmin, static_cast<double>(genericFPar[3])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::Ehistmin, static_cast<double>(fParPtr.at(3))))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::EkeV, static_cast<double>(genericFPar[2])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::EkeV, static_cast<double>(fParPtr.at(2))))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -998,28 +968,28 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::depthmax, static_cast<double>(genericFPar[5])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::depthmax, static_cast<double>(fParPtr.at(5))))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::depthstep, static_cast<double>(genericFPar[6])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::depthstep, static_cast<double>(fParPtr.at(6))))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::devid, genericIPar[5]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::devid, iParPtr.at(5)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::globalworkgrpsz, genericIPar[1]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::globalworkgrpsz, iParPtr.at(1)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
 
-  if(genericIPar[13] == 1)
+  if(iParPtr.at(13) == 1)
   {
     if(!writer->writeStringDataset(EMsoft::Constants::mode, EMsoft::Constants::full))
     {
@@ -1036,28 +1006,28 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     }
   }
 
-  if(!writer->writeScalarDataset(EMsoft::Constants::multiplier, genericIPar[4]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::multiplier, iParPtr.at(4)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::num_el, genericIPar[2]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::num_el, iParPtr.at(2)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  int iv = 2 * genericIPar[0] + 1;
+  int iv = 2 * iParPtr.at(0) + 1;
   if(!writer->writeScalarDataset(EMsoft::Constants::numsx, iv))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::omega, static_cast<double>(genericFPar[1])))
+  if(!writer->writeScalarDataset(EMsoft::Constants::omega, static_cast<double>(fParPtr.at(1))))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::platid, genericIPar[6]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::platid, iParPtr.at(6)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1065,7 +1035,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
 
   if(simData.mcMode == 1)
   {
-    if(!writer->writeScalarDataset(EMsoft::Constants::sig, static_cast<double>(genericFPar[0])))
+    if(!writer->writeScalarDataset(EMsoft::Constants::sig, static_cast<double>(fParPtr.at(0))))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -1095,7 +1065,7 @@ bool MonteCarloSimulationController::writeEMsoftHDFFile(MonteCarloSimulationCont
     QFile::remove(tmpOutputFilePath);
     return false;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::totnumel, genericIPar[3]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::totnumel, iParPtr.at(3)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1329,34 +1299,33 @@ QString MonteCarloSimulationController::getEMsoftUserLocation()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MonteCarloSimulationController::getIParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData)
+std::vector<int32_t> MonteCarloSimulationController::getIParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData)
 {
-  Int32ArrayType::Pointer iParPtr = m_XtalReader->getIParPtr();
-  int32_t* iPar = iParPtr->getPointer(0);
+  std::vector<int32_t> iParPtr = m_XtalReader->getIParPtr();
 
-  iPar[0] = static_cast<int>((simData.numOfPixelsN - 1) / 2);                        // number of pixels along x
-  iPar[1] = static_cast<int>(simData.globalWorkGroupSize);                           // global work group size
-  iPar[2] = static_cast<int>(simData.numOfEPerWorkitem);                             // number of electrons in work group
-  iPar[3] = static_cast<int>(simData.totalNumOfEConsidered);                         // total number of electrons in single MCstep
-  iPar[4] = static_cast<int>(simData.multiplierForTotalNumOfE);                      // multiplier for # of electrons
-  iPar[5] = static_cast<int>(simData.gpuDeviceID + 1);                               // OpenCL device ID
-  iPar[6] = static_cast<int>(simData.gpuPlatformID + 1);                             // OpenCL platform ID
-  iPar[12] = static_cast<int>(simData.maxDepthConsider / simData.depthStepSize + 1); // num z bins
-  iPar[13] = simData.mcMode;                                                         // simulation mode (1=full, 2=bse1)
+  iParPtr.at(0) = static_cast<int>((simData.numOfPixelsN - 1) / 2);                        // number of pixels along x
+  iParPtr.at(1) = static_cast<int>(simData.globalWorkGroupSize);                           // global work group size
+  iParPtr.at(2) = static_cast<int>(simData.numOfEPerWorkitem);                             // number of electrons in work group
+  iParPtr.at(3) = static_cast<int>(simData.totalNumOfEConsidered);                         // total number of electrons in single MCstep
+  iParPtr.at(4) = static_cast<int>(simData.multiplierForTotalNumOfE);                      // multiplier for # of electrons
+  iParPtr.at(5) = static_cast<int>(simData.gpuDeviceID + 1);                               // OpenCL device ID
+  iParPtr.at(6) = static_cast<int>(simData.gpuPlatformID + 1);                             // OpenCL platform ID
+  iParPtr.at(12) = static_cast<int>(simData.maxDepthConsider / simData.depthStepSize + 1); // num z bins
+  iParPtr.at(13) = simData.mcMode;                                                         // simulation mode (1=full, 2=bse1)
 
   // this next pair of values is a bit tricky since we use the accum_e and accum_z arrays for
   // two different cases, 'full' and 'bse1'
-  if(iPar[13] == 1)
+  if(iParPtr.at(13) == 1)
   {
-    iPar[11] = static_cast<int>((simData.acceleratingVoltage - simData.minEnergyConsider) / simData.energyBinSize + 1); // num E bins
-    iPar[14] = 1;                                                                                                       // only one major loop to be executed
+    iParPtr.at(11) = static_cast<int>((simData.acceleratingVoltage - simData.minEnergyConsider) / simData.energyBinSize + 1); // num E bins
+    iParPtr.at(14) = 1;                                                                                                       // only one major loop to be executed
   }
   else
   {
-    iPar[11] = static_cast<int>((simData.sampleEndTiltAngle - simData.sampleStartTiltAngle) / simData.sampleTiltStepSize + 1); // number of bse1 angles
-    iPar[14] = iPar[11];
+    iParPtr.at(11) = static_cast<int>((simData.sampleEndTiltAngle - simData.sampleStartTiltAngle) / simData.sampleTiltStepSize + 1); // number of bse1 angles
+    iParPtr.at(14) = iParPtr[11];
   }
-  iPar[15] = static_cast<int>((simData.numOfPixelsN - 1) / 20); // number of depth bins along x
+  iParPtr.at(15) = static_cast<int>((simData.numOfPixelsN - 1) / 20); // number of depth bins along x
 
   return iParPtr;
 }
@@ -1364,21 +1333,20 @@ Int32ArrayType::Pointer MonteCarloSimulationController::getIParPtr(MonteCarloSim
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer MonteCarloSimulationController::getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData)
+std::vector<float> MonteCarloSimulationController::getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData)
 {
-  FloatArrayType::Pointer fParPtr = m_XtalReader->getFParPtr();
-  float* fPar = fParPtr->getPointer(0);
+  std::vector<float> fParPtr = m_XtalReader->getFParPtr();
 
-  fPar[0] = simData.sampleTiltAngleSig;   // sample tilt angle
-  fPar[1] = simData.sampleRotAngleOmega;  // omega sample tilt angle
-  fPar[2] = simData.acceleratingVoltage;  // accelerating voltage
-  fPar[3] = simData.minEnergyConsider;    // Energy minimum in histogram
-  fPar[4] = simData.energyBinSize;        // Energy histogram bin size
-  fPar[5] = simData.maxDepthConsider;     // maximum depth to store
-  fPar[6] = simData.depthStepSize;        // depth step size
-  fPar[7] = simData.sampleStartTiltAngle; // get starting angle
-  fPar[8] = simData.sampleEndTiltAngle;   // end angle
-  fPar[9] = simData.sampleTiltStepSize;   // angle step size
+  fParPtr.at(0) = simData.sampleTiltAngleSig;   // sample tilt angle
+  fParPtr.at(1) = simData.sampleRotAngleOmega;  // omega sample tilt angle
+  fParPtr.at(2) = simData.acceleratingVoltage;  // accelerating voltage
+  fParPtr.at(3) = simData.minEnergyConsider;    // Energy minimum in histogram
+  fParPtr.at(4) = simData.energyBinSize;        // Energy histogram bin size
+  fParPtr.at(5) = simData.maxDepthConsider;     // maximum depth to store
+  fParPtr.at(6) = simData.depthStepSize;        // depth step size
+  fParPtr.at(7) = simData.sampleStartTiltAngle; // get starting angle
+  fParPtr.at(8) = simData.sampleEndTiltAngle;   // end angle
+  fParPtr.at(9) = simData.sampleTiltStepSize;   // angle step size
 
   return fParPtr;
 }

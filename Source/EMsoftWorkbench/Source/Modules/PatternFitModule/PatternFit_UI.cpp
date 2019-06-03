@@ -177,10 +177,10 @@ void PatternFit_UI::initializeHipassFilterValues()
   hiPassDims[0] = numOfPixelsX->text().toInt();
   hiPassDims[1] = numOfPixelsY->text().toInt();
 
-  m_HiPassData = DoubleArrayType::CreateArray(hiPassDims[0] * hiPassDims[1], "temp");
+  m_HiPassData.resize(hiPassDims[0] * hiPassDims[1]);
 
   double cutOff = hipassFilterLowCutOff->text().toDouble();
-  HiPassFilterC(nullptr, hiPassDims, &cutOff, &init, &destroy, m_HiPassData->getPointer(0));
+  HiPassFilterC(nullptr, hiPassDims, &cutOff, &init, &destroy, m_HiPassData.data());
 }
 
 // -----------------------------------------------------------------------------
@@ -196,7 +196,7 @@ void PatternFit_UI::destroyHipassFilterValues()
   hiPassDims[1] = numOfPixelsY->text().toInt();
 
   double cutOff = hipassFilterLowCutOff->text().toDouble();
-  HiPassFilterC(nullptr, hiPassDims, &cutOff, &init, &destroy, m_HiPassData->getPointer(0));
+  HiPassFilterC(nullptr, hiPassDims, &cutOff, &init, &destroy, m_HiPassData.data());
 }
 
 // -----------------------------------------------------------------------------
@@ -771,9 +771,9 @@ void PatternFit_UI::displayImage()
 
     patternFitViewer->loadImage(processedPattern);
   }
-  else if(m_SimulatedPatternData != FloatArrayType::NullPointer())
+  else if(!m_SimulatedPatternData.empty())
   {
-    FloatArrayType::Pointer processedPatternData = std::dynamic_pointer_cast<FloatArrayType>(m_SimulatedPatternData->deepCopy());
+    std::vector<float> processedPatternData = m_SimulatedPatternData;
 
     if(inverseGaussian->isChecked())
     {
@@ -1212,10 +1212,10 @@ PatternFitController::SimulationData PatternFit_UI::getSimulationData()
   data.dwellTime = dwellTime->text().toDouble();
   data.sampleOmegaAngle = omega->value();
 
-  data.angles = FloatArrayType::CreateArray(1, QVector<size_t>(1, 3), "angles");
-  data.angles->setComponent(0, 0, phi1->value() * SIMPLib::Constants::k_PiOver180);
-  data.angles->setComponent(0, 1, phi->value() * SIMPLib::Constants::k_PiOver180);
-  data.angles->setComponent(0, 2, phi2->value() * SIMPLib::Constants::k_PiOver180);
+  data.angles.resize(3);
+  data.angles.at(0) = phi1->value() * SIMPLib::Constants::k_PiOver180;
+  data.angles.at(1) = phi->value() * SIMPLib::Constants::k_PiOver180;
+  data.angles.at(2) = phi2->value() * SIMPLib::Constants::k_PiOver180;
 
   data.gammaValue = intensityGamma->value();
 

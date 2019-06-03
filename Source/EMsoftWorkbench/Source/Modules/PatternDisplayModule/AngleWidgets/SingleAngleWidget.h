@@ -60,7 +60,7 @@ public:
    * @brief getEulerAngles
    * @return
    */
-  virtual FloatArrayType::Pointer getEulerAngles() override;
+  virtual std::vector<float> getEulerAngles() override;
 
   /**
    * @brief hasValidAngles

@@ -142,15 +142,15 @@ void SamplingRateWidget::checkBoxChanged(int index)
 // -----------------------------------------------------------------------------
 void SamplingRateWidget::valuesChanged()
 {
-  FloatArrayType::Pointer eulerAngles = getEulerAngles();
+  std::vector<float> eulerAngles = getEulerAngles();
 
-  if(eulerAngles == FloatArrayType::NullPointer())
+  if(eulerAngles.empty())
   {
     numOfAnglesLineEdit->setText("0");
   }
   else
   {
-    numOfAnglesLineEdit->setText(QString::number(eulerAngles->getNumberOfTuples()));
+    numOfAnglesLineEdit->setText(QString::number(eulerAngles.size() / 3));
   }
 
   emit dataChanged(hasValidAngles());
@@ -257,7 +257,7 @@ void SamplingRateWidget::createModificationConnections(PatternDisplay_UI* ui)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer SamplingRateWidget::getEulerAngles()
+std::vector<float> SamplingRateWidget::getEulerAngles()
 {
   double phi1Start = phi1StartLineEdit->text().toDouble();
   double phi1MStep = phi1MStepLineEdit->text().toDouble();
@@ -290,14 +290,14 @@ FloatArrayType::Pointer SamplingRateWidget::getEulerAngles()
 
   if(phi1MStep == 0 || phiMStep == 0 || phi2MStep == 0)
   {
-    return FloatArrayType::NullPointer();
+    return std::vector<float>();
   }
 
   int phi1Dim = ((phi1End - phi1Start) / phi1MStep) + 1;
   int phiDim = ((phiEnd - phiStart) / phiMStep) + 1;
   int phi2Dim = ((phi2End - phi2Start) / phi2MStep) + 1;
 
-  FloatArrayType::Pointer floatArray = FloatArrayType::CreateArray(phi1Dim * phiDim * phi2Dim, QVector<size_t>(1, 3), "Euler Angles");
+  std::vector<float> floatArray(phi1Dim * phiDim * phi2Dim * 3);
 
   int index = 0;
   for(int i = phi1Start; i <= phi1End; i = i + phi1MStep)
@@ -318,9 +318,9 @@ FloatArrayType::Pointer SamplingRateWidget::getEulerAngles()
           val3 = val3 * k_PiOver180;
         }
 
-        floatArray->setComponent(index, 0, val1);
-        floatArray->setComponent(index, 1, val2);
-        floatArray->setComponent(index, 2, val3);
+        floatArray.at(index * 3 + 0) = val1;
+        floatArray.at(index * 3 + 1) = val2;
+        floatArray.at(index * 3 + 2) = val3;
         index++;
       }
     }

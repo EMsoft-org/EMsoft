@@ -43,7 +43,6 @@
 #include <H5Support/QH5Lite.h>
 #include <H5Support/QH5Utilities.h>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include <hdf5.h>

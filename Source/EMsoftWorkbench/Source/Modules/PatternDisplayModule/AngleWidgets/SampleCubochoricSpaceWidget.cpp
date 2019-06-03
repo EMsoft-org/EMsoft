@@ -117,15 +117,15 @@ void SampleCubochoricSpaceWidget::lineEditChanged(const QString& text)
 // -----------------------------------------------------------------------------
 void SampleCubochoricSpaceWidget::valuesChanged()
 {
-  FloatArrayType::Pointer eulerAngles = getEulerAngles();
+  std::vector<float> eulerAngles = getEulerAngles();
 
-  if(eulerAngles == FloatArrayType::NullPointer())
+  if(eulerAngles.empty())
   {
     numOfAnglesLineEdit->setText("0");
   }
   else
   {
-    numOfAnglesLineEdit->setText(QString::number(eulerAngles->getNumberOfTuples()));
+    numOfAnglesLineEdit->setText(QString::number(eulerAngles.size() / 3));
   }
 
   emit dataChanged(hasValidAngles());
@@ -436,7 +436,7 @@ bool SampleCubochoricSpaceWidget::insideCubicFZ(const double* rod, int ot)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer SampleCubochoricSpaceWidget::getEulerAngles()
+std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles()
 {
   OrientationListArrayType FZlist;
 
@@ -691,19 +691,20 @@ FloatArrayType::Pointer SampleCubochoricSpaceWidget::getEulerAngles()
   }
 
   // resize the EulerAngles array to the number of items in FZlist; don't forget to redefine the hard pointer
-  FloatArrayType::Pointer eulerAngles = FloatArrayType::CreateArray(FZlist.size(), QVector<size_t>(1, 3), "Euler Angles");
+  std::vector<float> eulerAngles(FZlist.size() * 3);
 
   // copy the Rodrigues vectors as Euler angles into the eulerAngles array; convert doubles to floats along the way
-  int j = -1;
+  int j = 0;
   for(const DOrientArrayType& rod : FZlist)
   {
-    j += 1;
     DOrientArrayType eu(3, 0.0f);
     OrientationTransformsType::ro2eu(rod, eu);
 
-    eulerAngles->setComponent(j, 0, static_cast<float>(eu[0]));
-    eulerAngles->setComponent(j, 1, static_cast<float>(eu[1]));
-    eulerAngles->setComponent(j, 2, static_cast<float>(eu[2]));
+    eulerAngles.at(j + 0) = static_cast<float>(eu[0]);
+    eulerAngles.at(j + 1) = static_cast<float>(eu[1]);
+    eulerAngles.at(j + 2) = static_cast<float>(eu[2]);
+
+    j += 3;
   }
 
   return eulerAngles;

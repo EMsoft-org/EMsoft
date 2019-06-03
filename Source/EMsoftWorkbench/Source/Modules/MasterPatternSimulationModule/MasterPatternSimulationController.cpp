@@ -177,47 +177,42 @@ void MasterPatternSimulationController::createMasterPattern(MasterPatternSimulat
     return;
   }
 
-  Int32ArrayType::Pointer iParPtr = getIParPtr(simData);
-  if(iParPtr == Int32ArrayType::NullPointer())
+  std::vector<int32_t> iParPtr = getIParPtr(simData);
+  if(iParPtr.empty())
   {
     return;
   }
 
-  FloatArrayType::Pointer fParPtr = getFParPtr(simData);
-  if(fParPtr == FloatArrayType::NullPointer())
+  std::vector<float> fParPtr = getFParPtr(simData);
+  if(fParPtr.empty())
   {
     return;
   }
-
-  int32_t* iPar = iParPtr->getPointer(0);
-  float* fPar = fParPtr->getPointer(0);
 
   // adjust the size of the mLPNH and mLPSH arrays to the correct one, since we did not have access
   // to the sizes in the datacheck() routine
-  QVector<size_t> numTuples(1, 1);
-  QVector<size_t> cDims(4, 0);
-  cDims[0] = 2 * iPar[16] + 1;
-  cDims[1] = cDims[0];
-  cDims[2] = iPar[11];
+  std::vector<size_t> dims(4, 0);
+  dims[0] = 2 * iParPtr.at(16) + 1;
+  dims[1] = dims[0];
+  dims[2] = iParPtr.at(11);
   //   cDims[3] = genericIPar[8];
-  cDims[3] = 1;
+  dims[3] = 1;
 
-  Int32ArrayType::Pointer accumzPtr = m_MonteCarloReader->getAccumzPtr();
-  if(accumzPtr == Int32ArrayType::NullPointer())
+  size_t dimsSize = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<size_t>());
+
+  std::vector<int32_t> accumzPtr = m_MonteCarloReader->getAccumzPtr();
+  if(accumzPtr.empty())
   {
     return;
   }
 
-  int32_t* genericAccumz = accumzPtr->getPointer(0);
-
   // Create a new mLPNH Array
-  m_GenericLPNHPtr = FloatArrayType::CreateArray(numTuples, cDims, "mLPNH", true);
+  m_GenericLPNHPtr.resize(dimsSize);
+  std::fill(m_GenericLPNHPtr.begin(), m_GenericLPNHPtr.end(), 0.0f);
 
   // Create a new mLPSH Array
-  m_GenericLPSHPtr = FloatArrayType::CreateArray(numTuples, cDims, "mLPSH", true);
-
-  float* genericLPNH = m_GenericLPNHPtr->getPointer(0);
-  float* genericLPSH = m_GenericLPSHPtr->getPointer(0);
+  m_GenericLPSHPtr.resize(dimsSize);
+  std::fill(m_GenericLPSHPtr.begin(), m_GenericLPSHPtr.end(), 0.0f);
 
   // Set the start time for this run (m_StartTime)
   m_StartTime = QDateTime::currentDateTime().time().toString();
@@ -231,7 +226,7 @@ void MasterPatternSimulationController::createMasterPattern(MasterPatternSimulat
   // incorrect interactions between the callback routines.
   m_Executing = true;
   instances[m_InstanceKey] = this;
-  EMsoftCgetEBSDmaster(iPar, fPar, m_Atompos.data(), m_Atomtypes.data(), m_Latparm.data(), genericAccumz, genericLPNH, genericLPSH, &MasterPatternSimulationControllerProgress, m_InstanceKey,
+  EMsoftCgetEBSDmaster(iParPtr.data(), fParPtr.data(), m_Atompos.data(), m_Atomtypes.data(), m_Latparm.data(), accumzPtr.data(), m_GenericLPNHPtr.data(), m_GenericLPSHPtr.data(), &MasterPatternSimulationControllerProgress, m_InstanceKey,
                        &m_Cancel);
   m_Executing = false;
   instances.remove(m_InstanceKey);
@@ -264,7 +259,7 @@ void MasterPatternSimulationController::initializeData()
   m_Atompos.clear();
   m_Atomtypes.clear();
   m_Latparm.clear();
-  m_GenericAccumzPtr.reset();
+  m_GenericAccumzPtr.clear();
   m_StartTime = "";
   m_CrystalSystem = 0;
   m_Natomtypes = 0;
@@ -383,9 +378,9 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
   }
 
   // Get the iPar and fPar arrays
-  Int32ArrayType::Pointer genericIParPtr = m_MonteCarloReader->getIParPtr();
-  FloatArrayType::Pointer genericFParPtr = m_MonteCarloReader->getFParPtr();
-  if(genericIParPtr == Int32ArrayType::NullPointer() || genericFParPtr == FloatArrayType::NullPointer())
+  std::vector<int32_t> genericIParPtr = getIParPtr(simData);
+  std::vector<float> genericFParPtr = getFParPtr(simData);
+  if(genericIParPtr.empty() || genericFParPtr.empty())
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -399,10 +394,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     return false;
   }
 
-  int32_t* genericIPar = genericIParPtr->getPointer(0);
-  float* genericFPar = genericFParPtr->getPointer(0);
-
-  if(genericIPar[13] == 1)
+  if(genericIParPtr.at(13) == 1)
   {
     if(!writer->openGroup(EMsoft::Constants::EBSDmaster))
     {
@@ -419,20 +411,16 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     }
   }
 
-  // We need to store these variables first, because we are going to close the file in the file reader
-  float* genericLPNH = m_GenericLPNHPtr->getPointer(0);
-  float* genericLPSH = m_GenericLPSHPtr->getPointer(0);
-
   // we use the standard names "mLPNH" and "mLPSH", regardless of what the user entered for this array name;
   // the user-defined name is only relevant within DREAM.3D
   {
     QVector<hsize_t> dims(4);
-    dims[0] = genericIPar[8];          // number of atom types
-    dims[1] = genericIPar[11];         // number of energy bins
-    dims[2] = 2 * genericIPar[16] + 1; // number of x pixels
+    dims[0] = genericIParPtr.at(8);          // number of atom types
+    dims[1] = genericIParPtr.at(11);         // number of energy bins
+    dims[2] = 2 * genericIParPtr.at(16) + 1; // number of x pixels
     dims[3] = dims[2];                 // number of y pixels
 
-    if(!writer->writePointerDataset(EMsoft::Constants::mLPNH, genericLPNH, dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::mLPNH, m_GenericLPNHPtr.data(), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -441,26 +429,24 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     // Create the stereographic northern hemisphere master pattern
     dims.pop_front();
     size_t zDim = dims[0];
-    FloatArrayType::Pointer genericSPNHPtr = FloatArrayType::CreateArray(0, "masterSPNH");
+    std::vector<float> genericSPNHPtr;
     size_t offset = 0;
     for(int z = 0; z < zDim; z++)
     {
       ProjectionConversions projConversion(this);
-      FloatArrayType::Pointer conversion =
+      std::vector<float> conversion =
           projConversion.convertLambertSquareData<float>(m_GenericLPNHPtr, dims[2], ModifiedLambertProjection::ProjectionType::Stereographic, z, ModifiedLambertProjection::Square::NorthSquare);
 
-      genericSPNHPtr->resize(genericSPNHPtr->getNumberOfTuples() + conversion->getNumberOfTuples());
-      for(int i = 0; i < conversion->getNumberOfTuples(); i++)
+      genericSPNHPtr.resize(genericSPNHPtr.size() + conversion.size());
+      for(const float &value : conversion)
       {
-        genericSPNHPtr->setValue(offset, conversion->getValue(i));
+        genericSPNHPtr.at(offset) = value;
         offset++;
       }
     }
 
-    float* genericSPNH = genericSPNHPtr->getPointer(0);
-
     // Write the stereographic northern hemisphere master pattern to the file
-    if(!writer->writePointerDataset(EMsoft::Constants::masterSPNH, genericSPNH, dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::masterSPNH, genericSPNHPtr.data(), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -469,12 +455,12 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
 
   {
     QVector<hsize_t> dims(4);
-    dims[0] = genericIPar[8];          // number of atom types
-    dims[1] = genericIPar[11];         // number of energy bins
-    dims[2] = 2 * genericIPar[16] + 1; // number of x pixels
+    dims[0] = genericIParPtr.at(8);          // number of atom types
+    dims[1] = genericIParPtr.at(11);         // number of energy bins
+    dims[2] = 2 * genericIParPtr.at(16) + 1; // number of x pixels
     dims[3] = dims[2];                 // number of y pixels
 
-    if(!writer->writePointerDataset(EMsoft::Constants::mLPSH, genericLPSH, dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::mLPSH, m_GenericLPSHPtr.data(), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -483,26 +469,24 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     // Create the stereographic southern hemisphere master pattern
     dims.pop_front();
     size_t zDim = dims[0];
-    FloatArrayType::Pointer genericSPSHPtr = FloatArrayType::CreateArray(0, EMsoft::Constants::masterSPSH);
+    std::vector<float> genericSPSHPtr(0);
     size_t offset = 0;
     for(int z = 0; z < zDim; z++)
     {
       ProjectionConversions projConversion(this);
-      FloatArrayType::Pointer conversion =
+      std::vector<float> conversion =
           projConversion.convertLambertSquareData<float>(m_GenericLPSHPtr, dims[2], ModifiedLambertProjection::ProjectionType::Stereographic, z, ModifiedLambertProjection::Square::NorthSquare);
 
-      genericSPSHPtr->resize(genericSPSHPtr->getNumberOfTuples() + conversion->getNumberOfTuples());
-      for(int i = 0; i < conversion->getNumberOfTuples(); i++)
+      genericSPSHPtr.resize(genericSPSHPtr.size() + conversion.size());
+      for(const float &value : conversion)
       {
-        genericSPSHPtr->setValue(offset, conversion->getValue(i));
+        genericSPSHPtr.at(offset) = value;
         offset++;
       }
     }
 
-    float* genericSPSH = genericSPSHPtr->getPointer(0);
-
     // Write the stereographic southern hemisphere master pattern to a file
-    if(!writer->writePointerDataset(EMsoft::Constants::masterSPSH, genericSPSH, dims))
+    if(!writer->writePointerDataset(EMsoft::Constants::masterSPSH, genericSPSHPtr.data(), dims))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -511,9 +495,9 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
 
   // and a few constants
   std::string dname;
-  if(genericIPar[13] == 1)
+  if(genericIParPtr.at(13) == 1)
   {
-    if(!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIPar[11]))
+    if(!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIParPtr.at(11)))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -540,11 +524,11 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
       return false;
     }
 
-    cDims[0] = genericIPar[11];
+    cDims[0] = genericIParPtr.at(11);
     QVector<float> EkeV(cDims[0]);
-    for(int i = 0; i < genericIPar[11]; i++)
+    for(int i = 0; i < genericIParPtr.at(11); i++)
     {
-      EkeV[i] = genericFPar[3] + (float)i * genericFPar[4];
+      EkeV[i] = genericFParPtr.at(3) + (float)i * genericFParPtr.at(4);
     }
 
     if(!writer->writeVectorDataset(EMsoft::Constants::EkeVs, EkeV, cDims))
@@ -568,7 +552,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     }
   }
 
-  if(!writer->writeScalarDataset(EMsoft::Constants::numset, genericIPar[8]))
+  if(!writer->writeScalarDataset(EMsoft::Constants::numset, genericIParPtr.at(8)))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1078,18 +1062,16 @@ QString MasterPatternSimulationController::getEMsoftUserLocation()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MasterPatternSimulationController::getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData)
+std::vector<int32_t> MasterPatternSimulationController::getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData)
 {
-  Int32ArrayType::Pointer iParPtr = m_MonteCarloReader->getIParPtr();
-  if(iParPtr == Int32ArrayType::NullPointer())
+  std::vector<int32_t> iParPtr = m_MonteCarloReader->getIParPtr();
+  if(iParPtr.empty())
   {
-    return Int32ArrayType::NullPointer();
+    return std::vector<int32_t>();
   }
 
-  int32_t* iPar = iParPtr->getPointer(0);
-
-  iPar[16] = static_cast<size_t>(simData.numOfMPPixels);      // number of pixels in master pattern
-  iPar[17] = static_cast<size_t>(simData.numOfOpenMPThreads); // number of OpenMP threads to be used
+  iParPtr.at(16) = static_cast<size_t>(simData.numOfMPPixels);      // number of pixels in master pattern
+  iParPtr.at(17) = static_cast<size_t>(simData.numOfOpenMPThreads); // number of OpenMP threads to be used
 
   return iParPtr;
 }
@@ -1097,20 +1079,18 @@ Int32ArrayType::Pointer MasterPatternSimulationController::getIParPtr(MasterPatt
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer MasterPatternSimulationController::getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData)
+std::vector<float> MasterPatternSimulationController::getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData)
 {
-  FloatArrayType::Pointer fParPtr = m_MonteCarloReader->getFParPtr();
-  if(fParPtr == FloatArrayType::NullPointer())
+  std::vector<float> fParPtr = m_MonteCarloReader->getFParPtr();
+  if(fParPtr.empty())
   {
-    return FloatArrayType::NullPointer();
+    return std::vector<float>();
   }
 
-  float* fPar = fParPtr->getPointer(0);
-
-  fPar[10] = simData.smallestDSpacing;
-  fPar[11] = simData.betheParametersX;
-  fPar[12] = simData.betheParametersY;
-  fPar[13] = simData.betheParametersZ;
+  fParPtr.at(10) = simData.smallestDSpacing;
+  fParPtr.at(11) = simData.betheParametersX;
+  fParPtr.at(12) = simData.betheParametersY;
+  fParPtr.at(13) = simData.betheParametersZ;
 
   return fParPtr;
 }

@@ -40,7 +40,6 @@
 #include <QtGui/QImage>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 class AbstractImageGenerator
 {

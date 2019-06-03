@@ -41,8 +41,6 @@
 
 #include <Eigen/Dense>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
-
 class EigenConversions
 {
   public:
@@ -63,20 +61,20 @@ class EigenConversions
     using TemplateMapType = Eigen::Map<TemplateMatrixType<T, RowCount, ColumnCount, Major> >;
 
     template <typename T, int Major>
-    static Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> > DataArrayToEigenMatrixMap(typename DataArray<T>::Pointer dataPtr, QVector<size_t> dims)
+    static Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> > DataArrayToEigenMatrixMap(std::vector<T> &dataPtr, std::vector<size_t> dims)
     {
       if (dims.size() != 2) { return Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> >(nullptr, 0, 0); }
 
-      Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> > matrixMap(dataPtr.get()->getPointer(0), dims[0], dims[1]);
+      Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> > matrixMap(dataPtr.data(), dims[0], dims[1]);
       return matrixMap;
     }
 
     template <typename T, int Major>
-    static Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> > DataArrayToEigenArrayMap(typename DataArray<T>::Pointer dataPtr, QVector<size_t> dims)
+    static Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> > DataArrayToEigenArrayMap(std::vector<T> &dataPtr, std::vector<size_t> dims)
     {
       if (dims.size() != 1) { return Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> >(nullptr); }
 
-      Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> > arrayMap(dataPtr.get()->getPointer(0), dims[0]);
+      Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> > arrayMap(dataPtr.data(), dims[0]);
       return arrayMap;
     }
 

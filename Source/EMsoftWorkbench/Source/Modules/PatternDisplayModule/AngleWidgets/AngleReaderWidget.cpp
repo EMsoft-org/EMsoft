@@ -245,7 +245,7 @@ void AngleReaderWidget::on_maxLineNum_valueChanged(int value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer AngleReaderWidget::getEulerAngles()
+std::vector<float> AngleReaderWidget::getEulerAngles()
 {
   QFile file(m_LoadedFilePath);
   if(file.open(QIODevice::ReadOnly))
@@ -269,9 +269,9 @@ FloatArrayType::Pointer AngleReaderWidget::getEulerAngles()
       numberOfAngles = in.readLine().toInt();
     }
 
-    FloatArrayType::Pointer angleArray = FloatArrayType::CreateArray(numberOfAngles, QVector<size_t>(1, 3), "Angle Array");
+    std::vector<float> angleArray(numberOfAngles * 3);
 
-    for(int i = 0; i < numberOfAngles; i++)
+    for(int i = 0; i < angleArray.size(); i += 3)
     {
       QString line = in.readLine();
       QStringList parts = line.split(QRegularExpression("[ \t]+"), QString::SkipEmptyParts);
@@ -280,12 +280,12 @@ FloatArrayType::Pointer AngleReaderWidget::getEulerAngles()
         QString part = parts[j];
         float value = part.toFloat();
         value = AbstractAngleWidget::ConvertToRadians(value);
-        angleArray->setComponent(i, j, value);
+        angleArray.at(i + j) = value;
       }
     }
 
     return angleArray;
   }
 
-  return FloatArrayType::NullPointer();
+  return std::vector<float>();
 }

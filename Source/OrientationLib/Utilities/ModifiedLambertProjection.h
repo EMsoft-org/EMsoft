@@ -41,7 +41,6 @@
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 #include "OrientationLib/OrientationLib.h"
 
@@ -85,7 +84,7 @@ class OrientationLib_EXPORT ModifiedLambertProjection
      * @param sphereRadius The radius of the sphere from where the coordinates are coming from.
      * @return
      */
-    static Pointer CreateProjectionFromXYZCoords(FloatArrayType* coords, int dimension, float sphereRadius);
+    static Pointer CreateProjectionFromXYZCoords(const std::vector<float> &coords, int dimension, float sphereRadius);
 
 
     SIMPL_GET_PROPERTY(int, Dimension)
@@ -93,8 +92,8 @@ class OrientationLib_EXPORT ModifiedLambertProjection
     SIMPL_GET_PROPERTY(float, SphereRadius)
 
 
-    SIMPL_GET_PROPERTY(DoubleArrayType::Pointer, NorthSquare)
-    SIMPL_GET_PROPERTY(DoubleArrayType::Pointer, SouthSquare)
+    SIMPL_GET_PROPERTY(std::vector<double>, NorthSquare)
+    SIMPL_GET_PROPERTY(std::vector<double>, SouthSquare)
 
     /**
      * @brief initializeSquares
@@ -153,7 +152,7 @@ class OrientationLib_EXPORT ModifiedLambertProjection
      * @param sqCoord [output] The XY coordinate in the Modified Lambert Square
      * @return If the point was in the north or south squares
      */
-    bool getSquareCoord(float* xyz, float* sqCoord);
+    bool getSquareCoord(const float *xyz, float* sqCoord);
 
     /**
      * @brief getSquareIndex
@@ -179,13 +178,13 @@ class OrientationLib_EXPORT ModifiedLambertProjection
      * @param stereoIntensity
      * @param projType
      */
-    void createProjection(int dim, FloatArrayType* stereoIntensity, ModifiedLambertProjection::ProjectionType projType);
+    void createProjection(int dim, std::vector<float> &stereoIntensity, ModifiedLambertProjection::ProjectionType projType);
 
     /**
      * @brief createStereographicProjection
      * @param stereoGraphicProjectionDims
      */
-    typename FloatArrayType::Pointer createProjection(int dim, ModifiedLambertProjection::ProjectionType projType);
+    typename std::vector<float> createProjection(int dim, ModifiedLambertProjection::ProjectionType projType);
 
   protected:
     ModifiedLambertProjection();
@@ -201,10 +200,8 @@ class OrientationLib_EXPORT ModifiedLambertProjection
     float m_MaxCoord;
     float m_MinCoord;
 
-    DoubleArrayType::Pointer m_NorthSquare;
-    DoubleArrayType::Pointer m_SouthSquare;
-
-
+    std::vector<double> m_NorthSquare;
+    std::vector<double> m_SouthSquare;
 
     ModifiedLambertProjection(const ModifiedLambertProjection&); // Copy Constructor Not Implemented
     void operator=(const ModifiedLambertProjection&); // Operator '=' Not Implemented
