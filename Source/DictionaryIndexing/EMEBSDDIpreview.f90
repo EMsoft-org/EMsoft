@@ -162,7 +162,7 @@ end if
 ! should we average patterns locally ?
 allocate(expt(patsz))
 dims3 = (/ binx, biny, 1 /)
-if (enl%numav.gt.0) then
+if (enl%numav.ge.0) then
   io_int(1) = 2*enl%numav+1
   io_int(2) = 2*enl%numav+1
   call WriteValue(' Averaging patterns over ', io_int, 2, "(I3,' by ',I3,' area')")
