@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _xtalfilereader_h_
-#define _xtalfilereader_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -110,8 +109,9 @@ class XtalFileReader : public QObject
      */
     void initializeData();
 
-    XtalFileReader(const XtalFileReader&);    // Copy Constructor Not Implemented
-    void operator=(const XtalFileReader&);  // Operator '=' Not Implemented
+  public:
+    XtalFileReader(const XtalFileReader&) = delete; // Copy Constructor Not Implemented
+    XtalFileReader(XtalFileReader&&) = delete;      // Move Constructor Not Implemented
+    XtalFileReader& operator=(const XtalFileReader&) = delete; // Copy Assignment Not Implemented
+    XtalFileReader& operator=(XtalFileReader&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _xtalfilereader_h_ */

@@ -121,9 +121,9 @@ void SingleAngleWidget::createModificationConnections(PatternDisplay_UI* ui)
 std::vector<float> SingleAngleWidget::getEulerAngles()
 {
   std::vector<float> floatArray(3);
-  floatArray.at(0) = eulerPhi1->text().toDouble() * k_PiOver180; // Convert to radians
-  floatArray.at(1) = eulerPhi->text().toDouble() * k_PiOver180;
-  floatArray.at(2) = eulerPhi2->text().toDouble() * k_PiOver180;
+  floatArray[0] = eulerPhi1->text().toDouble() * k_PiOver180; // Convert to radians
+  floatArray[1] = eulerPhi->text().toDouble() * k_PiOver180;
+  floatArray[2] = eulerPhi2->text().toDouble() * k_PiOver180;
 
   return floatArray;
 }

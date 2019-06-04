@@ -48,10 +48,7 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-XtalFileReader::XtalFileReader()
-{
-
-}
+XtalFileReader::XtalFileReader() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -106,7 +103,7 @@ void XtalFileReader::initializeData()
 // -----------------------------------------------------------------------------
 bool XtalFileReader::closeFile()
 {
-  if (QH5Utilities::closeFile(m_FileId))
+  if (static_cast<bool>(QH5Utilities::closeFile(m_FileId)))
   {
     initializeData();
     m_FileId = -1;
@@ -145,10 +142,10 @@ std::vector<int32_t> XtalFileReader::getIParPtr()
     m_IParVector.resize(EMsoftWorkbenchConstants::Constants::IParSize);
     std::fill(m_IParVector.begin(), m_IParVector.end(), 0);
 
-    m_IParVector.at(7) = crystalSystem;      // crystal system ID
-    m_IParVector.at(8) = natomTypes;         // # atoms in asymmetric unit
-    m_IParVector.at(9) = spaceGroupNumber;   // # space group
-    m_IParVector.at(10) = spaceGroupSetting; // space group origin setting
+    m_IParVector[7] = crystalSystem;      // crystal system ID
+    m_IParVector[8] = natomTypes;         // # atoms in asymmetric unit
+    m_IParVector[9] = spaceGroupNumber;   // # space group
+    m_IParVector[10] = spaceGroupSetting; // space group origin setting
   }
 
   return m_IParVector;
@@ -161,8 +158,6 @@ std::vector<float> XtalFileReader::getFParPtr()
 {
   if (m_FParVector.empty())
   {
-    QVector<size_t> cDims = { EMsoftWorkbenchConstants::Constants::FParSize };
-
     m_FParVector.resize(EMsoftWorkbenchConstants::Constants::FParSize);
     std::fill(m_FParVector.begin(), m_FParVector.end(), 0.0f);
 
@@ -178,7 +173,7 @@ std::vector<float> XtalFileReader::getFParPtr()
 bool XtalFileReader::getAtomPos(std::vector<float> &atomPos) {
   if (m_Atompos.empty())
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::AtomData);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::AtomData);
     herr_t err = QH5Lite::readVectorDataset(m_FileId, path, m_Atompos);
     if(err < 0)
     {
@@ -199,7 +194,7 @@ bool XtalFileReader::getAtomPos(std::vector<float> &atomPos) {
 bool XtalFileReader::getAtomTypes(std::vector<int32_t> &atomTypes) {
   if (m_Atomtypes.empty())
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::Atomtypes);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::Atomtypes);
     herr_t err = QH5Lite::readVectorDataset(m_FileId, path, m_Atomtypes);
     if(err < 0)
     {
@@ -220,7 +215,7 @@ bool XtalFileReader::getAtomTypes(std::vector<int32_t> &atomTypes) {
 bool XtalFileReader::getLatticeParameters(std::vector<float> &latParm) {
   if (m_Latparm.empty())
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::LatticeParameters);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::LatticeParameters);
     herr_t err = QH5Lite::readVectorDataset(m_FileId, path, m_Latparm);
     if(err < 0)
     {
@@ -241,7 +236,7 @@ bool XtalFileReader::getLatticeParameters(std::vector<float> &latParm) {
 bool XtalFileReader::getCreationDate(QString &creationDate) {
   if (m_CreationDate.isEmpty())
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::CreationDate);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::CreationDate);
     herr_t err = QH5Lite::readStringDataset(m_FileId, path, m_CreationDate );
     if(err < 0)
     {
@@ -262,7 +257,7 @@ bool XtalFileReader::getCreationDate(QString &creationDate) {
 bool XtalFileReader::getCreationTime(QString &creationTime) {
   if (m_CreationTime.isEmpty())
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::CreationTime);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::CreationTime);
     herr_t err = QH5Lite::readStringDataset(m_FileId, path, m_CreationTime );
     if(err < 0)
     {
@@ -283,7 +278,7 @@ bool XtalFileReader::getCreationTime(QString &creationTime) {
 bool XtalFileReader::getCreator(QString &creator) {
   if (m_Creator.isEmpty())
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::Creator);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::Creator);
     herr_t err = QH5Lite::readStringDataset(m_FileId, path, m_Creator );
     if(err < 0)
     {
@@ -304,7 +299,7 @@ bool XtalFileReader::getCreator(QString &creator) {
 bool XtalFileReader::getProgramName(QString &programName) {
   if (m_ProgramName.isEmpty())
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::ProgramName);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::ProgramName);
     herr_t err = QH5Lite::readStringDataset(m_FileId, path, m_ProgramName );
     if(err < 0)
     {
@@ -325,7 +320,7 @@ bool XtalFileReader::getProgramName(QString &programName) {
 bool XtalFileReader::getCrystalSystem(int &crystalSystem) {
   if (m_CrystalSystem < 0)
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::CrystalSystem);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::CrystalSystem);
     herr_t err = QH5Lite::readScalarDataset(m_FileId, path, m_CrystalSystem );
     if(err < 0)
     {
@@ -346,7 +341,7 @@ bool XtalFileReader::getCrystalSystem(int &crystalSystem) {
 bool XtalFileReader::getNatomTypes(int &natomTypes) {
   if (m_Natomtypes < 0)
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::Natomtypes);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::Natomtypes);
     herr_t err = QH5Lite::readScalarDataset(m_FileId, path, m_Natomtypes );
     if(err < 0)
     {
@@ -367,7 +362,7 @@ bool XtalFileReader::getNatomTypes(int &natomTypes) {
 bool XtalFileReader::getSpaceGroupNumber(int &spaceGroupNumber) {
   if (m_SpaceGroupNumber < 0)
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::SpaceGroupNumber);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::SpaceGroupNumber);
     herr_t err = QH5Lite::readScalarDataset(m_FileId, path, m_SpaceGroupNumber );
     if(err < 0)
     {
@@ -388,7 +383,7 @@ bool XtalFileReader::getSpaceGroupNumber(int &spaceGroupNumber) {
 bool XtalFileReader::getSpaceGroupSetting(int &spaceGroupSetting) {
   if (m_SpaceGroupSetting < 0)
   {
-    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData).arg(EMsoft::Constants::SpaceGroupSetting);
+    QString path = QString("%1/%2").arg(EMsoft::Constants::CrystalData, EMsoft::Constants::SpaceGroupSetting);
     herr_t err = QH5Lite::readScalarDataset(m_FileId, path, m_SpaceGroupSetting );
     if(err < 0)
     {

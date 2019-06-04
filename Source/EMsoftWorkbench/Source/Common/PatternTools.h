@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _PatternTools_h_
-#define _PatternTools_h_
+#pragma once
 
 #include <QtGui/QColor>
 
@@ -209,7 +207,7 @@ class PatternTools
      * @param tDims
      * @return
      */
-    static std::vector<float> CreateInverseGaussianMask(const std::vector<float> &patternData, std::vector<size_t> tDims);
+    static std::vector<float> CreateInverseGaussianMask(const std::vector<float> &patternData, const std::vector<size_t> &tDims);
 
     /**
      * @brief GetInverseGaussianLine
@@ -226,8 +224,9 @@ class PatternTools
      */
     static std::vector<float> GetInverseGaussianGrid(std::vector<size_t> dims);
 
-    PatternTools(const PatternTools&); // Copy Constructor Not Implemented
-    void operator=(const PatternTools&); // Operator '=' Not Implemented
+  public:
+    PatternTools(const PatternTools&) = delete; // Copy Constructor Not Implemented
+    PatternTools(PatternTools&&) = delete;      // Move Constructor Not Implemented
+    PatternTools& operator=(const PatternTools&) = delete; // Copy Assignment Not Implemented
+    PatternTools& operator=(PatternTools&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _PatternTools_h_ */

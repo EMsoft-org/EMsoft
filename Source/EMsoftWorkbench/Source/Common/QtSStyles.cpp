@@ -82,16 +82,12 @@ QMap<QString, QIcon>  QtSStyles::filterIconMap  = QMap<QString, QIcon>();
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSStyles::QtSStyles()
-{
-}
+QtSStyles::QtSStyles() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSStyles::~QtSStyles()
-{
-}
+QtSStyles::~QtSStyles() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -133,11 +129,9 @@ QString QtSStyles::GetUIFont()
   {
     return font.toString();
   }
-  else
-  {
-    QFont font;
-    return font.toString();
-  }
+
+  QFont blankFont;
+  return blankFont.toString();
 }
 
 // -----------------------------------------------------------------------------
@@ -145,11 +139,12 @@ QString QtSStyles::GetUIFont()
 // -----------------------------------------------------------------------------
 QColor QtSStyles::ColorForFilterGroup(const QString &grpName)
 {
+  if (filterColorMap.count() == 0)
+  {
+    parseJson();
+  }
 
-    if (filterColorMap.count() == 0)
-        parseJson();
-
-    return filterColorMap.value(grpName);
+  return filterColorMap.value(grpName);
 }
 
 
@@ -158,57 +153,81 @@ QColor QtSStyles::ColorForFilterGroup(const QString &grpName)
 // -----------------------------------------------------------------------------
 QIcon QtSStyles::IconForGroup(const QString &grpName)
 {
+  if (filterIconMap.count() == 0)
+  {
+    parseJson();
+  }
 
-    if (filterIconMap.count() == 0)
-        parseJson();
-
-    return filterIconMap.value(grpName);
-
+  return filterIconMap.value(grpName);
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void QtSStyles::setStyleSheetName(const QString &name)
 {
     QtSStyles::currentStyleSheetName = name;
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 QString QtSStyles::styleSheetName()
 {
     return currentStyleSheetName;
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 QColor QtSStyles::getPipelineFontColor()
 {
-    if ( QtSStyles::currentStyleSheetName == "light")
-    {
-        return QColor("white");
-    }
-    else if ( QtSStyles::currentStyleSheetName == "dark")
-    {
-        return QColor("white");
-    }
+  QColor color;
+  if ( QtSStyles::currentStyleSheetName == "light")
+  {
+    color.setNamedColor("white");
+  }
+  else if ( QtSStyles::currentStyleSheetName == "dark")
+  {
+    color.setNamedColor("white");
+  }
+  else
+  {
+    color.setNamedColor("black");
+  }
 
-    return QColor("black");
+  return color;
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 QColor QtSStyles::ColorForFilterState(QtSStyles::FilterState state)
 {
-    // TODO read these colors from json
-    if (state == QtSStyles::FilterComplete)
-    {
-        return QColor("green");
-    }
-    if (state == QtSStyles::FilterError)
-    {
-        return QColor("red");
-    }
-    else if (state == QtSStyles::FilterProcessing)
-    {
-        return QColor("#00c0ff");
-    }
+  QColor color;
+  if (state == QtSStyles::FilterComplete)
+  {
+    color.setNamedColor("green");
+  }
+  else if (state == QtSStyles::FilterError)
+  {
+    color.setNamedColor("red");
+  }
+  else if (state == QtSStyles::FilterProcessing)
+  {
+    color = QColor(0, 0xc0, 0xff);
+  }
+  else
+  {
+    color = QColor(0x6d, 0x7f, 0x89);
+  }
 
-    return QColor("#6d7f89");
+  return color;
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void QtSStyles::parseJson()
 {
     QString jsonString;
@@ -225,9 +244,9 @@ void QtSStyles::parseJson()
         QJsonObject jsonObj = doc.object();
         QJsonArray filterColorArray = jsonObj.value("Filter Group Properties").toArray();
 
-        for(int i=0; i < filterColorArray.size(); ++i)
+        for(const QJsonValueRef &jsonValue : filterColorArray)
         {
-            QJsonObject jsonObject  = filterColorArray.at(i).toObject();
+            QJsonObject jsonObject  = jsonValue.toObject();
             QString filterKey = jsonObject.value("group").toString();
             QString filterColorString = jsonObject.value("color").toString();
             QColor filterColor;

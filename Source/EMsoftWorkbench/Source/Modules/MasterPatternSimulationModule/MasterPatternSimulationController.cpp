@@ -192,9 +192,9 @@ void MasterPatternSimulationController::createMasterPattern(MasterPatternSimulat
   // adjust the size of the mLPNH and mLPSH arrays to the correct one, since we did not have access
   // to the sizes in the datacheck() routine
   std::vector<size_t> dims(4, 0);
-  dims[0] = 2 * iParPtr.at(16) + 1;
+  dims[0] = 2 * iParPtr[16] + 1;
   dims[1] = dims[0];
-  dims[2] = iParPtr.at(11);
+  dims[2] = iParPtr[11];
   //   cDims[3] = genericIPar[8];
   dims[3] = 1;
 
@@ -394,7 +394,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     return false;
   }
 
-  if(genericIParPtr.at(13) == 1)
+  if(genericIParPtr[13] == 1)
   {
     if(!writer->openGroup(EMsoft::Constants::EBSDmaster))
     {
@@ -415,9 +415,9 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
   // the user-defined name is only relevant within DREAM.3D
   {
     QVector<hsize_t> dims(4);
-    dims[0] = genericIParPtr.at(8);          // number of atom types
-    dims[1] = genericIParPtr.at(11);         // number of energy bins
-    dims[2] = 2 * genericIParPtr.at(16) + 1; // number of x pixels
+    dims[0] = genericIParPtr[8];          // number of atom types
+    dims[1] = genericIParPtr[11];         // number of energy bins
+    dims[2] = 2 * genericIParPtr[16] + 1; // number of x pixels
     dims[3] = dims[2];                 // number of y pixels
 
     if(!writer->writePointerDataset(EMsoft::Constants::mLPNH, m_GenericLPNHPtr.data(), dims))
@@ -455,9 +455,9 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
 
   {
     QVector<hsize_t> dims(4);
-    dims[0] = genericIParPtr.at(8);          // number of atom types
-    dims[1] = genericIParPtr.at(11);         // number of energy bins
-    dims[2] = 2 * genericIParPtr.at(16) + 1; // number of x pixels
+    dims[0] = genericIParPtr[8];          // number of atom types
+    dims[1] = genericIParPtr[11];         // number of energy bins
+    dims[2] = 2 * genericIParPtr[16] + 1; // number of x pixels
     dims[3] = dims[2];                 // number of y pixels
 
     if(!writer->writePointerDataset(EMsoft::Constants::mLPSH, m_GenericLPSHPtr.data(), dims))
@@ -495,9 +495,9 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
 
   // and a few constants
   std::string dname;
-  if(genericIParPtr.at(13) == 1)
+  if(genericIParPtr[13] == 1)
   {
-    if(!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIParPtr.at(11)))
+    if(!writer->writeScalarDataset(EMsoft::Constants::numEbins, genericIParPtr[11]))
     {
       QFile::remove(tmpOutputFilePath);
       return false;
@@ -524,11 +524,11 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
       return false;
     }
 
-    cDims[0] = genericIParPtr.at(11);
+    cDims[0] = genericIParPtr[11];
     QVector<float> EkeV(cDims[0]);
-    for(int i = 0; i < genericIParPtr.at(11); i++)
+    for(int i = 0; i < genericIParPtr[11]; i++)
     {
-      EkeV[i] = genericFParPtr.at(3) + (float)i * genericFParPtr.at(4);
+      EkeV[i] = genericFParPtr[3] + (float)i * genericFParPtr[4];
     }
 
     if(!writer->writeVectorDataset(EMsoft::Constants::EkeVs, EkeV, cDims))
@@ -552,7 +552,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
     }
   }
 
-  if(!writer->writeScalarDataset(EMsoft::Constants::numset, genericIParPtr.at(8)))
+  if(!writer->writeScalarDataset(EMsoft::Constants::numset, genericIParPtr[8]))
   {
     QFile::remove(tmpOutputFilePath);
     return false;
@@ -1070,8 +1070,8 @@ std::vector<int32_t> MasterPatternSimulationController::getIParPtr(MasterPattern
     return std::vector<int32_t>();
   }
 
-  iParPtr.at(16) = static_cast<size_t>(simData.numOfMPPixels);      // number of pixels in master pattern
-  iParPtr.at(17) = static_cast<size_t>(simData.numOfOpenMPThreads); // number of OpenMP threads to be used
+  iParPtr[16] = static_cast<size_t>(simData.numOfMPPixels);      // number of pixels in master pattern
+  iParPtr[17] = static_cast<size_t>(simData.numOfOpenMPThreads); // number of OpenMP threads to be used
 
   return iParPtr;
 }
@@ -1087,10 +1087,10 @@ std::vector<float> MasterPatternSimulationController::getFParPtr(MasterPatternSi
     return std::vector<float>();
   }
 
-  fParPtr.at(10) = simData.smallestDSpacing;
-  fParPtr.at(11) = simData.betheParametersX;
-  fParPtr.at(12) = simData.betheParametersY;
-  fParPtr.at(13) = simData.betheParametersZ;
+  fParPtr[10] = simData.smallestDSpacing;
+  fParPtr[11] = simData.betheParametersX;
+  fParPtr[12] = simData.betheParametersY;
+  fParPtr[13] = simData.betheParametersZ;
 
   return fParPtr;
 }

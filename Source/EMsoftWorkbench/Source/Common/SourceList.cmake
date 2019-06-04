@@ -59,29 +59,25 @@ set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS
 set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
   ${${SUBDIR_NAME}_DIR}/AbstractImageGenerator.h
   ${${SUBDIR_NAME}_DIR}/Constants.h
-  ${${SUBDIR_NAME}_DIR}/EigenConversions.h
+  ${${SUBDIR_NAME}_DIR}/EigenConversions.hpp
   ${${SUBDIR_NAME}_DIR}/FileIOTools.h
-  ${${SUBDIR_NAME}_DIR}/ImageGenerationTask.h
-  ${${SUBDIR_NAME}_DIR}/ImageGenerator.h
+  ${${SUBDIR_NAME}_DIR}/ImageGenerationTask.hpp
+  ${${SUBDIR_NAME}_DIR}/ImageGenerator.hpp
   ${${SUBDIR_NAME}_DIR}/IObserver.h
   ${${SUBDIR_NAME}_DIR}/MasterPatternFileReader.h
   ${${SUBDIR_NAME}_DIR}/PatternTools.h
-  ${${SUBDIR_NAME}_DIR}/ProjectionConversionTask.h
+  ${${SUBDIR_NAME}_DIR}/ProjectionConversionTask.hpp
   ${${SUBDIR_NAME}_DIR}/QtSFileUtils.h
 )
 
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
-  ${${SUBDIR_NAME}_DIR}/EigenConversions.cpp
   ${${SUBDIR_NAME}_DIR}/FileIOTools.cpp
   ${${SUBDIR_NAME}_DIR}/GLImageViewer.cpp
-  ${${SUBDIR_NAME}_DIR}/ImageGenerationTask.cpp
-  ${${SUBDIR_NAME}_DIR}/ImageGenerator.cpp
   ${${SUBDIR_NAME}_DIR}/IObserver.cpp
   ${${SUBDIR_NAME}_DIR}/MasterPatternFileReader.cpp
   ${${SUBDIR_NAME}_DIR}/MonteCarloFileReader.cpp
   ${${SUBDIR_NAME}_DIR}/PatternTools.cpp
-  ${${SUBDIR_NAME}_DIR}/ProjectionConversionTask.cpp
   ${${SUBDIR_NAME}_DIR}/QtSFileUtils.cpp
   ${${SUBDIR_NAME}_DIR}/QtSRecentFileList.cpp
   ${${SUBDIR_NAME}_DIR}/QtSSettings.cpp

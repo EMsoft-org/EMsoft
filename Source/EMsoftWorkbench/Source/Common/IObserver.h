@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _iobserver_h_
-#define _iobserver_h_
+#pragma once
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
@@ -48,9 +46,8 @@ class IObserver
 
     virtual void processObserverMessage(const QString& msg);
 
-  private:
-    IObserver(const IObserver&); // Copy Constructor Not Implemented
-    void operator=(const IObserver&); // Operator '=' Not Implemented
+    IObserver(const IObserver&) = delete; // Copy Constructor Not Implemented
+    IObserver(IObserver&&) = delete;      // Move Constructor Not Implemented
+    IObserver& operator=(const IObserver&) = delete; // Copy Assignment Not Implemented
+    IObserver& operator=(IObserver&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _IObserver_H_ */

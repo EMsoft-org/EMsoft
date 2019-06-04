@@ -44,7 +44,7 @@
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
-#include "Common/EigenConversions.h"
+#include "Common/EigenConversions.hpp"
 #include "Common/Constants.h"
 
 #include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
@@ -52,17 +52,12 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternTools::PatternTools()
-{
-}
+PatternTools::PatternTools() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternTools::~PatternTools()
-{
-
-}
+PatternTools::~PatternTools() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -78,13 +73,13 @@ std::vector<float> PatternTools::GeneratePattern(PatternTools::IParValues iParVa
   std::vector<float> genericFParPtr(EMsoftWorkbenchConstants::Constants::FParSize);
   std::fill(genericFParPtr.begin(), genericFParPtr.end(), 0.0f);
 
-  genericIParPtr.at(0) = (iParValues.numsx - 1) / 2;
-  genericIParPtr.at(8) = iParValues.numset;
-  genericIParPtr.at(11) = static_cast<int>((iParValues.incidentBeamVoltage - iParValues.minEnergy) / iParValues.energyBinSize) + 1;
-  genericIParPtr.at(16) = iParValues.npx;
+  genericIParPtr[0] = (iParValues.numsx - 1) / 2;
+  genericIParPtr[8] = iParValues.numset;
+  genericIParPtr[11] = static_cast<int>((iParValues.incidentBeamVoltage - iParValues.minEnergy) / iParValues.energyBinSize) + 1;
+  genericIParPtr[16] = iParValues.npx;
 
-  genericIParPtr.at(18) = static_cast<size_t>(iParValues.numOfPixelsX);
-  genericIParPtr.at(19) = static_cast<size_t>(iParValues.numOfPixelsY);
+  genericIParPtr[18] = static_cast<size_t>(iParValues.numOfPixelsX);
+  genericIParPtr[19] = static_cast<size_t>(iParValues.numOfPixelsY);
 
   int binningIndex = 0;
   if (iParValues.detectorBinningValue == 2)
@@ -100,27 +95,27 @@ std::vector<float> PatternTools::GeneratePattern(PatternTools::IParValues iParVa
     binningIndex = 3;
   }
 
-  genericIParPtr.at(20) = static_cast<size_t>(iParValues.numberOfOrientations); // number of orientations
-  genericIParPtr.at(21) = binningIndex;
-  genericIParPtr.at(22) = static_cast<size_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
-  genericIParPtr.at(23) = static_cast<size_t>(iParValues.numOfPixelsY / iParValues.detectorBinningValue);
+  genericIParPtr[20] = static_cast<size_t>(iParValues.numberOfOrientations); // number of orientations
+  genericIParPtr[21] = binningIndex;
+  genericIParPtr[22] = static_cast<size_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
+  genericIParPtr[23] = static_cast<size_t>(iParValues.numOfPixelsY / iParValues.detectorBinningValue);
 
   // and set all the float input parameters for the EMsoftCgetEBSDPatterns routine
   // some of these have been set in previous filters
-  genericFParPtr.at(0) = fParValues.sigma;
-  genericFParPtr.at(1) = fParValues.omega;
+  genericFParPtr[0] = fParValues.sigma;
+  genericFParPtr[1] = fParValues.omega;
 
-  genericFParPtr.at(14) = fParValues.pcPixelsX;         // pattern center x component (in pixel units)
-  genericFParPtr.at(15) = fParValues.pcPixelsY;         // pattern center y component (in pixel units)
-  genericFParPtr.at(16) = fParValues.scintillatorPixelSize;       // pixel size (microns) on scintillator surface
-  genericFParPtr.at(17) = fParValues.detectorTiltAngle;      // detector tilt angle (degrees) from horizontal (positive for detector looking upwards)
-  genericFParPtr.at(18) = fParValues.scintillatorDist;           // sample-scintillator distance (microns)
-  genericFParPtr.at(19) = fParValues.beamCurrent; // beam current [nA]
-  genericFParPtr.at(20) = fParValues.dwellTime;   // beam dwell time per pattern [micro-seconds]
-  genericFParPtr.at(21) = fParValues.gammaValue;  // intensity scaling gamma value
+  genericFParPtr[14] = fParValues.pcPixelsX;         // pattern center x component (in pixel units)
+  genericFParPtr[15] = fParValues.pcPixelsY;         // pattern center y component (in pixel units)
+  genericFParPtr[16] = fParValues.scintillatorPixelSize;       // pixel size (microns) on scintillator surface
+  genericFParPtr[17] = fParValues.detectorTiltAngle;      // detector tilt angle (degrees) from horizontal (positive for detector looking upwards)
+  genericFParPtr[18] = fParValues.scintillatorDist;           // sample-scintillator distance (microns)
+  genericFParPtr[19] = fParValues.beamCurrent; // beam current [nA]
+  genericFParPtr[20] = fParValues.dwellTime;   // beam dwell time per pattern [micro-seconds]
+  genericFParPtr[21] = fParValues.gammaValue;  // intensity scaling gamma value
 
   std::vector<float> genericEBSDPatternsPtr;
-  genericEBSDPatternsPtr.resize(iParValues.numberOfOrientations * genericIParPtr.at(22) * genericIParPtr.at(23));
+  genericEBSDPatternsPtr.resize(iParValues.numberOfOrientations * genericIParPtr[22] * genericIParPtr[23]);
 
   PatternTools::GeneratePattern_Helper(angleIndex, eulerAngles, lpnhData, lpshData, monteCarloSquareData, genericEBSDPatternsPtr, genericIParPtr, genericFParPtr, cancel);
 
@@ -237,9 +232,13 @@ QImage PatternTools::CalculateDifference(QImage minuend, QImage subtrahend)
 QImage PatternTools::CalculateComposite(QImage src, QImage dst, double opacity)
 {
   if (src.width() <= 0 || src.height() <= 0)
-      return dst;
+  {
+    return dst;
+  }
   if (dst.width() <= 0 || dst.height() <= 0)
-      return dst;
+  {
+    return dst;
+  }
 
   if (src.width() != dst.width() || src.height() != dst.height()) {
 #ifndef NDEBUG
@@ -255,8 +254,14 @@ QImage PatternTools::CalculateComposite(QImage src, QImage dst, double opacity)
       return dst;
   }
 
-  if (src.depth() != 32) src = src.convertToFormat(QImage::Format_ARGB32);
-  if (dst.depth() != 32) dst = dst.convertToFormat(QImage::Format_ARGB32);
+  if (src.depth() != 32)
+  {
+    src = src.convertToFormat(QImage::Format_ARGB32);
+  }
+  if (dst.depth() != 32)
+  {
+    dst = dst.convertToFormat(QImage::Format_ARGB32);
+  }
 
   int pixels = src.width() * src.height();
   {
@@ -459,7 +464,7 @@ std::vector<float> PatternTools::InverseGaussian(const std::vector<float> &patte
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<float> PatternTools::CreateInverseGaussianMask(const std::vector<float> &patternData, std::vector<size_t> tDims)
+std::vector<float> PatternTools::CreateInverseGaussianMask(const std::vector<float> &patternData, const std::vector<size_t> &tDims)
 {
   if (tDims.size() != 2) { return std::vector<float>(); }
 
@@ -548,10 +553,9 @@ std::vector<float> PatternTools::GetInverseGaussianGrid(std::vector<size_t> dims
 std::vector<float> PatternTools::GetInverseGaussianLine(size_t size)
 {
   std::vector<float> line = FindGen(size);
-  for (int i = 0; i < line.size(); i++)
+  for (float &value : line)
   {
-    float value = line.at(i) - static_cast<float>(size / 2);
-    line.at(i) = value;
+    value = value - static_cast<float>(size / 2);
   }
 
   return line;

@@ -48,7 +48,7 @@ QtSRecentFileList::QtSRecentFileList(QObject* parent)
 : QObject(parent)
 , m_Watcher(new QFileSystemWatcher(this))
 {
-  connect(m_Watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(removeFile(const QString&)));
+  connect(m_Watcher, SIGNAL(fileChanged(QString)), this, SLOT(removeFile(QString)));
 }
 
 // -----------------------------------------------------------------------------

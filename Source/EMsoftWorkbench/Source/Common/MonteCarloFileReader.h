@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _montecarlofilereader_h_
-#define _montecarlofilereader_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -60,7 +59,7 @@ class MonteCarloFileReader : public XtalFileReader
      * @brief closeFile
      * @return
      */
-    bool closeFile();
+    bool closeFile() override;
 
     bool getSampleTiltAngleSigma(double &sampleTiltAngleSigma);
     bool getSampleRotationalAngleOmega(double &sampleRotAngleOmega);
@@ -116,8 +115,9 @@ class MonteCarloFileReader : public XtalFileReader
      */
     void initializeData();
 
-    MonteCarloFileReader(const MonteCarloFileReader&);    // Copy Constructor Not Implemented
-    void operator=(const MonteCarloFileReader&);  // Operator '=' Not Implemented
+  public:
+    MonteCarloFileReader(const MonteCarloFileReader&) = delete; // Copy Constructor Not Implemented
+    MonteCarloFileReader(MonteCarloFileReader&&) = delete;      // Move Constructor Not Implemented
+    MonteCarloFileReader& operator=(const MonteCarloFileReader&) = delete; // Copy Assignment Not Implemented
+    MonteCarloFileReader& operator=(MonteCarloFileReader&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _montecarlofilereader_h_ */

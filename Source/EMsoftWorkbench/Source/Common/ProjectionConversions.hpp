@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef projectionconversions_h
-#define projectionconversions_h
+#pragma once
 
 #include <QtCore/QObject>
 
@@ -46,10 +45,10 @@ class ProjectionConversions : public QObject
 
 public:
     ProjectionConversions(QObject* parent = nullptr) {}
-    ~ProjectionConversions() {}
+    ~ProjectionConversions() override = default;
 
     template <typename T>
-    std::vector<float> convertLambertSquareData(typename std::vector<T> lsData, size_t dim,
+    std::vector<float> convertLambertSquareData(const std::vector<T> &lsData, size_t dim,
                                                        ModifiedLambertProjection::ProjectionType projType, size_t zValue = 0,
                                                        ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare)
     {
@@ -70,10 +69,9 @@ public:
       return stereoProj;
     }
 
-private:
-
-    ProjectionConversions(const ProjectionConversions&);    // Copy Constructor Not Implemented
-    void operator=(const ProjectionConversions&);  // Operator '=' Not Implemented
+  public:
+    ProjectionConversions(const ProjectionConversions&) = delete; // Copy Constructor Not Implemented
+    ProjectionConversions(ProjectionConversions&&) = delete;      // Move Constructor Not Implemented
+    ProjectionConversions& operator=(const ProjectionConversions&) = delete; // Copy Assignment Not Implemented
+    ProjectionConversions& operator=(ProjectionConversions&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* projectionconversions_h */

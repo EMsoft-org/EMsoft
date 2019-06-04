@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _qrecentfilelist_h_
-#define _qrecentfilelist_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
@@ -66,7 +64,7 @@ class QtSRecentFileList: public QObject
     Q_OBJECT
 
   public:
-    QtSRecentFileList(QObject* parent = 0);
+    QtSRecentFileList(QObject* parent = nullptr);
 
     /**
      * @brief Returns the singleton instance of this class.
@@ -151,11 +149,10 @@ class QtSRecentFileList: public QObject
     // QList<QAction*> actions;
     // QMenu* recentFileMenu;
 
-
-    QtSRecentFileList(const QtSRecentFileList&); //Copy Constructor Not Implemented
-    void operator=(const QtSRecentFileList&); //Copy Assignment Not Implemented
+  public:
+    QtSRecentFileList(const QtSRecentFileList&) = delete; // Copy Constructor Not Implemented
+    QtSRecentFileList(QtSRecentFileList&&) = delete;      // Move Constructor Not Implemented
+    QtSRecentFileList& operator=(const QtSRecentFileList&) = delete; // Copy Assignment Not Implemented
+    QtSRecentFileList& operator=(QtSRecentFileList&&) = delete;      // Move Assignment Not Implemented
 
 };
-
-#endif /* QRECENTFILELIST_H_ */
-

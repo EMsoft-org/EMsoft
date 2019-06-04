@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _abstractimagegenerator_h_
-#define _abstractimagegenerator_h_
+#pragma once
 
 #include <QtGui/QImage>
 
@@ -47,7 +45,7 @@ class AbstractImageGenerator
     SIMPL_SHARED_POINTERS(AbstractImageGenerator)
     SIMPL_TYPE_MACRO(AbstractImageGenerator)
 
-    virtual ~AbstractImageGenerator() {}
+    virtual ~AbstractImageGenerator() = default;
 
     /**
      * @brief createImage
@@ -68,14 +66,11 @@ class AbstractImageGenerator
     QPair<QVariant,QVariant>                              m_MinMaxPair;
     QImage                                                m_GeneratedImage;
 
-    AbstractImageGenerator()
-    {
-    }
+    AbstractImageGenerator() = default;
 
-  private:
-
-    AbstractImageGenerator(const AbstractImageGenerator&); // Copy Constructor Not Implemented
-    void operator=(const AbstractImageGenerator&); // Operator '=' Not Implemented
+  public:
+    AbstractImageGenerator(const AbstractImageGenerator&) = delete; // Copy Constructor Not Implemented
+    AbstractImageGenerator(AbstractImageGenerator&&) = delete;      // Move Constructor Not Implemented
+    AbstractImageGenerator& operator=(const AbstractImageGenerator&) = delete; // Copy Assignment Not Implemented
+    AbstractImageGenerator& operator=(AbstractImageGenerator&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _abstractimagegenerator_h_ */

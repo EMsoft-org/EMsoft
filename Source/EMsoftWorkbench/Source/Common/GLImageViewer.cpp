@@ -75,10 +75,7 @@ GLImageViewer::GLImageViewer(QWidget *parent, Qt::WindowFlags windowFlags) :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-GLImageViewer::~GLImageViewer()
-{
-
-}
+GLImageViewer::~GLImageViewer() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -368,7 +365,6 @@ void GLImageViewer::paintGL()
 // -----------------------------------------------------------------------------
 void GLImageViewer::loadImage(GLImageData data)
 {
-  QImage prevImage = m_CurrentImage;
   m_CurrentImage = data.image;
   m_MinValue = data.minValue;
   m_MaxValue = data.maxValue;

@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef glimageviewer_h
-#define glimageviewer_h
+#pragma once
 
 #include <QtWidgets/QOpenGLWidget>
 
@@ -106,6 +105,10 @@ private:
     int           m_ViewportWidth = 0;
     int           m_ViewportHeight = 0;
     bool          m_DefaultControls = true;
-};
 
-#endif /* glimageviewer_h */
+  public:
+    GLImageViewer(const GLImageViewer&) = delete; // Copy Constructor Not Implemented
+    GLImageViewer(GLImageViewer&&) = delete;      // Move Constructor Not Implemented
+    GLImageViewer& operator=(const GLImageViewer&) = delete; // Copy Assignment Not Implemented
+    GLImageViewer& operator=(GLImageViewer&&) = delete;      // Move Assignment Not Implemented
+};

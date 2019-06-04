@@ -33,16 +33,14 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _imagegenerationtask_h_
-#define _imagegenerationtask_h_
+#pragma once
 
 #include <QtCore/QRunnable>
 #include <QtCore/QSemaphore>
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
-#include "Common/ImageGenerator.h"
+#include "Common/ImageGenerator.hpp"
 
 template <typename T>
 class ImageGenerationTask : public QRunnable
@@ -51,7 +49,7 @@ class ImageGenerationTask : public QRunnable
     SIMPL_SHARED_POINTERS(ImageGenerationTask)
     SIMPL_TYPE_MACRO(ImageGenerationTask)
 
-    ImageGenerationTask(std::vector<T> data, size_t xDim, size_t yDim, size_t zSlice, QVector<AbstractImageGenerator::Pointer> &imageGenerators,
+    ImageGenerationTask(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zSlice, QVector<AbstractImageGenerator::Pointer> &imageGenerators,
                         QSemaphore &sem, size_t listIdx, bool horizontalMirror = false, bool verticalMirror = false) :
       QRunnable(),
       m_Data(data),
@@ -67,13 +65,13 @@ class ImageGenerationTask : public QRunnable
 
     }
 
-    virtual ~ImageGenerationTask() {}
+    ~ImageGenerationTask() override = default;
 
     virtual void beforeImageGeneration() {}
 
     virtual void afterImageGeneration() {}
 
-    void run()
+    void run() override
     {
       beforeImageGeneration();
 
@@ -114,7 +112,7 @@ class ImageGenerationTask : public QRunnable
     }
 
   private:
-    typename std::vector<T> m_Data;
+    std::vector<T> m_Data;
 
     size_t m_zSlice;
     size_t m_VectorIdx;
@@ -125,8 +123,9 @@ class ImageGenerationTask : public QRunnable
     QVector<AbstractImageGenerator::Pointer>* m_ImageGenerators;
     QSemaphore* m_Semaphore;
 
-    ImageGenerationTask(const ImageGenerationTask&); // Copy Constructor Not Implemented
-    void operator=(const ImageGenerationTask&); // Operator '=' Not Implemented
+  public:
+    ImageGenerationTask(const ImageGenerationTask&) = delete; // Copy Constructor Not Implemented
+    ImageGenerationTask(ImageGenerationTask&&) = delete;      // Move Constructor Not Implemented
+    ImageGenerationTask& operator=(const ImageGenerationTask&) = delete; // Copy Assignment Not Implemented
+    ImageGenerationTask& operator=(ImageGenerationTask&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _imagegenerationtask_h_ */

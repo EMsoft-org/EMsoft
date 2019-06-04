@@ -33,6 +33,47 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "ImageGenerator.h"
+#pragma once
 
+#include "Common/ImageGenerationTask.hpp"
+#include "Common/ProjectionConversions.hpp"
 
+#include "OrientationLib/Utilities/ModifiedLambertProjection.h"
+
+template <typename P, typename I>
+class ProjectionConversionTask : public ImageGenerationTask<I>
+{
+  public:
+    ProjectionConversionTask(const std::vector<P> &data, size_t xDim, size_t yDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
+                             size_t zValue, ModifiedLambertProjection::Square square, QVector<AbstractImageGenerator::Pointer> &imageGenerators, QSemaphore &sem,
+                             size_t vectorIdx, bool horizontalMirror = false, bool verticalMirror = false) :
+      ImageGenerationTask<I>(xDim, yDim, zValue, imageGenerators, sem, vectorIdx, horizontalMirror, verticalMirror),
+      m_Data(data),
+      m_ProjDim(projDim),
+      m_ProjType(projType),
+      m_Square(square)
+    {
+
+    }
+
+    ~ProjectionConversionTask() override = default;
+
+    void beforeImageGeneration()
+    {
+      ProjectionConversions projConversion;
+      std::vector<float> ptr = projConversion.convertLambertSquareData<P>(m_Data, m_ProjDim, m_ProjType, this->getVectorIndex(), m_Square);
+      this->setImageData(ptr);
+    }
+
+  private:
+    std::vector<P> m_Data;
+    size_t m_ProjDim;
+    ModifiedLambertProjection::ProjectionType m_ProjType;
+    ModifiedLambertProjection::Square m_Square = ModifiedLambertProjection::Square::NorthSquare;
+
+  public:
+    ProjectionConversionTask(const ProjectionConversionTask&) = delete; // Copy Constructor Not Implemented
+    ProjectionConversionTask(ProjectionConversionTask&&) = delete;      // Move Constructor Not Implemented
+    ProjectionConversionTask& operator=(const ProjectionConversionTask&) = delete; // Copy Assignment Not Implemented
+    ProjectionConversionTask& operator=(ProjectionConversionTask&&) = delete;      // Move Assignment Not Implemented
+};

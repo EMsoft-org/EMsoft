@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _emsoftfilewriter_h_
-#define _emsoftfilewriter_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -97,7 +96,7 @@ class EMsoftFileWriter : public QObject
       herr_t err = QH5Lite::writeScalarDataset(locId, dsetName, value);
       if(err < 0)
       {
-        QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId)).arg(dsetName);
+        QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId), dsetName);
         emit errorMessageGenerated(str, -10005);
         return false;
       }
@@ -121,7 +120,7 @@ class EMsoftFileWriter : public QObject
       herr_t err = QH5Lite::writeVectorDataset(locId, dsetName, dims, value);
       if(err < 0)
       {
-        QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId)).arg(dsetName);
+        QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId), dsetName);
         emit errorMessageGenerated(str, -10007);
         return false;
       }
@@ -143,7 +142,7 @@ class EMsoftFileWriter : public QObject
       int err = QH5Lite::writePointerDataset(locId, dsetName, rank, dims.data(), value);
       if(err < 0)
       {
-        QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId)).arg(dsetName);
+        QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId), dsetName);
         emit errorMessageGenerated(str, -20019);
         return false;
       }
@@ -158,8 +157,9 @@ class EMsoftFileWriter : public QObject
     hid_t                           m_FileId = -1;
     QStack<hid_t>                   m_IdStack;
 
-    EMsoftFileWriter(const EMsoftFileWriter&);    // Copy Constructor Not Implemented
-    void operator=(const EMsoftFileWriter&);  // Operator '=' Not Implemented
+  public:
+    EMsoftFileWriter(const EMsoftFileWriter&) = delete; // Copy Constructor Not Implemented
+    EMsoftFileWriter(EMsoftFileWriter&&) = delete;      // Move Constructor Not Implemented
+    EMsoftFileWriter& operator=(const EMsoftFileWriter&) = delete; // Copy Assignment Not Implemented
+    EMsoftFileWriter& operator=(EMsoftFileWriter&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _emsoftfilewriter_h_ */

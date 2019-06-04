@@ -1213,9 +1213,9 @@ PatternFitController::SimulationData PatternFit_UI::getSimulationData()
   data.sampleOmegaAngle = omega->value();
 
   data.angles.resize(3);
-  data.angles.at(0) = phi1->value() * SIMPLib::Constants::k_PiOver180;
-  data.angles.at(1) = phi->value() * SIMPLib::Constants::k_PiOver180;
-  data.angles.at(2) = phi2->value() * SIMPLib::Constants::k_PiOver180;
+  data.angles[0] = phi1->value() * SIMPLib::Constants::k_PiOver180;
+  data.angles[1] = phi->value() * SIMPLib::Constants::k_PiOver180;
+  data.angles[2] = phi2->value() * SIMPLib::Constants::k_PiOver180;
 
   data.gammaValue = intensityGamma->value();
 

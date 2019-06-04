@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _imagegenerator_h_
-#define _imagegenerator_h_
+#pragma once
 
 #include <QtGui/QImage>
 
@@ -52,19 +50,22 @@ class ImageGenerator : public AbstractImageGenerator
     SIMPL_SHARED_POINTERS(ImageGenerator<T>)
     SIMPL_TYPE_MACRO(ImageGenerator<T>)
 
-    static Pointer New(const std::vector<T> data, hsize_t xDim, hsize_t yDim, int zSlice,
+    static Pointer New(const std::vector<T> &data, hsize_t xDim, hsize_t yDim, int zSlice,
                        bool mirroredHorizontal = false, bool mirroredVertical = false)
     {
       Pointer sharedPtr (new ImageGenerator(data, xDim, yDim, zSlice, mirroredHorizontal, mirroredVertical));
       return sharedPtr;
     }
 
-    virtual ~ImageGenerator() {}
+    ~ImageGenerator() override = default;
 
-    void createImage()
+    void createImage() override
     {
       m_GeneratedImage = QImage(m_XDim, m_YDim, QImage::Format_Indexed8);
-      if (m_Data.size() <= 0) { return; }
+      if (m_Data.size() == 0)
+      {
+        return;
+      }
 
       QVector<QRgb> colorTable;
       for (int i = 0; i <= 255; i++)
@@ -116,7 +117,7 @@ class ImageGenerator : public AbstractImageGenerator
     }
 
   protected:
-    ImageGenerator(typename std::vector<T> data, hsize_t xDim, hsize_t yDim, int zSlice,
+    ImageGenerator(std::vector<T> data, hsize_t xDim, hsize_t yDim, int zSlice,
                    bool mirroredHorizontal = false, bool mirroredVertical = false) :
       AbstractImageGenerator(),
       m_Data(data),
@@ -137,8 +138,9 @@ class ImageGenerator : public AbstractImageGenerator
     bool m_MirroredHorizontal;
     bool m_MirroredVertical;
 
-    ImageGenerator(const ImageGenerator&); // Copy Constructor Not Implemented
-    void operator=(const ImageGenerator&); // Operator '=' Not Implemented
+  public:
+    ImageGenerator(const ImageGenerator&) = delete; // Copy Constructor Not Implemented
+    ImageGenerator(ImageGenerator&&) = delete;      // Move Constructor Not Implemented
+    ImageGenerator& operator=(const ImageGenerator&) = delete; // Copy Assignment Not Implemented
+    ImageGenerator& operator=(ImageGenerator&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _imagegenerator_h_ */

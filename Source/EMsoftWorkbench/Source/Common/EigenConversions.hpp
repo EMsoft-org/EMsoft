@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _eigenconversions_h_
-#define _eigenconversions_h_
+#pragma once
 
 #include <QtGui/QImage>
 
@@ -44,8 +42,8 @@
 class EigenConversions
 {
   public:
-    EigenConversions();
-    virtual ~EigenConversions();
+    EigenConversions() = default;
+    virtual ~EigenConversions() = default;
 
     using FloatArrayType = Eigen::Array<float, Eigen::Dynamic, 1, Eigen::RowMajor>;
     using FloatMatrixType = Eigen::Matrix<float,Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
@@ -61,7 +59,7 @@ class EigenConversions
     using TemplateMapType = Eigen::Map<TemplateMatrixType<T, RowCount, ColumnCount, Major> >;
 
     template <typename T, int Major>
-    static Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> > DataArrayToEigenMatrixMap(std::vector<T> &dataPtr, std::vector<size_t> dims)
+    static Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> > DataArrayToEigenMatrixMap(std::vector<T> &dataPtr, const std::vector<size_t> &dims)
     {
       if (dims.size() != 2) { return Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Major> >(nullptr, 0, 0); }
 
@@ -70,7 +68,7 @@ class EigenConversions
     }
 
     template <typename T, int Major>
-    static Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> > DataArrayToEigenArrayMap(std::vector<T> &dataPtr, std::vector<size_t> dims)
+    static Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> > DataArrayToEigenArrayMap(std::vector<T> &dataPtr, const std::vector<size_t> &dims)
     {
       if (dims.size() != 1) { return Eigen::Map< Eigen::Array<T, Eigen::Dynamic, 1, Major> >(nullptr); }
 
@@ -93,8 +91,9 @@ class EigenConversions
       return (tDims[0] * y) + x;
     }
 
-    EigenConversions(const EigenConversions&); // Copy Constructor Not Implemented
-    void operator=(const EigenConversions&); // Operator '=' Not Implemented
+  public:
+    EigenConversions(const EigenConversions&) = delete; // Copy Constructor Not Implemented
+    EigenConversions(EigenConversions&&) = delete;      // Move Constructor Not Implemented
+    EigenConversions& operator=(const EigenConversions&) = delete; // Copy Assignment Not Implemented
+    EigenConversions& operator=(EigenConversions&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _eigenconversions_h_ */

@@ -29,8 +29,8 @@
  *
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#ifndef _qtSFileUtils_H_
-#define _qtSFileUtils_H_
+
+#pragma once
 
 #include <QtCore/QString>
 #include <QtWidgets/QWidget>
@@ -49,7 +49,7 @@ class QtSFileUtils
      * @param pathEnding
      * @return
      */
-    static QString GenerateFileSystemPath(QString pathEnding);
+    static QString GenerateFileSystemPath(const QString &pathEnding);
 
     /**
      * @brief Reveals the path in the operating systems UI shell (Windows Explorer or macOS Finder)
@@ -77,10 +77,10 @@ class QtSFileUtils
      */
     static QStringList GetEnvVar(const QString &evnVar);
 
-  protected:
-
-  private:
+  public:
+    QtSFileUtils(const QtSFileUtils&) = delete; // Copy Constructor Not Implemented
+    QtSFileUtils(QtSFileUtils&&) = delete;      // Move Constructor Not Implemented
+    QtSFileUtils& operator=(const QtSFileUtils&) = delete; // Copy Assignment Not Implemented
+    QtSFileUtils& operator=(QtSFileUtils&&) = delete;      // Move Assignment Not Implemented
 
 };
-
-#endif /* _qtSFileUtils_H_ */

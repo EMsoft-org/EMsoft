@@ -46,17 +46,14 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-EMsoftFileWriter::EMsoftFileWriter()
-{
-
-}
+EMsoftFileWriter::EMsoftFileWriter() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 EMsoftFileWriter::~EMsoftFileWriter()
 {
-  while (m_IdStack.isEmpty() == false)
+  while (!m_IdStack.isEmpty())
   {
     closeGroup();
   }
@@ -126,7 +123,7 @@ bool EMsoftFileWriter::openGroup(const QString &groupName)
     locId = m_IdStack.top();
   }
 
-  if (H5Lexists(locId, groupName.toStdString().c_str(), H5P_DEFAULT))
+  if (static_cast<bool>(H5Lexists(locId, groupName.toStdString().c_str(), H5P_DEFAULT)))
   {
     groupId = QH5Utilities::openHDF5Object(locId, groupName);
   }
@@ -138,7 +135,7 @@ bool EMsoftFileWriter::openGroup(const QString &groupName)
   if (groupId < 0)
   {
     QString parentPath = QH5Utilities::getObjectPath(m_IdStack.top());
-    QString ss = QObject::tr("Error opening HDF5 group at path '%1/%2'").arg(parentPath).arg(groupName);
+    QString ss = QObject::tr("Error opening HDF5 group at path '%1/%2'").arg(parentPath, groupName);
     emit errorMessageGenerated(ss, -10005);
     return false;
   }
@@ -201,7 +198,7 @@ bool EMsoftFileWriter::writeStringDataset(const QString &dsetName, const QString
   herr_t err = QH5Lite::writeStringDataset(locId, dsetName, value );
   if(err < 0)
   {
-    QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId)).arg(dsetName);
+    QString str = QObject::tr("Error writing data set %1/%2").arg(QH5Utilities::getObjectPath(locId), dsetName);
     emit errorMessageGenerated(str, -10008);
     return false;
   }

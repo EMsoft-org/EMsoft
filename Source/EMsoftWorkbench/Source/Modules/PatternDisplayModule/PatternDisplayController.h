@@ -48,7 +48,7 @@
 
 #include "Common/AbstractImageGenerator.h"
 #include "Common/MasterPatternFileReader.h"
-#include "Common/ProjectionConversionTask.h"
+#include "Common/ProjectionConversionTask.hpp"
 
 #include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/SIMPLibMath.h"

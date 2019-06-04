@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _masterpatternfilereader_h_
-#define _masterpatternfilereader_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -119,7 +118,7 @@ class MasterPatternFileReader
      * @param objectName
      * @return
      */
-    std::vector<hsize_t> readDatasetDimensions(hid_t parentId, QString objectName);
+    std::vector<hsize_t> readDatasetDimensions(hid_t parentId, const QString &objectName);
 
     /**
      * @brief readStringDataset
@@ -132,7 +131,7 @@ class MasterPatternFileReader
       QString value = "";
       if (QH5Lite::readStringDataset(parentId, objectName, value) < 0)
       {
-        QString objPath = QH5Utilities::getObjectPath(parentId);
+//        QString objPath = QH5Utilities::getObjectPath(parentId);
 //        emit stdOutputMessageGenerated(tr("Error: Unable to read string dataset '%1' at path '%2'").arg(objectName).arg(objPath));
       }
 
@@ -151,7 +150,7 @@ class MasterPatternFileReader
       T value = -1;
       if (QH5Lite::readScalarDataset(parentId, objectName, value) < 0)
       {
-        QString objPath = QH5Utilities::getObjectPath(parentId);
+//        QString objPath = QH5Utilities::getObjectPath(parentId);
 //        emit stdOutputMessageGenerated(tr("Error: Unable to read scalar dataset '%1' at path '%2'").arg(objectName).arg(objPath));
       }
 
@@ -165,10 +164,13 @@ class MasterPatternFileReader
      * @return
      */
     template <typename T>
-    typename std::vector<T> readArrayDataset(hid_t parentId, QString objectName)
+    std::vector<T> readArrayDataset(hid_t parentId, QString objectName)
     {
       std::vector<hsize_t> dims = readDatasetDimensions(parentId, objectName);
-      if (dims.size() <= 0) { return std::vector<T>(); }
+      if (dims.empty())
+      {
+        return std::vector<T>();
+      }
 
       size_t numTuples = dims[0];
       for (int i = 1; i < dims.size(); i++)
@@ -176,7 +178,7 @@ class MasterPatternFileReader
         numTuples = numTuples * dims[i];
       }
 
-      typename std::vector<T> dataArray = std::vector<T>(numTuples);
+      std::vector<T> dataArray = std::vector<T>(numTuples);
       herr_t mLPNH_id = QH5Lite::readPointerDataset(parentId, objectName, dataArray.data());
       if (mLPNH_id < 0)
       {
@@ -187,8 +189,9 @@ class MasterPatternFileReader
       return dataArray;
     }
 
-    MasterPatternFileReader(const MasterPatternFileReader&);    // Copy Constructor Not Implemented
-    void operator=(const MasterPatternFileReader&);  // Operator '=' Not Implemented
+  public:
+    MasterPatternFileReader(const MasterPatternFileReader&) = delete; // Copy Constructor Not Implemented
+    MasterPatternFileReader(MasterPatternFileReader&&) = delete;      // Move Constructor Not Implemented
+    MasterPatternFileReader& operator=(const MasterPatternFileReader&) = delete; // Copy Assignment Not Implemented
+    MasterPatternFileReader& operator=(MasterPatternFileReader&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _masterpatternfilereader_h_ */

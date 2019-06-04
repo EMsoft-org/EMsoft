@@ -112,9 +112,7 @@ QtSSettings::QtSSettings(const QString& filePath, QObject* parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSSettings::~QtSSettings()
-{
-}
+QtSSettings::~QtSSettings() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -141,7 +139,8 @@ bool QtSSettings::beginGroup(const QString& prefix)
   {
     return false;
   }
-  else if(!m_Stack.isEmpty() && m_Stack.top()->group.contains(prefix) && m_Stack.top()->group[prefix].isObject())
+
+  if(!m_Stack.isEmpty() && m_Stack.top()->group.contains(prefix) && m_Stack.top()->group[prefix].isObject())
   {
     SIMPLViewSettingsGroup::Pointer newGroup = SIMPLViewSettingsGroup::Pointer(new SIMPLViewSettingsGroup(prefix, m_Stack.top()->group[prefix].toObject()));
     m_Stack.push(newGroup);
@@ -251,9 +250,9 @@ QStringList QtSSettings::value(const QString& key, const QStringList& defaultLis
   QJsonArray jsonArray = m_Stack.top()->group[key].toArray();
   QStringList list;
 
-  for(int i = 0; i < jsonArray.size(); i++)
+  for(const QJsonValueRef &jsonValue : jsonArray)
   {
-    QString str = jsonArray[i].toString();
+    QString str = jsonValue.toString();
     list.push_back(str);
   }
 
@@ -347,7 +346,7 @@ void QtSSettings::setValue(const QString& key, const QStringList& list)
 // -----------------------------------------------------------------------------
 void QtSSettings::openFile()
 {
-  if(m_Stack.size() > 0)
+  if(!m_Stack.empty())
   {
     closeFile();
   }

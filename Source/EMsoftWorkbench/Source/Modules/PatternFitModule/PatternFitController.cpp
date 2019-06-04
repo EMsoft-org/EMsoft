@@ -43,7 +43,7 @@
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
-#include "Common/ImageGenerator.h"
+#include "Common/ImageGenerator.hpp"
 #include "Common/PatternTools.h"
 #include "Common/ProjectionConversions.hpp"
 
