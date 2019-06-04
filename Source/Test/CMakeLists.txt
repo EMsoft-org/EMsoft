@@ -144,16 +144,16 @@ endif()
 # 1: The Ni.xtal file should have been copied into the proper spot via some other external means
 # We are just going to have to trust that it is there.
 set(test_index  "1")
-
+set(EMsoft_NML_TEST_DIR "${EMsoft_BINARY_DIR}/Testing")
 #------------------------------------------------------------------------------
 # 2: Setup the EMMCOpenCL executable
 math(EXPR test_index "${test_index} + 1")
 set(TEST_EXE_NAME EMMCOpenCL)
 configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
-              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
 )
 add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #------------------------------------------------------------------------------
@@ -161,13 +161,13 @@ add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
 math(EXPR test_index "${test_index} + 1")
 set(TEST_EXE_NAME EMEBSDmaster)
 configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
-              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+                ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
 )
 configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/BetheParameters.nml.in
-              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/BetheParameters.nml
+              ${EMsoft_NML_TEST_DIR}/BetheParameters.nml
 )
 add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #------------------------------------------------------------------------------
@@ -175,10 +175,10 @@ add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
 math(EXPR test_index "${test_index} + 1")
 set(TEST_EXE_NAME EMgetADP)
 configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
-              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
 )
 add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 #------------------------------------------------------------------------------
@@ -186,9 +186,9 @@ add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
 math(EXPR test_index "${test_index} + 1")
 set(TEST_EXE_NAME EMEBSDDIpreview)
 configure_file(${EMsoft_SOURCE_DIR}/Source/Test/NmlTemplates/${TEST_EXE_NAME}.nml.in
-              ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}.nml
+              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
 )
 add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" 
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
