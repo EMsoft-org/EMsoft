@@ -62,7 +62,7 @@ class ImageGenerator : public AbstractImageGenerator
     void createImage() override
     {
       m_GeneratedImage = QImage(m_XDim, m_YDim, QImage::Format_Indexed8);
-      if (m_Data.size() == 0)
+      if (m_Data.empty())
       {
         return;
       }
