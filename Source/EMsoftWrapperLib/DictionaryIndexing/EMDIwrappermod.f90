@@ -395,7 +395,7 @@ end do
 
 ! deal with the output file name ...
 f_exists = .FALSE.
-fname = trim(CS%EMtmppathname)//trim(CS%strvals(32))
+fname = trim(CS%EMtmppathname)//trim(CS%strvals(31))
 fname = EMsoft_toNativePath(fname)
 inquire(file=trim(fname), exist=f_exists)
 
