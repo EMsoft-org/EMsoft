@@ -162,6 +162,9 @@ void PatternFit_UI::setupGui()
   patternFitViewer->setDisabled(true);
   hipassFilterLowCutOff->setDisabled(true);
 
+  // This button should be hidden until we have an automatic fit algorithm in place
+  startFitBtn->hide();
+
   validateData();
 }
 
