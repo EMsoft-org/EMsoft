@@ -156,7 +156,7 @@ QVariant PatternListModel::data(const QModelIndex& index, int role) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternListModel::setPatternStatus(const int row, const PatternListItem::PatternStatus status)
+bool PatternListModel::setPatternStatus(const int row, const PatternListItem::PatternStatus status) const
 {
   PatternListItem* item = getItem(index(row, PatternListItem::DefaultColumn));
   if(item == nullptr)
@@ -171,7 +171,7 @@ bool PatternListModel::setPatternStatus(const int row, const PatternListItem::Pa
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString PatternListModel::itemName(const QModelIndex& index)
+QString PatternListModel::itemName(const QModelIndex& index) const
 {
   if(index.isValid())
   {
@@ -379,7 +379,7 @@ bool PatternListModel::setData(const QModelIndex& index, const QVariant& value, 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternListItem* PatternListModel::getRootItem()
+PatternListItem* PatternListModel::getRootItem() const
 {
   return m_RootItem;
 }
@@ -387,7 +387,7 @@ PatternListItem* PatternListModel::getRootItem()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternListModel::isEmpty()
+bool PatternListModel::isEmpty() const
 {
   return (rowCount(QModelIndex()) <= 0);
 }

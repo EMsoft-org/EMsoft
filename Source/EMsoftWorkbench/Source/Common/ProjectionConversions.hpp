@@ -44,13 +44,13 @@ class ProjectionConversions : public QObject
   Q_OBJECT
 
 public:
-    ProjectionConversions(QObject* parent = nullptr) {}
+    ProjectionConversions(const QObject* parent = nullptr) {}
     ~ProjectionConversions() override = default;
 
     template <typename T>
     std::vector<float> convertLambertSquareData(const std::vector<T> &lsData, size_t dim,
                                                        ModifiedLambertProjection::ProjectionType projType, size_t zValue = 0,
-                                                       ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare)
+                                                       ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare) const
     {
       ModifiedLambertProjection::Pointer lambertProjection = ModifiedLambertProjection::New();
       lambertProjection->initializeSquares(dim, 1.0f);

@@ -116,7 +116,7 @@ bool XtalFileReader::closeFile()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-hid_t XtalFileReader::getFileId()
+hid_t XtalFileReader::getFileId() const
 {
   return m_FileId;
 }

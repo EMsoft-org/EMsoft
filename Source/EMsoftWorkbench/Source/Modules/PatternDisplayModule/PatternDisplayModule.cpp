@@ -59,7 +59,7 @@ PatternDisplayModule::~PatternDisplayModule() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* PatternDisplayModule::createModuleUI(QJsonObject moduleObj, QWidget* parent)
+IModuleUI* PatternDisplayModule::createModuleUI(QJsonObject moduleObj, QWidget* parent) const
 {
   PatternDisplay_UI* ui = new PatternDisplay_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);

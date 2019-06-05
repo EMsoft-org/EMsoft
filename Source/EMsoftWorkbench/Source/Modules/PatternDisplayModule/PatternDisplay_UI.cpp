@@ -114,7 +114,7 @@ void PatternDisplay_UI::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::createValidators()
+void PatternDisplay_UI::createValidators() const
 {
   QDoubleValidator* dblValidator = new QDoubleValidator(scintillatorDist);
   scintillatorDist->setValidator(dblValidator);
@@ -165,24 +165,24 @@ void PatternDisplay_UI::createValidators()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::createWidgetConnections()
+void PatternDisplay_UI::createWidgetConnections() const
 {
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &PatternDisplayController::errorMessageGenerated, this, &PatternDisplay_UI::notifyErrorMessage);
   connect(m_Controller, &PatternDisplayController::warningMessageGenerated, this, &PatternDisplay_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
   // Connections to display messages to the PatternDisplay_UI status bar.  These messages also go in the log.
-  connect(masterPatternDisplayWidget, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
-  connect(monteCarloDisplayWidget, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
+  connect(masterPatternDisplayWidget, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+  connect(monteCarloDisplayWidget, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
   // Connections to display master pattern and monte carlo images in their respective image viewers
   connect(m_Controller, SIGNAL(mpImageNeedsDisplayed(GLImageViewer::GLImageData)), masterPatternDisplayWidget, SLOT(loadImage(GLImageViewer::GLImageData)));
   connect(m_Controller, SIGNAL(mcImageNeedsDisplayed(GLImageViewer::GLImageData)), monteCarloDisplayWidget, SLOT(loadImage(GLImageViewer::GLImageData)));
 
   // Connections to allow the controller to tell the image viewers that the image spin box range has changed
-  connect(m_Controller, SIGNAL(imageRangeChanged(int, int)), masterPatternDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int, int)));
-  connect(m_Controller, SIGNAL(imageRangeChanged(int, int)), monteCarloDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int, int)));
+  connect(m_Controller, SIGNAL(imageRangeChanged(int,int)), masterPatternDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int,int)));
+  connect(m_Controller, SIGNAL(imageRangeChanged(int,int)), monteCarloDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int,int)));
 
   // Connections to allow the controller to tell the workbench parameters section that it has new ekeVs values
   connect(m_Controller, SIGNAL(minMaxEnergyLevelsChanged(FloatArrayType::Pointer)), this, SLOT(setMinAndMaxEnergyLevelChoices(FloatArrayType::Pointer)));
@@ -193,8 +193,8 @@ void PatternDisplay_UI::createWidgetConnections()
   connect(m_PatternDisplayWidget, SIGNAL(dataChanged(SimulatedPatternDisplayWidget::PatternDisplayData)), this, SLOT(generateEBSDPatternImage(SimulatedPatternDisplayWidget::PatternDisplayData)));
 
   // Connection to allow the PatternDisplay_UI to tell the controller that it needs to generate new pattern images
-  connect(this, SIGNAL(patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData, PatternDisplayController::DetectorData)), m_Controller,
-          SLOT(generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData, PatternDisplayController::DetectorData)));
+  connect(this, SIGNAL(patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData,PatternDisplayController::DetectorData)), m_Controller,
+          SLOT(generatePatternImages(SimulatedPatternDisplayWidget::PatternDisplayData,PatternDisplayController::DetectorData)));
 }
 
 // -----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ void PatternDisplay_UI::parametersChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::setGenerateButtonAvailability(bool value)
+void PatternDisplay_UI::setGenerateButtonAvailability(bool value) const
 {
   generateBtn->setEnabled(value);
 }
@@ -258,7 +258,7 @@ void PatternDisplay_UI::setGenerateButtonAvailability(bool value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(const std::vector<float> &ekeVs)
+void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(const std::vector<float> &ekeVs) const
 {
   energyMinCB->clear();
   energyMaxCB->clear();
@@ -278,7 +278,7 @@ void PatternDisplay_UI::setMinAndMaxEnergyLevelChoices(const std::vector<float> 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::generateEBSDPatternImage(SimulatedPatternDisplayWidget::PatternDisplayData patternData)
+void PatternDisplay_UI::generateEBSDPatternImage(SimulatedPatternDisplayWidget::PatternDisplayData patternData) const
 {
   PatternDisplayController::DetectorData detectorData = getDetectorData();
   patternData.angles = m_CurrentAngleWidget->getEulerAngles();
@@ -289,7 +289,7 @@ void PatternDisplay_UI::generateEBSDPatternImage(SimulatedPatternDisplayWidget::
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternDisplayController::DetectorData PatternDisplay_UI::getDetectorData()
+PatternDisplayController::DetectorData PatternDisplay_UI::getDetectorData() const
 {
   PatternDisplayController::DetectorData detectorData;
   detectorData.barrelDistortion = barrelDistortion->text().toDouble();
@@ -334,7 +334,7 @@ void PatternDisplay_UI::on_mpSelectBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::on_generateBtn_clicked()
+void PatternDisplay_UI::on_generateBtn_clicked() const
 {
   if(mpLabel->text().isEmpty())
   {
@@ -428,7 +428,7 @@ void PatternDisplay_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::resetDisplayWidgets()
+void PatternDisplay_UI::resetDisplayWidgets() const
 {
   monteCarloDisplayWidget->setEnergyValue(1);
   masterPatternDisplayWidget->setEnergyValue(1);
@@ -456,7 +456,7 @@ void PatternDisplay_UI::readWindowSettings(QtSSettings* prefs)
 
   if(prefs->contains(QString("MainWindowState")))
   {
-    QByteArray layout_data = prefs->value("MainWindowState", QByteArray());
+//    QByteArray layout_data = prefs->value("MainWindowState", QByteArray());
     //    restoreState(layout_data);
   }
 
@@ -466,7 +466,7 @@ void PatternDisplay_UI::readWindowSettings(QtSSettings* prefs)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::writeWindowSettings(QtSSettings* prefs)
+void PatternDisplay_UI::writeWindowSettings(QtSSettings* prefs) const
 {
   prefs->beginGroup("WindowSettings");
   QByteArray geo_data = saveGeometry();
@@ -543,7 +543,7 @@ void PatternDisplay_UI::readDetectorAndMicroscopeParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::writeModuleSession(QJsonObject& obj)
+void PatternDisplay_UI::writeModuleSession(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::MasterPatternFilePath] = mpLabel->text();
 
@@ -572,7 +572,7 @@ void PatternDisplay_UI::writeModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplay_UI::writeDetectorAndMicroscopeParameters(QJsonObject& obj)
+void PatternDisplay_UI::writeDetectorAndMicroscopeParameters(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::ScintillatorDistance] = scintillatorDist->text().toDouble();
   obj[EMsoftWorkbenchConstants::IOStrings::DetectorTiltAngle] = detectorTiltAngle->text().toDouble();

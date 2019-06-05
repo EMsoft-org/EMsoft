@@ -65,15 +65,15 @@ public:
   SIMPL_INSTANCE_PROPERTY(QString, ItemName)
   SIMPL_INSTANCE_PROPERTY(PatternListItem::PatternStatus, PatternStatus)
 
-  PatternListItem* child(int number);
-  PatternListItem* parent();
+  PatternListItem* child(int number) const;
+  PatternListItem* parent() const;
 
   int childCount() const;
 
-  QString getItemTooltip();
+  QString getItemTooltip() const;
   bool setItemTooltip(const QString& value);
 
-  QIcon getIcon();
+  QIcon getIcon() const;
   bool setIcon(const QIcon& icon);
 
   bool insertChild(int position, PatternListItem* child);

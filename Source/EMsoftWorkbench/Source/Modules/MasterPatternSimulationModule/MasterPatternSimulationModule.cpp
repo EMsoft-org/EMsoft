@@ -59,7 +59,7 @@ MasterPatternSimulationModule::~MasterPatternSimulationModule()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* MasterPatternSimulationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent)
+IModuleUI* MasterPatternSimulationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent) const
 {
   Q_UNUSED(moduleObj)
 

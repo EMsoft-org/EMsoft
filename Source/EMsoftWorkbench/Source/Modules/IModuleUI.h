@@ -74,7 +74,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  virtual void writeModuleSession(QJsonObject& obj) = 0;
+  virtual void writeModuleSession(QJsonObject& obj) const = 0;
 
   /**
    * @brief validateData
@@ -84,13 +84,13 @@ public:
   /**
    * @brief getModuleIssues
    */
-  QList<IModuleUI::ModuleIssue> getModuleIssues();
+  QList<IModuleUI::ModuleIssue> getModuleIssues() const;
 
   /**
    * @brief getStdOutput
    * @return
    */
-  QString getStdOutput();
+  QString getStdOutput() const;
 
 protected:
   QList<ModuleIssue> m_ModuleIssues;
@@ -102,7 +102,7 @@ protected:
    * @brief getOpenedFilePath
    * @return
    */
-  QString getOpenedFilePath();
+  QString getOpenedFilePath() const;
 
   /**
    * @brief setOpenedFilePath
@@ -133,7 +133,7 @@ signals:
 
   void validationOfOtherModulesNeeded(IModuleUI* self);
 
-  void moduleParametersChanged();
+  void moduleParametersChanged() const;
 
   void errorMessageGenerated(const QString& msg);
   void warningMessageGenerated(const QString& msg);

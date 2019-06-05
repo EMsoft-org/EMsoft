@@ -60,13 +60,13 @@ public:
    * @brief getEulerAngles
    * @return
    */
-  virtual std::vector<float> getEulerAngles() override;
+  virtual std::vector<float> getEulerAngles() const override;
 
   /**
    * @brief hasValidAngles
    * @return
    */
-  virtual bool hasValidAngles() override;
+  virtual bool hasValidAngles() const override;
 
   /**
    * @brief readSession
@@ -76,13 +76,13 @@ public:
   /**
    * @brief writeSession
    */
-  virtual void writeSession(QJsonObject& obj) override;
+  virtual void writeSession(QJsonObject& obj) const override;
 
   /**
    * @brief createModificationConnections
    * @param ui
    */
-  virtual void createModificationConnections(PatternDisplay_UI* ui) override;
+  virtual void createModificationConnections(PatternDisplay_UI* ui) const override;
 
 private:
 public:

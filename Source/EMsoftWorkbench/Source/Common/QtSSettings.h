@@ -67,23 +67,23 @@ class QtSSettings : public QObject
     QtSSettings(const QString& filePath, QObject* parent = nullptr);
     ~QtSSettings() override;
 
-    QString fileName();
+    QString fileName() const;
 
-    bool contains(const QString& key);
+    bool contains(const QString& key) const;
 
     bool beginGroup(const QString& prefix);
     void endGroup();
 
-    QStringList childGroups();
+    QStringList childGroups() const;
 
     void remove(const QString& key);
 
     void clear();
 
-    QVariant value(const QString& key, const QVariant& defaultValue = QVariant());
-    QJsonObject value(const QString& key, const QJsonObject& defaultObject = QJsonObject());
-    QStringList value(const QString& key, const QStringList& defaultList = QStringList());
-    QByteArray value(const QString& key, const QByteArray& defaultValue);
+    QVariant value(const QString& key, const QVariant& defaultValue = QVariant()) const;
+    QJsonObject value(const QString& key, const QJsonObject& defaultObject = QJsonObject()) const;
+    QStringList value(const QString& key, const QStringList& defaultList = QStringList()) const;
+    QByteArray value(const QString& key, const QByteArray& defaultValue) const;
 
 
     void setValue(const QString& key, const QVariant& value);
@@ -97,7 +97,7 @@ class QtSSettings : public QObject
 
     void openFile();
     void closeFile();
-    void writeToFile();
+    void writeToFile() const;
 
     enum MultiValueLabels
     {

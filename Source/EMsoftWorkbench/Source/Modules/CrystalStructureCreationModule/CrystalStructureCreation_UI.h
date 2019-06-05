@@ -72,7 +72,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
   /**
    * @brief validateData
@@ -92,7 +92,7 @@ protected:
   void changeEvent(QEvent* event) override;
 
 protected slots:
-  void on_csCB_currentIndexChanged(int index);
+  void on_csCB_currentIndexChanged(int index) const;
 
   void parametersChanged();
 
@@ -115,18 +115,18 @@ private:
    * @brief writeCrystalSystemParameters
    * @param obj
    */
-  void writeCrystalSystemParameters(QJsonObject& obj);
+  void writeCrystalSystemParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeSpaceGroupParameters
    * @param obj
    */
-  void writeSpaceGroupParameters(QJsonObject& obj);
+  void writeSpaceGroupParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators
    */
-  void createValidators();
+  void createValidators() const;
 
   /**
    * @brief createModificationConnections
@@ -142,7 +142,7 @@ private:
    * @brief getCreationData
    * @return
    */
-  CrystalStructureCreationController::CrystalStructureCreationData getCreationData();
+  CrystalStructureCreationController::CrystalStructureCreationData getCreationData() const;
 
 public:
   CrystalStructureCreation_UI(const CrystalStructureCreation_UI&) = delete;            // Copy Constructor Not Implemented

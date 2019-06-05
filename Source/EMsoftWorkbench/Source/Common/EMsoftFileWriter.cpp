@@ -171,7 +171,7 @@ bool EMsoftFileWriter::closeGroup()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-hid_t EMsoftFileWriter::getFileId()
+hid_t EMsoftFileWriter::getFileId() const
 {
   return m_FileId;
 }
@@ -179,7 +179,7 @@ hid_t EMsoftFileWriter::getFileId()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-hid_t EMsoftFileWriter::getCurrentLocId()
+hid_t EMsoftFileWriter::getCurrentLocId() const
 {
   if (m_IdStack.isEmpty())
   {
@@ -192,7 +192,7 @@ hid_t EMsoftFileWriter::getCurrentLocId()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool EMsoftFileWriter::writeStringDataset(const QString &dsetName, const QString &value)
+bool EMsoftFileWriter::writeStringDataset(const QString &dsetName, const QString &value) const
 {
   hid_t locId = getCurrentLocId();
   herr_t err = QH5Lite::writeStringDataset(locId, dsetName, value );

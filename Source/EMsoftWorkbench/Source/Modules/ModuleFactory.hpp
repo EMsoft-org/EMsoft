@@ -54,7 +54,7 @@ public:
    * a parent  OR take responsibility for deleting this object.
    * @return
    */
-  IWorkbenchModule::Pointer createModule() override
+  IWorkbenchModule::Pointer createModule() const override
   {
     typename Module::Pointer w = Module::New();
     return w;

@@ -103,7 +103,7 @@ void ModuleManager::addModuleFactory(const QString& moduleName, const IModuleFac
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ModuleManager::printModuleNames()
+void ModuleManager::printModuleNames() const
 {
   QStringList names = getModuleNames();
   for(int i = 0; i < names.size(); i++)
@@ -115,10 +115,10 @@ void ModuleManager::printModuleNames()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QStringList ModuleManager::getModuleNames()
+QStringList ModuleManager::getModuleNames() const
 {
   QStringList names;
-  for(Collection::iterator iter = m_Factories.begin(); iter != m_Factories.end(); ++iter)
+  for(Collection::const_iterator iter = m_Factories.begin(); iter != m_Factories.end(); ++iter)
   {
     names.push_back(iter.key());
   }
@@ -129,7 +129,7 @@ QStringList ModuleManager::getModuleNames()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleFactory::Pointer ModuleManager::getFactoryForModule(const QString& moduleName)
+IModuleFactory::Pointer ModuleManager::getFactoryForModule(const QString& moduleName) const
 {
   return m_Factories[moduleName];
 }
@@ -137,7 +137,7 @@ IModuleFactory::Pointer ModuleManager::getFactoryForModule(const QString& module
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* ModuleManager::getModuleFromName(const QString& moduleName, const QJsonObject& initObj, QWidget* parent)
+IModuleUI* ModuleManager::getModuleFromName(const QString& moduleName, const QJsonObject& initObj, QWidget* parent) const
 {
   IModuleFactory::Pointer moduleFactory = getFactoryForModule(moduleName);
   if(moduleFactory != IModuleFactory::NullPointer())

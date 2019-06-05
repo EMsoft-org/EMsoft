@@ -56,7 +56,7 @@ public:
    * @brief createModule
    * @return
    */
-  virtual IWorkbenchModule::Pointer createModule() = 0;
+  virtual IWorkbenchModule::Pointer createModule() const = 0;
 
 protected:
   IModuleFactory() = default;

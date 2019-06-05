@@ -118,7 +118,7 @@ void MonteCarloSimulation_UI::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::on_gpuPlatformCB_currentIndexChanged(int index)
+void MonteCarloSimulation_UI::on_gpuPlatformCB_currentIndexChanged(int index) const
 {
   QStringList choices = m_Controller->getDeviceInfo(index + 1);
   gpuDeviceCB->clear();
@@ -132,7 +132,7 @@ void MonteCarloSimulation_UI::on_gpuPlatformCB_currentIndexChanged(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::createValidators()
+void MonteCarloSimulation_UI::createValidators() const
 {
   //  QDoubleValidator* doubleValidator = new QDoubleValidator(scintillatorPixelSize);
   //  scintillatorPixelSize->setValidator(doubleValidator);
@@ -173,16 +173,16 @@ void MonteCarloSimulation_UI::createModificationConnections()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::createWidgetConnections()
+void MonteCarloSimulation_UI::createWidgetConnections() const
 {
   connect(createMonteCarloBtn, &QPushButton::clicked, this, &MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked);
 
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
   connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
-  connect(m_Controller, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
+  connect(m_Controller, SIGNAL(updateMCProgress(int,int,float)), this, SLOT(updateMCProgress(int,int,float)));
 
   connect(csSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
@@ -216,7 +216,7 @@ void MonteCarloSimulation_UI::createWidgetConnections()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::updateMCProgress(int loopCompleted, int totalLoops, float bseYield)
+void MonteCarloSimulation_UI::updateMCProgress(int loopCompleted, int totalLoops, float bseYield) const
 {
   QString msg = QString("<b>Loop:</b> %1/%2 | <b>BSE Yield:</b> %3%").arg(loopCompleted).arg(totalLoops).arg(bseYield);
   mcProgressLabel->setText(msg);
@@ -409,7 +409,7 @@ void MonteCarloSimulation_UI::readGPUParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::writeModuleSession(QJsonObject& obj)
+void MonteCarloSimulation_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject monteCarloObj;
   QJsonObject gpuObj;
@@ -426,7 +426,7 @@ void MonteCarloSimulation_UI::writeModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject& obj)
+void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject& obj) const
 {
   obj[ioConstants::MonteCarloMode] = mcModeCB->currentIndex();
   obj[ioConstants::SampleTiltAngleSigma] = sampleTiltAngleSigSB->value();
@@ -445,7 +445,7 @@ void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::writeGPUParameters(QJsonObject& obj)
+void MonteCarloSimulation_UI::writeGPUParameters(QJsonObject& obj) const
 {
   obj[ioConstants::NumberOfElectronsPerWorkitem] = numOfEPerWorkitemSB->value();
   obj[ioConstants::TotalNumOfElectronsToBeConsidered] = totalNumOfEConsideredSB->value();
@@ -458,7 +458,7 @@ void MonteCarloSimulation_UI::writeGPUParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::on_mcModeCB_currentIndexChanged(int index)
+void MonteCarloSimulation_UI::on_mcModeCB_currentIndexChanged(int index) const
 {
   sampleTiltAngleSigLabel->hide();
   sampleTiltAngleSigSB->hide();
@@ -494,7 +494,7 @@ void MonteCarloSimulation_UI::on_mcModeCB_currentIndexChanged(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloSimulationController::MonteCarloSimulationData MonteCarloSimulation_UI::getCreationData()
+MonteCarloSimulationController::MonteCarloSimulationData MonteCarloSimulation_UI::getCreationData() const
 {
   MonteCarloSimulationController::MonteCarloSimulationData data;
   data.mcMode = mcModeCB->currentIndex() + 1;

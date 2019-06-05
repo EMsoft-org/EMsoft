@@ -104,7 +104,7 @@ class MasterPatternFileReader
      * @brief MasterPatternFileReader::readMasterPatternData
      * @return
      */
-    MasterPatternFileReader::MasterPatternData readMasterPatternData();
+    MasterPatternFileReader::MasterPatternData readMasterPatternData() const;
 
   private:
     hid_t m_FileId = -1;
@@ -118,7 +118,7 @@ class MasterPatternFileReader
      * @param objectName
      * @return
      */
-    std::vector<hsize_t> readDatasetDimensions(hid_t parentId, const QString &objectName);
+    std::vector<hsize_t> readDatasetDimensions(hid_t parentId, const QString &objectName) const;
 
     /**
      * @brief readStringDataset
@@ -126,7 +126,7 @@ class MasterPatternFileReader
      * @param objectName
      * @return
      */
-    QString readStringDataset(const hid_t &parentId, const QString &objectName)
+    QString readStringDataset(const hid_t &parentId, const QString &objectName) const
     {
       QString value = "";
       if (QH5Lite::readStringDataset(parentId, objectName, value) < 0)
@@ -145,7 +145,7 @@ class MasterPatternFileReader
      * @param objectName
      * @return
      */
-    T readScalarDataset(const hid_t &parentId, const QString &objectName)
+    T readScalarDataset(const hid_t &parentId, const QString &objectName) const
     {
       T value = -1;
       if (QH5Lite::readScalarDataset(parentId, objectName, value) < 0)
@@ -164,7 +164,7 @@ class MasterPatternFileReader
      * @return
      */
     template <typename T>
-    std::vector<T> readArrayDataset(hid_t parentId, QString objectName)
+    std::vector<T> readArrayDataset(hid_t parentId, QString objectName) const
     {
       std::vector<hsize_t> dims = readDatasetDimensions(parentId, objectName);
       if (dims.empty())

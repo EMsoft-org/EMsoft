@@ -70,27 +70,27 @@ void SampleCubochoricSpaceWidget::setupGui()
 {
   QIntValidator* intValidator = new QIntValidator(ptGrpNumLE);
   ptGrpNumLE->setValidator(intValidator);
-  connect(ptGrpNumLE, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(ptGrpNumLE, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   QDoubleValidator* dblValidator = new QDoubleValidator(misorientationAngLE);
   misorientationAngLE->setValidator(dblValidator);
-  connect(misorientationAngLE, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(misorientationAngLE, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(refOrientationX_LE);
   refOrientationX_LE->setValidator(dblValidator);
-  connect(refOrientationX_LE, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(refOrientationX_LE, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(refOrientationY_LE);
   refOrientationY_LE->setValidator(dblValidator);
-  connect(refOrientationY_LE, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(refOrientationY_LE, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(refOrientationZ_LE);
   refOrientationZ_LE->setValidator(dblValidator);
-  connect(refOrientationZ_LE, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(refOrientationZ_LE, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(numOfSamplingPtsLE);
   numOfSamplingPtsLE->setValidator(dblValidator);
-  connect(numOfSamplingPtsLE, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(numOfSamplingPtsLE, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   misorientationAngLabel->hide();
   misorientationAngLE->hide();
@@ -105,7 +105,7 @@ void SampleCubochoricSpaceWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::lineEditChanged(const QString& text)
+void SampleCubochoricSpaceWidget::lineEditChanged(const QString& text) const
 {
   Q_UNUSED(text)
 
@@ -115,7 +115,7 @@ void SampleCubochoricSpaceWidget::lineEditChanged(const QString& text)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::valuesChanged()
+void SampleCubochoricSpaceWidget::valuesChanged() const
 {
   std::vector<float> eulerAngles = getEulerAngles();
 
@@ -134,7 +134,7 @@ void SampleCubochoricSpaceWidget::valuesChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::hasValidAngles()
+bool SampleCubochoricSpaceWidget::hasValidAngles() const
 {
   return (numOfAnglesLineEdit->text().toInt() > 0);
 }
@@ -160,7 +160,7 @@ void SampleCubochoricSpaceWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::writeSession(QJsonObject& obj)
+void SampleCubochoricSpaceWidget::writeSession(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::SamplingMode] = samplingModeCB->currentIndex();
   obj[EMsoftWorkbenchConstants::IOStrings::PointGroupNum] = ptGrpNumLE->text().toInt();
@@ -179,7 +179,7 @@ void SampleCubochoricSpaceWidget::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::createModificationConnections(PatternDisplay_UI* ui)
+void SampleCubochoricSpaceWidget::createModificationConnections(PatternDisplay_UI* ui) const
 {
   // Line Edits
   connect(ptGrpNumLE, &QLineEdit::textEdited, [=] { emit ui->moduleParametersChanged(); });
@@ -199,7 +199,7 @@ void SampleCubochoricSpaceWidget::createModificationConnections(PatternDisplay_U
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::void_on_offsetSamplingGridChkBox_stateChanged(int state)
+void SampleCubochoricSpaceWidget::void_on_offsetSamplingGridChkBox_stateChanged(int state) const
 {
   Q_UNUSED(state)
 
@@ -209,7 +209,7 @@ void SampleCubochoricSpaceWidget::void_on_offsetSamplingGridChkBox_stateChanged(
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::on_samplingModeCB_currentIndexChanged(int index)
+void SampleCubochoricSpaceWidget::on_samplingModeCB_currentIndexChanged(int index) const
 {
   if(index == 0)
   {
@@ -244,7 +244,7 @@ void SampleCubochoricSpaceWidget::on_samplingModeCB_currentIndexChanged(int inde
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::RodriguesComposition(const DOrientArrayType& sigma, DOrientArrayType& rod)
+void SampleCubochoricSpaceWidget::RodriguesComposition(const DOrientArrayType& sigma, DOrientArrayType& rod) const
 {
   DOrientArrayType rho(3), rhomis(3);
   rho[0] = -rod[0] * rod[3];
@@ -290,7 +290,7 @@ void SampleCubochoricSpaceWidget::RodriguesComposition(const DOrientArrayType& s
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::IsinsideFZ(double* rod, int FZtype, int FZorder)
+bool SampleCubochoricSpaceWidget::IsinsideFZ(double* rod, int FZtype, int FZorder) const
 {
   bool insideFZ = false;
   // dealing with 180 rotations is needed only for
@@ -331,7 +331,7 @@ bool SampleCubochoricSpaceWidget::IsinsideFZ(double* rod, int FZtype, int FZorde
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::insideCyclicFZ(const double* rod, int order)
+bool SampleCubochoricSpaceWidget::insideCyclicFZ(const double* rod, int order) const
 {
 
   bool insideFZ = false;
@@ -351,7 +351,7 @@ bool SampleCubochoricSpaceWidget::insideCyclicFZ(const double* rod, int order)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::insideDihedralFZ(const double* rod, int order)
+bool SampleCubochoricSpaceWidget::insideDihedralFZ(const double* rod, int order) const
 {
 
   bool res = false, c1 = false, c2 = false;
@@ -399,7 +399,7 @@ bool SampleCubochoricSpaceWidget::insideDihedralFZ(const double* rod, int order)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SampleCubochoricSpaceWidget::insideCubicFZ(const double* rod, int ot)
+bool SampleCubochoricSpaceWidget::insideCubicFZ(const double* rod, int ot) const
 {
   bool res = false, c1 = false, c2 = false;
   std::vector<double> r(3);
@@ -436,7 +436,7 @@ bool SampleCubochoricSpaceWidget::insideCubicFZ(const double* rod, int ot)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles()
+std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
 {
   OrientationListArrayType FZlist;
 

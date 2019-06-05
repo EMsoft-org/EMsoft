@@ -52,12 +52,12 @@ class AbstractImageGenerator
      */
     virtual void createImage() = 0;
 
-    QImage getGeneratedImage()
+    QImage getGeneratedImage() const
     {
       return m_GeneratedImage;
     }
 
-    QPair<QVariant, QVariant> getMinMaxPair()
+    QPair<QVariant, QVariant> getMinMaxPair() const
     {
       return m_MinMaxPair;
     }

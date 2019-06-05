@@ -50,7 +50,7 @@ public:
 
   ~PatternFitModule() override;
 
-  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
+  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) const override;
 
 protected:
   PatternFitModule(QWidget* parent = nullptr);

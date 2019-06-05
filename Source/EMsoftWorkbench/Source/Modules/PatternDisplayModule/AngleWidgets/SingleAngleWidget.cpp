@@ -75,7 +75,7 @@ void SingleAngleWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SingleAngleWidget::hasValidAngles()
+bool SingleAngleWidget::hasValidAngles() const
 {
   // This can never be false, because even empty angle line edits will be counted as 0's.
   return true;
@@ -95,7 +95,7 @@ void SingleAngleWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SingleAngleWidget::writeSession(QJsonObject& obj)
+void SingleAngleWidget::writeSession(QJsonObject& obj) const
 {
   QJsonObject eulerObj;
   eulerObj[EMsoftWorkbenchConstants::IOStrings::Phi1] = eulerPhi1->text().toDouble();
@@ -107,7 +107,7 @@ void SingleAngleWidget::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SingleAngleWidget::createModificationConnections(PatternDisplay_UI* ui)
+void SingleAngleWidget::createModificationConnections(PatternDisplay_UI* ui) const
 {
   // Line Edits
   connect(eulerPhi1, &QLineEdit::textEdited, [=] { emit ui->moduleParametersChanged(); });
@@ -118,7 +118,7 @@ void SingleAngleWidget::createModificationConnections(PatternDisplay_UI* ui)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<float> SingleAngleWidget::getEulerAngles()
+std::vector<float> SingleAngleWidget::getEulerAngles() const
 {
   std::vector<float> floatArray(3);
   floatArray[0] = eulerPhi1->text().toDouble() * k_PiOver180; // Convert to radians

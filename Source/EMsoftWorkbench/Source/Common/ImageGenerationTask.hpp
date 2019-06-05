@@ -67,9 +67,9 @@ class ImageGenerationTask : public QRunnable
 
     ~ImageGenerationTask() override = default;
 
-    virtual void beforeImageGeneration() {}
+    virtual void beforeImageGeneration() const {}
 
-    virtual void afterImageGeneration() {}
+    virtual void afterImageGeneration() const {}
 
     void run() override
     {

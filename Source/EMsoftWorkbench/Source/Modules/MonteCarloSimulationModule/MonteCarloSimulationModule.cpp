@@ -57,7 +57,7 @@ MonteCarloSimulationModule::~MonteCarloSimulationModule() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* MonteCarloSimulationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent)
+IModuleUI* MonteCarloSimulationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent) const
 {
   Q_UNUSED(moduleObj)
 

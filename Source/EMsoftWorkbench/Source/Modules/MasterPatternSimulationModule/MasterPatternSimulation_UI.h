@@ -72,7 +72,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
   /**
    * @brief validateData
@@ -113,7 +113,7 @@ private:
    * @brief writeCrystalSystemParameters
    * @param obj
    */
-  void writeComputationalParameters(QJsonObject& obj);
+  void writeComputationalParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators
@@ -128,13 +128,13 @@ private:
   /**
    * @brief createWidgetConnections
    */
-  void createWidgetConnections();
+  void createWidgetConnections() const;
 
   /**
    * @brief getCreationData
    * @return
    */
-  MasterPatternSimulationController::MasterPatternSimulationData getSimulationData();
+  MasterPatternSimulationController::MasterPatternSimulationData getSimulationData() const;
 
 public:
   MasterPatternSimulation_UI(const MasterPatternSimulation_UI&) = delete;            // Copy Constructor Not Implemented

@@ -66,7 +66,7 @@ class XtalFileReader : public QObject
      */
     virtual bool closeFile();
 
-    hid_t getFileId();
+    hid_t getFileId() const;
     bool getAtomPos(std::vector<float> &atomPos);
     bool getAtomTypes(std::vector<int32_t> &atomTypes);
     bool getLatticeParameters(std::vector<float> &latParam);
@@ -82,7 +82,7 @@ class XtalFileReader : public QObject
     std::vector<float> getFParPtr();
 
   signals:
-    void errorMessageGenerated(const QString &msg, int code);
+    void errorMessageGenerated(const QString &msg, int code) const;
 
   private:
     hid_t                           m_FileId = -1;

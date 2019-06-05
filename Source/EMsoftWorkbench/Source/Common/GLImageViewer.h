@@ -66,13 +66,13 @@ public:
     void zoomOut();
     void fitToScreen();
 
-    QImage getCurrentImage();
+    QImage getCurrentImage() const;
 
-    void createModificationConnections(IModuleUI* ui);
+    void createModificationConnections(IModuleUI* ui) const;
 
     void readSession(QJsonObject &obj);
 
-    void writeSession(QJsonObject &obj);
+    void writeSession(QJsonObject &obj) const;
 
 protected:
     void paintGL() Q_DECL_OVERRIDE;

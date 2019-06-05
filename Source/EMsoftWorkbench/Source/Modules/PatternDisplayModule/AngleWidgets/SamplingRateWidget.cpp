@@ -64,51 +64,51 @@ void SamplingRateWidget::setupGui()
 {
   QDoubleValidator* dblValidator = new QDoubleValidator(phi1StartLineEdit);
   phi1StartLineEdit->setValidator(dblValidator);
-  connect(phi1StartLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi1StartLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phi1MStepLineEdit);
   phi1MStepLineEdit->setValidator(dblValidator);
-  connect(phi1MStepLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi1MStepLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phi1EndLineEdit);
   phi1EndLineEdit->setValidator(dblValidator);
-  connect(phi1EndLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi1EndLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phiStartLineEdit);
   phiStartLineEdit->setValidator(dblValidator);
-  connect(phiStartLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phiStartLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phiMStepLineEdit);
   phiMStepLineEdit->setValidator(dblValidator);
-  connect(phiMStepLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phiMStepLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phiEndLineEdit);
   phiEndLineEdit->setValidator(dblValidator);
-  connect(phiEndLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phiEndLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phi2StartLineEdit);
   phi2StartLineEdit->setValidator(dblValidator);
-  connect(phi2StartLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi2StartLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phi2MStepLineEdit);
   phi2MStepLineEdit->setValidator(dblValidator);
-  connect(phi2MStepLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi2MStepLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phi2EndLineEdit);
   phi2EndLineEdit->setValidator(dblValidator);
-  connect(phi2EndLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi2EndLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phi1AngleLineEdit);
   phi1AngleLineEdit->setValidator(dblValidator);
-  connect(phi1AngleLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi1AngleLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phiAngleLineEdit);
   phiAngleLineEdit->setValidator(dblValidator);
-  connect(phiAngleLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phiAngleLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   dblValidator = new QDoubleValidator(phi2AngleLineEdit);
   phi2AngleLineEdit->setValidator(dblValidator);
-  connect(phi2AngleLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(lineEditChanged(const QString&)));
+  connect(phi2AngleLineEdit, SIGNAL(textChanged(QString)), this, SLOT(lineEditChanged(QString)));
 
   connect(phi1CB, SIGNAL(stateChanged(int)), this, SLOT(checkBoxChanged(int)));
   connect(phiCB, SIGNAL(stateChanged(int)), this, SLOT(checkBoxChanged(int)));
@@ -120,7 +120,7 @@ void SamplingRateWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::lineEditChanged(const QString& text)
+void SamplingRateWidget::lineEditChanged(const QString& text) const
 {
   Q_UNUSED(text)
 
@@ -130,7 +130,7 @@ void SamplingRateWidget::lineEditChanged(const QString& text)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::checkBoxChanged(int index)
+void SamplingRateWidget::checkBoxChanged(int index) const
 {
   Q_UNUSED(index)
 
@@ -140,7 +140,7 @@ void SamplingRateWidget::checkBoxChanged(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::valuesChanged()
+void SamplingRateWidget::valuesChanged() const
 {
   std::vector<float> eulerAngles = getEulerAngles();
 
@@ -159,7 +159,7 @@ void SamplingRateWidget::valuesChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SamplingRateWidget::hasValidAngles()
+bool SamplingRateWidget::hasValidAngles() const
 {
   return (numOfAnglesLineEdit->text().toInt() > 0);
 }
@@ -196,7 +196,7 @@ void SamplingRateWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::writeSession(QJsonObject& obj)
+void SamplingRateWidget::writeSession(QJsonObject& obj) const
 {
   QJsonObject phi1Obj;
   phi1Obj[EMsoftWorkbenchConstants::IOStrings::Start] = phi1StartLineEdit->text().toDouble();
@@ -228,7 +228,7 @@ void SamplingRateWidget::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::createModificationConnections(PatternDisplay_UI* ui)
+void SamplingRateWidget::createModificationConnections(PatternDisplay_UI* ui) const
 {
   // Line Edits
   connect(phi1StartLineEdit, &QLineEdit::textEdited, [=] { emit ui->moduleParametersChanged(); });
@@ -257,7 +257,7 @@ void SamplingRateWidget::createModificationConnections(PatternDisplay_UI* ui)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<float> SamplingRateWidget::getEulerAngles()
+std::vector<float> SamplingRateWidget::getEulerAngles() const
 {
   double phi1Start = phi1StartLineEdit->text().toDouble();
   double phi1MStep = phi1MStepLineEdit->text().toDouble();
@@ -332,7 +332,7 @@ std::vector<float> SamplingRateWidget::getEulerAngles()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::on_phi1CB_stateChanged(int state)
+void SamplingRateWidget::on_phi1CB_stateChanged(int state) const
 {
   bool enabled = static_cast<bool>(state);
   phi1StartLineEdit->setEnabled(enabled);
@@ -344,7 +344,7 @@ void SamplingRateWidget::on_phi1CB_stateChanged(int state)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::on_phiCB_stateChanged(int state)
+void SamplingRateWidget::on_phiCB_stateChanged(int state) const
 {
   bool enabled = static_cast<bool>(state);
   phiStartLineEdit->setEnabled(enabled);
@@ -356,7 +356,7 @@ void SamplingRateWidget::on_phiCB_stateChanged(int state)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SamplingRateWidget::on_phi2CB_stateChanged(int state)
+void SamplingRateWidget::on_phi2CB_stateChanged(int state) const
 {
   bool enabled = static_cast<bool>(state);
   phi2StartLineEdit->setEnabled(enabled);

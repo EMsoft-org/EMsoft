@@ -92,7 +92,7 @@ public:
    * @brief writeWindowSettings
    * @param prefs
    */
-  void writeWindowSettings(QtSSettings* prefs);
+  void writeWindowSettings(QtSSettings* prefs) const;
 
   /**
    * @brief readModuleSession
@@ -104,7 +104,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
 protected:
   /**
@@ -124,12 +124,12 @@ protected slots:
    * @brief generateEBSDPatternImage
    * @param data
    */
-  void generateEBSDPatternImage(SimulatedPatternDisplayWidget::PatternDisplayData data);
+  void generateEBSDPatternImage(SimulatedPatternDisplayWidget::PatternDisplayData data) const;
 
   /**
    * @brief on_generateBtn_clicked
    */
-  void on_generateBtn_clicked();
+  void on_generateBtn_clicked() const;
 
   /**
    * @brief on_mpSelectBtn_clicked
@@ -146,13 +146,13 @@ protected slots:
    * @brief setMinAndMaxEnergyLevelChoices
    * @param ekeVs
    */
-  void setMinAndMaxEnergyLevelChoices(const std::vector<float> &ekeVs);
+  void setMinAndMaxEnergyLevelChoices(const std::vector<float> &ekeVs) const;
 
   /**
    * @brief setGenerateButtonAvailability
    * @param value
    */
-  void setGenerateButtonAvailability(bool value);
+  void setGenerateButtonAvailability(bool value) const;
 
   /**
    * @brief parametersChanged
@@ -162,10 +162,10 @@ protected slots:
   /**
    * @brief resetDisplayWidgets
    */
-  void resetDisplayWidgets();
+  void resetDisplayWidgets() const;
 
 signals:
-  void patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData);
+  void patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData) const;
 
 private:
   SimulatedPatternDisplayWidget* m_PatternDisplayWidget = nullptr;
@@ -179,12 +179,12 @@ private:
   /**
    * @brief createValidators
    */
-  void createValidators();
+  void createValidators() const;
 
   /**
    * @brief createWidgetConnections
    */
-  void createWidgetConnections();
+  void createWidgetConnections() const;
 
   /**
    * @brief createModificationConnections
@@ -201,13 +201,13 @@ private:
    * @brief writeDetectorAndMicroscopeParameters
    * @param obj
    */
-  void writeDetectorAndMicroscopeParameters(QJsonObject& obj);
+  void writeDetectorAndMicroscopeParameters(QJsonObject& obj) const;
 
   /**
    * @brief getDetectorData
    * @return
    */
-  PatternDisplayController::DetectorData getDetectorData();
+  PatternDisplayController::DetectorData getDetectorData() const;
 
   /**
    * @brief validateData

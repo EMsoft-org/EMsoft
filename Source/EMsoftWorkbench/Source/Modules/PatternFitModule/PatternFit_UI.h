@@ -55,8 +55,6 @@ class PatternFit_UI : public IModuleUI, public Ui::PatternFit_UI, public IObserv
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(PatternFit_UI)
-
   /**
    * @brief PatternFit_UI
    * @param parent
@@ -87,7 +85,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
 protected:
   /**
@@ -119,7 +117,7 @@ private slots:
   void on_hipassFilter_toggled(bool checked);
   void on_linearRampSubtraction_toggled(bool checked);
 
-  void on_fitModeCB_currentIndexChanged(int index);
+  void on_fitModeCB_currentIndexChanged(int index) const;
 
   /**
    * @brief slot_patternChoiceChanged
@@ -207,30 +205,30 @@ private:
    * @brief writeNonRefinableParameters
    * @param obj
    */
-  void writeNonRefinableParameters(QJsonObject& obj);
+  void writeNonRefinableParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeRefinableDetectorParameters
    * @param obj
    */
-  void writeRefinableDetectorParameters(QJsonObject& obj);
+  void writeRefinableDetectorParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeRefinableSampleParameters
    * @param obj
    */
-  void writeRefinableSampleParameters(QJsonObject& obj);
+  void writeRefinableSampleParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeFitParameters
    * @param obj
    */
-  void writeFitParameters(QJsonObject& obj);
+  void writeFitParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators
    */
-  void createValidators();
+  void createValidators() const;
 
   /**
    * @brief createParametersChangedConnections
@@ -240,7 +238,7 @@ private:
   /**
    * @brief createStepConnections
    */
-  void createStepConnections();
+  void createStepConnections() const;
 
   /**
    * @brief createWidgetConnections
@@ -261,12 +259,12 @@ private:
    * @brief getSimulationData
    * @return
    */
-  PatternFitController::SimulationData getSimulationData();
+  PatternFitController::SimulationData getSimulationData() const;
 
   /**
    * @brief checkFitMode
    */
-  void checkFitMode();
+  void checkFitMode() const;
 
   /**
    * @brief initializeHipassFilterValues

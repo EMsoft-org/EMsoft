@@ -272,7 +272,7 @@ void MasterPatternSimulationController::initializeData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool MasterPatternSimulationController::validateMasterPatternValues(MasterPatternSimulationController::MasterPatternSimulationData data)
+bool MasterPatternSimulationController::validateMasterPatternValues(MasterPatternSimulationController::MasterPatternSimulationData data) const
 {
   bool valid = true;
 
@@ -344,7 +344,7 @@ bool MasterPatternSimulationController::validateMasterPatternValues(MasterPatter
 //  a problem, since all the entries in the json/nml file are explicitly parsed out
 //  in the NMLparameters group anyway...
 // -----------------------------------------------------------------------------
-bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData)
+bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData) const
 {
   QString inputFilePath = simData.inputFilePath;
   QString outputFilePath = simData.outputFilePath;
@@ -855,7 +855,7 @@ bool MasterPatternSimulationController::writeEMsoftHDFFile(MasterPatternSimulati
   return true;
 }
 
-int MasterPatternSimulationController::getNumCPUCores()
+int MasterPatternSimulationController::getNumCPUCores() const
 {
   return QThread::idealThreadCount();
 }
@@ -1002,7 +1002,7 @@ QStringList MasterPatternSimulationController::getDeviceInfo(int platformID)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString MasterPatternSimulationController::getEMsoftUserName()
+QString MasterPatternSimulationController::getEMsoftUserName() const
 {
   // get the UserName
   std::string homeFolder = QDir::homePath().toStdString();
@@ -1022,7 +1022,7 @@ QString MasterPatternSimulationController::getEMsoftUserName()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString MasterPatternSimulationController::getEMsoftUserEmail()
+QString MasterPatternSimulationController::getEMsoftUserEmail() const
 {
   // get the UserEmail
   std::string homeFolder = QDir::homePath().toStdString();
@@ -1042,7 +1042,7 @@ QString MasterPatternSimulationController::getEMsoftUserEmail()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString MasterPatternSimulationController::getEMsoftUserLocation()
+QString MasterPatternSimulationController::getEMsoftUserLocation() const
 {
   // get the UserLocation
   std::string homeFolder = QDir::homePath().toStdString();
@@ -1062,7 +1062,7 @@ QString MasterPatternSimulationController::getEMsoftUserLocation()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<int32_t> MasterPatternSimulationController::getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData)
+std::vector<int32_t> MasterPatternSimulationController::getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const
 {
   std::vector<int32_t> iParPtr = m_MonteCarloReader->getIParPtr();
   if(iParPtr.empty())
@@ -1079,7 +1079,7 @@ std::vector<int32_t> MasterPatternSimulationController::getIParPtr(MasterPattern
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<float> MasterPatternSimulationController::getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData)
+std::vector<float> MasterPatternSimulationController::getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const
 {
   std::vector<float> fParPtr = m_MonteCarloReader->getFParPtr();
   if(fParPtr.empty())
@@ -1098,7 +1098,7 @@ std::vector<float> MasterPatternSimulationController::getFParPtr(MasterPatternSi
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MasterPatternSimulationController::setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops)
+void MasterPatternSimulationController::setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops) const
 {
   QString ss = QObject::tr("Master Pattern steps completed: %1 of %2; %3 of %4 energy bins").arg(loopCompleted).arg(totalLoops).arg(EloopCompleted).arg(totalEloops);
   emit stdOutputMessageGenerated(ss);

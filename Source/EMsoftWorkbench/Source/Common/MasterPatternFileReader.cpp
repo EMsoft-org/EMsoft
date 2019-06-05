@@ -83,7 +83,7 @@ MasterPatternFileReader::~MasterPatternFileReader() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MasterPatternFileReader::MasterPatternData MasterPatternFileReader::readMasterPatternData()
+MasterPatternFileReader::MasterPatternData MasterPatternFileReader::readMasterPatternData() const
 {
   MasterPatternFileReader::MasterPatternData mpData;
 
@@ -205,7 +205,7 @@ MasterPatternFileReader::MasterPatternData MasterPatternFileReader::readMasterPa
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<hsize_t> MasterPatternFileReader::readDatasetDimensions(hid_t parentId, const QString &objectName)
+std::vector<hsize_t> MasterPatternFileReader::readDatasetDimensions(hid_t parentId, const QString &objectName) const
 {
   std::vector<hsize_t> dims;
   H5T_class_t classType;

@@ -69,20 +69,20 @@ public:
   /**
    * @brief ModuleManager::printModuleNames
    */
-  void printModuleNames();
+  void printModuleNames() const;
 
   /**
    * @brief getFactoryForModule
    * @param moduleName
    * @return
    */
-  IModuleFactory::Pointer getFactoryForModule(const QString& moduleName);
+  IModuleFactory::Pointer getFactoryForModule(const QString& moduleName) const;
 
   /**
    * @brief getModuleNames Returns all module names as a QStringList
    * @return
    */
-  QStringList getModuleNames();
+  QStringList getModuleNames() const;
 
   /**
    * @brief getModuleFromName
@@ -91,7 +91,7 @@ public:
    * @param parent
    * @return
    */
-  IModuleUI* getModuleFromName(const QString& moduleName, const QJsonObject& initObj = QJsonObject(), QWidget* parent = nullptr);
+  IModuleUI* getModuleFromName(const QString& moduleName, const QJsonObject& initObj = QJsonObject(), QWidget* parent = nullptr) const;
 
 protected:
   ModuleManager();

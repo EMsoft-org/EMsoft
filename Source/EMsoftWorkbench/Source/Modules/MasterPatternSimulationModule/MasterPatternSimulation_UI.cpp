@@ -128,7 +128,7 @@ void MasterPatternSimulation_UI::createModificationConnections()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MasterPatternSimulation_UI::createWidgetConnections()
+void MasterPatternSimulation_UI::createWidgetConnections() const
 {
   connect(simulateBtn, &QPushButton::clicked, this, &MasterPatternSimulation_UI::slot_simulateBtn_clicked);
 
@@ -315,7 +315,7 @@ void MasterPatternSimulation_UI::readComputationalParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MasterPatternSimulation_UI::writeModuleSession(QJsonObject& obj)
+void MasterPatternSimulation_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject compParamObj;
 
@@ -329,7 +329,7 @@ void MasterPatternSimulation_UI::writeModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MasterPatternSimulation_UI::writeComputationalParameters(QJsonObject& obj)
+void MasterPatternSimulation_UI::writeComputationalParameters(QJsonObject& obj) const
 {
   obj[ioConstants::SmallestDSpacing] = smallestDSpacingSB->value();
   obj[ioConstants::NumOfMasterPatternPxls] = numOfMPPixelsSB->value();
@@ -346,7 +346,7 @@ void MasterPatternSimulation_UI::writeComputationalParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MasterPatternSimulationController::MasterPatternSimulationData MasterPatternSimulation_UI::getSimulationData()
+MasterPatternSimulationController::MasterPatternSimulationData MasterPatternSimulation_UI::getSimulationData() const
 {
   MasterPatternSimulationController::MasterPatternSimulationData data;
   data.smallestDSpacing = smallestDSpacingSB->value();

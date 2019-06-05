@@ -80,8 +80,8 @@ class EMsoftFileWriter : public QObject
      */
     bool closeGroup();
 
-    hid_t getFileId();
-    hid_t getCurrentLocId();
+    hid_t getFileId() const;
+    hid_t getCurrentLocId() const;
 
     /**
      * @brief writeScalarDataset
@@ -90,7 +90,7 @@ class EMsoftFileWriter : public QObject
      * @return
      */
     template <typename T>
-    bool writeScalarDataset(const QString &dsetName, T value)
+    bool writeScalarDataset(const QString &dsetName, T value) const
     {
       hid_t locId = getCurrentLocId();
       herr_t err = QH5Lite::writeScalarDataset(locId, dsetName, value);
@@ -104,7 +104,7 @@ class EMsoftFileWriter : public QObject
       return true;
     }
 
-    bool writeStringDataset(const QString &dsetName, const QString &value);
+    bool writeStringDataset(const QString &dsetName, const QString &value) const;
 
     /**
      * @brief writeVectorDataset
@@ -114,7 +114,7 @@ class EMsoftFileWriter : public QObject
      * @return
      */
     template <typename T>
-    bool writeVectorDataset(const QString &dsetName, QVector<T> value, QVector<hsize_t> dims)
+    bool writeVectorDataset(const QString &dsetName, QVector<T> value, QVector<hsize_t> dims) const
     {
       hid_t locId = getCurrentLocId();
       herr_t err = QH5Lite::writeVectorDataset(locId, dsetName, dims, value);
@@ -135,7 +135,7 @@ class EMsoftFileWriter : public QObject
      * @return
      */
     template <typename T>
-    bool writePointerDataset(const QString &dsetName, T* value, QVector<hsize_t> dims)
+    bool writePointerDataset(const QString &dsetName, T* value, QVector<hsize_t> dims) const
     {
       hid_t locId = getCurrentLocId();
       int32_t rank = dims.size();
@@ -151,7 +151,7 @@ class EMsoftFileWriter : public QObject
     }
 
   signals:
-    void errorMessageGenerated(const QString &msg, int code);
+    void errorMessageGenerated(const QString &msg, int code) const;
 
   private:
     hid_t                           m_FileId = -1;

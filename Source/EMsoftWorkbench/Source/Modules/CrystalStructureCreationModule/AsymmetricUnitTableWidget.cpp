@@ -83,7 +83,7 @@ void AsymmetricUnitTableWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableWidget::on_dynamicTable_cellChanged(int row, int col)
+void AsymmetricUnitTableWidget::on_dynamicTable_cellChanged(int row, int col) const
 {
   emit parametersChanged();
 }
@@ -91,7 +91,7 @@ void AsymmetricUnitTableWidget::on_dynamicTable_cellChanged(int row, int col)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<std::vector<double>> AsymmetricUnitTableWidget::getData()
+std::vector<std::vector<double>> AsymmetricUnitTableWidget::getData() const
 {
   int rCount = dynamicTable->rowCount(), cCount = dynamicTable->columnCount();
   std::vector<std::vector<double>> data(rCount, std::vector<double>(cCount));
@@ -123,7 +123,7 @@ std::vector<std::vector<double>> AsymmetricUnitTableWidget::getData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableWidget::on_addRowBtn_clicked()
+void AsymmetricUnitTableWidget::on_addRowBtn_clicked() const
 {
   int row = dynamicTable->rowCount();
 
@@ -143,7 +143,7 @@ void AsymmetricUnitTableWidget::on_addRowBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableWidget::insertRow(int idx, std::vector<double> columnData)
+void AsymmetricUnitTableWidget::insertRow(int idx, std::vector<double> columnData) const
 {
   if(columnData.size() != dynamicTable->columnCount())
   {
@@ -178,7 +178,7 @@ void AsymmetricUnitTableWidget::insertRow(int idx, std::vector<double> columnDat
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableWidget::on_deleteRowBtn_clicked()
+void AsymmetricUnitTableWidget::on_deleteRowBtn_clicked() const
 {
   dynamicTable->removeRow(dynamicTable->currentRow());
 
@@ -188,7 +188,7 @@ void AsymmetricUnitTableWidget::on_deleteRowBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableWidget::readSession(QJsonObject& obj)
+void AsymmetricUnitTableWidget::readSession(QJsonObject& obj) const
 {
   while(dynamicTable->rowCount() > 0)
   {
@@ -209,7 +209,7 @@ void AsymmetricUnitTableWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AsymmetricUnitTableWidget::writeSession(QJsonObject& obj)
+void AsymmetricUnitTableWidget::writeSession(QJsonObject& obj) const
 {
   AsymmetricUnitTableData tableData;
   tableData.setTableData(getData());

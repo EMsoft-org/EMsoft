@@ -114,7 +114,7 @@ public:
    * @param data
    * @return
    */
-  bool validateSimulationValues(PatternFitController::SimulationData data);
+  bool validateSimulationValues(PatternFitController::SimulationData data) const;
 
   /**
    * @brief setMasterFilePath Sets a new master file.  Automatically reads the data from the master file
@@ -128,21 +128,21 @@ public:
   using IntPair = QPair<int, int>;
 
 signals:
-  void updateEkeVs(std::vector<float> ekeVs);
-  void mpImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void mcImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void mpKeVNeedsDisplayed(float keV);
-  void mcKeVNeedsDisplayed(float keV);
-  void imageRangeChanged(int min, int max);
-  void splashScreenMsgGenerated(const QString& msg);
-  void newProgressBarMaximumValue(int value);
-  void newProgressBarValue(int value);
-  void rowDataChanged(const QModelIndex&, const QModelIndex&);
-  void generationFinished();
+  void updateEkeVs(std::vector<float> ekeVs) const;
+  void mpImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mcImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mpKeVNeedsDisplayed(float keV) const;
+  void mcKeVNeedsDisplayed(float keV) const;
+  void imageRangeChanged(int min, int max) const;
+  void splashScreenMsgGenerated(const QString& msg) const;
+  void newProgressBarMaximumValue(int value) const;
+  void newProgressBarValue(int value) const;
+  void rowDataChanged(const QModelIndex&, const QModelIndex&) const;
+  void generationFinished() const;
 
-  void errorMessageGenerated(const QString& msg);
-  void warningMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void errorMessageGenerated(const QString& msg) const;
+  void warningMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
   QString m_MasterFilePath;

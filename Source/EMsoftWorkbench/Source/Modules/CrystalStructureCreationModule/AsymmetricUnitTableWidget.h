@@ -68,32 +68,32 @@ public:
    */
   void setupGui();
 
-  std::vector<std::vector<double>> getData();
+  std::vector<std::vector<double>> getData() const;
 
   /**
    * @brief readSession
    * @param obj
    */
-  void readSession(QJsonObject& obj);
+  void readSession(QJsonObject& obj) const;
 
   /**
    * @brief writeSession
    * @param obj
    */
-  void writeSession(QJsonObject& obj);
+  void writeSession(QJsonObject& obj) const;
 
 public slots:
-  void on_dynamicTable_cellChanged(int row, int col);
-  void on_addRowBtn_clicked();
-  void on_deleteRowBtn_clicked();
+  void on_dynamicTable_cellChanged(int row, int col) const;
+  void on_addRowBtn_clicked() const;
+  void on_deleteRowBtn_clicked() const;
 
 signals:
-  void parametersChanged();
+  void parametersChanged() const;
 
 private:
   AsymmetricUnitTableItemDelegate* m_ItemDelegate = nullptr;
 
-  void insertRow(int idx, std::vector<double> columnData);
+  void insertRow(int idx, std::vector<double> columnData) const;
 
 public:
   AsymmetricUnitTableWidget(const AsymmetricUnitTableWidget&) = delete;            // Copy Constructor Not Implemented

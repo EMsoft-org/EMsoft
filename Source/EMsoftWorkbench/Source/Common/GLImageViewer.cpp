@@ -383,7 +383,7 @@ void GLImageViewer::loadImage(GLImageData data)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QImage GLImageViewer::getCurrentImage()
+QImage GLImageViewer::getCurrentImage() const
 {
   return m_CurrentImage;
 }
@@ -544,7 +544,7 @@ void GLImageViewer::wheelEvent(QWheelEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void GLImageViewer::createModificationConnections(IModuleUI* ui)
+void GLImageViewer::createModificationConnections(IModuleUI* ui) const
 {
   // If the viewer changes at all, set the window as modified
   connect(this, &GLImageViewer::viewerChanged, [=] { emit ui->moduleParametersChanged(); });
@@ -575,7 +575,7 @@ void GLImageViewer::readSession(QJsonObject &obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void GLImageViewer::writeSession(QJsonObject &obj)
+void GLImageViewer::writeSession(QJsonObject &obj) const
 {
   obj[ivMod::ZoomFactor] = m_ZoomFactor;
 

@@ -71,7 +71,7 @@ public:
    * @brief getRotationStepSize
    * @return
    */
-  double getRotationStepSize();
+  double getRotationStepSize() const;
 
   /**
    * @brief readSession
@@ -83,20 +83,20 @@ public:
    * @brief writeSession
    * @param obj
    */
-  void writeSession(QJsonObject& obj);
+  void writeSession(QJsonObject& obj) const;
 
 protected slots:
   /**
    * @brief on_patternChooserCB_currentIndexChanged
    * @param index
    */
-  void on_patternChooserCB_currentIndexChanged(int index);
+  void on_patternChooserCB_currentIndexChanged(int index) const;
 
   /**
    * @brief on_rotationStepSize_textChanged
    * @param text
    */
-  void on_rotationStepSize_textChanged(const QString& text);
+  void on_rotationStepSize_textChanged(const QString& text) const;
 
 protected:
   /**
@@ -105,17 +105,17 @@ protected:
   void setupGui();
 
 signals:
-  void patternChoiceChanged(int index);
-  void controlsChoicePressed(PatternControlsWidget::ControlsChoice choice);
-  void rotationStepSizeChanged(double rot);
-  void opacityChanged(double value);
+  void patternChoiceChanged(int index) const;
+  void controlsChoicePressed(PatternControlsWidget::ControlsChoice choice) const;
+  void rotationStepSizeChanged(double rot) const;
+  void opacityChanged(double value) const;
 
 private:
-  void createControlsConnections();
+  void createControlsConnections() const;
 
-  void createValidators();
+  void createValidators() const;
 
-  void createWidgetConnections();
+  void createWidgetConnections() const;
 
 public:
   PatternControlsWidget(const PatternControlsWidget&) = delete;            // Copy Constructor Not Implemented

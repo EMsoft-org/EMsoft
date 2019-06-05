@@ -96,7 +96,7 @@ public:
    * @param data
    * @return
    */
-  bool validateDetectorValues(PatternDisplayController::DetectorData data);
+  bool validateDetectorValues(PatternDisplayController::DetectorData data) const;
 
   /**
    * @brief setMasterFilePath Sets a new master file.  Automatically reads the data from the master file
@@ -124,27 +124,27 @@ public slots:
   void addPriorityIndex(size_t index);
 
 signals:
-  void minMaxEnergyLevelsChanged(const std::vector<float> &ekeVs);
-  void mpImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void mcImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void energyMinChanged(int min);
-  void energyMaxChanged(int max);
-  void imageRangeChanged(int min, int max);
-  void newProgressBarMaximumValue(int value);
-  void newProgressBarValue(int value);
-  void rowDataChanged(const QModelIndex&, const QModelIndex&);
-  void mpmcGenerationFinished();
-  void patternGenerationFinished();
+  void minMaxEnergyLevelsChanged(const std::vector<float> &ekeVs) const;
+  void mpImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mcImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void energyMinChanged(int min) const;
+  void energyMaxChanged(int max) const;
+  void imageRangeChanged(int min, int max) const;
+  void newProgressBarMaximumValue(int value) const;
+  void newProgressBarValue(int value) const;
+  void rowDataChanged(const QModelIndex&, const QModelIndex&) const;
+  void mpmcGenerationFinished() const;
+  void patternGenerationFinished() const;
 
-  void errorMessageGenerated(const QString& msg);
-  void warningMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void errorMessageGenerated(const QString& msg) const;
+  void warningMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 private slots:
-  void updateMPImage(MPMCDisplayWidget::MPMCData mpData);
-  void updateMCImage(MPMCDisplayWidget::MPMCData mcData);
+  void updateMPImage(MPMCDisplayWidget::MPMCData mpData) const;
+  void updateMCImage(MPMCDisplayWidget::MPMCData mcData) const;
 
-  void checkImageGenerationCompletion();
+  void checkImageGenerationCompletion() const;
 
   void patternThreadFinished();
 
@@ -284,7 +284,7 @@ private:
    * @param zValue
    * @return
    */
-  bool generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue);
+  bool generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const;
 
 public:
   PatternDisplayController(const PatternDisplayController&) = delete;            // Copy Constructor Not Implemented

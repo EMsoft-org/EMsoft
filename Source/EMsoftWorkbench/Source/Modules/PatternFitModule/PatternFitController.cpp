@@ -159,7 +159,7 @@ GLImageViewer::GLImageData PatternFitController::generatePatternImage(const std:
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternFitController::validateSimulationValues(PatternFitController::SimulationData data)
+bool PatternFitController::validateSimulationValues(PatternFitController::SimulationData data) const
 {
   if(data.masterFilePath.isEmpty())
   {

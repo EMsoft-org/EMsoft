@@ -72,7 +72,7 @@ void PatternControlsWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternControlsWidget::on_patternChooserCB_currentIndexChanged(int index)
+void PatternControlsWidget::on_patternChooserCB_currentIndexChanged(int index) const
 {
   emit patternChoiceChanged(index);
 
@@ -90,7 +90,7 @@ void PatternControlsWidget::on_patternChooserCB_currentIndexChanged(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternControlsWidget::on_rotationStepSize_textChanged(const QString& text)
+void PatternControlsWidget::on_rotationStepSize_textChanged(const QString& text) const
 {
   QString stepSizeStr = text;
   if(stepSizeStr.isEmpty())
@@ -110,7 +110,7 @@ void PatternControlsWidget::on_rotationStepSize_textChanged(const QString& text)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternControlsWidget::createControlsConnections()
+void PatternControlsWidget::createControlsConnections() const
 {
   connect(cwBtn, &QPushButton::pressed, [=] { emit controlsChoicePressed(PatternControlsWidget::ControlsChoice::CW); });
   connect(ccwBtn, &QPushButton::pressed, [=] { emit controlsChoicePressed(PatternControlsWidget::ControlsChoice::CCW); });
@@ -124,7 +124,7 @@ void PatternControlsWidget::createControlsConnections()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternControlsWidget::createValidators()
+void PatternControlsWidget::createValidators() const
 {
   QDoubleValidator* doubleValidator = new QDoubleValidator(rotationStepSize);
   rotationStepSize->setValidator(doubleValidator);
@@ -133,7 +133,7 @@ void PatternControlsWidget::createValidators()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternControlsWidget::createWidgetConnections()
+void PatternControlsWidget::createWidgetConnections() const
 {
   connect(opacitySlider, &QSlider::valueChanged, this, [=](int value) {
     double opacity = static_cast<double>(value) / 100;
@@ -154,7 +154,7 @@ void PatternControlsWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternControlsWidget::writeSession(QJsonObject& obj)
+void PatternControlsWidget::writeSession(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::PatternSelection] = patternChooserCB->currentText();
   obj[EMsoftWorkbenchConstants::IOStrings::Opacity] = opacitySlider->value();
@@ -164,7 +164,7 @@ void PatternControlsWidget::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-double PatternControlsWidget::getRotationStepSize()
+double PatternControlsWidget::getRotationStepSize() const
 {
   return rotationStepSize->text().toDouble();
 }

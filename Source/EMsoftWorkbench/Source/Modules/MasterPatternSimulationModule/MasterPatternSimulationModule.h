@@ -50,7 +50,7 @@ public:
 
   ~MasterPatternSimulationModule() override;
 
-  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
+  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) const override;
 
 protected:
   MasterPatternSimulationModule(QWidget* parent = nullptr);

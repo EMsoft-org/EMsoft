@@ -70,16 +70,16 @@ public:
 
   EMsoftWorkbench_UI* getNewWorkbenchInstance();
 
-  EMsoftWorkbench_UI* getActiveWindow();
+  EMsoftWorkbench_UI* getActiveWindow() const;
   void setActiveWindow(EMsoftWorkbench_UI* workbench);
 
 public slots:
   void listenNewInstanceTriggered();
   void listenOpenTriggered();
-  void listenEditStyleTriggered();
+  void listenEditStyleTriggered() const;
   void listenAboutEMsoftWorkbenchTriggered();
-  void listenClearRecentFilesTriggered();
-  void listenExitApplicationTriggered();
+  void listenClearRecentFilesTriggered() const;
+  void listenExitApplicationTriggered() const;
 
 protected:
   EMsoftWorkbench_UI* m_ActiveWindow;
@@ -124,7 +124,7 @@ private:
    * @brief createCustomDockMenu
    * @return
    */
-  QMenu* createCustomDockMenu();
+  QMenu* createCustomDockMenu() const;
 
   /**
    * @brief newInstanceFromFile

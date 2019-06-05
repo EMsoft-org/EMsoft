@@ -64,7 +64,7 @@ IModuleUI::~IModuleUI() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString IModuleUI::getOpenedFilePath()
+QString IModuleUI::getOpenedFilePath() const
 {
   return m_OpenedFilePath;
 }
@@ -127,7 +127,7 @@ void IModuleUI::clearModuleIssues()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString IModuleUI::getStdOutput()
+QString IModuleUI::getStdOutput() const
 {
   return m_StdOutput;
 }
@@ -135,7 +135,7 @@ QString IModuleUI::getStdOutput()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QList<IModuleUI::ModuleIssue> IModuleUI::getModuleIssues()
+QList<IModuleUI::ModuleIssue> IModuleUI::getModuleIssues() const
 {
   return m_ModuleIssues;
 }

@@ -65,9 +65,9 @@ public:
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
   QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const Q_DECL_OVERRIDE;
 
-  QString itemName(const QModelIndex& index);
+  QString itemName(const QModelIndex& index) const;
 
-  bool isEmpty();
+  bool isEmpty() const;
 
   QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const Q_DECL_OVERRIDE;
   QModelIndex parent(const QModelIndex& index) const Q_DECL_OVERRIDE;
@@ -85,9 +85,9 @@ public:
 
   bool setData(const QModelIndex& index, const QVariant& value, int role) Q_DECL_OVERRIDE;
 
-  bool setPatternStatus(int row, PatternListItem::PatternStatus status);
+  bool setPatternStatus(int row, PatternListItem::PatternStatus status) const;
 
-  PatternListItem* getRootItem();
+  PatternListItem* getRootItem() const;
 
 protected:
   PatternListModel(QObject* parent = nullptr);

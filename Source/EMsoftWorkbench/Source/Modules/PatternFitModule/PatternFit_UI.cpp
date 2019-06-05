@@ -202,7 +202,7 @@ void PatternFit_UI::destroyHipassFilterValues()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::createValidators()
+void PatternFit_UI::createValidators() const
 {
   QDoubleValidator* doubleValidator = new QDoubleValidator(scintillatorPixelSize);
   scintillatorPixelSize->setValidator(doubleValidator);
@@ -346,7 +346,7 @@ void PatternFit_UI::parametersChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::checkFitMode()
+void PatternFit_UI::checkFitMode() const
 {
   fitModeCB->blockSignals(true);
 
@@ -371,7 +371,7 @@ void PatternFit_UI::checkFitMode()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::createStepConnections()
+void PatternFit_UI::createStepConnections() const
 {
   connect(scintillatorDistMStep, &QLineEdit::textChanged, [=] { scintillatorDist->setSingleStep(scintillatorDistMStep->text().toDouble()); });
   connect(scintillatorDistMStep, &QLineEdit::textChanged, [=] { scintillatorDist->setSingleStep(scintillatorDistMStep->text().toDouble()); });
@@ -392,7 +392,7 @@ void PatternFit_UI::createWidgetConnections()
 {
   connect(m_Controller, &PatternFitController::errorMessageGenerated, this, &PatternFit_UI::notifyErrorMessage);
   connect(m_Controller, &PatternFitController::warningMessageGenerated, this, &PatternFit_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(const QString&)), this, SLOT(appendToStdOut(const QString&)));
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
   connect(patternControlsWidget, &PatternControlsWidget::patternChoiceChanged, this, &PatternFit_UI::slot_patternChoiceChanged);
   connect(patternControlsWidget, &PatternControlsWidget::rotationStepSizeChanged, this, [=](double rot) { updateRotationQuaternions(rot, detectorTiltAngle->text().toDouble()); });
@@ -664,7 +664,7 @@ void PatternFit_UI::updateRotationQuaternions(double rot, double detValue)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::on_fitModeCB_currentIndexChanged(int index)
+void PatternFit_UI::on_fitModeCB_currentIndexChanged(int index) const
 {
   PatternFit_UI::FitMode fitMode = static_cast<PatternFit_UI::FitMode>(index);
   scintillatorDistCB->blockSignals(true);
@@ -1063,7 +1063,7 @@ void PatternFit_UI::readFitParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::writeModuleSession(QJsonObject& obj)
+void PatternFit_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject nonRefParamObj;
   QJsonObject refDetectorParamObj;
@@ -1093,7 +1093,7 @@ void PatternFit_UI::writeModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::writeNonRefinableParameters(QJsonObject& obj)
+void PatternFit_UI::writeNonRefinableParameters(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::ScintillatorPixelSize] = scintillatorPixelSize->text().toDouble();
   obj[EMsoftWorkbenchConstants::IOStrings::BeamCurrent] = beamCurrent->text().toDouble();
@@ -1114,7 +1114,7 @@ void PatternFit_UI::writeNonRefinableParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::writeRefinableDetectorParameters(QJsonObject& obj)
+void PatternFit_UI::writeRefinableDetectorParameters(QJsonObject& obj) const
 {
   QJsonObject scintillatorDistObj;
   scintillatorDistObj[EMsoftWorkbenchConstants::IOStrings::IsChecked] = scintillatorDistCB->isChecked();
@@ -1155,7 +1155,7 @@ void PatternFit_UI::writeRefinableDetectorParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::writeRefinableSampleParameters(QJsonObject& obj)
+void PatternFit_UI::writeRefinableSampleParameters(QJsonObject& obj) const
 {
   QJsonObject intensityGammaObj;
   intensityGammaObj[EMsoftWorkbenchConstants::IOStrings::IsChecked] = intensityGammaCB->isChecked();
@@ -1189,7 +1189,7 @@ void PatternFit_UI::writeRefinableSampleParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFit_UI::writeFitParameters(QJsonObject& obj)
+void PatternFit_UI::writeFitParameters(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::FitCriterion] = fitCriterionCB->currentText();
   obj[EMsoftWorkbenchConstants::IOStrings::FitMode] = fitModeCB->currentText();
@@ -1198,7 +1198,7 @@ void PatternFit_UI::writeFitParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternFitController::SimulationData PatternFit_UI::getSimulationData()
+PatternFitController::SimulationData PatternFit_UI::getSimulationData() const
 {
   PatternFitController::SimulationData data;
   data.scintillatorDist = scintillatorDist->value();

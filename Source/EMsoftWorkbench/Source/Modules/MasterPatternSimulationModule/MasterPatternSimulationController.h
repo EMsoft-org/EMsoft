@@ -84,7 +84,7 @@ public:
    * @param data
    * @return
    */
-  bool validateMasterPatternValues(MasterPatternSimulationController::MasterPatternSimulationData data);
+  bool validateMasterPatternValues(MasterPatternSimulationController::MasterPatternSimulationData data) const;
 
   /**
    * @brief setUpdateProgress
@@ -92,13 +92,13 @@ public:
    * @param totalLoops
    * @param bseYield
    */
-  void setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops);
+  void setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops) const;
 
   /**
    * @brief getNumCPUCores
    * @return
    */
-  int getNumCPUCores();
+  int getNumCPUCores() const;
 
 #if 0
     /**
@@ -117,9 +117,9 @@ public:
 #endif
 
 signals:
-  void warningMessageGenerated(const QString& msg);
-  void errorMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void warningMessageGenerated(const QString& msg) const;
+  void errorMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
   MonteCarloFileReader* m_MonteCarloReader = nullptr;
@@ -156,7 +156,7 @@ private:
    * @param simData
    * @return
    */
-  bool writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  bool writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
 
 #if 0
     /**
@@ -187,31 +187,31 @@ private:
    * @brief getEMsoftUserName
    * @return
    */
-  QString getEMsoftUserName();
+  QString getEMsoftUserName() const;
 
   /**
    * @brief getEMsoftUserEmail
    * @return
    */
-  QString getEMsoftUserEmail();
+  QString getEMsoftUserEmail() const;
 
   /**
    * @brief getEMsoftUserLocation
    * @return
    */
-  QString getEMsoftUserLocation();
+  QString getEMsoftUserLocation() const;
 
   /**
    * @brief getIParPtr
    * @return
    */
-  std::vector<int32_t> getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  std::vector<int32_t> getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
 
   /**
    * @brief getFParPtr
    * @return
    */
-  std::vector<float> getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  std::vector<float> getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
 
 public:
   MasterPatternSimulationController(const MasterPatternSimulationController&) = delete;            // Copy Constructor Not Implemented

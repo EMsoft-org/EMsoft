@@ -50,7 +50,7 @@ public:
 
   ~CrystalStructureCreationModule() override;
 
-  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
+  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) const override;
 
 protected:
   CrystalStructureCreationModule(QWidget* parent = nullptr);

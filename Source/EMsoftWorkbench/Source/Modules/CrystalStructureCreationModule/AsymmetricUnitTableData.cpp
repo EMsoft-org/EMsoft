@@ -129,7 +129,7 @@ AsymmetricUnitTableData::~AsymmetricUnitTableData() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool AsymmetricUnitTableData::isEmpty()
+bool AsymmetricUnitTableData::isEmpty() const
 {
   return (!m_TableData.empty() || !m_RowHeaders.empty() || !m_ColHeaders.empty());
 }
@@ -432,7 +432,7 @@ void AsymmetricUnitTableData::writeData(QJsonObject& object) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<std::vector<double>> AsymmetricUnitTableData::readData(QJsonObject object)
+std::vector<std::vector<double>> AsymmetricUnitTableData::readData(QJsonObject object) const
 {
   std::vector<std::vector<double>> data;
   if(object["Table Data"].isArray())
@@ -467,7 +467,7 @@ std::vector<std::vector<double>> AsymmetricUnitTableData::readData(QJsonObject o
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<std::vector<double>> AsymmetricUnitTableData::getTableData()
+std::vector<std::vector<double>> AsymmetricUnitTableData::getTableData() const
 {
   return m_TableData;
 }

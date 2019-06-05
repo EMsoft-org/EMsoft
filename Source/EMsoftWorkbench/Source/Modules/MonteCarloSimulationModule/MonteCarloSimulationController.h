@@ -101,7 +101,7 @@ public:
    * @param data
    * @return
    */
-  bool validateMonteCarloValues(MonteCarloSimulationController::MonteCarloSimulationData data);
+  bool validateMonteCarloValues(MonteCarloSimulationController::MonteCarloSimulationData data) const;
 
   /**
    * @brief setUpdateProgress
@@ -109,26 +109,26 @@ public:
    * @param totalLoops
    * @param bseYield
    */
-  void setUpdateProgress(int loopCompleted, int totalLoops, float bseYield);
+  void setUpdateProgress(int loopCompleted, int totalLoops, float bseYield) const;
 
   /**
    * @brief getPlatformInfo
    * @return
    */
-  QStringList getPlatformInfo();
+  QStringList getPlatformInfo() const;
 
   /**
    * @brief getDeviceInfo
    * @param platformID
    * @return
    */
-  QStringList getDeviceInfo(int platformID);
+  QStringList getDeviceInfo(int platformID) const;
 
 signals:
-  void warningMessageGenerated(const QString& msg);
-  void errorMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
-  void updateMCProgress(int loop, int totalLoops, float bseYield);
+  void warningMessageGenerated(const QString& msg) const;
+  void errorMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
+  void updateMCProgress(int loop, int totalLoops, float bseYield) const;
 
 private:
   XtalFileReader* m_XtalReader = nullptr;
@@ -156,61 +156,61 @@ private:
    * @param simData
    * @return
    */
-  bool writeEMsoftHDFFile(MonteCarloSimulationController::MonteCarloSimulationData simData);
+  bool writeEMsoftHDFFile(MonteCarloSimulationController::MonteCarloSimulationData simData) const;
 
   /**
    * @brief getnumCLPlatforms
    * @return
    */
-  int getnumCLPlatforms();
+  int getnumCLPlatforms() const;
 
   /**
    * @brief getPlatformInfo
    */
-  void writePlatformInfo();
+  void writePlatformInfo() const;
 
   /**
    * @brief getnumCLDevices
    * @param platformID
    * @return
    */
-  int getnumCLDevices(int platformID);
+  int getnumCLDevices(int platformID) const;
 
   /**
    * @brief getDeviceInfo
    * @param platformID
    */
-  void writeDeviceInfo(int platformID);
+  void writeDeviceInfo(int platformID) const;
 
   /**
    * @brief getEMsoftUserName
    * @return
    */
-  QString getEMsoftUserName();
+  QString getEMsoftUserName() const;
 
   /**
    * @brief getEMsoftUserEmail
    * @return
    */
-  QString getEMsoftUserEmail();
+  QString getEMsoftUserEmail() const;
 
   /**
    * @brief getEMsoftUserLocation
    * @return
    */
-  QString getEMsoftUserLocation();
+  QString getEMsoftUserLocation() const;
 
   /**
    * @brief getIParPtr
    * @return
    */
-  std::vector<int32_t> getIParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData);
+  std::vector<int32_t> getIParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData) const;
 
   /**
    * @brief getFParPtr
    * @return
    */
-  std::vector<float> getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData);
+  std::vector<float> getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData) const;
 
   /**
    * @brief setSParValue
@@ -226,7 +226,7 @@ private:
    * @param fstring_len
    * @param cstring
    */
-  void convertToFortran(char* fstring, size_t fstring_len, const char* cstring);
+  void convertToFortran(char* fstring, size_t fstring_len, const char* cstring) const;
 
 public:
   MonteCarloSimulationController(const MonteCarloSimulationController&) = delete;            // Copy Constructor Not Implemented

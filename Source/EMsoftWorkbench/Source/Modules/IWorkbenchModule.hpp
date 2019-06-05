@@ -51,7 +51,7 @@ public:
 
   ~IWorkbenchModule() override = default;
 
-  virtual IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) = 0;
+  virtual IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) const = 0;
 
 protected:
   IWorkbenchModule(QObject* parent)

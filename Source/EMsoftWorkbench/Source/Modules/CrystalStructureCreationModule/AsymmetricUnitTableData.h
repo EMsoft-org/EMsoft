@@ -121,7 +121,7 @@ public:
   /**
    * @brief Table data getter and setter
    */
-  std::vector<std::vector<double>> getTableData();
+  std::vector<std::vector<double>> getTableData() const;
   void setTableData(const std::vector<std::vector<double>>& data);
 
   /**
@@ -137,7 +137,7 @@ public:
   /**
    * @brief Checks if the AsymmetricUnitTableData object is empty.
    */
-  bool isEmpty();
+  bool isEmpty() const;
 
   AsymmetricUnitTableData(const AsymmetricUnitTableData& rhs);
   void operator=(const AsymmetricUnitTableData& rhs);
@@ -159,7 +159,7 @@ private:
    * @param object
    * @return 2D array
    */
-  std::vector<std::vector<double>> readData(QJsonObject object);
+  std::vector<std::vector<double>> readData(QJsonObject object) const;
 
   /**
    * @brief Checks that the dimensions between all variables are the same.  If not, adjusts dimensions

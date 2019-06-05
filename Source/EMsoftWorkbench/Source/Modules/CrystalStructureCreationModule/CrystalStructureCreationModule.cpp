@@ -57,7 +57,7 @@ CrystalStructureCreationModule::~CrystalStructureCreationModule() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* CrystalStructureCreationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent)
+IModuleUI* CrystalStructureCreationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent) const
 {
   Q_UNUSED(moduleObj)
 

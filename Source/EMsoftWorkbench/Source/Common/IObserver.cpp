@@ -50,7 +50,7 @@ IObserver::~IObserver() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void IObserver::processObserverMessage(const QString& msg)
+void IObserver::processObserverMessage(const QString& msg) const
 {
   std::cout << msg.toStdString() << std::endl;
 }

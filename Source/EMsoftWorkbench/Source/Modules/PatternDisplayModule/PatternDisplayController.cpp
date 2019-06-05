@@ -64,7 +64,7 @@ PatternDisplayController::PatternDisplayController(QObject* parent)
 {
   // Connection to allow the pattern list to redraw itself
   PatternListModel* model = PatternListModel::Instance();
-  connect(this, SIGNAL(rowDataChanged(const QModelIndex&, const QModelIndex&)), model, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), Qt::QueuedConnection);
+  connect(this, SIGNAL(rowDataChanged(QModelIndex,QModelIndex)), model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), Qt::QueuedConnection);
 }
 
 // -----------------------------------------------------------------------------
@@ -216,7 +216,7 @@ void PatternDisplayController::createMonteCarloImageGenerators()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::checkImageGenerationCompletion()
+void PatternDisplayController::checkImageGenerationCompletion() const
 {
   if(QThreadPool::globalInstance()->activeThreadCount() > 0)
   {
@@ -326,7 +326,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
+bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const
 {
   AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, zValue);
   imgGen->createImage();
@@ -394,7 +394,7 @@ void PatternDisplayController::addPriorityIndex(size_t index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
+void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData) const
 {
   QImage image;
   VariantPair variantPair;
@@ -449,7 +449,7 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
+void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData) const
 {
   QImage image;
   VariantPair variantPair;
@@ -516,7 +516,7 @@ void PatternDisplayController::patternThreadFinished()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::validateDetectorValues(PatternDisplayController::DetectorData data)
+bool PatternDisplayController::validateDetectorValues(PatternDisplayController::DetectorData data) const
 {
   if(data.masterFilePath.isEmpty())
   {

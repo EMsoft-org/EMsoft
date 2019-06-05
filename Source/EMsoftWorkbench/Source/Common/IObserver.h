@@ -44,7 +44,7 @@ class IObserver
     virtual ~IObserver();
     SIMPL_TYPE_MACRO(IObserver)
 
-    virtual void processObserverMessage(const QString& msg);
+    virtual void processObserverMessage(const QString& msg) const;
 
     IObserver(const IObserver&) = delete; // Copy Constructor Not Implemented
     IObserver(IObserver&&) = delete;      // Move Constructor Not Implemented

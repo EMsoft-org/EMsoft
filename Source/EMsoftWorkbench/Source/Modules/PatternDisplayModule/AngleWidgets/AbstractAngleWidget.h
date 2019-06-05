@@ -58,12 +58,12 @@ public:
   static const QString UnknownStr;
   static const QString EulerId;
 
-  virtual std::vector<float> getEulerAngles() = 0;
+  virtual std::vector<float> getEulerAngles() const = 0;
 
   static float ConvertToRadians(float value);
   static float ConvertToDegrees(float value);
 
-  virtual bool hasValidAngles() = 0;
+  virtual bool hasValidAngles() const = 0;
 
   /**
    * @brief readSession
@@ -73,16 +73,16 @@ public:
   /**
    * @brief writeSession
    */
-  virtual void writeSession(QJsonObject& obj) = 0;
+  virtual void writeSession(QJsonObject& obj) const = 0;
 
   /**
    * @brief createModificationConnections
    * @param ui
    */
-  virtual void createModificationConnections(PatternDisplay_UI* ui) = 0;
+  virtual void createModificationConnections(PatternDisplay_UI* ui) const = 0;
 
 signals:
-  void dataChanged(bool validAngles);
+  void dataChanged(bool validAngles) const;
 
 private:
 public:
