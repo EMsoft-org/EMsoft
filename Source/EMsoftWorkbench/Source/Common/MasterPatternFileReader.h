@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _masterpatternfilereader_h_
-#define _masterpatternfilereader_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -42,8 +41,6 @@
 #include <H5Support/QH5Lite.h>
 #include <H5Support/QH5Utilities.h>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Common/IObserver.h"
 
@@ -55,7 +52,16 @@ class MasterPatternFileReader
     MasterPatternFileReader(const QString &filePath, IObserver* obs);
     virtual ~MasterPatternFileReader();
 
-    SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
+    /**
+    * @brief Setter property for Observer
+    */
+    void setObserver(IObserver *value);
+
+    /**
+    * @brief Getter property for Observer
+    * @return Value of Observer
+    */
+    IObserver* getObserver() const;
 
     struct MasterPatternData
     {
@@ -70,18 +76,18 @@ class MasterPatternFileReader
       // EMData/EBSDmaster
       int numMPEnergyBins;
       int numset;
-      FloatArrayType::Pointer ekevs;
-      FloatArrayType::Pointer masterLPNHData;
+      std::vector<float> ekevs;
+      std::vector<float> masterLPNHData;
       std::vector<hsize_t>    mLPNH_dims;
-      FloatArrayType::Pointer masterLPSHData;
+      std::vector<float> masterLPSHData;
       std::vector<hsize_t>    mLPSH_dims;
-      FloatArrayType::Pointer masterSPNHData;
+      std::vector<float> masterSPNHData;
       std::vector<hsize_t>    masterSPNH_dims;
 
       // EMData/MCOpenCL
       int numDepthBins;
       int numMCEnergyBins;
-      Int32ArrayType::Pointer monteCarloSquareData;
+      std::vector<int32_t> monteCarloSquareData;
       std::vector<hsize_t>    monteCarlo_dims;
 
       // NMLparameters/EBSDMasterNameList
@@ -106,13 +112,12 @@ class MasterPatternFileReader
      * @brief MasterPatternFileReader::readMasterPatternData
      * @return
      */
-    MasterPatternFileReader::MasterPatternData readMasterPatternData();
+    MasterPatternFileReader::MasterPatternData readMasterPatternData() const;
 
   private:
-    hid_t                           m_FileId = -1;
+    IObserver* m_Observer = nullptr;
 
-    QString                         m_ErrorMessage = "";
-    int                             m_ErrorCode = 0;
+    hid_t m_FileId = -1;
 
     /**
      * @brief readDatasetDimensions
@@ -120,7 +125,7 @@ class MasterPatternFileReader
      * @param objectName
      * @return
      */
-    std::vector<hsize_t> readDatasetDimensions(hid_t parentId, QString objectName);
+    std::vector<hsize_t> readDatasetDimensions(hid_t parentId, const QString &objectName) const;
 
     /**
      * @brief readStringDataset
@@ -128,12 +133,12 @@ class MasterPatternFileReader
      * @param objectName
      * @return
      */
-    QString readStringDataset(const hid_t &parentId, const QString &objectName)
+    QString readStringDataset(const hid_t &parentId, const QString &objectName) const
     {
       QString value = "";
       if (QH5Lite::readStringDataset(parentId, objectName, value) < 0)
       {
-        QString objPath = QH5Utilities::getObjectPath(parentId);
+//        QString objPath = QH5Utilities::getObjectPath(parentId);
 //        emit stdOutputMessageGenerated(tr("Error: Unable to read string dataset '%1' at path '%2'").arg(objectName).arg(objPath));
       }
 
@@ -147,12 +152,12 @@ class MasterPatternFileReader
      * @param objectName
      * @return
      */
-    T readScalarDataset(const hid_t &parentId, const QString &objectName)
+    T readScalarDataset(const hid_t &parentId, const QString &objectName) const
     {
       T value = -1;
       if (QH5Lite::readScalarDataset(parentId, objectName, value) < 0)
       {
-        QString objPath = QH5Utilities::getObjectPath(parentId);
+//        QString objPath = QH5Utilities::getObjectPath(parentId);
 //        emit stdOutputMessageGenerated(tr("Error: Unable to read scalar dataset '%1' at path '%2'").arg(objectName).arg(objPath));
       }
 
@@ -166,10 +171,13 @@ class MasterPatternFileReader
      * @return
      */
     template <typename T>
-    typename DataArray<T>::Pointer readArrayDataset(hid_t parentId, QString objectName)
+    std::vector<T> readArrayDataset(hid_t parentId, QString objectName) const
     {
       std::vector<hsize_t> dims = readDatasetDimensions(parentId, objectName);
-      if (dims.size() <= 0) { return DataArray<T>::NullPointer(); }
+      if (dims.empty())
+      {
+        return std::vector<T>();
+      }
 
       size_t numTuples = dims[0];
       for (int i = 1; i < dims.size(); i++)
@@ -177,19 +185,20 @@ class MasterPatternFileReader
         numTuples = numTuples * dims[i];
       }
 
-      typename DataArray<T>::Pointer dataArray = DataArray<T>::CreateArray(numTuples, QVector<size_t>(1, 1), objectName);
-      herr_t mLPNH_id = QH5Lite::readPointerDataset(parentId, objectName, dataArray->getPointer(0));
+      std::vector<T> dataArray = std::vector<T>(numTuples);
+      herr_t mLPNH_id = QH5Lite::readPointerDataset(parentId, objectName, dataArray.data());
       if (mLPNH_id < 0)
       {
 //        emit stdOutputMessageGenerated(tr("Error: Could not read object '%1'").arg(objectName));
-        return DataArray<T>::NullPointer();
+        return std::vector<T>();
       }
 
       return dataArray;
     }
 
-    MasterPatternFileReader(const MasterPatternFileReader&);    // Copy Constructor Not Implemented
-    void operator=(const MasterPatternFileReader&);  // Operator '=' Not Implemented
+  public:
+    MasterPatternFileReader(const MasterPatternFileReader&) = delete; // Copy Constructor Not Implemented
+    MasterPatternFileReader(MasterPatternFileReader&&) = delete;      // Move Constructor Not Implemented
+    MasterPatternFileReader& operator=(const MasterPatternFileReader&) = delete; // Copy Assignment Not Implemented
+    MasterPatternFileReader& operator=(MasterPatternFileReader&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _masterpatternfilereader_h_ */

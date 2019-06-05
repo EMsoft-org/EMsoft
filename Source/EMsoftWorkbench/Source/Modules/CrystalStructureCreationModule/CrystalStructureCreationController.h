@@ -78,19 +78,19 @@ public:
    * @brief createCrystalStructureFile
    * @param data
    */
-  void createCrystalStructureFile(CrystalStructureCreationController::CrystalStructureCreationData data);
+  void createCrystalStructureFile(CrystalStructureCreationController::CrystalStructureCreationData data) const;
 
   /**
    * @brief validateCrystalStructureValues
    * @param data
    * @return
    */
-  bool validateCrystalStructureValues(CrystalStructureCreationController::CrystalStructureCreationData data);
+  bool validateCrystalStructureValues(CrystalStructureCreationController::CrystalStructureCreationData data) const;
 
 signals:
-  void errorMessageGenerated(const QString& msg);
-  void warningMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void errorMessageGenerated(const QString& msg) const;
+  void warningMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 public:
   CrystalStructureCreationController(const CrystalStructureCreationController&) = delete;            // Copy Constructor Not Implemented

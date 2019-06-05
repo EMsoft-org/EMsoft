@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _simplviewstyles_h_
-#define _simplviewstyles_h_
+#pragma once
 
 #include <QtGui/QFont>
 #include <QtGui/QIcon>
@@ -59,7 +58,7 @@ class  QtSStyles : public QObject
 
 
     QtSStyles();
-    virtual ~QtSStyles() override;
+    ~QtSStyles() override;
 
 
     /**
@@ -95,6 +94,10 @@ private:
     static QMap<QString, QIcon> filterIconMap;
 
     static void parseJson();
-};
 
-#endif /* _SIMPLViewStyles_H_ */
+  public:
+    QtSStyles(const QtSStyles&) = delete; // Copy Constructor Not Implemented
+    QtSStyles(QtSStyles&&) = delete;      // Move Constructor Not Implemented
+    QtSStyles& operator=(const QtSStyles&) = delete; // Copy Assignment Not Implemented
+    QtSStyles& operator=(QtSStyles&&) = delete;      // Move Assignment Not Implemented
+};

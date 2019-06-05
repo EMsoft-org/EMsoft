@@ -33,11 +33,9 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#pragma once
 
-#ifndef _fileiotools_h_
-#define _fileiotools_h_
-
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
+#include <QtCore/QString>
 
 class FileIOTools
 {
@@ -50,9 +48,9 @@ class FileIOTools
   protected:
     FileIOTools();
 
-  private:
-    FileIOTools(const FileIOTools&); // Copy Constructor Not Implemented
-    void operator=(const FileIOTools&); // Operator '=' Not Implemented
+  public:
+    FileIOTools(const FileIOTools&) = delete; // Copy Constructor Not Implemented
+    FileIOTools(FileIOTools&&) = delete;      // Move Constructor Not Implemented
+    FileIOTools& operator=(const FileIOTools&) = delete; // Copy Assignment Not Implemented
+    FileIOTools& operator=(FileIOTools&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _fileiotools_h_ */

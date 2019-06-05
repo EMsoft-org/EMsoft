@@ -36,7 +36,6 @@
 #pragma once
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "ui_MPMCDisplayWidget.h"
 
@@ -51,7 +50,16 @@ public:
   MPMCDisplayWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~MPMCDisplayWidget() override;
 
-  SIMPL_INSTANCE_PROPERTY(std::vector<QImage>, ImageVector)
+    /**
+    * @brief Setter property for ImageVector
+    */
+    void setImageVector(const std::vector<QImage>& value); 
+
+    /**
+    * @brief Getter property for ImageVector
+    * @return Value of ImageVector
+    */
+    std::vector<QImage> getImageVector() const;
 
   using EnumType = unsigned int;
 
@@ -74,9 +82,9 @@ public:
    * @brief setEnergyValue
    * @param value
    */
-  void setEnergyValue(int value);
+  void setEnergyValue(int value) const;
 
-  MPMCData getMPMCData();
+  MPMCData getMPMCData() const;
 
   /**
    * @brief readSession
@@ -88,19 +96,19 @@ public:
    * @brief writeSession
    * @param obj
    */
-  void writeSession(QJsonObject& obj);
+  void writeSession(QJsonObject& obj) const;
 
   /**
    * @brief createModificationConnections
    */
-  void createConnections(PatternDisplay_UI* ui);
+  void createConnections(PatternDisplay_UI* ui) const;
 
 public slots:
   /**
    * @brief loadImage
    * @param image
    */
-  void loadImage(GLImageViewer::GLImageData data);
+  void loadImage(GLImageViewer::GLImageData data) const;
 
 protected:
   void setupGui();
@@ -110,14 +118,14 @@ protected slots:
    * @brief on_energyBinSpinBox_valueChanged
    * @param value
    */
-  void on_energyBinSpinBox_valueChanged(int value);
+  void on_energyBinSpinBox_valueChanged(int value) const;
 
   /**
    * @brief setEnergyBinSpinBoxRange
    * @param min
    * @param max
    */
-  void setEnergyBinSpinBoxRange(int min, int max);
+  void setEnergyBinSpinBoxRange(int min, int max) const;
 
   /**
    * @brief on_saveBtn_clicked
@@ -130,13 +138,15 @@ protected slots:
   void projModeChanged(int mode);
 
 signals:
-  void controlsChanged(MPMCDisplayWidget::MPMCData mpmcData);
-  void stdOutputMessageGenerated(QString msg);
+  void controlsChanged(MPMCDisplayWidget::MPMCData mpmcData) const;
+  void stdOutputMessageGenerated(QString msg) const;
 
 private slots:
-  void updateSliderRange(int, int);
+  void updateSliderRange(int, int) const;
 
 private:
+    std::vector<QImage> m_ImageVector;
+
   QActionGroup* m_ProjModeMenuActionGroup = nullptr;
   QAction* m_LambertSquareAction = nullptr;
   QAction* m_LambertCircleAction = nullptr;

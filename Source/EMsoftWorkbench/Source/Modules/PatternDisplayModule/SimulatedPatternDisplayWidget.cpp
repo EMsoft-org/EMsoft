@@ -91,10 +91,10 @@ void SimulatedPatternDisplayWidget::setupGui()
   PatternListModel* model = PatternListModel::Instance();
   patternListView->setModel(model);
 
-  connect(patternListView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)), this,
-          SLOT(patternListView_itemSelectionChanged(const QItemSelection&, const QItemSelection&)));
+  connect(patternListView->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), this,
+          SLOT(patternListView_itemSelectionChanged(QItemSelection,QItemSelection)));
 
-  connect(patternListView, SIGNAL(doubleClicked(const QModelIndex&)), this, SLOT(patternListView_doubleClicked(const QModelIndex&)));
+  connect(patternListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(patternListView_doubleClicked(QModelIndex)));
 
   m_MinSBValue = gammaSpinBox->minimum();
   m_MaxSBValue = gammaSpinBox->maximum();
@@ -173,9 +173,9 @@ void SimulatedPatternDisplayWidget::setupGui()
   gammaSpinBox->setValue(m_MinSBValue);
   gammaSpinBox->blockSignals(false);
 
-  detectorBinningBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::DetBinLabel).arg(getDetectorBinningValue()));
-  patternOriginBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternOriginLabel).arg(getPatternOriginValue()));
-  patternScalingBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternScalingLabel).arg(getPatternScalingValue()));
+  detectorBinningBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::DetBinLabel, getDetectorBinningValue()));
+  patternOriginBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternOriginLabel, getPatternOriginValue()));
+  patternScalingBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternScalingLabel, getPatternScalingValue()));
 
   connect(zoomIn, &QPushButton::pressed, [=] { imageWidget->zoomIn(); });
   connect(zoomOut, &QPushButton::pressed, [=] { imageWidget->zoomOut(); });
@@ -214,7 +214,7 @@ void SimulatedPatternDisplayWidget::closeEvent(QCloseEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::detectorBinning_selectionChanged()
+void SimulatedPatternDisplayWidget::detectorBinning_selectionChanged() const
 {
   size_t detectorBinValue = getDetectorBinningValue();
   detectorBinningBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::DetBinLabel).arg(detectorBinValue));
@@ -225,10 +225,10 @@ void SimulatedPatternDisplayWidget::detectorBinning_selectionChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::patternOrigin_selectionChanged()
+void SimulatedPatternDisplayWidget::patternOrigin_selectionChanged() const
 {
   QString patternOrigin = getPatternOriginValue();
-  patternOriginBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternOriginLabel).arg(patternOrigin));
+  patternOriginBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternOriginLabel, patternOrigin));
 
   displayImage(patternListView->currentIndex().row());
 }
@@ -236,11 +236,11 @@ void SimulatedPatternDisplayWidget::patternOrigin_selectionChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::patternScaling_selectionChanged()
+void SimulatedPatternDisplayWidget::patternScaling_selectionChanged() const
 {
   QString patternScaling = getPatternScalingValue();
 
-  patternScalingBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternScalingLabel).arg(patternScaling));
+  patternScalingBtn->setText(tr("%1: %2").arg(SimulatedPatternDisplayWidget::PatternScalingLabel, patternScaling));
 
   bool gammaIsOn = (patternScaling == SimulatedPatternDisplayWidget::GammaScaling);
   gammaSpinBox->setEnabled(gammaIsOn);
@@ -259,7 +259,7 @@ void SimulatedPatternDisplayWidget::generateImages()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-SimulatedPatternDisplayWidget::PatternDisplayData SimulatedPatternDisplayWidget::getPatternDisplayData()
+SimulatedPatternDisplayWidget::PatternDisplayData SimulatedPatternDisplayWidget::getPatternDisplayData() const
 {
   size_t detectorBinningValue = getDetectorBinningValue();
   if(detectorBinningValue == 0)
@@ -353,7 +353,7 @@ void SimulatedPatternDisplayWidget::on_gammaSpinBox_valueChanged(double value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::on_saveBtn_clicked()
+void SimulatedPatternDisplayWidget::on_saveBtn_clicked() const
 {
   QString proposedDir = emSoftApp->getOpenDialogLastDirectory();
   QFileInfo fi(proposedDir);
@@ -380,7 +380,7 @@ void SimulatedPatternDisplayWidget::on_saveBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::setExpectedPatterns(const FloatArrayType::Pointer& eulerAngles)
+void SimulatedPatternDisplayWidget::setExpectedPatterns(const std::vector<float> &eulerAngles)
 {
   PatternListModel* model = PatternListModel::Instance();
 
@@ -388,20 +388,22 @@ void SimulatedPatternDisplayWidget::setExpectedPatterns(const FloatArrayType::Po
   model->clear();
 
   m_LoadedImageData.clear();
-  m_LoadedImageData.resize(eulerAngles->getNumberOfTuples());
+  m_LoadedImageData.resize(eulerAngles.size() / 3);
 
-  for(int i = 0; i < eulerAngles->getNumberOfTuples(); i++)
+  int index = 0;
+  for(std::vector<float>::const_iterator iter = eulerAngles.begin(); iter < eulerAngles.end(); iter + 3)
   {
-    float a1 = eulerAngles->getComponent(i, 0);
-    float a2 = eulerAngles->getComponent(i, 1);
-    float a3 = eulerAngles->getComponent(i, 2);
+    float a1 = eulerAngles.at(*(iter + 0));
+    float a2 = eulerAngles.at(*(iter + 1));
+    float a3 = eulerAngles.at(*(iter + 2));
     a1 = AbstractAngleWidget::ConvertToDegrees(a1);
     a2 = AbstractAngleWidget::ConvertToDegrees(a2);
     a3 = AbstractAngleWidget::ConvertToDegrees(a3);
 
-    QString name = tr("Pattern %1: (%2, %3, %4)").arg(QString::number(i + 1), QString::number(a1), QString::number(a2), QString::number(a3));
+    QString name = tr("Pattern %1: (%2, %3, %4)").arg(QString::number(index + 1), QString::number(a1), QString::number(a2), QString::number(a3));
 
-    model->insertItem(i, name);
+    model->insertItem(index, name);
+    index++;
   }
 
   patternListView->setCurrentIndex(model->index(0, PatternListItem::DefaultColumn));
@@ -411,7 +413,7 @@ void SimulatedPatternDisplayWidget::setExpectedPatterns(const FloatArrayType::Po
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::setProgressBarValue(int value)
+void SimulatedPatternDisplayWidget::setProgressBarValue(int value) const
 {
   progressBar->setValue(value);
   int maximum = progressBar->maximum();
@@ -422,7 +424,7 @@ void SimulatedPatternDisplayWidget::setProgressBarValue(int value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::setProgressBarMaximum(int value)
+void SimulatedPatternDisplayWidget::setProgressBarMaximum(int value) const
 {
   progressBar->setMaximum(value);
 }
@@ -448,7 +450,7 @@ void SimulatedPatternDisplayWidget::loadImage(int index, const GLImageViewer::GL
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::displayImage(int index)
+void SimulatedPatternDisplayWidget::displayImage(int index) const
 {
   displayImage(m_LoadedImageData[index]);
 }
@@ -456,7 +458,7 @@ void SimulatedPatternDisplayWidget::displayImage(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::displayImage(GLImageViewer::GLImageData imageData)
+void SimulatedPatternDisplayWidget::displayImage(GLImageViewer::GLImageData imageData) const
 {
   PatternDisplayData displayData = getPatternDisplayData();
 
@@ -489,7 +491,7 @@ void SimulatedPatternDisplayWidget::displayImage(GLImageViewer::GLImageData imag
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::patternListView_itemSelectionChanged(const QItemSelection& current, const QItemSelection& previous)
+void SimulatedPatternDisplayWidget::patternListView_itemSelectionChanged(const QItemSelection& current, const QItemSelection& previous) const
 {
   Q_UNUSED(previous)
 
@@ -503,7 +505,7 @@ void SimulatedPatternDisplayWidget::patternListView_itemSelectionChanged(const Q
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::patternListView_doubleClicked(const QModelIndex& index)
+void SimulatedPatternDisplayWidget::patternListView_doubleClicked(const QModelIndex& index) const
 {
   PatternListModel* model = PatternListModel::Instance();
   model->setPatternStatus(index.row(), PatternListItem::PatternStatus::Priority);
@@ -514,7 +516,7 @@ void SimulatedPatternDisplayWidget::patternListView_doubleClicked(const QModelIn
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString SimulatedPatternDisplayWidget::getPatternOriginValue()
+QString SimulatedPatternDisplayWidget::getPatternOriginValue() const
 {
   QAction* checkedAction = m_PatternOriginMenuActionGroup->checkedAction();
   QString value = "";
@@ -530,7 +532,7 @@ QString SimulatedPatternDisplayWidget::getPatternOriginValue()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString SimulatedPatternDisplayWidget::getPatternScalingValue()
+QString SimulatedPatternDisplayWidget::getPatternScalingValue() const
 {
   QAction* checkedAction = m_PatternScalingMenuActionGroup->checkedAction();
   QString value = "";
@@ -546,7 +548,7 @@ QString SimulatedPatternDisplayWidget::getPatternScalingValue()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-size_t SimulatedPatternDisplayWidget::getDetectorBinningValue()
+size_t SimulatedPatternDisplayWidget::getDetectorBinningValue() const
 {
   QAction* checkedAction = m_DetectorBinningMenuActionGroup->checkedAction();
   size_t value = 0;
@@ -567,7 +569,7 @@ size_t SimulatedPatternDisplayWidget::getDetectorBinningValue()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-double SimulatedPatternDisplayWidget::getGammaValue()
+double SimulatedPatternDisplayWidget::getGammaValue() const
 {
   return gammaSpinBox->value();
 }
@@ -575,7 +577,7 @@ double SimulatedPatternDisplayWidget::getGammaValue()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::patternGenerationFinished()
+void SimulatedPatternDisplayWidget::patternGenerationFinished() const
 {
   progressBar->setValue(0);
   percentLabel->hide();

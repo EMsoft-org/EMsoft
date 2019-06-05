@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IWorkbenchModule.hpp"
 
@@ -44,18 +43,32 @@ class PatternDisplayModule : public IWorkbenchModule
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(PatternDisplayModule)
-  SIMPL_TYPE_MACRO(PatternDisplayModule)
-  SIMPL_STATIC_NEW_MACRO(PatternDisplayModule)
+  using Self = PatternDisplayModule;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for PatternDisplayModule
+   */
+  static Pointer NullPointer();
+
+  /**
+   * @brief Shared pointer New method for PatternDisplayModule
+   */
+  static Pointer New();
 
   ~PatternDisplayModule() override;
 
-  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
+  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) const override;
 
 protected:
   PatternDisplayModule(QWidget* parent = nullptr);
 
 private:
+
+
 public:
   PatternDisplayModule(const PatternDisplayModule&) = delete;            // Copy Constructor Not Implemented
   PatternDisplayModule(PatternDisplayModule&&) = delete;                 // Move Constructor Not Implemented

@@ -33,6 +33,50 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "ImageGenerator.h"
+#pragma once
 
+#include <QtGui/QImage>
 
+class AbstractImageGenerator
+{
+  public:
+    using Self = AbstractImageGenerator;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  static Pointer NullPointer()
+  {
+    return Pointer(static_cast<Self*>(nullptr));
+  }
+
+    virtual ~AbstractImageGenerator() = default;
+
+    /**
+     * @brief createImage
+     */
+    virtual void createImage() = 0;
+
+    QImage getGeneratedImage() const
+    {
+      return m_GeneratedImage;
+    }
+
+    QPair<QVariant, QVariant> getMinMaxPair() const
+    {
+      return m_MinMaxPair;
+    }
+
+  protected:
+    QPair<QVariant,QVariant>                              m_MinMaxPair;
+    QImage                                                m_GeneratedImage;
+
+    AbstractImageGenerator() = default;
+
+  public:
+    AbstractImageGenerator(const AbstractImageGenerator&) = delete; // Copy Constructor Not Implemented
+    AbstractImageGenerator(AbstractImageGenerator&&) = delete;      // Move Constructor Not Implemented
+    AbstractImageGenerator& operator=(const AbstractImageGenerator&) = delete; // Copy Assignment Not Implemented
+    AbstractImageGenerator& operator=(AbstractImageGenerator&&) = delete;      // Move Assignment Not Implemented
+};

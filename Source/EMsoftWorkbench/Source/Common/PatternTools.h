@@ -33,14 +33,10 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _PatternTools_h_
-#define _PatternTools_h_
+#pragma once
 
 #include <QtGui/QColor>
-
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
+#include <QtGui/QImage>
 
 class PatternTools
 {
@@ -87,9 +83,9 @@ class PatternTools
      * @param cancel
      * @return
      */
-    static FloatArrayType::Pointer GeneratePattern(PatternTools::IParValues iParValues, PatternTools::FParValues fParValues,
-                                  FloatArrayType::Pointer lpnhData, FloatArrayType::Pointer lpshData,
-                                  Int32ArrayType::Pointer monteCarloSquareData, FloatArrayType::Pointer eulerAngles,
+    static std::vector<float> GeneratePattern(PatternTools::IParValues iParValues, PatternTools::FParValues fParValues,
+                                  std::vector<float> &lpnhData, std::vector<float> &lpshData,
+                                  std::vector<int32_t> &monteCarloSquareData, const std::vector<float> &eulerAngles,
                                   int angleIndex, bool &cancel);
 
     /**
@@ -106,7 +102,7 @@ class PatternTools
      * @param lowCutOff
      * @param resultData
      */
-    static FloatArrayType::Pointer ApplyHipassFilter(FloatArrayType::Pointer patternData, QVector<size_t> dims, double lowCutOff, DoubleArrayType::Pointer hipassData);
+    static std::vector<float> ApplyHipassFilter(const std::vector<float> &patternData, std::vector<size_t> dims, double lowCutOff, std::vector<double> &hipassData);
 
     /**
      * @brief CalculateDifference
@@ -153,7 +149,7 @@ class PatternTools
      * @param tDims
      * @return
      */
-    static FloatArrayType::Pointer InverseGaussian(FloatArrayType::Pointer patternData, QVector<size_t> tDims);
+    static std::vector<float> InverseGaussian(const std::vector<float> &patternData, std::vector<size_t> tDims);
 
   protected:
     PatternTools();
@@ -173,7 +169,9 @@ class PatternTools
      * @param cancel
      * @return
      */
-    static void GeneratePattern_Helper(size_t index, FloatArrayType::Pointer eulerAngles, FloatArrayType::Pointer genericLPNHPtr, FloatArrayType::Pointer genericLPSHPtr, Int32ArrayType::Pointer genericAccum_ePtr, FloatArrayType::Pointer genericEBSDPatternsPtr, Int32ArrayType::Pointer genericIParPtr, FloatArrayType::Pointer genericFParPtr, bool &cancel);
+    static void GeneratePattern_Helper(size_t index, const std::vector<float>& eulerAngles, std::vector<float>& genericLPNHPtr, std::vector<float>& genericLPSHPtr,
+                                       std::vector<int32_t>& genericAccum_ePtr, std::vector<float>& genericEBSDPatternsPtr, std::vector<int32_t>& genericIParPtr,
+                                       std::vector<float>& genericFParPtr, bool& cancel);
 
     /**
      * @brief Sub2Ind
@@ -198,7 +196,7 @@ class PatternTools
      * @param size
      * @return
      */
-    static FloatArrayType::Pointer FindGen(size_t size);
+    static std::vector<float> FindGen(size_t size);
 
 
     // Inverse Gaussian Private Helper Methods
@@ -208,14 +206,14 @@ class PatternTools
      * @param tDims
      * @return
      */
-    static FloatArrayType::Pointer CreateInverseGaussianMask(FloatArrayType::Pointer patternData, QVector<size_t> tDims);
+    static std::vector<float> CreateInverseGaussianMask(const std::vector<float> &patternData, const std::vector<size_t> &tDims);
 
     /**
      * @brief GetInverseGaussianLine
      * @param size
      * @return
      */
-    static FloatArrayType::Pointer GetInverseGaussianLine(size_t size);
+    static std::vector<float> GetInverseGaussianLine(size_t size);
 
     /**
      * @brief GetInverseGaussianGrid
@@ -223,10 +221,11 @@ class PatternTools
      * @param yDim
      * @return
      */
-    static FloatArrayType::Pointer GetInverseGaussianGrid(QVector<size_t> dims);
+    static std::vector<float> GetInverseGaussianGrid(std::vector<size_t> dims);
 
-    PatternTools(const PatternTools&); // Copy Constructor Not Implemented
-    void operator=(const PatternTools&); // Operator '=' Not Implemented
+  public:
+    PatternTools(const PatternTools&) = delete; // Copy Constructor Not Implemented
+    PatternTools(PatternTools&&) = delete;      // Move Constructor Not Implemented
+    PatternTools& operator=(const PatternTools&) = delete; // Copy Assignment Not Implemented
+    PatternTools& operator=(PatternTools&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _PatternTools_h_ */

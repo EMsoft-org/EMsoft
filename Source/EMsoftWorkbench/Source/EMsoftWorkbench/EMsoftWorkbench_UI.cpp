@@ -39,6 +39,7 @@
 
 #include <QtCore/QJsonDocument>
 #include <QtCore/QPropertyAnimation>
+#include <QtCore/QDebug>
 
 #include <QtGui/QResizeEvent>
 
@@ -809,3 +810,20 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
 
   setMenuBar(m_MenuBar);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftWorkbench_UI::setOpenedFilePath(const QString& value)
+{
+  m_OpenedFilePath = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString EMsoftWorkbench_UI::getOpenedFilePath() const
+{
+  return m_OpenedFilePath;
+}
+

@@ -33,24 +33,20 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#pragma once
 
-#ifndef _iobserver_h_
-#define _iobserver_h_
-
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
+#include <QtCore/QString>
 
 class IObserver
 {
   public:
     IObserver();
     virtual ~IObserver();
-    SIMPL_TYPE_MACRO(IObserver)
 
-    virtual void processObserverMessage(const QString& msg);
+    virtual void processObserverMessage(const QString& msg) const;
 
-  private:
-    IObserver(const IObserver&); // Copy Constructor Not Implemented
-    void operator=(const IObserver&); // Operator '=' Not Implemented
+    IObserver(const IObserver&) = delete; // Copy Constructor Not Implemented
+    IObserver(IObserver&&) = delete;      // Move Constructor Not Implemented
+    IObserver& operator=(const IObserver&) = delete; // Copy Assignment Not Implemented
+    IObserver& operator=(IObserver&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _IObserver_H_ */

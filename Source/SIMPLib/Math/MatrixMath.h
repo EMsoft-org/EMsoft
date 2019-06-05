@@ -41,8 +41,6 @@
 #include "SIMPLib/SIMPLib.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-
 /*
  * @class MatrixMath MatrixMath.h DREAM3DLib/Common/MatrixMath.h
  * @brief This class performs Crystallographic Misorientation Calculations
@@ -55,7 +53,21 @@
 class SIMPLib_EXPORT MatrixMath
 {
   public:
-    SIMPL_SHARED_POINTERS(MatrixMath)
+    using Self = MatrixMath;
+    using Pointer = std::shared_ptr<Self>;
+    using ConstPointer = std::shared_ptr<const Self>;
+    using WeakPointer = std::weak_ptr<Self>;
+    using ConstWeakPointer = std::weak_ptr<Self>;
+
+    /**
+ * @brief NullPointer accessor for MatrixMath
+ */
+    static Pointer NullPointer();
+
+    /**
+ * @brief Shared pointer New method for MatrixMath
+ */
+    static Pointer New();
 
     virtual ~MatrixMath();
 

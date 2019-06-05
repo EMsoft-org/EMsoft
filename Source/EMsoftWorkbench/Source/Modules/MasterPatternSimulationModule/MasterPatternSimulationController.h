@@ -38,8 +38,6 @@
 #include <QtCore/QFutureWatcher>
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 class MonteCarloFileReader;
 class EMsoftFileWriter;
@@ -60,7 +58,16 @@ public:
     ECP
   };
 
-  SIMPL_INSTANCE_PROPERTY(bool, Cancel)
+    /**
+    * @brief Setter property for Cancel
+    */
+    void setCancel(const bool& value); 
+
+    /**
+    * @brief Getter property for Cancel
+    * @return Value of Cancel
+    */
+    bool getCancel() const;
 
   struct MasterPatternSimulationData
   {
@@ -85,7 +92,7 @@ public:
    * @param data
    * @return
    */
-  bool validateMasterPatternValues(MasterPatternSimulationController::MasterPatternSimulationData data);
+  bool validateMasterPatternValues(MasterPatternSimulationController::MasterPatternSimulationData data) const;
 
   /**
    * @brief setUpdateProgress
@@ -93,13 +100,13 @@ public:
    * @param totalLoops
    * @param bseYield
    */
-  void setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops);
+  void setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops) const;
 
   /**
    * @brief getNumCPUCores
    * @return
    */
-  int getNumCPUCores();
+  int getNumCPUCores() const;
 
 #if 0
     /**
@@ -118,18 +125,20 @@ public:
 #endif
 
 signals:
-  void warningMessageGenerated(const QString& msg);
-  void errorMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void warningMessageGenerated(const QString& msg) const;
+  void errorMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
+    bool m_Cancel;
+
   MonteCarloFileReader* m_MonteCarloReader = nullptr;
 
   QString m_StartTime = "";
 
-  Int32ArrayType::Pointer m_GenericAccumzPtr;
-  FloatArrayType::Pointer m_GenericLPNHPtr;
-  FloatArrayType::Pointer m_GenericLPSHPtr;
+  std::vector<int32_t> m_GenericAccumzPtr;
+  std::vector<float> m_GenericLPNHPtr;
+  std::vector<float> m_GenericLPSHPtr;
 
   std::vector<float> m_Atompos;
   std::vector<int32_t> m_Atomtypes;
@@ -157,7 +166,7 @@ private:
    * @param simData
    * @return
    */
-  bool writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  bool writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
 
 #if 0
     /**
@@ -188,31 +197,31 @@ private:
    * @brief getEMsoftUserName
    * @return
    */
-  QString getEMsoftUserName();
+  QString getEMsoftUserName() const;
 
   /**
    * @brief getEMsoftUserEmail
    * @return
    */
-  QString getEMsoftUserEmail();
+  QString getEMsoftUserEmail() const;
 
   /**
    * @brief getEMsoftUserLocation
    * @return
    */
-  QString getEMsoftUserLocation();
+  QString getEMsoftUserLocation() const;
 
   /**
    * @brief getIParPtr
    * @return
    */
-  Int32ArrayType::Pointer getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  std::vector<int32_t> getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
 
   /**
    * @brief getFParPtr
    * @return
    */
-  FloatArrayType::Pointer getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData);
+  std::vector<float> getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
 
 public:
   MasterPatternSimulationController(const MasterPatternSimulationController&) = delete;            // Copy Constructor Not Implemented

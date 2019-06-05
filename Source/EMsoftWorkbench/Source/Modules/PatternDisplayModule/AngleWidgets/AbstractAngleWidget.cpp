@@ -67,3 +67,12 @@ float AbstractAngleWidget::ConvertToDegrees(float value)
 {
   return value * AbstractAngleWidget::k_180OverPi; // Convert to degrees
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AbstractAngleWidget::Pointer AbstractAngleWidget::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+

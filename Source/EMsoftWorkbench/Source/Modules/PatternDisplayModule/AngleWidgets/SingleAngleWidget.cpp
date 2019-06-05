@@ -75,7 +75,7 @@ void SingleAngleWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool SingleAngleWidget::hasValidAngles()
+bool SingleAngleWidget::hasValidAngles() const
 {
   // This can never be false, because even empty angle line edits will be counted as 0's.
   return true;
@@ -95,7 +95,7 @@ void SingleAngleWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SingleAngleWidget::writeSession(QJsonObject& obj)
+void SingleAngleWidget::writeSession(QJsonObject& obj) const
 {
   QJsonObject eulerObj;
   eulerObj[EMsoftWorkbenchConstants::IOStrings::Phi1] = eulerPhi1->text().toDouble();
@@ -107,7 +107,7 @@ void SingleAngleWidget::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SingleAngleWidget::createModificationConnections(PatternDisplay_UI* ui)
+void SingleAngleWidget::createModificationConnections(PatternDisplay_UI* ui) const
 {
   // Line Edits
   connect(eulerPhi1, &QLineEdit::textEdited, [=] { emit ui->moduleParametersChanged(); });
@@ -118,12 +118,31 @@ void SingleAngleWidget::createModificationConnections(PatternDisplay_UI* ui)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer SingleAngleWidget::getEulerAngles()
+std::vector<float> SingleAngleWidget::getEulerAngles() const
 {
-  FloatArrayType::Pointer floatArray = FloatArrayType::CreateArray(1, QVector<size_t>(1, 3), "Euler Angles");
-  floatArray->setComponent(0, 0, eulerPhi1->text().toDouble() * k_PiOver180); // Convert to radians
-  floatArray->setComponent(0, 1, eulerPhi->text().toDouble() * k_PiOver180);
-  floatArray->setComponent(0, 2, eulerPhi2->text().toDouble() * k_PiOver180);
+  std::vector<float> floatArray(3);
+  floatArray[0] = eulerPhi1->text().toDouble() * k_PiOver180; // Convert to radians
+  floatArray[1] = eulerPhi->text().toDouble() * k_PiOver180;
+  floatArray[2] = eulerPhi2->text().toDouble() * k_PiOver180;
 
   return floatArray;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SingleAngleWidget::Pointer SingleAngleWidget::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SingleAngleWidget::Pointer SingleAngleWidget::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

@@ -60,18 +60,31 @@ ModifiedLambertProjection::ModifiedLambertProjection() :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ModifiedLambertProjection::~ModifiedLambertProjection()
-{
+ModifiedLambertProjection::~ModifiedLambertProjection() = default;
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+ModifiedLambertProjection::Pointer ModifiedLambertProjection::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ModifiedLambertProjection::Pointer ModifiedLambertProjection::CreateProjectionFromXYZCoords(FloatArrayType* coords, int dimension, float sphereRadius)
+ModifiedLambertProjection::Pointer ModifiedLambertProjection::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+ModifiedLambertProjection::Pointer ModifiedLambertProjection::CreateProjectionFromXYZCoords(const std::vector<float> &coords, int dimension, float sphereRadius)
 {
 
-  size_t npoints = coords->getNumberOfTuples();
   bool nhCheck = false;
   float sqCoord[2];
   //int sqIndex = 0;
@@ -101,12 +114,12 @@ ModifiedLambertProjection::Pointer ModifiedLambertProjection::CreateProjectionFr
   fprintf(f, "DATASET UNSTRUCTURED_GRID\nPOINTS %lu float\n", coords->getNumberOfTuples() );
 #endif
 
-  for(size_t i = 0; i < npoints; ++i)
+  for(std::vector<float>::const_iterator it = coords.begin(); it != coords.end(); it + 3)
   {
     sqCoord[0] = 0.0;
     sqCoord[1] = 0.0;
     //get coordinates in square projection of crystal normal parallel to boundary normal
-    nhCheck = squareProj->getSquareCoord(coords->getPointer(i * 3), sqCoord);
+    nhCheck = squareProj->getSquareCoord(&(*it), sqCoord);
 #if WRITE_LAMBERT_SQUARE_COORD_VTK
     fprintf(f, "%f %f 0\n", sqCoord[0], sqCoord[1]);
 #endif
@@ -152,10 +165,11 @@ void ModifiedLambertProjection::initializeSquares(int dims, float sphereRadius)
   m_HalfDimension = static_cast<float>(m_Dimension) / 2.0;
   m_HalfDimensionTimesStepSize = m_HalfDimension * m_StepSize;
 
-  m_NorthSquare = DoubleArrayType::CreateArray(m_Dimension*m_Dimension, "ModifiedLambert_NorthSquare");
-  m_NorthSquare->initializeWithZeros();
-  m_SouthSquare = DoubleArrayType::CreateArray(m_Dimension*m_Dimension, "ModifiedLambert_SouthSquare");
-  m_SouthSquare->initializeWithZeros();
+  m_NorthSquare.resize(m_Dimension*m_Dimension);
+  std::fill(m_NorthSquare.begin(), m_NorthSquare.end(), 0.0);
+
+  m_SouthSquare.resize(m_Dimension*m_Dimension);
+  std::fill(m_SouthSquare.begin(), m_SouthSquare.end(), 0.0);
 }
 
 // -----------------------------------------------------------------------------
@@ -247,25 +261,25 @@ void ModifiedLambertProjection::addInterpolatedValues(Square square, float* sqCo
   int index4 = bbin4 * m_Dimension + abin4;
   if (square == ModifiedLambertProjection::Square::NorthSquare)
   {
-    double v1 = m_NorthSquare->getValue(index1) + value * (1.0 - modX) * (1.0 - modY);
-    double v2 = m_NorthSquare->getValue(index2) + value * (modX) * (1.0 - modY);
-    double v3 = m_NorthSquare->getValue(index3) + value * (1.0 - modX) * (modY);
-    double v4 = m_NorthSquare->getValue(index4) + value * (modX) * (modY);
-    m_NorthSquare->setValue(index1, v1);
-    m_NorthSquare->setValue(index2, v2);
-    m_NorthSquare->setValue(index3, v3);
-    m_NorthSquare->setValue(index4, v4);
+    double v1 = m_NorthSquare.at(index1) + value * (1.0 - modX) * (1.0 - modY);
+    double v2 = m_NorthSquare.at(index2) + value * (modX) * (1.0 - modY);
+    double v3 = m_NorthSquare.at(index3) + value * (1.0 - modX) * (modY);
+    double v4 = m_NorthSquare.at(index4) + value * (modX) * (modY);
+    m_NorthSquare.at(index1) = v1;
+    m_NorthSquare.at(index2) = v2;
+    m_NorthSquare.at(index3) = v3;
+    m_NorthSquare.at(index4) = v4;
   }
   else
   {
-    double v1 = m_SouthSquare->getValue(index1) + value * (1.0 - modX) * (1.0 - modY);
-    double v2 = m_SouthSquare->getValue(index2) + value * (modX) * (1.0 - modY);
-    double v3 = m_SouthSquare->getValue(index3) + value * (1.0 - modX) * (modY);
-    double v4 = m_SouthSquare->getValue(index4) + value * (modX) * (modY);
-    m_SouthSquare->setValue(index1, v1);
-    m_SouthSquare->setValue(index2, v2);
-    m_SouthSquare->setValue(index3, v3);
-    m_SouthSquare->setValue(index4, v4);
+    double v1 = m_SouthSquare.at(index1) + value * (1.0 - modX) * (1.0 - modY);
+    double v2 = m_SouthSquare.at(index2) + value * (modX) * (1.0 - modY);
+    double v3 = m_SouthSquare.at(index3) + value * (1.0 - modX) * (modY);
+    double v4 = m_SouthSquare.at(index4) + value * (modX) * (modY);
+    m_SouthSquare.at(index1) = v1;
+    m_SouthSquare.at(index2) = v2;
+    m_SouthSquare.at(index3) = v3;
+    m_SouthSquare.at(index4) = v4;
   }
 }
 
@@ -276,13 +290,13 @@ void ModifiedLambertProjection::addValue(Square square, int index, double value)
 {
   if (square == ModifiedLambertProjection::Square::NorthSquare)
   {
-    double v = m_NorthSquare->getValue(index) + value;
-    m_NorthSquare->setValue(index, v);
+    double v = m_NorthSquare.at(index) + value;
+    m_NorthSquare.at(index) = v;
   }
   else
   {
-    double v = m_SouthSquare->getValue(index) + value;
-    m_SouthSquare->setValue(index, v);
+    double v = m_SouthSquare.at(index) + value;
+    m_SouthSquare.at(index) = v;
   }
 }
 
@@ -293,11 +307,11 @@ void ModifiedLambertProjection::setValue(Square square, int index, double value)
 {
   if (square == ModifiedLambertProjection::Square::NorthSquare)
   {
-    m_NorthSquare->setValue(index, value);
+    m_NorthSquare.at(index) = value;
   }
   else
   {
-    m_SouthSquare->setValue(index, value);
+    m_SouthSquare.at(index) = value;
   }
 }
 
@@ -308,11 +322,11 @@ double ModifiedLambertProjection::getValue(Square square, int index)
 {
   if (square == ModifiedLambertProjection::Square::NorthSquare)
   {
-    return m_NorthSquare->getValue(index);
+    return m_NorthSquare.at(index);
   }
   else
   {
-    return m_SouthSquare->getValue(index);
+    return m_SouthSquare.at(index);
   }
 }
 
@@ -383,19 +397,19 @@ double ModifiedLambertProjection::getInterpolatedValue(Square square, float* sqC
   modY = fabs(modY);
   if (square == ModifiedLambertProjection::Square::NorthSquare)
   {
-    float intensity1 = m_NorthSquare->getValue((abin1) + (bbin1 * m_Dimension));
-    float intensity2 = m_NorthSquare->getValue((abin2) + (bbin2 * m_Dimension));
-    float intensity3 = m_NorthSquare->getValue((abin3) + (bbin3 * m_Dimension));
-    float intensity4 = m_NorthSquare->getValue((abin4) + (bbin4 * m_Dimension));
+    float intensity1 = m_NorthSquare.at((abin1) + (bbin1 * m_Dimension));
+    float intensity2 = m_NorthSquare.at((abin2) + (bbin2 * m_Dimension));
+    float intensity3 = m_NorthSquare.at((abin3) + (bbin3 * m_Dimension));
+    float intensity4 = m_NorthSquare.at((abin4) + (bbin4 * m_Dimension));
     float interpolatedIntensity = ((intensity1 * (1 - modX) * (1 - modY)) + (intensity2 * (modX) * (1 - modY)) + (intensity3 * (1 - modX) * (modY)) + (intensity4 * (modX) * (modY)));
     return interpolatedIntensity;
   }
   else
   {
-    float intensity1 = m_SouthSquare->getValue((abin1) + (bbin1 * m_Dimension));
-    float intensity2 = m_SouthSquare->getValue((abin2) + (bbin2 * m_Dimension));
-    float intensity3 = m_SouthSquare->getValue((abin3) + (bbin3 * m_Dimension));
-    float intensity4 = m_SouthSquare->getValue((abin4) + (bbin4 * m_Dimension));
+    float intensity1 = m_SouthSquare.at((abin1) + (bbin1 * m_Dimension));
+    float intensity2 = m_SouthSquare.at((abin2) + (bbin2 * m_Dimension));
+    float intensity3 = m_SouthSquare.at((abin3) + (bbin3 * m_Dimension));
+    float intensity4 = m_SouthSquare.at((abin4) + (bbin4 * m_Dimension));
     float interpolatedIntensity = ((intensity1 * (1 - modX) * (1 - modY)) + (intensity2 * (modX) * (1 - modY)) + (intensity3 * (1 - modX) * (modY)) + (intensity4 * (modX) * (modY)));
     return interpolatedIntensity;
   }
@@ -404,7 +418,7 @@ double ModifiedLambertProjection::getInterpolatedValue(Square square, float* sqC
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool ModifiedLambertProjection::getSquareCoord(float* xyz, float* sqCoord)
+bool ModifiedLambertProjection::getSquareCoord(const float* xyz, float* sqCoord)
 {
   bool nhCheck = false;
   float adjust = 1.0;
@@ -480,12 +494,12 @@ int ModifiedLambertProjection::getSquareIndex(float* sqCoord)
 void ModifiedLambertProjection::normalizeSquares()
 {
 
-  size_t npoints = m_NorthSquare->getNumberOfTuples();
+  size_t npoints = m_NorthSquare.size();
   double nTotal = 0;
   double sTotal = 0;
 
-  double* north = m_NorthSquare->getPointer(0);
-  double* south = m_SouthSquare->getPointer(0);
+  double* north = m_NorthSquare.data();
+  double* south = m_SouthSquare.data();
 
   // Get the Sum of all the bins
   for(size_t i = 0; i < npoints; ++i)
@@ -512,9 +526,9 @@ void ModifiedLambertProjection::normalizeSquaresToMRD()
 {
   // First Normalize the squares
   normalizeSquares();
-  size_t npoints = m_NorthSquare->getNumberOfTuples();
-  double* north = m_NorthSquare->getPointer(0);
-  double* south = m_SouthSquare->getPointer(0);
+  size_t npoints = m_NorthSquare.size();
+  double* north = m_NorthSquare.data();
+  double* south = m_SouthSquare.data();
   int dimSqrd = m_Dimension * m_Dimension;
 
   // Multiply Each Bin by the total number of bins
@@ -529,7 +543,7 @@ void ModifiedLambertProjection::normalizeSquaresToMRD()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ModifiedLambertProjection::createProjection(int dim, FloatArrayType* stereoIntensity, ModifiedLambertProjection::ProjectionType projType)
+void ModifiedLambertProjection::createProjection(int dim, std::vector<float> &stereoIntensity, ModifiedLambertProjection::ProjectionType projType)
 {
   int xpoints = dim;
   int ypoints = dim;
@@ -561,8 +575,8 @@ void ModifiedLambertProjection::createProjection(int dim, FloatArrayType* stereo
   float xyz[3];
   bool nhCheck = false;
 
-  stereoIntensity->initializeWithZeros();
-  float* intensity = stereoIntensity->getPointer(0);
+  std::fill(stereoIntensity.begin(), stereoIntensity.end(), 0.0f);
+  float* intensity = stereoIntensity.data();
 // int sqIndex = 0;
 
   for (int64_t y = 0; y < ypoints; y++)
@@ -630,7 +644,7 @@ void ModifiedLambertProjection::createProjection(int dim, FloatArrayType* stereo
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-typename FloatArrayType::Pointer ModifiedLambertProjection::createProjection(int dim, ModifiedLambertProjection::ProjectionType projType)
+typename std::vector<float> ModifiedLambertProjection::createProjection(int dim, ModifiedLambertProjection::ProjectionType projType)
 {
   QString arrayName;
   if (projType == ModifiedLambertProjection::ProjectionType::Stereographic)
@@ -644,11 +658,50 @@ typename FloatArrayType::Pointer ModifiedLambertProjection::createProjection(int
   else
   {
     // Not a valid projection type
-    return FloatArrayType::NullPointer();
+    return std::vector<float>();
   }
 
-  typename FloatArrayType::Pointer intensity = FloatArrayType::CreateArray(QVector<size_t>(1, dim*dim), QVector<size_t>(1, 1), arrayName);
-  intensity->initializeWithZeros();
-  createProjection(dim, intensity.get(), projType);
+  typename std::vector<float> intensity(dim*dim, 0.0);
+  createProjection(dim, intensity, projType);
   return intensity;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+int ModifiedLambertProjection::getDimension() const
+{
+  return m_Dimension;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+float ModifiedLambertProjection::getStepSize() const
+{
+  return m_StepSize;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+float ModifiedLambertProjection::getSphereRadius() const
+{
+  return m_SphereRadius;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+std::vector<double> ModifiedLambertProjection::getNorthSquare() const
+{
+  return m_NorthSquare;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+std::vector<double> ModifiedLambertProjection::getSouthSquare() const
+{
+  return m_SouthSquare;
 }

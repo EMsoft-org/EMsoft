@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreationController.h"
 #include "Modules/IModuleUI.h"
@@ -50,8 +49,6 @@ class CrystalStructureCreation_UI : public IModuleUI, public Ui::CrystalStructur
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(CrystalStructureCreation_UI)
-
   /**
    * @brief CrystalStructureCreation_UI
    * @param parent
@@ -60,7 +57,16 @@ public:
 
   ~CrystalStructureCreation_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(CrystalStructureCreationController*, Controller)
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(CrystalStructureCreationController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    CrystalStructureCreationController* getController() const;
 
   /**
    * @brief readModuleSession
@@ -72,7 +78,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
   /**
    * @brief validateData
@@ -92,11 +98,13 @@ protected:
   void changeEvent(QEvent* event) override;
 
 protected slots:
-  void on_csCB_currentIndexChanged(int index);
+  void on_csCB_currentIndexChanged(int index) const;
 
   void parametersChanged();
 
 private:
+    CrystalStructureCreationController* m_Controller;
+
   QString m_LastFilePath = "";
 
   /**
@@ -115,18 +123,18 @@ private:
    * @brief writeCrystalSystemParameters
    * @param obj
    */
-  void writeCrystalSystemParameters(QJsonObject& obj);
+  void writeCrystalSystemParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeSpaceGroupParameters
    * @param obj
    */
-  void writeSpaceGroupParameters(QJsonObject& obj);
+  void writeSpaceGroupParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators
    */
-  void createValidators();
+  void createValidators() const;
 
   /**
    * @brief createModificationConnections
@@ -142,7 +150,7 @@ private:
    * @brief getCreationData
    * @return
    */
-  CrystalStructureCreationController::CrystalStructureCreationData getCreationData();
+  CrystalStructureCreationController::CrystalStructureCreationData getCreationData() const;
 
 public:
   CrystalStructureCreation_UI(const CrystalStructureCreation_UI&) = delete;            // Copy Constructor Not Implemented

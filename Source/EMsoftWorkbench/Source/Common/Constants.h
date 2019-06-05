@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _emsoftworkbenchconstants_h_
-#define _emsoftworkbenchconstants_h_
+#pragma once
 
 #include <QtCore/QString>
 
@@ -293,6 +292,4 @@ namespace EMsoftWorkbenchConstants
     const QString FitMode = "Fit Mode";
   }
 }
-
-#endif /* _emsoftworkbenchconstants_h_ */
 

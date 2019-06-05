@@ -33,50 +33,47 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#pragma once
 
-#ifndef _abstractimagegenerator_h_
-#define _abstractimagegenerator_h_
+#include "Common/ImageGenerationTask.hpp"
+#include "Common/ProjectionConversions.hpp"
 
-#include <QtGui/QImage>
+#include "OrientationLib/Utilities/ModifiedLambertProjection.h"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
-
-class AbstractImageGenerator
+template <typename P, typename I>
+class ProjectionConversionTask : public ImageGenerationTask<I>
 {
   public:
-    SIMPL_SHARED_POINTERS(AbstractImageGenerator)
-    SIMPL_TYPE_MACRO(AbstractImageGenerator)
-
-    virtual ~AbstractImageGenerator() {}
-
-    /**
-     * @brief createImage
-     */
-    virtual void createImage() = 0;
-
-    QImage getGeneratedImage()
+    ProjectionConversionTask(const std::vector<P> &data, size_t xDim, size_t yDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
+                             size_t zValue, ModifiedLambertProjection::Square square, QVector<AbstractImageGenerator::Pointer> &imageGenerators, QSemaphore &sem,
+                             size_t vectorIdx, bool horizontalMirror = false, bool verticalMirror = false) :
+      ImageGenerationTask<I>(xDim, yDim, zValue, imageGenerators, sem, vectorIdx, horizontalMirror, verticalMirror),
+      m_Data(data),
+      m_ProjDim(projDim),
+      m_ProjType(projType),
+      m_Square(square)
     {
-      return m_GeneratedImage;
+
     }
 
-    QPair<QVariant, QVariant> getMinMaxPair()
-    {
-      return m_MinMaxPair;
-    }
+    ~ProjectionConversionTask() override = default;
 
-  protected:
-    QPair<QVariant,QVariant>                              m_MinMaxPair;
-    QImage                                                m_GeneratedImage;
-
-    AbstractImageGenerator()
+    void beforeImageGeneration() override
     {
+      ProjectionConversions projConversion;
+      std::vector<float> ptr = projConversion.convertLambertSquareData<P>(m_Data, m_ProjDim, m_ProjType, this->getVectorIndex(), m_Square);
+      this->setImageData(ptr);
     }
 
   private:
+    std::vector<P> m_Data;
+    size_t m_ProjDim;
+    ModifiedLambertProjection::ProjectionType m_ProjType;
+    ModifiedLambertProjection::Square m_Square = ModifiedLambertProjection::Square::NorthSquare;
 
-    AbstractImageGenerator(const AbstractImageGenerator&); // Copy Constructor Not Implemented
-    void operator=(const AbstractImageGenerator&); // Operator '=' Not Implemented
+  public:
+    ProjectionConversionTask(const ProjectionConversionTask&) = delete; // Copy Constructor Not Implemented
+    ProjectionConversionTask(ProjectionConversionTask&&) = delete;      // Move Constructor Not Implemented
+    ProjectionConversionTask& operator=(const ProjectionConversionTask&) = delete; // Copy Assignment Not Implemented
+    ProjectionConversionTask& operator=(ProjectionConversionTask&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _abstractimagegenerator_h_ */

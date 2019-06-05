@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _xtalfilereader_h_
-#define _xtalfilereader_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -42,8 +41,6 @@
 #include <H5Support/QH5Lite.h>
 #include <H5Support/QH5Utilities.h>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include <hdf5.h>
 
@@ -68,7 +65,7 @@ class XtalFileReader : public QObject
      */
     virtual bool closeFile();
 
-    hid_t getFileId();
+    hid_t getFileId() const;
     bool getAtomPos(std::vector<float> &atomPos);
     bool getAtomTypes(std::vector<int32_t> &atomTypes);
     bool getLatticeParameters(std::vector<float> &latParam);
@@ -80,11 +77,11 @@ class XtalFileReader : public QObject
     bool getNatomTypes(int &natomTypes);
     bool getSpaceGroupNumber(int &spaceGroupNumber);
     bool getSpaceGroupSetting(int &spaceGroupSetting);
-    Int32ArrayType::Pointer getIParPtr();
-    FloatArrayType::Pointer getFParPtr();
+    std::vector<int32_t> getIParPtr();
+    std::vector<float> getFParPtr();
 
   signals:
-    void errorMessageGenerated(const QString &msg, int code);
+    void errorMessageGenerated(const QString &msg, int code) const;
 
   private:
     hid_t                           m_FileId = -1;
@@ -103,16 +100,17 @@ class XtalFileReader : public QObject
     int                             m_SpaceGroupNumber = -1;
     int                             m_SpaceGroupSetting = -1;
 
-    Int32ArrayType::Pointer         m_IParPtr = Int32ArrayType::NullPointer();
-    FloatArrayType::Pointer         m_FParPtr = FloatArrayType::NullPointer();
+    std::vector<int32_t> m_IParVector;
+    std::vector<float> m_FParVector;
 
     /**
      * @brief initializeData
      */
     void initializeData();
 
-    XtalFileReader(const XtalFileReader&);    // Copy Constructor Not Implemented
-    void operator=(const XtalFileReader&);  // Operator '=' Not Implemented
+  public:
+    XtalFileReader(const XtalFileReader&) = delete; // Copy Constructor Not Implemented
+    XtalFileReader(XtalFileReader&&) = delete;      // Move Constructor Not Implemented
+    XtalFileReader& operator=(const XtalFileReader&) = delete; // Copy Assignment Not Implemented
+    XtalFileReader& operator=(XtalFileReader&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _xtalfilereader_h_ */

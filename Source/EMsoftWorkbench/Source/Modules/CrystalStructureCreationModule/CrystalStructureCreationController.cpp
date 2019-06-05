@@ -36,7 +36,7 @@
 #include "CrystalStructureCreationController.h"
 
 #include <functional>
-#include <math.h>
+#include <cmath>
 
 #include <QtCore/QDateTime>
 #include <QtCore/QDir>
@@ -62,14 +62,12 @@ CrystalStructureCreationController::CrystalStructureCreationController(QObject* 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-CrystalStructureCreationController::~CrystalStructureCreationController()
-{
-}
+CrystalStructureCreationController::~CrystalStructureCreationController() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void CrystalStructureCreationController::createCrystalStructureFile(CrystalStructureCreationController::CrystalStructureCreationData data)
+void CrystalStructureCreationController::createCrystalStructureFile(CrystalStructureCreationController::CrystalStructureCreationData data) const
 {
   QString outputFilePath = data.outputFilePath;
   outputFilePath = QDir::toNativeSeparators(outputFilePath);
@@ -326,7 +324,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalStructureCreationController::CrystalStructureCreationData data)
+bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalStructureCreationController::CrystalStructureCreationData data) const
 {
   if(data.outputFilePath.isEmpty())
   {
@@ -412,10 +410,12 @@ bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalS
   {
     std::vector<int> v = {48, 50, 59, 68, 70, 85, 86, 88, 125, 126, 129, 130, 133, 134, 137, 138, 141, 142, 201, 203, 222, 224, 227, 228};
     std::transform(v.begin(), v.end(), v.begin(), std::bind2nd(std::plus<int>(), -data.spaceGroupNumber));
-    for(unsigned int i = 0; i < v.size(); i++)
+    for(int &value : v)
     {
-      if(v[i] < 0)
-        v[i] *= -1;
+      if(value < 0)
+      {
+        value *= -1;
+      }
     }
     double minp = *std::min_element(v.begin(), v.end());
     if((minp > 0) && (data.spaceGroupSetting == 2))

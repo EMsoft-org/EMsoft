@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _montecarlofilereader_h_
-#define _montecarlofilereader_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
@@ -42,8 +41,6 @@
 #include <H5Support/QH5Lite.h>
 #include <H5Support/QH5Utilities.h>
 
-#include "SIMPLib/DataArrays/DataArray.hpp"
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Common/XtalFileReader.h"
 
@@ -61,7 +58,7 @@ class MonteCarloFileReader : public XtalFileReader
      * @brief closeFile
      * @return
      */
-    bool closeFile();
+    bool closeFile() override;
 
     bool getSampleTiltAngleSigma(double &sampleTiltAngleSigma);
     bool getSampleRotationalAngleOmega(double &sampleRotAngleOmega);
@@ -82,43 +79,44 @@ class MonteCarloFileReader : public XtalFileReader
     bool getGlobalWorkgroupSize(int &globalWorkgrpSize);
     bool getMonteCarloMode(int &mcMode);
     bool getXtalFileName(QString &xtalFileName);
-    Int32ArrayType::Pointer getAccumzPtr();
-    Int32ArrayType::Pointer getAccumePtr();
-    Int32ArrayType::Pointer getIParPtr();
-    FloatArrayType::Pointer getFParPtr();
+    std::vector<int32_t> getAccumzPtr();
+    std::vector<int32_t> getAccumePtr();
+    std::vector<int32_t> getIParPtr();
+    std::vector<float> getFParPtr();
 
   private:
-    double                          m_SampleTiltAngleSig;
-    double                          m_SampleRotAngleOmega;
-    double                          m_SampleStartTiltAngle;
-    double                          m_SampleEndTiltAngle;
-    double                          m_SampleTiltStepSize;
-    double                          m_AcceleratingVoltage;
-    double                          m_MinEnergyConsider;
-    double                          m_EnergyBinSize;
-    double                          m_MaxDepthConsider;
-    double                          m_DepthStepSize;
-    int                             m_NumOfPixelsN;
-    int                             m_NumOfEPerWorkitem;
-    int                             m_TotalNumOfEConsidered;
-    int                             m_MultiplierForTotalNumOfE;
-    int                             m_GPUPlatformID;
-    int                             m_GPUDeviceID;
-    int                             m_GlobalWorkGroupSize;
-    int                             m_MonteCarloMode;
-    QString                         m_XtalFileName;
-    Int32ArrayType::Pointer         m_AccumePtr;
-    Int32ArrayType::Pointer         m_AccumzPtr;
-    Int32ArrayType::Pointer         m_IParPtr;
-    FloatArrayType::Pointer         m_FParPtr;
+    double m_SampleTiltAngleSig;
+    double m_SampleRotAngleOmega;
+    double m_SampleStartTiltAngle;
+    double m_SampleEndTiltAngle;
+    double m_SampleTiltStepSize;
+    double m_AcceleratingVoltage;
+    double m_MinEnergyConsider;
+    double m_EnergyBinSize;
+    double m_MaxDepthConsider;
+    double m_DepthStepSize;
+    int m_NumOfPixelsN;
+    int m_NumOfEPerWorkitem;
+    int m_TotalNumOfEConsidered;
+    int m_MultiplierForTotalNumOfE;
+    int m_GPUPlatformID;
+    int m_GPUDeviceID;
+    int m_GlobalWorkGroupSize;
+    int m_MonteCarloMode;
+    QString m_XtalFileName;
+    std::vector<int32_t> m_AccumePtr;
+    std::vector<int32_t> m_AccumzPtr;
+    std::vector<int32_t> m_IParVector;
+    std::vector<float> m_FParVector;
 
     /**
      * @brief initializeData
      */
     void initializeData();
 
-    MonteCarloFileReader(const MonteCarloFileReader&);    // Copy Constructor Not Implemented
-    void operator=(const MonteCarloFileReader&);  // Operator '=' Not Implemented
+  public:
+    MonteCarloFileReader(const MonteCarloFileReader&) = delete; // Copy Constructor Not Implemented
+    MonteCarloFileReader(MonteCarloFileReader&&) = delete;      // Move Constructor Not Implemented
+    MonteCarloFileReader& operator=(const MonteCarloFileReader&) = delete; // Copy Assignment Not Implemented
+    MonteCarloFileReader& operator=(MonteCarloFileReader&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _montecarlofilereader_h_ */

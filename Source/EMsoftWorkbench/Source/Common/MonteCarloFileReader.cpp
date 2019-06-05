@@ -46,8 +46,7 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloFileReader::MonteCarloFileReader() :
-  XtalFileReader()
+MonteCarloFileReader::MonteCarloFileReader()
 {
   initializeData();
 }
@@ -55,10 +54,7 @@ MonteCarloFileReader::MonteCarloFileReader() :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloFileReader::~MonteCarloFileReader()
-{
-
-}
+MonteCarloFileReader::~MonteCarloFileReader() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -84,9 +80,9 @@ void MonteCarloFileReader::initializeData()
   m_GlobalWorkGroupSize = -1;
   m_MonteCarloMode = -1;
   m_XtalFileName = "";
-  m_AccumzPtr = Int32ArrayType::NullPointer();
-  m_IParPtr = Int32ArrayType::NullPointer();
-  m_FParPtr = FloatArrayType::NullPointer();
+  m_AccumzPtr.clear();
+  m_IParVector.clear();
+  m_FParVector.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -106,9 +102,9 @@ bool MonteCarloFileReader::closeFile()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MonteCarloFileReader::getIParPtr()
+std::vector<int32_t> MonteCarloFileReader::getIParPtr()
 {
-  if (m_IParPtr == Int32ArrayType::NullPointer())
+  if (m_IParVector.empty())
   {
     int numOfPixelsN = 0;
     int globalWorkGrpSize = 0;
@@ -137,72 +133,70 @@ Int32ArrayType::Pointer MonteCarloFileReader::getIParPtr()
         !getMaximumDepthToConsider(maxDepth) ||
         !getDepthStepSize(depthStepSize) || !getMonteCarloMode(mcMode))
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // Get 'full' mode values, otherwise bail
     if (mcMode == 1 && (!getAcceleratingVoltage(accelVoltage) || !getMinimumEnergyToConsider(minEnergy) || !getEnergyBinSize(energyBinSize)))
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // Get 'bse1' mode values, otherwise bail
     if (mcMode != 1 && (!getSampleEndTiltAngle(sampleEndTiltAngle) || !getSampleStartTiltAngle(sampleStartTiltAngle) ||
                         !getSampleTiltStepSize(sampleTiltStepSize)))
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    m_IParPtr = XtalFileReader::getIParPtr();
-    if (m_IParPtr == Int32ArrayType::NullPointer())
+    m_IParVector = XtalFileReader::getIParPtr();
+    if (m_IParVector.empty())
     {
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    int32_t* iPar = m_IParPtr->getPointer(0);
-
-    iPar[0] = static_cast<int>((numOfPixelsN - 1) / 2); // number of pixels along x
-    iPar[1] = globalWorkGrpSize;                  // global work group size
-    iPar[2] = numOfEPerWorkitem; // number of electrons in work group
-    iPar[3] = totEConsidered;    // total number of electrons in single MCstep
-    iPar[4] = multiplier;        // multiplier for # of electrons
-    iPar[5] = gpuDeviceID + 1;   // OpenCL device ID
-    iPar[6] = gpuPlatformID + 1; // OpenCL platform ID
-    iPar[12] = static_cast<int>(maxDepth / depthStepSize + 1); // num z bins
-    iPar[13] = mcMode; // simulation mode (1=full, 2=bse1)
+    m_IParVector[0] = static_cast<int>((numOfPixelsN - 1) / 2); // number of pixels along x
+    m_IParVector[1] = globalWorkGrpSize;                  // global work group size
+    m_IParVector[2] = numOfEPerWorkitem; // number of electrons in work group
+    m_IParVector[3] = totEConsidered;    // total number of electrons in single MCstep
+    m_IParVector[4] = multiplier;        // multiplier for # of electrons
+    m_IParVector[5] = gpuDeviceID + 1;   // OpenCL device ID
+    m_IParVector[6] = gpuPlatformID + 1; // OpenCL platform ID
+    m_IParVector[12] = static_cast<int>(maxDepth / depthStepSize + 1); // num z bins
+    m_IParVector[13] = mcMode; // simulation mode (1=full, 2=bse1)
 
     // this next pair of values is a bit tricky since we use the accum_e and accum_z arrays for
     // two different cases, 'full' and 'bse1'
-    if (iPar[13] == 1)
+    if (m_IParVector[13] == 1)
     {
-      iPar[11] = static_cast<int>((accelVoltage - minEnergy) / energyBinSize + 1); // num E bins
-      iPar[14] = 1;    // only one major loop to be executed
+      m_IParVector[11] = static_cast<int>((accelVoltage - minEnergy) / energyBinSize + 1); // num E bins
+      m_IParVector[14] = 1;    // only one major loop to be executed
     }
     else
     {
-      iPar[11] = static_cast<int>((sampleEndTiltAngle - sampleStartTiltAngle) / sampleTiltStepSize + 1); // number of bse1 angles
-      iPar[14] = iPar[11];
+      m_IParVector[11] = static_cast<int>((sampleEndTiltAngle - sampleStartTiltAngle) / sampleTiltStepSize + 1); // number of bse1 angles
+      m_IParVector[14] = m_IParVector[11];
     }
-    iPar[15] = static_cast<int>((numOfPixelsN - 1) / 20); // number of depth bins along x
+    m_IParVector[15] = static_cast<int>((numOfPixelsN - 1) / 20); // number of depth bins along x
   }
 
-  return m_IParPtr;
+  return m_IParVector;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer MonteCarloFileReader::getFParPtr()
+std::vector<float> MonteCarloFileReader::getFParPtr()
 {
-  if (m_FParPtr == FloatArrayType::NullPointer()) {
+  if (m_FParVector.empty()) {
     double maxDepth = 0.0;
     double depthStepSize = 0.0;
     double accelVoltage = 0.0;
     double minEnergy = 0.0;
     double energyBinSize = 0.0;
-    double sampleEndTiltAngle = 0.0;
-    double sampleStartTiltAngle = 0.0;
-    double sampleTiltStepSize = 0.0;
+//    double sampleEndTiltAngle = 0.0;
+//    double sampleStartTiltAngle = 0.0;
+//    double sampleTiltStepSize = 0.0;
     double sampleTiltAngleSigma = 0.0;
     double sampleRotAngleOmega = 0.0;
 
@@ -217,26 +211,25 @@ FloatArrayType::Pointer MonteCarloFileReader::getFParPtr()
 //        !getSampleTiltStepSize(sampleTiltStepSize) ||
         !getSampleRotationalAngleOmega(sampleRotAngleOmega))
     {
-      return FloatArrayType::NullPointer();
+      return std::vector<float>();
     }
 
-    m_FParPtr = XtalFileReader::getFParPtr();
-    float* fPar = m_FParPtr->getPointer(0);
+    m_FParVector = XtalFileReader::getFParPtr();
 
     // fill the m_GenericFPar array
-    fPar[0] = sampleTiltAngleSigma; // sample tilt angle
-    fPar[1] = sampleRotAngleOmega;  // omega sample tilt angle
-    fPar[2] = accelVoltage;         // accelerating voltage
-    fPar[3] = minEnergy;            // Energy minimum in histogram
-    fPar[4] = energyBinSize;        // Energy histogram bin size
-    fPar[5] = maxDepth;             // maximum depth to store
-    fPar[6] = depthStepSize;        // depth step size
-//    fPar[7] = sampleStartTiltAngle; // get starting angle
-//    fPar[8] = sampleEndTiltAngle;   // end angle
-//    fPar[9] = sampleTiltStepSize;   // angle step size
+    m_FParVector[0] = sampleTiltAngleSigma; // sample tilt angle
+    m_FParVector[1] = sampleRotAngleOmega;  // omega sample tilt angle
+    m_FParVector[2] = accelVoltage;         // accelerating voltage
+    m_FParVector[3] = minEnergy;            // Energy minimum in histogram
+    m_FParVector[4] = energyBinSize;        // Energy histogram bin size
+    m_FParVector[5] = maxDepth;             // maximum depth to store
+    m_FParVector[6] = depthStepSize;        // depth step size
+//    m_FParVector[7] = sampleStartTiltAngle; // get starting angle
+//    m_FParVector[8] = sampleEndTiltAngle;   // end angle
+//    m_FParVector[9] = sampleTiltStepSize;   // angle step size
   }
 
-  return m_FParPtr;
+  return m_FParVector;
 }
 
 // -----------------------------------------------------------------------------
@@ -246,7 +239,7 @@ bool MonteCarloFileReader::getSampleTiltAngleSigma(double &sampleTiltAngleSigma)
 {
   if (m_SampleTiltAngleSig < 0.0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::sig);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::sig);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_SampleTiltAngleSig);
     if(err < 0)
     {
@@ -270,7 +263,7 @@ bool MonteCarloFileReader::getSampleRotationalAngleOmega(double &sampleRotAngleO
 {
   if (m_SampleRotAngleOmega < 0.0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::omega);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::omega);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_SampleRotAngleOmega);
     if(err < 0)
     {
@@ -354,7 +347,7 @@ bool MonteCarloFileReader::getAcceleratingVoltage(double &accelVoltage)
 {
   if (m_AcceleratingVoltage < 0.0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::EkeV);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::EkeV);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_AcceleratingVoltage);
     if(err < 0)
     {
@@ -378,7 +371,7 @@ bool MonteCarloFileReader::getMinimumEnergyToConsider(double &minEnergy)
 {
   if (m_MinEnergyConsider < 0.0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::Ehistmin);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::Ehistmin);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_MinEnergyConsider);
     if(err < 0)
     {
@@ -402,7 +395,7 @@ bool MonteCarloFileReader::getEnergyBinSize(double &energyBinSize)
 {
   if (m_EnergyBinSize < 0.0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::Ebinsize);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::Ebinsize);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_EnergyBinSize);
     if(err < 0)
     {
@@ -426,7 +419,7 @@ bool MonteCarloFileReader::getMaximumDepthToConsider(double &maxDepth)
 {
   if (m_MaxDepthConsider < 0.0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::depthmax);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::depthmax);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_MaxDepthConsider);
     if(err < 0)
     {
@@ -450,7 +443,7 @@ bool MonteCarloFileReader::getDepthStepSize(double &depthStepSize)
 {
   if (m_DepthStepSize < 0.0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::depthstep);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::depthstep);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_DepthStepSize);
     if(err < 0)
     {
@@ -474,7 +467,7 @@ bool MonteCarloFileReader::getNumberOfPixelsN(int &numOfPixelsN)
 {
   if (m_NumOfPixelsN < 0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::numsx);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::numsx);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_NumOfPixelsN);
     if(err < 0)
     {
@@ -498,7 +491,7 @@ bool MonteCarloFileReader::getNumberOfElectronsPerWorkitem(int &numOfEPerWorkite
 {
   if (m_NumOfEPerWorkitem < 0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::num_el);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::num_el);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_NumOfEPerWorkitem);
     if(err < 0)
     {
@@ -522,7 +515,7 @@ bool MonteCarloFileReader::getTotalNumberOfElectronsConsidered(int &totEConsider
 {
   if (m_TotalNumOfEConsidered < 0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::totnumel);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::totnumel);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_TotalNumOfEConsidered);
     if(err < 0)
     {
@@ -546,7 +539,7 @@ bool MonteCarloFileReader::getMultiplierForTotalNumberOfElectrons(int &multiplie
 {
   if (m_MultiplierForTotalNumOfE < 0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::multiplier);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::multiplier);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_MultiplierForTotalNumOfE);
     if(err < 0)
     {
@@ -570,7 +563,7 @@ bool MonteCarloFileReader::getGPUPlatformID(int &gpuPlatformID)
 {
   if (m_GPUPlatformID < 0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::platid);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::platid);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_GPUPlatformID);
     if(err < 0)
     {
@@ -594,7 +587,7 @@ bool MonteCarloFileReader::getGPUDeviceID(int &gpuDeviceID)
 {
   if (m_GPUDeviceID < 0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::devid);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::devid);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_GPUDeviceID);
     if(err < 0)
     {
@@ -618,7 +611,7 @@ bool MonteCarloFileReader::getGlobalWorkgroupSize(int &globalWorkgrpSize)
 {
   if (m_GlobalWorkGroupSize < 0)
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::globalworkgrpsz);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::globalworkgrpsz);
     herr_t err = QH5Lite::readScalarDataset(getFileId(), path, m_GlobalWorkGroupSize);
     if(err < 0)
     {
@@ -643,10 +636,7 @@ bool MonteCarloFileReader::getMonteCarloMode(int &mcMode)
   if (m_MonteCarloMode < 0)
   {
     QString modeStr = "";
-    QString path = QString("%1/%2/%3")
-                       .arg(EMsoft::Constants::NMLparameters)
-                       .arg(EMsoft::Constants::MCCLNameList)
-                       .arg(EMsoft::Constants::mode);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::mode);
     herr_t err = QH5Lite::readStringDataset(getFileId(), path, modeStr);
     if (err < 0) {
       QString str;
@@ -675,7 +665,7 @@ bool MonteCarloFileReader::getXtalFileName(QString &xtalFileName)
 {
   if (m_XtalFileName.isEmpty())
   {
-    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters).arg(EMsoft::Constants::MCCLNameList).arg(EMsoft::Constants::xtalname);
+    QString path = QString("%1/%2/%3").arg(EMsoft::Constants::NMLparameters, EMsoft::Constants::MCCLNameList, EMsoft::Constants::xtalname);
     herr_t err = QH5Lite::readStringDataset(getFileId(), path, m_XtalFileName);
     if(err < 0)
     {
@@ -695,15 +685,15 @@ bool MonteCarloFileReader::getXtalFileName(QString &xtalFileName)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
+std::vector<int32_t> MonteCarloFileReader::getAccumePtr()
 {
-  if (m_AccumePtr == Int32ArrayType::NullPointer())
+  if (m_AccumePtr.empty())
   {
     //--------------------------
     // read a bunch of data from the Monte Carlo group (used to be a separate file in previous version)
     std::vector<int32_t> accum_e;
 
-    QString path = QString("/%1/%2/%3").arg(EMsoft::Constants::EMData).arg(EMsoft::Constants::MCOpenCL).arg(EMsoft::Constants::accume);
+    QString path = QString("/%1/%2/%3").arg(EMsoft::Constants::EMData, EMsoft::Constants::MCOpenCL, EMsoft::Constants::accume);
     herr_t err = QH5Lite::readVectorDataset(getFileId(), path, accum_e);
     if(err < 0)
     {
@@ -711,7 +701,7 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20019);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // get the array dimensions
@@ -725,26 +715,17 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20020);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    // convert this array to the m_GenericAccumz data array
-    // adjust the size of the m_GenericAccumz array to the correct one, since we did not have access
-    // to the dimensions in the datacheck() routine
-    QVector<size_t> numTuples(1,1);
-    QVector<size_t>  cDims(4);
-    cDims[0] = static_cast<size_t>(dims[3]);
-    cDims[1] = static_cast<size_t>(dims[2]);
-    cDims[2] = static_cast<size_t>(dims[1]);
-    cDims[3] = static_cast<size_t>(dims[0]);
-
     // Create a new GenericAccumz Array
-    m_AccumePtr = Int32ArrayType::CreateArray(numTuples, cDims, "Accume", true);
-    int32_t* accumePtr = m_AccumePtr->getPointer(0);
+    int size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<hsize_t>());
+    m_AccumePtr.resize(size);
+    std::fill(m_AccumePtr.begin(), m_AccumePtr.end(), 0);
 
-    for(size_t i = 0; i < accum_e.size(); i++)
+    for(size_t i = 0; i < m_AccumePtr.size(); i++)
     {
-      accumePtr[i] = accum_e[i];
+      m_AccumePtr.at(i) = accum_e.at(i);
     }
   }
 
@@ -754,15 +735,15 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumePtr()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-Int32ArrayType::Pointer MonteCarloFileReader::getAccumzPtr()
+std::vector<int32_t> MonteCarloFileReader::getAccumzPtr()
 {
-  if (m_AccumzPtr == Int32ArrayType::NullPointer())
+  if (m_AccumzPtr.empty())
   {
     //--------------------------
     // read a bunch of data from the Monte Carlo group (used to be a separate file in previous version)
     std::vector<int32_t> accum_z;
 
-    QString path = QString("/%1/%2/%3").arg(EMsoft::Constants::EMData).arg(EMsoft::Constants::MCOpenCL).arg(EMsoft::Constants::accumz);
+    QString path = QString("/%1/%2/%3").arg(EMsoft::Constants::EMData, EMsoft::Constants::MCOpenCL, EMsoft::Constants::accumz);
     herr_t err = QH5Lite::readVectorDataset(getFileId(), path, accum_z);
     if(err < 0)
     {
@@ -770,7 +751,7 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumzPtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20021);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
     // get the array dimensions
@@ -784,26 +765,17 @@ Int32ArrayType::Pointer MonteCarloFileReader::getAccumzPtr()
       QTextStream ss(&str);
       ss << "Error reading data set " << path;
       emit errorMessageGenerated(str, -20022);
-      return Int32ArrayType::NullPointer();
+      return std::vector<int32_t>();
     }
 
-    // convert this array to the m_GenericAccumz data array
-    // adjust the size of the m_GenericAccumz array to the correct one, since we did not have access
-    // to the dimensions in the datacheck() routine
-    QVector<size_t> numTuples(1,1);
-    QVector<size_t>  cDims(4);
-    cDims[0] = static_cast<size_t>(dims[3]);
-    cDims[1] = static_cast<size_t>(dims[2]);
-    cDims[2] = static_cast<size_t>(dims[1]);
-    cDims[3] = static_cast<size_t>(dims[0]);
-
     // Create a new GenericAccumz Array
-    m_AccumzPtr = Int32ArrayType::CreateArray(numTuples, cDims, "Accumz", true);
-    int32_t* accumzPtr = m_AccumzPtr->getPointer(0);
+    int size = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<hsize_t>());
+    m_AccumzPtr.resize(size);
+    std::fill(m_AccumzPtr.begin(), m_AccumzPtr.end(), 0);
 
     for(size_t i = 0; i < accum_z.size(); i++)
     {
-      accumzPtr[i] = accum_z[i];
+      m_AccumzPtr[i] = accum_z[i];
     }
   }
 

@@ -99,7 +99,7 @@ void AngleReaderWidget::on_loadAngleFileBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool AngleReaderWidget::hasValidAngles()
+bool AngleReaderWidget::hasValidAngles() const
 {
   QFile file(m_LoadedFilePath);
   bool fileExists = file.exists();
@@ -121,7 +121,7 @@ void AngleReaderWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AngleReaderWidget::writeSession(QJsonObject& obj)
+void AngleReaderWidget::writeSession(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::AngleFilePath] = angleFileLineEdit->text();
   obj[EMsoftWorkbenchConstants::IOStrings::PartialFile] = partialFileCB->isChecked();
@@ -132,7 +132,7 @@ void AngleReaderWidget::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AngleReaderWidget::createModificationConnections(PatternDisplay_UI* ui)
+void AngleReaderWidget::createModificationConnections(PatternDisplay_UI* ui) const
 {
   // Line Edits
   connect(angleFileLineEdit, &QLineEdit::textChanged, [=] { emit ui->moduleParametersChanged(); });
@@ -148,7 +148,7 @@ void AngleReaderWidget::createModificationConnections(PatternDisplay_UI* ui)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AngleReaderWidget::on_partialFileCB_stateChanged(int state)
+void AngleReaderWidget::on_partialFileCB_stateChanged(int state) const
 {
   if(state == 0)
   {
@@ -215,7 +215,7 @@ void AngleReaderWidget::loadAngleFile(const QString& filePath)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AngleReaderWidget::on_minLineNum_valueChanged(int value)
+void AngleReaderWidget::on_minLineNum_valueChanged(int value) const
 {
   if(value > maxLineNum->value())
   {
@@ -230,7 +230,7 @@ void AngleReaderWidget::on_minLineNum_valueChanged(int value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AngleReaderWidget::on_maxLineNum_valueChanged(int value)
+void AngleReaderWidget::on_maxLineNum_valueChanged(int value) const
 {
   if(value < minLineNum->value())
   {
@@ -245,7 +245,7 @@ void AngleReaderWidget::on_maxLineNum_valueChanged(int value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer AngleReaderWidget::getEulerAngles()
+std::vector<float> AngleReaderWidget::getEulerAngles() const
 {
   QFile file(m_LoadedFilePath);
   if(file.open(QIODevice::ReadOnly))
@@ -269,9 +269,9 @@ FloatArrayType::Pointer AngleReaderWidget::getEulerAngles()
       numberOfAngles = in.readLine().toInt();
     }
 
-    FloatArrayType::Pointer angleArray = FloatArrayType::CreateArray(numberOfAngles, QVector<size_t>(1, 3), "Angle Array");
+    std::vector<float> angleArray(numberOfAngles * 3);
 
-    for(int i = 0; i < numberOfAngles; i++)
+    for(int i = 0; i < angleArray.size(); i += 3)
     {
       QString line = in.readLine();
       QStringList parts = line.split(QRegularExpression("[ \t]+"), QString::SkipEmptyParts);
@@ -280,12 +280,48 @@ FloatArrayType::Pointer AngleReaderWidget::getEulerAngles()
         QString part = parts[j];
         float value = part.toFloat();
         value = AbstractAngleWidget::ConvertToRadians(value);
-        angleArray->setComponent(i, j, value);
+        angleArray.at(i + j) = value;
       }
     }
 
     return angleArray;
   }
 
-  return FloatArrayType::NullPointer();
+  return std::vector<float>();
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AngleReaderWidget::setOpenDialogLastDirectory(const QString& value)
+{
+  m_OpenDialogLastDirectory = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString AngleReaderWidget::getOpenDialogLastDirectory() const
+{
+  return m_OpenDialogLastDirectory;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AngleReaderWidget::Pointer AngleReaderWidget::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AngleReaderWidget::Pointer AngleReaderWidget::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

@@ -44,7 +44,7 @@
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
-#include "Common/EigenConversions.h"
+#include "Common/EigenConversions.hpp"
 #include "Common/Constants.h"
 
 #include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
@@ -52,42 +52,34 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternTools::PatternTools()
-{
-}
+PatternTools::PatternTools() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternTools::~PatternTools()
-{
-
-}
+PatternTools::~PatternTools() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternTools::GeneratePattern(PatternTools::IParValues iParValues, PatternTools::FParValues fParValues,
-                                                          FloatArrayType::Pointer lpnhData, FloatArrayType::Pointer lpshData,
-                                                          Int32ArrayType::Pointer monteCarloSquareData, FloatArrayType::Pointer eulerAngles,
+std::vector<float> PatternTools::GeneratePattern(PatternTools::IParValues iParValues, PatternTools::FParValues fParValues,
+                                                          std::vector<float> &lpnhData, std::vector<float> &lpshData,
+                                                          std::vector<int32_t> &monteCarloSquareData, const std::vector<float> &eulerAngles,
                                                           int angleIndex, bool &cancel)
 {
-  Int32ArrayType::Pointer genericIParPtr = Int32ArrayType::CreateArray(EMsoftWorkbenchConstants::Constants::IParSize, QVector<size_t>(1, 1), "IPar");
-  genericIParPtr->initializeWithZeros();
+  std::vector<int32_t> genericIParPtr(EMsoftWorkbenchConstants::Constants::IParSize);
+  std::fill(genericIParPtr.begin(), genericIParPtr.end(), 0);
 
-  FloatArrayType::Pointer  genericFParPtr = FloatArrayType::CreateArray(EMsoftWorkbenchConstants::Constants::FParSize, QVector<size_t>(1, 1), "FPar");
-  genericFParPtr->initializeWithZeros();
+  std::vector<float> genericFParPtr(EMsoftWorkbenchConstants::Constants::FParSize);
+  std::fill(genericFParPtr.begin(), genericFParPtr.end(), 0.0f);
 
-  int32_t* genericIPar = genericIParPtr->getPointer(0);
-  float* genericFPar = genericFParPtr->getPointer(0);
+  genericIParPtr[0] = (iParValues.numsx - 1) / 2;
+  genericIParPtr[8] = iParValues.numset;
+  genericIParPtr[11] = static_cast<int>((iParValues.incidentBeamVoltage - iParValues.minEnergy) / iParValues.energyBinSize) + 1;
+  genericIParPtr[16] = iParValues.npx;
 
-  genericIPar[0] = (iParValues.numsx - 1) / 2;
-  genericIPar[8] = iParValues.numset;
-  genericIPar[11] = static_cast<int>((iParValues.incidentBeamVoltage - iParValues.minEnergy) / iParValues.energyBinSize) + 1;
-  genericIPar[16] = iParValues.npx;
-
-  genericIPar[18] = static_cast<size_t>(iParValues.numOfPixelsX);
-  genericIPar[19] = static_cast<size_t>(iParValues.numOfPixelsY);
+  genericIParPtr[18] = static_cast<size_t>(iParValues.numOfPixelsX);
+  genericIParPtr[19] = static_cast<size_t>(iParValues.numOfPixelsY);
 
   int binningIndex = 0;
   if (iParValues.detectorBinningValue == 2)
@@ -103,30 +95,27 @@ FloatArrayType::Pointer PatternTools::GeneratePattern(PatternTools::IParValues i
     binningIndex = 3;
   }
 
-  genericIPar[20] = static_cast<size_t>(iParValues.numberOfOrientations); // number of orientations
-  genericIPar[21] = binningIndex;
-  genericIPar[22] = static_cast<size_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
-  genericIPar[23] = static_cast<size_t>(iParValues.numOfPixelsY / iParValues.detectorBinningValue);
+  genericIParPtr[20] = static_cast<size_t>(iParValues.numberOfOrientations); // number of orientations
+  genericIParPtr[21] = binningIndex;
+  genericIParPtr[22] = static_cast<size_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
+  genericIParPtr[23] = static_cast<size_t>(iParValues.numOfPixelsY / iParValues.detectorBinningValue);
 
   // and set all the float input parameters for the EMsoftCgetEBSDPatterns routine
   // some of these have been set in previous filters
-  genericFPar[0] = fParValues.sigma;
-  genericFPar[1] = fParValues.omega;
+  genericFParPtr[0] = fParValues.sigma;
+  genericFParPtr[1] = fParValues.omega;
 
-  genericFPar[14] = fParValues.pcPixelsX;         // pattern center x component (in pixel units)
-  genericFPar[15] = fParValues.pcPixelsY;         // pattern center y component (in pixel units)
-  genericFPar[16] = fParValues.scintillatorPixelSize;       // pixel size (microns) on scintillator surface
-  genericFPar[17] = fParValues.detectorTiltAngle;      // detector tilt angle (degrees) from horizontal (positive for detector looking upwards)
-  genericFPar[18] = fParValues.scintillatorDist;           // sample-scintillator distance (microns)
-  genericFPar[19] = fParValues.beamCurrent; // beam current [nA]
-  genericFPar[20] = fParValues.dwellTime;   // beam dwell time per pattern [micro-seconds]
-  genericFPar[21] = fParValues.gammaValue;  // intensity scaling gamma value
+  genericFParPtr[14] = fParValues.pcPixelsX;         // pattern center x component (in pixel units)
+  genericFParPtr[15] = fParValues.pcPixelsY;         // pattern center y component (in pixel units)
+  genericFParPtr[16] = fParValues.scintillatorPixelSize;       // pixel size (microns) on scintillator surface
+  genericFParPtr[17] = fParValues.detectorTiltAngle;      // detector tilt angle (degrees) from horizontal (positive for detector looking upwards)
+  genericFParPtr[18] = fParValues.scintillatorDist;           // sample-scintillator distance (microns)
+  genericFParPtr[19] = fParValues.beamCurrent; // beam current [nA]
+  genericFParPtr[20] = fParValues.dwellTime;   // beam dwell time per pattern [micro-seconds]
+  genericFParPtr[21] = fParValues.gammaValue;  // intensity scaling gamma value
 
-  QVector<size_t> cDims(2);
-  cDims[0] = genericIPar[22];
-  cDims[1] = genericIPar[23];
-
-  FloatArrayType::Pointer genericEBSDPatternsPtr = FloatArrayType::CreateArray(iParValues.numberOfOrientations, cDims, "ebsdPatterns");
+  std::vector<float> genericEBSDPatternsPtr;
+  genericEBSDPatternsPtr.resize(iParValues.numberOfOrientations * genericIParPtr[22] * genericIParPtr[23]);
 
   PatternTools::GeneratePattern_Helper(angleIndex, eulerAngles, lpnhData, lpshData, monteCarloSquareData, genericEBSDPatternsPtr, genericIParPtr, genericFParPtr, cancel);
 
@@ -136,31 +125,18 @@ FloatArrayType::Pointer PatternTools::GeneratePattern(PatternTools::IParValues i
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternTools::GeneratePattern_Helper(size_t index, FloatArrayType::Pointer eulerAngles, FloatArrayType::Pointer genericLPNHPtr, FloatArrayType::Pointer genericLPSHPtr, Int32ArrayType::Pointer genericAccum_ePtr, FloatArrayType::Pointer genericEBSDPatternsPtr, Int32ArrayType::Pointer genericIParPtr, FloatArrayType::Pointer genericFParPtr, bool &cancel)
+void PatternTools::GeneratePattern_Helper(size_t index, const std::vector<float> &eulerAngles, std::vector<float> &genericLPNHPtr, std::vector<float> &genericLPSHPtr, std::vector<int32_t> &genericAccum_ePtr, std::vector<float> &genericEBSDPatternsPtr, std::vector<int32_t> &genericIParPtr, std::vector<float> &genericFParPtr, bool &cancel)
 {
-  int32_t* genericIPar = genericIParPtr->getPointer(0);
-  float* genericFPar = genericFParPtr->getPointer(0);
-  float* genericEBSDPatterns = genericEBSDPatternsPtr->getPointer(0);
-  int32_t* genericAccum_e = genericAccum_ePtr->getPointer(0);
-  float* genericLPNH = genericLPNHPtr->getPointer(0);
-  float* genericLPSH = genericLPSHPtr->getPointer(0);
+  std::vector<float> eulerAngle;
+  std::vector<float>::const_iterator iter = eulerAngles.begin() + (index * 3);
+  eulerAngle.push_back(*(iter + 0));
+  eulerAngle.push_back(*(iter + 1));
+  eulerAngle.push_back(*(iter + 2));
 
-  FloatArrayType::Pointer genericQuaternionsPtr = FloatArrayType::CreateArray(1, QVector<size_t>(1, 4), "Quats");
-  float* genericQuaternions = genericQuaternionsPtr->getPointer(0);
+  std::vector<float> quat(4);
+  OrientationTransforms<std::vector<float>,float>::eu2qu(eulerAngle, quat, QuaternionMath<float>::QuaternionScalarVector);
 
-  QVector<float> eulerAngle;
-  eulerAngle.push_back(eulerAngles->getComponent(index, 0));
-  eulerAngle.push_back(eulerAngles->getComponent(index, 1));
-  eulerAngle.push_back(eulerAngles->getComponent(index, 2));
-
-  QVector<float> quat(4);
-  OrientationTransforms<QVector<float>,float>::eu2qu(eulerAngle, quat, QuaternionMath<float>::QuaternionScalarVector);
-  genericQuaternionsPtr->setComponent(0, 0, quat[0]);
-  genericQuaternionsPtr->setComponent(0, 1, quat[1]);
-  genericQuaternionsPtr->setComponent(0, 2, quat[2]);
-  genericQuaternionsPtr->setComponent(0, 3, quat[3]);
-
-  EMsoftCgetEBSDPatterns(genericIPar, genericFPar, genericEBSDPatterns, genericQuaternions, genericAccum_e, genericLPNH, genericLPSH, nullptr, 0, &cancel);
+  EMsoftCgetEBSDPatterns(genericIParPtr.data(), genericFParPtr.data(), genericEBSDPatternsPtr.data(), quat.data(), genericAccum_ePtr.data(), genericLPNHPtr.data(), genericLPSHPtr.data(), nullptr, 0, &cancel);
 }
 
 // -----------------------------------------------------------------------------
@@ -203,15 +179,15 @@ QImage PatternTools::ApplyCircularMask(QImage pattern)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternTools::ApplyHipassFilter(FloatArrayType::Pointer patternData, QVector<size_t> dims, double lowCutOff, DoubleArrayType::Pointer hipassData)
+std::vector<float> PatternTools::ApplyHipassFilter(const std::vector<float> &patternData, std::vector<size_t> dims, double lowCutOff, std::vector<double> &hipassData)
 {
-  if (dims.size() != 2) { return FloatArrayType::NullPointer(); }
+  if (dims.size() != 2) { return std::vector<float>(); }
 
-  DoubleArrayType::Pointer patternPtr = DoubleArrayType::CreateArray(patternData->getNumberOfComponents(), "patternPtr");
+  std::vector<double> patternPtr(patternData.size());
 
-  for (int i = 0; i < patternData->getNumberOfComponents(); i++)
+  for (int i = 0; i < patternData.size(); i++)
   {
-    patternPtr->setValue(i, static_cast<double>(patternData->getComponent(0, i)));
+    patternPtr.at(i) = static_cast<double>(patternData.at(i));
   }
 
   int32_t hiPassDims[2];
@@ -220,12 +196,12 @@ FloatArrayType::Pointer PatternTools::ApplyHipassFilter(FloatArrayType::Pointer 
 
   bool init = false;
   bool destroy = false;
-  HiPassFilterC(patternPtr->getPointer(0), hiPassDims, &lowCutOff, &init, &destroy, hipassData->getPointer(0));
+  HiPassFilterC(patternPtr.data(), hiPassDims, &lowCutOff, &init, &destroy, hipassData.data());
 
-  FloatArrayType::Pointer newPatternData = std::dynamic_pointer_cast<FloatArrayType>(patternData->deepCopy());
-  for (int i = 0; i < hipassData->getNumberOfTuples(); i++)
+  std::vector<float> newPatternData = patternData;
+  for (int i = 0; i < hipassData.size(); i++)
   {
-    newPatternData->setComponent(0, i, static_cast<float>(hipassData->getValue(i)));
+    newPatternData.at(i) = static_cast<float>(hipassData.at(i));
   }
 
   return newPatternData;
@@ -256,9 +232,13 @@ QImage PatternTools::CalculateDifference(QImage minuend, QImage subtrahend)
 QImage PatternTools::CalculateComposite(QImage src, QImage dst, double opacity)
 {
   if (src.width() <= 0 || src.height() <= 0)
-      return dst;
+  {
+    return dst;
+  }
   if (dst.width() <= 0 || dst.height() <= 0)
-      return dst;
+  {
+    return dst;
+  }
 
   if (src.width() != dst.width() || src.height() != dst.height()) {
 #ifndef NDEBUG
@@ -274,8 +254,14 @@ QImage PatternTools::CalculateComposite(QImage src, QImage dst, double opacity)
       return dst;
   }
 
-  if (src.depth() != 32) src = src.convertToFormat(QImage::Format_ARGB32);
-  if (dst.depth() != 32) dst = dst.convertToFormat(QImage::Format_ARGB32);
+  if (src.depth() != 32)
+  {
+    src = src.convertToFormat(QImage::Format_ARGB32);
+  }
+  if (dst.depth() != 32)
+  {
+    dst = dst.convertToFormat(QImage::Format_ARGB32);
+  }
 
   int pixels = src.width() * src.height();
   {
@@ -453,11 +439,11 @@ QImage PatternTools::RemoveRamp(QImage image)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternTools::InverseGaussian(FloatArrayType::Pointer patternData, QVector<size_t> tDims)
+std::vector<float> PatternTools::InverseGaussian(const std::vector<float> &patternData, std::vector<size_t> tDims)
 {
-  if (tDims.size() != 2) { return FloatArrayType::NullPointer(); }
+  if (tDims.size() != 2) { return std::vector<float>(); }
 
-  FloatArrayType::Pointer newPatternData = std::dynamic_pointer_cast<FloatArrayType>(patternData->deepCopy());
+  std::vector<float> newPatternData = patternData;
   EigenConversions::FloatMapType matrixMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(newPatternData, tDims);
 
   // Swap the tDims because Eigen is expecting dimensions in column-major
@@ -465,9 +451,9 @@ FloatArrayType::Pointer PatternTools::InverseGaussian(FloatArrayType::Pointer pa
   tDims[1] = tDims[0];
   tDims[0] = temp;
 
-  FloatArrayType::Pointer inverseGaussianMask = CreateInverseGaussianMask(patternData, tDims);
+  std::vector<float> inverseGaussianMask = CreateInverseGaussianMask(patternData, tDims);
   EigenConversions::FloatMapType inverseGaussianMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(inverseGaussianMask, tDims);
-  if (inverseGaussianMask != FloatArrayType::NullPointer())
+  if (!inverseGaussianMask.empty())
   {
     matrixMap.array() = matrixMap.array() * inverseGaussianMap.array();
   }
@@ -478,14 +464,14 @@ FloatArrayType::Pointer PatternTools::InverseGaussian(FloatArrayType::Pointer pa
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternTools::CreateInverseGaussianMask(FloatArrayType::Pointer patternData, QVector<size_t> tDims)
+std::vector<float> PatternTools::CreateInverseGaussianMask(const std::vector<float> &patternData, const std::vector<size_t> &tDims)
 {
-  if (tDims.size() != 2) { return FloatArrayType::NullPointer(); }
+  if (tDims.size() != 2) { return std::vector<float>(); }
 
-  FloatArrayType::Pointer inverseGaussian = std::dynamic_pointer_cast<FloatArrayType>(patternData->deepCopy());
+  std::vector<float> inverseGaussian = patternData;
   EigenConversions::FloatMapType inverseGaussianMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(inverseGaussian, tDims);
 
-  FloatArrayType::Pointer grid = GetInverseGaussianGrid(tDims);
+  std::vector<float> grid = GetInverseGaussianGrid(tDims);
   EigenConversions::FloatMapType gridMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(grid, tDims);
 
   gridMap = -gridMap * 1.5;
@@ -498,31 +484,33 @@ FloatArrayType::Pointer PatternTools::CreateInverseGaussianMask(FloatArrayType::
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternTools::GetInverseGaussianGrid(QVector<size_t> dims)
+std::vector<float> PatternTools::GetInverseGaussianGrid(std::vector<size_t> dims)
 {
-  FloatArrayType::Pointer xLine = GetInverseGaussianLine(dims[0]);
+  size_t dimsSize = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<size_t>());
 
-  FloatArrayType::Pointer xGrid = FloatArrayType::CreateArray(dims, QVector<size_t>(1, 1), "xGrid");
+  std::vector<float> xLine = GetInverseGaussianLine(dims[0]);
+
+  std::vector<float> xGrid(dimsSize);
   EigenConversions::FloatMapType xGridMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(xGrid, dims);
 
   for (int col = 0; col < dims[1]; col++)
   {
     for (int row = 0; row < dims[0]; row++)
     {
-      xGridMap(row, col) = xLine->getValue(row);
+      xGridMap(row, col) = xLine.at(row);
     }
   }
 
-  FloatArrayType::Pointer yLine = GetInverseGaussianLine(dims[1]);
+  std::vector<float> yLine = GetInverseGaussianLine(dims[1]);
 
-  FloatArrayType::Pointer yGrid = FloatArrayType::CreateArray(dims, QVector<size_t>(1, 1), "yGrid");
+  std::vector<float> yGrid(dimsSize);
   EigenConversions::FloatMapType yGridMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(yGrid, dims);
 
   for (int row = 0; row < dims[0]; row++)
   {
     for (int col = 0; col < dims[1]; col++)
     {
-      yGridMap(row, col) = yLine->getValue(col);
+      yGridMap(row, col) = yLine.at(col);
     }
   }
 
@@ -562,13 +550,12 @@ FloatArrayType::Pointer PatternTools::GetInverseGaussianGrid(QVector<size_t> dim
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternTools::GetInverseGaussianLine(size_t size)
+std::vector<float> PatternTools::GetInverseGaussianLine(size_t size)
 {
-  FloatArrayType::Pointer line = FindGen(size);
-  for (int i = 0; i < line->getNumberOfTuples(); i++)
+  std::vector<float> line = FindGen(size);
+  for (float &value : line)
   {
-    float value = line->getValue(i) - static_cast<float>(size / 2);
-    line->setValue(i, value);
+    value = value - static_cast<float>(size / 2);
   }
 
   return line;
@@ -577,12 +564,12 @@ FloatArrayType::Pointer PatternTools::GetInverseGaussianLine(size_t size)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-FloatArrayType::Pointer PatternTools::FindGen(size_t size)
+std::vector<float> PatternTools::FindGen(size_t size)
 {
-  FloatArrayType::Pointer lineArray = FloatArrayType::CreateArray(size, "Line");
-  for (int i = 0; i < lineArray->getNumberOfTuples(); i++)
+  std::vector<float> lineArray(size);
+  for (int i = 0; i < lineArray.size(); i++)
   {
-    lineArray->setValue(i, static_cast<float>(i));
+    lineArray.at(i) = static_cast<float>(i);
   }
 
   return lineArray;

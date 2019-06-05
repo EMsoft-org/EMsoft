@@ -60,35 +60,30 @@ MasterPatternFileReader::MasterPatternFileReader(const QString &filePath, IObser
     }
     return;
   }
-  else
+
+  if (obs != nullptr)
   {
-    if (obs != nullptr)
-    {
-      obs->processObserverMessage(QObject::tr("Reading data file '%1'...").arg(fi.fileName()));
-    }
+    obs->processObserverMessage(QObject::tr("Reading data file '%1'...").arg(fi.fileName()));
+  }
 
-    double fileSize = fi.size();      // This is in bytes
-    fileSize = fileSize / 1000000;    // Convert to MB
+  double fileSize = fi.size();      // This is in bytes
+  fileSize = fileSize / 1000000;    // Convert to MB
 
-    if (obs != nullptr)
-    {
-      obs->processObserverMessage(QObject::tr("File Size: %1 MB\n").arg(QString::number(fileSize, 'f', 2)));
-    }
+  if (obs != nullptr)
+  {
+    obs->processObserverMessage(QObject::tr("File Size: %1 MB\n").arg(QString::number(fileSize, 'f', 2)));
   }
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MasterPatternFileReader::~MasterPatternFileReader()
-{
-
-}
+MasterPatternFileReader::~MasterPatternFileReader() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MasterPatternFileReader::MasterPatternData MasterPatternFileReader::readMasterPatternData()
+MasterPatternFileReader::MasterPatternData MasterPatternFileReader::readMasterPatternData() const
 {
   MasterPatternFileReader::MasterPatternData mpData;
 
@@ -210,7 +205,7 @@ MasterPatternFileReader::MasterPatternData MasterPatternFileReader::readMasterPa
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<hsize_t> MasterPatternFileReader::readDatasetDimensions(hid_t parentId, QString objectName)
+std::vector<hsize_t> MasterPatternFileReader::readDatasetDimensions(hid_t parentId, const QString &objectName) const
 {
   std::vector<hsize_t> dims;
   H5T_class_t classType;
@@ -227,3 +222,20 @@ std::vector<hsize_t> MasterPatternFileReader::readDatasetDimensions(hid_t parent
 
   return dims;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MasterPatternFileReader::setObserver(IObserver* value)
+{
+  m_Observer = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+IObserver* MasterPatternFileReader::getObserver() const
+{
+  return m_Observer;
+}
+

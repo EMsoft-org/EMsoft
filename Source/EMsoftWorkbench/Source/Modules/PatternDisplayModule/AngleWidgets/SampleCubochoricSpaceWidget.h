@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
@@ -48,8 +47,20 @@ class SampleCubochoricSpaceWidget : public AbstractAngleWidget, public Ui::Sampl
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(SampleCubochoricSpaceWidget)
-  SIMPL_STATIC_NEW_MACRO(SampleCubochoricSpaceWidget)
+  using Self = SampleCubochoricSpaceWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for SampleCubochoricSpaceWidget
+   */
+  static Pointer NullPointer();
+  /**
+   * @brief Shared pointer New method for SampleCubochoricSpaceWidget
+   */
+  static Pointer New();
 
   SampleCubochoricSpaceWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~SampleCubochoricSpaceWidget() override;
@@ -63,13 +74,13 @@ public:
    * @brief getEulerAngles
    * @return
    */
-  virtual FloatArrayType::Pointer getEulerAngles() override;
+  virtual std::vector<float> getEulerAngles() const override;
 
   /**
    * @brief hasValidAngles
    * @return
    */
-  virtual bool hasValidAngles() override;
+  virtual bool hasValidAngles() const override;
 
   /**
    * @brief readSession
@@ -79,29 +90,31 @@ public:
   /**
    * @brief writeSession
    */
-  virtual void writeSession(QJsonObject& obj) override;
+  virtual void writeSession(QJsonObject& obj) const override;
 
   /**
    * @brief createModificationConnections
    * @param ui
    */
-  virtual void createModificationConnections(PatternDisplay_UI* ui) override;
+  virtual void createModificationConnections(PatternDisplay_UI* ui) const override;
 
 protected slots:
-  void on_samplingModeCB_currentIndexChanged(int index);
-  void void_on_offsetSamplingGridChkBox_stateChanged(int state);
+  void on_samplingModeCB_currentIndexChanged(int index) const;
+  void void_on_offsetSamplingGridChkBox_stateChanged(int state) const;
 
-  void lineEditChanged(const QString& text);
+  void lineEditChanged(const QString& text) const;
 
 private:
-  void valuesChanged();
 
-  void RodriguesComposition(const DOrientArrayType& sigma, DOrientArrayType& rod);
 
-  bool IsinsideFZ(double* rod, int FZtype, int FZorder);
-  bool insideCyclicFZ(const double* rod, int order);
-  bool insideDihedralFZ(const double* rod, int order);
-  bool insideCubicFZ(const double* rod, int ot);
+  void valuesChanged() const;
+
+  void RodriguesComposition(const DOrientArrayType& sigma, DOrientArrayType& rod) const;
+
+  bool IsinsideFZ(double* rod, int FZtype, int FZorder) const;
+  bool insideCyclicFZ(const double* rod, int order) const;
+  bool insideDihedralFZ(const double* rod, int order) const;
+  bool insideCubicFZ(const double* rod, int ot) const;
 
 public:
   SampleCubochoricSpaceWidget(const SampleCubochoricSpaceWidget&) = delete;            // Copy Constructor Not Implemented

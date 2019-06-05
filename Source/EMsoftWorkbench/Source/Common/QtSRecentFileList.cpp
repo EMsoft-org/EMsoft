@@ -48,7 +48,7 @@ QtSRecentFileList::QtSRecentFileList(QObject* parent)
 : QObject(parent)
 , m_Watcher(new QFileSystemWatcher(this))
 {
-  connect(m_Watcher, SIGNAL(fileChanged(const QString&)), this, SLOT(removeFile(const QString&)));
+  connect(m_Watcher, SIGNAL(fileChanged(QString)), this, SLOT(removeFile(QString)));
 }
 
 // -----------------------------------------------------------------------------
@@ -78,7 +78,7 @@ QtSRecentFileList* QtSRecentFileList::instance()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool QtSRecentFileList::contains(const QString& file)
+bool QtSRecentFileList::contains(const QString& file) const
 {
   return this->recentFiles.contains(file);
 }
@@ -117,7 +117,7 @@ void QtSRecentFileList::addFile(const QString& file, AddType type)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QStringList QtSRecentFileList::fileList()
+QStringList QtSRecentFileList::fileList() const
 {
   return this->recentFiles;
 }
@@ -148,7 +148,7 @@ void QtSRecentFileList::clear()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void QtSRecentFileList::writeList(QtSSettings* prefs)
+void QtSRecentFileList::writeList(QtSSettings* prefs) const
 {
   prefs->setValue("Recent Files", this->fileList());
 }

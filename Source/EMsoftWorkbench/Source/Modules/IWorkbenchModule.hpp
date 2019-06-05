@@ -38,7 +38,6 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IModuleUI.h"
 
@@ -47,11 +46,20 @@ class IWorkbenchModule : public QObject
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(IWorkbenchModule)
+  using Self = IWorkbenchModule;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  static Pointer NullPointer()
+  {
+    return Pointer(static_cast<Self*>(nullptr));
+  }
 
   ~IWorkbenchModule() override = default;
 
-  virtual IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) = 0;
+  virtual IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) const = 0;
 
 protected:
   IWorkbenchModule(QObject* parent)

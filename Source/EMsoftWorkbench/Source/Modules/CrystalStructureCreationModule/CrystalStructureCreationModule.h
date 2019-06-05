@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IWorkbenchModule.hpp"
 
@@ -44,18 +43,32 @@ class CrystalStructureCreationModule : public IWorkbenchModule
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(CrystalStructureCreationModule)
-  SIMPL_TYPE_MACRO(CrystalStructureCreationModule)
-  SIMPL_STATIC_NEW_MACRO(CrystalStructureCreationModule)
+  using Self = CrystalStructureCreationModule;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for CrystalStructureCreationModule
+   */
+  static Pointer NullPointer();
+
+  /**
+   * @brief Shared pointer New method for CrystalStructureCreationModule
+   */
+  static Pointer New();
 
   ~CrystalStructureCreationModule() override;
 
-  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
+  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) const override;
 
 protected:
   CrystalStructureCreationModule(QWidget* parent = nullptr);
 
 private:
+
+
 public:
   CrystalStructureCreationModule(const CrystalStructureCreationModule&) = delete;            // Copy Constructor Not Implemented
   CrystalStructureCreationModule(CrystalStructureCreationModule&&) = delete;                 // Move Constructor Not Implemented

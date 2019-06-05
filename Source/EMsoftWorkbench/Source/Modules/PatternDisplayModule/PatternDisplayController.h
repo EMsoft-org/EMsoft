@@ -46,12 +46,10 @@
 #include "H5Support/QH5Lite.h"
 #include "H5Support/QH5Utilities.h"
 
-#include "Common/AbstractImageGenerator.h"
+#include "Common/AbstractImageGenerator.hpp"
 #include "Common/MasterPatternFileReader.h"
-#include "Common/ProjectionConversionTask.h"
+#include "Common/ProjectionConversionTask.hpp"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "OrientationLib/Utilities/ModifiedLambertProjection.h"
@@ -67,8 +65,26 @@ public:
   PatternDisplayController(QObject* parent = nullptr);
   ~PatternDisplayController() override;
 
-  SIMPL_INSTANCE_PROPERTY(SimulatedPatternDisplayWidget*, PatternDisplayWidget)
-  SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
+    /**
+    * @brief Setter property for PatternDisplayWidget
+    */
+    void setPatternDisplayWidget(SimulatedPatternDisplayWidget* value);
+
+    /**
+    * @brief Getter property for PatternDisplayWidget
+    * @return Value of PatternDisplayWidget
+    */
+    SimulatedPatternDisplayWidget* getPatternDisplayWidget() const;
+    /**
+    * @brief Setter property for Observer
+    */
+    void setObserver(IObserver* value);
+
+    /**
+    * @brief Getter property for Observer
+    * @return Value of Observer
+    */
+    IObserver* getObserver() const;
 
   struct DetectorData
   {
@@ -97,7 +113,7 @@ public:
    * @param data
    * @return
    */
-  bool validateDetectorValues(PatternDisplayController::DetectorData data);
+  bool validateDetectorValues(PatternDisplayController::DetectorData data) const;
 
   /**
    * @brief setMasterFilePath Sets a new master file.  Automatically reads the data from the master file
@@ -125,33 +141,36 @@ public slots:
   void addPriorityIndex(size_t index);
 
 signals:
-  void minMaxEnergyLevelsChanged(FloatArrayType::Pointer ekeVs);
-  void mpImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void mcImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void energyMinChanged(int min);
-  void energyMaxChanged(int max);
-  void imageRangeChanged(int min, int max);
-  void newProgressBarMaximumValue(int value);
-  void newProgressBarValue(int value);
-  void rowDataChanged(const QModelIndex&, const QModelIndex&);
-  void mpmcGenerationFinished();
-  void patternGenerationFinished();
+  void minMaxEnergyLevelsChanged(const std::vector<float> &ekeVs) const;
+  void mpImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mcImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void energyMinChanged(int min) const;
+  void energyMaxChanged(int max) const;
+  void imageRangeChanged(int min, int max) const;
+  void newProgressBarMaximumValue(int value) const;
+  void newProgressBarValue(int value) const;
+  void rowDataChanged(const QModelIndex&, const QModelIndex&) const;
+  void mpmcGenerationFinished() const;
+  void patternGenerationFinished() const;
 
-  void errorMessageGenerated(const QString& msg);
-  void warningMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void errorMessageGenerated(const QString& msg) const;
+  void warningMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 private slots:
-  void updateMPImage(MPMCDisplayWidget::MPMCData mpData);
-  void updateMCImage(MPMCDisplayWidget::MPMCData mcData);
+  void updateMPImage(MPMCDisplayWidget::MPMCData mpData) const;
+  void updateMCImage(MPMCDisplayWidget::MPMCData mcData) const;
 
-  void checkImageGenerationCompletion();
+  void checkImageGenerationCompletion() const;
 
   void patternThreadFinished();
 
   void cancelGeneration();
 
 private:
+  SimulatedPatternDisplayWidget* m_PatternDisplayWidget;
+  IObserver* m_Observer;
+
   const QString m_MasterLPNHName = "masterLPNH";
   const QString m_MasterLPSHName = "masterLPSH";
   const QString m_MasterCircleName = "masterCircle";
@@ -217,7 +236,7 @@ private:
    * @param verticalMirror
    */
   template <typename T>
-  void createImageGeneratorTasks(typename DataArray<T>::Pointer data, size_t xDim, size_t yDim, size_t zDim, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem,
+  void createImageGeneratorTasks(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zDim, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem,
                                  bool horizontalMirror = false, bool verticalMirror = false)
   {
     for(int z = 0; z < zDim; z++)
@@ -229,7 +248,7 @@ private:
   }
 
   template <typename T, typename U>
-  void createProjectionConversionTasks(typename DataArray<T>::Pointer data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
+  void createProjectionConversionTasks(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
                                        ModifiedLambertProjection::Square square, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false,
                                        bool verticalMirror = false)
   {
@@ -246,9 +265,9 @@ private:
    * @param data
    */
   template <typename T>
-  typename DataArray<T>::Pointer deHyperSlabData(typename DataArray<T>::Pointer data, hsize_t xDim, hsize_t yDim, hsize_t zDim)
+  std::vector<T> deHyperSlabData(const std::vector<T> &data, hsize_t xDim, hsize_t yDim, hsize_t zDim)
   {
-    typename DataArray<T>::Pointer newData = std::dynamic_pointer_cast<DataArray<T>>(data->deepCopy());
+    std::vector<T> newData = data;
     size_t currentIdx = 0;
 
     for(int z = 0; z < zDim; z++)
@@ -258,8 +277,8 @@ private:
         for(int x = 0; x < xDim; x++)
         {
           int index = (xDim * zDim * y) + (zDim * x) + z;
-          T value = data->getValue(index);
-          newData->setValue(currentIdx, value);
+          T value = data.at(index);
+          newData.at(currentIdx) = value;
           currentIdx++;
         }
       }
@@ -285,7 +304,7 @@ private:
    * @param zValue
    * @return
    */
-  bool generatePatternImage(GLImageViewer::GLImageData& imageData, const FloatArrayType::Pointer& pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue);
+  bool generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const;
 
 public:
   PatternDisplayController(const PatternDisplayController&) = delete;            // Copy Constructor Not Implemented

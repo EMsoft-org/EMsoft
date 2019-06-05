@@ -270,7 +270,7 @@ void EMsoftApplication::listenAboutEMsoftWorkbenchTriggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::listenEditStyleTriggered()
+void EMsoftApplication::listenEditStyleTriggered() const
 {
   styleSheetEditor->setGeometry(40, 40, 500, 800);
   styleSheetEditor->show();
@@ -280,7 +280,7 @@ void EMsoftApplication::listenEditStyleTriggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::listenClearRecentFilesTriggered()
+void EMsoftApplication::listenClearRecentFilesTriggered() const
 {
   // Clear the Recent Items Menu
   m_MenuRecentFiles->clear();
@@ -299,7 +299,7 @@ void EMsoftApplication::listenClearRecentFilesTriggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void EMsoftApplication::listenExitApplicationTriggered()
+void EMsoftApplication::listenExitApplicationTriggered() const
 {
   bool shouldReallyClose = true;
   for(EMsoftWorkbench_UI* workbench : m_WorkbenchInstances)
@@ -322,7 +322,7 @@ void EMsoftApplication::listenExitApplicationTriggered()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-EMsoftWorkbench_UI* EMsoftApplication::getActiveWindow()
+EMsoftWorkbench_UI* EMsoftApplication::getActiveWindow() const
 {
   return m_ActiveWindow;
 }
@@ -388,7 +388,7 @@ void EMsoftApplication::setActiveWindow(EMsoftWorkbench_UI* workbench)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QMenu* EMsoftApplication::createCustomDockMenu()
+QMenu* EMsoftApplication::createCustomDockMenu() const
 {
   QMenu* dockMenu = new QMenu();
   dockMenu->addAction(m_ActionOpen);
@@ -467,3 +467,20 @@ void EMsoftApplication::createDefaultMenuBar()
 //  m_MenuHelp->addAction(m_ActionAboutEMsoftWorkbench);
 //  m_DefaultMenuBar->addMenu(m_MenuHelp);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::setOpenDialogLastDirectory(const QString& value)
+{
+  m_OpenDialogLastDirectory = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString EMsoftApplication::getOpenDialogLastDirectory() const
+{
+  return m_OpenDialogLastDirectory;
+}
+

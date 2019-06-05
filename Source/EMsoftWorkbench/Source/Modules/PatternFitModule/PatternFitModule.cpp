@@ -57,9 +57,28 @@ PatternFitModule::~PatternFitModule() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* PatternFitModule::createModuleUI(QJsonObject moduleObj, QWidget* parent)
+IModuleUI* PatternFitModule::createModuleUI(QJsonObject moduleObj, QWidget* parent) const
 {
   PatternFit_UI* ui = new PatternFit_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternFitModule::Pointer PatternFitModule::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternFitModule::Pointer PatternFitModule::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

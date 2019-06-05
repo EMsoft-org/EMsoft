@@ -111,7 +111,7 @@ void MPMCDisplayWidget::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::setEnergyBinSpinBoxRange(int min, int max)
+void MPMCDisplayWidget::setEnergyBinSpinBoxRange(int min, int max) const
 {
   energyBinSpinBox->setRange(min, max);
 }
@@ -119,7 +119,7 @@ void MPMCDisplayWidget::setEnergyBinSpinBoxRange(int min, int max)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::setEnergyValue(int value)
+void MPMCDisplayWidget::setEnergyValue(int value) const
 {
   if(energyBinSpinBox->maximum() < value || energyBinSpinBox->minimum() > value)
   {
@@ -132,7 +132,7 @@ void MPMCDisplayWidget::setEnergyValue(int value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::on_energyBinSpinBox_valueChanged(int value)
+void MPMCDisplayWidget::on_energyBinSpinBox_valueChanged(int value) const
 {
   emit controlsChanged(getMPMCData());
 }
@@ -169,7 +169,7 @@ void MPMCDisplayWidget::projModeChanged(int mode)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::updateSliderRange(int min, int max)
+void MPMCDisplayWidget::updateSliderRange(int min, int max) const
 {
   energyBinSpinBox->setRange(min, max);
 }
@@ -177,7 +177,7 @@ void MPMCDisplayWidget::updateSliderRange(int min, int max)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::loadImage(GLImageViewer::GLImageData data)
+void MPMCDisplayWidget::loadImage(GLImageViewer::GLImageData data) const
 {
   QImage img = data.image;
 
@@ -233,7 +233,7 @@ void MPMCDisplayWidget::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::writeSession(QJsonObject& obj)
+void MPMCDisplayWidget::writeSession(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::EnergyBin] = energyBinSpinBox->value();
   obj[EMsoftWorkbenchConstants::IOStrings::ProjectionMode] = static_cast<int>(m_ProjectionMode);
@@ -248,7 +248,7 @@ void MPMCDisplayWidget::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::createConnections(PatternDisplay_UI* ui)
+void MPMCDisplayWidget::createConnections(PatternDisplay_UI* ui) const
 {
   // If anything causes a new image to be generated, modify the window
   connect(this, &MPMCDisplayWidget::controlsChanged, [=] { emit ui->moduleParametersChanged(); });
@@ -266,10 +266,27 @@ void MPMCDisplayWidget::createConnections(PatternDisplay_UI* ui)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MPMCDisplayWidget::MPMCData MPMCDisplayWidget::getMPMCData()
+MPMCDisplayWidget::MPMCData MPMCDisplayWidget::getMPMCData() const
 {
   MPMCDisplayWidget::MPMCData data;
   data.energyBin = energyBinSpinBox->value();
   data.mode = m_ProjectionMode;
   return data;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MPMCDisplayWidget::setImageVector(const std::vector<QImage>& value)
+{
+  m_ImageVector = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+std::vector<QImage> MPMCDisplayWidget::getImageVector() const
+{
+  return m_ImageVector;
+}
+

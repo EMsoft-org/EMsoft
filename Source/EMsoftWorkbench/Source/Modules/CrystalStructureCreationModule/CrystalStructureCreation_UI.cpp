@@ -104,7 +104,7 @@ void CrystalStructureCreation_UI::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void CrystalStructureCreation_UI::createValidators()
+void CrystalStructureCreation_UI::createValidators() const
 {
   QDoubleValidator* doubleValidator = new QDoubleValidator(aLE);
   aLE->setValidator(doubleValidator);
@@ -280,7 +280,7 @@ void CrystalStructureCreation_UI::readSpaceGroupParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void CrystalStructureCreation_UI::writeModuleSession(QJsonObject& obj)
+void CrystalStructureCreation_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject crystalSystemParamObj;
   QJsonObject spaceGroupParamObj;
@@ -300,7 +300,7 @@ void CrystalStructureCreation_UI::writeModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void CrystalStructureCreation_UI::writeCrystalSystemParameters(QJsonObject& obj)
+void CrystalStructureCreation_UI::writeCrystalSystemParameters(QJsonObject& obj) const
 {
   obj[ioConstants::CrystalSystemSelection] = csCB->currentIndex();
   obj[ioConstants::A] = aLE->text();
@@ -314,7 +314,7 @@ void CrystalStructureCreation_UI::writeCrystalSystemParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void CrystalStructureCreation_UI::writeSpaceGroupParameters(QJsonObject& obj)
+void CrystalStructureCreation_UI::writeSpaceGroupParameters(QJsonObject& obj) const
 {
   obj[ioConstants::SpaceGroupNumber] = spaceGrpNumberSB->value();
   obj[ioConstants::SpaceGroupSetting] = spaceGrpSettingCB->currentIndex();
@@ -323,7 +323,7 @@ void CrystalStructureCreation_UI::writeSpaceGroupParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index)
+void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index) const
 {
   CrystalStructureCreationController::CrystalSystem cs = static_cast<CrystalStructureCreationController::CrystalSystem>(index);
 
@@ -424,11 +424,11 @@ void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index)
  {
  case (0):
   sgmin = 195; sgmax = 230
- case (1): 
+ case (1):
  sgmin =  75; sgmax = 142
  case (2):
  sgmin =  16; sgmax =  74
- case (3): 
+ case (3):
  sgmin = 168; sgmax = 194
  case (4):
   if (cell%SG%SYM_second)
@@ -436,15 +436,15 @@ void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index)
              call Message('The space groups below correspond to the ', frm = "(/A)")
              call Message('second (rhombohedral) setting.', frm = "(A/)")
              call Message('Please select one of these space groups.', frm = "(A/)")
-             for (int i=0, i < 7; i++) 
+             for (int i=0, i < 7; i++)
              {
               if ((mod(i,4) == 0) || (i == 7)) {
                 write (6,"(1x,i3,':',A11,5x)") TRIG(i),SYM_SGname(TRIG(i))
               } else {
                 write (6,"(1x,i3,':',A11,5x,$)") TRIG(i),SYM_SGname(TRIG(i))
               }
-           
-             } 
+
+             }
              call Message(' -------------------------- ', frm = "(A)")
              call ReadValue(' Enter space group number : ', io_int, 1)
              cell%SYM_SGnum = io_int(1)
@@ -470,7 +470,7 @@ void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index)
   sgmin =   1; sgmax =   2;
 }
 
-// print out all the relevant space group names and numbers        
+// print out all the relevant space group names and numbers
  if (!skip) {
   call Message(' ', frm = "(/A/)")
   for(int i=sgmin;i < sgmax; i++) {
@@ -482,7 +482,7 @@ void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index)
    }
   }
   cell%SYM_SGnum = sgmin-1
-   while ((cell%SYM_SGnum.lt.sgmin) || (cell%SYM_SGnum.gt.sgmax)) 
+   while ((cell%SYM_SGnum.lt.sgmin) || (cell%SYM_SGnum.gt.sgmax))
    {
    call Message(' -------------------------- ', frm = "(A)")
    call ReadValue(' Enter space group number : ', io_int, 1)
@@ -500,7 +500,7 @@ void CrystalStructureCreation_UI::on_csCB_currentIndexChanged(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-CrystalStructureCreationController::CrystalStructureCreationData CrystalStructureCreation_UI::getCreationData()
+CrystalStructureCreationController::CrystalStructureCreationData CrystalStructureCreation_UI::getCreationData() const
 {
   CrystalStructureCreationController::CrystalStructureCreationData data;
   data.a = aLE->text().toDouble();
@@ -517,3 +517,20 @@ CrystalStructureCreationController::CrystalStructureCreationData CrystalStructur
 
   return data;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void CrystalStructureCreation_UI::setController(CrystalStructureCreationController* value)
+{
+  m_Controller = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+CrystalStructureCreationController* CrystalStructureCreation_UI::getController() const
+{
+  return m_Controller;
+}
+

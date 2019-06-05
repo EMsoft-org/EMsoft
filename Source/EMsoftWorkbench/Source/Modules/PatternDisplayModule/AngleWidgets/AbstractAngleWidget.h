@@ -37,8 +37,6 @@
 
 #include <QtWidgets/QWidget>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 class PatternDisplay_UI;
@@ -48,7 +46,16 @@ class AbstractAngleWidget : public QWidget
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(AbstractAngleWidget)
+  using Self = AbstractAngleWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for AbstractAngleWidget
+   */
+  static Pointer NullPointer();
 
   AbstractAngleWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~AbstractAngleWidget() override;
@@ -59,12 +66,12 @@ public:
   static const QString UnknownStr;
   static const QString EulerId;
 
-  virtual FloatArrayType::Pointer getEulerAngles() = 0;
+  virtual std::vector<float> getEulerAngles() const = 0;
 
   static float ConvertToRadians(float value);
   static float ConvertToDegrees(float value);
 
-  virtual bool hasValidAngles() = 0;
+  virtual bool hasValidAngles() const = 0;
 
   /**
    * @brief readSession
@@ -74,18 +81,19 @@ public:
   /**
    * @brief writeSession
    */
-  virtual void writeSession(QJsonObject& obj) = 0;
+  virtual void writeSession(QJsonObject& obj) const = 0;
 
   /**
    * @brief createModificationConnections
    * @param ui
    */
-  virtual void createModificationConnections(PatternDisplay_UI* ui) = 0;
+  virtual void createModificationConnections(PatternDisplay_UI* ui) const = 0;
 
 signals:
-  void dataChanged(bool validAngles);
+  void dataChanged(bool validAngles) const;
 
 private:
+
 public:
   AbstractAngleWidget(const AbstractAngleWidget&) = delete;            // Copy Constructor Not Implemented
   AbstractAngleWidget(AbstractAngleWidget&&) = delete;                 // Move Constructor Not Implemented

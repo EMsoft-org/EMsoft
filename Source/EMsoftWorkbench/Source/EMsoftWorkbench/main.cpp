@@ -34,6 +34,7 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include <QtCore/QDir>
+#include <QtCore/QDebug>
 #include <QtGui/QSurfaceFormat>
 
 #include <QtWidgets/QApplication>

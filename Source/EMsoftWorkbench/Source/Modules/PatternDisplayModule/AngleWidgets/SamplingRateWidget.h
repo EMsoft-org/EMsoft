@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
@@ -46,8 +45,20 @@ class SamplingRateWidget : public AbstractAngleWidget, public Ui::SamplingRateWi
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(SamplingRateWidget)
-  SIMPL_STATIC_NEW_MACRO(SamplingRateWidget)
+  using Self = SamplingRateWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for SamplingRateWidget
+   */
+  static Pointer NullPointer();
+  /**
+   * @brief Shared pointer New method for SamplingRateWidget
+   */
+  static Pointer New();
 
   SamplingRateWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~SamplingRateWidget() override;
@@ -61,13 +72,13 @@ public:
    * @brief getEulerAngles
    * @return
    */
-  virtual FloatArrayType::Pointer getEulerAngles() override;
+  virtual std::vector<float> getEulerAngles() const override;
 
   /**
    * @brief hasValidAngles
    * @return
    */
-  virtual bool hasValidAngles() override;
+  virtual bool hasValidAngles() const override;
 
   /**
    * @brief readSession
@@ -77,24 +88,26 @@ public:
   /**
    * @brief writeSession
    */
-  virtual void writeSession(QJsonObject& obj) override;
+  virtual void writeSession(QJsonObject& obj) const override;
 
   /**
    * @brief createModificationConnections
    * @param ui
    */
-  virtual void createModificationConnections(PatternDisplay_UI* ui) override;
+  virtual void createModificationConnections(PatternDisplay_UI* ui) const override;
 
 protected slots:
-  void on_phi1CB_stateChanged(int state);
-  void on_phiCB_stateChanged(int state);
-  void on_phi2CB_stateChanged(int state);
+  void on_phi1CB_stateChanged(int state) const;
+  void on_phiCB_stateChanged(int state) const;
+  void on_phi2CB_stateChanged(int state) const;
 
-  void lineEditChanged(const QString& text);
-  void checkBoxChanged(int index);
+  void lineEditChanged(const QString& text) const;
+  void checkBoxChanged(int index) const;
 
 private:
-  void valuesChanged();
+
+
+  void valuesChanged() const;
 
 public:
   SamplingRateWidget(const SamplingRateWidget&) = delete;            // Copy Constructor Not Implemented

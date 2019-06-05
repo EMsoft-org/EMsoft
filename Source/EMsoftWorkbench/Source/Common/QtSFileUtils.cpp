@@ -29,6 +29,7 @@
  *
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 #include "QtSFileUtils.h"
 
 #include <QtCore/QUrl>
@@ -42,19 +43,17 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSFileUtils::QtSFileUtils()
-{}
+QtSFileUtils::QtSFileUtils() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSFileUtils::~QtSFileUtils()
-{}
+QtSFileUtils::~QtSFileUtils() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString QtSFileUtils::GenerateFileSystemPath(QString pathEnding)
+QString QtSFileUtils::GenerateFileSystemPath(const QString &pathEnding)
 {
   QString appPath = QApplication::applicationDirPath();
 
@@ -166,12 +165,12 @@ void QtSFileUtils::ShowPathInGui(QWidget* parent, const QString &pathIn)
   {
     QStringList scriptArgs;
     scriptArgs << QLatin1String("-e")
-               << QString::fromLatin1("tell application \"Finder\" to reveal POSIX file \"%1\"")
+               << QString::fromLatin1(R"(tell application "Finder" to reveal POSIX file "%1")")
                   .arg(fileInfo.absoluteFilePath());
     QProcess::execute(QLatin1String("/usr/bin/osascript"), scriptArgs);
     scriptArgs.clear();
     scriptArgs << QLatin1String("-e")
-               << QLatin1String("tell application \"Finder\" to activate");
+               << QLatin1String(R"(tell application "Finder" to activate)");
     QProcess::execute(QLatin1String("/usr/bin/osascript"), scriptArgs);
   } else {
     // we cannot select a file here, because no file browser really supports it...

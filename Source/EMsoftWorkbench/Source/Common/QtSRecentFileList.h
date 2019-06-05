@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _qrecentfilelist_h_
-#define _qrecentfilelist_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
@@ -66,7 +64,7 @@ class QtSRecentFileList: public QObject
     Q_OBJECT
 
   public:
-    QtSRecentFileList(QObject* parent = 0);
+    QtSRecentFileList(QObject* parent = nullptr);
 
     /**
      * @brief Returns the singleton instance of this class.
@@ -92,7 +90,7 @@ class QtSRecentFileList: public QObject
      * @brief Returns the current list of 'Recent Files' for this application
      * @return
      */
-    QStringList fileList();
+    QStringList fileList() const;
 
     /**
      * @brief Adds a file to the recent files
@@ -104,7 +102,7 @@ class QtSRecentFileList: public QObject
      * @brief Writes the list of files to a preference file.
      * @param prefs The QSettings object to use.
      */
-    void writeList(QtSSettings* prefs);
+    void writeList(QtSSettings* prefs) const;
 
     /**
      * @brief Reads the list of Recent Files from the preferences file
@@ -140,7 +138,7 @@ class QtSRecentFileList: public QObject
      * @brief Returns true if the list already contains the file.
      * @param file The file to check.
      */
-    bool contains(const QString& file);
+    bool contains(const QString& file) const;
 
   private:
     ~QtSRecentFileList() override;
@@ -151,11 +149,10 @@ class QtSRecentFileList: public QObject
     // QList<QAction*> actions;
     // QMenu* recentFileMenu;
 
-
-    QtSRecentFileList(const QtSRecentFileList&); //Copy Constructor Not Implemented
-    void operator=(const QtSRecentFileList&); //Copy Assignment Not Implemented
+  public:
+    QtSRecentFileList(const QtSRecentFileList&) = delete; // Copy Constructor Not Implemented
+    QtSRecentFileList(QtSRecentFileList&&) = delete;      // Move Constructor Not Implemented
+    QtSRecentFileList& operator=(const QtSRecentFileList&) = delete; // Copy Assignment Not Implemented
+    QtSRecentFileList& operator=(QtSRecentFileList&&) = delete;      // Move Assignment Not Implemented
 
 };
-
-#endif /* QRECENTFILELIST_H_ */
-

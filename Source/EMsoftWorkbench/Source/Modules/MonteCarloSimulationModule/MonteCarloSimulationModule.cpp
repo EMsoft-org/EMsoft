@@ -57,7 +57,7 @@ MonteCarloSimulationModule::~MonteCarloSimulationModule() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* MonteCarloSimulationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent)
+IModuleUI* MonteCarloSimulationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent) const
 {
   Q_UNUSED(moduleObj)
 
@@ -65,3 +65,22 @@ IModuleUI* MonteCarloSimulationModule::createModuleUI(QJsonObject moduleObj, QWi
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+MonteCarloSimulationModule::Pointer MonteCarloSimulationModule::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+MonteCarloSimulationModule::Pointer MonteCarloSimulationModule::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

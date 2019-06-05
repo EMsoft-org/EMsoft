@@ -37,6 +37,7 @@
 
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>
+#include <QtCore/QTextStream>
 
 // -----------------------------------------------------------------------------
 //
@@ -129,7 +130,7 @@ AsymmetricUnitTableData::~AsymmetricUnitTableData() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool AsymmetricUnitTableData::isEmpty()
+bool AsymmetricUnitTableData::isEmpty() const
 {
   return (!m_TableData.empty() || !m_RowHeaders.empty() || !m_ColHeaders.empty());
 }
@@ -432,7 +433,7 @@ void AsymmetricUnitTableData::writeData(QJsonObject& object) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<std::vector<double>> AsymmetricUnitTableData::readData(QJsonObject object)
+std::vector<std::vector<double>> AsymmetricUnitTableData::readData(QJsonObject object) const
 {
   std::vector<std::vector<double>> data;
   if(object["Table Data"].isArray())
@@ -467,7 +468,7 @@ std::vector<std::vector<double>> AsymmetricUnitTableData::readData(QJsonObject o
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<std::vector<double>> AsymmetricUnitTableData::getTableData()
+std::vector<std::vector<double>> AsymmetricUnitTableData::getTableData() const
 {
   return m_TableData;
 }
@@ -586,3 +587,132 @@ bool AsymmetricUnitTableData::operator!=(const AsymmetricUnitTableData& rhs) con
 
   return false;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setColHeaders(const QStringList& value)
+{
+  m_ColHeaders = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QStringList AsymmetricUnitTableData::getColHeaders() const
+{
+  return m_ColHeaders;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setRowHeaders(const QStringList& value)
+{
+  m_RowHeaders = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QStringList AsymmetricUnitTableData::getRowHeaders() const
+{
+  return m_RowHeaders;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setDynamicRows(const bool& value)
+{
+  m_DynamicRows = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool AsymmetricUnitTableData::getDynamicRows() const
+{
+  return m_DynamicRows;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setDynamicCols(const bool& value)
+{
+  m_DynamicCols = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool AsymmetricUnitTableData::getDynamicCols() const
+{
+  return m_DynamicCols;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setMinRows(const int& value)
+{
+  m_MinRows = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+int AsymmetricUnitTableData::getMinRows() const
+{
+  return m_MinRows;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setMinCols(const int& value)
+{
+  m_MinCols = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+int AsymmetricUnitTableData::getMinCols() const
+{
+  return m_MinCols;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setDefaultRowCount(const int& value)
+{
+  m_DefaultRowCount = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+int AsymmetricUnitTableData::getDefaultRowCount() const
+{
+  return m_DefaultRowCount;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AsymmetricUnitTableData::setDefaultColCount(const int& value)
+{
+  m_DefaultColCount = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+int AsymmetricUnitTableData::getDefaultColCount() const
+{
+  return m_DefaultColCount;
+}
+

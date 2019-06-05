@@ -37,16 +37,33 @@
 
 #include <QtWidgets/QWidget>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 class IModuleUI : public QWidget
 {
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(IModuleUI)
+  using Self = IModuleUI;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for IModuleUI
+   */
+  static Pointer NullPointer();
 
-  SIMPL_BOOL_PROPERTY(Running)
+  /**
+    * @brief Setter property for Running
+    */
+  void setRunning(const bool& value); 
+
+  /**
+    * @brief Getter property for Running
+    * @return Value of Running
+    */
+  bool isRunning() const;
 
   ~IModuleUI() override;
 
@@ -74,7 +91,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  virtual void writeModuleSession(QJsonObject& obj) = 0;
+  virtual void writeModuleSession(QJsonObject& obj) const = 0;
 
   /**
    * @brief validateData
@@ -84,13 +101,13 @@ public:
   /**
    * @brief getModuleIssues
    */
-  QList<IModuleUI::ModuleIssue> getModuleIssues();
+  QList<IModuleUI::ModuleIssue> getModuleIssues() const;
 
   /**
    * @brief getStdOutput
    * @return
    */
-  QString getStdOutput();
+  QString getStdOutput() const;
 
 protected:
   QList<ModuleIssue> m_ModuleIssues;
@@ -102,7 +119,7 @@ protected:
    * @brief getOpenedFilePath
    * @return
    */
-  QString getOpenedFilePath();
+  QString getOpenedFilePath() const;
 
   /**
    * @brief setOpenedFilePath
@@ -133,13 +150,16 @@ signals:
 
   void validationOfOtherModulesNeeded(IModuleUI* self);
 
-  void moduleParametersChanged();
+  void moduleParametersChanged() const;
 
   void errorMessageGenerated(const QString& msg);
   void warningMessageGenerated(const QString& msg);
   void stdOutputMessageGenerated(const QString& msg);
 
 private:
+
+  bool m_Running;
+
   QString m_OpenedFilePath = "";
 
 public:

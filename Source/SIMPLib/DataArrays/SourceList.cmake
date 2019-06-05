@@ -36,15 +36,11 @@ set(SUBDIR_NAME DataArrays)
 
 
 set(SIMPLib_${SUBDIR_NAME}_HDRS
-  ${SIMPLib_SOURCE_DIR}/DataArrays/DataArray.hpp
-  ${SIMPLib_SOURCE_DIR}/DataArrays/IDataArray.h
-  ${SIMPLib_SOURCE_DIR}/DataArrays/StringDataArray.hpp
   ${SIMPLib_SOURCE_DIR}/DataArrays/DynamicListArray.hpp
   ${SIMPLib_SOURCE_DIR}/DataArrays/NeighborList.hpp
 )
 
 set(SIMPLib_${SUBDIR_NAME}_SRCS
-  ${SIMPLib_SOURCE_DIR}/DataArrays/IDataArray.cpp
 )
 cmp_IDE_SOURCE_PROPERTIES( "${SUBDIR_NAME}" "${SIMPLib_${SUBDIR_NAME}_HDRS};${SIMPLib_${SUBDIR_NAME}_Moc_HDRS}" "${SIMPLib_${SUBDIR_NAME}_SRCS}" "${PROJECT_INSTALL_HEADERS}")
 cmp_IDE_SOURCE_PROPERTIES( "Generated/${SUBDIR_NAME}" "" "${SIMPLib_${SUBDIR_NAME}_Generated_MOC_SRCS}" "0")

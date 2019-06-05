@@ -47,8 +47,6 @@
 
 #include "Common/MasterPatternFileReader.h"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "Modules/PatternFitModule/PatternFitViewer.h"
@@ -61,8 +59,26 @@ public:
   PatternFitController(QObject* parent = nullptr);
   ~PatternFitController() override;
 
-  SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
-  SIMPL_INSTANCE_PROPERTY(MasterPatternFileReader::MasterPatternData, MPFileData)
+    /**
+    * @brief Setter property for Observer
+    */
+    void setObserver(IObserver* value); 
+
+    /**
+    * @brief Getter property for Observer
+    * @return Value of Observer
+    */
+    IObserver* getObserver() const;
+    /**
+    * @brief Setter property for MPFileData
+    */
+    void setMPFileData(const MasterPatternFileReader::MasterPatternData& value); 
+
+    /**
+    * @brief Getter property for MPFileData
+    * @return Value of MPFileData
+    */
+    MasterPatternFileReader::MasterPatternData getMPFileData() const;
 
   struct SimulationData
   {
@@ -76,7 +92,7 @@ public:
     double beamCurrent;
     double dwellTime;
     double sampleOmegaAngle;
-    FloatArrayType::Pointer angles;
+    std::vector<float> angles;
     double gammaValue;
     bool useCircularMask;
     bool useHipassFilter;
@@ -92,7 +108,7 @@ public:
    * @param detectorData
    * @return
    */
-  FloatArrayType::Pointer generatePattern(PatternFitController::SimulationData detectorData);
+  std::vector<float> generatePattern(PatternFitController::SimulationData detectorData);
 
   /**
    * @brief generatePatternImage
@@ -108,14 +124,14 @@ public:
    * @param yDim
    * @return
    */
-  GLImageViewer::GLImageData generatePatternImage(const FloatArrayType::Pointer& patternData, size_t xDim, size_t yDim, size_t zValue = 0);
+  GLImageViewer::GLImageData generatePatternImage(const std::vector<float> &patternData, size_t xDim, size_t yDim, size_t zValue = 0);
 
   /**
    * @brief validateSimulationValues
    * @param data
    * @return
    */
-  bool validateSimulationValues(PatternFitController::SimulationData data);
+  bool validateSimulationValues(PatternFitController::SimulationData data) const;
 
   /**
    * @brief setMasterFilePath Sets a new master file.  Automatically reads the data from the master file
@@ -129,23 +145,26 @@ public:
   using IntPair = QPair<int, int>;
 
 signals:
-  void updateEkeVs(FloatArrayType::Pointer ekeVs);
-  void mpImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void mcImageNeedsDisplayed(GLImageViewer::GLImageData);
-  void mpKeVNeedsDisplayed(float keV);
-  void mcKeVNeedsDisplayed(float keV);
-  void imageRangeChanged(int min, int max);
-  void splashScreenMsgGenerated(const QString& msg);
-  void newProgressBarMaximumValue(int value);
-  void newProgressBarValue(int value);
-  void rowDataChanged(const QModelIndex&, const QModelIndex&);
-  void generationFinished();
+  void updateEkeVs(std::vector<float> ekeVs) const;
+  void mpImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mcImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mpKeVNeedsDisplayed(float keV) const;
+  void mcKeVNeedsDisplayed(float keV) const;
+  void imageRangeChanged(int min, int max) const;
+  void splashScreenMsgGenerated(const QString& msg) const;
+  void newProgressBarMaximumValue(int value) const;
+  void newProgressBarValue(int value) const;
+  void rowDataChanged(const QModelIndex&, const QModelIndex&) const;
+  void generationFinished() const;
 
-  void errorMessageGenerated(const QString& msg);
-  void warningMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void errorMessageGenerated(const QString& msg) const;
+  void warningMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
+    IObserver* m_Observer;
+    MasterPatternFileReader::MasterPatternData m_MPFileData;
+
   QString m_MasterFilePath;
   bool m_Cancel = false;
 

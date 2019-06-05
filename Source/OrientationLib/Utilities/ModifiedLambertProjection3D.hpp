@@ -29,13 +29,13 @@
  *
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 #ifndef _ModifiedLamberProjection3D_H_
 #define _ModifiedLamberProjection3D_H_
 
-#include <assert.h>
+#include <cassert>
 
 #include "SIMPLib/SIMPLib.h"
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/ArrayHelpers.hpp"
 
 #include "OrientationLib/OrientationLib.h"
@@ -49,13 +49,32 @@ template<typename T, typename K>
 class ModifiedLambertProjection3D
 {
   public:
-    SIMPL_SHARED_POINTERS(ModifiedLambertProjection3D)
-    SIMPL_STATIC_NEW_MACRO(ModifiedLambertProjection3D)
-    SIMPL_TYPE_MACRO(ModifiedLambertProjection3D)
+    using Self = ModifiedLambertProjection3D;
+    using Pointer = std::shared_ptr<Self>;
+    using ConstPointer = std::shared_ptr<const Self>;
+    using WeakPointer = std::weak_ptr<Self>;
+    using ConstWeakPointer = std::weak_ptr<Self>;
+
+    /**
+     * @brief NullPointer accessor for ModifiedLambertProjection3D
+     */
+    static Pointer NullPointer()
+    {
+      return Pointer(static_cast<Self*>(nullptr));
+    }
+
+    /**
+     * @brief Shared pointer New method for ModifiedLambertProjection3D
+     */
+    static Pointer New()
+    {
+      Pointer sharedPtr (new Self);
+      return sharedPtr;
+    }
 
     virtual ~ModifiedLambertProjection3D();
 
-    typedef ArrayHelpers<T, K> OMHelperType;
+    using OMHelperType = ArrayHelpers<T, K>;
 
     /**
      * @brief GetPyramid

@@ -99,7 +99,7 @@ void PatternFitViewer::clearImage()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFitViewer::on_saveBtn_clicked()
+void PatternFitViewer::on_saveBtn_clicked() const
 {
   QString proposedDir = emSoftApp->getOpenDialogLastDirectory();
   QFileInfo fi(proposedDir);
@@ -130,7 +130,7 @@ void PatternFitViewer::readSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFitViewer::writeSession(QJsonObject& obj)
+void PatternFitViewer::writeSession(QJsonObject& obj) const
 {
   obj[EMsoftWorkbenchConstants::IOStrings::FlickerInterval] = flickerIntervalSB->value();
   obj[EMsoftWorkbenchConstants::StringConstants::OverlayState] = static_cast<int>(overlayCB->checkState());
@@ -139,7 +139,7 @@ void PatternFitViewer::writeSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-int PatternFitViewer::getFlickerInterval()
+int PatternFitViewer::getFlickerInterval() const
 {
   return flickerIntervalSB->value();
 }

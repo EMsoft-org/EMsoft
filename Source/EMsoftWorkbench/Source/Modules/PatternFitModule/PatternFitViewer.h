@@ -37,7 +37,6 @@
 
 #include "Common/GLImageViewer.h"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternFitModule/PatternControlsWidget.h"
 
@@ -55,7 +54,7 @@ public:
 
   void clearImage();
 
-  int getFlickerInterval();
+  int getFlickerInterval() const;
 
   /**
    * @brief readSession
@@ -67,13 +66,13 @@ public:
    * @brief writeSession
    * @param obj
    */
-  void writeSession(QJsonObject& obj);
+  void writeSession(QJsonObject& obj) const;
 
 protected slots:
   /**
    * @brief on_saveBtn_clicked
    */
-  void on_saveBtn_clicked();
+  void on_saveBtn_clicked() const;
 
 protected:
   /**

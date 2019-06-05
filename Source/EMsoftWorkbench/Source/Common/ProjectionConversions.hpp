@@ -33,12 +33,9 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef projectionconversions_h
-#define projectionconversions_h
+#pragma once
 
 #include <QtCore/QObject>
-
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 #include "OrientationLib/Utilities/ModifiedLambertProjection.h"
 
@@ -47,13 +44,13 @@ class ProjectionConversions : public QObject
   Q_OBJECT
 
 public:
-    ProjectionConversions(QObject* parent = nullptr) {}
-    ~ProjectionConversions() {}
+    ProjectionConversions(const QObject* parent = nullptr) {}
+    ~ProjectionConversions() override = default;
 
     template <typename T>
-    FloatArrayType::Pointer convertLambertSquareData(typename DataArray<T>::Pointer lsData, size_t dim,
+    std::vector<float> convertLambertSquareData(const std::vector<T> &lsData, size_t dim,
                                                        ModifiedLambertProjection::ProjectionType projType, size_t zValue = 0,
-                                                       ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare)
+                                                       ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare) const
     {
       ModifiedLambertProjection::Pointer lambertProjection = ModifiedLambertProjection::New();
       lambertProjection->initializeSquares(dim, 1.0f);
@@ -64,18 +61,17 @@ public:
         {
           size_t index = dim*dim*zValue + dim*y + x;
           size_t projIdx = dim*y + x;
-          lambertProjection->setValue(square, projIdx, static_cast<double>(lsData->getValue(index)));
+          lambertProjection->setValue(square, projIdx, static_cast<double>(lsData.at(index)));
         }
       }
 
-      FloatArrayType::Pointer stereoProj = lambertProjection->createProjection(dim, projType);
+      std::vector<float> stereoProj = lambertProjection->createProjection(dim, projType);
       return stereoProj;
     }
 
-private:
-
-    ProjectionConversions(const ProjectionConversions&);    // Copy Constructor Not Implemented
-    void operator=(const ProjectionConversions&);  // Operator '=' Not Implemented
+  public:
+    ProjectionConversions(const ProjectionConversions&) = delete; // Copy Constructor Not Implemented
+    ProjectionConversions(ProjectionConversions&&) = delete;      // Move Constructor Not Implemented
+    ProjectionConversions& operator=(const ProjectionConversions&) = delete; // Copy Assignment Not Implemented
+    ProjectionConversions& operator=(ProjectionConversions&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* projectionconversions_h */

@@ -37,8 +37,6 @@
 
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-#include "SIMPLib/DataArrays/DataArray.hpp"
 
 #include "Common/GLImageViewer.h"
 
@@ -62,7 +60,7 @@ public:
     QString patternScaling;
     double gammaValue;
     bool useCircularMask;
-    FloatArrayType::Pointer angles;
+    std::vector<float> angles;
   };
 
   static const QString UpperLeftOrigin;
@@ -89,19 +87,19 @@ public:
    * @brief setExpectedPatterns
    * @param eulerAngles
    */
-  void setExpectedPatterns(const FloatArrayType::Pointer& eulerAngles);
+  void setExpectedPatterns(const std::vector<float>& eulerAngles);
 
   /**
    * @brief displayImage
    * @param imageData
    */
-  void displayImage(GLImageViewer::GLImageData imageData);
+  void displayImage(GLImageViewer::GLImageData imageData) const;
 
   /**
    * @brief displayImage
    * @param index
    */
-  void displayImage(int index);
+  void displayImage(int index) const;
 
   /**
    * @brief generateImage
@@ -120,31 +118,31 @@ public slots:
    * @brief setProgressValue
    * @param value
    */
-  void setProgressBarValue(int value);
+  void setProgressBarValue(int value) const;
 
   /**
    * @brief getDetectorBinningValue
    * @return
    */
-  size_t getDetectorBinningValue();
+  size_t getDetectorBinningValue() const;
 
   /**
    * @brief getPatternOrigin
    * @return
    */
-  QString getPatternOriginValue();
+  QString getPatternOriginValue() const;
 
   /**
    * @brief getPatternScaling
    * @return
    */
-  QString getPatternScalingValue();
+  QString getPatternScalingValue() const;
 
   /**
    * @brief getGammaValue
    * @return
    */
-  double getGammaValue();
+  double getGammaValue() const;
 
 protected:
   /**
@@ -179,50 +177,50 @@ protected slots:
   /**
    * @brief on_saveBtn_clicked
    */
-  void on_saveBtn_clicked();
+  void on_saveBtn_clicked() const;
 
   /**
    * @brief detectorBinning_selectionChanged
    */
-  void detectorBinning_selectionChanged();
+  void detectorBinning_selectionChanged() const;
 
   /**
    * @brief patternOrigin_selectionChanged
    */
-  void patternOrigin_selectionChanged();
+  void patternOrigin_selectionChanged() const;
 
   /**
    * @brief patternScaling_selectionChanged
    */
-  void patternScaling_selectionChanged();
+  void patternScaling_selectionChanged() const;
 
   /**
    * @brief patternListView_itemSelectionChanged
    * @param current
    * @param previous
    */
-  void patternListView_itemSelectionChanged(const QItemSelection& current, const QItemSelection& previous);
+  void patternListView_itemSelectionChanged(const QItemSelection& current, const QItemSelection& previous) const;
 
   /**
    * @brief patternListView_doubleClicked
    */
-  void patternListView_doubleClicked(const QModelIndex& index);
+  void patternListView_doubleClicked(const QModelIndex& index) const;
 
   /**
    * @brief setProgressBarMaximum
    * @param value
    */
-  void setProgressBarMaximum(int value);
+  void setProgressBarMaximum(int value) const;
 
 signals:
-  void dataChanged(SimulatedPatternDisplayWidget::PatternDisplayData patternData);
-  void cancelRequested();
-  void patternNeedsPriority(size_t index);
-  void generationStarted();
-  void generationFinished();
+  void dataChanged(SimulatedPatternDisplayWidget::PatternDisplayData patternData) const;
+  void cancelRequested() const;
+  void patternNeedsPriority(size_t index) const;
+  void generationStarted() const;
+  void generationFinished() const;
 
 private slots:
-  void patternGenerationFinished();
+  void patternGenerationFinished() const;
 
 private:
   int m_MinSBValue;
@@ -250,7 +248,7 @@ private:
   PatternDisplayData m_CurrentPatternDisplayData;
   PatternDisplayData m_NewPatternDisplayData;
 
-  PatternDisplayData getPatternDisplayData();
+  PatternDisplayData getPatternDisplayData() const;
 
 public:
   SimulatedPatternDisplayWidget(const SimulatedPatternDisplayWidget&) = delete;            // Copy Constructor Not Implemented

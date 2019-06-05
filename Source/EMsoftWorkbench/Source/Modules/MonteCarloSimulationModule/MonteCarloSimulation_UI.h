@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IModuleUI.h"
 #include "Modules/MonteCarloSimulationModule/MonteCarloSimulationController.h"
@@ -50,8 +49,6 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(MonteCarloSimulation_UI)
-
   /**
    * @brief MonteCarloSimulation_UI
    * @param parent
@@ -60,7 +57,16 @@ public:
 
   ~MonteCarloSimulation_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(MonteCarloSimulationController*, Controller)
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(MonteCarloSimulationController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    MonteCarloSimulationController* getController() const;
 
   /**
    * @brief readModuleSession
@@ -72,7 +78,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
   /**
    * @brief validateData
@@ -92,20 +98,22 @@ protected:
   void changeEvent(QEvent* event) override;
 
 protected slots:
-  void on_mcModeCB_currentIndexChanged(int index);
+  void on_mcModeCB_currentIndexChanged(int index) const;
 
   void slot_createMonteCarloBtn_clicked();
 
   void parametersChanged();
 
-  void updateMCProgress(int loopCompleted, int totalLoops, float bseYield);
+  void updateMCProgress(int loopCompleted, int totalLoops, float bseYield) const;
 
-  void on_gpuPlatformCB_currentIndexChanged(int index);
+  void on_gpuPlatformCB_currentIndexChanged(int index) const;
 
 private slots:
   void threadFinished();
 
 private:
+    MonteCarloSimulationController* m_Controller;
+
   QString m_LastFilePath = "";
   QSharedPointer<QFutureWatcher<void>> m_Watcher;
 
@@ -125,18 +133,18 @@ private:
    * @brief writeCrystalSystemParameters
    * @param obj
    */
-  void writeMonteCarloParameters(QJsonObject& obj);
+  void writeMonteCarloParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeSpaceGroupParameters
    * @param obj
    */
-  void writeGPUParameters(QJsonObject& obj);
+  void writeGPUParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators
    */
-  void createValidators();
+  void createValidators() const;
 
   /**
    * @brief createParametersChangedConnections
@@ -146,13 +154,13 @@ private:
   /**
    * @brief createWidgetConnections
    */
-  void createWidgetConnections();
+  void createWidgetConnections() const;
 
   /**
    * @brief getCreationData
    * @return
    */
-  MonteCarloSimulationController::MonteCarloSimulationData getCreationData();
+  MonteCarloSimulationController::MonteCarloSimulationData getCreationData() const;
 
 public:
   MonteCarloSimulation_UI(const MonteCarloSimulation_UI&) = delete;            // Copy Constructor Not Implemented

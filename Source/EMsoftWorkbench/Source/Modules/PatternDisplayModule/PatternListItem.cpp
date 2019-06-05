@@ -59,7 +59,7 @@ PatternListItem::~PatternListItem()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternListItem* PatternListItem::child(int number)
+PatternListItem* PatternListItem::child(int number) const
 {
   return m_ChildItems.value(number);
 }
@@ -117,7 +117,7 @@ bool PatternListItem::insertChildren(int position, int count, int columns)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternListItem* PatternListItem::parent()
+PatternListItem* PatternListItem::parent() const
 {
   return m_ParentItem;
 }
@@ -152,7 +152,7 @@ bool PatternListItem::removeChildren(int position, int count)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString PatternListItem::getItemTooltip()
+QString PatternListItem::getItemTooltip() const
 {
   return m_ItemTooltip;
 }
@@ -169,7 +169,7 @@ bool PatternListItem::setItemTooltip(const QString& value)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QIcon PatternListItem::getIcon()
+QIcon PatternListItem::getIcon() const
 {
   return m_Icon;
 }
@@ -190,3 +190,36 @@ void PatternListItem::setParent(PatternListItem* parent)
 {
   m_ParentItem = parent;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternListItem::setItemName(const QString& value)
+{
+  m_ItemName = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString PatternListItem::getItemName() const
+{
+  return m_ItemName;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternListItem::setPatternStatus(const PatternListItem::PatternStatus& value)
+{
+  m_PatternStatus = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternListItem::PatternStatus PatternListItem::getPatternStatus() const
+{
+  return m_PatternStatus;
+}
+

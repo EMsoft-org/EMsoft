@@ -112,14 +112,12 @@ QtSSettings::QtSSettings(const QString& filePath, QObject* parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSSettings::~QtSSettings()
-{
-}
+QtSSettings::~QtSSettings() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString QtSSettings::fileName()
+QString QtSSettings::fileName() const
 {
   return m_FilePath;
 }
@@ -127,7 +125,7 @@ QString QtSSettings::fileName()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool QtSSettings::contains(const QString& key)
+bool QtSSettings::contains(const QString& key) const
 {
   return m_Stack.top()->group.contains(key);
 }
@@ -141,7 +139,8 @@ bool QtSSettings::beginGroup(const QString& prefix)
   {
     return false;
   }
-  else if(!m_Stack.isEmpty() && m_Stack.top()->group.contains(prefix) && m_Stack.top()->group[prefix].isObject())
+
+  if(!m_Stack.isEmpty() && m_Stack.top()->group.contains(prefix) && m_Stack.top()->group[prefix].isObject())
   {
     SIMPLViewSettingsGroup::Pointer newGroup = SIMPLViewSettingsGroup::Pointer(new SIMPLViewSettingsGroup(prefix, m_Stack.top()->group[prefix].toObject()));
     m_Stack.push(newGroup);
@@ -171,7 +170,7 @@ void QtSSettings::endGroup()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QStringList QtSSettings::childGroups()
+QStringList QtSSettings::childGroups() const
 {
   QStringList list;
   QJsonObject obj = m_Stack.top()->group;
@@ -211,7 +210,7 @@ void QtSSettings::clear()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QVariant QtSSettings::value(const QString& key, const QVariant& defaultValue)
+QVariant QtSSettings::value(const QString& key, const QVariant& defaultValue) const
 {
   if(!m_Stack.top()->group.contains(key))
   {
@@ -224,7 +223,7 @@ QVariant QtSSettings::value(const QString& key, const QVariant& defaultValue)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QJsonObject QtSSettings::value(const QString& key, const QJsonObject& defaultObject)
+QJsonObject QtSSettings::value(const QString& key, const QJsonObject& defaultObject) const
 {
   if(!m_Stack.top()->group.contains(key))
   {
@@ -241,7 +240,7 @@ QJsonObject QtSSettings::value(const QString& key, const QJsonObject& defaultObj
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QStringList QtSSettings::value(const QString& key, const QStringList& defaultList)
+QStringList QtSSettings::value(const QString& key, const QStringList& defaultList) const
 {
   if(!m_Stack.top()->group[key].isArray())
   {
@@ -251,9 +250,9 @@ QStringList QtSSettings::value(const QString& key, const QStringList& defaultLis
   QJsonArray jsonArray = m_Stack.top()->group[key].toArray();
   QStringList list;
 
-  for(int i = 0; i < jsonArray.size(); i++)
+  for(const QJsonValueRef &jsonValue : jsonArray)
   {
-    QString str = jsonArray[i].toString();
+    QString str = jsonValue.toString();
     list.push_back(str);
   }
 
@@ -263,7 +262,7 @@ QStringList QtSSettings::value(const QString& key, const QStringList& defaultLis
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QByteArray QtSSettings::value(const QString& key, const QByteArray& defaultValue)
+QByteArray QtSSettings::value(const QString& key, const QByteArray& defaultValue) const
 {
   Q_UNUSED(defaultValue);
   QString value = m_Stack.top()->group[key].toString();
@@ -347,7 +346,7 @@ void QtSSettings::setValue(const QString& key, const QStringList& list)
 // -----------------------------------------------------------------------------
 void QtSSettings::openFile()
 {
-  if(m_Stack.size() > 0)
+  if(!m_Stack.empty())
   {
     closeFile();
   }
@@ -378,7 +377,7 @@ void QtSSettings::closeFile()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void QtSSettings::writeToFile()
+void QtSSettings::writeToFile() const
 {
   /* Percolate the information that has changed all the way to the root group
      (The root group is what will ultimately be written to the file) */

@@ -40,7 +40,7 @@
 #include <QtConcurrent>
 #include <QtCore/QFileInfo>
 
-#include "Common/ImageGenerator.h"
+#include "Common/ImageGenerator.hpp"
 #include "Common/PatternTools.h"
 #include "Common/ProjectionConversions.hpp"
 
@@ -64,7 +64,7 @@ PatternDisplayController::PatternDisplayController(QObject* parent)
 {
   // Connection to allow the pattern list to redraw itself
   PatternListModel* model = PatternListModel::Instance();
-  connect(this, SIGNAL(rowDataChanged(const QModelIndex&, const QModelIndex&)), model, SIGNAL(dataChanged(const QModelIndex&, const QModelIndex&)), Qt::QueuedConnection);
+  connect(this, SIGNAL(rowDataChanged(QModelIndex,QModelIndex)), model, SIGNAL(dataChanged(QModelIndex,QModelIndex)), Qt::QueuedConnection);
 }
 
 // -----------------------------------------------------------------------------
@@ -88,7 +88,7 @@ void PatternDisplayController::setMasterFilePath(const QString& masterFilePath)
   MasterPatternFileReader reader(masterFilePath, m_Observer);
   m_MP_Data = reader.readMasterPatternData();
 
-  if(m_MP_Data.ekevs == FloatArrayType::NullPointer())
+  if(m_MP_Data.ekevs.empty())
   {
     return;
   }
@@ -177,7 +177,7 @@ void PatternDisplayController::createMonteCarloImageGenerators()
   emit stdOutputMessageGenerated(tr("Version Identifier: %1").arg(m_MP_Data.mcVersionId));
 
   emit stdOutputMessageGenerated(tr("Dehyperslabbing Monte Carlo square data..."));
-  Int32ArrayType::Pointer monteCarloSquare_data = deHyperSlabData<int32_t>(m_MP_Data.monteCarloSquareData, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], m_MP_Data.monteCarlo_dims[2]);
+  std::vector<int32_t> monteCarloSquare_data = deHyperSlabData<int32_t>(m_MP_Data.monteCarloSquareData, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], m_MP_Data.monteCarlo_dims[2]);
 
   // Generate Monte Carlo square projection data
   m_MCSquareImageGenerators.resize(mc_zDim);
@@ -216,7 +216,7 @@ void PatternDisplayController::createMonteCarloImageGenerators()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::checkImageGenerationCompletion()
+void PatternDisplayController::checkImageGenerationCompletion() const
 {
   if(QThreadPool::globalInstance()->activeThreadCount() > 0)
   {
@@ -293,7 +293,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
       fParValues.dwellTime = detectorData.dwellTime;
       fParValues.gammaValue = patternData.gammaValue;
 
-      FloatArrayType::Pointer pattern =
+      std::vector<float> pattern =
           PatternTools::GeneratePattern(iParValues, fParValues, m_MP_Data.masterLPNHData, m_MP_Data.masterLPSHData, m_MP_Data.monteCarloSquareData, patternData.angles, index, m_Cancel);
 
       hsize_t xDim = static_cast<hsize_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
@@ -326,7 +326,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const FloatArrayType::Pointer& pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue)
+bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const
 {
   AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, zValue);
   imgGen->createImage();
@@ -351,8 +351,8 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
   m_PriorityOrder.clear();
   m_PatternWatchers.clear();
 
-  FloatArrayType::Pointer eulerAngles = patternData.angles;
-  size_t angleCount = eulerAngles->getNumberOfTuples();
+  std::vector<float> eulerAngles = patternData.angles;
+  size_t angleCount = eulerAngles.size() / 3;
   emit newProgressBarMaximumValue(angleCount);
 
   PatternListModel* model = PatternListModel::Instance();
@@ -394,7 +394,7 @@ void PatternDisplayController::addPriorityIndex(size_t index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
+void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData) const
 {
   QImage image;
   VariantPair variantPair;
@@ -433,7 +433,7 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
       variantPair = imageGen->getMinMaxPair();
     }
 
-    keV = m_MP_Data.ekevs->getValue(energyBin - 1);
+    keV = m_MP_Data.ekevs.at(energyBin - 1);
   }
 
   GLImageViewer::GLImageData imageData;
@@ -449,7 +449,7 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
+void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData) const
 {
   QImage image;
   VariantPair variantPair;
@@ -488,7 +488,7 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
       variantPair = imageGen->getMinMaxPair();
     }
 
-    keV = m_MP_Data.ekevs->getValue(energyBin - 1);
+    keV = m_MP_Data.ekevs.at(energyBin - 1);
   }
 
   GLImageViewer::GLImageData imageData;
@@ -516,7 +516,7 @@ void PatternDisplayController::patternThreadFinished()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::validateDetectorValues(PatternDisplayController::DetectorData data)
+bool PatternDisplayController::validateDetectorValues(PatternDisplayController::DetectorData data) const
 {
   if(data.masterFilePath.isEmpty())
   {
@@ -548,4 +548,36 @@ bool PatternDisplayController::validateDetectorValues(PatternDisplayController::
 void PatternDisplayController::cancelGeneration()
 {
   m_Cancel = true;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternDisplayController::setPatternDisplayWidget(SimulatedPatternDisplayWidget* value)
+{
+  m_PatternDisplayWidget = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SimulatedPatternDisplayWidget* PatternDisplayController::getPatternDisplayWidget() const
+{
+  return m_PatternDisplayWidget;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternDisplayController::setObserver(IObserver* value)
+{
+  m_Observer = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+IObserver* PatternDisplayController::getObserver() const
+{
+  return m_Observer;
 }

@@ -37,7 +37,6 @@
 
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/QuaternionMath.hpp"
 
 #include "Common/IObserver.h"
@@ -55,8 +54,6 @@ class PatternFit_UI : public IModuleUI, public Ui::PatternFit_UI, public IObserv
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(PatternFit_UI)
-
   /**
    * @brief PatternFit_UI
    * @param parent
@@ -65,8 +62,27 @@ public:
 
   ~PatternFit_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(PatternControlsWidget::PatternChoice, CurrentPatternChoice)
-  SIMPL_INSTANCE_PROPERTY(PatternFitController*, Controller)
+    /**
+    * @brief Setter property for CurrentPatternChoice
+    */
+    void setCurrentPatternChoice(const PatternControlsWidget::PatternChoice& value); 
+
+    /**
+    * @brief Getter property for CurrentPatternChoice
+    * @return Value of CurrentPatternChoice
+    */
+    PatternControlsWidget::PatternChoice getCurrentPatternChoice() const;
+
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(PatternFitController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    PatternFitController* getController() const;
 
   using EnumType = unsigned int;
 
@@ -87,7 +103,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
 protected:
   /**
@@ -119,7 +135,7 @@ private slots:
   void on_hipassFilter_toggled(bool checked);
   void on_linearRampSubtraction_toggled(bool checked);
 
-  void on_fitModeCB_currentIndexChanged(int index);
+  void on_fitModeCB_currentIndexChanged(int index) const;
 
   /**
    * @brief slot_patternChoiceChanged
@@ -146,10 +162,13 @@ private slots:
   void parametersChanged();
 
 private:
+    PatternControlsWidget::PatternChoice m_CurrentPatternChoice;
+    PatternFitController* m_Controller;
+
   GLImageViewer::GLImageData m_ReferencePattern;
 
-  FloatArrayType::Pointer m_SimulatedPatternData;
-  QVector<size_t> m_SimulatedPatternDims;
+  std::vector<float> m_SimulatedPatternData;
+  std::vector<size_t> m_SimulatedPatternDims;
 
   QuaternionMath<double>::Quaternion m_NavigationQuatX;
   QuaternionMath<double>::Quaternion m_NavigationQuatY;
@@ -160,7 +179,7 @@ private:
 
   bool m_HiPassDataInitialized = false;
   bool m_HiPassValuesChanged = false;
-  DoubleArrayType::Pointer m_HiPassData;
+  std::vector<double> m_HiPassData;
 
   double m_Opacity = 0.5;
   QTimer* m_FlickerTimer;
@@ -207,30 +226,30 @@ private:
    * @brief writeNonRefinableParameters
    * @param obj
    */
-  void writeNonRefinableParameters(QJsonObject& obj);
+  void writeNonRefinableParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeRefinableDetectorParameters
    * @param obj
    */
-  void writeRefinableDetectorParameters(QJsonObject& obj);
+  void writeRefinableDetectorParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeRefinableSampleParameters
    * @param obj
    */
-  void writeRefinableSampleParameters(QJsonObject& obj);
+  void writeRefinableSampleParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeFitParameters
    * @param obj
    */
-  void writeFitParameters(QJsonObject& obj);
+  void writeFitParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators
    */
-  void createValidators();
+  void createValidators() const;
 
   /**
    * @brief createParametersChangedConnections
@@ -240,7 +259,7 @@ private:
   /**
    * @brief createStepConnections
    */
-  void createStepConnections();
+  void createStepConnections() const;
 
   /**
    * @brief createWidgetConnections
@@ -261,12 +280,12 @@ private:
    * @brief getSimulationData
    * @return
    */
-  PatternFitController::SimulationData getSimulationData();
+  PatternFitController::SimulationData getSimulationData() const;
 
   /**
    * @brief checkFitMode
    */
-  void checkFitMode();
+  void checkFitMode() const;
 
   /**
    * @brief initializeHipassFilterValues
