@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
@@ -48,8 +47,20 @@ class SampleCubochoricSpaceWidget : public AbstractAngleWidget, public Ui::Sampl
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(SampleCubochoricSpaceWidget)
-  SIMPL_STATIC_NEW_MACRO(SampleCubochoricSpaceWidget)
+  using Self = SampleCubochoricSpaceWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for SampleCubochoricSpaceWidget
+   */
+  static Pointer NullPointer();
+  /**
+   * @brief Shared pointer New method for SampleCubochoricSpaceWidget
+   */
+  static Pointer New();
 
   SampleCubochoricSpaceWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~SampleCubochoricSpaceWidget() override;
@@ -94,6 +105,8 @@ protected slots:
   void lineEditChanged(const QString& text) const;
 
 private:
+
+
   void valuesChanged() const;
 
   void RodriguesComposition(const DOrientArrayType& sigma, DOrientArrayType& rod) const;

@@ -46,11 +46,10 @@
 #include "H5Support/QH5Lite.h"
 #include "H5Support/QH5Utilities.h"
 
-#include "Common/AbstractImageGenerator.h"
+#include "Common/AbstractImageGenerator.hpp"
 #include "Common/MasterPatternFileReader.h"
 #include "Common/ProjectionConversionTask.hpp"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "OrientationLib/Utilities/ModifiedLambertProjection.h"
@@ -66,8 +65,26 @@ public:
   PatternDisplayController(QObject* parent = nullptr);
   ~PatternDisplayController() override;
 
-  SIMPL_INSTANCE_PROPERTY(SimulatedPatternDisplayWidget*, PatternDisplayWidget)
-  SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
+    /**
+    * @brief Setter property for PatternDisplayWidget
+    */
+    void setPatternDisplayWidget(SimulatedPatternDisplayWidget* value);
+
+    /**
+    * @brief Getter property for PatternDisplayWidget
+    * @return Value of PatternDisplayWidget
+    */
+    SimulatedPatternDisplayWidget* getPatternDisplayWidget() const;
+    /**
+    * @brief Setter property for Observer
+    */
+    void setObserver(IObserver* value);
+
+    /**
+    * @brief Getter property for Observer
+    * @return Value of Observer
+    */
+    IObserver* getObserver() const;
 
   struct DetectorData
   {
@@ -151,6 +168,9 @@ private slots:
   void cancelGeneration();
 
 private:
+  SimulatedPatternDisplayWidget* m_PatternDisplayWidget;
+  IObserver* m_Observer;
+
   const QString m_MasterLPNHName = "masterLPNH";
   const QString m_MasterLPSHName = "masterLPSH";
   const QString m_MasterCircleName = "masterCircle";

@@ -1230,3 +1230,36 @@ PatternFitController::SimulationData PatternFit_UI::getSimulationData() const
 
   return data;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternFit_UI::setCurrentPatternChoice(const PatternControlsWidget::PatternChoice& value)
+{
+  m_CurrentPatternChoice = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternControlsWidget::PatternChoice PatternFit_UI::getCurrentPatternChoice() const
+{
+  return m_CurrentPatternChoice;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternFit_UI::setController(PatternFitController* value)
+{
+  m_Controller = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternFitController* PatternFit_UI::getController() const
+{
+  return m_Controller;
+}
+

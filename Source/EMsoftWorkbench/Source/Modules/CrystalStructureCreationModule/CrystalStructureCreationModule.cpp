@@ -65,3 +65,20 @@ IModuleUI* CrystalStructureCreationModule::createModuleUI(QJsonObject moduleObj,
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+CrystalStructureCreationModule::Pointer CrystalStructureCreationModule::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+CrystalStructureCreationModule::Pointer CrystalStructureCreationModule::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}

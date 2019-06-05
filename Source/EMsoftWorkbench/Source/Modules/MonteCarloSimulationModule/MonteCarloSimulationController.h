@@ -38,7 +38,6 @@
 #include <QtCore/QFutureWatcher>
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 class XtalFileReader;
 
@@ -58,7 +57,16 @@ public:
     ECP
   };
 
-  SIMPL_INSTANCE_PROPERTY(bool, Cancel)
+    /**
+    * @brief Setter property for Cancel
+    */
+    void setCancel(const bool& value); 
+
+    /**
+    * @brief Getter property for Cancel
+    * @return Value of Cancel
+    */
+    bool getCancel() const;
 
   struct MonteCarloSimulationData
   {
@@ -131,6 +139,8 @@ signals:
   void updateMCProgress(int loop, int totalLoops, float bseYield) const;
 
 private:
+    bool m_Cancel;
+
   XtalFileReader* m_XtalReader = nullptr;
   QString m_StartTime = "";
 

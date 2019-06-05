@@ -57,7 +57,16 @@ public:
   EMsoftWorkbench_UI(QWidget* parent = nullptr);
   ~EMsoftWorkbench_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(QString, OpenedFilePath)
+    /**
+    * @brief Setter property for OpenedFilePath
+    */
+    void setOpenedFilePath(const QString& value); 
+
+    /**
+    * @brief Getter property for OpenedFilePath
+    * @return Value of OpenedFilePath
+    */
+    QString getOpenedFilePath() const;
 
   /**
    * @brief openSession
@@ -125,6 +134,8 @@ signals:
   void workbenchWindowChangedState(EMsoftWorkbench_UI* instance);
 
 private:
+    QString m_OpenedFilePath;
+
   int m_CurrentStackedWidgetIdx = -1;
   QActionGroup* m_ToolbarButtonGroup = nullptr;
   QStringList m_ModuleNamesOrder;

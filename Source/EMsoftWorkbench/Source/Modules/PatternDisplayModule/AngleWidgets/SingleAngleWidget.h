@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
@@ -45,8 +44,20 @@ class SingleAngleWidget : public AbstractAngleWidget, public Ui::SingleAngleWidg
 {
   Q_OBJECT
 public:
-  SIMPL_SHARED_POINTERS(SingleAngleWidget)
-  SIMPL_STATIC_NEW_MACRO(SingleAngleWidget)
+  using Self = SingleAngleWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for SingleAngleWidget
+   */
+  static Pointer NullPointer();
+  /**
+   * @brief Shared pointer New method for SingleAngleWidget
+   */
+  static Pointer New();
 
   SingleAngleWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~SingleAngleWidget() override;
@@ -85,6 +96,8 @@ public:
   virtual void createModificationConnections(PatternDisplay_UI* ui) const override;
 
 private:
+
+
 public:
   SingleAngleWidget(const SingleAngleWidget&) = delete;            // Copy Constructor Not Implemented
   SingleAngleWidget(SingleAngleWidget&&) = delete;                 // Move Constructor Not Implemented

@@ -37,7 +37,6 @@
 
 #include <QtWidgets/QOpenGLWidget>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 class IModuleUI;
 
@@ -56,9 +55,38 @@ public:
         float keVValue = 0;
     };
 
-    SIMPL_BOOL_PROPERTY(Zoomable)
-    SIMPL_INSTANCE_PROPERTY(bool, HasKevValue)
-    SIMPL_INSTANCE_PROPERTY(bool, UseStatsOverlay)
+    /**
+    * @brief Getter property for Zoomable
+     * @return
+     */
+    bool isZoomable() const;
+
+    /**
+    * @brief Setter property for Zoomable
+     * @param value
+     */
+    void setZoomable(bool value);
+
+    /**
+    * @brief Setter property for HasKevValue
+    */
+    void setHasKevValue(bool value);
+
+    /**
+    * @brief Getter property for HasKevValue
+    * @return Value of HasKevValue
+    */
+    bool getHasKevValue() const;
+    /**
+    * @brief Setter property for UseStatsOverlay
+    */
+    void setUseStatsOverlay(const bool& value); 
+
+    /**
+    * @brief Getter property for UseStatsOverlay
+    * @return Value of UseStatsOverlay
+    */
+    bool getUseStatsOverlay() const;
 
     void loadImage(GLImageViewer::GLImageData data);
 
@@ -92,11 +120,15 @@ protected:
     void viewerChanged();
 
 private:
+    bool m_HasKevValue;
+    bool m_UseStatsOverlay;
+
     QImage        m_CurrentImage;
     float         m_MinValue;
     float         m_MaxValue;
     float         m_keVValue;
 
+    bool          m_Zoomable = false;
     float         m_ZoomFactor = 1.0f;
     QPointF       m_PanningOffset = QPointF(0.0f, 0.0f);
     bool          m_IsPannable = false;

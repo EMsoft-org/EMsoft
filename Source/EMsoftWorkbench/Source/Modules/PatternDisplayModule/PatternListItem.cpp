@@ -190,3 +190,36 @@ void PatternListItem::setParent(PatternListItem* parent)
 {
   m_ParentItem = parent;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternListItem::setItemName(const QString& value)
+{
+  m_ItemName = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString PatternListItem::getItemName() const
+{
+  return m_ItemName;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternListItem::setPatternStatus(const PatternListItem::PatternStatus& value)
+{
+  m_PatternStatus = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternListItem::PatternStatus PatternListItem::getPatternStatus() const
+{
+  return m_PatternStatus;
+}
+

@@ -36,6 +36,7 @@
 #pragma once
 
 #include <QtCore/QStringList>
+#include <QtCore/QMapIterator>
 
 #include "Modules/IModuleFactory.hpp"
 

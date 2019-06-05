@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
@@ -46,8 +45,20 @@ class SamplingRateWidget : public AbstractAngleWidget, public Ui::SamplingRateWi
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(SamplingRateWidget)
-  SIMPL_STATIC_NEW_MACRO(SamplingRateWidget)
+  using Self = SamplingRateWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for SamplingRateWidget
+   */
+  static Pointer NullPointer();
+  /**
+   * @brief Shared pointer New method for SamplingRateWidget
+   */
+  static Pointer New();
 
   SamplingRateWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~SamplingRateWidget() override;
@@ -94,6 +105,8 @@ protected slots:
   void checkBoxChanged(int index) const;
 
 private:
+
+
   void valuesChanged() const;
 
 public:

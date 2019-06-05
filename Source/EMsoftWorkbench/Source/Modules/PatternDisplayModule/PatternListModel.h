@@ -42,7 +42,6 @@
 
 #include <QtGui/QMovie>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternDisplayModule/PatternListItem.h"
 
@@ -54,8 +53,6 @@ class PatternListModel : public QAbstractListModel
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(PatternListModel)
-
   ~PatternListModel() override;
 
   static PatternListModel* Instance();

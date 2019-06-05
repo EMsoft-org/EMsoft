@@ -58,7 +58,7 @@ class ProjectionConversionTask : public ImageGenerationTask<I>
 
     ~ProjectionConversionTask() override = default;
 
-    void beforeImageGeneration()
+    void beforeImageGeneration() override
     {
       ProjectionConversions projConversion;
       std::vector<float> ptr = projConversion.convertLambertSquareData<P>(m_Data, m_ProjDim, m_ProjType, this->getVectorIndex(), m_Square);

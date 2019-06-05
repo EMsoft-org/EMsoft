@@ -41,7 +41,6 @@
 #include <H5Support/QH5Lite.h>
 #include <H5Support/QH5Utilities.h>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Common/IObserver.h"
 
@@ -53,7 +52,16 @@ class MasterPatternFileReader
     MasterPatternFileReader(const QString &filePath, IObserver* obs);
     virtual ~MasterPatternFileReader();
 
-    SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
+    /**
+    * @brief Setter property for Observer
+    */
+    void setObserver(IObserver *value);
+
+    /**
+    * @brief Getter property for Observer
+    * @return Value of Observer
+    */
+    IObserver* getObserver() const;
 
     struct MasterPatternData
     {
@@ -107,10 +115,9 @@ class MasterPatternFileReader
     MasterPatternFileReader::MasterPatternData readMasterPatternData() const;
 
   private:
-    hid_t m_FileId = -1;
+    IObserver* m_Observer = nullptr;
 
-    QString m_ErrorMessage = "";
-    int m_ErrorCode = 0;
+    hid_t m_FileId = -1;
 
     /**
      * @brief readDatasetDimensions

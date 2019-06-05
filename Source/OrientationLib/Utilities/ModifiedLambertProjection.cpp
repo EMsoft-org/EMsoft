@@ -60,9 +60,23 @@ ModifiedLambertProjection::ModifiedLambertProjection() :
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ModifiedLambertProjection::~ModifiedLambertProjection()
-{
+ModifiedLambertProjection::~ModifiedLambertProjection() = default;
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+ModifiedLambertProjection::Pointer ModifiedLambertProjection::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+ModifiedLambertProjection::Pointer ModifiedLambertProjection::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
 }
 
 // -----------------------------------------------------------------------------
@@ -650,4 +664,44 @@ typename std::vector<float> ModifiedLambertProjection::createProjection(int dim,
   typename std::vector<float> intensity(dim*dim, 0.0);
   createProjection(dim, intensity, projType);
   return intensity;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+int ModifiedLambertProjection::getDimension() const
+{
+  return m_Dimension;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+float ModifiedLambertProjection::getStepSize() const
+{
+  return m_StepSize;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+float ModifiedLambertProjection::getSphereRadius() const
+{
+  return m_SphereRadius;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+std::vector<double> ModifiedLambertProjection::getNorthSquare() const
+{
+  return m_NorthSquare;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+std::vector<double> ModifiedLambertProjection::getSouthSquare() const
+{
+  return m_SouthSquare;
 }

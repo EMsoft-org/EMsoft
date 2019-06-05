@@ -36,8 +36,7 @@
 #pragma once
 
 #include <QtGui/QColor>
-
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
+#include <QtGui/QImage>
 
 class PatternTools
 {

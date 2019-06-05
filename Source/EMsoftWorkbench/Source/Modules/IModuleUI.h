@@ -37,16 +37,33 @@
 
 #include <QtWidgets/QWidget>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 class IModuleUI : public QWidget
 {
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(IModuleUI)
+  using Self = IModuleUI;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for IModuleUI
+   */
+  static Pointer NullPointer();
 
-  SIMPL_BOOL_PROPERTY(Running)
+  /**
+    * @brief Setter property for Running
+    */
+  void setRunning(const bool& value); 
+
+  /**
+    * @brief Getter property for Running
+    * @return Value of Running
+    */
+  bool isRunning() const;
 
   ~IModuleUI() override;
 
@@ -140,6 +157,9 @@ signals:
   void stdOutputMessageGenerated(const QString& msg);
 
 private:
+
+  bool m_Running;
+
   QString m_OpenedFilePath = "";
 
 public:

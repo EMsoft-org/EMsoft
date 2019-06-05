@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IWorkbenchModule.hpp"
 
@@ -44,9 +43,21 @@ class MonteCarloSimulationModule : public IWorkbenchModule
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(MonteCarloSimulationModule)
-  SIMPL_TYPE_MACRO(MonteCarloSimulationModule)
-  SIMPL_STATIC_NEW_MACRO(MonteCarloSimulationModule)
+  using Self = MonteCarloSimulationModule;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for MonteCarloSimulationModule
+   */
+  static Pointer NullPointer();
+
+  /**
+   * @brief Shared pointer New method for MonteCarloSimulationModule
+   */
+  static Pointer New();
 
   ~MonteCarloSimulationModule() override;
 
@@ -56,6 +67,8 @@ protected:
   MonteCarloSimulationModule(QWidget* parent = nullptr);
 
 private:
+
+
 public:
   MonteCarloSimulationModule(const MonteCarloSimulationModule&) = delete;            // Copy Constructor Not Implemented
   MonteCarloSimulationModule(MonteCarloSimulationModule&&) = delete;                 // Move Constructor Not Implemented

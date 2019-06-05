@@ -549,3 +549,35 @@ void PatternDisplayController::cancelGeneration()
 {
   m_Cancel = true;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternDisplayController::setPatternDisplayWidget(SimulatedPatternDisplayWidget* value)
+{
+  m_PatternDisplayWidget = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SimulatedPatternDisplayWidget* PatternDisplayController::getPatternDisplayWidget() const
+{
+  return m_PatternDisplayWidget;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternDisplayController::setObserver(IObserver* value)
+{
+  m_Observer = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+IObserver* PatternDisplayController::getObserver() const
+{
+  return m_Observer;
+}

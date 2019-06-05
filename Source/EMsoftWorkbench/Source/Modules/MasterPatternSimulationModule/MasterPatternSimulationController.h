@@ -38,7 +38,6 @@
 #include <QtCore/QFutureWatcher>
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 class MonteCarloFileReader;
 class EMsoftFileWriter;
@@ -59,7 +58,16 @@ public:
     ECP
   };
 
-  SIMPL_INSTANCE_PROPERTY(bool, Cancel)
+    /**
+    * @brief Setter property for Cancel
+    */
+    void setCancel(const bool& value); 
+
+    /**
+    * @brief Getter property for Cancel
+    * @return Value of Cancel
+    */
+    bool getCancel() const;
 
   struct MasterPatternSimulationData
   {
@@ -122,6 +130,8 @@ signals:
   void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
+    bool m_Cancel;
+
   MonteCarloFileReader* m_MonteCarloReader = nullptr;
 
   QString m_StartTime = "";

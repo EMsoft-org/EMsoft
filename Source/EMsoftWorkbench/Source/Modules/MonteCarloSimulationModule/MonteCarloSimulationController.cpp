@@ -1360,3 +1360,20 @@ void MonteCarloSimulationController::setUpdateProgress(int loopCompleted, int to
   emit stdOutputMessageGenerated(ss);
   emit updateMCProgress(loopCompleted, totalLoops, bseYield);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MonteCarloSimulationController::setCancel(const bool& value)
+{
+  m_Cancel = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool MonteCarloSimulationController::getCancel() const
+{
+  return m_Cancel;
+}
+

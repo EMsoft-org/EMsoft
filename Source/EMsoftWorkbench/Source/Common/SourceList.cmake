@@ -57,7 +57,7 @@ set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS
 #set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
-  ${${SUBDIR_NAME}_DIR}/AbstractImageGenerator.h
+  ${${SUBDIR_NAME}_DIR}/AbstractImageGenerator.hpp
   ${${SUBDIR_NAME}_DIR}/Constants.h
   ${${SUBDIR_NAME}_DIR}/EigenConversions.hpp
   ${${SUBDIR_NAME}_DIR}/FileIOTools.h

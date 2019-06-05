@@ -37,7 +37,6 @@
 
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/QuaternionMath.hpp"
 
 #include "Common/IObserver.h"
@@ -63,8 +62,27 @@ public:
 
   ~PatternFit_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(PatternControlsWidget::PatternChoice, CurrentPatternChoice)
-  SIMPL_INSTANCE_PROPERTY(PatternFitController*, Controller)
+    /**
+    * @brief Setter property for CurrentPatternChoice
+    */
+    void setCurrentPatternChoice(const PatternControlsWidget::PatternChoice& value); 
+
+    /**
+    * @brief Getter property for CurrentPatternChoice
+    * @return Value of CurrentPatternChoice
+    */
+    PatternControlsWidget::PatternChoice getCurrentPatternChoice() const;
+
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(PatternFitController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    PatternFitController* getController() const;
 
   using EnumType = unsigned int;
 
@@ -144,6 +162,9 @@ private slots:
   void parametersChanged();
 
 private:
+    PatternControlsWidget::PatternChoice m_CurrentPatternChoice;
+    PatternFitController* m_Controller;
+
   GLImageViewer::GLImageData m_ReferencePattern;
 
   std::vector<float> m_SimulatedPatternData;

@@ -38,7 +38,6 @@
 #include <QtCore/QRunnable>
 #include <QtCore/QSemaphore>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Common/ImageGenerator.hpp"
 
@@ -46,8 +45,16 @@ template <typename T>
 class ImageGenerationTask : public QRunnable
 {
   public:
-    SIMPL_SHARED_POINTERS(ImageGenerationTask)
-    SIMPL_TYPE_MACRO(ImageGenerationTask)
+    using Self = ImageGenerationTask;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  static Pointer NullPointer()
+  {
+    return Pointer(static_cast<Self*>(nullptr));
+  }
 
     ImageGenerationTask(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zSlice, QVector<AbstractImageGenerator::Pointer> &imageGenerators,
                         QSemaphore &sem, size_t listIdx, bool horizontalMirror = false, bool verticalMirror = false) :
@@ -67,9 +74,9 @@ class ImageGenerationTask : public QRunnable
 
     ~ImageGenerationTask() override = default;
 
-    virtual void beforeImageGeneration() const {}
+    virtual void beforeImageGeneration() {}
 
-    virtual void afterImageGeneration() const {}
+    virtual void afterImageGeneration() {}
 
     void run() override
     {

@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/SIMPLib.h"
 
 #include "Modules/IWorkbenchModule.hpp"
@@ -47,8 +46,16 @@
 class IModuleFactory
 {
 public:
-  SIMPL_SHARED_POINTERS(IModuleFactory)
-  SIMPL_TYPE_MACRO(IModuleFactory)
+  using Self = IModuleFactory;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  static Pointer NullPointer()
+  {
+    return Pointer(static_cast<Self*>(nullptr));
+  }
 
   virtual ~IModuleFactory() = default;
 

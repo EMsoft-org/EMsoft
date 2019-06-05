@@ -467,3 +467,20 @@ void EMsoftApplication::createDefaultMenuBar()
 //  m_MenuHelp->addAction(m_ActionAboutEMsoftWorkbench);
 //  m_DefaultMenuBar->addMenu(m_MenuHelp);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftApplication::setOpenDialogLastDirectory(const QString& value)
+{
+  m_OpenDialogLastDirectory = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString EMsoftApplication::getOpenDialogLastDirectory() const
+{
+  return m_OpenDialogLastDirectory;
+}
+

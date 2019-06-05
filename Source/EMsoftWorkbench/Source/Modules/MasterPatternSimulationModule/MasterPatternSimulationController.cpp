@@ -1103,3 +1103,20 @@ void MasterPatternSimulationController::setUpdateProgress(int loopCompleted, int
   QString ss = QObject::tr("Master Pattern steps completed: %1 of %2; %3 of %4 energy bins").arg(loopCompleted).arg(totalLoops).arg(EloopCompleted).arg(totalEloops);
   emit stdOutputMessageGenerated(ss);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MasterPatternSimulationController::setCancel(const bool& value)
+{
+  m_Cancel = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool MasterPatternSimulationController::getCancel() const
+{
+  return m_Cancel;
+}
+

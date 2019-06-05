@@ -36,7 +36,6 @@
 #pragma once
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "ui_MPMCDisplayWidget.h"
 
@@ -51,7 +50,16 @@ public:
   MPMCDisplayWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~MPMCDisplayWidget() override;
 
-  SIMPL_INSTANCE_PROPERTY(std::vector<QImage>, ImageVector)
+    /**
+    * @brief Setter property for ImageVector
+    */
+    void setImageVector(const std::vector<QImage>& value); 
+
+    /**
+    * @brief Getter property for ImageVector
+    * @return Value of ImageVector
+    */
+    std::vector<QImage> getImageVector() const;
 
   using EnumType = unsigned int;
 
@@ -137,6 +145,8 @@ private slots:
   void updateSliderRange(int, int) const;
 
 private:
+    std::vector<QImage> m_ImageVector;
+
   QActionGroup* m_ProjModeMenuActionGroup = nullptr;
   QAction* m_LambertSquareAction = nullptr;
   QAction* m_LambertCircleAction = nullptr;

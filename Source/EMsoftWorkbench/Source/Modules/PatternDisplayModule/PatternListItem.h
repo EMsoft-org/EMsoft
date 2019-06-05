@@ -41,7 +41,6 @@
 
 #include <QtGui/QIcon>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 class PatternListItem
 {
@@ -62,8 +61,26 @@ public:
   static const int DefaultColumn = 0;
   static const int DefaultColumnCount = 1;
 
-  SIMPL_INSTANCE_PROPERTY(QString, ItemName)
-  SIMPL_INSTANCE_PROPERTY(PatternListItem::PatternStatus, PatternStatus)
+    /**
+    * @brief Setter property for ItemName
+    */
+    void setItemName(const QString& value); 
+
+    /**
+    * @brief Getter property for ItemName
+    * @return Value of ItemName
+    */
+    QString getItemName() const;
+    /**
+    * @brief Setter property for PatternStatus
+    */
+    void setPatternStatus(const PatternListItem::PatternStatus& value); 
+
+    /**
+    * @brief Getter property for PatternStatus
+    * @return Value of PatternStatus
+    */
+    PatternListItem::PatternStatus getPatternStatus() const;
 
   PatternListItem* child(int number) const;
   PatternListItem* parent() const;
@@ -87,6 +104,9 @@ public:
   void setParent(PatternListItem* parent);
 
 private:
+    QString m_ItemName;
+    PatternListItem::PatternStatus m_PatternStatus;
+
   QList<PatternListItem*> m_ChildItems;
   PatternListItem* m_ParentItem = nullptr;
   QString m_ItemTooltip = "";

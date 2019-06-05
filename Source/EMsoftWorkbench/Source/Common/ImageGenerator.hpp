@@ -39,16 +39,23 @@
 
 #include <H5public.h>
 
-#include "Common/AbstractImageGenerator.h"
+#include "Common/AbstractImageGenerator.hpp"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 template <typename T>
 class ImageGenerator : public AbstractImageGenerator
 {
   public:
-    SIMPL_SHARED_POINTERS(ImageGenerator<T>)
-    SIMPL_TYPE_MACRO(ImageGenerator<T>)
+    using Self = ImageGenerator<T>;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  static Pointer NullPointer()
+  {
+    return Pointer(static_cast<Self*>(nullptr));
+  }
 
     static Pointer New(const std::vector<T> &data, hsize_t xDim, hsize_t yDim, int zSlice,
                        bool mirroredHorizontal = false, bool mirroredVertical = false)

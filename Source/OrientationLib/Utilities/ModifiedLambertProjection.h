@@ -39,7 +39,6 @@
 
 #include <hdf5.h>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "OrientationLib/OrientationLib.h"
@@ -53,10 +52,22 @@
  */
 class OrientationLib_EXPORT ModifiedLambertProjection
 {
-  public:
-    SIMPL_SHARED_POINTERS(ModifiedLambertProjection)
-    SIMPL_STATIC_NEW_MACRO(ModifiedLambertProjection)
-    SIMPL_TYPE_MACRO(ModifiedLambertProjection)
+public:
+  using Self = ModifiedLambertProjection;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+
+  /**
+ * @brief NullPointer accessor for ModifiedLambertProjection
+ */
+  static Pointer NullPointer();
+
+  /**
+ * @brief Shared pointer New method for ModifiedLambertProjection
+ */
+  static Pointer New();
 
     virtual ~ModifiedLambertProjection();
 
@@ -86,14 +97,36 @@ class OrientationLib_EXPORT ModifiedLambertProjection
      */
     static Pointer CreateProjectionFromXYZCoords(const std::vector<float> &coords, int dimension, float sphereRadius);
 
+    /**
+    * @brief Getter property for Dimension
+    * @return Value of Dimension
+    */
+    int getDimension() const;
 
-    SIMPL_GET_PROPERTY(int, Dimension)
-    SIMPL_GET_PROPERTY(float, StepSize)
-    SIMPL_GET_PROPERTY(float, SphereRadius)
+    /**
+    * @brief Getter property for StepSize
+    * @return Value of StepSize
+    */
+    float getStepSize() const;
 
+    /**
+    * @brief Getter property for SphereRadius
+    * @return Value of SphereRadius
+    */
+    float getSphereRadius() const;
 
-    SIMPL_GET_PROPERTY(std::vector<double>, NorthSquare)
-    SIMPL_GET_PROPERTY(std::vector<double>, SouthSquare)
+    /**
+    * @brief Getter property for NorthSquare
+    * @return Value of NorthSquare
+    */
+    std::vector<double> getNorthSquare() const;
+
+    /**
+    * @brief Getter property for SouthSquare
+    * @return Value of SouthSquare
+    */
+    std::vector<double> getSouthSquare() const;
+
 
     /**
      * @brief initializeSquares

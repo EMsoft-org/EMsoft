@@ -709,3 +709,22 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
 
   return eulerAngles;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SampleCubochoricSpaceWidget::Pointer SampleCubochoricSpaceWidget::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SampleCubochoricSpaceWidget::Pointer SampleCubochoricSpaceWidget::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

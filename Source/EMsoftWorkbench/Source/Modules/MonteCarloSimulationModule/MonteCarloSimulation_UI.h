@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IModuleUI.h"
 #include "Modules/MonteCarloSimulationModule/MonteCarloSimulationController.h"
@@ -50,8 +49,6 @@ class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulatio
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(MonteCarloSimulation_UI)
-
   /**
    * @brief MonteCarloSimulation_UI
    * @param parent
@@ -60,7 +57,16 @@ public:
 
   ~MonteCarloSimulation_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(MonteCarloSimulationController*, Controller)
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(MonteCarloSimulationController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    MonteCarloSimulationController* getController() const;
 
   /**
    * @brief readModuleSession
@@ -106,6 +112,8 @@ private slots:
   void threadFinished();
 
 private:
+    MonteCarloSimulationController* m_Controller;
+
   QString m_LastFilePath = "";
   QSharedPointer<QFutureWatcher<void>> m_Watcher;
 

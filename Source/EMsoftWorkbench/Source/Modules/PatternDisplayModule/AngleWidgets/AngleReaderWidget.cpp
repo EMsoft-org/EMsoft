@@ -289,3 +289,39 @@ std::vector<float> AngleReaderWidget::getEulerAngles() const
 
   return std::vector<float>();
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AngleReaderWidget::setOpenDialogLastDirectory(const QString& value)
+{
+  m_OpenDialogLastDirectory = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString AngleReaderWidget::getOpenDialogLastDirectory() const
+{
+  return m_OpenDialogLastDirectory;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AngleReaderWidget::Pointer AngleReaderWidget::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AngleReaderWidget::Pointer AngleReaderWidget::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

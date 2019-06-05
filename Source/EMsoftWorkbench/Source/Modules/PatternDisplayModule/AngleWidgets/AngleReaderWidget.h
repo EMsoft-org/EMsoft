@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
@@ -46,13 +45,34 @@ class AngleReaderWidget : public AbstractAngleWidget, public Ui::AngleReaderWidg
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(AngleReaderWidget)
-  SIMPL_STATIC_NEW_MACRO(AngleReaderWidget)
+  using Self = AngleReaderWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for AngleReaderWidget
+   */
+  static Pointer NullPointer();
+  /**
+   * @brief Shared pointer New method for AngleReaderWidget
+   */
+  static Pointer New();
 
   AngleReaderWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~AngleReaderWidget() override;
 
-  SIMPL_INSTANCE_PROPERTY(QString, OpenDialogLastDirectory)
+    /**
+    * @brief Setter property for OpenDialogLastDirectory
+    */
+    void setOpenDialogLastDirectory(const QString& value); 
+
+    /**
+    * @brief Getter property for OpenDialogLastDirectory
+    * @return Value of OpenDialogLastDirectory
+    */
+    QString getOpenDialogLastDirectory() const;
 
   /**
    * @brief setupGui
@@ -119,6 +139,10 @@ protected:
   void loadAngleFile(const QString& filePath);
 
 private:
+
+
+    QString m_OpenDialogLastDirectory;
+
   QString m_LoadedFilePath = "";
   size_t m_FileAngleCount = 0;
 

@@ -205,3 +205,36 @@ bool PatternFitController::validateSimulationValues(PatternFitController::Simula
 
   return true;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternFitController::setObserver(IObserver* value)
+{
+  m_Observer = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+IObserver* PatternFitController::getObserver() const
+{
+  return m_Observer;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternFitController::setMPFileData(const MasterPatternFileReader::MasterPatternData& value)
+{
+  m_MPFileData = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+MasterPatternFileReader::MasterPatternData PatternFitController::getMPFileData() const
+{
+  return m_MPFileData;
+}
+

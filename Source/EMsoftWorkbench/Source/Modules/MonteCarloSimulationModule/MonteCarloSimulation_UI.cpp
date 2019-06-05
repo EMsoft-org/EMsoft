@@ -519,3 +519,20 @@ MonteCarloSimulationController::MonteCarloSimulationData MonteCarloSimulation_UI
   data.outputFilePath = mcFilePathLE->text();
   return data;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MonteCarloSimulation_UI::setController(MonteCarloSimulationController* value)
+{
+  m_Controller = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+MonteCarloSimulationController* MonteCarloSimulation_UI::getController() const
+{
+  return m_Controller;
+}
+

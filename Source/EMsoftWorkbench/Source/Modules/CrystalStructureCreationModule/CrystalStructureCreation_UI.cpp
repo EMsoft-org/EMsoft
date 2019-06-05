@@ -517,3 +517,20 @@ CrystalStructureCreationController::CrystalStructureCreationData CrystalStructur
 
   return data;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void CrystalStructureCreation_UI::setController(CrystalStructureCreationController* value)
+{
+  m_Controller = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+CrystalStructureCreationController* CrystalStructureCreation_UI::getController() const
+{
+  return m_Controller;
+}
+

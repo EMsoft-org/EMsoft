@@ -273,3 +273,20 @@ MPMCDisplayWidget::MPMCData MPMCDisplayWidget::getMPMCData() const
   data.mode = m_ProjectionMode;
   return data;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MPMCDisplayWidget::setImageVector(const std::vector<QImage>& value)
+{
+  m_ImageVector = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+std::vector<QImage> MPMCDisplayWidget::getImageVector() const
+{
+  return m_ImageVector;
+}
+

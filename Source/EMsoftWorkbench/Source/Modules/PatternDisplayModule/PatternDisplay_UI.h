@@ -40,7 +40,6 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QSplashScreen>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IModuleUI.h"
 #include "Modules/IWorkbenchModule.hpp"
@@ -60,8 +59,6 @@ class PatternDisplay_UI : public IModuleUI, public Ui::PatternDisplay_UI
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(PatternDisplay_UI)
-
   /**
    * @brief PatternDisplay_UI
    * @param parent
@@ -70,7 +67,16 @@ public:
 
   ~PatternDisplay_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(PatternDisplayController*, Controller)
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(PatternDisplayController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    PatternDisplayController* getController() const;
 
   using EnumType = unsigned int;
 
@@ -168,6 +174,8 @@ signals:
   void patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData) const;
 
 private:
+    PatternDisplayController* m_Controller;
+
   SimulatedPatternDisplayWidget* m_PatternDisplayWidget = nullptr;
 
   AbstractAngleWidget* m_CurrentAngleWidget = nullptr;

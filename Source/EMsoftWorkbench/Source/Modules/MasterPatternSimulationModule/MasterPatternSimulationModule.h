@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IWorkbenchModule.hpp"
 
@@ -44,9 +43,21 @@ class MasterPatternSimulationModule : public IWorkbenchModule
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(MasterPatternSimulationModule)
-  SIMPL_TYPE_MACRO(MasterPatternSimulationModule)
-  SIMPL_STATIC_NEW_MACRO(MasterPatternSimulationModule)
+  using Self = MasterPatternSimulationModule;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for MasterPatternSimulationModule
+   */
+  static Pointer NullPointer();
+
+  /**
+   * @brief Shared pointer New method for MasterPatternSimulationModule
+   */
+  static Pointer New();
 
   ~MasterPatternSimulationModule() override;
 
@@ -56,6 +67,8 @@ protected:
   MasterPatternSimulationModule(QWidget* parent = nullptr);
 
 private:
+
+
 public:
   MasterPatternSimulationModule(const MasterPatternSimulationModule&) = delete;            // Copy Constructor Not Implemented
   MasterPatternSimulationModule(MasterPatternSimulationModule&&) = delete;                 // Move Constructor Not Implemented

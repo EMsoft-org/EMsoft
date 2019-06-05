@@ -222,3 +222,20 @@ std::vector<hsize_t> MasterPatternFileReader::readDatasetDimensions(hid_t parent
 
   return dims;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MasterPatternFileReader::setObserver(IObserver* value)
+{
+  m_Observer = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+IObserver* MasterPatternFileReader::getObserver() const
+{
+  return m_Observer;
+}
+

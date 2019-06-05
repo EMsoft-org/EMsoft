@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
+#include <QtCore/QString>
 
 class FileIOTools
 {

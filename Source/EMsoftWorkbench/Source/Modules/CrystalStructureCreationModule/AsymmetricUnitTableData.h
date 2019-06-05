@@ -41,7 +41,6 @@
 
 #include <QtWidgets/QWidget>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 /**
  * @brief
@@ -60,14 +59,86 @@ public:
 
   ~AsymmetricUnitTableData() override;
 
-  SIMPL_INSTANCE_PROPERTY(QStringList, ColHeaders)
-  SIMPL_INSTANCE_PROPERTY(QStringList, RowHeaders)
-  SIMPL_INSTANCE_PROPERTY(bool, DynamicRows)
-  SIMPL_INSTANCE_PROPERTY(bool, DynamicCols)
-  SIMPL_INSTANCE_PROPERTY(int, MinRows)
-  SIMPL_INSTANCE_PROPERTY(int, MinCols)
-  SIMPL_INSTANCE_PROPERTY(int, DefaultRowCount)
-  SIMPL_INSTANCE_PROPERTY(int, DefaultColCount)
+    /**
+    * @brief Setter property for ColHeaders
+    */
+    void setColHeaders(const QStringList& value); 
+
+    /**
+    * @brief Getter property for ColHeaders
+    * @return Value of ColHeaders
+    */
+    QStringList getColHeaders() const;
+    /**
+    * @brief Setter property for RowHeaders
+    */
+    void setRowHeaders(const QStringList& value); 
+
+    /**
+    * @brief Getter property for RowHeaders
+    * @return Value of RowHeaders
+    */
+    QStringList getRowHeaders() const;
+    /**
+    * @brief Setter property for DynamicRows
+    */
+    void setDynamicRows(const bool& value); 
+
+    /**
+    * @brief Getter property for DynamicRows
+    * @return Value of DynamicRows
+    */
+    bool getDynamicRows() const;
+    /**
+    * @brief Setter property for DynamicCols
+    */
+    void setDynamicCols(const bool& value); 
+
+    /**
+    * @brief Getter property for DynamicCols
+    * @return Value of DynamicCols
+    */
+    bool getDynamicCols() const;
+    /**
+    * @brief Setter property for MinRows
+    */
+    void setMinRows(const int& value); 
+
+    /**
+    * @brief Getter property for MinRows
+    * @return Value of MinRows
+    */
+    int getMinRows() const;
+    /**
+    * @brief Setter property for MinCols
+    */
+    void setMinCols(const int& value); 
+
+    /**
+    * @brief Getter property for MinCols
+    * @return Value of MinCols
+    */
+    int getMinCols() const;
+    /**
+    * @brief Setter property for DefaultRowCount
+    */
+    void setDefaultRowCount(const int& value); 
+
+    /**
+    * @brief Getter property for DefaultRowCount
+    * @return Value of DefaultRowCount
+    */
+    int getDefaultRowCount() const;
+    /**
+    * @brief Setter property for DefaultColCount
+    */
+    void setDefaultColCount(const int& value); 
+
+    /**
+    * @brief Getter property for DefaultColCount
+    * @return Value of DefaultColCount
+    */
+    int getDefaultColCount() const;
 
   /**
    * @brief This deserializes a string of data and returns the original 2D array.
@@ -145,6 +216,15 @@ public:
   bool operator!=(const AsymmetricUnitTableData& rhs) const;
 
 private:
+    QStringList m_ColHeaders;
+    QStringList m_RowHeaders;
+    bool m_DynamicRows;
+    bool m_DynamicCols;
+    int m_MinRows;
+    int m_MinCols;
+    int m_DefaultRowCount;
+    int m_DefaultColCount;
+
   std::vector<std::vector<double>> m_TableData;
 
   /**

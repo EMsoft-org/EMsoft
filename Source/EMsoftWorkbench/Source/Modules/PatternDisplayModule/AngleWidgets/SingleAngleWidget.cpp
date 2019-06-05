@@ -127,3 +127,22 @@ std::vector<float> SingleAngleWidget::getEulerAngles() const
 
   return floatArray;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SingleAngleWidget::Pointer SingleAngleWidget::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SingleAngleWidget::Pointer SingleAngleWidget::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

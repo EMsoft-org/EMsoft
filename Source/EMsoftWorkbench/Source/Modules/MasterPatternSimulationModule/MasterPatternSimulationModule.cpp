@@ -67,3 +67,22 @@ IModuleUI* MasterPatternSimulationModule::createModuleUI(QJsonObject moduleObj, 
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+MasterPatternSimulationModule::Pointer MasterPatternSimulationModule::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+MasterPatternSimulationModule::Pointer MasterPatternSimulationModule::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

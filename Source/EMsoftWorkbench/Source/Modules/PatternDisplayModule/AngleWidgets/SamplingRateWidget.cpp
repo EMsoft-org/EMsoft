@@ -364,3 +364,22 @@ void SamplingRateWidget::on_phi2CB_stateChanged(int state) const
   phi2EndLineEdit->setEnabled(enabled);
   phi2AngleLineEdit->setDisabled(enabled);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SamplingRateWidget::Pointer SamplingRateWidget::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+SamplingRateWidget::Pointer SamplingRateWidget::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

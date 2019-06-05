@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/SIMPLib.h"
 
 #include "Modules/IModuleFactory.hpp"
@@ -45,9 +44,22 @@ template <class Module>
 class ModuleFactory : public IModuleFactory
 {
 public:
-  SIMPL_SHARED_POINTERS(ModuleFactory<Module>)
-  SIMPL_TYPE_MACRO_SUPER(ModuleFactory<Module>, IModuleFactory)
-  SIMPL_STATIC_NEW_MACRO(ModuleFactory<Module>)
+  using Self = ModuleFactory<Module>;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  static Pointer NullPointer()
+  {
+    return Pointer(static_cast<Self*>(nullptr));
+  }
+
+  static Pointer New()
+  {
+    Pointer sharedPtr (new Self);
+    return sharedPtr;
+  }
 
   /**
    * @brief Creates a new  for this filter. The Calling method MUST set

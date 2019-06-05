@@ -65,3 +65,22 @@ IModuleUI* PatternDisplayModule::createModuleUI(QJsonObject moduleObj, QWidget* 
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternDisplayModule::Pointer PatternDisplayModule::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternDisplayModule::Pointer PatternDisplayModule::New()
+{
+  Pointer sharedPtr (new Self);
+  return sharedPtr;
+}
+

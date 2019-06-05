@@ -42,7 +42,6 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QMenuBar>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IModuleUI.h"
 
@@ -60,7 +59,16 @@ public:
 
   ~EMsoftApplication() override;
 
-  SIMPL_INSTANCE_PROPERTY(QString, OpenDialogLastDirectory)
+    /**
+    * @brief Setter property for OpenDialogLastDirectory
+    */
+    void setOpenDialogLastDirectory(const QString& value); 
+
+    /**
+    * @brief Getter property for OpenDialogLastDirectory
+    * @return Value of OpenDialogLastDirectory
+    */
+    QString getOpenDialogLastDirectory() const;
 
   bool initialize(int argc, char* argv[]);
 
@@ -96,6 +104,8 @@ signals:
   void emSoftConfigurationChanged();
 
 private:
+    QString m_OpenDialogLastDirectory;
+
   StyleSheetEditor* styleSheetEditor;
 
   QMenuBar* m_DefaultMenuBar = nullptr;

@@ -47,7 +47,6 @@
 
 #include "Common/MasterPatternFileReader.h"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "Modules/PatternFitModule/PatternFitViewer.h"
@@ -60,8 +59,26 @@ public:
   PatternFitController(QObject* parent = nullptr);
   ~PatternFitController() override;
 
-  SIMPL_INSTANCE_PROPERTY(IObserver*, Observer)
-  SIMPL_INSTANCE_PROPERTY(MasterPatternFileReader::MasterPatternData, MPFileData)
+    /**
+    * @brief Setter property for Observer
+    */
+    void setObserver(IObserver* value); 
+
+    /**
+    * @brief Getter property for Observer
+    * @return Value of Observer
+    */
+    IObserver* getObserver() const;
+    /**
+    * @brief Setter property for MPFileData
+    */
+    void setMPFileData(const MasterPatternFileReader::MasterPatternData& value); 
+
+    /**
+    * @brief Getter property for MPFileData
+    * @return Value of MPFileData
+    */
+    MasterPatternFileReader::MasterPatternData getMPFileData() const;
 
   struct SimulationData
   {
@@ -145,6 +162,9 @@ signals:
   void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
+    IObserver* m_Observer;
+    MasterPatternFileReader::MasterPatternData m_MPFileData;
+
   QString m_MasterFilePath;
   bool m_Cancel = false;
 

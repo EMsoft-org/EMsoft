@@ -37,7 +37,6 @@
 
 #include "Common/GLImageViewer.h"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/PatternFitModule/PatternControlsWidget.h"
 

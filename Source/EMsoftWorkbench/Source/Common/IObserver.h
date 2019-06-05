@@ -35,14 +35,13 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
+#include <QtCore/QString>
 
 class IObserver
 {
   public:
     IObserver();
     virtual ~IObserver();
-    SIMPL_TYPE_MACRO(IObserver)
 
     virtual void processObserverMessage(const QString& msg) const;
 

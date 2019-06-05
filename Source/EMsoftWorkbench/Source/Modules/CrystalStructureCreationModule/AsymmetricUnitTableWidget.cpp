@@ -36,7 +36,10 @@
 #include "AsymmetricUnitTableWidget.h"
 
 #include <QtCore/QMetaProperty>
+#include <QtCore/QDebug>
+
 #include <QtGui/QFontMetrics>
+
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QScrollBar>
 

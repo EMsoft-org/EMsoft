@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/IModuleUI.h"
 #include "Modules/MasterPatternSimulationModule/MasterPatternSimulationController.h"
@@ -50,8 +49,6 @@ class MasterPatternSimulation_UI : public IModuleUI, public Ui::MasterPatternSim
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(MasterPatternSimulation_UI)
-
   /**
    * @brief MasterPatternSimulation_UI
    * @param parent
@@ -60,7 +57,16 @@ public:
 
   ~MasterPatternSimulation_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(MasterPatternSimulationController*, Controller)
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(MasterPatternSimulationController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    MasterPatternSimulationController* getController() const;
 
   /**
    * @brief readModuleSession
@@ -100,6 +106,8 @@ private slots:
   void threadFinished();
 
 private:
+    MasterPatternSimulationController* m_Controller;
+
   QString m_LastFilePath = "";
   QSharedPointer<QFutureWatcher<void>> m_Watcher;
 

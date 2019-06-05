@@ -608,3 +608,20 @@ void PatternDisplay_UI::writeDetectorAndMicroscopeParameters(QJsonObject& obj) c
   energyObj[EMsoftWorkbenchConstants::IOStrings::Maximum] = energyMaxCB->currentText().toInt();
   obj[EMsoftWorkbenchConstants::IOStrings::Energy] = energyObj;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternDisplay_UI::setController(PatternDisplayController* value)
+{
+  m_Controller = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+PatternDisplayController* PatternDisplay_UI::getController() const
+{
+  return m_Controller;
+}
+

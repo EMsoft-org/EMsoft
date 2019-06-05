@@ -37,7 +37,6 @@
 
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Common/GLImageViewer.h"
 

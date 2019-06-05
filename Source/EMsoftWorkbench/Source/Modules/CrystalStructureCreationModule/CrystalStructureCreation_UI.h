@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreationController.h"
 #include "Modules/IModuleUI.h"
@@ -50,8 +49,6 @@ class CrystalStructureCreation_UI : public IModuleUI, public Ui::CrystalStructur
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(CrystalStructureCreation_UI)
-
   /**
    * @brief CrystalStructureCreation_UI
    * @param parent
@@ -60,7 +57,16 @@ public:
 
   ~CrystalStructureCreation_UI() override;
 
-  SIMPL_INSTANCE_PROPERTY(CrystalStructureCreationController*, Controller)
+    /**
+    * @brief Setter property for Controller
+    */
+    void setController(CrystalStructureCreationController* value); 
+
+    /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+    CrystalStructureCreationController* getController() const;
 
   /**
    * @brief readModuleSession
@@ -97,6 +103,8 @@ protected slots:
   void parametersChanged();
 
 private:
+    CrystalStructureCreationController* m_Controller;
+
   QString m_LastFilePath = "";
 
   /**

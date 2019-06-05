@@ -359,3 +359,20 @@ MasterPatternSimulationController::MasterPatternSimulationData MasterPatternSimu
   data.outputFilePath = mpFilePathLE->text();
   return data;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MasterPatternSimulation_UI::setController(MasterPatternSimulationController* value)
+{
+  m_Controller = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+MasterPatternSimulationController* MasterPatternSimulation_UI::getController() const
+{
+  return m_Controller;
+}
+

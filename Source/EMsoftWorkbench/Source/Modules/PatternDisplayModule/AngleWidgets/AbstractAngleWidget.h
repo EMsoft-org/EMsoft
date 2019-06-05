@@ -37,7 +37,6 @@
 
 #include <QtWidgets/QWidget>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 class PatternDisplay_UI;
@@ -47,7 +46,16 @@ class AbstractAngleWidget : public QWidget
   Q_OBJECT
 
 public:
-  SIMPL_SHARED_POINTERS(AbstractAngleWidget)
+  using Self = AbstractAngleWidget;
+  using Pointer = std::shared_ptr<Self>;
+  using ConstPointer = std::shared_ptr<const Self>;
+  using WeakPointer = std::weak_ptr<Self>;
+  using ConstWeakPointer = std::weak_ptr<Self>;
+  
+  /**
+   * @brief NullPointer accessor for AbstractAngleWidget
+   */
+  static Pointer NullPointer();
 
   AbstractAngleWidget(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~AbstractAngleWidget() override;
@@ -85,6 +93,7 @@ signals:
   void dataChanged(bool validAngles) const;
 
 private:
+
 public:
   AbstractAngleWidget(const AbstractAngleWidget&) = delete;            // Copy Constructor Not Implemented
   AbstractAngleWidget(AbstractAngleWidget&&) = delete;                 // Move Constructor Not Implemented
