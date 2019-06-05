@@ -1,7 +1,6 @@
-#ifndef _ArrayHelpers_H_
-#define _ArrayHelpers_H_
+#pragma once
 
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <algorithm>
 #include <limits>
@@ -21,7 +20,7 @@ class ArrayHelpers
 {
   public:
 
-    virtual ~ArrayHelpers(){}
+    virtual ~ArrayHelpers() = default;
 
     static void splat(T& a, const K val)
     {
@@ -123,7 +122,7 @@ class ArrayHelpers
     }
 
     /* Auxiliary routine: printing eigenvectors */
-    static void print_eigenvectors( const char* desc, int n, float* wi, float* v, int ldv )
+    static void print_eigenvectors( const char* desc, int n, const float* wi, const float* v, int ldv )
     {
       int i, j;
       printf( "\n %s\n", desc );
@@ -166,11 +165,11 @@ class ArrayHelpers
 
 
   protected:
-    ArrayHelpers(){}
+    ArrayHelpers() = default;
 
-  private:
-    ArrayHelpers(const ArrayHelpers&); // Copy Constructor Not Implemented
-    void operator=(const ArrayHelpers&); // Operator '=' Not Implemented
+  public:
+    ArrayHelpers(const ArrayHelpers&) = delete; // Copy Constructor Not Implemented
+    ArrayHelpers(ArrayHelpers&&) = delete;      // Move Constructor Not Implemented
+    ArrayHelpers& operator=(const ArrayHelpers&) = delete; // Copy Assignment Not Implemented
+    ArrayHelpers& operator=(ArrayHelpers&&) = delete;      // Move Assignment Not Implemented
 };
-
-#endif /* _ArrayHelpers_H_ */

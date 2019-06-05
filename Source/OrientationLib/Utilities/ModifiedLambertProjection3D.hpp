@@ -30,8 +30,7 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _ModifiedLamberProjection3D_H_
-#define _ModifiedLamberProjection3D_H_
+#pragma once
 
 #include <cassert>
 
@@ -292,9 +291,15 @@ class ModifiedLambertProjection3D
       // inverse M_2
       qxy = xyz2[0]*xyz2[0]+xyz2[1]*xyz2[1];
       sx = 1.0;
-      if (xyz2[0] != 0.0)  sx = fabs(xyz2[0])/xyz2[0];
+      if (xyz2[0] != 0.0)
+      {
+        sx = fabs(xyz2[0])/xyz2[0];
+      }
       sy = 1.0;
-      if (xyz2[1] != 0.0)  sy = fabs(xyz2[1])/xyz2[1];
+      if (xyz2[1] != 0.0)
+      {
+        sy = fabs(xyz2[1])/xyz2[1];
+      }
 
       if (qxy != 0.0) {
         if (fabs(xyz2[1]) <= fabs(xyz2[0])) {
@@ -302,8 +307,14 @@ class ModifiedLambertProjection3D
           sq2xy = sqrt(q2xy);
           q = (LPs::beta/LPs::r2/LPs::R1) * sqrt(q2xy*qxy/(q2xy-fabs(xyz2[0])*sq2xy));
           tt = (xyz2[1]*xyz2[1]+fabs(xyz2[0])*sq2xy)/LPs::r2/qxy;
-          if (tt > 1.0) tt = 1.0;
-          if (tt < -1.0) tt = -1.0;
+          if (tt > 1.0)
+          {
+            tt = 1.0;
+          }
+          if (tt < -1.0)
+          {
+            tt = -1.0;
+          }
           ac = acos(tt);
           T1inv = q * sx;
           T2inv = q * sy * ac/LPs::pi12;
@@ -312,8 +323,14 @@ class ModifiedLambertProjection3D
           sqx2y = sqrt(qx2y);
           q = (LPs::beta/LPs::r2/LPs::R1) * sqrt(qx2y*qxy/(qx2y-fabs(xyz2[1])*sqx2y));
           tt = (xyz2[0]*xyz2[0]+fabs(xyz2[1])*sqx2y)/LPs::r2/qxy;
-          if (tt > 1.0) tt = 1.0;
-          if (tt < -1.0) tt = -1.0;
+          if (tt > 1.0)
+          {
+            tt = 1.0;
+          }
+          if (tt < -1.0)
+          {
+            tt = -1.0;
+          }
           ac = acos(tt);
           T1inv = q * sx * ac/LPs::pi12;
           T2inv = q * sy;
@@ -358,5 +375,3 @@ class ModifiedLambertProjection3D
     ModifiedLambertProjection3D(const ModifiedLambertProjection3D&); // Copy Constructor Not Implemented
     void operator=(const ModifiedLambertProjection3D&); // Operator '=' Not Implemented
 };
-
-#endif /* _ModifiedLamberProjection3D_H_ */

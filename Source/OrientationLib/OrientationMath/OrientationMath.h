@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _orientationmath_h_
-#define _orientationmath_h_
+#pragma once
 
 #include "SIMPLib/Math/QuaternionMath.hpp"
 
@@ -144,7 +142,7 @@ class OrientationLib_EXPORT OrientationMath
     * @param millerBravais Input Vector (UVTW)
     * @param miller Output Vector (UVW)
     */
-    static void MillerBravaisToMillerDirection(int millerBravais[4], int miller[3]);
+    static void MillerBravaisToMillerDirection(std::array<int,4> &millerBravais, std::array<int,3> &miller);
 
     /**
     * @brief Converts 3 parameter Miller lattice coordinates direction to 4 parameter Miller-Bravais lattice
@@ -152,7 +150,7 @@ class OrientationLib_EXPORT OrientationMath
     * @param miller Input Vector (UVW)
     * @param millerBravais Output Vector (UVTW)
     */
-    static void MillerToMillerBravaisDirection(int miller[3], int millerBravais[4]);
+    static void MillerToMillerBravaisDirection(std::array<int,3> &miller, std::array<int,4> &millerBravais);
 
     /**
     * @brief Converts 4 parameter Miller-Bravais lattice coordinates plane to 3 parameter Miller lattice
@@ -160,7 +158,7 @@ class OrientationLib_EXPORT OrientationMath
     * @param millerBravais Input Vector (HKIL)
     * @param miller Output Vector (HKL)
     */
-    static void MillerBravaisToMillerPlane(int millerBravais[4], int miller[3]);
+    static void MillerBravaisToMillerPlane(std::array<int,4> &millerBravais, std::array<int,3> & miller);
 
     /**
     * @brief Converts 3 parameter Miller lattice coordinates plane to 4 parameter Miller-Bravais lattice
@@ -168,7 +166,7 @@ class OrientationLib_EXPORT OrientationMath
     * @param miller Input Vector (HKL)
     * @param millerBravais Output Vector (HKIL)
     */
-    static void MillerToMillerBravaisPlane(int miller[3], int millerBravais[4]);
+    static void MillerToMillerBravaisPlane(std::array<int,3> &miller, std::array<int,4> &millerBravais);
 
   protected:
     OrientationMath();
@@ -178,6 +176,3 @@ class OrientationLib_EXPORT OrientationMath
     OrientationMath(const OrientationMath&); // Copy Constructor Not Implemented
     void operator=(const OrientationMath&); // Operator '=' Not Implemented
 };
-
-#endif /* _OrientationMath_H_ */
-

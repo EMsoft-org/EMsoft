@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _modifiedlambertprojection_h_
-#define _modifiedlambertprojection_h_
+#pragma once
 
 #include <hdf5.h>
 
@@ -145,7 +143,7 @@ public:
      * @param sqCoord
      * @param value
      */
-    void addInterpolatedValues(Square square, float* sqCoord, double value);
+    void addInterpolatedValues(Square square, const float* sqCoord, double value);
 
     /**
      * @brief addValue
@@ -177,7 +175,7 @@ public:
      * @param sqCoord
      * @return
      */
-    double getInterpolatedValue(Square square, float* sqCoord);
+    double getInterpolatedValue(Square square, const float* sqCoord);
 
     /**
      * @brief getSquareCoord
@@ -192,7 +190,7 @@ public:
      * @param sqCoord
      * @return
      */
-    int getSquareIndex(float* sqCoord);
+    int getSquareIndex(const float* sqCoord);
 
     /**
      * @brief This function normalizes the squares by taking the value of each square and dividing by the sum of all the
@@ -239,6 +237,3 @@ public:
     ModifiedLambertProjection(const ModifiedLambertProjection&); // Copy Constructor Not Implemented
     void operator=(const ModifiedLambertProjection&); // Operator '=' Not Implemented
 };
-
-#endif /* _ModifiedLambertProjection_H_ */
-
