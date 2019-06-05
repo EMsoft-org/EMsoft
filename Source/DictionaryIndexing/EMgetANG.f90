@@ -139,7 +139,7 @@ call h5open_EMsoft(hdferr)
                                     getPhi1=.TRUE., &
                                     getPhi=.TRUE., &
                                     getPhi2=.TRUE.) 
-
+        refined = .TRUE.
     else
         call readEBSDDotProductFile(enl%dotproductfile, dinl, hdferr, EBSDDIdata, &
                                 getCI=.TRUE., &
