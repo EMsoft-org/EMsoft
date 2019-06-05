@@ -198,11 +198,11 @@ write (*,*) 'maximum intensity in pattern ',maxval(expt)
 allocate(pattern(binx, biny), pcopy(binx, biny), pint(binx,biny), ppp(binx,biny), stat=ierr)
 if (enl%numav.gt.0) then 
   do kk=1,biny
-    pcopy(1:binx,kk) = expt((kk-1)*binx+1:kk*binx)
+    pcopy(1:binx,kk) = sumexpt((kk-1)*binx+1:kk*binx)
   end do
 else
   do kk=1,biny
-    pcopy(1:binx,kk) = sumexpt((kk-1)*binx+1:kk*binx)
+    pcopy(1:binx,kk) = expt((kk-1)*binx+1:kk*binx)
   end do
 end if
 

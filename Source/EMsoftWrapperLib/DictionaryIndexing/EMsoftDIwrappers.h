@@ -57,6 +57,16 @@ void EMsoftCpreprocessEBSDPatterns
 void EMsoftCpreprocessSingleEBSDPattern
     (size_t* ipar, float* fpar, float* inputpattern, float* outputpattern);
 
+/**
+* EBSD pattern preprocessing parameter range:
+* @param ipar array with integer input parameters
+* @param fpar array with float input parameters
+* @param spar array with string input parameters
+* @param averagedpattern  input EBSD pattern as float array
+* @param patternarray  input EBSD pattern as float array
+*/
+void EMsoftCEBSDDIpreview
+    (size_t* ipar, float* fpar, char* spar, float* averagedpattern, float* patternarray);
 
 /**
 * EBSD Dictionary indexing (all in ram) wrapper routine

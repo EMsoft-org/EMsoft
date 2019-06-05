@@ -88,7 +88,14 @@
 ! ipar(42): 16*ceiling(float(numsx*numsy)/16.0)
 ! ipar(43): neulers  (number of Euler angle triplets in the dictionary)
 ! ipar(44): nvariants (number of variants for refinement wrapper)
-! ipar(45:wraparraysize) : 0 (unused for now)
+! ipar(45): nregionsmin
+! ipar(46): nregionsstepsize
+! ipar(47): numav
+! ipar(48): patx
+! ipar(49): paty
+! ipar(50): numw (number of hipass parameters)
+! ipar(51): numr (number of regions parameters)
+! ipar(52:wraparraysize) : 0 (unused for now)
 
 ! real(kind=dbl) :: fpar(wraparraysize)  components
 ! fpar(1) : sig
@@ -119,7 +126,8 @@
 ! fpar(24): hipasswd
 ! refinement parameters
 ! fpar(25): step 
-! fpar(26:wraparraysize): 0 (unused for now)
+! fpar(26): hipasswmax (user by EBSDDIpreview wrapper)
+! fpar(27:wraparraysize): 0 (unused for now)
 
 ! newly added in version 3.2, to facilitate passing EMsoft configuration
 ! strings back and forth to C/C++ programs that call EMdymod routines...
@@ -648,7 +656,7 @@ end subroutine EMsoftCpreprocessEBSDPatterns
 !> @param ipar array with integer input parameters
 !> @param fpar array with float input parameters
 !> @param inputpattern unprocessed pattern
-!> @param inputpattern processed pattern
+!> @param outputpattern processed pattern
 !
 !> @date 01/22/18 MDG 1.0 original extracted from EMEBSDDI program
 !> @date 05/31/18 MDG 2.0 rewrite based on EMsoftCpreprocessEBSDPatterns call.
@@ -733,6 +741,295 @@ HPplanb = C_NULL_PTR
 ! that's it folks...
 end subroutine EMsoftCpreprocessSingleEBSDPattern
 
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EMsoftCEBSDDIpreview
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief This subroutine can be called by a C/C++ program as a standalone function to preprocess a single experimental EBSD pattern
+!
+!> @details This subroutine provides a method to generate a matrix of preprocessed
+!> patterns for a selected pattern.  This can be used to determine the appropriate
+!> preprocessing parameters 
+!>
+!> @param ipar array with integer input parameters
+!> @param fpar array with float input parameters
+!> @param spar array with string input parameters
+!> @param averagedpattern average pattern
+!> @param patternarray array of processed patterns
+!
+!> @date 06/05/19 MDG 1.0 original extracted from EMEBSDDIpreview program
+!--------------------------------------------------------------------------
+recursive subroutine EMsoftCEBSDDIpreview(ipar, fpar, spar, averagedpattern, patternarray) &
+           bind(c, name='EMsoftCEBSDDIpreview')    ! this routine is callable from a C/C++ program
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoftCEBSDDIpreview
+
+use local
+use configmod
+use constants
+use typedefs
+use iso_c_binding
+use filters
+use EBSDDImod
+use omp_lib
+use patternmod
+use HDF5
+
+IMPLICIT NONE
+
+integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
+real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
+character(kind=c_char, len=1), target, INTENT(IN) :: spar(wraparraysize*fnlen)
+real(kind=sgl),INTENT(OUT)              :: averagedpattern(ipar(19),ipar(20))
+real(kind=sgl),INTENT(OUT)              :: patternarray(ipar(50)*ipar(19),ipar(51)*ipar(20))
+
+integer(kind=irg)                       :: i, j, numsx, numsy, ipf_wd, ipf_ht, nregion, &
+                                           hipasswnsteps, nregionsmin, nregionsmax, binx, biny, &
+                                           nregionsstepsize, numav, istat, ii, jj, kk, hdferr, ierr, &
+                                           numr, numw, nx, ny, xoffset, yoffset, iunitexpt, L, patsz, &
+                                           patx, paty, recordsize
+real(kind=sgl)                          :: mi, ma, hipasswmax
+real(kind=dbl)                          :: x, y, v2, val
+character(fnlen)                        :: HDFstrings(10), inputtype=''
+real(kind=sgl),allocatable              :: expt(:), sumexpt(:), pattern(:,:), pcopy(:,:), hpvals(:)
+integer(kind=irg),allocatable           :: nrvals(:), pint(:,:), ppp(:,:)
+integer(HSIZE_T)                        :: dims3(3), offset3(3)
+type(C_PTR)                             :: HPplanf, HPplanb
+complex(kind=dbl),allocatable           :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable   :: inp(:,:), outp(:,:)
+real(kind=dbl),allocatable              :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
+
+! parameters to deal with the input string array spar
+type(ConfigStructureType)               :: CS
+
+! output of this routine: all output arrays must be allocated in the calling program
+!
+! averagedpattern
+! patternarray
+!
+
+! required input parameters:
+!
+! integers:
+! numsx                 ---> ipar(19)
+! numsy                 ---> ipar(20)
+! ipf_wd                ---> ipar(26)
+! ipf_ht                ---> ipar(27)
+! inputtype             ---> ipar(35)  2 = up1, 3 = up2, 4 = h5ebsd, etc... (see below) 
+! nregionsmin           ---> ipar(45)
+! nregionsstepsize      ---> ipar(46)
+! numav                 ---> ipar(47)
+! patx                  ---> ipar(48)
+! paty                  ---> ipar(49)
+! numw                  ---> ipar(50)  
+! numr                  ---> ipar(51)
+
+! floats:
+! w                     ---> fpar(24)  [in range [0 .. 0.5]]
+! hipasswmax            ---> fpar(26)
+
+! strings:
+! output file path      ---> CS%strvals(31)
+! experimental data file---> CS%strvals(32)
+! HDFstrings(1)         ---> CS%strvals(41)
+! HDFstrings(2)         ---> CS%strvals(42)
+! HDFstrings(3)         ---> CS%strvals(43)
+! HDFstrings(4)         ---> CS%strvals(44)
+! HDFstrings(5)         ---> CS%strvals(45)
+! HDFstrings(6)         ---> CS%strvals(46)
+! HDFstrings(7)         ---> CS%strvals(47)
+! HDFstrings(8)         ---> CS%strvals(48)
+! HDFstrings(9)         ---> CS%strvals(49)
+! HDFstrings(10)        ---> CS%strvals(50)
+
+! the calling program passes a c-string array spar that we need to convert to the 
+! standard EMsoft config structure for use inside this routine
+call C2F_configuration_strings(C_LOC(spar), CS)
+
+call h5open_EMsoft(hdferr)
+
+binx = ipar(19)
+biny = ipar(20)
+L = binx * biny
+recordsize = 4 * L
+patsz = L
+patx = ipar(48)
+paty = ipar(49)
+
+! dimensions of the output array of preprocessed patterns
+numw = ipar(50)
+numr = ipar(51)
+nx = numw * binx
+ny = numr * biny
+
+hipasswmax = fpar(26)
+nregionsmin = ipar(45)
+nregionsstepsize = ipar(46)
+iunitexpt = 100
+
+! get the HDF group and dataset names (in case the input file is HDF5 format)
+do i=1,10
+  HDFstrings(i) = trim(CS%strvals(40+i))
+end do 
+
+select case(ipar(35))
+  case(1) 
+    inputtype = "Binary"
+  case(2) 
+    inputtype = "TSLup1"
+  case(3) 
+    inputtype = "TSLup2"
+  case(4) 
+    inputtype = "TSLHDF"
+  case(5) 
+    inputtype = "OxfordBinary"
+  case(6) 
+    inputtype = "OxfordHDF"
+  case(7) 
+    inputtype = "EMEBSD"
+  case(8) 
+    inputtype = "BrukerHDF"
+end select
+
+! open the file with experimental patterns; depending on the inputtype parameter, this
+! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
+! pattern file produced by EMEBSD.f90; or a vendor binary or HDF5 file... in each case we need to 
+! open the file and leave it open, then use the getSingleExpPattern() routine to read a 
+! pattern into the expt variable ...  at the end, we use closeExpPatternFile() to
+! properly close the experimental pattern file
+istat = openExpPatternFile(CS%strvals(32), ipf_wd, L, inputtype, recordsize, iunitexpt, HDFstrings)
+if (istat.ne.0) then ! return an error message of some kind
+    ! call patternmod_errormessage(istat)
+    ! call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
+end if
+
+! should we average patterns?
+allocate(expt(patsz))
+dims3 = (/ binx, biny, 1 /)
+if (numav.ge.0) then
+  allocate(sumexpt(patsz))
+  sumexpt = 0.0
+  jj = 0 
+  do i=-numav,numav
+    if ((patx+i.gt.0).and.(patx+i.lt.ipf_wd)) then
+      do j=-numav,numav
+        if ((paty+j.gt.0).and.(paty+j.lt.ipf_ht)) then
+          offset3 = (/ 0, 0, (paty+j) * ipf_wd + (patx+i) /)
+          call getSingleExpPattern(paty, ipf_wd, patsz, L, dims3, offset3, iunitexpt, inputtype, &
+                                   HDFstrings, expt)
+          sumexpt = sumexpt + expt
+          jj = jj+1
+        end if 
+      end do 
+    end if 
+  end do
+  sumexpt = sumexpt / float(jj)
+end if
+
+! and read the center pattern (again)
+offset3 = (/ 0, 0, paty * ipf_wd + patx /)
+call getSingleExpPattern(paty, ipf_wd, patsz, L, dims3, offset3, iunitexpt, inputtype, HDFstrings, expt)
+
+! and close the pattern file
+call closeExpPatternFile(inputtype, iunitexpt)
+
+! close the HDF interface
+call h5close_EMsoft(hdferr)
+
+! turn it into a 2D pattern
+allocate(pattern(binx, biny), pcopy(binx, biny), pint(binx,biny), ppp(binx,biny), stat=ierr)
+if (numav.gt.0) then 
+  do kk=1,biny
+    pcopy(1:binx,kk) = sumexpt((kk-1)*binx+1:kk*binx)
+  end do
+else
+  do kk=1,biny
+    pcopy(1:binx,kk) = expt((kk-1)*binx+1:kk*binx)
+  end do
+end if
+
+! here we copy the averaged pattern into the output array 
+! that was allocated by the calling program ...
+averagedpattern = pcopy
+
+! ================
+! ================
+! next we generate the array of preprocessed patterns
+! define the high-pass filter width array and the nregions array
+allocate(nrvals(numr))
+nrvals = nregionsmin + (/ ((i-1)*nregionsstepsize, i=1,numr) /)
+
+! the array for the hi pass filter parameter is a non-linear progression
+allocate(hpvals(numw))
+do ii=1,numw
+    hpvals(ii) = 2.0**(float(ii-1-numw)) * 2.0 * hipasswmax
+end do
+
+! next we need to set up the high-pass filter fftw plans
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny))
+allocate(rrdata(binx,biny),ffdata(binx,biny))
+call init_HiPassFilter(dble(hpvals(1)), (/numsx, numsy /), hpmask, inp, outp, HPplanf, HPplanb) 
+
+! the outer loop goes over the hipass filter width and is displayed horizontally in the final image
+do ii=1,numw
+! Hi-Pass filter
+    pattern = pcopy
+    rrdata = dble(pattern)
+    ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), dble(hpvals(ii)), hpmask, inp, outp, HPplanf, HPplanb)
+    pattern = sngl(ffdata)
+
+    ma = maxval(pattern)
+    mi = minval(pattern)
+
+    pint = nint(((pattern - mi) / (ma-mi))*255.0)
+    xoffset = (ii-1) * binx + 1
+    do jj=1,numr
+! adaptive histogram equalization
+        if (nrvals(jj).eq.0) then
+            ppp = pint
+        else
+            ppp = adhisteq(nrvals(jj),binx,biny,pint)
+        end if 
+
+! and store the pattern in the correct spot in the patternarray array (flipped upside down !!!)
+! TO BE VERIFIED: DO WE STILL NEED TO FLIP THE PATTERN UPSIDE DOWN ???
+        yoffset =  (numr-jj) * biny + 1
+        do i=1,binx
+          do j=1,biny
+           patternarray(xoffset+i-1, yoffset+j-1) = ppp(i,biny-j+1)
+          end do
+        end do
+    end do
+
+! regenerate the complex inverted Gaussian mask with the next value of the mask width
+    hpmask = cmplx(1.D0,0.D0)
+    do i=1,binx/2 
+      x = dble(i)**2
+      do j=1,biny/2
+        y = dble(j)**2
+        v2 = hpvals(ii) * ( x+y )
+        if (v2.lt.30.D0) then
+          val = 1.D0-dexp(-v2)
+          hpmask(i,j) = cmplx(val, 0.D0)
+          hpmask(binx+1-i,j) = cmplx(val, 0.D0)
+          hpmask(i,biny+1-j) = cmplx(val, 0.D0)
+          hpmask(binx+1-i,biny+1-j) = cmplx(val, 0.D0)
+        end if
+      end do
+    end do
+end do
+
+! clean up all auxiliary arrays
+deallocate(hpmask, inp, outp, pcopy, rrdata, ffdata, hpvals, nrvals)
+deallocate(pattern, pint, ppp, expt)
+if (allocated(sumexpt)) deallocate(sumexpt)
+
+! this completes the computation of the patternarray output array
+
+end subroutine EMsoftCEBSDDIpreview
 
 ! !--------------------------------------------------------------------------
 ! !
