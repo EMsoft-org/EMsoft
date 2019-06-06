@@ -807,3 +807,1964 @@ QString SVStyle::WrapTextWithHtmlStyle(const QString& msg, bool bold) const
   }
   return formattedMessage;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setFader_color(const QColor& value)
+{
+  m_Fader_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getFader_color() const
+{
+  return m_Fader_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setWidget_Error_color(const QColor& value)
+{
+  m_Widget_Error_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getWidget_Error_color() const
+{
+  return m_Widget_Error_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setText_Error_color(const QColor& value)
+{
+  m_Text_Error_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getText_Error_color() const
+{
+  return m_Text_Error_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setCentralWidget_background_color(const QColor& value)
+{
+  m_CentralWidget_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getCentralWidget_background_color() const
+{
+  return m_CentralWidget_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQLabel_color(const QColor& value)
+{
+  m_QLabel_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQLabel_color() const
+{
+  return m_QLabel_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setFilterInputWidget_background_color(const QColor& value)
+{
+  m_FilterInputWidget_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getFilterInputWidget_background_color() const
+{
+  return m_FilterInputWidget_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQScrollArea_background_color(const QColor& value)
+{
+  m_QScrollArea_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQScrollArea_background_color() const
+{
+  return m_QScrollArea_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setVariablesTabContents_background_color(const QColor& value)
+{
+  m_VariablesTabContents_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getVariablesTabContents_background_color() const
+{
+  return m_VariablesTabContents_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setFilterParameterWidget_background_color(const QColor& value)
+{
+  m_FilterParameterWidget_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getFilterParameterWidget_background_color() const
+{
+  return m_FilterParameterWidget_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setFilterParameterWidget_border_color(const QColor& value)
+{
+  m_FilterParameterWidget_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getFilterParameterWidget_border_color() const
+{
+  return m_FilterParameterWidget_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQGroupBoxTitle_background_color(const QColor& value)
+{
+  m_QGroupBoxTitle_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQGroupBoxTitle_background_color() const
+{
+  return m_QGroupBoxTitle_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQGroupBox_background_color(const QColor& value)
+{
+  m_QGroupBox_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQGroupBox_background_color() const
+{
+  return m_QGroupBox_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQDockWidget_border_color(const QColor& value)
+{
+  m_QDockWidget_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQDockWidget_border_color() const
+{
+  return m_QDockWidget_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQDockWidget_color(const QColor& value)
+{
+  m_QDockWidget_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQDockWidget_color() const
+{
+  return m_QDockWidget_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQDockWidgetTitle_background_color(const QColor& value)
+{
+  m_QDockWidgetTitle_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQDockWidgetTitle_background_color() const
+{
+  return m_QDockWidgetTitle_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQDockWidgetTitle_color(const QColor& value)
+{
+  m_QDockWidgetTitle_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQDockWidgetTitle_color() const
+{
+  return m_QDockWidgetTitle_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQListView_background_color(const QColor& value)
+{
+  m_QListView_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQListView_background_color() const
+{
+  return m_QListView_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQListView_color(const QColor& value)
+{
+  m_QListView_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQListView_color() const
+{
+  return m_QListView_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQListViewItemHover_background_color(const QColor& value)
+{
+  m_QListViewItemHover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQListViewItemHover_background_color() const
+{
+  return m_QListViewItemHover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQListViewItemHover_color(const QColor& value)
+{
+  m_QListViewItemHover_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQListViewItemHover_color() const
+{
+  return m_QListViewItemHover_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQListViewItemSelected_background_color(const QColor& value)
+{
+  m_QListViewItemSelected_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQListViewItemSelected_background_color() const
+{
+  return m_QListViewItemSelected_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQListViewItemSelected_color(const QColor& value)
+{
+  m_QListViewItemSelected_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQListViewItemSelected_color() const
+{
+  return m_QListViewItemSelected_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMainWindowSeparator_background_color(const QColor& value)
+{
+  m_QMainWindowSeparator_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMainWindowSeparator_background_color() const
+{
+  return m_QMainWindowSeparator_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuBar_background_color(const QColor& value)
+{
+  m_QMenuBar_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuBar_background_color() const
+{
+  return m_QMenuBar_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuBarItem_color(const QColor& value)
+{
+  m_QMenuBarItem_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuBarItem_color() const
+{
+  return m_QMenuBarItem_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuBarItemPressed_color(const QColor& value)
+{
+  m_QMenuBarItemPressed_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuBarItemPressed_color() const
+{
+  return m_QMenuBarItemPressed_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuBarItemSelected_background_color(const QColor& value)
+{
+  m_QMenuBarItemSelected_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuBarItemSelected_background_color() const
+{
+  return m_QMenuBarItemSelected_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuBarItemSelected_color(const QColor& value)
+{
+  m_QMenuBarItemSelected_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuBarItemSelected_color() const
+{
+  return m_QMenuBarItemSelected_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenu_background_color(const QColor& value)
+{
+  m_QMenu_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenu_background_color() const
+{
+  return m_QMenu_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenu_color(const QColor& value)
+{
+  m_QMenu_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenu_color() const
+{
+  return m_QMenu_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuItemSelected_background_color(const QColor& value)
+{
+  m_QMenuItemSelected_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuItemSelected_background_color() const
+{
+  return m_QMenuItemSelected_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuItemSelected_color(const QColor& value)
+{
+  m_QMenuItemSelected_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuItemSelected_color() const
+{
+  return m_QMenuItemSelected_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQMenuItemDisabled_background_color(const QColor& value)
+{
+  m_QMenuItemDisabled_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQMenuItemDisabled_background_color() const
+{
+  return m_QMenuItemDisabled_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButton_background_color(const QColor& value)
+{
+  m_QPushButton_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButton_background_color() const
+{
+  return m_QPushButton_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButton_border_color(const QColor& value)
+{
+  m_QPushButton_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButton_border_color() const
+{
+  return m_QPushButton_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButtonHover_background_color(const QColor& value)
+{
+  m_QPushButtonHover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButtonHover_background_color() const
+{
+  return m_QPushButtonHover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButtonPressed_background_color(const QColor& value)
+{
+  m_QPushButtonPressed_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButtonPressed_background_color() const
+{
+  return m_QPushButtonPressed_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButtonDefault_background_color(const QColor& value)
+{
+  m_QPushButtonDefault_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButtonDefault_background_color() const
+{
+  return m_QPushButtonDefault_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButtonDefaultPressed_background_color(const QColor& value)
+{
+  m_QPushButtonDefaultPressed_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButtonDefaultPressed_background_color() const
+{
+  return m_QPushButtonDefaultPressed_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButtonDefaultHover_background_color(const QColor& value)
+{
+  m_QPushButtonDefaultHover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButtonDefaultHover_background_color() const
+{
+  return m_QPushButtonDefaultHover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButtonDefault_border_color(const QColor& value)
+{
+  m_QPushButtonDefault_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButtonDefault_border_color() const
+{
+  return m_QPushButtonDefault_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQPushButtonDefault_text_color(const QColor& value)
+{
+  m_QPushButtonDefault_text_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQPushButtonDefault_text_color() const
+{
+  return m_QPushButtonDefault_text_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQSplitter_handle_start_color(const QColor& value)
+{
+  m_QSplitter_handle_start_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQSplitter_handle_start_color() const
+{
+  return m_QSplitter_handle_start_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQSplitter_handle_end_color(const QColor& value)
+{
+  m_QSplitter_handle_end_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQSplitter_handle_end_color() const
+{
+  return m_QSplitter_handle_end_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolButton_background_color(const QColor& value)
+{
+  m_QToolButton_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolButton_background_color() const
+{
+  return m_QToolButton_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolButton_color(const QColor& value)
+{
+  m_QToolButton_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolButton_color() const
+{
+  return m_QToolButton_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolButton_border_color(const QColor& value)
+{
+  m_QToolButton_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolButton_border_color() const
+{
+  return m_QToolButton_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolButtonChecked_background_color(const QColor& value)
+{
+  m_QToolButtonChecked_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolButtonChecked_background_color() const
+{
+  return m_QToolButtonChecked_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolButtonDisabled_background_color(const QColor& value)
+{
+  m_QToolButtonDisabled_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolButtonDisabled_background_color() const
+{
+  return m_QToolButtonDisabled_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolButtonDisabled_color(const QColor& value)
+{
+  m_QToolButtonDisabled_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolButtonDisabled_color() const
+{
+  return m_QToolButtonDisabled_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQStatusBar_border_color(const QColor& value)
+{
+  m_QStatusBar_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQStatusBar_border_color() const
+{
+  return m_QStatusBar_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTableWidget_color(const QColor& value)
+{
+  m_QTableWidget_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTableWidget_color() const
+{
+  return m_QTableWidget_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTableWidget_selected_background_color(const QColor& value)
+{
+  m_QTableWidget_selected_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTableWidget_selected_background_color() const
+{
+  return m_QTableWidget_selected_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQHeaderView_background_color(const QColor& value)
+{
+  m_QHeaderView_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQHeaderView_background_color() const
+{
+  return m_QHeaderView_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQHeaderView_border_color(const QColor& value)
+{
+  m_QHeaderView_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQHeaderView_border_color() const
+{
+  return m_QHeaderView_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQHeaderView_color(const QColor& value)
+{
+  m_QHeaderView_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQHeaderView_color() const
+{
+  return m_QHeaderView_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQHeaderViewDisabled_background_color(const QColor& value)
+{
+  m_QHeaderViewDisabled_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQHeaderViewDisabled_background_color() const
+{
+  return m_QHeaderViewDisabled_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQHeaderViewDisabled_border_color(const QColor& value)
+{
+  m_QHeaderViewDisabled_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQHeaderViewDisabled_border_color() const
+{
+  return m_QHeaderViewDisabled_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQHeaderViewDisabled_color(const QColor& value)
+{
+  m_QHeaderViewDisabled_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQHeaderViewDisabled_color() const
+{
+  return m_QHeaderViewDisabled_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTabWidgetPane_border_color(const QColor& value)
+{
+  m_QTabWidgetPane_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTabWidgetPane_border_color() const
+{
+  return m_QTabWidgetPane_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTabWidgetPane_background_color(const QColor& value)
+{
+  m_QTabWidgetPane_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTabWidgetPane_background_color() const
+{
+  return m_QTabWidgetPane_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTabBarTab_border_color(const QColor& value)
+{
+  m_QTabBarTab_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTabBarTab_border_color() const
+{
+  return m_QTabBarTab_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTabBarTabSelected_background_color(const QColor& value)
+{
+  m_QTabBarTabSelected_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTabBarTabSelected_background_color() const
+{
+  return m_QTabBarTabSelected_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTabBarTabSelected_color(const QColor& value)
+{
+  m_QTabBarTabSelected_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTabBarTabSelected_color() const
+{
+  return m_QTabBarTabSelected_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTabBarTabNotSelected_background_color(const QColor& value)
+{
+  m_QTabBarTabNotSelected_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTabBarTabNotSelected_background_color() const
+{
+  return m_QTabBarTabNotSelected_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTabBarTabNotSelectedHover_background_color(const QColor& value)
+{
+  m_QTabBarTabNotSelectedHover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTabBarTabNotSelectedHover_background_color() const
+{
+  return m_QTabBarTabNotSelectedHover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTextEdit_background_color(const QColor& value)
+{
+  m_QTextEdit_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTextEdit_background_color() const
+{
+  return m_QTextEdit_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTextEdit_color(const QColor& value)
+{
+  m_QTextEdit_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTextEdit_color() const
+{
+  return m_QTextEdit_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQLineEdit_color(const QColor& value)
+{
+  m_QLineEdit_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQLineEdit_color() const
+{
+  return m_QLineEdit_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQLineEdit_background_color(const QColor& value)
+{
+  m_QLineEdit_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQLineEdit_background_color() const
+{
+  return m_QLineEdit_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQLineEdit_border_color(const QColor& value)
+{
+  m_QLineEdit_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQLineEdit_border_color() const
+{
+  return m_QLineEdit_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQLineEditDisabled_background_color(const QColor& value)
+{
+  m_QLineEditDisabled_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQLineEditDisabled_background_color() const
+{
+  return m_QLineEditDisabled_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQLineEditError_background_color(const QColor& value)
+{
+  m_QLineEditError_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQLineEditError_background_color() const
+{
+  return m_QLineEditError_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQSpinBoxArrow_background_color(const QColor& value)
+{
+  m_QSpinBoxArrow_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQSpinBoxArrow_background_color() const
+{
+  return m_QSpinBoxArrow_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQSpinBoxArrow_hover_background_color(const QColor& value)
+{
+  m_QSpinBoxArrow_hover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQSpinBoxArrow_hover_background_color() const
+{
+  return m_QSpinBoxArrow_hover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBox_border_color(const QColor& value)
+{
+  m_QComboBox_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBox_border_color() const
+{
+  return m_QComboBox_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBox_background_color(const QColor& value)
+{
+  m_QComboBox_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBox_background_color() const
+{
+  return m_QComboBox_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBoxArrow_background_color(const QColor& value)
+{
+  m_QComboBoxArrow_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBoxArrow_background_color() const
+{
+  return m_QComboBoxArrow_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBoxArrow_hover_background_color(const QColor& value)
+{
+  m_QComboBoxArrow_hover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBoxArrow_hover_background_color() const
+{
+  return m_QComboBoxArrow_hover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBoxItem_border_color(const QColor& value)
+{
+  m_QComboBoxItem_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBoxItem_border_color() const
+{
+  return m_QComboBoxItem_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBoxItem_selection_color(const QColor& value)
+{
+  m_QComboBoxItem_selection_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBoxItem_selection_color() const
+{
+  return m_QComboBoxItem_selection_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBoxItem_background_color(const QColor& value)
+{
+  m_QComboBoxItem_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBoxItem_background_color() const
+{
+  return m_QComboBoxItem_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBoxDisabled_background_color(const QColor& value)
+{
+  m_QComboBoxDisabled_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBoxDisabled_background_color() const
+{
+  return m_QComboBoxDisabled_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQComboBoxDisabled_color(const QColor& value)
+{
+  m_QComboBoxDisabled_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQComboBoxDisabled_color() const
+{
+  return m_QComboBoxDisabled_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolBar_background_color(const QColor& value)
+{
+  m_QToolBar_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolBar_background_color() const
+{
+  return m_QToolBar_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolBar_border_color(const QColor& value)
+{
+  m_QToolBar_border_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQToolBar_border_color() const
+{
+  return m_QToolBar_border_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeView_background_color(const QColor& value)
+{
+  m_QTreeView_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeView_background_color() const
+{
+  return m_QTreeView_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItem_background_color(const QColor& value)
+{
+  m_QTreeViewItem_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItem_background_color() const
+{
+  return m_QTreeViewItem_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItem_error_background_color(const QColor& value)
+{
+  m_QTreeViewItem_error_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItem_error_background_color() const
+{
+  return m_QTreeViewItem_error_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItem_color(const QColor& value)
+{
+  m_QTreeViewItem_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItem_color() const
+{
+  return m_QTreeViewItem_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItem_error_color(const QColor& value)
+{
+  m_QTreeViewItem_error_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItem_error_color() const
+{
+  return m_QTreeViewItem_error_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItem_font_size(const int& value)
+{
+  m_QTreeViewItem_font_size = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+int SVStyle::getQTreeViewItem_font_size() const
+{
+  return m_QTreeViewItem_font_size;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItemHover_background_color(const QColor& value)
+{
+  m_QTreeViewItemHover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItemHover_background_color() const
+{
+  return m_QTreeViewItemHover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItemHover_color(const QColor& value)
+{
+  m_QTreeViewItemHover_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItemHover_color() const
+{
+  return m_QTreeViewItemHover_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItemSelectedActive_background_color(const QColor& value)
+{
+  m_QTreeViewItemSelectedActive_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItemSelectedActive_background_color() const
+{
+  return m_QTreeViewItemSelectedActive_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItemSelectedActive_color(const QColor& value)
+{
+  m_QTreeViewItemSelectedActive_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItemSelectedActive_color() const
+{
+  return m_QTreeViewItemSelectedActive_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItemSelectedNotActive_background_color(const QColor& value)
+{
+  m_QTreeViewItemSelectedNotActive_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItemSelectedNotActive_background_color() const
+{
+  return m_QTreeViewItemSelectedNotActive_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewItemSelectedNotActive_color(const QColor& value)
+{
+  m_QTreeViewItemSelectedNotActive_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewItemSelectedNotActive_color() const
+{
+  return m_QTreeViewItemSelectedNotActive_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewBranch_background_color(const QColor& value)
+{
+  m_QTreeViewBranch_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewBranch_background_color() const
+{
+  return m_QTreeViewBranch_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewBranchHover_background_color(const QColor& value)
+{
+  m_QTreeViewBranchHover_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewBranchHover_background_color() const
+{
+  return m_QTreeViewBranchHover_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewBranchHover_color(const QColor& value)
+{
+  m_QTreeViewBranchHover_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewBranchHover_color() const
+{
+  return m_QTreeViewBranchHover_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewBranchSelectedActive_background_color(const QColor& value)
+{
+  m_QTreeViewBranchSelectedActive_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewBranchSelectedActive_background_color() const
+{
+  return m_QTreeViewBranchSelectedActive_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQTreeViewBranchSelectedNotActive_background_color(const QColor& value)
+{
+  m_QTreeViewBranchSelectedNotActive_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getQTreeViewBranchSelectedNotActive_background_color() const
+{
+  return m_QTreeViewBranchSelectedNotActive_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setFilterBackgroundColor(const QColor& value)
+{
+  m_FilterBackgroundColor = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getFilterBackgroundColor() const
+{
+  return m_FilterBackgroundColor;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setFilterSelectionColor(const QColor& value)
+{
+  m_FilterSelectionColor = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getFilterSelectionColor() const
+{
+  return m_FilterSelectionColor;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setFilterFontColor(const QColor& value)
+{
+  m_FilterFontColor = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getFilterFontColor() const
+{
+  return m_FilterFontColor;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_DataContainer_color(const QColor& value)
+{
+  m_DataArrayPath_DataContainer_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_DataContainer_color() const
+{
+  return m_DataArrayPath_DataContainer_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_AttributeMatrix_color(const QColor& value)
+{
+  m_DataArrayPath_AttributeMatrix_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_AttributeMatrix_color() const
+{
+  return m_DataArrayPath_AttributeMatrix_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_DataArray_color(const QColor& value)
+{
+  m_DataArrayPath_DataArray_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_DataArray_color() const
+{
+  return m_DataArrayPath_DataArray_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_Invalid_color(const QColor& value)
+{
+  m_DataArrayPath_Invalid_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_Invalid_color() const
+{
+  return m_DataArrayPath_Invalid_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_DataContainer_background_color(const QColor& value)
+{
+  m_DataArrayPath_DataContainer_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_DataContainer_background_color() const
+{
+  return m_DataArrayPath_DataContainer_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_AttributeMatrix_background_color(const QColor& value)
+{
+  m_DataArrayPath_AttributeMatrix_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_AttributeMatrix_background_color() const
+{
+  return m_DataArrayPath_AttributeMatrix_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_DataArray_background_color(const QColor& value)
+{
+  m_DataArrayPath_DataArray_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_DataArray_background_color() const
+{
+  return m_DataArrayPath_DataArray_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_Invalid_background_color(const QColor& value)
+{
+  m_DataArrayPath_Invalid_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_Invalid_background_color() const
+{
+  return m_DataArrayPath_Invalid_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_border_normal(const QColor& value)
+{
+  m_DataArrayPath_border_normal = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_border_normal() const
+{
+  return m_DataArrayPath_border_normal;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_border_not_found(const QColor& value)
+{
+  m_DataArrayPath_border_not_found = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_border_not_found() const
+{
+  return m_DataArrayPath_border_not_found;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_border_drag_enabled(const QColor& value)
+{
+  m_DataArrayPath_border_drag_enabled = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_border_drag_enabled() const
+{
+  return m_DataArrayPath_border_drag_enabled;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataArrayPath_border_drag_disabled(const QColor& value)
+{
+  m_DataArrayPath_border_drag_disabled = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataArrayPath_border_drag_disabled() const
+{
+  return m_DataArrayPath_border_drag_disabled;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataPathLabel_color(const QColor& value)
+{
+  m_DataPathLabel_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataPathLabel_color() const
+{
+  return m_DataPathLabel_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setDataPathLabel_Disabled_color(const QColor& value)
+{
+  m_DataPathLabel_Disabled_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getDataPathLabel_Disabled_color() const
+{
+  return m_DataPathLabel_Disabled_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setSIMPLViewPipelineDockWidgetTitle_inactive_background_color(const QColor& value)
+{
+  m_SIMPLViewPipelineDockWidgetTitle_inactive_background_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getSIMPLViewPipelineDockWidgetTitle_inactive_background_color() const
+{
+  return m_SIMPLViewPipelineDockWidgetTitle_inactive_background_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setSIMPLViewPipelineDockWidgetTitle_inactive_text_color(const QColor& value)
+{
+  m_SIMPLViewPipelineDockWidgetTitle_inactive_text_color = value;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QColor SVStyle::getSIMPLViewPipelineDockWidgetTitle_inactive_text_color() const
+{
+  return m_SIMPLViewPipelineDockWidgetTitle_inactive_text_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString SVStyle::getCurrentThemeFilePath() const
+{
+  return m_CurrentThemeFilePath;
+}
+

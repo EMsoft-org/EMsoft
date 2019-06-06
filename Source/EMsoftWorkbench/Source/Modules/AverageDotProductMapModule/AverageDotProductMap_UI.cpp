@@ -65,7 +65,7 @@ using InputType = AverageDotProductMapController::ADPMapData::InputType;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMap_UI::AverageDotProductMap_UI(QWidget* parent)
+AverageDotProductMap_UI::AverageDotProductMap_UI(QWidget *parent)
 : IModuleUI(parent)
 , m_Ui(new Ui::AverageDotProductMap_UI())
 {
@@ -479,7 +479,7 @@ void AverageDotProductMap_UI::readOutputParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj)
+void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject inputParamObj;
   writeInputParameters(inputParamObj);
@@ -497,7 +497,7 @@ void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeInputParameters(QJsonObject& obj)
+void AverageDotProductMap_UI::writeInputParameters(QJsonObject& obj) const
 {
   obj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
 
@@ -507,7 +507,7 @@ void AverageDotProductMap_UI::writeInputParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeComputationalParameters(QJsonObject& obj)
+void AverageDotProductMap_UI::writeComputationalParameters(QJsonObject& obj) const
 {
   obj[ioConstants::PatternHeight] = m_Ui->patternHeightSB->value();
   obj[ioConstants::PatternWidth] = m_Ui->patternWidthSB->value();
@@ -531,7 +531,7 @@ void AverageDotProductMap_UI::writeComputationalParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeOutputParameters(QJsonObject& obj)
+void AverageDotProductMap_UI::writeOutputParameters(QJsonObject& obj) const
 {
   obj[ioConstants::OutputImageFile] = m_Ui->outputFilePathLE->text();
 }
@@ -574,4 +574,20 @@ AverageDotProductMapController::ADPMapData AverageDotProductMap_UI::getData()
   }
 
   return data;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AverageDotProductMapController* AverageDotProductMap_UI::getController() const
+{
+  return m_Controller;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMap_UI::setController(AverageDotProductMapController* value)
+{
+  m_Controller = value;
 }

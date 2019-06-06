@@ -118,3 +118,11 @@ void SIMPLDataPathValidator::setSIMPLDataDirectory(const QString &path)
 
   emit dataDirectoryChanged(path);
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString SIMPLDataPathValidator::getSIMPLDataDirectory() const
+{
+  return m_SIMPLDataDirectory;
+}

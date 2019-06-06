@@ -35,8 +35,6 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-
 #include <QtCore/QFutureWatcher>
 
 #include "Modules/IModuleUI.h"
@@ -49,17 +47,24 @@ class AverageDotProductMap_UI : public IModuleUI
   Q_OBJECT
 
 public:
-  SIMPL_TYPE_MACRO(AverageDotProductMap_UI)
-
   /**
    * @brief AverageDotProductMap_UI
    * @param parent
    */
-  AverageDotProductMap_UI(QWidget* parent = nullptr);
+  AverageDotProductMap_UI(QWidget *parent = nullptr);
 
   ~AverageDotProductMap_UI() override;
 
-  SIMPL_POINTER_PROPERTY(AverageDotProductMapController, Controller)
+  /**
+    * @brief Getter property for Controller
+    * @return Value of Controller
+    */
+  AverageDotProductMapController* getController() const;
+
+  /**
+    * @brief Setter property for Controller
+    */
+  void setController(AverageDotProductMapController *value);
 
   /**
    * @brief readModuleSession
@@ -71,7 +76,7 @@ public:
    * @brief writeModuleSession
    * @param obj
    */
-  void writeModuleSession(QJsonObject& obj) override;
+  void writeModuleSession(QJsonObject& obj) const override;
 
   /**
    * @brief validateData
@@ -117,6 +122,8 @@ private slots:
 private:
   QSharedPointer<Ui::AverageDotProductMap_UI> m_Ui;
 
+  AverageDotProductMapController* m_Controller = nullptr;
+
   hid_t m_FileId;
   QString m_CurrentOpenFile;
 
@@ -145,19 +152,19 @@ private:
    * @brief writeInputParameters
    * @param obj
    */
-  void writeInputParameters(QJsonObject& obj);
+  void writeInputParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeCrystalSystemParameters
    * @param obj
    */
-  void writeComputationalParameters(QJsonObject& obj);
+  void writeComputationalParameters(QJsonObject& obj) const;
 
   /**
    * @brief writeOutputParameters
    * @param obj
    */
-  void writeOutputParameters(QJsonObject& obj);
+  void writeOutputParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators

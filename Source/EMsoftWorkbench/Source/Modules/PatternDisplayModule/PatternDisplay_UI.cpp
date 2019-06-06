@@ -47,7 +47,6 @@
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
-#include "Common/QtSSettings.h"
 
 #include "QtSupport/QtSSettings.h"
 

@@ -37,8 +37,6 @@
 
 #include "EMsoftWorkbench/Source/Common/SVControlWidgets.h"
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-
 class SearchLineEditPrivate;
 
 /**

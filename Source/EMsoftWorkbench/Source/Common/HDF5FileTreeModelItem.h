@@ -38,15 +38,22 @@
 
 #include <hdf5.h>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-
 class HDF5FileTreeModelItem
 {
 public:
   HDF5FileTreeModelItem(hid_t fileId, const QString& data, HDF5FileTreeModelItem* parent = 0);
   ~HDF5FileTreeModelItem();
 
-  SIMPL_INSTANCE_PROPERTY(bool, HasErrors)
+  /**
+    * @brief Getter property for HasErrors
+    * @return Value of HasErrors
+    */
+  bool getHasErrors() const;
+
+  /**
+    * @brief Setter property for HasErrors
+    */
+  void setHasErrors(const bool& value);
 
   void appendChild(HDF5FileTreeModelItem* child);
 
@@ -77,6 +84,7 @@ protected:
   void initializeChildCount();
 
 private:
+  bool m_HasErrors = false;
   QList<HDF5FileTreeModelItem*> m_ChildItems;
   int m_ChildItemsInitialized = 0;
   int m_ChildCount = -1;

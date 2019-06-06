@@ -32,9 +32,9 @@
 
 #pragma once
 
-#include "SIMPLib/SIMPLib.h"
+#include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
+#include "SIMPLib/SIMPLib.h"
 
 /**
  * @brief The SIMPLDataPathValidator class
@@ -48,7 +48,11 @@ class SIMPLib_EXPORT SIMPLDataPathValidator : public QObject
 
     static SIMPLDataPathValidator* Instance();
 
-    SIMPL_GET_PROPERTY(QString, SIMPLDataDirectory)
+    /**
+    * @brief Getter property for SIMPLDataDirectory
+    * @return Value of SIMPLDataDirectory
+    */
+    QString getSIMPLDataDirectory() const;
 
     /**
      * @brief setSIMPLDataDirectory

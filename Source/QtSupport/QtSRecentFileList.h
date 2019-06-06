@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _qrecentfilelist_h_
-#define _qrecentfilelist_h_
+#pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
@@ -66,7 +64,7 @@ class QtSRecentFileList: public QObject
     Q_OBJECT
 
   public:
-    QtSRecentFileList(QObject* parent = 0);
+    QtSRecentFileList(QObject* parent = nullptr);
 
     /**
      * @brief Returns the singleton instance of this class.
@@ -143,7 +141,7 @@ class QtSRecentFileList: public QObject
     bool contains(const QString& file);
 
   private:
-    ~QtSRecentFileList();
+    ~QtSRecentFileList() override;
 
     QStringList recentFiles;
 
@@ -156,6 +154,3 @@ class QtSRecentFileList: public QObject
     void operator=(const QtSRecentFileList&); //Copy Assignment Not Implemented
 
 };
-
-#endif /* QRECENTFILELIST_H_ */
-

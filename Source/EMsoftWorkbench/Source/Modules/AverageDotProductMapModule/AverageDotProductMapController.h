@@ -37,8 +37,6 @@
 
 #include <QtCore/QObject>
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-
 class AverageDotProductMapController : public QObject
 {
   Q_OBJECT
@@ -47,7 +45,16 @@ public:
   AverageDotProductMapController(QObject* parent = nullptr);
   ~AverageDotProductMapController() override;
 
-  SIMPL_INSTANCE_PROPERTY(bool, Cancel)
+  /**
+    * @brief Getter property for Cancel
+    * @return Value of Cancel
+    */
+  bool getCancel() const;
+
+  /**
+    * @brief Setter property for Cancel
+    */
+  void setCancel(const bool& value);
 
   struct ADPMapData
   {
@@ -132,6 +139,7 @@ private:
   std::vector<float> m_OutputIQMapVector;
   std::vector<float> m_OutputADPMapVector;
 
+  bool m_Cancel = false;
   size_t m_InstanceKey = 0;
   bool m_Executing = false;
 

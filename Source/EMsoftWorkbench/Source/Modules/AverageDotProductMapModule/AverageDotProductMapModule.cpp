@@ -57,11 +57,28 @@ AverageDotProductMapModule::~AverageDotProductMapModule() = default;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* AverageDotProductMapModule::createModuleUI(QJsonObject moduleObj, QWidget* parent)
+IModuleUI* AverageDotProductMapModule::createModuleUI(QJsonObject moduleObj, QWidget *parent) const
 {
   Q_UNUSED(moduleObj)
 
   AverageDotProductMap_UI* ui = new AverageDotProductMap_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AverageDotProductMapModule::Pointer AverageDotProductMapModule::NullPointer()
+{
+  return Pointer(static_cast<Self*>(nullptr));
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+AverageDotProductMapModule::Pointer AverageDotProductMapModule::New()
+{
+  Pointer sharedPtr (new (Self));
+  return sharedPtr;
 }

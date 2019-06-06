@@ -42,6 +42,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QThread>
+#include <QtCore/QMap>
 
 #include "Common/Constants.h"
 
@@ -309,4 +310,20 @@ void AverageDotProductMapController::setUpdateProgress(int loopCompleted, int to
 int AverageDotProductMapController::getNumCPUCores()
 {
   return QThread::idealThreadCount();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool AverageDotProductMapController::getCancel() const
+{
+  return m_Cancel;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMapController::setCancel(const bool& value)
+{
+  m_Cancel = value;
 }

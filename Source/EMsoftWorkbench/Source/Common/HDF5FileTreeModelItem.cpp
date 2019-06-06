@@ -405,3 +405,19 @@ QString HDF5FileTreeModelItem::generateHDFPath()
   }
   return path;
 }
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool HDF5FileTreeModelItem::getHasErrors() const
+{
+  return m_HasErrors;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void HDF5FileTreeModelItem::setHasErrors(const bool& value)
+{
+  m_HasErrors = value;
+}

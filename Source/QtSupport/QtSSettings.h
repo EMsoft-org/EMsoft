@@ -33,8 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _simplviewsettings_h_
-#define _simplviewsettings_h_
+#pragma once
 
 #include <QtCore/QSharedPointer>
 #include <QtCore/QString>
@@ -48,12 +47,12 @@
 
 struct SIMPLViewSettingsGroup
 {
-  SIMPLViewSettingsGroup(QString name, QJsonObject object)
+  SIMPLViewSettingsGroup(const QString &name, const QJsonObject &object)
   {
     groupName = name;
     group = object;
   }
-  typedef QSharedPointer<SIMPLViewSettingsGroup> Pointer;
+  using Pointer = QSharedPointer<SIMPLViewSettingsGroup>;
 
   QString groupName;
   QJsonObject group;
@@ -64,9 +63,9 @@ class QtSSettings : public QObject
     Q_OBJECT
 
   public:
-    QtSSettings(QObject* parent = 0);
-    QtSSettings(const QString& filePath, QObject* parent = 0);
-    ~QtSSettings();
+    QtSSettings(QObject* parent = nullptr);
+    QtSSettings(const QString& filePath, QObject* parent = nullptr);
+    ~QtSSettings() override;
 
     QString fileName();
 
@@ -109,5 +108,3 @@ class QtSSettings : public QObject
     QtSSettings(const QtSSettings&);    // Copy Constructor Not Implemented
     void operator=(const QtSSettings&);  // Operator '=' Not Implemented
 };
-
-#endif /* _SIMPLViewSettings_H */

@@ -88,7 +88,7 @@ bool QtSRecentFileList::contains(const QString& file)
 // -----------------------------------------------------------------------------
 void QtSRecentFileList::addFile(const QString& file, AddType type)
 {
-  if(QFile::exists(file) == true)
+  if(QFile::exists(file))
   {
     // Remove the file from wherever it is in the list
     removeFile(file);

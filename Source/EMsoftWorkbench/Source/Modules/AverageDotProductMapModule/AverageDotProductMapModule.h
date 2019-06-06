@@ -35,30 +35,34 @@
 
 #pragma once
 
-#include "SIMPLib/Common/SIMPLibSetGetMacros.h"
-
 #include "Modules/IWorkbenchModule.hpp"
 
 class AverageDotProductMapModule : public IWorkbenchModule
 {
-  Q_OBJECT
+    Q_OBJECT
 
-public:
-  SIMPL_SHARED_POINTERS(AverageDotProductMapModule)
-  SIMPL_TYPE_MACRO(AverageDotProductMapModule)
-  SIMPL_STATIC_NEW_MACRO(AverageDotProductMapModule)
+  public:
+    typedef AverageDotProductMapModule Self;
+    typedef std::shared_ptr<Self > Pointer;
+    typedef std::shared_ptr<const Self >  ConstPointer;
+    typedef std::weak_ptr<Self> WeakPointer;
+    typedef std::weak_ptr<Self> ConstWeakPointer;
 
-  ~AverageDotProductMapModule() override;
+    static Pointer NullPointer();
 
-  IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget* parent = nullptr) override;
+    static Pointer New();
 
-protected:
-  AverageDotProductMapModule(QWidget* parent = nullptr);
+    ~AverageDotProductMapModule() override;
 
-private:
-public:
-  AverageDotProductMapModule(const AverageDotProductMapModule&) = delete;            // Copy Constructor Not Implemented
-  AverageDotProductMapModule(AverageDotProductMapModule&&) = delete;                 // Move Constructor Not Implemented
-  AverageDotProductMapModule& operator=(const AverageDotProductMapModule&) = delete; // Copy Assignment Not Implemented
-  AverageDotProductMapModule& operator=(AverageDotProductMapModule&&) = delete;      // Move Assignment Not Implemented
+    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget *parent = nullptr) const override;
+
+  protected:
+    AverageDotProductMapModule(QWidget* parent = nullptr);
+
+  private:
+  public:
+    AverageDotProductMapModule(const AverageDotProductMapModule&) = delete;            // Copy Constructor Not Implemented
+    AverageDotProductMapModule(AverageDotProductMapModule&&) = delete;                 // Move Constructor Not Implemented
+    AverageDotProductMapModule& operator=(const AverageDotProductMapModule&) = delete; // Copy Assignment Not Implemented
+    AverageDotProductMapModule& operator=(AverageDotProductMapModule&&) = delete;      // Move Assignment Not Implemented
 };
