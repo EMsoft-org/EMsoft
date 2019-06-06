@@ -312,43 +312,6 @@ void GLImageViewer::paintGL()
 
   painter.drawImage(x, y, image, sx, sy, newWidth, newHeight);
 
-  if (m_UseStatsOverlay)
-  {
-    // Get the minimum, maximum, and keV values as strings
-    int statsStartingHeightOffset = 40;
-    int statsHeightSpacing = 20;
-    QString minStr = QObject::tr("Min: %1").arg(QString::number(m_MinValue, 'g', 4));
-    QString maxStr = QObject::tr("Max: %1").arg(QString::number(m_MaxValue, 'g', 4));
-    QString kevStr = "";
-    if (m_HasKevValue)
-    {
-      kevStr = QObject::tr("keV: %1").arg(QString::number(m_keVValue));
-      statsStartingHeightOffset = statsStartingHeightOffset + statsHeightSpacing;
-    }
-
-    // Figure out the length of the longest string
-    int maxStrLen = minStr.size();
-    if (maxStr.size() > maxStrLen)
-    {
-      maxStrLen = maxStr.size();
-    }
-    if (kevStr.size() > maxStrLen)
-    {
-      maxStrLen = kevStr.size();
-    }
-
-    int statsX = size().width() - (maxStrLen*8);
-
-    painter.setPen(Qt::white);
-    painter.fillRect(statsX - 10, size().height() - statsStartingHeightOffset - 20, maxStrLen*8 + 5, statsStartingHeightOffset + 10, QBrush(QColor(Qt::black)));
-    painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset), minStr);
-    painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + statsHeightSpacing), maxStr);
-    if (m_HasKevValue)
-    {
-      painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + (statsHeightSpacing*2)), kevStr);
-    }
-  }
-
   painter.end();
 
   if (needsRepaint)
@@ -360,16 +323,9 @@ void GLImageViewer::paintGL()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void GLImageViewer::loadImage(GLImageData data)
+void GLImageViewer::loadImage(QImage image)
 {
-  m_CurrentImage = data.image;
-  m_MinValue = data.minValue;
-  m_MaxValue = data.maxValue;
-
-  if (m_HasKevValue)
-  {
-    m_keVValue = data.keVValue;
-  }
+  m_CurrentImage = std::move(image);
 
   fitToScreen();
 
@@ -541,15 +497,6 @@ void GLImageViewer::wheelEvent(QWheelEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void GLImageViewer::createModificationConnections(IModuleUI* ui) const
-{
-  // If the viewer changes at all, set the window as modified
-  connect(this, &GLImageViewer::viewerChanged, [=] { emit ui->moduleParametersChanged(); });
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 void GLImageViewer::readSession(QJsonObject &obj)
 {
   m_ZoomFactor = obj[ivMod::ZoomFactor].toDouble(m_ZoomFactor);
@@ -607,37 +554,5 @@ bool GLImageViewer::isZoomable() const
 void GLImageViewer::setZoomable(bool value)
 {
   m_Zoomable = value;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void GLImageViewer::setHasKevValue(bool value)
-{
-  m_HasKevValue = value;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-bool GLImageViewer::getHasKevValue() const
-{
-  return m_HasKevValue;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void GLImageViewer::setUseStatsOverlay(const bool& value)
-{
-  m_UseStatsOverlay = value;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-bool GLImageViewer::getUseStatsOverlay() const
-{
-  return m_UseStatsOverlay;
 }
 

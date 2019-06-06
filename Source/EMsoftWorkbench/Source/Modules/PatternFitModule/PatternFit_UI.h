@@ -165,7 +165,7 @@ private:
     PatternControlsWidget::PatternChoice m_CurrentPatternChoice;
     PatternFitController* m_Controller;
 
-  GLImageViewer::GLImageData m_ReferencePattern;
+  PatternImageViewer::ImageData m_ReferencePattern;
 
   std::vector<float> m_SimulatedPatternData;
   std::vector<size_t> m_SimulatedPatternDims;

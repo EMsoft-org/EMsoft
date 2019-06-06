@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include "Common/GLImageViewer.h"
+#include "Common/PatternImageViewer.h"
 
 
 #include "Modules/PatternFitModule/PatternControlsWidget.h"
@@ -50,7 +50,7 @@ public:
   PatternFitViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~PatternFitViewer() override;
 
-  void loadImage(GLImageViewer::GLImageData imageData);
+  void loadImage(PatternImageViewer::ImageData imageData);
 
   void clearImage();
 

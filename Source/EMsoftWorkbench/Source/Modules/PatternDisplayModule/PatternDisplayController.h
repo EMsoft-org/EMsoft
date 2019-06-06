@@ -142,8 +142,8 @@ public slots:
 
 signals:
   void minMaxEnergyLevelsChanged(const std::vector<float> &ekeVs) const;
-  void mpImageNeedsDisplayed(GLImageViewer::GLImageData) const;
-  void mcImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mpImageNeedsDisplayed(PatternImageViewer::ImageData) const;
+  void mcImageNeedsDisplayed(PatternImageViewer::ImageData) const;
   void energyMinChanged(int min) const;
   void energyMaxChanged(int max) const;
   void imageRangeChanged(int min, int max) const;
@@ -304,7 +304,7 @@ private:
    * @param zValue
    * @return
    */
-  bool generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const;
+  bool generatePatternImage(PatternImageViewer::ImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const;
 
 public:
   PatternDisplayController(const PatternDisplayController&) = delete;            // Copy Constructor Not Implemented

@@ -37,8 +37,7 @@
 
 #include <QtCore/QObject>
 
-
-#include "Common/GLImageViewer.h"
+#include "Common/PatternImageViewer.h"
 
 #include "ui_SimulatedPatternDisplayWidget.h"
 
@@ -93,7 +92,7 @@ public:
    * @brief displayImage
    * @param imageData
    */
-  void displayImage(GLImageViewer::GLImageData imageData) const;
+  void displayImage(PatternImageViewer::ImageData imageData) const;
 
   /**
    * @brief displayImage
@@ -112,7 +111,7 @@ public slots:
    * @param index
    * @param data
    */
-  void loadImage(int index, const GLImageViewer::GLImageData& data);
+  void loadImage(int index, const PatternImageViewer::ImageData& data);
 
   /**
    * @brief setProgressValue
@@ -226,7 +225,7 @@ private:
   int m_MinSBValue;
   int m_MaxSBValue;
 
-  QVector<GLImageViewer::GLImageData> m_LoadedImageData;
+  QVector<PatternImageViewer::ImageData> m_LoadedImageData;
 
   QActionGroup* m_DetectorBinningMenuActionGroup = nullptr;
   QActionGroup* m_PatternOriginMenuActionGroup = nullptr;

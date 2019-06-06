@@ -115,7 +115,7 @@ public:
    * @param detectorData
    * @return
    */
-  GLImageViewer::GLImageData generatePatternImage(PatternFitController::SimulationData detectorData);
+  PatternImageViewer::ImageData generatePatternImage(PatternFitController::SimulationData detectorData);
 
   /**
    * @brief generatePatternImage
@@ -124,7 +124,7 @@ public:
    * @param yDim
    * @return
    */
-  GLImageViewer::GLImageData generatePatternImage(const std::vector<float> &patternData, size_t xDim, size_t yDim, size_t zValue = 0);
+  PatternImageViewer::ImageData generatePatternImage(const std::vector<float> &patternData, size_t xDim, size_t yDim, size_t zValue = 0);
 
   /**
    * @brief validateSimulationValues
@@ -146,8 +146,8 @@ public:
 
 signals:
   void updateEkeVs(std::vector<float> ekeVs) const;
-  void mpImageNeedsDisplayed(GLImageViewer::GLImageData) const;
-  void mcImageNeedsDisplayed(GLImageViewer::GLImageData) const;
+  void mpImageNeedsDisplayed(PatternImageViewer::ImageData) const;
+  void mcImageNeedsDisplayed(PatternImageViewer::ImageData) const;
   void mpKeVNeedsDisplayed(float keV) const;
   void mcKeVNeedsDisplayed(float keV) const;
   void imageRangeChanged(int min, int max) const;

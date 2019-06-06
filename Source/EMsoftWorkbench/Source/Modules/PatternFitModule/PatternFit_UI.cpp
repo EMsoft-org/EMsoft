@@ -764,7 +764,7 @@ void PatternFit_UI::on_linearRampSubtraction_toggled(bool checked)
 // -----------------------------------------------------------------------------
 void PatternFit_UI::displayImage()
 {
-  GLImageViewer::GLImageData processedPattern;
+  PatternImageViewer::ImageData processedPattern;
   if(m_CurrentPatternChoice == PatternControlsWidget::PatternChoice::Experimental && !m_ReferencePattern.image.isNull())
   {
     processedPattern = m_ReferencePattern;

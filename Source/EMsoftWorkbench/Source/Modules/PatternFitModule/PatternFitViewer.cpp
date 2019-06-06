@@ -82,7 +82,7 @@ void PatternFitViewer::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternFitViewer::loadImage(GLImageViewer::GLImageData imageData)
+void PatternFitViewer::loadImage(PatternImageViewer::ImageData imageData)
 {
   m_CurrentImage = imageData.image;
   imageWidget->loadImage(imageData);
@@ -93,7 +93,7 @@ void PatternFitViewer::loadImage(GLImageViewer::GLImageData imageData)
 // -----------------------------------------------------------------------------
 void PatternFitViewer::clearImage()
 {
-  imageWidget->loadImage(GLImageViewer::GLImageData());
+  imageWidget->loadImage(PatternImageViewer::ImageData());
 }
 
 // -----------------------------------------------------------------------------

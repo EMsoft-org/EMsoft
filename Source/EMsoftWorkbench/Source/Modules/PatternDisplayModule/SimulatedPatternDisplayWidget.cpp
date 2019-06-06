@@ -432,7 +432,7 @@ void SimulatedPatternDisplayWidget::setProgressBarMaximum(int value) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::loadImage(int index, const GLImageViewer::GLImageData& data)
+void SimulatedPatternDisplayWidget::loadImage(int index, const PatternImageViewer::ImageData& data)
 {
   if(index > m_LoadedImageData.size() - 1 || index < 0)
   {
@@ -458,7 +458,7 @@ void SimulatedPatternDisplayWidget::displayImage(int index) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SimulatedPatternDisplayWidget::displayImage(GLImageViewer::GLImageData imageData) const
+void SimulatedPatternDisplayWidget::displayImage(PatternImageViewer::ImageData imageData) const
 {
   PatternDisplayData displayData = getPatternDisplayData();
 
@@ -497,7 +497,7 @@ void SimulatedPatternDisplayWidget::patternListView_itemSelectionChanged(const Q
 
   if(current.indexes().size() == 1)
   {
-    GLImageViewer::GLImageData imageData = m_LoadedImageData[current.indexes()[0].row()];
+    PatternImageViewer::ImageData imageData = m_LoadedImageData[current.indexes()[0].row()];
     displayImage(imageData);
   }
 }

@@ -35,78 +35,62 @@
 
 #pragma once
 
-#include <QtWidgets/QOpenGLWidget>
+#include "Common/GLImageViewer.h"
 
 class IModuleUI;
 
-class GLImageViewer : public QOpenGLWidget
+class PatternImageViewer : public GLImageViewer
 {
     Q_OBJECT
 public:
-    GLImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~GLImageViewer() override;
+    PatternImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+    ~PatternImageViewer() override;
+
+    struct ImageData
+    {
+        QImage image;
+        float minValue = 0;
+        float maxValue = 0;
+        float keVValue = 0;
+    };
 
     /**
-    * @brief Getter property for Zoomable
-     * @return
-     */
-    bool isZoomable() const;
+    * @brief Setter property for HasKevValue
+    */
+    void setHasKevValue(bool value);
 
     /**
-    * @brief Setter property for Zoomable
-     * @param value
-     */
-    void setZoomable(bool value);
+    * @brief Getter property for HasKevValue
+    * @return Value of HasKevValue
+    */
+    bool getHasKevValue() const;
+    /**
+    * @brief Setter property for UseStatsOverlay
+    */
+    void setUseStatsOverlay(const bool& value); 
 
     /**
-     * @brief loadImage
-     * @param image
-     */
-    void loadImage(QImage image);
+    * @brief Getter property for UseStatsOverlay
+    * @return Value of UseStatsOverlay
+    */
+    bool getUseStatsOverlay() const;
 
-    void zoomIn();
-    void zoomOut();
-    void fitToScreen();
-
-    QImage getCurrentImage() const;
-
-    virtual void readSession(QJsonObject &obj);
-
-    virtual void writeSession(QJsonObject &obj) const;
+    void loadImage(PatternImageViewer::ImageData data);
 
 protected:
     void paintGL() Q_DECL_OVERRIDE;
-    void initializeGL() Q_DECL_OVERRIDE;
-
-    void enterEvent(QEvent* event) Q_DECL_OVERRIDE;
-    void leaveEvent(QEvent* event) Q_DECL_OVERRIDE;
-    void mousePressEvent(QMouseEvent* event) Q_DECL_OVERRIDE;
-    void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
-    void dragEnterEvent(QDragEnterEvent *event) Q_DECL_OVERRIDE;
-    void dragMoveEvent(QDragMoveEvent *event) Q_DECL_OVERRIDE;
-    void dropEvent(QDropEvent *event) Q_DECL_OVERRIDE;
-    void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE;
-    void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
-
-  signals:
-    void viewerChanged();
 
 private:
-    QImage        m_CurrentImage;
+    bool m_HasKevValue;
+    bool m_UseStatsOverlay;
 
-    bool          m_Zoomable = true;
-    float         m_ZoomFactor = 1.0f;
-    QPointF       m_PanningOffset = QPointF(0.0f, 0.0f);
-    bool          m_IsPannable = false;
-    bool          m_IsDragging = false;
-    QPoint        m_LastPos = QPoint(0.0f, 0.0f);
-    int           m_ViewportWidth = 0;
-    int           m_ViewportHeight = 0;
-    bool          m_DefaultControls = true;
+    float         m_MinValue;
+    float         m_MaxValue;
+    float         m_keVValue;
 
   public:
-    GLImageViewer(const GLImageViewer&) = delete; // Copy Constructor Not Implemented
-    GLImageViewer(GLImageViewer&&) = delete;      // Move Constructor Not Implemented
-    GLImageViewer& operator=(const GLImageViewer&) = delete; // Copy Assignment Not Implemented
-    GLImageViewer& operator=(GLImageViewer&&) = delete;      // Move Assignment Not Implemented
+    PatternImageViewer(const PatternImageViewer&) = delete; // Copy Constructor Not Implemented
+    PatternImageViewer(PatternImageViewer&&) = delete;      // Move Constructor Not Implemented
+    PatternImageViewer& operator=(const PatternImageViewer&) = delete; // Copy Assignment Not Implemented
+    PatternImageViewer& operator=(PatternImageViewer&&) = delete;      // Move Assignment Not Implemented
 };

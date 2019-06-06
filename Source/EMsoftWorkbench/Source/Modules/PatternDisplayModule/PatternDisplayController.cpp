@@ -299,7 +299,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
       hsize_t xDim = static_cast<hsize_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
       hsize_t yDim = static_cast<hsize_t>(iParValues.numOfPixelsY / iParValues.detectorBinningValue);
 
-      GLImageViewer::GLImageData imageData;
+      PatternImageViewer::ImageData imageData;
       bool success = generatePatternImage(imageData, pattern, xDim, yDim, 0);
 
       m_PatternDisplayWidget->loadImage(index, imageData);
@@ -326,7 +326,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplayController::generatePatternImage(GLImageViewer::GLImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const
+bool PatternDisplayController::generatePatternImage(PatternImageViewer::ImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const
 {
   AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, zValue);
   imgGen->createImage();
@@ -436,7 +436,7 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
     keV = m_MP_Data.ekevs.at(energyBin - 1);
   }
 
-  GLImageViewer::GLImageData imageData;
+  PatternImageViewer::ImageData imageData;
   imageData.image = image;
 
   imageData.minValue = variantPair.first.toFloat();
@@ -491,7 +491,7 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
     keV = m_MP_Data.ekevs.at(energyBin - 1);
   }
 
-  GLImageViewer::GLImageData imageData;
+  PatternImageViewer::ImageData imageData;
   imageData.image = image;
   imageData.minValue = variantPair.first.toFloat();
   imageData.maxValue = variantPair.second.toFloat();

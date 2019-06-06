@@ -125,7 +125,7 @@ std::vector<float> PatternFitController::generatePattern(PatternFitController::S
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-GLImageViewer::GLImageData PatternFitController::generatePatternImage(PatternFitController::SimulationData detectorData)
+PatternImageViewer::ImageData PatternFitController::generatePatternImage(PatternFitController::SimulationData detectorData)
 {
   std::vector<float> patternData = generatePattern(detectorData);
 
@@ -133,7 +133,7 @@ GLImageViewer::GLImageData PatternFitController::generatePatternImage(PatternFit
   tDims.push_back(detectorData.numOfPixelsX);
   tDims.push_back(detectorData.numOfPixelsY);
 
-  GLImageViewer::GLImageData imageData = generatePatternImage(patternData, tDims[0], tDims[1]);
+  PatternImageViewer::ImageData imageData = generatePatternImage(patternData, tDims[0], tDims[1]);
 
   return imageData;
 }
@@ -141,9 +141,9 @@ GLImageViewer::GLImageData PatternFitController::generatePatternImage(PatternFit
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-GLImageViewer::GLImageData PatternFitController::generatePatternImage(const std::vector<float>& patternData, size_t xDim, size_t yDim, size_t zValue)
+PatternImageViewer::ImageData PatternFitController::generatePatternImage(const std::vector<float>& patternData, size_t xDim, size_t yDim, size_t zValue)
 {
-  GLImageViewer::GLImageData imageData;
+  PatternImageViewer::ImageData imageData;
 
   AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(patternData, xDim, yDim, zValue, false, true);
   imgGen->createImage();
