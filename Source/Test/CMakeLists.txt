@@ -145,7 +145,7 @@ endif()
 get_filename_component(EMSOFT_PARENT ${EMsoft_SOURCE_DIR} DIRECTORY CACHE)
 if("${EMsoftData_DIR}" STREQUAL "")
   if(EXISTS "${EMSOFT_PARENT}/EMsoftData")
-    set(EMsoftData_DIR ${DREAM3D_PARENT}/EMsoftData)
+    set(EMsoftData_DIR ${EMSOFT_PARENT}/EMsoftData)
   else()
     message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
     Please clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch")  
