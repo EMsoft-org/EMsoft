@@ -43,7 +43,7 @@ typedef void (*ProgCallBackTypeError)(size_t, int);
 * @param cancel boolean to trigger cancellation of computation
 */
 void EMsoftCpreprocessEBSDPatterns
-    (size_t* ipar, float* fpar, char* spar, float* mask, 
+    (int32_t* ipar, float* fpar, char* spar, float* mask,
      float* exptIQ, float* ADPmap, ProgCallBackTypeDI2 callback, 
      size_t object, bool* cancel);
 
