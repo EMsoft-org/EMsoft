@@ -120,15 +120,15 @@ protected:
     void viewerChanged();
 
 private:
-    bool m_HasKevValue;
-    bool m_UseStatsOverlay;
+    bool m_HasKevValue = false;
+    bool m_UseStatsOverlay = true;
 
     QImage        m_CurrentImage;
-    float         m_MinValue;
-    float         m_MaxValue;
-    float         m_keVValue;
+    float         m_MinValue = 0.0f;
+    float         m_MaxValue = 0.0f;
+    float         m_keVValue = 0.0f;
 
-    bool          m_Zoomable = false;
+    bool          m_Zoomable = true;
     float         m_ZoomFactor = 1.0f;
     QPointF       m_PanningOffset = QPointF(0.0f, 0.0f);
     bool          m_IsPannable = false;

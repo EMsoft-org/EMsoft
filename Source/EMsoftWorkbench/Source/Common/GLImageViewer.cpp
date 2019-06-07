@@ -64,10 +64,7 @@ namespace ioMod = EMsoftWorkbenchConstants::IOStrings;
 //
 // -----------------------------------------------------------------------------
 GLImageViewer::GLImageViewer(QWidget *parent, Qt::WindowFlags windowFlags) :
-  QOpenGLWidget(parent, windowFlags),
-  m_HasKevValue(false),
-  m_UseStatsOverlay(true),
-  m_Zoomable(true)
+  QOpenGLWidget(parent, windowFlags)
 {
   setAcceptDrops(true);
 }
