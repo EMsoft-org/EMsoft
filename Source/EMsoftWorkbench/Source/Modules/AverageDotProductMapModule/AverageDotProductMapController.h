@@ -94,7 +94,7 @@ public:
     QString outputFilePath;
     QStringList hdfStrings;
 
-    std::vector<size_t> getIParVector() const;
+    std::vector<int32_t> getIParVector() const;
 
     std::vector<float> getFParVector() const;
 

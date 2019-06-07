@@ -97,7 +97,7 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
 {
   initializeData();
 
-  std::vector<size_t> iParVector = data.getIParVector();
+  std::vector<int32_t> iParVector = data.getIParVector();
   std::vector<float> fParVector = data.getFParVector();
   std::vector<char> sParVector = data.getSParVector();
 
@@ -219,36 +219,35 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<size_t> AverageDotProductMapController::ADPMapData::getIParVector() const
+std::vector<int32_t> AverageDotProductMapController::ADPMapData::getIParVector() const
 {
-  // allocate space for the iPar array, which will be used to communicate parameters with the EMsoftCpreprocessEBSDPatterns routine.
-  std::vector<size_t> iParVector(SizeConstants::IParSize, 0);
+  std::vector<int32_t> iParVector(SizeConstants::IParSize, 0);
 
-  iParVector.at(18) = numOfThreads;
-  iParVector.at(19) = patternWidth;
-  iParVector.at(20) = patternHeight;
-  iParVector.at(22) = binningFactor;
-  iParVector.at(23) = binningX;
-  iParVector.at(24) = binningY;
-  iParVector.at(26) = ipfWidth;
-  iParVector.at(27) = ipfHeight;
-  iParVector.at(28) = numOfRegions;
-  iParVector.at(29) = maskPattern;
+  iParVector[17] = numOfThreads;
+  iParVector[18] = patternWidth;
+  iParVector[19] = patternHeight;
+  iParVector[21] = binningFactor;
+  iParVector[22] = patternWidth;
+  iParVector[23] = patternHeight;
+  iParVector[25] = ipfWidth;
+  iParVector[26] = ipfHeight;
+  iParVector[27] = numOfRegions;
+  iParVector[28] = maskPattern;
 
   if (useROI)
   {
-    iParVector.at(30) = 1;
+    iParVector[29] = 1;
   }
   else
   {
-    iParVector.at(30) = 0;
+    iParVector[29] = 0;
   }
 
-  iParVector.at(31) = roi_1;
-  iParVector.at(32) = roi_2;
-  iParVector.at(33) = roi_3;
-  iParVector.at(34) = roi_4;
-  iParVector.at(35) = static_cast<int>(inputType);
+  iParVector[30] = roi_1;
+  iParVector[31] = roi_2;
+  iParVector[32] = roi_3;
+  iParVector[33] = roi_4;
+  iParVector[34] = static_cast<int>(inputType);
 
   return iParVector;
 }
@@ -260,8 +259,8 @@ std::vector<float> AverageDotProductMapController::ADPMapData::getFParVector() c
 {
   std::vector<float> fParVector(SizeConstants::FParSize, 0.0f);
 
-  fParVector.at(23) = maskRadius;
-  fParVector.at(24) = hipassFilter;
+  fParVector[22] = maskRadius;
+  fParVector[23] = hipassFilter;
 
   return fParVector;
 }
@@ -277,14 +276,14 @@ std::vector<char> AverageDotProductMapController::ADPMapData::getSParVector() co
 
   // Move Output File Path into the vector
   const char* charArray = outputFilePath.toStdString().c_str();
-  std::memcpy(sPar + (31 * SizeConstants::SParStringSize), charArray, outputFilePath.size());
+  std::memcpy(sPar + (30 * SizeConstants::SParStringSize), charArray, outputFilePath.size());
 
   // Move Pattern Data File into the vector
   charArray = patternDataFile.toStdString().c_str();
-  std::memcpy(sPar + (32 * SizeConstants::SParStringSize), charArray, patternDataFile.size());
+  std::memcpy(sPar + (31 * SizeConstants::SParStringSize), charArray, patternDataFile.size());
 
   // Move HDF Strings into the vector
-  int count = 41;
+  int count = 40;
   for (const QString &hdfString : hdfStrings)
   {
     charArray = hdfString.toStdString().c_str();
