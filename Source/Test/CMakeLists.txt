@@ -140,9 +140,16 @@ if(WIN32)
   set(EXE_EXT ".exe")
 endif()
 
+#------------------------------------------------------------------------------
+# This bit ensures that the EMsoftData_DIR is set correctly or errors out.
+get_filename_component(EMSOFT_PARENT ${EMsoft_SOURCE_DIR} DIRECTORY CACHE)
 if("${EMsoftData_DIR}" STREQUAL "")
-  message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
-  Please clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch")
+  if(EXISTS "${EMSOFT_PARENT}/EMsoftData")
+    set(EMsoftData_DIR ${DREAM3D_PARENT}/EMsoftData)
+  else()
+    message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
+    Please clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch")  
+  endif()
 endif()
 #------------------------------------------------------------------------------
 # 1: The Ni.xtal file should have been copied into the proper spot via some other external means
