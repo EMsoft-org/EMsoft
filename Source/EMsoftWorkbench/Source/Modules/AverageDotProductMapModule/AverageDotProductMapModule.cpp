@@ -35,10 +35,6 @@
 
 #include "AverageDotProductMapModule.h"
 
-#include <QtCore/QJsonObject>
-
-#include "Common/Constants.h"
-
 #include "Modules/AverageDotProductMapModule/AverageDotProductMap_UI.h"
 
 // -----------------------------------------------------------------------------

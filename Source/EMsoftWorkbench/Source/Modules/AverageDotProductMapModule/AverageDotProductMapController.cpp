@@ -35,27 +35,18 @@
 
 #include "AverageDotProductMapController.h"
 
-#include "EMsoftWrapperLib/DictionaryIndexing/EMsoftDIwrappers.h"
+//#include "EMsoftWrapperLib/DictionaryIndexing/EMsoftDIwrappers.h"
 
 #include <QtCore/QMimeDatabase>
 #include <QtCore/QDateTime>
-#include <QtCore/QFileInfo>
-#include <QtCore/QDir>
 #include <QtCore/QThread>
 #include <QtCore/QMap>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QTextStream>
-#include <QtCore/QDebug>
 
 #include <QtGui/QImage>
 
-#include "Common/Constants.h"
-
 #include "Constants.h"
-
-#include "EMsoftLib/EMsoftStringConstants.h"
-
-#define CL_VECTOR std::vector
 
 static size_t k_InstanceKey = 0;
 static QMap<size_t, AverageDotProductMapController*> instances;

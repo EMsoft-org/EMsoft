@@ -34,27 +34,8 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "AverageDotProductMap_UI.h"
-#if defined(_MSC_VER)
-#define _MATH_DEFINES_DEFINED
-#endif
-#include <initializer_list>
 
 #include <QtConcurrent>
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
-#include <QtCore/QJsonDocument>
-#include <QtCore/QThreadPool>
-#include <QtWidgets/QFileDialog>
-
-#include "EMsoftWorkbench/EMsoftApplication.h"
-
-#include "Common/FileIOTools.h"
-#include "Common/PatternTools.h"
-
-#include "QtSupport/QtSSettings.h"
-
-#include "H5Support/QH5Utilities.h"
 
 #include "Modules/AverageDotProductMapModule/Constants.h"
 #include "Modules/AverageDotProductMapModule/ChoosePatternsDatasetDialog.h"
