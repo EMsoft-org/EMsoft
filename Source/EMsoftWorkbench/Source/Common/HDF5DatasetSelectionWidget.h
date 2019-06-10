@@ -58,6 +58,8 @@ class HDF5DatasetSelectionWidget : public QWidget
 public:
   HDF5DatasetSelectionWidget(QWidget* parent = nullptr);
 
+  ~HDF5DatasetSelectionWidget() override;
+
   /**
    * @brief getCurrentFile
    * @return
@@ -85,18 +87,6 @@ public:
    * @param obj
    */
   void writeParameters(QJsonObject& obj);
-
-  /**
-   * @brief setDatasetSelectionEnabled
-   * @param enabled
-   */
-  void setDatasetSelectionEnabled(bool enabled);
-
-  /**
-   * @brief isDatasetSelectionEnabled
-   * @return
-   */
-  bool isDatasetSelectionEnabled() const;
 
   /**
    * @brief setOneSelectionOnly
@@ -189,6 +179,7 @@ protected:
 
 signals:
   void parametersChanged();
+  void selectedHDF5PathsChanged(QStringList selectedHDF5Paths);
 
 private slots:
   /**
@@ -260,8 +251,6 @@ private:
    * @return
    */
   void calculatePrimeFactors(int n, QVector<int>& primeFactors);
-
-  ~HDF5DatasetSelectionWidget() override;
 
 public:
   HDF5DatasetSelectionWidget(const HDF5DatasetSelectionWidget&) = delete; // Copy Constructor Not Implemented

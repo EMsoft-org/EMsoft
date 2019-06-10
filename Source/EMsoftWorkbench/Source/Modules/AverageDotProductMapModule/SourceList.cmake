@@ -45,6 +45,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
   ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.h
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.h
   ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.h
+  ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.h
 )
 
 # --------------------------------------------------------------------
@@ -62,10 +63,12 @@ set(EMsoftWorkbench_${MODULE_NAME}_SRCS
   ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.cpp
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.cpp
   ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.cpp
+  ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.cpp
 )
 
 set(EMsoftWorkbench_${MODULE_NAME}_UIS
   ${${MODULE_NAME}_DIR}/UI_Files/AverageDotProductMap_UI.ui
+  ${${MODULE_NAME}_DIR}/UI_Files/ChoosePatternsDatasetDialog.ui
   )
 # --------------------------------------------------------------------
 # Continue on with our Qt4 section

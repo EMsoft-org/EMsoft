@@ -49,7 +49,6 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS
   ${${SUBDIR_NAME}_DIR}/EMsoftFileWriter.h
   ${${SUBDIR_NAME}_DIR}/HDF5DatasetSelectionWidget.h
   ${${SUBDIR_NAME}_DIR}/HDF5FileTreeModel.h
-  ${${SUBDIR_NAME}_DIR}/HDF5FileTreeModelItem.h
   ${${SUBDIR_NAME}_DIR}/SVControlWidgets.h
 )
 
@@ -64,6 +63,7 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
   ${${SUBDIR_NAME}_DIR}/Constants.h
   ${${SUBDIR_NAME}_DIR}/EigenConversions.hpp
   ${${SUBDIR_NAME}_DIR}/FileIOTools.h
+  ${${SUBDIR_NAME}_DIR}/HDF5FileTreeModelItem.h
   ${${SUBDIR_NAME}_DIR}/ImageGenerationTask.hpp
   ${${SUBDIR_NAME}_DIR}/ImageGenerator.hpp
   ${${SUBDIR_NAME}_DIR}/IObserver.h

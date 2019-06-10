@@ -144,7 +144,7 @@ bool HDF5FileTreeModel::setData(const QModelIndex& index, const QVariant& value,
       m_SelectedHDF5Paths.removeAll(hdf5Path);
     }
 
-    emit selectedHDF5PathsChanged();
+    emit selectedHDF5PathsChanged(m_SelectedHDF5Paths);
   }
   else if(role == Roles::HasErrorsRole)
   {

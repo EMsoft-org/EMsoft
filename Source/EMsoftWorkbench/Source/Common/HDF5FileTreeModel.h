@@ -151,13 +151,13 @@ public:
   void setOneSelectionOnly(bool value);
 
 signals:
-  void selectedHDF5PathsChanged();
+  void selectedHDF5PathsChanged(QStringList selectedHDF5Paths);
 
 private:
   HDF5FileTreeModelItem* m_RootItem;
   hid_t m_FileId;
   QFileIconProvider m_IconProvider;
-  QList<QString> m_SelectedHDF5Paths;
+  QStringList m_SelectedHDF5Paths;
   bool m_OneSelectionOnly = false;
 
   /**

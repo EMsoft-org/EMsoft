@@ -42,6 +42,8 @@
 
 #include "ui_AverageDotProductMap_UI.h"
 
+class ChoosePatternsDatasetDialog;
+
 class AverageDotProductMap_UI : public IModuleUI
 {
   Q_OBJECT
@@ -104,15 +106,16 @@ protected slots:
   void listenInputTypeChanged(int index);
 
   /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
    * @brief listenROICheckboxStateChanged
    * @param state
    */
   void listenROICheckboxStateChanged(int state);
-
-  /**
-   * @brief listenOutputFileSelectBtnClicked
-   */
-  void listenOutputFileSelectBtnClicked();
 
   void parametersChanged();
 
@@ -124,7 +127,8 @@ private:
 
   AverageDotProductMapController* m_Controller = nullptr;
 
-  hid_t m_FileId;
+  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
+
   QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
@@ -143,12 +147,6 @@ private:
   void readComputationalParameters(QJsonObject& obj);
 
   /**
-   * @brief readOutputParameters
-   * @param obj
-   */
-  void readOutputParameters(QJsonObject& obj);
-
-  /**
    * @brief writeInputParameters
    * @param obj
    */
@@ -159,12 +157,6 @@ private:
    * @param obj
    */
   void writeComputationalParameters(QJsonObject& obj) const;
-
-  /**
-   * @brief writeOutputParameters
-   * @param obj
-   */
-  void writeOutputParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators

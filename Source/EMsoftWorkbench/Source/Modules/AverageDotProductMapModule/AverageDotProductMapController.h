@@ -36,6 +36,8 @@
 #pragma once
 
 #include <QtCore/QObject>
+#include <QtCore/QProcess>
+#include <QtCore/QTemporaryDir>
 
 class AverageDotProductMapController : public QObject
 {
@@ -91,7 +93,6 @@ public:
     float hipassFilter;
     int numOfRegions;
     int numOfThreads;
-    QString outputFilePath;
     QStringList hdfStrings;
 
     std::vector<int32_t> getIParVector() const;
@@ -127,10 +128,14 @@ public:
      */
   int getNumCPUCores();
 
+protected slots:
+  void listenADPMapFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 signals:
-  void warningMessageGenerated(const QString& msg);
-  void errorMessageGenerated(const QString& msg);
-  void stdOutputMessageGenerated(const QString& msg);
+  void adpMapCreated(const QImage &adpMap) const;
+  void warningMessageGenerated(const QString& msg) const;
+  void errorMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
   QString m_StartTime = "";
@@ -143,10 +148,25 @@ private:
   size_t m_InstanceKey = 0;
   bool m_Executing = false;
 
+  QTemporaryDir m_TempDir;
+
   /**
    * @brief initializeData
    */
   void initializeData();
+
+  /**
+   * @brief getADPMapExecutablePath
+   * @return
+   */
+  QString getADPMapExecutablePath() const;
+
+  /**
+   * @brief writeADPDataToFile
+   * @param file
+   * @param data
+   */
+  void writeADPDataToFile(const QString &filePath, const AverageDotProductMapController::ADPMapData &data) const;
 
   AverageDotProductMapController(const AverageDotProductMapController&); // Copy Constructor Not Implemented
   void operator=(const AverageDotProductMapController&);                 // Operator '=' Not Implemented

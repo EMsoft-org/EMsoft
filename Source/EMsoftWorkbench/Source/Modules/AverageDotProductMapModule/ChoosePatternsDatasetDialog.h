@@ -35,34 +35,34 @@
 
 #pragma once
 
-#include "Modules/IWorkbenchModule.hpp"
+#include <QtWidgets/QDialog>
 
-class AverageDotProductMapModule : public IWorkbenchModule
+#include "ui_ChoosePatternsDatasetDialog.h"
+
+class ChoosePatternsDatasetDialog : public QDialog
 {
     Q_OBJECT
 
   public:
-    using Self = AverageDotProductMapModule;
-    using Pointer = std::shared_ptr<Self>;
-    using ConstPointer = std::shared_ptr<const Self>;
-    using WeakPointer = std::weak_ptr<Self>;
-    using ConstWeakPointer = std::weak_ptr<Self>;
+    ChoosePatternsDatasetDialog(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::Dialog);
 
-    static Pointer NullPointer();
+    ~ChoosePatternsDatasetDialog() override;
 
-    static Pointer New();
-
-    ~AverageDotProductMapModule() override;
-
-    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget *parent = nullptr) const override;
+    /**
+     * @brief getHDF5DatasetSelectionWidget
+     * @return
+     */
+    HDF5DatasetSelectionWidget* getHDF5DatasetSelectionWidget() const;
 
   protected:
-    AverageDotProductMapModule(QWidget* parent = nullptr);
+    void setupGui();
 
   private:
+    QSharedPointer<Ui::ChoosePatternsDatasetDialog> m_Ui;
+
   public:
-    AverageDotProductMapModule(const AverageDotProductMapModule&) = delete;            // Copy Constructor Not Implemented
-    AverageDotProductMapModule(AverageDotProductMapModule&&) = delete;                 // Move Constructor Not Implemented
-    AverageDotProductMapModule& operator=(const AverageDotProductMapModule&) = delete; // Copy Assignment Not Implemented
-    AverageDotProductMapModule& operator=(AverageDotProductMapModule&&) = delete;      // Move Assignment Not Implemented
+    ChoosePatternsDatasetDialog(const ChoosePatternsDatasetDialog&) = delete;            // Copy Constructor Not Implemented
+    ChoosePatternsDatasetDialog(ChoosePatternsDatasetDialog&&) = delete;                 // Move Constructor Not Implemented
+    ChoosePatternsDatasetDialog& operator=(const ChoosePatternsDatasetDialog&) = delete; // Copy Assignment Not Implemented
+    ChoosePatternsDatasetDialog& operator=(ChoosePatternsDatasetDialog&&) = delete;      // Move Assignment Not Implemented
 };

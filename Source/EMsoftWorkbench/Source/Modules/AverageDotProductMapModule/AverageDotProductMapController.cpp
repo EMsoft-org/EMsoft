@@ -43,6 +43,11 @@
 #include <QtCore/QDir>
 #include <QtCore/QThread>
 #include <QtCore/QMap>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QTextStream>
+#include <QtCore/QDebug>
+
+#include <QtGui/QImage>
 
 #include "Common/Constants.h"
 
@@ -125,7 +130,152 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
   // incorrect interactions between the callback routines.
   m_Executing = true;
   instances[m_InstanceKey] = this;
-  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &AverageDotProductMapControllerProgress, m_InstanceKey, &m_Cancel);
+//  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &AverageDotProductMapControllerProgress, m_InstanceKey, &m_Cancel);
+
+  QProcess* avgDotProductMapProcess = new QProcess();
+  connect(avgDotProductMapProcess, &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(avgDotProductMapProcess->readAllStandardOutput().toStdString())); });
+  connect(avgDotProductMapProcess, &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(avgDotProductMapProcess->readAllStandardOutput().toStdString())); });
+  connect(avgDotProductMapProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenADPMapFinished(exitCode, exitStatus); });
+  QString adpExecutablePath = getADPMapExecutablePath();
+  if (!adpExecutablePath.isEmpty())
+  {
+    QString nmlFilePath = m_TempDir.path() + QDir::separator() + "EMgetADP.nml";
+    writeADPDataToFile(nmlFilePath, data);
+    QStringList parameters = {nmlFilePath};
+    avgDotProductMapProcess->start(adpExecutablePath, parameters);
+
+    // Wait until the QProcess is finished to exit this thread.
+    // AverageDotProductMapController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
+    avgDotProductMapProcess->waitForFinished(-1);
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMapController::writeADPDataToFile(const QString &filePath, const AverageDotProductMapController::ADPMapData &data) const
+{
+  QFile outputFile(filePath);
+  if (outputFile.open(QFile::WriteOnly))
+  {
+    QTextStream out(&outputFile);
+
+    out << " &getADP\n";
+    out << "! The line above must not be changed\n";
+    out << "!\n";
+    out << "! The values below are the default values for this program\n";
+    out << "!\n";
+    out << "! height of inverse pole figure in pixels\n";
+    out << tr(" ipf_ht = %1,\n").arg(data.ipfHeight);
+    out << "! width of inverse pole figure in pixels\n";
+    out << tr(" ipf_wd = %1,\n").arg(data.ipfWidth);
+    out << "! define the region of interest;  leave all at 0 for full field of view\n";
+    if (data.useROI)
+    {
+      out << tr(" ROI = %1 %2 %3 %4,\n").arg(QString::number(data.roi_1), QString::number(data.roi_2), QString::number(data.roi_3), QString::number(data.roi_4));
+    }
+    else
+    {
+      out << " ROI = 0 0 0 0,\n";
+    }
+    out << "! to use a custom mask, enter the mask filename here; leave undefined for standard mask option\n";
+    out << " maskfile = 'undefined',\n";
+    out << "! filter patterns or not\n";
+    out << " filterpattern = 'y',\n";
+    out << "! mask patterns or not\n";
+    out << " maskpattern = 'n',\n";
+    out << "! mask radius in pixels\n";
+    out << tr(" maskradius = %1,\n").arg(data.maskRadius);
+    out << "! hi pass filter w parameter; 0.05 is a reasonable value\n";
+    out << tr(" hipassw = %1,\n").arg(data.hipassFilter);
+    out << "! number of regions for adaptive histogram equalization\n";
+    out << tr(" nregions = %1,\n").arg(data.numOfRegions);
+    out << "! number of pattern pixels along x and y\n";
+    out << tr(" numsx = %1,\n").arg(data.patternWidth);
+    out << tr(" numsy = %1,\n").arg(data.patternHeight);
+    out << "!\n";
+    out << "!###################################################################\n";
+    out << "! INPUT FILE PARAMETERS\n";
+    out << "!###################################################################\n";
+    out << "!\n";
+    out << "! name of datafile where the patterns are stored; path relative to EMdatapathname\n";
+    out << tr(" exptfile = '%1',\n").arg(data.patternDataFile);
+    out << "! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF\n";
+
+    switch(data.inputType)
+    {
+    case ADPMapData::InputType::Binary:
+      out << " inputtype = 'Binary',\n";
+      break;
+    case ADPMapData::InputType::TSLup1:
+      out << " inputtype = 'TSLup1',\n";
+      break;
+    case ADPMapData::InputType::TSLup2:
+      out << " inputtype = 'TSLup2',\n";
+      break;
+    case ADPMapData::InputType::OxfordBinary:
+      out << " inputtype = 'OxfordBinary',\n";
+      break;
+    case ADPMapData::InputType::EMEBSD:
+      out << " inputtype = 'EMEBSD',\n";
+      break;
+    case ADPMapData::InputType::TSLHDF:
+      out << " inputtype = 'TSLHDF',\n";
+      break;
+    case ADPMapData::InputType::OxfordHDF:
+      out << " inputtype = 'OxfordHDF',\n";
+      break;
+    case ADPMapData::InputType::BrukerHDF:
+      out << " inputtype = 'BrukerHDF',\n";
+      break;
+    }
+
+    out << "! here we enter the HDF group names and data set names as individual strings (up to 10)\n";
+    out << "! enter the full path of a data set in individual strings for each group, in the correct order,\n";
+    out << "! and with the data set name as the last name; leave the remaining strings empty (they should all\n";
+    out << "! be empty for the Binary and TSLup2 formats)\n";
+
+    QString hdfStringsStr = " HDFstrings = @@HDF_STRINGS@@,\n";
+    QString hdfStringsJoined = data.hdfStrings.join("' '");
+    hdfStringsJoined.prepend("'");
+    hdfStringsJoined.append("'");
+    hdfStringsStr.replace("@@HDF_STRINGS@@", hdfStringsJoined);
+
+    out << hdfStringsStr;
+    out << "!\n";
+    out << "!###################################################################\n";
+    out << "! OTHER FILE PARAMETERS\n";
+    out << "!###################################################################\n";
+    out << "! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp\n";
+    out << "tmpfile = 'EMEBSDDict_tmp.data',\n";
+    out << "! if set to 'y', then use the existing file by the above name (if it exists), and keep the file\n";
+    out << "usetmpfile = 'n',\n";
+    out << "! keep or delete the tmp file at the end of the run\n";
+    out << "keeptmpfile = 'n',\n";
+    out << "! output tifffile: only the name part WITHOUT EXTENSION ; path relative to EMdatapathname\n";
+
+    out << tr("tiffname = '%1/Result',\n").arg(m_TempDir.path());
+    out << "! number of threads for parallel execution\n";
+    out << tr("nthreads = %1,\n").arg(data.numOfThreads);
+    out << "/\n";
+
+    outputFile.close();
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMapController::listenADPMapFinished(int exitCode, QProcess::ExitStatus exitStatus)
+{
+  // EMgetADP program automatically adds "_ADP" onto the end of the output image name
+  QString imagePath = tr("%1/Result_ADP.tiff").arg(m_TempDir.path());
+  QImage imageResult(imagePath);
+  if (!imageResult.isNull())
+  {
+    emit adpMapCreated(imageResult);
+  }
+
   m_Executing = false;
   instances.remove(m_InstanceKey);
 
@@ -139,6 +289,86 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
   {
     emit stdOutputMessageGenerated("Average Dot Product Map Generation was successfully canceled");
   }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QString AverageDotProductMapController::getADPMapExecutablePath() const
+{
+  QString adpExecutablePath;
+
+  QDir workingDirectory = QDir(QCoreApplication::applicationDirPath());
+
+#if defined(Q_OS_WIN)
+  if (workingDirectory.exists("EMgetADP.exe"))
+  {
+    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP.exe");
+    return adpExecutablePath;
+  }
+#elif defined(Q_OS_MAC)
+  // Look to see if we are inside an .app package or inside the 'tools' directory
+  if(workingDirectory.dirName() == "MacOS")
+  {
+    workingDirectory.cdUp();
+    if (workingDirectory.cd("bin"))
+    {
+      if (workingDirectory.exists("EMgetADP"))
+      {
+        adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+        return adpExecutablePath;
+      }
+      workingDirectory.cdUp();
+    }
+
+    workingDirectory.cdUp();
+    workingDirectory.cdUp();
+
+    if(workingDirectory.dirName() == "Bin" && workingDirectory.exists("EMgetADP"))
+    {
+      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+      return adpExecutablePath;
+    }
+  }
+#else
+  // We are on Linux - I think
+  // Try the current location of where the application was launched from which is
+  // typically the case when debugging from a build tree
+  QDir workingDirectory = workbenchDir;
+  if(workingDirectory.cd("bin"))
+  {
+    if (workingDirectory.exists("EMgetADP"))
+    {
+      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+      return adpExecutablePath;
+    }
+
+    workingDirectory.cdUp();
+  }
+
+  // Now try moving up a directory which is what should happen when running from a
+  // proper distribution of SIMPLView
+  workingDirectory = workbenchDir;
+  workingDirectory.cdUp();
+  if(workingDirectory.cd("bin"))
+  {
+    if (workingDirectory.exists("EMgetADP"))
+    {
+      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+      return adpExecutablePath;
+    }
+
+    workingDirectory.cdUp();
+  }
+#endif
+
+  if (adpExecutablePath.isEmpty())
+  {
+    QString errMsg = "Could not find Average Dot Product Map executable!";
+    emit errorMessageGenerated(errMsg);
+  }
+
+  return adpExecutablePath;
 }
 
 // -----------------------------------------------------------------------------
@@ -182,35 +412,6 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
     QString ss = QObject::tr("The input pattern data file at path '%1' is not an HDF5 file.").arg(inputPath);
     emit errorMessageGenerated(ss);
     return false;
-  }
-
-  QString outputPath = data.outputFilePath;
-  if (outputPath.isEmpty())
-  {
-    QString ss = QObject::tr("The output image file at path '%1' is empty.").arg(inputPath);
-    emit errorMessageGenerated(ss);
-    return false;
-  }
-
-  QFileInfo dir(outputPath);
-  QDir dPath = dir.path();
-  if(dir.suffix().isEmpty())
-  {
-    outputPath.append(".tif");
-  }
-
-  mime = db.mimeTypeForFile(outputPath);
-  if (!mime.inherits("image/tiff"))
-  {
-    QString ss = QObject::tr("The output image file at path '%1' is not a tiff file.").arg(data.outputFilePath);
-    emit errorMessageGenerated(ss);
-    return false;
-  }
-
-  if(!dPath.exists())
-  {
-    QString ss = QObject::tr("The directory path for the output image file does not exist. DREAM.3D will attempt to create this path during execution of the filter");
-    emit warningMessageGenerated(ss);
   }
 
   return true;
@@ -274,12 +475,12 @@ std::vector<char> AverageDotProductMapController::ADPMapData::getSParVector() co
   std::vector<char> sParVector(SizeConstants::SParSize * SizeConstants::SParStringSize, 0);
   char* sPar = sParVector.data();
 
-  // Move Output File Path into the vector
-  const char* charArray = outputFilePath.toStdString().c_str();
-  std::memcpy(sPar + (30 * SizeConstants::SParStringSize), charArray, outputFilePath.size());
+//  // Move Output File Path into the vector
+//  const char* charArray = outputFilePath.toStdString().c_str();
+//  std::memcpy(sPar + (30 * SizeConstants::SParStringSize), charArray, outputFilePath.size());
 
   // Move Pattern Data File into the vector
-  charArray = patternDataFile.toStdString().c_str();
+  const char* charArray = patternDataFile.toStdString().c_str();
   std::memcpy(sPar + (31 * SizeConstants::SParStringSize), charArray, patternDataFile.size());
 
   // Move HDF Strings into the vector

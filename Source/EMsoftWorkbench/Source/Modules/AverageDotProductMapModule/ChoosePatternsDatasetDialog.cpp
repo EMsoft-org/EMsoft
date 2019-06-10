@@ -33,36 +33,40 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#pragma once
+#include "ChoosePatternsDatasetDialog.h"
 
-#include "Modules/IWorkbenchModule.hpp"
-
-class AverageDotProductMapModule : public IWorkbenchModule
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+ChoosePatternsDatasetDialog::ChoosePatternsDatasetDialog(QWidget* parent, Qt::WindowFlags flags)
+: QDialog(parent, flags)
+, m_Ui(new Ui::ChoosePatternsDatasetDialog())
 {
-    Q_OBJECT
+  m_Ui->setupUi(this);
 
-  public:
-    using Self = AverageDotProductMapModule;
-    using Pointer = std::shared_ptr<Self>;
-    using ConstPointer = std::shared_ptr<const Self>;
-    using WeakPointer = std::weak_ptr<Self>;
-    using ConstWeakPointer = std::weak_ptr<Self>;
+  setupGui();
+}
 
-    static Pointer NullPointer();
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+ChoosePatternsDatasetDialog::~ChoosePatternsDatasetDialog() = default;
 
-    static Pointer New();
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ChoosePatternsDatasetDialog::setupGui()
+{
+  m_Ui->hdf5DatasetSelectionWidget->setInputFileLabelText("Pattern Data File");
+  m_Ui->hdf5DatasetSelectionWidget->setOneSelectionOnly(true);
 
-    ~AverageDotProductMapModule() override;
+  connect(m_Ui->buttonBox, &QDialogButtonBox::accepted, this, &ChoosePatternsDatasetDialog::close);
+}
 
-    IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget *parent = nullptr) const override;
-
-  protected:
-    AverageDotProductMapModule(QWidget* parent = nullptr);
-
-  private:
-  public:
-    AverageDotProductMapModule(const AverageDotProductMapModule&) = delete;            // Copy Constructor Not Implemented
-    AverageDotProductMapModule(AverageDotProductMapModule&&) = delete;                 // Move Constructor Not Implemented
-    AverageDotProductMapModule& operator=(const AverageDotProductMapModule&) = delete; // Copy Assignment Not Implemented
-    AverageDotProductMapModule& operator=(AverageDotProductMapModule&&) = delete;      // Move Assignment Not Implemented
-};
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+HDF5DatasetSelectionWidget* ChoosePatternsDatasetDialog::getHDF5DatasetSelectionWidget() const
+{
+  return m_Ui->hdf5DatasetSelectionWidget;
+}

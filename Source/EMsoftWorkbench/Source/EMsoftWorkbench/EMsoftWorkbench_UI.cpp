@@ -609,7 +609,7 @@ void EMsoftWorkbench_UI::slot_StdOutputMsgReceived(const QString& msg)
 {
   // Only add the standard output message to the standard output pane if the module
   // that sent the std output message is active
-  stdOutTE->append("\n" + msg);
+  stdOutTE->append(msg);
 }
 
 // -----------------------------------------------------------------------------

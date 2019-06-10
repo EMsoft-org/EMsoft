@@ -57,6 +57,7 @@
 #include "H5Support/QH5Utilities.h"
 
 #include "Modules/AverageDotProductMapModule/Constants.h"
+#include "Modules/AverageDotProductMapModule/ChoosePatternsDatasetDialog.h"
 
 namespace ioConstants = AverageDotProductMapModuleConstants::IOStrings;
 
@@ -72,6 +73,7 @@ AverageDotProductMap_UI::AverageDotProductMap_UI(QWidget *parent)
   m_Ui->setupUi(this);
 
   m_Controller = new AverageDotProductMapController(this);
+  connect(m_Controller, &AverageDotProductMapController::adpMapCreated, m_Ui->adpViewer, &GLImageViewer::loadImage);
 
   setupGui();
 }
@@ -79,15 +81,20 @@ AverageDotProductMap_UI::AverageDotProductMap_UI(QWidget *parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMap_UI::~AverageDotProductMap_UI() = default;
+AverageDotProductMap_UI::~AverageDotProductMap_UI()
+{
+  delete m_Controller;
+  delete m_ChoosePatternsDatasetDialog;
+}
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void AverageDotProductMap_UI::setupGui()
 {
-  m_Ui->hdf5SelectionWidget->setInputFileLabelText("Pattern Data File");
-  m_Ui->hdf5SelectionWidget->setOneSelectionOnly(true);
+  m_ChoosePatternsDatasetDialog = new ChoosePatternsDatasetDialog();
+
+  m_Ui->patternsDsetPathLabel->hide();
 
   // Add limits to all spinboxes
   initializeSpinBoxLimits();
@@ -203,9 +210,8 @@ void AverageDotProductMap_UI::createModificationConnections()
   connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &AverageDotProductMap_UI::listenInputTypeChanged);
 
   // Line Edits
-  connect(m_Ui->hdf5SelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, [=] { parametersChanged(); });
-
-  connect(m_Ui->outputFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
+  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
+  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &AverageDotProductMap_UI::parametersChanged);
 }
 
 // -----------------------------------------------------------------------------
@@ -215,12 +221,31 @@ void AverageDotProductMap_UI::createWidgetConnections()
 {
   connect(m_Ui->generateBtn, &QPushButton::clicked, this, &AverageDotProductMap_UI::listenGenerateBtnPressed);
 
+  connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &HDF5DatasetSelectionWidget::show);
+
+  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
+  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &AverageDotProductMap_UI::listenSelectedPatternDatasetChanged);
+
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &AverageDotProductMapController::errorMessageGenerated, this, &AverageDotProductMap_UI::notifyErrorMessage);
   connect(m_Controller, &AverageDotProductMapController::warningMessageGenerated, this, &AverageDotProductMap_UI::notifyWarningMessage);
   connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+}
 
-  connect(m_Ui->outputSelectBtn, &QPushButton::clicked, this, &AverageDotProductMap_UI::listenOutputFileSelectBtnClicked);
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMap_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths)
+{
+  if (patternDSetPaths.size() == 1)
+  {
+    m_Ui->patternsDsetPathLabel->setText(patternDSetPaths[0]);
+    m_Ui->patternsDsetPathLabel->show();
+  }
+  else
+  {
+    m_Ui->patternsDsetPathLabel->hide();
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -234,10 +259,10 @@ void AverageDotProductMap_UI::listenInputTypeChanged(int index)
     case InputType::TSLHDF:
     case InputType::BrukerHDF:
     case InputType::OxfordHDF:
-      m_Ui->hdf5SelectionWidget->setDatasetSelectionEnabled(true);
+      m_Ui->choosePatternsBtn->setEnabled(true);
       break;
     default:
-      m_Ui->hdf5SelectionWidget->setDatasetSelectionEnabled(false);
+      m_Ui->choosePatternsBtn->setDisabled(true);
       break;
   }
 
@@ -261,29 +286,6 @@ void AverageDotProductMap_UI::listenROICheckboxStateChanged(int state)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::listenOutputFileSelectBtnClicked()
-{
-  QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.tif";
-  if(!m_Ui->outputFilePathLE->text().isEmpty())
-  {
-    proposedFile = m_Ui->outputFilePathLE->text();
-  }
-
-  QString filePath = FileIOTools::GetSavePathFromDialog("Set Output File", "Image File (*.tif);;All Files (*.*)", proposedFile);
-  if(filePath.isEmpty())
-  {
-    return;
-  }
-
-  filePath = QDir::toNativeSeparators(filePath);
-  emSoftApp->setOpenDialogLastDirectory(filePath);
-
-  m_Ui->outputFilePathLE->setText(filePath);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 void AverageDotProductMap_UI::listenGenerateBtnPressed()
 {
   if(m_Ui->generateBtn->text() == "Cancel")
@@ -299,9 +301,7 @@ void AverageDotProductMap_UI::listenGenerateBtnPressed()
   AverageDotProductMapController::ADPMapData data = getData();
 
   m_Ui->generateBtn->setText("Cancel");
-  m_Ui->inputGrpBox->setDisabled(true);
-  m_Ui->compParamGrpBox->setDisabled(true);
-  m_Ui->outputGrpBox->setDisabled(true);
+  m_Ui->adpControlsFrame->setDisabled(true);
 
   // Single-threaded for now, but we can multi-thread later if needed
   //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
@@ -323,9 +323,7 @@ void AverageDotProductMap_UI::threadFinished()
   m_Controller->setCancel(false);
 
   m_Ui->generateBtn->setText("Generate");
-  m_Ui->inputGrpBox->setEnabled(true);
-  m_Ui->compParamGrpBox->setEnabled(true);
-  m_Ui->outputGrpBox->setEnabled(true);
+  m_Ui->adpControlsFrame->setEnabled(true);
 
   emit validationOfOtherModulesNeeded(this);
   setRunning(false);
@@ -378,8 +376,6 @@ void AverageDotProductMap_UI::readModuleSession(QJsonObject& obj)
 
   readComputationalParameters(obj);
 
-  readOutputParameters(obj);
-
   validateData();
 }
 
@@ -394,7 +390,8 @@ void AverageDotProductMap_UI::readInputParameters(QJsonObject& obj)
   m_Ui->inputTypeCB->setCurrentIndex(inputParamObj[ioConstants::InputType].toInt());
   m_Ui->inputTypeCB->blockSignals(false);
 
-  m_Ui->hdf5SelectionWidget->readParameters(inputParamObj);
+  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
+  hdf5DsetSelectionWidget->readParameters(inputParamObj);
 }
 
 // -----------------------------------------------------------------------------
@@ -465,20 +462,6 @@ void AverageDotProductMap_UI::readComputationalParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::readOutputParameters(QJsonObject& obj)
-{
-  QJsonObject outputParamObj = obj[ioConstants::OutputParam].toObject();
-
-  m_Ui->outputFilePathLE->blockSignals(true);
-
-  m_Ui->outputFilePathLE->setText(outputParamObj[ioConstants::OutputImageFile].toString());
-
-  m_Ui->outputFilePathLE->blockSignals(false);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject inputParamObj;
@@ -488,10 +471,6 @@ void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj) const
   QJsonObject compParamObj;
   writeComputationalParameters(compParamObj);
   obj[ioConstants::CompParam] = compParamObj;
-
-  QJsonObject outputParamObj;
-  writeOutputParameters(outputParamObj);
-  obj[ioConstants::OutputParam] = outputParamObj;
 }
 
 // -----------------------------------------------------------------------------
@@ -501,7 +480,8 @@ void AverageDotProductMap_UI::writeInputParameters(QJsonObject& obj) const
 {
   obj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
 
-  m_Ui->hdf5SelectionWidget->writeParameters(obj);
+  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
+  hdf5DsetSelectionWidget->writeParameters(obj);
 }
 
 // -----------------------------------------------------------------------------
@@ -531,14 +511,6 @@ void AverageDotProductMap_UI::writeComputationalParameters(QJsonObject& obj) con
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeOutputParameters(QJsonObject& obj) const
-{
-  obj[ioConstants::OutputImageFile] = m_Ui->outputFilePathLE->text();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 AverageDotProductMapController::ADPMapData AverageDotProductMap_UI::getData()
 {
   AverageDotProductMapController::ADPMapData data;
@@ -560,16 +532,21 @@ AverageDotProductMapController::ADPMapData AverageDotProductMap_UI::getData()
   data.patternWidth = m_Ui->patternWidthSB->value();
   data.binningFactor = m_Ui->binningFactorSB->value();
   data.patternHeight = m_Ui->patternHeightSB->value();
-  data.outputFilePath = m_Ui->outputFilePathLE->text();
-  data.patternDataFile = m_Ui->hdf5SelectionWidget->getCurrentFile();
 
-  QStringList selectedHDF5Paths = m_Ui->hdf5SelectionWidget->getSelectedHDF5Paths();
-  if (m_Ui->hdf5SelectionWidget->isDatasetSelectionEnabled() && !selectedHDF5Paths.isEmpty())
+  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
+  data.patternDataFile = hdf5DsetSelectionWidget->getCurrentFile();
+
+  QStringList selectedHDF5Paths = hdf5DsetSelectionWidget->getSelectedHDF5Paths();
+  if (!selectedHDF5Paths.isEmpty())
   {
-    QStringList hdfTokens = selectedHDF5Paths[0].split('/', QString::SplitBehavior::SkipEmptyParts);
-    for (QString hdfToken : hdfTokens)
+    if(data.inputType == AverageDotProductMapController::ADPMapData::InputType::TSLHDF || data.inputType == AverageDotProductMapController::ADPMapData::InputType::BrukerHDF ||
+       data.inputType == AverageDotProductMapController::ADPMapData::InputType::OxfordHDF)
     {
-      data.hdfStrings.push_back(hdfToken);
+      QStringList hdfTokens = selectedHDF5Paths[0].split('/', QString::SplitBehavior::SkipEmptyParts);
+      for (const QString &hdfToken : hdfTokens)
+      {
+        data.hdfStrings.push_back(hdfToken);
+      }
     }
   }
 
