@@ -1,0 +1,158 @@
+ &EBSDSphInxdata
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+!###################################################################
+! INDEXING MODE
+!###################################################################
+!
+! 'dynamic' for on the fly indexing or 'static' for pre calculated dictionary
+ indexingmode = 'dynamic',
+!
+!###################################################################
+! DICTIONARY PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+!###################################################################
+!
+! do you want Email or Slack notification when the run has completed?
+ Notify = 'Off',
+! width of data set in pattern input file
+ ipf_wd = 100,
+! height of data set in pattern input file
+ ipf_ht = 100,
+! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
+! region of interest has the point (x0,y0) as its upper left corner and is w x h patterns
+ ROI = 0 0 0 0,
+! X and Y sampling step sizes
+ stepX = 1.0,
+ stepY = 1.0,
+! number of top matches to keep from the dot product results
+ nnk = 50,
+! the following option has been disabled starting version 4.3
+! number of top matches to use for orientation averaging (<nnk)
+! nnav =  20,
+! number of top matches to use for Orientation Similarity Map computation (<nnk)
+ nosm = 20,
+! number of top matches to use for Indexing Success Map computation (<nnk)
+ nism = 5,
+! Indexing Success threshold angle (degrees)
+ isangle = 1.5,
+! to use a custom mask, enter the mask filename here; leave undefined for standard mask option
+ maskfile = 'undefined',
+! mask or not
+ maskpattern = 'n',
+! mask radius (in pixels, AFTER application of the binning operation)
+ maskradius = 240,
+! hi pass filter w parameter; 0.05 is a reasonable value
+ hipassw = 0.05,
+! number of regions for adaptive histogram equalization
+ nregions = 10,
+
+!###################################################################
+! SPHERICAL INDEXING PARAMETERS
+!###################################################################
+! bandwidth parameter (largest l value in spherical harmonic expansion)
+ bandwidth = 63,
+! 
+!###################################################################
+! ONLY SPECIFY WHEN INDEXINGMODE IS 'DYNAMIC'
+!###################################################################
+!
+! number of cubochoric points to generate list of orientations
+ ncubochoric = 100,
+! distance between scintillator and illumination point [microns]
+ L = 15000.0,
+! tilt angle of the camera (positive below horizontal, [degrees])
+ thetac = 10.0,
+! CCD pixel size on the scintillator surface [microns]
+ delta = 50.0,
+! number of CCD pixels along x and y
+ numsx = 640,
+ numsy = 480,
+! pattern center coordinates in units of pixels
+ xpc = 0.0,
+ ypc = 0.0,
+! angle between normal of sample and detector
+ omega = 0.0,
+! minimum and maximum energy to use for interpolation [keV]
+ energymin = 10.0,
+ energymax = 20.0,
+! the following option has been disabled starting version 4.3
+! spatial averaging method ('y' or 'n' ;can't be used with approximate energy average)
+! spatialaverage = 'n',
+! incident beam current [nA]
+ beamcurrent = 150.0,
+! beam dwell time [micro s]
+ dwelltime = 100.0,
+! binning mode (1, 2, 4, or 8)
+ binning = 1,
+! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
+ scalingmode = 'not',
+! gamma correction factor
+ gammavalue = 1.0,
+!
+!###################################################################
+! INPUT FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+!###################################################################
+!
+! name of datafile where the patterns are stored; path relative to EMdatapathname
+ exptfile = 'undefined',
+! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
+ inputtype = 'Binary',
+! here we enter the HDF group names and data set names as individual strings (up to 10)
+! enter the full path of a data set in individual strings for each group, in the correct order,
+! and with the data set name as the last name; leave the remaining strings empty (they should all
+! be empty for the Binary and TSLup2 formats)
+ HDFstrings = '' '' '' '' '' '' '' '' '' '',
+!
+!###################################################################
+! OTHER FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+!###################################################################
+!
+! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp
+ tmpfile = 'EMEBSDDict_tmp.data',
+ keeptmpfile = 'n',
+! output file ; path relative to EMdatapathname
+ datafile = 'undefined',
+! ctf output file ; path relative to EMdatapathname
+ ctffile = 'undefined',
+! the following option has been disabled starting version 4.3
+! average ctf output file ; path relative to EMdatapathname
+! avctffile = 'undefined',
+! ang output file ; path relative to EMdatapathname
+ angfile = 'undefined',
+! euler angle input file
+ eulerfile = 'undefined'
+
+!###################################################################
+! ONLY IF INDEXINGMODE IS STATIC
+!###################################################################
+!
+ dictfile = 'undefined',
+!
+!###################################################################
+! ONLY IF INDEXINGMODE IS DYNAMIC
+!###################################################################
+!
+! master pattern input file; path relative to EMdatapathname
+ masterfile = 'undefined',
+!
+!###################################################################
+! SYSTEM PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+!###################################################################
+!
+! number of dictionary files arranged in column for dot product on GPU (multiples of 16 perform better)
+ numdictsingle = 1024,
+! number of experimental files arranged in column for dot product on GPU (multiples of 16 perform better)
+ numexptsingle = 1024,
+! number of threads for parallel execution
+ nthreads = 1,
+! platform ID for OpenCL portion of program
+ platid = 1,
+! if you are running EMEBSDDI, EMECPDI, EMTKDDI, then define the device you wish to use 
+ devid = 1,
+! if you are running EMEBSDDImem on multiple GPUs, enter their device ids (up to eight) here; leave others at zero
+ multidevid = 0 0 0 0 0 0 0 0,
+! how many GPU devices do you want to use?
+ usenumd = 0,
+ /
