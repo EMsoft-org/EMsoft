@@ -227,6 +227,8 @@ void AverageDotProductMap_UI::listenSelectedPatternDatasetChanged(QStringList pa
   {
     m_Ui->patternsDsetPathLabel->hide();
   }
+
+  parametersChanged();
 }
 
 // -----------------------------------------------------------------------------

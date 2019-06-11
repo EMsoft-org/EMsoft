@@ -362,8 +362,9 @@ void HDF5DatasetSelectionWidget::listenSelectBtnClicked()
     m_Ui->value->blockSignals(true);
     m_Ui->value->setText(file);
     m_Ui->value->blockSignals(false);
-    parametersChanged();
   }
+
+  emit parametersChanged();
 
   // Store the last used directory into the private instance variable
   QFileInfo fi(file);
@@ -410,6 +411,7 @@ void HDF5DatasetSelectionWidget::dropEvent(QDropEvent* e)
     QDir parent(file);
     m_OpenDialogLastDirectory = parent.dirName();
     initWithFile(file);
+    emit parametersChanged();
   }
 }
 
@@ -418,6 +420,14 @@ void HDF5DatasetSelectionWidget::dropEvent(QDropEvent* e)
 // -----------------------------------------------------------------------------
 bool HDF5DatasetSelectionWidget::initWithFile(const QString& hdf5File)
 {
+  // Delete the old model
+  QAbstractItemModel* oldModel = m_Ui->hdfTreeView->model();
+  if (oldModel)
+  {
+    delete oldModel;
+    oldModel = nullptr;
+  }
+
   if(hdf5File.isNull())
   {
     return false;
@@ -447,10 +457,6 @@ bool HDF5DatasetSelectionWidget::initWithFile(const QString& hdf5File)
     setErrorText(msg);
     return false;
   }
-  // Delete the old model
-  QAbstractItemModel* oldModel = m_Ui->hdfTreeView->model();
-
-  delete oldModel;
 
   // Save the last place the user visited while opening the file
   QString nativeHdf5File = QDir::toNativeSeparators(hdf5File);
@@ -892,6 +898,13 @@ void HDF5DatasetSelectionWidget::calculatePrimeFactors(int n, QVector<int>& prim
 // -----------------------------------------------------------------------------
 void HDF5DatasetSelectionWidget::setValue(const QString& text)
 {
+  QAbstractItemModel* oldModel = m_Ui->hdfTreeView->model();
+  if (oldModel)
+  {
+    delete oldModel;
+    oldModel = nullptr;
+  }
+
   SIMPLDataPathValidator* validator = SIMPLDataPathValidator::Instance();
   QString inputPath = validator->convertToAbsolutePath(text);
   m_CurrentText = text;
@@ -923,6 +936,7 @@ void HDF5DatasetSelectionWidget::setValue(const QString& text)
     m_OpenDialogLastDirectory = fi.path();
     setErrorText("");
   }
+  emit parametersChanged();
   m_Ui->errorLabel->update();
 }
 
