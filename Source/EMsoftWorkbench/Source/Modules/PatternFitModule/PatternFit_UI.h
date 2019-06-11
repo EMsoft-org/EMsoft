@@ -302,6 +302,9 @@ private:
    */
   bool validateData() override;
 
-  PatternFit_UI(const PatternFit_UI&);  // Copy Constructor Not Implemented
-  void operator=(const PatternFit_UI&); // Operator '=' Not Implemented
+public:
+  PatternFit_UI(const PatternFit_UI&) = delete; // Copy Constructor Not Implemented
+  PatternFit_UI(PatternFit_UI&&) = delete;      // Move Constructor Not Implemented
+  PatternFit_UI& operator=(const PatternFit_UI&) = delete; // Copy Assignment Not Implemented
+  PatternFit_UI& operator=(PatternFit_UI&&) = delete;      // Move Assignment Not Implemented
 };

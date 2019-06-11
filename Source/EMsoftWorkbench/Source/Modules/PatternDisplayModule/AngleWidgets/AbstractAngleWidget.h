@@ -92,8 +92,6 @@ public:
 signals:
   void dataChanged(bool validAngles) const;
 
-private:
-
 public:
   AbstractAngleWidget(const AbstractAngleWidget&) = delete;            // Copy Constructor Not Implemented
   AbstractAngleWidget(AbstractAngleWidget&&) = delete;                 // Move Constructor Not Implemented

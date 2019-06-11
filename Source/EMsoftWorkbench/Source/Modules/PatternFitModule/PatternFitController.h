@@ -170,8 +170,11 @@ private:
 
   QVector<QSharedPointer<QFutureWatcher<void>>> m_Watchers;
 
-  PatternFitController(const PatternFitController&); // Copy Constructor Not Implemented
-  void operator=(const PatternFitController&);       // Operator '=' Not Implemented
+public:
+  PatternFitController(const PatternFitController&) = delete; // Copy Constructor Not Implemented
+  PatternFitController(PatternFitController&&) = delete;      // Move Constructor Not Implemented
+  PatternFitController& operator=(const PatternFitController&) = delete; // Copy Assignment Not Implemented
+  PatternFitController& operator=(PatternFitController&&) = delete;      // Move Assignment Not Implemented
 };
 
 Q_DECLARE_METATYPE(PatternFitController::SimulationData)

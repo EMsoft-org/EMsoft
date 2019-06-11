@@ -95,9 +95,6 @@ public:
    */
   virtual void createModificationConnections(PatternDisplay_UI* ui) const override;
 
-private:
-
-
 public:
   SingleAngleWidget(const SingleAngleWidget&) = delete;            // Copy Constructor Not Implemented
   SingleAngleWidget(SingleAngleWidget&&) = delete;                 // Move Constructor Not Implemented

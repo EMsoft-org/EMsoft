@@ -46,7 +46,7 @@ class HDF5FileTreeModel : public QAbstractItemModel
   Q_OBJECT
 
 public:
-  HDF5FileTreeModel(hid_t fileId, QObject* parent = 0);
+  HDF5FileTreeModel(hid_t fileId, QObject* parent = nullptr);
   ~HDF5FileTreeModel() override;
 
   enum Roles
@@ -171,4 +171,10 @@ private:
    * @brief setupModelData
    */
   void setupModelData();
+
+public:
+  HDF5FileTreeModel(const HDF5FileTreeModel&) = delete; // Copy Constructor Not Implemented
+  HDF5FileTreeModel(HDF5FileTreeModel&&) = delete;      // Move Constructor Not Implemented
+  HDF5FileTreeModel& operator=(const HDF5FileTreeModel&) = delete; // Copy Assignment Not Implemented
+  HDF5FileTreeModel& operator=(HDF5FileTreeModel&&) = delete;      // Move Assignment Not Implemented
 };

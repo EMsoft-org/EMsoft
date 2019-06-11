@@ -1839,4 +1839,10 @@ class SVStyle : public QObject
      * @return
      */
     int loadIntegerProperty(const QString &key, QJsonObject cssRepl, QJsonObject varMapping);
+
+  public:
+    SVStyle(const SVStyle&) = delete; // Copy Constructor Not Implemented
+    SVStyle(SVStyle&&) = delete;      // Move Constructor Not Implemented
+    SVStyle& operator=(const SVStyle&) = delete; // Copy Assignment Not Implemented
+    SVStyle& operator=(SVStyle&&) = delete;      // Move Assignment Not Implemented
 };

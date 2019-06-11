@@ -184,6 +184,9 @@ private:
    */
   AverageDotProductMapController::ADPMapData getData();
 
-  AverageDotProductMap_UI(const AverageDotProductMap_UI&); // Copy Constructor Not Implemented
-  void operator=(const AverageDotProductMap_UI&);          // Operator '=' Not Implemented
+public:
+  AverageDotProductMap_UI(const AverageDotProductMap_UI&) = delete; // Copy Constructor Not Implemented
+  AverageDotProductMap_UI(AverageDotProductMap_UI&&) = delete;      // Move Constructor Not Implemented
+  AverageDotProductMap_UI& operator=(const AverageDotProductMap_UI&) = delete; // Copy Assignment Not Implemented
+  AverageDotProductMap_UI& operator=(AverageDotProductMap_UI&&) = delete;      // Move Assignment Not Implemented
 };

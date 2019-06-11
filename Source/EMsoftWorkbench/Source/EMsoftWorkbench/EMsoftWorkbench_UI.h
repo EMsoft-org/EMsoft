@@ -232,6 +232,9 @@ private:
    */
   bool writeModulesToFile(const QString& filePath);
 
-  EMsoftWorkbench_UI(const EMsoftWorkbench_UI&); // Copy Constructor Not Implemented
-  void operator=(const EMsoftWorkbench_UI&);     // Operator '=' Not Implemented
+public:
+  EMsoftWorkbench_UI(const EMsoftWorkbench_UI&) = delete; // Copy Constructor Not Implemented
+  EMsoftWorkbench_UI(EMsoftWorkbench_UI&&) = delete;      // Move Constructor Not Implemented
+  EMsoftWorkbench_UI& operator=(const EMsoftWorkbench_UI&) = delete; // Copy Assignment Not Implemented
+  EMsoftWorkbench_UI& operator=(EMsoftWorkbench_UI&&) = delete;      // Move Assignment Not Implemented
 };

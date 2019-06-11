@@ -122,7 +122,6 @@ protected:
    */
   void setupGui();
 
-private:
 public:
   StatusBarWidget(const StatusBarWidget&) = delete;            // Copy Constructor Not Implemented
   StatusBarWidget(StatusBarWidget&&) = delete;                 // Move Constructor Not Implemented

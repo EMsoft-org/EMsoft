@@ -75,7 +75,6 @@ public:
 protected:
   ModuleFactory() = default;
 
-private:
 public:
   ModuleFactory(const ModuleFactory&) = delete;            // Copy Constructor Not Implemented
   ModuleFactory(ModuleFactory&&) = delete;                 // Move Constructor Not Implemented

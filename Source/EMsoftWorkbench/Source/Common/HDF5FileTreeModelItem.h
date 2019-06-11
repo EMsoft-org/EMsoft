@@ -99,5 +99,11 @@ private:
   bool m_IsString = false;
   std::string m_DataType = "";
   Qt::CheckState m_CheckState = Qt::Unchecked;
+
+public:
+  HDF5FileTreeModelItem(const HDF5FileTreeModelItem&) = delete; // Copy Constructor Not Implemented
+  HDF5FileTreeModelItem(HDF5FileTreeModelItem&&) = delete;      // Move Constructor Not Implemented
+  HDF5FileTreeModelItem& operator=(const HDF5FileTreeModelItem&) = delete; // Copy Assignment Not Implemented
+  HDF5FileTreeModelItem& operator=(HDF5FileTreeModelItem&&) = delete;      // Move Assignment Not Implemented
 };
 

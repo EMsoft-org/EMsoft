@@ -198,7 +198,7 @@ QModelIndex HDF5FileTreeModel::index(int row, int column, const QModelIndex& par
 {
   if(!hasIndex(row, column, parent))
   {
-    return QModelIndex();
+    return {};
   }
 
   HDF5FileTreeModelItem* parentItem;
@@ -218,7 +218,7 @@ QModelIndex HDF5FileTreeModel::index(int row, int column, const QModelIndex& par
     return createIndex(row, column, childItem);
   }
   {
-    return QModelIndex();
+    return {};
   }
 }
 
@@ -229,7 +229,7 @@ QModelIndex HDF5FileTreeModel::parent(const QModelIndex& index) const
 {
   if(!index.isValid())
   {
-    return QModelIndex();
+    return {};
   }
 
   HDF5FileTreeModelItem* childItem = static_cast<HDF5FileTreeModelItem*>(index.internalPointer());
@@ -237,7 +237,7 @@ QModelIndex HDF5FileTreeModel::parent(const QModelIndex& index) const
 
   if(parentItem == m_RootItem)
   {
-    return QModelIndex();
+    return {};
   }
 
   return createIndex(parentItem->row(), 0, parentItem);
@@ -333,14 +333,14 @@ QModelIndex HDF5FileTreeModel::hdf5PathToIndex(const QString& hdf5Path)
       }
       else
       {
-        return QModelIndex();
+        return {};
       }
     }
 
     return foundIndex;
   }
 
-  return QModelIndex();
+  return {};
 }
 
 // -----------------------------------------------------------------------------

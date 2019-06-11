@@ -66,9 +66,6 @@ public:
 protected:
   MasterPatternSimulationModule(QWidget* parent = nullptr);
 
-private:
-
-
 public:
   MasterPatternSimulationModule(const MasterPatternSimulationModule&) = delete;            // Copy Constructor Not Implemented
   MasterPatternSimulationModule(MasterPatternSimulationModule&&) = delete;                 // Move Constructor Not Implemented

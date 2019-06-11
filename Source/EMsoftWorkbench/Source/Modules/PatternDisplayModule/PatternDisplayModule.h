@@ -66,9 +66,6 @@ public:
 protected:
   PatternDisplayModule(QWidget* parent = nullptr);
 
-private:
-
-
 public:
   PatternDisplayModule(const PatternDisplayModule&) = delete;            // Copy Constructor Not Implemented
   PatternDisplayModule(PatternDisplayModule&&) = delete;                 // Move Constructor Not Implemented

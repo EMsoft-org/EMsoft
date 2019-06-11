@@ -144,6 +144,9 @@ private:
    */
   MasterPatternSimulationController::MasterPatternSimulationData getSimulationData() const;
 
-  MasterPatternSimulation_UI(const MasterPatternSimulation_UI&); // Copy Constructor Not Implemented
-  void operator=(const MasterPatternSimulation_UI&);             // Operator '=' Not Implemented
+public:
+  MasterPatternSimulation_UI(const MasterPatternSimulation_UI&) = delete; // Copy Constructor Not Implemented
+  MasterPatternSimulation_UI(MasterPatternSimulation_UI&&) = delete;      // Move Constructor Not Implemented
+  MasterPatternSimulation_UI& operator=(const MasterPatternSimulation_UI&) = delete; // Copy Assignment Not Implemented
+  MasterPatternSimulation_UI& operator=(MasterPatternSimulation_UI&&) = delete;      // Move Assignment Not Implemented
 };

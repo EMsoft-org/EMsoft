@@ -371,7 +371,9 @@ class ModifiedLambertProjection3D
   protected:
     ModifiedLambertProjection3D();
 
-  private:
-    ModifiedLambertProjection3D(const ModifiedLambertProjection3D&); // Copy Constructor Not Implemented
-    void operator=(const ModifiedLambertProjection3D&); // Operator '=' Not Implemented
+  public:
+    ModifiedLambertProjection3D(const ModifiedLambertProjection3D&) = delete; // Copy Constructor Not Implemented
+    ModifiedLambertProjection3D(ModifiedLambertProjection3D&&) = delete;      // Move Constructor Not Implemented
+    ModifiedLambertProjection3D& operator=(const ModifiedLambertProjection3D&) = delete; // Copy Assignment Not Implemented
+    ModifiedLambertProjection3D& operator=(ModifiedLambertProjection3D&&) = delete;      // Move Assignment Not Implemented
 };

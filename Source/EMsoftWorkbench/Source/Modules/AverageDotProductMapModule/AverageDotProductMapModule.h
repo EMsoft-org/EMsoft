@@ -59,7 +59,6 @@ class AverageDotProductMapModule : public IWorkbenchModule
   protected:
     AverageDotProductMapModule(QWidget* parent = nullptr);
 
-  private:
   public:
     AverageDotProductMapModule(const AverageDotProductMapModule&) = delete;            // Copy Constructor Not Implemented
     AverageDotProductMapModule(AverageDotProductMapModule&&) = delete;                 // Move Constructor Not Implemented

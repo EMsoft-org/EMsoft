@@ -168,6 +168,9 @@ private:
    */
   void writeADPDataToFile(const QString &filePath, const AverageDotProductMapController::ADPMapData &data) const;
 
-  AverageDotProductMapController(const AverageDotProductMapController&); // Copy Constructor Not Implemented
-  void operator=(const AverageDotProductMapController&);                 // Operator '=' Not Implemented
+public:
+  AverageDotProductMapController(const AverageDotProductMapController&) = delete; // Copy Constructor Not Implemented
+  AverageDotProductMapController(AverageDotProductMapController&&) = delete;      // Move Constructor Not Implemented
+  AverageDotProductMapController& operator=(const AverageDotProductMapController&) = delete; // Copy Assignment Not Implemented
+  AverageDotProductMapController& operator=(AverageDotProductMapController&&) = delete;      // Move Assignment Not Implemented
 };

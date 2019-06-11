@@ -222,6 +222,9 @@ private:
    */
   bool validateData() override;
 
-  PatternDisplay_UI(const PatternDisplay_UI&); // Copy Constructor Not Implemented
-  void operator=(const PatternDisplay_UI&);    // Operator '=' Not Implemented
+public:
+  PatternDisplay_UI(const PatternDisplay_UI&) = delete; // Copy Constructor Not Implemented
+  PatternDisplay_UI(PatternDisplay_UI&&) = delete;      // Move Constructor Not Implemented
+  PatternDisplay_UI& operator=(const PatternDisplay_UI&) = delete; // Copy Assignment Not Implemented
+  PatternDisplay_UI& operator=(PatternDisplay_UI&&) = delete;      // Move Assignment Not Implemented
 };

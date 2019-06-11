@@ -162,6 +162,9 @@ private:
    */
   MonteCarloSimulationController::MonteCarloSimulationData getCreationData() const;
 
-  MonteCarloSimulation_UI(const MonteCarloSimulation_UI&); // Copy Constructor Not Implemented
-  void operator=(const MonteCarloSimulation_UI&);          // Operator '=' Not Implemented
+public:
+  MonteCarloSimulation_UI(const MonteCarloSimulation_UI&) = delete; // Copy Constructor Not Implemented
+  MonteCarloSimulation_UI(MonteCarloSimulation_UI&&) = delete;      // Move Constructor Not Implemented
+  MonteCarloSimulation_UI& operator=(const MonteCarloSimulation_UI&) = delete; // Copy Assignment Not Implemented
+  MonteCarloSimulation_UI& operator=(MonteCarloSimulation_UI&&) = delete;      // Move Assignment Not Implemented
 };
