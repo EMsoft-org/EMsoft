@@ -39,7 +39,6 @@ set(OrientationLib_OrientationMath_HDRS
   ${OrientationLib_SOURCE_DIR}/OrientationMath/OrientationMath.h
   ${OrientationLib_SOURCE_DIR}/OrientationMath/OrientationTransforms.hpp
   ${OrientationLib_SOURCE_DIR}/OrientationMath/OrientationArray.hpp
-  ${OrientationLib_SOURCE_DIR}/OrientationMath/OrientationConverter.hpp
 )
 
 set(OrientationLib_OrientationMath_SRCS

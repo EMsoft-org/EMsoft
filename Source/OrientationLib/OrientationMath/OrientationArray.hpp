@@ -33,11 +33,10 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _OrientationArray_H_
-#define _OrientationArray_H_
+#pragma once
 
-#include <assert.h>
-#include <string.h>
+#include <cassert>
+#include <cstring>
 
 #include "SIMPLib/SIMPLib.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
@@ -446,11 +445,9 @@ class OrientationArray
 /**
  * @brief OrientationArrayF A convenience Typedef for a OrientationArray<float>
  */
-typedef OrientationArray<float> FOrientArrayType;
+using FOrientArrayType = OrientationArray<float>;
 
 /**
  * @brief OrientationArrayD A convenience Typedef for a OrientationArray<double>
  */
-typedef OrientationArray<double> DOrientArrayType;
-
-#endif /* _OrientationArray_H_ */
+using DOrientArrayType = OrientationArray<double>;

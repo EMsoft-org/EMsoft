@@ -33,9 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _OrientationTransforms_H_
-#define _OrientationTransforms_H_
-
+#pragma once
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -44,7 +42,7 @@
 #endif
 
 
-#include <assert.h>     /* assert */
+#include <cassert>     /* assert */
 
 #include <string>
 #include <iostream>
@@ -150,8 +148,8 @@ class OrientationTransforms
 {
   public:
 
-    typedef OrientationTransforms SelfType;
-    virtual ~OrientationTransforms() {}
+    using SelfType = OrientationTransforms;
+    ~OrientationTransforms() = default;
 
     typedef Eigen::Matrix<K, 3, 3, Eigen::RowMajor> RotationMatrixType;
     typedef Eigen::Map<RotationMatrixType> RotationMatrixMapType;
@@ -2161,6 +2159,3 @@ typedef OrientationTransforms<DOrientArrayType, double>     DOrientTransformsTyp
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-
-
-#endif /* _OrientationTransforms_H_ */

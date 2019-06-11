@@ -33,8 +33,8 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _simplibmath_h_
-#define _simplibmath_h_
+#pragma once
+
 /** @file SIMPLibMath.h
  * @brief This file performs the necessary including of <math.h> with certain
  * define constants (like M_PI) defined on all platforms.
@@ -77,8 +77,8 @@
 
 #endif
 
-#include <stddef.h>
-#include <math.h>
+#include <cstddef>
+#include <cmath>
 
 #include <vector>
 #include <limits>
@@ -257,6 +257,3 @@ class SIMPLibMath
     SIMPLibMath(const SIMPLibMath&); // Copy Constructor Not Implemented
     void operator=(const SIMPLibMath&); // Operator '=' Not Implemented
 };
-
-#endif /* _EMMATH_H_ */
-

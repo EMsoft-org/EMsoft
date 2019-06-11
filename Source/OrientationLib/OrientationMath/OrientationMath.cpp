@@ -35,22 +35,19 @@
 
 #include "OrientationMath.h"
 
+#include <array>
+
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-OrientationMath::OrientationMath()
-{
-
-}
+OrientationMath::OrientationMath() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-OrientationMath::~OrientationMath()
-{
-}
+OrientationMath::~OrientationMath() = default;
 
 // -----------------------------------------------------------------------------
 //
@@ -87,7 +84,7 @@ void OrientationMath::RootTensorFromLatticeParameters(float a, float b, float c,
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void OrientationMath::MillerBravaisToMillerDirection(int millerBravais[4], int miller[3])
+void OrientationMath::MillerBravaisToMillerDirection(std::array<int,4> &millerBravais, std::array<int,3> & miller)
 {
   miller[0] = millerBravais[0] - millerBravais[2];
   miller[1] = millerBravais[1] - millerBravais[2];
@@ -96,7 +93,7 @@ void OrientationMath::MillerBravaisToMillerDirection(int millerBravais[4], int m
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void OrientationMath::MillerToMillerBravaisDirection(int miller[3], int millerBravais[4])
+void OrientationMath::MillerToMillerBravaisDirection(std::array<int,3> &miller, std::array<int,4> &millerBravais)
 {
   millerBravais[0] = 0.33333f * (2 * miller[0] - miller[1]);
   millerBravais[1] = 0.33333f * (2 * miller[1] - miller[0]);
@@ -106,7 +103,7 @@ void OrientationMath::MillerToMillerBravaisDirection(int miller[3], int millerBr
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void OrientationMath::MillerBravaisToMillerPlane(int millerBravais[4], int miller[3])
+void OrientationMath::MillerBravaisToMillerPlane(std::array<int,4> &millerBravais, std::array<int,3> & miller)
 {
   miller[0] = millerBravais[0];
   miller[1] = millerBravais[1];
@@ -115,7 +112,7 @@ void OrientationMath::MillerBravaisToMillerPlane(int millerBravais[4], int mille
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void OrientationMath::MillerToMillerBravaisPlane(int miller[3], int millerBravais[4])
+void OrientationMath::MillerToMillerBravaisPlane(std::array<int,3> &miller, std::array<int,4> &millerBravais)
 {
   millerBravais[0] = miller[0];
   millerBravais[1] = miller[1];
