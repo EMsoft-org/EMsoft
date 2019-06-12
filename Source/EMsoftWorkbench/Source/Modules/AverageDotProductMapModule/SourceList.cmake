@@ -42,6 +42,7 @@ include_directories(${${MODULE_NAME}_DIR})
 # --------------------------------------------------------------------
 # Any Class that inherits from QObject, either directly or through the heirarchy needs to have its header listed here
 set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
+  ${${MODULE_NAME}_DIR}/ADPMapImageViewer.h
   ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.h
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.h
   ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.h
@@ -60,6 +61,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_HDRS
 
 
 set(EMsoftWorkbench_${MODULE_NAME}_SRCS
+  ${${MODULE_NAME}_DIR}/ADPMapImageViewer.cpp
   ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.cpp
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.cpp
   ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.cpp

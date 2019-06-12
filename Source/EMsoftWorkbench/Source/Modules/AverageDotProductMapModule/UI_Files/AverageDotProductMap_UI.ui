@@ -55,7 +55,7 @@
       </property>
       <item row="0" column="0">
        <widget class="QFrame" name="adpControlsFrame">
-        <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+        <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0">
          <property name="leftMargin">
           <number>4</number>
          </property>
@@ -610,7 +610,7 @@
        </layout>
       </item>
       <item row="0" column="1" rowspan="2">
-       <widget class="GLImageViewer" name="adpViewer"/>
+       <widget class="ADPMapImageViewer" name="adpViewer"/>
       </item>
      </layout>
     </widget>
@@ -632,9 +632,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GLImageViewer</class>
+   <class>ADPMapImageViewer</class>
    <extends>QOpenGLWidget</extends>
-   <header location="global">GLImageViewer.h</header>
+   <header>ADPMapImageViewer.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

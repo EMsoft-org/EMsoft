@@ -147,6 +147,8 @@ void HDF5DatasetSelectionWidget::setupGui()
 
   m_Ui->value->setFont(inputFileFont);
 
+  m_Ui->absPathLabel->hide();
+
   m_CurrentText = m_Ui->value->text();
 }
 
