@@ -112,7 +112,7 @@ endMacro()
 
 # Add in our NON-Filter classes
 D3DCompileDir(Common)
-D3DCompileDir(DataArrays)
+# D3DCompileDir(DataArrays)
 # D3DCompileDir(DataContainers)
 # D3DCompileDir(Geometry)
 # D3DCompileDir(FilterParameters)

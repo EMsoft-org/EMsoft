@@ -33,10 +33,9 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#ifndef _QuaternionMath_H_
-#define _QuaternionMath_H_
+#pragma once
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "SIMPLib/Math/SIMPLibMath.h"
 #include "SIMPLib/Math/MatrixMath.h"
@@ -92,7 +91,7 @@ class QuaternionMath
     /**
      * @brief ~QuaternionMath
      */
-    virtual ~QuaternionMath() {}
+    virtual ~QuaternionMath() = default;
 
     /**
      * @brief QuaternionMath Copy Constructor
@@ -466,24 +465,19 @@ class QuaternionMath
 /**
  * @brief QuaternionMathF Typedef for 32 bit floats for convenience
  */
-typedef QuaternionMath<float> QuaternionMathF;
+using QuaternionMathF = QuaternionMath<float>;
 
 /**
  * @brief QuaternionMathD Typedef for 64 bit floats for convenience
  */
-typedef QuaternionMath<double> QuaternionMathD;
+using QuaternionMathD = QuaternionMath<double>;
 
 /**
  * @brief QuatF 32 Bit Floating point Quaternion for convenience.
  */
-typedef QuaternionMath<float>::Quaternion QuatF;
+using QuatF = QuaternionMath<float>::Quaternion;
 
 /**
  * @brief QuatD 64 Bit Floating point Quaternion for convenience.
  */
-typedef QuaternionMath<double>::Quaternion QuatD;
-
-
-#endif /* _QuaternionMath_H_ */
-
-
+using QuatD = QuaternionMath<double>::Quaternion;

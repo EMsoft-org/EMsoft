@@ -35,6 +35,8 @@
 
 #include "MatrixMath.h"
 
+#include <array>
+
 #include "SIMPLib/Math/SIMPLibMath.h"
 
 // -----------------------------------------------------------------------------
@@ -67,7 +69,7 @@ MatrixMath::Pointer MatrixMath::New()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MatrixMath::CrossProduct(double a[3], double b[3], double c[3])
+void MatrixMath::CrossProduct(const std::array<double,3> &a, const std::array<double,3> &b, std::array<double,3> &c)
 {
   c[0] = a[1] * b[2] - a[2] * b[1];
   c[1] = a[2] * b[0] - a[0] * b[2];
@@ -76,7 +78,7 @@ void MatrixMath::CrossProduct(double a[3], double b[3], double c[3])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MatrixMath::CrossProduct(float a[3], float b[3], float c[3])
+void MatrixMath::CrossProduct(const std::array<float,3> &a, const std::array<float,3> &b, std::array<float,3> &c)
 {
   c[0] = a[1] * b[2] - a[2] * b[1];
   c[1] = a[2] * b[0] - a[0] * b[2];
@@ -116,7 +118,7 @@ void MatrixMath::Normalize3x1(float& i, float& j, float& k)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MatrixMath::Multiply3x3with3x3(float g1[3][3], float g2[3][3], float outMat[3][3])
+void MatrixMath::Multiply3x3with3x3(const float g1[3][3], const float g2[3][3], float outMat[3][3])
 {
   outMat[0][0] = g1[0][0] * g2[0][0] + g1[0][1] * g2[1][0] + g1[0][2] * g2[2][0];
   outMat[0][1] = g1[0][0] * g2[0][1] + g1[0][1] * g2[1][1] + g1[0][2] * g2[2][1];
@@ -129,35 +131,50 @@ void MatrixMath::Multiply3x3with3x3(float g1[3][3], float g2[3][3], float outMat
   outMat[2][2] = g1[2][0] * g2[0][2] + g1[2][1] * g2[1][2] + g1[2][2] * g2[2][2];
 }
 
-void MatrixMath::Multiply3x3with3x1(const float g1[3][3], float g2[3], float outMat[3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Multiply3x3with3x1(const float g1[3][3], const std::array<float,3> &g2, std::array<float,3> &outMat)
 {
   outMat[0] = g1[0][0] * g2[0] + g1[0][1] * g2[1] + g1[0][2] * g2[2];
   outMat[1] = g1[1][0] * g2[0] + g1[1][1] * g2[1] + g1[1][2] * g2[2];
   outMat[2] = g1[2][0] * g2[0] + g1[2][1] * g2[1] + g1[2][2] * g2[2];
 }
 
-void MatrixMath::Multiply3x3with3x1(double g1[3][3], double g2[3], double outMat[3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Multiply3x3with3x1(const double g1[3][3], const std::array<double,3> &g2, std::array<double,3> &outMat)
 {
   outMat[0] = g1[0][0] * g2[0] + g1[0][1] * g2[1] + g1[0][2] * g2[2];
   outMat[1] = g1[1][0] * g2[0] + g1[1][1] * g2[1] + g1[1][2] * g2[2];
   outMat[2] = g1[2][0] * g2[0] + g1[2][1] * g2[1] + g1[2][2] * g2[2];
 }
 
-void MatrixMath::Add3x1s(const float g1[3], float g2[3], float outMat[3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Add3x1s(const std::array<float,3> &g1, const std::array<float,3> &g2, std::array<float,3> &outMat)
 {
   outMat[0] = g1[0] + g2[0];
   outMat[1] = g1[1] + g2[1];
   outMat[2] = g1[2] + g2[2];
 }
 
-void MatrixMath::Subtract3x1s(const float g1[3], float g2[3], float outMat[3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Subtract3x1s(const std::array<float,3> &g1, const std::array<float,3> &g2, std::array<float,3> &outMat)
 {
   outMat[0] = g1[0] - g2[0];
   outMat[1] = g1[1] - g2[1];
   outMat[2] = g1[2] - g2[2];
 }
 
-void MatrixMath::Add3x3s(const float g1[3][3], float g2[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Add3x3s(const float g1[3][3], const float g2[3][3], float outMat[3][3])
 {
   outMat[0][0] = g1[0][0] + g2[0][0];
   outMat[0][1] = g1[0][1] + g2[0][1];
@@ -170,7 +187,10 @@ void MatrixMath::Add3x3s(const float g1[3][3], float g2[3][3], float outMat[3][3
   outMat[2][2] = g1[2][2] + g2[2][2];
 }
 
-void MatrixMath::Subtract3x3s(const float g1[3][3], float g2[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Subtract3x3s(const float g1[3][3], const float g2[3][3], float outMat[3][3])
 {
   outMat[0][0] = g1[0][0] - g2[0][0];
   outMat[0][1] = g1[0][1] - g2[0][1];
@@ -183,13 +203,19 @@ void MatrixMath::Subtract3x3s(const float g1[3][3], float g2[3][3], float outMat
   outMat[2][2] = g1[2][2] - g2[2][2];
 }
 
-void MatrixMath::Multiply3x1withConstant(float g[3], float constant)
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Multiply3x1withConstant(std::array<float,3> &g, float constant)
 {
   g[0] *= constant;
   g[1] *= constant;
   g[2] *= constant;
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void MatrixMath::Multiply3x3withConstant(float g[3][3], float constant)
 {
   g[0][0] *= constant;
@@ -203,7 +229,10 @@ void MatrixMath::Multiply3x3withConstant(float g[3][3], float constant)
   g[2][2] *= constant;
 }
 
-void MatrixMath::Invert3x3(float g[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Invert3x3(const float g[3][3], float outMat[3][3])
 {
   Adjoint3x3(g, outMat);
   float determinant = Determinant3x3(g);
@@ -211,14 +240,20 @@ void MatrixMath::Invert3x3(float g[3][3], float outMat[3][3])
   Multiply3x3withConstant(outMat, oneOverDeterminant);
 }
 
-void MatrixMath::Adjoint3x3(float g[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Adjoint3x3(const float g[3][3], float outMat[3][3])
 {
   float temp[3][3];
   Cofactor3x3(g, temp);
   Transpose3x3(temp, outMat);
 }
 
-void MatrixMath::Cofactor3x3(float g[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Cofactor3x3(const float g[3][3], float outMat[3][3])
 {
   float temp[3][3];
   Minors3x3(g, temp);
@@ -236,7 +271,10 @@ void MatrixMath::Cofactor3x3(float g[3][3], float outMat[3][3])
   outMat[2][2] = temp[2][2];
 }
 
-void MatrixMath::Minors3x3(float g[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Minors3x3(const float g[3][3], float outMat[3][3])
 {
   outMat[0][0] = g[1][1] * g[2][2] - g[2][1] * g[1][2];
   outMat[0][1] = g[1][0] * g[2][2] - g[2][0] * g[1][2];
@@ -249,12 +287,18 @@ void MatrixMath::Minors3x3(float g[3][3], float outMat[3][3])
   outMat[2][2] = g[0][0] * g[1][1] - g[1][0] * g[0][1];
 }
 
-float MatrixMath::Determinant3x3(float g[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+float MatrixMath::Determinant3x3(const float g[3][3])
 {
   return (g[0][0] * (g[1][1] * g[2][2] - g[1][2] * g[2][1])) - (g[0][1] * (g[1][0] * g[2][2] - g[1][2] * g[2][0])) + (g[0][2] * (g[1][0] * g[2][1] - g[1][1] * g[2][0]));
 }
 
-void MatrixMath::Transpose3x3(float g[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Transpose3x3(const float g[3][3], float outMat[3][3])
 {
   outMat[0][0] = g[0][0];
   outMat[0][1] = g[1][0];
@@ -267,7 +311,10 @@ void MatrixMath::Transpose3x3(float g[3][3], float outMat[3][3])
   outMat[2][2] = g[2][2];
 }
 
-void MatrixMath::Copy3x3(float g[3][3], float outMat[3][3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Copy3x3(const float g[3][3], float outMat[3][3])
 {
   outMat[0][0] = g[0][0];
   outMat[0][1] = g[0][1];
@@ -280,13 +327,19 @@ void MatrixMath::Copy3x3(float g[3][3], float outMat[3][3])
   outMat[2][2] = g[2][2];
 }
 
-void MatrixMath::Copy3x1(float g[3], float outMat[3])
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void MatrixMath::Copy3x1(const std::array<float,3> &g, std::array<float,3> &outMat)
 {
   outMat[0] = g[0];
   outMat[1] = g[1];
   outMat[2] = g[2];
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void MatrixMath::Identity3x3(float g[3][3])
 {
   g[0][0] = 1.0f;
@@ -300,6 +353,9 @@ void MatrixMath::Identity3x3(float g[3][3])
   g[2][2] = 1.0f;
 }
 
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void MatrixMath::Normalize3x3(float g[3][3])
 {
   float denom;
@@ -371,7 +427,7 @@ void MatrixMath::Normalize3x3(float g[3][3])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MatrixMath::Normalize3x1(float g[3])
+void MatrixMath::Normalize3x1(std::array<float,3> &g)
 {
   float denom;
   denom = g[0] * g[0] + g[1] * g[1] + g[2] * g[2];
@@ -400,7 +456,7 @@ void MatrixMath::Normalize3x1(float g[3])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-int MatrixMath::FindIndexOfMaxVal3x1(float g[3])
+int MatrixMath::FindIndexOfMaxVal3x1(const std::array<float,3> &g)
 {
   float a = fabs(g[0]);
   float b = fabs(g[1]);
@@ -409,20 +465,19 @@ int MatrixMath::FindIndexOfMaxVal3x1(float g[3])
   {
     return 0;
   }
-  else if(b >= a && b >= c)
+
+  if(b >= a && b >= c)
   {
     return 1;
   }
-  else
-  {
-    return 2;
-  }
+
+  return 2;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MatrixMath::Sort3x1Ascending(float g[3])
+void MatrixMath::Sort3x1Ascending(std::array<float,3> &g)
 {
   float temp;
 
@@ -481,7 +536,7 @@ void MatrixMath::Sort3x1Ascending(float g[3])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MatrixMath::Normalize3x1(double g[3])
+void MatrixMath::Normalize3x1(std::array<double,3> &g)
 {
   double denom;
   denom = g[0] * g[0] + g[1] * g[1] + g[2] * g[2];
@@ -506,7 +561,7 @@ void MatrixMath::Normalize3x1(double g[3])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-double MatrixMath::Magnitude4x1(double a[4])
+double MatrixMath::Magnitude4x1(const std::array<double,4> &a)
 {
   return (sqrt((a[0] * a[0]) + (a[1] * a[1]) + (a[2] * a[2]) + (a[3] * a[3])));
 }
@@ -514,7 +569,7 @@ double MatrixMath::Magnitude4x1(double a[4])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-float MatrixMath::Magnitude4x1(float a[4])
+float MatrixMath::Magnitude4x1(const std::array<float,4> &a)
 {
   return (sqrtf((a[0] * a[0]) + (a[1] * a[1]) + (a[2] * a[2]) + (a[3] * a[3])));
 }
@@ -522,7 +577,7 @@ float MatrixMath::Magnitude4x1(float a[4])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-float MatrixMath::DotProduct3x1(float a[3], float b[3])
+float MatrixMath::DotProduct3x1(const std::array<float,3> &a, const std::array<float,3> &b)
 {
   return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
 }
@@ -530,7 +585,7 @@ float MatrixMath::DotProduct3x1(float a[3], float b[3])
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-float MatrixMath::DotProduct3x1(double a[3], double b[3])
+float MatrixMath::DotProduct3x1(const std::array<double,3> &a, const std::array<double,3> &b)
 {
   return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]);
 }

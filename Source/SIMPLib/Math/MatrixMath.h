@@ -33,10 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-
-#ifndef _matrixmath_h_
-#define _matrixmath_h_
-
+#pragma once
 
 #include "SIMPLib/SIMPLib.h"
 #include "SIMPLib/Math/SIMPLibMath.h"
@@ -77,7 +74,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param g2
      * @param outMat
      */
-    static void Multiply3x3with3x3(float g1[3][3], float g2[3][3], float outMat[3][3]);
+    static void Multiply3x3with3x3(const float g1[3][3], const float g2[3][3], float outMat[3][3]);
 
     /**
      * @brief Performs the Matrix Multiplication of g1 and g2 and puts the result into outMat. (Single Precision version)
@@ -85,7 +82,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param g2
      * @param outMat
      */
-    static void Multiply3x3with3x1(const float g1[3][3], float g2[3], float outMat[3]);
+    static void Multiply3x3with3x1(const float g1[3][3], const std::array<float,3> &g2, std::array<float,3> &outMat);
 
     /**
      * @brief Performs the Matrix Multiplication of g1 and g2 and puts the result into outMat. (Double Precision Version)
@@ -93,7 +90,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param g2
      * @param outMat
      */
-    static void Multiply3x3with3x1(double g1[3][3], double g2[3], double outMat[3]);
+    static void Multiply3x3with3x1(const double g1[3][3], const std::array<double,3> &g2, std::array<double,3> &outMat);
 
     /**
      * @brief Performs the Matrix Addition of g1 and g2 and puts the result into outMat. (Single Precision version)
@@ -101,7 +98,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param g2
      * @param outMat
      */
-    static void Add3x1s(const float g1[3], float g2[3], float outMat[3]);
+    static void Add3x1s(const std::array<float,3> &g1, const std::array<float,3> &g2, std::array<float,3> &outMat);
 
     /**
      * @brief Performs the Matrix Subtraction of g2 from g1 and puts the result into outMat. (Single Precision version)
@@ -109,7 +106,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param g2
      * @param outMat
      */
-    static void Subtract3x1s(const float g1[3], float g2[3], float outMat[3]);
+    static void Subtract3x1s(const std::array<float,3> &g1, const std::array<float,3> &g2, std::array<float,3> &outMat);
 
     /**
      * @brief Performs the Matrix Addition of g1 and g2 and puts the result into outMat. (Single Precision version)
@@ -117,7 +114,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param g2
      * @param outMat
      */
-    static void Add3x3s(const float g1[3][3], float g2[3][3], float outMat[3][3]);
+    static void Add3x3s(const float g1[3][3], const float g2[3][3], float outMat[3][3]);
 
     /**
      * @brief Performs the Matrix Subtraction of g2 from g1 and puts the result into outMat. (Single Precision version)
@@ -125,14 +122,14 @@ class SIMPLib_EXPORT MatrixMath
      * @param g2
      * @param outMat
      */
-    static void Subtract3x3s(const float g1[3][3], float g2[3][3], float outMat[3][3]);
+    static void Subtract3x3s(const float g1[3][3], const float g2[3][3], float outMat[3][3]);
 
     /**
      * @brief Multiplies each element of a 3x1 matrix by the value v.
      * @param g Input Matrix
      * @param v Value to mutliply each element by.
      */
-    static void Multiply3x1withConstant(float g[3], float v);
+    static void Multiply3x1withConstant(std::array<float,3> &g, float v);
 
     /**
      * @brief Multiplies each element of a 3x1 matrix by the value v.
@@ -161,56 +158,56 @@ class SIMPLib_EXPORT MatrixMath
      * @param g
      * @param outMat
      */
-    static void Transpose3x3(float g[3][3], float outMat[3][3]);
+    static void Transpose3x3(const float g[3][3], float outMat[3][3]);
 
     /**
      * @brief Inverts the 3x3 matrix and places the result into outMat
      * @param g
      * @param outMat
      */
-    static void Invert3x3(float g[3][3], float outMat[3][3]);
+    static void Invert3x3(const float g[3][3], float outMat[3][3]);
 
     /**
      * @brief Calculates the Adjoint matrix of the 3x3 matrix and places the result into outMat
      * @param g
      * @param outMat
      */
-    static void Adjoint3x3(float g[3][3], float outMat[3][3]);
+    static void Adjoint3x3(const float g[3][3], float outMat[3][3]);
 
     /**
      * @brief Calculates the cofactor matrix of the 3x3 matrix and places the result into outMat
      * @param g
      * @param outMat
      */
-    static void Cofactor3x3(float g[3][3], float outMat[3][3]);
+    static void Cofactor3x3(const float g[3][3], float outMat[3][3]);
 
     /**
      * @brief Calculates the matrix of minors of the 3x3 matrix and places the result into outMat
      * @param g
      * @param outMat
      */
-    static void Minors3x3(float g[3][3], float outMat[3][3]);
+    static void Minors3x3(const float g[3][3], float outMat[3][3]);
 
     /**
      * @brief The determinant of a 3x3 matrix
      * @param g 3x3 Vector
      * @return
      */
-    static float Determinant3x3(float g[3][3]);
+    static float Determinant3x3(const float g[3][3]);
 
     /**
      * @brief Copies a 3x3 matrix into another 3x3 matrix
      * @param g
      * @param outMat
      */
-    static void Copy3x3(float g[3][3], float outMat[3][3]);
+    static void Copy3x3(const float g[3][3], float outMat[3][3]);
 
     /**
      * @brief Copies a 3x1 matrix into another 3x1 matrix
      * @param g
      * @param outMat
      */
-    static void Copy3x1(float g[3], float outMat[3]);
+    static void Copy3x1(const std::array<float,3> &g, std::array<float,3> &outMat);
 
     /**
      * @brief Initializes the 3x3 matrix to the "Identity" matrix
@@ -228,25 +225,25 @@ class SIMPLib_EXPORT MatrixMath
      * @brief Performs an "in place" normalization of the 3x1 vector. Single Precision Variant
      * @param g
      */
-    static void Normalize3x1(float g[3]);
+    static void Normalize3x1(std::array<float,3> &g);
 
     /**
      * @brief Performs an "in place" sort of the 3x1 vector in ascending order. Single Precision Variant
      * @param g
      */
-    static void Sort3x1Ascending(float g[3]);
+    static void Sort3x1Ascending(std::array<float,3> &g);
 
     /**
      * @brief Returns index of maximum value. Single Precision Variant
      * @param g
      */
-    static int FindIndexOfMaxVal3x1(float g[3]);
+    static int FindIndexOfMaxVal3x1(const std::array<float,3> &g);
 
     /**
     * @brief Performs an "in place" normalization of the 3x1 vector. Double Precision Variant
     * @param g
     */
-    static void Normalize3x1(double g[3]);
+    static void Normalize3x1(std::array<double,3> &g);
 
     /**
      * @brief Performs an "in place" normalization of the 3x1 vector. Double Precision Variant
@@ -278,13 +275,13 @@ class SIMPLib_EXPORT MatrixMath
      * @brief Returns the magnitude of the 4x1 vector. Single Precision Variant
      * @param a
      */
-    static float Magnitude4x1(float a[4]);
+    static float Magnitude4x1(const std::array<float,4> &a);
 
     /**
      * @brief Returns the magnitude of the 4x1 vector. Single Precision Variant
      * @param a
      */
-    static double Magnitude4x1(double a[4]);
+    static double Magnitude4x1(const std::array<double,4> &a);
 
     /**
      * @brief The dot product of 2 vectors a & b. Double Precision Variant
@@ -292,7 +289,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param b 1x3 Vector
      * @return
      */
-    static float DotProduct3x1(double a[3], double b[3]);
+    static float DotProduct3x1(const std::array<double,3> &a, const std::array<double,3> &b);
 
     /**
      * @brief The dot product of 2 vectors a & b. Single Precision Variant
@@ -300,7 +297,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param b 1x3 Vector
      * @return
      */
-    static float DotProduct3x1(float a[3], float b[3]);
+    static float DotProduct3x1(const std::array<float,3> &a, const std::array<float,3> &b);
 
     /**
      * @brief Performs a Cross Product of "a into b" and places the result into c. Double Precision Variant
@@ -309,7 +306,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param b
      * @param c
      */
-    static void CrossProduct(double a[3], double b[3], double c[3]);
+    static void CrossProduct(const std::array<double,3> &a, const std::array<double,3> &b, std::array<double,3> &c);
 
     /**
      * @brief Performs a Cross Product of "a into b" and places the result into c. Single Precision Variant
@@ -318,7 +315,7 @@ class SIMPLib_EXPORT MatrixMath
      * @param b
      * @param c
      */
-    static void CrossProduct(float a[3], float b[3], float c[3]);
+    static void CrossProduct(const std::array<float,3> &a, const std::array<float,3> &b, std::array<float,3> &c);
 
 
   protected:
@@ -328,6 +325,3 @@ class SIMPLib_EXPORT MatrixMath
     MatrixMath(const MatrixMath&); // Copy Constructor Not Implemented
     void operator=(const MatrixMath&); // Operator '=' Not Implemented
 };
-
-#endif /* _MatrixMath_H_ */
-
