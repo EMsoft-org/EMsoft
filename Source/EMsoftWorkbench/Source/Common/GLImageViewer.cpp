@@ -45,6 +45,7 @@
 #include <QtGui/QPainter>
 
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QFileDialog>
 
 #include "Common/Constants.h"
 
@@ -109,9 +110,37 @@ void GLImageViewer::zoomOut()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+void GLImageViewer::saveImage()
+{
+  QString filePath = QFileDialog::getSaveFileName(this, tr("Save Image"), m_OpenDialogLastDirectory, tr("JPEG File (*.jpeg);;PNG File(*.png);;TIFF File(*.tiff);;All Files (*.*)"));
+  m_OpenDialogLastDirectory = filePath;
+  if(filePath.isEmpty())
+  {
+    return;
+  }
+
+  bool success = m_CurrentImage.save(filePath);
+  if (!success)
+  {
+    emit errorMessageGenerated(tr("Error: Unable to save image to file path '%1'").arg(filePath));
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 float GLImageViewer::getZoomFactor()
 {
   return m_ZoomFactor;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void GLImageViewer::setZoomFactor(float val)
+{
+  m_ZoomFactor = val;
+  update();
 }
 
 // -----------------------------------------------------------------------------
@@ -219,6 +248,8 @@ void GLImageViewer::paintGL()
       m_ZoomFactor = minZoomFactor;
     }
   }
+
+  emit zoomFactorChanged(m_ZoomFactor);
 
   float percent = 1 / m_ZoomFactor;
   int newWidth = m_CurrentImage.width() / percent;

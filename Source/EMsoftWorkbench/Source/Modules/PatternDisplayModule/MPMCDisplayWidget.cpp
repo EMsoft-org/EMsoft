@@ -72,6 +72,7 @@ void MPMCDisplayWidget::setupGui()
   connect(zoomIn, &QPushButton::pressed, [=] { imageViewer->zoomIn(); });
   connect(zoomOut, &QPushButton::pressed, [=] { imageViewer->zoomOut(); });
   connect(fitToScreen, &QPushButton::pressed, [=] { imageViewer->fitToScreen(); });
+  connect(imageViewer, &GLImageViewer::errorMessageGenerated, this, &MPMCDisplayWidget::stdOutputMessageGenerated);
 
   imageViewer->setHasKevValue(true);
 
@@ -142,19 +143,7 @@ void MPMCDisplayWidget::on_energyBinSpinBox_valueChanged(int value) const
 // -----------------------------------------------------------------------------
 void MPMCDisplayWidget::on_saveBtn_clicked()
 {
-  QString proposedDir = emSoftApp->getOpenDialogLastDirectory();
-  QString filePath = QFileDialog::getSaveFileName(this, tr("Save Image"), proposedDir, tr("JPEG File (*.jpeg);;PNG File(*.png);;TIFF File(*.tiff);;All Files (*.*)"));
-  emSoftApp->setOpenDialogLastDirectory(filePath);
-  if(filePath.isEmpty())
-  {
-    return;
-  }
-
-  QImage image = imageViewer->getCurrentImage();
-  if(!image.save(filePath))
-  {
-    emit stdOutputMessageGenerated(tr("Error: Unable to save image to file path '%1'").arg(filePath));
-  }
+  imageViewer->saveImage();
 }
 
 // -----------------------------------------------------------------------------

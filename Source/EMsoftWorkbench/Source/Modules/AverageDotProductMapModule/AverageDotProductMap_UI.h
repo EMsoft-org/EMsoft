@@ -117,6 +117,15 @@ protected slots:
    */
   void listenROICheckboxStateChanged(int state);
 
+  /**
+   * @brief updateZoomFactor
+   * @param zoomFactor
+   */
+  void updateZoomFactor(float zoomFactor);
+
+  /**
+   * @brief parametersChanged
+   */
   void parametersChanged();
 
 private slots:

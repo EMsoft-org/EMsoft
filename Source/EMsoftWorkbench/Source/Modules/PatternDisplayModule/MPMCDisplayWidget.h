@@ -139,7 +139,7 @@ protected slots:
 
 signals:
   void controlsChanged(MPMCDisplayWidget::MPMCData mpmcData) const;
-  void stdOutputMessageGenerated(QString msg) const;
+  void stdOutputMessageGenerated(const QString &msg) const;
 
 private slots:
   void updateSliderRange(int, int) const;

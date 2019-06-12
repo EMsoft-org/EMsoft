@@ -77,6 +77,12 @@ void AverageDotProductMap_UI::setupGui()
 
   m_Ui->patternsDsetPathLabel->hide();
 
+  m_Ui->adpMapZoomSB->setDisabled(true);
+  m_Ui->adpMapSaveBtn->setDisabled(true);
+  m_Ui->adpMapZoomInBtn->setDisabled(true);
+  m_Ui->adpMapZoomOutBtn->setDisabled(true);
+  m_Ui->adpMapFitToScreenBtn->setDisabled(true);
+
   // Add limits to all spinboxes
   initializeSpinBoxLimits();
 
@@ -211,6 +217,26 @@ void AverageDotProductMap_UI::createWidgetConnections()
   connect(m_Controller, &AverageDotProductMapController::errorMessageGenerated, this, &AverageDotProductMap_UI::notifyErrorMessage);
   connect(m_Controller, &AverageDotProductMapController::warningMessageGenerated, this, &AverageDotProductMap_UI::notifyWarningMessage);
   connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &AverageDotProductMap_UI::appendToStdOut);
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &AverageDotProductMap_UI::updateZoomFactor);
+
+  connect(m_Ui->adpMapZoomInBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomIn);
+  connect(m_Ui->adpMapZoomOutBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomOut);
+  connect(m_Ui->adpMapFitToScreenBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::fitToScreen);
+  connect(m_Ui->adpMapZoomSB, QOverload<int>::of(&QSpinBox::valueChanged), [=] (int value) { m_Ui->adpViewer->setZoomFactor(value / 100.0f); });
+
+  connect(m_Ui->adpMapSaveBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::saveImage);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void AverageDotProductMap_UI::updateZoomFactor(float zoomFactor)
+{
+  m_Ui->adpMapZoomSB->blockSignals(true);
+  m_Ui->adpMapZoomSB->setValue(zoomFactor * 100);
+  m_Ui->adpMapZoomSB->blockSignals(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -310,6 +336,15 @@ void AverageDotProductMap_UI::threadFinished()
 
   emit validationOfOtherModulesNeeded(this);
   setRunning(false);
+
+  if (!m_Ui->adpViewer->getCurrentImage().isNull())
+  {
+    m_Ui->adpMapZoomSB->setEnabled(true);
+    m_Ui->adpMapSaveBtn->setEnabled(true);
+    m_Ui->adpMapZoomInBtn->setEnabled(true);
+    m_Ui->adpMapZoomOutBtn->setEnabled(true);
+    m_Ui->adpMapFitToScreenBtn->setEnabled(true);
+  }
 }
 
 // -----------------------------------------------------------------------------

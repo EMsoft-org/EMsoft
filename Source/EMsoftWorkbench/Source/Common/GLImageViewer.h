@@ -80,10 +80,29 @@ public:
     void fitToScreen();
 
     /**
+     * @brief saveImage
+     * @return
+     */
+    void saveImage();
+
+    /**
      * @brief getCurrentImage
      * @return
      */
     QImage getCurrentImage() const;
+
+    /**
+     * @brief getZoomFactor
+     * @return
+     */
+    float getZoomFactor();
+
+    /**
+     * @brief setZoomFactor
+     * @param val
+     * @return
+     */
+    void setZoomFactor(float val);
 
     virtual void readSession(QJsonObject &obj);
 
@@ -119,14 +138,10 @@ protected:
      */
     QPoint mapFromImageCoordinates(const QPoint &imageCoords);
 
-    /**
-     * @brief getZoomFactor
-     * @return
-     */
-    float getZoomFactor();
-
   signals:
+    void errorMessageGenerated(const QString &msg);
     void viewerChanged();
+    void zoomFactorChanged(float zoomFactor);
 
 private:
     QImage        m_CurrentImage;
@@ -145,6 +160,8 @@ private:
     QPoint m_TopLeftImageCoord = QPoint(0, 0);
     int m_ImageWidth = 0;
     int m_ImageHeight = 0;
+
+    QString m_OpenDialogLastDirectory;
 
   public:
     GLImageViewer(const GLImageViewer&) = delete; // Copy Constructor Not Implemented
