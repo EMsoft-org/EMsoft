@@ -474,7 +474,6 @@ bool HDF5DatasetSelectionWidget::initWithFile(const QString& hdf5File)
   HDF5FileTreeModel* treeModel = new HDF5FileTreeModel(m_FileId, m_Ui->hdfTreeView);
   connect(treeModel, &HDF5FileTreeModel::selectedHDF5PathsChanged, this, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged);
   treeModel->setOneSelectionOnly(m_OneSelectionOnly);
-  connect(treeModel, SIGNAL(selectedHDF5PathsChanged()), this, SIGNAL(parametersChanged()));
   m_Ui->hdfTreeView->setModel(treeModel);
 #if defined(Q_OS_MAC)
   m_Ui->hdfTreeView->setAttribute(Qt::WA_MacShowFocusRect, false);
