@@ -74,7 +74,7 @@ void ADPMapImageViewer::paintGL()
   QPainter painter;
   painter.begin(this);
   painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-  painter.setPen(QPen(QBrush(Qt::gray, Qt::Dense2Pattern), 1));
+  painter.setPen(QPen(QBrush(Qt::darkGray, Qt::Dense2Pattern), 1));
 
   // We need to convert to image coordinates and then back to mouse coordinates
   // so that our mouse coordinates are within the image boundaries
@@ -83,7 +83,7 @@ void ADPMapImageViewer::paintGL()
   painter.drawLine(0, mouseCoords.y(), width(), mouseCoords.y());
   painter.drawLine(mouseCoords.x(), 0, mouseCoords.x(), height());
 
-  if (m_SelectedImageCoords.x() >= 0 && m_SelectedImageCoords.y() >= 0)
+  if (isPixelSelected())
   {
     QPoint selectedMouseCoords = mapFromImageCoordinates(m_SelectedImageCoords);
 
@@ -91,6 +91,35 @@ void ADPMapImageViewer::paintGL()
     painter.drawLine(0, selectedMouseCoords.y(), width(), selectedMouseCoords.y());
     painter.drawLine(selectedMouseCoords.x(), 0, selectedMouseCoords.x(), height());
   }
+
+  // Get the current mouse coordinate and selected pixel coordinate relative to the image coordinate system
+  int statsStartingHeightOffset = 40;
+  int statsHeightSpacing = 20;
+  QString mousePosStr = "Mouse: N/A";
+  if (isMouseCoordinateValid())
+  {
+    mousePosStr = QObject::tr("Mouse: (%1, %2)").arg(QString::number(imageCoords.x()), QString::number(imageCoords.y()));
+  }
+
+  QString selectedPixelStr = "Selection: N/A";
+  if (isPixelSelected())
+  {
+    selectedPixelStr = QObject::tr("Selection: (%1, %2)").arg(QString::number(m_SelectedImageCoords.x()), QString::number(m_SelectedImageCoords.y()));
+  }
+
+  // Figure out the length of the longest string
+  int maxStrLen = mousePosStr.size();
+  if (selectedPixelStr.size() > maxStrLen)
+  {
+    maxStrLen = selectedPixelStr.size();
+  }
+
+  int statsX = size().width() - (maxStrLen*8);
+
+  painter.setPen(Qt::white);
+  painter.fillRect(statsX - 10, size().height() - statsStartingHeightOffset - 20, maxStrLen*8 + 5, statsStartingHeightOffset + 10, QBrush(QColor(Qt::black)));
+  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset), mousePosStr);
+  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + statsHeightSpacing), selectedPixelStr);
 
   painter.end();
 }
@@ -102,7 +131,7 @@ void ADPMapImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    m_SelectedImageCoords = m_ImageCoords;
+    m_SelectedImageCoords = mapToImageCoordinates(m_MouseCoords);
 
     update();
   }
@@ -116,7 +145,6 @@ void ADPMapImageViewer::mouseMoveEvent(QMouseEvent *event)
   GLImageViewer::mouseMoveEvent(event);
 
   m_MouseCoords = event->pos();
-  m_ImageCoords = mapToImageCoordinates(m_MouseCoords);
 
   update();
 }
@@ -128,9 +156,42 @@ void ADPMapImageViewer::leaveEvent(QEvent* event)
 {
   GLImageViewer::leaveEvent(event);
 
-  m_MouseCoords.setX(-1);
-  m_MouseCoords.setY(-1);
+  invalidateMouseCoordinate();
 
   update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool ADPMapImageViewer::isMouseCoordinateValid() const
+{
+  return (m_MouseCoords.x() >= 0 && m_MouseCoords.y() >= 0);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool ADPMapImageViewer::isPixelSelected() const
+{
+  return (m_SelectedImageCoords.x() >= 0 && m_SelectedImageCoords.y() >= 0);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ADPMapImageViewer::invalidateMouseCoordinate()
+{
+  m_MouseCoords.setX(-1);
+  m_MouseCoords.setY(-1);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ADPMapImageViewer::clearSelectedPixel()
+{
+  m_SelectedImageCoords.setX(-1);
+  m_SelectedImageCoords.setY(-1);
 }
 

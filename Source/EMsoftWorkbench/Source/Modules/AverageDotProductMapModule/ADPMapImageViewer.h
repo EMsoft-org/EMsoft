@@ -54,8 +54,29 @@ protected:
 
   private:
     QPoint m_MouseCoords = QPoint(-1, -1);
-    QPoint m_ImageCoords = QPoint(-1, -1);
     QPoint m_SelectedImageCoords = QPoint(-1, -1);
+
+    /**
+     * @brief Returns whether or not there is a valid mouse coordinate
+     * @return
+     */
+    bool isMouseCoordinateValid() const;
+
+    /**
+     * @brief Returns whether or not there is a pixel selected in the current image
+     * @return
+     */
+    bool isPixelSelected() const;
+
+    /**
+     * @brief invalidateMouseCoordinate
+     */
+    void invalidateMouseCoordinate();
+
+    /**
+     * @brief clearSelectedPixel
+     */
+    void clearSelectedPixel();
 
   public:
     ADPMapImageViewer(const ADPMapImageViewer&) = delete; // Copy Constructor Not Implemented
