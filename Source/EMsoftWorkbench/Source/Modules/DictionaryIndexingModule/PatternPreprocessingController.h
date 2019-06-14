@@ -41,13 +41,13 @@
 
 #include "AverageDotProductMapController.h"
 
-class PatternPreprocessingParametersController : public QObject
+class PatternPreprocessingController : public QObject
 {
   Q_OBJECT
 
 public:
-  PatternPreprocessingParametersController(QObject* parent = nullptr);
-  ~PatternPreprocessingParametersController() override;
+  PatternPreprocessingController(QObject* parent = nullptr);
+  ~PatternPreprocessingController() override;
 
   /**
     * @brief Getter property for Cancel
@@ -154,11 +154,11 @@ private:
    * @param file
    * @param data
    */
-  void writePreprocessedPatternsMatrixToFile(const QString &filePath, const PatternPreprocessingParametersController::PPMatrixData &data) const;
+  void writePreprocessedPatternsMatrixToFile(const QString &filePath, const PatternPreprocessingController::PPMatrixData &data) const;
 
 public:
-  PatternPreprocessingParametersController(const PatternPreprocessingParametersController&) = delete; // Copy Constructor Not Implemented
-  PatternPreprocessingParametersController(PatternPreprocessingParametersController&&) = delete;      // Move Constructor Not Implemented
-  PatternPreprocessingParametersController& operator=(const PatternPreprocessingParametersController&) = delete; // Copy Assignment Not Implemented
-  PatternPreprocessingParametersController& operator=(PatternPreprocessingParametersController&&) = delete;      // Move Assignment Not Implemented
+  PatternPreprocessingController(const PatternPreprocessingController&) = delete; // Copy Constructor Not Implemented
+  PatternPreprocessingController(PatternPreprocessingController&&) = delete;      // Move Constructor Not Implemented
+  PatternPreprocessingController& operator=(const PatternPreprocessingController&) = delete; // Copy Assignment Not Implemented
+  PatternPreprocessingController& operator=(PatternPreprocessingController&&) = delete;      // Move Assignment Not Implemented
 };

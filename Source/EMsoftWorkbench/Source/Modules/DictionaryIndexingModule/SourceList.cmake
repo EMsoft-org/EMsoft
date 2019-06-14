@@ -47,7 +47,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.h
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.h
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.h
-  ${${MODULE_NAME}_DIR}/PatternPreprocessingParametersController.h
+  ${${MODULE_NAME}_DIR}/PatternPreprocessingController.h
   ${${MODULE_NAME}_DIR}/PPMatrixImageViewer.h
 )
 
@@ -68,7 +68,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_SRCS
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.cpp
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.cpp
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.cpp
-  ${${MODULE_NAME}_DIR}/PatternPreprocessingParametersController.cpp
+  ${${MODULE_NAME}_DIR}/PatternPreprocessingController.cpp
   ${${MODULE_NAME}_DIR}/PPMatrixImageViewer.cpp
 )
 

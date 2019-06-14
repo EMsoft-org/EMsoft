@@ -54,7 +54,7 @@ DictionaryIndexing_UI::DictionaryIndexing_UI(QWidget *parent)
   m_Ui->setupUi(this);
 
   m_ADPController = new AverageDotProductMapController(this);
-  m_PPMatrixController = new PatternPreprocessingParametersController(this);
+  m_PPMatrixController = new PatternPreprocessingController(this);
 
   setupGui();
 }
@@ -74,8 +74,6 @@ DictionaryIndexing_UI::~DictionaryIndexing_UI()
 void DictionaryIndexing_UI::setupGui()
 {
   m_ChoosePatternsDatasetDialog = new ChoosePatternsDatasetDialog();
-
-  m_Ui->patternsDsetPathLabel->hide();
 
   // Add limits to all spinboxes
   initializeSpinBoxLimits();
@@ -205,17 +203,15 @@ void DictionaryIndexing_UI::createWidgetConnections()
 
   connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
 
-  connect(m_Ui->inputTypeCB, &QComboBox::currentTextChanged, m_Ui->ppInputTypeLabel, &QLabel::setText);
-
   HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
   connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &DictionaryIndexing_UI::listenSelectedPatternDatasetChanged);
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, m_Ui->ppPatternsDataFileLabel, &QLabel::setText);
+  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, m_Ui->patternDataFileLabel, &QLabel::setText);
 
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_ADPController, &AverageDotProductMapController::errorMessageGenerated, this, &DictionaryIndexing_UI::notifyErrorMessage);
   connect(m_ADPController, &AverageDotProductMapController::warningMessageGenerated, this, &DictionaryIndexing_UI::notifyWarningMessage);
   connect(m_ADPController, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
-  connect(m_ADPController, &AverageDotProductMapController::adpMapCreated, m_Ui->adpViewer, &GLImageViewer::loadImage);
+  connect(m_ADPController, &AverageDotProductMapController::adpMapCreated, m_Ui->adpViewer, &ADPMapImageViewer::loadImage);
 
   connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &DictionaryIndexing_UI::appendToStdOut);
   connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &DictionaryIndexing_UI::updateZoomFactor);
@@ -231,10 +227,13 @@ void DictionaryIndexing_UI::createWidgetConnections()
 
   connect(m_Ui->adpMapSaveBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::saveImage);
 
-  connect(m_PPMatrixController, &PatternPreprocessingParametersController::errorMessageGenerated, this, &DictionaryIndexing_UI::notifyErrorMessage);
-  connect(m_PPMatrixController, &PatternPreprocessingParametersController::warningMessageGenerated, this, &DictionaryIndexing_UI::notifyWarningMessage);
+  connect(m_PPMatrixController, &PatternPreprocessingController::errorMessageGenerated, this, &DictionaryIndexing_UI::notifyErrorMessage);
+  connect(m_PPMatrixController, &PatternPreprocessingController::warningMessageGenerated, this, &DictionaryIndexing_UI::notifyWarningMessage);
   connect(m_PPMatrixController, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
-  connect(m_PPMatrixController, &PatternPreprocessingParametersController::preprocessedPatternsMatrixCreated, m_Ui->ppMatrixViewer, &GLImageViewer::loadImage);
+  connect(m_PPMatrixController, &PatternPreprocessingController::preprocessedPatternsMatrixCreated, [=] (QImage image) {
+    auto matrixData = getPPMatrixData();
+    m_Ui->ppMatrixViewer->loadImage(image, matrixData.hipassRange, matrixData.hipassNumSteps);
+  });
 }
 
 // -----------------------------------------------------------------------------
@@ -254,14 +253,11 @@ void DictionaryIndexing_UI::listenSelectedPatternDatasetChanged(QStringList patt
 {
   if (patternDSetPaths.size() == 1)
   {
-    m_Ui->patternsDsetPathLabel->setText(patternDSetPaths[0]);
-    m_Ui->ppPatternsDatasetLabel->setText(patternDSetPaths[0]);
-    m_Ui->patternsDsetPathLabel->show();
+    m_Ui->patternDsetPathLabel->setText(patternDSetPaths[0]);
   }
   else
   {
-    m_Ui->patternsDsetPathLabel->hide();
-    m_Ui->ppPatternsDatasetLabel->setText("N/A");
+    m_Ui->patternDsetPathLabel->setText("N/A");
   }
 
   parametersChanged();
@@ -322,7 +318,7 @@ void DictionaryIndexing_UI::listenGenerateADPBtnPressed()
   AverageDotProductMapController::ADPMapData data = getADPMapData();
 
   m_Ui->generateADPBtn->setText("Cancel");
-  m_Ui->adpControlsFrame->setDisabled(true);
+  m_Ui->adpParametersGroupBox->setDisabled(true);
 
   // Single-threaded for now, but we can multi-thread later if needed
   //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
@@ -352,7 +348,7 @@ void DictionaryIndexing_UI::generateADPThreadFinished()
   m_Ui->adpMapFitToScreenBtn->setEnabled(true);
 
   m_Ui->generateADPBtn->setText("Generate");
-  m_Ui->adpControlsFrame->setEnabled(true);
+  m_Ui->adpParametersGroupBox->setEnabled(true);
 
   emit validationOfOtherModulesNeeded(this);
   setRunning(false);
@@ -375,10 +371,10 @@ void DictionaryIndexing_UI::listenGeneratePPPBtnPressed()
   setRunning(true);
   clearModuleIssues();
 
-  PatternPreprocessingParametersController::PPMatrixData data = getPPMatrixData();
+  PatternPreprocessingController::PPMatrixData data = getPPMatrixData();
 
   m_Ui->generatePPMatrixBtn->setText("Cancel");
-  m_Ui->ppMatrixControlsFrame->setDisabled(true);
+  m_Ui->ppParametersGroupBox->setDisabled(true);
 
   // Single-threaded for now, but we can multi-thread later if needed
   //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
@@ -387,7 +383,7 @@ void DictionaryIndexing_UI::listenGeneratePPPBtnPressed()
     m_PPMatrixWatcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
     connect(m_PPMatrixWatcher.data(), SIGNAL(finished()), this, SLOT(generatePPMatrixThreadFinished()));
 
-    QFuture<void> future = QtConcurrent::run(m_PPMatrixController, &PatternPreprocessingParametersController::createPreprocessedPatternsMatrix, data);
+    QFuture<void> future = QtConcurrent::run(m_PPMatrixController, &PatternPreprocessingController::createPreprocessedPatternsMatrix, data);
     m_PPMatrixWatcher->setFuture(future);
   }
 }
@@ -402,7 +398,7 @@ void DictionaryIndexing_UI::generatePPMatrixThreadFinished()
   m_Ui->generateADPBtn->setEnabled(true);
 
   m_Ui->generatePPMatrixBtn->setText("Generate");
-  m_Ui->ppMatrixControlsFrame->setEnabled(true);
+  m_Ui->ppParametersGroupBox->setEnabled(true);
 
   emit validationOfOtherModulesNeeded(this);
   setRunning(false);
@@ -443,7 +439,7 @@ bool DictionaryIndexing_UI::validateData()
 
   m_Ui->generateADPBtn->setEnabled(true);
 
-  PatternPreprocessingParametersController::PPMatrixData ppData = getPPMatrixData();
+  PatternPreprocessingController::PPMatrixData ppData = getPPMatrixData();
   if(!m_PPMatrixController->validatePPPValues(ppData))
   {
     m_Ui->generatePPMatrixBtn->setDisabled(true);
@@ -660,11 +656,11 @@ AverageDotProductMapController::ADPMapData DictionaryIndexing_UI::getADPMapData(
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternPreprocessingParametersController::PPMatrixData DictionaryIndexing_UI::getPPMatrixData()
+PatternPreprocessingController::PPMatrixData DictionaryIndexing_UI::getPPMatrixData()
 {
   AverageDotProductMapController::ADPMapData adpMapData = getADPMapData();
 
-  PatternPreprocessingParametersController::PPMatrixData data;
+  PatternPreprocessingController::PPMatrixData data;
   data.patternHeight = m_Ui->patternHeightSB->value();
   data.patternWidth = m_Ui->patternWidthSB->value();
   data.ipfHeight = m_Ui->ipfHeightSB->value();

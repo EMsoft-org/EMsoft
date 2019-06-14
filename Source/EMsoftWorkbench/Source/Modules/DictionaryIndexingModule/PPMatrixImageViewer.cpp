@@ -74,7 +74,7 @@ void PPMatrixImageViewer::paintGL()
 {
   GLImageViewer::paintGL();
 
-  if (getCurrentImage().isNull())
+  if (getCurrentImage().isNull() || m_HipassNumOfSteps == 0 || m_HipassValue == 0.0f)
   {
     return;
   }

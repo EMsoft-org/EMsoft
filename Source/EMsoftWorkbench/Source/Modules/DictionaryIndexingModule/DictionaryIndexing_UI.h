@@ -39,7 +39,7 @@
 
 #include "Modules/IModuleUI.h"
 #include "Modules/DictionaryIndexingModule/AverageDotProductMapController.h"
-#include "Modules/DictionaryIndexingModule/PatternPreprocessingParametersController.h"
+#include "Modules/DictionaryIndexingModule/PatternPreprocessingController.h"
 
 #include "ui_DictionaryIndexing_UI.h"
 
@@ -141,7 +141,7 @@ private:
   QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
 
   AverageDotProductMapController* m_ADPController = nullptr;
-  PatternPreprocessingParametersController* m_PPMatrixController = nullptr;
+  PatternPreprocessingController* m_PPMatrixController = nullptr;
 
   ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
 
@@ -209,7 +209,7 @@ private:
    * @brief getPPMatrixData
    * @return
    */
-  PatternPreprocessingParametersController::PPMatrixData getPPMatrixData();
+  PatternPreprocessingController::PPMatrixData getPPMatrixData();
 
 public:
   DictionaryIndexing_UI(const DictionaryIndexing_UI&) = delete; // Copy Constructor Not Implemented

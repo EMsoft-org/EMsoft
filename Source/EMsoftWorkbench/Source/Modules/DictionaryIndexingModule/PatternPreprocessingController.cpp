@@ -33,7 +33,7 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "PatternPreprocessingParametersController.h"
+#include "PatternPreprocessingController.h"
 
 //#include "EMsoftWrapperLib/DictionaryIndexing/EMsoftDIwrappers.h"
 
@@ -49,20 +49,20 @@
 #include "Constants.h"
 
 static size_t k_InstanceKey = 0;
-static QMap<size_t, PatternPreprocessingParametersController*> instances;
+static QMap<size_t, PatternPreprocessingController*> instances;
 
 namespace SizeConstants = DictionaryIndexingModuleConstants::ArraySizes;
 
 /**
- * @brief PatternPreprocessingParametersControllerProgress
+ * @brief PatternPreprocessingControllerProgress
  * @param instance
  * @param loopCompleted
  * @param totalLoops
  * @param bseYield
  */
-void PatternPreprocessingParametersControllerProgress(size_t instance, int loopCompleted, int totalLoops)
+void PatternPreprocessingControllerProgress(size_t instance, int loopCompleted, int totalLoops)
 {
-  PatternPreprocessingParametersController* obj = instances[instance];
+  PatternPreprocessingController* obj = instances[instance];
   if(nullptr != obj)
   {
     obj->setUpdateProgress(loopCompleted, totalLoops);
@@ -72,7 +72,7 @@ void PatternPreprocessingParametersControllerProgress(size_t instance, int loopC
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternPreprocessingParametersController::PatternPreprocessingParametersController(QObject* parent)
+PatternPreprocessingController::PatternPreprocessingController(QObject* parent)
 : QObject(parent)
 {
   m_InstanceKey = ++k_InstanceKey;
@@ -81,7 +81,7 @@ PatternPreprocessingParametersController::PatternPreprocessingParametersControll
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternPreprocessingParametersController::~PatternPreprocessingParametersController()
+PatternPreprocessingController::~PatternPreprocessingController()
 {
   k_InstanceKey--;
 }
@@ -89,7 +89,7 @@ PatternPreprocessingParametersController::~PatternPreprocessingParametersControl
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessingParametersController::createPreprocessedPatternsMatrix(const PPMatrixData &data)
+void PatternPreprocessingController::createPreprocessedPatternsMatrix(const PPMatrixData &data)
 {
   // WIP: This code currently calls out to a QProcess, but eventually it will use a C++ callback method instead
 
@@ -123,7 +123,7 @@ void PatternPreprocessingParametersController::createPreprocessedPatternsMatrix(
   // incorrect interactions between the callback routines.
   m_Executing = true;
   instances[m_InstanceKey] = this;
-//  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &PatternPreprocessingParametersControllerProgress, m_InstanceKey, &m_Cancel);
+//  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &PatternPreprocessingControllerProgress, m_InstanceKey, &m_Cancel);
 
   QProcess* ppMatrixProcess = new QProcess();
   connect(ppMatrixProcess, &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardOutput().toStdString())); });
@@ -138,7 +138,7 @@ void PatternPreprocessingParametersController::createPreprocessedPatternsMatrix(
     ppMatrixProcess->start(ppMatrixExecutablePath, parameters);
 
     // Wait until the QProcess is finished to exit this thread.
-    // PatternPreprocessingParametersController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
+    // PatternPreprocessingController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
     ppMatrixProcess->waitForFinished(-1);
   }
 }
@@ -146,7 +146,7 @@ void PatternPreprocessingParametersController::createPreprocessedPatternsMatrix(
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessingParametersController::writePreprocessedPatternsMatrixToFile(const QString &filePath, const PatternPreprocessingParametersController::PPMatrixData &data) const
+void PatternPreprocessingController::writePreprocessedPatternsMatrixToFile(const QString &filePath, const PatternPreprocessingController::PPMatrixData &data) const
 {
   QFile outputFile(filePath);
   if (outputFile.open(QFile::WriteOnly))
@@ -231,7 +231,7 @@ void PatternPreprocessingParametersController::writePreprocessedPatternsMatrixTo
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessingParametersController::listenPreprocessedPatternsMatrixFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void PatternPreprocessingController::listenPreprocessedPatternsMatrixFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
   // EMgetADP program automatically adds "_ADP" onto the end of the output image name
   QString imagePath = tr("%1/MatrixResult.tiff").arg(m_TempDir.path());
@@ -259,17 +259,18 @@ void PatternPreprocessingParametersController::listenPreprocessedPatternsMatrixF
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString PatternPreprocessingParametersController::getPreprocessedPatternsMatrixExecutablePath() const
+QString PatternPreprocessingController::getPreprocessedPatternsMatrixExecutablePath() const
 {
-  QString adpExecutablePath;
+  QString executableName = "EMEBSDDIpreview";
+  QString executablePath;
 
   QDir workingDirectory = QDir(QCoreApplication::applicationDirPath());
 
 #if defined(Q_OS_WIN)
-  if (workingDirectory.exists("EMgetADP.exe"))
+  if (workingDirectory.exists(tr("%1.exe").arg(executableName)))
   {
-    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP.exe");
-    return adpExecutablePath;
+    executablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), tr("%1.exe").arg(executableName));
+    return executablePath;
   }
 #elif defined(Q_OS_MAC)
   // Look to see if we are inside an .app package or inside the 'tools' directory
@@ -278,10 +279,10 @@ QString PatternPreprocessingParametersController::getPreprocessedPatternsMatrixE
     workingDirectory.cdUp();
     if (workingDirectory.cd("bin"))
     {
-      if (workingDirectory.exists("EMgetADP"))
+      if (workingDirectory.exists(executableName))
       {
-        adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-        return adpExecutablePath;
+        executablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), executableName);
+        return executablePath;
       }
       workingDirectory.cdUp();
     }
@@ -289,10 +290,10 @@ QString PatternPreprocessingParametersController::getPreprocessedPatternsMatrixE
     workingDirectory.cdUp();
     workingDirectory.cdUp();
 
-    if(workingDirectory.dirName() == "Bin" && workingDirectory.exists("EMgetADP"))
+    if(workingDirectory.dirName() == "Bin" && workingDirectory.exists(executableName))
     {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-      return adpExecutablePath;
+      executablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), executableName);
+      return executablePath;
     }
   }
 #else
@@ -302,10 +303,10 @@ QString PatternPreprocessingParametersController::getPreprocessedPatternsMatrixE
   QDir workingDirectory = workbenchDir;
   if(workingDirectory.cd("bin"))
   {
-    if (workingDirectory.exists("EMgetADP"))
+    if (workingDirectory.exists(executableName))
     {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-      return adpExecutablePath;
+      executablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), executableName);
+      return executablePath;
     }
 
     workingDirectory.cdUp();
@@ -317,29 +318,29 @@ QString PatternPreprocessingParametersController::getPreprocessedPatternsMatrixE
   workingDirectory.cdUp();
   if(workingDirectory.cd("bin"))
   {
-    if (workingDirectory.exists("EMgetADP"))
+    if (workingDirectory.exists(executableName))
     {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-      return adpExecutablePath;
+      executablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), executableName);
+      return executablePath;
     }
 
     workingDirectory.cdUp();
   }
 #endif
 
-  if (adpExecutablePath.isEmpty())
+  if (executablePath.isEmpty())
   {
-    QString errMsg = "Could not find Average Dot Product Map executable!";
+    QString errMsg = tr("Could not find '%1' executable!").arg(executableName);
     emit errorMessageGenerated(errMsg);
   }
 
-  return adpExecutablePath;
+  return executablePath;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessingParametersController::initializeData()
+void PatternPreprocessingController::initializeData()
 {
   m_OutputMaskVector.clear();
   m_OutputIQMapVector.clear();
@@ -352,7 +353,7 @@ void PatternPreprocessingParametersController::initializeData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternPreprocessingParametersController::validatePPPValues(const PPMatrixData &data)
+bool PatternPreprocessingController::validatePPPValues(const PPMatrixData &data)
 {
   return true;
 }
@@ -360,7 +361,7 @@ bool PatternPreprocessingParametersController::validatePPPValues(const PPMatrixD
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<int32_t> PatternPreprocessingParametersController::PPMatrixData::getIParVector() const
+std::vector<int32_t> PatternPreprocessingController::PPMatrixData::getIParVector() const
 {
   std::vector<int32_t> iParVector(SizeConstants::IParSize, 0);
 
@@ -385,7 +386,7 @@ std::vector<int32_t> PatternPreprocessingParametersController::PPMatrixData::get
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<float> PatternPreprocessingParametersController::PPMatrixData::getFParVector() const
+std::vector<float> PatternPreprocessingController::PPMatrixData::getFParVector() const
 {
   std::vector<float> fParVector(SizeConstants::FParSize, 0.0f);
 
@@ -398,7 +399,7 @@ std::vector<float> PatternPreprocessingParametersController::PPMatrixData::getFP
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<char> PatternPreprocessingParametersController::PPMatrixData::getSParVector() const
+std::vector<char> PatternPreprocessingController::PPMatrixData::getSParVector() const
 {
   // Move each string from the string array into the char array.  Each string has SParStringSize as its max size.
   std::vector<char> sParVector(SizeConstants::SParSize * SizeConstants::SParStringSize, 0);
@@ -427,7 +428,7 @@ std::vector<char> PatternPreprocessingParametersController::PPMatrixData::getSPa
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessingParametersController::setUpdateProgress(int loopCompleted, int totalLoops)
+void PatternPreprocessingController::setUpdateProgress(int loopCompleted, int totalLoops)
 {
   QString ss = QObject::tr("Average Dot Product: %1 of %2").arg(loopCompleted, totalLoops);
   emit stdOutputMessageGenerated(ss);
@@ -436,7 +437,7 @@ void PatternPreprocessingParametersController::setUpdateProgress(int loopComplet
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-int PatternPreprocessingParametersController::getNumCPUCores()
+int PatternPreprocessingController::getNumCPUCores()
 {
   return QThread::idealThreadCount();
 }
@@ -444,7 +445,7 @@ int PatternPreprocessingParametersController::getNumCPUCores()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternPreprocessingParametersController::getCancel() const
+bool PatternPreprocessingController::getCancel() const
 {
   return m_Cancel;
 }
@@ -452,7 +453,7 @@ bool PatternPreprocessingParametersController::getCancel() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessingParametersController::setCancel(const bool& value)
+void PatternPreprocessingController::setCancel(const bool& value)
 {
   m_Cancel = value;
 }
