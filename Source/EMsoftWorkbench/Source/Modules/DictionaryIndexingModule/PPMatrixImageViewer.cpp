@@ -33,7 +33,7 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "ADPMapImageViewer.h"
+#include "PPMatrixImageViewer.h"
 
 #include <QtCore/QDebug>
 
@@ -43,7 +43,7 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ADPMapImageViewer::ADPMapImageViewer(QWidget *parent, Qt::WindowFlags windowFlags) :
+PPMatrixImageViewer::PPMatrixImageViewer(QWidget *parent, Qt::WindowFlags windowFlags) :
   GLImageViewer(parent, windowFlags)
 {
   setMouseTracking(true);
@@ -52,12 +52,25 @@ ADPMapImageViewer::ADPMapImageViewer(QWidget *parent, Qt::WindowFlags windowFlag
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ADPMapImageViewer::~ADPMapImageViewer() = default;
+PPMatrixImageViewer::~PPMatrixImageViewer() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMapImageViewer::paintGL()
+void PPMatrixImageViewer::loadImage(const QImage &image, float hipassValue, int hipassNumOfSteps)
+{
+  GLImageViewer::loadImage(image);
+
+  m_HipassValue = hipassValue;
+  m_HipassNumOfSteps = hipassNumOfSteps;
+
+  update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PPMatrixImageViewer::paintGL()
 {
   GLImageViewer::paintGL();
 
@@ -66,45 +79,104 @@ void ADPMapImageViewer::paintGL()
     return;
   }
 
-  if (m_MouseCoords.x() < 0 && m_MouseCoords.y() < 0)
-  {
-    return;
-  }
-
   QPainter painter;
   painter.begin(this);
   painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-  painter.setPen(QPen(QBrush(Qt::darkGray, Qt::Dense2Pattern), 1));
 
-  // We need to convert to image coordinates and then back to mouse coordinates
-  // so that our mouse coordinates are within the image boundaries
-  QPoint imageCoords = mapToImageCoordinates(m_MouseCoords);
-  QPoint mouseCoords = mapFromImageCoordinates(imageCoords);
-  painter.drawLine(0, mouseCoords.y(), width(), mouseCoords.y());
-  painter.drawLine(mouseCoords.x(), 0, mouseCoords.x(), height());
+  // Draw a black grid that separates the patterns a bit more
+  QImage image = getCurrentImage();
+  int imageWidth = image.width();
+  int imageHeight = image.height();
+  int xStep = imageWidth / m_HipassNumOfSteps;
+  int yStep = imageHeight / m_HipassNumOfSteps;
+  painter.setPen(QPen(QBrush(Qt::black, Qt::SolidPattern), 2));
 
-  if (isPixelSelected())
+  // First, we need to draw the separation border around all the patterns
+  for (int x = 0; x <= imageWidth; x += xStep)
   {
-    QPoint selectedMouseCoords = mapFromImageCoordinates(m_SelectedImageCoords);
+    for (int y = 0; y <= imageHeight; y += yStep)
+    {
+      // Draw the separation border around the pattern
+      QRect rect(x, y, xStep, yStep);
+      QRect widgetRect(mapFromImageCoordinates(rect.topLeft()), mapFromImageCoordinates(rect.bottomRight()));
 
-    painter.setPen(QPen(QBrush(Qt::green, Qt::SolidPattern), 1));
-    painter.drawLine(0, selectedMouseCoords.y(), width(), selectedMouseCoords.y());
-    painter.drawLine(selectedMouseCoords.x(), 0, selectedMouseCoords.x(), height());
+      painter.setPen(QPen(QBrush(Qt::black, Qt::SolidPattern), 2));
+      painter.drawRect(widgetRect);
+    }
+  }
+
+  QPoint imageCoords = mapToImageCoordinates(m_MouseCoords);
+
+  // Next, we need to draw the mouse hover and selection borders
+  int xCounter = 1;
+  int yCounter = m_HipassNumOfSteps;
+  float selectedHipassValue = -1.0f;
+  float hoveredHipassValue = -1.0f;
+  int selectedNumOfRegions = -1;
+  int hoveredNumOfRegions = -1;
+  for (int x = 0; x <= imageWidth; x += xStep)
+  {
+    for (int y = 0; y <= imageHeight; y += yStep)
+    {
+      QRect rect(x, y, xStep, yStep);
+      QRect widgetRect(mapFromImageCoordinates(rect.topLeft()), mapFromImageCoordinates(rect.bottomRight()));
+      if (rect.contains(m_SelectedImageCoords))
+      {
+        // Draw the border around the currently selected pattern
+        painter.setPen(QPen(QBrush(Qt::green, Qt::SolidPattern), 2));
+        painter.drawRect(widgetRect);
+
+        selectedNumOfRegions = yCounter;
+
+        int divisor = (xCounter-1) * 2;
+        if (divisor == 0)
+        {
+          selectedHipassValue = m_HipassValue;
+        }
+        else
+        {
+          selectedHipassValue = m_HipassValue / divisor;
+        }
+      }
+      else if (isMouseCoordinateValid() && rect.contains(imageCoords))
+      {
+        // Draw the border around the currently hovered pattern
+        painter.setPen(QPen(QBrush(Qt::cyan, Qt::SolidPattern), 2));
+        painter.drawRect(widgetRect);
+
+        hoveredNumOfRegions = yCounter;
+
+        int divisor = (xCounter-1) * 2;
+        if (divisor == 0)
+        {
+          hoveredHipassValue = m_HipassValue;
+        }
+        else
+        {
+          hoveredHipassValue = m_HipassValue / divisor;
+        }
+      }
+
+      yCounter--;
+    }
+
+    xCounter++;
+    yCounter = m_HipassNumOfSteps;
   }
 
   // Get the current mouse coordinate and selected pixel coordinate relative to the image coordinate system
   int statsStartingHeightOffset = 40;
   int statsHeightSpacing = 20;
-  QString mousePosStr = "Mouse: N/A";
-  if (isMouseCoordinateValid())
+  QString mousePosStr = "Selected Hipass: N/A";
+  if (selectedHipassValue > 0)
   {
-    mousePosStr = QObject::tr("Mouse: (%1, %2)").arg(QString::number(imageCoords.x()), QString::number(imageCoords.y()));
+    mousePosStr = QObject::tr("Selected Hipass: %1").arg(QString::number(selectedHipassValue, 'g', 4));
   }
 
-  QString selectedPixelStr = "Selection: N/A";
-  if (isPixelSelected())
+  QString selectedPixelStr = "Selected Num Of Regions: N/A";
+  if (selectedNumOfRegions > 0)
   {
-    selectedPixelStr = QObject::tr("Selection: (%1, %2)").arg(QString::number(m_SelectedImageCoords.x()), QString::number(m_SelectedImageCoords.y()));
+    selectedPixelStr = QObject::tr("Selected Num Of Regions: %1").arg(QString::number(selectedNumOfRegions));
   }
 
   // Figure out the length of the longest string
@@ -127,11 +199,38 @@ void ADPMapImageViewer::paintGL()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMapImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
+void PPMatrixImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
     m_SelectedImageCoords = mapToImageCoordinates(m_MouseCoords);
+
+    QImage image = getCurrentImage();
+    int imageWidth = image.width();
+    int imageHeight = image.height();
+    int xStep = imageWidth / m_HipassNumOfSteps;
+    int yStep = imageHeight / m_HipassNumOfSteps;
+
+    // We are counting down with the Y counter because Qt assumes that (0,0) is in the upper left, whereas
+    // we want (0,0) to be located in the bottom left.
+    int xCounter = 1;
+    int yCounter = m_HipassNumOfSteps;
+    for (int x = 0; x <= imageWidth; x += xStep)
+    {
+      for (int y = 0; y <= imageHeight; y += yStep)
+      {
+        QRect rect(x, y, xStep, yStep);
+        if (rect.contains(m_SelectedImageCoords))
+        {
+          emit selectedHipassNumOfStepsChanged(yCounter);
+          emit selectedHipassValueChanged(m_HipassValue / ((xCounter-1) * 2));
+        }
+
+        yCounter--;
+      }
+
+      xCounter++;
+    }
 
     update();
   }
@@ -140,7 +239,7 @@ void ADPMapImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMapImageViewer::mouseMoveEvent(QMouseEvent *event)
+void PPMatrixImageViewer::mouseMoveEvent(QMouseEvent *event)
 {
   GLImageViewer::mouseMoveEvent(event);
 
@@ -152,7 +251,7 @@ void ADPMapImageViewer::mouseMoveEvent(QMouseEvent *event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMapImageViewer::leaveEvent(QEvent* event)
+void PPMatrixImageViewer::leaveEvent(QEvent* event)
 {
   GLImageViewer::leaveEvent(event);
 
@@ -164,7 +263,7 @@ void ADPMapImageViewer::leaveEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool ADPMapImageViewer::isMouseCoordinateValid() const
+bool PPMatrixImageViewer::isMouseCoordinateValid() const
 {
   return (m_MouseCoords.x() >= 0 && m_MouseCoords.y() >= 0);
 }
@@ -172,7 +271,7 @@ bool ADPMapImageViewer::isMouseCoordinateValid() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool ADPMapImageViewer::isPixelSelected() const
+bool PPMatrixImageViewer::isPixelSelected() const
 {
   return (m_SelectedImageCoords.x() >= 0 && m_SelectedImageCoords.y() >= 0);
 }
@@ -180,7 +279,7 @@ bool ADPMapImageViewer::isPixelSelected() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMapImageViewer::invalidateMouseCoordinate()
+void PPMatrixImageViewer::invalidateMouseCoordinate()
 {
   m_MouseCoords.setX(-1);
   m_MouseCoords.setY(-1);
@@ -189,7 +288,7 @@ void ADPMapImageViewer::invalidateMouseCoordinate()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMapImageViewer::clearSelectedPixel()
+void PPMatrixImageViewer::clearSelectedPixel()
 {
   m_SelectedImageCoords.setX(-1);
   m_SelectedImageCoords.setY(-1);

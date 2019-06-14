@@ -33,7 +33,7 @@
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-set(MODULE_NAME AverageDotProductMapModule)
+set(MODULE_NAME DictionaryIndexingModule)
 
 set(${MODULE_NAME}_DIR "${${SUBDIR_NAME}_DIR}/${MODULE_NAME}")
 
@@ -43,10 +43,12 @@ include_directories(${${MODULE_NAME}_DIR})
 # Any Class that inherits from QObject, either directly or through the heirarchy needs to have its header listed here
 set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
   ${${MODULE_NAME}_DIR}/ADPMapImageViewer.h
-  ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.h
+  ${${MODULE_NAME}_DIR}/DictionaryIndexing_UI.h
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.h
-  ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.h
+  ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.h
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.h
+  ${${MODULE_NAME}_DIR}/PatternPreprocessingParametersController.h
+  ${${MODULE_NAME}_DIR}/PPMatrixImageViewer.h
 )
 
 # --------------------------------------------------------------------
@@ -62,14 +64,16 @@ set(EMsoftWorkbench_${MODULE_NAME}_HDRS
 
 set(EMsoftWorkbench_${MODULE_NAME}_SRCS
   ${${MODULE_NAME}_DIR}/ADPMapImageViewer.cpp
-  ${${MODULE_NAME}_DIR}/AverageDotProductMap_UI.cpp
+  ${${MODULE_NAME}_DIR}/DictionaryIndexing_UI.cpp
   ${${MODULE_NAME}_DIR}/AverageDotProductMapController.cpp
-  ${${MODULE_NAME}_DIR}/AverageDotProductMapModule.cpp
+  ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.cpp
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.cpp
+  ${${MODULE_NAME}_DIR}/PatternPreprocessingParametersController.cpp
+  ${${MODULE_NAME}_DIR}/PPMatrixImageViewer.cpp
 )
 
 set(EMsoftWorkbench_${MODULE_NAME}_UIS
-  ${${MODULE_NAME}_DIR}/UI_Files/AverageDotProductMap_UI.ui
+  ${${MODULE_NAME}_DIR}/UI_Files/DictionaryIndexing_UI.ui
   ${${MODULE_NAME}_DIR}/UI_Files/ChoosePatternsDatasetDialog.ui
   )
 # --------------------------------------------------------------------
@@ -100,3 +104,10 @@ set(EMsoftWorkbench_${MODULE_NAME}_SRCS
 # -- Add the binary directory for this subdirectory to the include path which is where the moc files are generated
 include_directories( ${EMsoftWorkbench_BINARY_DIR})
 
+set(EMsoftWorkbench_${MODULE_NAME}_SOURCES
+${EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS}
+${EMsoftWorkbench_${MODULE_NAME}_HDRS}
+${EMsoftWorkbench_${MODULE_NAME}_SRCS}
+${EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS}
+${EMsoftWorkbench_${MODULE_NAME}_Generated_UI_HDRS}
+)

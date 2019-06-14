@@ -33,14 +33,14 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "AverageDotProductMapModule.h"
+#include "DictionaryIndexingModule.h"
 
-#include "Modules/AverageDotProductMapModule/AverageDotProductMap_UI.h"
+#include "Modules/DictionaryIndexingModule/DictionaryIndexing_UI.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapModule::AverageDotProductMapModule(QWidget* parent)
+DictionaryIndexingModule::DictionaryIndexingModule(QWidget* parent)
 : IWorkbenchModule(parent)
 {
 }
@@ -48,16 +48,16 @@ AverageDotProductMapModule::AverageDotProductMapModule(QWidget* parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapModule::~AverageDotProductMapModule() = default;
+DictionaryIndexingModule::~DictionaryIndexingModule() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-IModuleUI* AverageDotProductMapModule::createModuleUI(QJsonObject moduleObj, QWidget *parent) const
+IModuleUI* DictionaryIndexingModule::createModuleUI(QJsonObject moduleObj, QWidget *parent) const
 {
   Q_UNUSED(moduleObj)
 
-  AverageDotProductMap_UI* ui = new AverageDotProductMap_UI(parent);
+  DictionaryIndexing_UI* ui = new DictionaryIndexing_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
 }
@@ -65,7 +65,7 @@ IModuleUI* AverageDotProductMapModule::createModuleUI(QJsonObject moduleObj, QWi
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapModule::Pointer AverageDotProductMapModule::NullPointer()
+DictionaryIndexingModule::Pointer DictionaryIndexingModule::NullPointer()
 {
   return Pointer(static_cast<Self*>(nullptr));
 }
@@ -73,7 +73,7 @@ AverageDotProductMapModule::Pointer AverageDotProductMapModule::NullPointer()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapModule::Pointer AverageDotProductMapModule::New()
+DictionaryIndexingModule::Pointer DictionaryIndexingModule::New()
 {
   Pointer sharedPtr (new (Self));
   return sharedPtr;

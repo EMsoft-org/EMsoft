@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AverageDotProductMap_UI</class>
- <widget class="QWidget" name="AverageDotProductMap_UI">
+ <class>DictionaryIndexing_UI</class>
+ <widget class="QWidget" name="DictionaryIndexing_UI">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>867</width>
-    <height>814</height>
+    <height>881</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,7 +40,7 @@
      <property name="title">
       <string>Average Dot Product</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1,0">
+     <layout class="QGridLayout" name="gridLayout_3" columnstretch="0,1">
       <property name="leftMargin">
        <number>4</number>
       </property>
@@ -72,7 +72,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="generateBtn">
+         <widget class="QPushButton" name="generateADPBtn">
           <property name="text">
            <string>Generate</string>
           </property>
@@ -115,31 +115,6 @@
            </property>
            <property name="checked">
             <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="2">
-          <widget class="QSpinBox" name="roiSB_2">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Number of master pattern pixels N along positive X (total 2N+1)</string>
-           </property>
-           <property name="statusTip">
-            <string/>
-           </property>
-           <property name="suffix">
-            <string/>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>2000000001</number>
-           </property>
-           <property name="value">
-            <number>0</number>
            </property>
           </widget>
          </item>
@@ -232,15 +207,15 @@
            </property>
           </widget>
          </item>
-         <item row="12" column="0">
-          <widget class="QLabel" name="numOfThreadsLabel">
+         <item row="1" column="1" colspan="2">
+          <widget class="QLabel" name="patternsDsetPathLabel">
            <property name="text">
-            <string>Number of Threads</string>
+            <string>TextLabel</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="2">
-          <widget class="QSpinBox" name="ipfWidthSB">
+         <item row="6" column="2">
+          <widget class="QSpinBox" name="binningYSB">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -254,19 +229,26 @@
             </size>
            </property>
            <property name="suffix">
-            <string>px</string>
+            <string/>
            </property>
            <property name="prefix">
-            <string>Width: </string>
+            <string>Y: </string>
            </property>
            <property name="minimum">
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>1000</number>
+            <number>237</number>
            </property>
            <property name="value">
-            <number>600</number>
+            <number>1</number>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="0">
+          <widget class="QLabel" name="numOfThreadsLabel">
+           <property name="text">
+            <string>Number of Threads</string>
            </property>
           </widget>
          </item>
@@ -387,6 +369,31 @@
            </property>
           </widget>
          </item>
+         <item row="3" column="2">
+          <widget class="QSpinBox" name="roiSB_2">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Number of master pattern pixels N along positive X (total 2N+1)</string>
+           </property>
+           <property name="statusTip">
+            <string/>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>2000000001</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
          <item row="9" column="0">
           <widget class="QLabel" name="maskRadiusLabel">
            <property name="text">
@@ -421,47 +428,6 @@
           <widget class="QLabel" name="maskPatternLabel">
            <property name="text">
             <string>Mask Pattern</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="2">
-          <widget class="QSpinBox" name="roiSB_4">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>Number of master pattern pixels N along positive X (total 2N+1)</string>
-           </property>
-           <property name="statusTip">
-            <string/>
-           </property>
-           <property name="suffix">
-            <string/>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>2000000001</number>
-           </property>
-           <property name="value">
-            <number>0</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="2">
-          <widget class="QSpinBox" name="patternWidthSB">
-           <property name="suffix">
-            <string>px</string>
-           </property>
-           <property name="prefix">
-            <string>Width: </string>
-           </property>
-           <property name="maximum">
-            <number>1000</number>
-           </property>
-           <property name="value">
-            <number>80</number>
            </property>
           </widget>
          </item>
@@ -546,8 +512,33 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="2">
-          <widget class="QSpinBox" name="binningYSB">
+         <item row="4" column="2">
+          <widget class="QSpinBox" name="roiSB_4">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>Number of master pattern pixels N along positive X (total 2N+1)</string>
+           </property>
+           <property name="statusTip">
+            <string/>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>2000000001</number>
+           </property>
+           <property name="value">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="2">
+          <widget class="QSpinBox" name="ipfWidthSB">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -561,19 +552,19 @@
             </size>
            </property>
            <property name="suffix">
-            <string/>
+            <string>px</string>
            </property>
            <property name="prefix">
-            <string>Y: </string>
+            <string>Width: </string>
            </property>
            <property name="minimum">
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>237</number>
+            <number>1000</number>
            </property>
            <property name="value">
-            <number>1</number>
+            <number>600</number>
            </property>
           </widget>
          </item>
@@ -599,10 +590,19 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="1" colspan="2">
-          <widget class="QLabel" name="patternsDsetPathLabel">
-           <property name="text">
-            <string>TextLabel</string>
+         <item row="2" column="2">
+          <widget class="QSpinBox" name="patternWidthSB">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="prefix">
+            <string>Width: </string>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>80</number>
            </property>
           </widget>
          </item>
@@ -625,6 +625,9 @@
         </property>
         <item row="0" column="3">
          <widget class="QPushButton" name="adpMapZoomOutBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>24</width>
@@ -670,6 +673,9 @@
         </item>
         <item row="0" column="2">
          <widget class="QPushButton" name="adpMapZoomInBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>24</width>
@@ -702,6 +708,9 @@
         </item>
         <item row="0" column="4">
          <widget class="QPushButton" name="adpMapFitToScreenBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>24</width>
@@ -737,6 +746,9 @@
         </item>
         <item row="0" column="5">
          <widget class="QPushButton" name="adpMapSaveBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>24</width>
@@ -769,6 +781,9 @@
         </item>
         <item row="2" column="0">
          <widget class="QSpinBox" name="adpMapZoomSB">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
           </property>
@@ -789,23 +804,498 @@
           </property>
          </widget>
         </item>
+        <item row="2" column="1" colspan="5">
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
        </layout>
       </item>
      </layout>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+    <widget class="QGroupBox" name="ppMatrixGrpBox">
+     <property name="title">
+      <string>Pattern Preprocessing Parameters</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
+     <layout class="QGridLayout" name="gridLayout_4" columnstretch="0,1">
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="generatePPMatrixBtn">
+          <property name="text">
+           <string>Generate</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="1" rowspan="3">
+       <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,1,0">
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item row="0" column="3">
+         <widget class="QPushButton" name="ppMatrixZoomOutBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+            <normaloff>:/zoom_out.png</normaloff>:/zoom_out.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" colspan="5">
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="0" column="5">
+         <widget class="QPushButton" name="ppMatrixSaveBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+            <normaloff>:/disk_blue.png</normaloff>:/disk_blue.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="ppMatrixZoomInBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+            <normaloff>:/zoom_in.png</normaloff>:/zoom_in.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QPushButton" name="ppMatrixFitToScreenBtn">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+            <normaloff>:/fit_to_size.png</normaloff>:/fit_to_size.png</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>24</width>
+            <height>24</height>
+           </size>
+          </property>
+          <property name="flat">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QSpinBox" name="ppMatrixZoomSB">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="suffix">
+           <string>%</string>
+          </property>
+          <property name="prefix">
+           <string>Zoom: </string>
+          </property>
+          <property name="minimum">
+           <number>25</number>
+          </property>
+          <property name="maximum">
+           <number>400</number>
+          </property>
+          <property name="singleStep">
+           <number>5</number>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" colspan="6">
+         <widget class="PPMatrixImageViewer" name="ppMatrixViewer"/>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="0" rowspan="2">
+       <widget class="QFrame" name="ppMatrixControlsFrame">
+        <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,0,0,0,0,0,0,0,0,0,0" columnstretch="0,0,0">
+         <property name="bottomMargin">
+          <number>1</number>
+         </property>
+         <item row="10" column="0">
+          <widget class="QLabel" name="hipassLabel_6">
+           <property name="text">
+            <string>Number of Regions Step Size</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="hipassLabel_4">
+           <property name="text">
+            <string>Min Number of Regions</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="inputTypeLabel_4">
+           <property name="text">
+            <string>Chosen Pattern Coordinate:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1" colspan="2">
+          <widget class="QLabel" name="ppInputTypeLabel">
+           <property name="text">
+            <string>Binary</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="2">
+          <widget class="QSpinBox" name="patternWidthSB_2">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="prefix">
+            <string>Width: </string>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>80</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1" colspan="2">
+          <widget class="QLabel" name="ppPatternCoordLabel">
+           <property name="text">
+            <string>N/A</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="inputTypeLabel_3">
+           <property name="text">
+            <string>Chosen Patterns Dataset:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QLabel" name="inputTypeLabel_2">
+           <property name="text">
+            <string>Chosen Input Type:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QSpinBox" name="patternHeightSB_2">
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="prefix">
+            <string>Height: </string>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>60</number>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
+          <widget class="QLineEdit" name="maxNumOfRegionsLE"/>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLineEdit" name="hipassRangeLE"/>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="hipassLabel_5">
+           <property name="text">
+            <string>Max Number of Regions</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="2">
+          <widget class="QSpinBox" name="ipfWidthSB_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>110</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="prefix">
+            <string>Width: </string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>600</number>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="1">
+          <widget class="QLineEdit" name="numOfRegionsStepSizeLE"/>
+         </item>
+         <item row="8" column="1">
+          <widget class="QLineEdit" name="minNumOfRegionsLE"/>
+         </item>
+         <item row="2" column="1" colspan="2">
+          <widget class="QLabel" name="ppPatternsDatasetLabel">
+           <property name="text">
+            <string>N/A</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QLineEdit" name="hipassNumOfStepsLE"/>
+         </item>
+         <item row="1" column="1" colspan="2">
+          <widget class="QLabel" name="ppPatternsDataFileLabel">
+           <property name="text">
+            <string>N/A</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="bLabel_6">
+           <property name="text">
+            <string>Pattern Size (pixels)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="inputTypeLabel_5">
+           <property name="text">
+            <string>Chosen Pattern Data File:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="hipassLabel_2">
+           <property name="text">
+            <string>Hipass Range</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QSpinBox" name="ipfHeightSB_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>110</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="suffix">
+            <string>px</string>
+           </property>
+           <property name="prefix">
+            <string>Height: </string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>600</number>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="ipfLabel_2">
+           <property name="text">
+            <string>IPF Size (pixels)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="hipassLabel_3">
+           <property name="text">
+            <string>Hipass Number of Steps</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -815,10 +1305,12 @@
    <extends>QOpenGLWidget</extends>
    <header>ADPMapImageViewer.h</header>
   </customwidget>
+  <customwidget>
+   <class>PPMatrixImageViewer</class>
+   <extends>QOpenGLWidget</extends>
+   <header location="global">PPMatrixImageViewer.h</header>
+  </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>generateBtn</tabstop>
- </tabstops>
  <resources>
   <include location="../../../../Resources/icons/images/Icons.qrc"/>
  </resources>

@@ -371,7 +371,7 @@ void GLImageViewer::paintGL()
 // -----------------------------------------------------------------------------
 QPoint GLImageViewer::mapToImageCoordinates(const QPoint &widgetCoords)
 {
-  QPoint imageCoords(0, 0);
+  QPoint imageCoords(-1, -1);
   if (m_TopLeftImageCoord.x() == 0 && m_TopLeftImageCoord.y() == 0 && (m_TopLeftWidgetCoord.x() > 0 || m_TopLeftWidgetCoord.y() > 0))
   {
     // The image is smaller than the viewport

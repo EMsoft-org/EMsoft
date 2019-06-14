@@ -35,52 +35,67 @@
 
 #pragma once
 
+#include <QtCore/QMap>
+
 #include "Common/GLImageViewer.h"
 
-class ADPMapImageViewer : public GLImageViewer
+class PPMatrixImageViewer : public GLImageViewer
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    ADPMapImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-    ~ADPMapImageViewer() override;
+  PPMatrixImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+  ~PPMatrixImageViewer() override;
+
+  /**
+     * @brief loadImage
+     * @param image
+     */
+  void loadImage(const QImage &image, float hipassValue, int hipassNumOfSteps);
 
 protected:
-    void paintGL() override;
+  void paintGL() override;
 
-    void mouseDoubleClickEvent(QMouseEvent* event) override;
-    void mouseMoveEvent(QMouseEvent* event) override;
-    void leaveEvent(QEvent* event) override;
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void leaveEvent(QEvent* event) override;
 
-  private:
-    QPoint m_MouseCoords = QPoint(-1, -1);
-    QPoint m_SelectedImageCoords = QPoint(-1, -1);
+signals:
+  void selectedHipassValueChanged(float value);
+  void selectedHipassNumOfStepsChanged(int value);
 
-    /**
-     * @brief Returns whether or not there is a valid mouse coordinate
-     * @return
-     */
-    bool isMouseCoordinateValid() const;
+private:
+  QPoint m_MouseCoords = QPoint(-1, -1);
+  QPoint m_SelectedImageCoords = QPoint(-1, -1);
 
-    /**
-     * @brief Returns whether or not there is a pixel selected in the current image
-     * @return
-     */
-    bool isPixelSelected() const;
+  float m_HipassValue = 0.0f;
+  int m_HipassNumOfSteps = 0;
 
-    /**
-     * @brief invalidateMouseCoordinate
-     */
-    void invalidateMouseCoordinate();
+  /**
+   * @brief Returns whether or not there is a valid mouse coordinate
+   * @return
+   */
+  bool isMouseCoordinateValid() const;
 
-    /**
-     * @brief clearSelectedPixel
-     */
-    void clearSelectedPixel();
+  /**
+   * @brief Returns whether or not there is a pixel selected in the current image
+   * @return
+   */
+  bool isPixelSelected() const;
 
-  public:
-    ADPMapImageViewer(const ADPMapImageViewer&) = delete; // Copy Constructor Not Implemented
-    ADPMapImageViewer(ADPMapImageViewer&&) = delete;      // Move Constructor Not Implemented
-    ADPMapImageViewer& operator=(const ADPMapImageViewer&) = delete; // Copy Assignment Not Implemented
-    ADPMapImageViewer& operator=(ADPMapImageViewer&&) = delete;      // Move Assignment Not Implemented
+  /**
+   * @brief invalidateMouseCoordinate
+   */
+  void invalidateMouseCoordinate();
+
+  /**
+   * @brief clearSelectedPixel
+   */
+  void clearSelectedPixel();
+
+public:
+  PPMatrixImageViewer(const PPMatrixImageViewer&) = delete;            // Copy Constructor Not Implemented
+  PPMatrixImageViewer(PPMatrixImageViewer&&) = delete;                 // Move Constructor Not Implemented
+  PPMatrixImageViewer& operator=(const PPMatrixImageViewer&) = delete; // Copy Assignment Not Implemented
+  PPMatrixImageViewer& operator=(PPMatrixImageViewer&&) = delete;      // Move Assignment Not Implemented
 };

@@ -46,7 +46,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QToolButton>
 
-#include "Modules/AverageDotProductMapModule/Constants.h"
+#include "Modules/DictionaryIndexingModule/Constants.h"
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreation_UI.h"
 #include "Modules/ModuleManager.h"
 
@@ -191,7 +191,7 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::MasterPatternSimulation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternDisplay);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternFit);
-  m_ModuleNamesOrder.append(AverageDotProductMapModuleConstants::ModuleName);
+  m_ModuleNamesOrder.append(DictionaryIndexingModuleConstants::ModuleName);
 
   m_ToolbarButtonGroup = new QActionGroup(this);
 

@@ -197,6 +197,7 @@ protected:
 
 signals:
   void parametersChanged();
+  void patternDataFilePathChanged(const QString &filePath);
   void selectedHDF5PathsChanged(QStringList selectedHDF5Paths);
 
 private slots:

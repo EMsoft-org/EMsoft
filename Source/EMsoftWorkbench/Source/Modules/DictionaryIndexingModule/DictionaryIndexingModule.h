@@ -37,12 +37,12 @@
 
 #include "Modules/IWorkbenchModule.hpp"
 
-class AverageDotProductMapModule : public IWorkbenchModule
+class DictionaryIndexingModule : public IWorkbenchModule
 {
     Q_OBJECT
 
   public:
-    using Self = AverageDotProductMapModule;
+    using Self = DictionaryIndexingModule;
     using Pointer = std::shared_ptr<Self>;
     using ConstPointer = std::shared_ptr<const Self>;
     using WeakPointer = std::weak_ptr<Self>;
@@ -52,16 +52,16 @@ class AverageDotProductMapModule : public IWorkbenchModule
 
     static Pointer New();
 
-    ~AverageDotProductMapModule() override;
+    ~DictionaryIndexingModule() override;
 
     IModuleUI* createModuleUI(QJsonObject moduleObj = QJsonObject(), QWidget *parent = nullptr) const override;
 
   protected:
-    AverageDotProductMapModule(QWidget* parent = nullptr);
+    DictionaryIndexingModule(QWidget* parent = nullptr);
 
   public:
-    AverageDotProductMapModule(const AverageDotProductMapModule&) = delete;            // Copy Constructor Not Implemented
-    AverageDotProductMapModule(AverageDotProductMapModule&&) = delete;                 // Move Constructor Not Implemented
-    AverageDotProductMapModule& operator=(const AverageDotProductMapModule&) = delete; // Copy Assignment Not Implemented
-    AverageDotProductMapModule& operator=(AverageDotProductMapModule&&) = delete;      // Move Assignment Not Implemented
+    DictionaryIndexingModule(const DictionaryIndexingModule&) = delete;            // Copy Constructor Not Implemented
+    DictionaryIndexingModule(DictionaryIndexingModule&&) = delete;                 // Move Constructor Not Implemented
+    DictionaryIndexingModule& operator=(const DictionaryIndexingModule&) = delete; // Copy Assignment Not Implemented
+    DictionaryIndexingModule& operator=(DictionaryIndexingModule&&) = delete;      // Move Assignment Not Implemented
 };

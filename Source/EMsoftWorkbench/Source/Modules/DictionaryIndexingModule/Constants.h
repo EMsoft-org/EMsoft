@@ -40,9 +40,9 @@
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-namespace AverageDotProductMapModuleConstants
+namespace DictionaryIndexingModuleConstants
 {
-  const QString ModuleName("Average Dot Product Map");
+  const QString ModuleName("Dictionary Indexing");
 
   namespace ArraySizes
   {

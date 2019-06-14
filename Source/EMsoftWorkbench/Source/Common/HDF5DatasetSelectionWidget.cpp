@@ -490,6 +490,8 @@ bool HDF5DatasetSelectionWidget::initWithFile(const QString& hdf5File)
 
   m_Ui->attributesTable->horizontalHeader()->setStretchLastSection(true); // Stretch the last column to fit to the viewport
 
+  emit patternDataFilePathChanged(hdf5File);
+
 //  initializeHDF5Paths();
   return true;
 }

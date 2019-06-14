@@ -38,35 +38,25 @@
 #include <QtCore/QFutureWatcher>
 
 #include "Modules/IModuleUI.h"
-#include "Modules/AverageDotProductMapModule/AverageDotProductMapController.h"
+#include "Modules/DictionaryIndexingModule/AverageDotProductMapController.h"
+#include "Modules/DictionaryIndexingModule/PatternPreprocessingParametersController.h"
 
-#include "ui_AverageDotProductMap_UI.h"
+#include "ui_DictionaryIndexing_UI.h"
 
 class ChoosePatternsDatasetDialog;
 
-class AverageDotProductMap_UI : public IModuleUI
+class DictionaryIndexing_UI : public IModuleUI
 {
   Q_OBJECT
 
 public:
   /**
-   * @brief AverageDotProductMap_UI
+   * @brief DictionaryIndexing_UI
    * @param parent
    */
-  AverageDotProductMap_UI(QWidget *parent = nullptr);
+  DictionaryIndexing_UI(QWidget *parent = nullptr);
 
-  ~AverageDotProductMap_UI() override;
-
-  /**
-    * @brief Getter property for Controller
-    * @return Value of Controller
-    */
-  AverageDotProductMapController* getController() const;
-
-  /**
-    * @brief Setter property for Controller
-    */
-  void setController(AverageDotProductMapController *value);
+  ~DictionaryIndexing_UI() override;
 
   /**
    * @brief readModuleSession
@@ -98,7 +88,15 @@ protected:
   void changeEvent(QEvent* event) override;
 
 protected slots:
-  void listenGenerateBtnPressed();
+  /**
+   * @brief listenGenerateADPBtnPressed
+   */
+  void listenGenerateADPBtnPressed();
+
+  /**
+   * @brief listenGeneratePPPBtnPressed
+   */
+  void listenGeneratePPPBtnPressed();
 
   /**
    * @brief listenInputTypeChanged
@@ -129,19 +127,33 @@ protected slots:
   void parametersChanged();
 
 private slots:
-  void threadFinished();
+  /**
+   * @brief generateADPThreadFinished
+   */
+  void generateADPThreadFinished();
+
+  /**
+   * @brief generatePPMatrixThreadFinished
+   */
+  void generatePPMatrixThreadFinished();
 
 private:
-  QSharedPointer<Ui::AverageDotProductMap_UI> m_Ui;
+  QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
 
-  AverageDotProductMapController* m_Controller = nullptr;
+  AverageDotProductMapController* m_ADPController = nullptr;
+  PatternPreprocessingParametersController* m_PPMatrixController = nullptr;
 
   ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
+
+  QPoint m_SelectedADPPatternCoords = QPoint(-1, -1);
+  float m_SelectedHipassValue = -1.0f;
+  int m_SelectedNumOfRegions = -1;
 
   QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_Watcher;
+  QSharedPointer<QFutureWatcher<void>> m_ADPWatcher;
+  QSharedPointer<QFutureWatcher<void>> m_PPMatrixWatcher;
 
   /**
    * @brief readInputParameters
@@ -191,11 +203,17 @@ private:
    * @brief getData
    * @return
    */
-  AverageDotProductMapController::ADPMapData getData();
+  AverageDotProductMapController::ADPMapData getADPMapData();
+
+  /**
+   * @brief getPPMatrixData
+   * @return
+   */
+  PatternPreprocessingParametersController::PPMatrixData getPPMatrixData();
 
 public:
-  AverageDotProductMap_UI(const AverageDotProductMap_UI&) = delete; // Copy Constructor Not Implemented
-  AverageDotProductMap_UI(AverageDotProductMap_UI&&) = delete;      // Move Constructor Not Implemented
-  AverageDotProductMap_UI& operator=(const AverageDotProductMap_UI&) = delete; // Copy Assignment Not Implemented
-  AverageDotProductMap_UI& operator=(AverageDotProductMap_UI&&) = delete;      // Move Assignment Not Implemented
+  DictionaryIndexing_UI(const DictionaryIndexing_UI&) = delete; // Copy Constructor Not Implemented
+  DictionaryIndexing_UI(DictionaryIndexing_UI&&) = delete;      // Move Constructor Not Implemented
+  DictionaryIndexing_UI& operator=(const DictionaryIndexing_UI&) = delete; // Copy Assignment Not Implemented
+  DictionaryIndexing_UI& operator=(DictionaryIndexing_UI&&) = delete;      // Move Assignment Not Implemented
 };

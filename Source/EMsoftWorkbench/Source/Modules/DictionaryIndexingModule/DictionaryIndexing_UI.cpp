@@ -33,28 +33,28 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "AverageDotProductMap_UI.h"
+#include "DictionaryIndexing_UI.h"
 
 #include <QtConcurrent>
 
-#include "Modules/AverageDotProductMapModule/Constants.h"
-#include "Modules/AverageDotProductMapModule/ChoosePatternsDatasetDialog.h"
+#include "Modules/DictionaryIndexingModule/Constants.h"
+#include "Modules/DictionaryIndexingModule/ChoosePatternsDatasetDialog.h"
 
-namespace ioConstants = AverageDotProductMapModuleConstants::IOStrings;
+namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
 using InputType = AverageDotProductMapController::ADPMapData::InputType;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMap_UI::AverageDotProductMap_UI(QWidget *parent)
+DictionaryIndexing_UI::DictionaryIndexing_UI(QWidget *parent)
 : IModuleUI(parent)
-, m_Ui(new Ui::AverageDotProductMap_UI())
+, m_Ui(new Ui::DictionaryIndexing_UI())
 {
   m_Ui->setupUi(this);
 
-  m_Controller = new AverageDotProductMapController(this);
-  connect(m_Controller, &AverageDotProductMapController::adpMapCreated, m_Ui->adpViewer, &GLImageViewer::loadImage);
+  m_ADPController = new AverageDotProductMapController(this);
+  m_PPMatrixController = new PatternPreprocessingParametersController(this);
 
   setupGui();
 }
@@ -62,26 +62,20 @@ AverageDotProductMap_UI::AverageDotProductMap_UI(QWidget *parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMap_UI::~AverageDotProductMap_UI()
+DictionaryIndexing_UI::~DictionaryIndexing_UI()
 {
-  delete m_Controller;
+  delete m_ADPController;
   delete m_ChoosePatternsDatasetDialog;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::setupGui()
+void DictionaryIndexing_UI::setupGui()
 {
   m_ChoosePatternsDatasetDialog = new ChoosePatternsDatasetDialog();
 
   m_Ui->patternsDsetPathLabel->hide();
-
-  m_Ui->adpMapZoomSB->setDisabled(true);
-  m_Ui->adpMapSaveBtn->setDisabled(true);
-  m_Ui->adpMapZoomInBtn->setDisabled(true);
-  m_Ui->adpMapZoomOutBtn->setDisabled(true);
-  m_Ui->adpMapFitToScreenBtn->setDisabled(true);
 
   // Add limits to all spinboxes
   initializeSpinBoxLimits();
@@ -104,7 +98,7 @@ void AverageDotProductMap_UI::setupGui()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::initializeSpinBoxLimits()
+void DictionaryIndexing_UI::initializeSpinBoxLimits()
 {
   m_Ui->ipfHeightSB->setMinimum(1);
   m_Ui->ipfHeightSB->setMaximum(std::numeric_limits<int>::max());
@@ -151,7 +145,7 @@ void AverageDotProductMap_UI::initializeSpinBoxLimits()
   m_Ui->numOfRegionsSB->setMinimum(0);
   m_Ui->numOfRegionsSB->setMaximum(std::numeric_limits<int>::max());
 
-  int numOfCores = m_Controller->getNumCPUCores();
+  int numOfCores = m_ADPController->getNumCPUCores();
   m_Ui->numOfThreadsSB->setMinimum(1);
   m_Ui->numOfThreadsSB->setMaximum(numOfCores);
   m_Ui->numOfThreadsSB->setValue(numOfCores);
@@ -161,7 +155,7 @@ void AverageDotProductMap_UI::initializeSpinBoxLimits()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::createValidators()
+void DictionaryIndexing_UI::createValidators()
 {
   //  QDoubleValidator* doubleValidator = new QDoubleValidator(scintillatorPixelSize);
   //  scintillatorPixelSize->setValidator(doubleValidator);
@@ -170,7 +164,7 @@ void AverageDotProductMap_UI::createValidators()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::createModificationConnections()
+void DictionaryIndexing_UI::createModificationConnections()
 {
   // Spin Boxes
   connect(m_Ui->patternHeightSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged(); });
@@ -191,35 +185,44 @@ void AverageDotProductMap_UI::createModificationConnections()
   connect(m_Ui->hipassSB, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [=] { parametersChanged(); });
 
   // Checkboxes
-  connect(m_Ui->roiCB, &QCheckBox::stateChanged, this, &AverageDotProductMap_UI::listenROICheckboxStateChanged);
+  connect(m_Ui->roiCB, &QCheckBox::stateChanged, this, &DictionaryIndexing_UI::listenROICheckboxStateChanged);
 
   // Combo Boxes
-  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &AverageDotProductMap_UI::listenInputTypeChanged);
+  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &DictionaryIndexing_UI::listenInputTypeChanged);
 
   // Line Edits
   HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &AverageDotProductMap_UI::parametersChanged);
+  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &DictionaryIndexing_UI::parametersChanged);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::createWidgetConnections()
+void DictionaryIndexing_UI::createWidgetConnections()
 {
-  connect(m_Ui->generateBtn, &QPushButton::clicked, this, &AverageDotProductMap_UI::listenGenerateBtnPressed);
+  connect(m_Ui->generateADPBtn, &QPushButton::clicked, this, &DictionaryIndexing_UI::listenGenerateADPBtnPressed);
+  connect(m_Ui->generatePPMatrixBtn, &QPushButton::clicked, this, &DictionaryIndexing_UI::listenGeneratePPPBtnPressed);
 
   connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
 
+  connect(m_Ui->inputTypeCB, &QComboBox::currentTextChanged, m_Ui->ppInputTypeLabel, &QLabel::setText);
+
   HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &AverageDotProductMap_UI::listenSelectedPatternDatasetChanged);
+  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &DictionaryIndexing_UI::listenSelectedPatternDatasetChanged);
+  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, m_Ui->ppPatternsDataFileLabel, &QLabel::setText);
 
   // Pass errors, warnings, and std output messages up to the user interface
-  connect(m_Controller, &AverageDotProductMapController::errorMessageGenerated, this, &AverageDotProductMap_UI::notifyErrorMessage);
-  connect(m_Controller, &AverageDotProductMapController::warningMessageGenerated, this, &AverageDotProductMap_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+  connect(m_ADPController, &AverageDotProductMapController::errorMessageGenerated, this, &DictionaryIndexing_UI::notifyErrorMessage);
+  connect(m_ADPController, &AverageDotProductMapController::warningMessageGenerated, this, &DictionaryIndexing_UI::notifyWarningMessage);
+  connect(m_ADPController, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+  connect(m_ADPController, &AverageDotProductMapController::adpMapCreated, m_Ui->adpViewer, &GLImageViewer::loadImage);
 
-  connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &AverageDotProductMap_UI::appendToStdOut);
-  connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &AverageDotProductMap_UI::updateZoomFactor);
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &DictionaryIndexing_UI::appendToStdOut);
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &DictionaryIndexing_UI::updateZoomFactor);
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedPatternCoordinateChanged, [=] (QPoint coord) {
+    m_SelectedADPPatternCoords = coord;
+    m_Ui->ppPatternCoordLabel->setText(tr("(%1, %2)").arg(QString::number(coord.x()), QString::number(coord.y())));
+  });
 
   connect(m_Ui->adpMapZoomInBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomIn);
   connect(m_Ui->adpMapZoomOutBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomOut);
@@ -227,12 +230,17 @@ void AverageDotProductMap_UI::createWidgetConnections()
   connect(m_Ui->adpMapZoomSB, QOverload<int>::of(&QSpinBox::valueChanged), [=] (int value) { m_Ui->adpViewer->setZoomFactor(value / 100.0f); });
 
   connect(m_Ui->adpMapSaveBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::saveImage);
+
+  connect(m_PPMatrixController, &PatternPreprocessingParametersController::errorMessageGenerated, this, &DictionaryIndexing_UI::notifyErrorMessage);
+  connect(m_PPMatrixController, &PatternPreprocessingParametersController::warningMessageGenerated, this, &DictionaryIndexing_UI::notifyWarningMessage);
+  connect(m_PPMatrixController, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+  connect(m_PPMatrixController, &PatternPreprocessingParametersController::preprocessedPatternsMatrixCreated, m_Ui->ppMatrixViewer, &GLImageViewer::loadImage);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::updateZoomFactor(float zoomFactor)
+void DictionaryIndexing_UI::updateZoomFactor(float zoomFactor)
 {
   m_Ui->adpMapZoomSB->blockSignals(true);
   m_Ui->adpMapZoomSB->setValue(zoomFactor * 100);
@@ -242,16 +250,18 @@ void AverageDotProductMap_UI::updateZoomFactor(float zoomFactor)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths)
+void DictionaryIndexing_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths)
 {
   if (patternDSetPaths.size() == 1)
   {
     m_Ui->patternsDsetPathLabel->setText(patternDSetPaths[0]);
+    m_Ui->ppPatternsDatasetLabel->setText(patternDSetPaths[0]);
     m_Ui->patternsDsetPathLabel->show();
   }
   else
   {
     m_Ui->patternsDsetPathLabel->hide();
+    m_Ui->ppPatternsDatasetLabel->setText("N/A");
   }
 
   parametersChanged();
@@ -260,7 +270,7 @@ void AverageDotProductMap_UI::listenSelectedPatternDatasetChanged(QStringList pa
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::listenInputTypeChanged(int index)
+void DictionaryIndexing_UI::listenInputTypeChanged(int index)
 {
   InputType inputType = static_cast<InputType>(index + 1);
   switch(inputType)
@@ -281,7 +291,7 @@ void AverageDotProductMap_UI::listenInputTypeChanged(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::listenROICheckboxStateChanged(int state)
+void DictionaryIndexing_UI::listenROICheckboxStateChanged(int state)
 {
   Qt::CheckState checkState = static_cast<Qt::CheckState>(state);
   m_Ui->roiSB_1->setEnabled(checkState == Qt::Checked);
@@ -295,62 +305,122 @@ void AverageDotProductMap_UI::listenROICheckboxStateChanged(int state)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::listenGenerateBtnPressed()
+void DictionaryIndexing_UI::listenGenerateADPBtnPressed()
 {
-  if(m_Ui->generateBtn->text() == "Cancel")
+  if(m_Ui->generateADPBtn->text() == "Cancel")
   {
-    m_Controller->setCancel(true);
+    m_ADPController->setCancel(true);
     setRunning(false);
     return;
   }
 
+  m_Ui->generatePPMatrixBtn->setDisabled(true);
+
   setRunning(true);
   clearModuleIssues();
 
-  AverageDotProductMapController::ADPMapData data = getData();
+  AverageDotProductMapController::ADPMapData data = getADPMapData();
 
-  m_Ui->generateBtn->setText("Cancel");
+  m_Ui->generateADPBtn->setText("Cancel");
   m_Ui->adpControlsFrame->setDisabled(true);
 
   // Single-threaded for now, but we can multi-thread later if needed
   //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
   for(int i = 0; i < 1; i++)
   {
-    m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-    connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
+    m_ADPWatcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
+    connect(m_ADPWatcher.data(), SIGNAL(finished()), this, SLOT(generateADPThreadFinished()));
 
-    QFuture<void> future = QtConcurrent::run(m_Controller, &AverageDotProductMapController::createADPMap, data);
-    m_Watcher->setFuture(future);
+    QFuture<void> future = QtConcurrent::run(m_ADPController, &AverageDotProductMapController::createADPMap, data);
+    m_ADPWatcher->setFuture(future);
   }
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::threadFinished()
+void DictionaryIndexing_UI::generateADPThreadFinished()
 {
-  m_Controller->setCancel(false);
+  m_ADPController->setCancel(false);
 
-  m_Ui->generateBtn->setText("Generate");
+  m_Ui->generatePPMatrixBtn->setEnabled(true);
+
+  m_Ui->adpMapZoomSB->setEnabled(true);
+  m_Ui->adpMapSaveBtn->setEnabled(true);
+  m_Ui->adpMapZoomInBtn->setEnabled(true);
+  m_Ui->adpMapZoomOutBtn->setEnabled(true);
+  m_Ui->adpMapFitToScreenBtn->setEnabled(true);
+
+  m_Ui->generateADPBtn->setText("Generate");
   m_Ui->adpControlsFrame->setEnabled(true);
 
   emit validationOfOtherModulesNeeded(this);
   setRunning(false);
+}
 
-  if (!m_Ui->adpViewer->getCurrentImage().isNull())
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexing_UI::listenGeneratePPPBtnPressed()
+{
+  if(m_Ui->generatePPMatrixBtn->text() == "Cancel")
   {
-    m_Ui->adpMapZoomSB->setEnabled(true);
-    m_Ui->adpMapSaveBtn->setEnabled(true);
-    m_Ui->adpMapZoomInBtn->setEnabled(true);
-    m_Ui->adpMapZoomOutBtn->setEnabled(true);
-    m_Ui->adpMapFitToScreenBtn->setEnabled(true);
+    m_PPMatrixController->setCancel(true);
+    setRunning(false);
+    return;
+  }
+
+  m_Ui->generateADPBtn->setDisabled(true);
+
+  setRunning(true);
+  clearModuleIssues();
+
+  PatternPreprocessingParametersController::PPMatrixData data = getPPMatrixData();
+
+  m_Ui->generatePPMatrixBtn->setText("Cancel");
+  m_Ui->ppMatrixControlsFrame->setDisabled(true);
+
+  // Single-threaded for now, but we can multi-thread later if needed
+  //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
+  for(int i = 0; i < 1; i++)
+  {
+    m_PPMatrixWatcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
+    connect(m_PPMatrixWatcher.data(), SIGNAL(finished()), this, SLOT(generatePPMatrixThreadFinished()));
+
+    QFuture<void> future = QtConcurrent::run(m_PPMatrixController, &PatternPreprocessingParametersController::createPreprocessedPatternsMatrix, data);
+    m_PPMatrixWatcher->setFuture(future);
   }
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::parametersChanged()
+void DictionaryIndexing_UI::generatePPMatrixThreadFinished()
+{
+  m_ADPController->setCancel(false);
+
+  m_Ui->generateADPBtn->setEnabled(true);
+
+  m_Ui->generatePPMatrixBtn->setText("Generate");
+  m_Ui->ppMatrixControlsFrame->setEnabled(true);
+
+  emit validationOfOtherModulesNeeded(this);
+  setRunning(false);
+
+  if (!m_Ui->ppMatrixViewer->getCurrentImage().isNull())
+  {
+    m_Ui->ppMatrixZoomSB->setEnabled(true);
+    m_Ui->ppMatrixSaveBtn->setEnabled(true);
+    m_Ui->ppMatrixZoomInBtn->setEnabled(true);
+    m_Ui->ppMatrixZoomOutBtn->setEnabled(true);
+    m_Ui->ppMatrixFitToScreenBtn->setEnabled(true);
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexing_UI::parametersChanged()
 {
   validateData();
   emit moduleParametersChanged();
@@ -359,25 +429,41 @@ void AverageDotProductMap_UI::parametersChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool AverageDotProductMap_UI::validateData()
+bool DictionaryIndexing_UI::validateData()
 {
   clearModuleIssues();
 
-  AverageDotProductMapController::ADPMapData data = getData();
-  if(m_Controller->validateADPMapValues(data))
+  AverageDotProductMapController::ADPMapData adpData = getADPMapData();
+  if(!m_ADPController->validateADPMapValues(adpData))
   {
-    m_Ui->generateBtn->setEnabled(true);
-    return true;
+    m_Ui->generateADPBtn->setDisabled(true);
+    m_Ui->generatePPMatrixBtn->setDisabled(true);
+    return false;
   }
 
-  m_Ui->generateBtn->setDisabled(true);
-  return false;
+  m_Ui->generateADPBtn->setEnabled(true);
+
+  PatternPreprocessingParametersController::PPMatrixData ppData = getPPMatrixData();
+  if(!m_PPMatrixController->validatePPPValues(ppData))
+  {
+    m_Ui->generatePPMatrixBtn->setDisabled(true);
+    return false;
+  }
+
+  if (m_SelectedADPPatternCoords.x() < 0 && m_SelectedADPPatternCoords.y() < 0)
+  {
+    m_Ui->generatePPMatrixBtn->setDisabled(true);
+    return false;
+  }
+
+  m_Ui->generatePPMatrixBtn->setEnabled(true);
+  return true;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::changeEvent(QEvent* event)
+void DictionaryIndexing_UI::changeEvent(QEvent* event)
 {
   if(event->type() == QEvent::ActivationChange)
   {
@@ -388,7 +474,7 @@ void AverageDotProductMap_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::readModuleSession(QJsonObject& obj)
+void DictionaryIndexing_UI::readModuleSession(QJsonObject& obj)
 {
   readInputParameters(obj);
 
@@ -400,7 +486,7 @@ void AverageDotProductMap_UI::readModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::readInputParameters(QJsonObject& obj)
+void DictionaryIndexing_UI::readInputParameters(QJsonObject& obj)
 {
   QJsonObject inputParamObj = obj[ioConstants::InputParam].toObject();
 
@@ -415,7 +501,7 @@ void AverageDotProductMap_UI::readInputParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::readComputationalParameters(QJsonObject& obj)
+void DictionaryIndexing_UI::readComputationalParameters(QJsonObject& obj)
 {
   QJsonObject compParamObj = obj[ioConstants::CompParam].toObject();
 
@@ -480,7 +566,7 @@ void AverageDotProductMap_UI::readComputationalParameters(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj) const
+void DictionaryIndexing_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject inputParamObj;
   writeInputParameters(inputParamObj);
@@ -494,7 +580,7 @@ void AverageDotProductMap_UI::writeModuleSession(QJsonObject& obj) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeInputParameters(QJsonObject& obj) const
+void DictionaryIndexing_UI::writeInputParameters(QJsonObject& obj) const
 {
   obj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
 
@@ -505,7 +591,7 @@ void AverageDotProductMap_UI::writeInputParameters(QJsonObject& obj) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::writeComputationalParameters(QJsonObject& obj) const
+void DictionaryIndexing_UI::writeComputationalParameters(QJsonObject& obj) const
 {
   obj[ioConstants::PatternHeight] = m_Ui->patternHeightSB->value();
   obj[ioConstants::PatternWidth] = m_Ui->patternWidthSB->value();
@@ -529,7 +615,7 @@ void AverageDotProductMap_UI::writeComputationalParameters(QJsonObject& obj) con
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapController::ADPMapData AverageDotProductMap_UI::getData()
+AverageDotProductMapController::ADPMapData DictionaryIndexing_UI::getADPMapData()
 {
   AverageDotProductMapController::ADPMapData data;
   data.roi_1 = m_Ui->roiSB_1->value();
@@ -574,15 +660,25 @@ AverageDotProductMapController::ADPMapData AverageDotProductMap_UI::getData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapController* AverageDotProductMap_UI::getController() const
+PatternPreprocessingParametersController::PPMatrixData DictionaryIndexing_UI::getPPMatrixData()
 {
-  return m_Controller;
-}
+  AverageDotProductMapController::ADPMapData adpMapData = getADPMapData();
 
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void AverageDotProductMap_UI::setController(AverageDotProductMapController* value)
-{
-  m_Controller = value;
+  PatternPreprocessingParametersController::PPMatrixData data;
+  data.patternHeight = m_Ui->patternHeightSB->value();
+  data.patternWidth = m_Ui->patternWidthSB->value();
+  data.ipfHeight = m_Ui->ipfHeightSB->value();
+  data.ipfWidth = m_Ui->ipfWidthSB->value();
+  data.hipassRange = m_Ui->hipassRangeLE->text().toFloat();
+  data.hipassNumSteps = m_Ui->hipassNumOfStepsLE->text().toInt();
+  data.minNumOfRegions = m_Ui->minNumOfRegionsLE->text().toInt();
+  data.maxNumOfRegions = m_Ui->maxNumOfRegionsLE->text().toInt();
+  data.numOfRegionsStepSize = m_Ui->numOfRegionsStepSizeLE->text().toInt();
+  data.patternDataFile = adpMapData.patternDataFile;
+  data.inputType = adpMapData.inputType;
+  data.hdfStrings = adpMapData.hdfStrings;
+  data.patternCoordinateX = m_SelectedADPPatternCoords.x();
+  data.patternCoordinateY = m_SelectedADPPatternCoords.y();
+
+  return data;
 }
