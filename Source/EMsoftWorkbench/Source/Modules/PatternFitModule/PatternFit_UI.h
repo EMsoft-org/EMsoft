@@ -165,7 +165,7 @@ private:
     PatternControlsWidget::PatternChoice m_CurrentPatternChoice;
     PatternFitController* m_Controller;
 
-  GLImageViewer::GLImageData m_ReferencePattern;
+  PatternImageViewer::ImageData m_ReferencePattern;
 
   std::vector<float> m_SimulatedPatternData;
   std::vector<size_t> m_SimulatedPatternDims;
@@ -303,8 +303,8 @@ private:
   bool validateData() override;
 
 public:
-  PatternFit_UI(const PatternFit_UI&) = delete;            // Copy Constructor Not Implemented
-  PatternFit_UI(PatternFit_UI&&) = delete;                 // Move Constructor Not Implemented
+  PatternFit_UI(const PatternFit_UI&) = delete; // Copy Constructor Not Implemented
+  PatternFit_UI(PatternFit_UI&&) = delete;      // Move Constructor Not Implemented
   PatternFit_UI& operator=(const PatternFit_UI&) = delete; // Copy Assignment Not Implemented
   PatternFit_UI& operator=(PatternFit_UI&&) = delete;      // Move Assignment Not Implemented
 };

@@ -163,8 +163,8 @@ private:
   MonteCarloSimulationController::MonteCarloSimulationData getCreationData() const;
 
 public:
-  MonteCarloSimulation_UI(const MonteCarloSimulation_UI&) = delete;            // Copy Constructor Not Implemented
-  MonteCarloSimulation_UI(MonteCarloSimulation_UI&&) = delete;                 // Move Constructor Not Implemented
+  MonteCarloSimulation_UI(const MonteCarloSimulation_UI&) = delete; // Copy Constructor Not Implemented
+  MonteCarloSimulation_UI(MonteCarloSimulation_UI&&) = delete;      // Move Constructor Not Implemented
   MonteCarloSimulation_UI& operator=(const MonteCarloSimulation_UI&) = delete; // Copy Assignment Not Implemented
   MonteCarloSimulation_UI& operator=(MonteCarloSimulation_UI&&) = delete;      // Move Assignment Not Implemented
 };

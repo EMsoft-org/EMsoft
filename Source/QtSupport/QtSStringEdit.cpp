@@ -33,161 +33,132 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "QtSRecentFileList.h"
+#include "QtSStringEdit.h"
 
-#include <QtCore/QDir>
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
-#include <QtCore/QSettings>
-#include <QtWidgets/QMenu>
+#include <QtWidgets/QShortcut>
+
+#include "EMsoftWorkbench/Source/Common/SVStyle.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSRecentFileList::QtSRecentFileList(QObject* parent)
-: QObject(parent)
-, m_Watcher(new QFileSystemWatcher(this))
+QtSStringEdit::QtSStringEdit(QWidget* parent) : QWidget(parent)
 {
-  connect(m_Watcher, SIGNAL(fileChanged(QString)), this, SLOT(removeFile(QString)));
+  setupUi(this);
+  setupGui();
+}
+
+QtSStringEdit::~QtSStringEdit() = default;
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void QtSStringEdit::setupGui()
+{
+  applyChangesBtn->setVisible(false);
+  cancelChangesBtn->setVisible(false);
+  value->setAttribute(Qt::WA_MacShowFocusRect, false);
+
+  connect(value, SIGNAL(textChanged(const QString&)), this, SLOT(widgetChanged(const QString&)));
+
+  QShortcut* applyShortcut = new QShortcut(QKeySequence(Qt::Key::Key_Return), this);
+  QShortcut* cancelShortcut = new QShortcut(QKeySequence(Qt::Key::Key_Escape), this);
+  applyShortcut->setContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
+  cancelShortcut->setContext(Qt::ShortcutContext::WidgetWithChildrenShortcut);
+
+  connect(applyShortcut, &QShortcut::activated, this, &QtSStringEdit::on_applyChangesBtn_clicked);
+  connect(cancelShortcut, &QShortcut::activated, this, &QtSStringEdit::on_cancelChangesBtn_clicked);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSRecentFileList::~QtSRecentFileList()
+QString QtSStringEdit::getStoredValue()
 {
-  delete m_Watcher;
-  m_Watcher = nullptr;
+  return m_storedValue;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QtSRecentFileList* QtSRecentFileList::instance()
+QString QtSStringEdit::getText()
 {
-  // qDebug() << "QtSRecentFileList::instance()" << "\n";
-  static QtSRecentFileList* singleton;
+  return m_storedValue;
+}
 
-  if(singleton == nullptr)
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void QtSStringEdit::setText(QString newValue, bool signalsBlocked)
+{
+  value->blockSignals(signalsBlocked);
+
+  m_storedValue = newValue;
+  value->setText(newValue);
+
+  hideButtons();
+
+  value->blockSignals(false);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void QtSStringEdit::on_applyChangesBtn_clicked()
+{
+  value->setStyleSheet(QString(""));
+  m_storedValue = value->text();
+  emit valueChanged(m_storedValue);
+
+  hideButtons();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void QtSStringEdit::on_cancelChangesBtn_clicked()
+{
+  value->setText(m_storedValue);
+  value->setStyleSheet(QString(""));
+
+  hideButtons();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void QtSStringEdit::hideButtons()
+{
+  value->setToolTip("");
+  applyChangesBtn->setVisible(false);
+  cancelChangesBtn->setVisible(false);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void QtSStringEdit::widgetChanged(const QString& text)
+{
+  if(text == getStoredValue())
   {
-    singleton = new QtSRecentFileList();
+    value->setStyleSheet(QString(""));
+
+    hideButtons();
   }
-  return singleton;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-bool QtSRecentFileList::contains(const QString& file) const
-{
-  return this->recentFiles.contains(file);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void QtSRecentFileList::addFile(const QString& file, AddType type)
-{
-  if(QFile::exists(file))
+  else
   {
-    // Remove the file from wherever it is in the list
-    removeFile(file);
+    SVStyle::Instance()->SetErrorColor("QLineEdit", value);
+    value->setToolTip("Press the 'Return' key to apply your changes\nPress the 'Esc' key to cancel your changes");
 
-    if(recentFiles.size() == 7)
-    {
-      recentFiles.pop_back();
-    }
-
-    if(type == APPEND)
-    {
-      this->recentFiles.append(file);
-    }
-    else
-    {
-      this->recentFiles.prepend(file);
-    }
-
-    // Add the path to the watcher
-    m_Watcher->addPath(file);
-
-    emit fileListChanged(file); // Emit the signal so all the menus can update their contents
-  }
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QStringList QtSRecentFileList::fileList() const
-{
-  return this->recentFiles;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void QtSRecentFileList::removeFile(const QString& file)
-{
-  this->recentFiles.removeAll(file);
-
-  // Remove the path from the watcher
-  m_Watcher->removePath(file);
-
-  emit fileListChanged(file); // Emit the signal so all the menus can update their contents
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void QtSRecentFileList::clear()
-{
-  this->recentFiles.clear();
-
-  emit fileListChanged(""); // Emit the signal so all the menus can update their contents
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void QtSRecentFileList::writeList(QtSSettings* prefs) const
-{
-  prefs->setValue("Recent Files", this->fileList());
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void QtSRecentFileList::readList(QtSSettings* prefs)
-{
-  this->clear();
-
-  QStringList list = prefs->value("Recent Files", QStringList());
-
-  for(int i = 0; i < list.size(); i++)
-  {
-    QString filePath = list[i];
-    QFile file(filePath);
-    if(file.exists())
-    {
-      this->addFile(filePath, APPEND);
-    }
+    applyChangesBtn->setVisible(true);
+    cancelChangesBtn->setVisible(true);
   }
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString QtSRecentFileList::strippedName(const QString& fullFileName)
+void QtSStringEdit::setValidator(const QValidator *v)
 {
-  return QFileInfo(fullFileName).fileName();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QString QtSRecentFileList::parentAndFileName(const QString& file)
-{
-  QFileInfo fileinfo(file);
-
-  QDir parent = fileinfo.dir();
-  return parent.dirName() + QDir::separator() + fileinfo.fileName();
+  value->setValidator(v);
 }

@@ -33,7 +33,7 @@
     <number>8</number>
    </property>
    <item row="1" column="0" colspan="2">
-    <widget class="GLImageViewer" name="imageViewer"/>
+    <widget class="PatternImageViewer" name="imageViewer"/>
    </item>
    <item row="0" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -303,9 +303,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GLImageViewer</class>
+   <class>PatternImageViewer</class>
    <extends>QOpenGLWidget</extends>
-   <header location="global">GLImageViewer.h</header>
+   <header location="global">PatternImageViewer.h</header>
   </customwidget>
  </customwidgets>
  <resources>

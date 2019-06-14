@@ -134,15 +134,15 @@
     </layout>
    </item>
    <item row="0" column="0">
-    <widget class="GLImageViewer" name="imageWidget"/>
+    <widget class="PatternImageViewer" name="imageWidget"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GLImageViewer</class>
+   <class>PatternImageViewer</class>
    <extends>QOpenGLWidget</extends>
-   <header location="global">GLImageViewer.h</header>
+   <header location="global">PatternImageViewer.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

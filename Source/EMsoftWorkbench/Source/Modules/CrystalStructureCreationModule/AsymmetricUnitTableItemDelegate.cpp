@@ -34,8 +34,8 @@
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "AsymmetricUnitTableItemDelegate.h"
-#include <QIntValidator>
-#include <QLineEdit>
+
+#include <QtWidgets/QLineEdit>
 
 // -----------------------------------------------------------------------------
 //

@@ -37,7 +37,6 @@
 
 #include <QtWidgets/QOpenGLWidget>
 
-
 class IModuleUI;
 
 class GLImageViewer : public QOpenGLWidget
@@ -46,14 +45,6 @@ class GLImageViewer : public QOpenGLWidget
 public:
     GLImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
     ~GLImageViewer() override;
-
-    struct GLImageData
-    {
-        QImage image;
-        float minValue = 0;
-        float maxValue = 0;
-        float keVValue = 0;
-    };
 
     /**
     * @brief Getter property for Zoomable
@@ -68,27 +59,10 @@ public:
     void setZoomable(bool value);
 
     /**
-    * @brief Setter property for HasKevValue
-    */
-    void setHasKevValue(bool value);
-
-    /**
-    * @brief Getter property for HasKevValue
-    * @return Value of HasKevValue
-    */
-    bool getHasKevValue() const;
-    /**
-    * @brief Setter property for UseStatsOverlay
-    */
-    void setUseStatsOverlay(const bool& value); 
-
-    /**
-    * @brief Getter property for UseStatsOverlay
-    * @return Value of UseStatsOverlay
-    */
-    bool getUseStatsOverlay() const;
-
-    void loadImage(GLImageViewer::GLImageData data);
+     * @brief loadImage
+     * @param image
+     */
+    void loadImage(QImage image);
 
     void zoomIn();
     void zoomOut();
@@ -96,11 +70,9 @@ public:
 
     QImage getCurrentImage() const;
 
-    void createModificationConnections(IModuleUI* ui) const;
+    virtual void readSession(QJsonObject &obj);
 
-    void readSession(QJsonObject &obj);
-
-    void writeSession(QJsonObject &obj) const;
+    virtual void writeSession(QJsonObject &obj) const;
 
 protected:
     void paintGL() Q_DECL_OVERRIDE;
@@ -120,13 +92,7 @@ protected:
     void viewerChanged();
 
 private:
-    bool m_HasKevValue = false;
-    bool m_UseStatsOverlay = true;
-
     QImage        m_CurrentImage;
-    float         m_MinValue = 0.0f;
-    float         m_MaxValue = 0.0f;
-    float         m_keVValue = 0.0f;
 
     bool          m_Zoomable = true;
     float         m_ZoomFactor = 1.0f;

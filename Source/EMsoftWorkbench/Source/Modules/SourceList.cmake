@@ -83,6 +83,7 @@ include(${${SUBDIR_NAME}_DIR}/PatternFitModule/SourceList.cmake)
 include(${${SUBDIR_NAME}_DIR}/CrystalStructureCreationModule/SourceList.cmake)
 include(${${SUBDIR_NAME}_DIR}/MonteCarloSimulationModule/SourceList.cmake)
 include(${${SUBDIR_NAME}_DIR}/MasterPatternSimulationModule/SourceList.cmake)
+include(${${SUBDIR_NAME}_DIR}/AverageDotProductMapModule/SourceList.cmake)
 
 # -- Add the binary directory for this subdirectory to the include path which is where the moc files are generated
 include_directories( ${EMsoftWorkbench_BINARY_DIR})

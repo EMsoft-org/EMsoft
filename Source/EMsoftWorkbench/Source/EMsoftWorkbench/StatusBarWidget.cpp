@@ -38,7 +38,7 @@
 #include <QtCore/QDebug>
 #include <QtWidgets/QDockWidget>
 
-#include "Common/QtSStyles.h"
+#include "Common/SVStyle.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -78,7 +78,8 @@ void StatusBarWidget::updateStyle()
 // -----------------------------------------------------------------------------
 QString StatusBarWidget::generateStyleSheet(bool error)
 {
-  QFont font = QtSStyles::GetBrandingLabelFont();
+  SVStyle* svStyle = SVStyle::Instance();
+  QFont font = svStyle->GetBrandingLabelFont();
   QString fontString;
   QTextStream fontStringStream(&fontString);
 

@@ -67,23 +67,23 @@ class QtSSettings : public QObject
     QtSSettings(const QString& filePath, QObject* parent = nullptr);
     ~QtSSettings() override;
 
-    QString fileName() const;
+    QString fileName();
 
-    bool contains(const QString& key) const;
+    bool contains(const QString& key);
 
     bool beginGroup(const QString& prefix);
     void endGroup();
 
-    QStringList childGroups() const;
+    QStringList childGroups();
 
     void remove(const QString& key);
 
     void clear();
 
-    QVariant value(const QString& key, const QVariant& defaultValue = QVariant()) const;
-    QJsonObject value(const QString& key, const QJsonObject& defaultObject = QJsonObject()) const;
-    QStringList value(const QString& key, const QStringList& defaultList = QStringList()) const;
-    QByteArray value(const QString& key, const QByteArray& defaultValue) const;
+    QVariant value(const QString& key, const QVariant& defaultValue = QVariant());
+    QJsonObject value(const QString& key, const QJsonObject& defaultObject = QJsonObject());
+    QStringList value(const QString& key, const QStringList& defaultList = QStringList());
+    QByteArray value(const QString& key, const QByteArray& defaultValue);
 
 
     void setValue(const QString& key, const QVariant& value);
@@ -97,7 +97,7 @@ class QtSSettings : public QObject
 
     void openFile();
     void closeFile();
-    void writeToFile() const;
+    void writeToFile();
 
     enum MultiValueLabels
     {
@@ -105,9 +105,6 @@ class QtSSettings : public QObject
       Type
     };
 
-  public:
-    QtSSettings(const QtSSettings&) = delete; // Copy Constructor Not Implemented
-    QtSSettings(QtSSettings&&) = delete;      // Move Constructor Not Implemented
-    QtSSettings& operator=(const QtSSettings&) = delete; // Copy Assignment Not Implemented
-    QtSSettings& operator=(QtSSettings&&) = delete;      // Move Assignment Not Implemented
+    QtSSettings(const QtSSettings&);    // Copy Constructor Not Implemented
+    void operator=(const QtSSettings&);  // Operator '=' Not Implemented
 };

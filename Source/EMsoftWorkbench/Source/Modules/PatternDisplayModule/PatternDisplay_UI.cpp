@@ -47,7 +47,8 @@
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
-#include "Common/QtSSettings.h"
+
+#include "QtSupport/QtSSettings.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -177,8 +178,8 @@ void PatternDisplay_UI::createWidgetConnections() const
   connect(monteCarloDisplayWidget, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
   // Connections to display master pattern and monte carlo images in their respective image viewers
-  connect(m_Controller, SIGNAL(mpImageNeedsDisplayed(GLImageViewer::GLImageData)), masterPatternDisplayWidget, SLOT(loadImage(GLImageViewer::GLImageData)));
-  connect(m_Controller, SIGNAL(mcImageNeedsDisplayed(GLImageViewer::GLImageData)), monteCarloDisplayWidget, SLOT(loadImage(GLImageViewer::GLImageData)));
+  connect(m_Controller, SIGNAL(mpImageNeedsDisplayed(PatternImageViewer::ImageData)), masterPatternDisplayWidget, SLOT(loadImage(PatternImageViewer::ImageData)));
+  connect(m_Controller, SIGNAL(mcImageNeedsDisplayed(PatternImageViewer::ImageData)), monteCarloDisplayWidget, SLOT(loadImage(PatternImageViewer::ImageData)));
 
   // Connections to allow the controller to tell the image viewers that the image spin box range has changed
   connect(m_Controller, SIGNAL(imageRangeChanged(int,int)), masterPatternDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int,int)));

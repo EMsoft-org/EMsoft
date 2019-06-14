@@ -50,8 +50,9 @@
 
 #include <QtWidgets>
 
-#include "Common/QtSStyles.h"
 #include "StyleSheetEditor.h"
+
+#include "Common/SVStyle.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -70,8 +71,9 @@ StyleSheetEditor::StyleSheetEditor(QWidget* parent)
     defaultStyle = match.captured(1);
   }
 
-  styleSheetCombo->setCurrentIndex(styleSheetCombo->findText("light"));
-  loadStyleSheet("light");
+  connect(styleSheetCombo, &QComboBox::currentTextChanged, [=] (const QString &text) { loadStyleSheet(text); });
+
+  styleSheetCombo->setCurrentText("light");
 }
 
 // -----------------------------------------------------------------------------
@@ -95,6 +97,7 @@ void StyleSheetEditor::on_styleTextEdit_textChanged()
 // -----------------------------------------------------------------------------
 void StyleSheetEditor::on_applyButton_clicked()
 {
+  //    qDebug() << "style sheet name: "  << styleSheetCombo->currentText();
   qApp->setStyleSheet(styleTextEdit->toPlainText());
   applyButton->setEnabled(false);
 }
@@ -104,13 +107,11 @@ void StyleSheetEditor::on_applyButton_clicked()
 // -----------------------------------------------------------------------------
 void StyleSheetEditor::loadStyleSheet(const QString& sheetName)
 {
-  QFile file(":/" + sheetName.toLower() + ".qss");
+  QString filePath = ":/" + sheetName.toLower() + ".qss";
+  QFile file(filePath);
   file.open(QFile::ReadOnly);
   QString styleSheet = QString::fromLatin1(file.readAll());
 
   styleTextEdit->setPlainText(styleSheet);
-  //    qDebug() << "style sheet name: "  << sheetName;
-  QtSStyles::setStyleSheetName(sheetName);
-  qApp->setStyleSheet(styleSheet);
-  applyButton->setEnabled(false);
+  applyButton->setEnabled(true);
 }

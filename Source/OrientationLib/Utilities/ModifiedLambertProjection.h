@@ -234,6 +234,9 @@ public:
     std::vector<double> m_NorthSquare;
     std::vector<double> m_SouthSquare;
 
-    ModifiedLambertProjection(const ModifiedLambertProjection&); // Copy Constructor Not Implemented
-    void operator=(const ModifiedLambertProjection&); // Operator '=' Not Implemented
+  public:
+    ModifiedLambertProjection(const ModifiedLambertProjection&) = delete; // Copy Constructor Not Implemented
+    ModifiedLambertProjection(ModifiedLambertProjection&&) = delete;      // Move Constructor Not Implemented
+    ModifiedLambertProjection& operator=(const ModifiedLambertProjection&) = delete; // Copy Assignment Not Implemented
+    ModifiedLambertProjection& operator=(ModifiedLambertProjection&&) = delete;      // Move Assignment Not Implemented
 };

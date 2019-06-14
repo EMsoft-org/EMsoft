@@ -108,7 +108,7 @@ public slots:
    * @brief loadImage
    * @param image
    */
-  void loadImage(GLImageViewer::GLImageData data) const;
+  void loadImage(PatternImageViewer::ImageData data) const;
 
 protected:
   void setupGui();

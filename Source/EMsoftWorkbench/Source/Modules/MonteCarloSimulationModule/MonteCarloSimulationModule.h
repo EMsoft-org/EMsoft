@@ -66,9 +66,6 @@ public:
 protected:
   MonteCarloSimulationModule(QWidget* parent = nullptr);
 
-private:
-
-
 public:
   MonteCarloSimulationModule(const MonteCarloSimulationModule&) = delete;            // Copy Constructor Not Implemented
   MonteCarloSimulationModule(MonteCarloSimulationModule&&) = delete;                 // Move Constructor Not Implemented

@@ -153,8 +153,8 @@ private:
   CrystalStructureCreationController::CrystalStructureCreationData getCreationData() const;
 
 public:
-  CrystalStructureCreation_UI(const CrystalStructureCreation_UI&) = delete;            // Copy Constructor Not Implemented
-  CrystalStructureCreation_UI(CrystalStructureCreation_UI&&) = delete;                 // Move Constructor Not Implemented
+  CrystalStructureCreation_UI(const CrystalStructureCreation_UI&) = delete; // Copy Constructor Not Implemented
+  CrystalStructureCreation_UI(CrystalStructureCreation_UI&&) = delete;      // Move Constructor Not Implemented
   CrystalStructureCreation_UI& operator=(const CrystalStructureCreation_UI&) = delete; // Copy Assignment Not Implemented
   CrystalStructureCreation_UI& operator=(CrystalStructureCreation_UI&&) = delete;      // Move Assignment Not Implemented
 };

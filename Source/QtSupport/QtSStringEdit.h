@@ -35,69 +35,40 @@
 
 #pragma once
 
-#include <QtGui/QFont>
-#include <QtGui/QIcon>
-#include <QtGui/QColor>
+#include <QtWidgets/QWidget>
+#include <QtGui/QKeyEvent>
 
+#include "ui_QtSStringEdit.h"
 
-class QLineEdit;
-class QPushButton;
-
-class  QtSStyles : public QObject
+class QtSStringEdit : public QWidget, private Ui::QtSStringEdit
 {
-    Q_OBJECT
-  public:
+  Q_OBJECT
 
-    enum FilterState {
-        FilterDefault,
-        FilterComplete,
-        FilterProcessing,
-        FilterError
-    };
+public:
+  QtSStringEdit(QWidget* parent);
+  ~QtSStringEdit() override;
 
+  void setupGui();
 
+  QString getText();
+  void setText(QString value, bool blockSignals = false);
 
-    QtSStyles();
-    ~QtSStyles() override;
+  void setValidator(const QValidator *v);
 
+signals:
+  void valueChanged(QString value);
 
-    /**
-     * @brief QtSStyles::ColorForFilterGroup
-     * @param grpName
-     * @return
-     */
-    static QColor ColorForFilterGroup(const QString &grpName);
+public slots:
+  void widgetChanged(const QString& msg);
+  void on_applyChangesBtn_clicked();
+  void on_cancelChangesBtn_clicked();
 
-    /**
-     * @brief QtSStyles::IconForGroup
-     * @param grpName
-     * @return
-     */
-    static QIcon IconForGroup(const QString &grpName);
+  void hideButtons();
 
-    static void setStyleSheetName(const QString &name);
-    static QString styleSheetName();
-    static QColor getPipelineFontColor();
-
-    // Color of the left index rect in the pipline filters based on state
-    static QColor ColorForFilterState(FilterState state);
-
-    static QFont GetBrandingLabelFont();
-
-    static QString GetUIFont();
+protected:
+  QString getStoredValue();
 
 private:
-    static QString currentStyleSheetName;
-
-    // maps of colors and icons that are stored in a json file
-    static QMap<QString, QColor> filterColorMap;
-    static QMap<QString, QIcon> filterIconMap;
-
-    static void parseJson();
-
-  public:
-    QtSStyles(const QtSStyles&) = delete; // Copy Constructor Not Implemented
-    QtSStyles(QtSStyles&&) = delete;      // Move Constructor Not Implemented
-    QtSStyles& operator=(const QtSStyles&) = delete; // Copy Assignment Not Implemented
-    QtSStyles& operator=(QtSStyles&&) = delete;      // Move Assignment Not Implemented
+  QString m_storedValue;
 };
+

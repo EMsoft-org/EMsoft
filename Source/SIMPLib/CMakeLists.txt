@@ -120,7 +120,7 @@ D3DCompileDir(Common)
 D3DCompileDir(Math)
 # D3DCompileDir(Plugin)
 # D3DCompileDir(StatsData)
-# D3DCompileDir(Utilities)
+D3DCompileDir(Utilities)
 # D3DCompileDir(VTKUtils)
 
 

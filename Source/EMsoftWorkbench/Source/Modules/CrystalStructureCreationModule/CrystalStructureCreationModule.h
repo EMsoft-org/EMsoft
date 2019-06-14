@@ -66,9 +66,6 @@ public:
 protected:
   CrystalStructureCreationModule(QWidget* parent = nullptr);
 
-private:
-
-
 public:
   CrystalStructureCreationModule(const CrystalStructureCreationModule&) = delete;            // Copy Constructor Not Implemented
   CrystalStructureCreationModule(CrystalStructureCreationModule&&) = delete;                 // Move Constructor Not Implemented

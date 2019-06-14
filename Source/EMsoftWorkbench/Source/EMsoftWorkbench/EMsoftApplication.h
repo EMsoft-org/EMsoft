@@ -81,6 +81,11 @@ public:
   EMsoftWorkbench_UI* getActiveWindow() const;
   void setActiveWindow(EMsoftWorkbench_UI* workbench);
 
+  /**
+   * @brief createThemeMenu
+   */
+  QMenu* createThemeMenu(QWidget* parent = nullptr);
+
 public slots:
   void listenNewInstanceTriggered();
   void listenOpenTriggered();
@@ -111,8 +116,9 @@ private:
   QMenuBar* m_DefaultMenuBar = nullptr;
 
   QMenu* m_MenuFile = nullptr;
-  QMenu* m_MenuEdit = nullptr;
+//  QMenu* m_MenuEdit = nullptr;
   QMenu* m_MenuView = nullptr;
+  QMenu* m_MenuThemes = nullptr;
   QMenu* m_MenuRecentFiles = nullptr;
   QMenu* m_MenuHelp = nullptr;
 
@@ -123,7 +129,7 @@ private:
   QAction* m_ActionClearRecentFiles = nullptr;
   QAction* m_ActionAboutEMsoftWorkbench = nullptr;
   QAction* m_ActionExit = nullptr;
-  QAction* m_ActionEditStyle = nullptr;
+//  QAction* m_ActionEditStyle = nullptr;
 
   /**
    * @brief Creates the default menu bar that gets shown if there is no EMsoftWorkbench_UI window.

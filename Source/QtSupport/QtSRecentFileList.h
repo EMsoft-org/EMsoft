@@ -40,7 +40,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QFileSystemWatcher>
 
-#include "Common/QtSSettings.h"
+#include "QtSupport/QtSSettings.h"
 
 enum AddType
 {
@@ -90,7 +90,7 @@ class QtSRecentFileList: public QObject
      * @brief Returns the current list of 'Recent Files' for this application
      * @return
      */
-    QStringList fileList() const;
+    QStringList fileList();
 
     /**
      * @brief Adds a file to the recent files
@@ -102,7 +102,7 @@ class QtSRecentFileList: public QObject
      * @brief Writes the list of files to a preference file.
      * @param prefs The QSettings object to use.
      */
-    void writeList(QtSSettings* prefs) const;
+    void writeList(QtSSettings* prefs);
 
     /**
      * @brief Reads the list of Recent Files from the preferences file
@@ -138,7 +138,7 @@ class QtSRecentFileList: public QObject
      * @brief Returns true if the list already contains the file.
      * @param file The file to check.
      */
-    bool contains(const QString& file) const;
+    bool contains(const QString& file);
 
   private:
     ~QtSRecentFileList() override;
@@ -149,10 +149,8 @@ class QtSRecentFileList: public QObject
     // QList<QAction*> actions;
     // QMenu* recentFileMenu;
 
-  public:
-    QtSRecentFileList(const QtSRecentFileList&) = delete; // Copy Constructor Not Implemented
-    QtSRecentFileList(QtSRecentFileList&&) = delete;      // Move Constructor Not Implemented
-    QtSRecentFileList& operator=(const QtSRecentFileList&) = delete; // Copy Assignment Not Implemented
-    QtSRecentFileList& operator=(QtSRecentFileList&&) = delete;      // Move Assignment Not Implemented
+
+    QtSRecentFileList(const QtSRecentFileList&); //Copy Constructor Not Implemented
+    void operator=(const QtSRecentFileList&); //Copy Assignment Not Implemented
 
 };

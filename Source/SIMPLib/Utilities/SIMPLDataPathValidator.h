@@ -1,5 +1,5 @@
 /* ============================================================================
- * Copyright (c) 2017 BlueQuartz Softwae, LLC
+ * Copyright (c) 2017 BlueQuartz Software, LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -32,55 +32,55 @@
 
 #pragma once
 
-#include <QtCore/QString>
-#include <QtWidgets/QWidget>
+#include <QtCore/QObject>
+
+#include "SIMPLib/SIMPLib.h"
 
 /**
- * @brief The QtSFileUtils class
+ * @brief The SIMPLDataPathValidator class
  */
-class QtSFileUtils
+class SIMPLib_EXPORT SIMPLDataPathValidator : public QObject
 {
-  public:
-    QtSFileUtils();
-    virtual ~QtSFileUtils();
-
-    /**
-     * @brief Generates a native file system path from the relative path given
-     * @param pathEnding
-     * @return
-     */
-    static QString GenerateFileSystemPath(const QString &pathEnding);
-
-    /**
-     * @brief Reveals the path in the operating systems UI shell (Windows Explorer or macOS Finder)
-     * @param path The path to reveal
-     */
-    static void ShowPathInGui(QWidget* parent, const QString &path);
-
-    /**
-     * @brief GetPathSeperator
-     * @return Returns the separator character used in the PATH environment variable
-     */
-    static QString GetPathSeperator();
-
-    /**
-     * @brief Finds an executable in the PATH
-     * @param exe The executable to find
-     * @return The absolute path to the executable or empty if it is not found
-     */
-    static QString FindInPath(const QString &exe);
-
-    /**
-     * @brief Returns an environment variable
-     * @param evnVar
-     * @return
-     */
-    static QStringList GetEnvVar(const QString &evnVar);
+    Q_OBJECT
 
   public:
-    QtSFileUtils(const QtSFileUtils&) = delete; // Copy Constructor Not Implemented
-    QtSFileUtils(QtSFileUtils&&) = delete;      // Move Constructor Not Implemented
-    QtSFileUtils& operator=(const QtSFileUtils&) = delete; // Copy Assignment Not Implemented
-    QtSFileUtils& operator=(QtSFileUtils&&) = delete;      // Move Assignment Not Implemented
+    ~SIMPLDataPathValidator() override;
 
+    static SIMPLDataPathValidator* Instance();
+
+    /**
+    * @brief Getter property for SIMPLDataDirectory
+    * @return Value of SIMPLDataDirectory
+    */
+    QString getSIMPLDataDirectory() const;
+
+    /**
+     * @brief setSIMPLDataDirectory
+     * @param path
+     */
+    void setSIMPLDataDirectory(const QString &path);
+
+    /**
+     * @brief sanityCheckRelativePath
+     * @param relativePath
+     * @return
+     */
+    QString convertToAbsolutePath(const QString &relativePath);
+
+  protected:
+    SIMPLDataPathValidator();
+
+  signals:
+    void dataDirectoryChanged(const QString &path);
+
+  private:
+    static SIMPLDataPathValidator* m_Self;
+
+    QString m_SIMPLDataDirectory;
+
+  public:
+    SIMPLDataPathValidator(const SIMPLDataPathValidator&) = delete;            // Copy Constructor Not Implemented
+    SIMPLDataPathValidator(SIMPLDataPathValidator&&) = delete;                 // Move Constructor Not Implemented
+    SIMPLDataPathValidator& operator=(const SIMPLDataPathValidator&) = delete; // Copy Assignment Not Implemented
+    SIMPLDataPathValidator& operator=(SIMPLDataPathValidator&&) = delete;      // Move Assignment Not Implemented
 };

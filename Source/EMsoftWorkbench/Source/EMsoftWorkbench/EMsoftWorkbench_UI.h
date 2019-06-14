@@ -119,6 +119,11 @@ protected:
    */
   QMessageBox::StandardButton checkDirtyDocument();
 
+  /**
+   * @brief Slot that gets called when a toolbar button gets clicked on
+   */
+  void updateModuleWidgetSelection(int index);
+
 protected slots:
   void listenSaveSessionTriggered();
   void listenSaveSessionAsTriggered();
@@ -144,8 +149,9 @@ private:
   QMenuBar* m_MenuBar = nullptr;
 
   QMenu* m_MenuFile = nullptr;
-  QMenu* m_MenuEdit = nullptr;
+//  QMenu* m_MenuEdit = nullptr;
   QMenu* m_MenuView = nullptr;
+  QMenu* m_MenuThemes = nullptr;
   QMenu* m_MenuRecentFiles = nullptr;
   QMenu* m_MenuHelp = nullptr;
 
@@ -156,7 +162,7 @@ private:
   QAction* m_ActionClearRecentFiles = nullptr;
   QAction* m_ActionAboutEMsoftWorkbench = nullptr;
   QAction* m_ActionExit = nullptr;
-  QAction* m_ActionEditStyle = nullptr;
+//  QAction* m_ActionEditStyle = nullptr;
 
   /**
    * @brief Create the menu system for the workbench
@@ -226,6 +232,9 @@ private:
    */
   bool writeModulesToFile(const QString& filePath);
 
-  EMsoftWorkbench_UI(const EMsoftWorkbench_UI&); // Copy Constructor Not Implemented
-  void operator=(const EMsoftWorkbench_UI&);     // Operator '=' Not Implemented
+public:
+  EMsoftWorkbench_UI(const EMsoftWorkbench_UI&) = delete; // Copy Constructor Not Implemented
+  EMsoftWorkbench_UI(EMsoftWorkbench_UI&&) = delete;      // Move Constructor Not Implemented
+  EMsoftWorkbench_UI& operator=(const EMsoftWorkbench_UI&) = delete; // Copy Assignment Not Implemented
+  EMsoftWorkbench_UI& operator=(EMsoftWorkbench_UI&&) = delete;      // Move Assignment Not Implemented
 };

@@ -56,7 +56,6 @@ protected:
   void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
   void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 
-private:
 public:
   AsymmetricUnitTableItemDelegate(const AsymmetricUnitTableItemDelegate&) = delete;            // Copy Constructor Not Implemented
   AsymmetricUnitTableItemDelegate(AsymmetricUnitTableItemDelegate&&) = delete;                 // Move Constructor Not Implemented

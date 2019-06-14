@@ -46,13 +46,15 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QToolButton>
 
+#include "Modules/AverageDotProductMapModule/Constants.h"
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreation_UI.h"
 #include "Modules/ModuleManager.h"
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
-#include "Common/QtSRecentFileList.h"
-#include "Common/QtSSettings.h"
+
+#include "QtSupport/QtSRecentFileList.h"
+#include "QtSupport/QtSSettings.h"
 
 #include "EMsoftWorkbench/EMsoftApplication.h"
 #include "EMsoftWorkbench/StatusBarWidget.h"
@@ -189,6 +191,7 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::MasterPatternSimulation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternDisplay);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternFit);
+  m_ModuleNamesOrder.append(AverageDotProductMapModuleConstants::ModuleName);
 
   m_ToolbarButtonGroup = new QActionGroup(this);
 
@@ -210,47 +213,7 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
     connect(toolbarAction, &QAction::triggered, [=] {
       QList<QAction*> toolbarActions = mainToolbar->actions();
       int idx = toolbarActions.indexOf(toolbarAction);
-
-      if(dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(idx)) == nullptr)
-      {
-        // This module doesn't exist yet, so create it
-        IModuleUI* module_ui = manager->getModuleFromName(m_ModuleNamesOrder[idx], QJsonObject(), this);
-        if(module_ui != nullptr)
-        {
-          connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=](IModuleUI* module_ui) {
-            for(int i = 0; i < moduleStackedWidget->count(); i++)
-            {
-              IModuleUI* ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
-              if(ui != nullptr && ui != module_ui)
-              {
-                ui->validateData();
-              }
-            }
-          });
-
-          // Delete the placeholder
-          QWidget* placeholder = moduleStackedWidget->widget(idx);
-          moduleStackedWidget->removeWidget(placeholder);
-          delete placeholder;
-
-          // Insert the module widget into its proper place in the stacked widget
-          moduleStackedWidget->insertWidget(idx, module_ui);
-          moduleStackedWidget->setCurrentIndex(idx);
-          m_CurrentStackedWidgetIdx = idx;
-        }
-        else
-        {
-          // The user didn't give the module the information it needed to create itself, or there was an error.
-          // Restore the toolbar back to its previous selection
-          toolbarActions[m_CurrentStackedWidgetIdx]->setChecked(true);
-        }
-      }
-      else
-      {
-        // The module widget already exists in the stacked widget, so set its index as the current index
-        moduleStackedWidget->setCurrentIndex(idx);
-        m_CurrentStackedWidgetIdx = idx;
-      }
+      updateModuleWidgetSelection(idx);
     }); // End connect
   }
 
@@ -259,6 +222,57 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
   if(!toolbarActions.empty())
   {
     toolbarActions[0]->trigger();
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void EMsoftWorkbench_UI::updateModuleWidgetSelection(int index)
+{
+  ModuleManager* manager = ModuleManager::Instance();
+  QList<QAction*> toolbarActions = mainToolbar->actions();
+
+  IModuleUI* module_ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(index));
+  if(module_ui == nullptr)
+  {
+    // This module doesn't exist yet, so create it
+    module_ui = manager->getModuleFromName(m_ModuleNamesOrder[index], QJsonObject(), this);
+    if(module_ui != nullptr)
+    {
+      connect(module_ui, &IModuleUI::validationOfOtherModulesNeeded, [=](IModuleUI* module_ui) {
+        for(int i = 0; i < moduleStackedWidget->count(); i++)
+        {
+          IModuleUI* ui = dynamic_cast<IModuleUI*>(moduleStackedWidget->widget(i));
+          if(ui != nullptr && ui != module_ui)
+          {
+            ui->validateData();
+          }
+        }
+      });
+
+      // Delete the placeholder
+      QWidget* placeholder = moduleStackedWidget->widget(index);
+      moduleStackedWidget->removeWidget(placeholder);
+      delete placeholder;
+
+      // Insert the module widget into its proper place in the stacked widget
+      moduleStackedWidget->insertWidget(index, module_ui);
+      moduleStackedWidget->setCurrentIndex(index);
+      m_CurrentStackedWidgetIdx = index;
+    }
+    else
+    {
+      // The user didn't give the module the information it needed to create itself, or there was an error.
+      // Restore the toolbar back to its previous selection
+      toolbarActions[m_CurrentStackedWidgetIdx]->setChecked(true);
+    }
+  }
+  else
+  {
+    // The module widget already exists in the stacked widget, so set its index as the current index
+    moduleStackedWidget->setCurrentIndex(index);
+    m_CurrentStackedWidgetIdx = index;
   }
 }
 
@@ -595,7 +609,7 @@ void EMsoftWorkbench_UI::slot_StdOutputMsgReceived(const QString& msg)
 {
   // Only add the standard output message to the standard output pane if the module
   // that sent the std output message is active
-  stdOutTE->append("\n" + msg);
+  stdOutTE->append(msg);
 }
 
 // -----------------------------------------------------------------------------
@@ -748,8 +762,9 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   m_MenuBar = new QMenuBar();
 
   m_MenuFile = new QMenu("File", m_MenuBar);
-  m_MenuEdit = new QMenu("Edit", m_MenuBar);
+//  m_MenuEdit = new QMenu("Edit", m_MenuBar);
   m_MenuView = new QMenu("View", m_MenuBar);
+  m_MenuThemes = emSoftApp->createThemeMenu(m_MenuView);
   m_MenuRecentFiles = new QMenu("Recent Files", m_MenuBar);
   m_MenuHelp = new QMenu("Help", m_MenuBar);
 
@@ -772,7 +787,7 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   m_ActionExit = new QAction("Exit " + QApplication::applicationName(), m_MenuBar);
   m_ActionExit->setShortcut(QKeySequence::Quit);
 
-  m_ActionEditStyle = new QAction("Edit Style...", this);
+//  m_ActionEditStyle = new QAction("Edit Style...", this);
 
   connect(m_ActionNew, &QAction::triggered, emSoftApp, &EMsoftApplication::listenNewInstanceTriggered);
   connect(m_ActionOpen, &QAction::triggered, emSoftApp, &EMsoftApplication::listenOpenTriggered);
@@ -781,7 +796,7 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   connect(m_ActionExit, &QAction::triggered, emSoftApp, &EMsoftApplication::listenExitApplicationTriggered);
   connect(m_ActionClearRecentFiles, &QAction::triggered, emSoftApp, &EMsoftApplication::listenClearRecentFilesTriggered);
 //  connect(m_ActionAboutEMsoftWorkbench, &QAction::triggered, emSoftApp, &EMsoftApplication::listenAboutEMsoftWorkbenchTriggered);
-  connect(m_ActionEditStyle, &QAction::triggered, emSoftApp, &EMsoftApplication::listenEditStyleTriggered);
+//  connect(m_ActionEditStyle, &QAction::triggered, emSoftApp, &EMsoftApplication::listenEditStyleTriggered);
 
   // Create File Menu
   m_MenuBar->addMenu(m_MenuFile);
@@ -798,10 +813,11 @@ void EMsoftWorkbench_UI::createWorkbenchMenuSystem()
   m_MenuFile->addAction(m_ActionExit);
 
   // Create Edit Menu
-  m_MenuBar->addMenu(m_MenuEdit);
-  m_MenuEdit->addAction(m_ActionEditStyle);
+//  m_MenuBar->addMenu(m_MenuEdit);
+//  m_MenuEdit->addAction(m_ActionEditStyle);
 
   // Create View Menu
+  m_MenuView->addMenu(m_MenuThemes);
   m_MenuBar->addMenu(m_MenuView);
 
   // Create Help Menu

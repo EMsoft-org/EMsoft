@@ -51,7 +51,6 @@ public:
 protected:
   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const Q_DECL_OVERRIDE;
 
-private:
 public:
   PatternListItemDelegate(const PatternListItemDelegate&) = delete;            // Copy Constructor Not Implemented
   PatternListItemDelegate(PatternListItemDelegate&&) = delete;                 // Move Constructor Not Implemented

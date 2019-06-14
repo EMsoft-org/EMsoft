@@ -177,7 +177,7 @@ void MPMCDisplayWidget::updateSliderRange(int min, int max) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MPMCDisplayWidget::loadImage(GLImageViewer::GLImageData data) const
+void MPMCDisplayWidget::loadImage(PatternImageViewer::ImageData data) const
 {
   QImage img = data.image;
 
@@ -260,7 +260,7 @@ void MPMCDisplayWidget::createConnections(PatternDisplay_UI* ui) const
   });
 
   // Image Viewer modification connections
-  imageViewer->createModificationConnections(ui);
+  connect(imageViewer, &GLImageViewer::viewerChanged, [=] { emit ui->moduleParametersChanged(); });
 }
 
 // -----------------------------------------------------------------------------

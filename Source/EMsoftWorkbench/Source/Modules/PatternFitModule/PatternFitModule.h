@@ -65,9 +65,6 @@ public:
 protected:
   PatternFitModule(QWidget* parent = nullptr);
 
-private:
-
-
 public:
   PatternFitModule(const PatternFitModule&) = delete;            // Copy Constructor Not Implemented
   PatternFitModule(PatternFitModule&&) = delete;                 // Move Constructor Not Implemented
