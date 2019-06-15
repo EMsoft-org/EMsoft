@@ -37,41 +37,56 @@
 
 #include <QtCore/QFutureWatcher>
 
-#include "Modules/IModuleUI.h"
-#include "Modules/DictionaryIndexingModule/ADPMapController.h"
 #include "Modules/DictionaryIndexingModule/PatternPreprocessingController.h"
 
-#include "ui_DictionaryIndexing_UI.h"
+#include "ui_PatternPreprocessing_UI.h"
 
-class DictionaryIndexing_UI : public QWidget
+class ChoosePatternsDatasetDialog;
+
+class PatternPreprocessing_UI : public QWidget
 {
   Q_OBJECT
 
 public:
+  using InputType = EMsoftWorkbenchConstants::InputType;
+
   /**
-   * @brief DictionaryIndexing_UI
+   * @brief PatternPreprocessing_UI
    * @param parent
    */
-  DictionaryIndexing_UI(QWidget *parent = nullptr);
+  PatternPreprocessing_UI(QWidget *parent = nullptr);
 
-  ~DictionaryIndexing_UI() override;
+  ~PatternPreprocessing_UI() override;
 
   /**
    * @brief validateData
    */
-  void validateData();
+  bool validateData();
 
   /**
-   * @brief setHipassValue
-   * @param hipassValue
+   * @brief setInputType
+   * @param inputType
    */
-  void setHipassValue(float hipassValue);
+  void setInputType(ADPMapController::InputType inputType);
 
   /**
-   * @brief setHipassNumberOfRegions
-   * @param numOfRegions
+   * @brief setPatternDataFile
+   * @param filePath
    */
-  void setHipassNumberOfRegions(int numOfRegions);
+  void setPatternDataFile(const QString &filePath);
+
+  /**
+   * @brief setSelectedHDF5Path
+   * @param path
+   */
+  void setSelectedHDF5Path(const QStringList &path);
+
+public slots:
+  /**
+   * @brief setSelectedADPPatternPixel
+   * @param pixel
+   */
+  void setSelectedADPPatternPixel(const QPoint &pixel);
 
 protected:
   /**
@@ -81,33 +96,49 @@ protected:
 
 protected slots:
   /**
-   * @brief listenGenerateDIBtnPressed
+   * @brief listenPatternPreprocessingStarted
    */
-  void listenGenerateDIBtnPressed();
+  void listenPatternPreprocessingStarted();
 
   /**
-   * @brief parametersChanged
+   * @brief listenPatternPreprocessingFinished
    */
+  void listenPatternPreprocessingFinished();
+
+  /**
+   * @brief updateZoomFactor
+   * @param zoomFactor
+   */
+  void updateZoomFactor(float zoomFactor);
+
+signals:
+  void errorMessageGenerated(const QString &msg);
+  void warningMessageGenerated(const QString &msg);
+  void stdOutputMessageGenerated(const QString &msg);
+
+  void patternPreprocessingStarted();
+  void patternPreprocessingFinished();
+
+  void selectedHipassValueChanged(float value);
+  void selectedHipassNumOfStepsChanged(int value);
+
   void parametersChanged();
 
-private slots:
-  /**
-   * @brief generateDIThreadFinished
-   */
-  void generateDIThreadFinished();
-
 private:
-  QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
+  QSharedPointer<Ui::PatternPreprocessing_UI> m_Ui;
 
-  PatternPreprocessingController* m_DIController = nullptr;
+  PatternPreprocessingController* m_PPMatrixController = nullptr;
 
-  float m_HipassValue = -1.0f;
-  int m_HipassNumOfRegions = -1;
+  QPoint m_SelectedADPPatternPixel = QPoint(-1, -1);
+
+  InputType m_InputType = InputType::Binary;
+  QString m_PatternDataFile;
+  QStringList m_SelectedHDF5Path;
 
   QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_DIWatcher;
+  QSharedPointer<QFutureWatcher<void>> m_PPMatrixWatcher;
 
   /**
    * @brief createValidators
@@ -130,14 +161,14 @@ private:
   void createWidgetConnections();
 
   /**
-   * @brief getData
+   * @brief getPPMatrixData
    * @return
    */
-  ADPMapController::ADPMapData getDIData();
+  PatternPreprocessingController::PPMatrixData getPPMatrixData();
 
 public:
-  DictionaryIndexing_UI(const DictionaryIndexing_UI&) = delete; // Copy Constructor Not Implemented
-  DictionaryIndexing_UI(DictionaryIndexing_UI&&) = delete;      // Move Constructor Not Implemented
-  DictionaryIndexing_UI& operator=(const DictionaryIndexing_UI&) = delete; // Copy Assignment Not Implemented
-  DictionaryIndexing_UI& operator=(DictionaryIndexing_UI&&) = delete;      // Move Assignment Not Implemented
+  PatternPreprocessing_UI(const PatternPreprocessing_UI&) = delete; // Copy Constructor Not Implemented
+  PatternPreprocessing_UI(PatternPreprocessing_UI&&) = delete;      // Move Constructor Not Implemented
+  PatternPreprocessing_UI& operator=(const PatternPreprocessing_UI&) = delete; // Copy Assignment Not Implemented
+  PatternPreprocessing_UI& operator=(PatternPreprocessing_UI&&) = delete;      // Move Assignment Not Implemented
 };

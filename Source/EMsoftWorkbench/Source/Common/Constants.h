@@ -55,6 +55,18 @@ namespace EMsoftWorkbenchConstants
     UnknownFormat
   };
 
+  enum class InputType : EnumType
+  {
+    Binary = 0,
+    TSLup1,
+    TSLup2,
+    TSLHDF,
+    OxfordBinary,
+    OxfordHDF,
+    EMEBSD,
+    BrukerHDF
+  };
+
   namespace Constants
   {
     static const size_t IParSize = 80;

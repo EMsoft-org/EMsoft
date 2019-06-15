@@ -33,7 +33,7 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "AverageDotProductMapController.h"
+#include "ADPMapController.h"
 
 //#include "EMsoftWrapperLib/DictionaryIndexing/EMsoftDIwrappers.h"
 
@@ -43,26 +43,27 @@
 #include <QtCore/QMap>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QTextStream>
+#include <QtCore/QSharedPointer>
 
 #include <QtGui/QImage>
 
 #include "Constants.h"
 
 static size_t k_InstanceKey = 0;
-static QMap<size_t, AverageDotProductMapController*> instances;
+static QMap<size_t, ADPMapController*> instances;
 
 namespace SizeConstants = DictionaryIndexingModuleConstants::ArraySizes;
 
 /**
- * @brief AverageDotProductMapControllerProgress
+ * @brief ADPMapControllerProgress
  * @param instance
  * @param loopCompleted
  * @param totalLoops
  * @param bseYield
  */
-void AverageDotProductMapControllerProgress(size_t instance, int loopCompleted, int totalLoops)
+void ADPMapControllerProgress(size_t instance, int loopCompleted, int totalLoops)
 {
-  AverageDotProductMapController* obj = instances[instance];
+  ADPMapController* obj = instances[instance];
   if(nullptr != obj)
   {
     obj->setUpdateProgress(loopCompleted, totalLoops);
@@ -72,7 +73,7 @@ void AverageDotProductMapControllerProgress(size_t instance, int loopCompleted, 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapController::AverageDotProductMapController(QObject* parent)
+ADPMapController::ADPMapController(QObject* parent)
 : QObject(parent)
 {
   m_InstanceKey = ++k_InstanceKey;
@@ -81,7 +82,7 @@ AverageDotProductMapController::AverageDotProductMapController(QObject* parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AverageDotProductMapController::~AverageDotProductMapController()
+ADPMapController::~ADPMapController()
 {
   k_InstanceKey--;
 }
@@ -89,7 +90,7 @@ AverageDotProductMapController::~AverageDotProductMapController()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMapController::createADPMap(const ADPMapData &data)
+void ADPMapController::createADPMap(const ADPMapData &data)
 {
   initializeData();
 
@@ -121,12 +122,12 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
   // incorrect interactions between the callback routines.
   m_Executing = true;
   instances[m_InstanceKey] = this;
-//  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &AverageDotProductMapControllerProgress, m_InstanceKey, &m_Cancel);
+//  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &ADPMapControllerProgress, m_InstanceKey, &m_Cancel);
 
-  QProcess* avgDotProductMapProcess = new QProcess();
-  connect(avgDotProductMapProcess, &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(avgDotProductMapProcess->readAllStandardOutput().toStdString())); });
-  connect(avgDotProductMapProcess, &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(avgDotProductMapProcess->readAllStandardOutput().toStdString())); });
-  connect(avgDotProductMapProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenADPMapFinished(exitCode, exitStatus); });
+  QSharedPointer<QProcess> avgDotProductMapProcess = QSharedPointer<QProcess>(new QProcess());
+  connect(avgDotProductMapProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(avgDotProductMapProcess->readAllStandardOutput().toStdString())); });
+  connect(avgDotProductMapProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(avgDotProductMapProcess->readAllStandardOutput().toStdString())); });
+  connect(avgDotProductMapProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenADPMapFinished(exitCode, exitStatus); });
   QString adpExecutablePath = getADPMapExecutablePath();
   if (!adpExecutablePath.isEmpty())
   {
@@ -136,7 +137,7 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
     avgDotProductMapProcess->start(adpExecutablePath, parameters);
 
     // Wait until the QProcess is finished to exit this thread.
-    // AverageDotProductMapController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
+    // ADPMapController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
     avgDotProductMapProcess->waitForFinished(-1);
   }
 }
@@ -144,7 +145,7 @@ void AverageDotProductMapController::createADPMap(const ADPMapData &data)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMapController::writeADPDataToFile(const QString &filePath, const AverageDotProductMapController::ADPMapData &data) const
+void ADPMapController::writeADPDataToFile(const QString &filePath, const ADPMapController::ADPMapData &data) const
 {
   QFile outputFile(filePath);
   if (outputFile.open(QFile::WriteOnly))
@@ -195,28 +196,28 @@ void AverageDotProductMapController::writeADPDataToFile(const QString &filePath,
 
     switch(data.inputType)
     {
-    case ADPMapData::InputType::Binary:
+    case InputType::Binary:
       out << " inputtype = 'Binary',\n";
       break;
-    case ADPMapData::InputType::TSLup1:
+    case InputType::TSLup1:
       out << " inputtype = 'TSLup1',\n";
       break;
-    case ADPMapData::InputType::TSLup2:
+    case InputType::TSLup2:
       out << " inputtype = 'TSLup2',\n";
       break;
-    case ADPMapData::InputType::OxfordBinary:
+    case InputType::OxfordBinary:
       out << " inputtype = 'OxfordBinary',\n";
       break;
-    case ADPMapData::InputType::EMEBSD:
+    case InputType::EMEBSD:
       out << " inputtype = 'EMEBSD',\n";
       break;
-    case ADPMapData::InputType::TSLHDF:
+    case InputType::TSLHDF:
       out << " inputtype = 'TSLHDF',\n";
       break;
-    case ADPMapData::InputType::OxfordHDF:
+    case InputType::OxfordHDF:
       out << " inputtype = 'OxfordHDF',\n";
       break;
-    case ADPMapData::InputType::BrukerHDF:
+    case InputType::BrukerHDF:
       out << " inputtype = 'BrukerHDF',\n";
       break;
     }
@@ -257,7 +258,7 @@ void AverageDotProductMapController::writeADPDataToFile(const QString &filePath,
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMapController::listenADPMapFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void ADPMapController::listenADPMapFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
   // EMgetADP program automatically adds "_ADP" onto the end of the output image name
   QString imagePath = tr("%1/Result_ADP.tiff").arg(m_TempDir.path());
@@ -285,7 +286,7 @@ void AverageDotProductMapController::listenADPMapFinished(int exitCode, QProcess
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString AverageDotProductMapController::getADPMapExecutablePath() const
+QString ADPMapController::getADPMapExecutablePath() const
 {
   QString adpExecutablePath;
 
@@ -365,7 +366,7 @@ QString AverageDotProductMapController::getADPMapExecutablePath() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMapController::initializeData()
+void ADPMapController::initializeData()
 {
   m_OutputMaskVector.clear();
   m_OutputIQMapVector.clear();
@@ -378,7 +379,7 @@ void AverageDotProductMapController::initializeData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
+bool ADPMapController::validateADPMapValues(ADPMapData data)
 {
 //  QString inputPath = data.patternDataFile;
 //  if (inputPath.isEmpty())
@@ -405,8 +406,8 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
 //    return false;
 //  }
 
-  if(data.inputType == AverageDotProductMapController::ADPMapData::InputType::TSLHDF || data.inputType == AverageDotProductMapController::ADPMapData::InputType::BrukerHDF ||
-     data.inputType == AverageDotProductMapController::ADPMapData::InputType::OxfordHDF)
+  if(data.inputType == ADPMapController::InputType::TSLHDF || data.inputType == ADPMapController::InputType::BrukerHDF ||
+     data.inputType == ADPMapController::InputType::OxfordHDF)
   {
     if (data.hdfStrings.isEmpty())
     {
@@ -422,7 +423,7 @@ bool AverageDotProductMapController::validateADPMapValues(ADPMapData data)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<int32_t> AverageDotProductMapController::ADPMapData::getIParVector() const
+std::vector<int32_t> ADPMapController::ADPMapData::getIParVector() const
 {
   std::vector<int32_t> iParVector(SizeConstants::IParSize, 0);
 
@@ -458,7 +459,7 @@ std::vector<int32_t> AverageDotProductMapController::ADPMapData::getIParVector()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<float> AverageDotProductMapController::ADPMapData::getFParVector() const
+std::vector<float> ADPMapController::ADPMapData::getFParVector() const
 {
   std::vector<float> fParVector(SizeConstants::FParSize, 0.0f);
 
@@ -471,7 +472,7 @@ std::vector<float> AverageDotProductMapController::ADPMapData::getFParVector() c
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-std::vector<char> AverageDotProductMapController::ADPMapData::getSParVector() const
+std::vector<char> ADPMapController::ADPMapData::getSParVector() const
 {
   // Move each string from the string array into the char array.  Each string has SParStringSize as its max size.
   std::vector<char> sParVector(SizeConstants::SParSize * SizeConstants::SParStringSize, 0);
@@ -500,7 +501,7 @@ std::vector<char> AverageDotProductMapController::ADPMapData::getSParVector() co
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMapController::setUpdateProgress(int loopCompleted, int totalLoops)
+void ADPMapController::setUpdateProgress(int loopCompleted, int totalLoops)
 {
   QString ss = QObject::tr("Average Dot Product: %1 of %2").arg(loopCompleted, totalLoops);
   emit stdOutputMessageGenerated(ss);
@@ -509,7 +510,7 @@ void AverageDotProductMapController::setUpdateProgress(int loopCompleted, int to
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-int AverageDotProductMapController::getNumCPUCores()
+int ADPMapController::getNumCPUCores()
 {
   return QThread::idealThreadCount();
 }
@@ -517,7 +518,7 @@ int AverageDotProductMapController::getNumCPUCores()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool AverageDotProductMapController::getCancel() const
+bool ADPMapController::getCancel() const
 {
   return m_Cancel;
 }
@@ -525,7 +526,7 @@ bool AverageDotProductMapController::getCancel() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void AverageDotProductMapController::setCancel(const bool& value)
+void ADPMapController::setCancel(const bool& value)
 {
   m_Cancel = value;
 }

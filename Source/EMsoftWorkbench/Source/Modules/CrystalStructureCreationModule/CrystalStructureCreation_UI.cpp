@@ -193,7 +193,7 @@ void CrystalStructureCreation_UI::parametersChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool CrystalStructureCreation_UI::validateData()
+void CrystalStructureCreation_UI::validateData()
 {
   clearModuleIssues();
 
@@ -201,11 +201,11 @@ bool CrystalStructureCreation_UI::validateData()
   if(m_Controller->validateCrystalStructureValues(data))
   {
     createCrystalStructureBtn->setEnabled(true);
-    return true;
   }
-
-  createCrystalStructureBtn->setDisabled(true);
-  return false;
+  else
+  {
+    createCrystalStructureBtn->setDisabled(true);
+  }
 }
 
 // -----------------------------------------------------------------------------

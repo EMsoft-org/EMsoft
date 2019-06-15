@@ -50,10 +50,11 @@ protected:
 
   void mouseDoubleClickEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
+  void enterEvent(QEvent* event) override;
   void leaveEvent(QEvent* event) override;
 
 signals:
-  void selectedPatternCoordinateChanged(QPoint coord);
+  void selectedPatternPixelChanged(const QPoint &coord);
 
 private:
   QPoint m_MouseCoords = QPoint(-1, -1);

@@ -35,7 +35,7 @@
 
 #include "DictionaryIndexingModule.h"
 
-#include "Modules/DictionaryIndexingModule/DictionaryIndexing_UI.h"
+#include "Modules/DictionaryIndexingModule/DictionaryIndexingMain_UI.h"
 
 // -----------------------------------------------------------------------------
 //
@@ -57,7 +57,7 @@ IModuleUI* DictionaryIndexingModule::createModuleUI(QJsonObject moduleObj, QWidg
 {
   Q_UNUSED(moduleObj)
 
-  DictionaryIndexing_UI* ui = new DictionaryIndexing_UI(parent);
+  DictionaryIndexingMain_UI* ui = new DictionaryIndexingMain_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
   return ui;
 }

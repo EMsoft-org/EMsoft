@@ -39,13 +39,15 @@
 #include <QtCore/QProcess>
 #include <QtCore/QTemporaryDir>
 
-#include "AverageDotProductMapController.h"
+#include "ADPMapController.h"
 
 class PatternPreprocessingController : public QObject
 {
   Q_OBJECT
 
 public:
+  using InputType = EMsoftWorkbenchConstants::InputType;
+
   PatternPreprocessingController(QObject* parent = nullptr);
   ~PatternPreprocessingController() override;
 
@@ -66,13 +68,13 @@ public:
     int patternWidth;
     int ipfHeight;
     int ipfWidth;
-    float hipassRange;
+    float hipassValue;
     int hipassNumSteps;
     int minNumOfRegions;
     int maxNumOfRegions;
     int numOfRegionsStepSize;
     QString patternDataFile;
-    AverageDotProductMapController::ADPMapData::InputType inputType;
+    InputType inputType;
     QStringList hdfStrings;
     int patternCoordinateX;
     int patternCoordinateY;
@@ -101,7 +103,7 @@ public:
    * @param data
    * @return
    */
-  bool validatePPPValues(const PPMatrixData &data);
+  bool validatePPValues(const PPMatrixData &data);
 
   /**
    * @brief setUpdateProgress

@@ -185,7 +185,6 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
 
   // Create the order that the modules will be displayed in the user interface.  This order
   // gives the user an idea of what order to use the modules in.
-  ModuleManager* manager = ModuleManager::Instance();
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::CrystalStructureCreation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::MonteCarloSimulation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::MasterPatternSimulation);

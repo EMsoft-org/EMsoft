@@ -58,6 +58,7 @@ protected:
 
   void mouseDoubleClickEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
+  void enterEvent(QEvent* event) override;
   void leaveEvent(QEvent* event) override;
 
 signals:

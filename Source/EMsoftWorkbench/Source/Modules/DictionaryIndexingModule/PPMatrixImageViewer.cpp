@@ -114,9 +114,9 @@ void PPMatrixImageViewer::paintGL()
   float hoveredHipassValue = -1.0f;
   int selectedNumOfRegions = -1;
   int hoveredNumOfRegions = -1;
-  for (int x = 0; x <= imageWidth; x += xStep)
+  for (int x = 0; x < imageWidth; x += xStep)
   {
-    for (int y = 0; y <= imageHeight; y += yStep)
+    for (int y = 0; y < imageHeight; y += yStep)
     {
       QRect rect(x, y, xStep, yStep);
       QRect widgetRect(mapFromImageCoordinates(rect.topLeft()), mapFromImageCoordinates(rect.bottomRight()));
@@ -246,6 +246,23 @@ void PPMatrixImageViewer::mouseMoveEvent(QMouseEvent *event)
   m_MouseCoords = event->pos();
 
   update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PPMatrixImageViewer::enterEvent(QEvent* event)
+{
+  GLImageViewer::enterEvent(event);
+
+  if (!getCurrentImage().isNull())
+  {
+    setToolTip("Double-click to choose a pattern.");
+  }
+  else
+  {
+    setToolTip("");
+  }
 }
 
 // -----------------------------------------------------------------------------

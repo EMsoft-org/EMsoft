@@ -43,10 +43,13 @@ include_directories(${${MODULE_NAME}_DIR})
 # Any Class that inherits from QObject, either directly or through the heirarchy needs to have its header listed here
 set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
   ${${MODULE_NAME}_DIR}/ADPMapImageViewer.h
+  ${${MODULE_NAME}_DIR}/ADPMap_UI.h
   ${${MODULE_NAME}_DIR}/DictionaryIndexing_UI.h
-  ${${MODULE_NAME}_DIR}/AverageDotProductMapController.h
+  ${${MODULE_NAME}_DIR}/DictionaryIndexingMain_UI.h
+  ${${MODULE_NAME}_DIR}/ADPMapController.h
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.h
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.h
+  ${${MODULE_NAME}_DIR}/PatternPreprocessing_UI.h
   ${${MODULE_NAME}_DIR}/PatternPreprocessingController.h
   ${${MODULE_NAME}_DIR}/PPMatrixImageViewer.h
 )
@@ -64,17 +67,23 @@ set(EMsoftWorkbench_${MODULE_NAME}_HDRS
 
 set(EMsoftWorkbench_${MODULE_NAME}_SRCS
   ${${MODULE_NAME}_DIR}/ADPMapImageViewer.cpp
+  ${${MODULE_NAME}_DIR}/ADPMap_UI.cpp
   ${${MODULE_NAME}_DIR}/DictionaryIndexing_UI.cpp
-  ${${MODULE_NAME}_DIR}/AverageDotProductMapController.cpp
+  ${${MODULE_NAME}_DIR}/DictionaryIndexingMain_UI.cpp
+  ${${MODULE_NAME}_DIR}/ADPMapController.cpp
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.cpp
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.cpp
+  ${${MODULE_NAME}_DIR}/PatternPreprocessing_UI.cpp
   ${${MODULE_NAME}_DIR}/PatternPreprocessingController.cpp
   ${${MODULE_NAME}_DIR}/PPMatrixImageViewer.cpp
 )
 
 set(EMsoftWorkbench_${MODULE_NAME}_UIS
+  ${${MODULE_NAME}_DIR}/UI_Files/ADPMap_UI.ui
   ${${MODULE_NAME}_DIR}/UI_Files/DictionaryIndexing_UI.ui
+  ${${MODULE_NAME}_DIR}/UI_Files/DictionaryIndexingMain_UI.ui
   ${${MODULE_NAME}_DIR}/UI_Files/ChoosePatternsDatasetDialog.ui
+  ${${MODULE_NAME}_DIR}/UI_Files/PatternPreprocessing_UI.ui
   )
 # --------------------------------------------------------------------
 # Continue on with our Qt4 section

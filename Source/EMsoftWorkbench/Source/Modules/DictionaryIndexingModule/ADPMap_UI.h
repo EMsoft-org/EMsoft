@@ -37,41 +37,49 @@
 
 #include <QtCore/QFutureWatcher>
 
-#include "Modules/IModuleUI.h"
+#include "Common/Constants.h"
+
 #include "Modules/DictionaryIndexingModule/ADPMapController.h"
-#include "Modules/DictionaryIndexingModule/PatternPreprocessingController.h"
 
-#include "ui_DictionaryIndexing_UI.h"
+#include "ui_ADPMap_UI.h"
 
-class DictionaryIndexing_UI : public QWidget
+class ADPMap_UI : public QWidget
 {
   Q_OBJECT
 
 public:
+  using InputType = EMsoftWorkbenchConstants::InputType;
+
   /**
-   * @brief DictionaryIndexing_UI
+   * @brief ADPMap_UI
    * @param parent
    */
-  DictionaryIndexing_UI(QWidget *parent = nullptr);
+  ADPMap_UI(QWidget *parent = nullptr);
 
-  ~DictionaryIndexing_UI() override;
+  ~ADPMap_UI() override;
 
   /**
    * @brief validateData
    */
-  void validateData();
+  bool validateData();
 
   /**
-   * @brief setHipassValue
-   * @param hipassValue
+   * @brief setInputType
+   * @param inputType
    */
-  void setHipassValue(float hipassValue);
+  void setInputType(ADPMapController::InputType inputType);
 
   /**
-   * @brief setHipassNumberOfRegions
-   * @param numOfRegions
+   * @brief setPatternDataFile
+   * @param filePath
    */
-  void setHipassNumberOfRegions(int numOfRegions);
+  void setPatternDataFile(const QString &filePath);
+
+  /**
+   * @brief setSelectedHDF5Path
+   * @param path
+   */
+  void setSelectedHDF5Path(const QStringList &path);
 
 protected:
   /**
@@ -81,33 +89,54 @@ protected:
 
 protected slots:
   /**
-   * @brief listenGenerateDIBtnPressed
+   * @brief listenADPGenerationStarted
    */
-  void listenGenerateDIBtnPressed();
+  void listenADPGenerationStarted();
 
   /**
-   * @brief parametersChanged
+   * @brief listenADPGenerationFinished
    */
+  void listenADPGenerationFinished();
+
+  /**
+   * @brief listenROICheckboxStateChanged
+   * @param state
+   */
+  void listenROICheckboxStateChanged(int state);
+
+  /**
+   * @brief updateZoomFactor
+   * @param zoomFactor
+   */
+  void updateZoomFactor(float zoomFactor);
+
+signals:
+  void errorMessageGenerated(const QString &msg);
+  void warningMessageGenerated(const QString &msg);
+  void stdOutputMessageGenerated(const QString &msg);
+
+  void selectedPatternPixelChanged(const QPoint &patternPixel);
+
+  void adpMapGenerationStarted();
+  void adpMapGenerationFinished();
+
   void parametersChanged();
 
-private slots:
-  /**
-   * @brief generateDIThreadFinished
-   */
-  void generateDIThreadFinished();
-
 private:
-  QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
+  QSharedPointer<Ui::ADPMap_UI> m_Ui;
 
-  PatternPreprocessingController* m_DIController = nullptr;
+  ADPMapController* m_ADPController = nullptr;
 
-  float m_HipassValue = -1.0f;
-  int m_HipassNumOfRegions = -1;
+  InputType m_InputType = InputType::Binary;
+  QString m_PatternDataFile;
+  QStringList m_SelectedHDF5Path;
+
+  QPoint m_SelectedADPPatternCoords = QPoint(-1, -1);
 
   QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_DIWatcher;
+  QSharedPointer<QFutureWatcher<void>> m_ADPWatcher;
 
   /**
    * @brief createValidators
@@ -120,11 +149,6 @@ private:
   void createModificationConnections();
 
   /**
-   * @brief initializeSpinBoxLimits
-   */
-  void initializeSpinBoxLimits();
-
-  /**
    * @brief createWidgetConnections
    */
   void createWidgetConnections();
@@ -133,11 +157,11 @@ private:
    * @brief getData
    * @return
    */
-  ADPMapController::ADPMapData getDIData();
+  ADPMapController::ADPMapData getADPMapData();
 
 public:
-  DictionaryIndexing_UI(const DictionaryIndexing_UI&) = delete; // Copy Constructor Not Implemented
-  DictionaryIndexing_UI(DictionaryIndexing_UI&&) = delete;      // Move Constructor Not Implemented
-  DictionaryIndexing_UI& operator=(const DictionaryIndexing_UI&) = delete; // Copy Assignment Not Implemented
-  DictionaryIndexing_UI& operator=(DictionaryIndexing_UI&&) = delete;      // Move Assignment Not Implemented
+  ADPMap_UI(const ADPMap_UI&) = delete; // Copy Constructor Not Implemented
+  ADPMap_UI(ADPMap_UI&&) = delete;      // Move Constructor Not Implemented
+  ADPMap_UI& operator=(const ADPMap_UI&) = delete; // Copy Assignment Not Implemented
+  ADPMap_UI& operator=(ADPMap_UI&&) = delete;      // Move Assignment Not Implemented
 };

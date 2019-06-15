@@ -79,18 +79,16 @@ void ADPMapImageViewer::paintGL()
     painter.drawLine(selectedMouseCoords.x(), 0, selectedMouseCoords.x(), height());
   }
 
-  if (m_MouseCoords.x() < 0 && m_MouseCoords.y() < 0)
-  {
-    return;
-  }
-
   // We need to convert to image coordinates and then back to mouse coordinates
   // so that our mouse coordinates are within the image boundaries
   QPoint imageCoords = mapToImageCoordinates(m_MouseCoords);
   QPoint mouseCoords = mapFromImageCoordinates(imageCoords);
-  painter.setPen(QPen(QBrush(Qt::darkGray, Qt::Dense2Pattern), 1));
-  painter.drawLine(0, mouseCoords.y(), width(), mouseCoords.y());
-  painter.drawLine(mouseCoords.x(), 0, mouseCoords.x(), height());
+  if (isMouseCoordinateValid())
+  {
+    painter.setPen(QPen(QBrush(Qt::darkGray, Qt::Dense2Pattern), 1));
+    painter.drawLine(0, mouseCoords.y(), width(), mouseCoords.y());
+    painter.drawLine(mouseCoords.x(), 0, mouseCoords.x(), height());
+  }
 
   // Get the current mouse coordinate and selected pixel coordinate relative to the image coordinate system
   int statsStartingHeightOffset = 40;
@@ -132,7 +130,7 @@ void ADPMapImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
   if (event->button() == Qt::LeftButton)
   {
     m_SelectedImageCoords = mapToImageCoordinates(m_MouseCoords);
-    emit selectedPatternCoordinateChanged(m_SelectedImageCoords);
+    emit selectedPatternPixelChanged(m_SelectedImageCoords);
 
     update();
   }
@@ -148,6 +146,23 @@ void ADPMapImageViewer::mouseMoveEvent(QMouseEvent *event)
   m_MouseCoords = event->pos();
 
   update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ADPMapImageViewer::enterEvent(QEvent* event)
+{
+  GLImageViewer::enterEvent(event);
+
+  if (!getCurrentImage().isNull())
+  {
+    setToolTip("Double-click to choose a coordinate.");
+  }
+  else
+  {
+    setToolTip("");
+  }
 }
 
 // -----------------------------------------------------------------------------

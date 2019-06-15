@@ -39,13 +39,17 @@
 #include <QtCore/QProcess>
 #include <QtCore/QTemporaryDir>
 
-class AverageDotProductMapController : public QObject
+#include "Common/Constants.h"
+
+class ADPMapController : public QObject
 {
   Q_OBJECT
 
 public:
-  AverageDotProductMapController(QObject* parent = nullptr);
-  ~AverageDotProductMapController() override;
+  using InputType = EMsoftWorkbenchConstants::InputType;
+
+  ADPMapController(QObject* parent = nullptr);
+  ~ADPMapController() override;
 
   /**
     * @brief Getter property for Cancel
@@ -60,20 +64,6 @@ public:
 
   struct ADPMapData
   {
-    using EnumType = unsigned int;
-
-    enum class InputType : EnumType
-    {
-      Binary = 1,
-      TSLup1,
-      TSLup2,
-      TSLHDF,
-      OxfordBinary,
-      OxfordHDF,
-      EMEBSD,
-      BrukerHDF
-    };
-
     QString patternDataFile;
     InputType inputType;
     int patternHeight;
@@ -113,7 +103,7 @@ public:
    * @param data
    * @return
    */
-  bool validateADPMapValues(AverageDotProductMapController::ADPMapData data);
+  bool validateADPMapValues(ADPMapController::ADPMapData data);
 
   /**
    * @brief setUpdateProgress
@@ -166,11 +156,11 @@ private:
    * @param file
    * @param data
    */
-  void writeADPDataToFile(const QString &filePath, const AverageDotProductMapController::ADPMapData &data) const;
+  void writeADPDataToFile(const QString &filePath, const ADPMapController::ADPMapData &data) const;
 
 public:
-  AverageDotProductMapController(const AverageDotProductMapController&) = delete; // Copy Constructor Not Implemented
-  AverageDotProductMapController(AverageDotProductMapController&&) = delete;      // Move Constructor Not Implemented
-  AverageDotProductMapController& operator=(const AverageDotProductMapController&) = delete; // Copy Assignment Not Implemented
-  AverageDotProductMapController& operator=(AverageDotProductMapController&&) = delete;      // Move Assignment Not Implemented
+  ADPMapController(const ADPMapController&) = delete; // Copy Constructor Not Implemented
+  ADPMapController(ADPMapController&&) = delete;      // Move Constructor Not Implemented
+  ADPMapController& operator=(const ADPMapController&) = delete; // Copy Assignment Not Implemented
+  ADPMapController& operator=(ADPMapController&&) = delete;      // Move Assignment Not Implemented
 };

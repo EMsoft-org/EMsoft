@@ -43,6 +43,7 @@
 #include <QtCore/QMap>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QTextStream>
+#include <QtCore/QSharedPointer>
 
 #include <QtGui/QImage>
 
@@ -125,10 +126,10 @@ void PatternPreprocessingController::createPreprocessedPatternsMatrix(const PPMa
   instances[m_InstanceKey] = this;
 //  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &PatternPreprocessingControllerProgress, m_InstanceKey, &m_Cancel);
 
-  QProcess* ppMatrixProcess = new QProcess();
-  connect(ppMatrixProcess, &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardOutput().toStdString())); });
-  connect(ppMatrixProcess, &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardOutput().toStdString())); });
-  connect(ppMatrixProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenPreprocessedPatternsMatrixFinished(exitCode, exitStatus); });
+  QSharedPointer<QProcess> ppMatrixProcess = QSharedPointer<QProcess>(new QProcess());
+  connect(ppMatrixProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardOutput().toStdString())); });
+  connect(ppMatrixProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardOutput().toStdString())); });
+  connect(ppMatrixProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenPreprocessedPatternsMatrixFinished(exitCode, exitStatus); });
   QString ppMatrixExecutablePath = getPreprocessedPatternsMatrixExecutablePath();
   if (!ppMatrixExecutablePath.isEmpty())
   {
@@ -165,7 +166,7 @@ void PatternPreprocessingController::writePreprocessedPatternsMatrixToFile(const
     out << tr("ipf_wd = %1,\n").arg(data.ipfWidth);
     out << tr("ipf_ht = %1,\n").arg(data.ipfHeight);
     out << "! hipass w parameter range and number of steps (starts near zero)\n";
-    out << tr("hipasswmax = %1,\n").arg(data.hipassRange);
+    out << tr("hipasswmax = %1,\n").arg(data.hipassValue);
     out << tr("hipasswnsteps = %1,\n").arg(data.hipassNumSteps);
     out << "! number of regions for adaptive histogram equalization\n";
     out << tr("nregionsmin = %1,\n").arg(data.minNumOfRegions);
@@ -181,28 +182,28 @@ void PatternPreprocessingController::writePreprocessedPatternsMatrixToFile(const
 
     switch(data.inputType)
     {
-    case AverageDotProductMapController::ADPMapData::InputType::Binary:
+    case InputType::Binary:
       out << "inputtype = 'Binary',\n";
       break;
-    case AverageDotProductMapController::ADPMapData::InputType::TSLup1:
+    case InputType::TSLup1:
       out << "inputtype = 'TSLup1',\n";
       break;
-    case AverageDotProductMapController::ADPMapData::InputType::TSLup2:
+    case InputType::TSLup2:
       out << "inputtype = 'TSLup2',\n";
       break;
-    case AverageDotProductMapController::ADPMapData::InputType::OxfordBinary:
+    case InputType::OxfordBinary:
       out << "inputtype = 'OxfordBinary',\n";
       break;
-    case AverageDotProductMapController::ADPMapData::InputType::EMEBSD:
+    case InputType::EMEBSD:
       out << "inputtype = 'EMEBSD',\n";
       break;
-    case AverageDotProductMapController::ADPMapData::InputType::TSLHDF:
+    case InputType::TSLHDF:
       out << "inputtype = 'TSLHDF',\n";
       break;
-    case AverageDotProductMapController::ADPMapData::InputType::OxfordHDF:
+    case InputType::OxfordHDF:
       out << "inputtype = 'OxfordHDF',\n";
       break;
-    case AverageDotProductMapController::ADPMapData::InputType::BrukerHDF:
+    case InputType::BrukerHDF:
       out << "inputtype = 'BrukerHDF',\n";
       break;
     }
@@ -353,8 +354,17 @@ void PatternPreprocessingController::initializeData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternPreprocessingController::validatePPPValues(const PPMatrixData &data)
+bool PatternPreprocessingController::validatePPValues(const PPMatrixData &data)
 {
+  if (data.patternCoordinateX < 0 || data.patternCoordinateY < 0)
+  {
+    QString errMsg = "The 'Chosen ADP Coordinate' field is invalid.  Please double-click inside "
+                     "the average dot product map generated in the 'Average Dot Product Map' tab to "
+                     "choose a coordinate.";
+    emit errorMessageGenerated(errMsg);
+    return false;
+  }
+
   return true;
 }
 
@@ -391,7 +401,7 @@ std::vector<float> PatternPreprocessingController::PPMatrixData::getFParVector()
   std::vector<float> fParVector(SizeConstants::FParSize, 0.0f);
 
   fParVector[23] = hipassFilter;
-  fParVector[25] = hipassRange;
+  fParVector[25] = hipassValue;
 
   return fParVector;
 }

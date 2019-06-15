@@ -35,38 +35,39 @@
 
 #pragma once
 
+#include <QtCore/QFutureWatcher>
 
 #include "Modules/IModuleUI.h"
-#include "Modules/MonteCarloSimulationModule/MonteCarloSimulationController.h"
+#include "Modules/DictionaryIndexingModule/ADPMapController.h"
+#include "Modules/DictionaryIndexingModule/PatternPreprocessingController.h"
 
-#include "ui_MonteCarloSimulation_UI.h"
+#include "ui_DictionaryIndexingMain_UI.h"
 
-class QtSSettings;
-class QSplashScreen;
+class ChoosePatternsDatasetDialog;
 
-class MonteCarloSimulation_UI : public IModuleUI, public Ui::MonteCarloSimulation_UI
+class DictionaryIndexingMain_UI : public IModuleUI
 {
   Q_OBJECT
 
 public:
+  using InputType = EMsoftWorkbenchConstants::InputType;
+
+  using EnumType = unsigned int;
+
+  enum class ModuleTab : EnumType
+  {
+    AvgDotProductMap = 0,
+    PatternPreprocessing,
+    DictionaryIndexing
+  };
+
   /**
-   * @brief MonteCarloSimulation_UI
+   * @brief DictionaryIndexingMain_UI
    * @param parent
    */
-  MonteCarloSimulation_UI(QWidget* parent = nullptr);
+  DictionaryIndexingMain_UI(QWidget *parent = nullptr);
 
-  ~MonteCarloSimulation_UI() override;
-
-    /**
-    * @brief Setter property for Controller
-    */
-    void setController(MonteCarloSimulationController* value); 
-
-    /**
-    * @brief Getter property for Controller
-    * @return Value of Controller
-    */
-    MonteCarloSimulationController* getController() const;
+  ~DictionaryIndexingMain_UI() override;
 
   /**
    * @brief readModuleSession
@@ -85,6 +86,24 @@ public:
    */
   void validateData() override;
 
+  /**
+   * @brief getInputType
+   * @return
+   */
+  InputType getInputType() const;
+
+  /**
+   * @brief getPatternDataFile
+   * @return
+   */
+  QString getPatternDataFile() const;
+
+  /**
+   * @brief getSelectedHDF5Paths
+   * @return
+   */
+  QStringList getSelectedHDF5Paths() const;
+
 protected:
   /**
    * @brief setupGui
@@ -98,53 +117,61 @@ protected:
   void changeEvent(QEvent* event) override;
 
 protected slots:
-  void on_mcModeCB_currentIndexChanged(int index) const;
+  /**
+   * @brief listenGenerateADPBtnPressed
+   */
+  void listenADPMapGenerationStarted();
 
-  void slot_createMonteCarloBtn_clicked();
+  /**
+   * @brief generateADPThreadFinished
+   */
+  void listenADPMapGenerationFinished();
 
-  void parametersChanged();
+  /**
+   * @brief listenGeneratePPPBtnPressed
+   */
+  void listenPatternPreprocessingStarted();
 
-  void updateMCProgress(int loopCompleted, int totalLoops, float bseYield) const;
+  /**
+   * @brief generatePPMatrixThreadFinished
+   */
+  void listenPatternPreprocessingFinished();
 
-  void on_gpuPlatformCB_currentIndexChanged(int index) const;
+  /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(int index);
 
-private slots:
-  void threadFinished();
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString &filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
+   * @brief parametersChanged
+   */
+  void listenParametersChanged();
 
 private:
-    MonteCarloSimulationController* m_Controller;
+  QSharedPointer<Ui::DictionaryIndexingMain_UI> m_Ui;
+
+  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
+
+  QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_Watcher;
-
-  /**
-   * @brief readCrystalSystemParameters
-   * @param obj
-   */
-  void readMonteCarloParameters(QJsonObject& obj);
-
-  /**
-   * @brief readSpaceGroupParameters
-   * @param obj
-   */
-  void readGPUParameters(QJsonObject& obj);
-
-  /**
-   * @brief writeCrystalSystemParameters
-   * @param obj
-   */
-  void writeMonteCarloParameters(QJsonObject& obj) const;
-
-  /**
-   * @brief writeSpaceGroupParameters
-   * @param obj
-   */
-  void writeGPUParameters(QJsonObject& obj) const;
 
   /**
    * @brief createValidators
    */
-  void createValidators() const;
+  void createValidators();
 
   /**
    * @brief createParametersChangedConnections
@@ -152,19 +179,18 @@ private:
   void createModificationConnections();
 
   /**
-   * @brief createWidgetConnections
+   * @brief initializeSpinBoxLimits
    */
-  void createWidgetConnections() const;
+  void initializeSpinBoxLimits();
 
   /**
-   * @brief getCreationData
-   * @return
+   * @brief createWidgetConnections
    */
-  MonteCarloSimulationController::MonteCarloSimulationData getCreationData() const;
+  void createWidgetConnections();
 
 public:
-  MonteCarloSimulation_UI(const MonteCarloSimulation_UI&) = delete; // Copy Constructor Not Implemented
-  MonteCarloSimulation_UI(MonteCarloSimulation_UI&&) = delete;      // Move Constructor Not Implemented
-  MonteCarloSimulation_UI& operator=(const MonteCarloSimulation_UI&) = delete; // Copy Assignment Not Implemented
-  MonteCarloSimulation_UI& operator=(MonteCarloSimulation_UI&&) = delete;      // Move Assignment Not Implemented
+  DictionaryIndexingMain_UI(const DictionaryIndexingMain_UI&) = delete; // Copy Constructor Not Implemented
+  DictionaryIndexingMain_UI(DictionaryIndexingMain_UI&&) = delete;      // Move Constructor Not Implemented
+  DictionaryIndexingMain_UI& operator=(const DictionaryIndexingMain_UI&) = delete; // Copy Assignment Not Implemented
+  DictionaryIndexingMain_UI& operator=(DictionaryIndexingMain_UI&&) = delete;      // Move Assignment Not Implemented
 };
