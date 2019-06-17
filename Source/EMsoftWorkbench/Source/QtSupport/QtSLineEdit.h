@@ -35,7 +35,7 @@
 #include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QLineEdit>
 
-#include "EMsoftWorkbench/Source/Common/SVControlWidgets.h"
+#include "Common/SVControlWidgets.h"
 
 class SearchLineEditPrivate;
 
