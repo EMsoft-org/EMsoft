@@ -187,7 +187,7 @@ namespace SIMPLib
 
 
 
-class SIMPLibMath
+class SIMPLib_EXPORT SIMPLibMath
 {
   public:
     virtual ~SIMPLibMath();

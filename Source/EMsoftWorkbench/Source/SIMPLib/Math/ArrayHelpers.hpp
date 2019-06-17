@@ -16,7 +16,7 @@
  * @param K The POD type such as float or double.
  */
 template<typename T, typename K>
-class ArrayHelpers
+class SIMPLib_EXPORT ArrayHelpers
 {
   public:
 

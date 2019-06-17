@@ -57,7 +57,7 @@
  * @version 1.0
  */
 template<typename T>
-class QuaternionMath
+class SIMPLib_EXPORT QuaternionMath
 {
   public:
     /**
