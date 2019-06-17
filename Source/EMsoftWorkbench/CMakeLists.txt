@@ -99,6 +99,11 @@ include(${EMsoftWorkbench_SOURCE_DIR}/Source/Common/SourceList.cmake)
 include(${EMsoftWorkbench_SOURCE_DIR}/Source/EMsoftWorkbench/SourceList.cmake)
 include(${EMsoftWorkbench_SOURCE_DIR}/Source/Modules/SourceList.cmake)
 
+add_subdirectory( ${EMsoftWorkbench_SOURCE_DIR}/Source/QtSupport ${PROJECT_BINARY_DIR}/QtSupport)
+add_subdirectory( ${EMsoftWorkbench_SOURCE_DIR}/Source/H5Support ${PROJECT_BINARY_DIR}/H5Support)
+add_subdirectory( ${EMsoftWorkbench_SOURCE_DIR}/Source/OrientationLib ${PROJECT_BINARY_DIR}/OrientationLib)
+add_subdirectory( ${EMsoftWorkbench_SOURCE_DIR}/Source/SIMPLib ${PROJECT_BINARY_DIR}/SIMPLib)
+
 # -- Finally set the Project Sources to include all the sources
 set(${PROJECT_NAME}_PROJECT_SRCS
   ${EMsoftWorkbench_Generated_RC_SRCS}

@@ -117,8 +117,7 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
 
 # -- Add the binary directory for this subdirectory to the include path which is where the moc files are generated
 include_directories( ${EMsoftWorkbench_BINARY_DIR})
-include_directories(${QtSupport_SOURCE_DIR})
-include_directories(${QtSupport_BINARY_DIR})
+include_directories(${EMsoftWorkbench_SOURCE_DIR}/Source/QtSupport)
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_SOURCES
 ${EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS}
