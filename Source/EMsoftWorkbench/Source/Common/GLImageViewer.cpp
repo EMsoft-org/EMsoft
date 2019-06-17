@@ -45,6 +45,7 @@
 #include <QtGui/QPainter>
 
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QFileDialog>
 
 #include "Common/Constants.h"
 
@@ -104,6 +105,42 @@ void GLImageViewer::zoomOut()
     emit viewerChanged();
     update();
   }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void GLImageViewer::saveImage()
+{
+  QString filePath = QFileDialog::getSaveFileName(this, tr("Save Image"), m_OpenDialogLastDirectory, tr("JPEG File (*.jpeg);;PNG File(*.png);;TIFF File(*.tiff);;All Files (*.*)"));
+  m_OpenDialogLastDirectory = filePath;
+  if(filePath.isEmpty())
+  {
+    return;
+  }
+
+  bool success = m_CurrentImage.save(filePath);
+  if (!success)
+  {
+    emit errorMessageGenerated(tr("Error: Unable to save image to file path '%1'").arg(filePath));
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+float GLImageViewer::getZoomFactor()
+{
+  return m_ZoomFactor;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void GLImageViewer::setZoomFactor(float val)
+{
+  m_ZoomFactor = val;
+  update();
 }
 
 // -----------------------------------------------------------------------------
@@ -212,6 +249,8 @@ void GLImageViewer::paintGL()
     }
   }
 
+  emit zoomFactorChanged(m_ZoomFactor);
+
   float percent = 1 / m_ZoomFactor;
   int newWidth = m_CurrentImage.width() / percent;
   int newHeight = m_CurrentImage.height() / percent;
@@ -310,6 +349,13 @@ void GLImageViewer::paintGL()
     setCursor(Qt::ArrowCursor);
   }
 
+  m_TopLeftWidgetCoord.setX(x);
+  m_TopLeftWidgetCoord.setY(y);
+  m_TopLeftImageCoord.setX(sx);
+  m_TopLeftImageCoord.setY(sy);
+  m_ImageWidth = newWidth;
+  m_ImageHeight = newHeight;
+
   painter.drawImage(x, y, image, sx, sy, newWidth, newHeight);
 
   painter.end();
@@ -318,6 +364,75 @@ void GLImageViewer::paintGL()
   {
     update();
   }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QPoint GLImageViewer::mapToImageCoordinates(const QPoint &widgetCoords)
+{
+  QPoint imageCoords(-1, -1);
+  if (m_TopLeftImageCoord.x() == 0 && m_TopLeftImageCoord.y() == 0 && (m_TopLeftWidgetCoord.x() > 0 || m_TopLeftWidgetCoord.y() > 0))
+  {
+    // The image is smaller than the viewport
+    imageCoords.setX(widgetCoords.x() - m_TopLeftWidgetCoord.x());
+    imageCoords.setY(widgetCoords.y() - m_TopLeftWidgetCoord.y());
+    if (imageCoords.x() > m_ImageWidth)
+    {
+      imageCoords.setX(m_ImageWidth);
+    }
+    if (imageCoords.y() > m_ImageHeight)
+    {
+      imageCoords.setY(m_ImageHeight);
+    }
+    if (imageCoords.x() < 0)
+    {
+      imageCoords.setX(0);
+    }
+    if (imageCoords.y() < 0)
+    {
+      imageCoords.setY(0);
+    }
+  }
+  else
+  {
+    // The image is larger than the viewport
+    imageCoords.setX(widgetCoords.x() + m_TopLeftImageCoord.x());
+    imageCoords.setY(widgetCoords.y() + m_TopLeftImageCoord.y());
+  }
+
+  // This needs to be done to scale the image coordinates to 100% image size
+  imageCoords.setX(static_cast<int>((imageCoords.x() / static_cast<float>(m_ImageWidth)) * m_CurrentImage.width()));
+  imageCoords.setY(static_cast<int>((imageCoords.y() / static_cast<float>(m_ImageHeight)) * m_CurrentImage.height()));
+
+  return imageCoords;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+QPoint GLImageViewer::mapFromImageCoordinates(const QPoint &imageCoords)
+{
+  QPoint widgetCoords = imageCoords;
+
+  // This needs to be done to scale the image coordinates from 100% image size
+  widgetCoords.setX(static_cast<int>((widgetCoords.x() / static_cast<float>(m_CurrentImage.width())) * m_ImageWidth));
+  widgetCoords.setY(static_cast<int>((widgetCoords.y() / static_cast<float>(m_CurrentImage.height())) * m_ImageHeight));
+
+  if (m_TopLeftImageCoord.x() == 0 && m_TopLeftImageCoord.y() == 0 && (m_TopLeftWidgetCoord.x() > 0 || m_TopLeftWidgetCoord.y() > 0))
+  {
+    // The image is smaller than the viewport
+    widgetCoords.setX(widgetCoords.x() + m_TopLeftWidgetCoord.x());
+    widgetCoords.setY(widgetCoords.y() + m_TopLeftWidgetCoord.y());
+  }
+  else
+  {
+    // The image is larger than the viewport
+    widgetCoords.setX(widgetCoords.x() - m_TopLeftImageCoord.x());
+    widgetCoords.setY(widgetCoords.y() - m_TopLeftImageCoord.y());
+  }
+
+  return widgetCoords;
 }
 
 // -----------------------------------------------------------------------------

@@ -50,6 +50,8 @@
 
 #include "QtSupport/QtSSettings.h"
 
+#include "QtSupport/QtSSettings.h"
+
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
@@ -400,7 +402,7 @@ void PatternDisplay_UI::on_angleTypeCB_currentIndexChanged(int index)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternDisplay_UI::validateData()
+void PatternDisplay_UI::validateData()
 {
   clearModuleIssues();
 
@@ -408,11 +410,11 @@ bool PatternDisplay_UI::validateData()
   if(m_Controller->validateDetectorValues(data))
   {
     generateBtn->setEnabled(true);
-    return true;
   }
-
-  generateBtn->setDisabled(true);
-  return false;
+  else
+  {
+    generateBtn->setDisabled(true);
+  }
 }
 
 // -----------------------------------------------------------------------------

@@ -93,3 +93,11 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
 # -- Add the binary directory for this subdirectory to the include path which is where the moc files are generated
 include_directories( ${EMsoftWorkbench_BINARY_DIR})
 
+set(EMsoftWorkbench_${SUBDIR_NAME}_SOURCES
+${EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS}
+${EMsoftWorkbench_${SUBDIR_NAME}_HDRS}
+${EMsoftWorkbench_${SUBDIR_NAME}_SRCS}
+${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS}
+${EMsoftWorkbench_${SUBDIR_NAME}_Generated_UI_HDRS}
+)
+

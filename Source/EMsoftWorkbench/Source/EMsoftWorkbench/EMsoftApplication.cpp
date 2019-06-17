@@ -70,8 +70,8 @@
 // -----------------------------------------------------------------------------
 EMsoftApplication::EMsoftApplication(int& argc, char** argv)
 : QApplication(argc, argv)
-, m_OpenDialogLastDirectory("")
 , m_ActiveWindow(nullptr)
+, m_OpenDialogLastDirectory("")
 {
   SVStyle* style = SVStyle::Instance();
   style->loadStyleSheet(":/light.qss");

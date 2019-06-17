@@ -46,7 +46,7 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QToolButton>
 
-#include "Modules/AverageDotProductMapModule/Constants.h"
+#include "Modules/DictionaryIndexingModule/Constants.h"
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreation_UI.h"
 #include "Modules/ModuleManager.h"
 
@@ -185,13 +185,12 @@ void EMsoftWorkbench_UI::setupMainToolbarAndStackedWidget()
 
   // Create the order that the modules will be displayed in the user interface.  This order
   // gives the user an idea of what order to use the modules in.
-  ModuleManager* manager = ModuleManager::Instance();
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::CrystalStructureCreation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::MonteCarloSimulation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::MasterPatternSimulation);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternDisplay);
   m_ModuleNamesOrder.append(EMsoftWorkbenchConstants::ModuleNames::PatternFit);
-  m_ModuleNamesOrder.append(AverageDotProductMapModuleConstants::ModuleName);
+  m_ModuleNamesOrder.append(DictionaryIndexingModuleConstants::ModuleName);
 
   m_ToolbarButtonGroup = new QActionGroup(this);
 
@@ -610,6 +609,7 @@ void EMsoftWorkbench_UI::slot_StdOutputMsgReceived(const QString& msg)
   // Only add the standard output message to the standard output pane if the module
   // that sent the std output message is active
   stdOutTE->append(msg);
+  statusbar->showMessage(msg);
 }
 
 // -----------------------------------------------------------------------------

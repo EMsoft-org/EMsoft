@@ -35,50 +35,68 @@
 
 #pragma once
 
-#include <QtCore/QString>
+#include <QtCore/QMap>
 
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-namespace AverageDotProductMapModuleConstants
+#include "Common/GLImageViewer.h"
+
+class PPMatrixImageViewer : public GLImageViewer
 {
-  const QString ModuleName("Average Dot Product Map");
+  Q_OBJECT
 
-  namespace ArraySizes
-  {
-    static const size_t IParSize = 80;
-    static const size_t FParSize = 80;
-    static const size_t SParSize = 80;
-    static const size_t SParStringSize = 512;
-  }
+public:
+  PPMatrixImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+  ~PPMatrixImageViewer() override;
 
-  namespace IOStrings
-  {
-    const QString InputParam = "Input Parameters";
-    const QString PatternDataFile = "Pattern Data File";
-    const QString InputType = "Input Type";
+  /**
+     * @brief loadImage
+     * @param image
+     */
+  void loadImage(const QImage &image, float hipassValue, int hipassNumOfSteps);
 
-    const QString CompParam = "Computational Parameters";
-    const QString PatternHeight = "Pattern Height";
-    const QString PatternWidth = "Pattern Width";
-    const QString UseROI = "Use ROI";
-    const QString ROI_1 = "ROI_1";
-    const QString ROI_2 = "ROI_2";
-    const QString ROI_3 = "ROI_3";
-    const QString ROI_4 = "ROI_4";
-    const QString BinningFactor = "Binning Factor";
-    const QString BinningX = "Binning X";
-    const QString BinningY = "Binning Y";
-    const QString IPFHeight = "IPF Height";
-    const QString IPFWidth = "IPF Width";
-    const QString MaskPattern = "Mask Pattern";
-    const QString MaskRadius = "Mask Radius";
-    const QString HipassFilter = "Hipass Filter";
-    const QString NumberOfRegions = "Number Of Regions";
-    const QString NumberOfThreads = "Number Of Threads";
+protected:
+  void paintGL() override;
 
-    const QString OutputParam = "Output Parameters";
-    const QString OutputImageFile = "Output Image File";
-  }
-}
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void enterEvent(QEvent* event) override;
+  void leaveEvent(QEvent* event) override;
 
+signals:
+  void selectedHipassValueChanged(float value);
+  void selectedHipassNumOfStepsChanged(int value);
+
+private:
+  QPoint m_MouseCoords = QPoint(-1, -1);
+  QPoint m_SelectedImageCoords = QPoint(-1, -1);
+
+  float m_HipassValue = 0.0f;
+  int m_HipassNumOfSteps = 0;
+
+  /**
+   * @brief Returns whether or not there is a valid mouse coordinate
+   * @return
+   */
+  bool isMouseCoordinateValid() const;
+
+  /**
+   * @brief Returns whether or not there is a pixel selected in the current image
+   * @return
+   */
+  bool isPixelSelected() const;
+
+  /**
+   * @brief invalidateMouseCoordinate
+   */
+  void invalidateMouseCoordinate();
+
+  /**
+   * @brief clearSelectedPixel
+   */
+  void clearSelectedPixel();
+
+public:
+  PPMatrixImageViewer(const PPMatrixImageViewer&) = delete;            // Copy Constructor Not Implemented
+  PPMatrixImageViewer(PPMatrixImageViewer&&) = delete;                 // Move Constructor Not Implemented
+  PPMatrixImageViewer& operator=(const PPMatrixImageViewer&) = delete; // Copy Assignment Not Implemented
+  PPMatrixImageViewer& operator=(PPMatrixImageViewer&&) = delete;      // Move Assignment Not Implemented
+};

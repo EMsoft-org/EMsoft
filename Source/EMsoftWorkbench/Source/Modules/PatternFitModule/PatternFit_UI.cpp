@@ -338,8 +338,9 @@ void PatternFit_UI::createParametersChangedConnections()
 void PatternFit_UI::parametersChanged()
 {
   checkFitMode();
+  validateData();
 
-  if(validateData())
+  if (hasValidValues())
   {
     generateSimulatedPatternImage();
   }
@@ -549,19 +550,27 @@ void PatternFit_UI::on_expPatternSelectBtn_clicked()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternFit_UI::validateData()
+void PatternFit_UI::validateData()
 {
   clearModuleIssues();
 
-  PatternFitController::SimulationData data = getSimulationData();
-  if(m_Controller->validateSimulationValues(data))
+  if(hasValidValues())
   {
     startFitBtn->setEnabled(true);
-    return true;
   }
+  else
+  {
+    startFitBtn->setDisabled(true);
+  }
+}
 
-  startFitBtn->setDisabled(true);
-  return false;
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+bool PatternFit_UI::hasValidValues() const
+{
+  PatternFitController::SimulationData data = getSimulationData();
+  return m_Controller->validateSimulationValues(data);
 }
 
 // -----------------------------------------------------------------------------
@@ -913,7 +922,9 @@ void PatternFit_UI::readModuleSession(QJsonObject& obj)
   readRefinableSampleParameters(obj);
   readFitParameters(obj);
 
-  if(validateData())
+  validateData();
+
+  if(hasValidValues())
   {
     generateSimulatedPatternImage();
   }

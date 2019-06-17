@@ -147,6 +147,8 @@ void HDF5DatasetSelectionWidget::setupGui()
 
   m_Ui->value->setFont(inputFileFont);
 
+  m_Ui->absPathLabel->hide();
+
   m_CurrentText = m_Ui->value->text();
 }
 
@@ -472,7 +474,6 @@ bool HDF5DatasetSelectionWidget::initWithFile(const QString& hdf5File)
   HDF5FileTreeModel* treeModel = new HDF5FileTreeModel(m_FileId, m_Ui->hdfTreeView);
   connect(treeModel, &HDF5FileTreeModel::selectedHDF5PathsChanged, this, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged);
   treeModel->setOneSelectionOnly(m_OneSelectionOnly);
-  connect(treeModel, SIGNAL(selectedHDF5PathsChanged()), this, SIGNAL(parametersChanged()));
   m_Ui->hdfTreeView->setModel(treeModel);
 #if defined(Q_OS_MAC)
   m_Ui->hdfTreeView->setAttribute(Qt::WA_MacShowFocusRect, false);
@@ -488,6 +489,8 @@ bool HDF5DatasetSelectionWidget::initWithFile(const QString& hdf5File)
   connect(m_Ui->hdfTreeView->selectionModel(), &QItemSelectionModel::currentChanged, this, &HDF5DatasetSelectionWidget::listenHDFTreeViewCurrentChanged);
 
   m_Ui->attributesTable->horizontalHeader()->setStretchLastSection(true); // Stretch the last column to fit to the viewport
+
+  emit patternDataFilePathChanged(hdf5File);
 
 //  initializeHDF5Paths();
   return true;

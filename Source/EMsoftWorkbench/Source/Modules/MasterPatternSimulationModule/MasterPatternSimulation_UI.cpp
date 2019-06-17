@@ -239,7 +239,7 @@ void MasterPatternSimulation_UI::parametersChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool MasterPatternSimulation_UI::validateData()
+void MasterPatternSimulation_UI::validateData()
 {
   clearModuleIssues();
 
@@ -247,11 +247,11 @@ bool MasterPatternSimulation_UI::validateData()
   if(m_Controller->validateMasterPatternValues(data))
   {
     simulateBtn->setEnabled(true);
-    return true;
   }
-
-  simulateBtn->setDisabled(true);
-  return false;
+  else
+  {
+    simulateBtn->setDisabled(true);
+  }
 }
 
 // -----------------------------------------------------------------------------

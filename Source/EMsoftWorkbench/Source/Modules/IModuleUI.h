@@ -96,7 +96,7 @@ public:
   /**
    * @brief validateData
    */
-  virtual bool validateData() = 0;
+  virtual void validateData() = 0;
 
   /**
    * @brief getModuleIssues

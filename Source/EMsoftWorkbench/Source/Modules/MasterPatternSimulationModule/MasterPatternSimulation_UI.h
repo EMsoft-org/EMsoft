@@ -83,7 +83,7 @@ public:
   /**
    * @brief validateData
    */
-  bool validateData() override;
+  void validateData() override;
 
 protected:
   /**
