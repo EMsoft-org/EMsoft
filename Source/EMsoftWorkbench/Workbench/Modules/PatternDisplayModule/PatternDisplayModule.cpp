@@ -63,6 +63,10 @@ IModuleUI* PatternDisplayModule::createModuleUI(QJsonObject moduleObj, QWidget* 
 {
   PatternDisplay_UI* ui = new PatternDisplay_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
+  if (!moduleObj.empty())
+  {
+    ui->readModuleSession(moduleObj);
+  }
   return ui;
 }
 

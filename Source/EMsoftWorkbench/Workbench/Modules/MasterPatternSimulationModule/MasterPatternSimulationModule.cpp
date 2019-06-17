@@ -61,10 +61,12 @@ MasterPatternSimulationModule::~MasterPatternSimulationModule()
 // -----------------------------------------------------------------------------
 IModuleUI* MasterPatternSimulationModule::createModuleUI(QJsonObject moduleObj, QWidget* parent) const
 {
-  Q_UNUSED(moduleObj)
-
   MasterPatternSimulation_UI* ui = new MasterPatternSimulation_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
+  if (!moduleObj.empty())
+  {
+    ui->readModuleSession(moduleObj);
+  }
   return ui;
 }
 
