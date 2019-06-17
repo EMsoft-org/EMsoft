@@ -4,14 +4,7 @@
 ! The values below are the default values for this program
 !
 !###################################################################
-! INDEXING MODE
-!###################################################################
-!
-! 'dynamic' for on the fly indexing or 'static' for pre calculated dictionary
- indexingmode = 'dynamic',
-!
-!###################################################################
-! DICTIONARY PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+! MAIN INDEXING PARAMETERS
 !###################################################################
 !
 ! do you want Email or Slack notification when the run has completed?
@@ -26,19 +19,6 @@
 ! X and Y sampling step sizes
  stepX = 1.0,
  stepY = 1.0,
-! number of top matches to keep from the dot product results
- nnk = 50,
-! the following option has been disabled starting version 4.3
-! number of top matches to use for orientation averaging (<nnk)
-! nnav =  20,
-! number of top matches to use for Orientation Similarity Map computation (<nnk)
- nosm = 20,
-! number of top matches to use for Indexing Success Map computation (<nnk)
- nism = 5,
-! Indexing Success threshold angle (degrees)
- isangle = 1.5,
-! to use a custom mask, enter the mask filename here; leave undefined for standard mask option
- maskfile = 'undefined',
 ! mask or not
  maskpattern = 'n',
 ! mask radius (in pixels, AFTER application of the binning operation)
@@ -47,19 +27,13 @@
  hipassw = 0.05,
 ! number of regions for adaptive histogram equalization
  nregions = 10,
-
-!###################################################################
-! SPHERICAL INDEXING PARAMETERS
-!###################################################################
 ! bandwidth parameter (largest l value in spherical harmonic expansion)
  bandwidth = 63,
 ! 
 !###################################################################
-! ONLY SPECIFY WHEN INDEXINGMODE IS 'DYNAMIC'
+! DETECTOR PARAMETERS
 !###################################################################
 !
-! number of cubochoric points to generate list of orientations
- ncubochoric = 100,
 ! distance between scintillator and illumination point [microns]
  L = 15000.0,
 ! tilt angle of the camera (positive below horizontal, [degrees])
@@ -77,9 +51,6 @@
 ! minimum and maximum energy to use for interpolation [keV]
  energymin = 10.0,
  energymax = 20.0,
-! the following option has been disabled starting version 4.3
-! spatial averaging method ('y' or 'n' ;can't be used with approximate energy average)
-! spatialaverage = 'n',
 ! incident beam current [nA]
  beamcurrent = 150.0,
 ! beam dwell time [micro s]
@@ -116,24 +87,8 @@
  datafile = 'undefined',
 ! ctf output file ; path relative to EMdatapathname
  ctffile = 'undefined',
-! the following option has been disabled starting version 4.3
-! average ctf output file ; path relative to EMdatapathname
-! avctffile = 'undefined',
 ! ang output file ; path relative to EMdatapathname
  angfile = 'undefined',
-! euler angle input file
- eulerfile = 'undefined'
-
-!###################################################################
-! ONLY IF INDEXINGMODE IS STATIC
-!###################################################################
-!
- dictfile = 'undefined',
-!
-!###################################################################
-! ONLY IF INDEXINGMODE IS DYNAMIC
-!###################################################################
-!
 ! master pattern input file; path relative to EMdatapathname
  masterfile = 'undefined',
 !
