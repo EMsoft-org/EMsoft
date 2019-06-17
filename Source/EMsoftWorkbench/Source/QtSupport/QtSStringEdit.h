@@ -38,9 +38,11 @@
 #include <QtWidgets/QWidget>
 #include <QtGui/QKeyEvent>
 
+#include "QtSupportDLLExport.h"
+
 #include "ui_QtSStringEdit.h"
 
-class QtSStringEdit : public QWidget, private Ui::QtSStringEdit
+class QtSupport_EXPORT QtSStringEdit : public QWidget, private Ui::QtSStringEdit
 {
   Q_OBJECT
 

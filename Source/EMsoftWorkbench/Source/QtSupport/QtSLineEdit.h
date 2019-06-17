@@ -35,6 +35,8 @@
 #include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QLineEdit>
 
+#include "QtSupportDLLExport.h"
+
 #include "Common/SVControlWidgets.h"
 
 class SearchLineEditPrivate;
@@ -42,7 +44,7 @@ class SearchLineEditPrivate;
 /**
  * @brief The IconButton class
  */
-class IconButton : public QAbstractButton
+class QtSupport_EXPORT IconButton : public QAbstractButton
 {
     Q_OBJECT
     Q_PROPERTY(float iconOpacity READ iconOpacity WRITE setIconOpacity)

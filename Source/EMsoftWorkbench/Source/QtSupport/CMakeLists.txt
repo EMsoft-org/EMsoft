@@ -115,7 +115,13 @@ set(PROJECT_SRCS
     ${SVWidgetsLib_QtSupport_Generated_UI_HDRS}
 )
 
+include(GenerateExportHeader)
+
 add_library(${PROJECT_NAME} ${LIB_TYPE} ${PROJECT_SRCS})
+generate_export_header(${PROJECT_NAME}
+  EXPORT_MACRO_NAME ${PROJECT_NAME}_EXPORT
+  EXPORT_FILE_NAME ${PROJECT_NAME}DLLExport.h
+  )
 CMP_AddDefinitions(TARGET ${PROJECT_NAME})
 LibraryProperties( ${PROJECT_NAME}  ${EXE_DEBUG_EXTENSION} )
 CMP_MODULE_INCLUDE_DIRS (TARGET ${PROJECT_NAME} LIBVARS HDF5 Qt5Core)
@@ -140,6 +146,7 @@ TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PUBLIC
                               $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
                               $<BUILD_INTERFACE:${TARGET_SOURCE_DIR_PARENT}>
                               $<BUILD_INTERFACE:${TARGET_BINARY_DIR_PARENT}>
+                              ${QtSupport_BINARY_DIR}
                               ${EMsoftWorkbench_SOURCE_DIR}/Source/Common
                               )
 
