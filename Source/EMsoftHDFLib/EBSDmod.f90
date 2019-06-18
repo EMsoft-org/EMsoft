@@ -1955,5 +1955,100 @@ call Message('--> Output file generated with Monte Carlo data copied from '//tri
 
 end subroutine EBSDcopyMCdata 
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDcopyMPdata
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief copy Master Pattern data from one file to a new file using h5copy
+!
+!> @param inputfile name of file with MP data in it
+!> @param outputfile name of new file
+!
+!> @date 06/18/19  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine EBSDcopyMPdata(inputfile, outputfile)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDcopyMPdata
+
+use local
+use error
+use HDFsupport
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)       :: inputfile
+character(fnlen),INTENT(IN)       :: outputfile
+
+character(fnlen)                  :: infile, outfile, h5copypath, groupname
+character(512)                    :: cmd, cmd2
+logical                           :: f_exists, readonly
+type(HDFobjectStackType),pointer  :: HDF_head
+integer(kind=irg)                 :: hdferr
+
+! first make sure that the input file exists and has MP data in it
+infile = trim(EMsoft_getEMdatapathname())//trim(inputfile)
+infile = EMsoft_toNativePath(infile)
+inquire(file=infile, exist=f_exists)
+
+outfile = trim(EMsoft_getEMdatapathname())//trim(outputfile)
+outfile = EMsoft_toNativePath(outfile)
+
+! if the file does not exist, abort the program with an error message
+if (f_exists.eqv..FALSE.) then 
+  call FatalError('EBSDcopyMPdata','Master Pattern file does not exist: '//trim(infile))
+end if
+
+! make sure it has EBSDmaster data in it; hdf open is done in the calling program
+nullify(HDF_head)
+readonly = .TRUE.
+hdferr =  HDF_openFile(infile, HDF_head, readonly)
+
+groupname = SC_EMData
+hdferr = HDF_openGroup(groupname, HDF_head)
+if (hdferr.eq.-1) then 
+  call FatalError('EBSDcopyMPdata','EMData group does not exist in '//trim(infile))
+end if
+
+groupname = SC_EBSDmaster
+hdferr = HDF_openGroup(groupname, HDF_head)
+if (hdferr.eq.-1) then 
+  call FatalError('EBSDcopyMPdata','EBSDmaster group does not exist in '//trim(infile))
+end if
+
+call HDF_pop(HDF_head,.TRUE.)
+
+! OK, if we get here, then the file does exist and it contains Master Pattern data, so we let
+! the user know
+call Message('--> Input file contains Master Pattern data')
+
+! next, we copy the necessary groups into the new Master Pattern file
+h5copypath = trim(EMsoft_geth5copypath())//' -p -v '
+h5copypath = EMsoft_toNativePath(h5copypath)
+cmd = trim(h5copypath)//' -i "'//trim(infile)
+cmd = trim(cmd)//'" -o "'//trim(outfile)
+
+cmd2 = trim(cmd)//'" -s "/CrystalData" -d "/CrystalData"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/EMData" -d "/EMData"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/EMheader" -d "/EMheader"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/NMLfiles" -d "/NMLfiles"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/NMLparameters" -d "/NMLparameters"'
+call system(trim(cmd2))
+
+call Message('--> Output file generated with Master Pattern data copied from '//trim(infile))
+
+end subroutine EBSDcopyMPdata 
+
+
+
 
 end module EBSDmod

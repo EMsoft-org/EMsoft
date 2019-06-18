@@ -629,6 +629,7 @@ type EBSDoverlapNameListType
         character(fnlen)        :: masterfileA
         character(fnlen)        :: masterfileB
         character(fnlen)        :: datafile
+        character(fnlen)        :: overlapmode
 ! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
         integer(kind=irg)       :: numset
         integer(kind=irg)       :: npx

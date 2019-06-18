@@ -3583,11 +3583,12 @@ real(kind=sgl)          :: gB(3)
 real(kind=sgl)          :: fracA
 character(fnlen)        :: masterfileA
 character(fnlen)        :: masterfileB
+character(fnlen)        :: overlapmode
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
-                              datafile, HorizontalAxisA
+                              datafile, HorizontalAxisA, overlapmode
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -3601,6 +3602,7 @@ fracA           = 0.5                           ! volume fraction of phase A
 masterfileA     = 'undefined'   ! filename
 masterfileB     = 'undefined'   ! filename
 datafile        = 'undefined'   ! output file name
+overlapmode     = 'series'      ! options are 'full' or 'series'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3638,6 +3640,7 @@ enl%fracA = fracA
 enl%masterfileA = masterfileA
 enl%masterfileB = masterfileB
 enl%datafile = datafile
+enl%overlapmode = overlapmode
 
 end subroutine GetEBSDoverlapNameList
 
