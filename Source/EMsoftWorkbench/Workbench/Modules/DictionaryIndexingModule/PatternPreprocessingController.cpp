@@ -139,7 +139,7 @@ void PatternPreprocessingController::createPreprocessedPatternsMatrix(const PPMa
     ppMatrixProcess->start(ppMatrixExecutablePath, parameters);
 
     // Wait until the QProcess is finished to exit this thread.
-    // PatternPreprocessingController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
+    // PatternPreprocessingController::createPreprocessedPatternsMatrix is currently on a separate thread, so the GUI will continue to operate normally
     ppMatrixProcess->waitForFinished(-1);
   }
 }

@@ -36,9 +36,14 @@
 #include "ADPMapImageViewer.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QJsonObject>
 
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
+
+#include "Modules/DictionaryIndexingModule/Constants.h"
+
+namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
 // -----------------------------------------------------------------------------
 //
@@ -130,7 +135,7 @@ void ADPMapImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
   if (event->button() == Qt::LeftButton)
   {
     m_SelectedImageCoords = mapToImageCoordinates(m_MouseCoords);
-    emit selectedPatternPixelChanged(m_SelectedImageCoords);
+    emit selectedADPCoordinateChanged(m_SelectedImageCoords);
 
     update();
   }
@@ -175,6 +180,30 @@ void ADPMapImageViewer::leaveEvent(QEvent* event)
   invalidateMouseCoordinate();
 
   update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ADPMapImageViewer::readSession(const QJsonObject &obj)
+{
+  GLImageViewer::readSession(obj);
+
+  m_SelectedImageCoords.setX(obj[ioConstants::SelectedADPCoordX].toInt());
+  m_SelectedImageCoords.setY(obj[ioConstants::SelectedADPCoordY].toInt());
+
+  update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ADPMapImageViewer::writeSession(QJsonObject& obj) const
+{
+  GLImageViewer::writeSession(obj);
+
+  obj[ioConstants::SelectedADPCoordX] = m_SelectedImageCoords.x();
+  obj[ioConstants::SelectedADPCoordY] = m_SelectedImageCoords.y();
 }
 
 // -----------------------------------------------------------------------------

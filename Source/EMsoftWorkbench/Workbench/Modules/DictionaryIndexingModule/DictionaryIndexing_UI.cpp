@@ -157,6 +157,100 @@ ADPMapController::ADPMapData DictionaryIndexing_UI::getDIData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+void DictionaryIndexing_UI::readSession(const QJsonObject &obj)
+{
+  //  QJsonObject adpMapParamsObj = obj[ioConstants::ADPMapParams].toObject();
+
+  //  if(!adpMapParamsObj.isEmpty())
+  //  {
+  //    m_Ui->patternHeightLE->blockSignals(true);
+  //    m_Ui->patternWidthLE->blockSignals(true);
+  //    m_Ui->roiCB->blockSignals(true);
+  //    m_Ui->roi1LE->blockSignals(true);
+  //    m_Ui->roi2LE->blockSignals(true);
+  //    m_Ui->roi3LE->blockSignals(true);
+  //    m_Ui->roi4LE->blockSignals(true);
+  //    m_Ui->binningFactorLE->blockSignals(true);
+  //    m_Ui->binningXLE->blockSignals(true);
+  //    m_Ui->binningYLE->blockSignals(true);
+  //    m_Ui->ipfHeightLE->blockSignals(true);
+  //    m_Ui->ipfWidthLE->blockSignals(true);
+  //    m_Ui->maskPatternLE->blockSignals(true);
+  //    m_Ui->maskRadiusLE->blockSignals(true);
+  //    m_Ui->hipassLE->blockSignals(true);
+  //    m_Ui->numOfRegionsLE->blockSignals(true);
+  //    m_Ui->numOfThreadsLE->blockSignals(true);
+
+  //    m_Ui->patternHeightLE->setText(adpMapParamsObj[ioConstants::PatternHeight].toString());
+  //    m_Ui->patternWidthLE->setText(adpMapParamsObj[ioConstants::PatternWidth].toString());
+  //    m_Ui->roiCB->setChecked(adpMapParamsObj[ioConstants::UseROI].toBool());
+  //    m_Ui->roi1LE->setText(adpMapParamsObj[ioConstants::ROI_1].toString());
+  //    m_Ui->roi2LE->setText(adpMapParamsObj[ioConstants::ROI_2].toString());
+  //    m_Ui->roi3LE->setText(adpMapParamsObj[ioConstants::ROI_3].toString());
+  //    m_Ui->roi4LE->setText(adpMapParamsObj[ioConstants::ROI_4].toString());
+  //    m_Ui->binningFactorLE->setText(adpMapParamsObj[ioConstants::BinningFactor].toString());
+  //    m_Ui->binningXLE->setText(adpMapParamsObj[ioConstants::BinningX].toString());
+  //    m_Ui->binningYLE->setText(adpMapParamsObj[ioConstants::BinningY].toString());
+  //    m_Ui->ipfHeightLE->setText(adpMapParamsObj[ioConstants::IPFHeight].toString());
+  //    m_Ui->ipfWidthLE->setText(adpMapParamsObj[ioConstants::IPFWidth].toString());
+  //    m_Ui->maskPatternLE->setText(adpMapParamsObj[ioConstants::MaskPattern].toString());
+  //    m_Ui->maskRadiusLE->setText(adpMapParamsObj[ioConstants::MaskRadius].toString());
+  //    m_Ui->hipassLE->setText(adpMapParamsObj[ioConstants::HipassFilter].toString());
+  //    m_Ui->numOfRegionsLE->setText(adpMapParamsObj[ioConstants::NumberOfRegions].toString());
+  //    m_Ui->numOfThreadsLE->setText(adpMapParamsObj[ioConstants::NumberOfThreads].toString());
+
+  //    m_Ui->patternHeightLE->blockSignals(false);
+  //    m_Ui->patternWidthLE->blockSignals(false);
+  //    m_Ui->roiCB->blockSignals(false);
+  //    m_Ui->roi1LE->blockSignals(false);
+  //    m_Ui->roi2LE->blockSignals(false);
+  //    m_Ui->roi3LE->blockSignals(false);
+  //    m_Ui->roi4LE->blockSignals(false);
+  //    m_Ui->binningFactorLE->blockSignals(false);
+  //    m_Ui->binningXLE->blockSignals(false);
+  //    m_Ui->binningYLE->blockSignals(false);
+  //    m_Ui->ipfHeightLE->blockSignals(false);
+  //    m_Ui->ipfWidthLE->blockSignals(false);
+  //    m_Ui->maskPatternLE->blockSignals(false);
+  //    m_Ui->maskRadiusLE->blockSignals(false);
+  //    m_Ui->hipassLE->blockSignals(false);
+  //    m_Ui->numOfRegionsLE->blockSignals(false);
+  //    m_Ui->numOfThreadsLE->blockSignals(false);
+
+  //    m_Ui->adpViewer->readSession(adpMapParamsObj);
+  //  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexing_UI::writeSession(QJsonObject& obj) const
+{
+  //  QJsonObject adpMapParamsObj;
+  //  adpMapParamsObj[ioConstants::PatternHeight] = m_Ui->patternHeightLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::PatternWidth] = m_Ui->patternWidthLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::UseROI] = m_Ui->roiCB->isChecked();
+  //  adpMapParamsObj[ioConstants::ROI_1] = m_Ui->roi1LE->text().toInt();
+  //  adpMapParamsObj[ioConstants::ROI_2] = m_Ui->roi2LE->text().toInt();
+  //  adpMapParamsObj[ioConstants::ROI_3] = m_Ui->roi3LE->text().toInt();
+  //  adpMapParamsObj[ioConstants::ROI_4] = m_Ui->roi4LE->text().toInt();
+  //  adpMapParamsObj[ioConstants::BinningFactor] = m_Ui->binningFactorLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::BinningX] = m_Ui->binningXLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::BinningY] = m_Ui->binningYLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::IPFHeight] = m_Ui->ipfHeightLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::IPFWidth] = m_Ui->ipfWidthLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::MaskPattern] = m_Ui->maskPatternLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::MaskRadius] = m_Ui->maskRadiusLE->text().toDouble();
+  //  adpMapParamsObj[ioConstants::HipassFilter] = m_Ui->hipassLE->text().toDouble();
+  //  adpMapParamsObj[ioConstants::NumberOfRegions] = m_Ui->numOfRegionsLE->text().toInt();
+  //  adpMapParamsObj[ioConstants::NumberOfThreads] = m_Ui->numOfThreadsLE->text().toInt();
+  //  m_Ui->adpViewer->writeSession(adpMapParamsObj);
+  //  obj[ioConstants::ADPMapParams] = adpMapParamsObj;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::setHipassValue(float hipassValue)
 {
   m_HipassValue = hipassValue;

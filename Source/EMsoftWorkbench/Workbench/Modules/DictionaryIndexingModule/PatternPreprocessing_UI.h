@@ -81,6 +81,18 @@ public:
    */
   void setSelectedHDF5Path(const QStringList &path);
 
+  /**
+   * @brief readSession
+   * @param obj
+   */
+  void readSession(const QJsonObject& obj);
+
+  /**
+   * @brief writeSession
+   * @param obj
+   */
+  void writeSession(QJsonObject& obj) const;
+
 public slots:
   /**
    * @brief setSelectedADPPatternPixel

@@ -81,6 +81,18 @@ public:
    */
   void setSelectedHDF5Path(const QStringList &path);
 
+  /**
+   * @brief readSession
+   * @param obj
+   */
+  void readSession(const QJsonObject& obj);
+
+  /**
+   * @brief writeSession
+   * @param obj
+   */
+  void writeSession(QJsonObject& obj) const;
+
 protected:
   /**
    * @brief setupGui
@@ -115,7 +127,7 @@ signals:
   void warningMessageGenerated(const QString &msg);
   void stdOutputMessageGenerated(const QString &msg);
 
-  void selectedPatternPixelChanged(const QPoint &patternPixel);
+  void selectedADPCoordinateChanged(const QPoint &patternPixel);
 
   void adpMapGenerationStarted();
   void adpMapGenerationFinished();

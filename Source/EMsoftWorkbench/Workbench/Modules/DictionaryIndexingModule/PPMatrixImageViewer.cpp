@@ -36,9 +36,14 @@
 #include "PPMatrixImageViewer.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QJsonObject>
 
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
+
+#include "Constants.h"
+
+namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
 // -----------------------------------------------------------------------------
 //
@@ -275,6 +280,30 @@ void PPMatrixImageViewer::leaveEvent(QEvent* event)
   invalidateMouseCoordinate();
 
   update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PPMatrixImageViewer::readSession(const QJsonObject &obj)
+{
+  GLImageViewer::readSession(obj);
+
+  m_SelectedImageCoords.setX(obj[ioConstants::SelectedPatternImageX].toInt());
+  m_SelectedImageCoords.setY(obj[ioConstants::SelectedPatternImageY].toInt());
+
+  update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PPMatrixImageViewer::writeSession(QJsonObject& obj) const
+{
+  GLImageViewer::writeSession(obj);
+
+  obj[ioConstants::SelectedPatternImageX] = m_SelectedImageCoords.x();
+  obj[ioConstants::SelectedPatternImageY] = m_SelectedImageCoords.y();
 }
 
 // -----------------------------------------------------------------------------

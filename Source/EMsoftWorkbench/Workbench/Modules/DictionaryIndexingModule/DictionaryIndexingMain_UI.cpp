@@ -130,7 +130,7 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &DictionaryIndexingMain_UI::listenSelectedPatternDatasetChanged);
   connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, this, &DictionaryIndexingMain_UI::listenPatternDataFileChanged);
 
-  connect(m_Ui->adpMapUI, &ADPMap_UI::selectedPatternPixelChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::setSelectedADPPatternPixel);
+  connect(m_Ui->adpMapUI, &ADPMap_UI::selectedADPCoordinateChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::setSelectedADPPatternPixel);
   connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapGenerationStarted, this, &DictionaryIndexingMain_UI::listenADPMapGenerationStarted);
   connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapGenerationFinished, this, &DictionaryIndexingMain_UI::listenADPMapGenerationFinished);
   connect(m_Ui->adpMapUI, &ADPMap_UI::errorMessageGenerated, this, &DictionaryIndexingMain_UI::notifyErrorMessage);
@@ -138,8 +138,8 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(m_Ui->adpMapUI, &ADPMap_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
   connect(m_Ui->adpMapUI, &ADPMap_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
 
-//  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassValueChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setHipassValue);
-//  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassNumOfStepsChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setHipassNumberOfSteps);
+  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassValueChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setHipassValue);
+  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassNumOfStepsChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setHipassNumberOfRegions);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::patternPreprocessingStarted, this, &DictionaryIndexingMain_UI::listenPatternPreprocessingStarted);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::patternPreprocessingFinished, this, &DictionaryIndexingMain_UI::listenPatternPreprocessingFinished);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::errorMessageGenerated, this, &DictionaryIndexingMain_UI::notifyErrorMessage);
@@ -294,11 +294,18 @@ void DictionaryIndexingMain_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::readModuleSession(QJsonObject& obj)
 {
-//  readInputParameters(obj);
+  QJsonObject diModuleObj = obj[ioConstants::DIModule].toObject();
 
-//  readComputationalParameters(obj);
+  m_Ui->inputTypeCB->blockSignals(true);
+  m_Ui->inputTypeCB->setCurrentIndex(diModuleObj[ioConstants::InputType].toInt());
+  m_Ui->inputTypeCB->blockSignals(false);
 
-//  validateData();
+  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
+  hdf5DsetSelectionWidget->readParameters(diModuleObj);
+
+  m_Ui->adpMapUI->readSession(obj);
+  m_Ui->patternPreprocessingUI->readSession(obj);
+  m_Ui->dictionaryIndexingUI->readSession(obj);
 }
 
 // -----------------------------------------------------------------------------
@@ -306,13 +313,17 @@ void DictionaryIndexingMain_UI::readModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::writeModuleSession(QJsonObject& obj) const
 {
-//  QJsonObject inputParamObj;
-//  writeInputParameters(inputParamObj);
-//  obj[ioConstants::InputParam] = inputParamObj;
+  QJsonObject diModuleObj;
+  diModuleObj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
 
-//  QJsonObject compParamObj;
-//  writeComputationalParameters(compParamObj);
-//  obj[ioConstants::CompParam] = compParamObj;
+  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
+  hdf5DsetSelectionWidget->writeParameters(diModuleObj);
+
+  m_Ui->adpMapUI->writeSession(diModuleObj);
+  m_Ui->patternPreprocessingUI->writeSession(diModuleObj);
+  m_Ui->dictionaryIndexingUI->writeSession(diModuleObj);
+
+  obj[ioConstants::DIModule] = diModuleObj;
 }
 
 // -----------------------------------------------------------------------------

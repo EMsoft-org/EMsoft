@@ -53,6 +53,18 @@ public:
      */
   void loadImage(const QImage &image, float hipassValue, int hipassNumOfSteps);
 
+  /**
+   * @brief readSession
+   * @param obj
+   */
+  void readSession(const QJsonObject& obj) override;
+
+  /**
+   * @brief writeSession
+   * @param obj
+   */
+  void writeSession(QJsonObject& obj) const override;
+
 protected:
   void paintGL() override;
 

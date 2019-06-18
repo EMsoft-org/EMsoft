@@ -100,12 +100,6 @@ public:
    */
   QStringList getSelectedHDF5Paths() const;
 
-  /**
-   * @brief isDatasetSelectionEnabled
-   * @return
-   */
-  bool isDatasetSelectionEnabled() const;
-
 public slots:
 
   /**

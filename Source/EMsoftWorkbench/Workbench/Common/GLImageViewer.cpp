@@ -612,7 +612,7 @@ void GLImageViewer::wheelEvent(QWheelEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void GLImageViewer::readSession(QJsonObject &obj)
+void GLImageViewer::readSession(const QJsonObject &obj)
 {
   m_ZoomFactor = obj[ivMod::ZoomFactor].toDouble(m_ZoomFactor);
 
@@ -629,6 +629,8 @@ void GLImageViewer::readSession(QJsonObject &obj)
   m_ViewportWidth = obj[ivMod::ViewportWidth].toInt(m_ViewportWidth);
   m_ViewportHeight = obj[ivMod::ViewportHeight].toInt(m_ViewportHeight);
   m_DefaultControls = obj[ivMod::DefaultControls].toBool(m_DefaultControls);
+
+  update();
 }
 
 // -----------------------------------------------------------------------------

@@ -165,6 +165,28 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="dictionaryIndexingTab">
+      <attribute name="title">
+       <string>3. Dictionary Indexing</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="DictionaryIndexing_UI" name="dictionaryIndexingUI" native="true"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item row="3" column="0" colspan="4">
@@ -254,6 +276,12 @@
    <class>PatternPreprocessing_UI</class>
    <extends>QWidget</extends>
    <header location="global">PatternPreprocessing_UI.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>DictionaryIndexing_UI</class>
+   <extends>QWidget</extends>
+   <header location="global">DictionaryIndexing_UI.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

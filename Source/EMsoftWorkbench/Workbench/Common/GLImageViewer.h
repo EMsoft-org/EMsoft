@@ -104,7 +104,7 @@ public:
      */
     void setZoomFactor(float val);
 
-    virtual void readSession(QJsonObject &obj);
+    virtual void readSession(const QJsonObject &obj);
 
     virtual void writeSession(QJsonObject &obj) const;
 

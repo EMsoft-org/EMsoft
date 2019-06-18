@@ -73,6 +73,18 @@ public:
    */
   void setHipassNumberOfRegions(int numOfRegions);
 
+  /**
+   * @brief readSession
+   * @param obj
+   */
+  void readSession(const QJsonObject& obj);
+
+  /**
+   * @brief writeSession
+   * @param obj
+   */
+  void writeSession(QJsonObject& obj) const;
+
 protected:
   /**
    * @brief setupGui
