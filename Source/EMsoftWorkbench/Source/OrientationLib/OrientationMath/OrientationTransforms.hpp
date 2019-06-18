@@ -144,7 +144,7 @@ namespace DConst = SIMPLib::Constants;
  * then K is float.
  */
 template<typename T, typename K>
-class OrientationTransforms
+class OrientationLib_EXPORT OrientationTransforms
 {
   public:
 

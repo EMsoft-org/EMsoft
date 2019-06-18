@@ -52,7 +52,7 @@
 /**
  * @brief General Utilities for working with the HDF5 data files and API
  */
-class QH5Utilities
+class H5Support_EXPORT QH5Utilities
 {
 
   public:

@@ -33,69 +33,58 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#pragma once
 
-#ifndef _simplibdllexport_h_
-#define _simplibdllexport_h_
+#include "Common/GLImageViewer.h"
 
+class ADPMapImageViewer : public GLImageViewer
+{
+  Q_OBJECT
 
-#if defined (_MSC_VER)
-#pragma warning(disable: 4267)
-#pragma warning(disable: 4800) /*  warning C4800: 'double' : forcing value to bool 'true' or 'false' */
-#endif
+public:
+  ADPMapImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+  ~ADPMapImageViewer() override;
 
+protected:
+  void paintGL() override;
 
-/* Cmake will define SIMPLib_EXPORTS on Windows when it
-configures to build a shared library. If you are going to use
-another build system on windows or create the visual studio
-projects by hand you need to define SIMPLib_EXPORTS when
-building the MXADatModel DLL on windows.
-*/
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void enterEvent(QEvent* event) override;
+  void leaveEvent(QEvent* event) override;
 
-#if defined (SIMPLib_BUILT_AS_DYNAMIC_LIB)
+signals:
+  void selectedPatternPixelChanged(const QPoint &coord);
 
-#if defined (SIMPLib_EXPORTS)  /* Compiling the MXA DLL/Dylib */
-#if defined (_MSC_VER)  /* MSVC Compiler Case */
-#define  SIMPLib_EXPORT __declspec(dllexport)
-#define EXPIMP_TEMPLATE
-#elif (__GNUC__ >= 4)  /* GCC 4.x has support for visibility options */
-#define SIMPLib_EXPORT __attribute__ ((visibility("default")))
-#endif
-#else  /* Importing the DLL into another project */
-#if defined (_MSC_VER)  /* MSVC Compiler Case */
-#define  SIMPLib_EXPORT __declspec(dllimport)
-#define EXPIMP_TEMPLATE extern
-#elif (__GNUC__ >= 4)  /* GCC 4.x has support for visibility options */
-#define SIMPLib_EXPORT __attribute__ ((visibility("default")))
-#endif
-#endif
-#endif
+private:
+  QPoint m_MouseCoords = QPoint(-1, -1);
+  QPoint m_SelectedImageCoords = QPoint(-1, -1);
 
-/* If SIMPLib_EXPORT was never defined, define it here */
-#ifndef SIMPLib_EXPORT
-#define SIMPLib_EXPORT
-#define EXPIMP_TEMPLATE
-#endif
+  /**
+   * @brief Returns whether or not there is a valid mouse coordinate
+   * @return
+   */
+  bool isMouseCoordinateValid() const;
 
-#if 0
-#if defined (_WIN32) || defined __CYGWIN__
+  /**
+   * @brief Returns whether or not there is a pixel selected in the current image
+   * @return
+   */
+  bool isPixelSelected() const;
 
-#if defined (DREAM3D_BUILT_AS_DYNAMIC_LIB)
-#if defined(SIMPLib_EXPORTS)
-#define  SIMPLib_EXPORT __declspec(dllexport)
-#else
-#define  SIMPLib_EXPORT __declspec(dllimport)
-#endif /* SIMPLib_EXPORTS */
+  /**
+   * @brief invalidateMouseCoordinate
+   */
+  void invalidateMouseCoordinate();
 
-#else
-#define SIMPLib_EXPORT
-#endif
-#elif __GNUC__ >= 4
-#define FLOW_DLL __attribute__ ((visibility("default")))
-#define DLL_LOCAL  __attribute__ ((visibility("hidden")
-#else /* defined (_WIN32) && defined (DREAM3D_BUILD_SHARED_LIBS)  */
-#define SIMPLib_EXPORT
-#endif
-#endif
+  /**
+   * @brief clearSelectedPixel
+   */
+  void clearSelectedPixel();
 
-#endif /* _SIMPLib_DLL_EXPORT_H_ */
-
+public:
+  ADPMapImageViewer(const ADPMapImageViewer&) = delete;            // Copy Constructor Not Implemented
+  ADPMapImageViewer(ADPMapImageViewer&&) = delete;                 // Move Constructor Not Implemented
+  ADPMapImageViewer& operator=(const ADPMapImageViewer&) = delete; // Copy Assignment Not Implemented
+  ADPMapImageViewer& operator=(ADPMapImageViewer&&) = delete;      // Move Assignment Not Implemented
+};

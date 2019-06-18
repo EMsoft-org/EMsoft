@@ -33,55 +33,70 @@
 *
 * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+#pragma once
 
+#include <QtCore/QMap>
 
+#include "Common/GLImageViewer.h"
 
+class PPMatrixImageViewer : public GLImageViewer
+{
+  Q_OBJECT
 
-#ifndef _orientationlibdllexport_h_
-#define _orientationlibdllexport_h_
+public:
+  PPMatrixImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+  ~PPMatrixImageViewer() override;
 
+  /**
+     * @brief loadImage
+     * @param image
+     */
+  void loadImage(const QImage &image, float hipassValue, int hipassNumOfSteps);
 
-#if defined (_MSC_VER)
-#pragma warning(disable: 4251)
-#pragma warning(disable: 4710)
-#pragma warning(disable: 4820)
-#pragma warning(disable: 4668)
-#pragma warning(disable: 4265)
-#pragma warning(disable: 4189)
-#pragma warning(disable: 4640)
-#pragma warning(disable: 4996)
-#pragma warning(disable: 4548)
-#endif
+protected:
+  void paintGL() override;
 
-/* Cmake will define OrientationLib_EXPORTS on Windows when it
-configures to build a shared library. If you are going to use
-another build system on windows or create the visual studio
-projects by hand you need to define OrientationLib_EXPORTS when
-building the MXADatModel DLL on windows.
-*/
+  void mouseDoubleClickEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void enterEvent(QEvent* event) override;
+  void leaveEvent(QEvent* event) override;
 
-#if defined (OrientationLib_BUILT_AS_DYNAMIC_LIB)
+signals:
+  void selectedHipassValueChanged(float value);
+  void selectedHipassNumOfStepsChanged(int value);
 
-#if defined (OrientationLib_EXPORTS)  /* Compiling the MXA DLL/Dylib */
-#if defined (_MSC_VER)  /* MSVC Compiler Case */
-#define  OrientationLib_EXPORT __declspec(dllexport)
-#elif (__GNUC__ >= 4)  /* GCC 4.x has support for visibility options */
-#define OrientationLib_EXPORT __attribute__ ((visibility("default")))
-#endif
-#else  /* Importing the DLL into another project */
-#if defined (_MSC_VER)  /* MSVC Compiler Case */
-#define  OrientationLib_EXPORT __declspec(dllimport)
-#elif (__GNUC__ >= 4)  /* GCC 4.x has support for visibility options */
-#define OrientationLib_EXPORT __attribute__ ((visibility("default")))
-#endif
-#endif
-#endif
+private:
+  QPoint m_MouseCoords = QPoint(-1, -1);
+  QPoint m_SelectedImageCoords = QPoint(-1, -1);
 
-/* If OrientationLib_EXPORT was never defined, define it here */
-#ifndef OrientationLib_EXPORT
-#define OrientationLib_EXPORT
-#endif
+  float m_HipassValue = 0.0f;
+  int m_HipassNumOfSteps = 0;
 
+  /**
+   * @brief Returns whether or not there is a valid mouse coordinate
+   * @return
+   */
+  bool isMouseCoordinateValid() const;
 
-#endif /* _OrientationLib_COMMON_DLL_EXPORT_H_ */
+  /**
+   * @brief Returns whether or not there is a pixel selected in the current image
+   * @return
+   */
+  bool isPixelSelected() const;
 
+  /**
+   * @brief invalidateMouseCoordinate
+   */
+  void invalidateMouseCoordinate();
+
+  /**
+   * @brief clearSelectedPixel
+   */
+  void clearSelectedPixel();
+
+public:
+  PPMatrixImageViewer(const PPMatrixImageViewer&) = delete;            // Copy Constructor Not Implemented
+  PPMatrixImageViewer(PPMatrixImageViewer&&) = delete;                 // Move Constructor Not Implemented
+  PPMatrixImageViewer& operator=(const PPMatrixImageViewer&) = delete; // Copy Assignment Not Implemented
+  PPMatrixImageViewer& operator=(PPMatrixImageViewer&&) = delete;      // Move Assignment Not Implemented
+};

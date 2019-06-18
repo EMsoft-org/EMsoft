@@ -105,6 +105,11 @@ public:
    */
   void writeModuleSession(QJsonObject& obj) const override;
 
+  /**
+   * @brief validateData
+   */
+  void validateData() override;
+
 protected:
   /**
    * @brief setupGui
@@ -185,6 +190,12 @@ private:
   QTimer* m_FlickerTimer;
   bool m_FlickerIsChecked = false;
   PatternControlsWidget::PatternChoice m_BeforeFlickerChoice;
+
+  /**
+   * @brief hasValidValues
+   * @return
+   */
+  bool hasValidValues() const;
 
   /**
    * @brief setExperimentalPatternFilePath
@@ -296,11 +307,6 @@ private:
    * @brief destroyHipassFilterValues
    */
   void destroyHipassFilterValues();
-
-  /**
-   * @brief validateData
-   */
-  bool validateData() override;
 
 public:
   PatternFit_UI(const PatternFit_UI&) = delete; // Copy Constructor Not Implemented

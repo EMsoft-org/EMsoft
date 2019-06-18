@@ -35,55 +35,51 @@
 
 #pragma once
 
+#include <QtCore/QFutureWatcher>
 
-#include "Modules/CrystalStructureCreationModule/CrystalStructureCreationController.h"
-#include "Modules/IModuleUI.h"
+#include "Common/Constants.h"
 
-#include "ui_CrystalStructureCreation_UI.h"
+#include "Modules/DictionaryIndexingModule/ADPMapController.h"
 
-class QtSSettings;
-class QSplashScreen;
+#include "ui_ADPMap_UI.h"
 
-class CrystalStructureCreation_UI : public IModuleUI, public Ui::CrystalStructureCreation_UI
+class ADPMap_UI : public QWidget
 {
   Q_OBJECT
 
 public:
+  using InputType = EMsoftWorkbenchConstants::InputType;
+
   /**
-   * @brief CrystalStructureCreation_UI
+   * @brief ADPMap_UI
    * @param parent
    */
-  CrystalStructureCreation_UI(QWidget* parent = nullptr);
+  ADPMap_UI(QWidget *parent = nullptr);
 
-  ~CrystalStructureCreation_UI() override;
-
-    /**
-    * @brief Setter property for Controller
-    */
-    void setController(CrystalStructureCreationController* value); 
-
-    /**
-    * @brief Getter property for Controller
-    * @return Value of Controller
-    */
-    CrystalStructureCreationController* getController() const;
-
-  /**
-   * @brief readModuleSession
-   * @param obj
-   */
-  void readModuleSession(QJsonObject& obj) override;
-
-  /**
-   * @brief writeModuleSession
-   * @param obj
-   */
-  void writeModuleSession(QJsonObject& obj) const override;
+  ~ADPMap_UI() override;
 
   /**
    * @brief validateData
    */
-  void validateData() override;
+  bool validateData();
+
+  /**
+   * @brief setInputType
+   * @param inputType
+   */
+  void setInputType(ADPMapController::InputType inputType);
+
+  /**
+   * @brief setPatternDataFile
+   * @param filePath
+   */
+  void setPatternDataFile(const QString &filePath);
+
+  /**
+   * @brief setSelectedHDF5Path
+   * @param path
+   */
+  void setSelectedHDF5Path(const QStringList &path);
 
 protected:
   /**
@@ -91,53 +87,64 @@ protected:
    */
   void setupGui();
 
-  /**
-   * @brief changeEvent
-   * @param event
-   */
-  void changeEvent(QEvent* event) override;
-
 protected slots:
-  void on_csCB_currentIndexChanged(int index) const;
+  /**
+   * @brief listenADPGenerationStarted
+   */
+  void listenADPGenerationStarted();
+
+  /**
+   * @brief listenADPGenerationFinished
+   */
+  void listenADPGenerationFinished();
+
+  /**
+   * @brief listenROICheckboxStateChanged
+   * @param state
+   */
+  void listenROICheckboxStateChanged(int state);
+
+  /**
+   * @brief updateZoomFactor
+   * @param zoomFactor
+   */
+  void updateZoomFactor(float zoomFactor);
+
+signals:
+  void errorMessageGenerated(const QString &msg);
+  void warningMessageGenerated(const QString &msg);
+  void stdOutputMessageGenerated(const QString &msg);
+
+  void selectedPatternPixelChanged(const QPoint &patternPixel);
+
+  void adpMapGenerationStarted();
+  void adpMapGenerationFinished();
 
   void parametersChanged();
 
 private:
-    CrystalStructureCreationController* m_Controller;
+  QSharedPointer<Ui::ADPMap_UI> m_Ui;
+
+  ADPMapController* m_ADPController = nullptr;
+
+  InputType m_InputType = InputType::Binary;
+  QString m_PatternDataFile;
+  QStringList m_SelectedHDF5Path;
+
+  QPoint m_SelectedADPPatternCoords = QPoint(-1, -1);
+
+  QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
-
-  /**
-   * @brief readCrystalSystemParameters
-   * @param obj
-   */
-  void readCrystalSystemParameters(QJsonObject& obj);
-
-  /**
-   * @brief readSpaceGroupParameters
-   * @param obj
-   */
-  void readSpaceGroupParameters(QJsonObject& obj);
-
-  /**
-   * @brief writeCrystalSystemParameters
-   * @param obj
-   */
-  void writeCrystalSystemParameters(QJsonObject& obj) const;
-
-  /**
-   * @brief writeSpaceGroupParameters
-   * @param obj
-   */
-  void writeSpaceGroupParameters(QJsonObject& obj) const;
+  QSharedPointer<QFutureWatcher<void>> m_ADPWatcher;
 
   /**
    * @brief createValidators
    */
-  void createValidators() const;
+  void createValidators();
 
   /**
-   * @brief createModificationConnections
+   * @brief createParametersChangedConnections
    */
   void createModificationConnections();
 
@@ -147,14 +154,14 @@ private:
   void createWidgetConnections();
 
   /**
-   * @brief getCreationData
+   * @brief getData
    * @return
    */
-  CrystalStructureCreationController::CrystalStructureCreationData getCreationData() const;
+  ADPMapController::ADPMapData getADPMapData();
 
 public:
-  CrystalStructureCreation_UI(const CrystalStructureCreation_UI&) = delete; // Copy Constructor Not Implemented
-  CrystalStructureCreation_UI(CrystalStructureCreation_UI&&) = delete;      // Move Constructor Not Implemented
-  CrystalStructureCreation_UI& operator=(const CrystalStructureCreation_UI&) = delete; // Copy Assignment Not Implemented
-  CrystalStructureCreation_UI& operator=(CrystalStructureCreation_UI&&) = delete;      // Move Assignment Not Implemented
+  ADPMap_UI(const ADPMap_UI&) = delete; // Copy Constructor Not Implemented
+  ADPMap_UI(ADPMap_UI&&) = delete;      // Move Constructor Not Implemented
+  ADPMap_UI& operator=(const ADPMap_UI&) = delete; // Copy Assignment Not Implemented
+  ADPMap_UI& operator=(ADPMap_UI&&) = delete;      // Move Assignment Not Implemented
 };

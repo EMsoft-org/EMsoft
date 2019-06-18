@@ -235,7 +235,7 @@ void MonteCarloSimulation_UI::parametersChanged()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool MonteCarloSimulation_UI::validateData()
+void MonteCarloSimulation_UI::validateData()
 {
   clearModuleIssues();
 
@@ -243,11 +243,11 @@ bool MonteCarloSimulation_UI::validateData()
   if(m_Controller->validateMonteCarloValues(data))
   {
     createMonteCarloBtn->setEnabled(true);
-    return true;
   }
-
-  createMonteCarloBtn->setDisabled(true);
-  return false;
+  else
+  {
+    createMonteCarloBtn->setDisabled(true);
+  }
 }
 
 // -----------------------------------------------------------------------------

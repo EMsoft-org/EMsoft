@@ -39,8 +39,8 @@
 
 #include "Common/Constants.h"
 
-#include "Modules/AverageDotProductMapModule/AverageDotProductMapModule.h"
-#include "Modules/AverageDotProductMapModule/Constants.h"
+#include "Modules/DictionaryIndexingModule/DictionaryIndexingModule.h"
+#include "Modules/DictionaryIndexingModule/Constants.h"
 #include "Modules/CrystalStructureCreationModule/CrystalStructureCreationModule.h"
 #include "Modules/MasterPatternSimulationModule/MasterPatternSimulationModule.h"
 #include "Modules/ModuleFactory.hpp"
@@ -75,8 +75,8 @@ ModuleManager::ModuleManager()
   ModuleFactory<MasterPatternSimulationModule>::Pointer mpSimulationModuleFactory = ModuleFactory<MasterPatternSimulationModule>::New();
   addModuleFactory(EMsoftWorkbenchConstants::ModuleNames::MasterPatternSimulation, mpSimulationModuleFactory);
 
-  ModuleFactory<AverageDotProductMapModule>::Pointer avgDotProductMapModuleFactory = ModuleFactory<AverageDotProductMapModule>::New();
-  addModuleFactory(AverageDotProductMapModuleConstants::ModuleName, avgDotProductMapModuleFactory);
+  ModuleFactory<DictionaryIndexingModule>::Pointer avgDotProductMapModuleFactory = ModuleFactory<DictionaryIndexingModule>::New();
+  addModuleFactory(DictionaryIndexingModuleConstants::ModuleName, avgDotProductMapModuleFactory);
 }
 
 // -----------------------------------------------------------------------------

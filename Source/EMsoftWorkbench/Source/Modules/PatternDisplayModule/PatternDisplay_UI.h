@@ -112,6 +112,11 @@ public:
    */
   void writeModuleSession(QJsonObject& obj) const override;
 
+  /**
+   * @brief validateData
+   */
+  void validateData() override;
+
 protected:
   /**
    * @brief setupGui
@@ -216,11 +221,6 @@ private:
    * @return
    */
   PatternDisplayController::DetectorData getDetectorData() const;
-
-  /**
-   * @brief validateData
-   */
-  bool validateData() override;
 
 public:
   PatternDisplay_UI(const PatternDisplay_UI&) = delete; // Copy Constructor Not Implemented

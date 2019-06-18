@@ -38,52 +38,40 @@
 #include <QtCore/QFutureWatcher>
 
 #include "Modules/IModuleUI.h"
-#include "Modules/AverageDotProductMapModule/AverageDotProductMapController.h"
+#include "Modules/DictionaryIndexingModule/ADPMapController.h"
+#include "Modules/DictionaryIndexingModule/PatternPreprocessingController.h"
 
-#include "ui_AverageDotProductMap_UI.h"
+#include "ui_DictionaryIndexing_UI.h"
 
-class ChoosePatternsDatasetDialog;
-
-class AverageDotProductMap_UI : public IModuleUI
+class DictionaryIndexing_UI : public QWidget
 {
   Q_OBJECT
 
 public:
   /**
-   * @brief AverageDotProductMap_UI
+   * @brief DictionaryIndexing_UI
    * @param parent
    */
-  AverageDotProductMap_UI(QWidget *parent = nullptr);
+  DictionaryIndexing_UI(QWidget *parent = nullptr);
 
-  ~AverageDotProductMap_UI() override;
-
-  /**
-    * @brief Getter property for Controller
-    * @return Value of Controller
-    */
-  AverageDotProductMapController* getController() const;
-
-  /**
-    * @brief Setter property for Controller
-    */
-  void setController(AverageDotProductMapController *value);
-
-  /**
-   * @brief readModuleSession
-   * @param obj
-   */
-  void readModuleSession(QJsonObject& obj) override;
-
-  /**
-   * @brief writeModuleSession
-   * @param obj
-   */
-  void writeModuleSession(QJsonObject& obj) const override;
+  ~DictionaryIndexing_UI() override;
 
   /**
    * @brief validateData
    */
-  bool validateData() override;
+  void validateData();
+
+  /**
+   * @brief setHipassValue
+   * @param hipassValue
+   */
+  void setHipassValue(float hipassValue);
+
+  /**
+   * @brief setHipassNumberOfRegions
+   * @param numOfRegions
+   */
+  void setHipassNumberOfRegions(int numOfRegions);
 
 protected:
   /**
@@ -91,72 +79,35 @@ protected:
    */
   void setupGui();
 
-  /**
-   * @brief changeEvent
-   * @param event
-   */
-  void changeEvent(QEvent* event) override;
-
 protected slots:
-  void listenGenerateBtnPressed();
+  /**
+   * @brief listenGenerateDIBtnPressed
+   */
+  void listenGenerateDIBtnPressed();
 
   /**
-   * @brief listenInputTypeChanged
+   * @brief parametersChanged
    */
-  void listenInputTypeChanged(int index);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
-
-  /**
-   * @brief listenROICheckboxStateChanged
-   * @param state
-   */
-  void listenROICheckboxStateChanged(int state);
-
   void parametersChanged();
 
 private slots:
-  void threadFinished();
+  /**
+   * @brief generateDIThreadFinished
+   */
+  void generateDIThreadFinished();
 
 private:
-  QSharedPointer<Ui::AverageDotProductMap_UI> m_Ui;
+  QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
 
-  AverageDotProductMapController* m_Controller = nullptr;
+  PatternPreprocessingController* m_DIController = nullptr;
 
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
+  float m_HipassValue = -1.0f;
+  int m_HipassNumOfRegions = -1;
 
   QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_Watcher;
-
-  /**
-   * @brief readInputParameters
-   * @param obj
-   */
-  void readInputParameters(QJsonObject& obj);
-
-  /**
-   * @brief readCrystalSystemParameters
-   * @param obj
-   */
-  void readComputationalParameters(QJsonObject& obj);
-
-  /**
-   * @brief writeInputParameters
-   * @param obj
-   */
-  void writeInputParameters(QJsonObject& obj) const;
-
-  /**
-   * @brief writeCrystalSystemParameters
-   * @param obj
-   */
-  void writeComputationalParameters(QJsonObject& obj) const;
+  QSharedPointer<QFutureWatcher<void>> m_DIWatcher;
 
   /**
    * @brief createValidators
@@ -182,11 +133,11 @@ private:
    * @brief getData
    * @return
    */
-  AverageDotProductMapController::ADPMapData getData();
+  ADPMapController::ADPMapData getDIData();
 
 public:
-  AverageDotProductMap_UI(const AverageDotProductMap_UI&) = delete; // Copy Constructor Not Implemented
-  AverageDotProductMap_UI(AverageDotProductMap_UI&&) = delete;      // Move Constructor Not Implemented
-  AverageDotProductMap_UI& operator=(const AverageDotProductMap_UI&) = delete; // Copy Assignment Not Implemented
-  AverageDotProductMap_UI& operator=(AverageDotProductMap_UI&&) = delete;      // Move Assignment Not Implemented
+  DictionaryIndexing_UI(const DictionaryIndexing_UI&) = delete; // Copy Constructor Not Implemented
+  DictionaryIndexing_UI(DictionaryIndexing_UI&&) = delete;      // Move Constructor Not Implemented
+  DictionaryIndexing_UI& operator=(const DictionaryIndexing_UI&) = delete; // Copy Assignment Not Implemented
+  DictionaryIndexing_UI& operator=(DictionaryIndexing_UI&&) = delete;      // Move Assignment Not Implemented
 };

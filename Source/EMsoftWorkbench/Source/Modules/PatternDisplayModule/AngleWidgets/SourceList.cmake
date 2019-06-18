@@ -115,6 +115,12 @@ cmp_IDE_GENERATED_PROPERTIES( "Generated/Qt_Uic" "${EMsoftWorkbench_${MODULE_NAM
 # QT5_ADD_RESOURCES( ${PLUGIN_NAME}_Generated_RC_SRCS ""  )
 # cmp_IDE_SOURCE_PROPERTIES( "Generated/Qt_Qrc" "${${PLUGIN_NAME}_Generated_RC_SRCS}" "" "0")
 
-
+set(EMsoftWorkbench_${MODULE_NAME}_${AngleWidgets_NAME}_SOURCES
+${EMsoftWorkbench_${MODULE_NAME}_${AngleWidgets_NAME}_Moc_HDRS}
+${EMsoftWorkbench_${MODULE_NAME}_${AngleWidgets_NAME}_HDRS}
+${EMsoftWorkbench_${MODULE_NAME}_${AngleWidgets_NAME}_SRCS}
+${EMsoftWorkbench_${MODULE_NAME}_${AngleWidgets_NAME}_Generated_MOC_SRCS}
+${EMsoftWorkbench_${MODULE_NAME}_${AngleWidgets_NAME}_Generated_UI_HDRS}
+)
 
 

@@ -142,6 +142,7 @@ TARGET_INCLUDE_DIRECTORIES( ${PROJECT_NAME} PUBLIC
                               $<BUILD_INTERFACE:${TARGET_SOURCE_DIR_PARENT}>
                               $<BUILD_INTERFACE:${TARGET_BINARY_DIR_PARENT}>
                               ${EMsoftWorkbench_SOURCE_DIR}/Source/Common
+                              ${EMsoftWorkbench_BINARY_DIR}
                               )
 
 if(BUILD_SHARED_LIBS)

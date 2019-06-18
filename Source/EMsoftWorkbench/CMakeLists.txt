@@ -109,59 +109,15 @@ set(${PROJECT_NAME}_PROJECT_SRCS
   ${EMsoftWorkbench_Generated_RC_SRCS}
 
   ${EMsoftWorkbench_Common_SOURCES}
-
-  ${EMsoftWorkbench_EMsoftWorkbench_Moc_HDRS}
-  ${EMsoftWorkbench_EMsoftWorkbench_HDRS}
-  ${EMsoftWorkbench_EMsoftWorkbench_SRCS}
-  ${EMsoftWorkbench_EMsoftWorkbench_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_EMsoftWorkbench_Generated_UI_HDRS}
-
-  ${EMsoftWorkbench_Modules_Moc_HDRS}
-  ${EMsoftWorkbench_Modules_HDRS}
-  ${EMsoftWorkbench_Modules_SRCS}
-  ${EMsoftWorkbench_Modules_Generated_MOC_SRCS}
-
-  ${EMsoftWorkbench_PatternDisplayModule_Moc_HDRS}
-  ${EMsoftWorkbench_PatternDisplayModule_HDRS}
-  ${EMsoftWorkbench_PatternDisplayModule_SRCS}
-  ${EMsoftWorkbench_PatternDisplayModule_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_PatternDisplayModule_Generated_UI_HDRS}
-
-  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_Moc_HDRS}
-  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_HDRS}
-  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_SRCS}
-  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_Generated_UI_HDRS}
-
-  ${EMsoftWorkbench_PatternFitModule_Moc_HDRS}
-  ${EMsoftWorkbench_PatternFitModule_HDRS}
-  ${EMsoftWorkbench_PatternFitModule_SRCS}
-  ${EMsoftWorkbench_PatternFitModule_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_PatternFitModule_Generated_UI_HDRS}
-
-  ${EMsoftWorkbench_CrystalStructureCreationModule_Moc_HDRS}
-  ${EMsoftWorkbench_CrystalStructureCreationModule_HDRS}
-  ${EMsoftWorkbench_CrystalStructureCreationModule_SRCS}
-  ${EMsoftWorkbench_CrystalStructureCreationModule_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_CrystalStructureCreationModule_Generated_UI_HDRS}
-
-  ${EMsoftWorkbench_MonteCarloSimulationModule_Moc_HDRS}
-  ${EMsoftWorkbench_MonteCarloSimulationModule_HDRS}
-  ${EMsoftWorkbench_MonteCarloSimulationModule_SRCS}
-  ${EMsoftWorkbench_MonteCarloSimulationModule_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_MonteCarloSimulationModule_Generated_UI_HDRS}
-
-  ${EMsoftWorkbench_MasterPatternSimulationModule_Moc_HDRS}
-  ${EMsoftWorkbench_MasterPatternSimulationModule_HDRS}
-  ${EMsoftWorkbench_MasterPatternSimulationModule_SRCS}
-  ${EMsoftWorkbench_MasterPatternSimulationModule_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_MasterPatternSimulationModule_Generated_UI_HDRS}
-
-  ${EMsoftWorkbench_AverageDotProductMapModule_Moc_HDRS}
-  ${EMsoftWorkbench_AverageDotProductMapModule_HDRS}
-  ${EMsoftWorkbench_AverageDotProductMapModule_SRCS}
-  ${EMsoftWorkbench_AverageDotProductMapModule_Generated_MOC_SRCS}
-  ${EMsoftWorkbench_AverageDotProductMapModule_Generated_UI_HDRS}
+  ${EMsoftWorkbench_EMsoftWorkbench_SOURCES}
+  ${EMsoftWorkbench_Modules_SOURCES}
+  ${EMsoftWorkbench_PatternDisplayModule_SOURCES}
+  ${EMsoftWorkbench_PatternDisplayModule_AngleWidgets_SOURCES}
+  ${EMsoftWorkbench_PatternFitModule_SOURCES}
+  ${EMsoftWorkbench_CrystalStructureCreationModule_SOURCES}
+  ${EMsoftWorkbench_MonteCarloSimulationModule_SOURCES}
+  ${EMsoftWorkbench_MasterPatternSimulationModule_SOURCES}
+  ${EMsoftWorkbench_DictionaryIndexingModule_SOURCES}
   )
 
 include_directories(${HDF5_INCLUDE_DIR})

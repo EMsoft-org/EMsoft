@@ -64,11 +64,45 @@ public:
      */
     void loadImage(QImage image);
 
+    /**
+     * @brief zoomIn
+     */
     void zoomIn();
+
+    /**
+     * @brief zoomOut
+     */
     void zoomOut();
+
+    /**
+     * @brief fitToScreen
+     */
     void fitToScreen();
 
+    /**
+     * @brief saveImage
+     * @return
+     */
+    void saveImage();
+
+    /**
+     * @brief getCurrentImage
+     * @return
+     */
     QImage getCurrentImage() const;
+
+    /**
+     * @brief getZoomFactor
+     * @return
+     */
+    float getZoomFactor();
+
+    /**
+     * @brief setZoomFactor
+     * @param val
+     * @return
+     */
+    void setZoomFactor(float val);
 
     virtual void readSession(QJsonObject &obj);
 
@@ -88,8 +122,26 @@ protected:
     void wheelEvent(QWheelEvent* event) Q_DECL_OVERRIDE;
     void resizeEvent(QResizeEvent *event) Q_DECL_OVERRIDE;
 
+    /**
+     * @brief Maps image viewer widget coordinates relative to the currently loaded image.
+     * Any widget coordinates that are outside the bounds of the image will be automatically
+     * mapped to coordinates that are on the edge of the image.
+     * @param widgetCoords The coordinates relative to GLImageViewer.
+     * @return
+     */
+    QPoint mapToImageCoordinates(const QPoint &widgetCoords);
+
+    /**
+     * @brief Maps currently loaded image coordinates relative to the image viewer widget.
+     * @param imageCoords The coordinates relative to currently loaded image.
+     * @return
+     */
+    QPoint mapFromImageCoordinates(const QPoint &imageCoords);
+
   signals:
+    void errorMessageGenerated(const QString &msg);
     void viewerChanged();
+    void zoomFactorChanged(float zoomFactor);
 
 private:
     QImage        m_CurrentImage;
@@ -103,6 +155,13 @@ private:
     int           m_ViewportWidth = 0;
     int           m_ViewportHeight = 0;
     bool          m_DefaultControls = true;
+
+    QPoint m_TopLeftWidgetCoord = QPoint(0, 0);
+    QPoint m_TopLeftImageCoord = QPoint(0, 0);
+    int m_ImageWidth = 0;
+    int m_ImageHeight = 0;
+
+    QString m_OpenDialogLastDirectory;
 
   public:
     GLImageViewer(const GLImageViewer&) = delete; // Copy Constructor Not Implemented

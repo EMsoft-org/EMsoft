@@ -56,7 +56,7 @@ template<typename T>
  * in space. Alternate constructors can allow the class to simply wrap an existing
  * array of values which makes looping through an array of orientations easier.
  */
-class OrientationArray
+class OrientationLib_EXPORT OrientationArray
 {
 
   public:

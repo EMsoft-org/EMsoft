@@ -58,7 +58,7 @@ namespace H5Support_NAMESPACE
    * @date April 2007
    * @version $Revision: 1.3 $
    */
-  class H5Lite
+  class H5Support_EXPORT H5Lite
   {
     public:
       /**

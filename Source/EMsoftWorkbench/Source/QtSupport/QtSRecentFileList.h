@@ -40,6 +40,8 @@
 #include <QtCore/QSettings>
 #include <QtCore/QFileSystemWatcher>
 
+#include "QtSupportDLLExport.h"
+
 #include "QtSupport/QtSSettings.h"
 
 enum AddType
@@ -58,7 +60,7 @@ class QMenu;
  * @date Oct 2008
  * @version $Revision: 1.2 $
  */
-class QtSRecentFileList: public QObject
+class QtSupport_EXPORT QtSRecentFileList: public QObject
 {
 
     Q_OBJECT
