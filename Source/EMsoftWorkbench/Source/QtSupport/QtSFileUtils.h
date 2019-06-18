@@ -35,12 +35,14 @@
 #include <QtCore/QString>
 #include <QtWidgets/QWidget>
 
+#include "QtSupportDLLExport.h"
+
 class QLineEdit;
 
 /**
  * @brief The QtSFileUtils class
  */
-class QtSFileUtils
+class QtSupport_EXPORT QtSFileUtils
 {
 public:
   QtSFileUtils();

@@ -161,7 +161,6 @@ set(OrientationLib_SRCS
 
 )
 set(OrientationLib_HDRS
-    ${OrientationLib_SOURCE_DIR}/OrientationLibDLLExport.h
     ${OrientationLib_SOURCE_DIR}/OrientationLibConstants.h
 )
 
@@ -188,9 +187,13 @@ set(OrientationLib_PROJECT_SRCS
     ${OrientationLib_Generated_CMP_SRCS}
 )
 
-
+include(GenerateExportHeader)
 
 add_library(${PROJECT_NAME} ${LIB_TYPE} ${OrientationLib_PROJECT_SRCS})
+generate_export_header(${PROJECT_NAME}
+  EXPORT_MACRO_NAME ${PROJECT_NAME}_EXPORT
+  EXPORT_FILE_NAME ${PROJECT_NAME}DLLExport.h
+  )
 
 if(Qt5_FOUND)
   set(OrientationLib_LINK_LIBRARIES

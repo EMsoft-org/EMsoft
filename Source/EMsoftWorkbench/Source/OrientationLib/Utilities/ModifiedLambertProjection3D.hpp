@@ -45,7 +45,7 @@
  * a 3D Lambert Cube and a Sphere (XYZ) coordinates.
  */
 template<typename T, typename K>
-class ModifiedLambertProjection3D
+class OrientationLib_EXPORT ModifiedLambertProjection3D
 {
   public:
     using Self = ModifiedLambertProjection3D;

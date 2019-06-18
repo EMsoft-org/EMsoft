@@ -38,7 +38,9 @@
 #include <QtCore/QObject>
 #include <QtWidgets/QCompleter>
 
-class QtSFileCompleter : public QCompleter
+#include "QtSupportDLLExport.h"
+
+class QtSupport_EXPORT QtSFileCompleter : public QCompleter
 {
     Q_OBJECT
   public:

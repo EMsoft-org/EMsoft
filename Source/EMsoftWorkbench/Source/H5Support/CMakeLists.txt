@@ -71,7 +71,6 @@ set(H5Support_HDRS
     ${H5Support_SOURCE_DIR}/H5ScopedSentinel.h
     ${H5Support_SOURCE_DIR}/H5ScopedErrorHandler.h
     ${H5Support_SOURCE_DIR}/H5Macros.h
-    ${H5Support_SOURCE_DIR}/H5SupportDLLExport.h
 )
 
 if(H5Support_USE_QT)
@@ -119,7 +118,13 @@ set(PROJECT_SRCS
     ${H5Support_BINARY_DIR}/${CMP_VERSION_SOURCE_FILE_NAME}
 )
 
+include(GenerateExportHeader)
+
 add_library(${PROJECT_NAME} ${LIB_TYPE} ${PROJECT_SRCS})
+generate_export_header(${PROJECT_NAME}
+  EXPORT_MACRO_NAME ${PROJECT_NAME}_EXPORT
+  EXPORT_FILE_NAME ${PROJECT_NAME}DLLExport.h
+  )
 CMP_AddDefinitions(TARGET ${PROJECT_NAME})
 LibraryProperties( ${PROJECT_NAME}  ${EXE_DEBUG_EXTENSION} )
 CMP_MODULE_INCLUDE_DIRS (TARGET ${PROJECT_NAME} LIBVARS HDF5 Qt5Core)

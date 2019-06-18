@@ -36,7 +36,7 @@
 #include "@PROJECT_NAME@/@CMP_TYPES_FILE_NAME@"
 
 /* Include the DLL export preprocessor defines */
-#include "SIMPLib/Common/SIMPLibDLLExport.h"
+#include "SIMPLib/SIMPLibDLLExport.h"
 
 /* We are going to disable some warnings just to get a grip on all the warnings that get produced
 * during an MSVC build */

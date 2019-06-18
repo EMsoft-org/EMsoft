@@ -183,8 +183,14 @@ if( "${SIMPL_USE_MULTITHREADED_ALGOS}" STREQUAL "ON")
   list(APPEND ${PROJECT_NAME}_LINK_LIBS ${TBB_LIBRARIES})
 endif()
 
+include(GenerateExportHeader)
+
 #-- Add a library for the SIMPLib Code
 add_library(${PROJECT_NAME} ${LIB_TYPE} ${Project_SRCS} )
+generate_export_header(${PROJECT_NAME}
+  EXPORT_MACRO_NAME ${PROJECT_NAME}_EXPORT
+  EXPORT_FILE_NAME ${PROJECT_NAME}DLLExport.h
+  )
 target_link_libraries(${PROJECT_NAME} ${${PROJECT_NAME}_LINK_LIBS})
 LibraryProperties( ${PROJECT_NAME} ${EXE_DEBUG_EXTENSION} )
 set_target_properties (${PROJECT_NAME} PROPERTIES

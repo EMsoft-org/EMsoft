@@ -45,6 +45,8 @@
 
 #include <QtWidgets/QTreeWidget>
 
+#include "QtSupportDLLExport.h"
+
 struct SIMPLViewSettingsGroup
 {
   SIMPLViewSettingsGroup(const QString &name, const QJsonObject &object)
@@ -58,7 +60,7 @@ struct SIMPLViewSettingsGroup
   QJsonObject group;
 };
 
-class QtSSettings : public QObject
+class QtSupport_EXPORT QtSSettings : public QObject
 {
     Q_OBJECT
 

@@ -73,7 +73,7 @@ namespace H5Support_NAMESPACE
    * @date April 2007
    * @version $Revision: 1.3 $
    */
-  class QH5Lite
+  class H5Support_EXPORT QH5Lite
   {
     public:
       /**
