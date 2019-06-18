@@ -931,8 +931,8 @@ if (jexists) then
   end if
 else
   if (displayConfigFileMissingMessage.eq.0) then 
-    write(error_unit,'(/A)') '  WARNING: USER='//trim(EMsoft_getUser())
-    write(error_unit,'(/A)') '  WARNING: file '//trim(jsonname)//' not found '
+    write(error_unit,'(A)') '  WARNING: USER='//trim(EMsoft_getUser())
+    write(error_unit,'(A)') '  WARNING: file '//trim(jsonname)//' not found '
     write(error_unit,'(A/)') '  -----> Trying environment variables next ... '
     displayConfigFileMissingMessage = 1
   end if
