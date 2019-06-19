@@ -55,6 +55,7 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMECPQCmaster.template
   ${APP_DIR}/EMLauemaster.template
   ${APP_DIR}/EMSphInx.template
+  ${APP_DIR}/EMEBSDoverlap.template
 )
 
 if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")

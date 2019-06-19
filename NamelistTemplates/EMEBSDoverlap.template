@@ -1,0 +1,24 @@
+&EBSDoverlapdata
+! template file for the EMEBSDoverlap program
+!
+! name of EBSD master files
+ masterfileA = 'undefined',
+ masterfileB = 'undefined',
+! name of HDF5 output file
+ datafile = 'undefined',
+! orientation relation vectors:
+ gA = 0, 0, 1,
+ gB = 0, 0, 1,
+ tA = 1, 0, 0,
+ tB = 1, 0, 0 ,
+! center axis for output master pattern
+ PatternAxisA = 0, 0, 1,
+! horizontal axis for output pattern
+ HorizontalAxisA = 1, 0, 0,
+! volume fraction of phase A
+ fracA = 0.5,
+! overlap mode  
+!  'full' = generate complete master pattern file
+!  'series' = generate a series of 21 overlap patterns for a range of volume fractions
+ overlapmode = 'series',
+/
