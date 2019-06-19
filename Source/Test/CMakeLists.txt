@@ -148,7 +148,10 @@ if("${EMsoftData_DIR}" STREQUAL "")
     set(EMsoftData_DIR ${EMSOFT_PARENT}/EMsoftData)
   else()
     message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
-    Please clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch")  
+    We looked in the same directory as 'EMsoft' directory for a directory called EMsoftData but did not find it.\
+    You can clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch\
+    or you can set the EMsoftData_DIR variable to point to the location of the EMsoftData directory.\    
+    ")  
   endif()
 endif()
 #------------------------------------------------------------------------------
