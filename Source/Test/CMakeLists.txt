@@ -184,7 +184,7 @@ add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
 #------------------------------------------------------------------------------
 # 7: Setup the EMFit executable
 math(EXPR test_index "${test_index} + 1")
-set(TEST_EXE_NAME EMFit)
+set(TEST_EXE_NAME EMFitOrientation)
 configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
               ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
 )
