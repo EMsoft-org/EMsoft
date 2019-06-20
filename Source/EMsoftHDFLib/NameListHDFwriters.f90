@@ -1163,7 +1163,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EBSDoverlapNameListType),INTENT(INOUT)           :: emnl
 
-integer(kind=irg),parameter                           :: n_int = 1, n_real = 1
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1176,8 +1176,9 @@ groupname = SC_EBSDoverlapNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ emnl%stdout /)
+io_int = (/ emnl%stdout, emnl%newpgnum /)
 intlist(1) = 'stdout'
+intlist(1) = 'newpgnum'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real

@@ -619,6 +619,7 @@ end type TKDNameListType
 ! some of them are used to facilitate passing of subroutine arguments in EBSDmod.f90
 type EBSDoverlapNameListType
         integer(kind=irg)       :: stdout
+        integer(kind=irg)       :: newpgnum
         integer(kind=irg)       :: PatternAxisA(3)
         integer(kind=irg)       :: HorizontalAxisA(3)
         real(kind=sgl)          :: tA(3)

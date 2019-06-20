@@ -3574,6 +3574,7 @@ logical,OPTIONAL,INTENT(IN)             :: initonly
 logical                                 :: skipread = .FALSE.
 
 integer(kind=irg)       :: stdout
+integer(kind=irg)       :: newpgnum
 integer(kind=irg)       :: PatternAxisA(3)
 integer(kind=irg)       :: HorizontalAxisA(3)
 real(kind=sgl)          :: tA(3)
@@ -3588,10 +3589,11 @@ character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
-                              datafile, HorizontalAxisA, overlapmode
+                              datafile, HorizontalAxisA, overlapmode, newpgnum
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
+newpgnum        = -1                            ! -1 means 'use the point group of phase A'
 PatternAxisA    = (/ 0, 0, 1 /)                 ! center axis for output pattern
 HorizontalAxisA = (/ 1, 0, 0 /)                 ! horizontal axis for output pattern
 tA              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal A
@@ -3630,6 +3632,7 @@ end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the emnl fields
 enl%stdout = stdout
+enl%newpgnum = newpgnum
 enl%PatternAxisA = PatternAxisA
 enl%HorizontalAxisA = HorizontalAxisA
 enl%tA = tA

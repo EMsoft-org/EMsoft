@@ -17,6 +17,8 @@
  HorizontalAxisA = 1, 0, 0,
 ! volume fraction of phase A
  fracA = 0.5,
+! effective new point group number for this overlap symmetry (-1 for original symmetry of phase A)
+ newpgnum = -1,
 ! overlap mode  
 !  'full' = generate complete master pattern file
 !  'series' = generate a series of 21 overlap patterns for a range of volume fractions
