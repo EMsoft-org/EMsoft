@@ -46,85 +46,47 @@ include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
 if(EMsoft_ENABLE_HDF5_SUPPORT)
   
-  string(TOLOWER ${LIB_TYPE} lib_type)
+  set(lib_type "static")
+  if(BUILD_SHARED_LIBS)
+    set(lib_type "shared")
+  endif()
   set(hdf5LinkLibs hdf5 hdf5_f90cstub hdf5_fortran hdf5_hl hdf5_hl_f90cstub hdf5_hl_fortran)
   set(comps ${hdf5LinkLibs})
-  if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
-    set(hdf5LinkLibs "")
-    foreach(comp ${comps})
-      if(TARGET ${comp}-${lib_type})
-        set(hdf5LinkLibs ${hdf5LinkLibs} ${comp}-${lib_type})
-      endif()
-    endforeach()
-  endif()
+  set(hdf5LinkLibs "")
+  foreach(comp ${comps})
+    if(TARGET hdf5::${comp}-${lib_type})
+      set(hdf5LinkLibs ${hdf5LinkLibs} hdf5::${comp}-${lib_type})
+    endif() 
+  endforeach()
 
   set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${hdf5LinkLibs} EMsoftHDFLib)
 
-  AddEMsoftUnitTest(TARGET HDFtextfileTest
-                    SOURCES ${EMsoftTestDir}/HDFtextfileTest.f90
-                    TEST_NAME HDFtextfile
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
+  set(EMsoft_UNIT_TESTS 
+    HDFtextfile
+    HDFinteger
+    HDFchar
+    HDFfloat
+    HDFdouble
+    HDFhyperslab
+    HDFstack
+    MODcrystal
+    MODMuellerCalculus
+    MODRotations
+    Image
+  )
 
-  AddEMsoftUnitTest(TARGET HDFintegerTest
-                    SOURCES ${EMsoftTestDir}/HDFintegerTest.f90
-                    TEST_NAME HDFinteger
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFcharTest
-                    SOURCES ${EMsoftTestDir}/HDFcharTest.f90
-                    TEST_NAME HDFchar
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFfloatTest
-                    SOURCES ${EMsoftTestDir}/HDFfloatTest.f90
-                    TEST_NAME HDFfloat
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFdoubleTest
-                    SOURCES ${EMsoftTestDir}/HDFdoubleTest.f90
-                    TEST_NAME HDFdouble
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFhyperslabTest
-                    SOURCES ${EMsoftTestDir}/HDFhyperslabTest.f90
-                    TEST_NAME HDFhyperslab
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFstackTest
-                    SOURCES ${EMsoftTestDir}/HDFstackTest.f90
-                    TEST_NAME HDFstack
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET MODcrystalTest
-                    SOURCES ${EMsoftTestDir}/MODcrystalTest.f90
-                    TEST_NAME MODcrystal
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET MODMuellerCalculusTest
-                    SOURCES ${EMsoftTestDir}/MODMuellerCalculusTest.f90
-                    TEST_NAME MODMuellerCalculus
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET MODRotationsTest
-                    SOURCES ${EMsoftTestDir}/MODRotationsTest.f90
-                    TEST_NAME MODRotationsTest
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET ImageTest
-                    SOURCES ${EMsoftTestDir}/ImageTest.f90
-                    TEST_NAME Image
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
+  foreach(test ${EMsoft_UNIT_TESTS})
+    message(STATUS "Adding Unit test: ${test}" )
+    AddEMsoftUnitTest(TARGET ${test}Test
+                      SOURCES ${EMsoftTestDir}/${test}Test.f90
+                      TEST_NAME ${test}
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      SOLUTION_FOLDER EMsoftPublic/Test)
+    if(MSVC)
+        target_compile_options( ${test}Test PRIVATE "/MT$<$<CONFIG:Debug>:d>")
+        target_link_options(${test}Test PRIVATE "/NODEFAULTLIB:MSVCRT")
+    endif()
+  endforeach()
 
 endif()
 

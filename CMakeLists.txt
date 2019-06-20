@@ -329,4 +329,3 @@ if(EMsoft_ENABLE_TESTING)
   include(CTest)
   add_subdirectory(${EMsoft_SOURCE_DIR}/Source/Test ${PROJECT_BINARY_DIR}/Test)
 endif()
-

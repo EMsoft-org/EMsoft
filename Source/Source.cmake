@@ -93,6 +93,6 @@ if( EMsoft_ENABLE_EMsoftWorkbench )
                     "${EMsoft_BINARY_DIR}"
                     "EMsoftWorkbench")
   
-  add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftWorkbench ${PROJECT_BINARY_DIR}/EMsoftWorkbench)
+  include(${PROJECT_SOURCE_DIR}/Source/EMsoftWorkbench/SourceList.cmake)
 endif()
 

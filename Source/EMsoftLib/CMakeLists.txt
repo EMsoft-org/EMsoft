@@ -1,7 +1,14 @@
 project(EMsoftLib)
 
-configure_file(${EMsoftLib_SOURCE_DIR}/StringConstants.cmake
-               ${EMsoftLib_BINARY_DIR}/StringConstants.cmake @ONLY)
+include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake 
+${EMsoftLib_BINARY_DIR}/StringConstants.cmake)
+
+# configure_file(${EMsoftLib_SOURCE_DIR}/StringConstants.cmake
+#                ${EMsoftLib_BINARY_DIR}/StringConstants.cmake @ONLY)
+
+cmpConfigureFileWithMD5Check( GENERATED_FILE_PATH        ${EMsoftLib_BINARY_DIR}/StringConstants.cmake
+                             CONFIGURED_TEMPLATE_PATH   ${EMsoftLib_SOURCE_DIR}/StringConstants.cmake )
+
 
 add_custom_target(EMsoftLib_Generate_StringConstants ALL 
                   "${CMAKE_COMMAND}" -P "${EMsoftLib_BINARY_DIR}/StringConstants.cmake" 
@@ -99,9 +106,9 @@ if(EMsoft_ENABLE_TESTING)
   set(EMsoft_TESTING_DIR "${EMsoft_BINARY_DIR}/Testing")
   file(MAKE_DIRECTORY ${EMsoft_TESTING_DIR})
 endif()
-
-configure_file(${EMsoftLib_SOURCE_DIR}/local.f90.in 
-         ${EMsoftLib_BINARY_DIR}/local.f90 @ONLY)
+         
+cmpConfigureFileWithMD5Check( GENERATED_FILE_PATH        ${EMsoftLib_BINARY_DIR}/local.f90
+                              CONFIGURED_TEMPLATE_PATH   ${EMsoftLib_SOURCE_DIR}/local.f90.in  )
 #-------------------------------------------------------------------------------
 # Add files GENERATED DURING CMAKE TIME
 set(EMsoftLib_SRCS
