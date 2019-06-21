@@ -189,6 +189,6 @@ configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
               ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
 )
 add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TEST_EXE_NAME${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
+        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
         WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
