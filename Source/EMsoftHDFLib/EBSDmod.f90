@@ -1834,8 +1834,9 @@ end subroutine EBSDcopyMCdata
 !> @param outputfile name of new file
 !
 !> @date 06/18/19  MDG 1.0 original
+!> @date 06/21/19  MDG 1.1 add option to skip copying of CrystalData group
 !--------------------------------------------------------------------------
-recursive subroutine EBSDcopyMPdata(inputfile, outputfile)
+recursive subroutine EBSDcopyMPdata(inputfile, outputfile, skipCrystalData)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDcopyMPdata
 
 use local
@@ -1847,6 +1848,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)       :: inputfile
 character(fnlen),INTENT(IN)       :: outputfile
+logical,INTENT(IN),OPTIONAL       :: skipCrystalData
 
 character(fnlen)                  :: infile, outfile, h5copypath, groupname
 character(512)                    :: cmd, cmd2
@@ -1896,8 +1898,15 @@ h5copypath = EMsoft_toNativePath(h5copypath)
 cmd = trim(h5copypath)//' -i "'//trim(infile)
 cmd = trim(cmd)//'" -o "'//trim(outfile)
 
-cmd2 = trim(cmd)//'" -s "/CrystalData" -d "/CrystalData"'
-call system(trim(cmd2))
+if (present(skipCrystalData)) then 
+  if (skipCrystalData.eqv..FALSE.) then 
+    cmd2 = trim(cmd)//'" -s "/CrystalData" -d "/CrystalData"'
+    call system(trim(cmd2))
+  end if
+else
+  cmd2 = trim(cmd)//'" -s "/CrystalData" -d "/CrystalData"'
+  call system(trim(cmd2))
+end if
 
 cmd2 = trim(cmd)//'" -s "/EMData" -d "/EMData"'
 call system(trim(cmd2))

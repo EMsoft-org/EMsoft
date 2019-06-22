@@ -227,7 +227,11 @@ end if
 ! since the symmetry of the overlap master pattern will generally be really low.
 if (trim(enl%overlapmode).eq.'full') then
   call h5open_EMsoft(hdferr)
-  call EBSDcopyMPdata(enl%masterfileA, enl%datafile)
+  if (enl%newpgnum.eq.-1) then
+    call EBSDcopyMPdata(enl%masterfileA, enl%datafile)
+  else
+    call EBSDcopyMPdata(enl%masterfileA, enl%datafile, skipCrystalData=.TRUE.)
+  end if
   call h5close_EMsoft(hdferr)
 end if
 
@@ -509,6 +513,25 @@ groupname = SC_NMLparameters
 ! leave this group
   call HDF_pop(HDF_head)
 
+! if the CrystalData group was not written to the output file by h5copy, 
+! then we need to create it here with only the new SpaceGroupNumber 
+! and the PointGroupNumber as data sets (since the merged pattern may have a different 
+! symmetry than either of the member phases).
+if (enl%newpgnum.ne.-1) then 
+  groupname = SC_CrystalData
+    hdferr = HDF_createGroup(groupname, HDF_head)
+
+! write the PointGroupNumber data set 
+  dataset = 'PointGroupNumber'
+    hdferr = HDF_writeDataSetInteger(dataset, enl%newpgnum, HDF_head)
+
+! write the SpaceGroupNumber data set 
+  dataset = SC_SpaceGroupNumber
+    hdferr = HDF_writeDataSetInteger(dataset, SGPG(enl%newpgnum), HDF_head)
+
+  call HDF_pop(HDF_head)
+end if
+
 groupname = SC_EMData
 datagroupname = SC_EBSDmaster
   hdferr = HDF_openGroup(groupname, HDF_head)
@@ -540,16 +563,6 @@ dataset = SC_masterSPSH
   deallocate(SPNH, SPSH)
 
   call HDF_pop(HDF_head)
-  call HDF_pop(HDF_head)
-
-! change the space group number to 2 (for inversion symmetry only)
-groupname = SC_CrystalData
-  hdferr = HDF_openGroup(groupname, HDF_head)
-  
-dataset = SC_SpaceGroupNumber
-  i = 2
-  hdferr = HDF_writeDataSetInteger(dataset, i, HDF_head, overwrite)
-
   call HDF_pop(HDF_head)
 
 ! and, at the top level of the file, add a string that states that this is a modified master pattern file 
