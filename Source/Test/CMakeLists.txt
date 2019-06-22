@@ -110,15 +110,58 @@ if("${EMsoftData_DIR}" STREQUAL "")
     set(EMsoftData_DIR ${EMSOFT_PARENT}/EMsoftData)
   else()
     message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
-    We looked in the same directory as 'EMsoft' directory for a directory called EMsoftData but did not find it.\
+    We looked in the same directory as the 'EMsoft' directory for a directory called EMsoftData but did not find it.\
     You can clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch\
     or you can set the EMsoftData_DIR variable to point to the location of the EMsoftData directory.\    
     ")  
   endif()
 endif()
+
+#------------------------------------------------------------------------------
+#  Function: create_workflow_test
+#  brief: This creates a ctest for a specific EBSD DI Workflow
+#
+function(create_workflow_test)
+  set(options )
+  set(oneValueArgs EXE_NAME INDEX OUTPUT_DIR EXTRA_NML)
+  set(multiValueArgs )
+  cmake_parse_arguments(TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+  if(NOT EXISTS ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml)
+    message(FATAL_ERROR "NML File does not exist: ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml\
+    This file is part of the EMsoftData repository. Please ensure that the EMsoftData repository is\
+    up to date via a 'git pull origin develop' command. The current value of the EMsoftData_DIR is \
+    ${EMsoftData_DIR}")
+  endif()
+
+  configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
+                  ${TEST_OUTPUT_DIR}/${TEST_EXE_NAME}.nml
+  )
+
+  if(NOT "${TEST_EXTRA_NML}" STREQUAL "")
+    if(NOT EXISTS ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXTRA_NML})
+      message(FATAL_ERROR "NML File does not exist: ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXTRA_NML}\
+      This file is part of the EMsoftData repository. Please ensure that the EMsoftData repository is\
+      up to date via a 'git pull origin develop' command. The current value of the EMsoftData_DIR is \
+      ${EMsoftData_DIR}")
+    endif()
+  
+    configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXTRA_NML}
+                  ${EMsoft_NML_TEST_DIR}/${TEST_EXTRA_NML}
+    )
+  endif()
+  message(STATUS "Adding Unit Test: EMsoft_${TEST_INDEX}_${TEST_EXE_NAME}")
+  add_test(NAME EMsoft_${TEST_INDEX}_${TEST_EXE_NAME}
+          COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${TEST_OUTPUT_DIR}/${TEST_EXE_NAME}.nml" 
+          WORKING_DIRECTORY ${EMsoft_NML_TEST_DIR})
+
+endfunction()
+
+
 #------------------------------------------------------------------------------
 # 1: The Ni.xtal file should have been copied into the proper spot via some other external means
-# We are just going to have to trust that it is there.
+# We are just going to have to trust that it is there. We are numbering the tests
+# so that CTest runs them in the correct order.
 set(test_index  "1")
 set(EMsoft_NML_TEST_DIR "${EMsoft_BINARY_DIR}/DItutorial/Ni")
 file(MAKE_DIRECTORY ${EMsoft_NML_TEST_DIR})
@@ -126,69 +169,52 @@ file(MAKE_DIRECTORY ${EMsoft_NML_TEST_DIR})
 #------------------------------------------------------------------------------
 # 2: Setup the EMMCOpenCL executable
 math(EXPR test_index "${test_index} + 1")
-set(TEST_EXE_NAME EMMCOpenCL)
-configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
-              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
-)
-add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+create_workflow_test( EXE_NAME EMMCOpenCL
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
+
 
 #------------------------------------------------------------------------------
 # 3: Setup the EMEBSDmaster executable
 math(EXPR test_index "${test_index} + 1")
-set(TEST_EXE_NAME EMEBSDmaster)
-configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
-                ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
-)
-configure_file(${EMsoftData_DIR}/DItutorial/Ni/BetheParameters.nml
-              ${EMsoft_NML_TEST_DIR}/BetheParameters.nml
-)
-add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
-        WORKING_DIRECTORY ${EMsoft_NML_TEST_DIR})
+create_workflow_test( EXE_NAME EMEBSDmaster
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                      EXTRA_NML BetheParameters.nml
+                    )
+
 
 #------------------------------------------------------------------------------
 # 4: Setup the ADP executable
 math(EXPR test_index "${test_index} + 1")
-set(TEST_EXE_NAME EMgetADP)
-configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
-              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
-)
-add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+create_workflow_test( EXE_NAME EMgetADP
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
 
 #------------------------------------------------------------------------------
 # 5: Setup the EMEBSDDIpreview executable
 math(EXPR test_index "${test_index} + 1")
-set(TEST_EXE_NAME EMEBSDDIpreview)
-configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
-              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
-)
-add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+create_workflow_test( EXE_NAME EMEBSDDIpreview
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
+
 
 #------------------------------------------------------------------------------
 # 6: Setup the EMEBSDDIpreview executable
 math(EXPR test_index "${test_index} + 1")
-set(TEST_EXE_NAME EMEBSDDI)
-configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
-              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
-)
-add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+create_workflow_test( EXE_NAME EMEBSDDI
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
 
 #------------------------------------------------------------------------------
-# 7: Setup the EMFit executable
+# 7: Setup the EMFitOrientation executable
 math(EXPR test_index "${test_index} + 1")
-set(TEST_EXE_NAME EMFitOrientation)
-configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
-              ${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml
-)
-add_test(NAME EMsoft_${test_index}_${TEST_EXE_NAME}
-        COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${EMsoft_NML_TEST_DIR}/${TEST_EXE_NAME}.nml" 
-        WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+create_workflow_test( EXE_NAME EMFitOrientation
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
 
