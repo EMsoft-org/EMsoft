@@ -59,6 +59,7 @@ use local
 use error
 use HDF5
 use HDFsupport
+use commonmod
 
 IMPLICIT NONE
 
@@ -901,13 +902,13 @@ recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, mas
 use io
 use local
 use typedefs
-use EBSDDImod
+!use ebsddimod
 use NameListTypedefs
 use error
 use omp_lib
 use filters
 use timing
-
+use commonmod
 use ISO_C_BINDING
 
 IMPLICIT NONE
@@ -1190,7 +1191,7 @@ recursive subroutine PreProcessTKDPatterns(nthreads, inRAM, tkdnl, binx, biny, m
 use io
 use local
 use typedefs
-use EBSDDImod
+!use ebsddimod
 use NameListTypedefs
 use error
 use omp_lib

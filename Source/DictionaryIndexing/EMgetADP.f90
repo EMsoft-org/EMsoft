@@ -51,6 +51,7 @@ use error
 use initializers
 use EBSDmod
 use EBSDDImod
+use commonmod
 
 IMPLICIT NONE
 

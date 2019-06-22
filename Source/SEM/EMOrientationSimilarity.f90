@@ -58,6 +58,7 @@ use HDF5
 use HDFsupport
 use TIFF_f90
 use stringconstants
+use commonmod
 
 
 IMPLICIT NONE

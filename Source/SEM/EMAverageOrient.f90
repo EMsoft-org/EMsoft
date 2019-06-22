@@ -61,6 +61,7 @@ use rotations
 use Lambert
 use quaternions
 use stringconstants
+use commonmod
 
 IMPLICIT NONE
 

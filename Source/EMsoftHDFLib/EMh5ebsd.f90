@@ -748,8 +748,9 @@ use io
 use constants
 use ebsdiomod
 use ebsdmod
-use ebsddimod
+!use ebsddimod
 use dictmod
+use commonmod
 
 IMPLICIT NONE
 
@@ -1318,8 +1319,9 @@ use io
 use constants
 use ebsdiomod
 use ebsdmod
-use ebsddimod
+! use ebsddimod
 use dictmod
+use commonmod
 
 IMPLICIT NONE
 

@@ -57,6 +57,7 @@ use constants
 use error
 use omp_lib
 use ISO_C_BINDING
+use commonmod
 
 IMPLICIT NONE
 
