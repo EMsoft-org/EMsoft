@@ -73,6 +73,7 @@ use dictmod
 use bobyqa_refinement,only:bobyqa
 use FitOrientations,only:EMFitOrientationcalfunEBSD
 use stringconstants
+use commonmod
 
 use ISO_C_BINDING
 

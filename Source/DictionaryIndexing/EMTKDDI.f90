@@ -64,7 +64,7 @@ logical                                     :: verbose
 integer(kind=irg)                           :: istat, res
 
 interface
-        subroutine MasterSubroutine(tkdnl,acc,master,progname,nmldeffile)
+        subroutine EMTKDDISubroutine(tkdnl,acc,master,progname,nmldeffile)
 
         use local
         use typedefs
@@ -112,7 +112,7 @@ interface
         character(fnlen),INTENT(IN)                         :: progname
         character(fnlen),INTENT(IN)                         :: nmldeffile
 
-        end subroutine MasterSubroutine
+        end subroutine EMTKDDISubroutine
 end interface
 
 nmldeffile = 'EMTKDDI.nml'
@@ -151,13 +151,13 @@ allocate(acc%accum_e_detector(tkdnl%numEbins,tkdnl%numsx,tkdnl%numsy), stat=ista
 call TKDIndexingGenerateDetector(tkdnl, acc, master)
 deallocate(acc%accum_e)
 ! perform the dictionary indexing computations
-call MasterSubroutine(tkdnl,acc,master,progname, nmldeffile)
+call EMTKDDISubroutine(tkdnl,acc,master,progname, nmldeffile)
 
 end program EMTKDDI
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:MasterSubroutine
+! SUBROUTINE:EMTKDDISubroutine
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
@@ -183,7 +183,7 @@ end program EMTKDDI
 !> @date 11/30/18 MDG 3.0 replaced pattern preprocessing with standard routine from patternmod, allowing other fileformats
 !--------------------------------------------------------------------------
 
-subroutine MasterSubroutine(tkdnl,acc,master,progname, nmldeffile)
+subroutine EMTKDDISubroutine(tkdnl,acc,master,progname, nmldeffile)
 
 use local
 use typedefs
@@ -513,10 +513,10 @@ call CLread_source_file(sourcefile, csource, slength)
 
 ! allocate device memory for experimental and dictionary patterns
 cl_expt = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_expt, C_NULL_PTR, ierr)
-call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
+call CLerror_check('EMTKDDISubroutine:clCreateBuffer', ierr)
 
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
-call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
+call CLerror_check('EMTKDDISubroutine:clCreateBuffer', ierr)
 
 !================================
 ! the following lines were originally in the InnerProdGPU routine, but there is no need
@@ -690,7 +690,7 @@ if (trim(tkdnl%maskfile).ne.'undefined') then
       end do
       close(unit=dataunit,status='keep')
     else
-      call FatalError('MasterSubroutine','maskfile '//trim(fname)//' does not exist')
+      call FatalError('EMTKDDISubroutine','maskfile '//trim(fname)//' does not exist')
     end if
 else
     if (tkdnl%maskpattern.eq.'y') then
@@ -848,7 +848,7 @@ dictionaryloop: do ii = 1,cratio+1
 
       ierr = clEnqueueWriteBuffer(command_queue, cl_dict, CL_TRUE, 0_8, size_in_bytes_dict, C_LOC(dicttranspose(1)), &
                                   0, C_NULL_PTR, C_NULL_PTR)
-      call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
+      call CLerror_check('EMTKDDISubroutine:clEnqueueWriteBuffer', ierr)
 
       experimentalloop: do jj = 1,cratioE
 
@@ -861,7 +861,7 @@ dictionaryloop: do ii = 1,cratio+1
 
         ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
                                     0, C_NULL_PTR, C_NULL_PTR)
-        call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
+        call CLerror_check('EMTKDDISubroutine:clEnqueueWriteBuffer', ierr)
 
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,tkdnl%devid,kernel,context,command_queue)
 
@@ -1059,4 +1059,4 @@ if (trim(EMsoft_getNotify()).ne.'Off') then
 end if
 
 
-end subroutine MasterSubroutine
+end subroutine EMTKDDISubroutine
