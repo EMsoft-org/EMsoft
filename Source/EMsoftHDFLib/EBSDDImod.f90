@@ -424,8 +424,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
       ! EXTRACT POINT GROUP NUMBER FROM CRYSTAL STRUCTURE FILE 
       !=====================================================
       write (*,*) 'reading from xtalfile '//trim(mcnl%xtalname)
-      ! if EBSDMPdata%newSGnumber is set to 2, then pgnum must be set to 1 for 
-      ! overlap master patterns  [ added by MDG, 06/19/19 ]
+
       if (EBSDMPdata%AveragedMP.eqv..TRUE.) then 
           pgnum = EBSDMPdata%newPGnumber
       else    
