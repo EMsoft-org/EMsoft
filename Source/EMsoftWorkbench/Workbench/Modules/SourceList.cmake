@@ -19,6 +19,8 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
   ${${SUBDIR_NAME}_DIR}/IModuleFactory.hpp
   ${${SUBDIR_NAME}_DIR}/ModuleFactory.hpp
   ${${SUBDIR_NAME}_DIR}/ModuleManager.h
+  ${${SUBDIR_NAME}_DIR}/cl.hpp
+  ${${SUBDIR_NAME}_DIR}/ModuleTools.hpp
 )
 
 

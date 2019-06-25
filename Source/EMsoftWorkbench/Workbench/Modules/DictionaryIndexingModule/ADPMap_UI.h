@@ -43,6 +43,8 @@
 
 #include "ui_ADPMap_UI.h"
 
+class ChoosePatternsDatasetDialog;
+
 class ADPMap_UI : public QWidget
 {
   Q_OBJECT
@@ -62,24 +64,6 @@ public:
    * @brief validateData
    */
   bool validateData();
-
-  /**
-   * @brief setInputType
-   * @param inputType
-   */
-  void setInputType(ADPMapController::InputType inputType);
-
-  /**
-   * @brief setPatternDataFile
-   * @param filePath
-   */
-  void setPatternDataFile(const QString &filePath);
-
-  /**
-   * @brief setSelectedHDF5Path
-   * @param path
-   */
-  void setSelectedHDF5Path(const QStringList &path);
 
   /**
    * @brief readSession
@@ -109,6 +93,23 @@ protected slots:
    * @brief listenADPGenerationFinished
    */
   void listenADPGenerationFinished();
+
+  /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(int index);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString &filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
 
   /**
    * @brief listenROICheckboxStateChanged
@@ -143,6 +144,8 @@ private:
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
 
+  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
+
   QPoint m_SelectedADPPatternCoords = QPoint(-1, -1);
 
   QString m_CurrentOpenFile;
@@ -170,6 +173,24 @@ private:
    * @return
    */
   ADPMapController::ADPMapData getADPMapData();
+
+  /**
+   * @brief setInputType
+   * @param inputType
+   */
+  void setInputType(ADPMapController::InputType inputType);
+
+  /**
+   * @brief setPatternDataFile
+   * @param filePath
+   */
+  void setPatternDataFile(const QString &filePath);
+
+  /**
+   * @brief setSelectedHDF5Path
+   * @param path
+   */
+  void setSelectedHDF5Path(const QStringList &path);
 
 public:
   ADPMap_UI(const ADPMap_UI&) = delete; // Copy Constructor Not Implemented

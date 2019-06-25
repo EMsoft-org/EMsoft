@@ -172,10 +172,10 @@ void PPMatrixImageViewer::paintGL()
   // Get the current mouse coordinate and selected pixel coordinate relative to the image coordinate system
   int statsStartingHeightOffset = 40;
   int statsHeightSpacing = 20;
-  QString mousePosStr = "Selected Hipass: N/A";
+  QString mousePosStr = "Selected Hipass Value: N/A";
   if (selectedHipassValue > 0)
   {
-    mousePosStr = QObject::tr("Selected Hipass: %1").arg(QString::number(selectedHipassValue, 'g', 4));
+    mousePosStr = QObject::tr("Selected Hipass Value: %1").arg(QString::number(selectedHipassValue, 'g', 4));
   }
 
   QString selectedPixelStr = "Selected Num Of Regions: N/A";
@@ -235,6 +235,7 @@ void PPMatrixImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
       }
 
       xCounter++;
+      yCounter = m_HipassNumOfSteps;
     }
 
     update();

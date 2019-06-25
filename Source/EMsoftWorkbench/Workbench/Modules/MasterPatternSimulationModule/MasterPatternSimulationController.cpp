@@ -60,8 +60,6 @@
 #include "H5Support/QH5Lite.h"
 #include "H5Support/QH5Utilities.h"
 
-#include "Modules/MonteCarloSimulationModule/cl.hpp"
-
 #define CL_VECTOR std::vector
 
 static size_t k_InstanceKey = 0;

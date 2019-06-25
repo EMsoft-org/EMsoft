@@ -51,119 +51,57 @@
       <string>Average Dot Product Map Parameters</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_10">
-      <item row="5" column="2">
-       <widget class="QLineEdit" name="ipfWidthLE">
-        <property name="text">
-         <string>600</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="2">
-       <widget class="QLineEdit" name="binningYLE">
-        <property name="text">
-         <string>1</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <widget class="QLabel" name="numOfRegionsLabel">
-        <property name="text">
-         <string>Number of Regions</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="binningFactorLabel">
-        <property name="text">
-         <string>Binning Factor</string>
-        </property>
-       </widget>
-      </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="patternHeightLE">
-        <property name="text">
-         <string>60</string>
+       <widget class="QComboBox" name="inputTypeCB">
+        <property name="currentIndex">
+         <number>0</number>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
         </property>
-       </widget>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="ipfLabel">
-        <property name="text">
-         <string>IPF Size (pixels, HxW)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLineEdit" name="maskPatternLE">
-        <property name="text">
-         <string>1</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QLineEdit" name="roi3LE">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>0</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
+        <item>
+         <property name="text">
+          <string>Binary</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>TSLup1</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>TSLup2</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>TSLHDF</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>OxfordBinary</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>OxfordHDF</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>EMEBSD</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>BrukerHDF</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="5" column="1">
-       <widget class="QLineEdit" name="ipfHeightLE">
-        <property name="text">
-         <string>600</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="maskRadiusLabel">
-        <property name="text">
-         <string>Mask Radius</string>
-        </property>
-       </widget>
-      </item>
-      <item row="10" column="0">
-       <widget class="QLabel" name="numOfThreadsLabel">
-        <property name="text">
-         <string>Number of Threads</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="binningLabel">
-        <property name="text">
-         <string>Binning (X, Y)</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="hipassLabel">
-        <property name="text">
-         <string>Hipass Filter</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
        <widget class="QLineEdit" name="roi1LE">
         <property name="enabled">
          <bool>false</bool>
@@ -176,47 +114,14 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QLineEdit" name="patternWidthLE">
-        <property name="text">
-         <string>80</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="maskPatternLabel">
-        <property name="text">
-         <string>Mask Pattern</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="0">
-       <widget class="QCheckBox" name="roiCB">
+       <widget class="QPushButton" name="choosePatternsBtn">
         <property name="text">
-         <string>Region of Interest</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
+         <string>Choose Pattern Dataset...</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="roi4LE">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>0</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
+      <item row="5" column="2">
        <widget class="QLineEdit" name="roi2LE">
         <property name="enabled">
          <bool>false</bool>
@@ -229,44 +134,65 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="binningFactorLE">
+      <item row="5" column="0">
+       <widget class="QCheckBox" name="roiCB">
         <property name="text">
-         <string>1</string>
+         <string>Region of Interest</string>
         </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="bLabel_5">
-        <property name="text">
-         <string>Pattern Size (pixels, HxW)</string>
+        <property name="checked">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
       <item row="4" column="1">
-       <widget class="QLineEdit" name="binningXLE">
+       <widget class="QLineEdit" name="patternHeightLE">
         <property name="text">
-         <string>1</string>
+         <string>60</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="7" column="1">
-       <widget class="QLineEdit" name="maskRadiusLE">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>240</string>
+         <string>Pattern Data File:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="0">
+       <widget class="QLabel" name="ipfLabel">
+        <property name="text">
+         <string>IPF Size (pixels, HxW)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="0">
+       <widget class="QLabel" name="maskPatternLabel">
+        <property name="text">
+         <string>Mask Pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QLineEdit" name="ipfHeightLE">
+        <property name="text">
+         <string>600</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item row="8" column="1">
+      <item row="14" column="0">
+       <widget class="QLabel" name="numOfThreadsLabel">
+        <property name="text">
+         <string>Number of Threads</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="1">
        <widget class="QLineEdit" name="hipassLE">
         <property name="text">
          <string>0.05</string>
@@ -276,7 +202,44 @@
         </property>
        </widget>
       </item>
-      <item row="9" column="1">
+      <item row="4" column="0">
+       <widget class="QLabel" name="bLabel_5">
+        <property name="text">
+         <string>Pattern Size (pixels, HxW)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="1">
+       <widget class="QLineEdit" name="binningXLE">
+        <property name="text">
+         <string>1</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="14" column="1">
+       <widget class="QLineEdit" name="numOfThreadsLE">
+        <property name="text">
+         <string>20</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="1">
+       <widget class="QLineEdit" name="maskPatternLE">
+        <property name="text">
+         <string>1</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="1">
        <widget class="QLineEdit" name="numOfRegionsLE">
         <property name="text">
          <string>10</string>
@@ -286,13 +249,142 @@
         </property>
        </widget>
       </item>
-      <item row="10" column="1">
-       <widget class="QLineEdit" name="numOfThreadsLE">
+      <item row="8" column="0">
+       <widget class="QLabel" name="binningLabel">
         <property name="text">
-         <string>20</string>
+         <string>Binning (X, Y)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="12" column="0">
+       <widget class="QLabel" name="hipassLabel">
+        <property name="text">
+         <string>Hipass Filter</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="patternDataFileLabel">
+        <property name="text">
+         <string>N/A</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="2">
+       <widget class="QLineEdit" name="roi4LE">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>0</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="1">
+       <widget class="QLineEdit" name="binningFactorLE">
+        <property name="text">
+         <string>1</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QLineEdit" name="roi3LE">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>0</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="8" column="2">
+       <widget class="QLineEdit" name="binningYLE">
+        <property name="text">
+         <string>1</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="0">
+       <widget class="QLabel" name="maskRadiusLabel">
+        <property name="text">
+         <string>Mask Radius</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="2">
+       <widget class="QLineEdit" name="patternWidthLE">
+        <property name="text">
+         <string>80</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QLabel" name="binningFactorLabel">
+        <property name="text">
+         <string>Binning Factor</string>
+        </property>
+       </widget>
+      </item>
+      <item row="13" column="0">
+       <widget class="QLabel" name="numOfRegionsLabel">
+        <property name="text">
+         <string>Number of Regions</string>
+        </property>
+       </widget>
+      </item>
+      <item row="11" column="1">
+       <widget class="QLineEdit" name="maskRadiusLE">
+        <property name="text">
+         <string>240</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="2">
+       <widget class="QLineEdit" name="ipfWidthLE">
+        <property name="text">
+         <string>600</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="inputTypeLabel">
+        <property name="text">
+         <string>Input Type</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Pattern Dataset:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="patternDsetPathLabel">
+        <property name="text">
+         <string>N/A</string>
         </property>
        </widget>
       </item>
@@ -361,7 +453,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset>
          <normaloff>:/zoom_out.png</normaloff>:/zoom_out.png</iconset>
        </property>
        <property name="iconSize">
@@ -409,7 +501,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset>
          <normaloff>:/zoom_in.png</normaloff>:/zoom_in.png</iconset>
        </property>
        <property name="iconSize">
@@ -444,7 +536,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset>
          <normaloff>:/fit_to_size.png</normaloff>:/fit_to_size.png</iconset>
        </property>
        <property name="iconSize">
@@ -489,7 +581,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset>
          <normaloff>:/disk_blue.png</normaloff>:/disk_blue.png</iconset>
        </property>
        <property name="iconSize">
