@@ -127,6 +127,13 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::warningMessageGenerated, this, &DictionaryIndexingMain_UI::notifyWarningMessage);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
+
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::diGenerationStarted, this, &DictionaryIndexingMain_UI::listenDictionaryIndexingStarted);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::diGenerationFinished, this, &DictionaryIndexingMain_UI::listenDictionaryIndexingFinished);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::errorMessageGenerated, this, &DictionaryIndexingMain_UI::notifyErrorMessage);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::warningMessageGenerated, this, &DictionaryIndexingMain_UI::notifyWarningMessage);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
 }
 
 // -----------------------------------------------------------------------------
@@ -160,6 +167,24 @@ void DictionaryIndexingMain_UI::listenPatternPreprocessingStarted()
 //
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::listenPatternPreprocessingFinished()
+{
+  emit validationOfOtherModulesNeeded(this);
+  setRunning(false);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexingMain_UI::listenDictionaryIndexingStarted()
+{
+  setRunning(true);
+  clearModuleIssues();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexingMain_UI::listenDictionaryIndexingFinished()
 {
   emit validationOfOtherModulesNeeded(this);
   setRunning(false);

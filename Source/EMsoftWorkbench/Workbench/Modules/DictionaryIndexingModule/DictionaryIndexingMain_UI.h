@@ -118,6 +118,16 @@ protected slots:
   void listenPatternPreprocessingFinished();
 
   /**
+   * @brief listenDictionaryIndexingStarted
+   */
+  void listenDictionaryIndexingStarted();
+
+  /**
+   * @brief listenDictionaryIndexingFinished
+   */
+  void listenDictionaryIndexingFinished();
+
+  /**
    * @brief parametersChanged
    */
   void listenParametersChanged();

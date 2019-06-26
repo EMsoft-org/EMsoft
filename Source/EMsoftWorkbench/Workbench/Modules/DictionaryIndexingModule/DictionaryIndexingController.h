@@ -99,8 +99,8 @@ public:
     int roi_2;
     int roi_3;
     int roi_4;
-    int samplingStepSizeX;
-    int samplingStepSizeY;
+    float samplingStepSizeX;
+    float samplingStepSizeY;
     int nnk;
     int nnav;
     int nism;

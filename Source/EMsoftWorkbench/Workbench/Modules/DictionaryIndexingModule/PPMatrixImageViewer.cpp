@@ -208,6 +208,11 @@ void PPMatrixImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
+    if (getCurrentImage().isNull())
+    {
+      return;
+    }
+
     m_SelectedImageCoords = mapToImageCoordinates(m_MouseCoords);
 
     QImage image = getCurrentImage();

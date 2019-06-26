@@ -200,13 +200,34 @@ void DictionaryIndexing_UI::createWidgetConnections()
 {
   connect(m_Ui->generateDIBtn, &QPushButton::clicked, this, &DictionaryIndexing_UI::listenDIGenerationStarted);
 
-  connect(m_Ui->eulerAngleFileBtn, &QPushButton::clicked, [=] { selectOpenFilePath("Select Euler Angle File", "Text Files (*.txt);;All Files(*.*)"); });
-  connect(m_Ui->dictionaryFileBtn, &QPushButton::clicked, [=] { selectOpenFilePath("Select Dictionary File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)"); });
-  connect(m_Ui->masterFileBtn, &QPushButton::clicked, [=] { selectOpenFilePath("Select Master File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)"); });
-  connect(m_Ui->outputDataFileBtn, &QPushButton::clicked, [=] { selectSaveFilePath("Select Data File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)"); });
-  connect(m_Ui->outputCtfFileBtn, &QPushButton::clicked, [=] { selectSaveFilePath("Select Ctf File", "Ctf Files (*.ctf);;All Files(*.*)"); });
-  connect(m_Ui->outputAngFileBtn, &QPushButton::clicked, [=] { selectSaveFilePath("Select Ang File", "Ang Files (*.ang);;All Files(*.*)"); });
-  connect(m_Ui->outputAvgCtfFileBtn, &QPushButton::clicked, [=] { selectSaveFilePath("Select Average Ctf File", "Ctf Files (*.ctf);;All Files(*.*)"); });
+  connect(m_Ui->eulerAngleFileBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectOpenFilePath("Select Euler Angle File", "Text Files (*.txt);;All Files(*.*)");
+    m_Ui->eulerAngleFileLE->setText(filePath);
+  });
+  connect(m_Ui->dictionaryFileBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectOpenFilePath("Select Dictionary File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)");
+    m_Ui->dictionaryFileLE->setText(filePath);
+  });
+  connect(m_Ui->masterFileBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectOpenFilePath("Select Master File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)");
+    m_Ui->masterFileLE->setText(filePath);
+  });
+  connect(m_Ui->outputDataFileBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectSaveFilePath("Select Data File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)");
+    m_Ui->outputDataFileLE->setText(filePath);
+  });
+  connect(m_Ui->outputCtfFileBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectSaveFilePath("Select Ctf File", "Ctf Files (*.ctf);;All Files(*.*)");
+    m_Ui->outputCtfFileLE->setText(filePath);
+  });
+  connect(m_Ui->outputAngFileBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectSaveFilePath("Select Ang File", "Ang Files (*.ang);;All Files(*.*)");
+    m_Ui->outputAngFileLE->setText(filePath);
+  });
+  connect(m_Ui->outputAvgCtfFileBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectSaveFilePath("Select Average Ctf File", "Ctf Files (*.ctf);;All Files(*.*)");
+    m_Ui->outputAvgCtfFileLE->setText(filePath);
+  });
 
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_DIController, &DictionaryIndexingController::errorMessageGenerated, this, &DictionaryIndexing_UI::errorMessageGenerated);
@@ -498,7 +519,7 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
   for(int i = 0; i < 1; i++)
   {
     m_DIWatcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-    connect(m_DIWatcher.data(), SIGNAL(finished()), this, SLOT(listenADPGenerationFinished()));
+    connect(m_DIWatcher.data(), SIGNAL(finished()), this, SLOT(listenDIGenerationFinished()));
 
     QFuture<void> future = QtConcurrent::run(m_DIController, &DictionaryIndexingController::createDI, data);
     m_DIWatcher->setFuture(future);
@@ -565,8 +586,8 @@ DictionaryIndexingController::DIData DictionaryIndexing_UI::getDIData()
   data.roi_3 = m_Ui->roi3LE->text().toInt();
   data.roi_4 = m_Ui->roi4LE->text().toInt();
   data.useROI = m_Ui->roiCB->isChecked();
-  data.samplingStepSizeX = m_Ui->samplingStepSizeXLE->text().toInt();
-  data.samplingStepSizeY = m_Ui->samplingStepSizeYLE->text().toInt();
+  data.samplingStepSizeX = m_Ui->samplingStepSizeXLE->text().toFloat();
+  data.samplingStepSizeY = m_Ui->samplingStepSizeYLE->text().toFloat();
   data.nnk = m_Ui->nnkLE->text().toInt();
   data.nnav = m_Ui->nnavLE->text().toInt();
   data.nism = m_Ui->nismLE->text().toInt();
@@ -603,8 +624,8 @@ DictionaryIndexingController::DIData DictionaryIndexing_UI::getDIData()
   data.numDictSingle = m_Ui->numdictsingleLE->text().toInt();
   data.numExptSingle = m_Ui->numexptsingleLE->text().toInt();
   data.numOfThreads = m_Ui->numOfThreadsLE->text().toInt();
-  data.platId = m_Ui->gpuPlatformCB->currentIndex();
-  data.devId = m_Ui->gpuDeviceCB->currentIndex();
+  data.platId = m_Ui->gpuPlatformCB->currentIndex() + 1;
+  data.devId = m_Ui->gpuDeviceCB->currentIndex() + 1;
   return data;
 }
 

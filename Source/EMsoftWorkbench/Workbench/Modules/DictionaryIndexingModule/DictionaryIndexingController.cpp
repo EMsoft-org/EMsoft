@@ -124,17 +124,27 @@ void DictionaryIndexingController::createDI(const DIData &data)
   instances[m_InstanceKey] = this;
 //  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(), &ADPMapControllerProgress, m_InstanceKey, &m_Cancel);
 
+  QString diExecutablePath = getDIExecutablePath();
+
   QSharedPointer<QProcess> diProcess = QSharedPointer<QProcess>(new QProcess());
   connect(diProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardOutput().toStdString())); });
   connect(diProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardOutput().toStdString())); });
+  connect(diProcess.data(), &QProcess::errorOccurred, [=] (QProcess::ProcessError error) { emit stdOutputMessageGenerated(tr("Process Error: %1").arg(QString::number(error))); });
   connect(diProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenDIFinished(exitCode, exitStatus); });
-  QString adpExecutablePath = getDIExecutablePath();
-  if (!adpExecutablePath.isEmpty())
+
+  if (!diExecutablePath.isEmpty())
   {
+    QFileInfo fi(diExecutablePath);
+    QString emsoftPathName = fi.path();
+
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.insert("EMSOFTPATHNAME", emsoftPathName); // Add an environment variable
+    diProcess->setProcessEnvironment(env);
+
     QString nmlFilePath = m_TempDir.path() + QDir::separator() + "EMEBSDDI.nml";
     writeDIDataToFile(nmlFilePath, data);
     QStringList parameters = {nmlFilePath};
-    diProcess->start(adpExecutablePath, parameters);
+    diProcess->start(diExecutablePath, parameters);
 
     // Wait until the QProcess is finished to exit this thread.
     // DictionaryIndexingController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
@@ -277,7 +287,7 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
     out << "! beam dwell time [micro s]\n";
     out << tr(" dwelltime = %1,\n").arg(data.dwellTime);
     out << "! binning mode (1, 2, 4, or 8)\n";
-    out << tr(" binning = 8,\n").arg(data.binning);
+    out << tr(" binning = %1,\n").arg(data.binning);
     out << "! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction\n";
     switch(data.scalingMode)
     {
@@ -292,7 +302,7 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
       break;
     }
     out << "! gamma correction factor\n";
-    out << tr(" gammavalue = 0.3333,\n").arg(data.gammaCorrectionFactor);
+    out << tr(" gammavalue = %1,\n").arg(data.gammaCorrectionFactor);
     out << "!\n";
     out << "!###################################################################\n";
     out << "! INPUT FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'\n";
@@ -406,7 +416,7 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
     out << "! GPU device ID selector\n";
     out << tr(" devid = %1,\n").arg(data.devId);
     out << "! if you are running EMEBSDDImem on multiple GPUs, enter their device ids (up to eight) here; leave others at zero\n";
-    out << " multidevid = @EMsoft_TEST_GPU_DEVICE_ID@ 0 0 0 0 0 0 0,\n";
+    out << tr(" multidevid = %1 0 0 0 0 0 0 0,\n").arg(data.devId);
     out << "! how many GPU devices do you want to use?\n";
     out << " usenumd = 1,\n";
     out << " /\n";
@@ -435,11 +445,11 @@ void DictionaryIndexingController::listenDIFinished(int exitCode, QProcess::Exit
   // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
   if(!m_Cancel)
   {
-    emit stdOutputMessageGenerated("Average Dot Product Map Generation Complete");
+    emit stdOutputMessageGenerated("Dictionary Indexing Generation Complete");
   }
   else
   {
-    emit stdOutputMessageGenerated("Average Dot Product Map Generation was successfully canceled");
+    emit stdOutputMessageGenerated("Dictionary Indexing Generation was successfully canceled");
   }
 }
 
@@ -449,13 +459,14 @@ void DictionaryIndexingController::listenDIFinished(int exitCode, QProcess::Exit
 QString DictionaryIndexingController::getDIExecutablePath() const
 {
   QString adpExecutablePath;
+  QString programName = "EMEBSDDI";
 
   QDir workingDirectory = QDir(QCoreApplication::applicationDirPath());
 
 #if defined(Q_OS_WIN)
-  if (workingDirectory.exists("EMgetADP.exe"))
+  if (workingDirectory.exists(tr("%1.exe").arg(programName)))
   {
-    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP.exe");
+    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), tr("%1.exe").arg(programName));
     return adpExecutablePath;
   }
 #elif defined(Q_OS_MAC)
@@ -465,9 +476,9 @@ QString DictionaryIndexingController::getDIExecutablePath() const
     workingDirectory.cdUp();
     if (workingDirectory.cd("bin"))
     {
-      if (workingDirectory.exists("EMgetADP"))
+      if (workingDirectory.exists(programName))
       {
-        adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+        adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), programName);
         return adpExecutablePath;
       }
       workingDirectory.cdUp();
@@ -476,9 +487,9 @@ QString DictionaryIndexingController::getDIExecutablePath() const
     workingDirectory.cdUp();
     workingDirectory.cdUp();
 
-    if(workingDirectory.dirName() == "Bin" && workingDirectory.exists("EMgetADP"))
+    if(workingDirectory.dirName() == "Bin" && workingDirectory.exists(programName))
     {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), programName);
       return adpExecutablePath;
     }
   }
@@ -489,9 +500,9 @@ QString DictionaryIndexingController::getDIExecutablePath() const
   QDir workingDirectory = workbenchDir;
   if(workingDirectory.cd("bin"))
   {
-    if (workingDirectory.exists("EMgetADP"))
+    if (workingDirectory.exists(programName))
     {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), programName);
       return adpExecutablePath;
     }
 
@@ -504,9 +515,9 @@ QString DictionaryIndexingController::getDIExecutablePath() const
   workingDirectory.cdUp();
   if(workingDirectory.cd("bin"))
   {
-    if (workingDirectory.exists("EMgetADP"))
+    if (workingDirectory.exists(programName))
     {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
+      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), programName);
       return adpExecutablePath;
     }
 
@@ -516,7 +527,7 @@ QString DictionaryIndexingController::getDIExecutablePath() const
 
   if (adpExecutablePath.isEmpty())
   {
-    QString errMsg = "Could not find Average Dot Product Map executable!";
+    QString errMsg = "Could not find EMEBSDDI executable!";
     emit errorMessageGenerated(errMsg);
   }
 
