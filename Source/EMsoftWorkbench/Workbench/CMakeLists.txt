@@ -54,11 +54,10 @@ endif()
 # --------------------------------------------------------------------
 # EMsoftWorkbench needs the Eigen library
 set(EMsoftWorkbench_USE_EIGEN "")
-Find_Package(Eigen REQUIRED)
-if(EIGEN_FOUND)
-  message(STATUS "Found Eigen Library")
-  include_directories( ${EIGEN_INCLUDE_DIRS} )
-  include_directories( ${EIGEN_INCLUDE_DIR} )
+Find_Package(Eigen3 REQUIRED)
+if(EIGEN3_FOUND)
+  message(STATUS "Eigen3 Location: ${EIGEN3_ROOT_DIR}")
+  message(STATUS "Eigen3 Version: ${EIGEN3_VERSION_STRING}")
   set(EMsoftWorkbench_USE_EIGEN "1")
 else()
   message(WARNING "The Eigen Library is required for some algorithms to execute. These algorithms will be disabled.")
@@ -227,6 +226,7 @@ target_include_directories(${PROJECT_NAME}
     ${EMsoftWorkbench_SOURCE_DIR}/QtSupport
     ${EMsoft_SOURCE_DIR}/Source
     ${EMsoftWorkbench_BINARY_DIR}
+    ${EIGEN3_INCLUDE_DIRS}
     )
 
 # #- This installs all the help files. Note that we assume a flat directory structure
