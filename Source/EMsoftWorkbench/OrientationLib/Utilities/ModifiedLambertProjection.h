@@ -37,7 +37,7 @@
 
 #include <hdf5.h>
 
-#include "SIMPLib/Math/SIMPLibMath.h"
+#include "EbsdLib/Math/EbsdLibMath.h"
 
 #include "OrientationLib/OrientationLib.h"
 

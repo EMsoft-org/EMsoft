@@ -50,9 +50,9 @@
 #include "Common/MasterPatternFileReader.h"
 #include "Common/ProjectionConversionTask.hpp"
 
-#include "SIMPLib/Math/SIMPLibMath.h"
+#include "EbsdLib/Math/EbsdLibMath.h"
 
-#include "OrientationLib/Utilities/ModifiedLambertProjection.h"
+#include "EbsdLib/Utilities/ModifiedLambertProjection.h"
 
 #include "Modules/PatternDisplayModule/MPMCDisplayWidget.h"
 #include "Modules/PatternDisplayModule/SimulatedPatternDisplayWidget.h"

@@ -37,7 +37,7 @@
 
 #include <QtCore/QObject>
 
-#include "OrientationLib/Utilities/ModifiedLambertProjection.h"
+#include "EbsdLib/Utilities/ModifiedLambertProjection.h"
 
 class ProjectionConversions : public QObject
 {

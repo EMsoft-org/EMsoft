@@ -38,7 +38,7 @@
 #include "Common/ImageGenerationTask.hpp"
 #include "Common/ProjectionConversions.hpp"
 
-#include "OrientationLib/Utilities/ModifiedLambertProjection.h"
+#include "EbsdLib/Utilities/ModifiedLambertProjection.h"
 
 template <typename P, typename I>
 class ProjectionConversionTask : public ImageGenerationTask<I>

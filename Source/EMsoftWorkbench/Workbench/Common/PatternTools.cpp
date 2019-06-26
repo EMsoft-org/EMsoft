@@ -47,7 +47,7 @@
 #include "Common/EigenConversions.hpp"
 #include "Common/Constants.h"
 
-#include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
+#include "EbsdLib/OrientationMath/OrientationTransforms.hpp"
 
 // -----------------------------------------------------------------------------
 //

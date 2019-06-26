@@ -49,8 +49,8 @@
 
 #include "EMsoftApplication.h"
 
-#include "OrientationLib/OrientationMath/OrientationArray.hpp"
-#include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
+#include "EbsdLib/OrientationMath/OrientationArray.hpp"
+#include "EbsdLib/OrientationMath/OrientationTransforms.hpp"
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
@@ -475,7 +475,7 @@ void PatternFit_UI::slot_controlsChoicePressed(PatternControlsWidget::ControlsCh
       return;
     }
 
-    DOrientArrayType euArray(phi1->value() * SIMPLib::Constants::k_PiOver180, phi->value() * SIMPLib::Constants::k_PiOver180, phi2->value() * SIMPLib::Constants::k_PiOver180);
+    DOrientArrayType euArray(phi1->value() *EbsdLib::Constants::k_PiOver180, phi->value() *EbsdLib::Constants::k_PiOver180, phi2->value() *EbsdLib::Constants::k_PiOver180);
     DOrientArrayType quArray(4, 0.0);
     OrientationTransforms<DOrientArrayType, double>::eu2qu(euArray, quArray, QuaternionMath<double>::QuaternionScalarVector);
 
@@ -490,9 +490,9 @@ void PatternFit_UI::slot_controlsChoicePressed(PatternControlsWidget::ControlsCh
     phi1->blockSignals(true);
     phi->blockSignals(true);
     phi2->blockSignals(true);
-    phi1->setValue(eulerData[0] * SIMPLib::Constants::k_180OverPi);
-    phi->setValue(eulerData[1] * SIMPLib::Constants::k_180OverPi);
-    phi2->setValue(eulerData[2] * SIMPLib::Constants::k_180OverPi);
+    phi1->setValue(eulerData[0] *EbsdLib::Constants::k_180OverPi);
+    phi->setValue(eulerData[1] *EbsdLib::Constants::k_180OverPi);
+    phi2->setValue(eulerData[2] *EbsdLib::Constants::k_180OverPi);
     phi1->blockSignals(false);
     phi->blockSignals(false);
     phi2->blockSignals(false);
@@ -648,11 +648,11 @@ void PatternFit_UI::updateRotationQuaternions(double rot, double detValue)
   // Update the rotation quaternions for navigation
   MasterPatternFileReader::MasterPatternData mpData = m_Controller->getMPFileData();
 
-  double ang = rot * 0.5 * SIMPLib::Constants::k_PiOver180;
+  double ang = rot * 0.5 *EbsdLib::Constants::k_PiOver180;
   double cang = cos(ang);
   double sang = sin(ang);
-  double eta = (mpData.sigma - detValue) * SIMPLib::Constants::k_PiOver180;
-  double delta = SIMPLib::Constants::k_Pi * 0.5 - eta;
+  double eta = (mpData.sigma - detValue) *EbsdLib::Constants::k_PiOver180;
+  double delta =EbsdLib::Constants::k_Pi * 0.5 - eta;
   double ceta = cos(eta);
   double seta = sin(eta);
   double cdelta = cos(delta);
@@ -1228,9 +1228,9 @@ PatternFitController::SimulationData PatternFit_UI::getSimulationData() const
   data.sampleOmegaAngle = omega->value();
 
   data.angles.resize(3);
-  data.angles[0] = phi1->value() * SIMPLib::Constants::k_PiOver180;
-  data.angles[1] = phi->value() * SIMPLib::Constants::k_PiOver180;
-  data.angles[2] = phi2->value() * SIMPLib::Constants::k_PiOver180;
+  data.angles[0] = phi1->value() *EbsdLib::Constants::k_PiOver180;
+  data.angles[1] = phi->value() *EbsdLib::Constants::k_PiOver180;
+  data.angles[2] = phi2->value() *EbsdLib::Constants::k_PiOver180;
 
   data.gammaValue = intensityGamma->value();
 

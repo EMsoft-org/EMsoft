@@ -47,7 +47,7 @@
 
 #include "Common/MasterPatternFileReader.h"
 
-#include "SIMPLib/Math/SIMPLibMath.h"
+#include "EbsdLib/Math/EbsdLibMath.h"
 
 #include "Modules/PatternFitModule/PatternFitViewer.h"
 

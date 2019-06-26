@@ -41,8 +41,8 @@
 
 #include "Modules/PatternDisplayModule/PatternDisplay_UI.h"
 
-#include "OrientationLib/OrientationLibConstants.h"
-#include "OrientationLib/OrientationMath/OrientationTransforms.hpp"
+#include "EbsdLib/Core/EbsdLibConstants.h"
+#include "EbsdLib/OrientationMath/OrientationTransforms.hpp"
 
 using OrientationListArrayType = std::list<DOrientArrayType>;
 using OrientationTransformsType = OrientationTransforms<DOrientArrayType, double>;
@@ -339,7 +339,7 @@ bool SampleCubochoricSpaceWidget::insideCyclicFZ(const double* rod, int order) c
   if(rod[3] != std::numeric_limits<double>::infinity())
   {
     // check the z-component vs. tan(pi/2n)
-    insideFZ = fabs(rod[2] * rod[3]) <= LPs::BP[order - 1];
+    insideFZ = fabs(rod[2] * rod[3]) <= EbsdLib::LPs::BP[order - 1];
   }
   else if(rod[2] == 0.0)
   {
@@ -359,7 +359,7 @@ bool SampleCubochoricSpaceWidget::insideDihedralFZ(const double* rod, int order)
   const double r1 = 1.0;
 
   // first, check the z-component vs. tan(pi/2n)  (same as insideCyclicFZ)
-  c1 = fabs(r[2]) <= LPs::BP[order - 1];
+  c1 = fabs(r[2]) <= EbsdLib::LPs::BP[order - 1];
   res = false;
 
   // check the square boundary planes if c1=true
@@ -371,19 +371,19 @@ bool SampleCubochoricSpaceWidget::insideDihedralFZ(const double* rod, int order)
       c2 = (fabs(r[0]) <= r1) && (fabs(r[1]) <= r1);
       break;
     case EMsoftWorkbenchConstants::Constants::ThreeFoldAxisOrder:
-      c2 = fabs(LPs::srt * r[0] + 0.50 * r[1]) <= r1;
-      c2 = c2 && (fabs(LPs::srt * r[0] - 0.50 * r[1]) <= r1);
+      c2 = fabs(EbsdLib::LPs::srt * r[0] + 0.50 * r[1]) <= r1;
+      c2 = c2 && (fabs(EbsdLib::LPs::srt * r[0] - 0.50 * r[1]) <= r1);
       c2 = c2 && (fabs(r[1]) <= r1);
       break;
     case EMsoftWorkbenchConstants::Constants::FourFoldAxisOrder:
       c2 = (fabs(r[0]) <= r1) && (fabs(r[1]) <= r1);
-      c2 = c2 && ((LPs::r22 * fabs(r[0] + r[1]) <= r1) && (LPs::r22 * fabs(r[0] - r[1]) <= r1));
+      c2 = c2 && ((EbsdLib::LPs::r22 * fabs(r[0] + r[1]) <= r1) && (EbsdLib::LPs::r22 * fabs(r[0] - r[1]) <= r1));
       break;
     case EMsoftWorkbenchConstants::Constants::SixFoldAxisOrder:
-      c2 = fabs(0.50 * r[0] + LPs::srt * r[1]) <= r1;
-      c2 = c2 && (fabs(LPs::srt * r[0] + 0.50 * r[1]) <= r1);
-      c2 = c2 && (fabs(LPs::srt * r[0] - 0.50 * r[1]) <= r1);
-      c2 = c2 && (fabs(0.50 * r[0] - LPs::srt * r[1]) <= r1);
+      c2 = fabs(0.50 * r[0] + EbsdLib::LPs::srt * r[1]) <= r1;
+      c2 = c2 && (fabs(EbsdLib::LPs::srt * r[0] + 0.50 * r[1]) <= r1);
+      c2 = c2 && (fabs(EbsdLib::LPs::srt * r[0] - 0.50 * r[1]) <= r1);
+      c2 = c2 && (fabs(0.50 * r[0] - EbsdLib::LPs::srt * r[1]) <= r1);
       c2 = c2 && (fabs(r[1]) <= r1);
       c2 = c2 && (fabs(r[0]) <= r1);
       break;
@@ -414,7 +414,7 @@ bool SampleCubochoricSpaceWidget::insideCubicFZ(const double* rod, int ot) const
 
     using OrientationTransformsType = OrientationTransforms<std::vector<double>, double>;
 
-    c1 = OrientationTransformsType::OMHelperType::maxval(OrientationTransformsType::OMHelperType::absValue(r)) <= LPs::BP[3];
+    c1 = OrientationTransformsType::OMHelperType::maxval(OrientationTransformsType::OMHelperType::absValue(r)) <= EbsdLib::LPs::BP[3];
   }
   else
   {
@@ -451,7 +451,7 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
     int32_t FZtype, FZorder;
 
     // step size for sampling of grid; maximum total number of samples = pow(2*getNumsp()+1,3)
-    delta = (0.50 * LPs::ap) / static_cast<double>(numOfSamplingPts);
+    delta = (0.50 * EbsdLib::LPs::ap) / static_cast<double>(numOfSamplingPts);
 
     // do we need to shift this array away from the origin?
     double gridShift = 0.0f;
@@ -475,7 +475,7 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
     int Dg = 0;
 
     // eliminate points for which any of the coordinates lies outside the cube with semi-edge length "edge"
-    double edge = 0.5 * LPs::ap;
+    double edge = 0.5 * EbsdLib::LPs::ap;
 
     for(int i = -Np + 1; i < Np + 1; i++)
     {
@@ -540,15 +540,15 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
     double misorientationAngle = misorientationAngLE->text().toDouble();
 
     // step size for sampling of grid; the edge length of the cube is (pi ( w - sin(w) ))^1/3 with w the misorientation angle
-    omega = misorientationAngle * SIMPLib::Constants::k_Pi / 180.0f;
-    semi = pow(SIMPLib::Constants::k_Pi * (omega - sin(omega)), 1.0 / 3.0) * 0.5;
+    omega = misorientationAngle * EbsdLib::Constants::k_Pi / 180.0f;
+    semi = pow(EbsdLib::Constants::k_Pi * (omega - sin(omega)), 1.0 / 3.0) * 0.5;
     delta = semi / static_cast<double>(numOfSamplingPts);
 
     // convert the reference orientation to a 3-component Rodrigues vector sigma
     DOrientArrayType sigm(4), sigma(3), referenceOrientation(3);
-    referenceOrientation[0] = static_cast<double>(refOrientationX * SIMPLib::Constants::k_Pi / 180.0f);
-    referenceOrientation[1] = static_cast<double>(refOrientationY * SIMPLib::Constants::k_Pi / 180.0f);
-    referenceOrientation[2] = static_cast<double>(refOrientationZ * SIMPLib::Constants::k_Pi / 180.0f);
+    referenceOrientation[0] = static_cast<double>(refOrientationX *EbsdLib::Constants::k_Pi / 180.0f);
+    referenceOrientation[1] = static_cast<double>(refOrientationY *EbsdLib::Constants::k_Pi / 180.0f);
+    referenceOrientation[2] = static_cast<double>(refOrientationZ *EbsdLib::Constants::k_Pi / 180.0f);
     OrientationTransformsType::eu2ro(referenceOrientation, sigm);
     sigma[0] = sigm[0] * sigm[3];
     sigma[1] = sigm[1] * sigm[3];

@@ -37,7 +37,7 @@
 
 #include <QtCore/QObject>
 
-#include "SIMPLib/Math/QuaternionMath.hpp"
+#include "EbsdLib/Core/QuaternionMath.hpp"
 
 #include "Common/IObserver.h"
 

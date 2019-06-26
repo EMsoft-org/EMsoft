@@ -37,7 +37,7 @@
 
 #include <QtCore/QString>
 
-#include "SIMPLib/Math/SIMPLibMath.h"
+#include "EbsdLib/Math/EbsdLibMath.h"
 
 // -----------------------------------------------------------------------------
 //
