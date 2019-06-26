@@ -64,7 +64,7 @@ else()
 endif()
 
 # Request C++11 standard, using new CMake variables.
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS False)
 
