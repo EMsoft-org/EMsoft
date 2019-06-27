@@ -98,11 +98,6 @@ void ADPMapImageViewer::paintGL()
   // Get the current mouse coordinate and selected pixel coordinate relative to the image coordinate system
   int statsStartingHeightOffset = 40;
   int statsHeightSpacing = 20;
-  QString mousePosStr = "Mouse: N/A";
-  if (isMouseCoordinateValid())
-  {
-    mousePosStr = QObject::tr("Mouse: (%1, %2)").arg(QString::number(imageCoords.x()), QString::number(imageCoords.y()));
-  }
 
   QString selectedPixelStr = "Selection: N/A";
   if (isPixelSelected())
@@ -111,18 +106,13 @@ void ADPMapImageViewer::paintGL()
   }
 
   // Figure out the length of the longest string
-  int maxStrLen = mousePosStr.size();
-  if (selectedPixelStr.size() > maxStrLen)
-  {
-    maxStrLen = selectedPixelStr.size();
-  }
+  int maxStrLen = selectedPixelStr.size();
 
   int statsX = size().width() - (maxStrLen*8);
 
   painter.setPen(Qt::white);
   painter.fillRect(statsX - 10, size().height() - statsStartingHeightOffset - 20, maxStrLen*8 + 5, statsStartingHeightOffset + 10, QBrush(QColor(Qt::black)));
-  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset), mousePosStr);
-  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + statsHeightSpacing), selectedPixelStr);
+  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset), selectedPixelStr);
 
   painter.end();
 }
