@@ -79,6 +79,9 @@ std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const QString& filepat
 
   QVector<AngPhase::Pointer> ensembles = reader.getPhaseVector();
 
+  // Add a dummy Ang Phase to the front of the vector
+  ensembles.push_front(AngPhase::New());
+
   std::array<float, 3> normRefDir = refDirection; // Make a copy of the reference Direction
 
   MatrixMath::Normalize3x1(normRefDir[0], normRefDir[1], normRefDir[2]);
@@ -94,7 +97,6 @@ std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const QString& filepat
   EbsdLib::Rgb argb = 0x00000000;
   int32_t phase = 0;
   bool calcIPF = false;
-  size_t index = 0;
 
   QImage ipfImage(xDim, yDim, QImage::Format_RGBA8888);
   for(int32_t y = 0; y < yDim; y++)
@@ -103,13 +105,12 @@ std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const QString& filepat
     {
       size_t idx = static_cast<size_t>((y * xDim) + x);
       phase = phases[idx];
-      index = idx * 3;
 
-      ipfImage.setPixelColor(x, y, QRgb(0));
+      ipfImage.setPixelColor(x, y, QRgb(0x00000000));
 
-      dEuler[0] = static_cast<double>(phi1[index]);
-      dEuler[1] = static_cast<double>(phi[index + 1]);
-      dEuler[2] = static_cast<double>(phi2[index + 2]);
+      dEuler[0] = static_cast<double>(phi1[idx]);
+      dEuler[1] = static_cast<double>(phi[idx]);
+      dEuler[2] = static_cast<double>(phi2[idx]);
 
       // Make sure we are using a valid Euler Angles with valid crystal symmetry
       calcIPF = true;
@@ -123,8 +124,7 @@ std::tuple<QImage, int32_t> EbsdLoader::CreateIPFColorMap(const QString& filepat
       if(phase < ensembles.size() && calcIPF && crystalStructures[phase] < EbsdLib::CrystalStructure::LaueGroupEnd)
       {
         argb = ops[crystalStructures[phase]]->generateIPFColor(dEuler.data(), refDir.data(), false);
-
-        ipfImage.setPixel(x, y, argb);
+        ipfImage.setPixelColor(x, y, argb);
       }
     }
   }
