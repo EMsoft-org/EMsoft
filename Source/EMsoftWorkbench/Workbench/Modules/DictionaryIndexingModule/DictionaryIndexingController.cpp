@@ -47,6 +47,8 @@
 
 #include <QtGui/QImage>
 
+#include "Common/EbsdLoader.h"
+
 #include "Constants.h"
 
 static size_t k_InstanceKey = 0;
@@ -130,7 +132,7 @@ void DictionaryIndexingController::createDI(const DIData &data)
   connect(diProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardOutput().toStdString())); });
   connect(diProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardOutput().toStdString())); });
   connect(diProcess.data(), &QProcess::errorOccurred, [=] (QProcess::ProcessError error) { emit stdOutputMessageGenerated(tr("Process Error: %1").arg(QString::number(error))); });
-  connect(diProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenDIFinished(exitCode, exitStatus); });
+  connect(diProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenDIFinished(exitCode, exitStatus, data); });
 
   if (!diExecutablePath.isEmpty())
   {
@@ -428,11 +430,12 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void DictionaryIndexingController::listenDIFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void DictionaryIndexingController::listenDIFinished(int exitCode, QProcess::ExitStatus exitStatus, const DIData &data)
 {
-  // EMgetADP program automatically adds "_ADP" onto the end of the output image name
-  QString imagePath = tr("%1/Result_ADP.tiff").arg(m_TempDir.path());
-  QImage imageResult(imagePath);
+  std::array<float,3> refDirection = { 0.0f, 0.0f, 1.0f };
+  std::tuple<QImage, int32_t> ipfColorMapResults = EbsdLoader::CreateIPFColorMap(data.outputAngFilePath, refDirection);
+  QImage imageResult = std::get<0>(ipfColorMapResults);
+  int32_t err = std::get<1>(ipfColorMapResults);
   if (!imageResult.isNull())
   {
     emit diCreated(imageResult);

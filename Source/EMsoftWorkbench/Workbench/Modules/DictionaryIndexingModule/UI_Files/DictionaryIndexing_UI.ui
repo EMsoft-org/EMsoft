@@ -75,9 +75,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-197</y>
+            <y>0</y>
             <width>1022</width>
-            <height>1607</height>
+            <height>1583</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
@@ -537,6 +537,19 @@
                 </property>
                </widget>
               </item>
+              <item row="12" column="4">
+               <spacer name="horizontalSpacer_29">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
               <item row="24" column="2">
                <widget class="QLineEdit" name="ypcLE">
                 <property name="text">
@@ -605,19 +618,6 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QLineEdit" name="roi1LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="21" column="0">
                <widget class="QLabel" name="thetacLabel">
                 <property name="text">
@@ -629,6 +629,13 @@
                <widget class="QCheckBox" name="spatialAveragingCB">
                 <property name="text">
                  <string>Spatial Averaging</string>
+                </property>
+               </widget>
+              </item>
+              <item row="18" column="1" colspan="2">
+               <widget class="QComboBox" name="gpuDeviceCB">
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContents</enum>
                 </property>
                </widget>
               </item>
@@ -722,19 +729,6 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="2">
-               <widget class="QLineEdit" name="roi4LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="11" column="1">
                <widget class="QLineEdit" name="isangleLE">
                 <property name="text">
@@ -759,6 +753,13 @@
                <widget class="QLabel" name="nnavLabel">
                 <property name="text">
                  <string>Orientation Avging Matches</string>
+                </property>
+               </widget>
+              </item>
+              <item row="17" column="1" colspan="2">
+               <widget class="QComboBox" name="gpuPlatformCB">
+                <property name="sizeAdjustPolicy">
+                 <enum>QComboBox::AdjustToContents</enum>
                 </property>
                </widget>
               </item>
@@ -806,25 +807,94 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="roi3LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="22" column="0">
                <widget class="QLabel" name="deltaLabel">
                 <property name="text">
                  <string>CCD Pixel Size on Scin. Surface</string>
                 </property>
                </widget>
+              </item>
+              <item row="2" column="0" colspan="5">
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="roiCB">
+                  <property name="text">
+                   <string>Region of Interest (X, Y, W, H)</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi1LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi2LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi3LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi4LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_27">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </item>
               <item row="26" column="0">
                <widget class="QLabel" name="energyMinLabel">
@@ -837,16 +907,6 @@
                <widget class="QLabel" name="maskRadiusLabel">
                 <property name="text">
                  <string>Mask Radius</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QCheckBox" name="roiCB">
-                <property name="text">
-                 <string>Region of Interest</string>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -908,6 +968,19 @@
                 </property>
                </widget>
               </item>
+              <item row="1" column="3" colspan="2">
+               <spacer name="horizontalSpacer_25">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
               <item row="1" column="2">
                <widget class="QLineEdit" name="ipfWidthLE">
                 <property name="text">
@@ -922,19 +995,6 @@
                <widget class="QLineEdit" name="gammaCorrectionFactorLE">
                 <property name="text">
                  <string>0.3333</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="2">
-               <widget class="QLineEdit" name="roi2LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -984,6 +1044,19 @@
                  <set>Qt::AlignCenter</set>
                 </property>
                </widget>
+              </item>
+              <item row="4" column="3" colspan="2">
+               <spacer name="horizontalSpacer_26">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
               <item row="11" column="0">
                <widget class="QLabel" name="isangleLabel">
@@ -1090,85 +1163,6 @@
                 </property>
                </widget>
               </item>
-              <item row="12" column="4">
-               <spacer name="horizontalSpacer_29">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="4" column="3" colspan="2">
-               <spacer name="horizontalSpacer_26">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="3" column="3" colspan="2">
-               <spacer name="horizontalSpacer_28">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="2" column="3" colspan="2">
-               <spacer name="horizontalSpacer_27">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="3" colspan="2">
-               <spacer name="horizontalSpacer_25">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="18" column="1" colspan="2">
-               <widget class="QComboBox" name="gpuDeviceCB">
-                <property name="sizeAdjustPolicy">
-                 <enum>QComboBox::AdjustToContents</enum>
-                </property>
-               </widget>
-              </item>
-              <item row="17" column="1" colspan="2">
-               <widget class="QComboBox" name="gpuPlatformCB">
-                <property name="sizeAdjustPolicy">
-                 <enum>QComboBox::AdjustToContents</enum>
-                </property>
-               </widget>
-              </item>
              </layout>
             </widget>
            </item>
@@ -1262,6 +1256,9 @@
                   <width>300</width>
                   <height>0</height>
                  </size>
+                </property>
+                <property name="text">
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -1601,11 +1598,6 @@
   <tabstop>masterFileBtn</tabstop>
   <tabstop>ipfHeightLE</tabstop>
   <tabstop>ipfWidthLE</tabstop>
-  <tabstop>roiCB</tabstop>
-  <tabstop>roi1LE</tabstop>
-  <tabstop>roi2LE</tabstop>
-  <tabstop>roi3LE</tabstop>
-  <tabstop>roi4LE</tabstop>
   <tabstop>samplingStepSizeXLE</tabstop>
   <tabstop>samplingStepSizeYLE</tabstop>
   <tabstop>nnkLE</tabstop>

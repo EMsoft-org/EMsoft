@@ -174,7 +174,7 @@ public:
   int getNumCPUCores();
 
 protected slots:
-  void listenDIFinished(int exitCode, QProcess::ExitStatus exitStatus);
+  void listenDIFinished(int exitCode, QProcess::ExitStatus exitStatus, const DIData &data);
 
 signals:
   void diCreated(const QImage &adpMap) const;
