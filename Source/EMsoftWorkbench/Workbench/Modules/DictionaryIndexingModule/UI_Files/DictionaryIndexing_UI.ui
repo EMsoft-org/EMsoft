@@ -77,10 +77,22 @@
             <x>0</x>
             <y>0</y>
             <width>1022</width>
-            <height>1583</height>
+            <height>1572</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
            <item row="0" column="0">
             <widget class="QGroupBox" name="ppSelectionsGB">
              <property name="title">
