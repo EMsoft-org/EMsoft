@@ -146,6 +146,8 @@ void DictionaryIndexing_UI::createValidators()
   m_Ui->numOfThreadsLE->setValidator(new QIntValidator(m_Ui->numOfThreadsLE));
   m_Ui->numsxLE->setValidator(new QIntValidator(m_Ui->numsxLE));
   m_Ui->numsyLE->setValidator(new QIntValidator(m_Ui->numsyLE));
+
+  m_Ui->diZoomSB->setMaximum(std::numeric_limits<int>::max());
 }
 
 // -----------------------------------------------------------------------------

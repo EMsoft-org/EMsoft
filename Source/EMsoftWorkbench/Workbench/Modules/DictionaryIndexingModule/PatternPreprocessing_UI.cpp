@@ -113,6 +113,8 @@ void PatternPreprocessing_UI::createValidators()
   m_Ui->patternWidthLE->setValidator(new QIntValidator(m_Ui->patternWidthLE));
   m_Ui->ipfHeightLE->setValidator(new QIntValidator(m_Ui->ipfHeightLE));
   m_Ui->ipfWidthLE->setValidator(new QIntValidator(m_Ui->ipfWidthLE));
+
+  m_Ui->ppMatrixZoomSB->setMaximum(std::numeric_limits<int>::max());
 }
 
 // -----------------------------------------------------------------------------

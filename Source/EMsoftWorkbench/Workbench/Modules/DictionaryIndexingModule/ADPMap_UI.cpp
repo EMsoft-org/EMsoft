@@ -109,6 +109,8 @@ void ADPMap_UI::createValidators()
   m_Ui->maskPatternLE->setValidator(new QIntValidator(m_Ui->maskPatternLE));
   m_Ui->numOfRegionsLE->setValidator(new QIntValidator(m_Ui->numOfRegionsLE));
   m_Ui->numOfThreadsLE->setValidator(new QIntValidator(m_Ui->numOfThreadsLE));
+
+  m_Ui->adpMapZoomSB->setMaximum(std::numeric_limits<int>::max());
 }
 
 // -----------------------------------------------------------------------------
