@@ -85,6 +85,8 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/lzw.f90
   ${EMsoftLib_SOURCE_DIR}/Laue.f90
   ${EMsoftLib_SOURCE_DIR}/random.f90
+  ${EMsoftLib_SOURCE_DIR}/imageOPs.f90
+
 
   ${EMsoftLib_Additional_SRCS}
 )
