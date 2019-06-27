@@ -124,7 +124,7 @@
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="../../../Resources/icons/images/Icons.qrc">
+          <iconset resource="../Resources/icons/images/Icons.qrc">
            <normaloff>:/disk_blue.png</normaloff>:/disk_blue.png</iconset>
          </property>
          <property name="iconSize">
@@ -241,7 +241,7 @@
   </action>
  </widget>
  <resources>
-  <include location="../../../Resources/icons/images/Icons.qrc"/>
+  <include location="../Resources/icons/images/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

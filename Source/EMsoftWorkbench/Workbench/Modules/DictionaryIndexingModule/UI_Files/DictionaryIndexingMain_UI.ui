@@ -39,7 +39,7 @@
      </property>
      <widget class="QWidget" name="avgDotProductMapTab">
       <attribute name="title">
-       <string>1. Average Dot Product Map</string>
+       <string>Average Dot Product Map</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_7" columnstretch="0">
        <property name="leftMargin">
@@ -61,7 +61,7 @@
      </widget>
      <widget class="QWidget" name="patternPreprocessingTab">
       <attribute name="title">
-       <string>2. Pattern Preprocessing</string>
+       <string>Pattern Preprocessing</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3" columnstretch="0">
        <property name="leftMargin">
@@ -83,7 +83,7 @@
      </widget>
      <widget class="QWidget" name="dictionaryIndexingTab">
       <attribute name="title">
-       <string>3. Dictionary Indexing</string>
+       <string>Dictionary Indexing</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
        <property name="leftMargin">
@@ -128,7 +128,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../Resources/icons/images/Icons.qrc"/>
+  <include location="../../../Resources/icons/images/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>
