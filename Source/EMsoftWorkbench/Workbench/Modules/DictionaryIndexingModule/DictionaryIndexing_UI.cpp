@@ -132,10 +132,10 @@ void DictionaryIndexing_UI::createValidators()
 
   m_Ui->nnkLE->setValidator(new QIntValidator(m_Ui->nnkLE));
   m_Ui->nnavLE->setValidator(new QIntValidator(m_Ui->nnavLE));
-  m_Ui->roi1LE->setValidator(new QIntValidator(m_Ui->roi1LE));
-  m_Ui->roi2LE->setValidator(new QIntValidator(m_Ui->roi2LE));
-  m_Ui->roi3LE->setValidator(new QIntValidator(m_Ui->roi3LE));
-  m_Ui->roi4LE->setValidator(new QIntValidator(m_Ui->roi4LE));
+  m_Ui->roi1LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi1LE));
+  m_Ui->roi2LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi2LE));
+  m_Ui->roi3LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi3LE));
+  m_Ui->roi4LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi4LE));
   m_Ui->nosmLE->setValidator(new QIntValidator(m_Ui->nosmLE));
   m_Ui->nismLE->setValidator(new QIntValidator(m_Ui->nismLE));
   m_Ui->numdictsingleLE->setValidator(new QIntValidator(m_Ui->numdictsingleLE));
