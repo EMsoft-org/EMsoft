@@ -216,6 +216,7 @@ void DictionaryIndexingMain_UI::validateData()
     m_Ui->patternPreprocessingUI->validateData();
     break;
   case ModuleTab::DictionaryIndexing:
+    m_Ui->dictionaryIndexingUI->validateData();
     break;
   }
 }

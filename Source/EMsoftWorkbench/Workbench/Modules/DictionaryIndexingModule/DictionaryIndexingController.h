@@ -154,13 +154,6 @@ public:
   void createDI(const DIData &data);
 
   /**
-   * @brief validateDIValues
-   * @param data
-   * @return
-   */
-  bool validateDIValues(DictionaryIndexingController::DIData data);
-
-  /**
    * @brief setUpdateProgress
    * @param loopCompleted
    * @param totalLoops

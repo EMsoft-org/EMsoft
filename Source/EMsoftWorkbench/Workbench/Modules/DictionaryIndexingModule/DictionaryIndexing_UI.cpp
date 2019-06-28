@@ -208,6 +208,13 @@ void DictionaryIndexing_UI::createModificationConnections()
   connect(m_Ui->cubochoricPointsLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->numsxLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->numsyLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->eulerAngleFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->dictionaryFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->masterFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->outputDataFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->outputCtfFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->outputAngFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->outputAvgCtfFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
 
   HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
   connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &DictionaryIndexing_UI::parametersChanged);
@@ -575,9 +582,71 @@ void DictionaryIndexing_UI::listenDIGenerationFinished()
 // -----------------------------------------------------------------------------
 bool DictionaryIndexing_UI::validateData()
 {
-  DictionaryIndexingController::DIData diData = getDIData();
-  if(!m_DIController->validateDIValues(diData))
+  if (m_SelectedHipassValue < 0)
   {
+    QString errMsg = "The 'Selected Hipass Value' field is invalid.  Please double-click inside "
+                     "the image generated in the 'Pattern Preprocessing' tab to "
+                     "choose a hipass value and number of regions.";
+    emit errorMessageGenerated(errMsg);
+    m_Ui->generateDIBtn->setDisabled(true);
+    return false;
+  }
+
+  if (m_SelectedNumOfRegions < 0)
+  {
+    QString errMsg = "The 'Selected Number of Regions' field is invalid.  Please double-click inside "
+                     "the image generated in the 'Pattern Preprocessing' tab to "
+                     "choose a hipass value and number of regions.";
+    emit errorMessageGenerated(errMsg);
+    m_Ui->generateDIBtn->setDisabled(true);
+    return false;
+  }
+
+  InputType inputType = static_cast<InputType>(m_Ui->inputTypeCB->currentIndex());
+  if(inputType == DictionaryIndexingController::InputType::TSLHDF || inputType == DictionaryIndexingController::InputType::BrukerHDF ||
+     inputType == DictionaryIndexingController::InputType::OxfordHDF)
+  {
+    if (m_SelectedHDF5Path.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      emit errorMessageGenerated(ss);
+      m_Ui->generateDIBtn->setDisabled(true);
+      return false;
+    }
+  }
+
+  QString masterFilePath = m_Ui->masterFileLE->text();
+  if (masterFilePath.isEmpty())
+  {
+    QString ss = QObject::tr("'%1' field is empty.").arg(m_Ui->masterFileLabel->text());
+    emit errorMessageGenerated(ss);
+    m_Ui->generateDIBtn->setDisabled(true);
+    return false;
+  }
+
+  QString outputDataFilePath = m_Ui->outputDataFileLE->text();
+  if (outputDataFilePath.isEmpty())
+  {
+    QString ss = QObject::tr("'%1' field is empty.").arg(m_Ui->outputDataFileLabel->text());
+    emit errorMessageGenerated(ss);
+    m_Ui->generateDIBtn->setDisabled(true);
+    return false;
+  }
+
+  QString angFilePath = m_Ui->outputAngFileLE->text();
+  if (angFilePath.isEmpty())
+  {
+    QString ss = QObject::tr("'%1' field is empty.").arg(m_Ui->outputAngFileLabel->text());
+    emit errorMessageGenerated(ss);
+    m_Ui->generateDIBtn->setDisabled(true);
+    return false;
+  }
+
+  QString ctfFilePath = m_Ui->outputCtfFileLE->text();
+  if (ctfFilePath.isEmpty())
+  {
+    QString ss = QObject::tr("'%1' field is empty.").arg(m_Ui->outputCtfFileLabel->text());
+    emit errorMessageGenerated(ss);
     m_Ui->generateDIBtn->setDisabled(true);
     return false;
   }

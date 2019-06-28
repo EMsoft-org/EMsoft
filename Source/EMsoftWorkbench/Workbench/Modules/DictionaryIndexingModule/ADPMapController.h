@@ -99,13 +99,6 @@ public:
   void createADPMap(const ADPMapData &data);
 
   /**
-   * @brief validateADPMapValues
-   * @param data
-   * @return
-   */
-  bool validateADPMapValues(ADPMapController::ADPMapData data);
-
-  /**
    * @brief setUpdateProgress
    * @param loopCompleted
    * @param totalLoops

@@ -553,50 +553,6 @@ void DictionaryIndexingController::initializeData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool DictionaryIndexingController::validateDIValues(DIData data)
-{
-//  QString inputPath = data.patternDataFile;
-//  if (inputPath.isEmpty())
-//  {
-//    QString ss = QObject::tr("The input pattern data file path is empty.");
-//    emit errorMessageGenerated(ss);
-//    return false;
-//  }
-
-//  QFileInfo inFi(inputPath);
-//  if(!inFi.exists())
-//  {
-//    QString ss = QObject::tr("The input pattern data file with path '%1' does not exist.").arg(inputPath);
-//    emit errorMessageGenerated(ss);
-//    return false;
-//  }
-
-//  QMimeDatabase db;
-//  QMimeType mime = db.mimeTypeForFile(inputPath);
-//  if (!mime.inherits("application/x-hdf5") && !mime.inherits("application/x-hdf"))
-//  {
-//    QString ss = QObject::tr("The input pattern data file at path '%1' is not an HDF5 file.").arg(inputPath);
-//    emit errorMessageGenerated(ss);
-//    return false;
-//  }
-
-  if(data.inputType == DictionaryIndexingController::InputType::TSLHDF || data.inputType == DictionaryIndexingController::InputType::BrukerHDF ||
-     data.inputType == DictionaryIndexingController::InputType::OxfordHDF)
-  {
-    if (data.hdfStrings.isEmpty())
-    {
-      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
-      emit errorMessageGenerated(ss);
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 std::vector<int32_t> DictionaryIndexingController::DIData::getIParVector() const
 {
   std::vector<int32_t> iParVector(SizeConstants::IParSize, 0);

@@ -67,7 +67,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>789</width>
+            <width>652</width>
             <height>717</height>
            </rect>
           </property>
@@ -262,7 +262,7 @@
                  <number>10000</number>
                 </property>
                 <property name="text">
-                 <string>80</string>
+                 <string>60</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -301,7 +301,7 @@
                  <number>10000</number>
                 </property>
                 <property name="text">
-                 <string>600</string>
+                 <string>151</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -340,7 +340,7 @@
                  <number>10000</number>
                 </property>
                 <property name="text">
-                 <string>600</string>
+                 <string>186</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>

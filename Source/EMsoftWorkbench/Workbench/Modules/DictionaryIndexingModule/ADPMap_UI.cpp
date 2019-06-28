@@ -329,10 +329,17 @@ void ADPMap_UI::listenADPGenerationFinished()
 bool ADPMap_UI::validateData()
 {
   ADPMapController::ADPMapData adpData = getADPMapData();
-  if(!m_ADPController->validateADPMapValues(adpData))
+
+  if(adpData.inputType == InputType::TSLHDF || adpData.inputType == InputType::BrukerHDF ||
+     adpData.inputType == InputType::OxfordHDF)
   {
-    m_Ui->generateADPBtn->setDisabled(true);
-    return false;
+    if (adpData.hdfStrings.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      emit errorMessageGenerated(ss);
+      m_Ui->generateADPBtn->setDisabled(true);
+      return false;
+    }
   }
 
   m_Ui->generateADPBtn->setEnabled(true);

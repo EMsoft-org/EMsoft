@@ -311,10 +311,26 @@ void PatternPreprocessing_UI::listenPatternPreprocessingFinished()
 bool PatternPreprocessing_UI::validateData()
 {
   PatternPreprocessingController::PPMatrixData ppData = getPPMatrixData();
-  if(!m_PPMatrixController->validatePPValues(ppData))
+
+  if (ppData.patternCoordinateX < 0 || ppData.patternCoordinateY < 0)
   {
+    QString errMsg = "The 'Chosen ADP Coordinate' field is invalid.  Please double-click inside "
+                     "the average dot product map generated in the 'Average Dot Product Map' tab to "
+                     "choose a coordinate.";
+    emit errorMessageGenerated(errMsg);
     m_Ui->generatePPMatrixBtn->setDisabled(true);
     return false;
+  }
+
+  if(ppData.inputType == InputType::TSLHDF || ppData.inputType == InputType::BrukerHDF ||
+     ppData.inputType == InputType::OxfordHDF)
+  {
+    if (ppData.hdfStrings.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      emit errorMessageGenerated(ss);
+      return false;
+    }
   }
 
   if(m_Ui->hipassValueLE->text().isEmpty())

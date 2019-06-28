@@ -99,13 +99,6 @@ public:
   void createPreprocessedPatternsMatrix(const PPMatrixData &data);
 
   /**
-   * @brief validatePPPValues
-   * @param data
-   * @return
-   */
-  bool validatePPValues(const PPMatrixData &data);
-
-  /**
    * @brief setUpdateProgress
    * @param loopCompleted
    * @param totalLoops

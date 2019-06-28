@@ -173,7 +173,7 @@
                  <number>10000</number>
                 </property>
                 <property name="text">
-                 <string>10</string>
+                 <string>5</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>

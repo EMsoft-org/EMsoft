@@ -354,23 +354,6 @@ void PatternPreprocessingController::initializeData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool PatternPreprocessingController::validatePPValues(const PPMatrixData &data)
-{
-  if (data.patternCoordinateX < 0 || data.patternCoordinateY < 0)
-  {
-    QString errMsg = "The 'Chosen ADP Coordinate' field is invalid.  Please double-click inside "
-                     "the average dot product map generated in the 'Average Dot Product Map' tab to "
-                     "choose a coordinate.";
-    emit errorMessageGenerated(errMsg);
-    return false;
-  }
-
-  return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 std::vector<int32_t> PatternPreprocessingController::PPMatrixData::getIParVector() const
 {
   std::vector<int32_t> iParVector(SizeConstants::IParSize, 0);
