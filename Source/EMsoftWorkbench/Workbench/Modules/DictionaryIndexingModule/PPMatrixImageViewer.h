@@ -75,7 +75,7 @@ protected:
 
 signals:
   void selectedHipassValueChanged(float value);
-  void selectedHipassNumOfStepsChanged(int value);
+  void selectedHipassNumOfRegionsChanged(int value);
 
 private:
   QPoint m_MouseCoords = QPoint(-1, -1);

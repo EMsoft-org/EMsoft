@@ -67,7 +67,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>846</width>
+            <width>831</width>
             <height>839</height>
            </rect>
           </property>
@@ -90,8 +90,47 @@
               <string>Average Dot Product Map Parameters</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_10">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
+               <number>4</number>
+              </property>
+              <item row="5" column="0">
+               <widget class="QLabel" name="bLabel_5">
+                <property name="text">
+                 <string>Pattern Size (pixels, HxW)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QCheckBox" name="roiCB">
+                <property name="text">
+                 <string>Region of Interest</string>
+                </property>
+                <property name="checked">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="13" column="1">
+               <widget class="QLineEdit" name="hipassLE">
+                <property name="text">
+                 <string>0.05</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
               <item row="8" column="1">
-               <widget class="QLineEdit" name="binningXLE">
+               <widget class="QLineEdit" name="binningFactorLE">
                 <property name="text">
                  <string>1</string>
                 </property>
@@ -100,7 +139,21 @@
                 </property>
                </widget>
               </item>
-              <item row="6" column="1">
+              <item row="10" column="0">
+               <widget class="QLabel" name="ipfLabel">
+                <property name="text">
+                 <string>IPF Size (pixels, HxW)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="binningFactorLabel">
+                <property name="text">
+                 <string>Binning Factor</string>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="1">
                <widget class="QLineEdit" name="roi3LE">
                 <property name="enabled">
                  <bool>false</bool>
@@ -113,22 +166,8 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Pattern Dataset:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QPushButton" name="choosePatternsBtn">
-                <property name="text">
-                 <string>Choose Pattern Dataset...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="2">
-               <widget class="QLineEdit" name="ipfWidthLE">
+              <item row="10" column="1">
+               <widget class="QLineEdit" name="ipfHeightLE">
                 <property name="text">
                  <string>600</string>
                 </property>
@@ -137,38 +176,7 @@
                 </property>
                </widget>
               </item>
-              <item row="4" column="1">
-               <widget class="QLineEdit" name="patternHeightLE">
-                <property name="text">
-                 <string>60</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="0">
-               <widget class="QLabel" name="ipfLabel">
-                <property name="text">
-                 <string>IPF Size (pixels, HxW)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="0">
-               <widget class="QLabel" name="numOfThreadsLabel">
-                <property name="text">
-                 <string>Number of Threads</string>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="0">
-               <widget class="QLabel" name="numOfRegionsLabel">
-                <property name="text">
-                 <string>Number of Regions</string>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="1">
+              <item row="14" column="1">
                <widget class="QLineEdit" name="numOfRegionsLE">
                 <property name="text">
                  <string>10</string>
@@ -178,171 +186,14 @@
                 </property>
                </widget>
               </item>
-              <item row="10" column="0">
-               <widget class="QLabel" name="maskPatternLabel">
+              <item row="13" column="0">
+               <widget class="QLabel" name="hipassLabel">
                 <property name="text">
-                 <string>Mask Pattern</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1">
-               <widget class="QLineEdit" name="binningFactorLE">
-                <property name="text">
-                 <string>1</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+                 <string>Hipass Filter</string>
                 </property>
                </widget>
               </item>
               <item row="6" column="2">
-               <widget class="QLineEdit" name="roi4LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLabel" name="patternDsetPathLabel">
-                <property name="text">
-                 <string>N/A</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLineEdit" name="roi1LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="1">
-               <widget class="QLineEdit" name="maskRadiusLE">
-                <property name="text">
-                 <string>240</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="10" column="1">
-               <widget class="QLineEdit" name="maskPatternLE">
-                <property name="text">
-                 <string>1</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="2">
-               <widget class="QLineEdit" name="patternWidthLE">
-                <property name="text">
-                 <string>80</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="2">
-               <widget class="QLineEdit" name="binningYLE">
-                <property name="text">
-                 <string>1</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0">
-               <widget class="QLabel" name="binningFactorLabel">
-                <property name="text">
-                 <string>Binning Factor</string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="1">
-               <widget class="QLineEdit" name="numOfThreadsLE">
-                <property name="text">
-                 <string>20</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QComboBox" name="inputTypeCB">
-                <property name="currentIndex">
-                 <number>0</number>
-                </property>
-                <property name="sizeAdjustPolicy">
-                 <enum>QComboBox::AdjustToContents</enum>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>Binary</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>TSLup1</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>TSLup2</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>TSLHDF</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>OxfordBinary</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>OxfordHDF</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>EMEBSD</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>BrukerHDF</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="11" column="0">
-               <widget class="QLabel" name="maskRadiusLabel">
-                <property name="text">
-                 <string>Mask Radius</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="2">
                <widget class="QLineEdit" name="roi2LE">
                 <property name="enabled">
                  <bool>false</bool>
@@ -355,48 +206,10 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
-               <widget class="QLabel" name="patternDataFileLabel">
+              <item row="15" column="1">
+               <widget class="QLineEdit" name="numOfThreadsLE">
                 <property name="text">
-                 <string>N/A</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="inputTypeLabel">
-                <property name="text">
-                 <string>Input Type</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="bLabel_5">
-                <property name="text">
-                 <string>Pattern Size (pixels, HxW)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>Pattern Data File:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QCheckBox" name="roiCB">
-                <property name="text">
-                 <string>Region of Interest</string>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="1">
-               <widget class="QLineEdit" name="hipassLE">
-                <property name="text">
-                 <string>0.05</string>
+                 <string>20</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -404,7 +217,34 @@
                </widget>
               </item>
               <item row="9" column="1">
-               <widget class="QLineEdit" name="ipfHeightLE">
+               <widget class="QLineEdit" name="binningXLE">
+                <property name="text">
+                 <string>1</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QLineEdit" name="patternHeightLE">
+                <property name="text">
+                 <string>60</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="0">
+               <widget class="QLabel" name="maskRadiusLabel">
+                <property name="text">
+                 <string>Mask Radius</string>
+                </property>
+               </widget>
+              </item>
+              <item row="10" column="2">
+               <widget class="QLineEdit" name="ipfWidthLE">
                 <property name="text">
                  <string>600</string>
                 </property>
@@ -413,19 +253,263 @@
                 </property>
                </widget>
               </item>
-              <item row="12" column="0">
-               <widget class="QLabel" name="hipassLabel">
-                <property name="text">
-                 <string>Hipass Filter</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="0">
+              <item row="9" column="0">
                <widget class="QLabel" name="binningLabel">
                 <property name="text">
                  <string>Binning (X, Y)</string>
                 </property>
                </widget>
+              </item>
+              <item row="11" column="0">
+               <widget class="QLabel" name="maskPatternLabel">
+                <property name="text">
+                 <string>Mask Pattern</string>
+                </property>
+               </widget>
+              </item>
+              <item row="11" column="1">
+               <widget class="QLineEdit" name="maskPatternLE">
+                <property name="text">
+                 <string>1</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="12" column="1">
+               <widget class="QLineEdit" name="maskRadiusLE">
+                <property name="text">
+                 <string>240</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="15" column="0">
+               <widget class="QLabel" name="numOfThreadsLabel">
+                <property name="text">
+                 <string>Number of Threads</string>
+                </property>
+               </widget>
+              </item>
+              <item row="14" column="0">
+               <widget class="QLabel" name="numOfRegionsLabel">
+                <property name="text">
+                 <string>Number of Regions</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="2">
+               <widget class="QLineEdit" name="patternWidthLE">
+                <property name="text">
+                 <string>80</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="1">
+               <widget class="QLineEdit" name="roi1LE">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="7" column="2">
+               <widget class="QLineEdit" name="roi4LE">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>0</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="9" column="2">
+               <widget class="QLineEdit" name="binningYLE">
+                <property name="text">
+                 <string>1</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0" colspan="3">
+               <layout class="QGridLayout" name="gridLayout_4">
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_3">
+                  <property name="text">
+                   <string>Pattern Dataset:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>Pattern Data File:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="inputTypeLabel">
+                  <property name="text">
+                   <string>Input Type</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="1">
+                 <widget class="QLabel" name="patternDsetPathLabel">
+                  <property name="text">
+                   <string>N/A</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QPushButton" name="choosePatternsBtn">
+                  <property name="text">
+                   <string>Choose Pattern Dataset...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QLabel" name="patternDataFileLabel">
+                  <property name="text">
+                   <string>N/A</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="3">
+                 <spacer name="horizontalSpacer_8">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="3" column="2">
+                 <spacer name="horizontalSpacer_7">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="2" column="2">
+                 <spacer name="horizontalSpacer_6">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="1" column="2">
+                 <spacer name="horizontalSpacer_5">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="inputTypeCB">
+                  <property name="currentIndex">
+                   <number>0</number>
+                  </property>
+                  <property name="sizeAdjustPolicy">
+                   <enum>QComboBox::AdjustToContents</enum>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Binary</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>TSLup1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>TSLup2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>TSLHDF</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>OxfordBinary</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>OxfordHDF</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>EMEBSD</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>BrukerHDF</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="0" column="2">
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -476,7 +560,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QGridLayout" name="gridLayout_2">
        <property name="topMargin">
         <number>0</number>
@@ -490,8 +574,8 @@
        <property name="verticalSpacing">
         <number>-1</number>
        </property>
-       <item row="0" column="3">
-        <widget class="QPushButton" name="adpMapZoomOutBtn">
+       <item row="0" column="8">
+        <widget class="QPushButton" name="adpMapSaveBtn">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -512,7 +596,7 @@
          </property>
          <property name="icon">
           <iconset resource="../../../Resources/icons/images/Icons.qrc">
-           <normaloff>:/zoom_out.png</normaloff>:/zoom_out.png</iconset>
+           <normaloff>:/disk_blue.png</normaloff>:/disk_blue.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -525,55 +609,24 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0" colspan="2">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="adpMapZoomInBtn">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+       <item row="1" column="0" colspan="9">
+        <widget class="ADPMapImageViewer" name="adpViewer">
          <property name="minimumSize">
           <size>
-           <width>24</width>
-           <height>24</height>
+           <width>300</width>
+           <height>300</height>
           </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset resource="../../../Resources/icons/images/Icons.qrc">
-           <normaloff>:/zoom_in.png</normaloff>:/zoom_in.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>24</width>
-           <height>24</height>
-          </size>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
          </property>
         </widget>
        </item>
-       <item row="0" column="4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="adpMapInstructionsLabel">
+         <property name="text">
+          <string>Double-click to choose a pixel.</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
         <widget class="QPushButton" name="adpMapFitToScreenBtn">
          <property name="enabled">
           <bool>false</bool>
@@ -608,18 +661,8 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0" colspan="6">
-        <widget class="ADPMapImageViewer" name="adpViewer">
-         <property name="minimumSize">
-          <size>
-           <width>300</width>
-           <height>300</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="5">
-        <widget class="QPushButton" name="adpMapSaveBtn">
+       <item row="0" column="6">
+        <widget class="QPushButton" name="adpMapZoomOutBtn">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -640,7 +683,7 @@
          </property>
          <property name="icon">
           <iconset resource="../../../Resources/icons/images/Icons.qrc">
-           <normaloff>:/disk_blue.png</normaloff>:/disk_blue.png</iconset>
+           <normaloff>:/zoom_out.png</normaloff>:/zoom_out.png</iconset>
          </property>
          <property name="iconSize">
           <size>
@@ -678,7 +721,62 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1" colspan="5">
+       <item row="0" column="5">
+        <widget class="QPushButton" name="adpMapZoomInBtn">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../../../Resources/icons/images/Icons.qrc">
+           <normaloff>:/zoom_in.png</normaloff>:/zoom_in.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1" colspan="4">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="5" colspan="4">
+        <widget class="QLabel" name="adpMapSelectedPixelLabel">
+         <property name="text">
+          <string>Selected Pixel: N/A</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="4">
         <spacer name="horizontalSpacer_3">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -723,11 +821,9 @@
   <tabstop>numOfRegionsLE</tabstop>
   <tabstop>numOfThreadsLE</tabstop>
   <tabstop>generateADPBtn</tabstop>
-  <tabstop>adpMapZoomInBtn</tabstop>
   <tabstop>adpMapZoomOutBtn</tabstop>
   <tabstop>adpMapFitToScreenBtn</tabstop>
   <tabstop>adpMapSaveBtn</tabstop>
-  <tabstop>adpMapZoomSB</tabstop>
  </tabstops>
  <resources>
   <include location="../../../Resources/icons/images/Icons.qrc"/>

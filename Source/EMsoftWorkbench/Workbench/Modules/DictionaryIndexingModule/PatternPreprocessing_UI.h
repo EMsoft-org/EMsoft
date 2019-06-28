@@ -131,7 +131,7 @@ signals:
   void patternPreprocessingFinished();
 
   void selectedHipassValueChanged(float value);
-  void selectedHipassNumOfStepsChanged(int value);
+  void selectedHipassNumOfRegionsChanged(int value);
 
   void parametersChanged();
 

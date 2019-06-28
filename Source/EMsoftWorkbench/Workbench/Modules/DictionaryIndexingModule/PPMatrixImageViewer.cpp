@@ -169,34 +169,47 @@ void PPMatrixImageViewer::paintGL()
     yCounter = m_HipassNumOfSteps;
   }
 
-  // Get the current mouse coordinate and selected pixel coordinate relative to the image coordinate system
-  int statsStartingHeightOffset = 40;
-  int statsHeightSpacing = 20;
-  QString mousePosStr = "Selected Hipass Value: N/A";
-  if (selectedHipassValue > 0)
+  if (hoveredHipassValue >= 0 || hoveredNumOfRegions >= 0)
   {
-    mousePosStr = QObject::tr("Selected Hipass Value: %1").arg(QString::number(selectedHipassValue, 'g', 4));
+    QString hipassValueStr = QObject::tr("Hipass Value: %1").arg(QString::number(hoveredHipassValue, 'g', 4));
+    QString numOfRegionsStr = QObject::tr("Num Of Regions: %1").arg(QString::number(hoveredNumOfRegions));
+
+    // Figure out the length of the longest string
+    QFontMetrics fontMetrics(painter.fontMetrics());
+    int maxStringWidth = fontMetrics.width(hipassValueStr);
+    if (fontMetrics.width(numOfRegionsStr) > maxStringWidth)
+    {
+      maxStringWidth = fontMetrics.width(numOfRegionsStr);
+    }
+
+    painter.setPen(Qt::white);
+
+    int maxStringHeight = fontMetrics.height();
+
+    int cursorXPadding = 10;
+    int cursorYPadding = 10;
+    int textXPadding = 5;
+    int textYPadding = 5;
+    int textItemPaddingY = 5;
+
+    QRect bgRect(m_MouseCoords.x() + cursorXPadding, m_MouseCoords.y() + cursorYPadding, maxStringWidth + textXPadding*2, maxStringHeight + textYPadding*2 + textItemPaddingY + maxStringHeight);
+
+    // Keep the rect from going off the screen
+    if (bgRect.x() + bgRect.width() > width())
+    {
+      int widthOverflow = bgRect.x() + bgRect.width() - width();
+      bgRect.setX(bgRect.x() - widthOverflow);
+    }
+    if (bgRect.y() + bgRect.height() > height())
+    {
+      int heightOverflow = bgRect.y()+ bgRect.height() - height();
+      bgRect.setY(bgRect.y() - heightOverflow);
+    }
+
+    painter.fillRect(bgRect, QBrush(QColor(Qt::black)));
+    painter.drawText(QPoint(bgRect.x() + textXPadding, bgRect.y() + maxStringHeight), hipassValueStr);
+    painter.drawText(QPoint(bgRect.x() + textXPadding, bgRect.y() + maxStringHeight + textItemPaddingY + maxStringHeight), numOfRegionsStr);
   }
-
-  QString selectedPixelStr = "Selected Num Of Regions: N/A";
-  if (selectedNumOfRegions > 0)
-  {
-    selectedPixelStr = QObject::tr("Selected Num Of Regions: %1").arg(QString::number(selectedNumOfRegions));
-  }
-
-  // Figure out the length of the longest string
-  int maxStrLen = mousePosStr.size();
-  if (selectedPixelStr.size() > maxStrLen)
-  {
-    maxStrLen = selectedPixelStr.size();
-  }
-
-  int statsX = size().width() - (maxStrLen*8);
-
-  painter.setPen(Qt::white);
-  painter.fillRect(statsX - 10, size().height() - statsStartingHeightOffset - 20, maxStrLen*8 + 5, statsStartingHeightOffset + 10, QBrush(QColor(Qt::black)));
-  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset), mousePosStr);
-  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + statsHeightSpacing), selectedPixelStr);
 
   painter.end();
 }
@@ -232,7 +245,7 @@ void PPMatrixImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
         QRect rect(x, y, xStep, yStep);
         if (rect.contains(m_SelectedImageCoords))
         {
-          emit selectedHipassNumOfStepsChanged(yCounter);
+          emit selectedHipassNumOfRegionsChanged(yCounter);
           emit selectedHipassValueChanged(m_HipassValue / ((xCounter-1) * 2));
         }
 

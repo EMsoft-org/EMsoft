@@ -120,7 +120,7 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(m_Ui->adpMapUI, &ADPMap_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
 
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassValueChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setSelectedHipassValue);
-  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassNumOfStepsChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setSelectedNumberOfRegions);
+  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassNumOfRegionsChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setSelectedNumberOfRegions);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::patternPreprocessingStarted, this, &DictionaryIndexingMain_UI::listenPatternPreprocessingStarted);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::patternPreprocessingFinished, this, &DictionaryIndexingMain_UI::listenPatternPreprocessingFinished);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::errorMessageGenerated, this, &DictionaryIndexingMain_UI::notifyErrorMessage);

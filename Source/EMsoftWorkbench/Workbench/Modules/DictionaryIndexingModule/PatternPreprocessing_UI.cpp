@@ -88,6 +88,8 @@ void PatternPreprocessing_UI::setupGui()
 
   // Run this once so that the HDF5 widget can be either disabled or enabled
   listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
+
+  m_Ui->ppInstructionsLabel->hide();
 }
 
 // -----------------------------------------------------------------------------
@@ -153,6 +155,7 @@ void PatternPreprocessing_UI::createWidgetConnections()
   connect(m_PPMatrixController, &PatternPreprocessingController::preprocessedPatternsMatrixCreated, [=] (QImage image) {
     auto matrixData = getPPMatrixData();
     m_Ui->ppMatrixViewer->loadImage(image, matrixData.hipassValue, matrixData.hipassNumSteps);
+    m_Ui->ppInstructionsLabel->show();
   });
 
   connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
@@ -163,8 +166,14 @@ void PatternPreprocessing_UI::createWidgetConnections()
 
   connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::errorMessageGenerated, this, &PatternPreprocessing_UI::errorMessageGenerated);
   connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::zoomFactorChanged, this, &PatternPreprocessing_UI::updateZoomFactor);
-  connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::selectedHipassNumOfStepsChanged, this, &PatternPreprocessing_UI::selectedHipassNumOfStepsChanged);
-  connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::selectedHipassValueChanged, this, &PatternPreprocessing_UI::selectedHipassValueChanged);
+  connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::selectedHipassNumOfRegionsChanged, [=] (int numOfRegions) {
+    m_Ui->selectedNumOfRegionsLabel->setText(tr("Selected Num of Regions: %1").arg(numOfRegions));
+    emit selectedHipassNumOfRegionsChanged(numOfRegions);
+  });
+  connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::selectedHipassValueChanged, [=] (float hipassValue) {
+    m_Ui->selectedHipassValueLabel->setText(tr("Selected Hipass Value: %1").arg(hipassValue));
+    emit selectedHipassValueChanged(hipassValue);
+  });
 
   connect(m_Ui->ppMatrixZoomInBtn, &QPushButton::clicked, m_Ui->ppMatrixViewer, &PPMatrixImageViewer::zoomIn);
   connect(m_Ui->ppMatrixZoomOutBtn, &QPushButton::clicked, m_Ui->ppMatrixViewer, &PPMatrixImageViewer::zoomOut);

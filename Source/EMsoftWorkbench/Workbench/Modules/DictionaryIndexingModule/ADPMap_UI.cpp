@@ -85,6 +85,8 @@ void ADPMap_UI::setupGui()
 
   // Run this once so that the HDF5 widget can be either disabled or enabled
   listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
+
+  m_Ui->adpMapInstructionsLabel->hide();
 }
 
 // -----------------------------------------------------------------------------
@@ -157,7 +159,10 @@ void ADPMap_UI::createWidgetConnections()
   connect(m_ADPController, &ADPMapController::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
   connect(m_ADPController, &ADPMapController::warningMessageGenerated, this, &ADPMap_UI::warningMessageGenerated);
   connect(m_ADPController, &ADPMapController::stdOutputMessageGenerated, this, &ADPMap_UI::stdOutputMessageGenerated);
-  connect(m_ADPController, &ADPMapController::adpMapCreated, m_Ui->adpViewer, &ADPMapImageViewer::loadImage);
+  connect(m_ADPController, &ADPMapController::adpMapCreated, [=] (const QImage &adpMap) {
+    m_Ui->adpViewer->loadImage(adpMap);
+    m_Ui->adpMapInstructionsLabel->show();
+  });
 
   connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
 
@@ -167,7 +172,10 @@ void ADPMap_UI::createWidgetConnections()
 
   connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
   connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &ADPMap_UI::updateZoomFactor);
-  connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedADPCoordinateChanged, this, &ADPMap_UI::selectedADPCoordinateChanged);
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedADPCoordinateChanged, [=] (const QPoint &pixel) {
+    m_Ui->adpMapSelectedPixelLabel->setText(tr("Selected Pixel: (%1, %2)").arg(QString::number(pixel.x()), QString::number(pixel.y())));
+    emit selectedADPCoordinateChanged(pixel);
+  });
 
   connect(m_Ui->adpMapZoomInBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomIn);
   connect(m_Ui->adpMapZoomOutBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomOut);
