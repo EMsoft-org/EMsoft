@@ -176,9 +176,9 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
     out << "! 'dynamic' for on the fly indexing or 'static' for pre calculated dictionary\n";
     switch(data.indexingMode)
     {
-    case IndexingMode::Static:
-      out << " indexingmode = 'static',\n";
-      break;
+//    case IndexingMode::Static:
+//      out << " indexingmode = 'static',\n";
+//      break;
     case IndexingMode::Dynamic:
       out << " indexingmode = 'dynamic',\n";
       break;
@@ -436,7 +436,7 @@ void DictionaryIndexingController::listenDIFinished(int exitCode, QProcess::Exit
   std::tuple<QImage, int32_t> ipfColorMapResults = EbsdLoader::CreateIPFColorMap(data.outputAngFilePath, refDirection);
   QImage imageResult = std::get<0>(ipfColorMapResults);
   int32_t err = std::get<1>(ipfColorMapResults);
-  if (!imageResult.isNull())
+  if (!imageResult.isNull() && err == 0)
   {
     emit diCreated(imageResult);
   }

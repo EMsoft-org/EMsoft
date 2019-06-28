@@ -86,6 +86,9 @@ void ADPMap_UI::setupGui()
   // Run this once so that the HDF5 widget can be either disabled or enabled
   listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
 
+  m_Ui->numOfThreadsLabel->setToolTip(tr("Number of Threads must be between 1 and %1").arg(QThreadPool::globalInstance()->maxThreadCount()));
+  m_Ui->numOfThreadsLE->setToolTip(tr("Number of Threads must be between 1 and %1").arg(QThreadPool::globalInstance()->maxThreadCount()));
+
   m_Ui->adpMapInstructionsLabel->hide();
 }
 
@@ -97,20 +100,20 @@ void ADPMap_UI::createValidators()
   m_Ui->maskRadiusLE->setValidator(new QDoubleValidator(m_Ui->maskRadiusLE));
   m_Ui->hipassLE->setValidator(new QDoubleValidator(m_Ui->hipassLE));
 
-  m_Ui->patternHeightLE->setValidator(new QIntValidator(m_Ui->patternHeightLE));
-  m_Ui->patternWidthLE->setValidator(new QIntValidator(m_Ui->patternWidthLE));
-  m_Ui->roi1LE->setValidator(new QIntValidator(m_Ui->roi1LE));
-  m_Ui->roi2LE->setValidator(new QIntValidator(m_Ui->roi2LE));
-  m_Ui->roi3LE->setValidator(new QIntValidator(m_Ui->roi3LE));
-  m_Ui->roi4LE->setValidator(new QIntValidator(m_Ui->roi4LE));
-  m_Ui->binningFactorLE->setValidator(new QIntValidator(m_Ui->binningFactorLE));
-  m_Ui->binningXLE->setValidator(new QIntValidator(m_Ui->binningXLE));
-  m_Ui->binningYLE->setValidator(new QIntValidator(m_Ui->binningYLE));
-  m_Ui->ipfWidthLE->setValidator(new QIntValidator(m_Ui->ipfWidthLE));
-  m_Ui->ipfHeightLE->setValidator(new QIntValidator(m_Ui->ipfHeightLE));
-  m_Ui->maskPatternLE->setValidator(new QIntValidator(m_Ui->maskPatternLE));
-  m_Ui->numOfRegionsLE->setValidator(new QIntValidator(m_Ui->numOfRegionsLE));
-  m_Ui->numOfThreadsLE->setValidator(new QIntValidator(m_Ui->numOfThreadsLE));
+  m_Ui->patternHeightLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->patternHeightLE));
+  m_Ui->patternWidthLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->patternWidthLE));
+  m_Ui->roi1LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi1LE));
+  m_Ui->roi2LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi2LE));
+  m_Ui->roi3LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi3LE));
+  m_Ui->roi4LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi4LE));
+//  m_Ui->binningFactorLE->setValidator(new QIntValidator(m_Ui->binningFactorLE));
+//  m_Ui->binningXLE->setValidator(new QIntValidator(m_Ui->binningXLE));
+//  m_Ui->binningYLE->setValidator(new QIntValidator(m_Ui->binningYLE));
+  m_Ui->ipfWidthLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->ipfWidthLE));
+  m_Ui->ipfHeightLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->ipfHeightLE));
+//  m_Ui->maskPatternLE->setValidator(new QIntValidator(m_Ui->maskPatternLE));
+  m_Ui->numOfRegionsLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->numOfRegionsLE));
+  m_Ui->numOfThreadsLE->setValidator(new QIntValidator(1, QThreadPool::globalInstance()->maxThreadCount(), m_Ui->numOfThreadsLE));
 
   m_Ui->adpMapZoomSB->setMaximum(std::numeric_limits<int>::max());
 }
@@ -130,12 +133,12 @@ void ADPMap_UI::createModificationConnections()
   connect(m_Ui->roi2LE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->roi3LE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->roi4LE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->binningFactorLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->binningXLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->binningYLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+//  connect(m_Ui->binningFactorLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+//  connect(m_Ui->binningXLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+//  connect(m_Ui->binningYLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->ipfWidthLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->ipfHeightLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->maskPatternLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+//  connect(m_Ui->maskPatternLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->numOfRegionsLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->numOfThreadsLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->maskRadiusLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
@@ -347,18 +350,18 @@ ADPMapController::ADPMapData ADPMap_UI::getADPMapData()
   data.roi_3 = m_Ui->roi3LE->text().toInt();
   data.roi_4 = m_Ui->roi4LE->text().toInt();
   data.useROI = m_Ui->roiCB->isChecked();
-  data.binningX = m_Ui->binningXLE->text().toInt();
-  data.binningY = m_Ui->binningYLE->text().toInt();
+//  data.binningX = m_Ui->binningXLE->text().toInt();
+//  data.binningY = m_Ui->binningYLE->text().toInt();
   data.ipfWidth = m_Ui->ipfWidthLE->text().toInt();
   data.inputType = m_InputType;
   data.ipfHeight = m_Ui->ipfHeightLE->text().toInt();
   data.maskRadius = m_Ui->maskRadiusLE->text().toDouble();
-  data.maskPattern = m_Ui->maskPatternLE->text().toInt();
+//  data.maskPattern = m_Ui->maskPatternLE->text().toInt();
   data.hipassFilter = m_Ui->hipassLE->text().toDouble();
   data.numOfRegions = m_Ui->numOfRegionsLE->text().toInt();
   data.numOfThreads = m_Ui->numOfThreadsLE->text().toInt();
   data.patternWidth = m_Ui->patternWidthLE->text().toInt();
-  data.binningFactor = m_Ui->binningFactorLE->text().toInt();
+//  data.binningFactor = m_Ui->binningFactorLE->text().toInt();
   data.patternHeight = m_Ui->patternHeightLE->text().toInt();
   data.patternDataFile = m_PatternDataFile;
   data.hdfStrings = m_SelectedHDF5Path;
@@ -381,12 +384,12 @@ void ADPMap_UI::readSession(const QJsonObject &obj)
     m_Ui->roi2LE->blockSignals(true);
     m_Ui->roi3LE->blockSignals(true);
     m_Ui->roi4LE->blockSignals(true);
-    m_Ui->binningFactorLE->blockSignals(true);
-    m_Ui->binningXLE->blockSignals(true);
-    m_Ui->binningYLE->blockSignals(true);
+//    m_Ui->binningFactorLE->blockSignals(true);
+//    m_Ui->binningXLE->blockSignals(true);
+//    m_Ui->binningYLE->blockSignals(true);
     m_Ui->ipfHeightLE->blockSignals(true);
     m_Ui->ipfWidthLE->blockSignals(true);
-    m_Ui->maskPatternLE->blockSignals(true);
+//    m_Ui->maskPatternLE->blockSignals(true);
     m_Ui->maskRadiusLE->blockSignals(true);
     m_Ui->hipassLE->blockSignals(true);
     m_Ui->numOfRegionsLE->blockSignals(true);
@@ -401,12 +404,12 @@ void ADPMap_UI::readSession(const QJsonObject &obj)
     m_Ui->roi2LE->setText(adpMapParamsObj[ioConstants::ROI_2].toString());
     m_Ui->roi3LE->setText(adpMapParamsObj[ioConstants::ROI_3].toString());
     m_Ui->roi4LE->setText(adpMapParamsObj[ioConstants::ROI_4].toString());
-    m_Ui->binningFactorLE->setText(adpMapParamsObj[ioConstants::BinningFactor].toString());
-    m_Ui->binningXLE->setText(adpMapParamsObj[ioConstants::BinningX].toString());
-    m_Ui->binningYLE->setText(adpMapParamsObj[ioConstants::BinningY].toString());
+//    m_Ui->binningFactorLE->setText(adpMapParamsObj[ioConstants::BinningFactor].toString());
+//    m_Ui->binningXLE->setText(adpMapParamsObj[ioConstants::BinningX].toString());
+//    m_Ui->binningYLE->setText(adpMapParamsObj[ioConstants::BinningY].toString());
     m_Ui->ipfHeightLE->setText(adpMapParamsObj[ioConstants::IPFHeight].toString());
     m_Ui->ipfWidthLE->setText(adpMapParamsObj[ioConstants::IPFWidth].toString());
-    m_Ui->maskPatternLE->setText(adpMapParamsObj[ioConstants::MaskPattern].toString());
+//    m_Ui->maskPatternLE->setText(adpMapParamsObj[ioConstants::MaskPattern].toString());
     m_Ui->maskRadiusLE->setText(adpMapParamsObj[ioConstants::MaskRadius].toString());
     m_Ui->hipassLE->setText(adpMapParamsObj[ioConstants::HipassFilter].toString());
     m_Ui->numOfRegionsLE->setText(adpMapParamsObj[ioConstants::NumberOfRegions].toString());
@@ -423,12 +426,12 @@ void ADPMap_UI::readSession(const QJsonObject &obj)
     m_Ui->roi2LE->blockSignals(false);
     m_Ui->roi3LE->blockSignals(false);
     m_Ui->roi4LE->blockSignals(false);
-    m_Ui->binningFactorLE->blockSignals(false);
-    m_Ui->binningXLE->blockSignals(false);
-    m_Ui->binningYLE->blockSignals(false);
+//    m_Ui->binningFactorLE->blockSignals(false);
+//    m_Ui->binningXLE->blockSignals(false);
+//    m_Ui->binningYLE->blockSignals(false);
     m_Ui->ipfHeightLE->blockSignals(false);
     m_Ui->ipfWidthLE->blockSignals(false);
-    m_Ui->maskPatternLE->blockSignals(false);
+//    m_Ui->maskPatternLE->blockSignals(false);
     m_Ui->maskRadiusLE->blockSignals(false);
     m_Ui->hipassLE->blockSignals(false);
     m_Ui->numOfRegionsLE->blockSignals(false);
@@ -453,12 +456,12 @@ void ADPMap_UI::writeSession(QJsonObject& obj) const
   adpMapParamsObj[ioConstants::ROI_2] = m_Ui->roi2LE->text().toInt();
   adpMapParamsObj[ioConstants::ROI_3] = m_Ui->roi3LE->text().toInt();
   adpMapParamsObj[ioConstants::ROI_4] = m_Ui->roi4LE->text().toInt();
-  adpMapParamsObj[ioConstants::BinningFactor] = m_Ui->binningFactorLE->text().toInt();
-  adpMapParamsObj[ioConstants::BinningX] = m_Ui->binningXLE->text().toInt();
-  adpMapParamsObj[ioConstants::BinningY] = m_Ui->binningYLE->text().toInt();
+//  adpMapParamsObj[ioConstants::BinningFactor] = m_Ui->binningFactorLE->text().toInt();
+//  adpMapParamsObj[ioConstants::BinningX] = m_Ui->binningXLE->text().toInt();
+//  adpMapParamsObj[ioConstants::BinningY] = m_Ui->binningYLE->text().toInt();
   adpMapParamsObj[ioConstants::IPFHeight] = m_Ui->ipfHeightLE->text().toInt();
   adpMapParamsObj[ioConstants::IPFWidth] = m_Ui->ipfWidthLE->text().toInt();
-  adpMapParamsObj[ioConstants::MaskPattern] = m_Ui->maskPatternLE->text().toInt();
+//  adpMapParamsObj[ioConstants::MaskPattern] = m_Ui->maskPatternLE->text().toInt();
   adpMapParamsObj[ioConstants::MaskRadius] = m_Ui->maskRadiusLE->text().toDouble();
   adpMapParamsObj[ioConstants::HipassFilter] = m_Ui->hipassLE->text().toDouble();
   adpMapParamsObj[ioConstants::NumberOfRegions] = m_Ui->numOfRegionsLE->text().toInt();

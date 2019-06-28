@@ -91,7 +91,10 @@ void DictionaryIndexing_UI::setupGui()
   // Run this once so that the HDF5 widget can be either disabled or enabled
   listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
 
-  setStaticIndexingMode();
+  listenIndexingModeChanged(0);
+
+  m_Ui->numOfThreadsLabel->setToolTip(tr("Number of Threads must be between 1 and %1").arg(QThreadPool::globalInstance()->maxThreadCount()));
+  m_Ui->numOfThreadsLE->setToolTip(tr("Number of Threads must be between 1 and %1").arg(QThreadPool::globalInstance()->maxThreadCount()));
 
   QStringList choices = ModuleTools::getPlatformInfo();
   m_Ui->gpuPlatformCB->insertItems(0, choices);
@@ -114,6 +117,7 @@ void DictionaryIndexing_UI::setupGui()
 // -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::createValidators()
 {
+  // Double Validators
   m_Ui->maskRadiusLE->setValidator(new QDoubleValidator(m_Ui->maskRadiusLE));
   m_Ui->samplingStepSizeXLE->setValidator(new QDoubleValidator(m_Ui->samplingStepSizeXLE));
   m_Ui->samplingStepSizeYLE->setValidator(new QDoubleValidator(m_Ui->samplingStepSizeYLE));
@@ -130,22 +134,36 @@ void DictionaryIndexing_UI::createValidators()
   m_Ui->dwellTimeLE->setValidator(new QDoubleValidator(m_Ui->dwellTimeLE));
   m_Ui->gammaCorrectionFactorLE->setValidator(new QDoubleValidator(m_Ui->gammaCorrectionFactorLE));
 
-  m_Ui->nnkLE->setValidator(new QIntValidator(m_Ui->nnkLE));
-  m_Ui->nnavLE->setValidator(new QIntValidator(m_Ui->nnavLE));
+  // Int Validators
+  m_Ui->nnkLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->nnkLE));
+
+  QIntValidator* intValidator = new QIntValidator(m_Ui->nnavLE);
+  m_Ui->nnavLE->setValidator(intValidator);
+  intValidator->setRange(1, std::numeric_limits<int>::max());
+  connect(m_Ui->nnkLE, &QLineEdit::textChanged, [=] { intValidator->setRange(1, m_Ui->nnkLE->text().toInt()); });
+
+  intValidator = new QIntValidator(m_Ui->nosmLE);
+  m_Ui->nosmLE->setValidator(intValidator);
+  intValidator->setRange(1, std::numeric_limits<int>::max());
+  connect(m_Ui->nnkLE, &QLineEdit::textChanged, [=] { intValidator->setRange(1, m_Ui->nnkLE->text().toInt()); });
+
+  intValidator = new QIntValidator(m_Ui->nismLE);
+  m_Ui->nismLE->setValidator(intValidator);
+  intValidator->setRange(1, std::numeric_limits<int>::max());
+  connect(m_Ui->nnkLE, &QLineEdit::textChanged, [=] { intValidator->setRange(1, m_Ui->nnkLE->text().toInt()); });
+
   m_Ui->roi1LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi1LE));
   m_Ui->roi2LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi2LE));
   m_Ui->roi3LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi3LE));
   m_Ui->roi4LE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->roi4LE));
-  m_Ui->nosmLE->setValidator(new QIntValidator(m_Ui->nosmLE));
-  m_Ui->nismLE->setValidator(new QIntValidator(m_Ui->nismLE));
-  m_Ui->numdictsingleLE->setValidator(new QIntValidator(m_Ui->numdictsingleLE));
-  m_Ui->ipfWidthLE->setValidator(new QIntValidator(m_Ui->ipfWidthLE));
-  m_Ui->ipfHeightLE->setValidator(new QIntValidator(m_Ui->ipfHeightLE));
-  m_Ui->numexptsingleLE->setValidator(new QIntValidator(m_Ui->numexptsingleLE));
-  m_Ui->cubochoricPointsLE->setValidator(new QIntValidator(m_Ui->cubochoricPointsLE));
-  m_Ui->numOfThreadsLE->setValidator(new QIntValidator(m_Ui->numOfThreadsLE));
-  m_Ui->numsxLE->setValidator(new QIntValidator(m_Ui->numsxLE));
-  m_Ui->numsyLE->setValidator(new QIntValidator(m_Ui->numsyLE));
+  m_Ui->numdictsingleLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->numdictsingleLE));
+  m_Ui->ipfWidthLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->ipfWidthLE));
+  m_Ui->ipfHeightLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->ipfHeightLE));
+  m_Ui->numexptsingleLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->numexptsingleLE));
+  m_Ui->cubochoricPointsLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->cubochoricPointsLE));
+  m_Ui->numOfThreadsLE->setValidator(new QIntValidator(1, QThreadPool::globalInstance()->maxThreadCount(), m_Ui->numOfThreadsLE));
+  m_Ui->numsxLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->numsxLE));
+  m_Ui->numsyLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->numsyLE));
 
   m_Ui->diZoomSB->setMaximum(std::numeric_limits<int>::max());
 }
@@ -332,9 +350,9 @@ void DictionaryIndexing_UI::listenIndexingModeChanged(int index)
   IndexingMode mode = static_cast<IndexingMode>(index);
   switch(mode)
   {
-  case IndexingMode::Static:
-    setStaticIndexingMode();
-    break;
+//  case IndexingMode::Static:
+//    setStaticIndexingMode();
+//    break;
   case IndexingMode::Dynamic:
     setDynamicIndexingMode();
     break;

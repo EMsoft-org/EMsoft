@@ -74,7 +74,7 @@ EMsoftApplication::EMsoftApplication(int& argc, char** argv)
 , m_OpenDialogLastDirectory("")
 {
   SVStyle* style = SVStyle::Instance();
-  style->loadStyleSheet(":/Green.json");
+  style->loadStyleSheet(":/light.qss");
 
   // Create the default menu bar that gets displayed if there is no EMsoftWorkbench_UI instance (MacOS only)
   createDefaultMenuBar();
@@ -503,10 +503,18 @@ QMenu* EMsoftApplication::createThemeMenu(QWidget* parent)
   QMenu* menuThemes = new QMenu("Themes", parent);
 
   QString themePath = ":/default.qss";
-
   QAction* action = menuThemes->addAction("Default", [=] { style->loadStyleSheet(themePath); });
   action->setCheckable(true);
   if(themePath == style->getCurrentThemeFilePath())
+  {
+    action->setChecked(true);
+  }
+  themeActionGroup->addAction(action);
+
+  QString lightPath = ":/light.qss";
+  action = menuThemes->addAction("Light", [=] { style->loadStyleSheet(lightPath); });
+  action->setCheckable(true);
+  if(lightPath == style->getCurrentThemeFilePath())
   {
     action->setChecked(true);
   }

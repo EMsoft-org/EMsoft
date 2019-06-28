@@ -67,7 +67,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>831</width>
+            <width>713</width>
             <height>839</height>
            </rect>
           </property>
@@ -102,24 +102,23 @@
               <property name="bottomMargin">
                <number>4</number>
               </property>
-              <item row="5" column="0">
-               <widget class="QLabel" name="bLabel_5">
+              <item row="5" column="2">
+               <widget class="QLineEdit" name="patternWidthLE">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Pattern Size (pixels, HxW)</string>
+                 <string>60</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
-              <item row="6" column="0">
-               <widget class="QCheckBox" name="roiCB">
-                <property name="text">
-                 <string>Region of Interest</string>
-                </property>
-                <property name="checked">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="13" column="1">
+              <item row="9" column="1">
                <widget class="QLineEdit" name="hipassLE">
                 <property name="text">
                  <string>0.05</string>
@@ -129,10 +128,16 @@
                 </property>
                </widget>
               </item>
-              <item row="8" column="1">
-               <widget class="QLineEdit" name="binningFactorLE">
+              <item row="7" column="1">
+               <widget class="QLineEdit" name="ipfHeightLE">
+                <property name="toolTip">
+                 <string>Height of inverse pole figure in pixels</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>1</string>
+                 <string>151</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -140,44 +145,33 @@
                </widget>
               </item>
               <item row="10" column="0">
-               <widget class="QLabel" name="ipfLabel">
+               <widget class="QLabel" name="numOfRegionsLabel">
+                <property name="toolTip">
+                 <string>Number of regions for adaptive histogram equalization</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>IPF Size (pixels, HxW)</string>
+                 <string>Number of Regions</string>
                 </property>
                </widget>
               </item>
-              <item row="8" column="0">
-               <widget class="QLabel" name="binningFactorLabel">
+              <item row="9" column="0">
+               <widget class="QLabel" name="hipassLabel">
                 <property name="text">
-                 <string>Binning Factor</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1">
-               <widget class="QLineEdit" name="roi3LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+                 <string>Hipass Filter</string>
                 </property>
                </widget>
               </item>
               <item row="10" column="1">
-               <widget class="QLineEdit" name="ipfHeightLE">
-                <property name="text">
-                 <string>600</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="1">
                <widget class="QLineEdit" name="numOfRegionsLE">
+                <property name="toolTip">
+                 <string>Number of regions for adaptive histogram equalization</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>10</string>
                 </property>
@@ -186,27 +180,146 @@
                 </property>
                </widget>
               </item>
-              <item row="13" column="0">
-               <widget class="QLabel" name="hipassLabel">
+              <item row="5" column="0">
+               <widget class="QLabel" name="bLabel_5">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along x and y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Hipass Filter</string>
+                 <string>Pattern Size (pixels, HxW)</string>
                 </property>
                </widget>
               </item>
-              <item row="6" column="2">
-               <widget class="QLineEdit" name="roi2LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
+              <item row="8" column="0">
+               <widget class="QLabel" name="maskRadiusLabel">
                 <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
+                 <string>Mask Radius (pixels)</string>
                 </property>
                </widget>
               </item>
-              <item row="15" column="1">
+              <item row="11" column="0">
+               <widget class="QLabel" name="numOfThreadsLabel">
+                <property name="text">
+                 <string>Number of Threads</string>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0" colspan="3">
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="roiCB">
+                  <property name="toolTip">
+                   <string>Region of interest has the point (x, y) as its lower left corner and is w x h patterns</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
+                  <property name="text">
+                   <string>Region of Interest (X, Y, W, H)</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi1LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Top left X coordinate of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi2LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Top left Y coordinate of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi3LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Width of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
+                  <property name="text">
+                   <string>20</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="roi4LE">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Height of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
+                  <property name="text">
+                   <string>20</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_27">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+              <item row="11" column="1">
                <widget class="QLineEdit" name="numOfThreadsLE">
                 <property name="text">
                  <string>20</string>
@@ -216,18 +329,14 @@
                 </property>
                </widget>
               </item>
-              <item row="9" column="1">
-               <widget class="QLineEdit" name="binningXLE">
-                <property name="text">
-                 <string>1</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="5" column="1">
                <widget class="QLineEdit" name="patternHeightLE">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along x</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>60</string>
                 </property>
@@ -236,48 +345,20 @@
                 </property>
                </widget>
               </item>
-              <item row="12" column="0">
-               <widget class="QLabel" name="maskRadiusLabel">
+              <item row="7" column="0">
+               <widget class="QLabel" name="ipfLabel">
+                <property name="toolTip">
+                 <string>Height and width of inverse pole figure in pixels</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Mask Radius</string>
+                 <string>IPF Size (pixels, HxW)</string>
                 </property>
                </widget>
               </item>
-              <item row="10" column="2">
-               <widget class="QLineEdit" name="ipfWidthLE">
-                <property name="text">
-                 <string>600</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="0">
-               <widget class="QLabel" name="binningLabel">
-                <property name="text">
-                 <string>Binning (X, Y)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="0">
-               <widget class="QLabel" name="maskPatternLabel">
-                <property name="text">
-                 <string>Mask Pattern</string>
-                </property>
-               </widget>
-              </item>
-              <item row="11" column="1">
-               <widget class="QLineEdit" name="maskPatternLE">
-                <property name="text">
-                 <string>1</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="12" column="1">
+              <item row="8" column="1">
                <widget class="QLineEdit" name="maskRadiusLE">
                 <property name="text">
                  <string>240</string>
@@ -287,60 +368,16 @@
                 </property>
                </widget>
               </item>
-              <item row="15" column="0">
-               <widget class="QLabel" name="numOfThreadsLabel">
-                <property name="text">
-                 <string>Number of Threads</string>
-                </property>
-               </widget>
-              </item>
-              <item row="14" column="0">
-               <widget class="QLabel" name="numOfRegionsLabel">
-                <property name="text">
-                 <string>Number of Regions</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="2">
-               <widget class="QLineEdit" name="patternWidthLE">
-                <property name="text">
-                 <string>80</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="1">
-               <widget class="QLineEdit" name="roi1LE">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="7" column="2">
-               <widget class="QLineEdit" name="roi4LE">
-                <property name="enabled">
-                 <bool>false</bool>
+               <widget class="QLineEdit" name="ipfWidthLE">
+                <property name="toolTip">
+                 <string>Width of inverse pole figure in pixels</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
                 </property>
                 <property name="text">
-                 <string>0</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="9" column="2">
-               <widget class="QLineEdit" name="binningYLE">
-                <property name="text">
-                 <string>1</string>
+                 <string>186</string>
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
@@ -449,7 +486,7 @@
                 <item row="0" column="1">
                  <widget class="QComboBox" name="inputTypeCB">
                   <property name="currentIndex">
-                   <number>0</number>
+                   <number>3</number>
                   </property>
                   <property name="sizeAdjustPolicy">
                    <enum>QComboBox::AdjustToContents</enum>
@@ -805,17 +842,8 @@
  <tabstops>
   <tabstop>patternHeightLE</tabstop>
   <tabstop>patternWidthLE</tabstop>
-  <tabstop>roiCB</tabstop>
-  <tabstop>roi1LE</tabstop>
-  <tabstop>roi2LE</tabstop>
-  <tabstop>roi3LE</tabstop>
-  <tabstop>roi4LE</tabstop>
-  <tabstop>binningFactorLE</tabstop>
-  <tabstop>binningXLE</tabstop>
-  <tabstop>binningYLE</tabstop>
   <tabstop>ipfHeightLE</tabstop>
   <tabstop>ipfWidthLE</tabstop>
-  <tabstop>maskPatternLE</tabstop>
   <tabstop>maskRadiusLE</tabstop>
   <tabstop>hipassLE</tabstop>
   <tabstop>numOfRegionsLE</tabstop>

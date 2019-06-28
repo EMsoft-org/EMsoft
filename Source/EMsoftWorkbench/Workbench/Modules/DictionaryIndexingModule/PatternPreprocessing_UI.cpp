@@ -107,14 +107,14 @@ void PatternPreprocessing_UI::createValidators()
 {
   m_Ui->hipassValueLE->setValidator(new QDoubleValidator(m_Ui->hipassValueLE));
 
-  m_Ui->hipassNumOfStepsLE->setValidator(new QIntValidator(m_Ui->hipassNumOfStepsLE));
-  m_Ui->minNumOfRegionsLE->setValidator(new QIntValidator(m_Ui->minNumOfRegionsLE));
-  m_Ui->maxNumOfRegionsLE->setValidator(new QIntValidator(m_Ui->maxNumOfRegionsLE));
-  m_Ui->numOfRegionsStepSizeLE->setValidator(new QIntValidator(m_Ui->numOfRegionsStepSizeLE));
-  m_Ui->patternHeightLE->setValidator(new QIntValidator(m_Ui->patternHeightLE));
-  m_Ui->patternWidthLE->setValidator(new QIntValidator(m_Ui->patternWidthLE));
-  m_Ui->ipfHeightLE->setValidator(new QIntValidator(m_Ui->ipfHeightLE));
-  m_Ui->ipfWidthLE->setValidator(new QIntValidator(m_Ui->ipfWidthLE));
+  m_Ui->hipassNumOfStepsLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->hipassNumOfStepsLE));
+  m_Ui->minNumOfRegionsLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->minNumOfRegionsLE));
+  m_Ui->maxNumOfRegionsLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->maxNumOfRegionsLE));
+  m_Ui->numOfRegionsStepSizeLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->numOfRegionsStepSizeLE));
+  m_Ui->patternHeightLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->patternHeightLE));
+  m_Ui->patternWidthLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->patternWidthLE));
+  m_Ui->ipfHeightLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->ipfHeightLE));
+  m_Ui->ipfWidthLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->ipfWidthLE));
 
   m_Ui->ppMatrixZoomSB->setMaximum(std::numeric_limits<int>::max());
 }

@@ -430,13 +430,13 @@ std::vector<int32_t> ADPMapController::ADPMapData::getIParVector() const
   iParVector[17] = numOfThreads;
   iParVector[18] = patternWidth;
   iParVector[19] = patternHeight;
-  iParVector[21] = binningFactor;
+//  iParVector[21] = binningFactor;
   iParVector[22] = patternWidth;
   iParVector[23] = patternHeight;
   iParVector[25] = ipfWidth;
   iParVector[26] = ipfHeight;
   iParVector[27] = numOfRegions;
-  iParVector[28] = maskPattern;
+//  iParVector[28] = maskPattern;
 
   if (useROI)
   {

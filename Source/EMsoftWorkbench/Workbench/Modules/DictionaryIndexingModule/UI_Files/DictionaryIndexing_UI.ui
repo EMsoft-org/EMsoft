@@ -75,7 +75,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
+            <y>-497</y>
             <width>1022</width>
             <height>1572</height>
            </rect>
@@ -189,7 +189,7 @@
               <item row="8" column="0">
                <widget class="QLabel" name="masterFileLabel">
                 <property name="text">
-                 <string>Master File</string>
+                 <string>Master Pattern File</string>
                 </property>
                </widget>
               </item>
@@ -223,6 +223,12 @@
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="bLabel_8">
+                <property name="toolTip">
+                 <string>'Dynamic' for on-the-fly indexing</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Indexing Mode</string>
                 </property>
@@ -258,11 +264,12 @@
               </item>
               <item row="1" column="1">
                <widget class="QComboBox" name="indexingModeCB">
-                <item>
-                 <property name="text">
-                  <string>Static</string>
-                 </property>
-                </item>
+                <property name="toolTip">
+                 <string>'Dynamic' for on-the-fly indexing</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <item>
                  <property name="text">
                   <string>Dynamic</string>
@@ -473,6 +480,12 @@
              <layout class="QGridLayout" name="gridLayout_10">
               <item row="1" column="0">
                <widget class="QLabel" name="ipfLabel_3">
+                <property name="toolTip">
+                 <string>Height and width of data set in pattern input file</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>IPF Size (pixels, HxW)</string>
                 </property>
@@ -480,6 +493,12 @@
               </item>
               <item row="19" column="1">
                <widget class="QLineEdit" name="LLE">
+                <property name="toolTip">
+                 <string>Distance between scintillator and illumination point</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>15767.7</string>
                 </property>
@@ -504,6 +523,12 @@
               </item>
               <item row="5" column="1">
                <widget class="QLineEdit" name="nnkLE">
+                <property name="toolTip">
+                 <string>Number of top matches to keep from the dot product results</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>50</string>
                 </property>
@@ -524,6 +549,12 @@
               </item>
               <item row="20" column="1">
                <widget class="QLineEdit" name="cubochoricPointsLE">
+                <property name="toolTip">
+                 <string>Number of cubochoric points to generate list of orientations</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>100</string>
                 </property>
@@ -535,12 +566,18 @@
               <item row="32" column="0">
                <widget class="QLabel" name="binningLabel">
                 <property name="text">
-                 <string>Binning</string>
+                 <string>Binning Mode</string>
                 </property>
                </widget>
               </item>
               <item row="22" column="1">
                <widget class="QLineEdit" name="deltaLE">
+                <property name="toolTip">
+                 <string>CCD pixel size on the scintillator surface</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>59.2</string>
                 </property>
@@ -574,6 +611,12 @@
               </item>
               <item row="25" column="1">
                <widget class="QLineEdit" name="omegaLE">
+                <property name="toolTip">
+                 <string>Angle between normal of sample and detector</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>0.0</string>
                 </property>
@@ -598,15 +641,24 @@
               </item>
               <item row="15" column="0">
                <widget class="QLabel" name="numexptsingleLabel">
+                <property name="toolTip">
+                 <string>Number of experimental files arranged in column for dot product on GPU (multiples of 16 perform better)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Numexptsingle</string>
+                 <string>Num Experimental Patterns Per GPU Column</string>
                 </property>
                </widget>
               </item>
               <item row="31" column="0">
                <widget class="QLabel" name="dwellTimeLabel">
+                <property name="toolTip">
+                 <string/>
+                </property>
                 <property name="text">
-                 <string>Dwell Time</string>
+                 <string>Beam Dwell Time (Micro S)</string>
                 </property>
                </widget>
               </item>
@@ -622,6 +674,12 @@
               </item>
               <item row="7" column="1">
                <widget class="QLineEdit" name="nosmLE">
+                <property name="toolTip">
+                 <string>Number of top matches to use for Orientation Similarity Map computation (must be less than ADP Matches)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>20</string>
                 </property>
@@ -632,6 +690,12 @@
               </item>
               <item row="21" column="0">
                <widget class="QLabel" name="thetacLabel">
+                <property name="toolTip">
+                 <string>Tilt angle of the camera (positive below horizontal)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Camera Tilt Angle (degrees)</string>
                 </property>
@@ -639,8 +703,11 @@
               </item>
               <item row="29" column="0">
                <widget class="QCheckBox" name="spatialAveragingCB">
+                <property name="toolTip">
+                 <string>Spatial Averaging Method.  Can't be used with Energy Averaging Method set to Approximate.</string>
+                </property>
                 <property name="text">
-                 <string>Spatial Averaging</string>
+                 <string>Spatial Averaging Method</string>
                 </property>
                </widget>
               </item>
@@ -653,6 +720,12 @@
               </item>
               <item row="5" column="0">
                <widget class="QLabel" name="nnkLabel">
+                <property name="toolTip">
+                 <string>Number of top matches to keep from the dot product results</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>ADP Matches</string>
                 </property>
@@ -685,6 +758,12 @@
               </item>
               <item row="19" column="0">
                <widget class="QLabel" name="LLabel">
+                <property name="toolTip">
+                 <string>Distance between scintillator and illumination point</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>L (microns)</string>
                 </property>
@@ -692,6 +771,12 @@
               </item>
               <item row="9" column="0">
                <widget class="QLabel" name="nismLabel">
+                <property name="toolTip">
+                 <string>Number of top matches to use for Indexing Success Map computation (must be less than ADP Matches)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Indexing Success Map Matches</string>
                 </property>
@@ -699,6 +784,12 @@
               </item>
               <item row="27" column="1">
                <widget class="QLineEdit" name="energyMaxLE">
+                <property name="toolTip">
+                 <string>Maximum energy to use for interpolation</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>20.0</string>
                 </property>
@@ -709,6 +800,12 @@
               </item>
               <item row="25" column="0">
                <widget class="QLabel" name="omegaLabel">
+                <property name="toolTip">
+                 <string>Angle between normal of sample and detector</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Omega</string>
                 </property>
@@ -726,13 +823,25 @@
               </item>
               <item row="14" column="0">
                <widget class="QLabel" name="numdictsingleLabel">
+                <property name="toolTip">
+                 <string>Number of dictionary patterns arranged in column for dot product on GPU (multiples of 16 perform better)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Numdictsingle</string>
+                 <string>Num Dictionary Patterns Per GPU Column</string>
                 </property>
                </widget>
               </item>
               <item row="15" column="1">
                <widget class="QLineEdit" name="numexptsingleLE">
+                <property name="toolTip">
+                 <string>Number of experimental files arranged in column for dot product on GPU (multiples of 16 perform better)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>4096</string>
                 </property>
@@ -753,6 +862,12 @@
               </item>
               <item row="1" column="1">
                <widget class="QLineEdit" name="ipfHeightLE">
+                <property name="toolTip">
+                 <string>Height of data set in pattern input file</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>151</string>
                 </property>
@@ -763,6 +878,12 @@
               </item>
               <item row="8" column="0">
                <widget class="QLabel" name="nnavLabel">
+                <property name="toolTip">
+                 <string>Number of top matches to use for orientation averaging (must be less than ADP Matches)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Orientation Avging Matches</string>
                 </property>
@@ -777,6 +898,12 @@
               </item>
               <item row="8" column="1">
                <widget class="QLineEdit" name="nnavLE">
+                <property name="toolTip">
+                 <string>Number of top matches to use for orientation averaging (must be less than ADP Matches)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>20</string>
                 </property>
@@ -787,6 +914,12 @@
               </item>
               <item row="7" column="0">
                <widget class="QLabel" name="nosmLabel">
+                <property name="toolTip">
+                 <string>Number of top matches to use for Orientation Similarity Map computation (must be less than ADP Matches)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Orientation Similarity Map Matches</string>
                 </property>
@@ -794,6 +927,12 @@
               </item>
               <item row="21" column="1">
                <widget class="QLineEdit" name="thetacLE">
+                <property name="toolTip">
+                 <string>Tilt angle of the camera (positive below horizontal)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>10.0</string>
                 </property>
@@ -804,6 +943,12 @@
               </item>
               <item row="20" column="0">
                <widget class="QLabel" name="cubochoricPointsLabel">
+                <property name="toolTip">
+                 <string>Number of cubochoric points to generate list of orientations</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Cubochoric Points</string>
                 </property>
@@ -821,8 +966,14 @@
               </item>
               <item row="22" column="0">
                <widget class="QLabel" name="deltaLabel">
+                <property name="toolTip">
+                 <string>CCD pixel size on the scintillator surface</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>CCD Pixel Size on Scin. Surface</string>
+                 <string>CCD Pixel Size on Scin. Surface (microns)</string>
                 </property>
                </widget>
               </item>
@@ -833,6 +984,12 @@
                 </property>
                 <item>
                  <widget class="QCheckBox" name="roiCB">
+                  <property name="toolTip">
+                   <string>Region of interest has the point (x, y) as its lower left corner and is w x h patterns</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
                   <property name="text">
                    <string>Region of Interest (X, Y, W, H)</string>
                   </property>
@@ -845,6 +1002,12 @@
                  <widget class="QLineEdit" name="roi1LE">
                   <property name="enabled">
                    <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Top left X coordinate of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
                   </property>
                   <property name="text">
                    <string>1</string>
@@ -859,6 +1022,12 @@
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
+                  <property name="toolTip">
+                   <string>Top left Y coordinate of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
                   <property name="text">
                    <string>1</string>
                   </property>
@@ -872,8 +1041,14 @@
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
+                  <property name="toolTip">
+                   <string>Width of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>20</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -885,8 +1060,14 @@
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
+                  <property name="toolTip">
+                   <string>Height of ROI</string>
+                  </property>
+                  <property name="toolTipDuration">
+                   <number>10000</number>
+                  </property>
                   <property name="text">
-                   <string>1</string>
+                   <string>20</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -910,8 +1091,14 @@
               </item>
               <item row="26" column="0">
                <widget class="QLabel" name="energyMinLabel">
+                <property name="toolTip">
+                 <string>Minimum energy to use for interpolation</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Energy Min</string>
+                 <string>Energy Min (keV)</string>
                 </property>
                </widget>
               </item>
@@ -941,20 +1128,38 @@
               </item>
               <item row="30" column="0">
                <widget class="QLabel" name="beamCurrentLabel">
+                <property name="toolTip">
+                 <string>Incident Beam Current</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Beam Current</string>
+                 <string>Beam Current (nA)</string>
                 </property>
                </widget>
               </item>
               <item row="27" column="0">
                <widget class="QLabel" name="energyMaxLabel">
+                <property name="toolTip">
+                 <string>Maximum energy to use for interpolation</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
-                 <string>Energy Max</string>
+                 <string>Energy Max (keV)</string>
                 </property>
                </widget>
               </item>
               <item row="30" column="1">
                <widget class="QLineEdit" name="beamCurrentLE">
+                <property name="toolTip">
+                 <string>Incident Beam Current</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>150.0</string>
                 </property>
@@ -972,6 +1177,12 @@
               </item>
               <item row="14" column="1">
                <widget class="QLineEdit" name="numdictsingleLE">
+                <property name="toolTip">
+                 <string>Number of dictionary patterns arranged in column for dot product on GPU (multiples of 16 perform better)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>4096</string>
                 </property>
@@ -995,6 +1206,12 @@
               </item>
               <item row="1" column="2">
                <widget class="QLineEdit" name="ipfWidthLE">
+                <property name="toolTip">
+                 <string>Width of data set in pattern input file</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>186</string>
                 </property>
@@ -1029,6 +1246,12 @@
               </item>
               <item row="23" column="0">
                <widget class="QLabel" name="numsLabel">
+                <property name="toolTip">
+                 <string>Number of CCD pixels along x and y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Number of CCD Pixels (X, Y)</string>
                 </property>
@@ -1073,7 +1296,7 @@
               <item row="11" column="0">
                <widget class="QLabel" name="isangleLabel">
                 <property name="text">
-                 <string>Indexing Success Threshold Angle</string>
+                 <string>Indexing Success Threshold Angle (degrees)</string>
                 </property>
                </widget>
               </item>
@@ -1086,6 +1309,12 @@
               </item>
               <item row="26" column="1">
                <widget class="QLineEdit" name="energyMinLE">
+                <property name="toolTip">
+                 <string>Minimum energy to use for interpolation</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>10.0</string>
                 </property>
@@ -1123,6 +1352,12 @@
               </item>
               <item row="23" column="2">
                <widget class="QLineEdit" name="numsyLE">
+                <property name="toolTip">
+                 <string>Number of CCD pixels along y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>480</string>
                 </property>
@@ -1157,6 +1392,12 @@
               </item>
               <item row="9" column="1">
                <widget class="QLineEdit" name="nismLE">
+                <property name="toolTip">
+                 <string>Number of top matches to use for Indexing Success Map computation (must be less than ADP Matches)</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>5</string>
                 </property>
@@ -1167,6 +1408,12 @@
               </item>
               <item row="23" column="1">
                <widget class="QLineEdit" name="numsxLE">
+                <property name="toolTip">
+                 <string>Number of CCD pixels along x</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>480</string>
                 </property>
@@ -1383,7 +1630,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
         <spacer name="horizontalSpacer_2">
@@ -1647,13 +1894,9 @@
   <tabstop>diFitToScreenBtn</tabstop>
   <tabstop>diSaveBtn</tabstop>
   <tabstop>diZoomSB</tabstop>
-  <tabstop>pushButton_7</tabstop>
-  <tabstop>lineEdit_4</tabstop>
-  <tabstop>lineEdit_5</tabstop>
-  <tabstop>pushButton_6</tabstop>
  </tabstops>
  <resources>
-  <include location="../../../../Resources/icons/images/Icons.qrc"/>
+  <include location="../../../Resources/icons/images/Icons.qrc"/>
   <include location="../../../Resources/icons/images/Icons.qrc"/>
  </resources>
  <connections/>

@@ -210,12 +210,18 @@
               <item row="3" column="0">
                <widget class="QLabel" name="hipassLabel_2">
                 <property name="text">
-                 <string>Hipass Value</string>
+                 <string>Hipass Parameter Range</string>
                 </property>
                </widget>
               </item>
               <item row="1" column="1">
                <widget class="QLineEdit" name="patternHeightLE">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along x</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>60</string>
                 </property>
@@ -249,6 +255,12 @@
               </item>
               <item row="1" column="2">
                <widget class="QLineEdit" name="patternWidthLE">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>80</string>
                 </property>
@@ -282,6 +294,12 @@
               </item>
               <item row="2" column="1">
                <widget class="QLineEdit" name="ipfHeightLE">
+                <property name="toolTip">
+                 <string>Number of patterns along x</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>600</string>
                 </property>
@@ -302,6 +320,12 @@
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="ipfLabel_2">
+                <property name="toolTip">
+                 <string>Number of patterns along x and y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>IPF Size (pixels, HxW)</string>
                 </property>
@@ -309,6 +333,12 @@
               </item>
               <item row="2" column="2">
                <widget class="QLineEdit" name="ipfWidthLE">
+                <property name="toolTip">
+                 <string>Number of patterns along y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>600</string>
                 </property>
@@ -359,6 +389,12 @@
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="bLabel_6">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along x and y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
                 <property name="text">
                  <string>Pattern Size (pixels, HxW)</string>
                 </property>

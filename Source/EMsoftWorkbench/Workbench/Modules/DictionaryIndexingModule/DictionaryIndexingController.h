@@ -52,8 +52,8 @@ public:
 
   enum class IndexingMode : EnumType
   {
-    Static = 0,
-    Dynamic
+//    Static = 0,
+    Dynamic = 0
   };
 
   enum class EnergyAveragingMethod : EnumType
