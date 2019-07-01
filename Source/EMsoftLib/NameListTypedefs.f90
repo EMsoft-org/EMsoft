@@ -1725,6 +1725,7 @@ type EMmdSTEMNameListType
         logical                 :: dwflag
         real(kind=dbl)          :: thk
         logical                 :: presorted
+        integer(kind=irg)       :: subslice
 
 end type EMmdSTEMNameListType
 

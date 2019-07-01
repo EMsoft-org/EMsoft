@@ -7820,13 +7820,14 @@ integer(kind=irg)       :: platid, devid, discsize, usenumd, selnumd(4), maxnumi
 real(kind=sgl)          :: voltage, dmin, eu(3), convergence, scalefactor(6), stride
 real(kind=dbl)          :: phi1, phi2, phi3, thk 
 logical                 :: presorted
+integer(kind=irg)       :: subslice
 
 
 
 
 namelist /MDSTEMlist/ xtalname, datafile, eu, eulerconvention, phi1, phi2, phi3, dmin, &
   voltage, convergence, platid, devid, inputfilename, scalefactor, usenumd, selnumd, &
-  discsize, stride, maxnumincell, hypslab, dwflag, thk, presorted
+  discsize, stride, maxnumincell, hypslab, dwflag, thk, presorted, subslice
 
 
 datafile            = 'undefined' ! output filename
@@ -7847,6 +7848,7 @@ hypslab             = .TRUE. ! keep this
 dwflag              = .TRUE. ! keep this
 thk                 = 1.0
 presorted           = .False.
+subslice            = 1 ! how many subslices to use, default 0
 
 
 if (present(initonly)) then
@@ -7889,6 +7891,7 @@ msnml%hypslab              = hypslab
 msnml%dwflag               = dwflag
 msnml%thk                  = thk
 msnml%presorted            = presorted
+msnml%subslice             = subslice
 
 
 end subroutine GetEMmdSTEMNameList
