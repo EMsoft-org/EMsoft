@@ -7,7 +7,7 @@ This is the first release of version 4.2; this release does not provide many cha
 ![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
 
 ## Financial Support 
-EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, ws started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of TKD and related modalities, including the creation of routines that can generate PoVRay visualization script files, was performed with support from an ONR Vannevar Bush Fellowship, N00014-­16-­1-­2821.
+EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, was started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of TKD and related modalities, including the creation of routines that can generate PoVRay visualization script files, was performed with support from an ONR Vannevar Bush Fellowship, N00014-­16-­1-­2821.
 
 ## Source 
 [This site](http://vbff.materials.cmu.edu/EMsoft) conveniently brings all EMsoft stuff together in one place.  For nightly builds, please go to [this](http://www.bluequartz.net/binaries/EMsoft/experimental) site and navigate to the most recent date for a compiled version of the entire EMsoft package.  
@@ -43,9 +43,9 @@ Note that *somepath* should be replaced with wherever you installed the SDK.  Th
 To always maintain an up-to-date version of the package, you may want to create a little script that will help you synchronize the repositories and compile in one step.  Here is an example shell script for UNIX-flavored systems; the assumptions are that the repository has been cloned into the folder EMsoftPublic, and the EMsoftData repository into EMsoftData (adjust as needed for your system):
 
 ```fortran
-cd EMsoftPublic
+cd EMsoftData
 git pull --rebase origin develop
-cd ../EMsoftData
+cd ../EMsoftPublic
 git pull --rebase origin develop
 cd ../EMsoftBuild
 make -j
@@ -70,15 +70,15 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 -  We have added several C-callable routines to the *EMsoftWrapperLib* folders; these are versions of other library functions that have been made callable by C and C++ programs.  Documentation for all routines is underway and will be posted on the previously mentioned wiki pages. 
 - Unfortunately, work on the *EMsoftWorkbench* has come to a temporary stand-still due to lack of development funds. Hopefully we will be able to pick that thread back up at some point in the near future...
 
-## What's coming in 4.3? 
+## What's coming in 4.3 and beyond? 
 - We are working on improvements to all underlying libraries.
 - We will have a new Monte Carlo program using the Discrete Losses Approximation (DLA) instead of the Continuous Slowing Down Approximation (CSDA).  DLA produces a better result than CSDA, in particular with respect to the zero-loss peak (which is pretty much absent with CSDA).  So, in principle, we should get even better agreement with experimental EBSD, ECP, and TKD patterns!
-- In July of 2018, we started working on a new pattern indexing technique that we call *SphInx*; this approach relies on a spherical fast Fourier transform of an EBSD, ECP, or TKD master pattern to index experimental patterns.  This will be significantly faster than the current version of dictionary indexing and we are really excited about this new approach!
+- In July of 2018, we started working on a new pattern indexing technique that we call *EMSphInx*; this approach relies on a spherical fast Fourier transform of an EBSD, ECP, or TKD master pattern to index experimental patterns.  This will be significantly faster than the current version of dictionary indexing and we are really excited about this new approach!
 - On the TEM side, we will have a number of new programs for the computation of STEM-DCI (diffraction contrast) images, using displacement field input from phase field, molecular dynamics, and discrete dislocation dynamics simulations.  We will also extend this approach to the SEM-based ECCI modality, and introduce the capability to compute EBSD patterns for deformed materials (i.e., containing dislocation networks derived from discrete dislocation dynamics computations).
 - With financial support from the Naval Research Lab, BlueQuartz can continue work on the *EMsoftWorkbench*; expect a new and more powerful version in this release.
 - We hope to add a few programs for the computation of optical polarized light intensity curves based on a Mueller-matrix approach.
 - Some of our developers told us they have been working on python wrappers for *EMsoft* !!!  If they are willing to make these available to us, then we will make sure they become part of one of the next releases.
-- We hope to release version 4.3 sometime in the late Spring/early Summer of 2019.
+- We hope to release version 4.3 sometime in the late Summer of 2019.
 
 
 ## License ##
