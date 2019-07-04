@@ -1435,6 +1435,8 @@ dictionaryloop: do ii = 1,cratio+1
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,qq,ierr,resultarray,indexarray)
 
       TID = OMP_GET_THREAD_NUM()
+      allocate(resultarray(Nd))
+      allocate(indexarray(Nd))
 
 ! the master thread should be the one working on the GPU computation
 !$OMP MASTER
@@ -1515,6 +1517,7 @@ dictionaryloop: do ii = 1,cratio+1
 !$OMP END DO
     end if
 
+    deallocate(indexarray, resultarray)
 ! and we end the parallel section here (all threads will synchronize).
 !$OMP END PARALLEL
 
@@ -1529,8 +1532,9 @@ end do dictionaryloop
 ierr = clReleaseKernel(kernel)
 
 ! and deallocate some arrays
-deallocate(ppend, ppendE, dict, results, dpsort, indexlist, dpindex, res, results1, results2) 
-deallocate(resulttmp, expt, dicttranspose, resultarray)
+deallocate(ppend, ppendE, res, results1, results2, resulttmp, expt, dicttranspose, tmpimageexpt)
+deallocate(indexlist1, indexlist2, indexarray, indextmp)
+nullify(dict, results, dpsort, indexlist, dpindex)
 
 end subroutine EMsoftCEBSDDI
 
