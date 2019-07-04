@@ -84,8 +84,8 @@ void EMsoftCEBSDDIpreview
 */
 
 void EMsoftCEBSDDI
-	(size_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
-	 float* resultmain, size_t* indexmain, ProgCallBackTypeDI3 callback, ProgCallBackTypeError errorcallback,
+	(int32_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
+	 float* resultmain, int32_t* indexmain, ProgCallBackTypeDI3 callback, ProgCallBackTypeError errorcallback,
      size_t object, bool* cancel); 
 
 /**
