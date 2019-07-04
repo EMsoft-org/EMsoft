@@ -4704,7 +4704,7 @@ logical,OPTIONAL,INTENT(IN)                     :: initonly
 logical                                         :: skipread = .FALSE.
 
 integer(kind=irg)                               :: pgnum, nsteps, gridtype
-real(kind=dbl)                                  :: rodrigues(4), maxmisor, conevector(3), semiconeangle
+real(kind=dbl)                                  :: rodrigues(4), qFZ(4), axFZ(4), maxmisor, conevector(3), semiconeangle
 character(fnlen)                                :: samplemode
 character(fnlen)                                :: xtalname
 character(fnlen)                                :: euoutname
@@ -4717,13 +4717,15 @@ character(fnlen)                                :: axoutname
 
 ! namelist components
 namelist / RFZlist / pgnum, nsteps, gridtype, euoutname, cuoutname, hooutname, rooutname, quoutname, omoutname, axoutname, &
-                     samplemode, rodrigues, maxmisor, conevector, semiconeangle, xtalname
+                     samplemode, rodrigues, maxmisor, conevector, semiconeangle, xtalname, qFZ, axFZ
 
 ! initialize to default values
 pgnum = 32
 nsteps = 50
 gridtype = 0
 rodrigues = (/ 0.D0, 0.D0, 0.D0, 0.D0 /)  ! initialize as the identity rotation
+qFZ= (/ 1.D0, 0.D0, 0.D0, 0.D0 /)         ! initialize as the identity rotation
+axFZ= (/ 0.D0, 0.D0, 1.D0, 0.D0 /)         ! initialize as the identity rotation
 maxmisor = 5.D0                           ! in degrees
 samplemode = 'RFZ'                        ! or 'MIS' for sampling inside a ball with constant misorientation w.r.t. rodrigues
 ! or 'CON' for conical sampling around a unitvector for a cone with semi opening angle semiconangle
@@ -4754,6 +4756,8 @@ rfznl%pgnum  = pgnum
 rfznl%nsteps = nsteps
 rfznl%gridtype = gridtype
 rfznl%rodrigues = rodrigues
+rfznl%qFZ = qFZ
+rfznl%axFZ = axFZ
 rfznl%maxmisor = maxmisor
 rfznl%samplemode = samplemode
 rfznl%conevector = conevector

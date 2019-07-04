@@ -190,23 +190,39 @@ end subroutine getFZtypeandorder
 !> @param rod Rodrigues coordinates  (double precision)
 !> @param FZtype FZ type
 !> @param FZorder FZ order
+!> @param qFZ quaternion that rotates the FZ into a new orientation (optional)
 !
 !> @date 01/01/15 MDG 1.0 new routine, needed for dictionary indexing approach
 !> @date 06/04/15 MDG 1.1 corrected infty to inftyd (double precision infinity)
 !> @date 04/02/17 MDG 1.2 expanded FZ types to include misorientation FZs and icosahedral
+!> @date 07/04/19 MDG 1.3 added optional parameter to rotate the FZ into an arbitrary orientation
 !--------------------------------------------------------------------------
-recursive function IsinsideFZ(rod,FZtype,FZorder) result(insideFZ)
+recursive function IsinsideFZ(rod,FZtype,FZorder,qFZ) result(insideFZ)
 !DEC$ ATTRIBUTES DLLEXPORT :: IsinsideFZ
 
 use constants
 use math
+use quaternions
+use rotations
 
 IMPLICIT NONE
 
 real(kind=dbl), INTENT(IN)              :: rod(4)
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
+real(kind=dbl),INTENT(IN),OPTIONAL      :: qFZ(4)
 logical                                 :: insideFZ
+
+real(kind=dbl)                          :: newrod(4), qu(4)
+
+! do we need to rotate the FZ ? (we do this by rotating rod in the opposite way)
+if (present(qFZ)) then 
+  qu = ro2qu(rod)
+  qu = quat_mult( qFZ, quat_mult(qu, conjg(qFZ) )  )
+  newrod = qu2ro(qu)
+else
+  newrod = rod
+end if
 
 insideFZ = .FALSE.
 
@@ -216,17 +232,17 @@ insideFZ = .FALSE.
     case (0)
       insideFZ = .TRUE.   ! all points are inside the FZ
     case (1)
-      insideFZ = insideCyclicFZ(rod,FZtype,FZorder)        ! infinity is checked inside this function
+      insideFZ = insideCyclicFZ(newrod,FZtype,FZorder)        ! infinity is checked inside this function
     case (2)
-      if (rod(4).ne.inftyd()) insideFZ = insideDihedralFZ(rod,FZorder)
+      if (rod(4).ne.inftyd()) insideFZ = insideDihedralFZ(newrod,FZorder)
     case (3)
-      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(rod,'tet')
+      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(newrod,'tet')
     case (4)
-      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(rod,'oct')
+      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(newrod,'oct')
     case (5) ! icosahedral symmetry
-      if (rod(4).ne.inftyd()) insideFZ = insideIcosahedralFZ(rod)
+      if (rod(4).ne.inftyd()) insideFZ = insideIcosahedralFZ(newrod)
     case (6) ! cubic-hexagonal misorientation FZ
-      if (rod(4).ne.inftyd()) insideFZ = insideCubeHexFZ(rod)
+      if (rod(4).ne.inftyd()) insideFZ = insideCubeHexFZ(newrod)
     case (7)
 !     if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'oct')
     case (8)
@@ -604,8 +620,9 @@ end subroutine delete_FZlist
 !> @date 09/15/15 MDG 2.1 removed explicit origin allocation; changed while to do loops.
 !> @date 01/17/15 MDG 2.2 added gridtype option
 !> @date 05/22/16 MDG 2.3 correction for monoclinic symmetry with twofold axis along b, not c !!!
+!> @date 07/04/19 MDG 2.4 added option to rotate FZ before sampling
 !--------------------------------------------------------------------------
-recursive subroutine SampleRFZ(nsteps,pgnum,gridtype,FZcnt,FZlist)
+recursive subroutine SampleRFZ(nsteps,pgnum,gridtype,FZcnt,FZlist, qFZ)
 !DEC$ ATTRIBUTES DLLEXPORT :: SampleRFZ
 
 use typedefs
@@ -619,11 +636,15 @@ integer(kind=irg), INTENT(IN)        :: pgnum
 integer(kind=irg), INTENT(IN)        :: gridtype
 integer(kind=irg),INTENT(OUT)        :: FZcnt                ! counts number of entries in linked list
 type(FZpointd),pointer,INTENT(OUT)   :: FZlist               ! pointers
+real(kind=dbl),INTENT(IN),OPTIONAL   :: qFZ(4)
 
 real(kind=dbl)                       :: x, y, z, rod(4), delta, shift, sedge, ztmp
 type(FZpointd), pointer              :: FZtmp, FZtmp2
 integer(kind=irg)                    :: FZtype, FZorder, i, j, k
-logical                              :: b
+logical                              :: b, rotateFZ = .FALSE.
+
+
+if (present(qFZ)) rotateFZ = .TRUE.
 
 ! cube semi-edge length s = 0.5D0 * LPs%ap
 ! step size for sampling of grid; total number of samples = (2*nsteps+1)**3
@@ -678,7 +699,11 @@ FZorder = FZoarray(pgnum)
 
 ! If insideFZ=.TRUE., then add this point to the linked list FZlist and keep
 ! track of how many points there are on this list
-       b = IsinsideFZ(rod,FZtype,FZorder)
+       if (rotateFZ.eqv..TRUE.) then 
+         b = IsinsideFZ(rod,FZtype,FZorder,qFZ)
+       else
+         b = IsinsideFZ(rod,FZtype,FZorder)
+       end if
        if (b) then 
         if (.not.associated(FZlist)) then
           allocate(FZlist)

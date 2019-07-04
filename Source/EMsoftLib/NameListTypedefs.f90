@@ -994,6 +994,8 @@ type RFZNameListType
     integer(kind=irg)       :: pgnum
     integer(kind=irg)       :: nsteps
     integer(kind=irg)       :: gridtype
+    real(kind=dbl)          :: qFZ(4)
+    real(kind=dbl)          :: axFZ(4)
     real(kind=dbl)          :: rodrigues(4)
     real(kind=dbl)          :: maxmisor
     real(kind=dbl)          :: conevector(3)
