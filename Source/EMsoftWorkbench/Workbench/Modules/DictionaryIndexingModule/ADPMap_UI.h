@@ -43,6 +43,8 @@
 
 #include "ui_ADPMap_UI.h"
 
+class ChoosePatternsDatasetDialog;
+
 class ADPMap_UI : public QWidget
 {
   Q_OBJECT
@@ -64,22 +66,16 @@ public:
   bool validateData();
 
   /**
-   * @brief setInputType
-   * @param inputType
+   * @brief readSession
+   * @param obj
    */
-  void setInputType(ADPMapController::InputType inputType);
+  void readSession(const QJsonObject& obj);
 
   /**
-   * @brief setPatternDataFile
-   * @param filePath
+   * @brief writeSession
+   * @param obj
    */
-  void setPatternDataFile(const QString &filePath);
-
-  /**
-   * @brief setSelectedHDF5Path
-   * @param path
-   */
-  void setSelectedHDF5Path(const QStringList &path);
+  void writeSession(QJsonObject& obj) const;
 
 protected:
   /**
@@ -99,6 +95,23 @@ protected slots:
   void listenADPGenerationFinished();
 
   /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(int index);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString &filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
    * @brief listenROICheckboxStateChanged
    * @param state
    */
@@ -115,7 +128,7 @@ signals:
   void warningMessageGenerated(const QString &msg);
   void stdOutputMessageGenerated(const QString &msg);
 
-  void selectedPatternPixelChanged(const QPoint &patternPixel);
+  void selectedADPCoordinateChanged(const QPoint &patternPixel);
 
   void adpMapGenerationStarted();
   void adpMapGenerationFinished();
@@ -130,6 +143,8 @@ private:
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
+
+  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
 
   QPoint m_SelectedADPPatternCoords = QPoint(-1, -1);
 
@@ -158,6 +173,24 @@ private:
    * @return
    */
   ADPMapController::ADPMapData getADPMapData();
+
+  /**
+   * @brief setInputType
+   * @param inputType
+   */
+  void setInputType(ADPMapController::InputType inputType);
+
+  /**
+   * @brief setPatternDataFile
+   * @param filePath
+   */
+  void setPatternDataFile(const QString &filePath);
+
+  /**
+   * @brief setSelectedHDF5Path
+   * @param path
+   */
+  void setSelectedHDF5Path(const QStringList &path);
 
 public:
   ADPMap_UI(const ADPMap_UI&) = delete; // Copy Constructor Not Implemented

@@ -61,7 +61,7 @@
 #include "H5Support/QH5Lite.h"
 #include "H5Support/QH5Utilities.h"
 
-#include "Modules/MonteCarloSimulationModule/cl.hpp"
+#include "Modules/cl.hpp"
 
 #define CL_VECTOR std::vector
 
@@ -1133,29 +1133,6 @@ int MonteCarloSimulationController::getnumCLPlatforms() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QStringList MonteCarloSimulationController::getPlatformInfo() const
-{
-  QStringList platformInfos;
-  CL_VECTOR<cl::Platform> platforms;
-  cl::Platform::get(&platforms);
-  QString str;
-  QTextStream out(&str);
-  for(size_t i = 0; i < platforms.size(); i++)
-  {
-    cl::Platform curPlat = platforms[i];
-    QString ss = QObject::tr("Platform ");
-    ss.append(QString::number(i + 1));
-    ss.append(": ");
-    QString tt = QString::fromStdString(curPlat.getInfo<CL_PLATFORM_NAME>());
-    ss.append(tt);
-    platformInfos.push_back(ss);
-  }
-  return platformInfos;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 void MonteCarloSimulationController::writePlatformInfo() const
 {
   std::vector<cl::Platform> platforms;
@@ -1208,32 +1185,6 @@ void MonteCarloSimulationController::writeDeviceInfo(int platformID) const
     ss.append(tt);
     // std::cout << ss.toStdString();
   }
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QStringList MonteCarloSimulationController::getDeviceInfo(int platformID) const
-{
-  QStringList deviceInfos;
-
-  CL_VECTOR<cl::Platform> platforms;
-  cl::Platform::get(&platforms);
-  cl::Platform selectedPlatform = platforms[platformID - 1];
-
-  CL_VECTOR<cl::Device> devices;
-  selectedPlatform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
-  for(int i = 0; i < devices.size(); i++)
-  {
-    cl::Device curDev = devices[i];
-    QString ss = QObject::tr("GPU Device ");
-    ss.append(QString::number(i + 1));
-    ss.append(": ");
-    QString tt = QString::fromStdString(curDev.getInfo<CL_DEVICE_NAME>());
-    ss.append(tt);
-    deviceInfos.push_back(ss);
-  }
-  return deviceInfos;
 }
 
 // -----------------------------------------------------------------------------

@@ -37,7 +37,7 @@
 
 #include <QtWidgets/QWidget>
 
-#include "SIMPLib/Math/SIMPLibMath.h"
+#include "EbsdLib/Math/EbsdLibMath.h"
 
 class PatternDisplay_UI;
 

@@ -37,17 +37,21 @@
 
 #include <QtCore/QFutureWatcher>
 
-#include "Modules/IModuleUI.h"
-#include "Modules/DictionaryIndexingModule/ADPMapController.h"
-#include "Modules/DictionaryIndexingModule/PatternPreprocessingController.h"
+#include "Common/Constants.h"
+
+#include "Modules/DictionaryIndexingModule/DictionaryIndexingController.h"
 
 #include "ui_DictionaryIndexing_UI.h"
+
+class ChoosePatternsDatasetDialog;
 
 class DictionaryIndexing_UI : public QWidget
 {
   Q_OBJECT
 
 public:
+  using InputType = EMsoftWorkbenchConstants::InputType;
+
   /**
    * @brief DictionaryIndexing_UI
    * @param parent
@@ -59,19 +63,32 @@ public:
   /**
    * @brief validateData
    */
-  void validateData();
+  bool validateData();
 
   /**
-   * @brief setHipassValue
-   * @param hipassValue
+   * @brief readSession
+   * @param obj
    */
-  void setHipassValue(float hipassValue);
+  void readSession(const QJsonObject& obj);
 
   /**
-   * @brief setHipassNumberOfRegions
-   * @param numOfRegions
+   * @brief writeSession
+   * @param obj
    */
-  void setHipassNumberOfRegions(int numOfRegions);
+  void writeSession(QJsonObject& obj) const;
+
+public slots:
+  /**
+   * @brief setSelectedHipassValue
+   * @param value
+   */
+  void setSelectedHipassValue(float value);
+
+  /**
+   * @brief setSelectedNumberOfRegions
+   * @param value
+   */
+  void setSelectedNumberOfRegions(int value);
 
 protected:
   /**
@@ -81,32 +98,93 @@ protected:
 
 protected slots:
   /**
-   * @brief listenGenerateDIBtnPressed
+   * @brief listenDIGenerationStarted
    */
-  void listenGenerateDIBtnPressed();
+  void listenDIGenerationStarted();
 
   /**
-   * @brief parametersChanged
+   * @brief selectFilePath
+   * @param caption
+   * @param filter
+   * @return
    */
+  QString selectOpenFilePath(const QString &caption, const QString &filter);
+
+  /**
+   * @brief selectSaveFilePath
+   * @param caption
+   * @param filter
+   * @return
+   */
+  QString selectSaveFilePath(const QString &caption, const QString &filter);
+
+  /**
+   * @brief listenADPGenerationFinished
+   */
+  void listenDIGenerationFinished();
+
+  /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(int index);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString &filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
+   * @brief listenROICheckboxStateChanged
+   * @param state
+   */
+  void listenROICheckboxStateChanged(int state);
+
+  /**
+   * @brief listenIndexingModeChanged
+   * @param index
+   */
+  void listenIndexingModeChanged(int index);
+
+  /**
+   * @brief updateZoomFactor
+   * @param zoomFactor
+   */
+  void updateZoomFactor(float zoomFactor);
+
+signals:
+  void errorMessageGenerated(const QString &msg);
+  void warningMessageGenerated(const QString &msg);
+  void stdOutputMessageGenerated(const QString &msg);
+
+  void selectedADPCoordinateChanged(const QPoint &patternPixel);
+
+  void diGenerationStarted();
+  void diGenerationFinished();
+
   void parametersChanged();
-
-private slots:
-  /**
-   * @brief generateDIThreadFinished
-   */
-  void generateDIThreadFinished();
 
 private:
   QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
 
-  PatternPreprocessingController* m_DIController = nullptr;
+  DictionaryIndexingController* m_DIController = nullptr;
 
-  float m_HipassValue = -1.0f;
-  int m_HipassNumOfRegions = -1;
+  InputType m_InputType = InputType::Binary;
+  QString m_PatternDataFile;
+  QStringList m_SelectedHDF5Path;
 
-  QString m_CurrentOpenFile;
+  float m_SelectedHipassValue = -1.0f;
+  int m_SelectedNumOfRegions = -1;
 
-  QString m_LastFilePath = "";
+  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
+
+  QString m_OpenDialogLastDirectory = "";
   QSharedPointer<QFutureWatcher<void>> m_DIWatcher;
 
   /**
@@ -120,11 +198,6 @@ private:
   void createModificationConnections();
 
   /**
-   * @brief initializeSpinBoxLimits
-   */
-  void initializeSpinBoxLimits();
-
-  /**
    * @brief createWidgetConnections
    */
   void createWidgetConnections();
@@ -133,7 +206,35 @@ private:
    * @brief getData
    * @return
    */
-  ADPMapController::ADPMapData getDIData();
+  DictionaryIndexingController::DIData getDIData();
+
+  /**
+   * @brief setInputType
+   * @param inputType
+   */
+  void setInputType(InputType inputType);
+
+  /**
+   * @brief setPatternDataFile
+   * @param filePath
+   */
+  void setPatternDataFile(const QString &filePath);
+
+  /**
+   * @brief setSelectedHDF5Path
+   * @param path
+   */
+  void setSelectedHDF5Path(const QStringList &path);
+
+  /**
+   * @brief setStaticIndexingMode
+   */
+  void setStaticIndexingMode();
+
+  /**
+   * @brief setDynamicIndexingMode
+   */
+  void setDynamicIndexingMode();
 
 public:
   DictionaryIndexing_UI(const DictionaryIndexing_UI&) = delete; // Copy Constructor Not Implemented

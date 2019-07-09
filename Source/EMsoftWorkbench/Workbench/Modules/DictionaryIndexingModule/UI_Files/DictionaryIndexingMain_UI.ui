@@ -21,109 +21,25 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_6">
    <property name="leftMargin">
-    <number>4</number>
+    <number>8</number>
    </property>
    <property name="topMargin">
-    <number>4</number>
+    <number>8</number>
    </property>
    <property name="rightMargin">
-    <number>4</number>
+    <number>8</number>
    </property>
    <property name="bottomMargin">
-    <number>4</number>
+    <number>8</number>
    </property>
-   <item row="2" column="0">
-    <widget class="QPushButton" name="choosePatternsBtn">
-     <property name="text">
-      <string>Choose Pattern Dataset...</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" colspan="4">
-    <layout class="QGridLayout" name="gridLayout_12">
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="inputTypeLabel">
-       <property name="text">
-        <string>Input Type</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QComboBox" name="inputTypeCB">
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <property name="sizeAdjustPolicy">
-        <enum>QComboBox::AdjustToContents</enum>
-       </property>
-       <item>
-        <property name="text">
-         <string>Binary</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>TSLup1</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>TSLup2</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>TSLHDF</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>OxfordBinary</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>OxfordHDF</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>EMEBSD</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>BrukerHDF</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <spacer name="horizontalSpacer_7">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
-   <item row="7" column="0" colspan="4">
+   <item row="4" column="0" colspan="2">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
      </property>
      <widget class="QWidget" name="avgDotProductMapTab">
       <attribute name="title">
-       <string>1. Average Dot Product Map</string>
+       <string>Average Dot Product Map</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_7" columnstretch="0">
        <property name="leftMargin">
@@ -145,7 +61,7 @@
      </widget>
      <widget class="QWidget" name="patternPreprocessingTab">
       <attribute name="title">
-       <string>2. Pattern Preprocessing</string>
+       <string>Pattern Preprocessing</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3" columnstretch="0">
        <property name="leftMargin">
@@ -165,81 +81,29 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="dictionaryIndexingTab">
+      <attribute name="title">
+       <string>Dictionary Indexing</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="DictionaryIndexing_UI" name="dictionaryIndexingUI" native="true"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
-   </item>
-   <item row="3" column="0" colspan="4">
-    <layout class="QGridLayout" name="gridLayout_11">
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <item row="1" column="1">
-      <widget class="QLabel" name="patternDsetPathLabel">
-       <property name="text">
-        <string>N/A</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <spacer name="horizontalSpacer_20">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="1" column="2">
-      <spacer name="horizontalSpacer_21">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_3">
-       <property name="text">
-        <string>Pattern Dataset:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="patternDataFileLabel">
-       <property name="text">
-        <string>N/A</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Pattern Data File:</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="2" column="1" colspan="3">
-    <spacer name="horizontalSpacer_8">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>
@@ -256,9 +120,15 @@
    <header location="global">PatternPreprocessing_UI.h</header>
    <container>1</container>
   </customwidget>
+  <customwidget>
+   <class>DictionaryIndexing_UI</class>
+   <extends>QWidget</extends>
+   <header location="global">DictionaryIndexing_UI.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../Resources/icons/images/Icons.qrc"/>
+  <include location="../../../Resources/icons/images/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

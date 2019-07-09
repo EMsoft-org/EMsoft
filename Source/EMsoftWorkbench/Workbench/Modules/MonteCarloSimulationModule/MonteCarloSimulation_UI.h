@@ -35,7 +35,6 @@
 
 #pragma once
 
-
 #include "Modules/IModuleUI.h"
 #include "Modules/MonteCarloSimulationModule/MonteCarloSimulationController.h"
 

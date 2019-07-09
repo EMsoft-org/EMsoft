@@ -73,12 +73,12 @@ public:
     int roi_2;
     int roi_3;
     int roi_4;
-    int binningFactor;
-    int binningX;
-    int binningY;
+//    int binningFactor;
+//    int binningX;
+//    int binningY;
     int ipfHeight;
     int ipfWidth;
-    int maskPattern;
+//    int maskPattern;
     float maskRadius;
     float hipassFilter;
     int numOfRegions;
@@ -97,13 +97,6 @@ public:
    * @param data
    */
   void createADPMap(const ADPMapData &data);
-
-  /**
-   * @brief validateADPMapValues
-   * @param data
-   * @return
-   */
-  bool validateADPMapValues(ADPMapController::ADPMapData data);
 
   /**
    * @brief setUpdateProgress

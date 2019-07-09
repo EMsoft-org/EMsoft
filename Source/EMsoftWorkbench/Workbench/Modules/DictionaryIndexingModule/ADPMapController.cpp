@@ -379,50 +379,6 @@ void ADPMapController::initializeData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool ADPMapController::validateADPMapValues(ADPMapData data)
-{
-//  QString inputPath = data.patternDataFile;
-//  if (inputPath.isEmpty())
-//  {
-//    QString ss = QObject::tr("The input pattern data file path is empty.");
-//    emit errorMessageGenerated(ss);
-//    return false;
-//  }
-
-//  QFileInfo inFi(inputPath);
-//  if(!inFi.exists())
-//  {
-//    QString ss = QObject::tr("The input pattern data file with path '%1' does not exist.").arg(inputPath);
-//    emit errorMessageGenerated(ss);
-//    return false;
-//  }
-
-//  QMimeDatabase db;
-//  QMimeType mime = db.mimeTypeForFile(inputPath);
-//  if (!mime.inherits("application/x-hdf5") && !mime.inherits("application/x-hdf"))
-//  {
-//    QString ss = QObject::tr("The input pattern data file at path '%1' is not an HDF5 file.").arg(inputPath);
-//    emit errorMessageGenerated(ss);
-//    return false;
-//  }
-
-  if(data.inputType == ADPMapController::InputType::TSLHDF || data.inputType == ADPMapController::InputType::BrukerHDF ||
-     data.inputType == ADPMapController::InputType::OxfordHDF)
-  {
-    if (data.hdfStrings.isEmpty())
-    {
-      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
-      emit errorMessageGenerated(ss);
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 std::vector<int32_t> ADPMapController::ADPMapData::getIParVector() const
 {
   std::vector<int32_t> iParVector(SizeConstants::IParSize, 0);
@@ -430,13 +386,13 @@ std::vector<int32_t> ADPMapController::ADPMapData::getIParVector() const
   iParVector[17] = numOfThreads;
   iParVector[18] = patternWidth;
   iParVector[19] = patternHeight;
-  iParVector[21] = binningFactor;
+//  iParVector[21] = binningFactor;
   iParVector[22] = patternWidth;
   iParVector[23] = patternHeight;
   iParVector[25] = ipfWidth;
   iParVector[26] = ipfHeight;
   iParVector[27] = numOfRegions;
-  iParVector[28] = maskPattern;
+//  iParVector[28] = maskPattern;
 
   if (useROI)
   {

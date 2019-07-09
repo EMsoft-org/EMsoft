@@ -59,6 +59,8 @@
 #include "Common/FileIOTools.h"
 #include "Common/PatternTools.h"
 
+#include "Modules/ModuleTools.hpp"
+
 #include "QtSupport/QtSSettings.h"
 
 namespace ioConstants = EMsoftWorkbenchConstants::IOStrings;
@@ -100,7 +102,7 @@ void MonteCarloSimulation_UI::setupGui()
   // Show/Hide the correct widgets
   on_mcModeCB_currentIndexChanged(0);
 
-  QStringList choices = m_Controller->getPlatformInfo();
+  QStringList choices = ModuleTools::getPlatformInfo();
   gpuPlatformCB->insertItems(0, choices);
   if(gpuPlatformCB->count() > 0)
   {
@@ -108,7 +110,7 @@ void MonteCarloSimulation_UI::setupGui()
   }
 
   // Grab the first device as a default
-  choices = m_Controller->getDeviceInfo(1);
+  choices = ModuleTools::getDeviceInfo(1);
   gpuDeviceCB->insertItems(0, choices);
   if(gpuDeviceCB->count() > 0)
   {
@@ -121,7 +123,7 @@ void MonteCarloSimulation_UI::setupGui()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::on_gpuPlatformCB_currentIndexChanged(int index) const
 {
-  QStringList choices = m_Controller->getDeviceInfo(index + 1);
+  QStringList choices = ModuleTools::getDeviceInfo(index + 1);
   gpuDeviceCB->clear();
   gpuDeviceCB->insertItems(0, choices);
   if(gpuDeviceCB->count() > 0)

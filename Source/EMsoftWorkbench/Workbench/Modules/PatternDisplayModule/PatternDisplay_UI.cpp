@@ -188,7 +188,7 @@ void PatternDisplay_UI::createWidgetConnections() const
   connect(m_Controller, SIGNAL(imageRangeChanged(int,int)), monteCarloDisplayWidget, SLOT(setEnergyBinSpinBoxRange(int,int)));
 
   // Connections to allow the controller to tell the workbench parameters section that it has new ekeVs values
-  connect(m_Controller, SIGNAL(minMaxEnergyLevelsChanged(FloatArrayType::Pointer)), this, SLOT(setMinAndMaxEnergyLevelChoices(FloatArrayType::Pointer)));
+  connect(m_Controller, SIGNAL(minMaxEnergyLevelsChanged(std::vector<float>)), this, SLOT(setMinAndMaxEnergyLevelChoices(std::vector<float>)));
 
   // Connections to allow the image viewers to request a new image from the controller
   connect(masterPatternDisplayWidget, SIGNAL(controlsChanged(MPMCDisplayWidget::MPMCData)), m_Controller, SLOT(updateMPImage(MPMCDisplayWidget::MPMCData)));

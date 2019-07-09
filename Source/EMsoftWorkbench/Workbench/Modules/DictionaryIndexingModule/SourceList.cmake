@@ -48,6 +48,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
   ${${MODULE_NAME}_DIR}/DictionaryIndexingMain_UI.h
   ${${MODULE_NAME}_DIR}/ADPMapController.h
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.h
+  ${${MODULE_NAME}_DIR}/DictionaryIndexingController.h
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.h
   ${${MODULE_NAME}_DIR}/PatternPreprocessing_UI.h
   ${${MODULE_NAME}_DIR}/PatternPreprocessingController.h
@@ -72,6 +73,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_SRCS
   ${${MODULE_NAME}_DIR}/DictionaryIndexingMain_UI.cpp
   ${${MODULE_NAME}_DIR}/ADPMapController.cpp
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.cpp
+  ${${MODULE_NAME}_DIR}/DictionaryIndexingController.cpp
   ${${MODULE_NAME}_DIR}/ChoosePatternsDatasetDialog.cpp
   ${${MODULE_NAME}_DIR}/PatternPreprocessing_UI.cpp
   ${${MODULE_NAME}_DIR}/PatternPreprocessingController.cpp

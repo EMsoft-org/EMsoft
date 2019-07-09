@@ -43,8 +43,6 @@
 
 #include "ui_DictionaryIndexingMain_UI.h"
 
-class ChoosePatternsDatasetDialog;
-
 class DictionaryIndexingMain_UI : public IModuleUI
 {
   Q_OBJECT
@@ -86,24 +84,6 @@ public:
    */
   void validateData() override;
 
-  /**
-   * @brief getInputType
-   * @return
-   */
-  InputType getInputType() const;
-
-  /**
-   * @brief getPatternDataFile
-   * @return
-   */
-  QString getPatternDataFile() const;
-
-  /**
-   * @brief getSelectedHDF5Paths
-   * @return
-   */
-  QStringList getSelectedHDF5Paths() const;
-
 protected:
   /**
    * @brief setupGui
@@ -138,21 +118,14 @@ protected slots:
   void listenPatternPreprocessingFinished();
 
   /**
-   * @brief listenInputTypeChanged
+   * @brief listenDictionaryIndexingStarted
    */
-  void listenInputTypeChanged(int index);
+  void listenDictionaryIndexingStarted();
 
   /**
-   * @brief listenPatternDataFileChanged
-   * @param filePath
+   * @brief listenDictionaryIndexingFinished
    */
-  void listenPatternDataFileChanged(const QString &filePath);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+  void listenDictionaryIndexingFinished();
 
   /**
    * @brief parametersChanged
@@ -161,8 +134,6 @@ protected slots:
 
 private:
   QSharedPointer<Ui::DictionaryIndexingMain_UI> m_Ui;
-
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
 
   QString m_CurrentOpenFile;
 

@@ -54,11 +54,12 @@ namespace DictionaryIndexingModuleConstants
 
   namespace IOStrings
   {
-    const QString InputParam = "Input Parameters";
-    const QString PatternDataFile = "Pattern Data File";
+    const QString DIModule = "Dictionary Indexing Module";
     const QString InputType = "Input Type";
 
-    const QString CompParam = "Computational Parameters";
+    const QString ADPMapParams = "Average Dot Product Map Parameters";
+    const QString PPParameters = "Pattern Preprocessing Parameters";
+    const QString DIParams = "Dictionary Indexing Parameters";
     const QString PatternHeight = "Pattern Height";
     const QString PatternWidth = "Pattern Width";
     const QString UseROI = "Use ROI";
@@ -76,9 +77,16 @@ namespace DictionaryIndexingModuleConstants
     const QString HipassFilter = "Hipass Filter";
     const QString NumberOfRegions = "Number Of Regions";
     const QString NumberOfThreads = "Number Of Threads";
+    const QString SelectedADPCoordX = "Selected ADP Coord X";
+    const QString SelectedADPCoordY = "Selected ADP Coord Y";
 
-    const QString OutputParam = "Output Parameters";
-    const QString OutputImageFile = "Output Image File";
+    const QString HipassValue("Hipass Value");
+    const QString HipassNumOfSteps("Hipass Number of Steps");
+    const QString MinNumOfRegions("Minimum Number of Regions");
+    const QString MaxNumOfRegions("Maximum Number of Regions");
+    const QString NumOfRegionsStepSize("Number of Regions Step Size");
+    const QString SelectedPatternImageX = "Selected Pattern Image X";
+    const QString SelectedPatternImageY = "Selected Pattern Image Y";
   }
 }
 

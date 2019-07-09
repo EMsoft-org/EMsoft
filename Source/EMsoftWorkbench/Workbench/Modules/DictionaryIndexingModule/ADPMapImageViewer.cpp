@@ -36,9 +36,14 @@
 #include "ADPMapImageViewer.h"
 
 #include <QtCore/QDebug>
+#include <QtCore/QJsonObject>
 
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
+
+#include "Modules/DictionaryIndexingModule/Constants.h"
+
+namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
 // -----------------------------------------------------------------------------
 //
@@ -90,34 +95,38 @@ void ADPMapImageViewer::paintGL()
     painter.drawLine(mouseCoords.x(), 0, mouseCoords.x(), height());
   }
 
-  // Get the current mouse coordinate and selected pixel coordinate relative to the image coordinate system
-  int statsStartingHeightOffset = 40;
-  int statsHeightSpacing = 20;
-  QString mousePosStr = "Mouse: N/A";
   if (isMouseCoordinateValid())
   {
-    mousePosStr = QObject::tr("Mouse: (%1, %2)").arg(QString::number(imageCoords.x()), QString::number(imageCoords.y()));
+    QString selectedPixelStr = QObject::tr("Pixel: (%1, %2)").arg(QString::number(imageCoords.x()), QString::number(imageCoords.y()));
+
+    painter.setPen(Qt::white);
+
+    QFontMetrics fontMetrics(painter.fontMetrics());
+    int maxStringWidth = fontMetrics.width(selectedPixelStr);
+    int maxStringHeight = fontMetrics.height();
+
+    int cursorXPadding = 10;
+    int cursorYPadding = 10;
+    int textXPadding = 5;
+    int textYPadding = 5;
+
+    QRect bgRect(m_MouseCoords.x() + cursorXPadding, m_MouseCoords.y() + cursorYPadding, maxStringWidth + textXPadding*2, maxStringHeight + textYPadding*2);
+
+    // Keep the rect from going off the screen
+    if (bgRect.x() + bgRect.width() > width())
+    {
+      int widthOverflow = bgRect.x() + bgRect.width() - width();
+      bgRect.setX(bgRect.x() - widthOverflow);
+    }
+    if (bgRect.y() + bgRect.height() > height())
+    {
+      int heightOverflow = bgRect.y()+ bgRect.height() - height();
+      bgRect.setY(bgRect.y() - heightOverflow);
+    }
+
+    painter.fillRect(bgRect, QBrush(QColor(Qt::black)));
+    painter.drawText(QPoint(bgRect.x() + textXPadding, bgRect.y() + maxStringHeight), selectedPixelStr);
   }
-
-  QString selectedPixelStr = "Selection: N/A";
-  if (isPixelSelected())
-  {
-    selectedPixelStr = QObject::tr("Selection: (%1, %2)").arg(QString::number(m_SelectedImageCoords.x()), QString::number(m_SelectedImageCoords.y()));
-  }
-
-  // Figure out the length of the longest string
-  int maxStrLen = mousePosStr.size();
-  if (selectedPixelStr.size() > maxStrLen)
-  {
-    maxStrLen = selectedPixelStr.size();
-  }
-
-  int statsX = size().width() - (maxStrLen*8);
-
-  painter.setPen(Qt::white);
-  painter.fillRect(statsX - 10, size().height() - statsStartingHeightOffset - 20, maxStrLen*8 + 5, statsStartingHeightOffset + 10, QBrush(QColor(Qt::black)));
-  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset), mousePosStr);
-  painter.drawText(QPoint(statsX, size().height() - statsStartingHeightOffset + statsHeightSpacing), selectedPixelStr);
 
   painter.end();
 }
@@ -130,7 +139,7 @@ void ADPMapImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
   if (event->button() == Qt::LeftButton)
   {
     m_SelectedImageCoords = mapToImageCoordinates(m_MouseCoords);
-    emit selectedPatternPixelChanged(m_SelectedImageCoords);
+    emit selectedADPCoordinateChanged(m_SelectedImageCoords);
 
     update();
   }
@@ -154,15 +163,6 @@ void ADPMapImageViewer::mouseMoveEvent(QMouseEvent *event)
 void ADPMapImageViewer::enterEvent(QEvent* event)
 {
   GLImageViewer::enterEvent(event);
-
-  if (!getCurrentImage().isNull())
-  {
-    setToolTip("Double-click to choose a coordinate.");
-  }
-  else
-  {
-    setToolTip("");
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -175,6 +175,30 @@ void ADPMapImageViewer::leaveEvent(QEvent* event)
   invalidateMouseCoordinate();
 
   update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ADPMapImageViewer::readSession(const QJsonObject &obj)
+{
+  GLImageViewer::readSession(obj);
+
+  m_SelectedImageCoords.setX(obj[ioConstants::SelectedADPCoordX].toInt());
+  m_SelectedImageCoords.setY(obj[ioConstants::SelectedADPCoordY].toInt());
+
+  update();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ADPMapImageViewer::writeSession(QJsonObject& obj) const
+{
+  GLImageViewer::writeSession(obj);
+
+  obj[ioConstants::SelectedADPCoordX] = m_SelectedImageCoords.x();
+  obj[ioConstants::SelectedADPCoordY] = m_SelectedImageCoords.y();
 }
 
 // -----------------------------------------------------------------------------

@@ -120,10 +120,11 @@ class  SVStyle : public QObject
     Q_PROPERTY(QColor QPushButtonDefault_text_color READ getQPushButtonDefault_text_color WRITE setQPushButtonDefault_text_color)
     Q_PROPERTY(QColor QSplitter_handle_start_color READ getQSplitter_handle_start_color WRITE setQSplitter_handle_start_color)
     Q_PROPERTY(QColor QSplitter_handle_end_color READ getQSplitter_handle_end_color WRITE setQSplitter_handle_end_color)
-    Q_PROPERTY(QColor QToolButton_background_color READ getQToolButton_background_color WRITE setQToolButton_background_color)    
-    Q_PROPERTY(QColor QToolButton_color READ getQToolButton_color WRITE setQToolButton_color)    
-    Q_PROPERTY(QColor QToolButton_border_color READ getQToolButton_border_color WRITE setQToolButton_border_color)    
-    Q_PROPERTY(QColor QToolButtonChecked_background_color READ getQToolButtonChecked_background_color WRITE setQToolButtonChecked_background_color)    
+    Q_PROPERTY(QColor QToolButton_background_color READ getQToolButton_background_color WRITE setQToolButton_background_color)
+    Q_PROPERTY(QColor QToolButton_color READ getQToolButton_color WRITE setQToolButton_color)
+    Q_PROPERTY(QColor QToolButton_border_color READ getQToolButton_border_color WRITE setQToolButton_border_color)
+    Q_PROPERTY(QColor QToolButtonChecked_color READ getQToolButtonChecked_color WRITE setQToolButtonChecked_color)
+    Q_PROPERTY(QColor QToolButtonChecked_background_color READ getQToolButtonChecked_background_color WRITE setQToolButtonChecked_background_color)
     Q_PROPERTY(QColor QToolButtonDisabled_background_color READ getQToolButtonDisabled_background_color WRITE setQToolButtonDisabled_background_color)
     Q_PROPERTY(QColor QToolButtonDisabled_color READ getQToolButtonDisabled_color WRITE setQToolButtonDisabled_color)
     Q_PROPERTY(QColor QStatusBar_border_color READ getQStatusBar_border_color WRITE setQStatusBar_border_color)    
@@ -732,6 +733,19 @@ class  SVStyle : public QObject
     * @return Value of QToolButtonChecked_background_color
     */
     QColor getQToolButtonChecked_background_color() const;
+
+    /**
+    * @brief getQToolButtonChecked_color
+    * @return
+    */
+    QColor getQToolButtonChecked_color() const;
+
+    /**
+    * @brief setQToolButtonChecked_color
+    * @param val
+    * @return
+    */
+    void setQToolButtonChecked_color(const QColor &val);
     
     /**
     * @brief Setter property for QToolButtonDisabled_background_color
@@ -1742,6 +1756,7 @@ class  SVStyle : public QObject
     QColor m_QToolButton_color;
     QColor m_QToolButton_border_color;
     QColor m_QToolButtonChecked_background_color;
+    QColor m_QToolButtonChecked_color;
     QColor m_QToolButtonDisabled_background_color;
     QColor m_QToolButtonDisabled_color;
     QColor m_QStatusBar_border_color;

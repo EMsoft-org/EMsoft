@@ -64,22 +64,16 @@ public:
   bool validateData();
 
   /**
-   * @brief setInputType
-   * @param inputType
+   * @brief readSession
+   * @param obj
    */
-  void setInputType(ADPMapController::InputType inputType);
+  void readSession(const QJsonObject& obj);
 
   /**
-   * @brief setPatternDataFile
-   * @param filePath
+   * @brief writeSession
+   * @param obj
    */
-  void setPatternDataFile(const QString &filePath);
-
-  /**
-   * @brief setSelectedHDF5Path
-   * @param path
-   */
-  void setSelectedHDF5Path(const QStringList &path);
+  void writeSession(QJsonObject& obj) const;
 
 public slots:
   /**
@@ -106,6 +100,23 @@ protected slots:
   void listenPatternPreprocessingFinished();
 
   /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(int index);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString &filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
    * @brief updateZoomFactor
    * @param zoomFactor
    */
@@ -120,7 +131,7 @@ signals:
   void patternPreprocessingFinished();
 
   void selectedHipassValueChanged(float value);
-  void selectedHipassNumOfStepsChanged(int value);
+  void selectedHipassNumOfRegionsChanged(int value);
 
   void parametersChanged();
 
@@ -134,6 +145,8 @@ private:
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
+
+  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
 
   QString m_CurrentOpenFile;
 
@@ -165,6 +178,24 @@ private:
    * @return
    */
   PatternPreprocessingController::PPMatrixData getPPMatrixData();
+
+  /**
+   * @brief setInputType
+   * @param inputType
+   */
+  void setInputType(ADPMapController::InputType inputType);
+
+  /**
+   * @brief setPatternDataFile
+   * @param filePath
+   */
+  void setPatternDataFile(const QString &filePath);
+
+  /**
+   * @brief setSelectedHDF5Path
+   * @param path
+   */
+  void setSelectedHDF5Path(const QStringList &path);
 
 public:
   PatternPreprocessing_UI(const PatternPreprocessing_UI&) = delete; // Copy Constructor Not Implemented

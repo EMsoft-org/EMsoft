@@ -37,6 +37,7 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
   ${${SUBDIR_NAME}_DIR}/MasterPatternFileReader.h
   ${${SUBDIR_NAME}_DIR}/PatternTools.h
   ${${SUBDIR_NAME}_DIR}/ProjectionConversionTask.hpp
+  ${${SUBDIR_NAME}_DIR}/EbsdLoader.h
 )
 
 
@@ -55,6 +56,7 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
   ${${SUBDIR_NAME}_DIR}/HDF5FileTreeModel.cpp
   ${${SUBDIR_NAME}_DIR}/HDF5FileTreeModelItem.cpp
   #${${SUBDIR_NAME}_DIR}/SVControlWidgets.cpp
+  ${${SUBDIR_NAME}_DIR}/EbsdLoader.cpp
 )
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_UIS

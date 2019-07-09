@@ -119,19 +119,6 @@ public:
    */
   void setUpdateProgress(int loopCompleted, int totalLoops, float bseYield) const;
 
-  /**
-   * @brief getPlatformInfo
-   * @return
-   */
-  QStringList getPlatformInfo() const;
-
-  /**
-   * @brief getDeviceInfo
-   * @param platformID
-   * @return
-   */
-  QStringList getDeviceInfo(int platformID) const;
-
 signals:
   void warningMessageGenerated(const QString& msg) const;
   void errorMessageGenerated(const QString& msg) const;

@@ -55,10 +55,12 @@ DictionaryIndexingModule::~DictionaryIndexingModule() = default;
 // -----------------------------------------------------------------------------
 IModuleUI* DictionaryIndexingModule::createModuleUI(QJsonObject moduleObj, QWidget *parent) const
 {
-  Q_UNUSED(moduleObj)
-
   DictionaryIndexingMain_UI* ui = new DictionaryIndexingMain_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
+  if (!moduleObj.empty())
+  {
+    ui->readModuleSession(moduleObj);
+  }
   return ui;
 }
 

@@ -45,6 +45,18 @@ public:
   ADPMapImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
   ~ADPMapImageViewer() override;
 
+  /**
+   * @brief readSession
+   * @param obj
+   */
+  void readSession(const QJsonObject& obj) override;
+
+  /**
+   * @brief writeSession
+   * @param obj
+   */
+  void writeSession(QJsonObject& obj) const override;
+
 protected:
   void paintGL() override;
 
@@ -54,7 +66,7 @@ protected:
   void leaveEvent(QEvent* event) override;
 
 signals:
-  void selectedPatternPixelChanged(const QPoint &coord);
+  void selectedADPCoordinateChanged(const QPoint &coord);
 
 private:
   QPoint m_MouseCoords = QPoint(-1, -1);

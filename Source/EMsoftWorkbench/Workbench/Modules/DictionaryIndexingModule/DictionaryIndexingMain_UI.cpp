@@ -57,18 +57,13 @@ DictionaryIndexingMain_UI::DictionaryIndexingMain_UI(QWidget *parent)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-DictionaryIndexingMain_UI::~DictionaryIndexingMain_UI()
-{
-  delete m_ChoosePatternsDatasetDialog;
-}
+DictionaryIndexingMain_UI::~DictionaryIndexingMain_UI() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::setupGui()
 {
-  m_ChoosePatternsDatasetDialog = new ChoosePatternsDatasetDialog();
-
   // Add limits to all spinboxes
   initializeSpinBoxLimits();
 
@@ -82,9 +77,6 @@ void DictionaryIndexingMain_UI::setupGui()
   createModificationConnections();
 
   validateData();
-
-  // Run this once so that the HDF5 widget can be either disabled or enabled
-  listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
 }
 
 // -----------------------------------------------------------------------------
@@ -109,12 +101,7 @@ void DictionaryIndexingMain_UI::createValidators()
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::createModificationConnections()
 {
-  // Combo Boxes
-  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &DictionaryIndexingMain_UI::listenInputTypeChanged);
 
-  // Line Edits
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
 }
 
 // -----------------------------------------------------------------------------
@@ -124,13 +111,7 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
 {
   connect(m_Ui->tabWidget, &QTabWidget::currentChanged, [=] { validateData(); });
 
-  connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &DictionaryIndexingMain_UI::listenSelectedPatternDatasetChanged);
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, this, &DictionaryIndexingMain_UI::listenPatternDataFileChanged);
-
-  connect(m_Ui->adpMapUI, &ADPMap_UI::selectedPatternPixelChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::setSelectedADPPatternPixel);
+  connect(m_Ui->adpMapUI, &ADPMap_UI::selectedADPCoordinateChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::setSelectedADPPatternPixel);
   connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapGenerationStarted, this, &DictionaryIndexingMain_UI::listenADPMapGenerationStarted);
   connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapGenerationFinished, this, &DictionaryIndexingMain_UI::listenADPMapGenerationFinished);
   connect(m_Ui->adpMapUI, &ADPMap_UI::errorMessageGenerated, this, &DictionaryIndexingMain_UI::notifyErrorMessage);
@@ -138,78 +119,21 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(m_Ui->adpMapUI, &ADPMap_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
   connect(m_Ui->adpMapUI, &ADPMap_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
 
-//  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassValueChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setHipassValue);
-//  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassNumOfStepsChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setHipassNumberOfSteps);
+  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassValueChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setSelectedHipassValue);
+  connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::selectedHipassNumOfRegionsChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setSelectedNumberOfRegions);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::patternPreprocessingStarted, this, &DictionaryIndexingMain_UI::listenPatternPreprocessingStarted);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::patternPreprocessingFinished, this, &DictionaryIndexingMain_UI::listenPatternPreprocessingFinished);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::errorMessageGenerated, this, &DictionaryIndexingMain_UI::notifyErrorMessage);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::warningMessageGenerated, this, &DictionaryIndexingMain_UI::notifyWarningMessage);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
   connect(m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
-}
 
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void DictionaryIndexingMain_UI::listenPatternDataFileChanged(const QString &filePath)
-{
-  m_Ui->patternDataFileLabel->setText(filePath);
-
-  m_Ui->adpMapUI->setPatternDataFile(filePath);
-  m_Ui->patternPreprocessingUI->setPatternDataFile(filePath);
-
-  listenParametersChanged();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void DictionaryIndexingMain_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths)
-{
-  m_Ui->adpMapUI->setSelectedHDF5Path({});
-
-  if (patternDSetPaths.size() == 1)
-  {
-    m_Ui->patternDsetPathLabel->setText(patternDSetPaths[0]);
-
-    InputType inputType = static_cast<InputType>(m_Ui->inputTypeCB->currentIndex());
-    if(inputType == InputType::TSLHDF || inputType == InputType::BrukerHDF || inputType == InputType::OxfordHDF)
-    {
-      QStringList hdfTokens = patternDSetPaths[0].trimmed().split('/', QString::SplitBehavior::SkipEmptyParts);
-      m_Ui->adpMapUI->setSelectedHDF5Path(hdfTokens);
-      m_Ui->patternPreprocessingUI->setSelectedHDF5Path(hdfTokens);
-    }
-  }
-  else
-  {
-    m_Ui->patternDsetPathLabel->setText("N/A");
-  }
-
-  listenParametersChanged();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void DictionaryIndexingMain_UI::listenInputTypeChanged(int index)
-{
-  InputType inputType = static_cast<InputType>(index);
-  switch(inputType)
-  {
-    case InputType::TSLHDF:
-    case InputType::BrukerHDF:
-    case InputType::OxfordHDF:
-      m_Ui->choosePatternsBtn->setEnabled(true);
-      break;
-    default:
-      m_Ui->choosePatternsBtn->setDisabled(true);
-      break;
-  }
-
-  m_Ui->adpMapUI->setInputType(inputType);
-  m_Ui->patternPreprocessingUI->setInputType(inputType);
-
-  listenParametersChanged();
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::diGenerationStarted, this, &DictionaryIndexingMain_UI::listenDictionaryIndexingStarted);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::diGenerationFinished, this, &DictionaryIndexingMain_UI::listenDictionaryIndexingFinished);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::errorMessageGenerated, this, &DictionaryIndexingMain_UI::notifyErrorMessage);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::warningMessageGenerated, this, &DictionaryIndexingMain_UI::notifyWarningMessage);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
+  connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
 }
 
 // -----------------------------------------------------------------------------
@@ -251,6 +175,24 @@ void DictionaryIndexingMain_UI::listenPatternPreprocessingFinished()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+void DictionaryIndexingMain_UI::listenDictionaryIndexingStarted()
+{
+  setRunning(true);
+  clearModuleIssues();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexingMain_UI::listenDictionaryIndexingFinished()
+{
+  emit validationOfOtherModulesNeeded(this);
+  setRunning(false);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::listenParametersChanged()
 {
   validateData();
@@ -274,6 +216,7 @@ void DictionaryIndexingMain_UI::validateData()
     m_Ui->patternPreprocessingUI->validateData();
     break;
   case ModuleTab::DictionaryIndexing:
+    m_Ui->dictionaryIndexingUI->validateData();
     break;
   }
 }
@@ -294,11 +237,9 @@ void DictionaryIndexingMain_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::readModuleSession(QJsonObject& obj)
 {
-//  readInputParameters(obj);
-
-//  readComputationalParameters(obj);
-
-//  validateData();
+  m_Ui->adpMapUI->readSession(obj);
+  m_Ui->patternPreprocessingUI->readSession(obj);
+  m_Ui->dictionaryIndexingUI->readSession(obj);
 }
 
 // -----------------------------------------------------------------------------
@@ -306,39 +247,11 @@ void DictionaryIndexingMain_UI::readModuleSession(QJsonObject& obj)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::writeModuleSession(QJsonObject& obj) const
 {
-//  QJsonObject inputParamObj;
-//  writeInputParameters(inputParamObj);
-//  obj[ioConstants::InputParam] = inputParamObj;
+  QJsonObject diModuleObj;
 
-//  QJsonObject compParamObj;
-//  writeComputationalParameters(compParamObj);
-//  obj[ioConstants::CompParam] = compParamObj;
-}
+  m_Ui->adpMapUI->writeSession(diModuleObj);
+  m_Ui->patternPreprocessingUI->writeSession(diModuleObj);
+  m_Ui->dictionaryIndexingUI->writeSession(diModuleObj);
 
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QString DictionaryIndexingMain_UI::getPatternDataFile() const
-{
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  if (hdf5DsetSelectionWidget != nullptr)
-  {
-    return hdf5DsetSelectionWidget->getCurrentFile();
-  }
-
-  return {};
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QStringList DictionaryIndexingMain_UI::getSelectedHDF5Paths() const
-{
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  if (hdf5DsetSelectionWidget != nullptr)
-  {
-    return hdf5DsetSelectionWidget->getSelectedHDF5Paths();
-  }
-
-  return {};
+  obj[ioConstants::DIModule] = diModuleObj;
 }

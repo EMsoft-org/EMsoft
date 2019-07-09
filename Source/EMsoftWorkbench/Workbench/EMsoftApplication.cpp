@@ -503,7 +503,6 @@ QMenu* EMsoftApplication::createThemeMenu(QWidget* parent)
   QMenu* menuThemes = new QMenu("Themes", parent);
 
   QString themePath = ":/default.qss";
-
   QAction* action = menuThemes->addAction("Default", [=] { style->loadStyleSheet(themePath); });
   action->setCheckable(true);
   if(themePath == style->getCurrentThemeFilePath())
@@ -512,10 +511,19 @@ QMenu* EMsoftApplication::createThemeMenu(QWidget* parent)
   }
   themeActionGroup->addAction(action);
 
-  QStringList themeNames = { "Light", "Dark" };
+  QString lightPath = ":/light.qss";
+  action = menuThemes->addAction("Light", [=] { style->loadStyleSheet(lightPath); });
+  action->setCheckable(true);
+  if(lightPath == style->getCurrentThemeFilePath())
+  {
+    action->setChecked(true);
+  }
+  themeActionGroup->addAction(action);
+
+  QStringList themeNames = { "Dark", "Green", "Midnight", "Orange", "Watermelon" };
   for(const QString &themeName : themeNames)
   {
-    QString themePath = ":/" + themeName.toLower() + ".qss";
+    QString themePath = ":/" + themeName + ".json";
     QAction* action = menuThemes->addAction(themeName, [=] { style->loadStyleSheet(themePath); });
     action->setCheckable(true);
     if(themePath == style->getCurrentThemeFilePath())

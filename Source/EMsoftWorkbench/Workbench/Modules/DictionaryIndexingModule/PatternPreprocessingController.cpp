@@ -139,7 +139,7 @@ void PatternPreprocessingController::createPreprocessedPatternsMatrix(const PPMa
     ppMatrixProcess->start(ppMatrixExecutablePath, parameters);
 
     // Wait until the QProcess is finished to exit this thread.
-    // PatternPreprocessingController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
+    // PatternPreprocessingController::createPreprocessedPatternsMatrix is currently on a separate thread, so the GUI will continue to operate normally
     ppMatrixProcess->waitForFinished(-1);
   }
 }
@@ -349,23 +349,6 @@ void PatternPreprocessingController::initializeData()
   m_StartTime = "";
   m_Executing = false;
   m_Cancel = false;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-bool PatternPreprocessingController::validatePPValues(const PPMatrixData &data)
-{
-  if (data.patternCoordinateX < 0 || data.patternCoordinateY < 0)
-  {
-    QString errMsg = "The 'Chosen ADP Coordinate' field is invalid.  Please double-click inside "
-                     "the average dot product map generated in the 'Average Dot Product Map' tab to "
-                     "choose a coordinate.";
-    emit errorMessageGenerated(errMsg);
-    return false;
-  }
-
-  return true;
 }
 
 // -----------------------------------------------------------------------------

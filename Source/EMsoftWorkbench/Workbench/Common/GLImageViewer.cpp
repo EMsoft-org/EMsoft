@@ -53,7 +53,7 @@
 
 #include "Modules/IModuleUI.h"
 
-const float zoomOffset = 0.05f;
+const float zoomOffset = 0.25f;
 const float bounceBackSpeed = 3.0f;
 const float minZoomFactor = 0.25f;
 const float maxZoomFactor = 4.0f;
@@ -87,6 +87,7 @@ void GLImageViewer::zoomIn()
     m_ZoomFactor += zoomOffset;
     m_DefaultControls = false;
     emit viewerChanged();
+    emit zoomFactorChanged(m_ZoomFactor);
     update();
   }
 }
@@ -103,6 +104,7 @@ void GLImageViewer::zoomOut()
     m_ZoomFactor -= zoomOffset;
     m_DefaultControls = false;
     emit viewerChanged();
+    emit zoomFactorChanged(m_ZoomFactor);
     update();
   }
 }
@@ -140,6 +142,7 @@ float GLImageViewer::getZoomFactor()
 void GLImageViewer::setZoomFactor(float val)
 {
   m_ZoomFactor = val;
+  emit zoomFactorChanged(m_ZoomFactor);
   update();
 }
 
@@ -200,6 +203,7 @@ void GLImageViewer::fitToScreen()
   if (percent != 0.0)
   {
     m_ZoomFactor = 1 / percent;
+    emit zoomFactorChanged(m_ZoomFactor);
   }
 
   m_PanningOffset.setX(0);
@@ -235,21 +239,23 @@ void GLImageViewer::paintGL()
 //  int xCoord = std::abs(std::abs(static_cast<int>(m_PrevDx)) - mouseCoords.x());
 //  int yCoord = std::abs(std::abs(static_cast<int>(m_PrevDy)) - mouseCoords.y());
 
-  if (!m_DefaultControls)
-  {
-    if (m_ZoomFactor > maxZoomFactor)
-    {
-      // Limit the zoom factor to 4, so that we can't zoom in too far
-      m_ZoomFactor = maxZoomFactor;
-    }
-    else if (m_ZoomFactor < minZoomFactor)
-    {
-      // Limit the zoom factor to 0.25, so that we can't zoom out too far
-      m_ZoomFactor = minZoomFactor;
-    }
-  }
+//  if (!m_DefaultControls)
+//  {
+//    if (m_ZoomFactor > maxZoomFactor)
+//    {
+//      // Limit the zoom factor, so that we can't zoom in too far
+//      m_ZoomFactor = maxZoomFactor;
+//      emit zoomFactorChanged(m_ZoomFactor);
+//    }
+//    else if (m_ZoomFactor < minZoomFactor)
+//    {
+//      // Limit the zoom factor, so that we can't zoom out too far
+//      m_ZoomFactor = minZoomFactor;
+//      emit zoomFactorChanged(m_ZoomFactor);
+//    }
+//  }
 
-  emit zoomFactorChanged(m_ZoomFactor);
+//  emit zoomFactorChanged(m_ZoomFactor);
 
   float percent = 1 / m_ZoomFactor;
   int newWidth = m_CurrentImage.width() / percent;
@@ -612,9 +618,10 @@ void GLImageViewer::wheelEvent(QWheelEvent* event)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void GLImageViewer::readSession(QJsonObject &obj)
+void GLImageViewer::readSession(const QJsonObject &obj)
 {
   m_ZoomFactor = obj[ivMod::ZoomFactor].toDouble(m_ZoomFactor);
+  emit zoomFactorChanged(m_ZoomFactor);
 
   QJsonObject panningOffsetObj = obj[ivMod::PanningOffset].toObject();
   m_PanningOffset.setX(panningOffsetObj[ioMod::X].toDouble(m_PanningOffset.x()));
@@ -629,6 +636,8 @@ void GLImageViewer::readSession(QJsonObject &obj)
   m_ViewportWidth = obj[ivMod::ViewportWidth].toInt(m_ViewportWidth);
   m_ViewportHeight = obj[ivMod::ViewportHeight].toInt(m_ViewportHeight);
   m_DefaultControls = obj[ivMod::DefaultControls].toBool(m_DefaultControls);
+
+  update();
 }
 
 // -----------------------------------------------------------------------------

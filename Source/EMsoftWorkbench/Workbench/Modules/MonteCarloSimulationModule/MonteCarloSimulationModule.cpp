@@ -63,6 +63,10 @@ IModuleUI* MonteCarloSimulationModule::createModuleUI(QJsonObject moduleObj, QWi
 
   MonteCarloSimulation_UI* ui = new MonteCarloSimulation_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
+  if (!moduleObj.empty())
+  {
+    ui->readModuleSession(moduleObj);
+  }
   return ui;
 }
 

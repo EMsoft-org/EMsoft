@@ -38,7 +38,7 @@
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
-#include "OrientationLib/OrientationMath/OrientationArray.hpp"
+#include "EbsdLib/OrientationMath/OrientationArray.hpp"
 
 #include "ui_SampleCubochoricSpaceWidget.h"
 

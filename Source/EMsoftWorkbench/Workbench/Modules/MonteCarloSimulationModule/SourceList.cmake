@@ -54,7 +54,7 @@ set_source_files_properties( ${EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS
 #set_source_files_properties( ${EMsoftWorkbench_${MODULE_NAME}_Generated_MOC_SRCS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 set(EMsoftWorkbench_${MODULE_NAME}_HDRS
-  ${${MODULE_NAME}_DIR}/cl.hpp
+  
 )
 
 

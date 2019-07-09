@@ -1579,6 +1579,22 @@ QColor SVStyle::getQToolButtonChecked_background_color() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+QColor SVStyle::getQToolButtonChecked_color() const
+{
+  return m_QToolButtonChecked_color;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void SVStyle::setQToolButtonChecked_color(const QColor &val)
+{
+  m_QToolButtonChecked_color = val;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void SVStyle::setQToolButtonDisabled_background_color(const QColor& value)
 {
   m_QToolButtonDisabled_background_color = value;

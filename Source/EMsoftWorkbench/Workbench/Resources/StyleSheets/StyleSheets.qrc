@@ -2,9 +2,17 @@
  <RCC version="1.0">
  <qresource>
 
-  <file>dark.qss</file>
   <file>default.qss</file>
+
+  <file>Theme.css</file>
   <file>light.qss</file>
+  <file>Orange.json</file>
+  <file>Green.json</file>
+  <file>Watermelon.json</file>
+  <file>Dark.css</file>
+  <file>Dark.json</file>
+  <file>Midnight.css</file>
+  <file>Midnight.json</file>
 
  </qresource>
  </RCC>

@@ -61,6 +61,10 @@ IModuleUI* PatternFitModule::createModuleUI(QJsonObject moduleObj, QWidget* pare
 {
   PatternFit_UI* ui = new PatternFit_UI(parent);
   ui->setAttribute(Qt::WA_DeleteOnClose);
+  if (!moduleObj.empty())
+  {
+    ui->readModuleSession(moduleObj);
+  }
   return ui;
 }
 
