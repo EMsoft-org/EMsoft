@@ -52,6 +52,7 @@
 !> @date 02/19/19 MDG 3.0 corrects pattern orientation; manual indexing of patterns computed with EMEBSD
 !>                        revealed an unwanted upside down flip that was compensated by flipping the 
 !>                        exp. patterns; thus, all indexing runs thus far produced the correct results.
+!> @date 07/13/19 MDG 3.1 added option to read single pattern from OxfordBinary file
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -625,6 +626,7 @@ end subroutine getExpPatternRow
 !> @param exppat output array
 !
 !> @date 02/20/18 MDG 1.0 original
+!> @date 07/13/19 MDG 1.1 added option to read single pattern from OxfordBinary file
 !--------------------------------------------------------------------------
 recursive subroutine getSingleExpPattern(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppat) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getSingleExpPattern
@@ -654,6 +656,7 @@ integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
                                            l1, l2, multfactor
+integer(kind=8)                         :: patoffsets(wd)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -723,12 +726,47 @@ select case (itype)
           where(exppat.lt.0.0) exppat = exppat + 256.0
         end if
 
-    case(5)  ! "OxfordBinary"
-        call FatalError("getSingleExpPattern","input format not yet implemented")
+    case(5)  ! "OxfordBinary" ! [added/tested MDG 07/13/19]
+! read position of patterns in file for a single row from the header
+      liii = iii
+      l1 = mod(offset3(3),wd)
+      lL = L
+      lwd = wd
+      read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
+
+! generate buffers to load individual pattern into
+      buffersize = lL
+      allocate(buffer(buffersize), pairs(buffersize))
+
+! read single pattern into buffer with the 16 bytes of metadata skipped
+      read(unit=funit, pos=patoffsets(l1)+17_8, iostat=ios) buffer
+
+! convert the byte values into single byte integers
+      pairs = ichar(buffer) 
+      deallocate(buffer)
+
+ ! then we need to place it in the exppat array 
+      exppat = 0.0
+      pixcnt = 1
+      do jj=1,dims3(2)
+        jspot = (jj-1)*dims3(1) 
+        do ii=1,dims3(1)
+          exppat(jspot+ii) = float(pairs(pixcnt))
+          pixcnt = pixcnt + 1
+        end do 
+      end do 
+      deallocate(pairs)
+
+! finally, correct for the fact that the original values were unsigned integers
+      where(exppat.lt.0.0) exppat = exppat + 256.0
 
     case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
+
+! Update 07/13/19: after talking with Phillipe Pinard (Oxford) at the EMAS 2019 conference
+! in Trondheim, it is clear that Oxford is working on including the patterns into their
+! current HDF5 file version.  This might become available sometime by the end of 2019.
 
     case(4)  ! "TSLHDF" passed tests on 2/20/18 by MDG
 ! read a hyperslab single pattern section from the HDF5 input file
