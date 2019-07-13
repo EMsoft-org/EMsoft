@@ -10,7 +10,7 @@ if(NOT DEFINED CMP_SOURCE_DIR)
 endif()
 
 set(PROJECT_PREFIX "H5Support" CACHE STRING "The Prefix to be used for Preprocessor definitions")
-set(H5Support_INSTALL_FILES 0)
+set(H5Support_INSTALL_FILES 1)
 # -----------------------------------------------------------------------
 # The project generally does NOT want to install headers. See if another
 # project has over ridden that property
@@ -169,22 +169,21 @@ if(APPLE)
   set(install_dir "${DREAM3D_PACKAGE_DEST_PREFIX}bin")
   set(lib_install_dir "${DREAM3D_PACKAGE_DEST_PREFIX}lib")
 elseif(WIN32)
-  set(install_dir ".")
-  set(lib_install_dir ".")
+  set(install_dir "bin")
+  set(lib_install_dir "lib")
 endif()
 
-if (H5Support_INSTALL_FILES)
-
   INSTALL(TARGETS ${PROJECT_NAME}
-      EXPORT H5SupportTargets
-      COMPONENT Applications
-      RUNTIME DESTINATION ${install_dir}
-      LIBRARY DESTINATION ${lib_install_dir}
-      ARCHIVE DESTINATION lib
-      BUNDLE DESTINATION "."
-  )
+  EXPORT ${PROJECT_NAME}Targets
+  COMPONENT Applications
+  RUNTIME DESTINATION ${install_dir}
+  LIBRARY DESTINATION ${lib_install_dir}
+  ARCHIVE DESTINATION lib
+  BUNDLE DESTINATION "."
+)
 
 
+if (H5Support_INSTALL_FILES)
   # --------------------------------------------------------------------
   # Allow the generation and installation of a CMake configuration file
   # which makes using EMsoft from another project easier.

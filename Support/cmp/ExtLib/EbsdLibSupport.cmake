@@ -10,14 +10,16 @@ function(AddEbsdLibCopyInstallRules)
   cmake_parse_arguments(Z "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
   set(INTER_DIR ".")
 
-  # message(STATUS "Z_LIBVAR: ${Z_LIBVAR}")
-  # message(STATUS "Z_LIBNAME: ${Z_LIBNAME}")
-  # message(STATUS "Z_TYPES: ${Z_TYPES}")
-
+ # message(STATUS "Z_LIBVAR: ${Z_LIBVAR}")
+ # message(STATUS "Z_LIBNAME: ${Z_LIBNAME}")
+ # message(STATUS "Z_TYPES: ${Z_TYPES}")
+  
   set(Z_INSTALL_DIR "lib")
   if(WIN32)
-    set(Z_INSTALL_DIR ".")
+    set(Z_INSTALL_DIR "bin")
   endif()
+ # message(STATUS "Z_INSTALL_DIR: ${Z_INSTALL_DIR}")
+
 
   FOREACH(BTYPE ${Z_TYPES} )
     # message(STATUS "BTYPE: ${BTYPE}")
@@ -30,8 +32,9 @@ function(AddEbsdLibCopyInstallRules)
     GET_TARGET_PROPERTY(LibPath ${Z_LIBNAME} IMPORTED_LOCATION_${TYPE})
     # message(STATUS "LibPath: ${LibPath}")
     if(NOT "${LibPath}" STREQUAL "LibPath-NOTFOUND")
-      # message(STATUS "Creating Install Rule for ${LibPath}")
+     
       if(NOT TARGET ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy)
+       # message(STATUS "Creating Install Rule for ${LibPath}")
         ADD_CUSTOM_TARGET(ZZ_${Z_LIBVAR}_DLL_${TYPE}-Copy ALL
                             COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LibPath}
                             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INTER_DIR}/
@@ -86,7 +89,7 @@ if("${EbsdLib_DIR}" STREQUAL "")
 endif()
 
 
-## message(STATUS "EbsdLib_DIR: ${EbsdLib_DIR}")
+# message(STATUS "EbsdLib_DIR: ${EbsdLib_DIR}")
 
 find_package(EbsdLib)
 if(NOT EbsdLib_FOUND)
@@ -127,6 +130,6 @@ if(EbsdLib_FOUND)
   endif()
 
 ELSE(EbsdLib_FOUND)
-    # message(FATAL_ERROR "Cannot build without Haru.  Please set EbsdLib_INSTALL environment variable to point to your EbsdLib installation.")
+    # message(FATAL_ERROR "Cannot build without EbsdLib.  Please set EbsdLib_INSTALL environment variable to point to your EbsdLib installation.")
 ENDif(EbsdLib_FOUND)
 
