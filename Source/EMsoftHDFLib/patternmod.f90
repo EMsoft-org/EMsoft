@@ -109,7 +109,7 @@ if (trim(inputtype).eq."TSLup1") itype = 2
 if (trim(inputtype).eq."TSLup2") itype = 3
 if (trim(inputtype).eq."TSLHDF") itype = 4
 if (trim(inputtype).eq."OxfordBinary") itype = 5
-if (trim(inputtype).eq."OxfordHDF") itype = 6
+if (trim(inputtype).eq."OxfordHDF") itype = 6    ! to be implemented
 if (trim(inputtype).eq."EMEBSD") itype = 7
 if (trim(inputtype).eq."BrukerHDF") itype = 8
 
@@ -150,7 +150,7 @@ end function get_num_HDFgroups
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief invert the pattern reordering arrays
+!> @brief invert the pattern reordering arrays for Bruker HDF5 format
 !
 !> @param npat number of patterns in a single row of the ROI
 !
@@ -226,12 +226,11 @@ integer(kind=irg),INTENT(IN)            :: L
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: recsize
 integer(kind=irg),INTENT(IN)            :: funit
-integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
-                                           ios, up1header(4), version, patx, paty, myoffset
+                                           ios, up1header(4), version, patx, paty, myoffset, istat
 character(fnlen)                        :: groupname, dataset, platform
 logical                                 :: f_exists
 
@@ -333,7 +332,7 @@ select case (itype)
             groupname = trim(HDFstrings(i))
             hdferr = HDF_openGroup(groupname, pmHDF_head)
             if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-            !  this part is different from the other vendors: the patterns are not necessarily in the correct order (why not???)
+            !  this part is different from the other vendors: the patterns are not necessarily in the correct order 
             !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
             !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
             if (i.eq.1) then 
@@ -508,10 +507,10 @@ select case (itype)
 
     case(5)  ! "OxfordBinary"
 
-! read postion of patterns in file for a single row from the header
+! read position of patterns in file for a single row from the header
       read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
 
-! generate a buffer to load individial patterns into
+! generate a buffer to load individual patterns into
       buffersize = lL
       allocate(buffer(buffersize))
 
@@ -527,7 +526,6 @@ select case (itype)
         do jj=1_ill,lL
           pairs((ii - 1)*lL + jj) = ichar(buffer(jj)) 
         enddo
-
       end do
 
       deallocate(buffer)
