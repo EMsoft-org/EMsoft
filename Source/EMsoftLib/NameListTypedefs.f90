@@ -1215,52 +1215,52 @@ type EBSDIndexingNameListType
         character(fnlen)        :: MCxtalname
 end type EBSDIndexingNameListType
 
-type SphInxNameListType
-        integer(kind=irg)       :: numexptsingle
-        integer(kind=irg)       :: numdictsingle
-        integer(kind=irg)       :: ipf_ht
-        integer(kind=irg)       :: ipf_wd
-        integer(kind=irg)       :: ROI(4)
-        integer(kind=irg)       :: maskradius
-        character(fnlen)        :: exptfile
-        integer(kind=irg)       :: numsx
-        integer(kind=irg)       :: numsy
-        integer(kind=irg)       :: binning
-        integer(kind=irg)       :: nthreads
-        integer(kind=irg)       :: energyaverage
-        integer(kind=irg)       :: devid
-        integer(kind=irg)       :: usenumd
-        integer(kind=irg)       :: multidevid(8)
-        integer(kind=irg)       :: platid
-        integer(kind=irg)       :: nregions
-        real(kind=sgl)          :: L
-        real(kind=sgl)          :: thetac
-        real(kind=sgl)          :: delta
-        real(kind=sgl)          :: omega
-        real(kind=sgl)          :: xpc
-        real(kind=sgl)          :: ypc
-        real(kind=sgl)          :: stepX
-        real(kind=sgl)          :: stepY
-        real(kind=sgl)          :: energymin
-        real(kind=sgl)          :: energymax
-        real(kind=sgl)          :: gammavalue
-        real(kind=dbl)          :: beamcurrent
-        real(kind=dbl)          :: dwelltime
-        real(kind=dbl)          :: hipassw
-        character(1)            :: maskpattern
-        character(3)            :: scalingmode
-        character(3)            :: Notify
-        character(1)            :: keeptmpfile
-        character(fnlen)        :: anglefile
-        character(fnlen)        :: masterfile
-        character(fnlen)        :: energyfile
-        character(fnlen)        :: datafile
-        character(fnlen)        :: tmpfile
-        character(fnlen)        :: ctffile
-        character(fnlen)        :: angfile
-        character(fnlen)        :: inputtype
-        character(fnlen)        :: HDFstrings(10)
-end type SphInxNameListType
+! type SphInxNameListType
+!         integer(kind=irg)       :: numexptsingle
+!         integer(kind=irg)       :: numdictsingle
+!         integer(kind=irg)       :: ipf_ht
+!         integer(kind=irg)       :: ipf_wd
+!         integer(kind=irg)       :: ROI(4)
+!         integer(kind=irg)       :: maskradius
+!         character(fnlen)        :: exptfile
+!         integer(kind=irg)       :: numsx
+!         integer(kind=irg)       :: numsy
+!         integer(kind=irg)       :: binning
+!         integer(kind=irg)       :: nthreads
+!         integer(kind=irg)       :: energyaverage
+!         integer(kind=irg)       :: devid
+!         integer(kind=irg)       :: usenumd
+!         integer(kind=irg)       :: multidevid(8)
+!         integer(kind=irg)       :: platid
+!         integer(kind=irg)       :: nregions
+!         real(kind=sgl)          :: L
+!         real(kind=sgl)          :: thetac
+!         real(kind=sgl)          :: delta
+!         real(kind=sgl)          :: omega
+!         real(kind=sgl)          :: xpc
+!         real(kind=sgl)          :: ypc
+!         real(kind=sgl)          :: stepX
+!         real(kind=sgl)          :: stepY
+!         real(kind=sgl)          :: energymin
+!         real(kind=sgl)          :: energymax
+!         real(kind=sgl)          :: gammavalue
+!         real(kind=dbl)          :: beamcurrent
+!         real(kind=dbl)          :: dwelltime
+!         real(kind=dbl)          :: hipassw
+!         character(1)            :: maskpattern
+!         character(3)            :: scalingmode
+!         character(3)            :: Notify
+!         character(1)            :: keeptmpfile
+!         character(fnlen)        :: anglefile
+!         character(fnlen)        :: masterfile
+!         character(fnlen)        :: energyfile
+!         character(fnlen)        :: datafile
+!         character(fnlen)        :: tmpfile
+!         character(fnlen)        :: ctffile
+!         character(fnlen)        :: angfile
+!         character(fnlen)        :: inputtype
+!         character(fnlen)        :: HDFstrings(10)
+! end type SphInxNameListType
 
 type ADPNameListType
         integer(kind=irg)       :: ipf_ht
