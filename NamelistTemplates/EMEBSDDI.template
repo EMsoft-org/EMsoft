@@ -21,15 +21,16 @@
 ! height of data set in pattern input file
  ipf_ht = 100,
 ! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
-! region of interest has the point (x0,y0) as its lower left corner and is w x h patterns
+! region of interest has the point (x0,y0) as its upper left corner and is w x h patterns
  ROI = 0 0 0 0,
 ! X and Y sampling step sizes
  stepX = 1.0,
  stepY = 1.0,
 ! number of top matches to keep from the dot product results
  nnk = 50,
+! the following option has been disabled starting version 4.3
 ! number of top matches to use for orientation averaging (<nnk)
- nnav =  20,
+! nnav =  20,
 ! number of top matches to use for Orientation Similarity Map computation (<nnk)
  nosm = 20,
 ! number of top matches to use for Indexing Success Map computation (<nnk)
@@ -70,10 +71,9 @@
 ! minimum and maximum energy to use for interpolation [keV]
  energymin = 10.0,
  energymax = 20.0,
-! energy averaging method (0 for exact, 1 for approximate)
- energyaverage = 0,
+! the following option has been disabled starting version 4.3
 ! spatial averaging method ('y' or 'n' ;can't be used with approximate energy average)
- spatialaverage = 'n',
+! spatialaverage = 'n',
 ! incident beam current [nA]
  beamcurrent = 150.0,
 ! beam dwell time [micro s]
@@ -110,8 +110,9 @@
  datafile = 'undefined',
 ! ctf output file ; path relative to EMdatapathname
  ctffile = 'undefined',
+! the following option has been disabled starting version 4.3
 ! average ctf output file ; path relative to EMdatapathname
- avctffile = 'undefined',
+! avctffile = 'undefined',
 ! ang output file ; path relative to EMdatapathname
  angfile = 'undefined',
 ! euler angle input file

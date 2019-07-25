@@ -2200,13 +2200,13 @@ character(1)                    :: space                !< 'd' or 'r'
 ! for the cubic groups, we need to apply a lower symmetry group due to the fact that we
 ! do not use interpolations to apply the three-fold axes.  So, for all space groups with
 ! number .ge. 195, we must apply a lower symmetry group.  To avoid unnecessary repetitions,
-! we pre-compute the relevant syhmmetry operations and store them in an extra SG%SYM_extra array
+! we pre-compute the relevant symmetry operations and store them in an extra SG%SYM_extra array
 ! when we apply the symmetry for the first time.  Then, we test the space group number in 
 ! the CalcStar routine to see which set of arrays to use.  Since the cubic symmetry is used a lot,
 ! we hard-coded the symmetry operations to make things go slightly faster.
 
 
-! we have point on the square/hexagonal Lambert projection and we need to determine the 
+! we have points on the square/hexagonal Lambert projection and we need to determine the 
 ! set of equivalent points; we can use the CalcStar routine to do this, but first we
 ! need to convert the 2D coordinates into a 3D vector in reciprocal space.
 xy = (/ dble(ipx), dble(ipy) /) / dble(npx)

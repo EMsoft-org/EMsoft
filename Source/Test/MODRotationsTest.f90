@@ -44,9 +44,9 @@ module MODRotationsTest
 
 contains 
 
-subroutine MODRotationsTestExecuteTest(res) &
-           bind(c, name='MODRotationsTestExecuteTest')    ! this routine is callable from a C/C++ program
-!DEC$ ATTRIBUTES DLLEXPORT :: MODRotationsTestExecuteTest
+subroutine MODRotationsExecuteTest(res) &
+           bind(c, name='MODRotationsExecuteTest')    ! this routine is callable from a C/C++ program
+!DEC$ ATTRIBUTES DLLEXPORT :: MODRotationsExecuteTest
 
 use local
 use constants
@@ -7266,6 +7266,6 @@ end do
 write (*,*) ' Total number of rotations tests executed = ',testcounter
 write (*,*) ' Total number of rotations tests failed = ',testsfailed
 
-end subroutine MODRotationsTestExecuteTest
+end subroutine MODRotationsExecuteTest
 
 end module MODRotationsTest

@@ -1142,6 +1142,129 @@ end subroutine HDFwriteEBSDMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteEBSDoverlapNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param emnl EBSD master name list structure
+!
+!> @date 03/21/15  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEBSDoverlapNameList(HDF_head, emnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEBSDoverlapNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(EBSDoverlapNameListType),INTENT(INOUT)           :: emnl
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+logical                                               :: g_exists, overwrite=.TRUE.
+
+! create the group for this namelist
+groupname = SC_EBSDoverlapNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ emnl%stdout, emnl%newpgnum /)
+intlist(1) = 'stdout'
+intlist(1) = 'newpgnum'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write a single real
+dataset = 'fracA'
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetFloat(dataset, emnl%fracA, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetFloat(dataset, emnl%fracA, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create fracA dataset',.TRUE.)
+
+! vectors
+dataset = 'tA'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, emnl%tA, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create tA dataset',.TRUE.)
+
+dataset = 'tB'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, emnl%tB, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create tB dataset',.TRUE.)
+
+dataset = 'gA'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, emnl%gA, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create gA dataset',.TRUE.)
+
+dataset = 'gB'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, emnl%gB, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create gB dataset',.TRUE.)
+
+dataset = 'PatternAxisA'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, emnl%PatternAxisA, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create PatternAxisA dataset',.TRUE.)
+
+dataset = 'HorizontalAxisA'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, emnl%HorizontalAxisA, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create HorizontalAxisA dataset',.TRUE.)
+
+dataset = 'masterfileA'
+line2(1) = emnl%masterfileA
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create masterfileA dataset',.TRUE.)
+
+dataset = 'masterfileB'
+line2(1) = emnl%masterfileB
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create masterfileB dataset',.TRUE.)
+
+dataset = 'datafile'
+line2(1) = emnl%datafile
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create datafile dataset',.TRUE.)
+
+
+dataset = 'overlapmode'
+line2(1) = emnl%overlapmode
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unable to create overlapmode dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEBSDoverlapNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteEBSDSingleMasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

@@ -66,6 +66,25 @@ type CTFNameListType
         character(fnlen)        :: dotproductfile
 end type CTFNameListType
 
+! namelist for EMgetANG program
+type ANGNameListType
+        character(4)            :: modality
+        character(8)            :: angledataset   ! 'original' or 'refined'
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: newangfile
+        character(fnlen)        :: dotproductfile
+end type ANGNameListType
+
+! namelist for EMgetEulers program
+type EulersNameListType
+        character(8)            :: angledataset   ! 'original' or 'refined'
+        character(3)            :: raddeg         ! 'rad' or 'deg'
+        character(fnlen)        :: txtfile
+        character(fnlen)        :: datafile
+        character(fnlen)        :: EMEBSDnmlfile
+        character(fnlen)        :: dotproductfile
+end type EulersNameListType
+
 ! namelist for EMGBO program
 type GBONameListType
         integer(kind=irg)       :: pgnum
@@ -235,6 +254,20 @@ type LaueMasterNameListType
         character(fnlen)        :: tiffname
         character(fnlen)        :: xtalname
 end type LaueMasterNameListType
+
+! namelist for the EMLaue program 
+type LaueNameListType
+        integer(kind=irg)       :: numpx
+        integer(kind=irg)       :: numpy
+        integer(kind=irg)       :: patchw
+        real(kind=sgl)          :: pixelsize
+        real(kind=sgl)          :: pcx
+        real(kind=sgl)          :: pcy
+        real(kind=sgl)          :: beam(3)
+        real(kind=sgl)          :: SDdistance
+        character(fnlen)        :: MPfname
+        character(fnlen)        :: hdfname
+end type LaueNameListType
 
 ! namelist for the EMMCLIPSS program ! PGC added 12/01/15
 type MCLIPSSNameListType
@@ -586,6 +619,7 @@ end type TKDNameListType
 ! some of them are used to facilitate passing of subroutine arguments in EBSDmod.f90
 type EBSDoverlapNameListType
         integer(kind=irg)       :: stdout
+        integer(kind=irg)       :: newpgnum
         integer(kind=irg)       :: PatternAxisA(3)
         integer(kind=irg)       :: HorizontalAxisA(3)
         real(kind=sgl)          :: tA(3)
@@ -596,6 +630,7 @@ type EBSDoverlapNameListType
         character(fnlen)        :: masterfileA
         character(fnlen)        :: masterfileB
         character(fnlen)        :: datafile
+        character(fnlen)        :: overlapmode
 ! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
         integer(kind=irg)       :: numset
         integer(kind=irg)       :: npx
@@ -959,6 +994,8 @@ type RFZNameListType
     integer(kind=irg)       :: pgnum
     integer(kind=irg)       :: nsteps
     integer(kind=irg)       :: gridtype
+    real(kind=dbl)          :: qFZ(4)
+    real(kind=dbl)          :: axFZ(4)
     real(kind=dbl)          :: rodrigues(4)
     real(kind=dbl)          :: maxmisor
     real(kind=dbl)          :: conevector(3)
@@ -1071,6 +1108,7 @@ type EBSDDIpreviewNameListType
         integer(kind=irg)       :: paty
         integer(kind=irg)       :: ipf_wd
         integer(kind=irg)       :: ipf_ht
+        integer(kind=irg)       :: numav
         real(kind=sgl)          :: hipasswmax
         character(fnlen)        :: patternfile
         character(fnlen)        :: tifffile
@@ -1176,6 +1214,53 @@ type EBSDIndexingNameListType
         character(fnlen)        :: MCprogname
         character(fnlen)        :: MCxtalname
 end type EBSDIndexingNameListType
+
+! type SphInxNameListType
+!         integer(kind=irg)       :: numexptsingle
+!         integer(kind=irg)       :: numdictsingle
+!         integer(kind=irg)       :: ipf_ht
+!         integer(kind=irg)       :: ipf_wd
+!         integer(kind=irg)       :: ROI(4)
+!         integer(kind=irg)       :: maskradius
+!         character(fnlen)        :: exptfile
+!         integer(kind=irg)       :: numsx
+!         integer(kind=irg)       :: numsy
+!         integer(kind=irg)       :: binning
+!         integer(kind=irg)       :: nthreads
+!         integer(kind=irg)       :: energyaverage
+!         integer(kind=irg)       :: devid
+!         integer(kind=irg)       :: usenumd
+!         integer(kind=irg)       :: multidevid(8)
+!         integer(kind=irg)       :: platid
+!         integer(kind=irg)       :: nregions
+!         real(kind=sgl)          :: L
+!         real(kind=sgl)          :: thetac
+!         real(kind=sgl)          :: delta
+!         real(kind=sgl)          :: omega
+!         real(kind=sgl)          :: xpc
+!         real(kind=sgl)          :: ypc
+!         real(kind=sgl)          :: stepX
+!         real(kind=sgl)          :: stepY
+!         real(kind=sgl)          :: energymin
+!         real(kind=sgl)          :: energymax
+!         real(kind=sgl)          :: gammavalue
+!         real(kind=dbl)          :: beamcurrent
+!         real(kind=dbl)          :: dwelltime
+!         real(kind=dbl)          :: hipassw
+!         character(1)            :: maskpattern
+!         character(3)            :: scalingmode
+!         character(3)            :: Notify
+!         character(1)            :: keeptmpfile
+!         character(fnlen)        :: anglefile
+!         character(fnlen)        :: masterfile
+!         character(fnlen)        :: energyfile
+!         character(fnlen)        :: datafile
+!         character(fnlen)        :: tmpfile
+!         character(fnlen)        :: ctffile
+!         character(fnlen)        :: angfile
+!         character(fnlen)        :: inputtype
+!         character(fnlen)        :: HDFstrings(10)
+! end type SphInxNameListType
 
 type ADPNameListType
         integer(kind=irg)       :: ipf_ht

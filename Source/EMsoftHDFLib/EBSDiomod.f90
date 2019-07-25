@@ -616,13 +616,13 @@ do ii = 1,ipar(3)
     write(str1,'(A,F8.5)') ' ',euler(1)*dtor
     write(str2,'(A,F8.5)') ' ',euler(2)*dtor
     write(str3,'(A,F8.5)') ' ',euler(3)*dtor
-! sampling coordinates
+! sampling coordinates [interchanged x and y on 05/28/19, MDG] 
     if (sum(ebsdnl%ROI).ne.0) then
-      write(str4,'(A,F12.5)') ' ',float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%StepY
-      write(str5,'(A,F12.5)') ' ',float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%StepX
+      write(str4,'(A,F12.5)') ' ',float(MODULO(ii-1,ebsdnl%ROI(3)))*ebsdnl%StepX
+      write(str5,'(A,F12.5)') ' ',float(floor(float(ii-1)/float(ebsdnl%ROI(3))))*ebsdnl%StepY
     else
-      write(str4,'(A,F12.5)') ' ',float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%StepY
-      write(str5,'(A,F12.5)') ' ',float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%StepX
+      write(str4,'(A,F12.5)') ' ',float(MODULO(ii-1,ebsdnl%ipf_wd))*ebsdnl%StepX
+      write(str5,'(A,F12.5)') ' ',float(floor(float(ii-1)/float(ebsdnl%ipf_wd)))*ebsdnl%StepY
     end if 
 ! Image Quality (using the Krieger Lassen pattern sharpness parameter iq)
     write(str6,'(A,F6.1)') ' ',BSval  !  IQ value in range [0.0 .. 255.0]

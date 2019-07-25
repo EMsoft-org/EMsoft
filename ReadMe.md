@@ -4,12 +4,13 @@ This package contains a series of programs along with a library, mostly written 
 
 This is the first release of version 4.3; this release provides significant additions to the package and many changes under the hood. See below for a detailed list.  There is also an important change to the open source model: a portion of our source code is now licensed for commercial entities.  Academic and government users can continue to use the source under the BSD2 license, as before.
 
-The Dictionary Indexing tutorial paper has now been published in the journal **Integrating Materials and Manufacturing Innovation**. The EMsoft version that goes along with this paper is version 4.2; this release has the following DOI (through Zenodo):  
+The Dictionary Indexing tutorial paper has now been [published](https://link.springer.com/article/10.1007%2Fs40192-019-00137-4) in the journal **Integrating Materials and Manufacturing Innovation**. The EMsoft version that goes along with this paper is version 4.2; this release has the following DOI (through Zenodo):  
+
 
 ![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
 
 ## Financial Support 
-EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, ws started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of TKD and related modalities, including the creation of routines that can generate PoVRay visualization script files, was performed with support from an ONR Vannevar Bush Fellowship, N00014-­16-­1-­2821.
+EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, was started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of TKD and related modalities, including the creation of routines that can generate PoVRay visualization script files, was performed with support from an ONR Vannevar Bush Fellowship, N00014-­16-­1-­2821.
 
 ## Source 
 [This site](http://vbff.materials.cmu.edu/EMsoft) conveniently brings all EMsoft stuff together in one place.  For nightly builds, please go to [this](http://www.bluequartz.net/binaries/EMsoft/experimental) site and navigate to the most recent date for a compiled version of the entire EMsoft package.  
@@ -24,7 +25,7 @@ Precompiled binaries (i.e., [nightly builds](http://www.bluequartz.net/binaries/
 | Windows 10 | 64 bit, NVidia GPU with latest (3.88) drivers installed |
 
 
-If you want to build EMsoft yourself, it would make sense to first get a GitHub account, and fork this repository into your account. Then clone the repo *from your account* onto your local computer. Before you can compile things, you need to first build the Software Developer Kit (EMsoft_SDK), which you can find [here](https://github.com/EMsoft-org/EMsoftSuperbuild); follow the instructions for your platform. Then, in the top folder where you have cloned the EMsoft repository, carry out the following commands (for UNIX-type builds; on Windows, use nmake instead of make):
+If you want to build EMsoft yourself, it would make sense to first get a GitHub account, and fork this repository into your account. Then clone the repo *from your account* onto your local computer. Before you can compile things, you need to first build the Software Developer Kit (EMsoft_SDK), which you can find [here](https://github.com/EMsoft-org/EMsoftSuperbuild); follow the instructions for your platform. In addition (as of June 19th, 2019), you will need to clone the *EMsoftData* repository, also from *EMsoft-org*, in a folder at the same level as the Public repository folder. Then, starting in the top folder where you have cloned the EMsoft repository, carry out the following commands (for UNIX-type builds; on Windows, use nmake instead of make):
 
 ```fortran
   mkdir EMsoftBuild
@@ -41,6 +42,18 @@ If you want to build EMsoft yourself, it would make sense to first get a GitHub 
 
 ```
 Note that *somepath* should be replaced with wherever you installed the SDK.  These commands should compile both a Release and a Debug version of EMsoft. You can then add the path to the EMsoftBuild/Release/Bin folder to your shell path and start using the programs.  Note that the Debug version of the executables will run much more slowly than the Release version.
+
+To always maintain an up-to-date version of the package, you may want to create a little script that will help you synchronize the repositories and compile in one step.  Here is an example shell script for UNIX-flavored systems; the assumptions are that the repository has been cloned into the folder EMsoftPublic, and the EMsoftData repository into EMsoftData (adjust as needed for your system):
+
+```fortran
+cd EMsoftData
+git pull --rebase origin develop
+cd ../EMsoftPublic
+git pull --rebase origin develop
+cd ../EMsoftBuild
+make -j
+
+```
 
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
@@ -69,6 +82,7 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 -  We now offer pre-compiled Virtual Machine apps for a number of IDL routines that can be used to visualize some of the EMsoft data files, or carry out EBSD detector parameter fits.  Try the apps out yourself after you download them from [IDL apps](http://vbff.materials.cmu.edu/EMsoft). 
 -  We have added several C-callable routines to the *EMsoftWrapperLib* folders; these are versions of other library functions that have been made callable by C and C++ programs.  Documentation for all routines is underway and will be posted on the previously mentioned wiki pages. 
 - Unfortunately, work on the *EMsoftWorkbench* has come to a temporary stand-still due to lack of development funds. Hopefully we will be able to pick that thread back up at some point in the near future...
+
 
 ## What's coming in 4.4? 
 - We are working on improvements to all underlying libraries.

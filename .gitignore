@@ -21,10 +21,14 @@ Support/Scripts/GMT/gmt.history
 /linux/
 .idea
 /Debug/
+/Mathematica/
 .ctags
 .vscode
 /ExternalProjects
 UpdateCopyrightRange.pro
+resources/EMSphInx.wisdom
+
+/EMSphInx/
 
 /IDL/pro/*.sav
 *.bak
@@ -115,6 +119,7 @@ IDL/various
 *.o
 /IDL/README.txt
 /resources/*.pro
+/resources/EMSphInx.wisdom
 /src/local.f90
 /src_programs/*.c
 /src_programs/go*

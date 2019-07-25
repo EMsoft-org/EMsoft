@@ -43,7 +43,7 @@ typedef void (*ProgCallBackTypeError)(size_t, int);
 * @param cancel boolean to trigger cancellation of computation
 */
 void EMsoftCpreprocessEBSDPatterns
-    (size_t* ipar, float* fpar, char* spar, float* mask, 
+    (int32_t* ipar, float* fpar, char* spar, float* mask,
      float* exptIQ, float* ADPmap, ProgCallBackTypeDI2 callback, 
      size_t object, bool* cancel);
 
@@ -57,6 +57,16 @@ void EMsoftCpreprocessEBSDPatterns
 void EMsoftCpreprocessSingleEBSDPattern
     (size_t* ipar, float* fpar, float* inputpattern, float* outputpattern);
 
+/**
+* EBSD pattern preprocessing parameter range:
+* @param ipar array with integer input parameters
+* @param fpar array with float input parameters
+* @param spar array with string input parameters
+* @param averagedpattern  input EBSD pattern as float array
+* @param patternarray  input EBSD pattern as float array
+*/
+void EMsoftCEBSDDIpreview
+    (size_t* ipar, float* fpar, char* spar, float* averagedpattern, float* patternarray);
 
 /**
 * EBSD Dictionary indexing (all in ram) wrapper routine
@@ -74,8 +84,8 @@ void EMsoftCpreprocessSingleEBSDPattern
 */
 
 void EMsoftCEBSDDI
-	(size_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
-	 float* resultmain, size_t* indexmain, ProgCallBackTypeDI3 callback, ProgCallBackTypeError errorcallback,
+	(int32_t* ipar, float* fpar, char* spar, float* dpatterns, float* epatterns, 
+	 float* resultmain, int32_t* indexmain, ProgCallBackTypeDI3 callback, ProgCallBackTypeError errorcallback,
      size_t object, bool* cancel); 
 
 /**

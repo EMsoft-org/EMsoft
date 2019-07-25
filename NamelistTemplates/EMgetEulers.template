@@ -1,0 +1,14 @@
+ &Eulerslist
+! which Euler angle data set do you want to use? 'original' or 'refined'
+ angledataset = 'original',
+! use radians (rad) or degrees (deg) for the Euler angle file
+ raddeg = 'deg',
+! name of orientations text output file (relative to EMdatapathname)
+ txtfile = 'undefined',
+! name of EMEBSD input namelist file to be generated (relative to EMdatapathname)
+ EMEBSDnmlfile = 'undefined', 
+! name of EMEBSD h5 output file; path relative to EMdatapathname
+ datafile = 'undefined',
+! name of input dot product file (relative to EMdatapathname)
+ dotproductfile = 'undefined',
+ /
