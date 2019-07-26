@@ -111,10 +111,10 @@ endif()
 #set(EMsoft_WEBSITE_SCP_USERNAME "mjackson")
 #-- Create a bash script file that will upload the latest version to the web server
 if(WIN32)
-  message(STATUS "${PROJECT_SOURCE_DIR}/Support/copy_nightly.bat.in")
-  message(STATUS "${PROJECT_BINARY_DIR}/copy_nightly.bat")
-    configure_file(${PROJECT_SOURCE_DIR}/Support/copy_nightly.bat.in
-                  ${EMsoft_BINARY_DIR}/copy_nightly.bat)
+  #message(STATUS "${PROJECT_SOURCE_DIR}/Support/copy_nightly.bat.in")
+  #message(STATUS "${PROJECT_BINARY_DIR}/copy_nightly.bat")
+  configure_file(${PROJECT_SOURCE_DIR}/Support/copy_nightly.bat.in
+                ${EMsoft_BINARY_DIR}/copy_nightly.bat)
 endif()
 
 # Create an NSIS based installer for Windows Systems

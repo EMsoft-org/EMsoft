@@ -153,6 +153,7 @@ end program EMEBSDmaster
 !> @date 04/03/18  MDG 7.1 replaced all regular MC variables by mcnl structure components
 !> @date 01/07/19  MDG 7.2 added Legendre lattitudinal grid mode (used for spherical indexing)
 !> @date 05/26/19  MDG 7.3 added warning about trigonal structures requiring hexagonal setting 
+!> @date 07/01/19  MDG 7.4 corrected initial beam energy in restart mode 
 !--------------------------------------------------------------------------
 subroutine ComputeMasterPattern(emnl, progname, nmldeffile)
 
@@ -292,13 +293,68 @@ call WriteValue(' --> total number of BSE electrons in MC data set ', io_int, 1)
 !=============================================
 !=============================================
 
+allocate(EkeVs(EBSDMCdata%numEbins),thick(EBSDMCdata%numEbins))
 
+do i=1,EBSDMCdata%numEbins
+  EkeVs(i) = mcnl%Ehistmin + float(i-1)*mcnl%Ebinsize
+end do
+
+!=============================================
+! should we create a new file or open an existing file?
+!=============================================
+  lastEnergy = -1
+  outname = trim(EMsoft_getEMdatapathname())//trim(emnl%outname)
+  outname = EMsoft_toNativePath(outname)
+  energyfile = trim(EMsoft_getEMdatapathname())//trim(emnl%energyfile)
+  energyfile = EMsoft_toNativePath(energyfile)
+
+if (emnl%restart.eqv..TRUE.) then
+! in this case we need to check whether or not the file exists, then open
+! it and read the value of the last energy level that was simulated and written
+! to that file; if this level is different from the lowest energy level we 
+! know that there is at least one more level to be simulated.  If it is equal,
+! then we can abort the program here.
+
+  inquire(file=trim(outname), exist=f_exists)
+  if (.not.f_exists) then 
+    call FatalError('ComputeMasterPattern','restart HDF5 file does not exist')
+  end if
+  
+!=============================================
+! open the existing HDF5 file 
+!=============================================
+  datagroupname = 'EBSDmaster'
+  nullify(HDF_head)
+! Initialize FORTRAN interface.
+  call h5open_EMsoft(hdferr)
+
+! Create a new file using the default properties.
+  readonly = .TRUE.
+  hdferr =  HDF_openFile(outname, HDF_head, readonly)
+
+! all we need to get from the file is the lastEnergy parameter
+groupname = SC_EMData
+  hdferr = HDF_openGroup(groupname, HDF_head)
+  hdferr = HDF_openGroup(datagroupname, HDF_head)
+
+dataset = SC_lastEnergy
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, lastEnergy)
+
+  call HDF_pop(HDF_head,.TRUE.)
+
+! and close the fortran hdf interface
+  call h5close_EMsoft(hdferr)
+end if
 !=============================================
 !=============================================
 ! crystallography section; 
  allocate(cell)
  verbose = .TRUE.
- call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+ if (emnl%restart.eqv..TRUE.) then 
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose)
+ else
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+ end if
 
 ! check the crystal system and setting; abort the program for trigonal with rhombohedral setting with
 ! an explanation for the user
@@ -360,11 +416,7 @@ if ((cell%xtal_system.eq.4).or.(cell%xtal_system.eq.5)) usehex = .TRUE.
 !=============================================
 !=============================================
 ! this is where we determine the value for the thickness integration limit for the CalcLgh3 routine...
-allocate(EkeVs(EBSDMCdata%numEbins),thick(EBSDMCdata%numEbins))
 
-do i=1,EBSDMCdata%numEbins
-  EkeVs(i) = mcnl%Ehistmin + float(i-1)*mcnl%Ebinsize
-end do
 
 ! then, for each energy determine the 95% histogram thickness
 izzmax = 0
@@ -448,54 +500,9 @@ deallocate(EBSDMCdata%accum_z)
 ! this will all be changed with the new version of the Bethe potentials
   call Set_Bethe_Parameters(BetheParameters,.TRUE.)
 
-!=============================================
-! should we create a new file or open an existing file?
-!=============================================
-  lastEnergy = -1
-  outname = trim(EMsoft_getEMdatapathname())//trim(emnl%outname)
-  outname = EMsoft_toNativePath(outname)
-  energyfile = trim(EMsoft_getEMdatapathname())//trim(emnl%energyfile)
-  energyfile = EMsoft_toNativePath(energyfile)
 
-if (emnl%restart.eqv..TRUE.) then
-! in this case we need to check whether or not the file exists, then open
-! it and read the value of the last energy level that was simulated and written
-! to that file; if this level is different from the lowest energy level we 
-! know that there is at least one more level to be simulated.  If it is equal,
-! then we can abort the program here.
 
-  inquire(file=trim(outname), exist=f_exists)
-  if (.not.f_exists) then 
-    call FatalError('ComputeMasterPattern','restart HDF5 file does not exist')
-  end if
-  
-!=============================================
-! open the existing HDF5 file 
-!=============================================
-  datagroupname = 'EBSDmaster'
-  nullify(HDF_head)
-! Initialize FORTRAN interface.
-  call h5open_EMsoft(hdferr)
-
-! Create a new file using the default properties.
-  readonly = .TRUE.
-  hdferr =  HDF_openFile(outname, HDF_head, readonly)
-
-! all we need to get from the file is the lastEnergy parameter
-groupname = SC_EMData
-  hdferr = HDF_openGroup(groupname, HDF_head)
-  hdferr = HDF_openGroup(datagroupname, HDF_head)
-
-dataset = SC_lastEnergy
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, lastEnergy)
-
-  call HDF_pop(HDF_head,.TRUE.)
-
-! and close the fortran hdf interface
-  call h5close_EMsoft(hdferr)
-
-else
-
+if (emnl%restart.eqv..FALSE.) then
 !=============================================
 ! create or update the HDF5 output file
 !=============================================

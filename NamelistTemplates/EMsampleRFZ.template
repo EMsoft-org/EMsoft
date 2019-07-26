@@ -12,6 +12,11 @@
  conevector = 0.D0, 0.D0, 1.D0,
 ! cone semi-angle (in degrees)
  semiconeangle = 2.D0,
+! active quaternion that rotates the entire fundamental zone before sampling
+ qFZ = 1.D0  0.D0  0.D0  0.D0, 
+! or an active axis-angle pair for the FZ rotation before sampling (  rotation axis, angle in degrees )
+! [the rotation axis need not be normalized]
+ axFZ = 0.D0 0.D0 1.D0 0.D0,
 ! point group number
  pgnum = 32,
 ! crystal structure file name (used for FIB samplemode only)

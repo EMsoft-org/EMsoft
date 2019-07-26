@@ -52,6 +52,7 @@
 !> @date 02/19/19 MDG 3.0 corrects pattern orientation; manual indexing of patterns computed with EMEBSD
 !>                        revealed an unwanted upside down flip that was compensated by flipping the 
 !>                        exp. patterns; thus, all indexing runs thus far produced the correct results.
+!> @date 07/13/19 MDG 3.1 added option to read single pattern from OxfordBinary file
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -59,6 +60,7 @@ use local
 use error
 use HDF5
 use HDFsupport
+use commonmod
 
 IMPLICIT NONE
 
@@ -107,7 +109,7 @@ if (trim(inputtype).eq."TSLup1") itype = 2
 if (trim(inputtype).eq."TSLup2") itype = 3
 if (trim(inputtype).eq."TSLHDF") itype = 4
 if (trim(inputtype).eq."OxfordBinary") itype = 5
-if (trim(inputtype).eq."OxfordHDF") itype = 6
+if (trim(inputtype).eq."OxfordHDF") itype = 6    ! to be implemented
 if (trim(inputtype).eq."EMEBSD") itype = 7
 if (trim(inputtype).eq."BrukerHDF") itype = 8
 
@@ -148,7 +150,7 @@ end function get_num_HDFgroups
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief invert the pattern reordering arrays
+!> @brief invert the pattern reordering arrays for Bruker HDF5 format
 !
 !> @param npat number of patterns in a single row of the ROI
 !
@@ -224,12 +226,11 @@ integer(kind=irg),INTENT(IN)            :: L
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: recsize
 integer(kind=irg),INTENT(IN)            :: funit
-integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
-                                           ios, up1header(4), version, patx, paty, myoffset
+                                           ios, up1header(4), version, patx, paty, myoffset, istat
 character(fnlen)                        :: groupname, dataset, platform
 logical                                 :: f_exists
 
@@ -331,7 +332,7 @@ select case (itype)
             groupname = trim(HDFstrings(i))
             hdferr = HDF_openGroup(groupname, pmHDF_head)
             if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-            !  this part is different from the other vendors: the patterns are not necessarily in the correct order (why not???)
+            !  this part is different from the other vendors: the patterns are not necessarily in the correct order 
             !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
             !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
             if (i.eq.1) then 
@@ -506,10 +507,10 @@ select case (itype)
 
     case(5)  ! "OxfordBinary"
 
-! read postion of patterns in file for a single row from the header
+! read position of patterns in file for a single row from the header
       read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
 
-! generate a buffer to load individial patterns into
+! generate a buffer to load individual patterns into
       buffersize = lL
       allocate(buffer(buffersize))
 
@@ -525,7 +526,6 @@ select case (itype)
         do jj=1_ill,lL
           pairs((ii - 1)*lL + jj) = ichar(buffer(jj)) 
         enddo
-
       end do
 
       deallocate(buffer)
@@ -624,6 +624,7 @@ end subroutine getExpPatternRow
 !> @param exppat output array
 !
 !> @date 02/20/18 MDG 1.0 original
+!> @date 07/13/19 MDG 1.1 added option to read single pattern from OxfordBinary file
 !--------------------------------------------------------------------------
 recursive subroutine getSingleExpPattern(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppat) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getSingleExpPattern
@@ -653,6 +654,7 @@ integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
                                            l1, l2, multfactor
+integer(kind=8)                         :: patoffsets(wd)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -722,12 +724,47 @@ select case (itype)
           where(exppat.lt.0.0) exppat = exppat + 256.0
         end if
 
-    case(5)  ! "OxfordBinary"
-        call FatalError("getSingleExpPattern","input format not yet implemented")
+    case(5)  ! "OxfordBinary" ! [added/tested MDG 07/13/19]
+! read position of patterns in file for a single row from the header
+      liii = iii
+      l1 = mod(offset3(3),wd)
+      lL = L
+      lwd = wd
+      read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
+
+! generate buffers to load individual pattern into
+      buffersize = lL
+      allocate(buffer(buffersize), pairs(buffersize))
+
+! read single pattern into buffer with the 16 bytes of metadata skipped
+      read(unit=funit, pos=patoffsets(l1)+17_8, iostat=ios) buffer
+
+! convert the byte values into single byte integers
+      pairs = ichar(buffer) 
+      deallocate(buffer)
+
+ ! then we need to place it in the exppat array 
+      exppat = 0.0
+      pixcnt = 1
+      do jj=1,dims3(2)
+        jspot = (jj-1)*dims3(1) 
+        do ii=1,dims3(1)
+          exppat(jspot+ii) = float(pairs(pixcnt))
+          pixcnt = pixcnt + 1
+        end do 
+      end do 
+      deallocate(pairs)
+
+! finally, correct for the fact that the original values were unsigned integers
+      where(exppat.lt.0.0) exppat = exppat + 256.0
 
     case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
+
+! Update 07/13/19: after talking with Phillipe Pinard (Oxford) at the EMAS 2019 conference
+! in Trondheim, it is clear that Oxford is working on including the patterns into their
+! current HDF5 file version.  This might become available sometime by the end of 2019.
 
     case(4)  ! "TSLHDF" passed tests on 2/20/18 by MDG
 ! read a hyperslab single pattern section from the HDF5 input file
@@ -901,13 +938,13 @@ recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, mas
 use io
 use local
 use typedefs
-use EBSDDImod
+!use ebsddimod
 use NameListTypedefs
 use error
 use omp_lib
 use filters
 use timing
-
+use commonmod
 use ISO_C_BINDING
 
 IMPLICIT NONE
@@ -1190,7 +1227,7 @@ recursive subroutine PreProcessTKDPatterns(nthreads, inRAM, tkdnl, binx, biny, m
 use io
 use local
 use typedefs
-use EBSDDImod
+!use ebsddimod
 use NameListTypedefs
 use error
 use omp_lib

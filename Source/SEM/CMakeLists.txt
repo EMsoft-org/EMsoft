@@ -149,5 +149,14 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         TEMPLATE ${TMPLT_DIR}/EMTKDmaster.template 
                         SOLUTION_FOLDER EMsoftPublic/SEM 
                         INSTALL_PROGRAM TRUE)
+
+  Add_EMsoft_Executable(TARGET EMEBSDoverlap
+                        SOURCES ${APP_DIR}/EMEBSDoverlap.f90 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
+                        TEMPLATE ${TMPLT_DIR}/EMEBSDoverlap.template 
+                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        INSTALL_PROGRAM TRUE)
+
+
 endif()
 

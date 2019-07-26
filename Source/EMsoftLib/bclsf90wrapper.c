@@ -22,6 +22,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "bcls/bclslib.h"  // The BCLS solver library.
 #include "bcls/bcls.h"  // The BCLS solver library.
 
 #include "cs.h"    // The CSparse matrix library.
@@ -191,7 +192,7 @@ void bclsf90wrapper(int* mm, int* nn, int* nonz, int* ids, double* vals, int* nn
     worksp  Wrk;             // Workspace.
     int nnz;
     int err;
-    int m, n, count;
+    int m, n;
     double damp;
     double* Xout  = NULL;    // output
     double *anorm = NULL;    // Column norms of A.

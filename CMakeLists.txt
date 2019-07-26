@@ -64,7 +64,7 @@ else()
 endif()
 
 # Request C++11 standard, using new CMake variables.
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_EXTENSIONS False)
 
@@ -85,9 +85,7 @@ set(EMsoft_VER_MINOR "3")
 set(EMsoft_VER_PATCH "0")
 #------------------------------------------------------------------------------
 
-
 project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
-
 
 include(CMakeParseArguments)
 
@@ -187,6 +185,16 @@ cmpRevisionString( GENERATED_HEADER_FILE_PATH "${EMsoft_VERSION_HDR_FILE}"
                         NAMESPACE "EMsoft"
                         PROJECT_NAME "${PROJECT_NAME}"
                         EXPORT_MACRO "EMsoft_EXPORT")
+
+
+execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
+                          OUTPUT_VARIABLE EMsoft_GIT_HASH
+                          RESULT_VARIABLE did_run
+                          ERROR_VARIABLE git_error
+                          WORKING_DIRECTORY ${EMsoft_SOURCE_DIR}
+                          OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+string(TIMESTAMP EMsoft_BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%SZ" UTC)
 
 include (${CMP_SOURCE_DIR}/cmpProject.cmake)
 
@@ -321,4 +329,3 @@ if(EMsoft_ENABLE_TESTING)
   include(CTest)
   add_subdirectory(${EMsoft_SOURCE_DIR}/Source/Test ${PROJECT_BINARY_DIR}/Test)
 endif()
-
