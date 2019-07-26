@@ -10,6 +10,7 @@ implicit none
   !@brief                                 : rescale an image (craetes a single use ImageRescaler)
   !@param in  [IN   ] real(1:wIn , 1:hIn ): input image
   !@param out [INOUT] real(1:wOut, 1:hOut): locatino to write output image (scale to size of out)
+  !@param dc0 [IN   ] logical             : [optional] .true. to set DC value to 0, false (or excluded) to leave unchanged
   !@note                                  : wOut/wIn must == hOut/hIn (to the nearest int)
   public :: RescaleImage 
 
@@ -42,6 +43,7 @@ implicit none
     !@brief                              : rescale an image (this could be modified to include a filter)
     !@param in  [IN ] real(1:wIn ,1:hIn ): image to rescale
     !@param out [OUT] real(1:wOut,1:hOut): location to write rescaled image
+    !@param dc0 [IN ] logical            : [optional] .true. to set DC value to 0, false (or excluded) to leave unchanged
     !@note                               : input can be (8/16)bit int or (32/64)bit real, output will always be 64bit real
     generic   :: rescale => ImageRescaler_Rescale8, ImageRescaler_Rescale16, ImageRescaler_Rescale32, ImageRescaler_Rescale64
   end type ImageRescaler
@@ -50,16 +52,19 @@ contains
   !@brief    : rescale an image (craetes a single use ImageRescaler)
   !@param in : input image
   !@param out: locatino to write output image (scale to size of out)
+  !@param dc0: true/false to make mean of rescaled image 0 / leave unchanged
   !@note     : wOut/wIn must == hOut/hIn (to the nearest int)
-  subroutine RescaleImage(in, out)
+  subroutine RescaleImage(in, out, dc0)
     use error
   implicit none
-    real   (kind=dbl     ),INTENT(IN   ) :: in (1:,:)
-    real   (kind=dbl     ),INTENT(INOUT) :: out(1:,:)
+    real   (kind=dbl     ),INTENT(IN   )          :: in (1:,:)
+    real   (kind=dbl     ),INTENT(INOUT)          :: out(1:,:)
+    logical               ,INTENT(IN   ),optional :: dc0
 
-    real   (kind=dbl     )               :: s
-    integer(kind=irg     )               :: iIn(2), iOut(2)
-    type   (ImageRescaler)               :: scaler
+    real   (kind=dbl     )                        :: s
+    integer(kind=irg     )                        :: iIn(2), iOut(2)
+    type   (ImageRescaler)                        :: scaler
+    logical                                       :: zer = .false.
 
     ! get shape of arrays
     iIn  = shape(in )
@@ -73,7 +78,8 @@ contains
 
     ! if a single scale factor works build a rescaler and apply
     call scaler%init(iIn(1), iIn(2), s)
-    call scaler%rescale(in, out)
+    if(present(dc0)) zer = dc0
+    call scaler%rescale(in, out, zer)
 
   end subroutine RescaleImage
 
@@ -154,11 +160,13 @@ contains
   !@param this: structure to use for rescaling
   !@param in  : image to rescale
   !@param out : location to write rescaled image
-  subroutine ImageRescaler_Rescale(this, out)
+  !@param dc0 : true/false to make mean of rescaled image 0 / leave unchanged
+  subroutine ImageRescaler_Rescale(this, out, dc0)
     use FFTW3MOD
   implicit none
     class(ImageRescaler),INTENT(INOUT) :: this ! structure to use for rescaling
     real (kind=dbl     ),INTENT(INOUT) :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    logical             ,INTENT(IN   ) :: dc0
 
     ! first compute DCT of input image
     call fftw_execute_r2r(this%pFwd, this%pImIn, this%pImOut) ! do forward transformation
@@ -172,9 +180,12 @@ contains
       this%pDctIn = this%pImOut(1:this%wOut, 1:this%hOut) ! copy entire dct
     endif
 
+    ! zero out dc value if needed
+    if(dc0) this%pDctIn(1,1) = 0.D0
+
     ! do inverse DCT
     call fftw_execute_r2r(this%pRev, this%pDctIn, this%pDctOut)
-    out = this%pDctOut ! copy out of fftw allocated array
+    out = this%pDctOut / (this%wIn * this%hIn * 4) ! copy out of fftw allocated array and normalize
 
   end subroutine ImageRescaler_Rescale
 
@@ -182,52 +193,68 @@ contains
   !@param this: structure to use for rescaling
   !@param in  : 8 bit int image to rescale
   !@param out : location to write rescaled image
-  subroutine ImageRescaler_Rescale8(this, in, out)
+  !@param dc0 : true/false to make mean of rescaled image 0 / leave unchanged
+  subroutine ImageRescaler_Rescale8(this, in, out, dc0)
   implicit none
-    class  (ImageRescaler),INTENT(INOUT) :: this ! structure to use for rescaling
-    integer(kind=1       ),INTENT(IN   ) :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
-    real   (kind=dbl     ),INTENT(INOUT) :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    class  (ImageRescaler),INTENT(INOUT)          :: this ! structure to use for rescaling
+    integer(kind=1       ),INTENT(IN   )          :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
+    real   (kind=dbl     ),INTENT(INOUT)          :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    logical               ,INTENT(IN   ),optional :: dc0
+    logical                                       :: zer = .false.
+    if(present(dc0)) zer = dc0
     this%pImIn = in ! copy input to fftw allocated array
-    call ImageRescaler_Rescale(this, out) ! do rescaling
+    call ImageRescaler_Rescale(this, out, dc0) ! do rescaling
   end subroutine ImageRescaler_Rescale8
 
   !@brief     : rescale an image (this could be modified to include a filter)
   !@param this: structure to use for rescaling
   !@param in  : 16 bit int image to rescale
   !@param out : location to write rescaled image
-  subroutine ImageRescaler_Rescale16(this, in, out)
+  !@param dc0 : true/false to make mean of rescaled image 0 / leave unchanged
+  subroutine ImageRescaler_Rescale16(this, in, out, dc0)
   implicit none
-    class  (ImageRescaler),INTENT(INOUT) :: this ! structure to use for rescaling
-    integer(kind=2       ),INTENT(IN   ) :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
-    real   (kind=dbl     ),INTENT(INOUT) :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    class  (ImageRescaler),INTENT(INOUT)          :: this ! structure to use for rescaling
+    integer(kind=2       ),INTENT(IN   )          :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
+    real   (kind=dbl     ),INTENT(INOUT)          :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    logical               ,INTENT(IN   ),optional :: dc0
+    logical                                       :: zer = .false.
+    if(present(dc0)) zer = dc0
     this%pImIn = in ! copy input to fftw allocated array
-    call ImageRescaler_Rescale(this, out) ! do rescaling
+    call ImageRescaler_Rescale(this, out, dc0) ! do rescaling
   end subroutine ImageRescaler_Rescale16
 
   !@brief     : rescale an image (this could be modified to include a filter)
   !@param this: structure to use for rescaling
   !@param in  : 32 bit real image to rescale
   !@param out : location to write rescaled image
-  subroutine ImageRescaler_Rescale32(this, in, out)
+  !@param dc0 : true/false to make mean of rescaled image 0 / leave unchanged
+  subroutine ImageRescaler_Rescale32(this, in, out, dc0)
   implicit none
-    class(ImageRescaler),INTENT(INOUT) :: this ! structure to use for rescaling
-    real (kind=sgl     ),INTENT(IN   ) :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
-    real (kind=dbl     ),INTENT(INOUT) :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    class(ImageRescaler),INTENT(INOUT)          :: this ! structure to use for rescaling
+    real (kind=sgl     ),INTENT(IN   )          :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
+    real (kind=dbl     ),INTENT(INOUT)          :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    logical             ,INTENT(IN   ),optional :: dc0
+    logical                                     :: zer = .false.
+    if(present(dc0)) zer = dc0
     this%pImIn = in ! copy input to fftw allocated array
-    call ImageRescaler_Rescale(this, out) ! do rescaling
+    call ImageRescaler_Rescale(this, out, dc0) ! do rescaling
   end subroutine ImageRescaler_Rescale32
 
   !@brief     : rescale an image (this could be modified to include a filter)
   !@param this: structure to use for rescaling
   !@param in  : 64 bit real image to rescale
   !@param out : location to write rescaled image
-  subroutine ImageRescaler_Rescale64(this, in, out)
+  !@param dc0 : true/false to make mean of rescaled image 0 / leave unchanged
+  subroutine ImageRescaler_Rescale64(this, in, out, dc0)
   implicit none
-    class(ImageRescaler),INTENT(INOUT) :: this ! structure to use for rescaling
-    real (kind=dbl     ),INTENT(IN   ) :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
-    real (kind=dbl     ),INTENT(INOUT) :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    class(ImageRescaler),INTENT(INOUT)          :: this ! structure to use for rescaling
+    real (kind=dbl     ),INTENT(IN   )          :: in (1:this%wIn , 1:this%hIn ) ! structure to use for rescaling
+    real (kind=dbl     ),INTENT(INOUT)          :: out(1:this%wOut, 1:this%hOut) ! structure to use for rescaling
+    logical             ,INTENT(IN   ),optional :: dc0
+    logical                                     :: zer = .false.
+    if(present(dc0)) zer = dc0
     this%pImIn = in ! copy input to fftw allocated array
-    call ImageRescaler_Rescale(this, out) ! do rescaling
+    call ImageRescaler_Rescale(this, out, dc0) ! do rescaling
   end subroutine ImageRescaler_Rescale64
 
 end module imageOPs
