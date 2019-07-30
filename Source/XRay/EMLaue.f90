@@ -36,7 +36,7 @@
 !
 !> @brief Basic program to compute a realistic transmission/reflection Laue pattern
 !
-!> @date 03/28/19  MDG 1.0 original version 
+!> @date 07/30/19  MDG 1.0 original version 
 !--------------------------------------------------------------------------
 program EMLaue
 
@@ -78,13 +78,13 @@ end program EMLaue
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief compute a transmission/reflection Laue pattern 
+!> @brief compute a series of transmission/reflection Laue patterns
 !
 !> @param lnl namelist 
 !> @param progname program name
 !> @param nmldeffile namelist file name (so that the entire file can be stored inside the HDF5 file)
 !
-!> @date 03/28/19  MDG 1.0 original
+!> @date 07/30/19  MDG 1.0 original
 !--------------------------------------------------------------------------
 subroutine ComputeLauePattern(lnl, progname, nmldeffile)
 
@@ -94,6 +94,7 @@ use NameListHandlers
 use initializersHDF
 use initializers
 use Lauemod
+use xrdmod
 use symmetry
 use crystal
 use constants
@@ -121,21 +122,32 @@ type(LaueNameListType),INTENT(INOUT)       :: lnl
 character(fnlen),INTENT(IN)                :: progname
 character(fnlen),INTENT(IN)                :: nmldeffile
 
-type(LaueMasterNameListType)               :: lmnl
-type(LaueMPdataType)                       :: LaueMPdata
+integer(kind=irg)                          :: numangles
+type(AngleType),pointer                    :: angles
 
 integer(kind=irg)						   :: hdferr, npx, npy
-character(fnlen)						   :: MPfile
-real(kind=sgl),allocatable 				   :: detector(:,:)
+real(kind=sgl) 							   :: kouter, kinner 
+real(kind=sgl),allocatable 				   :: detector(:,:), patterns(:,:,:)
 
 type(HDFobjectStackType),pointer           :: HDF_head
 
 ! Initialize FORTRAN interface.
-nullify(HDF_head)
-call h5open_EMsoft(hdferr)
+! nullify(HDF_head)
+! call h5open_EMsoft(hdferr)
 
 ! read the master pattern file 
-call readLaueMasterFile(lnl%MPfname, lmnl, hdferr, LaueMPdata, getmLPNH=.TRUE., getmLPSH=.TRUE.)
+! call readLaueMasterFile(lnl%MPfname, lmnl, hdferr, LaueMPdata, getmLPNH=.TRUE., getmLPSH=.TRUE.)
+
+! read the list of orientations and convert them all to quaternions if they are not already
+nullify(angles)
+allocate(angles)
+call Lauereadangles(lnl%orientationfile, numangles, angles, verbose=.TRUE.)
+
+! compute the limiting wave numbers for the outer and inner Ewald spheres
+kouter = getXRDwavenumber(lnl%maxVoltage)
+kinner = getXRDwavenumber(lnl%minVoltage)
+
+! read the crystal structure file 
 
 ! generate the detector array
 npx = lnl%numpx
@@ -143,7 +155,6 @@ npy = lnl%numpy
 allocate(detector(npx, npy))
 
 ! 
-
 
 
 end subroutine ComputeLauePattern

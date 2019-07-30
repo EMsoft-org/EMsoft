@@ -259,14 +259,17 @@ end type LaueMasterNameListType
 type LaueNameListType
         integer(kind=irg)       :: numpx
         integer(kind=irg)       :: numpy
-        integer(kind=irg)       :: patchw
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: spotw
         real(kind=sgl)          :: pixelsize
-        real(kind=sgl)          :: pcx
-        real(kind=sgl)          :: pcy
-        real(kind=sgl)          :: beam(3)
+        real(kind=sgl)          :: maxVoltage
+        real(kind=sgl)          :: minVoltage
         real(kind=sgl)          :: SDdistance
-        character(fnlen)        :: MPfname
+        character(fnlen)        :: Lauemode
+        character(fnlen)        :: orientationfile
+        character(fnlen)        :: tiffprefix
         character(fnlen)        :: hdfname
+        character(fnlen)        :: xtalname
 end type LaueNameListType
 
 ! namelist for the EMMCLIPSS program ! PGC added 12/01/15
