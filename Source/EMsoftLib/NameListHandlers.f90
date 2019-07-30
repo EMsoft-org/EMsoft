@@ -1180,6 +1180,7 @@ real(kind=sgl)          :: pixelsize
 real(kind=sgl)          :: maxVoltage
 real(kind=sgl)          :: minVoltage
 real(kind=sgl)          :: SDdistance
+real(kind=sgl)          :: gammavalue
 character(fnlen)        :: Lauemode
 character(fnlen)        :: orientationfile
 character(fnlen)        :: tiffprefix
@@ -1188,7 +1189,7 @@ character(fnlen)        :: hdfname
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueData / numpx, numpy, nthreads, spotw, pixelsize, maxVoltage, minVoltage, SDdistance, &
-                       Lauemode, orientationfile, tiffprefix, xtalname, hdfname
+                       gammavalue, Lauemode, orientationfile, tiffprefix, xtalname, hdfname
 
 numpx = 1024                   ! detector x-size (pixels)
 numpy = 768                    ! detector y-size (pixels)
@@ -1198,6 +1199,7 @@ spotw = 0.1                    ! spot size weight factor (1/(2*sigma^2))
 maxVoltage = 30.0              ! in kV
 minVoltage = 15.0              ! in kV
 SDdistance = 100.0             ! mm
+gammavalue = 1.0               ! scaling factor for gamma intensity scaling
 Lauemode = 'transmission'      ! 'transmission' or 'reflection'
 orientationfile = 'undefined'  ! input file with orientation list 
 tiffprefix = 'undefined'       ! prefix for tiff output files with individual patterns
@@ -1234,6 +1236,7 @@ lnl%spotw = spotw
 lnl%maxVoltage= maxVoltage
 lnl%minVoltage= minVoltage
 lnl%SDdistance = SDdistance  
+lnl%gammavalue = gammavalue
 lnl%Lauemode = Lauemode
 lnl%orientationfile = orientationfile
 lnl%xtalname = xtalname

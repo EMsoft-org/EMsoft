@@ -265,6 +265,7 @@ type LaueNameListType
         real(kind=sgl)          :: maxVoltage
         real(kind=sgl)          :: minVoltage
         real(kind=sgl)          :: SDdistance
+        real(kind=sgl)          :: gammavalue
         character(fnlen)        :: Lauemode
         character(fnlen)        :: orientationfile
         character(fnlen)        :: tiffprefix

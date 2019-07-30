@@ -67,6 +67,7 @@ recursive subroutine Lauereadangles(orientationfilename,numangles,angles,verbose
 use typedefs
 use NameListTypedefs
 use io
+use error 
 use files
 use quaternions
 use rotations
@@ -197,15 +198,14 @@ integer(kind=irg),INTENT(IN) 				:: npy
 integer(kind=irg),INTENT(IN) 				:: refcnt
 real(kind=sgl) 								:: pattern(npx, npy)
 
-real(kind=sgl) 								:: r1, r2, grot(3), gyz, gbig, gsmall, kspot, kprime(3), kp(3)
+real(kind=sgl) 								:: r1, r2, grot(3), gyz, gbig, gsmall, kspot, kprime(3), kp(3), scl
 type(Laue_g_list),pointer                   :: rltmp
 integer(kind=irg)							:: gg, traref
 
 traref = 1  ! reflection mode = 1
 if (trim(lnl%Lauemode).eq.'transmission') traref = 2 ! transmission mode = 2
 
-r1 = kouter**2
-r2 = kinner**2
+scl = lnl%SDdistance / lnl%pixelsize 
 
 pattern = 0.0
 
@@ -215,23 +215,23 @@ rltmp => reflist
 do gg=1,refcnt 
   grot = sngl(quat_Lp(conjg(qu),rltmp%xyz))
 ! make sure this reflection lies between the two limiting Ewald spheres
-  gyz = grot(2)*grot(2) + grot(3)*grot(3)
-  gbig = (grot(1)+kouter)**2 + gyz - r1
-  gsmall = (grot(1)+kinner)**2 + gyz - r2
+  gyz = sum(grot*grot) 
+  gbig = 2.0*grot(1)*kouter + gyz 
+  gsmall = 2.0*grot(1)*kinner + gyz 
   if ((gbig.le.0.0).and.(gsmall.ge.0.0)) then 
 ! this is a good point so let's draw stuff
 ! first, determine the wave number for this point
-    kspot = - sum(grot*grot) / (2.0*grot(1))
+    kspot = - gyz / (2.0*grot(1))
     kprime = (/ kspot, 0.0, 0.0 /)  + grot
     if ((kprime(1).gt.0.0).and.(traref.eq.2)) then 
-      kp = (kprime/abs(kprime(1))) * lnl%SDdistance
+      kp = (kprime/abs(kprime(1))) * scl
       if ( (abs(kp(2)).le.(lnl%numpx/2)).and.(abs(kp(3)).le.(lnl%numpy/2)) ) then 
 ! draw the reflection on the transmission screen 
 	    call addLauereflection(pattern, lnl%numpx, lnl%numpy, kp, sngl(rltmp%sfs), lnl%spotw)
       end if
     end if 
     if ((kprime(1).lt.0.0).and.(traref.eq.1)) then 
-      kp = (kprime/abs(kprime(1))) * lnl%SDdistance
+      kp = (kprime/abs(kprime(1))) * scl
       if ( (abs(kp(2)).le.(lnl%numpx/2)).and.(abs(kp(3)).le.(lnl%numpy/2)) ) then 
 ! draw the reflection on the backreflection screen 
 		kp(2) = -kp(2)
@@ -293,12 +293,12 @@ ddd = (dd-1)/2
 px = kp(2) + real(npx/2)
 py = kp(3) + real(npy/2)
 
-dx = kp(2)-int(kp(2))
-dy = kp(3)-int(kp(3))
-ix = int(kp(2))-ddd
-iy = int(kp(3))-ddd
+dx = px-int(px)
+dy = py-int(py)
+ix = int(px)-ddd
+iy = int(py)-ddd 
 
-evals = sfs * exp( - ( (xar-dx)**2 + (yar -dy)**2 ) * spotw )
+evals = alog(sfs+1.0) * exp( - ( (xar-dx)**2 + (yar -dy)**2 ) * spotw )
 
 if ( (ix+dd.lt.npx).and.(iy+dd.lt.npy).and.(ix.gt.0).and.(iy.gt.0) ) pattern(ix:ix+dd-1,iy:iy+dd-1) = evals
 

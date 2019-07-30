@@ -378,7 +378,7 @@ do h=-imh,imh
 ! fill in the values
              gtail % hkl = (/ h, k, l /)
              call TransSpace(cell, dble(gtail % hkl), gtail % xyz, 'r', 'c')
-             call NormVec(cell, gtail%xyz, 'c')
+!             call NormVec(cell, gtail%xyz, 'c')    ! removed by MDG, 07/30/19 for EMLaue program
              gtail % tt = CalcDiffAngle(cell,h,k,l)
              gtail % polar = (1.D0+ cos(2.D0*gtail%tt)**2)*0.5D0
              gtail % sfs = sfs / threshold

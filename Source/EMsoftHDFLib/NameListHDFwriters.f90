@@ -566,7 +566,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(LaueNameListType),INTENT(IN)                     :: lnl
 
-integer(kind=irg),parameter                           :: n_int = 3, n_real = 5
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -585,12 +585,13 @@ intlist(3) = 'nthreads'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals
-io_real = (/ lnl%spotw, lnl%pixelsize, lnl%maxVoltage, lnl%minVoltage, lnl%SDdistance /)
+io_real = (/ lnl%spotw, lnl%pixelsize, lnl%maxVoltage, lnl%minVoltage, lnl%SDdistance, lnl%gammavalue /)
 reallist(1) = 'spotw'
 reallist(2) = 'pixelsize'
 reallist(3) = 'maxVoltage'
 reallist(4) = 'minVoltage'
 reallist(5) = 'SDdistance'
+reallist(6) = 'gammavalue'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the strings
