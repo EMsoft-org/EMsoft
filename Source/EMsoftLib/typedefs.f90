@@ -1729,6 +1729,12 @@ integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLintegers
 
 
+
+type AngleType
+        real(kind=sgl),allocatable      :: quatang(:,:)
+end type AngleType
+
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------

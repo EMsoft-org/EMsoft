@@ -145,7 +145,7 @@ type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
-character(2)                            :: angletype
+character(2)                            :: atype
 real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
 real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
 
@@ -162,7 +162,7 @@ anglefile = EMsoft_toNativePath(anglefile)
 open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
-read(dataunit,*) angletype
+read(dataunit,*) atype
 
 ! then the number of angles in the file
 read(dataunit,*) numangles
@@ -172,7 +172,7 @@ if (present(verbose)) then
   call WriteValue('Number of angle entries = ',io_int,1)
 end if
 
-if (angletype.eq.'eu') then
+if (atype.eq.'eu') then
 ! allocate the euler angle array
   allocate(eulang(3,numangles),stat=istat)
 ! if istat.ne.0 then do some error handling ... 
@@ -254,7 +254,7 @@ type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
-character(2)                            :: angletype
+character(2)                            :: atype
 real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
 real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
 
@@ -271,7 +271,7 @@ anglefile = EMsoft_toNativePath(anglefile)
 open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
-read(dataunit,*) angletype
+read(dataunit,*) atype
 
 ! then the number of angles in the file
 read(dataunit,*) numangles
@@ -281,7 +281,7 @@ if (present(verbose)) then
   call WriteValue('Number of angle entries = ',io_int,1)
 end if
 
-if (angletype.eq.'eu') then
+if (atype.eq.'eu') then
 ! allocate the euler angle array
   allocate(eulang(3,numangles),stat=istat)
 ! if istat.ne.0 then do some error handling ... 
@@ -354,7 +354,7 @@ type(EBSDAnglePCDefType),pointer        :: orpcdef
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
-character(2)                            :: angletype
+character(2)                            :: atype
 real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
 real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
 
@@ -371,8 +371,8 @@ anglefile = EMsoft_toNativePath(anglefile)
 open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
-read(dataunit,*) angletype
-if (angletype.ne.'eu') then 
+read(dataunit,*) atype
+if (atype.ne.'eu') then 
   call FatalError("EBSDreadorpcdef","Other orientation formats to be implemented; only Euler for now")
 end if
 
