@@ -109,11 +109,26 @@ if("${EMsoftData_DIR}" STREQUAL "")
   if(EXISTS "${EMSOFT_PARENT}/EMsoftData")
     set(EMsoftData_DIR ${EMSOFT_PARENT}/EMsoftData)
   else()
-    message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
-    We looked in the same directory as the 'EMsoft' directory for a directory called EMsoftData but did not find it.\
-    You can clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch\
-    or you can set the EMsoftData_DIR variable to point to the location of the EMsoftData directory.\    
-    ")  
+    message(WARNING "EMsoftData_DIR not found or empty folder, cloning automatically from https://github.com/emsoft-org/EMsoftData")
+message(FATAL_ERROR "${EMSOFT_PARENT}/EMsoftData")
+    include(ExternalProject)
+    ExternalProject_Add("EMsoftDataClone"
+      GIT_REPOSITORY https://github.com/emsoft-org/EMsoftData
+      GIT_TAG "develop" # get the develop branch
+      DOWNLOAD_DIR "${EMSOFT_PARENT}/EMsoftData"
+      GIT_SHALLOW TRUE # we don't need version history
+      GIT_PROGRESS TRUE # there may be some large datafiles
+      # CONFIGURE_COMMAND "" # nothing needs to be configured
+      # BUILD_COMMAND "" # nothing needs to be built
+      # INSTALL_COMMAND "" # nothing needs to be installed
+      # TEST_COMMAND "" # nothing needs to be tested
+    )
+
+    # message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
+    # We looked in the same directory as the 'EMsoft' directory for a directory called EMsoftData but did not find it.\
+    # You can clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch\
+    # or you can set the EMsoftData_DIR variable to point to the location of the EMsoftData directory.\    
+    # ")  
   endif()
 endif()
 

@@ -1728,83 +1728,8 @@ integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape
                                                                                     3,11,3,11,1,11 /), (/ 6, CSLnumberdefined /))
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLintegers
 
-
-
 type AngleType
         real(kind=sgl),allocatable      :: quatang(:,:)
 end type AngleType
-
-
-!--------------------------------------------------------------------------
-!--------------------------------------------------------------------------
-!--------------------------------------------------------------------------
-! type definitions used for the Spherical Indexing algorithm
-
-type SH_gridLayout
-    integer(kind=irg)                   :: LambertLegendre  ! 1 for Legendre (preferred), 2 for Lambert
-end type SH_gridLayout
-
-type SH_Coefficients
-    integer(kind=irg)                   :: maxL
-    real(kind=dbl),allocatable          :: Alm(:)
-    real(kind=dbl),allocatable          :: Blm(:)
-    real(kind=dbl),allocatable          :: Plm(:)
-    real(kind=dbl),allocatable          :: Ylm(:)
-    real(kind=dbl)                      :: lastPhi
-    real(kind=dbl)                      :: lastTheta
-end type SH_Coefficients
-
-type SH_Mode 
-  integer  :: l
-  integer  :: m 
-  complex  :: weight
-end type SH_Mode
-
-type SH_LUT
-  real(kind=dbl),allocatable            :: ring(:)            ! work space to repack patterns from row -> ring major order
-  complex(kind=dbl),allocatable         :: cWrk1(:), cWrk2(:) ! complex working arrays for a single ring
-  real(kind=dbl),allocatable            :: rWrk1(:), rWrk2(:) ! real working array for a single ring
-  integer(kind=irg),allocatable         :: ringStart(:)       ! starting index of each ring in the row representation
-end type SH_LUT
-
-type fftwPlanPtr
-  type(C_ptr)                           :: frwdplan
-  type(C_ptr)                           :: bkwdplan
-end type fftwPlanPtr
-
-type SH_SHTConstantsType
-  integer(kind=irg)                     :: dim          ! side length of square Lambert projection
-  integer(kind=irg)                     :: d            ! half length of square Lambert projection
-  integer(kind=irg)                     :: Nt           ! number of pairs of equal lattitude rings [(dim+1)/2]
-  integer(kind=irg)                     :: maxL         ! maximum bandwidth of square lambert projection (must be < Nt for arbitrary rings (Nt*2 for legendre rings))
-  integer(kind=irg)                     :: Nw           ! number of different types of weights [(dim-2) / 8 + 1]
-  real(kind=dbl),allocatable            :: r1x2(:)      ! precomputed sqrt(1-x*x) values
-  real(kind=dbl),allocatable            :: wy(:,:)      ! weighting factor for each ring [Nt * Nw]
-  real(kind=dbl),allocatable            :: cosTy(:)     ! cosine of latitude of each ring [Nt]
-  real(kind=dbl),allocatable            :: amn(:,:)     ! precomputed a^m_n values for on the fly ylm calculation [maxL^2]
-  real(kind=dbl),allocatable            :: bmn(:,:)     ! precomputed b^m_n values for on the fly ylm calculation [maxL^2]
-! array of pointers to fftw plans ...   
-  type(fftwPlanPtr),allocatable         :: fftwPlans(:) ! array of pointer structures to fftw plans
-end type SH_SHTConstantsType
-
-type SH_correlatorType
-   ! these members are constant
-   integer(kind=irg)                    :: bw             ! maximum bandwidth to use (exclusive)
-   integer(kind=sgl)                    :: sl             ! side length of grid in euler space (2 * bandWidth - 1)
-   integer(kind=irg)                    :: bwP            ! bandwidth of padded sidelength
-   integer(kind=sgl)                    :: slP            ! sidelength padded to a fast FFT size
-   real   (kind=dbl),allocatable        :: wigD (:,:,:  ) ! lookup table for wigner d functions
-   type(C_ptr)                          :: plan           ! array of pointer structures to fftw plans
-
-   ! these members are working space that is modified
-   complex(kind=dbl)        ,allocatable :: fm   (:,:    ) ! 2d lookup table to hold \hat{f}(j,m) * d^j_{m, k} for all j and m (for any given k)
-   complex(kind=dbl)        ,allocatable :: gn   (:      ) ! 1d lookup table to hold \bar{\hat{g}(j,n)} * d^j_{k,n} for all j (for any given k and n)
-   type   (C_PTR)                        :: pFxc, pXc      ! c pointers for allocation of fxc and xc
-   complex(C_DOUBLE_COMPLEX),pointer     :: fxc  (:,:,:  ) ! fft of cross correlation (in fftw multi dimensional real format)
-   real   (C_DOUBLE)        ,pointer     :: xc   (:,:,:  ) ! real space cross correlation (this is what we're after)
-   real   (kind=dbl)        ,allocatable :: dBeta(:,:,:,:) ! wigner (lowercase) d lookup table for arbitrary beta (for refinement)
-end type SH_correlatorType
-
-
 
 end module typedefs
