@@ -545,6 +545,88 @@ end subroutine HDFwriteLaueMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteLaueNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist file into HDF file
+!
+!> @param HDF_head top of push stack
+!> @param lnl name list structure
+!
+!> @date 07/30/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteLaueNameList(HDF_head, lnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteLaueNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(LaueNameListType),INTENT(IN)                     :: lnl
+
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset,groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_LaueNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ lnl%numpx, lnl%numpy, lnl%nthreads /)
+intlist(1) = 'numpx'
+intlist(2) = 'numpy'
+intlist(3) = 'nthreads'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real = (/ lnl%spotw, lnl%pixelsize, lnl%maxVoltage, lnl%minVoltage, lnl%SDdistance, lnl%gammavalue /)
+reallist(1) = 'spotw'
+reallist(2) = 'pixelsize'
+reallist(3) = 'maxVoltage'
+reallist(4) = 'minVoltage'
+reallist(5) = 'SDdistance'
+reallist(6) = 'gammavalue'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! write all the strings
+dataset = SC_xtalname
+line2(1) = lnl%xtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = 'hdfname'
+line2(1) = lnl%hdfname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create hdfname dataset',.TRUE.)
+
+dataset = 'tiffprefix'
+line2(1) = lnl%tiffprefix
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create tiffprefix dataset',.TRUE.)
+
+dataset = 'Lauemode'
+line2(1) = lnl%Lauemode
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create Lauemode dataset',.TRUE.)
+
+dataset = 'orientationfile'
+line2(1) = lnl%orientationfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create orientationfile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteLaueNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteOMmasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

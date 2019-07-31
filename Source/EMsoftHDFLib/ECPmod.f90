@@ -878,7 +878,7 @@ type(ECPAngleType),pointer              :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
-character(2)                            :: angletype
+character(2)                            :: atype
 real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
 real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
 
@@ -897,8 +897,8 @@ anglefile = EMsoft_toNativePath(anglefile)
 open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
-read(dataunit,*) angletype
-if (angletype.eq.'eu') then
+read(dataunit,*) atype
+if (atype.eq.'eu') then
   enl%anglemode = 'euler'
 else
   enl%anglemode = 'quats'

@@ -223,7 +223,8 @@ call cpu_time(tstart)
 ! go through the entire reflection list
   rltmp => reflist
   do i=1,gcnt
-! locate the nearest Lambert pixel
+! locate the nearest Lambert pixel (we need to make sure that the cartesian vector has unit length)
+    call NormVec(cell, rltmp%xyz, 'c') 
     call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 ! intensity with polarization correction
     inten = rltmp%sfs * rltmp%polar

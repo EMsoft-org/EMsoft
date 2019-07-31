@@ -332,7 +332,7 @@ end if
 ! next we make a list of all rlp's that satisfy the following conditions
 !  - rlp must be inside the limiting sphere;
 !  - rlp must not be a systematic extinction;
-!  - rlp must not be a symmetry-induced extinction (since everything is kinematical, I presume)
+!  - rlp must not be a symmetry-induced extinction (since everything is kinematical)
 ! Since we don't know a-priori how many rlps will satisfy all
 ! three conditions, we'll first create a linked list and then copy
 ! that list into an allocatable array reflist
@@ -343,7 +343,7 @@ end if
    nullify(gtail%next)                  ! nullify next in new value
  end if
 
-! initialize the computation mode for CTEM_CU to X-Ray
+! initialize the computation mode X-Ray
 rlp%method = 'XR'
 
 ! compute the intensity threshold parameter as a fraction of |F(000)|^2 
@@ -378,7 +378,7 @@ do h=-imh,imh
 ! fill in the values
              gtail % hkl = (/ h, k, l /)
              call TransSpace(cell, dble(gtail % hkl), gtail % xyz, 'r', 'c')
-             call NormVec(cell, gtail%xyz, 'c')
+!             call NormVec(cell, gtail%xyz, 'c')    ! removed by MDG, 07/30/19 for EMLaue program
              gtail % tt = CalcDiffAngle(cell,h,k,l)
              gtail % polar = (1.D0+ cos(2.D0*gtail%tt)**2)*0.5D0
              gtail % sfs = sfs / threshold
