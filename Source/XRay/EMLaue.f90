@@ -85,6 +85,7 @@ end program EMLaue
 !> @param nmldeffile namelist file name (so that the entire file can be stored inside the HDF5 file)
 !
 !> @date 07/30/19  MDG 1.0 original
+!> @date 08/01/19  MDG 1.1 added optional backprojections to the output file
 !--------------------------------------------------------------------------
 subroutine ComputeLauePattern(lnl, progname, nmldeffile)
 
@@ -123,28 +124,28 @@ character(fnlen),INTENT(IN)                :: progname
 character(fnlen),INTENT(IN)                :: nmldeffile
 
 integer(kind=irg)                          :: numangles, numbatches, remainder, ii, jj, pid
-integer(kind=irg),allocatable 			   :: batchnumangles(:)
-integer(kind=irg),parameter 			   :: batchsize = 100
+integer(kind=irg),allocatable 			       :: batchnumangles(:)
+integer(kind=irg),parameter 			         :: batchsize = 100
 type(AngleType),pointer                    :: angles
 
-integer(kind=irg)						   :: hdferr, npx, npy, refcnt, io_int(1), NUMTHREADS, TID
-real(kind=sgl) 							   :: kouter, kinner, tstart, tstop, mi, ma
-real(kind=sgl),allocatable 				   :: pattern(:,:),patternbatch(:,:,:)
+integer(kind=irg)						               :: hdferr, npx, npy, refcnt, io_int(1), NUMTHREADS, TID, BPnpx, BPnpy
+real(kind=sgl) 							               :: kouter, kinner, tstart, tstop, mi, ma
+real(kind=sgl),allocatable 				         :: pattern(:,:), patternbatch(:,:,:), bppatterns(:,:,:), bp(:,:)
 
 type(HDFobjectStackType),pointer           :: HDF_head
 type(unitcell),pointer                     :: cell
-logical 								   :: verbose, g_exists, insert=.TRUE., overwrite=.TRUE.
+logical 								                   :: verbose, g_exists, insert=.TRUE., overwrite=.TRUE.
 
 type(LaueMasterNameListType)               :: lmnl
 type(Laue_g_list),pointer                  :: reflist, rltmp          
 
-character(fnlen) 						   :: hdfname, groupname, datagroupname, attributename, dataset, fname, TIFF_filename
+character(fnlen) 						               :: hdfname, groupname, datagroupname, attributename, dataset, fname, TIFF_filename
 character(11)                              :: dstr
 character(15)                              :: tstrb
 character(15)                              :: tstre
-character(4)							   :: pnum
-character(fnlen)						   :: HDF_FileVersion
-integer(HSIZE_T)        			       :: dims3(3), cnt3(3), offset3(3)
+character(4)							                 :: pnum
+character(fnlen)						               :: HDF_FileVersion
+integer(HSIZE_T)        			             :: dims3(3), cnt3(3), offset3(3)
 character(fnlen,kind=c_char)               :: line2(1)
 
 ! declare variables for use in object oriented image module
@@ -290,7 +291,7 @@ dataset = 'numangles'
 
 ! create the hyperslabs and write zeroes to them for now
 dataset = 'LauePatterns'
-  if (numangles.lt.100) then 
+  if (numangles.lt.batchsize) then 
 	  dims3 = (/ npx, npy, numangles /)
 	  cnt3 = (/ npx, npy, numangles /)
 	  offset3 = (/ 0, 0, 0 /)
@@ -312,8 +313,42 @@ dataset = 'LauePatterns'
 	  end if
   end if
 
-! leave the output HDF5 file open so that we can write the hyperslabs as they are completed 
+! should we add the backprojections to the same file ?
+if (trim(lnl%backprojection).eq.'Yes') then 
+  BPnpx = 2*lnl%BPx+1
+  BPnpy = 2*lnl%BPx+1
+  if (numangles.lt.batchsize) then 
+    allocate(bppatterns(BPnpx, BPnpy, numangles))
+  else
+    allocate(bppatterns(BPnpx, BPnpy, batchnumangles(1)))
+  end if
+  bppatterns = 0.0
 
+dataset = 'backprojections'
+  if (numangles.lt.batchsize) then 
+    dims3 = (/ BPnpx, BPnpy, numangles /)
+    cnt3 = (/ BPnpx, BPnpy, numangles /)
+    offset3 = (/ 0, 0, 0 /)
+    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then 
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    else
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+    end if
+  else 
+    dims3 = (/ BPnpx, BPnpy, numangles /)
+    cnt3 = (/ BPnpx, BPnpy, batchnumangles(1) /)
+    offset3 = (/ 0, 0, 0 /)
+    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then 
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    else
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+    end if
+  end if
+end if
+
+! leave the output HDF5 file open so that we can write the hyperslabs as they are completed 
 
 !=============================================
 !=============================================
@@ -328,7 +363,7 @@ dataset = 'LauePatterns'
   do ii = 1, numbatches
 
 ! use OpenMP to run on multiple cores ... 
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, pid, jj, pattern)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, pid, jj, pattern, bp)
 
   NUMTHREADS = OMP_GET_NUM_THREADS()
   TID = OMP_GET_THREAD_NUM()
@@ -342,8 +377,24 @@ dataset = 'LauePatterns'
       patternbatch(1:npx,1:npy,jj) = pattern**lnl%gammavalue
     end do 
 !$OMP END DO
-    if (TID.eq.0) write (*,*) 'batch ',ii,'; maxval() ',maxval(patternbatch)
+    if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed '
     deallocate(pattern)
+
+    if (trim(lnl%backprojection).eq.'Yes') then 
+      allocate(bp(1:BPnpx,1:BPnpy))
+      bp = 0.0
+
+!$OMP DO SCHEDULE(DYNAMIC)
+      do jj = 1,batchnumangles(ii)
+        pid = (ii-1) * batchnumangles(1) + jj  
+        bp = backprojectLauePattern( (/kouter, kinner/), lnl%pixelsize, lnl%SDdistance, (/npx, npy/), &
+                                     (/BPnpx, BPnpy/), patternbatch(1:npx,1:npy,jj), lnl%Lauemode)
+        bppatterns(1:npx,1:npy,jj) = bp
+      end do 
+!$OMP END DO
+      if (TID.eq.0) write (*,*) 'batch ',ii,'; backprojections completed '
+      deallocate(bp)
+    end if 
 
 ! end of OpenMP portion
 !$OMP END PARALLEL
@@ -360,6 +411,22 @@ dataset = 'LauePatterns'
 	offset3 = (/ 0, 0, (ii-1) * batchnumangles(1) /)
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch(:,:,1:batchnumangles(ii)), dims3, offset3, &
     	                                    cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  end if
+
+
+  if (trim(lnl%backprojection).eq.'Yes') then 
+    if (numangles.lt.100) then 
+      dims3 = (/ BPnpx, BPnpy, numangles /)
+      cnt3 = (/ BPnpx, BPnpy, numangles /)
+      offset3 = (/ 0, 0, 0 /)
+        hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    else 
+      dims3 = (/ BPnpx, BPnpy, numangles /)
+      cnt3 = (/ BPnpx, BPnpy, batchnumangles(ii) /)
+      offset3 = (/ 0, 0, (ii-1) * batchnumangles(1) /)
+        hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns(:,:,1:batchnumangles(ii)), dims3, offset3, &
+                                          cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    end if
   end if
 
 ! optionally, write the individual tiff image files 
@@ -396,6 +463,7 @@ dataset = 'LauePatterns'
 
  end do ! outer loop
 ! 
+
  call HDF_pop(HDF_head)
  call HDF_pop(HDF_head)
  call timestamp(datestring=dstr, timestring=tstre)

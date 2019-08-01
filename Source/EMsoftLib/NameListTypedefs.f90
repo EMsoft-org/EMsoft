@@ -260,12 +260,14 @@ type LaueNameListType
         integer(kind=irg)       :: numpx
         integer(kind=irg)       :: numpy
         integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: BPx
         real(kind=sgl)          :: spotw
         real(kind=sgl)          :: pixelsize
         real(kind=sgl)          :: maxVoltage
         real(kind=sgl)          :: minVoltage
         real(kind=sgl)          :: SDdistance
         real(kind=sgl)          :: gammavalue
+        character(fnlen)        :: backprojection
         character(fnlen)        :: Lauemode
         character(fnlen)        :: orientationfile
         character(fnlen)        :: tiffprefix

@@ -350,17 +350,24 @@ integer(kind=irg)                   :: ix, iy, ierr, slp1(2), slp2(2)
 real(kind=dbl)                      :: px, py, phi, quat(4), yquat(4), r, r2, p(2), q(2), n1(3), n2(3), &
                                        rn1(3), rn2(3), Ledge
 
-Ledge = dble(LPdims(1))
+! scale factor for square Lambert projection
+Ledge = dble((LPdims(1)-1)/2)
+
+! set the array to zero
+mLPNH = 0.0
+
+yquat = (/ 1.D0/sqrt(2.D0), 0.D0, -1.D0/sqrt(2.D0), 0.D0 /)
 
 do ix=1,Ldims(1)
-  px = dble(ix-Ldims(1)/2)
+  px = dble(ix-Ldims(1)/2) * delta
   do iy=1,Ldims(2)
-    py = dble(iy-Ldims(2)/2)
-    if (Lpat(ix,iy).ne.0.D0) then 
+    py = dble(iy-Ldims(2)/2) * delta
+!   if (Lpat(ix,iy).ne.0.D0) then 
+    if (Lpat(ix,iy).ge.1.D-3) then 
 ! get the azimuthal angle phi from px and py
         phi = datan2(px, py) - cPi*0.5D0
         quat = (/ cos(phi*0.5D0), -sin(phi*0.5D0), 0.D0, 0.D0 /)
-        r = sqrt(px*px+py*py) * delta 
+        r = sqrt(px*px+py*py)
         r2 = r*r
         p = (/ sqrt((kk(1)+L)**2+r2), sqrt((kk(2)+L)**2+r2) /)
         q = (/ 1.D0/sqrt(2.D0*p(1)**2-2.D0*(kk(1)+L)*p(1)), 1.D0/sqrt(2.D0*p(2)**2-2.D0*(kk(2)+L)*p(2)) /)
@@ -373,9 +380,9 @@ do ix=1,Ldims(1)
         rn1 = rn1/norm2(rn1) 
         rn2 = rn2/norm2(rn2) 
 ! and project both points onto the Lambert square
-        slp1 = nint(LambertSphereToSquare(rn1,ierr) * Ledge)
+        slp1 = nint(LambertSphereToSquare(rn1,ierr) * Ledge) - Ledge
         mLPNH(slp1(1),slp1(2)) = mLPNH(slp1(1),slp1(2)) + Lpat(ix,iy)
-        slp2 = nint(LambertSphereToSquare(rn2,ierr) * Ledge)
+        slp2 = nint(LambertSphereToSquare(rn2,ierr) * Ledge) - Ledge
         mLPNH(slp2(1),slp2(2)) = mLPNH(slp2(1),slp2(2)) + Lpat(ix,iy)
     end if
   end do 
