@@ -2269,7 +2269,7 @@ end subroutine CalcEBSDPatternSingleApprox
 !> @date 03/12/18 MDG 1.0 started new routine
 !> @date 02/05/19 MDG 1.1 added presentFolder optional keyword to turn off standard path handling
 !--------------------------------------------------------------------------
-recursive subroutine readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, getADP, getAverageOrientations, getCI, &
+recursive subroutine  readEBSDDotProductFile(dpfile, ebsdnl, hdferr, EBSDDIdata, getADP, getAverageOrientations, getCI, &
                                             getEulerAngles, getFit, getIQ, getKAM, getOSM, getPhase, getPhi1, &
                                             getPhi, getPhi2, getSEMsignal, getTopDotProductList, getTopMatchIndices, & 
                                             getValid, getXPosition, getYPosition, getRefinedDotProducts, &
@@ -2395,10 +2395,10 @@ call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then
     call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, iarray)
     ebsdnl%ROI(1:4) = iarray(1:4)
+    deallocate(iarray)
 else
     ebsdnl%ROI = (/ 0, 0, 0, 0 /)
 end if
-
 
 dataset = SC_angfile
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
@@ -2413,6 +2413,7 @@ dataset = SC_anglefile
 dataset = SC_axisangle
     call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, farray)
     ebsdnl%axisangle(1:4) = farray(1:4)
+    deallocate(farray)
 
 dataset = SC_beamcurrent
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, ebsdnl%beamcurrent)
@@ -2759,7 +2760,8 @@ dataset = SC_StepY
 
 ! and close the HDF5 dot product file
 call HDF_pop(HDF_head,.TRUE.)
-    
+nullify(HDF_head)
+ 
 end subroutine readEBSDDotProductFile
 
 end module EBSDDImod

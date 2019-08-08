@@ -39,8 +39,78 @@
 !> @note all we need to run this program is the file name of the dot product file
 !
 !> @date 02/05/19 MDG 1.0 original
+!> @date 08/02/19 MDG 1.1 add file reading loop
+!> @date 07/04/19 MDG 1.2 add optional program arguments list 
 !--------------------------------------------------------------------------
 program EMdpextract
+
+use local
+use HDF5
+use HDFsupport
+use io
+
+IMPLICIT NONE
+
+character(fnlen)                :: progname, progdesc, dpfilebase, cwd
+integer(kind=irg)               :: another, io_int(1), numarg, i, hdferr
+
+progname = 'EMdpextract.f90'
+progdesc = 'Extract a number of images from a dictionary indexing dot product file'
+
+! print some information
+call EMsoft(progname, progdesc)
+
+call h5open_EMsoft(hdferr)
+call getcwd(cwd)
+
+numarg = command_argument_count()
+
+if (numarg.gt.0) then
+  io_int(1) = numarg
+  call WriteValue('Number of command line arguments detected: ',io_int,1)
+
+  do i=1,numarg
+    call getarg(i,dpfilebase)
+    call extractImages(dpfilebase, cwd)
+  end do
+
+else ! no command line arguments, so we work interactively 
+  another = 1
+
+  do while (another.eq.1) 
+    ! ask the user for the dot product file name without the .h5 extension
+    dpfilebase = ''
+    call ReadValue('Enter the name of the dot product file without the .h5 extension:', dpfilebase)
+
+    call extractImages(dpfilebase, cwd)
+
+    call Message('----')
+    call ReadValue(' Another one ? (1/0) :', io_int)
+    another = io_int(1)
+
+  end do 
+
+end if
+
+
+call h5close_EMsoft(hdferr)
+
+end program EMdpextract
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:extractImages
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief Subroutine to extract images from a dot product file
+!
+!> @param dpfile dot product file name 
+!
+!> @date 08/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+subroutine extractImages(dpfilebase, cwd)
 
 use local
 use HDF5
@@ -56,15 +126,18 @@ use EBSDDImod
 use commonmod
 use EMh5ebsd
 
-IMPLICIT NONE
+IMPLICIT NONE 
 
-character(fnlen)                        :: progname, progdesc, dpfilebase, dpfile, dirname, image_filename
+character(fnlen),INTENT(IN)             :: dpfilebase 
+character(fnlen),INTENT(IN)             :: cwd
+
+character(fnlen)                        :: dirname, image_filename, dpfile
 type(HDFobjectStackType),pointer        :: HDF_head
 type(EBSDDIdataType)                    :: EBSDDIdata
 type(EBSDIndexingNameListType)          :: dinl
 integer(kind=irg)                       :: hdferr, shp(2), jj, nx, ny
 real(kind=sgl)                          :: mi, ma
-logical                                 :: fexists 
+logical                                 :: fexists
 
 ! declare variables for use in object oriented image module
 integer                                 :: iostat
@@ -74,21 +147,10 @@ type(image_t)                           :: im, im2
 integer(int8)                           :: i8 (3,4), int8val
 integer(int8), allocatable              :: output_image(:,:)
 
-progname = 'EMdpextract.f90'
-progdesc = 'Extract a number of images from a dictionary indexing dot product file'
-
-! print some information
-call EMsoft(progname, progdesc)
-
-
-! ask the user for the dot product file name without the .h5 extension
-call ReadValue('Enter the name of the dot product file without the .h5 extension:', dpfilebase)
-dpfile = trim(dpfilebase)//'.h5'
-
+! read all the image-type arrays from the file
+dpfile = trim(cwd)//'/'//trim(dpfilebase)//'.h5'
 call Message (' looking for file '//trim(dpfile))
 
-! read all the image-type arrays from the file
-call h5open_EMsoft(hdferr)
 call readEBSDDotProductFile(dpfile, dinl, hdferr, EBSDDIdata, &
                             getADP=.TRUE., &
                             getKAM=.TRUE., &
@@ -96,7 +158,7 @@ call readEBSDDotProductFile(dpfile, dinl, hdferr, EBSDDIdata, &
                             getIQ=.TRUE., & 
                             getOSM=.TRUE., & 
                             presentFolder=.TRUE.) 
-call h5close_EMsoft(hdferr)
+
 call Message('   found file and read data arrays')
 
 ! take these arrays and generate image files for each of them; place them in a folder with the dpfilebase name 
@@ -130,7 +192,7 @@ if(0.ne.iostat) then
 else  
   call Message('  ADP array written to '//trim(image_filename))
 end if 
-deallocate(output_image)
+deallocate(output_image,EBSDDIdata%ADP)
 
 ! ==============================
 ! ==============================
@@ -159,7 +221,7 @@ if(0.ne.iostat) then
 else  
   call Message('  CI array written to '//trim(image_filename))
 end if 
-deallocate(output_image)
+deallocate(output_image,EBSDDIdata%CI)
 
 ! ==============================
 ! ==============================
@@ -188,7 +250,7 @@ if(0.ne.iostat) then
 else  
   call Message('  IQ array written to '//trim(image_filename))
 end if 
-deallocate(output_image)
+deallocate(output_image,EBSDDIdata%IQ)
 
 ! ==============================
 ! ==============================
@@ -214,7 +276,7 @@ if(0.ne.iostat) then
 else  
   call Message('  KAM array written to '//trim(image_filename))
 end if 
-deallocate(output_image)
+deallocate(output_image,EBSDDIdata%KAM)
 
 ! ==============================
 ! ==============================
@@ -240,12 +302,8 @@ if(0.ne.iostat) then
 else  
   call Message('  OSM array written to '//trim(image_filename))
 end if 
-deallocate(output_image)
+deallocate(output_image,EBSDDIdata%OSM)
 
+call chdir(trim(cwd))
 
-
-
-
-
-
-end program EMdpextract
+end subroutine extractImages

@@ -566,7 +566,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(LaueNameListType),INTENT(IN)                     :: lnl
 
-integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -578,10 +578,11 @@ groupname = SC_LaueNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ lnl%numpx, lnl%numpy, lnl%nthreads /)
+io_int = (/ lnl%numpx, lnl%numpy, lnl%nthreads, lnl%BPx /)
 intlist(1) = 'numpx'
 intlist(2) = 'numpy'
 intlist(3) = 'nthreads'
+intlist(4) = 'BPx'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals
@@ -614,6 +615,11 @@ dataset = 'Lauemode'
 line2(1) = lnl%Lauemode
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create Lauemode dataset',.TRUE.)
+
+dataset = 'backprojection'
+line2(1) = lnl%backprojection
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create backprojection dataset',.TRUE.)
 
 dataset = 'orientationfile'
 line2(1) = lnl%orientationfile

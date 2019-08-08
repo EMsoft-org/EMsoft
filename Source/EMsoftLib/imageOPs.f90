@@ -18,8 +18,8 @@ implicit none
   type ImageRescaler
     integer(kind=irg)             :: wIn  , hIn   ! input  image dimensions
     integer(kind=irg)             :: wOut , hOut  ! output image dimensions
-    type   (c_ptr   )             :: pFwd , pRev  ! forward and reverse 2D DCT plans
-    type   (c_ptr   )             :: pBuf1, pBuf2 ! c pointers for allocation of FFTW work arrays
+    type   (c_ptr   ),allocatable :: pFwd , pRev  ! forward and reverse 2D DCT plans
+    type   (c_ptr   ),allocatable :: pBuf1, pBuf2 ! c pointers for allocation of FFTW work arrays
     real   (c_double),pointer     :: pImIn  (:,:) ! fortran pointer for input  to pFwd
     real   (c_double),pointer     :: pImOut (:,:) ! fortran pointer for output of pFwd
     real   (c_double),pointer     :: pDctIn (:,:) ! fortran pointer for input  to pRev
@@ -99,6 +99,17 @@ contains
 
     integer(kind=irg     )               :: wMax, hMax
 
+    ! clean up an existing object
+    call this%destroy()
+    allocate(this%pFwd )
+    allocate(this%pRev )
+    allocate(this%pBuf1)
+    allocate(this%pBuf2)
+    this%pFwd  = c_null_ptr
+    this%pRev  = c_null_ptr
+    this%pBuf1 = c_null_ptr
+    this%pBuf2 = c_null_ptr
+
     ! sanity check scale factor
     if(s.le.0.D0) call FatalError('ImageRescaler_Init', 'scale factor must be non-negative')
 
@@ -141,10 +152,23 @@ contains
     use FFTW3MOD
   implicit none
     class(ImageRescaler),INTENT(INOUT) :: this ! structure to clean up
-    call fftw_destroy_plan(this%pFwd ) ! free plans
-    call fftw_destroy_plan(this%pRev ) ! free plans
-    call fftw_free        (this%pBuf1) ! free work arrays
-    call fftw_free        (this%pBuf2) ! free work arrays
+
+    if(allocated(this%pFwd )) then
+      if(c_associated(this%pFwd )) call fftw_destroy_plan(this%pFwd ) ! free plans
+      deallocate(this%pFwd )
+    endif
+    if(allocated(this%pRev )) then
+      if(c_associated(this%pRev )) call fftw_destroy_plan(this%pRev ) ! free plans
+      deallocate(this%pRev )
+    endif
+    if(allocated(this%pBuf1)) then
+      if(c_associated(this%pBuf1)) call fftw_free        (this%pBuf1) ! free work arrays
+      deallocate(this%pBuf1)
+    endif
+    if(allocated(this%pBuf2)) then
+      if(c_associated(this%pBuf2)) call fftw_free        (this%pBuf2) ! free work arrays
+      deallocate(this%pBuf2)
+    endif
   end subroutine ImageRescaler_Destroy
 
   !@brief     : clean up resources automatically
