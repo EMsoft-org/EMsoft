@@ -76,16 +76,17 @@ make -j
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
 ## New features in 4.3
-- There are a few minor bug fixes
+- There are a few minor bug fixes.
 - EMsoft now has two additional ways to manage file paths; please check the descriptions in the *FilePathConventions.md* file.
-- We introduce a new diffraction pattern indexing algorithm that we call **EMSphInx**. We have successfully indexed patterns from the following modalities: EBSD, TKD, ECP, transmission Laue. Installing EMSphInx will require that you download the repository from [https:/github.com/EMsoft-org/EMSphInx](https:/github.com/EMsoft-org/EMSphInx) and build it.  Alternatively, you can download the nightly build from [http://www.bluequartz.net/binaries/EMsoft/experimental/](http://www.bluequartz.net/binaries/EMsoft/experimental/) for Windows 10 or Mac OS X.  It is also possible to install a stand-alone version of EMSphInx that is fully self-contained. **Note that *EMSphInx* has a non-commercial license that is different from the EMsoft BSD2 license.**
+- We introduce a new diffraction pattern indexing algorithm that we call **EMSphInx**. We have successfully indexed patterns from the following modalities: EBSD, TKD, ECP, transmission Laue. Installing EMSphInx will require that you download the repository from [https:/github.com/EMsoft-org/EMSphInx](https:/github.com/EMsoft-org/EMSphInx) and build it along with the rest of *EMsoft*.  Alternatively, you can download the nightly build from [http://www.bluequartz.net/binaries/EMsoft/experimental/](http://www.bluequartz.net/binaries/EMsoft/experimental/) for Windows 10 or Mac OS X.  It is also possible to install a stand-alone version of EMSphInx that is fully self-contained. **Note that *EMSphInx* has a non-commercial license that is different from the EMsoft BSD2 license, hence it is kept in a separate repository.**
 - The indexing programs (dictionary indexing and spherical indexing) can now read the binary Oxford .ebsp format (provided that file is not compressed), courtesy of Michael Atkinson (U. Manchester).
+- EBSD pattern binning can now handle arbitrary initial and final pattern sizes; the rescaling operation has been implemented using Fourier transforms, so optimal rebinning of a pattern of size 184x184 to one of size 60x60 can now be performed (subject to the usual Nyquist frequency limitations). In addition to the regular  "binning" factors (1x, 2x, 4x etc), the program input files now also accept a rebinned final size whch will override the binning factor. 
 - We have a new *EMEBSDoverlap* program that allows the user to merge two master patterns with a given orientation relation.  This can be useful to index diffraction patterns from samples for which the scale of the microstructure is such that two phases are intermixed over length scales smaller than the size of the interaction volume.  See the *SEM/EBSD Overlap Master Patterns* wiki for more details.
-- In the *EMsampleRFZ* program it is now possible to rotate the entire fundamental zone into an arbitrary orientation; this can be useful in the context of EBSD overlap master patterns.
+- In the *EMsampleRFZ* program it is now possible to rotate the entire fundamental zone into an arbitrary orientation; this can be useful in the context of EBSD overlap master patterns or for orientation sampling in non-standard settings.
 - We have a simple forward model for Laue diffraction; as for the EBSD case, the algorithm produces a master pattern based on kinematical structure factors.  This can be used with the new spherical indexing algorithm to automatically index large Laue pattern data sets. There is also a separate new *EMLaue* program that can generate series of transmission or reflection Laue patterns.
 - We now provide support for Python wrapping! Thanks to Saransh Singh (LLNL), we have slightly restructured our source code to allow for Python routines to call any of the EMsoft library routines. For an example, see XXX. There is also a new wiki page describing this wrapping process in more detail.
 - For TEM diffraction contrast we release a series of new programs that allow the user to simulate STEM-DCI images.  These are essentially 4-D data sets in which there is a 2-D convergent beam electron diffraction (EBSD) pattern for each pixel in a 2-D field of view. The new codes allow for the manual definition of a small number of idealized crystallographic defects (straight dislocations, perfect stacking faults, spherical inclusions and voids), or displacement field input from phase field computations (currently only for gamma-gamma' superalloy microstructures), discrete dislocation dynamics, or molecular dynamics.
-- We have a new forward model for polarized light microscopy, based on the Mueller matrix calculus. This includes a model for light scattering from uniaxial crystal structures (e.g., Ti). Work is underway to incorporate biaxial structures as well as an indexing algorithm to take input images from an optical microscope and return a partial orientation map (c-axis only for uniaxial crystals).
+- We have a new forward model for polarized light microscopy, based on the Mueller matrix calculus. This includes a model for light scattering from uniaxial crystal structures (e.g., Ti or Zr). Work is underway to incorporate biaxial structures as well as an indexing algorithm to take input images from an optical microscope and return a partial orientation map (c-axis only for uniaxial crystals).
 
 ## New features in 4.2
 - There are a few minor bug fixes
@@ -106,7 +107,7 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 
 ## What's coming in 4.4? 
 - We are working on improvements to all underlying libraries.
-- Extensive development of the *EMsoftWorkbench* is currently underway at BlueQuartz Software.  We will make the new version, capable of running the dictionary indexing algorithm, available in this release.  
+- Extensive development of the *EMsoftWorkbench* is currently underway at BlueQuartz Software.  We will make the new version, capable of running the either the dictionary indexing algorithm or the new spherical indexing algorithm, available in this release.  
 - We hope to release version 4.4 by the Spring of 2020.
 
 
@@ -149,9 +150,9 @@ For anything related to EMSphInx:
     !*                                                                     *
     !* Author: William C. Lenthe                                           *
     !*                                                                     *
-    !* EMSphInx is freely available for non-commercial use, and may be     *
-    !* redistributed under these conditions. Please, see the license.txt   *
-    !* file in this distribution for further details.                      *
+    !* EMSphInx is available for academic or non-profit non-commercial     *
+    !* research use. Please, see the license.txt file in this distribution *
+    !* for further details.                                                *
     !*                                                                     *
     !* Interested in a commercial license? Contact:                        *
     !*                                                                     *
