@@ -63,20 +63,20 @@ IMPLICIT NONE
 
 ! all of these need to disappear... no global variables!
 
-type(MAPN_block)                 :: MAPN
-type(MA_block)                   :: MA
-type(MKAP_block)                 :: MKAP
-type(MRD_block)                  :: MRD
-type(MT_block)                   :: MT
-type(MKT_block)                  :: MKT
-type(SCALE30_block)              :: SCALE30
-type(MP_block)                   :: MP
-type(MAP_block)                  :: MAP
-type(hhs_block)                  :: hhs
+! type(MAPN_block)                 :: MAPN
+! type(MA_block)                   :: MA
+! type(MKAP_block)                 :: MKAP
+! type(MRD_block)                  :: MRD
+! type(MT_block)                   :: MT
+! type(MKT_block)                  :: MKT
+! type(SCALE30_block)              :: SCALE30
+! type(MP_block)                   :: MP
+! type(MAP_block)                  :: MAP
+! type(hhs_block)                  :: hhs
 
-private :: NEWTON 
+private :: NEWTON, DERIV, RKM 
 
-public  :: ANCALC
+public  :: ANCALC, PANCALC
 
 contains
 
@@ -1148,25 +1148,25 @@ eight: do
     MRD%Y(M)=MRD%Y(M)+MRD%DT(M,1) 
    end do
    MRD%X=MRD%X+H3        
-   CALL DERIV   
+   CALL DERIV(MRD)   
    do  M=1,8  
     MRD%Y(M)=MRD%YT(M)+0.5*(MRD%DT(M,1)+H3*MRD%D(M))
    end do
    MRD%SKIP=1.0  
-   CALL DERIV
+   CALL DERIV(MRD)
    MRD%SKIP=0.0  
    do M=1,8 
     MRD%DT(M,2)=MRD%Q*MRD%D(M)
     MRD%Y(M)=MRD%YT(M)+0.375*(MRD%DT(M,1)+MRD%DT(M,2)) 
    end do
    MRD%X=XT+H2   
-   CALL DERIV 
+   CALL DERIV(MRD) 
    do M=1,8 
     MRD%DT(M,3)=4.0*H3*MRD%D(M) 
     MRD%Y(M)=MRD%YT(M)+1.5*(MRD%DT(M,1)+MRD%DT(M,3)-MRD%DT(M,2)) 
    end do
    MRD%X=XT+MRD%Q 
-   CALL DERIV  
+   CALL DERIV(MRD)  
    M2=0   
    do M=1,8  
     MRD%DT(M,4)=H3*MRD%D(M)  
@@ -1248,10 +1248,20 @@ eight: do
  end do
 end subroutine RKM 
 
-STOPPED HERE !!!
-
-
-subroutine DERIV
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: DERIV
+!
+!> @author Head, A.K. and Humble, P. and Clarebrough, L.M. and Morton, A.J. and Forwood, C.T.
+!
+!> @brief Derivative calculation
+! 
+!> @param MRD
+!
+!> @date    08/13/19 MDG 1.0 adapted from .f77 original
+!--------------------------------------------------------------------------
+recursive subroutine DERIV(MRD)
+!DEC$ ATTRIBUTES DLLEXPORT :: DERIV
 ! 
 !************************************************************** 
 !*     SUBROUTINE DERIV   BERECHNUNG DER ABLEITUNG VON        * 
@@ -1261,6 +1271,8 @@ subroutine DERIV
 !************************************************************** 
 
 IMPLICIT NONE
+
+type(MRD_block),INTENT(INOUT)     :: MRD
 
 real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, BETA, Z
 ! 
