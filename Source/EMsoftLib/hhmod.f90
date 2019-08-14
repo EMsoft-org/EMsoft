@@ -74,9 +74,9 @@ IMPLICIT NONE
 ! type(MAP_block)                  :: MAP
 ! type(hhs_block)                  :: hhs
 
-private :: NEWTON, DERIV, RKM 
+private :: NEWTON, DERIV 
 
-public  :: ANCALC, PANCALC
+public  :: ANCALC, PANCALC, RKM
 
 contains
 
@@ -180,7 +180,8 @@ integer(kind=irg)              :: I, J, K, L, M, N, LT, KQ, KR, KS, KT, NJ, I1, 
 integer(kind=irg),parameter    :: L1(6)=(/1,2,3,2,3,1/), L2(6)=(/1,2,3,3,1,2/), &
                                   L3(3,3)= reshape( (/1,6,5,6,2,4,5,4,3/), (/3,3/) ), & 
                                   N1(4)=(/2,4,2,1/), N2(4)=(/3,1,4,2/), N3(4)=(/4,3,1,3/), &
-                                  NN(3)=(/6,2,4/), MM(3)=(/1,6,5/)
+                                  NN(3)=(/6,2,4/), MM(3)=(/1,6,5/), NP(3) = (/2,3,1/), NQ(3) = (/3,1,2/)
+
 real(kind=sgl)                 :: C(6,6), EE(3,6), EN(3,3), QM(7,4), G(9), E(9), F(9), HI(12), &
                                   DR(4,4), DI(4,4), B(4,4), ELR(4,4), ELI(4,4), X, Y, Z, PRK, PIK, SQR, SQI, XR, XI, YR, YI, &
                                   DELR, DELI, AUMR, AUMI, DEL
@@ -234,7 +235,8 @@ real(kind=sgl)                 :: C(6,6), EE(3,6), EN(3,3), QM(7,4), G(9), E(9),
   do KR=1,3
    do KS=1,3
     KT=KQ+KR+KS-2
-    MAPN%QR(KT)=MAPN%QR(KT)+G(KQ)*G(KR+3)*G(KS+6)+2.0*E(KQ)*E(KR+3)*E(KS+6)-E(KQ)*E(KR)*G(KS+6)-E(KQ+3)*E(KR+3)*G(KS+3)-E(KQ+6)*E(KR+6)*G(KS)
+    MAPN%QR(KT)=MAPN%QR(KT)+G(KQ)*G(KR+3)*G(KS+6)+2.0*E(KQ)*E(KR+3)*E(KS+6) &
+                -E(KQ)*E(KR)*G(KS+6)-E(KQ+3)*E(KR+3)*G(KS+3)-E(KQ+6)*E(KR+6)*G(KS)
    end do
   end do
  end do
@@ -463,7 +465,7 @@ real(kind=sgl)              :: C(6,6), EE(3,6), EN(3,3), QM(7,4), G(9), E(9), F(
                                BY, CY, D, AZZ, BZ, CZ, DZ
 integer(kind=irg)           :: I, J, K, L, M, N, LP, LQ, LT, LV, KP, KQ, KR, KS, KT, &
                                MX, MY, MZ, NX, NY, NZ, NJ, NL, ML, K1, K2, K3, J1, I1, I2
-integer(kind=irg),parameter :: L1(6)=(/1,2,3,2,3,1/), L2(6)=(/1,2,3,3,1,2/), 
+integer(kind=irg),parameter :: L1(6)=(/1,2,3,2,3,1/), L2(6)=(/1,2,3,3,1,2/), &
                                L3(3,3)= reshape( (/1,6,5,6,2,4,5,4,3/), (/3,3/)), & 
                                N1(4)=(/2,1,1,1/), N2(4)=(/3,3,2,2/), N3(4)=(/4,4,4,3/), &
                                NN(3)=(/6,2,4/), MM(3)=(/1,6,5/)
@@ -1103,9 +1105,9 @@ recursive subroutine RKM(MRD)
 ! 
 ! INTEGRATE THE HOWIE-WHELAN EQUATIONS
 
-type(MRD_block),INTENT(INOUT)     :: MRD
-
 IMPLICIT NONE
+
+type(MRD_block),INTENT(INOUT)     :: MRD
 
 integer(kind=irg)                 :: M1, M2, J, M
 real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST
@@ -1142,7 +1144,7 @@ real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST
   end if
 
 eight: do
-   CALL DERIV 
+   CALL DERIV(MRD) 
    do M=1,8 
     MRD%DT(M,1)=H3*MRD%D(M) 
     MRD%Y(M)=MRD%Y(M)+MRD%DT(M,1) 

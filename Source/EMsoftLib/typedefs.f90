@@ -1793,27 +1793,27 @@ type MAP_block
  real(kind=sgl)            :: DC(3,3)
 end type
 
-! variables not in common blocks are grouped into a single structure of type hhs_block
-type hhs_block
-! constants and single variables
-  real(kind=sgl)              :: LC1, LC2, LC3, LC4
-  integer(kind=irg),parameter :: ICOL=256, IROW=160, ICOLP=257   ! needs to become variable !
-  integer(kind=irg),parameter :: NP(3) = (/2,3,1/), NQ(3) = (/3,1,2/)
-  character(15)               :: IY
-! arrays
-  complex(kind=sgl)           :: SU(4), CNX(8), MXXX(4,4), MYYY(4,4), MZZZ(4,4)
-  real(kind=sgl)              :: GD(3), BD(4), B2D(4), B3D(4), B4D(4), BM(3), FN(3), FP1X(3),  &
-                                 FPX(3), FP3X(3), FP(3), FP3(3), FNX(3), DCX(3,3), DR(4), DI(4), &
-                                 UR(4,4), UI(4,4), VR(4,4), VI(4,4), DD(3), SUR(4), SUI(4), &
-                                 UX(3), AB(3), AB1(3), POSA(4), POSB(4), COORD(4), HANDL(4), &
-                                 HANDR(4), TEMPY(8), QL1(4), QL2(4), QL3(4), QL4(4), S(4,4), QS(4,4)
-  integer(kind=irg)           :: ITYPE(4)
-! allocatable arrays, to be modified 
-! integer(kind=irg),allocatable :: IX(:), IXX(:)
-  integer(kind=irg)           :: IX(ICOLP), IXX(ICOLP)
-! real(kind=sgl),allocatable  :: FX(:,:),TBD(:,:), TQB(:),TQD(:), BFINTENS(:,:),DFINTENS(:,:)
-  real(kind=sgl)              :: FX(ICOL,4),TBD(IROW,ICOLP), TQB(ICOLP),TQD(ICOLP), BFINTENS(ICOL,IROW),DFINTENS(ICOL,IROW)
-end type
+! ! variables not in common blocks are grouped into a single structure of type hhs_block
+! type hhs_block
+! ! constants and single variables
+!   real(kind=sgl)              :: LC1, LC2, LC3, LC4
+!   integer(kind=irg)           :: ICOL=256, IROW=160, ICOLP=257   ! needs to become variable !
+!   ! integer(kind=irg)           :: NP(3) = (/2,3,1/), NQ(3) = (/3,1,2/)
+!   character(15)               :: IY
+! ! arrays
+!   complex(kind=sgl)           :: SU(4), CNX(8), MXXX(4,4), MYYY(4,4), MZZZ(4,4)
+!   real(kind=sgl)              :: GD(3), BD(4), B2D(4), B3D(4), B4D(4), BM(3), FN(3), FP1X(3),  &
+!                                  FPX(3), FP3X(3), FP(3), FP3(3), FNX(3), DCX(3,3), DR(4), DI(4), &
+!                                  UR(4,4), UI(4,4), VR(4,4), VI(4,4), DD(3), SUR(4), SUI(4), &
+!                                  UX(3), AB(3), AB1(3), POSA(4), POSB(4), COORD(4), HANDL(4), &
+!                                  HANDR(4), TEMPY(8), QL1(4), QL2(4), QL3(4), QL4(4), S(4,4), QS(4,4)
+!   integer(kind=irg)           :: ITYPE(4)
+! ! allocatable arrays, to be modified 
+!   integer(kind=irg),allocatable :: IX(:), IXX(:)
+! ! integer(kind=irg)           :: IX(ICOLP), IXX(ICOLP)
+!   real(kind=sgl),allocatable  :: FX(:,:),TBD(:,:), TQB(:),TQD(:), BFINTENS(:,:),DFINTENS(:,:)
+! ! real(kind=sgl)              :: FX(ICOL,4),TBD(IROW,ICOLP), TQB(ICOLP),TQD(ICOLP), BFINTENS(ICOL,IROW),DFINTENS(ICOL,IROW)
+! end type
 
 !=======================================
 !=======================================

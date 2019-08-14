@@ -29,33 +29,38 @@
 ! EMsoft:EMhh4.f90 
 !--------------------------------------------------------------------------
 !
-! MODULE: EMhh4
+! PROGRAM: EMhh4
 !
 !> @author Original hh.f77 code history, see
-! Author = {Head, A.K. and Humble, P. and Clarebrough, L.M. and Morton, A.J. and Forwood, C.T.},
-! Publisher = {North Holland Publishing Company},
-! Series = {Defects in {C}rystalline {S}olids, edited by Amelinckx, S. and Gevers, R. and Nihoul, J.},
-! Title = {Computed Electron Micrographs and Defect Identification},
-! Volume = {7},
-! Year = 1973}
+!> Author = {Head, A.K. and Humble, P. and Clarebrough, L.M. and Morton, A.J. and Forwood, C.T.},
+!> Publisher = {North Holland Publishing Company},
+!> Series = {Defects in {C}rystalline {S}olids, edited by Amelinckx, S. and Gevers, R. and Nihoul, J.},
+!> Title = {Computed Electron Micrographs and Defect Identification},
+!> Volume = {7},
+!> Year = 1973}
+!> Translated to fortran-90 by MDG. All original variable names are kept in upper case
+!> notation, all EMsoft add-ons and new code is in lower case.
 !
-! Translated to Fortran-90 by MDG.
-! Integrated with other source code from EMsoft package.
-! Added TIFF output + support for tilt series.
-! Added namelist handling to replace the older input format
+!> @note improvements to the code:
+!> - Integrated with EMsoft modules.
+!> - Added HDF5 and image output + support for tilt series.
+!> - Added standard EMsoft namelist handling to replace the older input format
 !
-! The new f90 code is more readable than the original f77 code,
-! mostly because the more modern Fortran language has better control
-! structures. All ordinary and computed goto statements have been replaced with
+!> @todo
+!> - incorporate OpenMP parallel thread support
+!
+! The new f90 code is a bit more readable than the original f77 code,
+! mostly because the modern Fortran language has better control structures.
+! All ordinary and computed goto statements have been replaced with
 ! case and other control statements.  No line labels are used at all.
 ! Variable names have been left unchanged (mostly) to facilitate comparison
-! with original hh4 code as well as debugging.  The original code (a version
+! with original hh4 code as well as debugging.  The original f77 code (a version
 ! generated in the '80s by the group of Prof. Skalicky at the Technical University
 ! of Vienna, Austria.) can be downloaded from:
 !
 ! http://ctem.web.cmu.edu/software/HeadHumble.tar.gz
 ! 
-!> @date ??/??/01 MDG 1.0 original conversion from f77 version
+!> @date 01/15/03 MDG 1.0 original conversion from f77 version
 !> @date 08/13/19 MDG 2.0 new version, integrated with EMsoft 4.3
 !--------------------------------------------------------------------------
 ! original program header 
@@ -70,7 +75,7 @@
 !***********************************************************************
 !
 !***********************************************************************
-!*       Main program - Problem geometry                               *
+!*       Main program                                                  *
 !***********************************************************************
 program EMhh4
 
@@ -80,8 +85,22 @@ use files
 use crystal
 use typedefs
 use hhmod
+use HDFsupport
 
 IMPLICIT NONE
+
+! all original COMMON blocks are replaced by user-defined structures in typedefs.f90
+type(MAPN_block)                 :: MAPN
+type(MA_block)                   :: MA
+type(MKAP_block)                 :: MKAP
+type(MRD_block)                  :: MRD
+type(MT_block)                   :: MT
+type(MKT_block)                  :: MKT
+type(SCALE30_block)              :: SCALE30
+type(MP_block)                   :: MP
+type(MAP_block)                  :: MAP
+
+
 
 ! Namelist structure for input data
 NAMELIST /defects/ fname,LPIEZO,IND, &
@@ -96,17 +115,57 @@ integer      :: LPIEZO, IND, LTEST, LBOD, LPR, LQ, LB(3), LD, LB2(3), LD2, LB3(3
                 LF1(3), LF2(3), LF3(3), LF4(3), LU(3), LG(3), LBM(3), LFN(3), LFP1(3), &
                 LFP(3), LFP3(3), LS1(3), LS2(3), LS3(3),  LQ1, LQ2, LQ3
 character(15) :: fname
-! other variables for the main program
 
-integer      :: ICNT, LLQ, NNN, NNNN, I, J, JB, JC, K, L, KMIN, KMAX, KTOT, MOVE, LUCK, ISTORE, LSWITC, &
-                IFLAG, JT, JM, KOUNTF, INDL, KK, JZ
+!=======================
+! original variables for the main program
+!=======================
+! regular integers
+integer(kind=irg)             :: ICNT, LLQ, NNN, NNNN, I, J, JB, JC, K, L, KMIN, KMAX, KTOT, MOVE, LUCK, ISTORE, LSWITC, &
+                                 IFLAG, JT, JM, KOUNTF, INDL, KK, JZ 
+! regular integer arrays
+integer(kind=irg)             :: ITYPE(4)
+! integer constants
+integer(kind=irg),parameter   :: NP(3) = (/2,3,1/), NQ(3) = (/3,1,2/)
+integer(kind=irg)             :: ICOL=256, IROW=160, ICOLP=257   ! needs to become variable via namelist !
+! integer allocatable
+integer(kind=irg),allocatable :: IX(:), IXX(:)
+! integer(kind=irg)           :: IX(ICOLP), IXX(ICOLP)
 
-real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM, PT, SL, PT2, SL2, &
-                THBM, EXT1, EXT2, EXT3, EXT4, EXTRA, FRACTI, DIVISO, DELT, WL, DELW, DELL, BACK, BACKD, &
-                STORE, DELTA, DEL, DEL2, DISTR, DISTRA, DISTL, DISTLA, XXX, YYY, ZZZ, VVV, FAULT1, &
-                ALPHA, COSA1, SINA1, FAULT2, COSA2, SINA2, FAULT3, COSA3, SINA3, STARTA, SURFAC, XX1, &
-                TRAMP3, TRAMP7,DNR, DNI, DNN, TTB, TTD, WW
+! regular reals
+real(kind=sgl)                :: GINB, GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM, PT, SL, PT2, SL2, &
+                                 THBM, EXT1, EXT2, EXT3, EXT4, EXTRA, FRACTI, DIVISO, DELT, WL, DELW, DELL, BACK, BACKD, &
+                                 STORE, DELTA, DEL, DEL2, DISTR, DISTRA, DISTL, DISTLA, XXX, YYY, ZZZ, VVV, FAULT1, &
+                                 ALPHA, COSA1, SINA1, FAULT2, COSA2, SINA2, FAULT3, COSA3, SINA3, STARTA, SURFAC, XX1, &
+                                 TRAMP3, TRAMP7,DNR, DNI, DNN, TTB, TTD, WW, LC1, LC2, LC3, LC4
+! regular real arrays
+real(kind=sgl)                :: GD(3), BD(4), B2D(4), B3D(4), B4D(4), BM(3), FN(3), FP1X(3),  &
+                                 FPX(3), FP3X(3), FP(3), FP3(3), FNX(3), DCX(3,3), DR(4), DI(4), &
+                                 UR(4,4), UI(4,4), VR(4,4), VI(4,4), DD(3), SUR(4), SUI(4), &
+                                 UX(3), AB(3), AB1(3), POSA(4), POSB(4), COORD(4), HANDL(4), &
+                                 HANDR(4), TEMPY(8), QL1(4), QL2(4), QL3(4), QL4(4), S(4,4), QS(4,4), RR(3)
+! real allocatable 
+real(kind=sgl),allocatable    :: FX(:,:),TBD(:,:), TQB(:),TQD(:), BFINTENS(:,:),DFINTENS(:,:)
+! real(kind=sgl)              :: FX(ICOL,4),TBD(IROW,ICOLP), TQB(ICOLP),TQD(ICOLP), BFINTENS(ICOL,IROW),DFINTENS(ICOL,IROW)
 
+! regular complex
+complex(kind=sgl)             :: SU(4), CNX(8), MXXX(4,4), MYYY(4,4), MZZZ(4,4)
+
+! character variables
+character(15)                 :: IY
+
+!=======================
+! additional EMsoft variables (not originally in hh4.f code)
+!=======================
+type(unitcell), pointer       :: cell
+character(fnlen)              :: mess
+
+
+
+
+nullify(cell)
+
+
+! to be replaced by standard namelist handling
 !***********************************************************************
 !*    Read all program data from the namelist input file fort.10       *
 !***********************************************************************
@@ -120,6 +179,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
  MT%LS1 = LS1; MT%LS2 = LS2; MT%LS3 = LS3;
  MT%LF1 = LF1; MT%LF2 = LF2; MT%LF3 = LF3; MT%LF4 = LF4;
  SCALE30%LTEST = LTEST
+
 ! open file for output
  ICNT=1
  OPEN(6,FILE='HH.DAT', Status='UNKNOWN')
@@ -129,20 +189,20 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
 !*      for trigonal we can use both trigonal and hexagonal indices  *
 !*      (0=trigonal) (1=hexagonal)                                   *
 !
-! the hh.f program calls an individual routine for each crystal system
-! and essentially computes the direct and reciprocal structure matrices.
-! In terms of the variables defined for the CTEM book, the following
+! the original hh.f program called an individual routine for each crystal system
+! and essentially computed the direct and reciprocal structure matrices.
+! In terms of the crystallographic variables of EMsoft, the following
 ! relations hold:
-!   hh.f        CTEM source code
+!   hh.f        EMsoft
 !   AT          cell%dsm/cell%a
 !   ATR         cell%rsm*cell%a
 !
-! We will stick to the hh.f variable names for easy translation.
+! We will mostly stick to the hh.f variable names for easy translation.
 ! The routine CrystalData does everything that was originally done
 ! by the following hh.f subroutines:  TRICLIN, MONOCLI, RHOMBIS,
 ! TRIGONA, TETRAGONA, HEXAGON, and CUBIC.
 !*********************************************************************
- call CrystalData(fname)
+ call CrystalData(cell)
  MKT%AT  = cell%dsm/cell%a
  MKT%ATR = cell%rsm*cell%a
 !*********************************************************************
@@ -169,9 +229,10 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
 !***********************************************************
 !*      Computation of  G.B   and  G.(B X U)               *
 !***********************************************************
- GINB=CalcDot(MT%TLG,MT%TLB,'c')/FLOAT(LD) 
- call CalcCross(MT%TLB,MT%TLU,RR,'c','c',0)
- GINBXU=CalcDot(MT%TLG,RR,'c')/FLOAT(LD)
+! this uses EMsoft routines rather than the original code
+ GINB=CalcDot(cell,MT%TLG,MT%TLB,'c')/FLOAT(LD) 
+ call CalcCross(cell,MT%TLB,MT%TLU,RR,'c','c',0)
+ GINBXU=CalcDot(cell,MT%TLG,RR,'c')/FLOAT(LD)
 !***********************************************************************
 !*       Make sure that the input data make geometric sense            *
 !*       and initialize some default values; a lot of this was         *
@@ -339,7 +400,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
  PT2=SEP2*AB1(1) 
  SL2=-SEP2*AB1(2)/BM(2)
  if (LPIEZO.eq.0) then 
-  call ANCALC 
+  call ANCALC(MAP, MKAP, MAPN, MA, SCALE30) 
   if (MAPN%KRASH.eq.0) then
    do I=1,3
     write(6,*) (MA%AR(I,J),MA%AI(I,J),J=1,3)
@@ -447,7 +508,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
    STOP 
   end if 
  else
-  call PANCALC
+  call PANCALC(MAP, MKAP, MAPN, MA, MP, SCALE30)
   if (MAPN%KRASH.eq.0) then
    do K=1,4
     SU(K)=CMPLX(0.0,0.0)
@@ -577,11 +638,14 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
   write (6,"(1H ,17H DCX-KOORDINATEN )") 
   write (6,"(1X,3F12.8)") ((DCX(I,J),J=1,3),I=1,3)
   write (6,"(1H ,48H KOORDINATEN DER BURGERSVEKTOREN UND FAULTPLANES)") 
-  write (6,"(1H0,3F12.8,'  BD',3F12.8,' B2D',3F12.8,' B3D'/1H ,3F12.8,'  BM',3F12.8,'  GD',3F12.8,'  FN'/1H ,3F12.8,' FNX',3F12.8,'FP1X',3F12.8,' FPX'/1H ,3F12.8,'FP3X',3F12.8,'  FP',3F12.8,' FP3')") BD,B2D,B3D,BM,GD,FN,FNX,FP1X,FPX,FP3X,FP,FP3
+  write (6,"(1H0,3F12.8,'  BD',3F12.8,' B2D',3F12.8,' B3D'/1H ,3F12.8,'  BM',3F12.8,'  GD',3F12.8,'  FN'/1H ,3F12.8,' FNX', &
+             3F12.8,'FP1X',3F12.8,' FPX'/1H ,3F12.8,'FP3X',3F12.8,'  FP',3F12.8,' FP3')") &
+             BD,B2D,B3D,BM,GD,FN,FNX,FP1X,FPX,FP3X,FP,FP3
   write (6,"(1H0,26H ERSTER SEPARATIONSVEKTOR )") 
   write (6,"(1H ,3F12.8,3H AB,F12.8,3H SL,F12.8,3H PT,F12.8,5H DELT)") AB,SL,PT,DELT 
   write (6,"(1H0,27H ZWEITER SEPARATIONSVEKTOR )") 
-  write (6,"(1H ,3F12.8,3HAB1,F12.8,3HPT2/1H ,F12.8,4HEXT1,1F12.8,4HEXT2,F12.8,4HEXT3,F12.8,5HEXTRA)") AB1,SL2,PT2,EXT1,EXT2,EXT3,EXTRA
+  write (6,"(1H ,3F12.8,3HAB1,F12.8,3HPT2/1H ,F12.8,4HEXT1,1F12.8,4HEXT2,F12.8,4HEXT3,F12.8,5HEXTRA)") &
+             AB1,SL2,PT2,EXT1,EXT2,EXT3,EXTRA
   write (6,"(1H ,15H CN-KONSTANTEN )") 
   write (6,"(1H ,4F12.8)") (MRD%CN(J),J=1,16)
   write(6,"(' ',4F12.6)") (MRD%CN(J+21),J=1,8)
@@ -603,9 +667,9 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
  MRD%Y(1)=1.0
  MRD%Y(7)=1.0
  MRD%X1=THBM*cPi/FLOAT(ICOL/2) 
- CALL RKM
+ CALL RKM(MRD)
  MRD%X1=cPi*THBM
- CALL RKM
+ CALL RKM(MRD)
  BACK=1.0
  BACKD=1.0
 !  This is a very long do-loop;  could be rewritten with function
@@ -825,7 +889,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
       XX1=MRD%X1
       I=ITYPE(KOUNTF) 
       MRD%X1=POSA(KOUNTF) 
-      call RKM
+      call RKM(MRD)
       KTOT=KTOT+MRD%KOUNT 
       select case(I)
       case(1); TRAMP3=MRD%Y(3) 
@@ -867,7 +931,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
     end if
    end do ifkount
 !
-   call RKM
+   call RKM(MRD)
    KTOT=KTOT+MRD%KOUNT 
    DNR=MRD%Y(1)*MRD%Y(7)-MRD%Y(2)*MRD%Y(8)-MRD%Y(3)*MRD%Y(5)+MRD%Y(4)*MRD%Y(6) 
    DNI=MRD%Y(1)*MRD%Y(8)+MRD%Y(2)*MRD%Y(7)-MRD%Y(3)*MRD%Y(6)-MRD%Y(4)*MRD%Y(5) 
@@ -890,7 +954,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
        XX1=MRD%X1
        I=ITYPE(KOUNTF) 
        MRD%X1=POSA(KOUNTF) 
-       CALL RKM
+       CALL RKM(MRD)
        KTOT=KTOT+MRD%KOUNT 
        if (I.eq.4) EXIT ifkount2
        select case(I)
@@ -928,7 +992,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
      end if
     end do ifkount2
     if (I.ne.4) then
-     CALL RKM
+     CALL RKM(MRD)
      KTOT=KTOT+MRD%KOUNT 
     end if
     TEMPY(1:8)=MRD%Y(1:8) 
@@ -952,7 +1016,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
        XX1=MRD%X1
        I=ITYPE(KOUNTF) 
        MRD%X1=POSB(KOUNTF) 
-       CALL RKM
+       CALL RKM(MRD)
        KTOT=KTOT+MRD%KOUNT 
        if (I.eq.4) then
         write(6,"(1HG/26H1ITYPE(4) IN B INTEGRATION)")
@@ -991,7 +1055,7 @@ real         :: GINB, RR(3), GINBXU, Z, SBM1, SBM2, SBM3, SFN1, SFN2, SFN3, FNBM
       end if
      end if
     end do ifkount3
-    call RKM
+    call RKM(MRD)
     KTOT=KTOT+MRD%KOUNT 
     INDL=LLQ*JM+1 
 ! 
