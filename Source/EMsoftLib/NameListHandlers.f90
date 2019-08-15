@@ -8885,4 +8885,181 @@ msnml%discsize             = discsize
 
 end subroutine GetEMmdSTEMNameList
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEMhh4NameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill hhnl structure (used by EMhh4.f90)
+!
+!> @param nmlfile namelist file name
+!> @param hhnl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 08/15/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEMhh4NameList(nmlfile, hhnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMhh4NameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(EMhh4NameListType),INTENT(INOUT)       :: hhnl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: IROW
+integer(kind=irg)       :: ICOL
+integer(kind=irg)       :: LB(3), LD 
+integer(kind=irg)       :: LB2(3), LD2
+integer(kind=irg)       :: LB3(3), LD3
+integer(kind=irg)       :: LB4(3), LD4
+integer(kind=irg)       :: LU(3)
+integer(kind=irg)       :: LG(3)
+integer(kind=irg)       :: LBM(3)
+integer(kind=irg)       :: LFN(3)
+integer(kind=irg)       :: wnum
+integer(kind=irg)       :: LFP1(3), LFP(3), LFP3(3)
+integer(kind=irg)       :: LS1(3), LQ1 
+integer(kind=irg)       :: LS2(3), LQ2 
+integer(kind=irg)       :: LS3(3), LQ3 
+integer(kind=sgl)       :: LTEST
+real(kind=sgl)          :: kV
+real(kind=sgl)          :: THICK, START, FINISH
+real(kind=sgl)          :: wmin, wmax
+real(kind=sgl)          :: SEP, SEP2
+real(kind=sgl)          :: FAP1, FAP3
+real(kind=sgl)          :: D1row1(6)
+real(kind=sgl)          :: D1row2(6)
+real(kind=sgl)          :: D1row3(6)
+real(kind=sgl)          :: D1row4(6)
+real(kind=sgl)          :: D1row5(6)
+real(kind=sgl)          :: D1row6(6)
+character(fnlen)        :: xtalname
+character(fnlen)        :: outname
+
+namelist /hhlist/ nthreads, IROW, ICOL, LB, LD , LB2, LD2, LB3, LD3, LB4, LD4, LU, LG, LBM, LFN, &
+                  wnum, LFP1, LFP, LFP3, LS1, LQ1 , LS2, LQ2 , LS3, LQ3 , LTEST, kV, THICK, START, FINISH, &
+                  wmin, wmax, SEP, SEP2, FAP1, FAP3, D1row1, D1row2, D1row3, D1row4, D1row5, D1row6,&
+                  xtalname, outname
+
+ xtalname = 'undefined'
+ outname = 'undefined'
+ nthreads = 1
+ IROW = 160
+ ICOL = 256
+ kV = 200.0
+ LB = (/1, 0, 1/)
+ LD = 2
+ LB2 = (/0, 0, 0/) 
+ LD2 = 1
+ LB3 = (/0, 0, 0/)
+ LD3 = 1
+ LB4 = (/0, 0, 0/)
+ LD4 = 1
+ LU = (/1, 1, 1/)
+ LG = (/2, 0, 0/)
+ LBM = (/0, 0, 1/)
+ LFN = (/0, 0, 1/)
+ THICK = 5.0
+ START = 0.0
+ FINISH = 6.0
+ wmin = -1.0
+ wmax =  1.0
+ wnum =  5
+ LFP1 = (/1, 1, 0/)
+ LFP = (/0, 0, 0/)
+ LFP3 = (/0, 0, 0/) 
+ LS1 = (/1, 0, 1/) 
+ LQ1 = 2
+ LS2 = (/0, 0, 0/) 
+ LQ2 = 2
+ LS3 = (/0, 0, 0/) 
+ LQ3 = 2      
+ SEP = 2.0
+ SEP2 = 2.0
+ FAP1 = 0.0
+ FAP3 = 0.0
+ D1row1 = (/100.0, 80.0, 80.0,  0.0,  0.0,  0.0/)
+ D1row2 = (/ 80.0,100.0, 80.0,  0.0,  0.0,  0.0/)
+ D1row3 = (/ 80.0, 80.0,100.0,  0.0,  0.0,  0.0/)
+ D1row4 = (/  0.0,  0.0,  0.0, 50.0,  0.0,  0.0/)
+ D1row5 = (/  0.0,  0.0,  0.0,  0.0, 50.0,  0.0/)
+ D1row6 = (/  0.0,  0.0,  0.0,  0.0,  0.0, 50.0/)
+ LTEST = 0
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=hhlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(outname).eq.'undefined') then
+  call FatalError('GetEMhh4NameList:',' output HDF file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetEMhh4NameList:',' xtalname name is undefined in '//nmlfile)
+ end if
+
+end if
+
+hhnl%nthreads = nthreads
+hhnl%IROW = IROW
+hhnl%ICOL = ICOL
+hhnl%LB = LB
+hhnl%LD  = LD
+hhnl%LB2 = LB2
+hhnl%LD2 = LD2
+hhnl%LB3 = LB3
+hhnl%LD3 = LD3
+hhnl%LB4 = LB4
+hhnl%LD4 = LD4
+hhnl%LU = LU
+hhnl%LG = LG
+hhnl%LBM = LBM
+hhnl%LFN = LFN
+hhnl%wnum = wnum
+hhnl%LFP1 = LFP1
+hhnl%LFP = LFP
+hhnl%LFP3 = LFP3
+hhnl%LS1 = LS1
+hhnl%LQ1  = LQ1
+hhnl%LS2 = LS2
+hhnl%LQ2  = LQ2
+hhnl%LS3 = LS3
+hhnl%LQ3  = LQ3
+hhnl%LTEST = LTEST
+hhnl%kV = kV
+hhnl%THICK = THICK
+hhnl%START = START
+hhnl%FINISH = FINISH
+hhnl%wmin = wmin
+hhnl%wmax = wmax
+hhnl%SEP = SEP
+hhnl%SEP2 = SEP2
+hhnl%FAP1 = FAP1
+hhnl%FAP3 = FAP3
+hhnl%D1row1 = D1row1 
+hhnl%D1row2 = D1row2 
+hhnl%D1row3 = D1row3 
+hhnl%D1row4 = D1row4 
+hhnl%D1row5 = D1row5 
+hhnl%D1row6 = D1row6 
+hhnl%xtalname = xtalname
+hhnl%outname = outname
+
+end subroutine GetEMhh4NameList
+
+
 end module NameListHandlers

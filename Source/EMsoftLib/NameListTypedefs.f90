@@ -1918,4 +1918,37 @@ type EMmdSTEMNameListType
         integer(kind=irg)       :: discsize
 end type EMmdSTEMNameListType
 
+type EMhh4NameListType
+        integer(kind=irg)       :: nthreads
+        integer(kind=irg)       :: IROW
+        integer(kind=irg)       :: ICOL
+        integer(kind=irg)       :: LB(3), LD 
+        integer(kind=irg)       :: LB2(3), LD2
+        integer(kind=irg)       :: LB3(3), LD3
+        integer(kind=irg)       :: LB4(3), LD4
+        integer(kind=irg)       :: LU(3)
+        integer(kind=irg)       :: LG(3)
+        integer(kind=irg)       :: LBM(3)
+        integer(kind=irg)       :: LFN(3)
+        integer(kind=irg)       :: wnum
+        integer(kind=irg)       :: LFP1(3), LFP(3), LFP3(3)
+        integer(kind=irg)       :: LS1(3), LQ1 
+        integer(kind=irg)       :: LS2(3), LQ2 
+        integer(kind=irg)       :: LS3(3), LQ3 
+        integer(kind=sgl)       :: LTEST
+        real(kind=sgl)          :: kV
+        real(kind=sgl)          :: THICK, START, FINISH
+        real(kind=sgl)          :: wmin, wmax
+        real(kind=sgl)          :: SEP, SEP2
+        real(kind=sgl)          :: FAP1, FAP3
+        real(kind=sgl)          :: D1row1(6)
+        real(kind=sgl)          :: D1row2(6)
+        real(kind=sgl)          :: D1row3(6)
+        real(kind=sgl)          :: D1row4(6)
+        real(kind=sgl)          :: D1row5(6)
+        real(kind=sgl)          :: D1row6(6)
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: outname
+ end type EMhh4NameListType
+
 end module NameListTypedefs

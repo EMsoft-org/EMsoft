@@ -159,6 +159,9 @@ character(15)                 :: IY
 type(unitcell), pointer       :: cell
 character(fnlen)              :: mess
 
+! set original parameters that are not used in this f90 version of the code
+IND = 0
+LPR = 1
 
 
 
