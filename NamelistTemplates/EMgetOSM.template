@@ -3,10 +3,10 @@
 !
 ! The values below are the default values for this program
 !
-! number of top matches to be used for OSM map
- nmatch = 20,
+! number of top matches to be used for OSM map (maximum of 5 different values, zero if not needed)
+ nmatch = 20 0 0 0 0,
 ! input dot product file name
  dotproductfile = 'undefined',
-! output tiff file name 
+! output tiff file name; prefix only !!!  .tiff will be added 
  tiffname = 'undefined',
  /

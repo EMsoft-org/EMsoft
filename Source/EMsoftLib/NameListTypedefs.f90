@@ -1291,7 +1291,7 @@ type ADPNameListType
 end type ADPNameListType
 
 type OSMNameListType
-        integer(kind=irg)       :: nmatch
+        integer(kind=irg)       :: nmatch(5)
         character(fnlen)        :: dotproductfile
         character(fnlen)        :: tiffname
 end type OSMNameListType

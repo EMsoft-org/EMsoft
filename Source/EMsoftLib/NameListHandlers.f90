@@ -5776,7 +5776,7 @@ logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
 
-integer(kind=irg)       :: nmatch
+integer(kind=irg)       :: nmatch(5)
 character(fnlen)        :: dotproductfile
 character(fnlen)        :: tiffname
 
@@ -5785,7 +5785,7 @@ character(fnlen)        :: tiffname
 namelist  / getOSM / nmatch, dotproductfile, tiffname
 
 ! set the input parameters to default values
-nmatch = 20
+nmatch = (/ 20, 0, 0, 0, 0 /)
 dotproductfile = 'undefined'
 tiffname = 'undefined'
 

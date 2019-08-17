@@ -66,8 +66,9 @@ integer(kind=irg)                           :: istat, res
 type(EBSDIndexingNameListType)              :: dinl
 type(EBSDDIdataType)                        :: EBSDDIdata
 real(kind=sgl),allocatable                  :: OSMmap(:,:)
-integer(kind=irg)                           :: dims(2), hdferr, io_int(2)
+integer(kind=irg)                           :: dims(2), dimsOSM(2), hdferr, io_int(2), osmnum, i
 character(fnlen)                            :: fname, TIFF_filename
+character(2)                                :: fnum
 real(kind=sgl)                              :: ma, mi
 
 ! declare variables for use in object oriented image module
@@ -105,53 +106,69 @@ call readEBSDDotProductFile(osmnl%dotproductfile, dinl, hdferr, EBSDDIdata, &
 
 call h5close_EMsoft(hdferr)
 
+! first get the number of different OSM values in the list (non-zero entries)
+osmnum = 0
+do i=1,5
+  if (osmnl%nmatch(i).ne.0) osmnum = osmnum+1
+end do
+
 ! check to ake sure that the requested osmnl%nmatch values is <= the available number
 dims = shape( EBSDDIdata%TopMatchIndices )
-if (osmnl%nmatch.gt.dinl%nnk) then 
-   io_int(1) = osmnl%nmatch
+do i=1,osmnum
+  if (osmnl%nmatch(i).gt.dinl%nnk) then 
+   io_int(1) = osmnl%nmatch(i)
    io_int(2) = dims(1)
    call WriteValue(' Number of requested OSM levels = ',io_int, 2, "(I3,'; available number = ',I3)")
    call Message('   --> Resetting requested number to maximum available')
-   osmnl%nmatch = dims(1)
-end if
+   osmnl%nmatch(i) = dims(1)
+  end if
+end do
 
-! compute the Orientation Similarity Map
 if (sum(dinl%ROI).ne.0) then
   allocate(OSMmap( dinl%ROI(3), dinl%ROI(4) ) )
-  call EBSDgetOrientationSimilarityMap( dims, EBSDDIdata%TopMatchIndices, osmnl%nmatch, dinl%ROI(3), dinl%ROI(4), OSMmap)
 else
   allocate(OSMmap( dinl%ipf_wd, dinl%ipf_ht ) )
-  call EBSDgetOrientationSimilarityMap( dims, EBSDDIdata%TopMatchIndices, osmnl%nmatch, dinl%ipf_wd, dinl%ipf_ht, OSMmap)
 end if
-
-! output the ADP map as a tiff file 
-fname = trim(EMsoft_getEMdatapathname())//trim(osmnl%tiffname)
-fname = EMsoft_toNativePath(fname)
-TIFF_filename = trim(fname)
+OSMmap = 0.0
 
 ! allocate memory for image
-dims = shape(OSMmap)
-allocate(TIFF_image( dims(1), dims(2) ))
+dimsOSM = shape(OSMmap)
+allocate(TIFF_image( dimsOSM(1), dimsOSM(2) ))
 
-! fill the image with whatever data you have (between 0 and 255)
-ma = maxval(OSMmap)
-mi = minval(OSMmap)
+do i=1,osmnum
+! compute the Orientation Similarity Map
+  if (sum(dinl%ROI).ne.0) then
+    call EBSDgetOrientationSimilarityMap( dims, EBSDDIdata%TopMatchIndices, osmnl%nmatch(i), dinl%ROI(3), dinl%ROI(4), OSMmap)
+  else
+    call EBSDgetOrientationSimilarityMap( dims, EBSDDIdata%TopMatchIndices, osmnl%nmatch(i), dinl%ipf_wd, dinl%ipf_ht, OSMmap)
+  end if
 
-TIFF_image = int(255 * (OSMmap-mi)/(ma-mi))
+  ! output the ADP map as a tiff file 
+  write(fnum,"(I2.2)") osmnl%nmatch(i)
+  fname = trim(EMsoft_getEMdatapathname())//trim(osmnl%tiffname)//fnum//'.tiff'
+  fname = EMsoft_toNativePath(fname)
+  TIFF_filename = trim(fname)
 
-! set up the image_t structure
-im = image_t(TIFF_image)
-if(im%empty()) call Message("EMgetOSM","failed to convert array to image")
+  ! fill the image with whatever data you have (between 0 and 255)
+  ma = maxval(OSMmap)
+  mi = minval(OSMmap)
 
-! create the file
-call im%write(trim(TIFF_filename), iostat, iomsg) ! format automatically detected from extension
-if(0.ne.iostat) then
-  call Message("failed to write image to file : "//iomsg)
-else  
-  call Message('OSM map written to '//trim(TIFF_filename))
-end if 
-deallocate(TIFF_image)
+  TIFF_image = int(255 * (OSMmap-mi)/(ma-mi))
+  im = image_t(TIFF_image)
+  if(im%empty()) call Message("EMgetOSM","failed to convert array to image")
 
+  ! create the file
+  call im%write(trim(TIFF_filename), iostat, iomsg) ! format automatically detected from extension
+  if(0.ne.iostat) then
+    call Message("failed to write image to file : "//iomsg)
+  else  
+    call Message('OSM map written to '//trim(TIFF_filename))
+  end if 
+
+  call im%clear()
+
+  OSMmap = 0.0
+end do
 
 end program EMgetOSM
 
