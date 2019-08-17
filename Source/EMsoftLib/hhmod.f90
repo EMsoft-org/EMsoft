@@ -209,7 +209,7 @@ real(kind=sgl)                 :: C(6,6), EE(3,6), EN(3,3), QM(7,4), G(9), E(9),
   end do
  end do
  if (SCALE30%LTEST.eq.1) then
-  write(*,"('  C-DC ',6F10.6)") ((C(I,J),J=1,6),I=1,6)
+  write(dataunit,"('  C-DC ',6F10.6)") ((C(I,J),J=1,6),I=1,6)
  end if 
  G(1)=C(5,5)
  G(2)=2.0*C(4,5)
@@ -241,7 +241,7 @@ real(kind=sgl)                 :: C(6,6), EE(3,6), EN(3,3), QM(7,4), G(9), E(9),
   end do
  end do
  if (SCALE30%LTEST.eq.1) then
-  write(6,"('  QR- HH4 ',F30.15)") (MAPN%QR(KP),KP=1,7)
+  write(dataunit,"('  QR- HH4 ',F30.15)") (MAPN%QR(KP),KP=1,7)
  end if 
  MAPN%QR=MAPN%QR/MAPN%QR(7)
  MAPN%KRASH=0
@@ -309,7 +309,7 @@ real(kind=sgl)                 :: C(6,6), EE(3,6), EN(3,3), QM(7,4), G(9), E(9),
 !
  if (SCALE30%LTEST.eq.1) then
   do I=1,3
-   WRITE(6,"(' Roots HH4 ',2F20.15)") MA%PR(I),MA%PI(I)
+   WRITE(dataunit,"(' Roots HH4 ',2F20.15)") MA%PR(I),MA%PI(I)
   end do 
  end if 
  DO K=1,3 
@@ -347,7 +347,7 @@ real(kind=sgl)                 :: C(6,6), EE(3,6), EN(3,3), QM(7,4), G(9), E(9),
  if (SCALE30%LTEST.eq.1) then
   do J=1,3
    do K=1,3
-    WRITE(6,"('   Vektoren as HH4 ',2F20.12)") MA%AR(J,K),MA%AI(J,K)
+    WRITE(dataunit,"('   Vektoren as HH4 ',2F20.12)") MA%AR(J,K),MA%AI(J,K)
    end do
   end do 
  end if 
@@ -1145,28 +1145,20 @@ real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST
 
 eight: do
    CALL DERIV(MRD) 
-   do M=1,8 
-    MRD%DT(M,1)=H3*MRD%D(M) 
-    MRD%Y(M)=MRD%Y(M)+MRD%DT(M,1) 
-   end do
+    MRD%DT(:,1)=H3*MRD%D(:) 
+    MRD%Y(:)=MRD%Y(:)+MRD%DT(:,1) 
    MRD%X=MRD%X+H3        
    CALL DERIV(MRD)   
-   do  M=1,8  
-    MRD%Y(M)=MRD%YT(M)+0.5*(MRD%DT(M,1)+H3*MRD%D(M))
-   end do
+    MRD%Y(:)=MRD%YT(:)+0.5*(MRD%DT(:,1)+H3*MRD%D(:))
    MRD%SKIP=1.0  
    CALL DERIV(MRD)
    MRD%SKIP=0.0  
-   do M=1,8 
-    MRD%DT(M,2)=MRD%Q*MRD%D(M)
-    MRD%Y(M)=MRD%YT(M)+0.375*(MRD%DT(M,1)+MRD%DT(M,2)) 
-   end do
+    MRD%DT(:,2)=MRD%Q*MRD%D(:)
+    MRD%Y(:)=MRD%YT(:)+0.375*(MRD%DT(:,1)+MRD%DT(:,2)) 
    MRD%X=XT+H2   
    CALL DERIV(MRD) 
-   do M=1,8 
-    MRD%DT(M,3)=4.0*H3*MRD%D(M) 
-    MRD%Y(M)=MRD%YT(M)+1.5*(MRD%DT(M,1)+MRD%DT(M,3)-MRD%DT(M,2)) 
-   end do
+    MRD%DT(:,3)=4.0*H3*MRD%D(:) 
+    MRD%Y(:)=MRD%YT(:)+1.5*(MRD%DT(:,1)+MRD%DT(:,3)-MRD%DT(:,2)) 
    MRD%X=XT+MRD%Q 
    CALL DERIV(MRD)  
    M2=0   
@@ -1190,9 +1182,7 @@ eight: do
    EXIT eight
   end do eight
 
-  do  M=1,8 
-   MRD%Y(M)=MRD%YT(M)+0.5*(MRD%DT(M,1)+MRD%DT(M,3)+MRD%DT(M,4))  
-  end do
+   MRD%Y(:)=MRD%YT(:)+0.5*(MRD%DT(:,1)+MRD%DT(:,3)+MRD%DT(:,4))  
   J=M1+M2    
   MRD%KOUNT=MRD%KOUNT+1 
 

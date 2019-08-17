@@ -118,9 +118,11 @@ end program EMhh4
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief compute a dynamical zone axis precession electron diffraction pattern
+!> @brief compute pairs of two-beam BF/DF images for a set of dislocations 
 !
-!> @param nmlfile namelist file name
+!> @param hhnl namelist
+!> @param progname program name string
+!> @param nmldeffile namelist file name
 !
 !> @date 08/15/19 MDG 1.0 original based on hh4.f program
 !--------------------------------------------------------------------------
@@ -129,6 +131,8 @@ subroutine HHComputeImages(hhnl,progname,nmldeffile)
 use local
 use constants
 use crystal
+use diffraction
+use symmetry
 use io 
 use files
 use error 
@@ -163,7 +167,7 @@ integer(kind=irg)             :: ICNT, LLQ, NNN, NNNN, I, J, JB, JC, K, L, KMIN,
 integer(kind=irg)             :: ITYPE(4)
 ! integer constants
 integer(kind=irg),parameter   :: NP(3) = (/2,3,1/), NQ(3) = (/3,1,2/), addon(4) = (/ 1, 0, 2, 3 /)
-integer(kind=irg)             :: ICOL, IROW, ICOLP   ! needs to become variable via namelist !
+integer(kind=irg)             :: ICOL, IROW, ICOLP 
 ! integer allocatable
 integer(kind=irg),allocatable :: IX(:), IXX(:)
 
@@ -193,8 +197,13 @@ character(fnlen)              :: diagfile = 'HHdiagnostics.txt'
 ! additional EMsoft variables (not originally in hh4.f code)
 !=======================
 type(unitcell), pointer       :: cell
+type(gnode)                   :: rlp
 character(fnlen)              :: mess
 integer(kind=irg)             :: numim, imnum
+real(kind=sgl),allocatable    :: wvalues(:)
+logical                       :: isallowed
+real(kind=dbl)                :: eps = 1.0D-6
+real(kind=sgl)                :: wstep, io_real(1)
 
 nullify(cell)
 allocate(cell)
@@ -210,6 +219,7 @@ cell%fname = trim(hhnl%xtalname)
  allocate( IX(ICOLP), IXX(ICOLP) )
  allocate( FX(ICOL,4), TBD(IROW,ICOLP), TQB(ICOLP), TQD(ICOLP) )
  allocate( BFINTENS(ICOL, IROW, numim), DFINTENS(ICOL, IROW, numim) )
+ allocate( wvalues(numim) )
 
 ! set original hh4.f parameters that are not used in this f90 version of the code
  IND = 0
@@ -222,8 +232,6 @@ cell%fname = trim(hhnl%xtalname)
 
 ! copy namelist entries to appropriate variables
 
-! this needs to be changed by means of a loop over the image pairs
- MRD%CN(17) = hhnl%wmin 
 ! elastic moduli
  MKAP%D1(1,1:6) = hhnl%D1row1 
  MKAP%D1(2,1:6) = hhnl%D1row2 
@@ -264,7 +272,7 @@ cell%fname = trim(hhnl%xtalname)
 ! open diagnostic file for output if hhnl%LTEST.eq.1
  ICNT=1
  if (hhnl%LTEST.eq.1) then 
-   OPEN(6,FILE=trim(diagfile), Status='UNKNOWN')
+   OPEN(dataunit,FILE=trim(diagfile), Status='UNKNOWN')
  end if
 
 !OPEN(3,FILE='hh.ima', Status='UNKNOWN', Form='UNFORMATTED')
@@ -330,16 +338,32 @@ cell%fname = trim(hhnl%xtalname)
 ! new code: compute the extinction distance and the ano ratio
 ! for the selected g-vector
 !***********************************************************************
-
+cell%voltage = dble(hhnl%kV)
+call CalcWaveLength(cell,rlp,skip=3,verbose=.TRUE.)
+call CalcPositions(cell,'v')
+rlp%method = 'WK'
+call CalcUcg(cell, rlp, MT%LG)
+isallowed = IsGAllowed(cell, MT%LG)
+! check whether this is a lattice extinction, a symmetry extinction, or an allowed reflection
+if ((rlp%Umod.lt.eps).and.(isallowed.eqv..FALSE.)) then
+  call FatalError('HHComputeImages','This reflection is absent due to lattice centering.')
+end if
+if ((rlp%Umod.lt.eps).and.(isallowed.eqv..TRUE.)) then
+  call FatalError('HHComputeImages','This reflection is absent due to glide or screw symmetry elements.')
+end if
+! get the etinction distance and the absorption ratio for this reflection
+XIGEE = rlp%xg
+MRD%ANO = -1.0/rlp%ar
+io_real(1) = XIGEE
+call WriteValue('extinction distance [nm] ',io_real, 1)
+io_real(1) = MRD%ANO
+call WriteValue('absorption ratio         ',io_real, 1)
 
 !***********************************************************************
 !*       Make sure that the input data make geometric sense            *
 !*       and initialize some default values; a lot of this was         *
 !*       typical spaghetti-code....                                    *
 !***********************************************************************
- MRD%ANO = -MRD%ANO
- if (MRD%ANO.eq.0.0) MRD%ANO=0.1
-
 ! make sure the START and FINISH values make sense
  FINISH = hhnl%FINISH 
  START = hhnl%START 
@@ -351,8 +375,6 @@ cell%fname = trim(hhnl%xtalname)
  if (FINISH.le.START) then
    call FatalError('HHComputeImages','START after FINISH')
  end if
-
- MRD%CN(18)=2.0*MRD%CN(17) 
 
 ! intercept zero denominators by setting them to 1
  if (MT%LD.eq.0)  MT%LD=1
@@ -493,7 +515,7 @@ cell%fname = trim(hhnl%xtalname)
  Z=SQRT(FP(1)**2+FP(2)**2) 
  if(Z.eq.0.0) Z=1. 
  if(hhnl%SEP.ne.0.0) then
-  mess = ' FAULT PLANE 2 ZERO WITH SEP NONZERO'; call Message("(A)")
+  call Message(' FAULT PLANE 2 ZERO WITH SEP NONZERO')
  end if
  AB(1)=FP(2)/Z 
  AB(2)=-FP(1)/Z
@@ -503,120 +525,121 @@ cell%fname = trim(hhnl%xtalname)
  if(Z.eq.0.0) Z=1. 
  AB1(1)=FP3(2)/Z 
  AB1(2)=-FP3(1)/Z
+ AB1(3)=0.0
  PT2=hhnl%SEP2*AB1(1) 
  SL2=-hhnl%SEP2*AB1(2)/BM(2)
 ! we do not consider piezoelectric effects in this version of the program
 !if (LPIEZO.eq.0) then 
-!   call ANCALC(MAP, MKAP, MAPN, MA, SCALE30) 
-!   if (MAPN%KRASH.eq.0) then
-!    do I=1,3
-!     write(6,*) (MA%AR(I,J),MA%AI(I,J),J=1,3)
-!    end do
-!    write(6,*) (GD(I),I=1,3)
-!    do I=1,3
-!     write(6,*) MA%PR(I),MA%PI(I)
-!    end do
-!    do I=1,3
-!     write(6,*) (MA%EMR(I,J),MA%EMI(I,J),J=1,3)
-!    end do
-!    write(6,"('  H  ',3F20.10)") ((MA%H(I,J),J=1,3),I=1,3)
-!    do JB=1,3 
-!     SUR(JB)=0.0
-!     SUI(JB)=0.0
-!     do K=1,3
-!      SUR(JB)=SUR(JB)+GD(K)*MA%AR(K,JB) 
-!      SUI(JB)=SUI(JB)+GD(K)*MA%AI(K,JB) 
-!     end do
-!    end do
-!    do JB=1,3 
-!     DR(JB)=SUR(JB)*MA%PR(JB)-SUI(JB)*MA%PI(JB) 
-!     DI(JB)=SUR(JB)*MA%PI(JB)+SUI(JB)*MA%PR(JB) 
-!    end do
-!    do JB=1,3 
-!     do L=1,3
-!      UR(JB,L)=0.0 
-!      UI(JB,L)=0.0 
-!      do J=1,3
-!       UR(JB,L)=UR(JB,L)+MA%EMR(JB,J)*MA%H(J,L) 
-!       UI(JB,L)=UI(JB,L)+MA%EMI(JB,J)*MA%H(J,L) 
-!      end do
-!     end do 
-!    end do 
-!    do JB=1,3 
-!     do L=1,3
-!      VR(JB,L)=DR(JB)*UR(JB,L)-DI(JB)*UI(JB,L) 
-!      VI(JB,L)=DR(JB)*UI(JB,L)+DI(JB)*UR(JB,L) 
-!     end do
-!    end do
-!    do JB=1,3 
-!     do L=1,3
-!      UI(JB,L)=VR(JB,L)*MA%PR(JB)+VI(JB,L)*MA%PI(JB) 
-!     end do
-!    end do
-! !***********************************************************
-! !*            First Dislocation                            *
-! !***********************************************************
-!    do J=1,3
-!     MRD%CN(J+8)=MA%PR(J)
-!     MRD%CN(J+12)=MA%PI(J)**2
-!     MRD%CN(J)=0.0
-!     MRD%CN(J+4)=0.0
-!     do L=1,3
-!      MRD%CN(J)=MRD%CN(J)+VR(J,L)*BD(L)
-!      MRD%CN(J+4)=MRD%CN(J+4)+UI(J,L)*BD(L)
-!     end do
-!    end do
-!    write(6,*) (MRD%CN(I),I=1,16)
-! !***********************************************************
-! !*        Second Dislocation                               *
-! !***********************************************************
-!    do J=1,3
-!     MRD%CN(J+21)=0.0 
-!     MRD%CN(J+25)=0.0 
-!     do L=1,3
-!      MRD%CN(J+21)=MRD%CN(J+21)+VR(J,L)*B2D(L) 
-!      MRD%CN(J+25)=MRD%CN(J+25)+UI(J,L)*B2D(L) 
-!     end do
-!    end do
-! !***********************************************************
-! !*       Third Dislocation                                 *
-! !***********************************************************
-!    do J=1,3
-!     MRD%CN(J+31)=0.0 
-!     MRD%CN(J+35)=0.0 
-!     do L=1,3
-!      MRD%CN(J+31)=MRD%CN(J+31)+VR(J,L)*B3D(L) 
-!      MRD%CN(J+35)=MRD%CN(J+35)+UI(J,L)*B3D(L) 
-!     end do
-!    end do
-! !***********************************************************
-! !*       Fourth Dislocation                                *
-! !***********************************************************
-!    do J=1,3
-!     MRD%CN(J+50)=0.0 
-!     MRD%CN(J+54)=0.0 
-!     do L=1,3
-!      MRD%CN(J+50)=MRD%CN(J+50)+VR(J,L)*B4D(L) 
-!      MRD%CN(J+54)=MRD%CN(J+54)+UI(J,L)*B4D(L) 
-!     end do
-!    end do 
-!    MRD%CN(4)=0.0
-!    MRD%CN(8)=0.0
-!    MRD%CN(12)=0.0 
-!    MRD%CN(16)=0.0 
-!    MRD%CN(25)=0.0 
-!    MRD%CN(29)=0.0 
-!    MRD%CN(35)=0.0 
-!    MRD%CN(39)=0.0 
-!    MRD%CN(54)=0.0 
-!    MRD%CN(58)=0.0 
-!    write(6,"(' H-ANCALC ',4F10.4)") ((MA%H(I,J),J=1,4),I=1,4) 
-!   else
-!    STOP 
-!   end if 
-! !else  
-! ! the following lines are all commented out because we do not 
-! ! want to consider piezoelectric effects at this point in time
+  call ANCALC(MAP, MKAP, MAPN, MA, SCALE30) 
+  if (MAPN%KRASH.eq.0) then
+   do I=1,3
+    write(6,*) (MA%AR(I,J),MA%AI(I,J),J=1,3)
+   end do
+   write(6,*) (GD(I),I=1,3)
+   do I=1,3
+    write(6,*) MA%PR(I),MA%PI(I)
+   end do
+   do I=1,3
+    write(6,*) (MA%EMR(I,J),MA%EMI(I,J),J=1,3)
+   end do
+   write(6,"('  H  ',3F20.10)") ((MA%H(I,J),J=1,3),I=1,3)
+   do JB=1,3 
+    SUR(JB)=0.0
+    SUI(JB)=0.0
+    do K=1,3
+     SUR(JB)=SUR(JB)+GD(K)*MA%AR(K,JB) 
+     SUI(JB)=SUI(JB)+GD(K)*MA%AI(K,JB) 
+    end do
+   end do
+   do JB=1,3 
+    DR(JB)=SUR(JB)*MA%PR(JB)-SUI(JB)*MA%PI(JB) 
+    DI(JB)=SUR(JB)*MA%PI(JB)+SUI(JB)*MA%PR(JB) 
+   end do
+   do JB=1,3 
+    do L=1,3
+     UR(JB,L)=0.0 
+     UI(JB,L)=0.0 
+     do J=1,3
+      UR(JB,L)=UR(JB,L)+MA%EMR(JB,J)*MA%H(J,L) 
+      UI(JB,L)=UI(JB,L)+MA%EMI(JB,J)*MA%H(J,L) 
+     end do
+    end do 
+   end do 
+   do JB=1,3 
+    do L=1,3
+     VR(JB,L)=DR(JB)*UR(JB,L)-DI(JB)*UI(JB,L) 
+     VI(JB,L)=DR(JB)*UI(JB,L)+DI(JB)*UR(JB,L) 
+    end do
+   end do
+   do JB=1,3 
+    do L=1,3
+     UI(JB,L)=VR(JB,L)*MA%PR(JB)+VI(JB,L)*MA%PI(JB) 
+    end do
+   end do
+!***********************************************************
+!*            First Dislocation                            *
+!***********************************************************
+   do J=1,3
+    MRD%CN(J+8)=MA%PR(J)
+    MRD%CN(J+12)=MA%PI(J)**2
+    MRD%CN(J)=0.0
+    MRD%CN(J+4)=0.0
+    do L=1,3
+     MRD%CN(J)=MRD%CN(J)+VR(J,L)*BD(L)
+     MRD%CN(J+4)=MRD%CN(J+4)+UI(J,L)*BD(L)
+    end do
+   end do
+   write(6,*) (MRD%CN(I),I=1,16)
+!***********************************************************
+!*        Second Dislocation                               *
+!***********************************************************
+   do J=1,3
+    MRD%CN(J+21)=0.0 
+    MRD%CN(J+25)=0.0 
+    do L=1,3
+     MRD%CN(J+21)=MRD%CN(J+21)+VR(J,L)*B2D(L) 
+     MRD%CN(J+25)=MRD%CN(J+25)+UI(J,L)*B2D(L) 
+    end do
+   end do
+!***********************************************************
+!*       Third Dislocation                                 *
+!***********************************************************
+   do J=1,3
+    MRD%CN(J+31)=0.0 
+    MRD%CN(J+35)=0.0 
+    do L=1,3
+     MRD%CN(J+31)=MRD%CN(J+31)+VR(J,L)*B3D(L) 
+     MRD%CN(J+35)=MRD%CN(J+35)+UI(J,L)*B3D(L) 
+    end do
+   end do
+!***********************************************************
+!*       Fourth Dislocation                                *
+!***********************************************************
+   do J=1,3
+    MRD%CN(J+50)=0.0 
+    MRD%CN(J+54)=0.0 
+    do L=1,3
+     MRD%CN(J+50)=MRD%CN(J+50)+VR(J,L)*B4D(L) 
+     MRD%CN(J+54)=MRD%CN(J+54)+UI(J,L)*B4D(L) 
+    end do
+   end do 
+   MRD%CN(4)=0.0
+   MRD%CN(8)=0.0
+   MRD%CN(12)=0.0 
+   MRD%CN(16)=0.0 
+   MRD%CN(25)=0.0 
+   MRD%CN(29)=0.0 
+   MRD%CN(35)=0.0 
+   MRD%CN(39)=0.0 
+   MRD%CN(54)=0.0 
+   MRD%CN(58)=0.0 
+   write(dataunit,"(' H-ANCALC ',4F10.4)") ((MA%H(I,J),J=1,4),I=1,4) 
+  else
+   STOP 
+  end if 
+!else  
+! the following lines are all commented out because we do not 
+! want to consider piezoelectric effects at this point in time
 !   call PANCALC(MAP, MKAP, MAPN, MA, MP, SCALE30)
 !   if (MAPN%KRASH.eq.0) then
 !    do K=1,4
@@ -708,6 +731,7 @@ cell%fname = trim(hhnl%xtalname)
  KMAX=0
  KTOT=0
 
+write (*,*) 'passing line 735'
 ! 
 !********************************************************************** 
 !  BESTIMMUNG DER BILDLAENGE                                          * 
@@ -744,30 +768,42 @@ cell%fname = trim(hhnl%xtalname)
 !********************************************************************** 
 ! 
  if (SCALE30%LTEST.eq.1) then
-  write (6,"(1H1,16H DC-KOORDINATEN )") 
-  write (6,"(1X,3F12.8)") ((MAP%DC(I,J),J=1,3),I=1,3) 
-  write (6,"(1H ,17H DCX-KOORDINATEN )") 
-  write (6,"(1X,3F12.8)") ((DCX(I,J),J=1,3),I=1,3)
-  write (6,"(1H ,48H KOORDINATEN DER BURGERSVEKTOREN UND FAULTPLANES)") 
-  write (6,"(1H0,3F12.8,'  BD',3F12.8,' B2D',3F12.8,' B3D'/1H ,3F12.8,'  BM',3F12.8,'  GD',3F12.8,'  FN'/1H ,3F12.8,' FNX', &
+  write (dataunit,"(1H1,16H DC-KOORDINATEN )") 
+  write (dataunit,"(1X,3F12.8)") ((MAP%DC(I,J),J=1,3),I=1,3) 
+  write (dataunit,"(1H ,17H DCX-KOORDINATEN )") 
+  write (dataunit,"(1X,3F12.8)") ((DCX(I,J),J=1,3),I=1,3)
+  write (dataunit,"(1H ,48H KOORDINATEN DER BURGERSVEKTOREN UND FAULTPLANES)") 
+  write (dataunit,"(1H0,3F12.8,'  BD',3F12.8,' B2D',3F12.8,' B3D'/1H ,3F12.8,'  BM',3F12.8,'  GD',3F12.8,'  FN'/1H ,3F12.8,' FNX', &
              3F12.8,'FP1X',3F12.8,' FPX'/1H ,3F12.8,'FP3X',3F12.8,'  FP',3F12.8,' FP3')") &
              BD,B2D,B3D,BM,GD,FN,FNX,FP1X,FPX,FP3X,FP,FP3
-  write (6,"(1H0,26H ERSTER SEPARATIONSVEKTOR )") 
-  write (6,"(1H ,3F12.8,3H AB,F12.8,3H SL,F12.8,3H PT,F12.8,5H DELT)") AB,SL,PT,DELT 
-  write (6,"(1H0,27H ZWEITER SEPARATIONSVEKTOR )") 
-  write (6,"(1H ,3F12.8,3HAB1,F12.8,3HPT2/1H ,F12.8,4HEXT1,1F12.8,4HEXT2,F12.8,4HEXT3,F12.8,5HEXTRA)") &
+  write (dataunit,"(1H0,26H ERSTER SEPARATIONSVEKTOR )") 
+  write (dataunit,"(1H ,3F12.8,3H AB,F12.8,3H SL,F12.8,3H PT,F12.8,5H DELT)") AB,SL,PT,DELT 
+  write (dataunit,"(1H0,27H ZWEITER SEPARATIONSVEKTOR )") 
+  write (dataunit,"(1H ,3F12.8,3HAB1,F12.8,3HPT2/1H ,F12.8,4HEXT1,1F12.8,4HEXT2,F12.8,4HEXT3,F12.8,5HEXTRA)") &
              AB1,SL2,PT2,EXT1,EXT2,EXT3,EXTRA
-  write (6,"(1H ,15H CN-KONSTANTEN )") 
-  write (6,"(1H ,4F12.8)") (MRD%CN(J),J=1,16)
-  write(6,"(' ',4F12.6)") (MRD%CN(J+21),J=1,8)
-  write(6,"(' ',4F12.6)") (MRD%CN(J+31),J=1,8)
-  write(6,"(' ',4F12.6)") (MRD%CN(J+50),J=1,8)
+  write (dataunit,"(1H ,15H CN-KONSTANTEN )") 
+  write (dataunit,"(1H ,4F12.8)") (MRD%CN(J),J=1,16)
+  write(dataunit,"(' ',4F12.6)") (MRD%CN(J+21),J=1,8)
+  write(dataunit,"(' ',4F12.6)") (MRD%CN(J+31),J=1,8)
+  write(dataunit,"(' ',4F12.6)") (MRD%CN(J+50),J=1,8)
  end if
  MRD%CN(30)=1000.0 
  MRD%SKIP=0.0
  MRD%X=0.0 
  MRD%Q=0.0 
  MRD%ERROR=0.0001
+
+wstep = (hhnl%wmax-hhnl%wmin) / float(hhnl%wnum-1) 
+wvalues = hhnl%wmin + (/ (i*wstep, i=0,hhnl%wnum-1) /)
+
+write (*,*) 'passing line 800'
+
+! loop over all the image pairs to be computed 
+do imnum=1,hhnl%wnum
+! set the excitation error parameter and related quantities
+ MRD%CN(17) = wvalues(imnum)
+ MRD%CN(18) = 2.0*MRD%CN(17) 
+write (*,*) 'starting computation for excitation error ', MRD%CN(17)
 
 ! 
 !********************************************************************** 
@@ -784,14 +820,14 @@ cell%fname = trim(hhnl%xtalname)
  CALL RKM(MRD)
  BACK=1.0
  BACKD=1.0
-
-! loop over all the image pairs to be computed 
-do imnum=1,hhnl%wnum
-! set the excitation error parameter and related quantities
+write (*,*) 'background intensity computed '
 
 !  This is a very long do-loop;  could be rewritten with function
 !  and subroutine calls... and really should be parallelized using OpenMP
  do JC=1,IROW
+!do JC=1,50
+ write (*,*) 'starting row ', JC
+
   MRD%CN(19)=(FLOAT(JC)-FLOAT(IROW/2)-0.5)*DELW
   MOVE=0
   COORD(1)=-MRD%CN(42)
@@ -1150,6 +1186,7 @@ do imnum=1,hhnl%wnum
    BFINTENS(j,ICNT,imnum)=TQB(j)
    DFINTENS(j,ICNT,imnum)=TQD(j)
   end do
+  write (*,*) BFINTENS(1,ICNT,1), DFINTENS(1,ICNT,1)
   ICNT=ICNT+1
  end do  ! from several pages back !!!
 
@@ -1161,28 +1198,29 @@ do imnum=1,hhnl%wnum
 !*******************************************************
 !
   if (SCALE30%LTEST.eq.1) then  
-   write(6,"('    HH.f90  ',A15,' TWO-BEAM ',F6.2,' WL',F6.2,' WW', &
-           F5.2,' STR ',F5.2,' FIN ',F7.3,'TH',F7.3,'THBM')") IY,WL,WW,START,FINISH,THICK,THBM 
+  IY = ''
+   write(dataunit,"('    HH.f90  ',' TWO-BEAM ',F6.2,' WL',F6.2,' WW', &
+           F5.2,' STR ',F5.2,' FIN ',F7.3,'TH',F7.3,'THBM')") WL,WW,START,FINISH,THICK,THBM 
   
-   write(6,"(' ',3I2,'/',I1,'B   ',F8.4,' Q1 ',3I2,'U    ',3I2,  &
+   write(dataunit,"(' ',3I2,'/',I1,'B   ',F8.4,' Q1 ',3I2,'U    ',3I2,  &
            'G    ',3I2,'BM   ',3I2,'FN',F7.3,'W',F9.3,'BACK') ") &
            MT%LB,LD,QL1(4),MT%LU,MT%LG,MT%LBM,MT%LFN,MRD%CN(17),BACK
   
-   write(6,"(' ',3I2,'/',I1,'B2  ',F8.4,' Q2 ',F5.2,'SEP  ',3I2, &
+   write(dataunit,"(' ',3I2,'/',I1,'B2  ',F8.4,' Q2 ',F5.2,'SEP  ',3I2, &
            'FP1  ',3I2,'FP2  ',3I2,'FP3  ',3I2,'/',I1,'SH1  ',3I2,'/',I1, &
            'SH2  ',3I2,'/',I1,'SH3  ',' 4VS-SYM ',I2,' NNNN')") &
            MT%LB2,MT%LD2,QL2(4),hhnl%SEP,MT%LFP1,MT%LFP,MT%LFP3,MT%LS1,MT%LQ1,MT%LS2,MT%LQ2,MT%LS3,MT%LQ3,NNNN
   
-   write(6,"(' ',3I2,'/',I1,'B3  ',F8.4,' Q3 ',F5.2,'SEP2  ',F5.2, &
+   write(dataunit,"(' ',3I2,'/',I1,'B3  ',F8.4,' Q3 ',F5.2,'SEP2  ',F5.2, &
            ' FAP1 ',F5.2,' FAP3 ',F8.1,' XIGEE ',F4.1,' DELTA ',F8.5, &
-            ' ANO ')") MT%LB3,MT%LD3,QL3(4),hhnl%SEP2,hhnl%FAP1,hhnl%FAP3,XIGEE,DELTA,ANO
+            ' ANO ')") MT%LB3,MT%LD3,QL3(4),hhnl%SEP2,hhnl%FAP1,hhnl%FAP3,XIGEE,DELTA,MRD%ANO
   
-   write(6,"(' ',3I2,'/',I1,'B4  ',F8.4,' Q4 ',' PIEZO=',I1,' IND=',I1)") &
+   write(dataunit,"(' ',3I2,'/',I1,'B4  ',F8.4,' Q4 ',' PIEZO=',I1,' IND=',I1)") &
              MT%LB4,MT%LD4,QL4(4),LPIEZO,IND 
   
-   write(6,"('  G.B=',F10.4,'  G.(B X U)=',F10.4)") GINB,GINBXU
+   write(dataunit,"('  G.B=',F10.4,'  G.(B X U)=',F10.4)") GINB,GINBXU
 ! close the file if this is the last image 
-   if (imnum.eq.hhnl%wnum) CLOSE (UNIT=6)
+   if (imnum.eq.hhnl%wnum) CLOSE (UNIT=dataunit)
   end if
 !
 end do ! loop over all images 
