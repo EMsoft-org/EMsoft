@@ -1290,6 +1290,13 @@ type ADPNameListType
         character(fnlen)        :: HDFstrings(10)
 end type ADPNameListType
 
+type OSMNameListType
+        integer(kind=irg)       :: nmatch
+        character(fnlen)        :: dotproductfile
+        character(fnlen)        :: tiffname
+end type OSMNameListType
+
+
 type TKDIndexingNameListType
         integer(kind=irg)       :: ncubochoric
         integer(kind=irg)       :: numexptsingle

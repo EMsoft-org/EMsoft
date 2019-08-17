@@ -5752,6 +5752,72 @@ end subroutine GetADPNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetOSMNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill osmnl structure (used by EMgetOSM.f90)
+!
+!> @param nmlfile namelist file name
+!> @param osmnl name list structure
+!
+!> @date 02/17/18 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetOSMNameList(nmlfile, osmnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetOSMNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(OSMNameListType),INTENT(INOUT)               :: osmnl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: nmatch
+character(fnlen)        :: dotproductfile
+character(fnlen)        :: tiffname
+
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / getOSM / nmatch, dotproductfile, tiffname
+
+! set the input parameters to default values
+nmatch = 20
+dotproductfile = 'undefined'
+tiffname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=getOSM)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(dotproductfile).eq.'undefined') then
+        call FatalError('GetOSMNameList:',' dot product file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tiffname).eq.'undefined') then
+        call FatalError('GetOSMNameList:',' output tiff file name is undefined in '//nmlfile)
+    end if
+ end if
+
+! if we get here, then all appears to be ok, and we need to fill in the enl fields
+osmnl%nmatch = nmatch
+osmnl%dotproductfile = dotproductfile
+osmnl%tiffname = tiffname
+
+end subroutine GetOSMNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetTKDIndexingNameList
 !
 !> @author Marc De Graef , Carnegie Mellon University
