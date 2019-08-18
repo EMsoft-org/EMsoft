@@ -5852,11 +5852,11 @@ character(2)            :: indexingmode
 namelist  / dpmerge / dotproductfile, ctfname, angname, usedp, indexingmode
 
 ! set the input parameters to default values
-dotproductfile = 'undefined' 'undefined' '' '' '',
-ctfname = 'undefined',
-angname = 'undefined',
-usedp = 'original',
-indexingmode = 'DI',
+dotproductfile = (/ 'undefined','undefined','undefined','undefined','undefined' /)
+ctfname = 'undefined'
+angname = 'undefined'
+usedp = 'original'
+indexingmode = 'DI'
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -5880,10 +5880,10 @@ if (.not.skipread) then
 
 ! if we get here, then all appears to be ok, and we need to fill in the dpmnl fields
 dpmnl%dotproductfile = dotproductfile
-dpnml%ctfname = ctfname 
-dpnml%angname = angname 
-dpnml%indexingmode = indexingmode
-dpnml%usedp = usedp
+dpmnl%ctfname = ctfname 
+dpmnl%angname = angname 
+dpmnl%indexingmode = indexingmode
+dpmnl%usedp = usedp
 
 end subroutine GetdpmergeNameList
 

@@ -61,15 +61,19 @@ IMPLICIT NONE
 
 character(fnlen)                            :: nmldeffile, progname, progdesc
 type(dpmergeNameListType)                   :: dpmnl
+type(EBSDMasterNameListType)                :: mpnl
 integer(kind=irg)                           :: istat, res
 
 type(EBSDIndexingNameListType)              :: dinl
 type(EBSDDIdataType)                        :: EBSDDIdata
-real(kind=sgl),allocatable                  :: dplist(:,:), OSMlist(:,:), exptIQ(:)
-integer(kind=irg),allocatable               :: phaseID(:)
-integer(kind=irg)                           :: ipf_wd, ipf_ht
-integer(kind=irg)                           :: dims(2), hdferr, io_int(2), i, numdp
-character(fnlen)                            :: fname, xtalname(5)
+type(EBSDMPdataType)                        :: EBSDMPdata
+real(kind=sgl),allocatable                  :: dplist(:,:), OSMlist(:,:), exptIQ(:), eangles(:,:,:), pfrac(:), pID(:)
+integer(kind=irg),allocatable               :: phaseID(:), pnum(:)
+integer(kind=irg)                           :: ipf_wd, ipf_ht, irow, numpat, ml(1)
+integer(kind=irg)                           :: dims(1), hdferr, io_int(2), i, numdp
+real(kind=sgl)                              :: io_real(1)
+character(fnlen)                            :: fname, xtalname(5), infile, rdxtalname
+logical                                     :: f_exists 
 
 nmldeffile = 'EMdpmerge.nml'
 progname = 'EMdpmerge.f90'
@@ -93,62 +97,125 @@ end if
 ! how many input files are there ?
 numdp = 0
 do i=1,5
-  if (trim(dpmnl%dotproductfile(i).ne.'')) numdp = numdp + 1
+  if (trim(dpmnl%dotproductfile(i)).ne.'') numdp = numdp + 1
 end do 
 io_int(1) = numdp
-call WriteValue('',io_int,1,"('found ',I2,' dot product file names')")
+call WriteValue('',io_int,1,"(' Found ',I2,' dot product file names'/)")
 
 
 ! open the fortran HDF interface 
 call h5open_EMsoft(hdferr)
 
-if (indexingmode.eq.'DI') then 
+if (dpmnl%indexingmode.eq.'DI') then 
 ! loop over the input files and extract all the necessary data; at the same time, check to make 
 ! sure that they cover the same data (after the first one has been read, allocate the data arrays) 
   do i=1,numdp
-    if (trim(dpmnl%usedp).eq.'original') then 
+    call Message(' Reading data from '//trim(dpmnl%dotproductfile(i)) )
+    if (trim(dpmnl%usedp).eq.'original') then ! read the original DI results
       call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
                                   getEulerAngles = .TRUE., &
+                                  getIQ = .TRUE., &
+                                  getOSM = .TRUE., &
                                   getCI = .TRUE.)
-    else
+    else   ! read the results from the refinement run
       call readEBSDDotProductFile(dpmnl%dotproductfile(i), dinl, hdferr, EBSDDIdata, &
-                                  getTopMatchIndices = .TRUE.)
+                                  getRefinedEulerAngles = .TRUE., &
+                                  getIQ = .TRUE., &
+                                  getOSM = .TRUE., &
+                                  getRefinedDotProducts = .TRUE.)
     end if
 
     if (i.eq.1) then 
   ! get the ROI dimensions and allocate the arrays 
-
-
+      if (sum(dinl%ROI).ne.0) then 
+        ipf_wd = dinl%ROI(3)
+        ipf_ht = dinl%ROI(4)
+      else
+        ipf_wd = dinl%ipf_wd
+        ipf_ht = dinl%ipf_ht
+      end if
+      numpat = ipf_wd * ipf_ht 
+      allocate( dplist(numpat,numdp), OSMlist(numpat, numdp), exptIQ(numpat), eangles(numpat,3,numdp) ) 
     else 
   ! check dimensions of the ROI; they must be the same.  if they are, then add the data to the various arrays
-
+      dims = shape(EBSDDIdata%CI)
+      if (dims(1).ne.numpat) then 
+        call FatalError('EMdpmerge','inconsistent ROI dimensions in dot product input files ' )
+      end if 
+    end if 
+! copy the data
+    do irow = 1, ipf_ht
+      OSMlist( (irow-1)*ipf_wd+1:irow*ipf_wd,i) = EBSDDIdata%OSM(1:ipf_wd,irow)
+    end do
+    exptIQ(:) = EBSDDIdata%IQ(:)
+    deallocate( EBSDDIdata%OSM, EBSDDIdata%IQ )
+    if (trim(dpmnl%usedp).eq.'original') then 
+      eangles(1:numpat,1:3,i) = EBSDDIdata%EulerAngles(1:numpat,1:3)
+      dplist(1:numpat,i) = EBSDDIdata%CI(1:numpat)
+      deallocate( EBSDDIdata%EulerAngles, EBSDDIdata%CI )
+    else 
+      eangles(1:numpat,1:3,i) = EBSDDIdata%RefinedEulerAngles(1:numpat,1:3) 
+      dplist(1:numpat,i) = EBSDDIdata%RefinedDotProducts(1:numpat)
+      deallocate( EBSDDIdata%RefinedEulerAngles, EBSDDIdata%RefinedDotProducts )
     end if 
 
+! finally, get the name of the xtal file from the master pattern file
+! if that file can not be found, ask the user interactively to enter the xtalname parameter 
+    infile = trim(EMsoft_getEMdatapathname())//trim(dinl%masterfile)
+    infile = EMsoft_toNativePath(infile)
+    inquire(file=trim(infile), exist=f_exists)
 
-    deallocate(EBSDDIdata% )
+    if (f_exists.eqv..TRUE.) then
+      call readEBSDMasterPatternFile(dinl%masterfile, mpnl, hdferr, EBSDMPdata)
+      xtalname(i) = trim(EBSDMPdata%xtalname)
+    else 
+      call Message('***************************')
+      call Message('Master pattern file '//trim(infile)//' can not be found')
+      call Message('***************************')
+      call WriteValue(' Current dot product file :', trim(dpmnl%dotproductfile(i)))
+      call ReadValue('  Enter crystal structure file name (with extension) ', rdxtalname)
+      xtalname(i) = trim(rdxtalname)
+    end if
+
   end do 
 
   ! close HDF5 interface
   call h5close_EMsoft(hdferr)
 
-
   ! determine which phase has the largest confidence index for each ROI sampling point
-  allocate(phaseID(), )
+  allocate(phaseID(numpat), pID(numdp))
+  do i=1,numpat 
+    pID(1:numdp) = dplist(i,1:numdp)
+    ml = maxloc(pID)
+    phaseID(i) = ml(1)
+  end do
+  deallocate(pID)
 
+  ! determine the phase fractions and print that information 
+  allocate(pnum(numdp),pfrac(numdp))
+  pnum = 0
+  do i=1,numpat
+    pnum(phaseID(i)) = pnum(phaseID(i)) + 1
+  end do
+  pfrac = float(pnum)/float(numpat) * 100.0 
+  call Message(' Phase fractions :',"(/A)")
+  call Message(' -----------------')
+  do i=1,numdp 
+    io_real(1) = pfrac(i)
+    call WriteValue('  Phase '//trim(xtalname(i)), io_real, 1, "(F6.2)")
+  end do
 
+  ! ! write a new .ctf file, if requested  
+  ! if (trim(dpmnl%ctfname).ne.'undefined') then 
+  !   call ctfmerge_writeFile(dinl,xtalname,ipar,eangles, phaseID, dplist, OSMlist, exptIQ)
+  !   call Message('Merged orientation data stored in ctf file : '//trim(dpmnl%ctfname))
+  ! end if 
 
-
-  ! write a new .ctf file, if requested  
-  if (trim(dpmnl%ctfname).ne.'undefined') then 
-    call ctfmerge_writeFile(dinl,xtalname,ipar,eulerarray, dpvals, OSMmap, exptIQ)
-    call Message('Data stored in ctf file : '//trim(dpmnl%ctfname))
-  end if 
-
-  ! write a new .ang file, if requested 
-  if (trim(dpmnl%angname).ne.'undefined') then 
-    call angmerge_writeFile()
-    call Message('Data stored in ang file : '//trim(dpmnl%angname))
-  end if 
+  ! ! write a new .ang file, if requested 
+  ! if (trim(dpmnl%angname).ne.'undefined') then 
+  !   call angmerge_writeFile()
+  !   call Message('Merged orientation data stored in ang file : '//trim(dpmnl%angname))
+  ! end if 
 
 else ! indexing mode must be SI
 ! the files are Spherical Indexing files, so they do not have an OSM map in them, and some other
