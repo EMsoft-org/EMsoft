@@ -1037,7 +1037,7 @@ end subroutine ctfmerge_writeFile
 !> @date 08/18/19 MDG 1.0 original based opn angebsd_writeFile
 !--------------------------------------------------------------------------
 recursive subroutine angmerge_writeFile(ebsdnl,xtalname,ipar,eangles,phaseID,dplist,IQmap)
-!DEC$ ATTRIBUTES DLLEXPORT :: angebsd_writeFile
+!DEC$ ATTRIBUTES DLLEXPORT :: angmerge_writeFile
 
 use NameListTypedefs
 use constants 
