@@ -217,11 +217,12 @@ if (dpmnl%indexingmode.eq.'DI') then
     call Message('Merged orientation data stored in ctf file : '//trim(dpmnl%ctfname))
   end if 
 
-  ! ! write a new .ang file, if requested 
-  ! if (trim(dpmnl%angname).ne.'undefined') then 
-  !   call angmerge_writeFile()
-  !   call Message('Merged orientation data stored in ang file : '//trim(dpmnl%angname))
-  ! end if 
+! write a new .ang file, if requested 
+  if (trim(dpmnl%angname).ne.'undefined') then 
+    dinl%angfile = trim(dpmnl%angname)
+    call angmerge_writeFile(dinl,xtalname,ipar,eangles, phaseID, dplist, exptIQ)
+    call Message('Merged orientation data stored in ang file : '//trim(dpmnl%angname))
+  end if 
 
 else ! indexing mode must be SI
 ! the files are Spherical Indexing files, so they do not have an OSM map in them, and some other
