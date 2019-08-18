@@ -1,0 +1,16 @@
+ &dpmerge
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+! two to five dot product file names to be merged [relative to EMdatapathname]
+ dotproductfile = 'undefined' 'undefined' '' '' '',
+! output .ctf file name
+ ctfname = 'undefined',
+! output .ang file name
+ angname = 'undefined',
+! dot products to use: 'original' or 'refined'
+ usedp = 'original',
+! indxing mode: 'DI' or 'SI'
+ indexingmode = 'DI',
+ /

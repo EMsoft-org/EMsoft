@@ -1296,6 +1296,13 @@ type OSMNameListType
         character(fnlen)        :: tiffname
 end type OSMNameListType
 
+type dpmergeNameListType
+        character(fnlen)        :: dotproductfile(5)
+        character(fnlen)        :: ctfname
+        character(fnlen)        :: angname
+        character(8)            :: usedp
+        character(2)            :: indexingmode
+end type dpmergeNameListType
 
 type TKDIndexingNameListType
         integer(kind=irg)       :: ncubochoric
