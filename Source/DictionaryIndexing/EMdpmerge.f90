@@ -52,6 +52,7 @@ use initializers
 use HDFsupport
 use EBSDmod
 use EBSDDImod
+use EBSDiomod
 use commonmod
 use ISO_C_BINDING
 use image
@@ -69,7 +70,7 @@ type(EBSDDIdataType)                        :: EBSDDIdata
 type(EBSDMPdataType)                        :: EBSDMPdata
 real(kind=sgl),allocatable                  :: dplist(:,:), OSMlist(:,:), exptIQ(:), eangles(:,:,:), pfrac(:), pID(:)
 integer(kind=irg),allocatable               :: phaseID(:), pnum(:)
-integer(kind=irg)                           :: ipf_wd, ipf_ht, irow, numpat, ml(1)
+integer(kind=irg)                           :: ipf_wd, ipf_ht, irow, numpat, ml(1), ipar(4)
 integer(kind=irg)                           :: dims(1), hdferr, io_int(2), i, numdp
 real(kind=sgl)                              :: io_real(1)
 character(fnlen)                            :: fname, xtalname(5), infile, rdxtalname
@@ -135,7 +136,7 @@ if (dpmnl%indexingmode.eq.'DI') then
         ipf_ht = dinl%ipf_ht
       end if
       numpat = ipf_wd * ipf_ht 
-      allocate( dplist(numpat,numdp), OSMlist(numpat, numdp), exptIQ(numpat), eangles(numpat,3,numdp) ) 
+      allocate( dplist(numpat,numdp), OSMlist(numpat, numdp), exptIQ(numpat), eangles(3,numpat,numdp) ) 
     else 
   ! check dimensions of the ROI; they must be the same.  if they are, then add the data to the various arrays
       dims = shape(EBSDDIdata%CI)
@@ -150,11 +151,11 @@ if (dpmnl%indexingmode.eq.'DI') then
     exptIQ(:) = EBSDDIdata%IQ(:)
     deallocate( EBSDDIdata%OSM, EBSDDIdata%IQ )
     if (trim(dpmnl%usedp).eq.'original') then 
-      eangles(1:numpat,1:3,i) = EBSDDIdata%EulerAngles(1:numpat,1:3)
+      eangles(1:3,1:numpat,i) = EBSDDIdata%EulerAngles(1:3,1:numpat)
       dplist(1:numpat,i) = EBSDDIdata%CI(1:numpat)
       deallocate( EBSDDIdata%EulerAngles, EBSDDIdata%CI )
     else 
-      eangles(1:numpat,1:3,i) = EBSDDIdata%RefinedEulerAngles(1:numpat,1:3) 
+      eangles(1:3,1:numpat,i) = EBSDDIdata%RefinedEulerAngles(1:3,1:numpat) 
       dplist(1:numpat,i) = EBSDDIdata%RefinedDotProducts(1:numpat)
       deallocate( EBSDDIdata%RefinedEulerAngles, EBSDDIdata%RefinedDotProducts )
     end if 
@@ -179,8 +180,7 @@ if (dpmnl%indexingmode.eq.'DI') then
 
   end do 
 
-  ! close HDF5 interface
-  call h5close_EMsoft(hdferr)
+
 
   ! determine which phase has the largest confidence index for each ROI sampling point
   allocate(phaseID(numpat), pID(numdp))
@@ -205,11 +205,17 @@ if (dpmnl%indexingmode.eq.'DI') then
     call WriteValue('  Phase '//trim(xtalname(i)), io_real, 1, "(F6.2)")
   end do
 
-  ! ! write a new .ctf file, if requested  
-  ! if (trim(dpmnl%ctfname).ne.'undefined') then 
-  !   call ctfmerge_writeFile(dinl,xtalname,ipar,eangles, phaseID, dplist, OSMlist, exptIQ)
-  !   call Message('Merged orientation data stored in ctf file : '//trim(dpmnl%ctfname))
-  ! end if 
+  ! write a new .ctf file, if requested  
+  ipar(1) = numpat
+  ipar(2) = numdp 
+  ipar(3) = ipf_wd 
+  ipar(4) = ipf_ht 
+
+  if (trim(dpmnl%ctfname).ne.'undefined') then 
+    dinl%ctffile = trim(dpmnl%ctfname)
+    call ctfmerge_writeFile(dinl,xtalname,ipar,eangles, phaseID, dplist, OSMlist, exptIQ)
+    call Message('Merged orientation data stored in ctf file : '//trim(dpmnl%ctfname))
+  end if 
 
   ! ! write a new .ang file, if requested 
   ! if (trim(dpmnl%angname).ne.'undefined') then 
@@ -225,7 +231,8 @@ else ! indexing mode must be SI
 end if 
 
 
-
+  ! close HDF5 interface
+call h5close_EMsoft(hdferr) 
 
 
 end program EMdpmerge
