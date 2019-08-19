@@ -263,7 +263,7 @@ if (trim(dpmnl%phasemapname).ne.'undefined') then
   mi = minval(dpmap)
   dpmap = 255*(dpmap-mi)/(ma-mi)
 
-! the pre-defined colors are red, green, blue, yellow and cyan for the 5 dot product files
+! the pre-defined colors are red, green, blue, yellow, cyan, fushia, and white 
 ! each color is weighted by the maximum dot product value to make the image a bit more realistic
   do j=1,ipf_ht
    do i=1,ipf_wd
@@ -302,14 +302,14 @@ if (trim(dpmnl%phasemapname).ne.'undefined') then
   im = image_t(TIFF_image)
   im%dims = (/ ipf_wd, ipf_ht /)
   im%samplesPerPixel = 3
-  if(im%empty()) call Message("EMdpmerge","failed to convert array to rgb image")
+  if(im%empty()) call Message("EMdpmerge: failed to convert array to rgb image")
 
   ! create the file
   call im%write(trim(TIFF_filename), iostat, iomsg) ! format automatically detected from extension
   if(0.ne.iostat) then
-    call Message("failed to write image to file : "//iomsg)
+    call Message(" Failed to write image to file : "//iomsg)
   else  
-    call Message('color phase map written to '//trim(TIFF_filename))
+    call Message(' Color phase map written to '//trim(TIFF_filename))
   end if 
 deallocate(TIFF_image)
 end if 
