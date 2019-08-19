@@ -28,13 +28,13 @@ endif()
 
 # if the EMSphInx folder exists, then we include it in the build
 if (EXISTS ${PROJECT_SOURCE_DIR}/Source/EMSphInx)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMSphInx/EMSphInxLib ${PROJECT_BINARY_DIR}/EMsoftSphInxLib)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMSphInx/f90/EMSphInxLib ${PROJECT_BINARY_DIR}/EMsoftSphInxLib)
   set(MODALITY_DIRS
     DictionaryIndexing
     OLIO
     OM
     SEM
-    EMSphInx/EMSphInxSrc
+    EMSphInx/f90/EMSphInxSrc
     TEM
     QC
     Utilities
