@@ -5845,16 +5845,20 @@ logical                                           :: skipread = .FALSE.
 character(fnlen)        :: dotproductfile(5)
 character(fnlen)        :: ctfname
 character(fnlen)        :: angname
+character(fnlen)        :: phasemapname
+integer(kind=irg)       :: phasecolors(5)
 character(8)            :: usedp
 character(2)            :: indexingmode
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / dpmerge / dotproductfile, ctfname, angname, usedp, indexingmode
+namelist  / dpmerge / dotproductfile, ctfname, angname, usedp, indexingmode, phasemapname, phasecolors
 
 ! set the input parameters to default values
 dotproductfile = (/ 'undefined','undefined','undefined','undefined','undefined' /)
 ctfname = 'undefined'
 angname = 'undefined'
+phasemapname = 'undefined'
+phasecolors = (/ 1, 2, 0, 0, 0 /)
 usedp = 'original'
 indexingmode = 'DI'
 
@@ -5882,6 +5886,8 @@ if (.not.skipread) then
 dpmnl%dotproductfile = dotproductfile
 dpmnl%ctfname = ctfname 
 dpmnl%angname = angname 
+dpmnl%phasemapname = phasemapname 
+dpmnl%phasecolors = phasecolors
 dpmnl%indexingmode = indexingmode
 dpmnl%usedp = usedp
 
