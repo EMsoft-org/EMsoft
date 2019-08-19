@@ -132,7 +132,8 @@ if (dpmnl%indexingmode.eq.'DI') then
                                   getRefinedEulerAngles = .TRUE., &
                                   getIQ = .TRUE., &
                                   getOSM = .TRUE., &
-                                  getRefinedDotProducts = .TRUE.)
+                                  getRefinedDotProducts = .TRUE., &
+                                  getCI = .TRUE.)
     end if
 
     if (i.eq.1) then 
