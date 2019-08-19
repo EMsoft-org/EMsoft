@@ -26,6 +26,9 @@ Support/Scripts/GMT/gmt.history
 .vscode
 /ExternalProjects
 UpdateCopyrightRange.pro
+UpdateEMSphInxCopyrightStatement.pro
+fixf90
+fixC
 resources/EMSphInx.wisdom
 
 /EMSphInx/

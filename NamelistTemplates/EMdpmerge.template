@@ -1,0 +1,22 @@
+ &dpmerge
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+! two to five dot product file names to be merged [relative to EMdatapathname]
+ dotproductfile = 'undefined' 'undefined' '' '' '',
+! name of color file for phase map; accepts .tiff or .bmp extension
+! the color will be scaled in intensity by the value of the maximum dot product
+ phasemapname = 'undefined',
+! the available colors are 1:red, 2:green, 3:blue, 4:yellow, 5:cyan, 6:fushia, and 7:white 
+! define the color for each phase (up to 5) by entering the numbers (leave 0 if not used)
+ phasecolors = 1 2 0 0 0,
+! output .ctf file name
+ ctfname = 'undefined',
+! output .ang file name
+ angname = 'undefined',
+! dot products to use: 'original' or 'refined'
+ usedp = 'original',
+! indxing mode: 'DI' or 'SI'
+ indexingmode = 'DI',
+ /

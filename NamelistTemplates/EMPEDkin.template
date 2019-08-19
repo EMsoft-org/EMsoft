@@ -1,0 +1,29 @@
+ &PEDkinNameList 
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! the name of the crystal input file MUST be specified (full pathname)
+ xtalname = 'undefined',
+! microscope accelerating voltage [kV]
+ voltage = 200.,
+! detector pixelsize [reciprocal nm per pixel]
+ rnmpp = 0.150,
+! number of pixels on detector edge
+ npix = 144,
+! thickness value [nm]
+ thickness = 50.0,
+! output will be stored here (relative to EMdatapathname)
+ outname = 'undefined',
+! euler angles read from file or sampled uniformly 
+! read from file = 'file', uniform sampling = 'dict'
+ sampling = 'dict',
+! euler angle file name (relative to EMdatapathname)
+ eulerfile = 'undefined',
+! number of sampling points along cubochoric edge
+ ncubochoric = 100,
+! number of threads for parallel computation
+ nthreads = 1,
+! this last line must be present!
+ /
