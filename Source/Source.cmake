@@ -27,31 +27,31 @@ if( ${EMsoft_ENABLE_HDF5_SUPPORT} )
 endif()
 
 # if the EMSphInx folder exists, then we include it in the build
-if (EXISTS ${PROJECT_SOURCE_DIR}/Source/EMSphInx)
-  add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMSphInx/EMSphInxLib ${PROJECT_BINARY_DIR}/EMsoftSphInxLib)
+# if (EXISTS ${PROJECT_SOURCE_DIR}/Source/EMSphInx)
+#   add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMSphInx/EMSphInxLib ${PROJECT_BINARY_DIR}/EMsoftSphInxLib)
+#   set(MODALITY_DIRS
+#     DictionaryIndexing
+#     OLIO
+#     OM
+#     SEM
+#     # EMSphInx/EMSphInxSrc
+#     TEM
+#     QC
+#     Utilities
+#     XRay
+#   )
+# else()
   set(MODALITY_DIRS
     DictionaryIndexing
     OLIO
     OM
     SEM
-    EMSphInx/EMSphInxSrc
     TEM
     QC
     Utilities
     XRay
   )
-else()
-  set(MODALITY_DIRS
-    DictionaryIndexing
-    OLIO
-    OM
-    SEM
-    TEM
-    QC
-    Utilities
-    XRay
-  )
-endif()
+# endif()
 
 # -----------------------------------------------------------------------
 # Establish which modalities are going to be compiled

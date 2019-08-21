@@ -351,8 +351,9 @@ end if
 if ((rlp%Umod.lt.eps).and.(isallowed.eqv..TRUE.)) then
   call FatalError('HHComputeImages','This reflection is absent due to glide or screw symmetry elements.')
 end if
-! get the etinction distance and the absorption ratio for this reflection
-XIGEE = rlp%xg
+MRD%CN = 0.0
+! get the extinction distance and the absorption ratio for this reflection
+XIGEE = 10.0*rlp%xg
 MRD%ANO = -1.0/rlp%ar
 io_real(1) = XIGEE
 call WriteValue('extinction distance [nm] ',io_real, 1)
@@ -792,18 +793,23 @@ write (*,*) 'passing line 735'
  MRD%X=0.0 
  MRD%Q=0.0 
  MRD%ERROR=0.0001
+ MRD%D=0.0
+ MRD%DT=0.0
+ MRD%YT=0.0
 
-wstep = (hhnl%wmax-hhnl%wmin) / float(hhnl%wnum-1) 
-wvalues = hhnl%wmin + (/ (i*wstep, i=0,hhnl%wnum-1) /)
-
-write (*,*) 'passing line 800'
+ if (hhnl%wnum.eq.1) then 
+   wvalues(1) = hhnl%wmin
+ else  
+   wstep = (hhnl%wmax-hhnl%wmin) / float(hhnl%wnum-1) 
+   wvalues = hhnl%wmin + (/ (i*wstep, i=0,hhnl%wnum-1) /)
+ end if
 
 ! loop over all the image pairs to be computed 
 do imnum=1,hhnl%wnum
 ! set the excitation error parameter and related quantities
  MRD%CN(17) = wvalues(imnum)
  MRD%CN(18) = 2.0*MRD%CN(17) 
-write (*,*) 'starting computation for excitation error ', MRD%CN(17)
+ write (*,*) 'starting computation for excitation error ', MRD%CN(17)
 
 ! 
 !********************************************************************** 
@@ -820,13 +826,12 @@ write (*,*) 'starting computation for excitation error ', MRD%CN(17)
  CALL RKM(MRD)
  BACK=1.0
  BACKD=1.0
-write (*,*) 'background intensity computed '
 
+write (*,*) 'background computed '
 !  This is a very long do-loop;  could be rewritten with function
 !  and subroutine calls... and really should be parallelized using OpenMP
  do JC=1,IROW
 !do JC=1,50
- write (*,*) 'starting row ', JC
 
   MRD%CN(19)=(FLOAT(JC)-FLOAT(IROW/2)-0.5)*DELW
   MOVE=0
@@ -914,18 +919,22 @@ write (*,*) 'background intensity computed '
          EXIT  ! the do KK loop
         end if
        else
-        MRD%CN(15)=-HANDL(KK) 
-        MOVE=1
-        EXIT  ! the do KK loop
+         MRD%CN(15)=-HANDL(KK) 
+         MOVE=1
+         EXIT  ! the do KK loop
        end if
       else
        MRD%CN(15)=-HANDR(KK) 
        MOVE=1
        EXIT  ! the do KK loop
       end if
+     else
+       MRD%CN(15)=-HANDL(KK) 
+       MOVE=1
+       EXIT  ! the do KK loop
      end if
-    end if
-   end if
+    end if ! else cycle KK loop
+   end if ! else cycle KK loop
   end do 
 ! 
 !***********************************************************************
@@ -1175,10 +1184,10 @@ write (*,*) 'background intensity computed '
       TQD(JZ)=0.5*(TQD(JZ-1)+TQD(JZ+1))
    end do
   end if
-  do J=1,3
-   if ((ABS(MRD%CN(19)+COORD(J))-DELL).le.0.0) then 
-   end if
-  end do
+  ! do J=1,3
+  !  if ((ABS(MRD%CN(19)+COORD(J))-DELL).le.0.0) then 
+  !  end if
+  ! end do
 ! 
 !  AUSDRUCK EINER BILDZEILE 
 ! 
@@ -1186,7 +1195,21 @@ write (*,*) 'background intensity computed '
    BFINTENS(j,ICNT,imnum)=TQB(j)
    DFINTENS(j,ICNT,imnum)=TQD(j)
   end do
-  write (*,*) BFINTENS(1,ICNT,1), DFINTENS(1,ICNT,1)
+  write (*,*) ICNT, BFINTENS(1,ICNT,imnum), DFINTENS(1,ICNT,imnum)
+  if (ICNT.eq.1) then 
+    write(*,*) MRD%CN
+    write (*,*) MRD%X 
+    write (*,*) MRD%X1 
+    write (*,*) MRD%Y 
+    write (*,*) MRD%ERROR 
+    write (*,*) MRD%Q 
+    write (*,*) MRD%D 
+    write (*,*) MRD%YT 
+    write (*,*) MRD%DT 
+    write (*,*) MRD%ANO 
+    write (*,*) MRD%SKIP 
+    write (*,*) MRD%KOUNT
+  end if
   ICNT=ICNT+1
  end do  ! from several pages back !!!
 
@@ -1198,7 +1221,7 @@ write (*,*) 'background intensity computed '
 !*******************************************************
 !
   if (SCALE30%LTEST.eq.1) then  
-  IY = ''
+   IY = ''
    write(dataunit,"('    HH.f90  ',' TWO-BEAM ',F6.2,' WL',F6.2,' WW', &
            F5.2,' STR ',F5.2,' FIN ',F7.3,'TH',F7.3,'THBM')") WL,WW,START,FINISH,THICK,THBM 
   
@@ -1224,9 +1247,6 @@ write (*,*) 'background intensity computed '
   end if
 !
 end do ! loop over all images 
-
-
-
 
 ! finally, generate the output HDF file along with .tiff images
  write (3) BFINTENS,DFINTENS

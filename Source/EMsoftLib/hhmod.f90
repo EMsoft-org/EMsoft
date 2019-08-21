@@ -74,9 +74,9 @@ IMPLICIT NONE
 ! type(MAP_block)                  :: MAP
 ! type(hhs_block)                  :: hhs
 
-private :: NEWTON, DERIV 
+private :: NEWTON
 
-public  :: ANCALC, PANCALC, RKM
+public  :: ANCALC, PANCALC, RKM, DERIV
 
 contains
 
@@ -1087,11 +1087,7 @@ end subroutine PANCALC
 !
 !> @brief Runge-Kutta integration of Howie-Whelan equations
 ! 
-!> @param MAP
-!> @param MKAP
-!> @param MAPN
-!> @param MA
-!> @param SCALE30
+!> @param MRD
 !
 !> @date    08/13/19 MDG 1.0 adapted from .f77 original
 !--------------------------------------------------------------------------
@@ -1100,144 +1096,133 @@ recursive subroutine RKM(MRD)
 
 ! Note:
 ! The original RKM routine was rather complicated due to the extensive
-! use of computed goto statements.  The new routine uses modern program
-! control statements instead of the computed goto and such.
+! use of computed goto statements.  The new routine is still ugly, but 
+! no longer uses any goto statements, computed or otherwise...
 ! 
 ! INTEGRATE THE HOWIE-WHELAN EQUATIONS
+
+use error 
 
 IMPLICIT NONE
 
 type(MRD_block),INTENT(INOUT)     :: MRD
 
-integer(kind=irg)                 :: M1, M2, J, M
-real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST
+integer(kind=irg)                 :: M1, M2, J, M, leave
+real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST, BETA
+logical                           :: verbose = .FALSE.
 
- M1=4 
- MRD%KOUNT=0 
- ERHIGH=5.0*MRD%ERROR 
- ERLOW=0.03125*ERHIGH 
- J = 1
- do while (J.gt.0)
-  if (J.eq.1) then
-   if (MRD%Q.ne.0.0) then 
-    if (((MRD%X1-MRD%X)/MRD%Q-1.0000001).le.0.0) then
-     H1=MRD%Q    
-     MRD%Q=MRD%X1-MRD%X  
-     M1=5  
-     H2=0.5*MRD%Q
-     H3=MRD%Q/3.0 
-     XT=MRD%X    
-     MRD%YT=MRD%Y  
-    else 
-     XT=MRD%X    
-     MRD%YT=MRD%Y  
-    end if
-   else
-    MRD%Q=MRD%X1-MRD%X      
-    H1=MRD%Q   
-    M1=5  
-    H2=0.5*MRD%Q
-    H3=MRD%Q/3.0 
-    XT=MRD%X    
-    MRD%YT=MRD%Y  
-   end if
-  end if
-
-eight: do
-   CALL DERIV(MRD) 
-    MRD%DT(:,1)=H3*MRD%D(:) 
-    MRD%Y(:)=MRD%Y(:)+MRD%DT(:,1) 
-   MRD%X=MRD%X+H3        
-   CALL DERIV(MRD)   
-    MRD%Y(:)=MRD%YT(:)+0.5*(MRD%DT(:,1)+H3*MRD%D(:))
-   MRD%SKIP=1.0  
-   CALL DERIV(MRD)
-   MRD%SKIP=0.0  
-    MRD%DT(:,2)=MRD%Q*MRD%D(:)
-    MRD%Y(:)=MRD%YT(:)+0.375*(MRD%DT(:,1)+MRD%DT(:,2)) 
-   MRD%X=XT+H2   
-   CALL DERIV(MRD) 
-    MRD%DT(:,3)=4.0*H3*MRD%D(:) 
-    MRD%Y(:)=MRD%YT(:)+1.5*(MRD%DT(:,1)+MRD%DT(:,3)-MRD%DT(:,2)) 
-   MRD%X=XT+MRD%Q 
-   CALL DERIV(MRD)  
-   M2=0   
-   do M=1,8  
-    MRD%DT(M,4)=H3*MRD%D(M)  
-    TEST=ABS (MRD%DT(M,1)+MRD%DT(M,3)-0.5*(MRD%DT(M,4)+3.0*MRD%DT(M,2)))
-    if ((TEST-ERHIGH).ge.0.0) then 
-     M1=4 
-     MRD%Q=0.5*MRD%Q
-     H2=0.5*MRD%Q   
-     H3=MRD%Q/3.0  
-     MRD%Y=MRD%YT
-     MRD%X=XT     
-     CYCLE eight
+M1=4 
+MRD%KOUNT=0  
+ERHIGH=5.0*MRD%ERROR 
+ERLOW=0.03125*ERHIGH  
+J = 1
+do while (J.ne.100) 
+ select case(J)
+  case(1)
+    if (verbose) write (*,*) 'case 1', MRD%Q
+    if (MRD%Q.ne.0.0) then
+      J = 2
     else
-     if ((TEST-ERLOW).ge.0.0) then 
-      M2=-2 
-     end if
+      J = 20
     end if
-   end do 
-   EXIT eight
-  end do eight
 
-   MRD%Y(:)=MRD%YT(:)+0.5*(MRD%DT(:,1)+MRD%DT(:,3)+MRD%DT(:,4))  
-  J=M1+M2    
-  MRD%KOUNT=MRD%KOUNT+1 
+  case(2)
+    if (verbose) write (*,*) 'case 2'
+    IF ( ( (MRD%X1-MRD%X)/MRD%Q - 1.0000001 ).le.0.0 ) then ! 29,29,7
+      J=29
+    else 
+      J=7
+    end if  
 
-  select case(J)
-  case(1);
+  case(3)
+    if (verbose) write (*,*) 'case 3'
+    MRD%Q=H1; J=11
 
-  case(2); 
-  if (((MRD%X1-MRD%X)/MRD%Q-1.0000001).le.0.0) then 
-   H1=MRD%Q    
-   MRD%Q=MRD%X1-MRD%X  
-   M1=5  
-   H2=0.5*MRD%Q
-   H3=MRD%Q/3.0 
-   XT=MRD%X    
-   MRD%YT=MRD%Y  
-  else
-   XT=MRD%X    
-   MRD%YT=MRD%Y  
-  end if 
+  case(4)
+    if (verbose) write (*,*) 'case 4'
+    MRD%Q=2.0*MRD%Q; H2=0.5*MRD%Q; H3=MRD%Q/3.0; J=2
 
-  case(3);
-   MRD%Q=H1
-   H2=0.5*MRD%Q 
-   H3=MRD%Q/3.0 
-   J=0
+  case(5)
+    if (verbose) write (*,*) 'case 5'
+    IF ((H1-2.0*MRD%Q).lt.0.0) then ! 30,3,3
+      J = 30
+    else 
+      J = 3
+    end if
 
-  case(4);
-   MRD%Q=2.0*MRD%Q   
-   H2=0.5*MRD%Q  
-   H3=MRD%Q/3.0  
-   if (((MRD%X1-MRD%X)/MRD%Q-1.0000001).le.0.0) then   
-    H1=MRD%Q    
-    MRD%Q=MRD%X1-MRD%X  
-    M1=5  
-    H2=0.5*MRD%Q
-    H3=MRD%Q/3.0 
-    XT=MRD%X    
-    MRD%YT=MRD%Y  
-   else
-    XT=MRD%X    
-    MRD%YT=MRD%Y  
-   end if 
+  case(6)
+    if (verbose) write (*,*) 'case 6'
+    M1=5; H2=0.5*MRD%Q; H3=MRD%Q/3.0; J=7
 
-  case(5);
-   if ((H1-2.0*MRD%Q).lt.0.0) then 
-    MRD%Q=2.0*MRD%Q   
-   else 
-    MRD%Q=H1   
-   end if
-   H2=0.5*MRD%Q 
-   H3=MRD%Q/3.0 
-   J=0
+  case(7)
+    if (verbose) write (*,*) 'case 7'
+    XT=MRD%X; MRD%YT(:)=MRD%Y(:); J=8
 
-  end select
- end do
+  case(8)
+    if (verbose) write (*,*) 'case 8 ', MRD%X, MRD%Y
+    CALL DERIV(MRD)
+    MRD%DT(:,1)=H3*MRD%D(:); MRD%Y(:)=MRD%Y(:)+MRD%DT(:,1); MRD%X=MRD%X+H3
+    CALL DERIV(MRD)
+    MRD%Y(:)=MRD%YT(:)+0.5*(MRD%DT(:,1)+H3*MRD%D(:)); MRD%SKIP=1.0
+    CALL DERIV(MRD)
+    MRD%SKIP=0.0; MRD%DT(:,2)=MRD%Q*MRD%D(:); MRD%Y(:)=MRD%YT(:)+0.375*(MRD%DT(:,1)+MRD%DT(:,2)); MRD%X=XT+H2
+    CALL DERIV(MRD)
+    MRD%DT(:,3)=4.0*H3*MRD%D(:); MRD%Y(:)=MRD%YT(:)+1.5*(MRD%DT(:,1)+MRD%DT(:,3)-MRD%DT(:,2)); MRD%X=XT+MRD%Q
+    CALL DERIV(MRD)
+    M2=0
+    J = 10
+
+  case(9)
+    if (verbose) write (*,*) 'case 9'
+    M1=4; MRD%Q=0.5*MRD%Q; H2=0.5*MRD%Q; H3=MRD%Q/3.0; MRD%Y(:)=MRD%YT(:); MRD%X=XT; J=8
+
+  case(10)
+    if (verbose) write (*,*) 'case 10'
+    leave = 0
+    doten: do M=1,8 
+      MRD%DT(M,4)=H3*MRD%D(M)
+      TEST=ABS (MRD%DT(M,1)+MRD%DT(M,3)-0.5*(MRD%DT(M,4)+3.0*MRD%DT(M,2)))
+      IF ((TEST-ERHIGH).lt.0.0) then ! 26,9,9
+        IF ((TEST-ERLOW).lt.0.0) then ! 10,27,27
+         CYCLE doten
+        END IF 
+        M2=-2     ! old line 27
+      ELSE 
+        J = 9
+        leave = 1
+        EXIT doten     ! jump out of case select
+      END IF
+    end do doten  ! old line 10
+    if (leave.eq.0) then 
+      MRD%Y(:)=MRD%YT(:)+0.5*(MRD%DT(:,1)+MRD%DT(:,3)+MRD%DT(:,4))
+      MRD%KOUNT=MRD%KOUNT+1
+      J=M1+M2
+    end if
+
+  case(11)
+    if (verbose) write (*,*) 'case 11'
+    H2=0.5*MRD%Q; H3=MRD%Q/3.0; J=100
+
+  case(20)
+    if (verbose) write (*,*) 'case 20'
+    MRD%Q=MRD%X1-MRD%X; H1=MRD%Q; J=6 
+    write (*,*) MRD%Q, MRD%X1, MRD%X, H1
+
+  case(29)
+    if (verbose) write (*,*) 'case 29'
+    H1=MRD%Q; MRD%Q=MRD%X1-MRD%X; J=6
+
+  case(30)
+    if (verbose) write (*,*) 'case 30'
+    MRD%Q=2.0*MRD%Q; J=11
+
+  case default 
+    call FatalError('RKM','case value does not exist')
+
+ end select
+end do 
+! if J=100, then we return from this routine     
+
 end subroutine RKM 
 
 !--------------------------------------------------------------------------
@@ -1265,8 +1250,9 @@ recursive subroutine DERIV(MRD)
 IMPLICIT NONE
 
 type(MRD_block),INTENT(INOUT)     :: MRD
+real,save                         :: BETA
 
-real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, BETA, Z
+real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, Z
 ! 
 ! 
  if (MRD%SKIP.eq.0.0) then
@@ -1306,16 +1292,24 @@ real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, BE
    X44=MRD%X-MRD%CN(43)
   end if
   R4=(MRD%CN(30)-MRD%CN(44))/X44
-  BETA1=(((R1*MRD%CN(1)+MRD%CN(5))/((R1+MRD%CN(9))**2+MRD%CN(13)))+((R1*MRD%CN(2)+MRD%CN(6))/((R1+MRD%CN(10))**2+MRD%CN(14)))+&
-     ((R1*MRD%CN(3)+MRD%CN(7))/((R1+MRD%CN(11))**2+MRD%CN(15)))+((R1*MRD%CN(4)+MRD%CN(8))/((R1+MRD%CN(12))**2+MRD%CN(16))))/X11 
-  BETA2=(((R2*MRD%CN(22)+MRD%CN(26))/((R2+MRD%CN(9))**2+MRD%CN(13)))+((R2*MRD%CN(23)+MRD%CN(27))/((R2+MRD%CN(10))**2+MRD%CN(14)))+&
-     ((R2*MRD%CN(24)+MRD%CN(28))/((R2+MRD%CN(11))**2+MRD%CN(15)))+((R2*MRD%CN(25)+MRD%CN(29))/((R2+MRD%CN(12))**2+MRD%CN(16))))/X22 
-  BETA3=(((R3*MRD%CN(32)+MRD%CN(36))/((R3+MRD%CN(9))**2+MRD%CN(13)))+((R3*MRD%CN(33)+MRD%CN(37))/((R3+MRD%CN(10))**2+MRD%CN(14)))+&
-     ((R3*MRD%CN(34)+MRD%CN(38))/((R3+MRD%CN(11))**2+MRD%CN(15)))+((R3*MRD%CN(35)+MRD%CN(39))/((R3+MRD%CN(12))**2+MRD%CN(16))))/X33 
-  BETA4=(((R4*MRD%CN(51)+MRD%CN(55))/((R4+MRD%CN(9))**2+MRD%CN(13)))+((R4*MRD%CN(52)+MRD%CN(56))/((R4+MRD%CN(10))**2+MRD%CN(14)))+&
-     ((R4*MRD%CN(53)+MRD%CN(57))/((R4+MRD%CN(11))**2+MRD%CN(15)))+((R4*MRD%CN(54)+MRD%CN(58))/((R4+MRD%CN(12))**2+MRD%CN(16))))/X44 
+  BETA1=(((R1*MRD%CN(1)+MRD%CN(5))/((R1+MRD%CN(9))**2+MRD%CN(13)))+&
+         ((R1*MRD%CN(2)+MRD%CN(6))/((R1+MRD%CN(10))**2+MRD%CN(14)))+&
+         ((R1*MRD%CN(3)+MRD%CN(7))/((R1+MRD%CN(11))**2+MRD%CN(15)))+&
+         ((R1*MRD%CN(4)+MRD%CN(8))/((R1+MRD%CN(12))**2+MRD%CN(16))))/X11 
+  BETA2=(((R2*MRD%CN(22)+MRD%CN(26))/((R2+MRD%CN(9))**2+MRD%CN(13)))+&
+         ((R2*MRD%CN(23)+MRD%CN(27))/((R2+MRD%CN(10))**2+MRD%CN(14)))+&
+         ((R2*MRD%CN(24)+MRD%CN(28))/((R2+MRD%CN(11))**2+MRD%CN(15)))+&
+         ((R2*MRD%CN(25)+MRD%CN(29))/((R2+MRD%CN(12))**2+MRD%CN(16))))/X22 
+  BETA3=(((R3*MRD%CN(32)+MRD%CN(36))/((R3+MRD%CN(9))**2+MRD%CN(13)))+&
+         ((R3*MRD%CN(33)+MRD%CN(37))/((R3+MRD%CN(10))**2+MRD%CN(14)))+&
+         ((R3*MRD%CN(34)+MRD%CN(38))/((R3+MRD%CN(11))**2+MRD%CN(15)))+&
+         ((R3*MRD%CN(35)+MRD%CN(39))/((R3+MRD%CN(12))**2+MRD%CN(16))))/X33 
+  BETA4=(((R4*MRD%CN(51)+MRD%CN(55))/((R4+MRD%CN(9))**2+MRD%CN(13)))+&
+         ((R4*MRD%CN(52)+MRD%CN(56))/((R4+MRD%CN(10))**2+MRD%CN(14)))+&
+         ((R4*MRD%CN(53)+MRD%CN(57))/((R4+MRD%CN(11))**2+MRD%CN(15)))+&
+         ((R4*MRD%CN(54)+MRD%CN(58))/((R4+MRD%CN(12))**2+MRD%CN(16))))/X44 
   BETA=MRD%CN(18)+BETA1+BETA2+BETA3+BETA4 
- else
+end if
 !*******************************************************************
 !*     BERUECKSICHTIGUNG DER ANOMALEN ABSORPTION                   *
 !*******************************************************************
@@ -1331,7 +1325,6 @@ real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, BE
   Z=MRD%ANO*(MRD%Y(6)+MRD%Y(8)) 
   MRD%D(6)=Z+MRD%Y(7) 
   MRD%D(8)=BETA*MRD%Y(7)+Z+MRD%Y(5) 
- end if
 end subroutine DERIV
 
 end module hhmod
