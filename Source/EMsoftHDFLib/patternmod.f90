@@ -53,6 +53,7 @@
 !>                        revealed an unwanted upside down flip that was compensated by flipping the 
 !>                        exp. patterns; thus, all indexing runs thus far produced the correct results.
 !> @date 07/13/19 MDG 3.1 added option to read single pattern from OxfordBinary file
+!> @date 08/20/19 MDG 3.2 added vendor pattern center conversion function [for EMSphInx indexing program]
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -1485,8 +1486,62 @@ call WriteValue('Number of experimental patterns processed per second : ',io_rea
 end subroutine PreProcessTKDPatterns
 
 
+!--------------------------------------------------------------------------
+!
+! subroutine: getEMsoftPCcoordinates
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert pattern center coordinates to EMsoft units for each vendor
+!
+!> @param pctr array of 3 PC coordinates
+!> @param vendor vendor string
+!> @param delta pixel size [microns]
+!> @param Nx number of detector pixels along x
+!> @param Ny number of detector pixels along y
+!
+!> @date 08/20/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function getEMsoftPCcoordinates(pctr, vendor, delta, Nx, Ny) result(EMsoftpc)
+!DEC$ ATTRIBUTES DLLEXPORT :: getEMsoftPCcoordinates
 
+use io
 
+IMPLICIT NONE 
+
+real(kind=sgl),INTENT(IN)           :: pctr(3) 
+character(fnlen),INTENT(IN)         :: vendor 
+real(kind=sgl),INTENT(IN)           :: delta
+integer(kind=irg),INTENT(IN)        :: Nx
+integer(kind=irg),INTENT(IN)        :: Ny
+real(kind=sgl)                      :: EMsoftpc(3)
+
+real(kind=sgl)                      :: io_real(3)
+
+if (trim(vendor).eq.'EMsoft') then 
+  EMsoftpc = pctr 
+end if 
+
+if (trim(vendor).eq.'EDAX/TSL') then 
+  EMsoftpc = (/ Nx * (pctr(1) - 0.5), Nx * pctr(2) - Ny*0.5, Nx * delta * pctr(3) /)
+end if 
+
+if (trim(vendor).eq.'Oxford') then 
+  EMsoftpc = (/ Nx * (pctr(1) - 0.5), Ny * (pctr(2) - 0.5), Nx * delta * pctr(3) /)
+end if 
+
+if (trim(vendor).eq.'Bruker') then 
+  EMsoftpc = (/ Nx * (pctr(1) - 0.5), Ny * (0.5 - pctr(2)), Nx * delta * pctr(3) /)
+end if 
+
+if (trim(vendor).ne.'EMsoft') then 
+  io_real = pctr 
+  call WriteValue('Input pattern center coordinates in '//trim(vendor)//' convention : ',io_real,3)
+  io_real = EMsoftpc
+  call WriteValue('  --> pattern center coordinates in EMsoft convention : ',io_real,3)
+end if
+
+end function getEMsoftPCcoordinates
 
 
 end module patternmod
