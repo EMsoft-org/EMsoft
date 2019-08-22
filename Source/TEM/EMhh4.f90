@@ -537,17 +537,19 @@ call WriteValue('absorption ratio         ',io_real, 1)
 !if (LPIEZO.eq.0) then 
   call ANCALC(MAP, MKAP, MAPN, MA, SCALE30) 
   if (MAPN%KRASH.eq.0) then
-   do I=1,3
-    write(6,*) (MA%AR(I,J),MA%AI(I,J),J=1,3)
-   end do
-   write(6,*) (GD(I),I=1,3)
-   do I=1,3
-    write(6,*) MA%PR(I),MA%PI(I)
-   end do
-   do I=1,3
-    write(6,*) (MA%EMR(I,J),MA%EMI(I,J),J=1,3)
-   end do
-   write(6,"('  H  ',3F20.10)") ((MA%H(I,J),J=1,3),I=1,3)
+   if (SCALE30%LTEST.eq.1) then
+     do I=1,3
+      write(dataunit,*) (MA%AR(I,J),MA%AI(I,J),J=1,3)
+     end do
+     write(dataunit,*) (GD(I),I=1,3)
+     do I=1,3
+      write(dataunit,*) MA%PR(I),MA%PI(I)
+     end do
+     do I=1,3
+      write(dataunit,*) (MA%EMR(I,J),MA%EMI(I,J),J=1,3)
+     end do
+     write(dataunit,"('  H  ',3F20.10)") ((MA%H(I,J),J=1,3),I=1,3)
+   end if
    do JB=1,3 
     SUR(JB)=0.0
     SUI(JB)=0.0
@@ -594,7 +596,9 @@ call WriteValue('absorption ratio         ',io_real, 1)
      MRD%CN(J+4)=MRD%CN(J+4)+UI(J,L)*BD(L)
     end do
    end do
-   write(6,*) (MRD%CN(I),I=1,16)
+   if (SCALE30%LTEST.eq.1) then
+     write(dataunit,*) (MRD%CN(I),I=1,16)
+   end if
 !***********************************************************
 !*        Second Dislocation                               *
 !***********************************************************
@@ -638,7 +642,9 @@ call WriteValue('absorption ratio         ',io_real, 1)
    MRD%CN(39)=0.0 
    MRD%CN(54)=0.0 
    MRD%CN(58)=0.0 
-   write(dataunit,"(' H-ANCALC ',4F10.4)") ((MA%H(I,J),J=1,4),I=1,4) 
+   if (SCALE30%LTEST.eq.1) then
+     write(dataunit,"(' H-ANCALC ',4F10.4)") ((MA%H(I,J),J=1,4),I=1,4) 
+   end if
   else
    STOP 
   end if 
