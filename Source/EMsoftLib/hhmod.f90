@@ -1250,9 +1250,8 @@ recursive subroutine DERIV(MRD)
 IMPLICIT NONE
 
 type(MRD_block),INTENT(INOUT)     :: MRD
-real,save                         :: BETA
 
-real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, Z
+real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, BETA, Z
 ! 
 ! 
  if (MRD%SKIP.eq.0.0) then

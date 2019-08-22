@@ -258,6 +258,9 @@ cell%fname = trim(hhnl%xtalname)
  MT%LS1 = hhnl%LS1
  MT%LS2 = hhnl%LS2
  MT%LS3 = hhnl%LS3
+ MT%LQ1 = hhnl%LQ1
+ MT%LQ2 = hhnl%LQ2
+ MT%LQ3 = hhnl%LQ3
  ! MT%LF1 = hhnl%LF1
  ! MT%LF2 = hhnl%LF2
  ! MT%LF3 = hhnl%LF3
@@ -942,6 +945,8 @@ write (*,*) 'background computed '
   ZZZ=MRD%CN(19)+MRD%CN(42) 
   VVV=MRD%CN(19)-MRD%CN(42) 
   MRD%CN(30)=MRD%CN(19)/BM(2) 
+  COSA = 0.0
+  SINA = 0.0
 !***********************************
 !*   First Stacking Fault          *
 !***********************************
@@ -1186,21 +1191,6 @@ write (*,*) 'background computed '
    BFINTENS(j,ICNT,imnum)=TQB(j)
    DFINTENS(j,ICNT,imnum)=TQD(j)
   end do
-  write (*,*) ICNT, BFINTENS(1,ICNT,imnum), DFINTENS(1,ICNT,imnum)
-  if (ICNT.eq.1) then 
-    write(*,*) MRD%CN
-    write (*,*) MRD%X 
-    write (*,*) MRD%X1 
-    write (*,*) MRD%Y 
-    write (*,*) MRD%ERROR 
-    write (*,*) MRD%Q 
-    write (*,*) MRD%D 
-    write (*,*) MRD%YT 
-    write (*,*) MRD%DT 
-    write (*,*) MRD%ANO 
-    write (*,*) MRD%SKIP 
-    write (*,*) MRD%KOUNT
-  end if
   ICNT=ICNT+1
  end do  ! from several pages back !!!
 
@@ -1217,7 +1207,7 @@ write (*,*) 'background computed '
            F5.2,' STR ',F5.2,' FIN ',F7.3,'TH',F7.3,'THBM')") WL,WW,START,FINISH,THICK,THBM 
   
    write(dataunit,"(' ',3I2,'/',I1,'B   ',F8.4,' Q1 ',3I2,'U    ',3I2,  &
-           'G    ',3I2,'BM   ',3I2,'FN',F7.3,'W',F9.3,'BACK') ") &
+           'G    ',3I2,'BM   ',3I2,'FN',F7.3,'W',F9.3,'BACK')") &
            MT%LB,LD,QL1(4),MT%LU,MT%LG,MT%LBM,MT%LFN,MRD%CN(17),BACK
   
    write(dataunit,"(' ',3I2,'/',I1,'B2  ',F8.4,' Q2 ',F5.2,'SEP  ',3I2, &
