@@ -1342,7 +1342,7 @@ end subroutine DERIV
 !
 !> @date 08/22/19 MDG 1.0 adapted from similar code in dictionary indexing program
 !--------------------------------------------------------------------------
-recursive subroutine writeHH4_HDFfile(hhnl, BF, DF, progname, nmldeffile)
+recursive subroutine writeHH4_HDFfile(hhnl, BF, DF, dstr, tstrb, tstre, progname, nmldeffile)
 !DEC$ ATTRIBUTES DLLEXPORT :: writeHH4_HDFfile
 
 use HDF5
@@ -1355,6 +1355,9 @@ IMPLICIT NONE
 type(EMhh4NameListType),INTENT(IN)                  :: hhnl
 real(kind=sgl),INTENT(IN)                           :: BF(hhnl%ICOL, hhnl%IROW, hhnl%wnum)
 real(kind=sgl),INTENT(IN)                           :: DF(hhnl%ICOL, hhnl%IROW, hhnl%wnum)
+character(11),INTENT(INOUT)                         :: dstr
+character(15),INTENT(IN)                            :: tstrb
+character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
 
@@ -1374,7 +1377,6 @@ hhfile = EMsoft_toNativePath(hhfile)
 hdferr =  HDF_createFile(hhfile, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening file')
 
-
 call hh_writeInfo(dstr, tstrb, tstre, progname, ebsdnl, nmldeffile, HDF_head)
 
 
@@ -1393,7 +1395,6 @@ end subroutine writeHH4_HDFfile
 !
 !> @brief write general information fields to the h5ebsd file, including EMsoft specific fields
 !
-!> @param filetype integer to indicate EBSD, ECP, etc filetypes
 !> @param dstr date string
 !> @param tstrb begin time string
 !> @param tstre end time string
@@ -1401,7 +1402,7 @@ end subroutine writeHH4_HDFfile
 !
 !> @date 02/11/16 MDG 1.0 original
 !--------------------------------------------------------------------------
-subroutine hh_writeInfo(filetype, dstr, tstrb, tstre, progname, ebsdnl, nmldeffile, HDF_head)
+subroutine hh_writeInfo(dstr, tstrb, tstre, progname, hhnl, nmldeffile, HDF_head)
 !DEC$ ATTRIBUTES DLLEXPORT :: hh_writeInfo
 
 use NameListTypedefs
@@ -1410,9 +1411,20 @@ use NameListHDFwriters
 
 IMPLICIT NONE
 
+character(11),INTENT(INOUT)                         :: dstr
+character(15),INTENT(IN)                            :: tstrb
+character(15),INTENT(IN)                            :: tstre
+character(fnlen),INTENT(IN)                         :: progname
+type(EMhh4NameListType),INTENT(INOUT)               :: hhnl
+character(fnlen),INTENT(IN)                         :: nmldeffile
+type(HDFobjectStackType),pointer                    :: HDF_head
+
+character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
+
 ! set the Manufacturer and Version data sets
 dataset = SC_Manufacturer
-  stringarray(1)= trim(manufacturer)
+  stringarray(1)= trim(progname)
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
 
 dataset = SC_Version
@@ -1421,7 +1433,7 @@ dataset = SC_Version
 
 ! add the EMsoft header group
 ! write the EMheader to the file
-groupname = SC_h5EBSD
+groupname = 'EMheader'
   call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname)
 
 ! create a namelist group to write all the namelist files into
@@ -1440,7 +1452,7 @@ groupname = SC_NMLfiles
 groupname = SC_NMLparameters
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (filetype.eq.1) then 
-    call HDFwriteEBSDDictionaryIndexingNameList(HDF_head, ebsdnl)
+    call HDFwriteHH4NameList(HDF_head, hhnl)
   end if
 
 ! leave this group
