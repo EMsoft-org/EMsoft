@@ -402,10 +402,10 @@ call WriteValue('absorption ratio         ',io_real, 1)
  if (sum(MT%TLFP3**2).eq.0.0) then 
   MT%TLFP3=MT%TLFP1 
  else
-  if ((((MT%TLFP3(1)-MT%TLFP1(1)).eq.0.0).or.((MT%TLFP3(2)-MT%TLFP1(2)).eq.0.0)).or.((MT%TLFP3(3)-MT%TLFP1(3)).eq.0.0)) then
-    mess = 'Fault planes 1 and 3 not identical in input; identity 3=1 imposed'; call Message("(A)")
-    MT%TLFP3=MT%TLFP1 
+  if (sum((MT%TLFP3-MT%TLFP1)**2).ne.0.0) then 
+    call Message('Fault planes 1 and 3 not identical in input; identity 3=1 imposed')
   end if
+  MT%TLFP3=MT%TLFP1 
  end if
 
 !***********************************************************************
@@ -520,6 +520,7 @@ call WriteValue('absorption ratio         ',io_real, 1)
  end if
  AB(1)=FP(2)/Z 
  AB(2)=-FP(1)/Z
+ AB(3)=0.0
  PT=hhnl%SEP*AB(1)
  SL=hhnl%SEP*AB(2)/BM(2)
  Z=SQRT(FP3(1)**2+FP3(2)**2) 
@@ -732,7 +733,6 @@ call WriteValue('absorption ratio         ',io_real, 1)
  KMAX=0
  KTOT=0
 
-write (*,*) 'passing line 735'
 ! 
 !********************************************************************** 
 !  BESTIMMUNG DER BILDLAENGE                                          * 
@@ -831,7 +831,6 @@ write (*,*) 'background computed '
 !  This is a very long do-loop;  could be rewritten with function
 !  and subroutine calls... and really should be parallelized using OpenMP
  do JC=1,IROW
-!do JC=1,50
 
   MRD%CN(19)=(FLOAT(JC)-FLOAT(IROW/2)-0.5)*DELW
   MOVE=0
@@ -869,10 +868,8 @@ write (*,*) 'background computed '
   DELTA=5.0 
   DEL=DELTA*cPi/XIGEE
   DEL2=2.0*DEL
-  do J=1,4
-   HANDR(J)=COORD(J)-DEL 
-   HANDL(J)=COORD(J)+DEL 
-  end do
+  HANDR=COORD-DEL 
+  HANDL=COORD+DEL 
   if ((HANDL(1)-HANDR(2)).ge.0.0) then 
    if ((HANDL(2)-HANDR(3)).ge.0.0) then 
 !*Case 1
@@ -993,14 +990,8 @@ write (*,*) 'background computed '
 !
   STARTA=cPi*(EXTRA/2.0-(THBM+EXTRA)*FINISH/THICK)-(MRD%CN(19)*FNX(1)/FNX(2))
   SURFAC=STARTA+cPi*THBM 
-  POSA(1)=FAULT1
-  ITYPE(1)=1
-  POSA(2)=FAULT2
-  ITYPE(2)=2
-  POSA(3)=FAULT3
-  ITYPE(3)=3
-  POSA(4)=SURFAC
-  ITYPE(4)=4
+  POSA = (/ FAULT1, FAULT2, FAULT3, SURFAC /)
+  ITYPE = (/ 1, 2, 3, 4 /)
   do J=1,3
    LUCK=0
    do K=1,3
@@ -1021,7 +1012,7 @@ write (*,*) 'background computed '
    if ((ITYPE(J)-4).ne.0) then 
     if (LSWITC.ne.0) then
      POSB(J)=POSA(J) 
-     EXIT
+     CYCLE
     else
      POSB(J)=-10050.0+FLOAT(J) 
     end if 
