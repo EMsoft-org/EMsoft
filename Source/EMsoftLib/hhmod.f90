@@ -1326,4 +1326,132 @@ end if
   MRD%D(8)=BETA*MRD%Y(7)+Z+MRD%Y(5) 
 end subroutine DERIV
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: writeHH4_HDFfile
+!
+!> @author Marc De Graef
+!
+!> @brief generate HDF5 output file for the EMhh4 program
+! 
+!> @param hhnl name list 
+!> @param BFINTENS Bright Field image array
+!> @param DFINTENS Bright Field image array
+!> @params progname calling program name
+!> @params nmldeffile  name list parameter file name
+!
+!> @date 08/22/19 MDG 1.0 adapted from similar code in dictionary indexing program
+!--------------------------------------------------------------------------
+recursive subroutine writeHH4_HDFfile(hhnl, BF, DF, progname, nmldeffile)
+!DEC$ ATTRIBUTES DLLEXPORT :: writeHH4_HDFfile
+
+use HDF5
+use HDFsupport 
+use NameListTypedefs
+
+
+IMPLICIT NONE 
+
+type(EMhh4NameListType),INTENT(IN)                  :: hhnl
+real(kind=sgl),INTENT(IN)                           :: BF(hhnl%ICOL, hhnl%IROW, hhnl%wnum)
+real(kind=sgl),INTENT(IN)                           :: DF(hhnl%ICOL, hhnl%IROW, hhnl%wnum)
+character(fnlen),INTENT(IN)                         :: progname
+character(fnlen),INTENT(IN)                         :: nmldeffile
+
+integer(kind=irg)                                   :: irow, icol, imnum, hdferr
+character(fnlen)                                    :: groupname, dataset, hhfile, nmlname, manufacturer
+type(HDFobjectStackType),pointer                    :: HDF_head
+
+irow = hhnl%IROW
+icol = hhnl%ICOL
+imnum = hhnl%wnum
+
+nullify(HDF_head)
+
+! Create a new file using the default properties.
+hhfile = trim(EMsoft_getEMdatapathname())//trim(hhnl%outname)
+hhfile = EMsoft_toNativePath(hhfile)
+hdferr =  HDF_createFile(hhfile, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening file')
+
+
+call hh_writeInfo(dstr, tstrb, tstre, progname, ebsdnl, nmldeffile, HDF_head)
+
+
+
+
+
+end subroutine writeHH4_HDFfile
+
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:hh_writeInfo
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write general information fields to the h5ebsd file, including EMsoft specific fields
+!
+!> @param filetype integer to indicate EBSD, ECP, etc filetypes
+!> @param dstr date string
+!> @param tstrb begin time string
+!> @param tstre end time string
+!> @param progname name of the calling program
+!
+!> @date 02/11/16 MDG 1.0 original
+!--------------------------------------------------------------------------
+subroutine hh_writeInfo(filetype, dstr, tstrb, tstre, progname, ebsdnl, nmldeffile, HDF_head)
+!DEC$ ATTRIBUTES DLLEXPORT :: hh_writeInfo
+
+use NameListTypedefs
+use NameListHandlers
+use NameListHDFwriters
+
+IMPLICIT NONE
+
+! set the Manufacturer and Version data sets
+dataset = SC_Manufacturer
+  stringarray(1)= trim(manufacturer)
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+
+dataset = SC_Version
+  stringarray(1)= 'EMsoft '//EMsoft_getEMsoftversion()
+  hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+
+! add the EMsoft header group
+! write the EMheader to the file
+groupname = SC_h5EBSD
+  call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname)
+
+! create a namelist group to write all the namelist files into
+groupname = SC_NMLfiles
+  hdferr = HDF_createGroup(groupname, HDF_head)
+
+! and write the nml file for this program to the HDF5 file
+! read the text file and write the array to the file
+  dataset = trim(nmlname)
+  hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
+
+! leave this group
+  call HDF_pop(HDF_head)
+  
+! create a namelist group to write all the namelist files into
+groupname = SC_NMLparameters
+  hdferr = HDF_createGroup(groupname, HDF_head)
+  if (filetype.eq.1) then 
+    call HDFwriteEBSDDictionaryIndexingNameList(HDF_head, ebsdnl)
+  end if
+
+! leave this group
+  call HDF_pop(HDF_head)
+
+end subroutine h5ebsd_writeInfo
+
+
+
+
+
+
+
 end module hhmod
