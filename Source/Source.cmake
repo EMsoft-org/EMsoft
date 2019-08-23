@@ -40,7 +40,18 @@ if (EXISTS ${PROJECT_SOURCE_DIR}/Source/EMSphInx)
     Utilities
     XRay
   )
-
+else()
+  set(MODALITY_DIRS
+    DictionaryIndexing
+    OLIO
+    OM
+    SEM
+    TEM
+    QC
+    Utilities
+    XRay
+)
+endif()
 # -----------------------------------------------------------------------
 # Establish which modalities are going to be compiled
 # -----------------------------------------------------------------------
