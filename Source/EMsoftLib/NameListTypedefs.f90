@@ -1922,6 +1922,8 @@ type EMhh4NameListType
         integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: IROW
         integer(kind=irg)       :: ICOL
+        integer(kind=irg)       :: wnum
+        integer(kind=sgl)       :: LTEST
         integer(kind=irg)       :: LB(3), LD 
         integer(kind=irg)       :: LB2(3), LD2
         integer(kind=irg)       :: LB3(3), LD3
@@ -1930,12 +1932,10 @@ type EMhh4NameListType
         integer(kind=irg)       :: LG(3)
         integer(kind=irg)       :: LBM(3)
         integer(kind=irg)       :: LFN(3)
-        integer(kind=irg)       :: wnum
         integer(kind=irg)       :: LFP1(3), LFP(3), LFP3(3)
         integer(kind=irg)       :: LS1(3), LQ1 
         integer(kind=irg)       :: LS2(3), LQ2 
         integer(kind=irg)       :: LS3(3), LQ3 
-        integer(kind=sgl)       :: LTEST
         real(kind=sgl)          :: kV
         real(kind=sgl)          :: THICK, START, FINISH
         real(kind=sgl)          :: wmin, wmax

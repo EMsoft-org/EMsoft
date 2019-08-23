@@ -136,7 +136,9 @@ use symmetry
 use io 
 use files
 use error 
+use timing
 use hhmod
+use hhHDFmod
 use HDFsupport
 use NameListTypedefs
 
@@ -199,11 +201,20 @@ character(fnlen)              :: diagfile = 'HHdiagnostics.txt'
 type(unitcell), pointer       :: cell
 type(gnode)                   :: rlp
 character(fnlen)              :: mess
-integer(kind=irg)             :: numim, imnum
+character(fnlen),allocatable  :: legendfiles(:)
+character(3)                  :: filenum
+character(11)                 :: dstr
+character(15)                 :: tstrb
+character(15)                 :: tstre
+integer(kind=irg)             :: numim, imnum, hdferr
 real(kind=sgl),allocatable    :: wvalues(:)
 logical                       :: isallowed
 real(kind=dbl)                :: eps = 1.0D-6
 real(kind=sgl)                :: wstep, io_real(1)
+
+
+call timestamp(datestring=dstr, timestring=tstrb)
+
 
 nullify(cell)
 allocate(cell)
@@ -215,6 +226,14 @@ cell%fname = trim(hhnl%xtalname)
  ICOLP = hhnl%ICOL+1 
  numim = hhnl%wnum
 
+! allocate the string array for the legend files 
+ allocate( legendfiles(numim) )
+ do i=1,numim
+   write (filenum,"(I3.3)") i
+   legendfiles(i) = trim(EMsoft_getEMdatapathname())//'legend_'//filenum//'.txt'
+   legendfiles(i) = EMsoft_toNativePath(legendfiles(i))
+ end do
+
 ! allocate all allocatable arrays here 
  allocate( IX(ICOLP), IXX(ICOLP) )
  allocate( FX(ICOL,4), TBD(IROW,ICOLP), TQB(ICOLP), TQD(ICOLP) )
@@ -223,7 +242,6 @@ cell%fname = trim(hhnl%xtalname)
 
 ! set original hh4.f parameters that are not used in this f90 version of the code
  IND = 0
- !LPR = 1
  LPIEZO = 0
  LQ=2
  LLQ=1 
@@ -278,7 +296,6 @@ cell%fname = trim(hhnl%xtalname)
    OPEN(dataunit,FILE=trim(diagfile), Status='UNKNOWN')
  end if
 
-!OPEN(3,FILE='hh.ima', Status='UNKNOWN', Form='UNFORMATTED')
 !*********************************************************************
 !*      Select the crystal system                                    *
 !*      for trigonal we can use both trigonal and hexagonal indices  *
@@ -359,9 +376,9 @@ MRD%CN = 0.0
 XIGEE = 10.0*rlp%xg
 MRD%ANO = -1.0/rlp%ar
 io_real(1) = XIGEE
-call WriteValue('extinction distance [nm] ',io_real, 1)
+call WriteValue(' Extinction distance [nm] ',io_real, 1)
 io_real(1) = MRD%ANO
-call WriteValue('absorption ratio         ',io_real, 1)
+call WriteValue(' Absorption ratio         ',io_real, 1)
 
 !***********************************************************************
 !*       Make sure that the input data make geometric sense            *
@@ -388,9 +405,6 @@ call WriteValue('absorption ratio         ',io_real, 1)
  if (MT%LQ1.eq.0)  MT%LQ1=1
  if (MT%LQ2.eq.0)  MT%LQ2=1
  if (MT%LQ3.eq.0)  MT%LQ3=1
-! if (LBOD.eq.0)  LBOD=1   no longer needed
-
-
 
 !***********************************************************************
 !***     Default foil normal LFN = LBM                               ***
@@ -518,9 +532,9 @@ call WriteValue('absorption ratio         ',io_real, 1)
 !***********************************************************************
  Z=SQRT(FP(1)**2+FP(2)**2) 
  if(Z.eq.0.0) Z=1. 
- if(hhnl%SEP.ne.0.0) then
-  call Message(' FAULT PLANE 2 ZERO WITH SEP NONZERO')
- end if
+ ! if(hhnl%SEP.ne.0.0) then
+ !  call Message(' FAULT PLANE 2 ZERO WITH SEP NONZERO')
+ ! end if
  AB(1)=FP(2)/Z 
  AB(2)=-FP(1)/Z
  AB(3)=0.0
@@ -793,9 +807,9 @@ call WriteValue('absorption ratio         ',io_real, 1)
              AB1,SL2,PT2,EXT1,EXT2,EXT3,EXTRA
   write (dataunit,"(1H ,15H CN-KONSTANTEN )") 
   write (dataunit,"(1H ,4F12.8)") (MRD%CN(J),J=1,16)
-  write(dataunit,"(' ',4F12.6)") (MRD%CN(J+21),J=1,8)
-  write(dataunit,"(' ',4F12.6)") (MRD%CN(J+31),J=1,8)
-  write(dataunit,"(' ',4F12.6)") (MRD%CN(J+50),J=1,8)
+  write (dataunit,"(' ',4F12.6)") (MRD%CN(J+21),J=1,8)
+  write (dataunit,"(' ',4F12.6)") (MRD%CN(J+31),J=1,8)
+  write (dataunit,"(' ',4F12.6)") (MRD%CN(J+50),J=1,8)
  end if
  MRD%CN(30)=1000.0 
  MRD%SKIP=0.0
@@ -818,7 +832,8 @@ do imnum=1,hhnl%wnum
 ! set the excitation error parameter and related quantities
  MRD%CN(17) = wvalues(imnum)
  MRD%CN(18) = 2.0*MRD%CN(17) 
- write (*,*) 'starting computation for excitation error ', MRD%CN(17)
+ io_real(1) = MRD%CN(17)
+ call WriteValue(' starting image computation for w ', io_real,1)
 
 ! 
 !********************************************************************** 
@@ -836,7 +851,6 @@ do imnum=1,hhnl%wnum
  BACK=1.0
  BACKD=1.0
 
-write (*,*) 'background computed '
 !  This is a very long do-loop;  could be rewritten with function
 !  and subroutine calls... and really should be parallelized using OpenMP
  do JC=1,IROW
@@ -1194,21 +1208,29 @@ write (*,*) 'background computed '
 !  AUSDRUCK EINER BILDZEILE 
 ! 
   do j=1,ICOL
-   BFINTENS(j,ICNT,imnum)=TQB(j)
-   DFINTENS(j,ICNT,imnum)=TQD(j)
+   BFINTENS(j,JC,imnum)=TQB(j)
+   DFINTENS(j,JC,imnum)=TQD(j)
   end do
   ICNT=ICNT+1
  end do  ! from several pages back !!!
 
 
  WW=79.0*DELW/cPi 
+
+ if (SCALE30%LTEST.eq.1) then  
+! close the diagnostics file if this is the last image 
+   if (imnum.eq.hhnl%wnum) CLOSE (UNIT=dataunit)
+ end if
 ! 
 !*******************************************************
 !*       AUSDRUCK DER BILDLEGENDE                *******
 !*******************************************************
 !
-  if (SCALE30%LTEST.eq.1) then  
-   IY = ''
+
+! open a temporary file with the image legend for addition to the output HDF5 file 
+   call Message('  --> writing image legend to '//trim(legendfiles(imnum)) )
+   OPEN(dataunit,FILE=trim(legendfiles(imnum)), status='UNKNOWN')
+
    write(dataunit,"('    HH.f90  ',' TWO-BEAM ',F6.2,' WL',F6.2,' WW', &
            F5.2,' STR ',F5.2,' FIN ',F7.3,'TH',F7.3,'THBM')") WL,WW,START,FINISH,THICK,THBM 
   
@@ -1229,16 +1251,25 @@ write (*,*) 'background computed '
              MT%LB4,MT%LD4,QL4(4),LPIEZO,IND 
   
    write(dataunit,"('  G.B=',F10.4,'  G.(B X U)=',F10.4)") GINB,GINBXU
-! close the file if this is the last image 
-   if (imnum.eq.hhnl%wnum) CLOSE (UNIT=dataunit)
-  end if
+
+   CLOSE(dataunit, status='keep')
 !
 end do ! loop over all images 
 
-! finally, generate the output HDF file along with .tiff images
- write (3) BFINTENS,DFINTENS
-!
- CLOSE (UNIT=3)
+call timestamp(datestring=dstr, timestring=tstre)
+
+call Message(' Writing HDF5 outfile file ',"(/A)")
+
+call h5open_EMsoft(hdferr)
+call writeHH4_HDFfile(hhnl, BFINTENS, DFINTENS, dstr, tstrb, tstre, legendfiles, progname, nmldeffile)
+call h5close_EMsoft(hdferr)
+
+! cleanup: remove the legendfiles 
+call Message(' Cleaning up legend files (they have been added to the HDF5 output file)',"(/A)")
+do i=1,numim
+   OPEN(dataunit,FILE=trim(legendfiles(i)), status='OLD')
+   CLOSE(dataunit,status='delete')
+end do
 
 end subroutine HHComputeImages
  
