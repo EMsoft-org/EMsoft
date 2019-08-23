@@ -167,7 +167,7 @@ type(MAP_block)               :: MAP
 ! original hh4.f variables 
 !=======================
 ! regular integers
-integer(kind=irg)             :: ICNT, LLQ, NNN, NNNN, I, J, JB, JC, K, L, KMIN, KMAX, KTOT, MOVE, LUCK, ISTORE, LSWITC, &
+integer(kind=irg)             :: LLQ, NNN, NNNN, I, J, JB, JC, K, L, KMIN, KMAX, KTOT, MOVE, LUCK, ISTORE, LSWITC, &
                                  IFLAG, JT, JM, KOUNTF, INDL, KK, JZ, IND, LD, LQ, LPIEZO
 ! regular integer arrays
 integer(kind=irg)             :: ITYPE(4)
@@ -300,7 +300,6 @@ cell%fname = trim(hhnl%xtalname)
  MKAP%EA = 0.0
 
 ! open diagnostic file for output if hhnl%LTEST.eq.1
- ICNT=1
  if (hhnl%LTEST.eq.1) then 
    OPEN(dataunit,FILE=trim(diagfile), Status='UNKNOWN')
  end if
@@ -821,13 +820,7 @@ call WriteValue(' Absorption ratio         ',io_real, 1)
   write (dataunit,"(' ',4F12.6)") (MRD%CN(J+50),J=1,8)
  end if
  MRD%CN(30)=1000.0 
- MRD%SKIP=0.0
- MRD%X=0.0 
- MRD%Q=0.0 
- MRD%ERROR=0.0001
- MRD%D=0.0
- MRD%DT=0.0
- MRD%YT=0.0
+ 
 
  if (hhnl%wnum.eq.1) then 
    wvalues(1) = hhnl%wmin
@@ -841,7 +834,16 @@ do imnum=1,hhnl%wnum
 ! set the excitation error parameter and related quantities
  MRD%CN(17) = wvalues(imnum)
  MRD%CN(18) = 2.0*MRD%CN(17) 
+ MRD%X=0.0 
+ MRD%Q=0.0 
+ MRD%D=0.0
+ MRD%DT=0.0
+ MRD%YT=0.0
+ MRD%ERROR=0.0001
+ MRD%SKIP=0.0
+
  io_real(1) = MRD%CN(17)
+ MRD%KOUNT = 0
  call WriteValue(' starting image computation for w ', io_real,1)
 
 ! 
@@ -1220,7 +1222,6 @@ do imnum=1,hhnl%wnum
    BFINTENS(j,JC,imnum)=TQB(j)
    DFINTENS(j,JC,imnum)=TQD(j)
   end do
-  ICNT=ICNT+1
  end do  ! from several pages back !!!
 
 

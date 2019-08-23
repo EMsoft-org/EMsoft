@@ -1108,7 +1108,7 @@ IMPLICIT NONE
 type(MRD_block),INTENT(INOUT)     :: MRD
 
 integer(kind=irg)                 :: M1, M2, J, M, leave
-real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST, BETA
+real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST
 logical                           :: verbose = .FALSE.
 
 M1=4 
@@ -1119,7 +1119,7 @@ J = 1
 do while (J.ne.100) 
  select case(J)
   case(1)
-    if (verbose) write (*,*) 'case 1', MRD%Q
+    if (verbose) write (*,*) 'case 1'
     if (MRD%Q.ne.0.0) then
       J = 2
     else
@@ -1159,7 +1159,7 @@ do while (J.ne.100)
     XT=MRD%X; MRD%YT(:)=MRD%Y(:); J=8
 
   case(8)
-    if (verbose) write (*,*) 'case 8 ', MRD%X, MRD%Y
+    if (verbose) write (*,*) 'case 8 '
     CALL DERIV(MRD)
     MRD%DT(:,1)=H3*MRD%D(:); MRD%Y(:)=MRD%Y(:)+MRD%DT(:,1); MRD%X=MRD%X+H3
     CALL DERIV(MRD)
@@ -1250,7 +1250,8 @@ IMPLICIT NONE
 
 type(MRD_block),INTENT(INOUT)     :: MRD
 
-real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, BETA, Z
+real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, Z
+real,save  :: BETA
 ! 
 ! 
  if (MRD%SKIP.eq.0.0) then
