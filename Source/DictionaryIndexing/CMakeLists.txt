@@ -101,6 +101,20 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         SOLUTION_FOLDER EMsoftPublic/DictionaryIndexing 
                         INSTALL_PROGRAM TRUE)
 
+  Add_EMsoft_Executable(TARGET EMgetOSM
+                        SOURCES ${APP_DIR}/EMgetOSM.f90 
+                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} ${FORTRAN_LIBRARIES}
+                        TEMPLATE ${TMPLT_DIR}/EMgetOSM.template 
+                        SOLUTION_FOLDER EMsoftPublic/DictionaryIndexing 
+                        INSTALL_PROGRAM TRUE)
+
+  Add_EMsoft_Executable(TARGET EMdpmerge
+                        SOURCES ${APP_DIR}/EMdpmerge.f90 
+                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} ${FORTRAN_LIBRARIES}
+                        TEMPLATE ${TMPLT_DIR}/EMdpmerge.template 
+                        SOLUTION_FOLDER EMsoftPublic/DictionaryIndexing 
+                        INSTALL_PROGRAM TRUE)
+
   Add_EMsoft_Executable(TARGET EMdpextract
                         SOURCES ${APP_DIR}/EMdpextract.f90 
                         LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} ${FORTRAN_LIBRARIES}

@@ -115,6 +115,10 @@ end else begin
                 if (XRegistered("Efit_display") NE 0) then begin
 		  WIDGET_CONTROL, Efitwidget_s.displaybase, /DESTROY
                 endif
+                if (XRegistered("Efit_navigator") NE 0) then begin
+      WIDGET_CONTROL, Efitwidget_s.navigatorbase, /DESTROY
+                endif
+
  		Core_Print,'Quitting program',/blank
                 wait,1.0
 		WIDGET_CONTROL, Efitwidget_s.base, /DESTROY

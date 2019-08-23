@@ -40,6 +40,7 @@ set(EMsoftHDFLib_SRCS
   ${EMsoftHDFLib_SOURCE_DIR}/TKDDImod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/TKDmod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/utilities.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/hhHDFmod.f90
 # 	${EMsoftHDFLib_SOURCE_DIR}/EMdymodHDF.f90
 )
 
