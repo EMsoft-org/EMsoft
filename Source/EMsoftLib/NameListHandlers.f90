@@ -8942,14 +8942,18 @@ real(kind=sgl)          :: D1row5(6)
 real(kind=sgl)          :: D1row6(6)
 character(fnlen)        :: xtalname
 character(fnlen)        :: outname
+character(fnlen)        :: imageprefix
+character(fnlen)        :: imagetype 
 
 namelist /hhlist/ nthreads, IROW, ICOL, LB, LD , LB2, LD2, LB3, LD3, LB4, LD4, LU, LG, LBM, LFN, &
                   wnum, LFP1, LFP, LFP3, LS1, LQ1 , LS2, LQ2 , LS3, LQ3 , LTEST, kV, THICK, START, FINISH, &
                   wmin, wmax, SEP, SEP2, FAP1, FAP3, D1row1, D1row2, D1row3, D1row4, D1row5, D1row6,&
-                  xtalname, outname
+                  xtalname, outname, imageprefix, imagetype
 
  xtalname = 'undefined'
  outname = 'undefined'
+ imageprefix = 'undefined'
+ imagetype = 'tiff'
  nthreads = 1
  IROW = 160
  ICOL = 256
@@ -9058,6 +9062,8 @@ hhnl%D1row5 = D1row5
 hhnl%D1row6 = D1row6 
 hhnl%xtalname = xtalname
 hhnl%outname = outname
+hhnl%imageprefix = imageprefix
+hhnl%imagetype = imagetype 
 
 end subroutine GetEMhh4NameList
 

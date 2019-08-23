@@ -4946,6 +4946,16 @@ line2(1) = hhnl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create xtalname dataset',.TRUE.)
 
+dataset = 'imageprefix'
+line2(1) = hhnl%imageprefix
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create imageprefix dataset',.TRUE.)
+
+dataset = 'imagetype'
+line2(1) = hhnl%imagetype
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create imagetype dataset',.TRUE.)
+
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 

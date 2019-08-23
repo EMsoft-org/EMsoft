@@ -11,6 +11,10 @@
  xtalname = 'undefined',
 ! output file name
  outname = 'undefined',
+! prefix for image file name
+ imageprefix = 'undefined',
+! image type 'bmp' or 'tiff'
+ imagetype = 'tiff',
 ! number of OpenMP threads to be used for computation
  nthreads = 1,
 ! number of rows and columns in the BF/DF images

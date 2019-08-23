@@ -62,6 +62,7 @@
 ! 
 !> @date 01/15/03 MDG 1.0 original conversion from f77 version
 !> @date 08/13/19 MDG 2.0 new version, integrated with EMsoft 4.3
+!> @date 08/23/19 MDG 2.1 debugged and tested; added HDF5 and image output formats
 !--------------------------------------------------------------------------
 ! original program header 
 !** (INPUT,OUTPUT,TAPE5=INPUT,TAPE6=OUTPUT,TAPE10) 
@@ -141,6 +142,9 @@ use hhmod
 use hhHDFmod
 use HDFsupport
 use NameListTypedefs
+use ISO_C_BINDING
+use image
+use, intrinsic :: iso_fortran_env
 
 IMPLICIT NONE 
 
@@ -200,7 +204,7 @@ character(fnlen)              :: diagfile = 'HHdiagnostics.txt'
 !=======================
 type(unitcell), pointer       :: cell
 type(gnode)                   :: rlp
-character(fnlen)              :: mess
+character(fnlen)              :: mess, fname
 character(fnlen),allocatable  :: legendfiles(:)
 character(3)                  :: filenum
 character(11)                 :: dstr
@@ -210,11 +214,16 @@ integer(kind=irg)             :: numim, imnum, hdferr
 real(kind=sgl),allocatable    :: wvalues(:)
 logical                       :: isallowed
 real(kind=dbl)                :: eps = 1.0D-6
-real(kind=sgl)                :: wstep, io_real(1)
+real(kind=sgl)                :: wstep, io_real(1), mimi, mama
 
+! declare variables for use in object oriented image module
+integer                       :: iostat
+character(len=128)            :: iomsg
+logical                       :: isInteger
+type(image_t)                 :: im
+integer(int8), allocatable    :: output_image(:,:)
 
 call timestamp(datestring=dstr, timestring=tstrb)
-
 
 nullify(cell)
 allocate(cell)
@@ -1265,11 +1274,41 @@ call writeHH4_HDFfile(hhnl, BFINTENS, DFINTENS, dstr, tstrb, tstre, legendfiles,
 call h5close_EMsoft(hdferr)
 
 ! cleanup: remove the legendfiles 
-call Message(' Cleaning up legend files (they have been added to the HDF5 output file)',"(/A)")
+call Message(' Cleaning up legend files (they have been added to the HDF5 output file)',"(/A/)")
 do i=1,numim
    OPEN(dataunit,FILE=trim(legendfiles(i)), status='OLD')
    CLOSE(dataunit,status='delete')
 end do
+
+! image output requested ?  If so, then BF and DF pairs are put together in single images but with 
+! a common gray scale for the entire series.
+if (trim(hhnl%imageprefix).ne.'undefined') then 
+  allocate(output_image(2*ICOL, IROW))
+  mimi = minval ( (/ minval(BFINTENS), minval(DFINTENS) /) )
+  mama = maxval ( (/ maxval(BFINTENS), maxval(DFINTENS) /) )
+  BFINTENS = 255.0*(BFINTENS-mimi)/(mama-mimi)
+  DFINTENS = 255.0*(DFINTENS-mimi)/(mama-mimi)
+
+  do i=1,numim
+   write (filenum,"(I3.3)") i
+   fname = trim(EMsoft_getEMdatapathname())//trim(hhnl%imageprefix)//filenum//'.'//trim(hhnl%imagetype)
+   fname = EMsoft_toNativePath(fname)
+   
+   output_image(1:ICOL,1:IROW) = int(BFINTENS(1:ICOL,1:IROW,i))
+   output_image(ICOL+1:2*ICOL,1:IROW) = int(DFINTENS(1:ICOL,1:IROW,i))
+
+   im = image_t(output_image)
+   if(im%empty()) call Message(" HHComputeImages: failed to convert array to image")
+
+   call im%write(trim(fname), iostat, iomsg) ! format automatically detected from extension
+   if(0.ne.iostat) then
+      call Message(" HHComputeImages: failed to write image to file : "//iomsg)
+   else  
+      call Message(' BF/DF images written to '//trim(fname))
+   end if 
+  end do 
+
+end if
 
 end subroutine HHComputeImages
  

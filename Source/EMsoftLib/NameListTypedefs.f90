@@ -1949,6 +1949,8 @@ type EMhh4NameListType
         real(kind=sgl)          :: D1row6(6)
         character(fnlen)        :: xtalname
         character(fnlen)        :: outname
+        character(fnlen)        :: imageprefix
+        character(fnlen)        :: imagetype 
  end type EMhh4NameListType
 
 end module NameListTypedefs
