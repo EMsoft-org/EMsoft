@@ -4718,7 +4718,7 @@ end subroutine HDFwriteCBEDQCNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:HDFwriteCBEDNameList
+! SUBROUTINE:HDFwrite2DQCCBEDNameList
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
@@ -4786,5 +4786,181 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCBEDNameList: unable to cr
 call HDF_pop(HDF_head)
 
 end subroutine HDFwrite2DQCCBEDNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteHH4NameList
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param hhnl EMHH4 name list structure
+!
+!> @date 08/23/19 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteHH4NameList(HDF_head, hhnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteHH4NameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(EMhh4NameListType),INTENT(INOUT)                 :: hhnl
+
+integer(kind=irg),parameter                           :: n_int = 12, n_real = 10 
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = 'EMHH4NameList'
+hdferr    = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int      = (/ hhnl%nthreads, hhnl%IROW, hhnl%ICOL, hhnl%wnum, hhnl%LTEST, hhnl%LD, hhnl%LD2, &
+                 hhnl%LD3, hhnl%LD4, hhnl%LQ1, hhnl%LQ2, hhnl%LQ3 /)
+intlist(1)  = 'nthreads'
+intlist(2)  = 'IROW'
+intlist(3)  = 'ICOL'
+intlist(4)  = 'wnum'
+intlist(5)  = 'LTEST'
+intlist(6)  = 'LD'
+intlist(7)  = 'LD2'
+intlist(8)  = 'LD3'
+intlist(9)  = 'LD4'
+intlist(10)  = 'LQ1'
+intlist(11)  = 'LQ2'
+intlist(12)  = 'LQ3'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the integer arrays 
+dataset = 'LB'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LB, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LB dataset',.TRUE.)
+
+dataset = 'LB2'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LB2, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LB2 dataset',.TRUE.)
+
+dataset = 'LB3'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LB3, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LB3 dataset',.TRUE.)
+
+dataset = 'LB4'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LB4, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LB4 dataset',.TRUE.)
+
+dataset = 'LU'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LU, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LU dataset',.TRUE.)
+
+dataset = 'LG'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LG, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LG dataset',.TRUE.)
+
+dataset = 'LBM'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LBM, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LBM dataset',.TRUE.)
+
+dataset = 'LFN'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LFN, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LFN dataset',.TRUE.)
+
+dataset = 'LFP1'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LFP1, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LFP1 dataset',.TRUE.)
+
+dataset = 'LFP'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LFP, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LFP dataset',.TRUE.)
+
+dataset = 'LFP3'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LFP3, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LFP3 dataset',.TRUE.)
+
+dataset = 'LS1'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LS1, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LS1 dataset',.TRUE.)
+
+dataset = 'LS2'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LS2, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LS2 dataset',.TRUE.)
+
+dataset = 'LS3'
+hdferr = HDF_writeDatasetIntegerArray1D(dataset, hhnl%LS3, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create LS3 dataset',.TRUE.)
+
+
+! write all the single reals
+io_real     = (/ hhnl%kV, hhnl%THICK, hhnl%START, hhnl%FINISH, hhnl%wmin, hhnl%wmax, hhnl%SEP, hhnl%SEP2, hhnl%FAP1, hhnl%FAP3 /)
+reallist(1) = 'kV'
+reallist(2) = 'THICK'
+reallist(3) = 'START'
+reallist(4) = 'FINISH'
+reallist(5) = 'wmin'
+reallist(6) = 'wmax'
+reallist(7) = 'SEP'
+reallist(8) = 'SEP2'
+reallist(9) = 'FAP1'
+reallist(10) = 'FAP3'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! real arrays
+dataset = 'D1row1'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, hhnl%D1row1, 6, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create D1row1 dataset',.TRUE.)
+
+dataset = 'D1row2'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, hhnl%D1row2, 6, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create D1row2 dataset',.TRUE.)
+
+dataset = 'D1row3'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, hhnl%D1row3, 6, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create D1row3 dataset',.TRUE.)
+
+dataset = 'D1row4'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, hhnl%D1row4, 6, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create D1row4 dataset',.TRUE.)
+
+dataset = 'D1row5'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, hhnl%D1row5, 6, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create D1row5 dataset',.TRUE.)
+
+dataset = 'D1row6'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, hhnl%D1row6, 6, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create D1row6 dataset',.TRUE.)
+
+! write all the strings
+dataset = 'outname'
+line2(1) = hhnl%outname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create outname dataset',.TRUE.)
+
+dataset = SC_xtalname
+line2(1) = hhnl%xtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = 'imageprefix'
+line2(1) = hhnl%imageprefix
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create imageprefix dataset',.TRUE.)
+
+dataset = 'imagetype'
+line2(1) = hhnl%imagetype
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteHH4NameList: unable to create imagetype dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteHH4NameList
+
+
 
 end module NameListHDFwriters
