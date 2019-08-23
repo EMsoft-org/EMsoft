@@ -1,73 +1,61 @@
- &EBSDSphInxdata
+ &SphInxNameList
 ! The line above must not be changed
 !
 ! The values below are the default values for this program
 !
 !###################################################################
-! MAIN INDEXING PARAMETERS
+! INDEXING PARAMETERS
 !###################################################################
 !
-! do you want Email or Slack notification when the run has completed?
- Notify = 'Off',
-! width of data set in pattern input file
- ipf_wd = 100,
-! height of data set in pattern input file
- ipf_ht = 100,
+! spherical harmonic bandwidth [of the form (1 + 3^p * 5^q * 7^r * 11^s)/2, with p,q,r,s >= 0 integers]
+! some reasonable values are: 53, 63, 68, 74, 88, 95, 113, 122, 123, 158, 172, 188, 203, 221, 263, 284, 313
+! a nice range for parameter studies is 53, 68, 88, 113, 158, 203, 263, 338 (a factor of 1.3 between each)
+ bw = 53, 
+! normalization flag [.TRUE., .FALSE.]
+ normed = .TRUE.,
+! refinement flag [.TRUE., .FALSE.]
+ refine = .TRUE.,
 ! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
 ! region of interest has the point (x0,y0) as its upper left corner and is w x h patterns
- ROI = 0 0 0 0,
-! X and Y sampling step sizes
- stepX = 1.0,
- stepY = 1.0,
-! mask or not
- maskpattern = 'n',
-! mask radius (in pixels, AFTER application of the binning operation)
- maskradius = 240,
-! hi pass filter w parameter; 0.05 is a reasonable value
- hipassw = 0.05,
+ ROImask = 0 0 0 0,
+! or
+! define a file name containing a mask with 1's and 0's [not implemented in Release 4.3]
+ ROIfile = 'undefined',
 ! number of regions for adaptive histogram equalization
  nregions = 10,
-! bandwidth parameter (largest l value in spherical harmonic expansion)
- bandwidth = 63,
-! 
+! parallel threads to be used [if 0, then use maximum available number returned by omp_get_max_threads()]
+ nthread = 0, 
+! number of patterns to dispatch to a thread at once [when 0, automatically estimated 
+! [indexer.hpp, BatchEstimate]
+ batchsize = 0,
+
 !###################################################################
-! DETECTOR PARAMETERS
+! SCAN PARAMETERS AND CAMERA CALIBRATION
 !###################################################################
-!
-! distance between scintillator and illumination point [microns]
- L = 15000.0,
-! tilt angle of the camera (positive below horizontal, [degrees])
+! scan dimensions [ipf_width (pixels), ipf_height (pixels), stepx (micron), stepy (micron)]
+ scandims = 0.0 0.0 0.1 0.1,
+! [numsx, numsy] pattern dimensions (pixels)
+ patdims = 640 480,
+! detector pixel size [microns]
+ delta = 55.0,
+! [x*, y*, z*] pattern center (any vendor convention) or [xpc, ypc, L] in EMsoft units
+ pctr = 0.0 0.0 15000.0,
+! vendor string ['EMsoft', 'EDAX/TSL', 'Oxford', 'Bruker']
+ vendor = 'EMsoft', 
+! detector tilt angle from vertical [degrees]
  thetac = 10.0,
-! CCD pixel size on the scintillator surface [microns]
- delta = 50.0,
-! number of CCD pixels along x and y
- numsx = 640,
- numsy = 480,
-! pattern center coordinates in units of pixels
- xpc = 0.0,
- ypc = 0.0,
-! angle between normal of sample and detector
- omega = 0.0,
-! minimum and maximum energy to use for interpolation [keV]
- energymin = 10.0,
- energymax = 20.0,
-! incident beam current [nA]
- beamcurrent = 150.0,
-! beam dwell time [micro s]
- dwelltime = 100.0,
-! binning mode (1, 2, 4, or 8)
+! pattern binning factor
  binning = 1,
-! intensity scaling mode 'not' = no scaling, 'lin' = linear, 'gam' = gamma correction
- scalingmode = 'not',
-! gamma correction factor
- gammavalue = 1.0,
-!
+! apply a circular mask ? [.TRUE., .FALSE.]
+ circmask = .FALSE.,
+
 !###################################################################
-! INPUT FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+! Input Data
 !###################################################################
-!
-! name of datafile where the patterns are stored; path relative to EMdatapathname
- exptfile = 'undefined',
+! master pattern file [relative to EMdatpathname]
+ masterfile = 'undefined',
+! experimental patter file name [relative to EMdatapathname]
+ patfile = 'undefined',
 ! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
  inputtype = 'Binary',
 ! here we enter the HDF group names and data set names as individual strings (up to 10)
@@ -75,39 +63,14 @@
 ! and with the data set name as the last name; leave the remaining strings empty (they should all
 ! be empty for the Binary and TSLup2 formats)
  HDFstrings = '' '' '' '' '' '' '' '' '' '',
-!
+
 !###################################################################
-! OTHER FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+! Output Data
 !###################################################################
-!
-! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp
- tmpfile = 'EMEBSDDict_tmp.data',
- keeptmpfile = 'n',
-! output file ; path relative to EMdatapathname
+! HDF5 output file, must be defined [relative to EMdatapathname]
  datafile = 'undefined',
-! ctf output file ; path relative to EMdatapathname
- ctffile = 'undefined',
-! ang output file ; path relative to EMdatapathname
+! output ctf file name, optional [relative to EMdatapathname]
+ ctffile = 'undefined', 
+! output ang file name, optional [relative to EMdatapathname]
  angfile = 'undefined',
-! master pattern input file; path relative to EMdatapathname
- masterfile = 'undefined',
-!
-!###################################################################
-! SYSTEM PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
-!###################################################################
-!
-! number of dictionary files arranged in column for dot product on GPU (multiples of 16 perform better)
- numdictsingle = 1024,
-! number of experimental files arranged in column for dot product on GPU (multiples of 16 perform better)
- numexptsingle = 1024,
-! number of threads for parallel execution
- nthreads = 1,
-! platform ID for OpenCL portion of program
- platid = 1,
-! if you are running EMEBSDDI, EMECPDI, EMTKDDI, then define the device you wish to use 
- devid = 1,
-! if you are running EMEBSDDImem on multiple GPUs, enter their device ids (up to eight) here; leave others at zero
- multidevid = 0 0 0 0 0 0 0 0,
-! how many GPU devices do you want to use?
- usenumd = 0,
  /

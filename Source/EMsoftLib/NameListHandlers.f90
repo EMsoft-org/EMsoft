@@ -5752,6 +5752,150 @@ end subroutine GetADPNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetOSMNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill osmnl structure (used by EMgetOSM.f90)
+!
+!> @param nmlfile namelist file name
+!> @param osmnl name list structure
+!
+!> @date 08/17/19 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetOSMNameList(nmlfile, osmnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetOSMNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(OSMNameListType),INTENT(INOUT)               :: osmnl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+integer(kind=irg)       :: nmatch(5)
+character(fnlen)        :: dotproductfile
+character(fnlen)        :: tiffname
+
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / getOSM / nmatch, dotproductfile, tiffname
+
+! set the input parameters to default values
+nmatch = (/ 20, 0, 0, 0, 0 /)
+dotproductfile = 'undefined'
+tiffname = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=getOSM)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(dotproductfile).eq.'undefined') then
+        call FatalError('GetOSMNameList:',' dot product file name is undefined in '//nmlfile)
+    end if
+
+    if (trim(tiffname).eq.'undefined') then
+        call FatalError('GetOSMNameList:',' output tiff file name is undefined in '//nmlfile)
+    end if
+ end if
+
+! if we get here, then all appears to be ok, and we need to fill in the enl fields
+osmnl%nmatch = nmatch
+osmnl%dotproductfile = dotproductfile
+osmnl%tiffname = tiffname
+
+end subroutine GetOSMNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetdpmergeNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill osmnl structure (used by EMgetOSM.f90)
+!
+!> @param nmlfile namelist file name
+!> @param dpmnl name list structure
+!
+!> @date 08/17/19 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetdpmergeNameList(nmlfile, dpmnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetdpmergeNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                       :: nmlfile
+type(dpmergeNameListType),INTENT(INOUT)           :: dpmnl
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+
+character(fnlen)        :: dotproductfile(5)
+character(fnlen)        :: ctfname
+character(fnlen)        :: angname
+character(fnlen)        :: phasemapname
+integer(kind=irg)       :: phasecolors(5)
+character(8)            :: usedp
+character(2)            :: indexingmode
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / dpmerge / dotproductfile, ctfname, angname, usedp, indexingmode, phasemapname, phasecolors
+
+! set the input parameters to default values
+dotproductfile = (/ 'undefined','undefined','undefined','undefined','undefined' /)
+ctfname = 'undefined'
+angname = 'undefined'
+phasemapname = 'undefined'
+phasecolors = (/ 1, 2, 0, 0, 0 /)
+usedp = 'original'
+indexingmode = 'DI'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=dpmerge)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if ((trim(dotproductfile(1)).eq.'undefined').or.(trim(dotproductfile(2)).eq.'undefined')) then
+        call FatalError('GetdpmergeNameList:',' at least two dot product file names must be defined in '//nmlfile)
+    end if
+
+    if ((trim(ctfname).eq.'undefined').and.(trim(angname).eq.'undefined')) then
+        call FatalError('GetdpmergeNameList:',' either ctfname or angname must be defined in '//nmlfile)
+    end if
+ end if
+
+! if we get here, then all appears to be ok, and we need to fill in the dpmnl fields
+dpmnl%dotproductfile = dotproductfile
+dpmnl%ctfname = ctfname 
+dpmnl%angname = angname 
+dpmnl%phasemapname = phasemapname 
+dpmnl%phasecolors = phasecolors
+dpmnl%indexingmode = indexingmode
+dpmnl%usedp = usedp
+
+end subroutine GetdpmergeNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetTKDIndexingNameList
 !
 !> @author Marc De Graef , Carnegie Mellon University

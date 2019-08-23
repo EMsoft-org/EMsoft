@@ -1290,6 +1290,22 @@ type ADPNameListType
         character(fnlen)        :: HDFstrings(10)
 end type ADPNameListType
 
+type OSMNameListType
+        integer(kind=irg)       :: nmatch(5)
+        character(fnlen)        :: dotproductfile
+        character(fnlen)        :: tiffname
+end type OSMNameListType
+
+type dpmergeNameListType
+        character(fnlen)        :: dotproductfile(5)
+        character(fnlen)        :: ctfname
+        character(fnlen)        :: angname
+        character(fnlen)        :: phasemapname
+        integer(kind=irg)       :: phasecolors(5)
+        character(8)            :: usedp
+        character(2)            :: indexingmode
+end type dpmergeNameListType
+
 type TKDIndexingNameListType
         integer(kind=irg)       :: ncubochoric
         integer(kind=irg)       :: numexptsingle
