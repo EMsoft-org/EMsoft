@@ -4810,7 +4810,7 @@ IMPLICIT NONE
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
 type(EMhh4NameListType),INTENT(INOUT)                 :: hhnl
 
-integer(kind=irg),parameter                           :: n_int = 12, n_real = 10 
+integer(kind=irg),parameter                           :: n_int = 11, n_real = 10 
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -4822,20 +4822,19 @@ groupname = 'EMHH4NameList'
 hdferr    = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int      = (/ hhnl%nthreads, hhnl%IROW, hhnl%ICOL, hhnl%wnum, hhnl%LTEST, hhnl%LD, hhnl%LD2, &
+io_int      = (/ hhnl%IROW, hhnl%ICOL, hhnl%wnum, hhnl%LTEST, hhnl%LD, hhnl%LD2, &
                  hhnl%LD3, hhnl%LD4, hhnl%LQ1, hhnl%LQ2, hhnl%LQ3 /)
-intlist(1)  = 'nthreads'
-intlist(2)  = 'IROW'
-intlist(3)  = 'ICOL'
-intlist(4)  = 'wnum'
-intlist(5)  = 'LTEST'
-intlist(6)  = 'LD'
-intlist(7)  = 'LD2'
-intlist(8)  = 'LD3'
-intlist(9)  = 'LD4'
-intlist(10)  = 'LQ1'
-intlist(11)  = 'LQ2'
-intlist(12)  = 'LQ3'
+intlist(1)  = 'IROW'
+intlist(2)  = 'ICOL'
+intlist(3)  = 'wnum'
+intlist(4)  = 'LTEST'
+intlist(5)  = 'LD'
+intlist(6)  = 'LD2'
+intlist(7)  = 'LD3'
+intlist(8)  = 'LD4'
+intlist(9)  = 'LQ1'
+intlist(10)  = 'LQ2'
+intlist(11)  = 'LQ3'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the integer arrays 

@@ -15,8 +15,6 @@
  imageprefix = 'undefined',
 ! image type 'bmp' or 'tiff'
  imagetype = 'tiff',
-! number of OpenMP threads to be used for computation
- nthreads = 1,
 ! number of rows and columns in the BF/DF images
  IROW = 160,
  ICOL = 256,
@@ -42,24 +40,6 @@
 ! diffraction vector (integers) e.g. 1,2,-1,
  LG = 2 0 0,
 ! 
-!=============foil geometry parameters=========
-! beam direction (integers) e.g. 1,1,1,
- LBM = 0 0 1,
-! foil normal (integers) e.g. 1,1,1,
- LFN = 0 0 1,
-! foil thickness in units of extinction distance, e.g. 6.0,
- THICK = 5.0,
-! starting thickness of computation, default = 0.0,
- START = 0.0, 
-! end of thickness integration
- FINISH = 6.0,
-! w-parameter (excitation error * extinction distance) [original parameter name CN17]
-! this can be defined as a range from wmin to wmax, along with number of increments;
-! if both values identical, then only one BF/DF image pair will be produced 
- wmin = -1.0,
- wmax =  1.0,
- wnum =  5,
-!
 !=============stacking fault parameters========
 ! stacking fault plane normal (integers) e.g. 1,1,0,
  LFP1 = 1 1 0,
@@ -83,6 +63,24 @@
  FAP1 = 0.0,
  FAP3 = 0.0,
 ! 
+!=============foil geometry parameters=========
+! beam direction (integers) e.g. 1,1,1,
+ LBM = 0 0 1,
+! foil normal (integers) e.g. 1,1,1,
+ LFN = 0 0 1,
+! foil thickness in units of extinction distance, e.g. 6.0,
+ THICK = 5.0,
+! starting thickness of computation, default = 0.0,
+ START = 0.0, 
+! end of thickness integration
+ FINISH = 6.0,
+! w-parameter (excitation error * extinction distance) [original parameter name CN17]
+! this can be defined as a range from wmin to wmax, along with number of increments;
+! if both values identical, then only one BF/DF image pair will be produced 
+ wmin = -1.0,
+ wmax =  1.0,
+ wnum =  5,
+!
 !==============material property parameters
 ! 6x6 elastic constant tensor, to be entered in six separate rows; must be symmetric
 ! example is for cubic symmetry; units are [GPa]

@@ -1935,7 +1935,6 @@ type EMmdSTEMNameListType
 end type EMmdSTEMNameListType
 
 type EMhh4NameListType
-        integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: IROW
         integer(kind=irg)       :: ICOL
         integer(kind=irg)       :: wnum
