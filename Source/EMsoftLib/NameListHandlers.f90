@@ -488,6 +488,73 @@ end subroutine GetGBONameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetGBOdmNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill gbonl structure (used by EMGBOdm.f90)
+!
+!> @param nmlfile namelist file name
+!> @param gbonl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 04/22/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetGBOdmNameList(nmlfile, gbonl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetGBOdmNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(GBOdmNameListType),INTENT(INOUT)       :: gbonl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+integer(kind=irg)       :: pgnum
+integer(kind=irg)       :: nthreads
+character(fnlen)        :: inname
+character(fnlen)        :: outname
+
+namelist /GBOdmlist/ pgnum, outname, nthreads, inname
+
+nthreads = 0
+outname = 'undefined' 
+inname = 'undefined' 
+pgnum = 32
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=GBOdmlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(outname).eq.'undefined') then
+  call FatalError('EMGBOdm:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(inname).eq.'undefined') then
+  call FatalError('EMGBOdm:',' input file name is undefined in '//nmlfile)
+ end if
+end if
+
+gbonl%nthreads = nthreads
+gbonl%pgnum = pgnum
+gbonl%outname = outname
+gbonl%inname = inname
+
+end subroutine GetGBOdmNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetoSLERPNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
