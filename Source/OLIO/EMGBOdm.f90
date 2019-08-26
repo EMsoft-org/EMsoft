@@ -143,13 +143,16 @@ end if
 ! compute the pairwise distance matrix using parallel threads
 call Message(' Computing distance matrix ',"(/A/)")
 
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, qa, qb, qc, qd, ic, tt)
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, qa, qb, qc, qd, ic, tt, io_int)
 TID = OMP_GET_THREAD_NUM()
 
 ! generate nquats random quartets of quaternions
 !$OMP DO SCHEDULE(DYNAMIC)
 do ir = 1,numoct
-  write (*,*) 'Thread ',TID,' starting row ',ir 
+!$OMP CRITICAL
+  io_int = (/ ir, numoct /) 
+  call WriteValue(' Starting row ',io_int,2, "(I4,' of ',I4)")
+!$OMP END CRITICAL
   qa = octarray(1:4,ir)
   qb = octarray(5:8,ir)
 ! make sure they are unit quaternions
