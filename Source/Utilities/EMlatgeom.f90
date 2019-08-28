@@ -64,7 +64,7 @@ logical				:: loadingfile
  progdesc = 'Simple lattice geometry program'
  call EMsoft(progname, progdesc)
  
- allocate (cell)
+ ! allocate (cell)
 
 ! load crystal structure data
  call ReadValue(' Enter xtal file name : ', gname,"(A)")

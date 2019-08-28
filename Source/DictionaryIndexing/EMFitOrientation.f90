@@ -383,7 +383,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     ! we need to get the direct structure matrix to convert the axis-angle pair
     ! to the correct reference frame, so we'll read the complete xtal file
     ! and initialize all matrices as usual
-    allocate (cell)
+    ! allocate (cell)
     cell%fname = trim(dinl%MCxtalname)
     call CrystalData(cell)
 

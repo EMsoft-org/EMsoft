@@ -239,8 +239,8 @@ end if
 !=============================
 ! ok, we're in business... let's initialize the crystal structures so that we
 ! can compute the orientation relation matrix
-nullify(cellA,cellB)
-allocate(cellA,cellB)
+! nullify(cellA,cellB)
+! allocate(cellA,cellB)
 dmin=0.05
 voltage = 30000.0
 

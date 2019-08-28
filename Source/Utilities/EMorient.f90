@@ -94,7 +94,7 @@ end interface
  progdesc = 'Stereographic projection of orientation relation'
  call EMsoft(progname, progdesc)
 
- allocate(cellA, cellB)
+ !allocate(cellA, cellB)
 
  inm=2
  cellA % SG % SYM_reduce=.TRUE.

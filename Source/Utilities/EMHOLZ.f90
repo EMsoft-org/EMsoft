@@ -79,7 +79,7 @@ interface
 
         IMPLICIT NONE
 
-        type(unitcell)        ,INTENT(IN)       :: cell
+        type(unitcell)        ,INTENT(INOUT)    :: cell
         type(postscript_type),INTENT(INOUT)     :: PS
         type(gnode),INTENT(INOUT)               :: rlp
         real(kind=sgl),INTENT(IN)               :: camlen
@@ -144,7 +144,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell)        ,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(INOUT)    :: cell
 type(postscript_type),INTENT(INOUT)     :: PS
 type(gnode),INTENT(INOUT)               :: rlp
 real(kind=sgl),INTENT(IN)               :: camlen
@@ -175,7 +175,7 @@ interface
 
         IMPLICIT NONE
 
-        type(unitcell)        ,INTENT(IN)       :: cell
+        type(unitcell)        ,INTENT(INOUT)    :: cell
         type(HOLZvartype),INTENT(INOUT)         :: HOLZvar
         end subroutine ShortestGFOLZ
 
@@ -192,7 +192,7 @@ interface
 
         IMPLICIT NONE
 
-        type(unitcell)        ,INTENT(IN)       :: cell
+        type(unitcell)        ,INTENT(INOUT)    :: cell
         type(gnode),INTENT(INOUT)               :: rlp
         type(postscript_type)                   :: PS
         type(holzreflection),pointer,INTENT(INOUT) :: top, bot
@@ -239,7 +239,7 @@ interface
         
         IMPLICIT NONE
         
-        type(unitcell)        ,INTENT(IN)       :: cell
+        type(unitcell)        ,INTENT(INOUT)       :: cell
         type(holzreflection),pointer,INTENT(INOUT) :: top 
         type(HOLZvartype),INTENT(INOUT)         :: HOLZvar
         end subroutine ReCalcHOLZ
@@ -617,7 +617,7 @@ use error
 
 IMPLICIT NONE
 
-type(unitcell)        ,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(INOUT)    :: cell
 type(HOLZvartype),INTENT(INOUT)         :: HOLZvar
 
 real(kind=sgl)                          :: gmin,gam11,gam12,gam22
@@ -693,7 +693,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell)        ,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(INOUT)    :: cell
 type(gnode),INTENT(INOUT)               :: rlp
 type(postscript_type)                   :: PS
 type(holzreflection),pointer,INTENT(INOUT) :: top, bot
@@ -878,7 +878,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell)        ,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(INOUT)    :: cell
 type(holzreflection),pointer,INTENT(INOUT) :: top 
 type(HOLZvartype),INTENT(INOUT)         :: HOLZvar
 
