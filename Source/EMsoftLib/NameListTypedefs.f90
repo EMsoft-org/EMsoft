@@ -1726,7 +1726,8 @@ type EMmdSTEMNameListType
         real(kind=dbl)          :: thk
         logical                 :: presorted
         integer(kind=irg)       :: subslice
-
+        integer(kind=irg)       :: ZAindex(3)
+        real(kind=sgl)          :: lauec(2)
 end type EMmdSTEMNameListType
 
 end module NameListTypedefs
