@@ -294,7 +294,7 @@ logical                                 :: overwrite = .TRUE., insert = .TRUE., 
 maxthreads = omp_get_max_threads()
 
 nullify(HDF_head)
-nullify(cell)
+!nullify(cell)        
 
 !====================================
 ! what is the output format?  GUI or BIN ?

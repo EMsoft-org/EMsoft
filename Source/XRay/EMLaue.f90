@@ -158,7 +158,7 @@ integer(int8), allocatable                 :: TIFF_image(:,:)
 
 
 nullify(HDF_head)
-nullify(cell)
+!nullify(cell)        
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = ''
 call cpu_time(tstart)

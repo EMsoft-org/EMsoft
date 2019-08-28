@@ -283,7 +283,7 @@ if (.not.g_exists) then
   call Message('Master file does not contain crystal structure data; will look for .xtal file instead.')
 else
 ! there is CrystalData present in this file, so let's read it here...
-  nullify(cell)
+  !nullify(cell)        
   allocate(cell)
   verbose = .TRUE.
   call Initialize_Cell(cell,Dyn,rlp,xtalname, emnl%dmin, sngl(EkeV), verbose, HDF_head)
@@ -339,7 +339,7 @@ call Message(' -> completed reading '//trim(emnl%energyfile), frm = "(A/)")
 ! the program (done deep inside the Initialize_Cell call.
 
 if (xtaldataread.eqv..FALSE.) then
-  nullify(cell)
+  !nullify(cell)        
   allocate(cell)
 
   verbose = .TRUE.

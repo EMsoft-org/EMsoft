@@ -159,7 +159,7 @@ character(15)                              :: tstre
 
 
 nullify(HDF_head)
-nullify(cell)
+!nullify(cell)        
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call cpu_time(tstart)

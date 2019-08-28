@@ -206,7 +206,7 @@ call  ECPSinglereadMCfile(ecpnl, acc, verbose=.TRUE.)
 !=============================================
 !=============================================
 ! crystallography section
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 ! load the crystal structure and compute the Fourier coefficient lookup table

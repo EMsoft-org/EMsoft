@@ -114,7 +114,7 @@ end interface
  progdesc = 'Important crystallographic data for TEM applications'
  call EMsoft(progname, progdesc)
 
- nullify(cell)
+ !nullify(cell)        
  allocate(cell)
  
  inm=2

@@ -187,7 +187,7 @@ character(100)                    :: c
 
  numsy = mcnl%numsx
 
- nullify(cell)
+ !nullify(cell)        
  allocate(cell)
 
  verbose = .TRUE.

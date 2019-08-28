@@ -62,7 +62,7 @@ integer(kind=irg),parameter     :: tworig(24)=(/48,50,59,68,70,85,86,88,125,126,
                                                 141,142,201,203,222,224,227,228/)
 
 
- nullify(cell)
+ !nullify(cell)        
  allocate(cell)
 
  progname = 'EMxtalExtract.f90'

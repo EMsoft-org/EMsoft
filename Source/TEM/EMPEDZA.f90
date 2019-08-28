@@ -194,7 +194,7 @@ end interface
 !=============================================
 !=============================================
 ! crystallography section
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 verbose = .TRUE.

@@ -185,7 +185,7 @@ nullify(HDF_head)
 call timestamp(datestring=dstr, timestring=tstrb)
 
 numsy = mcnl%numsx
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 ! get the crystal structure from the *.xtal file

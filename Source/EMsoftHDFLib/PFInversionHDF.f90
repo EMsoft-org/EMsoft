@@ -84,7 +84,7 @@ real(kind=sgl)                                  :: dmin, voltage
 logical                                         :: verbose2
 
 xtalname2 = ''
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 ! just some arbitrary values
@@ -180,7 +180,7 @@ voltage = 30.0
 verbose2 = .FALSE.
 
 xtalname2 = ''
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 call ResetCell(cell)
@@ -486,7 +486,7 @@ verbose2 = .FALSE.
 
 ! load the crystal structure file, which also computes all the important 
 ! matrices as well as all the symmetry arrays
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 cell%SG%SYM_reduce=.TRUE.
 cell%fname = trim(epf%xtalname)
@@ -674,7 +674,7 @@ dtor        = cPi/180.D0
 delta       = 1.D0/dble(nLam)
 
 ! allocate cell
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 nullify(HDF_head_cell)

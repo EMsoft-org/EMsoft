@@ -112,7 +112,7 @@ res = 0
 !===================================================
 
 ! nullify the cell pointer
-nullify(cell)
+!nullify(cell)        
 
 !===================================================
 ! in this test, we generate a crystal structure and then we test all the distance and angle 

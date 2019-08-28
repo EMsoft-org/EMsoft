@@ -197,7 +197,7 @@ character(2)                              :: str
 call timestamp(datestring=dstr, timestring=tstrb)
 call system_clock(tstart, clock_rate)
 
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 voltage         = cbednl%voltage

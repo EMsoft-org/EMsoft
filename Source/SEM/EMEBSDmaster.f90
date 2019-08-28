@@ -265,7 +265,7 @@ character(100)                    :: c
 stereog = .TRUE.
 
 nullify(HDF_head)
-nullify(cell)
+!nullify(cell)        
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call cpu_time(tstart)

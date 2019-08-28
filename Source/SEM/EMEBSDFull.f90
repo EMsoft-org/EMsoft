@@ -289,7 +289,7 @@ call Time_tick(tick)
 nullify(HDF_head)
 
 ! generate xtal structure data
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 ! get the crystal strucutre from the *.xtal file

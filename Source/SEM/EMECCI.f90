@@ -199,7 +199,7 @@ integer(int8), allocatable              :: montage(:,:)
  nullify(khead)
  nullify(ktmp)
 
- nullify(cell)
+ !nullify(cell)        
  allocate(cell)
   
  call timestamp(datestring=dstr, timestring=tstrb)

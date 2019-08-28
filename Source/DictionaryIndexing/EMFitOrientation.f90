@@ -159,7 +159,7 @@ dtor = sngl(cPi) / 180.0
 init = .TRUE.
 overwrite = .TRUE.
 verbose = .FALSE.
-nullify(cell)
+!nullify(cell)        
 
 nmldeffile = 'EMFitOrientationPS.nml'
 progname = 'EMFitOrientationPS.f90'

@@ -154,7 +154,7 @@ call cpu_time(tstart)
 !=============================================
 !=============================================
 ! crystallography section
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 verbose = .TRUE.

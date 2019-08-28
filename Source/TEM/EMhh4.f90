@@ -222,7 +222,7 @@ integer(int8), allocatable    :: output_image(:,:)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 cell%fname = trim(hhnl%xtalname)
 

@@ -155,7 +155,7 @@ dtor = cPi/180.D0
 delta = 1.D0/dble(nLam)
 
 ! allocate cell
-nullify(cell)
+!nullify(cell)        
 allocate(cell)
 
 nullify(HDF_head_cell)
