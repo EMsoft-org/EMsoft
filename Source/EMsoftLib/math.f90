@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2017, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -43,6 +43,7 @@
 !> @date 11/13/13 MDG 4.0 added MatrixExponential routine
 !> @date 11/23/15 MDG 4.1 moved several routines from other mods into this one
 !> @date 10/24/17 MDG 4.2 added infty()/inftyd() functions to return the IEEE infinity value
+!> @date 08/23/19 MDG 4.3 removed spaces around "kind" statements to facilitate f90wrap python wrapper generation
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -763,21 +764,21 @@ recursive function c4_normal_01 ( seed )
 !
 !  Parameters:
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, complex ( kind = 4 ) C4_NORMAL_01, a unit pseudonormal value.
+!    Output, complex (kind=4) C4_NORMAL_01, a unit pseudonormal value.
 !
   implicit none
 
-  complex ( kind = 4 ) c4_normal_01
-  real ( kind = 4 ), parameter :: r4_pi = 3.141592653589793E+00
-! real ( kind = 4 ) r4_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 4 ) v1
-  real ( kind = 4 ) v2
-  real ( kind = 4 ) x_c
-  real ( kind = 4 ) x_r
+  complex (kind=4) c4_normal_01
+  real (kind=4), parameter :: r4_pi = 3.141592653589793E+00
+! real (kind=4) r4_uniform_01
+  integer (kind=4) seed
+  real (kind=4) v1
+  real (kind=4) v2
+  real (kind=4) x_c
+  real (kind=4) x_r
 
   v1 = r4_uniform_01 ( seed )
   v2 = r4_uniform_01 ( seed )
@@ -810,21 +811,21 @@ recursive function c8_normal_01 ( seed )
 !
 !  Parameters:
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random number
+!    Input/output, integer (kind=4) SEED, a seed for the random number
 !    generator.
 !
-!    Output, complex ( kind = 8 ) C8_NORMAL_01, a sample of the PDF.
+!    Output, complex (kind=8) C8_NORMAL_01, a sample of the PDF.
 !
   implicit none
 
-  complex ( kind = 8 ) c8_normal_01
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-! real ( kind = 8 ) r8_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) v1
-  real ( kind = 8 ) v2
-  real ( kind = 8 ) x_c
-  real ( kind = 8 ) x_r
+  complex (kind=8) c8_normal_01
+  real (kind=8), parameter :: r8_pi = 3.141592653589793D+00
+! real (kind=8) r8_uniform_01
+  integer (kind=4) seed
+  real (kind=8) v1
+  real (kind=8) v2
+  real (kind=8) x_c
+  real (kind=8) x_r
 
   v1 = r8_uniform_01 ( seed )
   v2 = r8_uniform_01 ( seed )
@@ -832,7 +833,7 @@ recursive function c8_normal_01 ( seed )
   x_r = sqrt ( - 2.0D+00 * log ( v1 ) ) * cos ( 2.0D+00 * r8_pi * v2 )
   x_c = sqrt ( - 2.0D+00 * log ( v1 ) ) * sin ( 2.0D+00 * r8_pi * v2 )
 
-  c8_normal_01 = cmplx ( x_r, x_c, kind = 8 )
+  c8_normal_01 = cmplx ( x_r, x_c,kind=8)
 
   return
 end
@@ -866,12 +867,12 @@ recursive function i4_huge ( )
 !
 !  Parameters:
 !
-!    Output, integer ( kind = 4 ) I4_HUGE, a "huge" I4.
+!    Output, integer (kind=4) I4_HUGE, a "huge" I4.
 !
   implicit none
 
-  integer ( kind = 4 ) i4
-  integer ( kind = 4 ) i4_huge
+  integer (kind=4) i4
+  integer (kind=4) i4_huge
 
   i4_huge = 2147483647
 
@@ -905,26 +906,26 @@ recursive function i4_normal_ab ( a, b, seed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 4 ) A, the mean of the PDF.
+!    Input, real (kind=4) A, the mean of the PDF.
 !
-!    Input, real ( kind = 4 ) B, the standard deviation of the PDF.
+!    Input, real (kind=4) B, the standard deviation of the PDF.
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the
+!    Input/output, integer (kind=4) SEED, a seed for the
 !    random number generator.
 !
-!    Output, integer ( kind = 4 ) I4_NORMAL_AB, a sample of the normal PDF.
+!    Output, integer (kind=4) I4_NORMAL_AB, a sample of the normal PDF.
 !
   implicit none
 
-  real ( kind = 4 ) a
-  real ( kind = 4 ) b
-  integer ( kind = 4 ) i4_normal_ab
-  real ( kind = 4 ) r1
-  real ( kind = 4 ) r2
-  real ( kind = 4 ), parameter :: r4_pi = 3.141592653589793E+00
-! real ( kind = 4 ) r4_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 4 ) x
+  real (kind=4) a
+  real (kind=4) b
+  integer (kind=4) i4_normal_ab
+  real (kind=4) r1
+  real (kind=4) r2
+  real (kind=4), parameter :: r4_pi = 3.141592653589793E+00
+! real (kind=4) r4_uniform_01
+  integer (kind=4) seed
+  real (kind=4) x
 
   r1 = r4_uniform_01 ( seed )
   r2 = r4_uniform_01 ( seed )
@@ -962,27 +963,27 @@ recursive function i8_normal_ab ( a, b, seed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, the mean of the PDF.
+!    Input, real (kind=8) A, the mean of the PDF.
 !
-!    Input, real ( kind = 8 ) B, the standard deviation of the PDF.
+!    Input, real (kind=8) B, the standard deviation of the PDF.
 !
-!    Input/output, integer ( kind = 8 ) SEED, a seed for the
+!    Input/output, integer (kind=8) SEED, a seed for the
 !    random number generator.
 !
-!    Output, integer ( kind = 8 ) I8_NORMAL_AB, a sample of the normal PDF.
+!    Output, integer (kind=8) I8_NORMAL_AB, a sample of the normal PDF.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  integer ( kind = 8 ) i8_normal_ab
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-! real ( kind = 8 ) r8_uniform_01
-! integer ( kind = 8 ) seed     ! compiler error, type mismatch; corrected MDG 01/02/15
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) x
+  real (kind=8) a
+  real (kind=8) b
+  integer (kind=8) i8_normal_ab
+  real (kind=8) r1
+  real (kind=8) r2
+  real (kind=8), parameter :: r8_pi = 3.141592653589793D+00
+! real (kind=8) r8_uniform_01
+! integer (kind=8) seed     ! compiler error, type mismatch; corrected MDG 01/02/15
+  integer (kind=4) seed
+  real (kind=8) x
 
   r1 = r8_uniform_01 ( seed )
   r2 = r8_uniform_01 ( seed )
@@ -1018,21 +1019,21 @@ recursive function r4_normal_01 ( seed )
 !
 !  Parameters:
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, real ( kind = 4 ) R4_NORMAL_01, a sample of the standard
+!    Output, real (kind=4) R4_NORMAL_01, a sample of the standard
 !    normal PDF.
 !
   implicit none
 
-  real ( kind = 4 ) r1
-  real ( kind = 4 ) r2
-  real ( kind = 4 ) r4_normal_01
-  real ( kind = 4 ), parameter :: r4_pi = 3.141592653589793E+00
-! real ( kind = 4 ) r4_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 4 ) x
+  real (kind=4) r1
+  real (kind=4) r2
+  real (kind=4) r4_normal_01
+  real (kind=4), parameter :: r4_pi = 3.141592653589793E+00
+! real (kind=4) r4_uniform_01
+  integer (kind=4) seed
+  real (kind=4) x
 
   r1 = r4_uniform_01 ( seed )
   r2 = r4_uniform_01 ( seed )
@@ -1068,26 +1069,26 @@ recursive function r4_normal_ab ( a, b, seed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 4 ) A, the mean of the PDF.
+!    Input, real (kind=4) A, the mean of the PDF.
 !
-!    Input, real ( kind = 4 ) B, the standard deviation of the PDF.
+!    Input, real (kind=4) B, the standard deviation of the PDF.
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, real ( kind = 4 ) R4_NORMAL_AB, a sample of the normal PDF.
+!    Output, real (kind=4) R4_NORMAL_AB, a sample of the normal PDF.
 !
   implicit none
 
-  real ( kind = 4 ) a
-  real ( kind = 4 ) b
-  real ( kind = 4 ) r1
-  real ( kind = 4 ) r2
-  real ( kind = 4 ) r4_normal_ab
-  real ( kind = 4 ), parameter :: r4_pi = 3.141592653589793E+00
-! real ( kind = 4 ) r4_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 4 ) x
+  real (kind=4) a
+  real (kind=4) b
+  real (kind=4) r1
+  real (kind=4) r2
+  real (kind=4) r4_normal_ab
+  real (kind=4), parameter :: r4_pi = 3.141592653589793E+00
+! real (kind=4) r4_uniform_01
+  integer (kind=4) seed
+  real (kind=4) x
 
   r1 = r4_uniform_01 ( seed )
   r2 = r4_uniform_01 ( seed )
@@ -1107,7 +1108,7 @@ recursive function r4_uniform_01 ( seed )
 !
 !  Discussion:
 !
-!    An R4 is a real ( kind = 4 ) value.
+!    An R4 is a real (kind=4) value.
 !
 !    This routine implements the recursion
 !
@@ -1169,18 +1170,18 @@ recursive function r4_uniform_01 ( seed )
 !
 !  Parameters:
 !
-!    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which
+!    Input/output, integer (kind=4) SEED, the "seed" value, which
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 4 ) R4_UNIFORM_01, a new pseudorandom variate,
+!    Output, real (kind=4) R4_UNIFORM_01, a new pseudorandom variate,
 !    strictly between 0 and 1.
 !
   implicit none
 
-  integer ( kind = 4 ), parameter :: i4_huge = 2147483647
-  integer ( kind = 4 ) k
-  integer ( kind = 4 ) seed
-  real ( kind = 4 ) r4_uniform_01
+  integer (kind=4), parameter :: i4_huge = 2147483647
+  integer (kind=4) k
+  integer (kind=4) seed
+  real (kind=4) r4_uniform_01
 
   if ( seed == 0 ) then
     write ( *, '(a)' ) ' '
@@ -1197,7 +1198,7 @@ recursive function r4_uniform_01 ( seed )
     seed = seed + i4_huge
   end if
 
-  r4_uniform_01 = real ( seed, kind = 4 ) * 4.656612875E-10
+  r4_uniform_01 = real ( seed,kind=4) * 4.656612875E-10
 
   return
 end
@@ -1210,7 +1211,7 @@ recursive subroutine r4vec_uniform_01 ( n, seed, r )
 !
 !  Discussion:
 !
-!    An R4VEC is an array of real ( kind = 4 ) values.
+!    An R4VEC is an array of real (kind=4) values.
 !
 !  Licensing:
 !
@@ -1255,23 +1256,23 @@ recursive subroutine r4vec_uniform_01 ( n, seed, r )
 !
 !  Parameters:
 !
-!    Input, integer ( kind = 4 ) N, the number of entries in the vector.
+!    Input, integer (kind=4) N, the number of entries in the vector.
 !
-!    Input/output, integer ( kind = 4 ) SEED, the "seed" value,
+!    Input/output, integer (kind=4) SEED, the "seed" value,
 !    which should NOT be 0.
 !    On output, SEED has been updated.
 !
-!    Output, real ( kind = 4 ) R(N), the vector of pseudorandom values.
+!    Output, real (kind=4) R(N), the vector of pseudorandom values.
 !
   implicit none
 
-  integer ( kind = 4 ) n
+  integer (kind=4) n
 
-  integer ( kind = 4 ) i
-  integer ( kind = 4 ), parameter :: i4_huge = 2147483647
-  integer ( kind = 4 ) k
-  integer ( kind = 4 ) seed
-  real ( kind = 4 ) r(n)
+  integer (kind=4) i
+  integer (kind=4), parameter :: i4_huge = 2147483647
+  integer (kind=4) k
+  integer (kind=4) seed
+  real (kind=4) r(n)
 
   if ( seed == 0 ) then
     write ( *, '(a)' ) ' '
@@ -1290,7 +1291,7 @@ recursive subroutine r4vec_uniform_01 ( n, seed, r )
       seed = seed + i4_huge
     end if
 
-    r(i) = real ( seed, kind = 4 ) * 4.656612875E-10
+    r(i) = real ( seed,kind=4) * 4.656612875E-10
 
   end do
 
@@ -1324,38 +1325,38 @@ recursive subroutine r4vec_normal_ab ( n, a, b, seed, x )
 !
 !  Parameters:
 !
-!    Input, integer ( kind = 4 ) N, the number of values desired.
+!    Input, integer (kind=4) N, the number of values desired.
 !
-!    Input, real ( kind = 4 ) A, B, the mean and standard deviation.
+!    Input, real (kind=4) A, B, the mean and standard deviation.
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, real ( kind = 4 ) X(N), a sample of the standard normal PDF.
+!    Output, real (kind=4) X(N), a sample of the standard normal PDF.
 !
 !  Local parameters:
 !
-!    Local, real ( kind = 4 ) R(N+1), is used to store some uniform
+!    Local, real (kind=4) R(N+1), is used to store some uniform
 !    random values.  Its dimension is N+1, but really it is only needed
 !    to be the smallest even number greater than or equal to N.
 !
-!    Local, integer ( kind = 4 ) X_LO_INDEX, X_HI_INDEX, records the range
+!    Local, integer (kind=4) X_LO_INDEX, X_HI_INDEX, records the range
 !    of entries of X that we need to compute.
 !
   implicit none
 
-  integer ( kind = 4 ) n
+  integer (kind=4) n
 
-  real ( kind = 4 ) a
-  real ( kind = 4 ) b
-  integer ( kind = 4 ) m
-  real ( kind = 4 ) r(n+1)
-  real ( kind = 4 ), parameter :: r4_pi = 3.141592653589793E+00
-! real ( kind = 4 ) r4_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 4 ) x(n)
-  integer ( kind = 4 ) x_hi_index
-  integer ( kind = 4 ) x_lo_index
+  real (kind=4) a
+  real (kind=4) b
+  integer (kind=4) m
+  real (kind=4) r(n+1)
+  real (kind=4), parameter :: r4_pi = 3.141592653589793E+00
+! real (kind=4) r4_uniform_01
+  integer (kind=4) seed
+  real (kind=4) x(n)
+  integer (kind=4) x_hi_index
+  integer (kind=4) x_lo_index
 !
 !  Record the range of X we need to fill in.
 !
@@ -1451,21 +1452,21 @@ recursive function r8_normal_01 ( seed )
 !
 !  Parameters:
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, real ( kind = 8 ) R8_NORMAL_01, a normally distributed
+!    Output, real (kind=8) R8_NORMAL_01, a normally distributed
 !    random value.
 !
   implicit none
 
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) r8_normal_01
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-! real ( kind = 8 ) r8_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) x
+  real (kind=8) r1
+  real (kind=8) r2
+  real (kind=8) r8_normal_01
+  real (kind=8), parameter :: r8_pi = 3.141592653589793D+00
+! real (kind=8) r8_uniform_01
+  integer (kind=4) seed
+  real (kind=8) x
 
   r1 = r8_uniform_01 ( seed )
   r2 = r8_uniform_01 ( seed )
@@ -1501,26 +1502,26 @@ recursive function r8_normal_ab ( a, b, seed )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) A, the mean of the PDF.
+!    Input, real (kind=8) A, the mean of the PDF.
 !
-!    Input, real ( kind = 8 ) B, the standard deviation of the PDF.
+!    Input, real (kind=8) B, the standard deviation of the PDF.
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, real ( kind = 8 ) R8_NORMAL_AB, a sample of the normal PDF.
+!    Output, real (kind=8) R8_NORMAL_AB, a sample of the normal PDF.
 !
   implicit none
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  real ( kind = 8 ) r1
-  real ( kind = 8 ) r2
-  real ( kind = 8 ) r8_normal_ab
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-! real ( kind = 8 ) r8_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) x
+  real (kind=8) a
+  real (kind=8) b
+  real (kind=8) r1
+  real (kind=8) r2
+  real (kind=8) r8_normal_ab
+  real (kind=8), parameter :: r8_pi = 3.141592653589793D+00
+! real (kind=8) r8_uniform_01
+  integer (kind=4) seed
+  real (kind=8) x
 
   r1 = r8_uniform_01 ( seed )
   r2 = r8_uniform_01 ( seed )
@@ -1599,18 +1600,18 @@ recursive function r8_uniform_01 ( seed )
 !
 !  Parameters:
 !
-!    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which
+!    Input/output, integer (kind=4) SEED, the "seed" value, which
 !    should NOT be 0.
 !    On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R8_UNIFORM_01, a new pseudorandom variate,
+!    Output, real (kind=8) R8_UNIFORM_01, a new pseudorandom variate,
 !    strictly between 0 and 1.
 !
   implicit none
 
-  integer ( kind = 4 ) k
-  real ( kind = 8 ) r8_uniform_01
-  integer ( kind = 4 ) seed
+  integer (kind=4) k
+  real (kind=8) r8_uniform_01
+  integer (kind=4) seed
 
   k = seed / 127773
 
@@ -1623,7 +1624,7 @@ recursive function r8_uniform_01 ( seed )
 !  Although SEED can be represented exactly as a 32 bit integer,
 !  it generally cannot be represented exactly as a 32 bit real number!
 !
-  r8_uniform_01 = real ( seed, kind = 8 ) * 4.656612875D-10
+  r8_uniform_01 = real ( seed,kind=8) * 4.656612875D-10
 
   return
 end
@@ -1677,21 +1678,21 @@ recursive subroutine r8mat_normal_01 ( m, n, seed, r )
 !
 !  Parameters:
 !
-!    Input, integer ( kind = 4 ) M, N, the number of rows and columns
+!    Input, integer (kind=4) M, N, the number of rows and columns
 !    in the array.
 !
-!    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which
+!    Input/output, integer (kind=4) SEED, the "seed" value, which
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R(M,N), the array of pseudonormal values.
+!    Output, real (kind=8) R(M,N), the array of pseudonormal values.
 !
   implicit none
 
-  integer ( kind = 4 ) m
-  integer ( kind = 4 ) n
+  integer (kind=4) m
+  integer (kind=4) n
 
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) r(m,n)
+  integer (kind=4) seed
+  real (kind=8) r(m,n)
 
   call r8vec_normal_01 ( m * n, seed, r )
 
@@ -1747,25 +1748,25 @@ recursive subroutine r8mat_normal_ab ( m, n, a, b, seed, r )
 !
 !  Parameters:
 !
-!    Input, integer ( kind = 4 ) M, N, the number of rows and columns
+!    Input, integer (kind=4) M, N, the number of rows and columns
 !    in the array.
 !
-!    Input, real ( kind = 8 ) A, B, the mean and standard deviation.
+!    Input, real (kind=8) A, B, the mean and standard deviation.
 !
-!    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which
+!    Input/output, integer (kind=4) SEED, the "seed" value, which
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R(M,N), the array of pseudonormal values.
+!    Output, real (kind=8) R(M,N), the array of pseudonormal values.
 !
   implicit none
 
-  integer ( kind = 4 ) m
-  integer ( kind = 4 ) n
+  integer (kind=4) m
+  integer (kind=4) n
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) r(m,n)
+  real (kind=8) a
+  real (kind=8) b
+  integer (kind=4) seed
+  real (kind=8) r(m,n)
 
   call r8vec_normal_ab ( m * n, a, b, seed, r )
 
@@ -1799,34 +1800,34 @@ recursive subroutine r8vec_normal_01 ( n, seed, x )
 !
 !  Parameters:
 !
-!    Input, integer ( kind = 4 ) N, the number of values desired.
+!    Input, integer (kind=4) N, the number of values desired.
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, real ( kind = 8 ) X(N), a sample of the standard normal PDF.
+!    Output, real (kind=8) X(N), a sample of the standard normal PDF.
 !
 !  Local parameters:
 !
-!    Local, real ( kind = 8 ) R(N+1), is used to store some uniform
+!    Local, real (kind=8) R(N+1), is used to store some uniform
 !    random values.  Its dimension is N+1, but really it is only needed
 !    to be the smallest even number greater than or equal to N.
 !
-!    Local, integer ( kind = 4 ) X_LO_INDEX, X_HI_INDEX, records the range
+!    Local, integer (kind=4) X_LO_INDEX, X_HI_INDEX, records the range
 !    of entries of X that we need to compute
 !
   implicit none
 
-  integer ( kind = 4 ) n
+  integer (kind=4) n
 
-  integer ( kind = 4 ) m
-  real ( kind = 8 ) r(n+1)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-! real ( kind = 8 ) r8_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) x(n)
-  integer ( kind = 4 ) x_hi_index
-  integer ( kind = 4 ) x_lo_index
+  integer (kind=4) m
+  real (kind=8) r(n+1)
+  real (kind=8), parameter :: r8_pi = 3.141592653589793D+00
+! real (kind=8) r8_uniform_01
+  integer (kind=4) seed
+  real (kind=8) x(n)
+  integer (kind=4) x_hi_index
+  integer (kind=4) x_lo_index
 !
 !  Record the range of X we need to fill in.
 !
@@ -1920,38 +1921,38 @@ recursive subroutine r8vec_normal_ab ( n, a, b, seed, x )
 !
 !  Parameters:
 !
-!    Input, integer ( kind = 4 ) N, the number of values desired.
+!    Input, integer (kind=4) N, the number of values desired.
 !
-!    Input, real ( kind = 8 ) A, B, the mean and standard deviation.
+!    Input, real (kind=8) A, B, the mean and standard deviation.
 !
-!    Input/output, integer ( kind = 4 ) SEED, a seed for the random
+!    Input/output, integer (kind=4) SEED, a seed for the random
 !    number generator.
 !
-!    Output, real ( kind = 8 ) X(N), a sample of the standard normal PDF.
+!    Output, real (kind=8) X(N), a sample of the standard normal PDF.
 !
 !  Local parameters:
 !
-!    Local, real ( kind = 8 ) R(N+1), is used to store some uniform
+!    Local, real (kind=8) R(N+1), is used to store some uniform
 !    random values.  Its dimension is N+1, but really it is only needed
 !    to be the smallest even number greater than or equal to N.
 !
-!    Local, integer ( kind = 4 ) X_LO_INDEX, X_HI_INDEX, records the range
+!    Local, integer (kind=4) X_LO_INDEX, X_HI_INDEX, records the range
 !    of entries of X that we need to compute. 
 !
   implicit none
 
-  integer ( kind = 4 ) n
+  integer (kind=4) n
 
-  real ( kind = 8 ) a
-  real ( kind = 8 ) b
-  integer ( kind = 4 ) m
-  real ( kind = 8 ) r(n+1)
-  real ( kind = 8 ), parameter :: r8_pi = 3.141592653589793D+00
-! real ( kind = 8 ) r8_uniform_01
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) x(n)
-  integer ( kind = 4 ) x_hi_index
-  integer ( kind = 4 ) x_lo_index
+  real (kind=8) a
+  real (kind=8) b
+  integer (kind=4) m
+  real (kind=8) r(n+1)
+  real (kind=8), parameter :: r8_pi = 3.141592653589793D+00
+! real (kind=8) r8_uniform_01
+  integer (kind=4) seed
+  real (kind=8) x(n)
+  integer (kind=4) x_hi_index
+  integer (kind=4) x_lo_index
 !
 !  Record the range of X we need to fill in.
 !
@@ -2071,21 +2072,21 @@ recursive subroutine r8vec_uniform_01 ( n, seed, r )
 !
 !  Parameters:
 !
-!    Input, integer ( kind = 4 ) N, the number of entries in the vector.
+!    Input, integer (kind=4) N, the number of entries in the vector.
 !
-!    Input/output, integer ( kind = 4 ) SEED, the "seed" value, which
+!    Input/output, integer (kind=4) SEED, the "seed" value, which
 !    should NOT be 0.  On output, SEED has been updated.
 !
-!    Output, real ( kind = 8 ) R(N), the vector of pseudorandom values.
+!    Output, real (kind=8) R(N), the vector of pseudorandom values.
 !
   implicit none
 
-  integer ( kind = 4 ) n
+  integer (kind=4) n
 
-  integer ( kind = 4 ) i
-  integer ( kind = 4 ) k
-  integer ( kind = 4 ) seed
-  real ( kind = 8 ) r(n)
+  integer (kind=4) i
+  integer (kind=4) k
+  integer (kind=4) seed
+  real (kind=8) r(n)
 
   do i = 1, n
 
@@ -2097,7 +2098,7 @@ recursive subroutine r8vec_uniform_01 ( n, seed, r )
       seed = seed + 2147483647
     end if
 
-    r(i) = real ( seed, kind = 8 ) * 4.656612875D-10
+    r(i) = real ( seed,kind=8) * 4.656612875D-10
 
   end do
 

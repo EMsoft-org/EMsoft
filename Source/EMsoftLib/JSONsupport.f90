@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2015, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -1241,7 +1241,7 @@ integer(kind=irg),INTENT(INOUT)                       :: error_cnt
 
 type(json_value),pointer                              :: p, inp
 
-integer(kind=irg),parameter                           :: n_int = 5, n_real = 6
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 6
 integer(kind=irg)                                     :: io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -1253,12 +1253,11 @@ namelistname = 'inputlist'
 call JSON_initpointers(p, inp, jsonname, namelistname, error_cnt)
 
 ! write all the single integers
-io_int = (/ lacbednl%stdout, lacbednl%maxHOLZ, lacbednl%numthick, lacbednl%npix, lacbednl%nthreads /)
-intlist(1) = 'stdout'
-intlist(2) = 'maxHOLZ'
-intlist(3) = 'numthick'
-intlist(4) = 'npix'
-intlist(5) = 'nthreads'
+io_int = (/ lacbednl%maxHOLZ, lacbednl%numthick, lacbednl%npix, lacbednl%nthreads /)
+intlist(1) = 'maxHOLZ'
+intlist(2) = 'numthick'
+intlist(3) = 'npix'
+intlist(4) = 'nthreads'
 call JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cnt)
 
 ! vectors
@@ -2963,7 +2962,7 @@ else
   ep = 'EBSDreflectors.masterfile'
   call JSONreadString(json, ep, rnl%masterfile, defrnl%masterfile)
   ep = 'EBSDreflectors.energyfile'
-  call JSONreadString(json, ep, rnl%energyfile, defrnl%energyfile)
+  call JSONreadString(json, ep, rnl%listfile, defrnl%listfile)
 end if
 
 call json%destroy(); call JSON_failtest(error_cnt)

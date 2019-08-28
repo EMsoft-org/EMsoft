@@ -46,84 +46,190 @@ include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
 if(EMsoft_ENABLE_HDF5_SUPPORT)
   
-  string(TOLOWER ${LIB_TYPE} lib_type)
+  set(lib_type "static")
+  if(BUILD_SHARED_LIBS)
+    set(lib_type "shared")
+  endif()
   set(hdf5LinkLibs hdf5 hdf5_f90cstub hdf5_fortran hdf5_hl hdf5_hl_f90cstub hdf5_hl_fortran)
   set(comps ${hdf5LinkLibs})
-  if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
-    set(hdf5LinkLibs "")
-    foreach(comp ${comps})
-      if(TARGET ${comp}-${lib_type})
-        set(hdf5LinkLibs ${hdf5LinkLibs} ${comp}-${lib_type})
-      endif()
-    endforeach()
-  endif()
+  set(hdf5LinkLibs "")
+  foreach(comp ${comps})
+    if(TARGET hdf5::${comp}-${lib_type})
+      set(hdf5LinkLibs ${hdf5LinkLibs} hdf5::${comp}-${lib_type})
+    endif() 
+  endforeach()
 
   set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${hdf5LinkLibs} EMsoftHDFLib)
 
-  AddEMsoftUnitTest(TARGET HDFtextfileTest
-                    SOURCES ${EMsoftTestDir}/HDFtextfileTest.f90
-                    TEST_NAME HDFtextfile
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
+  set(EMsoft_UNIT_TESTS 
+    HDFtextfile
+    HDFinteger
+    HDFchar
+    HDFfloat
+    HDFdouble
+    HDFhyperslab
+    HDFstack
+    MODcrystal
+    MODMuellerCalculus
+    MODRotations
+    Image
+  )
 
-  AddEMsoftUnitTest(TARGET HDFintegerTest
-                    SOURCES ${EMsoftTestDir}/HDFintegerTest.f90
-                    TEST_NAME HDFinteger
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFcharTest
-                    SOURCES ${EMsoftTestDir}/HDFcharTest.f90
-                    TEST_NAME HDFchar
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFfloatTest
-                    SOURCES ${EMsoftTestDir}/HDFfloatTest.f90
-                    TEST_NAME HDFfloat
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFdoubleTest
-                    SOURCES ${EMsoftTestDir}/HDFdoubleTest.f90
-                    TEST_NAME HDFdouble
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFhyperslabTest
-                    SOURCES ${EMsoftTestDir}/HDFhyperslabTest.f90
-                    TEST_NAME HDFhyperslab
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET HDFstackTest
-                    SOURCES ${EMsoftTestDir}/HDFstackTest.f90
-                    TEST_NAME HDFstack
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET MODcrystalTest
-                    SOURCES ${EMsoftTestDir}/MODcrystalTest.f90
-                    TEST_NAME MODcrystal
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET MODMuellerCalculusTest
-                    SOURCES ${EMsoftTestDir}/MODMuellerCalculusTest.f90
-                    TEST_NAME MODMuellerCalculus
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET MODRotationsTest
-                    SOURCES ${EMsoftTestDir}/MODRotationsTest.f90
-                    TEST_NAME MODRotationsTest
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
-
-  AddEMsoftUnitTest(TARGET ImageTest
-                    SOURCES ${EMsoftTestDir}/ImageTest.f90
-                    TEST_NAME Image
-                    LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                    SOLUTION_FOLDER EMsoftPublic/Test)
+  foreach(test ${EMsoft_UNIT_TESTS})
+    message(STATUS "Adding Unit test: ${test}" )
+    AddEMsoftUnitTest(TARGET ${test}Test
+                      SOURCES ${EMsoftTestDir}/${test}Test.f90
+                      TEST_NAME ${test}
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      SOLUTION_FOLDER EMsoftPublic/Test)
+    if(MSVC)
+        target_compile_options( ${test}Test PRIVATE "/MT$<$<CONFIG:Debug>:d>")
+        target_link_options(${test}Test PRIVATE "/NODEFAULTLIB:MSVCRT")
+    endif()
+  endforeach()
 
 endif()
+
+#------------------------------------------------------------------------------
+# Create CTest entries for a basic indexing workflow
+#------------------------------------------------------------------------------
+# Use multiple CPU cores to Test
+include(ProcessorCount)
+ProcessorCount(EMsoft_TEST_CPU_COUNT)
+
+set(EXE_EXT "")
+if(WIN32)
+  set(EXE_EXT ".exe")
+endif()
+
+#------------------------------------------------------------------------------
+# This bit ensures that the EMsoftData_DIR is set correctly or errors out.
+get_filename_component(EMSOFT_PARENT ${EMsoft_SOURCE_DIR} DIRECTORY CACHE)
+if("${EMsoftData_DIR}" STREQUAL "")
+  if(EXISTS "${EMSOFT_PARENT}/EMsoftData")
+    set(EMsoftData_DIR ${EMSOFT_PARENT}/EMsoftData)
+  else()
+    message(WARNING "EMsoftData_DIR not found or empty folder, cloning automatically from https://github.com/emsoft-org/EMsoftData")
+message(FATAL_ERROR "${EMSOFT_PARENT}/EMsoftData")
+    include(ExternalProject)
+    ExternalProject_Add("EMsoftDataClone"
+      GIT_REPOSITORY https://github.com/emsoft-org/EMsoftData
+      GIT_TAG "develop" # get the develop branch
+      DOWNLOAD_DIR "${EMSOFT_PARENT}/EMsoftData"
+      GIT_SHALLOW TRUE # we don't need version history
+      GIT_PROGRESS TRUE # there may be some large datafiles
+      # CONFIGURE_COMMAND "" # nothing needs to be configured
+      # BUILD_COMMAND "" # nothing needs to be built
+      # INSTALL_COMMAND "" # nothing needs to be installed
+      # TEST_COMMAND "" # nothing needs to be tested
+    )
+
+    # message(FATAL_ERROR "EMsoftData CMake Variable must point to the path to the EMsoftData repository.\
+    # We looked in the same directory as the 'EMsoft' directory for a directory called EMsoftData but did not find it.\
+    # You can clone it from https://github.com/emsoft-org/EMsoftData using the 'develop' branch\
+    # or you can set the EMsoftData_DIR variable to point to the location of the EMsoftData directory.\    
+    # ")  
+  endif()
+endif()
+
+#------------------------------------------------------------------------------
+#  Function: create_workflow_test
+#  brief: This creates a ctest for a specific EBSD DI Workflow
+#
+function(create_workflow_test)
+  set(options )
+  set(oneValueArgs EXE_NAME INDEX OUTPUT_DIR EXTRA_NML)
+  set(multiValueArgs )
+  cmake_parse_arguments(TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+  if(NOT EXISTS ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml)
+    message(FATAL_ERROR "NML File does not exist: ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml\
+    This file is part of the EMsoftData repository. Please ensure that the EMsoftData repository is\
+    up to date via a 'git pull origin develop' command. The current value of the EMsoftData_DIR is \
+    ${EMsoftData_DIR}")
+  endif()
+
+  configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXE_NAME}.nml
+                  ${TEST_OUTPUT_DIR}/${TEST_EXE_NAME}.nml
+  )
+
+  if(NOT "${TEST_EXTRA_NML}" STREQUAL "")
+    if(NOT EXISTS ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXTRA_NML})
+      message(FATAL_ERROR "NML File does not exist: ${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXTRA_NML}\
+      This file is part of the EMsoftData repository. Please ensure that the EMsoftData repository is\
+      up to date via a 'git pull origin develop' command. The current value of the EMsoftData_DIR is \
+      ${EMsoftData_DIR}")
+    endif()
+  
+    configure_file(${EMsoftData_DIR}/DItutorial/Ni/${TEST_EXTRA_NML}
+                  ${EMsoft_NML_TEST_DIR}/${TEST_EXTRA_NML}
+    )
+  endif()
+  message(STATUS "Adding Unit Test: EMsoft_${TEST_INDEX}_${TEST_EXE_NAME}")
+  add_test(NAME EMsoft_${TEST_INDEX}_${TEST_EXE_NAME}
+          COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TEST_EXE_NAME}${EXE_EXT}" "${TEST_OUTPUT_DIR}/${TEST_EXE_NAME}.nml" 
+          WORKING_DIRECTORY ${EMsoft_NML_TEST_DIR})
+
+endfunction()
+
+
+#------------------------------------------------------------------------------
+# 1: The Ni.xtal file should have been copied into the proper spot via some other external means
+# We are just going to have to trust that it is there. We are numbering the tests
+# so that CTest runs them in the correct order.
+set(test_index  "1")
+set(EMsoft_NML_TEST_DIR "${EMsoft_BINARY_DIR}/DItutorial/Ni")
+file(MAKE_DIRECTORY ${EMsoft_NML_TEST_DIR})
+
+#------------------------------------------------------------------------------
+# 2: Setup the EMMCOpenCL executable
+math(EXPR test_index "${test_index} + 1")
+create_workflow_test( EXE_NAME EMMCOpenCL
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
+
+
+#------------------------------------------------------------------------------
+# 3: Setup the EMEBSDmaster executable
+math(EXPR test_index "${test_index} + 1")
+create_workflow_test( EXE_NAME EMEBSDmaster
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                      EXTRA_NML BetheParameters.nml
+                    )
+
+
+#------------------------------------------------------------------------------
+# 4: Setup the ADP executable
+math(EXPR test_index "${test_index} + 1")
+create_workflow_test( EXE_NAME EMgetADP
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
+
+#------------------------------------------------------------------------------
+# 5: Setup the EMEBSDDIpreview executable
+math(EXPR test_index "${test_index} + 1")
+create_workflow_test( EXE_NAME EMEBSDDIpreview
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
+
+
+#------------------------------------------------------------------------------
+# 6: Setup the EMEBSDDIpreview executable
+math(EXPR test_index "${test_index} + 1")
+create_workflow_test( EXE_NAME EMEBSDDI
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
+
+#------------------------------------------------------------------------------
+# 7: Setup the EMFitOrientation executable
+math(EXPR test_index "${test_index} + 1")
+create_workflow_test( EXE_NAME EMFitOrientation
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
+

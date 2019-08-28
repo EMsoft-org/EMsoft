@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2018, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2015-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -131,22 +131,25 @@ modalityname = trim(enl%modality)
 call h5open_EMsoft(hdferr)
 
 if (trim(modalityname) .eq. 'EBSD') then
-    call readEBSDDotProductFile(enl%dotproductfile, dinl, hdferr, EBSDDIdata, &
+    refined = .FALSE.
+    if (trim(enl%angledataset).eq.'refined') then 
+        call readEBSDDotProductFile(enl%dotproductfile, dinl, hdferr, EBSDDIdata, &
+                                    getCI=.TRUE., &
+                                    getIQ=.TRUE., & 
+                                    getOSM=.TRUE., & 
+                                    getRefinedEulerAngles=.TRUE., &
+                                    getPhi1=.TRUE., &
+                                    getPhi=.TRUE., &
+                                    getPhi2=.TRUE.) 
+
+    else
+        call readEBSDDotProductFile(enl%dotproductfile, dinl, hdferr, EBSDDIdata, &
                                 getCI=.TRUE., &
                                 getIQ=.TRUE., & 
                                 getOSM=.TRUE., & 
-                                getRefinedEulerAngles=.TRUE., &
                                 getPhi1=.TRUE., &
                                 getPhi=.TRUE., &
                                 getPhi2=.TRUE.) 
-
-    refined = .FALSE.
-    if (trim(enl%angledataset).eq.'refined') then 
-        if (allocated(EBSDDIdata%RefinedEulerAngles)) then
-            refined = .TRUE.
-        else
-            call FatalError('EMgetCTF','There is no refined Euler Angle dataset in this dot product file')
-        end if
     end if
 
     Nexp = EBSDDIdata%Nexp
@@ -157,7 +160,7 @@ if (trim(modalityname) .eq. 'EBSD') then
     end if 
     euler_best = 0.0
     CIlist = 0.0
-    if (refined.eqv..TRUE.) then
+    if (refined.eqv..FALSE.) then
         euler_best(1,1:Nexp) = EBSDDIdata%Phi1(1:Nexp)*180.0/cPi
         euler_best(2,1:Nexp) = EBSDDIdata%Phi(1:Nexp)*180.0/cPi
         euler_best(3,1:Nexp) = EBSDDIdata%Phi2(1:Nexp)*180.0/cPi
@@ -209,9 +212,9 @@ else
     call FatalError('EMgetCTF:',dpfile)
 end if
 
-! read the Monte Carlo data file to get the xtal file name
-    call readEBSDMonteCarloFile(dinl%masterfile, mcnl, hdferr, EBSDMCdata)
-    pgnum = GetPointGroup(mcnl%xtalname,.FALSE.)
+write (*,*) 'crystal structure file name = ', trim(enl%xtalname)
+
+    pgnum = GetPointGroup(enl%xtalname,NoHDFInterfaceOpen=.FALSE.)
 
 ! and prepare the .ctf output file 
 if(modalityname .eq. 'EBSD') then
@@ -237,7 +240,7 @@ if(modalityname .eq. 'EBSD') then
     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
 
     if (dinl%ctffile.ne.'undefined') then 
-      call ctfebsd_writeFile(dinl,mcnl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM, &
+      call ctfebsd_writeFile(dinl,enl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%OSM, &
                              EBSDDIdata%IQ,noindex=.TRUE.)
       call Message('Data stored in ctf file : '//trim(enl%newctffile))
     end if

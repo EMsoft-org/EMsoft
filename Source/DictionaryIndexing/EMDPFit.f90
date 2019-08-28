@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -84,6 +84,8 @@ end program EMDPFit
 !> @date 02/22/16  SS 1.0 original
 !> @date 08/08/16  SS 1.1 4 pattern fit
 !> @date 08/10/16  SS 1.2 added variable stepsize
+!> @date 08/28/18 MDG 1.3 replaced master pattern reading by standard routines in EBSDmod.f90
+!> @date 08/28/18 MDG 1.4 replaced single pattern reading by standard input of patterns from various formats
 !--------------------------------------------------------------------------
 subroutine FitDP(enl, progname, nmldeffile)
 
@@ -96,6 +98,7 @@ use,INTRINSIC :: ISO_C_BINDING
 use omp_lib
 use error
 use EMdymod
+use EBSDmod
 use bobyqa_module
 use io, only:WriteValue
 use stringconstants
@@ -107,6 +110,11 @@ IMPLICIT NONE
 type(EMDPFitListType),INTENT(INOUT)             :: enl
 character(fnlen),INTENT(IN)                     :: progname
 character(fnlen),INTENT(IN)                     :: nmldeffile
+
+type(MCCLNameListType)                          :: mcnl
+type(EBSDMasterNameListType)                    :: mpnl
+type(EBSDMCdataType)                            :: EBSDMCdata
+type(EBSDMPdataType)                            :: EBSDMPdata
 
 real(kind=sgl),allocatable                      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:)
 real(kind=sgl),allocatable                      :: mLPNHtmp(:,:,:,:), mLPSHtmp(:,:,:,:)
@@ -229,92 +237,43 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
         call FatalError('EMDPFit','Unknown similarity measure for images')
     end if
 
-    if(enl%mask) IPAR(11) = 1
+    if (enl%mask.eqv..TRUE.) IPAR(11) = 1
+
+! read the relevant parameters and arrays from the EBSD master file 
+
 ! open the fortran HDF interface
     call h5open_EMsoft(hdferr)
+    nullify(HDF_head)
 
-    nullify(HDF_head, HDF_head)
+    ! 1. read the Monte Carlo data 
+    call readEBSDMonteCarloFile(enl%masterfile, mcnl, hdferr, EBSDMCdata, getAccume=.TRUE.)
 
-! is this a propoer HDF5 file ?
-    call h5fis_hdf5_f(trim(EMsoft_getEMdatapathname())//trim(enl%masterfile), stat, hdferr)
-
-    if (stat) then 
-! open the master file 
-        readonly = .TRUE.
-        filename = trim(EMsoft_getEMdatapathname())//trim(enl%masterfile)
-        
-        hdferr =  HDF_openFile(filename, HDF_head, readonly)
-        
-groupname = SC_EMData
-        hdferr = HDF_openGroup(groupname, HDF_head)
-
-groupname = SC_EBSDmaster
-        hdferr = HDF_openGroup(groupname, HDF_head)
-
-dataset = SC_mLPNH
-        call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNHtmp)
-
-dataset = SC_mLPSH
-        call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPSHtmp)
-
-        nnx = (dims4(1)-1)/2
-        IPAR(6) = nnx
-
-        allocate(mLPNH(-nnx:nnx,-nnx:nnx,dims4(3),dims4(4)), mLPSH(-nnx:nnx,-nnx:nnx,dims4(3),dims4(4)))
-
-        mLPNH = mLPNHtmp
-        mLPSH = mLPSHtmp
-
-        deallocate(mLPNHtmp, mLPSHtmp) 
-
-dataset = SC_numEbins
-        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, iread)
-        IPAR(4) = iread
-
-dataset = SC_numset
-        call HDF_readDatasetInteger(dataset, HDF_head, hdferr, iread)
-        IPAR(7) = iread
-
-        call HDF_pop(HDF_head)
-
-! open the Data group
-groupname = SC_MCOpenCL
-        hdferr = HDF_openGroup(groupname, HDF_head)
-
-dataset = SC_accume
-        call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, accum_e_int)
-        nnx = (dims3(2)-1)/2
-        IPAR(5) = nnx
-
-        allocate(accum_e(1:dims3(1),-nnx:nnx,-nnx:nnx))
-
-! and close EMData group
-        call HDF_pop(HDF_head)
-        call HDF_pop(HDF_head)
-
-! open the namelist group
-groupname = SC_NMLparameters
-        hdferr = HDF_openGroup(groupname, HDF_head)
-
-groupname = SC_MCCLNameList
-        hdferr = HDF_openGroup(groupname, HDF_head)
-
-dataset = SC_sig
-        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, fpar(4))
-
-dataset = SC_omega
-        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, fpar(5))
-enl%omega = fpar(5)
-
-        call HDF_pop(HDF_head,.TRUE.)
-
-    end if
-
-! close the fortran HDF interface
+    ! 2. read EBSD master patterns
+    call readEBSDMasterPatternFile(enl%masterfile, mpnl, hdferr, EBSDMPdata, getmLPNH=.TRUE., getmLPSH=.TRUE., keep4=.TRUE.)
     call h5close_EMsoft(hdferr)
 
-    accum_e = float(accum_e_int)
-    deallocate(accum_e_int)
+    dims4 = shape(EBSDMPdata%mLPNH4)
+    nnx = (dims4(1)-1)/2
+    IPAR(6) = nnx
+
+    allocate(mLPNH(-nnx:nnx,-nnx:nnx,dims4(3),dims4(4)), mLPSH(-nnx:nnx,-nnx:nnx,dims4(3),dims4(4)))
+
+    mLPNH = EBSDMPdata%mLPNH4
+    mLPSH = EBSDMPdata%mLPSH4
+
+    deallocate(EBSDMPdata%mLPNH4, EBSDMPdata%mLPSH4) 
+
+    IPAR(4) = EBSDMPdata%numEbins
+    IPAR(7) = EBSDMPdata%numset
+    fpar(4) = mcnl%sig
+    fpar(5) = mcnl%omega
+
+    dims3 = shape(EBSDMCdata%accum_e)
+    nnx = (dims3(2)-1)/2
+    IPAR(5) = nnx
+    allocate(accum_e(1:dims3(1),-nnx:nnx,-nnx:nnx))
+    accum_e = float(EBSDMCdata%accum_e)
+    deallocate(EBSDMCdata%accum_e)
 
     IPAR(2) = enl%numsx
     IPAR(3) = enl%numsy
@@ -350,6 +309,9 @@ enl%omega = fpar(5)
     STEPSIZE(6) = enl%step_L
     
     allocate(EXPT(IPAR(2)*IPAR(3)/IPAR(12)**2))
+
+! this part needs to be replaced with the proper reading routines so that all file formats can be accessed 
+! using this fitting program... 
 
     open(unit=dataunit,file=trim(EMsoft_getEMdatapathname())//trim(enl%exptfile),action='read',access='direct',&
     form='unformatted',recl=(4*ipar(2)*ipar(3)/ipar(12)**2))

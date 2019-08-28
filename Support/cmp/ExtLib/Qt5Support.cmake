@@ -1,36 +1,3 @@
-#--////////////////////////////////////////////////////////////////////////////
-# Copyright (c) 2009-2015 BlueQuartz Software, LLC
-#
-# Redistribution and use in source and binary forms, with or without modification,
-# are permitted provided that the following conditions are met:
-#
-# Redistributions of source code must retain the above copyright notice, this
-# list of conditions and the following disclaimer.
-#
-# Redistributions in binary form must reproduce the above copyright notice, this
-# list of conditions and the following disclaimer in the documentation and/or
-# other materials provided with the distribution.
-#
-# Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-# contributors may be used to endorse or promote products derived from this software
-# without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-# USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# The code contained herein was partially funded by the followig contracts:
-#    United States Air Force Prime Contract FA8650-07-D-5800
-#    United States Air Force Prime Contract FA8650-10-D-5210
-#    United States Prime Contract Navy N00173-07-C-2068
-#--////////////////////////////////////////////////////////////////////////////
 # --------------------------------------------------------------------
 #-- Copy all the Qt5 dependent DLLs into the current build directory so that
 #-- one can debug an application or library that depends on Qt5 libraries.
@@ -73,6 +40,8 @@ function(CopyQt5RunTimeLibraries)
                             # COMMENT "Copying ${P_PREFIX}${qtlib}${TYPE}.dll to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Debug/"
                             )
         set_target_properties(ZZ_${P_PREFIX}${qtlib}${TYPE}-Debug-Copy PROPERTIES FOLDER ZZ_COPY_FILES/Debug/Qt5)
+        get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+        set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${P_PREFIX}${qtlib}${TYPE}-Debug-Copy)
       endif()
 
     #   message(STATUS "Generating Copy Rule for Qt Release DLL Library ${QT_DLL_PATH_tmp}/${qtlib}d.dll")
@@ -84,6 +53,8 @@ function(CopyQt5RunTimeLibraries)
                             # COMMENT "Copying ${P_PREFIX}${qtlib}.dll to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Release/"
                             )
         set_target_properties(ZZ_${P_PREFIX}${qtlib}${TYPE}-Release-Copy PROPERTIES FOLDER ZZ_COPY_FILES/Release/Qt5)
+        get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+        set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${P_PREFIX}${qtlib}${TYPE}-Release-Copy)
       endif()
     endforeach(qtlib)
   elseif(SUPPORT_LIB_OPTION EQUAL 1)
@@ -106,6 +77,8 @@ function(CopyQt5RunTimeLibraries)
                             ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                             COMMENT "Copying ${P_PREFIX}${qtlib}${TYPE}.dll to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/")
         set_target_properties(ZZ_${qtlib}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/Qt5)
+        get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+        set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${qtlib}-Copy)
       endif()
     endforeach(qtlib)
   endif()
@@ -155,6 +128,8 @@ function(AddQt5SupportLibraryCopyInstallRules)
                             COMMENT "Copying ${P_PREIX}${qtlib}${SUFFIX}.dll to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INT_DIR}/")
         set_target_properties(ZZ_${qtlib}-${INT_DIR}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/${INT_DIR}/Qt5)
         install(FILES ${QT_DLL_PATH}/${P_PREIX}${qtlib}${SUFFIX}.dll  DESTINATION "${destination}" CONFIGURATIONS ${INT_DIR} COMPONENT Applications)
+        get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+        set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${qtlib}-${INT_DIR}-Copy)
       endif()
 
       set(INT_DIR "Release")
@@ -166,13 +141,15 @@ function(AddQt5SupportLibraryCopyInstallRules)
                             COMMENT "Copying ${P_PREIX}${qtlib}${SUFFIX}.dll to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${INT_DIR}/")
         set_target_properties(ZZ_${qtlib}-${INT_DIR}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/${INT_DIR}/Qt5)
         install(FILES ${QT_DLL_PATH}/${P_PREIX}${qtlib}${SUFFIX}.dll  DESTINATION "${destination}" CONFIGURATIONS ${INT_DIR} COMPONENT Applications)
+        get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+        set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${qtlib}-${INT_DIR}-Copy)      
       endif()
     endforeach(qtlib)
 
   elseif(SUPPORT_LIB_OPTION EQUAL 1)
   # This should be the code path for Ninja/NMake/Makefiles all on NON-OS X systems
     set(SUFFIX "")
-    if( ${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    if( "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
         set(SUFFIX ${P_DEBUG_SUFFIX})
     endif()
     set(INT_DIR "")
@@ -186,7 +163,9 @@ function(AddQt5SupportLibraryCopyInstallRules)
                             COMMENT "Copying ${P_PREIX}${qtlib}${SUFFIX}.dll to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
         set_target_properties(ZZ_${qtlib}-Copy PROPERTIES FOLDER ZZ_COPY_FILES/${INT_DIR}/Qt5)
         install(FILES ${QT_DLL_PATH}/${P_PREIX}${qtlib}${SUFFIX}.dll  DESTINATION "${destination}" CONFIGURATIONS ${CMAKE_BUILD_TYPE} COMPONENT Applications)
-        endif()
+        get_property(COPY_LIBRARY_TARGETS GLOBAL PROPERTY COPY_LIBRARY_TARGETS)
+        set_property(GLOBAL PROPERTY COPY_LIBRARY_TARGETS ${COPY_LIBRARY_TARGETS} ZZ_${qtlib}-Copy)        
+      endif()
     endforeach(qtlib)
 
   endif()
@@ -327,43 +306,11 @@ function(AddQWebEngineSupportFiles)
   endif()
 
   if (QM_QT_VERSION VERSION_GREATER 5.8.0 OR QM_QT_VERSION VERSION_EQUAL 5.8.0 )
-    if(WIN32 OR LINUX)
-      install(FILES ${QM_QT_INSTALL_PREFIX}/resources/icudtl.dat
-                    ${QM_QT_INSTALL_PREFIX}/resources/qtwebengine_resources.pak 
-                    ${QM_QT_INSTALL_PREFIX}/resources/qtwebengine_resources_100p.pak 
-                    ${QM_QT_INSTALL_PREFIX}/resources/qtwebengine_resources_200p.pak
-                    ${QM_QT_INSTALL_PREFIX}/resources/qtwebengine_devtools_resources.pak
-              DESTINATION ${QTCONF_DIR}/resources
-              COMPONENT Applications)
-      install(FILES ${QM_QT_INSTALL_PREFIX}/bin/QtWebEngineProcess.exe
-                    ${QM_QT_INSTALL_PREFIX}/bin/libEGL.dll
-                    ${QM_QT_INSTALL_PREFIX}/bin/libGLESv2.dll
-                DESTINATION ${QTCONF_DIR}
-                COMPONENT Applications)
-      install(DIRECTORY ${QM_QT_INSTALL_PREFIX}/translations/qtwebengine_locales
-                DESTINATION ${QTCONF_DIR}/translations
-                COMPONENT Applications)
-
-    endif()
+    message(FATAL_ERROR "Qt 5.8.x is not supported for development.")
   elseif (QM_QT_VERSION VERSION_GREATER 5.7.0 OR QM_QT_VERSION VERSION_EQUAL 5.7.0 )
     message(FATAL_ERROR "Qt 5.7 is not supported for development.")
   elseif (QM_QT_VERSION VERSION_GREATER 5.6.0 OR QM_QT_VERSION VERSION_EQUAL 5.6.0)
-    if(WIN32 OR LINUX)
-      install(FILES ${QM_QT_INSTALL_PREFIX}/resources/icudtl.dat
-                    ${QM_QT_INSTALL_PREFIX}/resources/qtwebengine_resources.pak 
-                    ${QM_QT_INSTALL_PREFIX}/resources/qtwebengine_resources_100p.pak 
-                    ${QM_QT_INSTALL_PREFIX}/resources/qtwebengine_resources_200p.pak
-              DESTINATION ${QTCONF_DIR}/resources
-              COMPONENT Applications)
-      install(FILES ${QM_QT_INSTALL_PREFIX}/bin/QtWebEngineProcess.exe
-                    ${QM_QT_INSTALL_PREFIX}/bin/libEGL.dll
-                    ${QM_QT_INSTALL_PREFIX}/bin/libGLESv2.dll
-                DESTINATION ${QTCONF_DIR}
-                COMPONENT Applications)
-      install(DIRECTORY ${QM_QT_INSTALL_PREFIX}/translations/qtwebengine_locales
-                DESTINATION ${QTCONF_DIR}/translations
-                COMPONENT Applications)
-    endif()
+    message(FATAL_ERROR "Qt 5.6.x is not supported for development.")
   elseif (QM_QT_VERSION VERSION_GREATER 5.5.0 OR QM_QT_VERSION VERSION_EQUAL 5.5.0)
     message(FATAL_ERROR "Qt 5.5.x is not supported for development.")
   elseif (QM_QT_VERSION VERSION_GREATER 5.4.0 OR QM_QT_VERSION VERSION_EQUAL 5.4.0)
@@ -465,7 +412,12 @@ macro(CMP_AddQt5Support Qt5Components NeedQtWebEngine ProjectBinaryDir VarPrefix
   if (QM_QT_VERSION VERSION_GREATER 5.8.99 AND QM_QT_VERSION VERSION_LESS 5.9.99)
     set(Qt5_ICU_COMPONENTS "")
   endif()
-  
+
+  # QT 5.10.x
+  if (QM_QT_VERSION VERSION_GREATER 5.9.99 AND QM_QT_VERSION VERSION_LESS 5.10.99)
+    set(Qt5_ICU_COMPONENTS "")
+  endif()
+
   if(CMAKE_SYSTEM_NAME MATCHES "Linux")
     set(Qt5_ICU_COMPONENTS icui18n icuuc icudata)
   endif()
@@ -478,18 +430,10 @@ macro(CMP_AddQt5Support Qt5Components NeedQtWebEngine ProjectBinaryDir VarPrefix
     set(Qt5_OGL_COMPONENTS libEGL libGLESv2 opengl32sw)
     AddQt5SupportLibraryCopyInstallRules( LIBRARIES ${Qt5_OGL_COMPONENTS} PREFIX "" DEBUG_SUFFIX "")
   endif()
-
   #-- Let CMake determine which files need to have 'moc' run on them
-  set(CMAKE_AUTOMOC FALSE)
+  set(CMAKE_AUTOMOC TRUE)
 
   set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER "Qt5AutoMocTargets")
-
-  #-- Make sure we include the proper Qt5 include directories
-  foreach(qtlib ${Qt5_COMPONENTS})
-    include_directories( ${Qt5${qtlib}_INCLUDE_DIRS})
-  endforeach()
-
-  #set(QT_PLUGINS_FILE "${ProjectBinaryDir}/Qt_Plugins.txt")
 
   get_property(QT_PLUGINS_FILE GLOBAL PROPERTY QtPluginsTxtFile)
   if("${QT_PLUGINS_FILE}" STREQUAL "")
@@ -525,6 +469,27 @@ macro(CMP_AddQt5Support Qt5Components NeedQtWebEngine ProjectBinaryDir VarPrefix
                   PLUGIN_FILE_TEMPLATE "${QT_PLUGINS_FILE_TEMPLATE}"
                   PLUGIN_SUFFIX Plugin
                   PLUGIN_TYPE platforms)
+      AddQt5Plugins(PLUGIN_NAMES QWindowsDirect2DIntegration
+                  PLUGIN_FILE "${QT_PLUGINS_FILE}"
+                  PLUGIN_FILE_TEMPLATE "${QT_PLUGINS_FILE_TEMPLATE}"
+                  PLUGIN_SUFFIX Plugin
+                  PLUGIN_TYPE platforms)
+      AddQt5Plugins(PLUGIN_NAMES QMinimalIntegration
+                  PLUGIN_FILE "${QT_PLUGINS_FILE}"
+                  PLUGIN_FILE_TEMPLATE "${QT_PLUGINS_FILE_TEMPLATE}"
+                  PLUGIN_SUFFIX Plugin
+                  PLUGIN_TYPE platforms)
+       AddQt5Plugins(PLUGIN_NAMES QOffscreenIntegration
+                  PLUGIN_FILE "${QT_PLUGINS_FILE}"
+                  PLUGIN_FILE_TEMPLATE "${QT_PLUGINS_FILE_TEMPLATE}"
+                  PLUGIN_SUFFIX Plugin
+                  PLUGIN_TYPE platforms)
+
+      AddQt5Plugins(PLUGIN_NAMES QWindowsVistaStyle
+                  PLUGIN_FILE "${QT_PLUGINS_FILE}"
+                  PLUGIN_FILE_TEMPLATE "${QT_PLUGINS_FILE_TEMPLATE}"
+                  PLUGIN_SUFFIX Plugin
+                  PLUGIN_TYPE styles)
     endif()
 
     if(CMAKE_SYSTEM_NAME MATCHES "Linux")
@@ -548,9 +513,6 @@ macro(CMP_AddQt5Support Qt5Components NeedQtWebEngine ProjectBinaryDir VarPrefix
                 PLUGIN_FILE_TEMPLATE "${QT_PLUGINS_FILE_TEMPLATE}"
                 PLUGIN_TYPE accessible)
   endif()
-
-  # Append the locations of the Qt libraries to our Library Search Paths
-  list(APPEND CMP_LIB_SEARCH_DIRS ${QT_BINARY_DIR} ${QT_LIBRARY_DIR} )
 
   # Append the locations of the Qt libraries to our Library Search Paths
   list(APPEND CMP_LIB_SEARCH_DIRS ${QT_BINARY_DIR} ${QT_LIBRARY_DIR} )

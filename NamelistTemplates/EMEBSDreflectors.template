@@ -1,0 +1,16 @@
+ &EBSDreflectors
+! smallest d-spacing to take into account [nm]
+ dmin = 0.05,
+! name of master pattern file; relative to EMdatapathname
+ masterfile = 'undefined',
+! name of the .csv, markdown or LaTeX output file (no extension) ; relative to EMdatapathname
+ listfile = 'undefined',
+! sampling step size (degrees)
+ increment = 0.025,
+! output type; available options 'latex', 'csv', 'markdown'
+ outputformat = 'csv',
+! number of reflectors to be listed in final output
+ numlist = 20,
+! number of parallel threads to be used for computation
+ nthreads = 1,
+ /

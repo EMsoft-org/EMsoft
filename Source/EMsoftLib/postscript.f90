@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -639,23 +639,20 @@ end subroutine
 !> @date    5/19/01 MDG 2.0 f90
 !> @date   11/27/01 MDG 2.1 added kind support
 !> @date   03/25/13 MDG 3.0 updated IO
+!> @date   12/21/18 MDG 4.0 new color model
 !--------------------------------------------------------------------------
 recursive subroutine PS_sphere(x,y,r,clr)
 !DEC$ ATTRIBUTES DLLEXPORT :: PS_sphere
 
+use constants
+
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)  	:: x,y			!< center coordinates
-real(kind=sgl),INTENT(IN)  	:: r			!< radius
-character(3),INTENT(IN)       :: clr			!< color string
+real(kind=sgl),INTENT(IN)     :: x,y    !< center coordinates
+real(kind=sgl),INTENT(IN)     :: r      !< radius
+integer(kind=irg),INTENT(IN)  :: clr    !< atomic number
 
- if (clr.eq.'red') write (psunit,"(1x,7(f12.5,1x),'sp')") 0.6,0.0,0.0,r,r,x,y
- if (clr.eq.'grn') write (psunit,"(1x,7(f12.5,1x),'sp')") 0.0,0.6,0.0,r,r,x,y
- if (clr.eq.'blu') write (psunit,"(1x,7(f12.5,1x),'sp')") 0.0,0.0,0.6,r,r,x,y
- if (clr.eq.'bro') write (psunit,"(1x,7(f12.5,1x),'sp')") 0.6,0.6,0.4,r,r,x,y
- if (clr.eq.'ylw') write (psunit,"(1x,7(f12.5,1x),'sp')") 0.6,0.6,0.0,r,r,x,y
- if (clr.eq.'pnk') write (psunit,"(1x,7(f12.5,1x),'sp')") 0.6,0.0,0.6,r,r,x,y
- if (clr.eq.'cyn') write (psunit,"(1x,7(f12.5,1x),'sp')") 0.0,0.6,0.6,r,r,x,y
+write (psunit,"(1x,7(f12.5,1x),'sp')") ATOM_colors(1:3,clr),r,r,x,y
 
 end subroutine
 

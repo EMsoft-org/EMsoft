@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -1128,7 +1128,7 @@ integer(kind=irg),INTENT(INOUT)         :: p(3)         !< input/output vector
 integer(kind=irg),INTENT(INOUT)         :: q(4)         !< input/output vector
 character(2),INTENT(IN)                 :: d            !< direction string ('34' or '43')
 integer(kind=irg)                       :: i, j         !< auxiliary variables
-real(kind=sgl)                          :: r(4), rm     !< auxiliary variables  
+real(kind=sgl)                          :: r(4), rm, tmp(4)     !< auxiliary variables  
 
  if (d.eq.'43') then 
 ! equation 1.31
@@ -1149,19 +1149,20 @@ real(kind=sgl)                          :: r(4), rm     !< auxiliary variables
 ! first, find the non-zero minimum index
   rm = 100.0
   do i=1,4 
-   if ((abs(r(i)).lt.rm).and.(r(i).gt.0.0)) then
-    rm = abs(r(i))
-   end if
+   if ((abs(r(i)).lt.rm).and.(r(i).ne.0.0)) rm = abs(r(i))
   end do
 
 ! then check if this index is a common divider of the others
   j = 0
   do i=1,4
-   r(i) = r(i)/rm
-   if ((r(i)-mod(r(i),1.0)).eq.0.0) j=j+1
+   tmp(i) = r(i)/rm
+   if ( ( abs(tmp(i))-int(abs(tmp(i))) ).eq.0.0) j=j+1
   end do
-  if (j.eq.4) rm=1.0
-   q = int(r*rm)
+  if (j.eq.4) then
+    q = tmp
+  else  
+    q = r
+  end if
  end if
 
 end subroutine MilBrav

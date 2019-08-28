@@ -23,9 +23,13 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMECPZA.template
   ${APP_DIR}/EMECPmaster.template
   ${APP_DIR}/EMgetADP.template
+  ${APP_DIR}/EMgetOSM.template
+  ${APP_DIR}/EMgetANG.template
   ${APP_DIR}/EMgetCTF.template
+  ${APP_DIR}/EMGBO.template
   ${APP_DIR}/EMKAM.template
   ${APP_DIR}/EMKosselmaster.template
+  ${APP_DIR}/EMLACBED.template
   ${APP_DIR}/EMkinematical.template
   ${APP_DIR}/EMMC.template
   ${APP_DIR}/EMMCOpenCL.template
@@ -39,12 +43,21 @@ set(EMSoft_RESOURCE_FILES
   ${APP_DIR}/EMoSLERP.template
   ${APP_DIR}/EMfoil.template
   ${APP_DIR}/EMsampleRFZ.template
-  ${APP_DIR}/EMRefineOrientation.template
+  ${APP_DIR}/EMFitOrientation.template
   ${APP_DIR}/MDElectronProp.template
   ${APP_DIR}/EMTKDmaster.template
   ${APP_DIR}/EMTKD.template
   ${APP_DIR}/PFInversion.template
   ${APP_DIR}/EMTKDDI.template
+  ${APP_DIR}/EMCBEDQC.template
+  ${APP_DIR}/EMCBED2DQC.template
+  ${APP_DIR}/EMEBSD2DQCmaster.template
+  ${APP_DIR}/EMEBSDQCmaster.template
+  ${APP_DIR}/EMECPQCmaster.template
+  ${APP_DIR}/EMLauemaster.template
+  ${APP_DIR}/EMLaue.template
+  ${APP_DIR}/EMSphInx.template
+  ${APP_DIR}/EMEBSDoverlap.template
 )
 
 if(NOT EXISTS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/NamelistTemplates")

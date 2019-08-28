@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2015, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -151,6 +151,9 @@ end program EMEBSDmaster
 !> @date 03/06/17  MDG 6.7 removed normal absorption from depth integration
 !> @date 04/02/18  MDG 7.0 replaced MC file reading by new routine in EBSDmod
 !> @date 04/03/18  MDG 7.1 replaced all regular MC variables by mcnl structure components
+!> @date 01/07/19  MDG 7.2 added Legendre lattitudinal grid mode (used for spherical indexing)
+!> @date 05/26/19  MDG 7.3 added warning about trigonal structures requiring hexagonal setting 
+!> @date 07/01/19  MDG 7.4 corrected initial beam energy in restart mode 
 !--------------------------------------------------------------------------
 subroutine ComputeMasterPattern(emnl, progname, nmldeffile)
 
@@ -198,7 +201,8 @@ integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, ieq
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
 real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstart, tstop, bp(4), nabsl, etotal, dens, avA, avZ
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:,:), auxSH(:,:,:,:), Z2percent(:)  ! results
-real(kind=sgl),allocatable      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)  ! results
+real(kind=sgl),allocatable      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)
+real(kind=dbl),allocatable      :: LegendreArray(:), upd(:), diagonal(:)
 complex(kind=dbl)               :: czero
 complex(kind=dbl),allocatable   :: Lgh(:,:), Sgh(:,:,:)
 logical                 :: usehex, switchmirror, verbose
@@ -213,7 +217,7 @@ character(8)            :: MCscversion
 character(11)           :: dstr
 character(15)           :: tstrb
 character(15)           :: tstre
-logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE., stereog, g_exists, xtaldataread, FL
+logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE., stereog, g_exists, xtaldataread, FL, doLegendre
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 character(fnlen,kind=c_char)                     :: line2(1)
 
@@ -233,7 +237,7 @@ type(MCCLNameListType)          :: mcnl
 type(HDFobjectStackType),pointer  :: HDF_head
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)
-integer(kind=irg)                 :: NumLines
+integer(kind=irg)                 :: NumLines, info
 character(fnlen)                  :: SlackUsername, exectime
 character(100)                    :: c
 
@@ -269,6 +273,10 @@ call cpu_time(tstart)
 tpi = 2.D0*cPi
 czero = dcmplx(0.D0,0.D0)
 
+! is the master pattern used for spherical indexing only ?  If so, then we need to modifiy the k-vector sampling
+doLegendre = .FALSE.
+if (trim(emnl%latgridtype).eq.'Legendre') doLegendre = .TRUE.
+
 !=============================================
 !=============================================
 ! ---------- read Monte Carlo .h5 output file and extract necessary parameters
@@ -285,13 +293,83 @@ call WriteValue(' --> total number of BSE electrons in MC data set ', io_int, 1)
 !=============================================
 !=============================================
 
+allocate(EkeVs(EBSDMCdata%numEbins),thick(EBSDMCdata%numEbins))
 
+do i=1,EBSDMCdata%numEbins
+  EkeVs(i) = mcnl%Ehistmin + float(i-1)*mcnl%Ebinsize
+end do
+
+!=============================================
+! should we create a new file or open an existing file?
+!=============================================
+  lastEnergy = -1
+  outname = trim(EMsoft_getEMdatapathname())//trim(emnl%outname)
+  outname = EMsoft_toNativePath(outname)
+  energyfile = trim(EMsoft_getEMdatapathname())//trim(emnl%energyfile)
+  energyfile = EMsoft_toNativePath(energyfile)
+
+if (emnl%restart.eqv..TRUE.) then
+! in this case we need to check whether or not the file exists, then open
+! it and read the value of the last energy level that was simulated and written
+! to that file; if this level is different from the lowest energy level we 
+! know that there is at least one more level to be simulated.  If it is equal,
+! then we can abort the program here.
+
+  inquire(file=trim(outname), exist=f_exists)
+  if (.not.f_exists) then 
+    call FatalError('ComputeMasterPattern','restart HDF5 file does not exist')
+  end if
+  
+!=============================================
+! open the existing HDF5 file 
+!=============================================
+  datagroupname = 'EBSDmaster'
+  nullify(HDF_head)
+! Initialize FORTRAN interface.
+  call h5open_EMsoft(hdferr)
+
+! Create a new file using the default properties.
+  readonly = .TRUE.
+  hdferr =  HDF_openFile(outname, HDF_head, readonly)
+
+! all we need to get from the file is the lastEnergy parameter
+groupname = SC_EMData
+  hdferr = HDF_openGroup(groupname, HDF_head)
+  hdferr = HDF_openGroup(datagroupname, HDF_head)
+
+dataset = SC_lastEnergy
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, lastEnergy)
+
+  call HDF_pop(HDF_head,.TRUE.)
+
+! and close the fortran hdf interface
+  call h5close_EMsoft(hdferr)
+end if
 !=============================================
 !=============================================
 ! crystallography section; 
  allocate(cell)
  verbose = .TRUE.
- call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+ if (emnl%restart.eqv..TRUE.) then 
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose)
+ else
+   call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(mcnl%EkeV), verbose)
+ end if
+
+! check the crystal system and setting; abort the program for trigonal with rhombohedral setting with
+! an explanation for the user
+
+if ((cell%xtal_system.eq.5).and.(cell%b.eq.cell%c)) then 
+    call Message('')
+    call Message(' ========Program Aborted========')
+    call Message(' The EBSD master pattern simulation for rhombohedral/trigonal structures')
+    call Message(' requires that the structure be described using the hexagonal reference')
+    call Message(' frame.  Please re-enter the crystal structure in this setting and re-run')
+    call Message(' the Monte Carlo calculation and this master pattern program.')
+    call Message('')
+    stop
+end if
+
 
 ! then calculate density, average atomic number and average atomic weight
  call CalcDensity(cell, dens, avZ, avA, Z2percent)
@@ -338,11 +416,7 @@ if ((cell%xtal_system.eq.4).or.(cell%xtal_system.eq.5)) usehex = .TRUE.
 !=============================================
 !=============================================
 ! this is where we determine the value for the thickness integration limit for the CalcLgh3 routine...
-allocate(EkeVs(EBSDMCdata%numEbins),thick(EBSDMCdata%numEbins))
 
-do i=1,EBSDMCdata%numEbins
-  EkeVs(i) = mcnl%Ehistmin + float(i-1)*mcnl%Ebinsize
-end do
 
 ! then, for each energy determine the 95% histogram thickness
 izzmax = 0
@@ -426,54 +500,9 @@ deallocate(EBSDMCdata%accum_z)
 ! this will all be changed with the new version of the Bethe potentials
   call Set_Bethe_Parameters(BetheParameters,.TRUE.)
 
-!=============================================
-! should we create a new file or open an existing file?
-!=============================================
-  lastEnergy = -1
-  outname = trim(EMsoft_getEMdatapathname())//trim(emnl%outname)
-  outname = EMsoft_toNativePath(outname)
-  energyfile = trim(EMsoft_getEMdatapathname())//trim(emnl%energyfile)
-  energyfile = EMsoft_toNativePath(energyfile)
 
-if (emnl%restart.eqv..TRUE.) then
-! in this case we need to check whether or not the file exists, then open
-! it and read the value of the last energy level that was simulated and written
-! to that file; if this level is different from the lowest energy level we 
-! know that there is at least one more level to be simulated.  If it is equal,
-! then we can abort the program here.
 
-  inquire(file=trim(outname), exist=f_exists)
-  if (.not.f_exists) then 
-    call FatalError('ComputeMasterPattern','restart HDF5 file does not exist')
-  end if
-  
-!=============================================
-! open the existing HDF5 file 
-!=============================================
-  datagroupname = 'EBSDmaster'
-  nullify(HDF_head)
-! Initialize FORTRAN interface.
-  call h5open_EMsoft(hdferr)
-
-! Create a new file using the default properties.
-  readonly = .TRUE.
-  hdferr =  HDF_openFile(outname, HDF_head, readonly)
-
-! all we need to get from the file is the lastEnergy parameter
-groupname = SC_EMData
-  hdferr = HDF_openGroup(groupname, HDF_head)
-  hdferr = HDF_openGroup(datagroupname, HDF_head)
-
-dataset = SC_lastEnergy
-  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, lastEnergy)
-
-  call HDF_pop(HDF_head,.TRUE.)
-
-! and close the fortran hdf interface
-  call h5close_EMsoft(hdferr)
-
-else
-
+if (emnl%restart.eqv..FALSE.) then
 !=============================================
 ! create or update the HDF5 output file
 !=============================================
@@ -662,6 +691,23 @@ end if
 
 !=============================================
 !=============================================
+! do we need to precompute the Legendre array for the new lattitudinal grid values?
+if (doLegendre.eqv..TRUE.) then
+  call Message(' Computing Legendre lattitudinal grid values')
+  allocate(diagonal(2*emnl%npx+1),upd(2*emnl%npx+1))
+  diagonal = 0.D0
+  upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,2*emnl%npx+1) /)
+  call dsterf(2*emnl%npx-1, diagonal, upd, info) 
+! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
+  allocate(LegendreArray(2*emnl%npx+1))
+  LegendreArray(1:2*emnl%npx+1) = diagonal(2*emnl%npx+1:1:-1)
+! set the center eigenvalue to 0
+  LegendreArray(emnl%npx+1) = 0.D0
+  deallocate(diagonal, upd)
+end if
+
+!=============================================
+!=============================================
 ! figure out what the start energy value is for the energyloop
 if (lastEnergy.ne.-1) then
   Estart = lastEnergy-1
@@ -692,7 +738,7 @@ energyloop: do iE=Estart,1,-1
 ! print a message to indicate where we are in the computation
    io_int(1)=iE
    io_int(2)=Estart
-   call Message('Starting computation for energy bin (in reverse order)', frm = "(/A$)")
+   call Message(' Starting computation for energy bin (in reverse order)', frm = "(/A$)")
    call WriteValue(' ',io_int,2,"(I4,' of ',I4$)")
    io_real(1) = EkeVs(iE)
    call WriteValue('; energy [keV] = ',io_real,1,"(F6.2/)")
@@ -713,12 +759,22 @@ energyloop: do iE=Estart,1,-1
 ! numk is the total number of k-vectors to be included in this computation;
 ! note that this needs to be redone for each energy, since the wave vector changes with energy
    nullify(khead)
-   if (usehex) then
-    call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
-                SamplingType,ijmax,'RoscaLambert',usehex)
+   if (doLegendre.eqv..FALSE.) then
+    if (usehex) then
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambert',usehex)
+    else 
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambert',usehex)
+    end if
    else 
-    call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
-                SamplingType,ijmax,'RoscaLambert',usehex)
+    if (usehex) then
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambertLegendre',usehex, LegendreArray)
+    else 
+      call Calckvectors(khead,cell, (/ 0.D0, 0.D0, 1.D0 /), (/ 0.D0, 0.D0, 0.D0 /),0.D0,emnl%npx,npy,numk, &
+                  SamplingType,ijmax,'RoscaLambertLegendre',usehex, LegendreArray)
+    end if
    end if
    io_int(1)=numk
    call WriteValue('# independent beam directions to be considered = ', io_int, 1, "(I8)")

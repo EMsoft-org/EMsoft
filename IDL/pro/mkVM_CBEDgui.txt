@@ -1,0 +1,7 @@
+; define the appname
+appname = 'CBEDDisplay'
+saveappname = appname+'.sav'
+
+; compile the program and get all dependencies resolved
+.r CBEDDisplay
+resolve_all                    

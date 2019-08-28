@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -95,30 +95,41 @@ real(kind=dbl), parameter :: epsijkd = 1.D0
 ! rotations tutorial paper for an in-depth explanation.  These changes propagate
 ! to a number of files, notably quaternions.f90, and everywhere else that quaternions
 ! and rotations in general are used.
+!
+! Reference:  D.J. Rowenhorst, A.D. Rollett, G.S. Roher, M.A. Groeber, M.A. Jackson, 
+!  P.J. Konijnenberg, and M. De Graef. "Tutorial: consistent representations of and 
+!  conversions between 3D rotations". Modeling and Simulations in Materials Science 
+!  and Engineering, 23, 083501 (2015).
+!
 ! ****************************************************
 ! ****************************************************
 ! ****************************************************
 
 
 ! various physical constants
-!> cPi		= pi [dimensionless]
-!> cLight	= velocity of light [m/s]
-!> cPlanck	= Planck''s constant [Js]
+!> cPi		    = pi [dimensionless]
+!> cLight	    = velocity of light [m/s]
+!> cPlanck	    = Planck''s constant [Js]
 !> cBoltzmann	= Boltmann constant [J/K]
-!> cPermea	= permeability of vacuum [4pi 10^7 H/m]
-!> cPermit	= permittivity of vacuum [F/m]
-!> cCharge	= electron charge [C]
+!> cPermea	    = permeability of vacuum [4pi 10^7 H/m]
+!> cPermit	    = permittivity of vacuum [F/m]
+!> cCharge	    = electron charge [C]
 !> cRestmass	= electron rest mass [kg]
-!> cMoment	= electron magnetic moment [J/T]
-!> cJ2eV	= Joules per eV
+!> cMoment	    = electron magnetic moment [J/T]
+!> cJ2eV	    = Joules per eV
 !> cAvogadro	= Avogadro's constant [mol^-1]
-
+!
+! The values of several of these constants have been updated to the new SI 2019 exact values [MDG, 01/22/19]
+! The exact values below are the ones for cLight, cPlanck, cBoltzmann, cCharge; the others are derived using 
+! the standard relations in the 2019 SI units document.  In the derivation, we used 0.0072973525664D0 as the 
+! value for the hyperfine structure constant alpha. 
+!
 real(kind=dbl), parameter :: cPi=3.141592653589793238D0, cLight = 299792458.D0, &
-                             cPlanck = 6.62606957D-34, cBoltzmann = 1.3806488D-23,  &
-                             cPermea = 1.2566370614D-6, cPermit = 8.854187817D-12, &
-                             cCharge = 1.602176565D-19, cRestmass = 9.10938291D-31, &
-                             cMoment = 9.28476430D-24, cJ2eV = 1.602176565D-19, &
-                             cAvogadro = 6.02214129D23
+                             cPlanck = 6.62607015D-34, cBoltzmann = 1.380649D-23,  &
+                             cPermea = 1.2566370616D-6, cPermit = 8.8541878163D-12, &
+                             cCharge = 1.602176634D-19, cRestmass = 9.1093837090D-31, &
+                             cMoment = 9.2740100707D-24, cJ2eV = 1.602176565D-19, &
+                             cAvogadro = 6.02214076D23
 !DEC$ ATTRIBUTES DLLEXPORT :: cPi
 !DEC$ ATTRIBUTES DLLEXPORT :: cPlanck
 !DEC$ ATTRIBUTES DLLEXPORT :: cPermea
@@ -181,7 +192,101 @@ character(3), parameter :: ATOM_color(98)=(/'blu','grn','blu','blu','red','bro',
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','grn'/)
-!DEC$ ATTRIBUTES DLLEXPORT :: ATOM_color
+
+real(kind=sgl), parameter :: ATOM_colors(3,92) = reshape( (/ &
+                                            0.90000,0.90000,0.15000, &
+                                            0.00000,0.90000,0.15000, &
+                                            0.32311,0.53387,0.69078, &
+                                            0.61572,0.99997,0.61050, &
+                                            0.53341,0.53341,0.71707, &
+                                            0.06577,0.02538,0.00287, &
+                                            0.50660,0.68658,0.90000, &
+                                            0.90000,0.00000,0.00000, &
+                                            0.09603,0.80000,0.74127, &
+                                            0.90000,0.12345,0.54321, &
+                                            0.78946,0.77423,0.00002, &
+                                            0.41999,0.44401,0.49998, &
+                                            0.09751,0.67741,0.90000, &
+                                            0.00000,0.00000,0.90000, &
+                                            0.53486,0.51620,0.89000, &
+                                            0.90000,0.98070,0.00000, &
+                                            0.94043,0.96999,0.37829, &
+                                            0.33333,0.00000,0.33333, &
+                                            0.65547,0.58650,0.69000, &
+                                            0.36245,0.61630,0.77632, &
+                                            0.98804,0.41819,0.90000, &
+                                            0.31588,0.53976,0.67494, &
+                                            0.83998,0.08402,0.67625, &
+                                            0.90000,0.00000,0.60000, &
+                                            0.90000,0.00000,0.60000, &
+                                            0.71051,0.44662,0.00136, &
+                                            0.00000,0.00000,0.68666, &
+                                            0.22939,0.61999,0.60693, &
+                                            0.78996,0.54162,0.14220, &
+                                            0.52998,0.49818,0.50561, &
+                                            0.74037,0.90000,0.18003, &
+                                            0.66998,0.44799,0.19431, &
+                                            0.53341,0.53341,0.71707, &
+                                            0.92998,0.44387,0.01862, &
+                                            0.96999,0.53349,0.24250, &
+                                            0.25000,0.75000,0.50000, &
+                                            0.90000,0.00000,0.60000, &
+                                            0.00000,0.90000,0.15256, &
+                                            0.00000,0.00000,0.90000, &
+                                            0.00000,0.90000,0.00000, &
+                                            0.50660,0.68658,0.90000, &
+                                            0.35003,0.52340,0.90000, &
+                                            0.80150,0.69171,0.79129, &
+                                            0.92998,0.79744,0.04651, &
+                                            0.90000,0.06583,0.05002, &
+                                            0.00002,0.00005,0.76999, &
+                                            0.09751,0.67741,0.90000, &
+                                            0.55711,0.50755,0.90000, &
+                                            0.22321,0.72000,0.33079, &
+                                            0.29000,0.26679,0.28962, &
+                                            0.53999,0.42660,0.45495, &
+                                            0.90000,0.43444,0.13001, &
+                                            0.42605,0.14739,0.66998, &
+                                            0.13001,0.90000,0.24593, &
+                                            0.90000,0.00000,0.60000, &
+                                            0.74342,0.39631,0.45338, &
+                                            0.72000,0.24598,0.15122, &
+                                            0.00000,0.00000,0.90000, &
+                                            0.90000,0.44813,0.23003, &
+                                            0.20000,0.90000,0.11111, &
+                                            0.90000,0.00000,0.00000, &
+                                            0.99042,0.02402,0.49194, &
+                                            0.90000,0.00000,0.60000, &
+                                            0.66998,0.44799,0.19431, &
+                                            0.23165,0.09229,0.57934, &
+                                            0.90000,0.87648,0.81001, &
+                                            0.00000,0.20037,0.64677, &
+                                            0.53332,0.53332,0.53332, &
+                                            0.15903,0.79509,0.98584, &
+                                            0.15322,0.99164,0.95836, &
+                                            0.18293,0.79933,0.59489, &
+                                            0.83000,0.09963,0.55012, &
+                                            0.34002,0.36210,0.90000, &
+                                            0.46000,0.19898,0.03679, &
+                                            0.06270,0.56999,0.12186, &
+                                            0.18003,0.24845,0.90000, &
+                                            0.33753,0.30100,0.43000, &
+                                            0.25924,0.25501,0.50999, &
+                                            0.90000,0.79663,0.39001, &
+                                            0.47999,0.47207,0.46557, &
+                                            0.70549,0.83000,0.74490, &
+                                            0.38000,0.32427,0.31919, &
+                                            0.62942,0.42309,0.73683, &
+                                            0.90000,0.00000,0.00000, &
+                                            0.50000,0.33333,0.33333, &
+                                            0.72727,0.12121,0.50000, &
+                                            0.90000,0.00000,0.00000, &
+                                            0.46310,0.90950,0.01669, &
+                                            0.66667,0.66666,0.00000, &
+                                            0.14893,0.99596,0.47105, &
+                                            0.53332,0.53332,0.53332, &
+                                            0.47773,0.63362,0.66714 /), (/3,92/))
+!DEC$ ATTRIBUTES DLLEXPORT :: ATOM_colors
 
 !> atomic weights for things like density computations (from NIST elemental data base)
 real(kind=sgl),parameter        :: ATOM_weights(98) = (/1.00794, 4.002602, 6.941, 9.012182, 10.811, &

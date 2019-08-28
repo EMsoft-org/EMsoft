@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -114,10 +114,10 @@ character(fnlen),INTENT(IN)             :: progname
 
 integer(kind=irg)                       :: i, j, num, m, FZcnt, io_int(1), FZtype, FZorder
 real(kind=dbl)                          :: eud(3), rtod, cud(3), qud(4), hod(3), ax(4), calpha, conevector(3), &
-                                           h, k, l, ih, ik, il, itmp(48,3), idiff, eps
+                                           h, k, l, ih, ik, il, itmp(48,3), idiff, eps, x, qFZ(4)
 type(FZpointd),pointer                  :: FZlist, FZtmp
 logical                                 :: doeu = .FALSE., docu = .FALSE., doho = .FALSE., doqu = .FALSE., &
-                                           doom = .FALSE., doax = .FALSE., doro = .FALSE., newpoint
+                                           doom = .FALSE., doax = .FALSE., doro = .FALSE., newpoint, rotateFZ = .FALSE.
 type(unitcell),pointer                  :: cell
 character(fnlen)                        :: filename
 
@@ -132,6 +132,26 @@ if (trim(rfznl%quoutname).ne.'undefined') doqu = .TRUE.
 if (trim(rfznl%rooutname).ne.'undefined') doro = .TRUE.
 if (trim(rfznl%omoutname).ne.'undefined') doom = .TRUE.
 if (trim(rfznl%axoutname).ne.'undefined') doax = .TRUE.
+
+! do we need to rotate the Rodrigues FZ before sampling ?
+if (sum(rfznl%qFZ - (/ 1.D0, 0.D0, 0.D0, 0.D0 /)) .ne. 0.D0) then
+  rotateFZ = .TRUE.
+  qFZ = rfznl%qFZ
+end if
+
+! or is there an axis-angle pair for the FZ rotation ?
+if (sum(rfznl%axFZ - (/0.D0, 0.D0, 1.D0, 0.D0 /)) .ne. 0.D0) then
+  ax = rfznl%axFZ
+  x = sqrt(sum(ax(1:3)*ax(1:3)))
+  if (x.gt.0.D0) then 
+    ax(1:3) = ax(1:3) / x
+  else
+    ax(1:3) = (/ 0.D0, 0.D0, 1.D0 /)  
+  end if
+  ax(4) = ax(4) * cPi / 180.D0
+  qFZ = ax2qu(ax)
+  rotateFZ = .TRUE.
+end if 
 
 ! a bit of output
 call Message('Starting computation for point group '//PGTHD(rfznl%pgnum))
@@ -191,7 +211,11 @@ FZorder = FZoarray(rfznl%pgnum)
 nullify(FZlist)
 FZcnt = 0
 if (trim(rfznl%samplemode).eq.'RFZ') then
-  call SampleRFZ(rfznl%nsteps,rfznl%pgnum,rfznl%gridtype,FZcnt,FZlist)
+  if (rotateFZ.eqv..TRUE.) then 
+    call SampleRFZ(rfznl%nsteps,rfznl%pgnum,rfznl%gridtype,FZcnt,FZlist,qFZ)
+  else
+    call SampleRFZ(rfznl%nsteps,rfznl%pgnum,rfznl%gridtype,FZcnt,FZlist)
+  end if
 end if
 if (trim(rfznl%samplemode).eq.'MIS') then
   write(*,*) 'Rodrigues vector = ', rfznl%rodrigues
@@ -220,7 +244,7 @@ call WriteValue('Total number of unique orientations generated = ',io_int,1,"(I1
 
 ! generate a list of all orientations in Euler angle format (if requested)
 if (doeu) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%euoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%euoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=20,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (20,"(A)") 'eu'
@@ -229,7 +253,7 @@ end if
 
 ! generate a list of all orientations in cubochoric format (if requested)
 if (docu) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%euoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%euoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=21,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (21,"(A)") 'cu'
@@ -238,7 +262,7 @@ end if
 
 ! generate a list of all orientations in homochoric format (if requested)
 if (doho) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%hooutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%hooutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=22,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (22,"(A)") 'ho'
@@ -247,7 +271,7 @@ end if
 
 ! generate a list of all orientations in quternion format (if requested)
 if (doqu) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%quoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%quoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=23,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (23,"(A)") 'qu'
@@ -256,7 +280,7 @@ end if
 
 ! generate a list of all orientations in Rodrigues format (if requested)
 if (doro) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%rooutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%rooutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=24,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (24,"(A)") 'ro'
@@ -265,7 +289,7 @@ end if
 
 ! generate a list of all orientations in orientation matrix format (if requested)
 if (doom) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%omoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%omoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=25,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (25,"(A)") 'om'
@@ -274,7 +298,7 @@ end if
 
 ! generate a list of all orientations in axis angle pair format (if requested)
 if (doax) then
-  filename = trim(EMsoft_getEMdatapathname())//'/'//trim(rfznl%axoutname)
+  filename = trim(EMsoft_getEMdatapathname())//trim(rfznl%axoutname)
   filename = EMsoft_toNativePath(filename)
   open (UNIT=26,FILE=trim(filename),FORM='formatted',STATUS='unknown')
   write (26,"(A)") 'ax'

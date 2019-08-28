@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2017, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -25,4 +25,6 @@
 ! OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
 ! USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ! ###################################################################
+
+The license above applies to ALL EMsoft files, including binaries and libraries, with the exception of the entire Source/EMSphInx folder and all executables and libraries derived from it; for EMSphInx, a non-commercial license applies, the details of which can be found in the Source/EMSphInx/license.txt file.  Note that the EMSphInx source code resides in a separate GitHub repository (EMsoft-org/EMSphInx) and is not automatically installed.
 

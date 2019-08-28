@@ -19,24 +19,29 @@ endif()
 
 
 set(EMsoftHDFLib_SRCS
-	${EMsoftHDFLib_SOURCE_DIR}/initializersHDF.f90
- 	${EMsoftHDFLib_SOURCE_DIR}/NameListHDFwriters.f90
 	${EMsoftHDFLib_SOURCE_DIR}/EBSDmod.f90
-# 	${EMsoftHDFLib_SOURCE_DIR}/EMdymodHDF.f90
-  ${EMsoftHDFLib_SOURCE_DIR}/ECPmod.f90
+	${EMsoftHDFLib_SOURCE_DIR}/initializersHDF.f90
+ 	${EMsoftHDFLib_SOURCE_DIR}/EBSDDImod.f90
+ 	${EMsoftHDFLib_SOURCE_DIR}/HDFsupport.f90
+ 	${EMsoftHDFLib_SOURCE_DIR}/NameListHDFwriters.f90
+  ${EMsoftHDFLib_Additional_SRCS}
+  ${EMsoftHDFLib_SOURCE_DIR}/commonmod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/EBSDiomod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/ECPiomod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/ECPmod.f90
- 	${EMsoftHDFLib_SOURCE_DIR}/HDFsupport.f90
- 	${EMsoftHDFLib_SOURCE_DIR}/EBSDDImod.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/ECPmod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/EMh5ebsd.f90
   ${EMsoftHDFLib_SOURCE_DIR}/FitOrientations.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/InitializersQCHDF.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/Lauemod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/patternmod.f90
-  ${EMsoftHDFLib_SOURCE_DIR}/TKDmod.f90
-  ${EMsoftHDFLib_SOURCE_DIR}/TKDDImod.f90
   ${EMsoftHDFLib_SOURCE_DIR}/PFInversionHDF.f90
-
-  ${EMsoftHDFLib_Additional_SRCS}
+  ${EMsoftHDFLib_SOURCE_DIR}/QCmodHDF.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/TKDDImod.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/TKDmod.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/utilities.f90
+  ${EMsoftHDFLib_SOURCE_DIR}/hhHDFmod.f90
+# 	${EMsoftHDFLib_SOURCE_DIR}/EMdymodHDF.f90
 )
 
 GetHDF5LinkLibraries(EMSOFT)

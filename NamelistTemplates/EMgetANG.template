@@ -1,0 +1,12 @@
+ &ANGlist
+! modality  'EBSD' or 'ECP'    [ECP does not work yet ... 04/26/19]
+ modality = 'EBSD',
+! crystal structure filename
+ xtalname = 'undefined'
+! which Euler angle data set do you want to use? 'original' or 'refined'
+ angledataset = 'original',
+! name of new ang output file (relative to EMdatapathname)
+ newangfile = 'undefined',
+! name of input dot product file (relative to EMdatapathname)
+ dotproductfile = 'undefined',
+ /

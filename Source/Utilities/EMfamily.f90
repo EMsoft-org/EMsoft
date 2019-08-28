@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -119,7 +119,7 @@ integer(kind=irg)           	:: itmp(48,3)
    call GetIndex(cell%hexset,hkl,sp)
    call CalcFamily(cell,hkl,num,sp,itmp)
    io_int(:1) = num
-   call WriteValue('Multiplicity = ', io_int, 1, "(I3)")
+   call WriteValue('  Multiplicity = ', io_int, 1, "(I3)")
 
    do i=1,num
     h=itmp(i,1)

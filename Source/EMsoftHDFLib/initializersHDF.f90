@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -213,7 +213,7 @@ end if
 
  if (present(verbose)) then
   if (verbose) then
-   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+   call Message(' Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
   end if
  end if
  

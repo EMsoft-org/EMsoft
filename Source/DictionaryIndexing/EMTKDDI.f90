@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2017, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -64,7 +64,7 @@ logical                                     :: verbose
 integer(kind=irg)                           :: istat, res
 
 interface
-        subroutine MasterSubroutine(tkdnl,acc,master,progname,nmldeffile)
+        subroutine EMTKDDISubroutine(tkdnl,acc,master,progname,nmldeffile)
 
         use local
         use typedefs
@@ -112,7 +112,7 @@ interface
         character(fnlen),INTENT(IN)                         :: progname
         character(fnlen),INTENT(IN)                         :: nmldeffile
 
-        end subroutine MasterSubroutine
+        end subroutine EMTKDDISubroutine
 end interface
 
 nmldeffile = 'EMTKDDI.nml'
@@ -151,13 +151,13 @@ allocate(acc%accum_e_detector(tkdnl%numEbins,tkdnl%numsx,tkdnl%numsy), stat=ista
 call TKDIndexingGenerateDetector(tkdnl, acc, master)
 deallocate(acc%accum_e)
 ! perform the dictionary indexing computations
-call MasterSubroutine(tkdnl,acc,master,progname, nmldeffile)
+call EMTKDDISubroutine(tkdnl,acc,master,progname, nmldeffile)
 
 end program EMTKDDI
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:MasterSubroutine
+! SUBROUTINE:EMTKDDISubroutine
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
@@ -180,9 +180,10 @@ end program EMTKDDI
 !> @date 11/14/16 MDG 1.7 added code to read h5 file instead of compute on-the-fly (static mode)
 !> @date 05/07/17 MDG 2.0 forked routine from original EBSD program; modified for TKD indexing
 !> @date 11/13/17 MDG 2.1 moved OpenCL code from InnerProdGPU routine to main code
+!> @date 11/30/18 MDG 3.0 replaced pattern preprocessing with standard routine from patternmod, allowing other fileformats
 !--------------------------------------------------------------------------
 
-subroutine MasterSubroutine(tkdnl,acc,master,progname, nmldeffile)
+subroutine EMTKDDISubroutine(tkdnl,acc,master,progname, nmldeffile)
 
 use local
 use typedefs
@@ -218,6 +219,8 @@ use h5lt
 use HDFsupport
 use EMh5ebsd
 use EBSDiomod
+use patternmod
+use notifications
 use NameListHDFwriters
 use ECPmod, only: GetPointGroup
 use Indexingmod
@@ -271,7 +274,7 @@ real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
 real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
                                                        exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
-                                                       tmpimageexpt(:)
+                                                       tmpimageexpt(:), OSMmap(:,:)
 real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:),&
                                                        eulerarray(:,:),resultmain(:,:),resulttmp(:,:)
 integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:) 
@@ -297,7 +300,7 @@ integer(hsize_t),allocatable                        :: iPhase(:), iValid(:)
 integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
 
-integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
+integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq, iiiend, iiistart, jjend, TIFF_nx, TIFF_ny
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc
 type(FZpointd),pointer                              :: FZlist, FZtmp
 integer(kind=irg),allocatable                       :: indexlist(:),indexarray(:),indexmain(:,:),indextmp(:,:)
@@ -312,22 +315,46 @@ integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
 integer(kind=irg)                                   :: indx
 integer(kind=irg)                                   :: correctsize
-logical                                             :: f_exists, init
+logical                                             :: f_exists, init, ROIselected
 character(1000)                                     :: charline
 
 integer(kind=irg)                                   :: ipar(10)
+
+character(fnlen),ALLOCATABLE                        :: MessageLines(:)
+integer(kind=irg)                                   :: NumLines
+character(fnlen)                                    :: TitleMessage, exectime
+character(100)                                      :: c
+
 
 
 type(HDFobjectStackType),pointer                    :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
+
+if (sum(tkdnl%ROI).ne.0) then
+  ROIselected = .TRUE.
+  iiistart = tkdnl%ROI(2)
+  iiiend = tkdnl%ROI(2)+tkdnl%ROI(4)-1
+  jjend = tkdnl%ROI(3)
+else
+  ROIselected = .FALSE.
+  iiistart = 1
+  iiiend = tkdnl%ipf_ht
+  jjend = tkdnl%ipf_wd
+end if
+
+
 verbose = .FALSE.
 init = .TRUE.
 Ne = tkdnl%numexptsingle
 Nd = tkdnl%numdictsingle
 L = tkdnl%numsx*tkdnl%numsy/tkdnl%binning**2
-totnumexpt = tkdnl%ipf_wd*tkdnl%ipf_ht
+if (ROIselected.eqv..TRUE.) then 
+    totnumexpt = tkdnl%ROI(3)*tkdnl%ROI(4)
+else
+    totnumexpt = tkdnl%ipf_wd*tkdnl%ipf_ht
+end if
 imght = tkdnl%numsx/tkdnl%binning
 imgwd =  tkdnl%numsy/tkdnl%binning
 nnk = tkdnl%nnk
@@ -476,6 +503,8 @@ call WriteValue(' Number of unique orientations sampled =        : ', io_int, 1,
 !================================
 ! INITIALIZATION OF OpenCL DEVICE
 !================================
+call Message('--> Initializing OpenCL device')
+
 call CLinit_PDCCQ(platform, nump, tkdnl%platid, device, numd, tkdnl%devid, info, context, command_queue)
 
 ! read the cl source file
@@ -484,10 +513,10 @@ call CLread_source_file(sourcefile, csource, slength)
 
 ! allocate device memory for experimental and dictionary patterns
 cl_expt = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_expt, C_NULL_PTR, ierr)
-call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
+call CLerror_check('EMTKDDISubroutine:clCreateBuffer', ierr)
 
 cl_dict = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes_dict, C_NULL_PTR, ierr)
-call CLerror_check('MasterSubroutine:clCreateBuffer', ierr)
+call CLerror_check('EMTKDDISubroutine:clCreateBuffer', ierr)
 
 !================================
 ! the following lines were originally in the InnerProdGPU routine, but there is no need
@@ -638,15 +667,6 @@ end if
 !=====================================================
 ! define the circular mask if necessary and convert to 1D vector
 !=====================================================
-! if (tkdnl%maskpattern.eq.'y') then
-!   do ii = 1,biny
-!       do jj = 1,binx
-!           if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. tkdnl%maskradius**2) then
-!               mask(jj,ii) = 0.0
-!           end if
-!       end do
-!   end do
-! end if
   
 if (trim(tkdnl%maskfile).ne.'undefined') then
 ! read the mask from file; the mask can be defined by a 2D array of 0 and 1 values
@@ -670,7 +690,7 @@ if (trim(tkdnl%maskfile).ne.'undefined') then
       end do
       close(unit=dataunit,status='keep')
     else
-      call FatalError('MasterSubroutine','maskfile '//trim(fname)//' does not exist')
+      call FatalError('EMTKDDISubroutine','maskfile '//trim(fname)//' does not exist')
     end if
 else
     if (tkdnl%maskpattern.eq.'y') then
@@ -684,208 +704,46 @@ else
     end if
 end if
 
-
-
-
-
 do ii = 1,biny
     do jj = 1,binx
         masklin((ii-1)*binx+jj) = mask(jj,ii)
     end do
 end do
 
-
 !=====================================================
 ! Preprocess all the experimental patterns and store
 ! them in a temporary file as vectors; also, create 
 ! an average dot product map to be stored in the h5ebsd output file
-!
-! this could become a separate routine in the EMTKDmod module ...
 !=====================================================
-
-! first, make sure that this file does not already exist
-f_exists = .FALSE.
-fname = trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)
-fname = EMsoft_toNativePath(fname)
-inquire(file=trim(fname), exist=f_exists)
-
-call WriteValue('Creating temporary file :',trim(fname))
-
-if (f_exists) then
-  open(unit=itmpexpt,file=trim(fname),&
-      status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
-  close(unit=itmpexpt,status='delete')
-end if
-
-! open the temporary file
-open(unit=itmpexpt,file=trim(fname),&
-     status='unknown',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
-
-ename = trim(EMsoft_getEMdatapathname())//trim(tkdnl%exptfile)
-ename = EMsoft_toNativePath(ename)
-open(unit=iunitexpt,file=trim(ename),&
-    status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
-call Message(' opened input file '//trim(ename))
-
-! prepare the fftw plan for this pattern size
-TKDpattern = 0.0
-tmp = sngl(getEBSDIQ(binx, biny, TKDpattern, init))
-
-! also, allocate the arrays used to create the dot product map; this will require 
-! reading the actual EBSD HDF5 file to figure out how many rows and columns there
-! are in the region of interest.  For now we get those from the nml until we actually 
-! implement the HDF5 reading bit
-! this portion of code was first tested in IDL.
-allocate(TKDpatterninteger(binx,biny))
-TKDpatterninteger = 0
-allocate(TKDpatternad(binx,biny),TKDpatternintd(binx,biny))
-TKDpatternad = 0.0
-TKDpatternintd = 0.0
-
-! this next part is done with OpenMP, with only thread 0 doing the reading and writing,
-! Thread 0 reads one line worth of patterns from the input file, then the threads do 
-! the work, and thread 0 writes to the output file; repeat until all patterns have been processed.
-
-call OMP_SET_NUM_THREADS(tkdnl%nthreads)
-io_int(1) = tkdnl%nthreads
-call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
-
-! allocate the arrays that holds the experimental patterns from a single row of the region of interest
-allocate(exppatarray(patsz * tkdnl%ipf_wd),stat=istat)
-if (istat .ne. 0) stop 'could not allocate exppatarray'
-
-! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
-allocate(TKDPat(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate arrays for TKDPat filter'
-TKDPat = 0.0
-allocate(ksqarray(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate ksqarray array'
-Jres = 0.0
-call init_getEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf)
-deallocate(TKDPat)
-
-! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
-if (istat .ne. 0) stop 'could not allocate hpmask array'
-call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
-
-call Message('Starting processing of experimental patterns')
-call cpu_time(tstart)
-
-! we do one row at a time
-prepexperimentalloop: do iii = 1,tkdnl%ipf_ht
-
-! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
-!$OMP& PRIVATE(imageexpt, tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, vlen, tmp, inp, outp)
-
-! set the thread ID
-    TID = OMP_GET_THREAD_NUM()
-! initialize thread private variables
-    tmpimageexpt = 0.0
-    allocate(TKDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
-
-    allocate(TKDpint(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate TKDpint array'
-
-    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
-
-    rrdata = 0.D0
-    ffdata = 0.D0
-
-! thread 0 reads the next row of patterns from the input file
-    if (TID.eq.0) then
-      do jj=1,tkdnl%ipf_wd
-        read(iunitexpt,rec=(iii-1)*tkdnl%ipf_wd + jj) imageexpt
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
-      end do
-    end if
-
-! other threads must wait until T0 is ready
-!$OMP BARRIER
-    jj=0
-
-! then loop in parallel over all patterns to perform the preprocessing steps
-!$OMP DO SCHEDULE(DYNAMIC)
-    do jj=1,tkdnl%ipf_wd
-! convert imageexpt to 2D Pattern array
-        do kk=1,biny
-          TKDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
-        end do
-
-! compute the pattern Image Quality 
-        exptIQ((iii-1)*tkdnl%ipf_wd + jj) = sngl(computeEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf))
-
-! Hi-Pass filter
-        rrdata = dble(TKDPat)
-        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
-        TKDPat = sngl(ffdata)
-
-! adaptive histogram equalization
-        ma = maxval(TKDPat)
-        mi = minval(TKDPat)
-    
-        TKDpint = nint(((TKDPat - mi) / (ma-mi))*255.0)
-        TKDPat = float(adhisteq(tkdnl%nregions,binx,biny,TKDpint))
-
-! convert back to 1D vector
-        do kk=1,biny
-          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = TKDPat(1:binx,kk)
-        end do
-
-! apply circular mask and normalize for the dot product computation
-        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
-        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
-        if (vlen.ne.0.0) then
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
-        else
-          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
-        end if
-    end do
-!$OMP END DO
-
-! thread 0 writes the row of patterns to the output file
-    if (TID.eq.0) then
-      do jj=1,tkdnl%ipf_wd
-        write(itmpexpt,rec=(iii-1)*tkdnl%ipf_wd + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
-      end do
-    end if
-
-deallocate(TKDPat, rrdata, ffdata, TKDpint, inp, outp)
-!$OMP BARRIER
-!$OMP END PARALLEL
-
-! print an update of progress
-    if (mod(iii,5).eq.0) then
-        io_int(1:2) = (/ iii, tkdnl%ipf_ht /)
-        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
-    end if
-end do prepexperimentalloop
-
-call Message(' -> experimental patterns stored in tmp file')
-
-close(unit=iunitexpt,status='keep')
-close(unit=itmpexpt,status='keep')
-
-! print some timing information
-call CPU_TIME(tstop)
-tstop = tstop - tstart
-io_real(1) = float(tkdnl%nthreads) * float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+call h5open_EMsoft(hdferr)
+call PreProcessTKDPatterns(tkdnl%nthreads, .FALSE., tkdnl, binx, biny, masklin, correctsize, totnumexpt, &
+                           exptIQ=exptIQ)
+call h5close_EMsoft(hdferr)
 
 !=====================================================
 call Message(' -> computing Average Dot Product map (ADP)')
 call Message(' ')
 
-allocate(dpmap(totnumexpt))
+
 ! re-open the temporary file
+fname = trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)
+fname = EMsoft_toNativePath(fname)
+
 open(unit=itmpexpt,file=trim(fname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
+
 ! use the getADPmap routine in the filters module
-call getADPmap(itmpexpt, totnumexpt, L, tkdnl%ipf_wd, tkdnl%ipf_ht, dpmap)
+if (ROIselected.eqv..TRUE.) then
+  allocate(dpmap(tkdnl%ROI(3)*tkdnl%ROI(4)))
+  call getADPmap(itmpexpt, tkdnl%ROI(3)*tkdnl%ROI(4), L, tkdnl%ROI(3), tkdnl%ROI(4), dpmap)
+  TIFF_nx = tkdnl%ROI(3)
+  TIFF_ny = tkdnl%ROI(4)
+else
+  allocate(dpmap(totnumexpt))
+  call getADPmap(itmpexpt, totnumexpt, L, tkdnl%ipf_wd, tkdnl%ipf_ht, dpmap)
+  TIFF_nx = tkdnl%ipf_wd
+  TIFF_ny = tkdnl%ipf_ht
+end if
 
 ! we keep the temporary file open since we will be reading from it...
 
@@ -990,7 +848,7 @@ dictionaryloop: do ii = 1,cratio+1
 
       ierr = clEnqueueWriteBuffer(command_queue, cl_dict, CL_TRUE, 0_8, size_in_bytes_dict, C_LOC(dicttranspose(1)), &
                                   0, C_NULL_PTR, C_NULL_PTR)
-      call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
+      call CLerror_check('EMTKDDISubroutine:clEnqueueWriteBuffer', ierr)
 
       experimentalloop: do jj = 1,cratioE
 
@@ -1003,7 +861,7 @@ dictionaryloop: do ii = 1,cratio+1
 
         ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
                                     0, C_NULL_PTR, C_NULL_PTR)
-        call CLerror_check('MasterSubroutine:clEnqueueWriteBuffer', ierr)
+        call CLerror_check('EMTKDDISubroutine:clEnqueueWriteBuffer', ierr)
 
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,tkdnl%devid,kernel,context,command_queue)
 
@@ -1150,6 +1008,15 @@ ipar(3) = totnumexpt
 ipar(4) = Nd*ceiling(float(FZcnt)/float(Nd))
 ipar(5) = FZcnt
 ipar(6) = pgnum
+if (ROIselected.eqv..TRUE.) then
+  ipar(7) = tkdnl%ROI(3)
+  ipar(8) = tkdnl%ROI(4)
+else
+  ipar(7) = tkdnl%ipf_wd
+  ipar(8) = tkdnl%ipf_ht
+end if 
+
+allocate(OSMmap(jjend, iiiend))
 
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
@@ -1157,22 +1024,39 @@ call h5open_EMsoft(hdferr)
 if (tkdnl%datafile.ne.'undefined') then 
   vendor = 'TSL'
   call h5tkd_writeFile(vendor, tkdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
-                        dpmap, progname, nmldeffile)
+                        dpmap, progname, nmldeffile, OSMmap)
   call Message('Data stored in h5tkd file : '//trim(tkdnl%datafile))
 end if
 
 if (tkdnl%ctffile.ne.'undefined') then 
-  call ctftkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain)
+  call ctftkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
   call Message('Data stored in ctf file : '//trim(tkdnl%ctffile))
 end if
 
 if (tkdnl%angfile.ne.'undefined') then 
-  write (*,*) 'ang format not available until Release 3.2'
-  !call angebsd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain)
-  !call Message('Data stored in ang file : '//trim(tkdnl%angfile))
+    call angtkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain,exptIQ)
+    call Message('Data stored in ang file : '//trim(tkdnl%angfile))
 end if
 
 ! close the fortran HDF5 interface
 call h5close_EMsoft(hdferr)
 
-end subroutine MasterSubroutine
+! if requested, we notify the user that this program has completed its run
+if (trim(EMsoft_getNotify()).ne.'Off') then
+  if (trim(tkdnl%Notify).eq.'On') then 
+    NumLines = 3
+    allocate(MessageLines(NumLines))
+
+    call hostnm(c)
+ 
+    MessageLines(1) = 'EMEBSDDI program has ended successfully'
+    MessageLines(2) = 'Indexed data stored in '//trim(tkdnl%datafile)
+    write (exectime,"(F15.0)") tstop  
+    MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
+    TitleMessage = 'EMsoft on '//trim(c)
+    i = PostMessage(MessageLines, NumLines, TitleMessage)
+  end if
+end if
+
+
+end subroutine EMTKDDISubroutine

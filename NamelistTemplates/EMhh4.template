@@ -1,0 +1,160 @@
+ &hhlist
+! namelist file for EMsoft version of the 4-dislocation Head&Humble program,
+! modified by the group of Prof. Skalicky (U. Vienna) in the early 1980s.
+! Some of the original input parameters are handled in a different way in
+! the EMsoft context, but they are kept in this file (commented out and placed 
+! at the end of the file) for historical reasons.
+!===========================================================================
+!
+!============EMsoft specific parameters======
+! crystal structure file name (.xtal)
+ xtalname = 'undefined',
+! output file name
+ outname = 'undefined',
+! prefix for image file name
+ imageprefix = 'undefined',
+! image type 'bmp' or 'tiff'
+ imagetype = 'tiff',
+! number of rows and columns in the BF/DF images
+ IROW = 160,
+ ICOL = 256,
+! accelerating voltage [kV] [not present in original program]
+ kV = 200.0,
+
+!============defect parameters================
+! integer Burgers vector components e.g. -1,1,1, for dislocation 1
+ LB = 1 0 1,
+! common integer denominator for LB components e.g. 2,
+ LD = 2,
+! dislocation 2 [set to zero if no dislocation present]
+ LB2 = 0 0 0, 
+ LD2 = 1,
+! dislocation 3 [set to zero if no dislocation present]
+ LB3 = 0 0 0, 
+ LD3 = 1,
+! dislocation 4 [set to zero if no dislocation present]
+ LB4 = 0 0 0, 
+ LD4 = 1,
+! dislocation line direction (integers) e.g. -1,1,1,
+ LU = 1 1 1,
+! diffraction vector (integers) e.g. 1,2,-1,
+ LG = 2 0 0,
+! 
+!=============stacking fault parameters========
+! stacking fault plane normal (integers) e.g. 1,1,0,
+ LFP1 = 1 1 0,
+! same for second and third stacking faults,
+ LFP = 0 0 0,
+ LFP3 = 0 0 0, 
+! components and denominator (integers) of the displacement vector of the first 
+! stacking fault
+ LS1 = 1 0 1, 
+ LQ1 = 2,      
+! same for second and third faults,
+ LS2 = 0 0 0, 
+ LQ2 = 2,      
+ LS3 = 0 0 0, 
+ LQ3 = 2,      
+! separation between dislocations in units of extinction distance,
+ SEP = 2.0,
+! second separation parameter
+ SEP2 = 2.0,
+! used for parallel, overlapping stacking faults,
+ FAP1 = 0.0,
+ FAP3 = 0.0,
+! 
+!=============foil geometry parameters=========
+! beam direction (integers) e.g. 1,1,1,
+ LBM = 0 0 1,
+! foil normal (integers) e.g. 1,1,1,
+ LFN = 0 0 1,
+! foil thickness in units of extinction distance, e.g. 6.0,
+ THICK = 5.0,
+! starting thickness of computation, default = 0.0,
+ START = 0.0, 
+! end of thickness integration
+ FINISH = 6.0,
+! w-parameter (excitation error * extinction distance) [original parameter name CN17]
+! this can be defined as a range from wmin to wmax, along with number of increments;
+! if both values identical, then only one BF/DF image pair will be produced 
+ wmin = -1.0,
+ wmax =  1.0,
+ wnum =  5,
+!
+!==============material property parameters
+! 6x6 elastic constant tensor, to be entered in six separate rows; must be symmetric
+! example is for cubic symmetry; units are [GPa]
+ D1row1 = 100.0  80.0  80.0   0.0   0.0   0.0,
+ D1row2 =  80.0 100.0  80.0   0.0   0.0   0.0,
+ D1row3 =  80.0  80.0 100.0   0.0   0.0   0.0,
+ D1row4 =   0.0   0.0   0.0  50.0   0.0   0.0,
+ D1row5 =   0.0   0.0   0.0   0.0  50.0   0.0,
+ D1row6 =   0.0   0.0   0.0   0.0   0.0  50.0,
+!
+!=========diagnostic parameter================
+! 0=no test data, 1=output test data in file HHdiagnostics.txt
+ LTEST = 0,
+!
+!======================================================================
+!======================================================================
+!======================================================================
+! DO NOT UNCOMMENT THE FOLLOWING LIST OF PARAMETERS; THEY ARE NOT USED
+! IN THE EMsoft 4.3 RELEASE OF THE HH PROGRAM.
+!======================================================================
+!======================================================================
+!======================================================================
+!! by default, no piezoelectric effects are included in the computation 
+! LPIEZO = 0,
+!!=============piezoelectric parameters=========
+!! by default these are all set to zero.  For information on how to use 
+!! these parameters, see the following publication
+!! https://doi.org/10.1080/01418618608242895
+!! 4 component dipole layer vectors e.g. 0.0,0.0,0.0,0.0,
+! BD  = 0.0 0.0 0.0 0.0,
+! B2D = 0.0 0.0 0.0 0.0,
+! B3D = 0.0 0.0 0.0 0.0,
+! B4D = 0.0 0.0 0.0 0.0,
+!! line force components (integers) e.g. 0,0,0,
+! LF1 = 0 0 0,
+!! line force denominator (floating point) e.g. 1.0,
+! LC1 = 1.0
+!! same for 3 other dislocations,
+! LF2 = 0 0 0,
+! LC2 = 1.0
+! LF3 = 0 0 0,
+! LC3 = 1.0
+! LF4 = 0 0 0,
+! LC4 = 1.0
+!! core charges of dislocations, e.g. 0.0,0.0,0.0,0.0,
+! QL1 = 0.0 0.0 0.0 0.0,
+! QL2 = 0.0 0.0 0.0 0.0,
+! QL3 = 0.0 0.0 0.0 0.0,
+! QL4 = 0.0 0.0 0.0 0.0,
+!!! 3x6 piezoelectric tensor, entered as rows; units of []
+! EProw1 =  0.0  0.0  0.0  0.0  0.0  0.0,
+! EProw2 =  0.0  0.0  0.0  0.0  0.0  0.0,
+! EProw3 =  0.0  0.0  0.0  0.0  0.0  0.0,
+!! 3x3 dielectric tensor, symmetric, entered as rows; units of []
+! EArow1 =  0.0  0.0  0.0,   
+! EArow2 =  0.0  0.0  0.0,   
+! EArow3 =  0.0  0.0  0.0,   
+!
+!=====================================================
+! original input parameters that no longer need to be defined in 
+! this EMsoft implementation of hh4
+!
+! the crystal structure data is handled via the standard .xtal input file
+!       A,B,C           = unit cell parameters in Angstroem, 
+!       WALP,WBET,WGAM  = unit cell angles in degrees,
+!       KS              = crystal system number (integer)
+!                       tricline,monoclinic,rhombohedral,trigonal,
+!                       tetragonal,hexagonal,cubic (1..7),
+!       XIGEE           = extinction distance (in Angstroem) [now computed from lattice potential]
+!       ANO             = anomalous absorption (default 0.1) [now computed from absorption form factors]
+!       LBOD            = 1=bright field image, 2=dark field image [both are always computed]
+!       IND             = symmetry factor, remains 0 most of the time [set to 0]
+!       LQ              = 1=fast run (default), 2=slower run (4 times as slow), slow is at higher resolution [resolution set by user]
+!       LPR             = not used in our version, set to 1
+!       IY              = 15 character title string e.g. 'TESTRUN 2/18/91' [replaced by EMheader group in output HDF file]
+!=====================================================
+ /

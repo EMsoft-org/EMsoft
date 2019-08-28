@@ -16,9 +16,11 @@ endforeach()
 
 set(EMsoftWrapperLib_SOURCES
   ${DictionaryIndexing_Wrapper_SRCS}
+  ${OLIO_Wrapper_SRCS}
   ${OM_Wrapper_SRCS}
   ${SEM_Wrapper_SRCS}
   ${TEM_Wrapper_SRCS}
+  ${QC_Wrapper_SRCS}
   ${Utilities_Wrapper_SRCS}
 )
 

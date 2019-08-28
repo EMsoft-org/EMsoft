@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -44,6 +44,7 @@
 !> @date 01/17/15 MDG 2.2 added gridtype option to SampleRFZ
 !> @date 03/03/16 MDG 2.3 added uniform sampling for constant misorientations
 !> @date 04/01/17 MDG 3.0 start to add FZs for two-phase systems (e.g., cubic-hexagonal, etc.)
+!> @date 02/21/19 MDG 3.1 adds MacKenzie distributions (theoretical expressions)
 !--------------------------------------------------------------------------
 module so3
 
@@ -189,23 +190,39 @@ end subroutine getFZtypeandorder
 !> @param rod Rodrigues coordinates  (double precision)
 !> @param FZtype FZ type
 !> @param FZorder FZ order
+!> @param qFZ quaternion that rotates the FZ into a new orientation (optional)
 !
 !> @date 01/01/15 MDG 1.0 new routine, needed for dictionary indexing approach
 !> @date 06/04/15 MDG 1.1 corrected infty to inftyd (double precision infinity)
 !> @date 04/02/17 MDG 1.2 expanded FZ types to include misorientation FZs and icosahedral
+!> @date 07/04/19 MDG 1.3 added optional parameter to rotate the FZ into an arbitrary orientation
 !--------------------------------------------------------------------------
-recursive function IsinsideFZ(rod,FZtype,FZorder) result(insideFZ)
+recursive function IsinsideFZ(rod,FZtype,FZorder,qFZ) result(insideFZ)
 !DEC$ ATTRIBUTES DLLEXPORT :: IsinsideFZ
 
 use constants
 use math
+use quaternions
+use rotations
 
 IMPLICIT NONE
 
 real(kind=dbl), INTENT(IN)              :: rod(4)
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
+real(kind=dbl),INTENT(IN),OPTIONAL      :: qFZ(4)
 logical                                 :: insideFZ
+
+real(kind=dbl)                          :: newrod(4), qu(4)
+
+! do we need to rotate the FZ ? (we do this by rotating rod in the opposite way)
+if (present(qFZ)) then 
+  qu = ro2qu(rod)
+  qu = quat_mult( qFZ, quat_mult(qu, conjg(qFZ) )  )
+  newrod = qu2ro(qu)
+else
+  newrod = rod
+end if
 
 insideFZ = .FALSE.
 
@@ -215,17 +232,17 @@ insideFZ = .FALSE.
     case (0)
       insideFZ = .TRUE.   ! all points are inside the FZ
     case (1)
-      insideFZ = insideCyclicFZ(rod,FZtype,FZorder)        ! infinity is checked inside this function
+      insideFZ = insideCyclicFZ(newrod,FZtype,FZorder)        ! infinity is checked inside this function
     case (2)
-      if (rod(4).ne.inftyd()) insideFZ = insideDihedralFZ(rod,FZorder)
+      if (rod(4).ne.inftyd()) insideFZ = insideDihedralFZ(newrod,FZorder)
     case (3)
-      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(rod,'tet')
+      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(newrod,'tet')
     case (4)
-      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(rod,'oct')
+      if (rod(4).ne.inftyd()) insideFZ = insideCubicFZ(newrod,'oct')
     case (5) ! icosahedral symmetry
-      if (rod(4).ne.inftyd()) insideFZ = insideIcosahedralFZ(rod)
+      if (rod(4).ne.inftyd()) insideFZ = insideIcosahedralFZ(newrod)
     case (6) ! cubic-hexagonal misorientation FZ
-      if (rod(4).ne.inftyd()) insideFZ = insideCubeHexFZ(rod)
+      if (rod(4).ne.inftyd()) insideFZ = insideCubeHexFZ(newrod)
     case (7)
 !     if (rod(4).ne.inftyd) insideFZ = insideCubicFZ(rod,'oct')
     case (8)
@@ -336,6 +353,7 @@ end function insideCyclicFZ
 !
 !> @date 05/12/14  MDG 1.0 original
 !> @date 10/02/14  MDG 2.0 rewrite
+!> @date 02/21/19  MDG 2.1 correction of initial truncation factor from 1.5 to sqrt(3); only affected 222 point group
 !--------------------------------------------------------------------------
 recursive function insideDihedralFZ(rod,order) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: insideDihedralFZ
@@ -353,7 +371,7 @@ real(kind=dbl),parameter                  :: r1 = 1.00D0
 real(kind=dbl),allocatable                :: polygonvertex(:,:)
 integer(kind=irg)                         :: inout
 
-if (rod(4).gt.1.5) then 
+if (rod(4).gt.sqrt(3.D0)) then 
   res = .FALSE.
 else
   r(1:3) = rod(1:3) * rod(4)
@@ -602,8 +620,9 @@ end subroutine delete_FZlist
 !> @date 09/15/15 MDG 2.1 removed explicit origin allocation; changed while to do loops.
 !> @date 01/17/15 MDG 2.2 added gridtype option
 !> @date 05/22/16 MDG 2.3 correction for monoclinic symmetry with twofold axis along b, not c !!!
+!> @date 07/04/19 MDG 2.4 added option to rotate FZ before sampling
 !--------------------------------------------------------------------------
-recursive subroutine SampleRFZ(nsteps,pgnum,gridtype,FZcnt,FZlist)
+recursive subroutine SampleRFZ(nsteps,pgnum,gridtype,FZcnt,FZlist, qFZ)
 !DEC$ ATTRIBUTES DLLEXPORT :: SampleRFZ
 
 use typedefs
@@ -617,11 +636,15 @@ integer(kind=irg), INTENT(IN)        :: pgnum
 integer(kind=irg), INTENT(IN)        :: gridtype
 integer(kind=irg),INTENT(OUT)        :: FZcnt                ! counts number of entries in linked list
 type(FZpointd),pointer,INTENT(OUT)   :: FZlist               ! pointers
+real(kind=dbl),INTENT(IN),OPTIONAL   :: qFZ(4)
 
 real(kind=dbl)                       :: x, y, z, rod(4), delta, shift, sedge, ztmp
 type(FZpointd), pointer              :: FZtmp, FZtmp2
 integer(kind=irg)                    :: FZtype, FZorder, i, j, k
-logical                              :: b
+logical                              :: b, rotateFZ = .FALSE.
+
+
+if (present(qFZ)) rotateFZ = .TRUE.
 
 ! cube semi-edge length s = 0.5D0 * LPs%ap
 ! step size for sampling of grid; total number of samples = (2*nsteps+1)**3
@@ -676,7 +699,11 @@ FZorder = FZoarray(pgnum)
 
 ! If insideFZ=.TRUE., then add this point to the linked list FZlist and keep
 ! track of how many points there are on this list
-       b = IsinsideFZ(rod,FZtype,FZorder)
+       if (rotateFZ.eqv..TRUE.) then 
+         b = IsinsideFZ(rod,FZtype,FZorder,qFZ)
+       else
+         b = IsinsideFZ(rod,FZtype,FZorder)
+       end if
        if (b) then 
         if (.not.associated(FZlist)) then
           allocate(FZlist)
@@ -1886,5 +1913,208 @@ end subroutine getVertex
 2     CONTINUE                                                          
       RETURN                                                            
       END FUNCTION PNPOLY
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: MKCC
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief auxiliary function for MacKenzie distributions
+!
+!> @note Uses the expressions from A. Morawiec, J.Appl.Cryst. (1995) 28:289-293
+!
+!> @param a
+!> @param b
+!> @param c
+!
+!> @date 02/22/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function MKCC(a, b, c) result(CC)
+!DEC$ ATTRIBUTES DLLEXPORT :: MKCC
+
+use constants
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)       :: a 
+real(kind=dbl),INTENT(IN)       :: b 
+real(kind=dbl),INTENT(IN)       :: c 
+real(kind=dbl)                  :: CC 
+
+CC =  acos( (cos(c)-cos(a)*cos(b)) / (sin(a)*sin(b)) )
+
+end function MKCC
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: MKS2
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief auxiliary function for MacKenzie distributions
+!
+!> @note Uses the expressions from A. Morawiec, J.Appl.Cryst. (1995) 28:289-293
+!
+!> @param a
+!> @param b
+!> @param c
+!
+!> @date 02/22/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function MKS2(a, b, c) result(S2)
+!DEC$ ATTRIBUTES DLLEXPORT :: MKS2
+
+use constants
+
+IMPLICIT NONE
+
+real(kind=dbl),INTENT(IN)       :: a 
+real(kind=dbl),INTENT(IN)       :: b 
+real(kind=dbl),INTENT(IN)       :: c 
+real(kind=dbl)                  :: S2 
+
+S2 = 2.D0 * ( cPi - MKCC(a,b,c) - cos(a) * MKCC(c,a,b) - cos(b) * MKCC(b,c,a) )
+
+end function MKS2
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getMacKenzieDistribution
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief computes the theoretical MacKenzie distribution for a given rotational point group
+!
+!> @note Uses the expressions from A. Morawiec, J.Appl.Cryst. (1995) 28:289-293
+!
+!> @param pgnum
+!> @param misor  array of misorientation angles for which the function values are requested
+!> @param Nmisor number of misorientation values
+!> @param MK MacKenzie distribution values
+!
+!> @date 02/22/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine getMacKenzieDistribution(pgnum, Nmisor, misor, MK)
+!DEC$ ATTRIBUTES DLLEXPORT :: getMacKenzieDistribution
+
+use constants
+use typedefs
+use error
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)        :: pgnum
+integer(kind=irg),INTENT(IN)        :: Nmisor
+real(kind=dbl),INTENT(IN)           :: misor(0:Nmisor)
+real(kind=dbl),INTENT(INOUT)        :: MK(0:Nmisor)
+
+real(kind=dbl),allocatable          :: pomega(:), chi(:), rr(:)
+real(kind=dbl)                      :: h, h2, h3
+integer(kind=irg)                   :: prot, pgrotOrder, i
+real(kind=dbl),parameter            :: nn(4) = dble((/ 2, 4, 3, 6 /)), nnn(4) = dble((/ 4, 8, 6, 12 /))
+
+! allocate array
+allocate(pomega(Nmisor))
+
+! first get the distribution pomega for the no-symmetry case 
+prot = PGrot(pgnum)
+pgrotOrder = PGTHDorder(prot)
+pomega = (1.D0 / (2.D0 * cPi * cPi)) * sin(misor*0.5D0)**2
+
+! if there is rotational symmetry, then compute the solid angle function chi
+if (prot.gt.1) then 
+  allocate(chi(Nmisor), rr(Nmisor))
+  chi = 4.D0 * cPi
+  rr = tan(misor*0.5D0)
+  if ((prot.eq.3).or.(prot.eq.6)) h = nn(1)
+  if ((prot.eq.9).or.(prot.eq.12)) h = nn(2)
+  if ((prot.eq.16).or.(prot.eq.18)) h = nn(3)
+  if ((prot.eq.21).or.(prot.eq.24)) h = nn(4)
+
+  select case(prot) 
+    case (3, 9, 16, 21)   ! cyclic point groups 
+      chi = 4.D0 * cPi
+      h2 = tan(cPi * 0.5D0 / h)
+      do i = 0, Nmisor
+        if (rr(i).ge.h2) then 
+          chi(i) = chi(i) - 4.D0 * cPi * (1.D0 - cos( acos(h2/rr(i)) ) )
+        end if
+      end do
+      MK = (cPi/180.D0) * h * pomega * chi
+
+    case (6, 12, 18, 24)   ! dihedral groups 
+      h2 = tan(cPi * 0.5D0 / h)
+      h3 = 1.D0
+      do i = 0, Nmisor
+        if (rr(i).gt.h2) then 
+          chi(i) = chi(i) - 4.D0 * cPi * (1.D0 - cos( acos(h2/rr(i)) ) )
+        end if
+        if (rr(i).gt.h3) then 
+          chi(i) = chi(i) - 4.D0 * h * cPi * (1.D0 - cos( acos(h3/rr(i)) ) )
+        end if
+        if (rr(i).gt.sqrt(h3+h2*h2)) then 
+          chi(i) = chi(i) + 4.D0 * h * MKS2( acos(h2/rr(i)), acos(h3/rr(i)), cPi/2.D0) &
+                   + 2.D0 * h * MKS2( acos(h3/rr(i)), acos(h3/rr(i)), cPi/h)           
+        end if
+        if (rr(i).gt.sqrt(h3+2.D0*h2*h2)) then 
+          chi(i) = 0.D0
+        end if
+      end do
+      MK = (cPi/180.D0) * (2.D0 * h) * pomega * chi
+ 
+     case (28)   ! tetrahedral group 
+      h2 = 1.D0/sqrt(2.D0)
+      h3 = 1.D0/sqrt(3.D0)
+      do i = 0, Nmisor
+        if (rr(i).gt.h3) then 
+          chi(i) = chi(i) - 16.D0 * cPi * (1.D0 - cos( acos(h3/rr(i)) ) )
+        end if
+        if (rr(i).gt.h2) then 
+          chi(i) = chi(i) + 12.D0 * MKS2( acos(h3/rr(i)),  acos(h3/rr(i)), acos(h3*h3) ) 
+        end if
+        if (rr(i).gt.1.D0) then 
+          chi(i) = 0.D0
+        end if
+      end do
+      MK = (cPi/180.D0) * 12.D0 * pomega * chi
+
+     case (30)   ! octahedral group 
+      h2 = sqrt(2.D0) - 1.D0
+      h3 = 1.D0/sqrt(3.D0)
+      do i = 0, Nmisor
+        if (rr(i).gt.h2) then 
+          chi(i) = chi(i) - 12.D0 * cPi * (1.D0 - cos( acos(h2/rr(i)) ) )
+        end if
+        if (rr(i).gt.h3) then 
+          chi(i) = chi(i) - 16.D0 * cPi * (1.D0 - cos( acos(h3/rr(i)) ) )
+        end if
+        if (rr(i).gt.(2.D0-sqrt(2.D0))) then 
+          chi(i) = chi(i) + 12.D0 * MKS2( acos(h2/rr(i)),  acos(h2/rr(i)), cPi*0.5D0 ) + &
+                   24.D0 * MKS2( acos(h2/rr(i)),  acos(h3/rr(i)), acos(h3) ) 
+        end if
+        if (rr(i).gt.sqrt(23.0-16.D0*sqrt(2.D0))) then 
+          chi(i) = 0.D0
+        end if
+      end do
+      MK = (cPi/180.D0) * 24.D0 * pomega * chi
+
+    case default
+      call FatalError('getMacKenzieDistribution',' non-existent rotational point group number')
+  end select
+  deallocate(chi, rr)
+! force the last point to zero  
+  MK(Nmisor) = 0.D0
+else 
+  MK = (cPi/180.D0) * (4.D0 * cPi) * pomega
+  deallocate(pomega)
+end if
+
+end subroutine getMacKenzieDistribution
+
+
+
+
 
 end module so3

@@ -1,0 +1,38 @@
+ &LaueData
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+! crystal structure file name
+ xtalname = 'undefined',
+! detector x-size (pixels)
+ numpx = 1024,
+! detector y-size (pixels)
+ numpy = 768,
+! number of parallel threads
+ nthreads = 1,
+! detector pixel size (microns, square pixels)
+ pixelsize = 50.0,
+! spot size weight factor (basically 1/(2*sigma^2) for Gaussian peaks)
+ spotw = 0.1,
+! intensity scaling gamma factor 
+ gammavalue = 1.0,
+! x-ray tube accelerating voltage (kV)
+ maxVoltage = 30.0,
+! cutoff lower voltage (kV)
+ minVoltage = 15.0,
+! sample-detector distance (mm)
+ SDdistance = 100.0,
+! do we need to store backprojections as well ?  'Yes' or 'No'
+ backprojection = 'No',
+! dimension of square Lambert array for backprojection (actual will be 2*BPx+1 by 2*BPx+1)
+ BPx = 300,
+! laue pattern mode 'transmission' or 'reflection'
+ Lauemode = 'transmission',
+! input file with list of orientations
+ orientationfile = 'undefined'
+! prefix for tiff output files with individual patterns
+ tiffprefix = 'undefined',
+! HDF output file name (relative to EMdatapathname)
+ hdfname = 'undefined',
+ /

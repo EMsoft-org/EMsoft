@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2018, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2019, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -39,6 +39,8 @@
 !> @details
 !> defines the kind-parameters for short and long integers, and single/double
 !> precision reals, as well as a few other global variables (path variables etc).
+!
+!> @note all errorCode values in this file start with 999xxx 
 !
 !> @date 1/8/99   MDG 1.0 original
 !> @date 5/6/01   MDG 2.0 f90
@@ -104,6 +106,13 @@ use,intrinsic :: ISO_C_BINDING
   integer(kind=irg),parameter           :: fnlen = 512
 !DEC$ ATTRIBUTES DLLEXPORT :: fnlen
 
+!> counter for non-fatal error messages in handling of environment variables;
+!> if this counter equals 0, then error warnings will be printed, otherwise not.
+  integer(kind=irg)                     :: displayEMsoftWarningMessages = 0
+  integer(kind=irg)                     :: displayConfigFileMissingMessage = 0
+!DEC$ ATTRIBUTES DLLEXPORT :: displayEMsoftWarningMessages
+!DEC$ ATTRIBUTES DLLEXPORT :: displayConfigFileMissingMessage
+
 !> standard array size for all wrapper routine calls; applies to ipar, fpar, and spar arrays
   integer(c_int32_t),parameter          :: wraparraysize = 80
 !DEC$ ATTRIBUTES DLLEXPORT :: wraparraysize
@@ -137,7 +146,7 @@ type ConfigStructureType
  character(5)      :: EMNotify
  character(3)      :: Develop
  character(3)      :: Release
-! other configuration parameters that may be needed in various program but are not in the EMsoftConfig.json file
+! other configuration parameters that may be needed in various programs but are not in the EMsoftConfig.json file
  character(fnlen)  :: h5copypath
  character(fnlen)  :: EMsoftplatform
  character(fnlen)  :: EMsofttestpath
@@ -176,9 +185,9 @@ character(30)      :: ConfigStructureNames(27) = (/ "EMsoftpathname             
                                                     "Configpath                    ", &
                                                     "Templatepathname              ", &
                                                     "Resourcepathname              ", &
-                                                    "Homepathname                  ",&
+                                                    "Homepathname                  ", &
                                                     "OpenCLpathname                ", &
-                                                    "Templatecodefilename          ",&
+                                                    "Templatecodefilename          ", &
                                                     "WyckoffPositionsfilename      ", &
                                                     "Randomseedfilename            ", &
                                                     "EMsoftnativedelimiter         " /)
@@ -359,7 +368,7 @@ end function EMsoft_getEMsoftTestingPath
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief returns the EMsoftplatform
+!> @brief returns the Version Information
 !
 !> @param no input parameters
 !
@@ -375,6 +384,53 @@ character(20) :: version
 version = "@EMsoft_VER_MAJOR@_@EMsoft_VER_MINOR@_@EMsoft_VER_PATCH@_@EMsoft_VERSION_TWEAK@"
 
 end function EMsoft_getEMsoftversion
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getEMsoftRevision
+!
+!> @author 
+!
+!> @brief returns the Git Hash of the current commit.
+!
+!> @param no input parameters
+!
+!> @date  
+!--------------------------------------------------------------------------
+recursive function EMsoft_getEMsoftRevision() result(revision)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMsoftRevision
+
+IMPLICIT NONE
+
+character(40) :: revision
+
+revision = "@EMsoft_GIT_HASH@"
+
+end function EMsoft_getEMsoftRevision
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getEMsoftBuildDate
+!
+!> @author 
+!
+!> @brief returns the Git Hash of the current commit.
+!
+!> @param no input parameters
+!
+!> @date  
+!--------------------------------------------------------------------------
+recursive function EMsoft_getEMsoftBuildDate() result(buildDate)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMsoftBuildDate
+
+IMPLICIT NONE
+
+character(24) :: buildDate
+
+buildDate = "@EMsoft_BUILD_TIMESTAMP@"
+
+end function EMsoft_getEMsoftBuildDate
 
 
 !--------------------------------------------------------------------------
@@ -449,16 +505,36 @@ end function EMsoft_getConfigpath
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  02/27/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMsoftpathname() result(EMsoftpathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMsoftpathname
 
+use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
+
 IMPLICIT NONE
 
-character(fnlen)                        :: EMsoftpathname, ep
+character(fnlen)                        :: EMsoftpathname, ep, envParam, envReturn
+integer                                 :: l, status
 
 ep = SC_EMsoftpathname
 EMsoftpathname = EMsoft_getJSONparameter(ep)
+
+if (trim(EMsoftpathname).eq.'tryEnvironmentVariable') then 
+  envParam = 'EMSOFTPATHNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    EMsoftpathname = trim(envReturn)
+    l = len(trim(EMsoftpathname))
+    if (EMsoftpathname(l:l).ne.'/') EMsoftpathname = trim(EMsoftpathname)//'/'
+  else
+    write (error_unit,"(A)") 'EMsoftpathname was not defined in the json file'
+    write (error_unit,"(A)") 'EMSOFTPATHNAME environment variable was NOT defined as a backup.'
+    status = 999001
+    write (error_unit,"(' status = ',I10)") status
+    STOP 999001
+  end if
+end if 
 
 end function EMsoft_getEMsoftpathname
 
@@ -474,16 +550,38 @@ end function EMsoft_getEMsoftpathname
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  02/27/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMdatapathname() result(EMdatapathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMdatapathname
 
+use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
+
 IMPLICIT NONE
 
-character(fnlen)                        :: EMdatapathname, ep
+character(fnlen)                        :: EMdatapathname, ep, envParam, envReturn
+integer                                 :: l
 
 ep = SC_EMdatapathname
 EMdatapathname = EMsoft_getJSONparameter(ep)
+
+if (trim(EMdatapathname).eq.'tryEnvironmentVariable') then 
+  envParam = 'EMDATAPATHNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    EMdatapathname = trim(envReturn)
+    l = len(trim(EMdatapathname))
+    if (EMdatapathname(l:l).ne.'/') EMdatapathname = trim(EMdatapathname)//'/'
+  else
+    if (displayEMsoftWarningMessages.eq.0) then 
+      write (error_unit,"(A)") 'EMdatapathname was not defined in the json file'
+      write (error_unit,"(/A)") '  WARNING: EMDATAPATHNAME environment variable was NOT defined as a backup.'
+      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
+    end if
+    EMdatapathname = ''
+  end if
+end if 
 
 end function EMsoft_getEMdatapathname
 
@@ -498,16 +596,38 @@ end function EMsoft_getEMdatapathname
 !> @param no input parameters
 !
 !> @date  08/15/17 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMXtalFolderpathname() result(EMXtalFolderpathname)
-!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMdatapathname
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMXtalFolderpathname
+
+use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
 
 IMPLICIT NONE
 
-character(fnlen)                        :: EMXtalFolderpathname, ep
+character(fnlen)                        :: EMXtalFolderpathname, ep, envParam, envReturn
+integer                                 :: l
 
 ep = SC_EMXtalFolderpathname
 EMXtalFolderpathname = EMsoft_getJSONparameter(ep)
+
+if (trim(EMXtalFolderpathname).eq.'tryEnvironmentVariable') then 
+  envParam = 'EMXTALFOLDERPATHNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    EMXtalFolderpathname = trim(envReturn)
+    l = len(trim(EMXtalFolderpathname))
+    if (EMXtalFolderpathname(l:l).ne.'/') EMXtalFolderpathname = trim(EMXtalFolderpathname)//'/'
+  else
+    if (displayEMsoftWarningMessages.eq.0) then 
+      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
+      write (error_unit,"(/A)") '  WARNING: EMXTALFOLDERPATHNAME environment variable was NOT defined as a backup.'
+      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
+    end if
+    EMXtalFolderpathname = ''
+  end if
+end if 
 
 end function EMsoft_getEMXtalFolderpathname
 
@@ -523,16 +643,38 @@ end function EMsoft_getEMXtalFolderpathname
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMtmppathname() result(EMtmppathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMtmppathname
 
+use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
+
 IMPLICIT NONE
 
-character(fnlen)                        :: EMtmppathname, ep
+character(fnlen)                        :: EMtmppathname, ep, envParam, envReturn
+integer                                 :: l
 
 ep = SC_EMtmppathname
 EMtmppathname = EMsoft_getJSONparameter(ep)
+
+if (trim(EMtmppathname).eq.'tryEnvironmentVariable') then 
+  envParam = 'EMTMPPATHNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    EMtmppathname = trim(envReturn)
+    l = len(trim(EMtmppathname))
+    if (EMtmppathname(l:l).ne.'/') EMtmppathname = trim(EMtmppathname)//'/'
+  else
+    if (displayEMsoftWarningMessages.eq.0) then 
+      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMtmppathname'
+      write (error_unit,"(/A)") '  WARNING: EMTMPPATHNAME environment variable was NOT defined as a backup.'
+      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
+    end if
+    EMtmppathname = ''
+  end if
+end if 
 
 end function EMsoft_getEMtmppathname
 
@@ -547,16 +689,28 @@ end function EMsoft_getEMtmppathname
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getUsername() result(username)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUsername
 
 IMPLICIT NONE
 
-character(fnlen)                        :: username, ep
+character(fnlen)                        :: username, ep, envParam, envReturn, loginname
 
 ep = SC_UserName
 username = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+if (trim(username).eq.'tryEnvironmentVariable') then 
+  envParam = 'USERNAME'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    username = trim(envReturn)
+  else
+    call getlog(loginname)
+    username = trim(loginname)
+  end if
+end if 
 
 end function EMsoft_getUsername
 
@@ -571,16 +725,28 @@ end function EMsoft_getUsername
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getUserlocation() result(userlocation)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUserlocation
 
 IMPLICIT NONE
 
-character(fnlen)                        :: userlocation, ep
+character(fnlen)                        :: userlocation, ep, envParam, envReturn, hostname
 
 ep = SC_UserLocation
 userlocation = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+if (trim(userlocation).eq.'tryEnvironmentVariable') then 
+  envParam = 'USERlocation'
+  call getenv(trim(envParam),envReturn)
+  if (trim(envReturn).ne.'') then 
+    userlocation = trim(envReturn)
+  else
+    call hostnm(hostname)
+    userlocation = trim(hostname)
+  end if
+end if 
 
 end function EMsoft_getUserlocation
 
@@ -596,6 +762,7 @@ end function EMsoft_getUserlocation
 !> @param no input parameters
 !
 !> @date  07/02/16 MDG 1.0 new function
+!> @date  03/02/19 MDG 2.0 add functionality for environment variables
 !--------------------------------------------------------------------------
 recursive function EMsoft_getUseremail() result(useremail)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUseremail
@@ -603,10 +770,14 @@ recursive function EMsoft_getUseremail() result(useremail)
 
 IMPLICIT NONE
 
-character(fnlen)                        :: useremail, ep
+character(fnlen)                        :: useremail, ep, envParam, envReturn, hostname
 
 ep = SC_UserEmail
 useremail = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
+
+if (trim(useremail).eq.'tryEnvironmentVariable') then 
+  useremail = 'undefined'
+end if
 
 end function EMsoft_getUseremail
 
@@ -681,6 +852,7 @@ end function EMsoft_getRelease
 !> @date  08/19/16 MDG 1.1 modification for Develop check
 !> @date  12/03/16 MDG 1.2 added check for final delimiter
 !> @date  08/15/17 MDG 1.3 changed default behavior for empty JSON parameter strings
+!> @date  02/27/19 MDG 2.0 add code to allow for operation without config json file
 !--------------------------------------------------------------------------
 recursive function EMsoft_getJSONparameter(ep, nobackslash) result(param)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getJSONparameter
@@ -737,7 +909,8 @@ if (jexists) then
    if (trim(ep).eq.SC_Develop) then
     param = trim(ep)
    else
-    write(error_unit,'(A)') 'WARNING: field '//trim(ep)//' not found in json file'
+    write(error_unit,'(A)') 'WARNING: USER='//trim(EMsoft_getUser())
+    write(error_unit,'(A)') 'WARNING: field '//trim(ep)//' not found in json file: '//trim(jsonname)
     write(error_unit,'(A)') 'WARNING: continuing with empty parameter value for '//trim(ep)
     param = ''
    end if
@@ -757,9 +930,13 @@ if (jexists) then
     end if
   end if
 else
-    write(error_unit,'(A)') 'WARNING: file '//trim(jsonname)//' not found '
-    write(error_unit,'(A)') 'Please execute the EMsoftinit program first! '
-    stop
+  if (displayConfigFileMissingMessage.eq.0) then 
+    write(error_unit,'(A)') '  WARNING: USER='//trim(EMsoft_getUser())
+    write(error_unit,'(A)') '  WARNING: file '//trim(jsonname)//' not found '
+    write(error_unit,'(A/)') '  -----> Trying environment variables next ... '
+    displayConfigFileMissingMessage = 1
+  end if
+  param = 'tryEnvironmentVariable'
 end if
 
 
@@ -852,6 +1029,31 @@ userHomePathName = trim(HomeDrive)//trim(userHomePathName)
 
 end function EMsoft_getUserHomePath
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getUserHomePath
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the resourcepathname
+!
+!> @param no input parameters
+!
+!> @date  10/25/16 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getUser() result(userName)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getUser
+
+character(fnlen)  :: userName
+character(9)      :: User
+
+User = 'USER'
+
+call getenv(trim(User),userName)
+userName = trim(userName)
+
+end function EMsoft_getUser
+
 
 !--------------------------------------------------------------------------
 !
@@ -896,6 +1098,27 @@ character(fnlen)                        :: xtalpathname, p
 xtalpathname = trim(EMsoft_getEMXtalFolderpathname())
 
 end function EMsoft_getXtalpathname
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getfftwWisdomfilename
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the filename of the fftw wisdom file
+!
+!> @param no input parameters
+!
+!> @date  01/29/19 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getfftwWisdomfilename() result(fftwWisdomfilename)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getfftwWisdomfilename
+
+character(fnlen)                        :: fftwWisdomfilename
+
+fftwWisdomfilename = trim(EMsoft_getResourcepathname())//SC_fftwwisdomtxt
+
+end function EMsoft_getfftwWisdomfilename
 
 
 !--------------------------------------------------------------------------
@@ -1046,15 +1269,19 @@ if (present(EMconfig)) then
    EMconfig%EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 end if 
 
- write (std,"(//1x,'EMsoft version ',A,', Copyright (C) 2001-2018 Marc De Graef Research Group/CMU')") &
-      trim(EMsoft_getEMsoftversion()) 
+ write (std,"(//1x,'Copyright (C) 2001-2019 Marc De Graef Research Group/CMU')") 
  write (std,"(1x,'EMsoft comes with ABSOLUTELY NO WARRANTY.')")
  write (std,"(1x,'This is free software, and you are welcome to redistribute it')")
  write (std,"(1x,'under certain conditions; see License.txt file for details.'//)")
 
- write (std,"(1x,'Program name : ',A)") trim(progname)
- write (std,"(1x,'Purpose      : ',A)") trim(progdesc)
- write (std,"(1x,'Platform     : ',A/)") "@CMAKE_SYSTEM_NAME@"
+ write (std,"(1x,'Program name         : ',A)") trim(progname)
+ write (std,"(1x,'Purpose              : ',A)") trim(progdesc)
+ write (std,"(1x,'Platform             : ',A)") "@CMAKE_SYSTEM_NAME@"
+ write (std,"(1x,'Source code version  : ',A)") trim(EMsoft_getEMsoftversion())
+ write (std,"(1x,'Source code Revision : ',A)") trim(EMsoft_getEMsoftRevision())
+ write (std,"(1x,'Build Date/Time      : ',A/)") trim(EMsoft_getEMsoftBuildDate())
+
+ write (std,"(1x,'See https://github.com/EMsoft-org/EMsoft/wiki for selected help pages.'/)")
 
  call timestamp(std)
  write (std,"(1x,/)")
@@ -1180,6 +1407,7 @@ end function EMsoft_fromNativePath
 !> @date  02/25/16 MDG 1.3 removed support for environment variables; added creation of EMsoftConfig.json file
 !> @date  02/25/16 MDG 1.4 added optional config parameter
 !> @date  10/07/16 MDG 1.5 modified creation of configuration file for new split Public/Private develop setup
+!> @date  08/31/18 MDG 1.6 replaced 'mv' command by 'ren' for Windows platform
 !--------------------------------------------------------------------------
 
 subroutine EMsoft_path_init(config)
@@ -1194,7 +1422,7 @@ character(fnlen)                        :: pathstring, dirstring, ep, EMsoftpath
 integer(kind=irg)                       :: i, error_cnt
 logical                                 :: found, fexists, jexists
 character(fnlen)                        :: confname, emsoftname, jsonname, jsonfilename, fname, cwd, &
-                                           dirname, library, dataname, xtalname
+                                           dirname, library, dataname, xtalname, platform
 character(3)                            :: release, develop
 character(len=1)                        :: edp, tab, yesno, EMsoftnativedelimiter
 
@@ -1236,7 +1464,12 @@ if (present(config)) then
       write (*,*) '         Renaming old file to ',trim(jsonname)//'.save'
       write (*,*) '         Creating new configuration file'
       write (*,*) '-------'
-      call system('mv '//trim(jsonname)//' '//trim(jsonname)//'.save')
+      platform = EMsoft_getEMsoftplatform()
+      if (trim(platform).ne.'Windows') then   ! use the UNIX rename command 'mv oldname newname'
+        call system('mv '//trim(jsonname)//' '//trim(jsonname)//'.save')
+      else   ! on Windows the file rename command is 'ren oldname newname'
+        call system('ren '//trim(jsonname)//' '//trim(jsonname)//'.save')
+      end if
     end if
 
 ! look for the .config/EMsoft/EMsoftConfig.json file one step at a time

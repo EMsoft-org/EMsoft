@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2015, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -411,7 +411,7 @@ end interface
 
 ! add other data lines to the upper left
     call PS_setfont(PSfonts(2),0.15)
-    call PS_textvar(-0.25,PS%psfigheight-0.18,'Acc. Voltage [kV] ',sngl(cell%voltage)*0.001)
+    call PS_textvar(-0.25,PS%psfigheight-0.18,'Acc. Voltage [kV] ',sngl(cell%voltage))
     call PS_text(-0.25,PS%psfigheight-0.38,'Foil normal ')
     call PrintIndices('d',cell%hexset,HOLZvar%FN(1),HOLZvar%FN(2),HOLZvar%FN(3),-0.25+1.5,PS%psfigheight-0.38)
     call PS_textvar(-0.25,PS%psfigheight-0.58,'Foil thickness [nm] ',HOLZvar%thickness)

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -62,7 +62,7 @@ use files
         
 integer(kind=irg),parameter             :: n=1000
 character(1)                            :: sp
-character(3)                            :: acol(n)
+integer(kind=irg)                       :: acol(n)
         
 real(kind=sgl)                          :: p(4),q(4),xmax,x(n),y(n),z(n),x1,y1,z1,asize(n),M(4,4),VD,diam, io_real(3)
 integer(kind=irg)                       :: idx(n),iview(3),iform, io_int(3), imanum
@@ -165,7 +165,7 @@ end interface
    else
     asize(icnt)=ATOM_MTradii(cell % ATOM_type(i))
    endif
-   acol(icnt)=ATOM_color(cell % ATOM_type(i))
+   acol(icnt)=cell % ATOM_type(i)
   end do
  end do
 

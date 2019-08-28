@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -372,7 +372,7 @@ integer(kind=irg),parameter :: SGPG(32) =(/1,2,3,6,10,16,25,47,75,81,83,89,99,11
 integer(kind=irg),parameter :: SGsym(73) =(/1,2,3,5,6,8,10,12,16,21,22,23,25,35,38,42,44,47, &
                                             65,69,71,75,79,81,82,83,87,89,97,99,107,111,115, &
                                             119,121,123,139,143,146,147,148,149,150,155,156, &
-                                            157,160,162,164,165,168,174,175,177,183,187,189, &
+                                            157,160,162,164,166,168,174,175,177,183,187,189, &
                                             191,195,196,197,200,202,204,207,209,211,215,216, &
                                             217,221,225,229/)
 !DEC$ ATTRIBUTES DLLEXPORT :: SGsym
@@ -439,9 +439,17 @@ character(5),parameter  :: PGTHD(36) =(/'    1','   -1','    2','    m','  2/m',
                                         ' -43m',' m-3m','  532','  822',' 1022',' 1222' /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHD
 
+!> 32 3D point group orders in International Tables order
+integer(kind=irg),parameter       :: PGTHDorder(32) = (/ 1, 2, 2, 2, 4, 4, 4, 8, 4, 8, &
+                                                         8, 8, 8, 8,16, 3, 6, 6, 6,12, &
+                                                         6,12,12,12,12,12,24,12,24,24, &
+                                                        24,32 /)
+!DEC$ ATTRIBUTES DLLEXPORT :: PGTHDorder
+
+
 !> 3D point groups : purely rotational point groups corresponding to each point group
-integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,3,3,6,6,6,9,9,9,12,12,12,12,16,16, &
-                                                  18,18,18,21,21,21,24,24,24,24,28,28,30,30,30,33,34,35,36/)
+integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,1,3,6,3,6,9,3,9,12,9,6,12,16,16, &
+                                                  18,16,18,21,16,21,24,21,18,24,28,28,30,28,30,33,34,35,36/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGrot
 
 !> 3D point groups : Laue group number
@@ -746,8 +754,39 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,152) = reshape( (/ &
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_Qsymop
 
 
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+! The EBSDiomod module needs a conversion table from a point group number to 
+! a 2 character string describing the TSL symmetry convention for that point group
+!
+! TSL LAUE Symmetry Identifiers (taken from DREAM3D/Source/EbsdLib/TSL/AngConstants.h in DREAM.3D source code)
 
+! #define OH  43        // cubic            Oh         a=b=c     a=b=g=90
+! #define TH  23        // tetrahedral      Th         a=b=c     a=b=g=90
 
+! #define D4H 42        // ditetragonal     D4h        a=b!=c    a=b=g=90
+! #define C4H 4         // tetragonal       C4h        a=b!=c    a=b=g=90
+
+! #define D2H 22        // orthrohombic     D2h        a!=b!=c   a=b=g=90
+
+! #define C2H_c 2       // monoclinic       C2h        a!=b!=c   a=b=90!=g
+! #define C2H_b 20      // monoclinic       C2h        a!=b!=c   a=g=90!=b
+! #define C2H_a 21      // monoclinic       C2h        a!=b!=c   b=g=90!=a
+
+! #define D6H 62        // dihexagonal      D6h        a=b!=c    a=b=90 g=120
+! #define C6H 6         // hexagonal        C6h        a=b! =c   a=b=90 g=120
+
+! #define D3D 32        // ditrigonal       D3d        a=b=c     a=b=g!=90
+! #define C3I 3         // trigonal         C3i        a=b=c     a=b=g!=90
+
+! #define CIs 1         // triclinic        Ci         a!=b!=c  a!=b!=g!=90
+!--------------------------------------------------------------------------
+character(2),PARAMETER :: TSLsymtype(32) = (/' 1',' 1',' 2',' 2',' 2','22','22','22', &
+                                             ' 4',' 4',' 4','42','42','42','42',' 3', &
+                                             ' 3','32','32','32',' 6',' 6',' 6','62', &
+                                             '62','62','62','23','23','43','43','43'/)
+!DEC$ ATTRIBUTES DLLEXPORT :: TSLsymtype
+                                             
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -904,6 +943,22 @@ type refliststrongsubstype
     integer(kind=irg)                       :: nns 
     type(refliststrongsubstype),pointer     :: next ! only strong beams are considered
 end type refliststrongsubstype
+
+
+
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+!--------------------------------------------------------------------------
+
+! linked list for Laue XRD computations.
+type Laue_g_list  
+  integer(kind=irg)   :: hkl(3)       ! Miller indices
+  real(kind=dbl)      :: xyz(3)       ! Cartesian components of the plane normal
+  real(kind=dbl)      :: tt           ! 2theta value
+  real(kind=dbl)      :: polar        ! polarization factor
+  real(kind=dbl)      :: sfs          ! |structure factor|^2
+  type(Laue_g_list),pointer :: next   ! connection to next reflector
+end type Laue_g_list
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1677,6 +1732,78 @@ integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape
                                                                                     1,4,1,8,1,8, &
                                                                                     3,11,3,11,1,11 /), (/ 6, CSLnumberdefined /))
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLintegers
+
+type AngleType
+        real(kind=sgl),allocatable      :: quatang(:,:)
+end type AngleType
+
+!=======================================
+!=======================================
+!=======================================
+! below are type definitions for the f90 EMsoft version of the original
+! Head&Humble hh4.f90 program, now called EMhh4.f90. The comment line
+! before each type def is the original COMMON block definition
+!
+! COMMON/MAPN/NEW,ZR,ZI,QR(9),QI(9),KRASH 
+type MAPN_block
+  integer(kind=irg)        :: KRASH, NEW
+  real(kind=sgl)           :: ZR, ZI, QR(9), QI(9)
+end type
+
+! COMMON/MA/PR(4),PI(4),AR(4,4),AI(4,4),EMR(4,4),EMI(4,4),H(4,4) 
+type MA_block
+  real(kind=sgl)           :: PR(4), PI(4), AR(4,4), AI(4,4), EMR(4,4), EMI(4,4), H(4,4) 
+end type
+
+! COMMON/MKAP/D1(6,6),EP(3,6),EA(3,3) 
+type MKAP_block
+ real(kind=sgl)            :: D1(6,6), EP(3,6), EA(3,3) 
+end type
+
+! COMMON/MRD/CN(61),X,X1,Y(8),ERROR,Q,KOUNT,D(8),YT(8),DT(8,4),ANO,SKIP 
+type MRD_block
+ real(kind=sgl)            :: CN(61), X, X1, Y(8), ERROR, Q, D(8), YT(8), DT(8,4), ANO, SKIP 
+ integer(kind=irg)         :: KOUNT
+end type
+
+! COMMON/MT/LU(3),LG(3),LBM(3),LFN(3),LB(3),LB2(3),LB3(3),LB4(3), 
+!           LFP(3),LFP1(3),LFP3(3),LS1(3),LS2(3),LS3(3),TLU(3),TLG(3),
+!           TLBM(3),TLFN(3),TLB(3),TLB2(3),TLB3(3),TLB4(3),TLFP(3),
+!           TLFP1(3),TLFP3(3),TLS1(3),TLS2(3),TLS3(3),LF1(3),
+!           LF2(3),LF3(3),LF4(3),TLF1(3),TLF2(3),TLF3(3),TLF4(3) 
+type MT_block
+ real(kind=sgl)            :: TLU(3), TLG(3), TLBM(3), TLFN(3), TLB(3), TLB2(3), TLB3(3), TLB4(3), TLFP(3), &
+                              TLFP1(3), TLFP3(3), TLS1(3), TLS2(3), TLS3(3), TLF1(3), TLF2(3), TLF3(3), TLF4(3) 
+ integer(kind=irg)         :: LU(3), LG(3), LBM(3), LFN(3), LB(3), LB2(3), LB3(3), LB4(3), LD, LD2, LD3, LD4, &
+                              LFP(3), LFP1(3), LFP3(3), LS1(3), LS2(3), LS3(3), LF1(3), LF2(3), LF3(3), LF4(3), &
+                              LQ1, LQ2, LQ3
+end type
+
+! COMMON/MKT/AT(3,3),ATR(3,3)
+type MKT_block
+ real(kind=sgl)            :: AT(3,3), ATR(3,3)
+end type
+
+! COMMON/SCALE30/LTEST
+type SCALE30_block
+ integer(kind=irg)         :: LTEST
+end type
+
+! COMMON/MP/PC(4),AS(4,4),EL(4,4) 
+type MP_block
+ complex(kind=sgl)         :: PC(4), AS(4,4), EL(4,4) 
+end type
+
+! COMMON/MAP/DC(3,3)
+type MAP_block
+ real(kind=sgl)            :: DC(3,3)
+end type
+
+!=======================================
+!=======================================
+!=======================================
+
+
 
 
 

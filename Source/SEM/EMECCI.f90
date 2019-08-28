@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2015, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -108,6 +108,7 @@ end program EMECCI
 !> @date 10/04/14  MDG 4.0 no globals conversion
 !> @date 04/20/15  MDG 4.1 continued no-globals conversion and HDF output
 !> @date 12/23/15  MDG 4.2 fixed incorrect initialization of nat array that resulted in negative intensities
+!> @date 11/02/18  MDG 4.3 add montage output option in tiff, jpeg, or png format
 !--------------------------------------------------------------------------
 subroutine ComputeECCI(eccinl, progname, nmldeffile)
 
@@ -137,7 +138,9 @@ use HDFsupport
 use ISO_C_BINDING
 use omp_lib
 use stringconstants
-
+use ISO_C_BINDING
+use image
+use, intrinsic :: iso_fortran_env
 
 IMPLICIT NONE
 
@@ -146,13 +149,13 @@ character(fnlen),INTENT(IN)             :: progname
 character(fnlen),INTENT(IN)             :: nmldeffile
 
 integer(HSIZE_T)                        :: dims3(3), cnt3(3), offset3(3)
-integer(kind=irg)                       :: nn,i,j,k,npix,npiy,ii,jj, numset, t_interval,nat(100), &
+integer(kind=irg)                       :: nn,i,j,k,npix,npiy,ii,jj,kkk, numset, t_interval,nat(100), montage_nx, montage_ny, &
                                            DF_nums_new,DF_npix_new,DF_npiy_new, numstart,numstop, isg, TID, &
                                            NTHR, SETNTHR, isym, ir, ga(3), gb(3),ic,g,numd,ix,iy,nkt,nbeams, ik, ig, &
-                                           numk,ixp,iyp, io_int(6), skip, gg(3), error_cnt, dinfo, nref, hdferr
+                                           numk,ixp,iyp, io_int(6), skip, gg(3), error_cnt, dinfo, nref, hdferr, maxXY
 
 integer(kind=irg),parameter             :: numdd=360 ! 180
-real(kind=sgl)                          :: thick, X(2), bragg, thetac, kstar(3), gperp(3), &
+real(kind=sgl)                          :: thick, X(2), bragg, thetac, kstar(3), gperp(3), av, mi, ma, &
                                            gdotR,DF_gf(3), tpi, DM(2,2), DD, c(3), gx(3), gy(3), &
                                            gac(3), gbc(3),zmax, io_real(2), ijmax, tstart, tstop, kk(3)
 real(kind=dbl)                          :: arg, glen, DynFN(3), xx
@@ -161,14 +164,14 @@ complex(kind=dbl),allocatable           :: amp(:),amp2(:),Azz(:,:),DF_R(:,:)
 complex(kind=dbl)                       :: czero=dcmplx(0.D0,0.D0),cone=dcmplx(1.D0,0.D0)
 complex(kind=dbl)                       :: para(0:numdd),dx,dy,dxm,dym, xgp
 real(kind=sgl),allocatable              :: sgarray(:,:)
-real(kind=sgl),allocatable              :: disparray(:,:,:,:),imatvals(:,:), ECCIimages(:,:,:), XYarray(:,:)
-integer(kind=sgl),allocatable           :: expval(:,:,:), hklarray(:,:)
+real(kind=sgl),allocatable              :: disparray(:,:,:,:),imatvals(:,:), ECCIimages(:,:,:), XYarray(:,:), ECCIstore(:,:,:)
+integer(kind=sgl),allocatable           :: expval(:,:,:), hklarray(:,:), XYint(:,:)
 complex(kind=dbl),allocatable           :: Lgh(:),Sgh(:), DHWMz(:,:)
 logical                                 :: ECCI, verbose, overwrite=.TRUE., insert=.TRUE.
 character(11)                           :: dstr
 character(15)                           :: tstrb
 character(15)                           :: tstre
-character(fnlen)                        :: groupname, dataset, outname
+character(fnlen)                        :: groupname, dataset, outname, Image_filename, fname
 character(fnlen,kind=c_char)            :: line2(1)
 
 type(unitcell),pointer                  :: cell
@@ -181,6 +184,14 @@ type(reflisttype),pointer               :: reflist, firstw, rltmp, rltmpa, rltmp
 type(defecttype)                        :: defects
 
 type(HDFobjectStackType),pointer        :: HDF_head
+
+! declare variables for use in object oriented image module
+integer                                 :: iostat
+character(len=128)                      :: iomsg
+logical                                 :: isInteger
+type(image_t)                           :: im
+integer(int8)                           :: i8 (3,4)
+integer(int8), allocatable              :: montage(:,:)
 
  ECCI = .TRUE.
  
@@ -447,6 +458,11 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
   allocate(ECCIimages(npix,npiy,1))
   ECCIimages = 0.0
 
+  if (trim(eccinl%montagename).ne.'undefined') then
+    allocate(ECCIstore(npix,npiy,numk))
+    ECCIstore = 0.0
+  end if
+
 ! compute the excitation error array for all incident beam directions
   allocate(sgarray(nn,numk))
 ! loop over the wave vector linked list
@@ -615,7 +631,7 @@ dataset = SC_npiy
 
 dataset = SC_XYarray
   hdferr = HDF_writeDatasetFloatArray2D(dataset, XYarray, 2, numk, HDF_head)
-  deallocate(XYarray)
+  if (trim(eccinl%montagename).eq.'undefined') deallocate(XYarray)
 
   rltmpa => reflist%next 
   do ic=1,nn
@@ -857,8 +873,92 @@ dataset = SC_ECCIimages
 ! and close the fortran hdf interface
   call h5close_EMsoft(hdferr)
 
+  if (trim(eccinl%montagename).ne.'undefined') then
+    do i=1,eccinl%DF_npix
+      do j=1,eccinl%DF_npiy
+        ECCIstore(i,j,isg) = ECCIimages(i,j,1)
+      end do
+    end do
+  end if
+
 200 end do mainloop
 
 call Message('Data stored in file '//trim(outname),"(/A/)")
+
+! option in response to feature request #31: add direct image output with a montage of all 
+! simulated ECCIs, either in a 2D array (array mode illumination) or a linear array (trace mode).
+if (trim(eccinl%montagename).ne.'undefined') then
+
+  call Message('Generating image montage')
+
+! output the montage as an image file (tiff, jpeg, or png) 
+  fname = trim(EMsoft_getEMdatapathname())//trim(eccinl%montagename)
+  fname = EMsoft_toNativePath(fname)
+  Image_filename = trim(fname)
+
+  
+! allocate the montage array
+  if (eccinl%progmode.eq.'array') then 
+! divide the beam offsets by the dkt step size so that we can turn them into integers
+    XYarray = XYarray / eccinl%dkt
+    allocate(XYint(2,numk))
+    XYint = nint(XYarray)
+    maxXY = maxval(XYint)
+    montage_nx = eccinl%DF_npix*(2*maxXY+1)
+    montage_ny = eccinl%DF_npiy*(2*maxXY+1)
+    allocate(montage(montage_nx,montage_ny))
+  else ! progmode = 'trace'
+    montage_nx = eccinl%DF_npix*numk
+    montage_ny = eccinl%DF_npiy
+    allocate(montage(montage_nx,montage_ny))
+  end if
+
+! assign the average value of the ECCIimages array to the montage
+  av = sum(ECCIstore)/float(eccinl%DF_npix)/float(eccinl%DF_npiy)/float(numk)
+  montage = av 
+
+! get the intensity scaling parameters
+  ma = maxval(ECCIstore)
+  mi = minval(ECCIstore)
+
+! fill and scale the montage array
+  do kkk=1,numk
+    do j=1,eccinl%DF_npiy
+      do i=1,eccinl%DF_npix
+        if (eccinl% progmode.eq.'array') then
+          ii = eccinl%DF_npix * (maxXY + XYint(1,kkk)) + i
+          jj = eccinl%DF_npiy * (maxXY + XYint(2,kkk)) + j
+          montage(ii,jj) = int(255 * (ECCIstore(i,j,kkk)-mi)/(ma-mi))
+        else
+          ii = eccinl%DF_npix * (kkk-1) + i
+          jj = j
+          montage(ii,jj) = int(255 * (ECCIstore(i,j,kkk)-mi)/(ma-mi))
+        end if
+      end do
+    end do
+  end do
+  deallocate(ECCIstore)
+
+! set up the image_t structure
+  im = image_t(montage)
+  if (im%empty()) call Message("EMECCI","failed to convert array to image")
+
+! create the file
+  call im%write(trim(Image_filename), iostat, iomsg) ! format automatically detected from extension
+  if (0.ne.iostat) then
+    call Message("Failed to write image to file : "//iomsg)
+  else  
+    call Message('ECCI image montage written to '//trim(Image_filename))
+  end if 
+  deallocate(montage)
+
+end if
+
+
+
+
+
+
+
 
 end subroutine ComputeECCI

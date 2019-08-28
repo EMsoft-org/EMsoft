@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2018, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -37,6 +37,7 @@
 !> @brief Display crystal structure information
 !
 !> @date   07/31/18 MDG 1.0 original
+!> @date   12/23/18 MDG 1.1 minor reorganization
 !--------------------------------------------------------------------------
 program EMshowxtal
 
@@ -57,6 +58,7 @@ character(fnlen)               :: progname, progdesc, gname
 type(unitcell),pointer         :: cell
 logical                        :: verbose=.TRUE.
 integer(kind=irg)			   :: i, j
+character(1)                   :: yesno
 
  progname = 'EMshowxtal.f90'
  progdesc = 'Display crystal structure information'
@@ -69,19 +71,27 @@ integer(kind=irg)			   :: i, j
  cell%fname = trim(gname)
  call CrystalData(cell,verbose)
 
- do i=1,cell%SG%SYM_MATnum 
-   write (*,*) (cell%SG%SYM_data(i,1,j),j=1,4)
-   write (*,*) (cell%SG%SYM_data(i,2,j),j=1,4)
-   write (*,*) (cell%SG%SYM_data(i,3,j),j=1,4)
-   write (*,*) ' '
- end do
+ call Message('Do you want to print the symmetry matrices as well ? (y/n) ')
+ read (5,"(A1)") yesno
 
- do i=1,cell%SG%SYM_NUMpt 
-   write (*,*) (cell%SG%SYM_direc(i,1,j),j=1,3)
-   write (*,*) (cell%SG%SYM_direc(i,2,j),j=1,3)
-   write (*,*) (cell%SG%SYM_direc(i,3,j),j=1,3)
-   write (*,*) ' '
- end do
- 
+ if (yesno.eq.'y') then
+    call Message('Space group operators (last column = translation)')
+     do i=1,cell%SG%SYM_MATnum 
+       write (*,*) i,':'
+       write (*,*) (cell%SG%SYM_data(i,1,j),j=1,4)
+       write (*,*) (cell%SG%SYM_data(i,2,j),j=1,4)
+       write (*,*) (cell%SG%SYM_data(i,3,j),j=1,4)
+       write (*,*) ' '
+     end do
+
+     call Message('Point group operators')
+     do i=1,cell%SG%SYM_NUMpt 
+       write (*,*) i,':'
+       write (*,*) (cell%SG%SYM_direc(i,1,j),j=1,3)
+       write (*,*) (cell%SG%SYM_direc(i,2,j),j=1,3)
+       write (*,*) (cell%SG%SYM_direc(i,3,j),j=1,3)
+       write (*,*) ' '
+     end do
+ endif    
 
 end program EMshowxtal

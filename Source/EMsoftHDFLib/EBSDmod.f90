@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2014, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -89,9 +89,13 @@ type EBSDMPdataType
         integer(kind=irg)               :: lastEnergy
         integer(kind=irg)               :: numEbins
         integer(kind=irg)               :: numset
+        integer(kind=irg)               :: newPGnumber
+        logical                         :: AveragedMP
         character(fnlen)                :: xtalname
         real(kind=sgl),allocatable      :: BetheParameters(:)
         real(kind=sgl),allocatable      :: keVs(:)
+        real(kind=sgl),allocatable      :: mLPNH4(:,:,:,:)
+        real(kind=sgl),allocatable      :: mLPSH4(:,:,:,:)
         real(kind=sgl),allocatable      :: mLPNH(:,:,:)
         real(kind=sgl),allocatable      :: mLPSH(:,:,:)
         real(kind=sgl),allocatable      :: masterSPNH(:,:,:)
@@ -103,6 +107,7 @@ type EBSDDetectorType
         real(kind=sgl),allocatable      :: accum_e_detector(:,:,:)
         type(EBSDPixel),allocatable     :: detector(:,:) 
 end type EBSDDetectorType
+
 
 
 contains
@@ -140,7 +145,7 @@ type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
-character(2)                            :: angletype
+character(2)                            :: atype
 real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
 real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
 
@@ -157,7 +162,7 @@ anglefile = EMsoft_toNativePath(anglefile)
 open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
-read(dataunit,*) angletype
+read(dataunit,*) atype
 
 ! then the number of angles in the file
 read(dataunit,*) numangles
@@ -167,7 +172,7 @@ if (present(verbose)) then
   call WriteValue('Number of angle entries = ',io_int,1)
 end if
 
-if (angletype.eq.'eu') then
+if (atype.eq.'eu') then
 ! allocate the euler angle array
   allocate(eulang(3,numangles),stat=istat)
 ! if istat.ne.0 then do some error handling ... 
@@ -249,7 +254,7 @@ type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
-character(2)                            :: angletype
+character(2)                            :: atype
 real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
 real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
 
@@ -266,7 +271,7 @@ anglefile = EMsoft_toNativePath(anglefile)
 open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
-read(dataunit,*) angletype
+read(dataunit,*) atype
 
 ! then the number of angles in the file
 read(dataunit,*) numangles
@@ -276,7 +281,7 @@ if (present(verbose)) then
   call WriteValue('Number of angle entries = ',io_int,1)
 end if
 
-if (angletype.eq.'eu') then
+if (atype.eq.'eu') then
 ! allocate the euler angle array
   allocate(eulang(3,numangles),stat=istat)
 ! if istat.ne.0 then do some error handling ... 
@@ -349,7 +354,7 @@ type(EBSDAnglePCDefType),pointer        :: orpcdef
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
-character(2)                            :: angletype
+character(2)                            :: atype
 real(kind=sgl),allocatable              :: eulang(:,:)   ! euler angle array
 real(kind=sgl)                          :: qax(4)        ! axis-angle rotation quaternion
 
@@ -366,8 +371,8 @@ anglefile = EMsoft_toNativePath(anglefile)
 open(unit=dataunit,file=trim(anglefile),status='old',action='read')
 
 ! get the type of angle first [ 'eu' or 'qu' ]
-read(dataunit,*) angletype
-if (angletype.ne.'eu') then 
+read(dataunit,*) atype
+if (atype.ne.'eu') then 
   call FatalError("EBSDreadorpcdef","Other orientation formats to be implemented; only Euler for now")
 end if
 
@@ -662,7 +667,7 @@ end if
 ! and close the HDF5 Monte Carloe file
 call HDF_pop(HDF_head,.TRUE.)
 
-call Message(' -> completed reading '//trim(infile), frm = "(A/)")
+call Message(' -> completed reading Monte Carlo data from '//trim(infile), frm = "(A/)")
 
 end subroutine readEBSDMonteCarloFile
 
@@ -682,9 +687,10 @@ end subroutine readEBSDMonteCarloFile
 !> @param hdferr error code
 !
 !> @date 04/02/18 MDG 1.0 started new routine, to eventually replace all other EBSD Monte Carlo reading routines
+!> @date 08/28/18 MDG 1.1 added keep4 parameter to pass 4D master patterns instead of 3D
 !--------------------------------------------------------------------------
 recursive subroutine readEBSDMasterPatternFile(MPfile, mpnl, hdferr, EBSDMPdata, getkeVs, getmLPNH, getmLPSH, &
-                                               getmasterSPNH, getmasterSPSH)
+                                               getmasterSPNH, getmasterSPSH, keep4)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDMasterPatternFile
 
 use local
@@ -707,9 +713,10 @@ logical,INTENT(IN),OPTIONAL                         :: getmLPNH
 logical,INTENT(IN),OPTIONAL                         :: getmLPSH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPNH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPSH
+logical,INTENT(IN),OPTIONAL                         :: keep4
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
-logical                                             :: stat, readonly, g_exists, f_exists, FL
+logical                                             :: stat, readonly, g_exists, f_exists, FL, keepall
 type(HDFobjectStackType),pointer                    :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, restart, combinesites, uniform, istat
 integer(kind=irg),allocatable                       :: iarray(:)
@@ -717,6 +724,11 @@ real(kind=sgl),allocatable                          :: farray(:)
 real(kind=sgl),allocatable                          :: mLPNH(:,:,:,:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3), dims4(4) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
+keepall = .FALSE.
+if (present(keep4)) then
+  if (keep4.eqv..TRUE.) keepall = .TRUE.
+end if
 
 ! we assume that the calling program has opened the HDF interface
 
@@ -735,7 +747,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
    call FatalError('readEBSDMasterPatternFile','This is not a proper HDF5 file')
 end if 
    
-! open the Monte Carlo file 
+! open the Master Pattern file 
 nullify(HDF_head)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
@@ -743,10 +755,10 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 ! check whether or not the MC file was generated using DREAM.3D
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
 ! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
-datagroupname = '/EMheader/MCOpenCL'
+datagroupname = '/EMheader/EBSDmaster'
 call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
-  call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
+  call FatalError('ComputeMasterPattern','This HDF file does not contain Master Pattern header data')
 end if
 
 groupname = SC_EMheader
@@ -776,6 +788,29 @@ end if
 call HDF_pop(HDF_head)
 
 !====================================
+! check if this is an overlap EBSD pattern or a regular one  [ added by MDG, 06/19/19 ]
+!====================================
+dataset = 'READMEFIRST'
+call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+EBSDMPdata%AveragedMP = .FALSE.
+EBSDMPdata%newPGnumber = -1
+if (g_exists.eqv..TRUE.) then
+    EBSDMPdata%AveragedMP = .TRUE.
+    call Message(' This master pattern file contains an averaged master pattern (generated by EMEBSDoverlap)')
+end if
+
+if (EBSDMPdata%AveragedMP.eqv..TRUE.) then
+  groupname = SC_CrystalData
+      hdferr = HDF_openGroup(groupname, HDF_head)
+
+  dataset = 'PointGroupNumber'
+  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%newPGnumber)
+
+  call HDF_pop(HDF_head)
+end if
+
+!====================================
 ! read all NMLparameters group datasets
 !====================================
 groupname = SC_NMLparameters
@@ -787,6 +822,14 @@ groupname = SC_EBSDMasterNameList
 dataset = SC_Esel
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
 if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%Esel)
+
+! we need to set the newPGnumber parameter to the correct value, to reflect the fact that 
+! the symmetry of the overlap pattern will be different [ added by MDG, 06/20/19 ]
+if (EBSDMPdata%AveragedMP.eqv..TRUE.) then 
+  dataset = 'newpgnumber'
+  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%newPGnumber)
+end if
 
 dataset = SC_combinesites
 call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
@@ -887,8 +930,13 @@ if (present(getmLPNH)) then
   if (getmLPNH.eqv..TRUE.) then
     dataset = SC_mLPNH
     call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
-    allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
-    EBSDMPdata%mLPNH = sum(mLPNH,4)
+    if (keepall) then
+      allocate(EBSDMPdata%mLPNH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
+      EBSDMPdata%mLPNH4 = mLPNH
+    else
+      allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
+      EBSDMPdata%mLPNH = sum(mLPNH,4)
+    end if
     deallocate(mLPNH)
   end if 
 end if
@@ -897,8 +945,13 @@ if (present(getmLPSH)) then
   if (getmLPSH.eqv..TRUE.) then
     dataset = SC_mLPSH
     call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
-    allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
-    EBSDMPdata%mLPSH = sum(mLPNH,4)
+    if (keepall) then
+      allocate(EBSDMPdata%mLPSH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
+      EBSDMPdata%mLPSH4 = mLPNH
+    else
+      allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
+      EBSDMPdata%mLPSH = sum(mLPNH,4)
+    end if
     deallocate(mLPNH)
   end if 
 end if
@@ -920,164 +973,9 @@ end if
 ! and close the HDF5 Master Pattern file
 call HDF_pop(HDF_head,.TRUE.)
 
-call Message(' -> completed reading '//trim(infile), frm = "(A/)")
+call Message(' -> completed reading master pattern data from '//trim(infile), frm = "(A/)")
 
 end subroutine readEBSDMasterPatternFile
-
-! !--------------------------------------------------------------------------
-! !
-! ! SUBROUTINE:EBSDreadMasterfile_overlap
-! !
-! !> @author Marc De Graef, Carnegie Mellon University
-! !
-! !> @brief read EBSD master pattern from file
-! !
-! !> @param enl EBSDoverlap name list structure
-! !> @param 
-! !
-! !> @date 06/24/14  MDG 1.0 original
-! !> @date 04/02/15  MDG 2.0 changed program input & output to HDF format
-! !> @date 09/03/15  MDG 2.1 removed old file format support
-! !> @date 06/03/18  MDG 3.0 commented out entire routine; not used anywhere.
-! !--------------------------------------------------------------------------
-! recursive subroutine EBSDreadMasterfile_overlap(enl, master, mfile, verbose)
-! !DEC$ ATTRIBUTES DLLEXPORT :: EBSDreadMasterfile_overlap
-
-! use local
-! use typedefs
-! use NameListTypedefs
-! use files
-! use io
-! use error
-! use HDF5
-! use HDFsupport
-
-
-! IMPLICIT NONE
-
-! type(EBSDoverlapNameListType),INTENT(INOUT)    :: enl
-! type(EBSDMasterType),pointer            :: master
-! character(fnlen),INTENT(IN),OPTIONAL    :: mfile
-! logical,INTENT(IN),OPTIONAL             :: verbose
-
-! real(kind=sgl),allocatable              :: sr(:,:,:) 
-! real(kind=sgl),allocatable              :: EkeVs(:) 
-! integer(kind=irg),allocatable           :: atomtype(:)
-
-! real(kind=sgl),allocatable              :: srtmp(:,:,:,:)
-! integer(kind=irg)                       :: istat
-
-! logical                                 :: stat, readonly
-! integer(kind=irg)                       :: hdferr, nlines
-! integer(HSIZE_T)                        :: dims(1), dims4(4)
-! character(fnlen)                        :: groupname, dataset, masterfile
-! character(fnlen),allocatable            :: stringarray(:)
-
-! type(HDFobjectStackType),pointer        :: HDF_head
-
-! ! open the fortran HDF interface
-! call h5open_EMsoft(hdferr)
-
-! nullify(HDF_head, HDF_head)
-
-! ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
-! if (PRESENT(mfile)) then
-!   masterfile = trim(EMsoft_getEMdatapathname())//trim(mfile)
-! else
-!   masterfile = trim(EMsoft_getEMdatapathname())//trim(enl%masterfile)
-! end if 
-! masterfile = EMsoft_toNativePath(masterfile)
-
-! ! first, we need to check whether or not the input file is of the HDF5 format type
-! call h5fis_hdf5_f(trim(masterfile), stat, hdferr)
-
-! if (stat) then 
-! ! open the master file 
-!   readonly = .TRUE.
-!   hdferr =  HDF_openFile(masterfile, HDF_head, readonly)
-
-! ! open the namelist group
-! groupname = SC_NMLparameters
-!   hdferr = HDF_openGroup(groupname, HDF_head)
-
-! groupname = SC_EBSDMasterNameList
-!   hdferr = HDF_openGroup(groupname, HDF_head)
-
-! ! read all the necessary variables from the namelist group
-! dataset = SC_energyfile
-!   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-!   enl%Masterenergyfile = trim(stringarray(1))
-!   deallocate(stringarray)
-
-! dataset = SC_npx
-!   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%npx)
-!   enl%npy = enl%npx
-
-!   call HDF_pop(HDF_head)
-!   call HDF_pop(HDF_head)
-
-! groupname = SC_EMData
-!   hdferr = HDF_openGroup(groupname, HDF_head)
-
-! dataset = SC_numEbins
-!   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%nE)
-
-! dataset = SC_numset
-!   call HDF_readDatasetInteger(dataset, HDF_head, hdferr, enl%numset)
-
-! ! dataset = 'squhex'
-! ! call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-! ! enl%sqorhe = trim(stringarray(1))
-! ! deallocate(stringarray)
-
-! dataset = SC_mLPNH
-!   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
-!   allocate(master%mLPNH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
-!   master%mLPNH = sum(srtmp,4)
-!   deallocate(srtmp)
-
-! dataset = SC_mLPSH
-!   call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, srtmp)
-!   allocate(master%mLPSH(-enl%npx:enl%npx,-enl%npy:enl%npy,enl%nE),stat=istat)
-!   master%mLPSH = sum(srtmp,4)
-!   deallocate(srtmp)
-
-! dataset = SC_xtalname
-!   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-!   enl%Masterxtalname = trim(stringarray(1))
-!   deallocate(stringarray)
-
-!   call HDF_pop(HDF_head)
-
-! groupname = SC_EMheader
-!   hdferr = HDF_openGroup(groupname, HDF_head)
-
-! dataset = SC_ProgramName
-!   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-!   enl%Masterprogname = trim(stringarray(1))
-!   deallocate(stringarray)
-  
-! dataset = SC_Version
-!   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-!   enl%Masterscversion = trim(stringarray(1))
-!   deallocate(stringarray)
-  
-!   call HDF_pop(HDF_head,.TRUE.)
-
-! ! close the fortran HDF interface
-!   call h5close_EMsoft(hdferr)
-
-! else
-!   masterfile = 'File '//trim(masterfile)//' is not an HDF5 file'
-!   call FatalError('EBSDreadMasterfile_overlap',masterfile)
-! end if
-! !====================================
-
-! if (present(verbose)) then
-!   if (verbose) call Message(' -> completed reading '//trim(masterfile), frm = "(A)")
-! end if
-
-! end subroutine EBSDreadMasterfile_overlap
 
 
 !--------------------------------------------------------------------------
@@ -1097,6 +995,7 @@ end subroutine readEBSDMasterPatternFile
 !> @date 07/01/15   SS 1.1 added omega as the second tilt angle
 !> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
 !> @date 04/03/18  MDG 3.0 new version with split use of name list arrays
+!> @date 02/19/19  MDG 4.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: GenerateEBSDDetector
@@ -1122,7 +1021,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nsx, nsy  ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nsx, nsy, elp  ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1152,6 +1051,7 @@ sw = sin(mcnl%omega * dtor)
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
 
+elp = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -1159,9 +1059,9 @@ do j=1,enl%numsx
   Lc = cw * scin_x(j) + enl%L*sw
   do i=1,enl%numsy
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   EBSDdetector%rgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   EBSDdetector%rgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   EBSDdetector%rgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   EBSDdetector%rgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   EBSDdetector%rgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   EBSDdetector%rgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -1245,7 +1145,7 @@ deallocate(z)
               EBSDMCdata%accum_e(k,nix+1,niy) * dx * dym + &
               EBSDMCdata%accum_e(k,nix,niy+1) * dxm * dy + &
               EBSDMCdata%accum_e(k,nix+1,niy+1) * dx * dy
-          EBSDdetector%accum_e_detector(k,i,j) = g * s
+          EBSDdetector%accum_e_detector(k,i,elp-j) = g * s
         end do
     end do
   end do 
@@ -1270,6 +1170,7 @@ end subroutine GenerateEBSDDetector
 !> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
 !> @date 02/22/18  MDG 1.3 forked from EBSDGenerateDetector; uses separate pattern center coordinates patcntr
 !> @date 04/03/18  MDG 2.0 updated with new name list and data structures
+!> @date 02/19/19  MDG 3.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine GeneratemyEBSDDetector(enl, mcnl, EBSDMCdata, nsx, nsy, numE, tgx, tgy, tgz, accum_e_detector, patcntr, bg)
 !DEC$ ATTRIBUTES DLLEXPORT :: GeneratemyEBSDDetector
@@ -1302,7 +1203,7 @@ real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degr
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
 real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny     ! various parameters
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp     ! various parameters
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1334,6 +1235,7 @@ sw = sin(mcnl%omega * dtor)
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
 
+elp = nsy + 1
 L2 = L * L
 do j=1,nsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -1341,9 +1243,9 @@ do j=1,nsx
   Lc = cw * scin_x(j) + L*sw
   do i=1,nsy
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
-   tgx(j,i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
-   tgy(j,i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
-   tgz(j,i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+   tgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   tgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   tgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
   end do
 end do
 deallocate(scin_x, scin_y)
@@ -1427,7 +1329,7 @@ if (present(bg)) then
               EBSDMCdata%accum_e(k,nix+1,niy) * dx * dym + &
               EBSDMCdata%accum_e(k,nix,niy+1) * dxm * dy + &
               EBSDMCdata%accum_e(k,nix+1,niy+1) * dx * dy
-          accum_e_detector(k,i,j) = g * s
+          accum_e_detector(k,i,elp-j) = g * s
         end do
     end do
   end do 
@@ -1451,6 +1353,7 @@ end subroutine GeneratemyEBSDDetector
 !
 !> @date 03/17/16 MDG 1.0 original
 !> @date 09/26/17 MDG 1.1 added Umatrix argument to try out inclusion of lattice strains
+!> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,mask, &
                                                prefactor, Fmatrix, removebackground, applynoise)
@@ -1723,10 +1626,11 @@ end subroutine CalcEBSDPatternSingleFullFast
 !
 !> @param enl EBSD name list structure
 !
-!> @date 06/24/14  MDG 1.0 original
-!> @date 07/01/15   SS 1.1 added omega as the second tilt angle
-!> @date 07/07/15   SS 1.2 correction to the omega tilt parameter; old version in the comments
-!> @date 05/10/18  MDG 1.3 added arguments to clean up namelists 
+!> @date 06/24/14 MDG 1.0 original
+!> @date 07/01/15  SS 1.1 added omega as the second tilt angle
+!> @date 07/07/15  SS 1.2 correction to the omega tilt parameter; old version in the comments
+!> @date 05/10/18 MDG 1.3 added arguments to clean up namelists 
+!> @date 02/19/19 MDG 2.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
 !--------------------------------------------------------------------------
 recursive subroutine EBSDFullGenerateDetector(enl, EBSDdetector, numEbins, numzbins, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDFullGenerateDetector
@@ -1751,7 +1655,7 @@ real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=sgl)                          :: alp, ca, sa, cw, sw
 real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
-integer(kind=irg)                       :: i, j, Emin, Emax, istat, k, ipx, ipy, ierr   
+integer(kind=irg)                       :: i, j, Emin, Emax, istat, k, ipx, ipy, ierr, elp   
 real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
 real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                          :: ixy(2)
@@ -1780,7 +1684,7 @@ sw = sin(enl%omega * dtor)
 
 ! compute auxilliary interpolation arrays
 ! if (istat.ne.0) then ...
-
+elp = enl%numsy + 1
 L2 = enl%L * enl%L
 do j=1,enl%numsx
   sx = L2 + scin_x(j) * scin_x(j)
@@ -1790,15 +1694,15 @@ do j=1,enl%numsx
 
    rhos = 1.0/sqrt(sx + scin_y(i)**2)
 
-   allocate(EBSDdetector%detector(j,i)%lambdaEZ(1:numEbins,1:numzbins))
+   allocate(EBSDdetector%detector(j,elp-i)%lambdaEZ(1:numEbins,1:numzbins))
 
-   EBSDdetector%detector(j,i)%lambdaEZ = 0.D0
+   EBSDdetector%detector(j,elp-i)%lambdaEZ = 0.D0
 
-   EBSDdetector%detector(j,i)%dc = (/(scin_y(i) * ca + sa * Ls) * rhos, Lc * rhos,&
+   EBSDdetector%detector(j,elp-i)%dc = (/(scin_y(i) * ca + sa * Ls) * rhos, Lc * rhos,&
                                     (-sa * scin_y(i) + ca * Ls) * rhos/)
 
-   EBSDdetector%detector(j,i)%dc =  &
-         EBSDdetector%detector(j,i)%dc/NORM2(EBSDdetector%detector(j,i)%dc)
+   EBSDdetector%detector(j,elp-i)%dc =  &
+         EBSDdetector%detector(j,elp-i)%dc/NORM2(EBSDdetector%detector(j,elp-i)%dc)
 
 !  if (ierr .ne. 0) then
 !      call FatalError('EBSDFullGenerateDetector:','Lambert Projection coordinate undefined')
@@ -1811,20 +1715,20 @@ deallocate(scin_x, scin_y)
 alpha = atan(enl%delta/enl%L/sqrt(sngl(cPi)))
 ipx = nint(enl%numsx/2 + enl%xpc)
 ipy = nint(enl%numsy/2 + enl%ypc)
-pcvec = EBSDdetector%detector(ipx,ipy)%dc
+pcvec = EBSDdetector%detector(ipx,elp-ipy)%dc
 calpha = cos(alpha)
 
 do i = 1,enl%numsx
     do j = 1,enl%numsy
 
-        dc = EBSDdetector%detector(i,j)%dc 
+        dc = EBSDdetector%detector(i,elp-j)%dc 
         dp = DOT_PRODUCT(pcvec,dc)
         theta = acos(dp)
 
         if ((i.eq.ipx).and.(j.eq.ipy)) then
-          EBSDdetector%detector(i,j)%cfactor = 0.25 
+          EBSDdetector%detector(i,elp-j)%cfactor = 0.25 
         else
-          EBSDdetector%detector(i,j)%cfactor = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3)
+          EBSDdetector%detector(i,elp-j)%cfactor = ((calpha*calpha + dp*dp - 1.0)**1.5)/(calpha**3)
         end if
 
     end do
@@ -1929,6 +1833,110 @@ call system(trim(cmd2))
 call Message('--> Output file generated with Monte Carlo data copied from '//trim(infile))
 
 end subroutine EBSDcopyMCdata 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:EBSDcopyMPdata
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief copy Master Pattern data from one file to a new file using h5copy
+!
+!> @param inputfile name of file with MP data in it
+!> @param outputfile name of new file
+!
+!> @date 06/18/19  MDG 1.0 original
+!> @date 06/21/19  MDG 1.1 add option to skip copying of CrystalData group
+!--------------------------------------------------------------------------
+recursive subroutine EBSDcopyMPdata(inputfile, outputfile, skipCrystalData)
+!DEC$ ATTRIBUTES DLLEXPORT :: EBSDcopyMPdata
+
+use local
+use error
+use HDFsupport
+use io
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)       :: inputfile
+character(fnlen),INTENT(IN)       :: outputfile
+logical,INTENT(IN),OPTIONAL       :: skipCrystalData
+
+character(fnlen)                  :: infile, outfile, h5copypath, groupname
+character(512)                    :: cmd, cmd2
+logical                           :: f_exists, readonly
+type(HDFobjectStackType),pointer  :: HDF_head
+integer(kind=irg)                 :: hdferr
+
+! first make sure that the input file exists and has MP data in it
+infile = trim(EMsoft_getEMdatapathname())//trim(inputfile)
+infile = EMsoft_toNativePath(infile)
+inquire(file=infile, exist=f_exists)
+
+outfile = trim(EMsoft_getEMdatapathname())//trim(outputfile)
+outfile = EMsoft_toNativePath(outfile)
+
+! if the file does not exist, abort the program with an error message
+if (f_exists.eqv..FALSE.) then 
+  call FatalError('EBSDcopyMPdata','Master Pattern file does not exist: '//trim(infile))
+end if
+
+! make sure it has EBSDmaster data in it; hdf open is done in the calling program
+nullify(HDF_head)
+readonly = .TRUE.
+hdferr =  HDF_openFile(infile, HDF_head, readonly)
+
+groupname = SC_EMData
+hdferr = HDF_openGroup(groupname, HDF_head)
+if (hdferr.eq.-1) then 
+  call FatalError('EBSDcopyMPdata','EMData group does not exist in '//trim(infile))
+end if
+
+groupname = SC_EBSDmaster
+hdferr = HDF_openGroup(groupname, HDF_head)
+if (hdferr.eq.-1) then 
+  call FatalError('EBSDcopyMPdata','EBSDmaster group does not exist in '//trim(infile))
+end if
+
+call HDF_pop(HDF_head,.TRUE.)
+
+! OK, if we get here, then the file does exist and it contains Master Pattern data, so we let
+! the user know
+call Message('--> Input file contains Master Pattern data')
+
+! next, we copy the necessary groups into the new Master Pattern file
+h5copypath = trim(EMsoft_geth5copypath())//' -p -v '
+h5copypath = EMsoft_toNativePath(h5copypath)
+cmd = trim(h5copypath)//' -i "'//trim(infile)
+cmd = trim(cmd)//'" -o "'//trim(outfile)
+
+if (present(skipCrystalData)) then 
+  if (skipCrystalData.eqv..FALSE.) then 
+    cmd2 = trim(cmd)//'" -s "/CrystalData" -d "/CrystalData"'
+    call system(trim(cmd2))
+  end if
+else
+  cmd2 = trim(cmd)//'" -s "/CrystalData" -d "/CrystalData"'
+  call system(trim(cmd2))
+end if
+
+cmd2 = trim(cmd)//'" -s "/EMData" -d "/EMData"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/EMheader" -d "/EMheader"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/NMLfiles" -d "/NMLfiles"'
+call system(trim(cmd2))
+
+cmd2 = trim(cmd)//'" -s "/NMLparameters" -d "/NMLparameters"'
+call system(trim(cmd2))
+
+call Message('--> Output file generated with Master Pattern data copied from '//trim(infile))
+
+end subroutine EBSDcopyMPdata 
+
+
 
 
 end module EBSDmod

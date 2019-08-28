@@ -1,0 +1,37 @@
+ &RefineOrientations
+! number of parallel threads to use for refinement run
+ nthreads = 1,
+! name of input dot product HDF5 file
+ dotproductfile = 'undefined',
+! name of ctf output file for refined orientations
+ ctffile = 'undefined',
+! name of temporary file for pre-processed patterns 
+! (will override the temporary file name defined in the dot product file)
+ tmpfile = 'undefined',
+! modality ('EBSD' or 'ECP')
+ modality = 'EBSD',
+! keep the pre-processed patterns all in memory?
+ inRAM = .FALSE.,
+! how many items from the top matches list do you want to check for the refinement?
+ matchdepth = 1,
+! refinement method:  
+! 'SUB' : refinement by hierarchical sub-sampling of cubic grid in cubochoric space
+! 'FIT' : fit by "bound optimization by quadratic approximation" (BOBYQA) in homochoric space (generally faster than SUB)
+ method = 'FIT',
+! ===================================
+! if method == 'SUB'
+! number of hierarchical iterations
+ niter = 1,
+! number of points sampled around given point [(2*nmis+1)^3]
+ nmis = 1,
+! ===================================
+! if method == 'FIT'
+! max step size to take in homochoric space during the refinement
+ step = 0.03,
+! In FIT mode, this program can also include pseudo-symmetric variants in the list of starting orientations to refine.
+! Pseudo-symmetric variant Euler triplets or axis-angle pair(s) are stored in the PSvariantfile.
+!    format:  first line 'ax', second line number of axis-angle pairs, then one pair per line (unit vector, angle last in degrees)
+! or format:  first line 'eu', second line number of Euler triplets, then one triplet per line (in degrees)
+ PSvariantfile = 'undefined',
+! ===================================
+ /

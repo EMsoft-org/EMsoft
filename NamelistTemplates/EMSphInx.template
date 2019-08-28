@@ -1,0 +1,78 @@
+ &SphInxNameList
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+!###################################################################
+! INDEXING PARAMETERS
+!###################################################################
+!
+! spherical harmonic bandwidth [of the form (1 + 3^p * 5^q * 7^r * 11^s)/2, with p,q,r,s >= 0 integers]
+! some reasonable values are: 53, 63, 68, 74, 88, 95, 113, 122, 123, 158, 172, 188, 203, 221, 263, 284, 313
+! a nice range for parameter studies is 53, 68, 88, 113, 158, 203, 263, 338 (a factor of 1.3 between each)
+ bw = 53, 
+! normalization flag [.TRUE., .FALSE.]
+ normed = .TRUE.,
+! refinement flag [.TRUE., .FALSE.]
+ refine = .TRUE.,
+! flip patterns vertically flag [.TRUE., .FALSE.]
+ pflip = .FALSE.
+! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
+! region of interest has the point (x0,y0) as its upper left corner and is w x h patterns
+ ROImask = 0 0 0 0,
+! or
+! define a file name containing a mask with 1's and 0's [not implemented in Release 4.3]
+ ROIfile = 'undefined',
+! number of regions for adaptive histogram equalization
+ nregions = 10,
+! parallel threads to be used [if 0, then use maximum available number returned by omp_get_max_threads()]
+ nthread = 0, 
+! number of patterns to dispatch to a thread at once [when 0, automatically estimated 
+! [indexer.hpp, BatchEstimate]
+ batchsize = 0,
+
+!###################################################################
+! SCAN PARAMETERS AND CAMERA CALIBRATION
+!###################################################################
+! scan dimensions [ipf_width (pixels), ipf_height (pixels), stepx (micron), stepy (micron)]
+ scandims = 0.0 0.0 0.1 0.1,
+! [numsx, numsy] pattern dimensions (pixels)
+ patdims = 640 480,
+! detector pixel size [microns]
+ delta = 55.0,
+! [x*, y*, z*] pattern center (any vendor convention) or [xpc, ypc, L] in EMsoft units
+ pctr = 0.0 0.0 15000.0,
+! vendor string ['EMsoft', 'EDAX/TSL', 'Oxford', 'Bruker']
+ vendor = 'EMsoft', 
+! detector tilt angle from vertical [degrees]
+ thetac = 10.0,
+! pattern binning factor
+ binning = 1,
+! apply a circular mask ? [.TRUE., .FALSE.]
+ circmask = .FALSE.,
+
+!###################################################################
+! Input Data
+!###################################################################
+! master pattern file [relative to EMdatpathname]
+ masterfile = 'undefined',
+! experimental patter file name [relative to EMdatapathname]
+ patfile = 'undefined',
+! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
+ inputtype = 'Binary',
+! here we enter the HDF group names and data set names as individual strings (up to 10)
+! enter the full path of a data set in individual strings for each group, in the correct order,
+! and with the data set name as the last name; leave the remaining strings empty (they should all
+! be empty for the Binary and TSLup2 formats)
+ HDFstrings = '' '' '' '' '' '' '' '' '' '',
+
+!###################################################################
+! Output Data
+!###################################################################
+! HDF5 output file, must be defined [relative to EMdatapathname]
+ datafile = 'undefined',
+! output ctf file name, optional [relative to EMdatapathname]
+ ctffile = 'undefined', 
+! output ang file name, optional [relative to EMdatapathname]
+ angfile = 'undefined',
+ /

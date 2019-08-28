@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2017, Marc De Graef/Saransh Singh/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -161,7 +161,7 @@ logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE.
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 character(fnlen,kind=c_char)                     :: line2(1)
 type(IncidentListECP),pointer           :: khead, ktmp
-
+type(ECPLargeAccumType),pointer         :: acc
 
 logical                             :: verbose, usehex, switchmirror
 
@@ -179,7 +179,7 @@ character(fnlen)                    :: mode
 integer(HSIZE_T)                    :: dims4(4), cnt4(4), offset4(4), dims2(2), cnt2(2), offset2(2)
 
 
-!$OMP THREADPRIVATE(rlp) 
+!$OMP THREADPRIVATE(rlp)
 
 nullify(HDF_head)
 
@@ -196,105 +196,8 @@ allocate(cell)
 ! first, we need to load the data from the MC program.
 !=============================================================
 
-call Message('opening '//trim(ecpnl%energyfile), frm = "(A)" )
-
-energyfile = trim(EMsoft_getEMdatapathname())//trim(ecpnl%energyfile)
-! this is now an HDF5 file as of version 5.1
-! [since this is no longer a sequential access file, we do not need to read everything, just
-! the quantities that we need...]
-
-!
-! Initialize FORTRAN interface.
-!
-call h5open_EMsoft(hdferr)
-
-! first of all, if the file exists, then delete it and rewrite it on each energyloop
-energyfile = trim(EMsoft_getEMdatapathname())//trim(ecpnl%energyfile)
-inquire(file=energyfile, exist=f_exists)
-
-if (.not.f_exists) then
-    call FatalError('ComputeMasterPattern','Monte Carlo input file does not exist')
-end if
-
-! open the MC file using the default properties.
-readonly = .TRUE.
-hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
-
-! open the namelist group
-groupname = SC_NMLparameters
-hdferr = HDF_openGroup(groupname, HDF_head)
-
-groupname = SC_MCCLNameList
-hdferr = HDF_openGroup(groupname, HDF_head)
-
-! read all the necessary variables from the namelist group
-dataset = SC_xtalname
-call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-xtalname = trim(stringarray(1))
-
-dataset = SC_numsx
-call HDF_readDatasetInteger(dataset, HDF_head, hdferr, nsx)
-nsx = (nsx - 1)/2
-nsy = nsx
-
-dataset = SC_EkeV
-call HDF_readDatasetDouble(dataset, HDF_head, hdferr, EkeV)
-
-dataset = SC_Ehistmin
-call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ehistmin)
-
-dataset = SC_Ebinsize
-call HDF_readDatasetDouble(dataset, HDF_head, hdferr, Ebinsize)
-
-dataset = SC_depthmax
-call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthmax)
-
-dataset = SC_depthstep
-call HDF_readDatasetDouble(dataset, HDF_head, hdferr, depthstep)
-
-dataset = SC_mode
-call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-mode = trim(stringarray(1))
-
-if (trim(mode) .ne. 'bse1') then
-    call FatalError('ECmasterpattern','The mode is not bse1...select the correct monte carlo file')
-end if
-
-! close the name list group
-call HDF_pop(HDF_head)
-call HDF_pop(HDF_head)
-
-! open the Data group
-groupname = SC_EMData
-hdferr = HDF_openGroup(groupname, HDF_head)
-
-! read data items
-dataset = SC_numangle
-call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numEbins)
-
-dataset = SC_numzbins
-call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numzbins)
-
-dataset = SC_totnumel
-call HDF_readDatasetInteger(dataset, HDF_head, hdferr, num_el)
-
-dataset = SC_accumz
-! dims4 =  (/ numEbins, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
-call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
-allocate(accum_z(numEbins,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
-accum_z = acc_z
-deallocate(acc_z)
-
-! and close everything
-call HDF_pop(HDF_head,.TRUE.)
-
-! close the fortran interface
-call h5close_EMsoft(hdferr)
-
-ind = float(numEbins)/2.0+1.0
-etotal = sum(accum_z(floor(ind),:,:,:))
-
-call Message(' -> completed reading '//trim(ecpnl%energyfile), frm = "(A//)")
+call Message(' -> opening '//trim(ecpnl%energyfile), frm = "(A)" )
+call  ECPSinglereadMCfile(ecpnl, acc, verbose=.TRUE.)
 
 !=============================================
 ! completed reading monte carlo file
@@ -308,6 +211,9 @@ allocate(cell)
 
 ! load the crystal structure and compute the Fourier coefficient lookup table
 verbose = .TRUE.
+xtalname = ecpnl%MCxtalname
+EkeV = ecpnl%EkeV
+
 call Initialize_Cell(cell,Dyn,rlp, xtalname, ecpnl%dmin, sngl(EkeV),verbose)
 
 ! determine the point group number
@@ -317,22 +223,22 @@ call Initialize_Cell(cell,Dyn,rlp, xtalname, ecpnl%dmin, sngl(EkeV),verbose)
  end do
  isym = j
 
-! here is new code dealing with all the special cases (quite a few more compared to the 
+! here is new code dealing with all the special cases (quite a few more compared to the
 ! Laue group case)...  isym is the point group number. Once the symmetry case has been
 ! fully determined (taking into account things like 31m and 3m1 an such), then the only places
 ! that symmetry is handled are the modified Calckvectors routine, and the filling of the modified
-! Lambert projections after the dynamical simulation step.  We are also changing the name of the 
+! Lambert projections after the dynamical simulation step.  We are also changing the name of the
 ! sr array (or srhex) to mLPNH and mLPSH (modified Lambert Projection Northern/Southern Hemisphere),
 ! and we change the output HDF5 file a little as well. We need to make sure that the EMECP program
-! issues an error when an old format HDF5 file is read.  
+! issues an error when an old format HDF5 file is read.
 
-! Here, we encode isym into a new number that describes the sampling scheme; the new schemes are 
+! Here, we encode isym into a new number that describes the sampling scheme; the new schemes are
 ! described in detail in the EBSD manual pdf file.
 
 SamplingType = PGSamplingType(isym)
 
 ! next, intercept the special cases (hexagonal vs. rhombohedral cases that require special treatment)
-if (SamplingType.eq.-1) then 
+if (SamplingType.eq.-1) then
   SamplingType = getHexvsRho(cell,isym)
 end if
 
@@ -368,10 +274,18 @@ tots = 0
 totw = 0
 
 numset = cell % ATOM_ntype  ! number of special positions in the unit cell
+
+numzbins = ecpnl%numzbins
+numEbins = ecpnl%Ebinsize
 izz = numzbins
 
 allocate(lambdaZ(1:izz),stat=istat)
 allocate(nat(numset),stat=istat)
+
+accum_z = acc%accum_z
+
+etotal = sum(acc%accum_z)
+ind = float(numEbins)/2.0+1.0
 
 do iz=1,izz
     lambdaZ(iz) = float(sum(accum_z(floor(ind),iz,:,:)))/float(etotal)
@@ -439,8 +353,7 @@ groupname = SC_EMData
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 dataset = SC_xtalname
-stringarray(1)= trim(xtalname)
-hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
+hdferr = HDF_writeDatasetStringArray(dataset, trim(xtalname), 1, HDF_head)
 
 dataset = SC_numset
 hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head)
@@ -451,14 +364,12 @@ hdferr = HDF_writeDatasetDouble(dataset, EkeV, HDF_head)
 dataset = SC_cellATOMtype
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, cell%ATOM_type(1:numset), numset, HDF_head)
 
-dataset = SC_squhex
-if (usehex) then
-stringarray(1)= 'hexago'
-hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
-else
-stringarray(1)= 'square'
-hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
-end if
+! dataset = SC_squhex
+! if (usehex) then
+! hdferr = HDF_writeDatasetStringArray(dataset, 'hexago', 1, HDF_head)
+! else
+! hdferr = HDF_writeDatasetStringArray(dataset, 'square', 1, HDF_head)
+! end if
 
 ! create the hyperslab and write zeroes to it for now
 dataset = SC_ECP
@@ -480,7 +391,7 @@ call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4
 !!$OMP PARALLEL default(shared) COPYIN(rlp) &
 !$OMP PARALLEL COPYIN(rlp) &
 !$OMP& PRIVATE(DynMat,Sgh,Sghtmp,Lgh,i,FN,TID,kn,ipx,ipy,ix,ip,iequiv,nequiv,reflist,firstw) &
-!$OMP& PRIVATE(kk,kkk,nns,nnw,nref,nat,io_int,io_int_sgl,nthreads,svals) 
+!$OMP& PRIVATE(kk,kkk,nns,nnw,nref,nat,io_int,io_int_sgl,nthreads,svals)
 !!!!$OMP& SHARED(mLPNH,mLPSH,tots,totw)
 
 nthreads = OMP_GET_NUM_THREADS()
@@ -612,5 +523,3 @@ call Message('Final data stored in file '//trim(ecpnl%datafile), frm = "(A/)")
 
 
 end subroutine ECPsinglepattern
-
-

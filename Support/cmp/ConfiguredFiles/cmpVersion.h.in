@@ -5,14 +5,13 @@
  * --------------------------------------------------------------------------*/
 
 
-#ifndef _@VERSION_GEN_NAMESPACE@_VERSION_H_
-#define _@VERSION_GEN_NAMESPACE@_VERSION_H_
+#ifndef _@VERSION_INCLUDE_GUARD@_version_h_
+#define _@VERSION_INCLUDE_GUARD@_version_h_
 
 
 #include <QtCore/QString>
-
-#include "@CMP_TOP_HEADER_FILE@"
-
+ 
+@CMP_TOP_HEADER_INCLUDE_STATMENT@
 
 namespace @VERSION_GEN_NAMESPACE@
 {
@@ -20,7 +19,12 @@ namespace @VERSION_GEN_NAMESPACE@
   class Version
   {
     public:
-      virtual ~Version();
+      ~Version() = default;
+      Version(const Version&) = delete; // Copy Constructor Not Implemented
+      Version(Version&&) = delete;      // Move Constructor Not Implemented
+      Version& operator=(const Version&) = delete; // Copy Assignment Not Implemented
+      Version& operator=(Version&&) = delete;      // Move Assignment Not Implemented
+
 
       static @VERSION_GEN_NAMESPACE_EXPORT@ QString Complete();
       static @VERSION_GEN_NAMESPACE_EXPORT@ QString Major   ();
@@ -32,13 +36,9 @@ namespace @VERSION_GEN_NAMESPACE@
       static @VERSION_GEN_NAMESPACE_EXPORT@ QString BuildDate();
 
     protected:
-      Version();
+      Version() = default;
 
   };
 }
 
-
-
-
-
-#endif /* _@VERSION_GEN_NAMESPACE@_VERSION_H_ */
+#endif /* _@VERSION_INCLUDE_GUARD@_version_h_ */

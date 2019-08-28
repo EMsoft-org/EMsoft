@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2017, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -2932,7 +2932,7 @@ if (ta.eq.infty()) then
 else
   angle = 2.0*atan(ta)
   ta = 1.0/sqrt(sum(r(1:3)*r(1:3)))
-  res = (/ r(1)/ta, r(2)/ta, r(3)/ta, angle /)
+  res = (/ r(1)*ta, r(2)*ta, r(3)*ta, angle /)
 end if
 
 end function ro2ax
@@ -2976,7 +2976,7 @@ if (ta.eq.inftyd()) then
 else
   angle = 2.D0*datan(ta)
   ta = 1.D0/dsqrt(sum(r(1:3)*r(1:3)))
-  res = (/ r(1)/ta, r(2)/ta, r(3)/ta, angle /)
+  res = (/ r(1)*ta, r(2)*ta, r(3)*ta, angle /)
 end if
 
 end function ro2ax_d

@@ -1,7 +1,14 @@
 project(EMsoftLib)
 
-configure_file(${EMsoftLib_SOURCE_DIR}/StringConstants.cmake
-               ${EMsoftLib_BINARY_DIR}/StringConstants.cmake @ONLY)
+include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake 
+${EMsoftLib_BINARY_DIR}/StringConstants.cmake)
+
+# configure_file(${EMsoftLib_SOURCE_DIR}/StringConstants.cmake
+#                ${EMsoftLib_BINARY_DIR}/StringConstants.cmake @ONLY)
+
+cmpConfigureFileWithMD5Check( GENERATED_FILE_PATH        ${EMsoftLib_BINARY_DIR}/StringConstants.cmake
+                             CONFIGURED_TEMPLATE_PATH   ${EMsoftLib_SOURCE_DIR}/StringConstants.cmake )
+
 
 add_custom_target(EMsoftLib_Generate_StringConstants ALL 
                   "${CMAKE_COMMAND}" -P "${EMsoftLib_BINARY_DIR}/StringConstants.cmake" 
@@ -54,6 +61,12 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/pgm.f90
   ${EMsoftLib_SOURCE_DIR}/postscript.f90
   ${EMsoftLib_SOURCE_DIR}/povray.f90
+  ${EMsoftLib_SOURCE_DIR}/QCmod.f90
+  ${EMsoftLib_SOURCE_DIR}/qcrystal.f90
+  ${EMsoftLib_SOURCE_DIR}/diffractionQC.f90
+  ${EMsoftLib_SOURCE_DIR}/MBmoduleQC.f90
+  ${EMsoftLib_SOURCE_DIR}/kvectorsQC.f90
+  ${EMsoftLib_SOURCE_DIR}/gvectorsQC.f90
   ${EMsoftLib_SOURCE_DIR}/quaternions.f90
   ${EMsoftLib_SOURCE_DIR}/rng.f90
   ${EMsoftLib_SOURCE_DIR}/rotations.f90
@@ -70,6 +83,12 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/bmp.f90
   ${EMsoftLib_SOURCE_DIR}/tif.f90
   ${EMsoftLib_SOURCE_DIR}/lzw.f90
+  ${EMsoftLib_SOURCE_DIR}/Laue.f90
+  ${EMsoftLib_SOURCE_DIR}/xrd.f90
+  ${EMsoftLib_SOURCE_DIR}/random.f90
+  ${EMsoftLib_SOURCE_DIR}/imageOPs.f90
+  ${EMsoftLib_SOURCE_DIR}/hhmod.f90
+
 
   ${EMsoftLib_Additional_SRCS}
 )
@@ -92,9 +111,9 @@ if(EMsoft_ENABLE_TESTING)
   set(EMsoft_TESTING_DIR "${EMsoft_BINARY_DIR}/Testing")
   file(MAKE_DIRECTORY ${EMsoft_TESTING_DIR})
 endif()
-
-configure_file(${EMsoftLib_SOURCE_DIR}/local.f90.in 
-         ${EMsoftLib_BINARY_DIR}/local.f90 @ONLY)
+         
+cmpConfigureFileWithMD5Check( GENERATED_FILE_PATH        ${EMsoftLib_BINARY_DIR}/local.f90
+                              CONFIGURED_TEMPLATE_PATH   ${EMsoftLib_SOURCE_DIR}/local.f90.in  )
 #-------------------------------------------------------------------------------
 # Add files GENERATED DURING CMAKE TIME
 set(EMsoftLib_SRCS
@@ -130,7 +149,7 @@ TARGET_LINK_LIBRARIES(EMsoftLib
                 ${EMsoft_BLAS_LAPACK_LIBS}
                 ${IFORT_COMPILER_LIBRARIES}
           )
-target_include_directories(EMsoftLib PUBLIC ${CLFORTRAN_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR})
+target_include_directories(EMsoftLib PUBLIC ${CLFortran_INCLUDE_DIRS} ${FFTW3_INCLUDE_DIR})
 set_target_properties (EMsoftLib PROPERTIES
                   LINKER_LANGUAGE Fortran
                    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2018, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -96,6 +96,7 @@ end program EMEBSDDIpreview
 !> @date 01/24/18 MDG 1.0 original
 !> @date 02/19/18 MDG 1.1 modified input to new patternmod module options
 !> @date 07/17/18 MDG 1.2 option to extract and scale up individual pattern
+!> @date 04/26/19 MDG 1.3 added option to ouput an averaged pattern
 !--------------------------------------------------------------------------
 
 subroutine MasterSubroutine(enl, progname, nmldeffile)
@@ -123,7 +124,7 @@ integer(HSIZE_T)                                    :: dims3(3), offset3(3)
 logical                                             :: f_exists
 real(kind=sgl)                                      :: mi, ma, io_real(1)
 real(kind=dbl)                                      :: x, y, val, v2
-real(kind=sgl),allocatable                          :: expt(:), pattern(:,:), pcopy(:,:), hpvals(:)
+real(kind=sgl),allocatable                          :: expt(:), pattern(:,:), pcopy(:,:), hpvals(:), sumexpt(:)
 integer(kind=irg),allocatable                       :: nrvals(:), pint(:,:), ppp(:,:)
 type(C_PTR)                                         :: HPplanf, HPplanb
 complex(kind=dbl),allocatable                       :: hpmask(:,:)
@@ -158,19 +159,52 @@ if (istat.ne.0) then
     call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
 end if
 
+! should we average patterns locally ?
 allocate(expt(patsz))
 dims3 = (/ binx, biny, 1 /)
+if (enl%numav.ge.0) then
+  io_int(1) = 2*enl%numav+1
+  io_int(2) = 2*enl%numav+1
+  call WriteValue(' Averaging patterns over ', io_int, 2, "(I3,' by ',I3,' area')")
+  allocate(sumexpt(patsz))
+  sumexpt = 0.0
+  jj = 0 
+  do i=-enl%numav,enl%numav
+    if ((enl%patx+i.gt.0).and.(enl%patx+i.lt.enl%ipf_wd)) then
+      do j=-enl%numav,enl%numav
+        if ((enl%paty+j.gt.0).and.(enl%paty+j.lt.enl%ipf_ht)) then
+          offset3 = (/ 0, 0, (enl%paty+j) * enl%ipf_wd + (enl%patx+i) /)
+          call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, enl%inputtype, &
+                                   enl%HDFstrings, expt)
+          sumexpt = sumexpt + expt
+          jj = jj+1
+        end if 
+      end do 
+    end if 
+  end do
+  sumexpt = sumexpt / float(jj)
+end if
+
+! and read the center pattern (again)
 offset3 = (/ 0, 0, enl%paty * enl%ipf_wd + enl%patx /)
 call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, enl%inputtype, enl%HDFstrings, expt)
 
 ! and close the pattern file
 call closeExpPatternFile(enl%inputtype, iunitexpt)
 
+write (*,*) 'maximum intensity in pattern ',maxval(expt)
+
 ! turn it into a 2D pattern
 allocate(pattern(binx, biny), pcopy(binx, biny), pint(binx,biny), ppp(binx,biny), stat=ierr)
-do kk=1,biny
-  pcopy(1:binx,kk) = expt((kk-1)*binx+1:kk*binx)
-end do
+if (enl%numav.gt.0) then 
+  do kk=1,biny
+    pcopy(1:binx,kk) = sumexpt((kk-1)*binx+1:kk*binx)
+  end do
+else
+  do kk=1,biny
+    pcopy(1:binx,kk) = expt((kk-1)*binx+1:kk*binx)
+  end do
+end if
 
 ! do we need to extract this pattern from the file and store it as an image file ?
 if (trim(enl%patternfile).ne.'undefined') then

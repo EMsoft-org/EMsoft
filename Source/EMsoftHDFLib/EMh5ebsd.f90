@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2016, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2016-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -737,8 +737,9 @@ end subroutine h5ebsd_writePhaseGroup
 !> @param ebsdnl input name list
 !
 !> @date 03/10/16 MDG 1.0 original
+!> @date 05/19/19 MDG 1.1 disable option to compute orientation average map
 !--------------------------------------------------------------------------
-subroutine h5ebsd_writeFile(vendor, ebsdnl, xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
+subroutine h5ebsd_writeFile(vendor, ebsdnl, xtalname, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, dicteulerarray, &
                             dpmap, progname, nmldeffile, OSMmap)
 !DEC$ ATTRIBUTES DLLEXPORT :: h5ebsd_writeFile
 
@@ -747,8 +748,9 @@ use io
 use constants
 use ebsdiomod
 use ebsdmod
-use ebsddimod
+!use ebsddimod
 use dictmod
+use commonmod
 
 IMPLICIT NONE
 
@@ -761,7 +763,7 @@ integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: exptIQ(ipar(3))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
-real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
+real(kind=sgl),INTENT(INOUT)                        :: dicteulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
@@ -771,19 +773,21 @@ character(15)                                       :: tstre
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 integer(kind=irg)                                   :: hdferr, filetype, i, j, ii, jj,indx, istat, ipar2(6), L
 character(fnlen)                                    :: groupname, dataset, h5ebsdfile, savefile
-logical                                             :: noindex
+logical                                             :: noindex, g_exists, overwrite=.TRUE.
 type(dicttype)                                      :: dict
+real(kind=sgl)                                      :: eulerarray(3,ipar(4))
 
 real(kind=sgl),allocatable                          :: kam(:,:), ISMap(:)
 
-real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), results(:), avEuler(:,:), &
+real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), eangles(:,:), results(:), avEuler(:,:), &
                                                        lresultmain(:,:), eulers(:,:) 
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
 real(kind=sgl)                                      :: isratio, io_real(1)
 type(HDFobjectStackType),pointer                    :: HDF_head
 
-
+! copy the dictionary euler angle array 
+eulerarray = dicteulerarray
 
 !=====================================================
 ! write the output in the format of an h5ebsd file
@@ -846,7 +850,7 @@ dataset = SC_CIMap
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset CImap')
 
 !=====================================================
-! Fit (to be completed with Farangis' code)
+! Fit 
 dataset = SC_Fit
   allocate(eangle(ipar(3)),stat=istat)
   eangle = 1.0
@@ -855,25 +859,26 @@ dataset = SC_Fit
   deallocate(eangle)
 
 !=====================================================
+! this option is disabled starting in version 4.3 [05/19/19, MDG]; code block can be deleted
 ! Averaged Orientation Map (using near-match list and quaternion logarithm averaging)
 ! define the ipar2 entries
-  allocate(avEuler(3,ipar(3)))
+!   allocate(avEuler(3,ipar(3)))
   ipar2(1) = ipar(6)
   ipar2(2) = ipar(5)
   ipar2(3) = ipar(3)
   ipar2(4) = ipar(1)
   ipar2(5) = ipar(2)
   ipar2(6) = ebsdnl%nnav
-! get the avEuler array
-  eulerarray = eulerarray * sngl(cPi)/180.0
-  call EBSDgetAverageOrientations(ipar2, eulerarray, indexmain(1:ipar2(4),1:ipar2(5)), resultmain(1:ipar2(4),1:ipar2(5)), &
-                                  avEuler)
-  eulerarray = eulerarray * 180.0/sngl(cPi)
+! ! get the avEuler array
+!   eulerarray = eulerarray * sngl(cPi)/180.0
+!   call EBSDgetAverageOrientations(ipar2, eulerarray, indexmain(1:ipar2(4),1:ipar2(5)), resultmain(1:ipar2(4),1:ipar2(5)), &
+!                                   avEuler)
+!   eulerarray = eulerarray * 180.0/sngl(cPi)
 
-! and write it to the HDF file
-dataset = SC_AverageOrientations
-  hdferr = HDF_writeDatasetFloatArray2D(dataset, avEuler, 3, ipar(3), HDF_head)
-  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset AverageOrientations')
+! ! and write it to the HDF file
+! dataset = SC_AverageOrientations
+!   hdferr = HDF_writeDatasetFloatArray2D(dataset, avEuler, 3, ipar(3), HDF_head)
+!   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset AverageOrientations')
 
 ! get the nearest neighbor Kernel Average Misorientation Map (KAM)
   allocate(eulers(3,ipar(3)))
@@ -913,27 +918,28 @@ dataset = SC_OSM
   end if
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset OSM')
 
+! this option is disabled starting in version 4.3 [05/1/19, MDG]; code can be deleted
 ! also create a second ctf file, if requested
-  if (trim(ebsdnl%avctffile).ne.'undefined') then
-    savefile = ebsdnl%ctffile
-    ebsdnl%ctffile = ebsdnl%avctffile
-    ipar2(1:6) = ipar(1:6)
-    ipar(1) = 1
-    ipar(2) = ipar2(3)
-    ipar(3) = ipar2(3)
-    ipar(4) = ipar2(3)
+  ! if (trim(ebsdnl%avctffile).ne.'undefined') then
+  !   savefile = ebsdnl%ctffile
+  !   ebsdnl%ctffile = ebsdnl%avctffile
+  !   ipar2(1:6) = ipar(1:6)
+  !   ipar(1) = 1
+  !   ipar(2) = ipar2(3)
+  !   ipar(3) = ipar2(3)
+  !   ipar(4) = ipar2(3)
   
-    allocate(lindexmain(1,ipar2(3)), lresultmain(1,ipar2(3)))
-    lindexmain = 0
-    lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
-    noindex = .TRUE.
+  !   allocate(lindexmain(1,ipar2(3)), lresultmain(1,ipar2(3)))
+  !   lindexmain = 0
+  !   lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
+  !   noindex = .TRUE.
 
-    call ctfebsd_writeFile(ebsdnl,xtalname,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
-    call Message('Average orientation data stored in ctf file : '//trim(ebsdnl%avctffile))
-    ebsdnl%ctffile = savefile
-    ipar(1:6) = ipar2(1:6)
-    deallocate(lindexmain, lresultmain)
-  end if
+  !   call ctfebsd_writeFile(ebsdnl,xtalname,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
+  !   call Message('Average orientation data stored in ctf file : '//trim(ebsdnl%avctffile))
+  !   ebsdnl%ctffile = savefile
+  !   ipar(1:6) = ipar2(1:6)
+  !   deallocate(lindexmain, lresultmain)
+  ! end if
 
 ! we also insert a visual map of the Confidence Index, resampled on a rectangular array
 ! dataset = 'FitMap'
@@ -1020,6 +1026,21 @@ dataset = SC_Valid
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Valid')
   deallocate(valid)
 
+dataset = SC_EulerAngles
+  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  allocate(eangles(3,ipar(3)),stat=istat)
+  do ii = 1,ipar(3)
+    indx = indexmain(1,ii)
+    eangles(1:3,ii) = eulerarray(1:3,indx)
+  end do
+  eangles = eangles * sngl(cPi)/180.0
+  if (g_exists) then 
+     hdferr = HDF_writeDatasetFloatArray2D(dataset, eangles, 3, ipar(3), HDF_head, overwrite)
+  else
+     hdferr = HDF_writeDatasetFloatArray2D(dataset, eangles, 3, ipar(3), HDF_head)
+  end if
+  if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset EulerAngles')
+
 !=====================================================
 ! Euler angles: Phi 
 dataset = SC_Phi
@@ -1098,6 +1119,7 @@ dataset = SC_YPos
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Y position')
   deallocate(results)
  
+
 !=====================================================
 !=====================================================
 ! this concludes the standard data sets in the Data group
@@ -1125,8 +1147,8 @@ dataset = SC_Ncubochoric
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Ncubochoric')
 
 ! write the list of sampled Euler angles
-dataset = SC_EulerAngles
-  hdferr = HDF_writeDatasetFloatArray2D(dataset, eulerarray, 3, ipar(4), HDF_head)
+dataset = SC_DictionaryEulerAngles
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, dicteulerarray, 3, ipar(4), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset EulerAngles')
 
 ! number of experimental patterns 
@@ -1173,7 +1195,6 @@ dataset = SC_CameraElevationAngle
   hdferr = HDF_writeDatasetFloat(dataset, ebsdnl%thetac, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset TopMatchIndices')
  
-
 !=====================================================
 ! Coordinate System group
   call h5ebsd_writeCoordinateSystemGroup(HDF_head)
@@ -1224,7 +1245,6 @@ groupname = "1"
 
 ! close the Phase group
   call HDF_pop(HDF_head)
-
 
 !=====================================================
 ! Sample ID
@@ -1291,7 +1311,7 @@ end subroutine h5ebsd_writeFile
 !> @date 05/07/17 MDG 1.0 original, based on original EBSD routine
 !--------------------------------------------------------------------------
 subroutine h5tkd_writeFile(vendor, tkdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, dpmap, &
-                            progname, nmldeffile)
+                            progname, nmldeffile, OSMmap)
 !DEC$ ATTRIBUTES DLLEXPORT :: h5tkd_writeFile
 
 use NameListTypedefs
@@ -1299,8 +1319,9 @@ use io
 use constants
 use ebsdiomod
 use ebsdmod
-use ebsddimod
+! use ebsddimod
 use dictmod
+use commonmod
 
 IMPLICIT NONE
 
@@ -1316,6 +1337,7 @@ real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
+real(kind=sgl),INTENT(OUT)                          :: OSMmap(ipar(7),ipar(8))
 
 character(15)                                       :: tstre
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
@@ -1366,7 +1388,7 @@ allocate(stringarray(1))
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group Scan 1')
 
-groupname = SC_EBSD
+groupname = SC_TKD
   hdferr = HDF_createGroup(groupname, HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error opening group EBSD')
 
@@ -1426,7 +1448,7 @@ dataset = SC_AverageOrientations
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset AverageOrientations')
 
 ! get the nearest neighbor Kernel Average Misorientation Map (KAM)
-  allocate(kam(tkdnl%ipf_wd,tkdnl%ipf_ht),eulers(3,ipar(3)))
+  allocate(eulers(3,ipar(3)))
   do i=1,ipar(3)
     eulers(1:3,i) = eulerarray(1:3,indexmain(1,i))
   end do
@@ -1436,19 +1458,30 @@ dataset = SC_AverageOrientations
   dict%pgnum = ipar2(1)
   call DI_Init(dict,'nil') 
 dataset = SC_KAM
-  call EBSDgetKAMMap(ipar(3), eulers, tkdnl%ipf_wd, tkdnl%ipf_ht, dict, kam)
-  kam = kam*180.0/sngl(cPi)
-  hdferr = HDF_writeDatasetFloatArray2D(dataset, kam, tkdnl%ipf_wd, tkdnl%ipf_ht, HDF_head)
+  if (sum(tkdnl%ROI).ne.0) then
+    allocate(kam(tkdnl%ROI(3),tkdnl%ROI(4)))
+    call EBSDgetKAMMap(ipar(3), eulers, tkdnl%ROI(3), tkdnl%ROI(4), dict, kam)
+    kam = kam*180.0/sngl(cPi)
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, kam, tkdnl%ROI(3), tkdnl%ROI(4), HDF_head)
+  else
+    allocate(kam(tkdnl%ipf_wd,tkdnl%ipf_ht))
+    call EBSDgetKAMMap(ipar(3), eulers, tkdnl%ipf_wd, tkdnl%ipf_ht, dict, kam)
+    kam = kam*180.0/sngl(cPi)
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, kam, tkdnl%ipf_wd, tkdnl%ipf_ht, HDF_head)
+  end if
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset KAM')
   deallocate(kam, eulers)
 
 ! get the Orientation Similarity Map (OSM)
-  allocate(osm(tkdnl%ipf_wd,tkdnl%ipf_ht))
 dataset = SC_OSM
-  call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, tkdnl%nosm, tkdnl%ipf_wd, tkdnl%ipf_ht, osm)
-  hdferr = HDF_writeDatasetFloatArray2D(dataset, osm, tkdnl%ipf_wd, tkdnl%ipf_ht, HDF_head)
+  if (sum(tkdnl%ROI).ne.0) then
+    call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, tkdnl%nosm, tkdnl%ROI(3), tkdnl%ROI(4), OSMmap)
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, OSMmap, tkdnl%ROI(3), tkdnl%ROI(4), HDF_head)
+  else
+    call EBSDgetOrientationSimilarityMap( (/ipar(1), ipar(2)/), indexmain, tkdnl%nosm, tkdnl%ipf_wd, tkdnl%ipf_ht, OSMmap)
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, OSMmap, tkdnl%ipf_wd, tkdnl%ipf_ht, HDF_head)
+  end if
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset OSM')
-  deallocate(osm)
 
 ! also create a second ctf file, if requested
   if (trim(tkdnl%avctffile).ne.'undefined') then
@@ -1465,7 +1498,7 @@ dataset = SC_OSM
     lresultmain(1,1:ipar2(3)) = resultmain(1,1:ipar2(3))
     noindex = .TRUE.
 
-    call ctftkd_writeFile(tkdnl,ipar,lindexmain,avEuler,lresultmain,noindex)
+    call ctftkd_writeFile(tkdnl,ipar,lindexmain,avEuler,lresultmain,OSMmap,exptIQ,noindex)
     call Message('Average orientation data stored in ctf file : '//trim(tkdnl%avctffile))
     tkdnl%ctffile = savefile
     ipar(1:6) = ipar2(1:6)
@@ -1571,11 +1604,19 @@ dataset = SC_Phi2
 ! from Header
   dataset = 'X Position'
   allocate(results(ipar(3)),stat=istat)
-  do jj=1,tkdnl%ipf_ht
-    do ii=1,tkdnl%ipf_wd
-      results(tkdnl%ipf_wd*(jj-1)+ii) = (ii-1)*tkdnl%StepX 
+  if (sum(tkdnl%ROI).ne.0) then
+    do jj=1,tkdnl%ROI(3)
+      do ii=1,tkdnl%ROI(4)
+        results(tkdnl%ipf_wd*(jj-1)+ii) = (ii-1)*tkdnl%StepX 
+      end do
     end do
-  end do
+  else
+    do jj=1,tkdnl%ipf_ht
+      do ii=1,tkdnl%ipf_wd
+        results(tkdnl%ipf_wd*(jj-1)+ii) = (ii-1)*tkdnl%StepX 
+      end do
+    end do
+  end if
   hdferr = HDF_writeDatasetFloatArray1D(dataset, results, ipar(3), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset X Position')
 
@@ -1584,11 +1625,19 @@ dataset = SC_Phi2
 ! Y Position: list of y positions for sampling points; requires knowledge of step size
 ! from Header
   dataset = 'Y Position'
-  do jj=1,tkdnl%ipf_ht
-    do ii=1,tkdnl%ipf_wd
-      results(tkdnl%ipf_wd*(jj-1)+ii) = (jj-1)*tkdnl%StepY 
+  if (sum(tkdnl%ROI).ne.0) then
+    do jj=1,tkdnl%ROI(3)
+      do ii=1,tkdnl%ROI(4)
+        results(tkdnl%ipf_wd*(jj-1)+ii) = (jj-1)*tkdnl%StepY 
+      end do
     end do
-  end do
+  else
+    do jj=1,tkdnl%ipf_ht
+      do ii=1,tkdnl%ipf_wd
+        results(tkdnl%ipf_wd*(jj-1)+ii) = (jj-1)*tkdnl%StepY 
+      end do
+    end do
+  end if
   hdferr = HDF_writeDatasetFloatArray1D(dataset, results, ipar(3), HDF_head)
   if (hdferr.ne.0) call HDF_handleError(hdferr,'Error writing dataset Y position')
   deallocate(results)

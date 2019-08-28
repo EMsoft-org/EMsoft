@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2018, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2018-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -48,6 +48,12 @@
 !> @date 02/20/18 MDG 1.3 added option to extract a single pattern from the input file
 !> @date 04/01/18 MDG 2.0 added routine to preprocess EBSD patterns 
 !> @date 05/09/18 MDG 2.1 added .up1 TSL format 
+!> @date 11/30/18 MDG 2.2 added suport for TKD pattern preprocessing
+!> @date 02/19/19 MDG 3.0 corrects pattern orientation; manual indexing of patterns computed with EMEBSD
+!>                        revealed an unwanted upside down flip that was compensated by flipping the 
+!>                        exp. patterns; thus, all indexing runs thus far produced the correct results.
+!> @date 07/13/19 MDG 3.1 added option to read single pattern from OxfordBinary file
+!> @date 08/20/19 MDG 3.2 added vendor pattern center conversion function [for EMSphInx indexing program]
 !--------------------------------------------------------------------------
 module patternmod
 
@@ -55,6 +61,7 @@ use local
 use error
 use HDF5
 use HDFsupport
+use commonmod
 
 IMPLICIT NONE
 
@@ -103,7 +110,7 @@ if (trim(inputtype).eq."TSLup1") itype = 2
 if (trim(inputtype).eq."TSLup2") itype = 3
 if (trim(inputtype).eq."TSLHDF") itype = 4
 if (trim(inputtype).eq."OxfordBinary") itype = 5
-if (trim(inputtype).eq."OxfordHDF") itype = 6
+if (trim(inputtype).eq."OxfordHDF") itype = 6    ! to be implemented
 if (trim(inputtype).eq."EMEBSD") itype = 7
 if (trim(inputtype).eq."BrukerHDF") itype = 8
 
@@ -144,7 +151,7 @@ end function get_num_HDFgroups
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief invert the pattern reordering arrays
+!> @brief invert the pattern reordering arrays for Bruker HDF5 format
 !
 !> @param npat number of patterns in a single row of the ROI
 !
@@ -205,6 +212,7 @@ end subroutine invert_ordering_arrays
 !> @date 04/12/18 MDG 1.4 added option for patterns that don't start at record boundaries in up2 format
 !> @date 05/10/18 MDG 1.5 changed .up2 access mode to STREAM to facilitate record positioning
 !> @date 06/21/18 SS  1.6 changed recorsize to L*4 instead of recsize (correctsize*4); recsize has padded 0's
+!> @date 05/01/19 MA  1.7 add support for Oxford Instruments binary pattern files
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -219,13 +227,13 @@ integer(kind=irg),INTENT(IN)            :: L
 character(fnlen),INTENT(IN)             :: inputtype
 integer(kind=irg),INTENT(IN)            :: recsize
 integer(kind=irg),INTENT(IN)            :: funit
-integer(kind=irg)                       :: istat
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
-                                           ios, up1header(4), version, patx, paty, myoffset
+                                           ios, up1header(4), version, patx, paty, myoffset, istat
 character(fnlen)                        :: groupname, dataset, platform
+logical                                 :: f_exists
 
 istat = 0
 
@@ -235,6 +243,17 @@ itype = get_input_type(inputtype)
 
 ename = trim(EMsoft_getEMdatapathname())//trim(filename)
 ename = EMsoft_toNativePath(ename)
+
+f_exists = .FALSE.
+inquire(file=trim(ename), exist=f_exists)
+
+if (.not.f_exists) then
+   call Message(' Input file '//trim(ename)//' does not exist in this location ... ')
+   call Message(' Please check the input parameters in the namelist file.')
+   call Message(' ')
+   call FatalError('openExpPatternFile','Unrecoverable error; file not found')
+end if
+
 call Message('Pattern input file '//trim(ename))
 call Message('  input file type '//trim(inputtype))
 
@@ -244,9 +263,9 @@ platform = EMsoft_getEMsoftplatform()
 select case (itype)
     case(1)  ! "Binary"
         if (trim(platform).eq.'Windows') then
-            recordsize = L 			  ! windows record length is in units of 4 bytes
+            recordsize = L        ! windows record length is in units of 4 bytes
         else
-            recordsize = L*4	      ! all other platforms use record length in units of bytes
+            recordsize = L*4      ! all other platforms use record length in units of bytes
         end if
         open(unit=funit,file=trim(ename),&
             status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
@@ -276,8 +295,13 @@ select case (itype)
         end if
 
     case(5)  ! "OxfordBinary"
-        call FatalError("openExpPatternFile","OxfordBinary input format not yet implemented")
-
+        ! open the file in STREAM access mode to allow for byte-level access
+        open(unit=funit,file=trim(ename), status='old',access='stream',iostat=ios)
+        if (ios.ne.0) then
+            io_int(1) = ios
+            call WriteValue("File open error; error type ",io_int,1)
+            call FatalError("openExpPatternFile","Cannot continue program")
+        end if
 
     case(6)  ! "OxfordHDF"
         call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
@@ -287,7 +311,7 @@ select case (itype)
     case(4, 7)  ! "TSLHDF", "EMEBSD"
         nullify(pmHDF_head)
         ! open the file
-        hdferr =  HDF_openFile(ename, pmHDF_head)
+        hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
         ! open all the groups to the correct level of the data set
         do i=1,hdfnumg
@@ -301,7 +325,7 @@ select case (itype)
     case(8)  !  "BrukerHDF"
         nullify(pmHDF_head)
         ! open the file
-        hdferr =  HDF_openFile(ename, pmHDF_head)
+        hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
 
         ! open all the groups to the correct level of the data set
@@ -309,16 +333,16 @@ select case (itype)
             groupname = trim(HDFstrings(i))
             hdferr = HDF_openGroup(groupname, pmHDF_head)
             if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-            !  this part is different from the other vendors: the patterns are not necessarily in the correct order (why not???)
+            !  this part is different from the other vendors: the patterns are not necessarily in the correct order 
             !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
             !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
-            if (i.eq.2) then 
+            if (i.eq.1) then 
                groupname = 'SEM'
                hdferr = HDF_openGroup(groupname, pmHDF_head)
-               dataset = 'IX'
+               dataset = 'SEM IX'
                call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
                if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
-               dataset = 'IY'
+               dataset = 'SEM IY'
                call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
                if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
                call invert_ordering_arrays(npat)
@@ -362,6 +386,8 @@ end function openExpPatternFile
 !> @date 02/21/18 MDG 1.1 added optional Region-of-Interest capability
 !> @date 04/12/18 MDG 1.2 added option for patterns that don't start at record boundaries in up2 format
 !> @date 05/10/18 MDG 1.3 completely reworked up1 and up2 reading by switching to STREAM access instead of DIRECT access
+!> @date 03/21/19 MDG 1.4 fixed off-by-one error in column labels for up1 and up2 file formats
+!> @date 05/01/19 MA  1.5 add support for Oxford Instruments binary pattern files
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
@@ -391,7 +417,8 @@ integer(kind=irg)                       :: sng, pixcnt
 integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
-                                           kkstart, kkend, multfactor 
+                                           kkstart, kkend, multfactor
+integer(kind=8)                         :: patoffsets(wd)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -409,10 +436,11 @@ if (itype.eq.3) multfactor = 2_ill
 if (present(ROI)) then 
  kkstart = ROI(1)
  kkend = kkstart + ROI(3) - 1_ill 
-! for the TSL up1 and up2 formats we need to skip the first ROI(2)-1 rows and set the correct offset value (in bytes) 
+! for the TSL up1 and up2 formats we need to skip the first ROI(2)-1 
+! rows and set the correct offset value (in bytes) 
  if (((itype.eq.2).or.(itype.eq.3)).and.(iii.eq.ROI(2))) then   ! make sure we do this only once ...
    do ii=1,ROI(2)-1
-      offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
+     offset = offset + (lwd * lL) * multfactor   ! this is in units of bytes
    end do
  end if
 else
@@ -426,6 +454,8 @@ select case (itype)
 ! when the experimental patterns were only available in individual image file format. 
 ! This file would have been created using a Matlab or IDL routine.  We anticipate that 
 ! this format will not be used for much longer.
+! In view of the pattern flip resolution, the user must ensure that the Matlab script
+!  DOES NOT flip the pattern upside down !
       do jj=kkstart,kkend
         read(funit,rec=(liii-1)*lwd + jj) imageexpt
         exppatarray((jj-kkstart)*patsz+1:(jj-1)*patsz+L) = imageexpt(1:L)
@@ -454,10 +484,10 @@ select case (itype)
 ! then we need to place them in the exppatarray array 
       exppatarray = 0.0
       pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
-      do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI; remember to flip the patterns upside down !
+      do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI
         kspot = (kk-kkstart)*patsz
         do jj=1,dims3(2)
-          jspot = (dims3(2)-jj)*dims3(1) 
+          jspot = (jj-1)*dims3(1) 
           do ii=1,dims3(1)
             exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
             pixcnt = pixcnt + 1
@@ -478,6 +508,48 @@ select case (itype)
 
     case(5)  ! "OxfordBinary"
 
+! read position of patterns in file for a single row from the header
+      read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
+
+! generate a buffer to load individual patterns into
+      buffersize = lL
+      allocate(buffer(buffersize))
+
+! allocate pairs to store all patterns in a row
+      buffersize = lwd * lL
+      allocate(pairs(buffersize))
+
+      do ii=1,lwd
+! read each pattern into buffer with the 16 bytes of metadata skipped
+        read(unit=funit, pos=patoffsets(ii)+17_8, iostat=ios) buffer
+
+! loop over pixels and convert the byte values into single byte integers
+        do jj=1_ill,lL
+          pairs((ii - 1)*lL + jj) = ichar(buffer(jj)) 
+        enddo
+      end do
+
+      deallocate(buffer)
+
+ ! then we need to place them in the exppatarray array 
+      exppatarray = 0.0
+      pixcnt = (kkstart-1)*dims3(1)*dims3(2)+1
+      do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI
+        kspot = (kk-kkstart)*patsz
+        do jj=1,dims3(2)
+          jspot = (jj-1)*dims3(1) 
+          do ii=1,dims3(1)
+            exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
+            pixcnt = pixcnt + 1
+          end do 
+        end do 
+      end do 
+
+      deallocate(pairs)
+
+! finally, correct for the fact that the original values were unsigned integers
+      where(exppatarray.lt.0.0) exppatarray = exppatarray + 256.0
+
     case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
@@ -489,7 +561,7 @@ select case (itype)
         do kk=kkstart,kkend
             do jj=1,dims3(2)
                 do ii=1,dims3(1)
-                   z = float(EBSDpatint(ii,dims3(2)+1-jj,kk))
+                   z = float(EBSDpatint(ii,jj,kk))
                    if (z.lt.0.0) z = z+2.0**16
                    exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = z
                 end do 
@@ -524,8 +596,7 @@ select case (itype)
             EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
             do jj=1,dims3(2)
                 do ii=1,dims3(1) 
-                    ! Bruker patterns are stored upside down compared to the EMsoft convention...
-                    exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+                    exppatarray((kk-kkstart)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
                 end do 
             end do 
         end do 
@@ -554,6 +625,7 @@ end subroutine getExpPatternRow
 !> @param exppat output array
 !
 !> @date 02/20/18 MDG 1.0 original
+!> @date 07/13/19 MDG 1.1 added option to read single pattern from OxfordBinary file
 !--------------------------------------------------------------------------
 recursive subroutine getSingleExpPattern(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppat) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getSingleExpPattern
@@ -583,6 +655,7 @@ integer(kind=ish)                       :: pair(2)
 integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
                                            l1, l2, multfactor
+integer(kind=8)                         :: patoffsets(wd)
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -637,7 +710,7 @@ select case (itype)
         exppat = 0.0
         pixcnt = 1
         do jj=1,dims3(2)
-          jspot = (dims3(2)-jj)*dims3(1) 
+          jspot = (jj-1)*dims3(1) 
           do ii=1,dims3(1)
             exppat(jspot+ii) = float(pairs(pixcnt))
             pixcnt = pixcnt + 1
@@ -652,11 +725,47 @@ select case (itype)
           where(exppat.lt.0.0) exppat = exppat + 256.0
         end if
 
-    case(5)  ! "OxfordBinary"
+    case(5)  ! "OxfordBinary" ! [added/tested MDG 07/13/19]
+! read position of patterns in file for a single row from the header
+      liii = iii
+      l1 = mod(offset3(3),wd)
+      lL = L
+      lwd = wd
+      read(unit=funit, pos=(liii-1)*lwd*8+9, iostat=ios) patoffsets
+
+! generate buffers to load individual pattern into
+      buffersize = lL
+      allocate(buffer(buffersize), pairs(buffersize))
+
+! read single pattern into buffer with the 16 bytes of metadata skipped
+      read(unit=funit, pos=patoffsets(l1)+17_8, iostat=ios) buffer
+
+! convert the byte values into single byte integers
+      pairs = ichar(buffer) 
+      deallocate(buffer)
+
+ ! then we need to place it in the exppat array 
+      exppat = 0.0
+      pixcnt = 1
+      do jj=1,dims3(2)
+        jspot = (jj-1)*dims3(1) 
+        do ii=1,dims3(1)
+          exppat(jspot+ii) = float(pairs(pixcnt))
+          pixcnt = pixcnt + 1
+        end do 
+      end do 
+      deallocate(pairs)
+
+! finally, correct for the fact that the original values were unsigned integers
+      where(exppat.lt.0.0) exppat = exppat + 256.0
 
     case(6)  ! "OxfordHDF"
 ! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
 ! patterns stored in it... Hence this option is currently non-existent.
+
+! Update 07/13/19: after talking with Phillipe Pinard (Oxford) at the EMAS 2019 conference
+! in Trondheim, it is clear that Oxford is working on including the patterns into their
+! current HDF5 file version.  This might become available sometime by the end of 2019.
 
     case(4)  ! "TSLHDF" passed tests on 2/20/18 by MDG
 ! read a hyperslab single pattern section from the HDF5 input file
@@ -666,7 +775,7 @@ select case (itype)
         exppat = 0.0
         do jj=1,dims3(2)
             do ii=1,dims3(1)
-                  z = float(EBSDpatint(ii,dims3(2)+1-jj,1))
+                  z = float(EBSDpatint(ii,jj,1))
                   if (z.lt.0.0) z = z+2.0**16
                   exppat((jj-1)*dims3(1)+ii) = z
             end do 
@@ -698,8 +807,7 @@ select case (itype)
         EBSDpat = HDF_readHyperslabCharArray3D(dataset, offset3new, dims3new, pmHDF_head) 
         do jj=1,dims3(2)
             do ii=1,dims3(1) 
-                ! Bruker patterns are stored upside down compared to the EMsoft convention...
-                exppat((kk-1)*patsz+(jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,dims3(2)+1-jj,1)))
+                exppat((jj-1)*dims3(1)+ii) = float(ichar(EBSDpat(ii,jj,1)))
             end do 
         end do 
 
@@ -747,7 +855,7 @@ select case (itype)
         nullify(pmHDF_head)
 
     case(5)  ! "OxfordBinary"
-        call FatalError("closeExpPatternFile","input format not yet implemented")
+        close(unit=funit,status='keep')
 
     case(6)  ! "OxfordHDF"
         call FatalError("closeExpPatternFile","input format not yet implemented")
@@ -831,13 +939,13 @@ recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, mas
 use io
 use local
 use typedefs
-use EBSDDImod
+!use ebsddimod
 use NameListTypedefs
 use error
 use omp_lib
 use filters
 use timing
-
+use commonmod
 use ISO_C_BINDING
 
 IMPLICIT NONE
@@ -917,10 +1025,11 @@ end if
 ! open the file and leave it open, then use the getExpPatternRow() routine to read a row
 ! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
-istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, ebsdnl%HDFstrings)
+istat = openExpPatternFile(ebsdnl%exptfile, ebsdnl%ipf_wd, L, ebsdnl%inputtype, recordsize, iunitexpt, &
+                           ebsdnl%HDFstrings)
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
-    call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
+    call FatalError("PreProcessPatterns:", "Fatal error handling experimental pattern file")
 end if
 
 ! this next part is done with OpenMP, with only thread 0 doing the reading;
@@ -1087,8 +1196,352 @@ call WriteValue('Number of experimental patterns processed per second : ',io_rea
 end subroutine PreProcessPatterns
 
 
+!--------------------------------------------------------------------------
+!
+! subroutine: PreProcessTKDPatterns
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief standard preprocessing of TKD patterns (hi-pass filter+adaptive histogram equalization)
+!
+!> @details This is one of the core routines used to pre-process TKD patterns for dictionary indexing.
+!> The routine reads the experimental patterns row by row, and performs a hi-pass filter and adaptive
+!> histogram equalization.  Then the preprocessed patterns are either stored in a binary direct access file,
+!> or they are kept in RAM, depending on the user parameter setting. 
+!
+!> @param nthreads number of threads to be used
+!> @param inRAM write file or keep patterns in RAM ?
+!> @param tkdnl namelist for the tkd computations
+!> @param binx, biny pattern size 
+!> @param masklin vector form of pattern mask 
+!> @param correctsize 
+!> @param totnumexpt 
+!> @param epatterns (OPTIONAL) array with pre-processed patterns
+!> @param exptIQ (OPTIONAL) computation of pattern quality (IQ) array
+!
+!> @date 11/30/18 MDG 1.0 original, based on EBSD routine
+!--------------------------------------------------------------------------
+recursive subroutine PreProcessTKDPatterns(nthreads, inRAM, tkdnl, binx, biny, masklin, correctsize, totnumexpt, &
+                                        epatterns, exptIQ)
+!DEC$ ATTRIBUTES DLLEXPORT :: PreProcessTKDPatterns
+
+use io
+use local
+use typedefs
+!use ebsddimod
+use NameListTypedefs
+use error
+use omp_lib
+use filters
+use timing
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                :: nthreads
+logical,INTENT(IN)                          :: inRAM
+type(TKDIndexingNameListType),INTENT(IN)    :: tkdnl
+integer(kind=irg),INTENT(IN)                :: binx
+integer(kind=irg),INTENT(IN)                :: biny
+real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
+integer(kind=irg),INTENT(IN)                :: correctsize
+integer(kind=irg),INTENT(IN)                :: totnumexpt
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
+
+logical                                     :: ROIselected, f_exists
+character(fnlen)                            :: fname
+integer(kind=irg)                           :: istat, L, recordsize, io_int(2), patsz, iii, &
+                                               iiistart, iiiend, jjend, TID, jj, kk, ierr
+integer(HSIZE_T)                            :: dims3(3), offset3(3)
+integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42
+real(kind=sgl)                              :: tstart, tstop, vlen, tmp, ma, mi, io_real(1)
+real(kind=dbl)                              :: w, Jres
+integer(kind=irg),allocatable               :: TKDpint(:,:)
+real(kind=sgl),allocatable                  :: tmpimageexpt(:), TKDPattern(:,:), imageexpt(:), exppatarray(:), TKDpat(:,:)
+real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
+complex(kind=dbl),allocatable               :: hpmask(:,:)
+complex(C_DOUBLE_COMPLEX),allocatable       :: inp(:,:), outp(:,:)
+type(C_PTR)                                 :: planf, HPplanf, HPplanb
 
 
+call Message('Preprocessing experimental patterns')
+
+!===================================================================================
+! define a bunch of mostly integer parameters
+recordsize = correctsize*4
+L = binx*biny
+patsz = correctsize
+w = tkdnl%hipassw
+
+if (sum(tkdnl%ROI).ne.0) then
+  ROIselected = .TRUE.
+  iiistart = tkdnl%ROI(2)
+  iiiend = tkdnl%ROI(2)+tkdnl%ROI(4)-1
+  jjend = tkdnl%ROI(3)
+else
+  ROIselected = .FALSE.
+  iiistart = 1
+  iiiend = tkdnl%ipf_ht
+  jjend = tkdnl%ipf_wd
+end if
+
+!===================================================================================
+! open the output file if the patterns are not to be kept in memory
+if (inRAM.eqv..FALSE.) then
+! first, make sure that this file does not already exist
+   f_exists = .FALSE.
+   fname = trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)
+   fname = EMsoft_toNativePath(fname)
+   inquire(file=trim(trim(EMsoft_getEMtmppathname())//trim(tkdnl%tmpfile)), exist=f_exists)
+
+   call WriteValue('Creating temporary file :',trim(fname))
+
+   if (f_exists) then
+      open(unit=itmpexpt,file=trim(fname),&
+          status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+      close(unit=itmpexpt,status='delete')
+   end if
+   open(unit=itmpexpt,file=trim(fname),&
+   status='unknown',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+end if
+  
+!===================================================================================
+! open the file with experimental patterns; depending on the inputtype parameter, this
+! can be a regular binary file, as produced by a MatLab or IDL script (default); a 
+! pattern file produced by EMTKD.f90; or a vendor binary or HDF5 file... in each case we need to 
+! open the file and leave it open, then use the getExpPatternRow() routine to read a row
+! of patterns into the exppatarray variable ...  at the end, we use closeExpPatternFile() to
+! properly close the experimental pattern file
+istat = openExpPatternFile(tkdnl%exptfile, tkdnl%ipf_wd, L, tkdnl%inputtype, recordsize, iunitexpt, &
+                           tkdnl%HDFstrings)
+if (istat.ne.0) then
+    call patternmod_errormessage(istat)
+    call FatalError("PreProcessTKDPatterns:", "Fatal error handling experimental pattern file")
+end if
+
+! this next part is done with OpenMP, with only thread 0 doing the reading;
+! Thread 0 reads one line worth of patterns from the input file, then all threads do 
+! the work, and thread 0 adds them to the epatterns array in RAM; repeat until all patterns have been processed.
+
+call OMP_SET_NUM_THREADS(nthreads)
+io_int(1) = nthreads
+call WriteValue(' -> Number of threads set to ',io_int,1,"(I3)")
+
+! allocate the arrays that holds the experimental patterns from a single row of the region of interest
+allocate(exppatarray(patsz * tkdnl%ipf_wd),stat=istat)
+if (istat .ne. 0) stop 'could not allocate exppatarray'
+
+if (present(exptIQ)) then
+! prepare the fftw plan for this pattern size to compute pattern quality (pattern sharpness Q)
+  allocate(TKDPat(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate arrays for EBSDPat filter'
+  TKDPat = 0.0
+  allocate(ksqarray(binx,biny),stat=istat)
+  if (istat .ne. 0) stop 'could not allocate ksqarray array'
+  Jres = 0.0
+! we should be able to just use the EBSD routine to do this ...
+  call init_getEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf)
+  deallocate(TKDPat)
+end if
+
+! initialize the HiPassFilter routine (has its own FFTW plans)
+allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+if (istat .ne. 0) stop 'could not allocate hpmask array'
+call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
+deallocate(inp, outp)
+
+call Message('Starting processing of experimental patterns')
+call cpu_time(tstart)
+
+dims3 = (/ binx, biny, tkdnl%ipf_wd /)
+
+!===================================================================================
+! we do one row at a time
+prepexperimentalloop: do iii = iiistart,iiiend
+
+! start the OpenMP portion
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP& PRIVATE(imageexpt, tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, vlen, tmp, inp, outp)
+
+! set the thread ID
+    TID = OMP_GET_THREAD_NUM()
+
+! initialize thread private variables
+    allocate(TKDPat(binx,biny),rrdata(binx,biny),ffdata(binx,biny),tmpimageexpt(binx*biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate arrays for Hi-Pass filter'
+
+    allocate(TKDpint(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate TKDpint array'
+
+    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
+    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+
+    tmpimageexpt = 0.0
+    rrdata = 0.D0
+    ffdata = 0.D0
+
+! thread 0 reads the next row of patterns from the input file
+! we have to allow for all the different types of input files here...
+    if (TID.eq.0) then
+        offset3 = (/ 0, 0, (iii-1)*tkdnl%ipf_wd /)
+        if (ROIselected.eqv..TRUE.) then
+            call getExpPatternRow(iii, tkdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  tkdnl%inputtype, tkdnl%HDFstrings, exppatarray, tkdnl%ROI)
+        else
+            call getExpPatternRow(iii, tkdnl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, &
+                                  tkdnl%inputtype, tkdnl%HDFstrings, exppatarray)
+        end if
+    end if
+
+! other threads must wait until T0 is ready
+!$OMP BARRIER
+    jj=0
+
+! then loop in parallel over all patterns to perform the preprocessing steps
+!$OMP DO SCHEDULE(DYNAMIC)
+    do jj=1,jjend
+! convert imageexpt to 2D TKD Pattern array
+        do kk=1,biny
+          TKDPat(1:binx,kk) = exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx)
+        end do
+
+        if (present(exptIQ)) then
+! compute the pattern Image Quality 
+          exptIQ((iii-iiistart)*jjend + jj) = sngl(computeEBSDIQ(binx, biny, TKDPat, ksqarray, Jres, planf))
+        end if
+
+! Hi-Pass filter
+        rrdata = dble(TKDPat)
+        ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), w, hpmask, inp, outp, HPplanf, HPplanb)
+        TKDPat = sngl(ffdata)
+
+! adaptive histogram equalization
+        ma = maxval(TKDPat)
+        mi = minval(TKDPat)
+    
+        TKDpint = nint(((TKDPat - mi) / (ma-mi))*255.0)
+        TKDPat = float(adhisteq(tkdnl%nregions,binx,biny,TKDpint))
+
+! convert back to 1D vector
+        do kk=1,biny
+          exppatarray((jj-1)*patsz+(kk-1)*binx+1:(jj-1)*patsz+kk*binx) = TKDPat(1:binx,kk)
+        end do
+
+! apply circular mask and normalize for the dot product computation
+        exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
+        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        if (vlen.ne.0.0) then
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
+        else
+          exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = 0.0
+        end if
+    end do
+!$OMP END DO
+
+! thread 0 writes the row of patterns to the epatterns array or to the file, depending on the enl%inRAM parameter
+    if (TID.eq.0) then
+      if (inRAM.eqv..TRUE.) then
+        do jj=1,jjend
+          epatterns(1:patsz,(iii-iiistart)*jjend + jj) = exppatarray((jj-1)*patsz+1:jj*patsz)
+        end do
+      else
+        do jj=1,jjend
+          write(itmpexpt,rec=(iii-iiistart)*jjend + jj) exppatarray((jj-1)*patsz+1:jj*patsz)
+        end do
+      end if
+    end if
+
+deallocate(tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, inp, outp)
+!$OMP BARRIER
+!$OMP END PARALLEL
+
+! print an update of progress
+    if (mod(iii-iiistart+1,5).eq.0) then
+      if (ROIselected.eqv..TRUE.) then
+        io_int(1:2) = (/ iii-iiistart+1, tkdnl%ROI(4) /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      else
+        io_int(1:2) = (/ iii-iiistart+1, tkdnl%ipf_ht /)
+        call WriteValue('Completed row ',io_int,2,"(I4,' of ',I4,' rows')")
+      end if
+    end if
+end do prepexperimentalloop
+
+call Message(' -> experimental patterns preprocessed')
+
+call closeExpPatternFile(tkdnl%inputtype, iunitexpt)
+
+if (inRAM.eqv..FALSE.) then
+  close(unit=itmpexpt,status='keep')
+end if
+
+! print some timing information
+call CPU_TIME(tstop)
+tstop = tstop - tstart
+io_real(1) = float(tkdnl%nthreads) * float(totnumexpt)/tstop
+call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+
+end subroutine PreProcessTKDPatterns
+
+
+!--------------------------------------------------------------------------
+!
+! subroutine: getEMsoftPCcoordinates
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief convert pattern center coordinates to EMsoft units for each vendor
+!
+!> @param pctr array of 3 PC coordinates
+!> @param vendor vendor string
+!> @param delta pixel size [microns]
+!> @param Nx number of detector pixels along x
+!> @param Ny number of detector pixels along y
+!
+!> @date 08/20/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function getEMsoftPCcoordinates(pctr, vendor, delta, Nx, Ny) result(EMsoftpc)
+!DEC$ ATTRIBUTES DLLEXPORT :: getEMsoftPCcoordinates
+
+use io
+
+IMPLICIT NONE 
+
+real(kind=sgl),INTENT(IN)           :: pctr(3) 
+character(fnlen),INTENT(IN)         :: vendor 
+real(kind=sgl),INTENT(IN)           :: delta
+integer(kind=irg),INTENT(IN)        :: Nx
+integer(kind=irg),INTENT(IN)        :: Ny
+real(kind=sgl)                      :: EMsoftpc(3)
+
+real(kind=sgl)                      :: io_real(3)
+
+if (trim(vendor).eq.'EMsoft') then 
+  EMsoftpc = pctr 
+end if 
+
+if (trim(vendor).eq.'EDAX/TSL') then 
+  EMsoftpc = (/ Nx * (pctr(1) - 0.5), Nx * pctr(2) - Ny*0.5, Nx * delta * pctr(3) /)
+end if 
+
+if (trim(vendor).eq.'Oxford') then 
+  EMsoftpc = (/ Nx * (pctr(1) - 0.5), Ny * (pctr(2) - 0.5), Nx * delta * pctr(3) /)
+end if 
+
+if (trim(vendor).eq.'Bruker') then 
+  EMsoftpc = (/ Nx * (pctr(1) - 0.5), Ny * (0.5 - pctr(2)), Nx * delta * pctr(3) /)
+end if 
+
+if (trim(vendor).ne.'EMsoft') then 
+  io_real = pctr 
+  call WriteValue('Input pattern center coordinates in '//trim(vendor)//' convention : ',io_real,3)
+  io_real = EMsoftpc
+  call WriteValue('  --> pattern center coordinates in EMsoft convention : ',io_real,3)
+end if
+
+end function getEMsoftPCcoordinates
 
 
 end module patternmod

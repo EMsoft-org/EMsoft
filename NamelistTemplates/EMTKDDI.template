@@ -14,10 +14,15 @@
 ! DICTIONARY PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################
 !
+! do you want Email or Slack notification when the run has completed?
+ Notify = 'Off',
 ! height of inverse pole figure in pixels
  ipf_ht = 100,
 ! width of inverse pole figure in pixels
  ipf_wd = 100,
+! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
+! region of interest has the point (x0,y0) as its lower left corner and is w x h patterns
+ ROI = 0 0 0 0,
 ! X and Y sampling step sizes
  stepX = 1.0,
  stepY = 1.0,
@@ -51,8 +56,8 @@
 ! CCD pixel size on the scintillator surface [microns]
  delta = 50.0,
 ! number of CCD pixels along x and y
- numsx = 640,
- numsy = 480,
+ numsx = 0,
+ numsy = 0,
 ! pattern center coordinates in units of pixels
  xpc = 0.0,
  ypc = 0.0,
@@ -77,11 +82,23 @@
  gammavalue = 1.0,
 !
 !###################################################################
-! FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+! INPUT FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################
 !
 ! name of datafile where the patterns are stored; path relative to EMdatapathname
  exptfile = 'undefined',
+! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF
+ inputtype = 'Binary',
+! here we enter the HDF group names and data set names as individual strings (up to 10)
+! enter the full path of a data set in individual strings for each group, in the correct order,
+! and with the data set name as the last name; leave the remaining strings empty (they should all
+! be empty for the Binary and TSLup2 formats)
+ HDFstrings = '' '' '' '' '' '' '' '' '' '',
+!
+!###################################################################
+! OTHER FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
+!###################################################################
+!
 ! temporary data storage file name ; will be stored in $HOME/.config/EMsoft/tmp
  tmpfile = 'EMTKDDict_tmp.data',
 ! output file ; path relative to EMdatapathname
