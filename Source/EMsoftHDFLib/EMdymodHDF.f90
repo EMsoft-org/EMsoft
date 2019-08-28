@@ -140,7 +140,7 @@ character(fnlen),INTENT(IN)             :: cpar(ncpar)
 real(kind=sgl),INTENT(OUT)              :: PEDpattern(ipar(2),ipar(2),ipar(4))
 real(kind=sgl),INTENT(IN)               :: quats(nq,ipar(4))
 
-type(unitcell),pointer,SAVE             :: cell
+type(unitcell)        ,SAVE             :: cell
 type(DynType),save                      :: Dyn
 type(gnode),save                        :: rlp
 type(reflisttype),pointer,SAVE          :: reflist, nexts, rltmpa

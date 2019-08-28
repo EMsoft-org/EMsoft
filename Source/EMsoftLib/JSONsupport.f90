@@ -2218,7 +2218,7 @@ use, intrinsic :: iso_fortran_env, only: wp => real64
 
 IMPLICIT NONE
 
-type(unitcell),pointer,INTENT(IN)                     :: cell
+type(unitcell)        ,INTENT(IN)                     :: cell
 type(defecttype),INTENT(INOUT)                        :: defects
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
 logical,INTENT(IN),OPTIONAL                           :: verbose
@@ -2394,7 +2394,7 @@ use, intrinsic :: iso_fortran_env, only: wp => real64
 
 IMPLICIT NONE
 
-type(unitcell),pointer,INTENT(IN)                     :: cell
+type(unitcell)        ,INTENT(IN)                     :: cell
 character(fnlen),INTENT(IN)                           :: jsonname
 type(defecttype),INTENT(INOUT)                        :: defects
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt

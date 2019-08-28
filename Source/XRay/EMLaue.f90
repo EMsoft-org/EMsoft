@@ -133,7 +133,7 @@ real(kind=sgl) 							               :: kouter, kinner, tstart, tstop, mi, ma
 real(kind=sgl),allocatable 				         :: pattern(:,:), patternbatch(:,:,:), bppatterns(:,:,:), bp(:,:)
 
 type(HDFobjectStackType),pointer           :: HDF_head
-type(unitcell),pointer                     :: cell
+type(unitcell)                             :: cell
 logical 								                   :: verbose, g_exists, insert=.TRUE., overwrite=.TRUE.
 
 type(LaueMasterNameListType)               :: lmnl

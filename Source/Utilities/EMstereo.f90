@@ -61,7 +61,7 @@ character(1)                    :: sp
 logical                         :: topbot
 integer(kind=irg)               :: iview(3), io_int(3), imanum
 character(fnlen)                :: progname, progdesc, gname
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 logical                         :: loadingfile
 type(postscript_type)           :: PS
 

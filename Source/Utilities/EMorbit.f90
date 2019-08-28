@@ -55,7 +55,7 @@ real(kind=dbl)                  :: ctmp(192,3)
 integer(kind=irg)               :: i,m,n,ans, io_int(1) 
 real(kind=sgl)                  :: io_real(3)
 character(fnlen)                :: progname, progdesc, gname
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 
  progname = 'EMorbit.f90'
  progdesc = 'List the orbit of a given position'

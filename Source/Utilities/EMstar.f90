@@ -63,7 +63,7 @@ real(kind=dbl)          :: kk(3),stmp(0:47,3)
 logical                 :: first, loadingfile
 character(1)            :: space
 character(fnlen)        :: progname, progdesc, gname
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(gnode)             :: rlp
 
  progname = 'EMstar.f90'

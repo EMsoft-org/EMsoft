@@ -107,7 +107,7 @@ integer(kind=irg),parameter            :: numfrac = 21
 logical                                :: verbose, iv, overwrite
 character(6)                           :: sqorheA, sqorheB
 character(fnlen)                       :: outstr, datafile, xtalnameA, xtalnameB
-type(unitcell),pointer                 :: cellA, cellB
+type(unitcell)                         :: cellA, cellB
 type(DynType),save                     :: DynA, DynB
 type(gnode),save                       :: rlpA, rlpB
 real(kind=sgl)                         :: dmin, voltage, TTAB(3,3), TT(3,3), io_real(3), cA, cB, scl, fA(numfrac), om(3,3), &

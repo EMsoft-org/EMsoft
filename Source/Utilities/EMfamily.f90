@@ -66,7 +66,7 @@ real(kind=sgl)       		:: rr(3),g(3),r(3),M(3,3), CX, CY, CRad, negthresh,xst,ys
 integer(kind=irg)    		:: h,k,l,hkl(3),iview(3),cr,ans,sgn,i,num, io_int(1), imanum
 character(fnlen)                :: progname, progdesc, gname
 character(200)                  :: parta
-type(unitcell),pointer	        :: cell
+type(unitcell)        	        :: cell
 logical                         :: loadingfile
 type(postscript_type)           :: PS
 integer(kind=irg)           	:: itmp(48,3)

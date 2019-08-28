@@ -60,7 +60,7 @@ IMPLICIT NONE
 real(kind=sgl)                  :: io_real(1), camlen
 character(fnlen)                :: progname, progdesc, gname
 integer(kind=irg)               :: imanum
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(gnode)                     :: rlp
 type(postscript_type)           :: PS
 logical                         :: loadingfile

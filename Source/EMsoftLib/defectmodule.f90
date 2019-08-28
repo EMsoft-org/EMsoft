@@ -76,7 +76,7 @@ use JSONsupport
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(defecttype),INTENT(INOUT)          :: defects
 character(fnlen),INTENT(IN)             :: jsonname
 integer(kind=irg),INTENT(IN)            :: npix
@@ -210,7 +210,7 @@ use typedefs
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(defecttype),INTENT(INOUT)  :: defects
 integer(kind=irg),INTENT(IN)    :: npix, npiy, dinfo
 real(kind=sgl),INTENT(IN)       :: L
@@ -278,7 +278,7 @@ use files
 IMPLICIT NONE
 
 type(defecttype),INTENT(INOUT)          :: defects
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: DF_npix, DF_npiy, dinfo
 real(kind=sgl),INTENT(IN)               :: DF_gf(3), L
 
@@ -336,7 +336,7 @@ use files
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(defecttype),INTENT(INOUT)          :: defects
 integer(kind=irg),INTENT(IN)            :: DF_npix, DF_npiy, dinfo
 real(kind=sgl),INTENT(IN)               :: DF_g(3)
@@ -406,7 +406,7 @@ use files
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(defecttype),INTENT(INOUT)  :: defects
 integer(kind=irg),INTENT(IN)    :: DF_npix, DF_npiy, dinfo
 real(kind=sgl),INTENT(IN)       :: DF_gf(3), L
@@ -568,7 +568,7 @@ use files
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(defecttype),INTENT(INOUT)  :: defects
 integer(kind=irg),INTENT(IN)    :: dinfo,DF_npix,DF_npiy
 real(kind=sgl),INTENT(IN)       :: DF_L
@@ -640,7 +640,7 @@ use rotations
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(foiltype),INTENT(INOUT)    :: foil
 integer(kind=sgl),INTENT(IN)    :: dinfo
 
@@ -836,7 +836,7 @@ use rotations
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(defecttype),INTENT(INOUT)          :: defects
 integer(kind=irg),INTENT(IN)            :: inum
 integer(kind=irg),INTENT(IN)            :: dinfo
@@ -1169,7 +1169,7 @@ use math
 IMPLICIT NONE
 
 type(defecttype),INTENT(INOUT)  :: defects
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: DF_L
 real(kind=sgl),INTENT(IN)       :: DF_g(3)
 integer(kind=irg),INTENT(IN)    :: inum, nx, ny, dinfo
@@ -1361,7 +1361,7 @@ use math
 IMPLICIT NONE
 
 type(defecttype),INTENT(INOUT)  :: defects
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: DF_L
 real(kind=sgl),INTENT(IN)       :: DF_g(3)
 integer(kind=irg),INTENT(IN)    :: inum, nx, ny, dinfo
@@ -1773,7 +1773,7 @@ use rotations
 
 IMPLICIT NONE
 
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 type(defecttype),INTENT(INOUT)      :: defects
 integer(kind=irg),INTENT(IN)        :: i
 integer(kind=irg),INTENT(IN)        :: dinfo
@@ -1935,7 +1935,7 @@ use math
 
 IMPLICIT NONE
 
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 type(defecttype),INTENT(INOUT)      :: defects
 integer(kind=irg),INTENT(IN)        :: i
 integer(kind=irg),INTENT(IN)        :: dinfo
@@ -2326,7 +2326,7 @@ use rotations
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(defecttype),INTENT(INOUT)          :: defects
 integer(kind=irg),INTENT(IN)            :: i,j
 

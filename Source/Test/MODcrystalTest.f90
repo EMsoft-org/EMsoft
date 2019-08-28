@@ -56,7 +56,7 @@ IMPLICIT NONE
 
 integer(C_INT32_T),INTENT(OUT)  :: res
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 integer(kind=irg)		:: i, j, k
 real(kind=dbl)			:: diff
 real(kind=sgl)			:: diffs

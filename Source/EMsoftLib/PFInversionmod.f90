@@ -73,7 +73,7 @@ integer(kind=irg),INTENT(IN)        :: nLam
 real(kind=dbl),INTENT(OUT)          :: PFLam(-nLam:nLam,-nLam:nLam)
 integer(kind=irg),INTENT(IN)        :: pgnum
 integer(kind=irg),INTENT(IN)        :: neqv
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 
 real(kind=dbl)                      :: lamx(-nlam:nlam), lamy(-nlam:nlam)
 real(kind=dbl)                      :: lam(2), xyz(3), hcrossy(3), PFhkl_f(3), PFhkl_dbl(3)
@@ -241,7 +241,7 @@ integer(kind=irg),INTENT(IN)        :: PFhkl(3)
 integer(kind=irg),INTENT(IN)        :: nLam
 real(kind=dbl),INTENT(IN)           :: PFLam(-nLam:nLam,-nLam:nLam)
 integer(kind=irg),INTENT(IN)        :: pgnum
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 
 real(kind=dbl)                       :: xy(2), PFhkl_f(3), xyz(3), hcrossy(3), PFhkl_dbl(3)
 integer(kind=irg)                    :: ii, jj, kk, ll, ierr, nth

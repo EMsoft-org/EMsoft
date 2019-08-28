@@ -138,7 +138,7 @@ real(kind=sgl),allocatable      :: pedpattern(:,:), xx(:,:), yy(:,:), line(:), d
 character(len=1),allocatable    :: pedp(:,:,:), pedpat(:,:)
 integer(kind=irg),allocatable   :: patinbatch(:)
 integer(kind=irg)               :: totnumberbatch, nextra
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 type(reflisttype),pointer       :: reflist, nexts, rltmpa

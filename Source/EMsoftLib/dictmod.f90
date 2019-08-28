@@ -1349,7 +1349,7 @@ use symmetry
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: ro(4)
-type(unitcell),pointer,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(IN)       :: cell
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
 real(kind=dbl),INTENT(OUT)              :: roMFZ(4)

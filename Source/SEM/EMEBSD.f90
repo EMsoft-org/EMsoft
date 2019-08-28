@@ -370,7 +370,7 @@ integer, parameter                      :: K4B=selected_int_kind(9)      ! used 
 integer(K4B)                            :: idum
 
 type(HDFobjectStackType),pointer        :: HDF_head
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
 integer(HSIZE_T), dimension(1:2)        :: hdims2, offset2 
 integer(HSIZE_T)                        :: dim0, dim1, dim2
@@ -1283,7 +1283,7 @@ integer, parameter                      :: K4B=selected_int_kind(9)      ! used 
 integer(K4B)                            :: idum
 
 type(HDFobjectStackType),pointer        :: HDF_head
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
 integer(HSIZE_T)                        :: dim0, dim1, dim2
 character(fnlen,kind=c_char)            :: line2(1)

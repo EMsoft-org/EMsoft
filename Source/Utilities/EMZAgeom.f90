@@ -53,7 +53,7 @@ use io
 
 integer(kind=irg)       :: kk(3), ga(3), gb(3), io_int(6), j, i, dgn
 character(fnlen)        :: progname, progdesc, gname
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 logical                 :: loadingfile
 
 ! display the standard program info

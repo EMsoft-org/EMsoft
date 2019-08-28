@@ -57,7 +57,7 @@ integer(kind=irg)        	:: isel,another, oi_int(3)
 real(kind=sgl)           	:: v1(3),v2(3),vc(3),p,q,r, oi_real(1)
 character(1)             	:: sp,sp2
 character(fnlen)		:: progname, progdesc, gname
-type(unitcell),pointer		:: cell
+type(unitcell)        		:: cell
 logical				:: loadingfile
 
  progname = 'EMlatgeom.f90'

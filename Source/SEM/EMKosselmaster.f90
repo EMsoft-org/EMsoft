@@ -170,7 +170,7 @@ character(fnlen, KIND=c_char)           :: stringarray(1)
 character(fnlen,kind=c_char)            :: line2(1)
 character(fnlen)                :: oldprogname, groupname, energyfile, outname
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 type(reflisttype),pointer       :: reflist,firstw, rltmp

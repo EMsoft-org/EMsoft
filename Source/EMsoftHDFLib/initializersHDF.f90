@@ -81,7 +81,7 @@ use HDFsupport
 
 IMPLICIT NONE
 
-type(unitcell),pointer                     :: cell
+type(unitcell)                             :: cell
 type(DynType),INTENT(INOUT)                :: Dyn
 type(gnode),INTENT(INOUT)                  :: rlp
 character(fnlen),INTENT(IN)                :: xtalname

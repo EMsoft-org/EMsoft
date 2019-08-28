@@ -151,7 +151,7 @@ recursive subroutine ResetCell(cell)
 
 IMPLICIT NONE
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 
 ! initialize cell 
  cell%a = 0.0_dbl
@@ -224,7 +224,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 
 !> auxiliary variables for geometric computation
 real(kind=dbl)          :: det,ca,cb,cg,sa,sb,sg,tg,pirad
@@ -345,7 +345,7 @@ recursive subroutine TransSpaceDouble(cell,t,d,inspace,outspace)
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=dbl),INTENT(IN)       :: t(3)                 !< input vector in inspace reference frame
 real(kind=dbl),INTENT(OUT)      :: d(3)                 !< output vector in outspace reference frame 
 character(1),INTENT(IN)         :: inspace              !< characters to label input space (d, r, or c)
@@ -428,7 +428,7 @@ recursive subroutine TransSpaceSingle(cell, t, d, inspace, outspace)
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: t(3)                 !< input vector in inspace reference frame
 real(kind=sgl),INTENT(OUT)      :: d(3)                 !< output vector in outspace reference frame 
 character(1),INTENT(IN)         :: inspace              !< characters to label input space (d, r, or c)
@@ -521,7 +521,7 @@ use math, ONLY: mInvert
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=dbl),INTENT(IN)       :: t(3)                 !< input vector w.r.t. input space reference frame
 real(kind=dbl),INTENT(OUT)      :: d(3)                 !< transformed vector components
 real(kind=dbl),INTENT(IN)       :: talpha(3,3)          !< transformation matrix
@@ -579,7 +579,7 @@ recursive function CalcDotSingle(cell, p,q,space) result(cdot)
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: p(3)         !< first input vector in space reference frame
 real(kind=sgl),INTENT(IN)       :: q(3)         !< second input vector
 character(1),INTENT(IN)         :: space        !< space in which to compute product ('d', 'r', or 'c')
@@ -620,7 +620,7 @@ recursive function CalcDotDouble(cell, p, q, space) result(cdot)
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=dbl),INTENT(IN)       :: p(3)         !< first input vector in space reference frame
 real(kind=dbl),INTENT(IN)       :: q(3)         !< second input vector
 character(1),INTENT(IN)         :: space        !< space in which to compute product ('d', 'r', or 'c')
@@ -663,7 +663,7 @@ recursive subroutine NormVecSingle(cell, p, space)
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=sgl),INTENT(INOUT)            :: p(3)         !< input/output vector components
 character(1),INTENT(IN)                 :: space        !< space character ('d', 'r', or 'c')
 real(kind=sgl)                          :: x            !< auxiliary variable
@@ -704,7 +704,7 @@ recursive subroutine NormVecDouble(cell, p, space)
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=dbl),INTENT(INOUT)            :: p(3)         !< input/output vector components
 character(1),INTENT(IN)                 :: space        !< space character ('d', 'r', or 'c')
 real(kind=dbl)                          :: x            !< auxiliary variable
@@ -745,7 +745,7 @@ recursive function CalcLengthSingle(cell, p, space) result(x)
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=sgl),INTENT(IN)               :: p(3)         !< input/output vector components
 character(1),INTENT(IN)                 :: space        !< space character ('d', 'r', or 'c')
 real(kind=sgl)                          :: x            !< auxiliary variable
@@ -782,7 +782,7 @@ recursive function CalcLengthDouble(cell, p, space) result(x)
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=dbl),INTENT(IN)               :: p(3)         !< input/output vector components
 character(1),INTENT(IN)                 :: space        !< space character ('d', 'r', or 'c')
 real(kind=dbl)                          :: x            !< auxiliary variable
@@ -822,7 +822,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=sgl),INTENT(IN)               :: p(3)         !< first vector components
 real(kind=sgl),INTENT(IN)               :: q(3)         !< second vector components
 character(1),INTENT(IN)                 :: space        !< space of the computation ('d', 'r', 'c')
@@ -881,7 +881,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=dbl),INTENT(IN)               :: p(3)         !< first vector components
 real(kind=dbl),INTENT(IN)               :: q(3)         !< second vector components
 character(1),INTENT(IN)                 :: space        !< space of the computation ('d', 'r', 'c')
@@ -949,7 +949,7 @@ use math
 
 IMPLICIT NONE 
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=sgl),INTENT(IN)               :: p(3)         !< first input vector (order is important here !)
 real(kind=sgl),INTENT(IN)               :: q(3)         !< second input vector
 real(kind=sgl),INTENT(OUT)              :: r(3)         !< output vector
@@ -1042,7 +1042,7 @@ use math
 
 IMPLICIT NONE 
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=dbl),INTENT(IN)               :: p(3)         !< first input vector (order is important here !)
 real(kind=dbl),INTENT(IN)               :: q(3)         !< second input vector
 real(kind=dbl),INTENT(OUT)              :: r(3)         !< output vector
@@ -1762,7 +1762,7 @@ use error
 IMPLICIT NONE
 
 type(orientation),INTENT(INOUT) :: orel         !< orientation relation type
-type(unitcell),pointer          :: cellA, cellB 
+type(unitcell)                  :: cellA, cellB 
 character(2),INTENT(IN)         :: direction  !< direction of transformation (AB or BA)
 real(kind=sgl)                  :: TT(3,3)
 
@@ -1843,7 +1843,7 @@ recursive function CalcsgHOLZ(cell,HOLZdata,gg,kt,lambda) result(exer)
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(HOLZentries),INTENT(INOUT)         :: HOLZdata
 real(kind=sgl),INTENT(IN)               :: gg(3), kt(3), lambda
 
@@ -1905,7 +1905,7 @@ use error
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(HOLZentries),INTENT(INOUT)         :: HOLZdata
 integer(kind=irg),INTENT(IN)            :: uvw(3), fn(3)
 real(kind=sgl),INTENT(IN)               :: g1(3), g2(3)
@@ -2020,7 +2020,7 @@ recursive function GetHOLZcoordinates(cell,HOLZdata,gg,kt,lambda) result(pxy)
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(HOLZentries),INTENT(INOUT)         :: HOLZdata
 real(kind=sgl),INTENT(IN)               :: gg(3), kt(3), lambda
 
@@ -2083,7 +2083,7 @@ use typedefs
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell, cellS
+type(unitcell)                          :: cell, cellS
 real(kind=sgl),INTENT(IN)               :: kg(3)
 real(kind=sgl),INTENT(IN)               :: TTinv(3,3)
 real(kind=sgl),INTENT(IN)               :: FN(3)

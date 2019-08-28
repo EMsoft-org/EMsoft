@@ -122,7 +122,7 @@ character(fnlen),INTENT(IN)                :: nmldeffile
 
 logical 								                   :: verbose
 type(HDFobjectStackType),pointer           :: HDF_head
-type(unitcell),pointer                     :: cell
+type(unitcell)                             :: cell
 type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp
 real(kind=sgl),allocatable                 :: mLPNH(:,:), mLPSH(:,:), masterSPNH(:,:), masterSPSH(:,:)

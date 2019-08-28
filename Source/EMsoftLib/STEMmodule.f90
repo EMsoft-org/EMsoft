@@ -77,7 +77,7 @@ IMPLICIT NONE
 
 type(STEMtype),INTENT(INOUT)            :: STEM
 type(STEMGeometryNameListType),INTENT(INOUT)    :: stemnl
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: g(3)
 
@@ -480,7 +480,7 @@ IMPLICIT NONE
 
 type(STEMtype),INTENT(INOUT)        :: STEM
 type(STEMGeometryNameListType),INTENT(INOUT)    :: stemnl
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 real(kind=dbl),INTENT(INOUT)        :: F(3)
 type(DynType),INTENT(INOUT)         :: Dyn
 type(kvectorlist),pointer           :: khead
@@ -585,7 +585,7 @@ IMPLICIT NONE
 
 type(STEMtype),INTENT(INOUT)                    :: STEM
 type(STEMGeometryNameListType),INTENT(INOUT)    :: stemnl
-type(unitcell),pointer                          :: cell
+type(unitcell)                                  :: cell
 real(kind=dbl),INTENT(INOUT)                    :: F(3)
 type(DynType),INTENT(INOUT)                     :: Dyn
 type(kvectorlist),pointer                       :: khead

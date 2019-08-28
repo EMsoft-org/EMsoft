@@ -80,7 +80,7 @@ use crystal
 
 IMPLICIT NONE
 
-type(unitcell),pointer	               :: cell
+type(unitcell)        	               :: cell
 real(kind=sgl),INTENT(OUT)        	:: M(3,3)				!< output transformation matrix
 integer(kind=irg),INTENT(IN)     	:: iview(3)				!< input viewing direction indices
 
@@ -229,7 +229,7 @@ use io
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)   :: PS
-type(unitcell),pointer	               :: cell
+type(unitcell)        	               :: cell
 character(1),INTENT(IN)     		:: sp			!< space character 'd' or 'r'
 integer(kind=irg),INTENT(INOUT)	:: iview(3)		!< viewing direction
 integer(kind=irg),INTENT(IN)		:: hm, km, lm		!< maximum h,k,l indices to be included in drawing
@@ -349,7 +349,7 @@ use crystal
 
 IMPLICIT NONE
 
-type(unitcell),pointer	               :: cell
+type(unitcell)        	               :: cell
 integer(kind=irg),INTENT(IN)		:: iview(3)		!< viewing direction indices
 real(kind=sgl),INTENT(OUT)		:: M(4,4)		!< transformation matrix
 real(kind=sgl),INTENT(IN)		:: VD			!< viewing distance in [nm]

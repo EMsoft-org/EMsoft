@@ -167,7 +167,7 @@ character(fnlen),INTENT(IN)                   :: progname
 
 ! crystal structure variables
 logical                                       :: verbose
-type(unitcell),pointer,save                   :: cell
+type(unitcell)        ,save                   :: cell
 type(DynType)                                 :: Dyn
 type(gnode),save                              :: rlp
 type(BetheParameterType)                      :: BetheParameters
@@ -264,7 +264,7 @@ interface
 
         IMPLICIT NONE
 
-        type(unitcell),pointer              :: cell
+        type(unitcell)                      :: cell
         complex(kind=dbl),INTENT(IN)        :: DynMat(nn,nn)
         integer(kind=sgl),INTENT(IN)        :: nn
         real(kind=sgl),INTENT(IN)           :: lambdaZ(1:nt)
@@ -916,7 +916,7 @@ use math
 
 IMPLICIT NONE
 
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 complex(kind=dbl),INTENT(IN)        :: DynMat(nn,nn)
 integer(kind=sgl),INTENT(IN)        :: nn
 real(kind=sgl),INTENT(IN)           :: lambdaZ(1:nt)

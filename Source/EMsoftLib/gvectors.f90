@@ -136,7 +136,7 @@ IMPLICIT NONE
 
 type(reflisttype),pointer       :: rltail
 type(reflisttype),pointer       :: listroot
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(INOUT) :: nref
 integer(kind=irg),INTENT(IN)    :: hkl(3)               !< Miller indices of reflection to be added to list
 
@@ -281,7 +281,7 @@ use NameListTypedefs
 
 IMPLICIT NONE
 
-type(unitcell),pointer            :: cell
+type(unitcell)                    :: cell
 type(LaueMasterNameListType),INTENT(INOUT) :: lmnl
 type(Laue_g_list),pointer         :: reflist                    ! linked list for allowed g-vector search 
 integer(kind=irg),INTENT(OUT)     :: gcnt
@@ -437,7 +437,7 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                         :: cell
+type(unitcell)                                 :: cell
 type(reflisttype),pointer                      :: listroot
 type(reflisttype),pointer                      :: listrootw
 type(BetheParameterType),INTENT(IN)            :: BetheParameter
@@ -579,7 +579,7 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(kvectorlist),pointer               :: khead
 type(reflisttype),pointer               :: reflist
 type(DynType),INTENT(INOUT)             :: Dyn
@@ -747,7 +747,7 @@ use io
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 type(DynType),INTENT(INOUT)            :: Dyn
 type(BetheParameterType),INTENT(INOUT) :: BetheParameter
@@ -1148,7 +1148,7 @@ use error
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(IN)    :: k(3)
 integer(kind=irg),INTENT(IN)    :: ga(3)
 integer(kind=irg),INTENT(IN)    :: gb(3)
@@ -1222,7 +1222,7 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                         :: cell
+type(unitcell)                                 :: cell
 type(reflisttype),pointer                      :: listroot
 type(BetheParameterType),INTENT(IN)            :: BetheParameter
 real(kind=sgl),INTENT(IN)                      :: FN(3)
@@ -1417,7 +1417,7 @@ use typedefs
 
 IMPLICIT NONE
 
-type(unitcell),pointer				:: cell
+type(unitcell)        				:: cell
 type(reflisttype),pointer			:: listroot
 real(kind=sgl),INTENT(IN)			:: FN(3)
 real(kind=sgl),INTENT(IN)			:: dmin

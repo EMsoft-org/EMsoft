@@ -153,7 +153,7 @@ character(len=1),allocatable    :: ped(:,:),pedpat(:,:)
 real(kind=sgl)                  :: rnmpp,Igmax,xc,yc,dx,dy,k(3),kp(3),sg,Ig,ma,mi
 integer(kind=irg)               :: ww,tdp,sx,sy,nsize
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 type(reflisttype),pointer       :: reflist,firstw, rltmpa
@@ -180,7 +180,7 @@ use kvectors
 IMPLICIT NONE
 
 type(kvectorlist),pointer,INTENT(INOUT) :: khead
-type(unitcell),pointer,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(IN)       :: cell
 real(kind=dbl),INTENT(IN)               :: k(3)         !< initial wave vector
 real(kind=dbl),INTENT(IN)               :: ga(3)        !< "horizontal" reciprocal lattice vector
 real(kind=sgl),INTENT(IN)               :: precangle    !< precession angle in [mrad]
@@ -648,7 +648,7 @@ use kvectors
 IMPLICIT NONE
 
 type(kvectorlist),pointer,INTENT(INOUT) :: khead
-type(unitcell),pointer,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(IN)       :: cell
 real(kind=dbl),INTENT(IN)               :: k(3)         !< initial wave vector
 real(kind=dbl),INTENT(IN)               :: ga(3)        !< "horizontal" reciprocal lattice vector
 real(kind=sgl),INTENT(IN)               :: precangle    !< precession angle in [mrad]

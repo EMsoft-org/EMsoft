@@ -74,7 +74,7 @@ character(1),dimension(fnlen),INTENT(IN)        :: xtalname
 
 character(fnlen)                                :: xtalname2, fname
 character(1)                                    :: rchar
-type(unitcell),pointer                          :: cell
+type(unitcell)                                  :: cell
 integer(kind=irg)                               :: eqvplanes(48,3), ii, pgnum, hdferr
 type(HDFobjectStackType),pointer                :: HDF_head_cell
 
@@ -163,7 +163,7 @@ character(1),dimension(fnlen),INTENT(IN)      :: xtalname
 
 character(fnlen)                              :: xtalname2, fname
 character(1)                                  :: rchar
-type(unitcell),pointer                        :: cell
+type(unitcell)                                :: cell
 integer(kind=irg)                             :: eqvplanes(48,3), num, ii, pgnum, hdferr
 integer(kind=irg),allocatable                 :: PFhkl_eqv(:,:)
 type(HDFobjectStackType),pointer              :: HDF_head_cell
@@ -465,7 +465,7 @@ use stringconstants
 type(PFInversionNameListType), INTENT(IN)      :: epf
 type(PoleFigures),pointer                      :: PF
 logical, optional                              :: verbose
-type(unitcell),pointer                         :: cell
+type(unitcell)                                 :: cell
 type(HDFobjectStackType),pointer               :: HDF_head_cell
 
 logical                                        :: pout, f_exists
@@ -597,7 +597,7 @@ logical                            :: verbose
 type(PFInversionNameListType)      :: epf
 type(PoleFigures),pointer          :: PF
 
-type(unitcell),pointer             :: cell
+type(unitcell)                     :: cell
 type(DynType)                      :: Dyn
 type(gnode)                        :: rlp
 integer(kind=irg)                  :: eqvplanes(48,3)

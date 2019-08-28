@@ -2178,7 +2178,7 @@ use error
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(IN)    :: ipx
 integer(kind=irg),INTENT(IN)    :: ipy
 integer(kind=irg),INTENT(IN)    :: ipz

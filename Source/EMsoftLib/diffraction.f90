@@ -190,7 +190,7 @@ use io
 
 IMPLICIT NONE
 
-type(unitcell),pointer    :: cell
+type(unitcell)            :: cell
 type(gnode),INTENT(INOUT) :: rlp
 logical,INTENT(IN),OPTIONAL             :: verbose
 real(kind=sgl)            :: io_real(1)
@@ -237,7 +237,7 @@ use io
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(gnode),INTENT(INOUT)               :: rlp
 integer(kind=irg),INTENT(IN),OPTIONAL   :: skip                 !< scattering set identifier
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -330,7 +330,7 @@ use crystal
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(IN)    :: h,k,l                !< Miller indices
 
 real(kind=sgl)                  :: tt
@@ -413,7 +413,7 @@ use others
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(gnode),INTENT(INOUT)       :: rlp
 integer(kind=irg),INTENT(IN)    :: hkl(3)               !< Miller indices
 logical,OPTIONAL,INTENT(IN)     :: applyqgshift
@@ -787,7 +787,7 @@ use others
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: dmin
 real(kind=sgl),INTENT(IN)       :: gstep
 
@@ -862,7 +862,7 @@ use others
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: s
 complex(kind=sgl),INTENT(OUT)   :: sfarray(*)
 
@@ -911,7 +911,7 @@ use crystal
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: gg(3)                !< reciprocal lattice point
 real(kind=sgl),INTENT(IN)       :: kk(3)                !< wave vector
 real(kind=sgl),INTENT(IN)       :: FN(3)                !< foil normal
@@ -959,7 +959,7 @@ use crystal
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=dbl),INTENT(IN)       :: gg(3)                !< reciprocal lattice point
 real(kind=dbl),INTENT(IN)       :: kk(3)                !< wave vector
 real(kind=dbl),INTENT(IN)       :: FN(3)                !< foil normal
@@ -1200,7 +1200,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(postscript_type),INTENT(INOUT) :: PS
 type(gnode),INTENT(INOUT)       :: rlp
 real(kind=sgl),INTENT(IN)       :: camlen
@@ -1526,7 +1526,7 @@ use error
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT) :: PS
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: xo, yo               !< lower left position
 integer(kind=irg),INTENT(IN)    :: u, v, w              !< zone axis components
 integer(kind=irg),INTENT(IN)    :: p                    !< ??
@@ -1699,7 +1699,7 @@ use postscript
 IMPLICIT NONE 
 
 type(postscript_type),INTENT(INOUT) :: PS
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: xo, yo               !< lower left position
 logical,INTENT(IN)              :: np                   !< logical for new page
 real(kind=sgl),INTENT(IN)       :: laL                  !< camera length

@@ -130,7 +130,7 @@ use crystal
 IMPLICIT NONE
 
 type(kvectorlist),pointer               :: khead
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=dbl),INTENT(IN)               :: k(3)         !< initial wave vector
 real(kind=dbl),INTENT(IN)               :: ga(3)        !< "horizontal" reciprocal lattice vector
 real(kind=dbl),INTENT(IN)               :: ktmax        !< maximum length of tangential wave vector
@@ -1271,7 +1271,7 @@ use Lambert
 IMPLICIT NONE
 
 type(kvectorlist),pointer               :: khead
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(symdata2D),INTENT(INOUT)           :: TDPG
 real(kind=dbl),INTENT(IN)               :: k(3)         !< initial wave vector
 real(kind=dbl),INTENT(IN)               :: ga(3)        !< "horizontal" reciprocal lattice vector
@@ -1419,7 +1419,7 @@ use diffraction
 IMPLICIT NONE
 
 type(kvectorlist),pointer              :: ktail
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: i
 integer(kind=irg),INTENT(IN)            :: j
 integer(kind=irg),INTENT(INOUT) :: numk
@@ -1555,7 +1555,7 @@ use crystal
 IMPLICIT NONE
 
 type(kvectorlist),pointer               :: ktail
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(kind=irg),INTENT(INOUT)         :: numk
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(IN)            :: i
@@ -1696,7 +1696,7 @@ use Lambert
 IMPLICIT NONE
 
 type(kvectorlist),pointer               :: khead,ktail
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 real(kind=sgl),INTENT(IN)               :: rotmat(3,3)         !< initial wave vector
 real(kind=sgl),INTENT(IN)               :: thetac        !< half angle of cone of incident beam directions in degrees
 integer(kind=irg),INTENT(IN)            :: npx          !< number of kvectors along x
@@ -1814,7 +1814,7 @@ use Lambert
 IMPLICIT NONE
 
 type(kvectorlist),pointer               :: khead,ktail
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: npx ! 2*npx+1 is size of master pattern
 integer(kind=irg),INTENT(IN)            :: npix ! the small patch will be 4*npix*npix
 integer(kind=irg),INTENT(IN)            :: centralpix(2)

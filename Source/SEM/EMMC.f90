@@ -140,7 +140,7 @@ type(MCNameListType),INTENT(INOUT)      :: mcnl
 character(fnlen),INTENT(IN)             :: progname
 character(fnlen),INTENT(IN)             :: nmldeffile
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(DynType)           :: Dyn
 type(gnode)             :: rlp
 

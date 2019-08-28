@@ -88,7 +88,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                          :: cell
+type(unitcell)                                  :: cell
 type(reflisttype),pointer                       :: listroot
 type(BetheParameterType),INTENT(INOUT)          :: BetheParameter
 real(kind=sgl),INTENT(IN)                       :: FN(3)
@@ -203,7 +203,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                          :: cell
+type(unitcell)                                  :: cell
 type(reflisttype),pointer                       :: listroot
 real(kind=sgl),INTENT(IN)                       :: FN(3)
 real(kind=sgl),INTENT(IN)                       :: k(3)

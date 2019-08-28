@@ -153,7 +153,7 @@ real(kind=sgl),allocatable                   :: Eweights(:)
 real(kind=sgl),allocatable                   :: srtmp(:,:,:,:), mLPNH(:,:,:), mLPSH(:,:,:), masterNH(:,:), masterSH(:,:), KBI(:)
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(DynType),save      :: Dyn
 type(gnode),save        :: rlp
 type(HDFobjectStackType),pointer  :: HDF_head

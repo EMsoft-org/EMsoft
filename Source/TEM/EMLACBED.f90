@@ -139,7 +139,7 @@ type(LACBEDNameListType),INTENT(INOUT)    :: cbednl
 character(fnlen),INTENT(IN)               :: progname
 character(fnlen),INTENT(IN)               :: nmlfile
 
-type(unitcell),pointer                    :: cell
+type(unitcell)                            :: cell
 type(reflisttype),pointer                 :: reflist, firstw, nexts, rl, mainreflist, rltmpa, rltmpb
 type(BetheParameterType)                  :: BetheParameters
 type(gnode),save                          :: rlp

@@ -174,7 +174,7 @@ character(15)                           :: tstre
 character(fnlen)                        :: groupname, dataset, outname, Image_filename, fname
 character(fnlen,kind=c_char)            :: line2(1)
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(gnode)                             :: rlp
 type(DynType)                           :: Dyn
 type(kvectorlist),pointer               :: khead, ktmp

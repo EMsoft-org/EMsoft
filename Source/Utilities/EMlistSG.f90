@@ -59,7 +59,7 @@ character(3)   				:: pos
 integer(kind=irg)        		:: p(4),ii,jj,i, io_int(1)
 real(kind=sgl)           		:: ppp, io_real(1)
 character(fnlen)                      :: progname, progdesc
-type(unitcell),pointer	               :: cell
+type(unitcell)        	               :: cell
 character(fnlen)                      :: mess
 
  progname = 'EMlistSG.f90'

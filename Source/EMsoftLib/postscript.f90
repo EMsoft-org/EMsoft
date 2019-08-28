@@ -1938,7 +1938,7 @@ recursive subroutine DrawSPFrame(PS,cell,CX,CY,CRad,iview,sp)
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)           :: PS
-type(unitcell),pointer	                       :: cell
+type(unitcell)        	                       :: cell
 real(kind=sgl),INTENT(IN)    			:: CX, CY		!< circle center coordinates 
 real(kind=sgl),INTENT(IN)    			:: CRad 		!< circle radius
 integer(kind=irg),INTENT(INOUT)		:: iview(3)		!< zone axis indices

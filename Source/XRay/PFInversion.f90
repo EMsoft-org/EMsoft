@@ -66,7 +66,7 @@ logical                            :: verbose
 type(PFInversionNameListType)      :: epf
 type(PoleFigures),pointer          :: PF
 
-type(unitcell),pointer             :: cell
+type(unitcell)                     :: cell
 type(DynType)                      :: Dyn
 type(gnode)                        :: rlp
 integer(kind=irg)                  :: eqvplanes(48,3)

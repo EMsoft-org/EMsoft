@@ -152,7 +152,7 @@ integer(kind=irg)                       :: FZtype, FZorder
 character(fnlen)                        :: modalityname
 
 type(HDFobjectStackType),pointer        :: HDF_head
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 
 dtor = sngl(cPi) / 180.0
 

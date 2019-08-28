@@ -88,7 +88,7 @@ use constants
 IMPLICIT NONE
 
 type(DynType),INTENT(INOUT)     :: Dyn
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(kvectorlist),pointer       :: ktmp
 type(BetheParameterType),INTENT(IN) :: BetheParameter
 integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
@@ -190,7 +190,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: kn
 type(BetheParameterType),INTENT(IN) :: BetheParameter
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
@@ -270,7 +270,7 @@ use constants
 IMPLICIT NONE
 
 complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: kn
 integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
@@ -500,7 +500,7 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                     :: cell
+type(unitcell)                             :: cell
 real(kind=sgl),INTENT(IN)                  :: dmin
 integer(kind=sgl),INTENT(IN)               :: numset
 integer(kind=sgl),INTENT(INOUT)            :: nat(100)
@@ -605,7 +605,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 integer(kind=irg),INTENT(IN)            :: nns
 integer(kind=irg),INTENT(IN)            :: numset
@@ -662,7 +662,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: kkk(3)
 integer(kind=irg),INTENT(IN)            :: numset
 integer(kind=irg),INTENT(INOUT)         :: nat(100)
@@ -735,7 +735,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
@@ -818,7 +818,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
@@ -1053,7 +1053,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer           :: cell
+type(unitcell)                   :: cell
 type(reflisttype),pointer        :: listroot
 type(reflisttype),pointer        :: listrootw
 type(gnode),INTENT(INOUT)        :: rlp
@@ -1266,7 +1266,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer           :: cell
+type(unitcell)                   :: cell
 type(reflisttype),pointer        :: listroot
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nref,nref)
 integer(kind=irg),INTENT(IN)     :: nref
@@ -1432,7 +1432,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                      :: cell_subs
+type(unitcell)                              :: cell_subs
 integer(kind=irg),INTENT(IN)                :: nns_film
 type(refliststrongsubstype),pointer         :: refliststrong_subs
 complex(kind=dbl),INTENT(IN)                :: S0(nns_film)
@@ -1592,7 +1592,7 @@ use math
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell_film,cell_subs
+type(unitcell)                          :: cell_film,cell_subs
 type(reflisttype),pointer               :: reflist_film
 type(refliststrongsubstype),pointer     :: refliststrong_subs
 real(kind=sgl),INTENT(IN)               :: k0(3),dmin

@@ -63,7 +63,7 @@ real(kind=sgl)                 :: preg, dmin, gstepsize
 real(kind=dbl)				   :: eps = 1.0D-6
 character(fnlen)               :: progname, progdesc, gname
 character(200)                 :: parta
-type(unitcell),pointer         :: cell
+type(unitcell)                 :: cell
 logical                        :: isallowed
 type(gnode)                    :: rlp
 

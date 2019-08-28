@@ -148,7 +148,7 @@ character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 real(kind=sgl),allocatable                   :: masterNH(:,:), masterSH(:,:), stereoNH(:,:), stereoSH(:,:), &
                                                 phi(:), cp(:), sp(:), dc(:,:), mLPNH(:,:,:), mLPSH(:,:,:)
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(DynType),save      :: Dyn
 type(gnode),save        :: rlp
 type(HDFobjectStackType),pointer  :: HDF_head

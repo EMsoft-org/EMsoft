@@ -58,7 +58,7 @@ logical                 :: topbot, loadingfile
 real(kind=sgl)          :: io_real(1), camlen
 integer(kind=irg)       :: imanum, io_int(1)
 character(fnlen)        :: progname, progdesc, gname
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(postscript_type)   :: PS
 type(gnode)             :: rlp
 
@@ -75,7 +75,7 @@ interface
         use postscript
 
         type(postscript_type)           :: PS
-        type(unitcell),pointer          :: cell
+        type(unitcell)                  :: cell
         end subroutine InfoPage
 
         subroutine StrucFacPage(PS, cell, rlp)
@@ -91,7 +91,7 @@ interface
         use diffraction
         
         type(postscript_type),INTENT(INOUT)             :: PS
-        type(unitcell),pointer                          :: cell
+        type(unitcell)                                  :: cell
         type(gnode),INTENT(INOUT)                       :: rlp
         end subroutine StrucFacPage
 
@@ -105,7 +105,7 @@ interface
         use graphics
         
         type(postscript_type)           :: PS
-        type(unitcell),pointer          :: cell
+        type(unitcell)                  :: cell
         end subroutine StereoPage
 
 end interface
@@ -173,7 +173,7 @@ use files
 use symmetry
 use postscript
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(postscript_type)           :: PS
 real(kind=sgl)                  :: ast,bst,cst,alphast,betast,gammast,coor(5)
 integer(kind=irg)               :: iap
@@ -435,7 +435,7 @@ use postscript
 use diffraction
 
 type(postscript_type),INTENT(INOUT)             :: PS
-type(unitcell),pointer                          :: cell
+type(unitcell)                                  :: cell
 type(gnode),INTENT(INOUT)                       :: rlp
 
 integer(kind=irg),parameter                     :: inm = 4
@@ -737,7 +737,7 @@ use postscript
 use io 
 use graphics
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(postscript_type)           :: PS
 character(1)                    :: sp
 logical                         :: topbot

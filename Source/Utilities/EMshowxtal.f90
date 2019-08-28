@@ -55,7 +55,7 @@ use postscript
 IMPLICIT NONE
 
 character(fnlen)               :: progname, progdesc, gname
-type(unitcell),pointer         :: cell
+type(unitcell)                 :: cell
 logical                        :: verbose=.TRUE.
 integer(kind=irg)			   :: i, j
 character(1)                   :: yesno

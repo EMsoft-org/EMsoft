@@ -159,7 +159,7 @@ logical                 :: f_exists, readonly, overwrite=.TRUE., insert=.TRUE., 
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 character(fnlen,kind=c_char)                     :: line2(1)
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 type(reflisttype),pointer       :: reflist,firstw, rltmp
