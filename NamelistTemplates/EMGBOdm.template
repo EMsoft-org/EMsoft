@@ -1,0 +1,21 @@
+&GBOdmlist
+! do not change the first line in this file !
+!
+! Note: All parameter values are default values for the program
+!
+!--------------
+! point group number 
+!   #1:    '1', #2:    '-1', #3:      '2', #4:    'm', #5:  '2/m', #6:   '222', #7:    'mm2', #8:   'mmm'
+!   #9:    '4', #10:   '-4', #11:   '4/m', #12: '422', #13: '4mm', #14: '-42m', #15: '4/mmm', #16:    '3'
+!   #17:  '-3', #18:   '32', #19:    '3m', #20: '-3m', #21:   '6', #22:   '-6', #23:   '6/m', #24:  '622'
+!   #25: '6mm', #26: '-6m2', #27: '6/mmm', #28:  '23', #29:  'm3', #30:  '432', #31:  '-43m', #32: 'm-3m'
+ pgnum = 32,
+! number of threads for parallel computation (0 to use the maximum available)
+ nthreads = 0,
+! input octonion file name (EMsoft relative pathname)
+!    this file must have the number of octonions on the first line, then one octonion per line
+ inname = 'undefined'
+! output file name; simple text file (EMsoft relative pathname)
+ outname = 'undefined'
+! this last line must be present!
+/

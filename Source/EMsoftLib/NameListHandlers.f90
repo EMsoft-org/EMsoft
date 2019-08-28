@@ -488,6 +488,73 @@ end subroutine GetGBONameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetGBOdmNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill gbonl structure (used by EMGBOdm.f90)
+!
+!> @param nmlfile namelist file name
+!> @param gbonl name list structure
+!> @param initonly [optional] logical
+!
+!> @date 04/22/18  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetGBOdmNameList(nmlfile, gbonl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetGBOdmNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: nmlfile
+type(GBOdmNameListType),INTENT(INOUT)       :: gbonl
+logical,OPTIONAL,INTENT(IN)                 :: initonly
+
+logical                                     :: skipread = .FALSE.
+
+integer(kind=irg)       :: pgnum
+integer(kind=irg)       :: nthreads
+character(fnlen)        :: inname
+character(fnlen)        :: outname
+
+namelist /GBOdmlist/ pgnum, outname, nthreads, inname
+
+nthreads = 0
+outname = 'undefined' 
+inname = 'undefined' 
+pgnum = 32
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=GBOdmlist)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(outname).eq.'undefined') then
+  call FatalError('EMGBOdm:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(inname).eq.'undefined') then
+  call FatalError('EMGBOdm:',' input file name is undefined in '//nmlfile)
+ end if
+end if
+
+gbonl%nthreads = nthreads
+gbonl%pgnum = pgnum
+gbonl%outname = outname
+gbonl%inname = inname
+
+end subroutine GetGBOdmNameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetoSLERPNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -9056,7 +9123,6 @@ logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
 
-integer(kind=irg)       :: nthreads
 integer(kind=irg)       :: IROW
 integer(kind=irg)       :: ICOL
 integer(kind=irg)       :: LB(3), LD 
@@ -9089,7 +9155,7 @@ character(fnlen)        :: outname
 character(fnlen)        :: imageprefix
 character(fnlen)        :: imagetype 
 
-namelist /hhlist/ nthreads, IROW, ICOL, LB, LD , LB2, LD2, LB3, LD3, LB4, LD4, LU, LG, LBM, LFN, &
+namelist /hhlist/ IROW, ICOL, LB, LD , LB2, LD2, LB3, LD3, LB4, LD4, LU, LG, LBM, LFN, &
                   wnum, LFP1, LFP, LFP3, LS1, LQ1 , LS2, LQ2 , LS3, LQ3 , LTEST, kV, THICK, START, FINISH, &
                   wmin, wmax, SEP, SEP2, FAP1, FAP3, D1row1, D1row2, D1row3, D1row4, D1row5, D1row6,&
                   xtalname, outname, imageprefix, imagetype
@@ -9098,7 +9164,6 @@ namelist /hhlist/ nthreads, IROW, ICOL, LB, LD , LB2, LD2, LB3, LD3, LB4, LD4, L
  outname = 'undefined'
  imageprefix = 'undefined'
  imagetype = 'tiff'
- nthreads = 1
  IROW = 160
  ICOL = 256
  kV = 200.0
@@ -9120,10 +9185,10 @@ namelist /hhlist/ nthreads, IROW, ICOL, LB, LD , LB2, LD2, LB3, LD3, LB4, LD4, L
  wmin = -1.0
  wmax =  1.0
  wnum =  5
- LFP1 = (/1, 1, 0/)
+ LFP1 = (/0, 0, 0/)
  LFP = (/0, 0, 0/)
  LFP3 = (/0, 0, 0/) 
- LS1 = (/1, 0, 1/) 
+ LS1 = (/0, 0, 0/) 
  LQ1 = 2
  LS2 = (/0, 0, 0/) 
  LQ2 = 2
@@ -9162,7 +9227,6 @@ if (.not.skipread) then
 
 end if
 
-hhnl%nthreads = nthreads
 hhnl%IROW = IROW
 hhnl%ICOL = ICOL
 hhnl%LB = LB

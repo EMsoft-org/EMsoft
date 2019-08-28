@@ -96,6 +96,14 @@ type GBONameListType
         character(fnlen)        :: outname
 end type GBONameListType
 
+! namelist for EMGBOdm program
+type GBOdmNameListType
+        integer(kind=irg)       :: pgnum
+        integer(kind=irg)       :: nthreads
+        character(fnlen)        :: inname
+        character(fnlen)        :: outname
+end type GBOdmNameListType
+
 ! namelist for EMoSLERP program
 type oSLERPNameListType
         integer(kind=irg)       :: framesize
@@ -1935,7 +1943,6 @@ type EMmdSTEMNameListType
 end type EMmdSTEMNameListType
 
 type EMhh4NameListType
-        integer(kind=irg)       :: nthreads
         integer(kind=irg)       :: IROW
         integer(kind=irg)       :: ICOL
         integer(kind=irg)       :: wnum

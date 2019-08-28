@@ -46,9 +46,6 @@
 !> - Added HDF5 and image output + support for tilt series.
 !> - Added standard EMsoft namelist handling to replace the older input format
 !
-!> @todo
-!> - incorporate OpenMP parallel thread support
-!
 ! The new f90 code is a bit more readable than the original f77 code,
 ! mostly because the modern Fortran language has better control structures.
 ! All ordinary and computed goto statements have been replaced with
@@ -103,7 +100,7 @@ progdesc = 'Two-Beam Head&Humble dislocation simulation program'
 call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any
-call Interpret_Program_Arguments(nmldeffile,1,(/ 260 /), progname)
+call Interpret_Program_Arguments(nmldeffile,1,(/ 262 /), progname)
 
 ! deal with the namelist stuff
 call GetEMhh4NameList(nmldeffile,hhnl)
