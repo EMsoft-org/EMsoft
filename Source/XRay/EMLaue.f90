@@ -175,7 +175,7 @@ kinner = getXRDwavenumber(lnl%minVoltage)
 !=============================================
 !=============================================
 ! crystallography section 
-allocate(cell)
+!allocate(cell)        
 verbose = .TRUE.
 
 ! clear the cell variable (set everything to zero)

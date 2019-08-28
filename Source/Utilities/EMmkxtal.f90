@@ -55,7 +55,7 @@ use files
 
 IMPLICIT NONE
 
-type(unitcell), pointer         :: cell
+type(unitcell)                  :: cell
 character(fnlen)                :: progname, progdesc, fname, source
 integer(kind=irg)               :: numarg, i
 integer(kind=irg)               :: iargc        !< external function for command line
@@ -89,7 +89,7 @@ logical                         :: useWyckoff
   end do
  end if
 
- allocate(cell)
+ !allocate(cell)        
  
  cell%SYM_SGset=0
  call GetLatParm(cell)

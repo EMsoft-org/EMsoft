@@ -199,7 +199,7 @@ call cpu_time(tstart)
 ! crystallography section
 
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
  verbose = .TRUE.
  call Initialize_Cell(cell,Dyn,rlp,kmnl%xtalname, kmnl%dmin, kmnl%voltage, verbose)

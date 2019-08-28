@@ -61,7 +61,7 @@ type(unitcell)                  :: cell
  progdesc = 'List the orbit of a given position'
  call EMsoft(progname, progdesc)
  
- allocate(cell)
+ !allocate(cell)        
  cell % SG % SYM_reduce=.TRUE.
  call ReadValue(' Enter xtal file name : ', gname,"(A)")
  cell%fname = gname

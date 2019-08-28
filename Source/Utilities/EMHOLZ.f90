@@ -91,7 +91,7 @@ progname = 'EMHOLZ.f90'
 progdesc = 'Kinematical HOLZ pattern and HOLZ line simulations'
 call EMsoft(progname, progdesc)
 
-allocate(cell)
+!allocate(cell)        
  
 cell%SG%SYM_reduce=.TRUE.
 

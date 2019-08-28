@@ -199,7 +199,7 @@ character(fnlen)              :: diagfile = 'HHdiagnostics.txt'
 !=======================
 ! additional EMsoft variables (not originally in hh4.f code)
 !=======================
-type(unitcell), pointer       :: cell
+type(unitcell)                :: cell
 type(gnode)                   :: rlp
 character(fnlen)              :: mess, fname
 character(fnlen),allocatable  :: legendfiles(:)
@@ -223,7 +223,7 @@ integer(int8), allocatable    :: output_image(:,:)
 call timestamp(datestring=dstr, timestring=tstrb)
 
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 cell%fname = trim(hhnl%xtalname)
 
 ! get some parameters from the namelist

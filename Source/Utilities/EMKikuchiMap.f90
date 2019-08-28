@@ -89,7 +89,7 @@ end interface
  call EMsoft(progname, progdesc)
 
 
- allocate(cell)
+ !allocate(cell)        
 
  cell % SG % SYM_reduce=.TRUE.
 

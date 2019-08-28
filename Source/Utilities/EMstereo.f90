@@ -69,7 +69,7 @@ type(postscript_type)           :: PS
  progdesc = 'Stereographic projections (direct/ reciprocal space)'
  call EMsoft(progname, progdesc)
  
- allocate(cell)
+ !allocate(cell)        
 
  cell % SG % SYM_reduce=.TRUE.
  topbot=.FALSE.

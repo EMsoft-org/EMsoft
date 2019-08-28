@@ -156,7 +156,7 @@ delta = 1.D0/dble(nLam)
 
 ! allocate cell
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 nullify(HDF_head_cell)
 fname = trim(EMsoft_getXtalpathname())//trim(xtalname)

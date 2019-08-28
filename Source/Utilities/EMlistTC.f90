@@ -68,7 +68,7 @@ progdesc = 'List information about texture components'
 ! print some information
 call EMsoft(progname, progdesc)
 
-allocate(cell)
+!allocate(cell)        
 ! ask for the crystal structure file
 cell % SG % SYM_reduce=.FALSE.
 call ReadValue(' Enter xtal file name : ', gname,"(A)")

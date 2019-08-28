@@ -340,7 +340,7 @@ deallocate(wf)
   prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
 !====================================
 
-allocate(cell)
+!allocate(cell)        
 cell%fname = trim(enl%MCxtalname)
 call ReadDataHDF(cell)
 

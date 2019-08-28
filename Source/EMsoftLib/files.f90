@@ -80,7 +80,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell), pointer                 :: cell
+type(unitcell)                          :: cell
 
 integer(kind=irg)                       :: i, j, oi_int(3)
 real(kind=dbl)                          :: oi_real(5)

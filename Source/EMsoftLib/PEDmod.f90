@@ -74,7 +74,7 @@ use diffraction
 IMPLICIT NONE
 
 type(PEDKINIndxListType), INTENT(IN)         :: pednl
-type(unitcell), pointer                      :: cell
+type(unitcell)                               :: cell
 integer(kind=irg),INTENT(IN)                 :: reflistarray(3,nref)
 real(kind=sgl),INTENT(IN)                    :: sanglearray(nref)
 

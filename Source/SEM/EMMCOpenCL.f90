@@ -210,7 +210,7 @@ call timestamp(datestring=dstr, timestring=tstrb)
 
 numsy = mcnl%numsx
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 ! get the crystal strucutre from the *.xtal file
 verbose = .TRUE.

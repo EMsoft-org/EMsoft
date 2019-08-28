@@ -69,7 +69,7 @@ logical                         :: loadingfile
  progdesc = 'Kinematical Zone Axis Diffraction Patterns'
  call EMsoft(progname, progdesc)
 
- allocate(cell)
+ !allocate(cell)        
 
 
  cell % SG % SYM_reduce=.TRUE.

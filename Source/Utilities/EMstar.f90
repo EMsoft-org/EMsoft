@@ -70,7 +70,7 @@ type(gnode)             :: rlp
  progdesc = 'Computes the star of a reciprocal lattice vector'
  call EMsoft(progname, progdesc)
 
- allocate(cell)
+ !allocate(cell)        
 
 ! initialize crystal
  cell % SG % SYM_reduce=.FALSE.

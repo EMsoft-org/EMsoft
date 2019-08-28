@@ -75,7 +75,7 @@ integer(kind=irg)           	:: itmp(48,3)
  progdesc = 'Stereographic projection of a family of directions/planes'
  call EMsoft(progname, progdesc)
  
-  allocate(cell)
+  !allocate(cell)        
  cell % SG % SYM_reduce=.TRUE.
  topbot=.TRUE.
 

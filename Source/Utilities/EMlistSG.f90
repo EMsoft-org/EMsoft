@@ -66,7 +66,7 @@ character(fnlen)                      :: mess
  progdesc = 'List equivalent positions for arbitrary space group'
  call EMsoft(progname, progdesc)
 
- allocate(cell)
+ !allocate(cell)        
  
  cell % SG% SYM_reduce=.TRUE.
  pos = 'xyz'

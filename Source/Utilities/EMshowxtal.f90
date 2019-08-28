@@ -64,7 +64,7 @@ character(1)                   :: yesno
  progdesc = 'Display crystal structure information'
  call EMsoft(progname, progdesc)
 
- allocate(cell)
+ !allocate(cell)        
  
  call ReadValue(' Enter xtal file name : ', gname,"(A)")
  cell%SG%SYM_reduce=.TRUE.

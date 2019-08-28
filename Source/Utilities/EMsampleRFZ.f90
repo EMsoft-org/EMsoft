@@ -162,7 +162,7 @@ if (trim(rfznl%samplemode).eq.'FIB') then
   if (rfznl%xtalname.eq.'undefined') then 
     call FatalError('CreateSampling','Routine requires an .xtal filename for fiber texture mode')
   endif
-  allocate(cell)
+  !allocate(cell)        
 ! initialize crystal
   cell % SG % SYM_reduce=.FALSE.
   cell%fname = rfznl%xtalname

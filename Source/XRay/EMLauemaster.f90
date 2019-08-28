@@ -167,7 +167,7 @@ call cpu_time(tstart)
 !=============================================
 !=============================================
 ! crystallography section; 
- allocate(cell)
+ !allocate(cell)        
  verbose = .TRUE.
 
 ! clear the cell variable (set everything to zero)

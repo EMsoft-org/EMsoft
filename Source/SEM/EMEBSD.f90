@@ -457,7 +457,7 @@ deallocate(wf)
   bindx = 1.0/float(enl%binning)**2
 !====================================
 
-allocate(cell)
+!allocate(cell)        
 cell%fname = trim(mcnl%xtalname)
 call ReadDataHDF(cell)
 call CalcMatrices(cell)
@@ -1348,7 +1348,7 @@ write (*,*) ' multiplicative factor to generate 1 nC of incident electrons ', em
 
 !====================================
 
-allocate(cell)
+!allocate(cell)        
 cell%fname = trim(mcnl%xtalname)
 call ReadDataHDF(cell)
 call CalcMatrices(cell)

@@ -180,7 +180,7 @@ character(fnlen,kind=c_char)                     :: line2(1)
 
 logical                             :: verbose, usehex, switchmirror
 
-type(unitcell), pointer             :: cell
+type(unitcell)                      :: cell
 type(gnode),save                    :: rlp
 type(DynType),save                  :: Dyn
 type(kvectorlist), pointer          :: khead, ktmp ! linked list for incident wave vectors for master list
@@ -295,7 +295,7 @@ if (.not.g_exists) then
 else
 ! there is CrystalData present in this file, so let's read it here...
   !nullify(cell)        
-  allocate(cell)
+  !allocate(cell)        
   verbose = .TRUE.
   call Initialize_Cell(cell,Dyn,rlp,xtalname, ecpnl%dmin, sngl(EkeV), verbose, HDF_head)
   xtaldataread = .TRUE.
@@ -345,7 +345,7 @@ call Message(' -> completed reading '//trim(ecpnl%energyfile), frm = "(A//)")
 ! crystallography section
 if (xtaldataread.eqv..FALSE.) then
   !nullify(cell)        
-  allocate(cell)
+  !allocate(cell)        
 
   verbose = .TRUE.
   call Initialize_Cell(cell,Dyn,rlp,xtalname, ecpnl%dmin, sngl(EkeV), verbose)

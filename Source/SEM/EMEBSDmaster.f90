@@ -348,7 +348,7 @@ end if
 !=============================================
 !=============================================
 ! crystallography section; 
- allocate(cell)
+ !allocate(cell)        
  verbose = .TRUE.
  if (emnl%restart.eqv..TRUE.) then 
    call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, emnl%dmin, sngl(EkeVs(lastEnergy-1)), verbose)

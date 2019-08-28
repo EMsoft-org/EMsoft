@@ -50,7 +50,7 @@ use files
 
 IMPLICIT NONE
 
-type(unitcell), pointer         :: cell
+type(unitcell)                  :: cell
 character(fnlen)                :: progname, progdesc, fname, txtname
 integer(kind=irg)               :: numarg, i, io_int(3)
 real(kind=dbl)                  :: io_real(5)
@@ -63,7 +63,7 @@ integer(kind=irg),parameter     :: tworig(24)=(/48,50,59,68,70,85,86,88,125,126,
 
 
  !nullify(cell)        
- allocate(cell)
+ !allocate(cell)        
 
  progname = 'EMxtalExtract.f90'
  progdesc = 'Extract all information from an HDF crystal structure file and dump it in regular or Wyckoff form to a text file'

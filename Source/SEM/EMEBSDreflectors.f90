@@ -220,7 +220,7 @@ masterSH = masterSH / sd
 
 ! initialize the crystal structure and compute a list of potential reflectors 
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 ! get the crystal structure from the *.xtal file
 verbose = .TRUE.

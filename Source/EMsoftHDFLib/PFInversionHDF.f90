@@ -85,7 +85,7 @@ logical                                         :: verbose2
 
 xtalname2 = ''
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 ! just some arbitrary values
 dmin = 0.04
@@ -181,7 +181,7 @@ verbose2 = .FALSE.
 
 xtalname2 = ''
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 call ResetCell(cell)
 
@@ -487,7 +487,7 @@ verbose2 = .FALSE.
 ! load the crystal structure file, which also computes all the important 
 ! matrices as well as all the symmetry arrays
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 cell%SG%SYM_reduce=.TRUE.
 cell%fname = trim(epf%xtalname)
 
@@ -675,7 +675,7 @@ delta       = 1.D0/dble(nLam)
 
 ! allocate cell
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 nullify(HDF_head_cell)
 fname   = trim(EMsoft_getXtalpathname())//trim(xtalname)

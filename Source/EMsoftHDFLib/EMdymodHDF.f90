@@ -162,7 +162,7 @@ if (ipar(1).gt.0) then
 !=============================================
 ! crystallography section
   !nullify(cell)        
-  allocate(cell)
+  !allocate(cell)        
   call Initialize_Cell(cell,Dyn,rlp,cpar(1), fpar(1), fpar(2))
 
 !=============================================

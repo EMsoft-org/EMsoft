@@ -316,7 +316,7 @@ recursive subroutine PS_cellinfo(PS, cell, xo, yo)
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)        :: PS
-type(unitcell), pointer                    :: cell
+type(unitcell)                             :: cell
 
 real(kind=sgl),INTENT(IN)                  :: xo,yo		!< starting location for output 
 

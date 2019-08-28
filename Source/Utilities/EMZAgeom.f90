@@ -61,7 +61,7 @@ logical                 :: loadingfile
  progdesc = 'Zone axis geometry and symmetry'
  call EMsoft(progname, progdesc)
 
- allocate(cell)
+ !allocate(cell)        
   
 ! first get the crystal data and microscope voltage
  call ReadValue('Enter xtal file name : ', gname,"(A)")

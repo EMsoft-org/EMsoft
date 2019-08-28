@@ -200,7 +200,7 @@ integer(int8), allocatable              :: montage(:,:)
  nullify(ktmp)
 
  !nullify(cell)        
- allocate(cell)
+ !allocate(cell)        
   
  call timestamp(datestring=dstr, timestring=tstrb)
  call cpu_time(tstart)

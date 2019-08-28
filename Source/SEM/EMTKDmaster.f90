@@ -284,7 +284,7 @@ if (.not.g_exists) then
 else
 ! there is CrystalData present in this file, so let's read it here...
   !nullify(cell)        
-  allocate(cell)
+  !allocate(cell)        
   verbose = .TRUE.
   call Initialize_Cell(cell,Dyn,rlp,xtalname, emnl%dmin, sngl(EkeV), verbose, HDF_head)
   xtaldataread = .TRUE.
@@ -340,7 +340,7 @@ call Message(' -> completed reading '//trim(emnl%energyfile), frm = "(A/)")
 
 if (xtaldataread.eqv..FALSE.) then
   !nullify(cell)        
-  allocate(cell)
+  !allocate(cell)        
 
   verbose = .TRUE.
   call Initialize_Cell(cell,Dyn,rlp,xtalname, emnl%dmin, sngl(EkeV), verbose)

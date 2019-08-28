@@ -165,7 +165,7 @@ type(ECPLargeAccumType),pointer         :: acc
 
 logical                             :: verbose, usehex, switchmirror
 
-type(unitcell), pointer             :: cell
+type(unitcell)                      :: cell
 type(gnode),save                    :: rlp
 type(DynType),save                  :: Dyn
 type(kvectorlist), pointer          :: kheadcone,ktmpcone ! linked list for incident wave vectors for individual pattern
@@ -189,7 +189,7 @@ call CPU_TIME(tstart)
 gzero = 1
 frac = 0.05
 
-allocate(cell)
+!allocate(cell)        
 
 !=============================================================
 !read Monte Carlo output file and extract necessary parameters
@@ -207,7 +207,7 @@ call  ECPSinglereadMCfile(ecpnl, acc, verbose=.TRUE.)
 !=============================================
 ! crystallography section
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 ! load the crystal structure and compute the Fourier coefficient lookup table
 verbose = .TRUE.

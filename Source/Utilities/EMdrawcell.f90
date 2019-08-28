@@ -93,7 +93,7 @@ end interface
  progdesc='Draw one or more unit cells in perspective mode'
  call EMsoft(progname, progdesc)
  
- allocate(cell)
+ !allocate(cell)        
 
  cell % SG % SYM_reduce=.TRUE.
  CX=7.0

@@ -71,7 +71,7 @@ type(gnode)                    :: rlp
  progdesc = 'Display potential coefficient values'
  call EMsoft(progname, progdesc)
 
- allocate(cell)
+ !allocate(cell)        
  
  call ReadValue(' Enter xtal file name : ', gname,"(A)")
  cell%fname = trim(gname)

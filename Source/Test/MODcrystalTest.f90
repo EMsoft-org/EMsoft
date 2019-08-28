@@ -130,7 +130,7 @@ res = 0
 ! Al @ (0.2, 0.3, 0.4)
 ! Ti @ (0.5, 0.6, 0.7)
 !
-allocate(cell)
+!allocate(cell)        
 cell%fname = 'hypothetical.xtal'
 cell%a = 0.6_dbl
 cell%b = 0.7_dbl

@@ -6344,7 +6344,7 @@ use typedefs
 
 IMPLICIT NONE
 
-type(unitcell), pointer                 :: cell
+type(unitcell)                          :: cell
 logical,INTENT(IN),OPTIONAL             :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 
@@ -6415,7 +6415,7 @@ use error
  
 IMPLICIT NONE
 
-type(unitcell), pointer, INTENT(IN)     :: cell
+type(unitcell)         , INTENT(IN)     :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
@@ -6558,7 +6558,7 @@ use ISO_C_BINDING
  
 IMPLICIT NONE
 
-type(unitcell), pointer, INTENT(INOUT)  :: cell
+type(unitcell)         , INTENT(INOUT)  :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head

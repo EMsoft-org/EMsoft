@@ -198,7 +198,7 @@ call timestamp(datestring=dstr, timestring=tstrb)
 call system_clock(tstart, clock_rate)
 
 !nullify(cell)        
-allocate(cell)
+!allocate(cell)        
 
 voltage         = cbednl%voltage
 minten          = cbednl%minten
