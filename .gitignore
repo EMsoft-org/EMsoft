@@ -30,6 +30,14 @@ UpdateEMSphInxCopyrightStatement.pro
 fixf90
 fixC
 resources/EMSphInx.wisdom
+/Source/pyEMsoft/__pycache__
+/Source/pyEMsoft/*.so
+/Source/pyEMsoft/*.f90
+/Source/pyEMsoft/pyEMsoft.py
+/Source/pyEMsoft/.f2py_f2cmap
+
+
+
 
 /EMSphInx/
 

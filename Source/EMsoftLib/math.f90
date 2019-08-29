@@ -2740,6 +2740,8 @@ end function kdelta
 !
 !> @param co
 !> @param roots
+!
+!> @note THIS ROUTINE FAILS FOR CERTAIN COEFFICIENT COMBINATIONS; CHECK sqrt ARGUMENT for C
 ! 
 !> @date 01/18/16   SS 1.0 original
 !> @date 01/25/16  MDG 1.1 minor mods to make more efficient
