@@ -8,7 +8,7 @@ EMsoftLib=${EMsoft_folder}/Source/EMsoftLib
 EMsoftHDFLib=${EMsoft_folder}/Source/EMsoftHDFLib
 EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoft/EMsoftLib
 
-rm -rf f90wrap_*.f90 *.so
+rm -rf *.so pyEMsoft.py
 
 f90_source_files[0]=typedefs.f90 
 f90_source_files[1]=crystal.f90 
@@ -53,13 +53,8 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I$EMsoft_BUILDfolder/EMsoft/EMsoftLi
 -L$CondaLib \
 -lblas -llapack -lEMsoftLib -ljsonfortran -lhdf5 -lclfortran -lfftw3
 
+# move f90wrap files to sources folder and clean up
+mkdir sources 
+mv f90wrap_*.f90 sources
+rm *.f90 
 
-# for i in $f90_source_files
-# do
-#   rm $i
-# done
-
-# for i in $f90_generated_source_files
-# do
-#   rm $i
-# done
