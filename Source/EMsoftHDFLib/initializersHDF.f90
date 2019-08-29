@@ -83,12 +83,15 @@ IMPLICIT NONE
 
 type(unitcell)                             :: cell
 type(DynType),INTENT(INOUT)                :: Dyn
+!f2py intent(in,out) ::  Dyn
 type(gnode),INTENT(INOUT)                  :: rlp
+!f2py intent(in,out) ::  rlp
 character(fnlen),INTENT(IN)                :: xtalname
 real(kind=sgl),INTENT(IN)                  :: dmin
 real(kind=sgl),INTENT(IN)                  :: voltage
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
 logical,INTENT(IN),OPTIONAL                :: interpolate
 

@@ -404,6 +404,7 @@ integer(kind=irg),INTENT(IN)            :: funit
 character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
+!f2py intent(in,out) ::  exppatarray
 integer(kind=irg),OPTIONAL,INTENT(IN)   :: ROI(4)
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
@@ -642,6 +643,7 @@ integer(kind=irg),INTENT(IN)            :: funit
 character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppat(patsz)
+!f2py intent(in,out) ::  exppat
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L), z
@@ -959,7 +961,9 @@ real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
 integer(kind=irg),INTENT(IN)                :: correctsize
 integer(kind=irg),INTENT(IN)                :: totnumexpt
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+!f2py intent(in,out) ::  epatterns
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
+!f2py intent(in,out) ::  exptIQ
 
 logical                                     :: ROIselected, f_exists
 character(fnlen)                            :: fname
@@ -1248,7 +1252,9 @@ real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
 integer(kind=irg),INTENT(IN)                :: correctsize
 integer(kind=irg),INTENT(IN)                :: totnumexpt
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+!f2py intent(in,out) ::  epatterns
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
+!f2py intent(in,out) ::  exptIQ
 
 logical                                     :: ROIselected, f_exists
 character(fnlen)                            :: fname

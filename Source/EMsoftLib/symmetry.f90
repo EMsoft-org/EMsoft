@@ -1250,6 +1250,7 @@ IMPLICIT NONE
 
 type(unitcell)          :: cell
 integer(kind=irg),INTENT(INOUT) :: isym                         !< used to resolve some potential ambiguities for 3-fold and 6-fold symmetries
+!f2py intent(in,out) ::  isym                         !< used to resolve some potential ambiguities for 3-fold and 6-fold symmetries
 integer(kind=irg),INTENT(IN)            :: k(3)                 !< input zone axis indices
 integer(kind=irg),INTENT(OUT)           :: gone(3)              !< output first vector
 integer(kind=irg),INTENT(OUT)           :: gtwo(3)              !< output second vector
@@ -2178,6 +2179,7 @@ use error
 IMPLICIT NONE
 
 type (symdata2D),INTENT(INOUT)  :: TDPG
+!f2py intent(in,out) ::  TDPG
 integer(kind=irg),INTENT(IN)    :: pgn          !< point group number
 
 ! here we define all 8 possible 2x2 matrices (remember column major order !)
@@ -2331,6 +2333,7 @@ type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: k(3)         !< zone axis
 integer(kind=irg),INTENT(IN)            :: ga(3)        !< g-vector
 integer(kind=irg),INTENT(INOUT) :: isym         !< 2D point group number
+!f2py intent(in,out) ::  isym         !< 2D point group number
 real(kind=sgl),INTENT(OUT)              :: thetam       !< rotation angle (degrees, CCW)
 
 integer(kind=irg)                       :: num
@@ -2637,6 +2640,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: sgnum
 character(fnlen),INTENT(INOUT)          :: wpstring
+!f2py intent(in,out) ::  wpstring
 
 character(fnlen)                        :: line, wpf
 logical                                 :: fexists
@@ -2691,6 +2695,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: sgnum
 character(fnlen),INTENT(INOUT)          :: wpstring
+!f2py intent(in,out) ::  wpstring
 character(6),INTENT(OUT),OPTIONAL       :: WyckoffList(27)
 
 character(fnlen)                        :: line, wpf, mess, gpstring, spstring
@@ -2775,6 +2780,7 @@ use error
 IMPLICIT NONE
 
 type(unitcell),INTENT(INOUT)            :: cell
+!f2py intent(in,out) ::  cell
 
 logical                                 :: more, found                !< logical to determine if more atoms need to be entered
 character(1)                            :: ans, list(6)        !< used for IO

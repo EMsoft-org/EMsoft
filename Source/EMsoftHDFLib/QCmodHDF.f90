@@ -62,6 +62,7 @@ use ECPmod
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer         :: acc
 type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
@@ -299,6 +300,7 @@ end subroutine ECPreadQCMCMasterfile
 ! IMPLICIT NONE
 
 ! type(EBSDNameListType),INTENT(INOUT)      :: enl
+!f2py intent(in,out) ::  enl
 ! type(EBSDAngleType),pointer               :: angles
 ! character(fnlen),INTENT(IN),OPTIONAL      :: efile
 ! logical,INTENT(IN),OPTIONAL               :: verbose

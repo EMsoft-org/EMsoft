@@ -91,10 +91,12 @@ IMPLICIT NONE
 type(unitcell)                                  :: cell
 type(reflisttype),pointer                       :: listroot
 type(BetheParameterType),INTENT(INOUT)          :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 real(kind=sgl),INTENT(IN)                       :: FN(3)
 real(kind=sgl),INTENT(IN)                       :: k(3)
 real(kind=sgl),INTENT(IN)                       :: dmin
 integer(kind=irg),INTENT(INOUT)                 :: nref
+!f2py intent(in,out) ::  nref
 logical,INTENT(IN),OPTIONAL                     :: verbose
 
 integer(kind=irg)                               :: imh, imk, iml, gg(3), ix, iy, iz, i, minholz, RHOLZ, im, istat, N, &
@@ -208,6 +210,7 @@ type(reflisttype),pointer                       :: listroot
 real(kind=sgl),INTENT(IN)                       :: FN(3)
 real(kind=sgl),INTENT(IN)                       :: k(3)
 integer(kind=irg),INTENT(INOUT)                 :: nref
+!f2py intent(in,out) ::  nref
 real(kind=sgl),INTENT(IN)                       :: pedangle
 real(kind=sgl),INTENT(IN)                       :: goffset
 logical,INTENT(IN),OPTIONAL                     :: verbose

@@ -97,6 +97,7 @@ IMPLICIT NONE
 
 type(TDQCStructureType),pointer         :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
@@ -218,6 +219,7 @@ IMPLICIT NONE
 
 type(QCStructureType),pointer            :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
@@ -336,6 +338,7 @@ IMPLICIT NONE
 
 type(TDQCStructureType),pointer         :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
@@ -455,6 +458,7 @@ IMPLICIT NONE
 
 type(QCStructureType),pointer            :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
@@ -684,6 +688,7 @@ IMPLICIT NONE
 type(TDQCStructureType),pointer         :: cell
 logical,INTENT(IN),OPTIONAL             :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 integer(kind=irg)                       :: i, ipg, isave
 
@@ -736,6 +741,7 @@ IMPLICIT NONE
 type(QCStructureType),pointer            :: cell
 logical,INTENT(IN),OPTIONAL             :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 integer(kind=irg)                       :: i, ipg, isave
 
@@ -793,6 +799,7 @@ real(kind=sgl),INTENT(IN)                  :: voltage
 integer(kind=irg),INTENT(IN)            :: nthreads
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
 
 integer(kind=irg)                          :: istat, io_int(5), skip, QCindex, nLUT
@@ -1028,6 +1035,7 @@ real(kind=sgl),INTENT(IN)                  :: voltage
 integer(kind=irg),INTENT(IN)               :: nthreads
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
 
 integer(kind=irg)                          :: istat, io_int(6), skip

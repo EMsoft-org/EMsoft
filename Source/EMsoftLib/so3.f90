@@ -546,6 +546,7 @@ use typedefs
 IMPLICIT NONE
 
 type(FZpointd),pointer,INTENT(INOUT)  :: top
+!f2py intent(in,out) ::  top
 
 type(FZpointd),pointer                :: ltail, ltmp
 
@@ -1127,6 +1128,7 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)               :: misang       ! desired misorientation angle (degrees)
 integer(kind=irg),INTENT(IN)            :: N            ! desired number of sampling points along cube edge
 integer(kind=irg),INTENT(INOUT)         :: CMcnt        ! number of entries in linked list
+!f2py intent(in,out) ::  CMcnt        ! number of entries in linked list
 type(FZpointd),pointer                  :: CMlist       ! pointer to start of linked list
 
 type(FZpointd),pointer                  :: CMtmp, CMtmp2
@@ -1267,6 +1269,7 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)               :: misang       ! desired misorientation angle (degrees)
 integer(kind=irg),INTENT(IN)            :: N            ! desired number of sampling points along cube edge
 integer(kind=irg),INTENT(INOUT)         :: CMcnt        ! number of entries in linked list
+!f2py intent(in,out) ::  CMcnt        ! number of entries in linked list
 type(FZpointd),pointer                  :: CMlist       ! pointer to start of linked list
 
 type(FZpointd),pointer                  :: CMtmp, CMtmp2
@@ -1352,6 +1355,7 @@ integer(kind=irg),INTENT(IN)            :: N            ! number of sampling poi
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
 integer(kind=irg),INTENT(INOUT)         :: cnt          ! number of entries in linked list
+!f2py intent(in,out) ::  cnt          ! number of entries in linked list
 type(FZpointd),pointer                  :: list         ! pointer to start of linked list
 
 type(FZpointd),pointer                  :: tmp, tmp2
@@ -1451,6 +1455,7 @@ integer(kind=irg),INTENT(IN)            :: N            ! number of sampling poi
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
 integer(kind=irg),INTENT(INOUT)         :: cnt          ! number of entries in linked list
+!f2py intent(in,out) ::  cnt          ! number of entries in linked list
 type(FZpointd),pointer                  :: list         ! pointer to start of linked list
 
 type(FZpointd),pointer                  :: tmp, tmp2
@@ -1545,6 +1550,7 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)               :: rhozero(4)   ! center Rodrigues vector
 real(kind=dbl),INTENT(IN)               :: misang       ! desired misorientation angle (degrees)
 integer(kind=irg),INTENT(INOUT)         :: CMcnt        ! number of entries in linked list
+!f2py intent(in,out) ::  CMcnt        ! number of entries in linked list
 type(FZpointd),pointer                  :: CMlist       ! pointer to start of linked list
 
 type(FZpointd),pointer                  :: CMtmp
@@ -1599,6 +1605,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: eulerfile
 integer(kind=irg),INTENT(INOUT)         :: FZcnt        ! number of entries in linked list
+!f2py intent(in,out) ::  FZcnt        ! number of entries in linked list
 type(FZpointd),pointer                  :: FZlist       ! pointer to start of linked list
 
 character(fnlen)                        :: filepath
@@ -2009,6 +2016,7 @@ integer(kind=irg),INTENT(IN)        :: pgnum
 integer(kind=irg),INTENT(IN)        :: Nmisor
 real(kind=dbl),INTENT(IN)           :: misor(0:Nmisor)
 real(kind=dbl),INTENT(INOUT)        :: MK(0:Nmisor)
+!f2py intent(in,out) ::  MK
 
 real(kind=dbl),allocatable          :: pomega(:), chi(:), rr(:)
 real(kind=dbl)                      :: h, h2, h3

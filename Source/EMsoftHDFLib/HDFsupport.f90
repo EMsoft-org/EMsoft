@@ -107,6 +107,7 @@ use local
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT) :: hdferr
+!f2py intent(in,out) ::  hdferr
 integer(kind=irg)               :: printonoff
 
 ! write (*,*) '>>>>>>>>>>>>>>>  OPENING HDF INTERFACE !!!!!!!!!'
@@ -141,6 +142,7 @@ use local
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT) :: hdferr
+!f2py intent(in,out) ::  hdferr
 
 ! write (*,*) '>>>>>>>>>>>>>>>  CLOSING HDF INTERFACE !!!!!!!!!'
 
@@ -238,7 +240,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(11),INTENT(INOUT)                           :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                              :: tstrb
 character(15),INTENT(IN)                              :: tstre
 character(fnlen),INTENT(IN)                           :: prn
@@ -444,6 +448,7 @@ use io
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(LEN=1),INTENT(IN)                           :: oT
 integer(HID_T),INTENT(IN)                             :: oID 
 character(fnlen),INTENT(IN)                           :: oName
@@ -501,6 +506,7 @@ use io
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),optional                             :: closeall
 logical,INTENT(IN),optional                             :: verbose
 
@@ -746,6 +752,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: HDFname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: file_id ! file identifier
@@ -792,6 +799,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: HDFname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: readonly
 integer(kind=irg)                                       :: success
 
@@ -840,6 +848,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: groupname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: group_id!  identifier
@@ -897,6 +906,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: groupname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: group_id !  identifier
@@ -938,6 +948,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: data_id !  identifier
@@ -984,6 +995,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 character(fnlen),INTENT(IN)                             :: filename
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 character(len=fnlen, KIND=c_char),allocatable, TARGET   :: stringarray(:) 
@@ -1159,6 +1171,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(OUT)                           :: nlines
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg),INTENT(OUT)                           :: hdferr
 character(len=fnlen, KIND=c_char),allocatable, TARGET, INTENT(OUT)   :: stringarray(:) 
 
@@ -1283,6 +1296,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 character(fnlen),INTENT(IN)                             :: textfile
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: filetype, space ! Handles
@@ -1381,6 +1395,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: nlines
 character(len=fnlen),INTENT(IN)                         :: inputarray(nlines) 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1496,6 +1511,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 character(len=1),TARGET                                 :: chararray(dim0) 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1580,6 +1596,7 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 character(len=1),TARGET                                 :: chararray(dim0, dim1) 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1664,6 +1681,7 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2) 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1749,6 +1767,7 @@ integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2, dim3) 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1832,6 +1851,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: intval
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1919,6 +1939,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=1),INTENT(IN)                              :: intarr(dim0)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2005,6 +2026,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: intarr(dim0)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2091,6 +2113,7 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: intarr(dim0, dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2179,6 +2202,7 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN),TARGET                     :: intarr(dim0, dim1, dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2267,6 +2291,7 @@ integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 integer(kind=irg),INTENT(IN)                            :: intarr(dim0, dim1, dim2, dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2351,6 +2376,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 real(kind=sgl),INTENT(IN)                               :: fltval
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2436,6 +2462,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 real(kind=dbl),INTENT(IN)                               :: dblval
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2524,6 +2551,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2612,6 +2640,7 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2700,6 +2729,7 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2789,6 +2819,7 @@ integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, dim2, dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2881,6 +2912,7 @@ integer(kind=irg),INTENT(IN)                            :: dim4
 integer(kind=irg),INTENT(IN)                            :: dim5
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, dim2, dim3, dim4, dim5)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2966,6 +2998,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -3053,6 +3086,7 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0, dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -3141,6 +3175,7 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0, dim1, dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -3230,6 +3265,7 @@ integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0, dim1, dim2, dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -3324,6 +3360,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:), allocatable, TARGET, INTENT(OUT)     :: rdata
 
@@ -3393,6 +3430,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:,:), allocatable, TARGET, INTENT(OUT)   :: rdata
 
@@ -3463,6 +3501,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:,:,:), allocatable, TARGET, INTENT(OUT) :: rdata
 
@@ -3533,6 +3572,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT) :: rdata
 
@@ -3602,6 +3642,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer,  TARGET, INTENT(OUT)                                        :: rdata
 
@@ -3664,6 +3705,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer, dimension(:), allocatable, TARGET, INTENT(OUT)              :: rdata
 
@@ -3733,6 +3775,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer, dimension(:,:), allocatable, TARGET, INTENT(OUT)            :: rdata
 
@@ -3802,6 +3845,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer, dimension(:,:,:), allocatable, TARGET, INTENT(OUT)          :: rdata
 
@@ -3871,6 +3915,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 !integer, dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT)        :: rdata
 integer, dimension(:,:,:,:), allocatable, TARGET        :: rdata
@@ -3942,6 +3987,7 @@ integer,parameter                                       :: real_kind4 = SELECTED
 
 character(fnlen),INTENT(IN)                             :: dataname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind4), TARGET, INTENT(OUT)                                 :: rdata
 
@@ -4006,6 +4052,7 @@ integer,parameter                                       :: real_kind4 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind4), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
 
@@ -4077,6 +4124,7 @@ integer,parameter                                       :: real_kind4 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind4), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
 
@@ -4148,6 +4196,7 @@ integer,parameter                                       :: real_kind4 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind4), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
 
@@ -4219,6 +4268,7 @@ integer,parameter                                       :: real_kind4 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind4), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
 
@@ -4288,6 +4338,7 @@ integer,parameter                                       :: real_kind8 = SELECTED
 
 character(fnlen),INTENT(IN)                             :: dataname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind8), TARGET, INTENT(OUT)                                 :: rdata
 
@@ -4353,6 +4404,7 @@ integer,parameter                                       :: real_kind8 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind8), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
 
@@ -4424,6 +4476,7 @@ integer,parameter                                       :: real_kind8 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind8), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
 
@@ -4495,6 +4548,7 @@ integer,parameter                                       :: real_kind8 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind8), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
 
@@ -4567,6 +4621,7 @@ integer,parameter                                       :: real_kind8 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 real(real_kind8), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
 
@@ -4653,6 +4708,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 character(kind=c_char),INTENT(IN),TARGET                :: wdata(dim0,dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4732,6 +4788,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 character(kind=c_char),INTENT(IN)                       :: wdata(dim0,dim1,dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4809,6 +4866,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
 character(kind=c_char),INTENT(IN)                       :: wdata(dim0,dim1,dim2,dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4881,6 +4939,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4954,6 +5013,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1,dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5028,6 +5088,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
 integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1,dim2,dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5102,6 +5163,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5177,6 +5239,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5253,6 +5316,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
 real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5327,6 +5391,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5402,6 +5467,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5478,6 +5544,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
 real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5545,6 +5612,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(len=1,kind=c_char), dimension(:,:), allocatable, TARGET   :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5613,6 +5681,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(kind=c_char), dimension(:,:,:), allocatable, TARGET   :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5677,6 +5746,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(len=1,kind=c_char), dimension(:,:,:,:), allocatable, TARGET   :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5744,6 +5814,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer, dimension(:,:), allocatable, TARGET            :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5808,6 +5879,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer, dimension(:,:,:), allocatable, TARGET          :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5872,6 +5944,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer, dimension(:,:,:,:), allocatable, TARGET        :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5938,6 +6011,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(real_kind4), dimension(:,:), allocatable, TARGET    :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -6004,6 +6078,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(real_kind4), dimension(:,:,:), allocatable, TARGET  :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -6070,6 +6145,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(real_kind4), dimension(:,:,:,:), allocatable, TARGET:: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -6136,6 +6212,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(real_kind8), dimension(:,:), allocatable, TARGET    :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -6202,6 +6279,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(real_kind8), dimension(:,:,:), allocatable, TARGET  :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -6268,6 +6346,7 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(real_kind8), dimension(:,:,:,:), allocatable, TARGET:: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -6345,8 +6424,10 @@ use typedefs
 IMPLICIT NONE
 
 type(unitcell),INTENT(INOUT)            :: cell
+!f2py intent(in,out) ::  cell
 logical,INTENT(IN),OPTIONAL             :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 integer(kind=irg)                       :: i, ipg, isave
 
@@ -6416,7 +6497,9 @@ use error
 IMPLICIT NONE
 
 type(unitcell)         , INTENT(INOUT)  :: cell
+!f2py intent(in,out) ::  cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
@@ -6559,7 +6642,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(unitcell)         , INTENT(INOUT)  :: cell
+!f2py intent(in,out) ::  cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
@@ -6702,6 +6787,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: dataset
 type(HDFobjectStackType),pointer,INTENT(INOUT)  :: HDFhead
+!f2py intent(in,out) ::  HDFhead
 
 logical                                         :: itis
 
@@ -6764,6 +6850,7 @@ recursive SUBROUTINE h5_write_pseudo_bse_image(fname, dsetnm, hdferr, wdata)
 
   INTEGER,PARAMETER               :: real_kind = SELECTED_REAL_KIND(4)
   REAL(KIND=4), DIMENSION(:,:,:),  TARGET, INTENT(INOUT)    :: wdata
+!f2py intent(in,out) :: wdata
 
   INTEGER                         :: rnk
   
@@ -6834,6 +6921,7 @@ recursive SUBROUTINE h5_tsl_read_ebsd_pattern(fname,dsetnm,hdferr,rdata, offset,
   INTEGER,INTENT(OUT)             :: hdferr   !hdferr flag
   INTEGER(HID_T)                  :: fid, dsetid, spaceid, memspace !FILE ID, DATASET ID, DATASPACE ID, MEMORY SPACE
   INTEGER, DIMENSION(:,:), TARGET, INTENT(INOUT)    :: rdata  ! variable for data to be read into
+!f2py intent(in,out) :: rdata
   TYPE(C_PTR)                     :: buff
   INTEGER(KIND=8),INTENT(IN)      :: offset ! 1d index of pattern in nRow x nColumns sized vector
   INTEGER,INTENT(IN)              :: szx, szy ! nColumns, nRows in the scan
@@ -6956,7 +7044,9 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 character(len=fnlen, KIND=c_char),INTENT(INOUT)         :: stratt 
+!f2py intent(in,out) ::  stratt 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -7047,7 +7137,9 @@ use ISO_C_BINDING
 character(fnlen),INTENT(IN)                             :: dataname
 integer(SIZE_T),INTENT(IN)                              :: slen
 character(len=slen, KIND=c_char),INTENT(INOUT)          :: stratt 
+!f2py intent(in,out) ::  stratt 
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: aspace_id, filetype, atype_id, attr_id, memtype ! Handles
@@ -7130,6 +7222,7 @@ character(fnlen),INTENT(IN)                         :: dataset
 integer(kind=irg),INTENT(IN)                        :: numx
 integer(kind=irg),INTENT(IN)                        :: numy
 integer(kind=irg),INTENT(INOUT)                     :: image(numx,numy)
+!f2py intent(in,out) ::  image
 type(HDFobjectStackType),pointer                    :: HDF_head
 
 integer(kind=irg),allocatable                       :: vec(:)

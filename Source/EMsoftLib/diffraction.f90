@@ -192,6 +192,7 @@ IMPLICIT NONE
 
 type(unitcell)            :: cell
 type(gnode),INTENT(INOUT) :: rlp
+!f2py intent(in,out) ::  rlp
 logical,INTENT(IN),OPTIONAL             :: verbose
 real(kind=sgl)            :: io_real(1)
 
@@ -239,6 +240,7 @@ IMPLICIT NONE
 
 type(unitcell)                          :: cell
 type(gnode),INTENT(INOUT)               :: rlp
+!f2py intent(in,out) ::  rlp
 integer(kind=irg),INTENT(IN),OPTIONAL   :: skip                 !< scattering set identifier
 logical,INTENT(IN),OPTIONAL             :: verbose
 
@@ -415,6 +417,7 @@ IMPLICIT NONE
 
 type(unitcell)                  :: cell
 type(gnode),INTENT(INOUT)       :: rlp
+!f2py intent(in,out) ::  rlp
 integer(kind=irg),INTENT(IN)    :: hkl(3)               !< Miller indices
 logical,OPTIONAL,INTENT(IN)     :: applyqgshift
 logical,OPTIONAL,INTENT(IN)     :: interpolate          ! requires rlp%mode = 'IP'
@@ -1202,7 +1205,9 @@ IMPLICIT NONE
 
 type(unitcell)                  :: cell
 type(postscript_type),INTENT(INOUT) :: PS
+!f2py intent(in,out) ::  PS
 type(gnode),INTENT(INOUT)       :: rlp
+!f2py intent(in,out) ::  rlp
 real(kind=sgl),INTENT(IN)       :: camlen
 
 integer(kind=irg),parameter     :: inm = 5
@@ -1526,6 +1531,7 @@ use error
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT) :: PS
+!f2py intent(in,out) ::  PS
 type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: xo, yo               !< lower left position
 integer(kind=irg),INTENT(IN)    :: u, v, w              !< zone axis components
@@ -1699,6 +1705,7 @@ use postscript
 IMPLICIT NONE 
 
 type(postscript_type),INTENT(INOUT) :: PS
+!f2py intent(in,out) ::  PS
 type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: xo, yo               !< lower left position
 logical,INTENT(IN)              :: np                   !< logical for new page
@@ -1800,6 +1807,7 @@ character(1),INTENT(IN)                 :: list(256)            !< input string
 integer(kind=irg),INTENT(OUT)           :: slect(256)           !< list of patterns to be drawn
 integer(kind=irg),INTENT(OUT)           :: np                           !< number of patterns
 logical,INTENT(INOUT)                   :: ppat                 !< powder pattern included ?
+!f2py intent(in,out) ::  ppat                 !< powder pattern included ?
 
 integer(kind=irg)                       :: comma(100),hyphen(100),ccnt,hcnt,i,j,k,ip,icnt,nd,n,istart,istop
 integer(kind=irg),parameter             :: nmb(48:57)=(/0,1,2,3,4,5,6,7,8,9/)

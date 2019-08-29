@@ -734,6 +734,7 @@ use rng
 IMPLICIT NONE
 
 type(rng_t),INTENT(INOUT)           :: seed 
+!f2py intent(in,out) ::  seed 
 real(kind=dbl)                      :: q(4) 
 
 real(kind=dbl)                      :: x1,x2,y1,y2,s1,s2

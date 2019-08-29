@@ -229,9 +229,11 @@ use io
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)   :: PS
+!f2py intent(in,out) ::  PS
 type(unitcell)        	               :: cell
 character(1),INTENT(IN)     		:: sp			!< space character 'd' or 'r'
 integer(kind=irg),INTENT(INOUT)	:: iview(3)		!< viewing direction
+!f2py intent(in,out) ::  iview
 integer(kind=irg),INTENT(IN)		:: hm, km, lm		!< maximum h,k,l indices to be included in drawing
 logical,INTENT(IN)          		:: topbot		!< logical for XXX
 
@@ -432,6 +434,7 @@ use postscript
 IMPLICIT NONE
 
 type(axonotype),INTENT(INOUT)	:: AXO
+!f2py intent(in,out) ::  AXO
 
  AXO%xi=1
  AXO%yi=2
@@ -450,6 +453,7 @@ use postscript
 IMPLICIT NONE
 
 type(axonotype),INTENT(INOUT)	:: AXO
+!f2py intent(in,out) ::  AXO
 character(*),INTENT(IN)       :: what
 
 ! clear the screen
@@ -525,12 +529,17 @@ use io
 IMPLICIT NONE
 
 type(axonotype),INTENT(INOUT)	            :: AXO
+!f2py intent(in,out) ::  AXO
 type(postscript_type),INTENT(INOUT)       :: PS
+!f2py intent(in,out) ::  PS
 type(axistype),INTENT(INOUT)              :: AX
+!f2py intent(in,out) ::  AX
 character(fnlen),INTENT(IN)               :: progdesc
 integer(kind=irg),INTENT(INOUT)           :: imanum
+!f2py intent(in,out) ::  imanum
 real(kind=sgl),INTENT(IN)                 :: zz(nx,ny)
 real(kind=sgl),INTENT(INOUT)              :: inten(nx,ny)
+!f2py intent(in,out) ::  inten
 integer(kind=irg),INTENT(IN)              :: nx
 integer(kind=irg),INTENT(IN)              :: ny
 character(6),INTENT(IN)                   :: dmode
@@ -820,13 +829,20 @@ use io
 IMPLICIT NONE
 
 type(axonotype),INTENT(INOUT)        :: AXO
+!f2py intent(in,out) ::  AXO
 type(postscript_type),INTENT(INOUT)  :: PS
+!f2py intent(in,out) ::  PS
 type(axistype),INTENT(INOUT)         :: AX
+!f2py intent(in,out) ::  AX
 character(fnlen),INTENT(IN)          :: progdesc
 integer(kind=irg),INTENT(INOUT)      :: imanum
+!f2py intent(in,out) ::  imanum
 real(kind=sgl),INTENT(INOUT)         :: zz(nx,ny)
+!f2py intent(in,out) ::  zz
 integer(kind=irg),INTENT(INOUT)      :: nx
+!f2py intent(in,out) ::  nx
 integer(kind=irg),INTENT(INOUT)      :: ny
+!f2py intent(in,out) ::  ny
 real(kind=sgl),INTENT(IN)            :: g
 character(fnlen),INTENT(IN)          :: axname
 

@@ -86,6 +86,7 @@ IMPLICIT NONE
 type(reflisttype),pointer       :: listroot 
 type(reflisttype),pointer       :: rltail
 integer(kind=irg),INTENT(INOUT) :: nref
+!f2py intent(in,out) ::  nref
 
 integer(kind=irg)  :: istat
 
@@ -138,6 +139,7 @@ type(reflisttype),pointer       :: rltail
 type(reflisttype),pointer       :: listroot
 type(unitcell)                  :: cell
 integer(kind=irg),INTENT(INOUT) :: nref
+!f2py intent(in,out) ::  nref
 integer(kind=irg),INTENT(IN)    :: hkl(3)               !< Miller indices of reflection to be added to list
 
 integer(kind=irg)               :: istat
@@ -283,6 +285,7 @@ IMPLICIT NONE
 
 type(unitcell)                    :: cell
 type(LaueMasterNameListType),INTENT(INOUT) :: lmnl
+!f2py intent(in,out) ::  lmnl
 type(Laue_g_list),pointer         :: reflist                    ! linked list for allowed g-vector search 
 integer(kind=irg),INTENT(OUT)     :: gcnt
 logical,OPTIONAL,INTENT(IN)       :: verbose                    ! print output or not ?
@@ -583,7 +586,9 @@ type(unitcell)                          :: cell
 type(kvectorlist),pointer               :: khead
 type(reflisttype),pointer               :: reflist
 type(DynType),INTENT(INOUT)             :: Dyn
+!f2py intent(in,out) ::  Dyn
 type(BetheParameterType),INTENT(INOUT)  :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 integer(kind=irg),INTENT(IN)            :: numk
 integer(kind=irg),INTENT(OUT)           :: nbeams
 
@@ -750,7 +755,9 @@ IMPLICIT NONE
 type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 type(DynType),INTENT(INOUT)            :: Dyn
+!f2py intent(in,out) ::  Dyn
 type(BetheParameterType),INTENT(INOUT) :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 character(*),INTENT(IN)         :: calcmode             !< computation mode
 real(kind=dbl),INTENT(IN)               :: kk(3),kt(3)          !< incident wave vector and tangential component
 logical,INTENT(IN)                      :: IgnoreFoilNormal     !< how to deal with the foil normal
@@ -1083,6 +1090,7 @@ use io
 IMPLICIT NONE
 
 type(BetheParameterType),INTENT(INOUT)        :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 logical,INTENT(IN),OPTIONAL     :: silent
 
 character(fnlen),parameter      :: Bethefilename = 'BetheParameters.nml'
@@ -1422,6 +1430,7 @@ type(reflisttype),pointer			:: listroot
 real(kind=sgl),INTENT(IN)			:: FN(3)
 real(kind=sgl),INTENT(IN)			:: dmin
 type(BetheParameterType),INTENT(INOUT)		:: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 real(kind=sgl),INTENT(IN)			:: k(3)
 integer(kind=irg),INTENT(IN)			:: ga(3)
 integer(kind=irg),INTENT(IN)			:: gb(3)

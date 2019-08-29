@@ -128,6 +128,7 @@ use error
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer         :: acc
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -325,6 +326,7 @@ use error
 IMPLICIT NONE
 
 type(ECPSingleNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer         :: acc
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -523,6 +525,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -874,6 +877,7 @@ IMPLICIT NONE
 
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPAngleType),pointer              :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
@@ -991,6 +995,7 @@ use constants
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer             :: master
 logical, INTENT(IN), OPTIONAL           :: verbose
 
@@ -1093,6 +1098,7 @@ use Lambert
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer             :: master
 type(ECPLargeAccumType),pointer         :: acc
 real(kind=sgl), INTENT(OUT)             :: weightfact(nsig)
@@ -1183,6 +1189,7 @@ use error
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer                 :: acc
 character(fnlen),INTENT(IN),OPTIONAL            :: efile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1382,6 +1389,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPMasterType),pointer                     :: master
 character(fnlen),INTENT(IN),OPTIONAL            :: mfile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1612,6 +1620,7 @@ use constants
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer                     :: master
 logical, INTENT(IN), OPTIONAL                   :: verbose
 
@@ -1715,6 +1724,7 @@ use Lambert
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer                     :: master
 type(ECPLargeAccumType),pointer                 :: acc
 real(kind=sgl), INTENT(OUT)                     :: weightfact(nsig)
@@ -1912,6 +1922,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -2149,8 +2160,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: dpfile
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(ECPDIdataType),INTENT(INOUT)                   :: ECPDIdata
+!f2py intent(in,out) ::  ECPDIdata
 logical,INTENT(IN),OPTIONAL                         :: getADP
 logical,INTENT(IN),OPTIONAL                         :: getAverageOrientations
 logical,INTENT(IN),OPTIONAL                         :: getCI

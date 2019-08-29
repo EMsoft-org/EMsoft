@@ -665,6 +665,7 @@ IMPLICIT NONE
 
 type(unitcell)                          :: cell
 real(kind=sgl),INTENT(INOUT)            :: p(3)         !< input/output vector components
+!f2py intent(in,out) ::  p
 character(1),INTENT(IN)                 :: space        !< space character ('d', 'r', or 'c')
 real(kind=sgl)                          :: x            !< auxiliary variable
 
@@ -706,6 +707,7 @@ IMPLICIT NONE
 
 type(unitcell)                          :: cell
 real(kind=dbl),INTENT(INOUT)            :: p(3)         !< input/output vector components
+!f2py intent(in,out) ::  p
 character(1),INTENT(IN)                 :: space        !< space character ('d', 'r', or 'c')
 real(kind=dbl)                          :: x            !< auxiliary variable
 
@@ -1125,7 +1127,9 @@ recursive subroutine MilBrav(p,q,d)
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT)         :: p(3)         !< input/output vector
+!f2py intent(in,out) ::  p
 integer(kind=irg),INTENT(INOUT)         :: q(4)         !< input/output vector
+!f2py intent(in,out) ::  q
 character(2),INTENT(IN)                 :: d            !< direction string ('34' or '43')
 integer(kind=irg)                       :: i, j         !< auxiliary variables
 real(kind=sgl)                          :: r(4), rm, tmp(4)     !< auxiliary variables  
@@ -1203,6 +1207,7 @@ use io
 IMPLICIT NONE
 
 type(unitcell),INTENT(INOUT)            :: cell
+!f2py intent(in,out) ::  cell
 
 integer(kind=irg)                       :: io_int(1)    !< integer input array
 real(kind=dbl)                          :: io_real(1)   !< double precision real input array
@@ -1357,6 +1362,7 @@ use io
 IMPLICIT NONE
 
 type(unitcell),INTENT(INOUT)            :: cell
+!f2py intent(in,out) ::  cell
 
 logical                                 :: more                 !< logical to determine if more atoms need to be entered
 character(1)                            :: ans, list(256)       !< used for IO
@@ -1762,6 +1768,7 @@ use error
 IMPLICIT NONE
 
 type(orientation),INTENT(INOUT) :: orel         !< orientation relation type
+!f2py intent(in,out) ::  orel         !< orientation relation type
 type(unitcell)                  :: cellA, cellB 
 character(2),INTENT(IN)         :: direction  !< direction of transformation (AB or BA)
 real(kind=sgl)                  :: TT(3,3)
@@ -1845,6 +1852,7 @@ IMPLICIT NONE
 
 type(unitcell)                          :: cell
 type(HOLZentries),INTENT(INOUT)         :: HOLZdata
+!f2py intent(in,out) ::  HOLZdata
 real(kind=sgl),INTENT(IN)               :: gg(3), kt(3), lambda
 
 real(kind=sgl)                          :: exer, g1len, g2len
@@ -1907,6 +1915,7 @@ IMPLICIT NONE
 
 type(unitcell)                          :: cell
 type(HOLZentries),INTENT(INOUT)         :: HOLZdata
+!f2py intent(in,out) ::  HOLZdata
 integer(kind=irg),INTENT(IN)            :: uvw(3), fn(3)
 real(kind=sgl),INTENT(IN)               :: g1(3), g2(3)
 
@@ -2022,6 +2031,7 @@ IMPLICIT NONE
 
 type(unitcell)                          :: cell
 type(HOLZentries),INTENT(INOUT)         :: HOLZdata
+!f2py intent(in,out) ::  HOLZdata
 real(kind=sgl),INTENT(IN)               :: gg(3), kt(3), lambda
 
 real(kind=sgl)                          :: pxy(2), h1, h2, g11, g12, g22, z

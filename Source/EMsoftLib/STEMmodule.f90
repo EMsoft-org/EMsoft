@@ -76,7 +76,9 @@ use NameListTypeDefs
 IMPLICIT NONE
 
 type(STEMtype),INTENT(INOUT)            :: STEM
+!f2py intent(in,out) ::  STEM
 type(STEMGeometryNameListType),INTENT(INOUT)    :: stemnl
+!f2py intent(in,out) ::  stemnl
 type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: g(3)
@@ -479,10 +481,14 @@ use NameListTypeDefs
 IMPLICIT NONE
 
 type(STEMtype),INTENT(INOUT)        :: STEM
+!f2py intent(in,out) ::  STEM
 type(STEMGeometryNameListType),INTENT(INOUT)    :: stemnl
+!f2py intent(in,out) ::  stemnl
 type(unitcell)                      :: cell
 real(kind=dbl),INTENT(INOUT)        :: F(3)
+!f2py intent(in,out) ::  F
 type(DynType),INTENT(INOUT)         :: Dyn
+!f2py intent(in,out) ::  Dyn
 type(kvectorlist),pointer           :: khead
 type(reflisttype),pointer           :: reflist
 integer(kind=irg),INTENT(IN)        :: nn
@@ -584,10 +590,14 @@ use NameListTypeDefs
 IMPLICIT NONE
 
 type(STEMtype),INTENT(INOUT)                    :: STEM
+!f2py intent(in,out) ::  STEM
 type(STEMGeometryNameListType),INTENT(INOUT)    :: stemnl
+!f2py intent(in,out) ::  stemnl
 type(unitcell)                                  :: cell
 real(kind=dbl),INTENT(INOUT)                    :: F(3)
+!f2py intent(in,out) ::  F
 type(DynType),INTENT(INOUT)                     :: Dyn
+!f2py intent(in,out) ::  Dyn
 type(kvectorlist),pointer                       :: khead
 type(reflisttype),pointer                       :: reflist
 character(2),INTENT(IN)                         :: geometry

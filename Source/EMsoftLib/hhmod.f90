@@ -98,6 +98,7 @@ recursive subroutine NEWTON(MAPN)
 IMPLICIT NONE
 
 type(MAPN_block),INTENT(INOUT)    :: MAPN
+!f2py intent(in,out) ::  MAPN
 
 integer(kind=irg)                 :: KOUNT, KONVRG, J, M
 real(kind=sgl)                    :: XR, XI, YR, YI, TR, TI, F
@@ -171,10 +172,15 @@ recursive subroutine ANCALC(MAP, MKAP, MAPN, MA, SCALE30)
 IMPLICIT NONE
 
 type(MAP_block),INTENT(INOUT)     :: MAP
+!f2py intent(in,out) ::  MAP
 type(MKAP_block),INTENT(INOUT)    :: MKAP
+!f2py intent(in,out) ::  MKAP
 type(MAPN_block),INTENT(INOUT)    :: MAPN
+!f2py intent(in,out) ::  MAPN
 type(MA_block),INTENT(INOUT)      :: MA
+!f2py intent(in,out) ::  MA
 type(SCALE30_block),INTENT(INOUT) :: SCALE30
+!f2py intent(in,out) ::  SCALE30
 
 integer(kind=irg)              :: I, J, K, L, M, N, LT, KQ, KR, KS, KT, NJ, I1, I2, J1, J2, K1, K2, LP, LQ, KP, NL, ML
 integer(kind=irg),parameter    :: L1(6)=(/1,2,3,2,3,1/), L2(6)=(/1,2,3,3,1,2/), &
@@ -447,11 +453,17 @@ recursive subroutine PANCALC(MAP, MKAP, MAPN, MA, MP, SCALE30)
 IMPLICIT NONE
 
 type(MAP_block),INTENT(INOUT)     :: MAP
+!f2py intent(in,out) ::  MAP
 type(MKAP_block),INTENT(INOUT)    :: MKAP
+!f2py intent(in,out) ::  MKAP
 type(MAPN_block),INTENT(INOUT)    :: MAPN
+!f2py intent(in,out) ::  MAPN
 type(MA_block),INTENT(INOUT)      :: MA
+!f2py intent(in,out) ::  MA
 type(MP_block),INTENT(INOUT)      :: MP
+!f2py intent(in,out) ::  MP
 type(SCALE30_block),INTENT(INOUT) :: SCALE30
+!f2py intent(in,out) ::  SCALE30
 
 
 !**************************************************** 
@@ -1106,6 +1118,7 @@ use error
 IMPLICIT NONE
 
 type(MRD_block),INTENT(INOUT)     :: MRD
+!f2py intent(in,out) ::  MRD
 
 integer(kind=irg)                 :: M1, M2, J, M, leave
 real(kind=sgl)                    :: ERHIGH, ERLOW, H1, H2, H3, XT, TEST
@@ -1249,6 +1262,7 @@ recursive subroutine DERIV(MRD)
 IMPLICIT NONE
 
 type(MRD_block),INTENT(INOUT)     :: MRD
+!f2py intent(in,out) ::  MRD
 
 real       :: X11, X22, X33, X44, R1, R2, R3, R4, BETA1, BETA2, BETA3, BETA4, Z
 real,save  :: BETA

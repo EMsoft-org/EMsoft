@@ -2227,6 +2227,7 @@ IMPLICIT NONE
 complex(kind=dbl),INTENT(IN)    :: a(*)
 integer(kind=irg),INTENT(IN)    :: m
 complex(kind=dbl),INTENT(INOUT) :: x
+!f2py intent(in,out) ::  x
 real(kind=sgl),INTENT(IN)       :: eps
 logical,INTENT(IN)              :: polish
 
@@ -2989,6 +2990,7 @@ integer(kind=irg),INTENT(IN)    :: NClusters
 integer(kind=irg),INTENT(IN)    :: NSC
 integer(kind=irg),INTENT(IN)    :: NSR
 integer(kind=irg),INTENT(INOUT) :: IndexArray(NRow)
+!f2py intent(in,out) ::  IndexArray
 
 integer(kind=irg)               :: IA(NSC,NSR), NinC(NClusters)
 integer(kind=irg)               :: i, j, k, ic, nc, ix, px, py, Emax(1), Emin(1), nloop, nchanged, totswap

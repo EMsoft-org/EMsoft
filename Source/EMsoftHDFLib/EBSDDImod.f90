@@ -177,11 +177,17 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   IMPLICIT NONE
   
   type(EBSDIndexingNameListType),INTENT(INOUT)        :: dinl
+!f2py intent(in,out) ::  dinl
   type(MCCLNameListType),INTENT(INOUT)                :: mcnl
+!f2py intent(in,out) ::  mcnl
   type(EBSDMasterNameListType),INTENT(INOUT)          :: mpnl
+!f2py intent(in,out) ::  mpnl
   type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
   type(EBSDMPdataType),INTENT(INOUT)                  :: EBSDMPdata
+!f2py intent(in,out) ::  EBSDMPdata
   type(EBSDDetectorType),INTENT(INOUT)                :: EBSDdetector
+!f2py intent(in,out) ::  EBSDdetector
   character(fnlen),INTENT(IN)                         :: progname
   character(fnlen),INTENT(IN)                         :: nmldeffile
   
@@ -1168,6 +1174,7 @@ use HDF5
 use HDFsupport
 
 type(EBSDclusterNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 real(kind=dbl),allocatable                      :: rdata(:,:,:)
 
 character(len=1), allocatable                   :: cdata(:,:,:)
@@ -1258,6 +1265,7 @@ type(EBSDclusterNameListType),INTENT(IN):: enl
 integer(kind=irg),INTENT(IN)            :: dims(3)
 integer(kind=irg),INTENT(IN)            :: w
 real(kind=dbl),INTENT(INOUT)            :: rdata(dims(1),dims(2),dims(3))
+!f2py intent(in,out) ::  rdata
 logical,INTENT(IN),OPTIONAL             :: applymask
 logical,INTENT(IN),OPTIONAL             :: normalize
 
@@ -1380,6 +1388,7 @@ use error
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDLargeAccumDIType),pointer              :: acc
 character(fnlen),INTENT(IN),OPTIONAL            :: efile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1492,6 +1501,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDMasterDIType),pointer                  :: master
 character(fnlen),INTENT(IN),OPTIONAL            :: mfile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1665,6 +1675,7 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDLargeAccumDIType),pointer              :: acc
 type(EBSDMasterDIType),pointer                  :: master
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1838,6 +1849,7 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDLargeAccumDIType),pointer              :: acc
 type(EBSDMasterDIType),pointer                  :: master
 integer(kind=irg),INTENT(IN)                    :: nlines
@@ -2116,6 +2128,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 logical,INTENT(OUT)                                 :: holdexpt
 logical,INTENT(OUT)                                 :: holddict
 
@@ -2289,8 +2302,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: dpfile
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(EBSDDIdataType),INTENT(INOUT)                  :: EBSDDIdata
+!f2py intent(in,out) ::  EBSDDIdata
 logical,INTENT(IN),OPTIONAL                         :: getADP
 logical,INTENT(IN),OPTIONAL                         :: getAverageOrientations
 logical,INTENT(IN),OPTIONAL                         :: getCI

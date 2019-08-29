@@ -118,6 +118,7 @@ recursive subroutine Time_reset(TT)
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)	:: TT
+!f2py intent(in,out) ::  TT
 
 TT%TIME_t_count = 0.0
 TT%TIME_unit_count = 0.0
@@ -151,6 +152,7 @@ recursive subroutine Time_report(TT, interval)
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
+!f2py intent(in,out) ::  TT
 real(kind=sgl),intent(IN)   		:: interval
 
  TT%TIME_interval = interval
@@ -177,6 +179,7 @@ recursive subroutine Time_start(TT)
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
+!f2py intent(in,out) ::  TT
 
 ! start the timing of the computation
  call Time_reset(TT)
@@ -205,6 +208,7 @@ recursive subroutine Time_estimate(TT, numk)
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
+!f2py intent(in,out) ::  TT
 integer(kind=irg),intent(IN)     	:: numk
 
 integer(kind=irg)      		:: TIME_nc
@@ -244,6 +248,7 @@ recursive subroutine Time_remaining(TT, ik, numk)
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
+!f2py intent(in,out) ::  TT
 integer(kind=irg),intent(IN)   	:: ik
 integer(kind=irg),intent(IN)   	:: numk
 
@@ -347,6 +352,7 @@ recursive subroutine Time_stop(TT, numk)
 IMPLICIT NONE
 
 type(timetype),INTENT(INOUT)		:: TT
+!f2py intent(in,out) ::  TT
 integer(kind=irg),INTENT(IN)  		:: numk
 
 real(kind=sgl)				:: io_real(1)

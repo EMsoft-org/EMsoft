@@ -100,6 +100,7 @@ IMPLICIT NONE
 
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDAngleType),pointer              :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
@@ -219,6 +220,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumType),pointer         :: acc
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -400,6 +402,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -560,6 +563,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(TKDoverlapNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(TKDMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -712,6 +716,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumType),pointer         :: acc
 type(TKDMasterType),pointer             :: master
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -1086,6 +1091,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDFullDetector),pointer           :: scintillator
 logical,INTENT(IN),OPTIONAL             :: verbose
 

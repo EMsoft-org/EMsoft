@@ -2011,6 +2011,7 @@ IMPLICIT NONE
 
 INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
 type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+!f2py intent(in,out) ::  argv
 REAL(c_float)                                   :: getEBSDPatternsWrapper
 
 ! wrapper function dependent declarations; they are all pointers 
@@ -2071,6 +2072,7 @@ IMPLICIT NONE
 
 INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
 type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+!f2py intent(in,out) ::  argv
 REAL(c_float)                                   :: getECPatternsWrapper
 
 ! wrapper function dependent declarations; they are all pointers 
@@ -2126,6 +2128,7 @@ IMPLICIT NONE
 
 INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
 type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+!f2py intent(in,out) ::  argv
 REAL(c_float)                                   :: getKosselPatternsWrapper
 
 ! wrapper function dependent declarations; they are all pointers 
@@ -2183,6 +2186,7 @@ IMPLICIT NONE
 
 INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
 type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+!f2py intent(in,out) ::  argv
 REAL(c_float)                                   :: efitECPWrapper
 
 ! wrapper function dependent declarations; they are all pointers 
@@ -2261,6 +2265,7 @@ IMPLICIT NONE
 
 INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
 type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+!f2py intent(in,out) ::  argv
 REAL(c_float)                                   :: efitEBSDWrapper
 
 ! wrapper function dependent declarations; they are all pointers 

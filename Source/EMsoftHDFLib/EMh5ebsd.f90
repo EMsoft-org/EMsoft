@@ -84,10 +84,12 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                        :: filetype
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
 type(HDFobjectStackType),pointer                    :: HDF_head
 
@@ -170,10 +172,12 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                        :: filetype
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+!f2py intent(in,out) ::  tkdnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
 type(HDFobjectStackType),pointer                    :: HDF_head
 
@@ -756,14 +760,18 @@ IMPLICIT NONE
 
 character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: xtalname
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
+!f2py intent(in,out) ::  ipar
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: exptIQ(ipar(3))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                        :: dicteulerarray(3,ipar(4))
+!f2py intent(in,out) ::  dicteulerarray
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
@@ -1327,13 +1335,17 @@ IMPLICIT NONE
 
 character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+!f2py intent(in,out) ::  tkdnl
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
+!f2py intent(in,out) ::  ipar
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: exptIQ(ipar(3))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
+!f2py intent(in,out) ::  eulerarray
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile

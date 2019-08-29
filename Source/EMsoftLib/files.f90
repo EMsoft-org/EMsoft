@@ -315,6 +315,7 @@ use io
 IMPLICIT NONE
 
 character(fnlen),INTENT(INOUT)          :: nmldefault
+!f2py intent(in,out) ::  nmldefault
 integer(kind=irg),INTENT(IN)            :: numt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 character(fnlen),INTENT(IN)             :: progname

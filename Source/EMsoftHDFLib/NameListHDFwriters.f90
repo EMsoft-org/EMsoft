@@ -82,6 +82,7 @@ recursive subroutine HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg),INTENT(IN)                          :: io_int(n_int)
 character(20),INTENT(IN)                              :: intlist(n_int)
 integer(kind=irg),INTENT(IN)                          :: n_int
@@ -124,6 +125,7 @@ recursive subroutine HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(kind=sgl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
 integer(kind=irg),INTENT(IN)                          :: n_real
@@ -166,6 +168,7 @@ recursive subroutine HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 real(kind=dbl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
 integer(kind=irg),INTENT(IN)                          :: n_real
@@ -217,6 +220,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(LorentzNameListType),INTENT(IN)                  :: knl
 
 integer(kind=irg),parameter                           :: n_int = 4, n_real = 8
@@ -340,6 +344,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(KosselNameListType),INTENT(IN)                   :: knl
 
 integer(kind=irg),parameter                           :: n_int = 5, n_real = 6
@@ -418,6 +423,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(KosselMasterNameListType),INTENT(IN)             :: knl
 
 integer(kind=irg),parameter                           :: n_int = 4, n_real = 5
@@ -490,6 +496,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(LaueMasterNameListType),INTENT(IN)               :: knl
 
 integer(kind=irg),parameter                           :: n_int = 2, n_real = 2, n_double = 2
@@ -564,6 +571,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(LaueNameListType),INTENT(IN)                     :: lnl
 
 integer(kind=irg),parameter                           :: n_int = 4, n_real = 6
@@ -652,6 +660,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(OMmasterNameListType),INTENT(IN)                 :: knl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
@@ -728,6 +737,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(OMNameListType),INTENT(IN)                       :: knl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
@@ -795,7 +805,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(MCNameListType),INTENT(INOUT)                    :: mcnl
+!f2py intent(in,out) ::  mcnl
 
 integer(kind=irg),parameter                           :: n_int = 6, n_real = 7
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -877,7 +889,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(MCLIPSSNameListType),INTENT(INOUT)                    :: mcnl
+!f2py intent(in,out) ::  mcnl
 
 integer(kind=irg),parameter                           :: n_int = 6, n_real = 10
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -960,7 +974,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
+!f2py intent(in,out) ::  mcnl
 
 integer(kind=irg),parameter                           :: n_int = 8, n_real_bse1 = 9, n_real_full = 7
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -1060,7 +1076,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(MCCLMultiLayerNameListType),INTENT(INOUT)        :: mcnl
+!f2py intent(in,out) ::  mcnl
 
 integer(kind=irg),parameter                           :: n_int = 5, n_real = 9
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -1148,7 +1166,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 7, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
@@ -1249,7 +1269,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDoverlapNameListType),INTENT(INOUT)           :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 2, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
@@ -1372,7 +1394,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDSingleMasterNameListType),INTENT(INOUT)      :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), combinesites
@@ -1473,7 +1497,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(RefineMartensitetype),INTENT(INOUT)              :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 2, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
@@ -1568,7 +1594,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDQCMasterNameListType),INTENT(INOUT)          :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
@@ -1629,7 +1657,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSD2DQCMasterNameListType),INTENT(INOUT)        :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 5
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
@@ -1713,7 +1743,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(TKDMasterNameListType),INTENT(INOUT)            :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 7, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
@@ -1799,7 +1831,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(TKDspotsNameListType),INTENT(INOUT)              :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 4, n_real = 10
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
@@ -1891,7 +1925,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDMasterOpenCLNameListType),INTENT(INOUT)      :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 9, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform
@@ -1976,7 +2012,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(BetheParameterType),INTENT(INOUT)                :: BetheParameters
+!f2py intent(in,out) ::  BetheParameters
 
 integer(kind=irg),parameter                           :: n_int = 1, n_real = 4
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform
@@ -2028,7 +2066,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDclusterNameListType),INTENT(INOUT)           :: emnl
+!f2py intent(in,out) ::  emnl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart
@@ -2091,7 +2131,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECPQCMasterNameListType),INTENT(INOUT)           :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
 integer(kind=irg)                                     :: hdferr, io_int(n_int), distort
@@ -2151,7 +2193,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECPMasterNameListType),INTENT(INOUT)             :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 
 integer(kind=irg),parameter                           :: n_int = 5, n_real = 1
 integer(kind=irg)                                     :: hdferr, io_int(n_int), distort, combinesites
@@ -2223,7 +2267,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECPZANameListType),INTENT(INOUT)                 :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 
 integer(kind=irg),parameter                           :: n_int = 2, n_real = 2
 integer(kind=irg)                                     :: hdferr, io_int(n_int), distort
@@ -2300,7 +2346,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
+!f2py intent(in,out) ::  enl
 
 integer(kind=irg),parameter                           :: n_int = 8, n_real = 10
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -2458,7 +2506,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(TKDNameListType),INTENT(INOUT)                   :: enl
+!f2py intent(in,out) ::  enl
 
 integer(kind=irg),parameter                           :: n_int = 6, n_real = 9
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -2580,7 +2630,9 @@ use error
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECPNameListType),INTENT(INOUT)                   :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 logical,INTENT(IN)                                    :: twolayerflag
 
 integer(kind=irg),parameter                           :: n_int = 2
@@ -2757,7 +2809,9 @@ use error
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECPSingleNameListType),INTENT(INOUT)             :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 
 integer(kind=irg),parameter                           :: n_int = 2
 integer(kind=irg)                                     :: n_real
@@ -2854,7 +2908,9 @@ use error
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECPIndexingNameListType),INTENT(INOUT)           :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 
 integer(kind=irg),parameter                           :: n_int = 11
 integer(kind=irg),parameter                           :: n_real = 6
@@ -2970,7 +3026,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(LACBEDNameListType),INTENT(INOUT)                :: lacbednl
+!f2py intent(in,out) ::  lacbednl
 
 integer(kind=irg),parameter                           :: n_int = 4, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3047,7 +3105,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(CBEDNameListType),INTENT(INOUT)                  :: cbednl
+!f2py intent(in,out) ::  cbednl
 
 integer(kind=irg),parameter                           :: n_int = 4, n_real = 5
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3127,7 +3187,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECPpatternNameListType),INTENT(INOUT)            :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 
 integer(kind=irg),parameter                           :: n_int = 2, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3193,7 +3255,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(PEDkinNameListType),INTENT(INOUT)                :: pednl
+!f2py intent(in,out) ::  pednl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 4
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3268,7 +3332,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(kinematicalNameListType),INTENT(INOUT)                :: knl
+!f2py intent(in,out) ::  knl
 
 integer(kind=irg),parameter                           :: n_int = 0, n_real = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3326,7 +3392,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(PEDZANameListType),INTENT(INOUT)                   :: pednl
+!f2py intent(in,out) ::  pednl
 
 integer(kind=irg),parameter                           :: n_int = 5, n_real = 6
 integer(kind=irg)                                     :: hdferr, io_int(n_int)
@@ -3410,7 +3478,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(ECCINameListType),INTENT(INOUT)                  :: eccinl
+!f2py intent(in,out) ::  eccinl
 
 integer(kind=irg),parameter                           :: n_int = 5, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3536,7 +3606,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(RFZNameListType),INTENT(INOUT)                   :: rfznl
+!f2py intent(in,out) ::  rfznl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3621,7 +3693,9 @@ use local
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(DictIndxOpenCLListType),INTENT(INOUT)            :: dictindxnl
+!f2py intent(in,out) ::  dictindxnl
 
 integer(kind=irg),parameter                           :: n_int = 8, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3698,7 +3772,9 @@ use local
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EBSDIndexingNameListType),INTENT(INOUT)          :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 
 integer(kind=irg),parameter                           :: n_int = 20, n_real = 12, n_reald = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -3896,7 +3972,9 @@ use local
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(TKDIndexingNameListType),INTENT(INOUT)           :: tkdnl
+!f2py intent(in,out) ::  tkdnl
 
 integer(kind=irg),parameter                           :: n_int = 17, n_real = 11, n_reald = 3
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -4081,7 +4159,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
+!f2py intent(in,out) ::  mcnl
 
 integer(kind=irg),parameter                           :: n_int = 8, n_real_bse1 = 10, n_real_full = 8
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -4186,7 +4266,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
+!f2py intent(in,out) ::  mcnl
 
 integer(kind=irg),parameter                           :: n_int = 8, n_real = 8
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -4267,6 +4349,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(PFInversionNameListType),INTENT(IN)              :: epf
 
 
@@ -4338,6 +4421,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(STEMDCINameListType),INTENT(IN)                  :: epf
 
 
@@ -4443,6 +4527,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EMgammaSTEMNameListType),INTENT(IN)              :: dcinl
 
 
@@ -4524,6 +4609,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EMTGBSTEMNameListType),INTENT(IN)              :: dcinl
 
 
@@ -4600,6 +4686,7 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(STEMGeometryNameListType),INTENT(IN)             :: epf
 
 
@@ -4667,7 +4754,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EMCBEDQCNameListType),INTENT(INOUT)              :: cbednl
+!f2py intent(in,out) ::  cbednl
 
 integer(kind=irg),parameter                           :: n_int = 2, n_real = 4
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -4737,7 +4826,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EMCBED2DQCNameListType),INTENT(INOUT)            :: cbednl
+!f2py intent(in,out) ::  cbednl
 
 integer(kind=irg),parameter                           :: n_int = 2, n_real = 5
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
@@ -4808,7 +4899,9 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 type(EMhh4NameListType),INTENT(INOUT)                 :: hhnl
+!f2py intent(in,out) ::  hhnl
 
 integer(kind=irg),parameter                           :: n_int = 11, n_real = 10 
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)

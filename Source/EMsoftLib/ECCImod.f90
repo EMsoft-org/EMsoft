@@ -303,7 +303,9 @@ integer(kind=irg),INTENT(IN)            :: nn
 ! corrected on 10/22/14 in response to issue #3 of release 2.0 raised by jfikar
 ! Sgh array changed to one dimensional vector instead of 2D array
 complex(kind=dbl),INTENT(INOUT) :: Sgh(nn)
+!f2py intent(in,out) ::  Sgh
 integer(kind=irg),INTENT(INOUT) :: nat(100)
+!f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(3), ikk, n, numset
 real(kind=sgl)                          :: Znsq, DBWF, kkl

@@ -333,6 +333,7 @@ IMPLICIT NONE
 
 INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
 type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+!f2py intent(in,out) ::  argv
 REAL(c_float)                                   :: SinglePEDPatternWrapper
 
 ! wrapper function dependent declarations; they are all pointers 

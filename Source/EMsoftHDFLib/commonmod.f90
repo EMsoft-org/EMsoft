@@ -476,6 +476,7 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(IN)                :: ipar(10)
 integer(kind=irg),INTENT(IN)                :: tmi(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                :: ea(3,ipar(4))
+!f2py intent(in,out) ::  ea
 type(EBSDIndexingNameListType),INTENT(IN)   :: ebsdnl
 real(kind=sgl),INTENT(OUT)                  :: ism(ipar(7)*ipar(8))
 
@@ -562,7 +563,9 @@ real(kind=sgl),INTENT(IN)        :: eulers(3,numeu)
 integer(kind=irg),INTENT(IN)     :: ipf_wd
 integer(kind=irg),INTENT(IN)     :: ipf_ht
 !type(dicttype),INTENT(INOUT),pointer:: dict
+!f2py intent(in,out) ::  dict
 type(dicttype),INTENT(INOUT):: dict
+!f2py intent(in,out) ::  dict
 real(kind=sgl),INTENT(OUT)       :: kam(ipf_wd,ipf_ht)
 
 real(kind=sgl),allocatable       :: localkam(:)

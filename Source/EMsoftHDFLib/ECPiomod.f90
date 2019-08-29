@@ -79,6 +79,7 @@ use error
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
@@ -294,12 +295,16 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
+!f2py intent(in,out) ::  ipar
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
+!f2py intent(in,out) ::  eulerarray
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
 
@@ -492,7 +497,9 @@ use NameListHDFwriters
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname

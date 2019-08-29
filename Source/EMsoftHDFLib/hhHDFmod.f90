@@ -71,9 +71,11 @@ use NameListTypedefs
 IMPLICIT NONE 
 
 type(EMhh4NameListType),INTENT(INOUT)               :: hhnl
+!f2py intent(in,out) ::  hhnl
 real(kind=sgl),INTENT(IN)                           :: BF(hhnl%ICOL, hhnl%IROW, hhnl%wnum)
 real(kind=sgl),INTENT(IN)                           :: DF(hhnl%ICOL, hhnl%IROW, hhnl%wnum)
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: legendfiles(hhnl%wnum)
@@ -161,10 +163,12 @@ use NameListHDFwriters
 IMPLICIT NONE
 
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 type(EMhh4NameListType),INTENT(INOUT)               :: hhnl
+!f2py intent(in,out) ::  hhnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
 type(HDFobjectStackType),pointer                    :: HDF_head
 

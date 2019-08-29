@@ -243,6 +243,7 @@ use stringconstants
 type(PFInversionNameListType),INTENT(IN)            :: epf
 type(PoleFigures),pointer                           :: PF
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
@@ -589,6 +590,7 @@ IMPLICIT NONE
 
 character(1),dimension(fnlen),INTENT(IN)         :: nmldeffile2
 integer(kind=irg),target,INTENT(INOUT)           :: mm, nn, nnz
+!f2py intent(in,out) ::  mm, nn, nnz
 integer(kind=irg),INTENT(OUT)                    :: nnzcolp(nn+1), nnzcolidp(nnz)
 real(kind=dbl),INTENT(OUT)                       :: nnzvalssortedp(nnz)
 

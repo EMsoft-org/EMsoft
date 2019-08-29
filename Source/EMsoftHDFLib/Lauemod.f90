@@ -85,8 +85,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: MPfile
 type(LaueMasterNameListType),INTENT(INOUT)          :: lmnl
+!f2py intent(in,out) ::  lmnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(LaueMPdataType),INTENT(INOUT)                  :: LaueMPdata
+!f2py intent(in,out) ::  LaueMPdata
 logical,INTENT(IN),OPTIONAL                         :: getmLPNH
 logical,INTENT(IN),OPTIONAL                         :: getmLPSH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPNH

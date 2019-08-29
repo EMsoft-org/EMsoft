@@ -93,6 +93,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDMasterDIType),pointer                   :: master
 character(fnlen),INTENT(IN),OPTIONAL            :: mfile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -267,6 +268,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumDIType),pointer               :: acc
 type(TKDMasterDIType),pointer                   :: master
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -442,6 +444,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumDIType),pointer               :: acc
 character(fnlen),INTENT(IN),OPTIONAL            :: efile
 logical,INTENT(IN),OPTIONAL                     :: verbose

@@ -139,6 +139,7 @@ integer(kind=irg),INTENT(IN)            :: npy          !< number of kvectors al
 integer(kind=irg),INTENT(OUT)           :: numk         !< total number of kvectors in linked list
 integer(kind=irg),INTENT(IN)            :: isym         !< Laue symmetry group number 
 integer(kind=irg),INTENT(INOUT)         :: ijmax        !< max parameter used for Conical and StandardConical modes
+!f2py intent(in,out) ::  ijmax        !< max parameter used for Conical and StandardConical modes
 character(*),INTENT(IN)                 :: mapmode      !< controls the type of mapping used ('Standard' or 'RoscaLambert')
 !real(kind=sgl),INTENT(IN)              :: klaue(2)     !< Laue center coordinates
 real(kind=dbl),INTENT(IN),OPTIONAL      :: LegendreArray(2*npx+1) !< Legendre lattitude grid points for spherical indexing
@@ -1273,6 +1274,7 @@ IMPLICIT NONE
 type(kvectorlist),pointer               :: khead
 type(unitcell)                          :: cell
 type(symdata2D),INTENT(INOUT)           :: TDPG
+!f2py intent(in,out) ::  TDPG
 real(kind=dbl),INTENT(IN)               :: k(3)         !< initial wave vector
 real(kind=dbl),INTENT(IN)               :: ga(3)        !< "horizontal" reciprocal lattice vector
 real(kind=dbl),INTENT(IN)               :: ktmax        !< maximum length of tangential wave vector
@@ -1281,6 +1283,7 @@ integer(kind=irg),INTENT(IN)            :: npy          !< number of kvectors al
 integer(kind=irg),INTENT(OUT)           :: numk         !< total number of kvectors in linked list
 integer(kind=irg),INTENT(IN)            :: isym         !< Laue symmetry group number 
 integer(kind=irg),INTENT(INOUT)         :: ijmax        !< max parameter used for Conical and StandardConical modes
+!f2py intent(in,out) ::  ijmax        !< max parameter used for Conical and StandardConical modes
 real(kind=sgl),INTENT(IN)               :: klaue(2)     !< fractional Laue center coordinates
 logical,INTENT(IN),OPTIONAL             :: debug
 
@@ -1423,6 +1426,7 @@ type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: i
 integer(kind=irg),INTENT(IN)            :: j
 integer(kind=irg),INTENT(INOUT) :: numk
+!f2py intent(in,out) ::  numk
 real(kind=dbl),INTENT(IN)               :: delta
 real(kind=dbl),INTENT(IN)               :: gan(3)
 real(kind=dbl),INTENT(IN)               :: gperp(3)
@@ -1557,6 +1561,7 @@ IMPLICIT NONE
 type(kvectorlist),pointer               :: ktail
 type(unitcell)                          :: cell
 integer(kind=irg),INTENT(INOUT)         :: numk
+!f2py intent(in,out) ::  numk
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(IN)            :: i
 integer(kind=irg),INTENT(IN)            :: j

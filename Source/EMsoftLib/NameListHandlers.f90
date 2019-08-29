@@ -69,6 +69,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(GrainVizNameListType),INTENT(INOUT)    :: gvnl
+!f2py intent(in,out) ::  gvnl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -147,6 +148,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(ChangeSettingNameListType),INTENT(INOUT) :: csnl
+!f2py intent(in,out) ::  csnl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -213,6 +215,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(CTFNameListType),INTENT(INOUT)         :: csnl
+!f2py intent(in,out) ::  csnl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -287,6 +290,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(ANGNameListType),INTENT(INOUT)         :: csnl
+!f2py intent(in,out) ::  csnl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -361,6 +365,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(EulersNameListType),INTENT(INOUT)      :: csnl
+!f2py intent(in,out) ::  csnl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -438,6 +443,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(GBONameListType),INTENT(INOUT)         :: gbonl
+!f2py intent(in,out) ::  gbonl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -509,6 +515,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(GBOdmNameListType),INTENT(INOUT)       :: gbonl
+!f2py intent(in,out) ::  gbonl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -576,6 +583,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(oSLERPNameListType),INTENT(INOUT)      :: onl
+!f2py intent(in,out) ::  onl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -672,6 +680,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(LorentzNameListType),INTENT(INOUT) :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -804,6 +813,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(MultiPhaseNameListType),INTENT(INOUT)  :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.
@@ -878,6 +888,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(KosselNameListType),INTENT(INOUT)  :: knl
+!f2py intent(in,out) ::  knl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -975,6 +986,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(KosselMasterNameListType),INTENT(INOUT)  :: knl
+!f2py intent(in,out) ::  knl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -1063,6 +1075,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
 type(OMmasterNameListType),INTENT(INOUT)      :: omnl
+!f2py intent(in,out) ::  omnl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
 logical                                       :: skipread = .FALSE.
@@ -1153,6 +1166,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
 type(LaueMasterNameListType),INTENT(INOUT)    :: lmnl
+!f2py intent(in,out) ::  lmnl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
 logical                                       :: skipread = .FALSE.
@@ -1235,6 +1249,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
 type(LaueNameListType),INTENT(INOUT)          :: lnl
+!f2py intent(in,out) ::  lnl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
 logical                                       :: skipread = .FALSE.
@@ -1341,6 +1356,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
 type(OMNameListType),INTENT(INOUT)            :: omnl
+!f2py intent(in,out) ::  omnl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
 logical                                       :: skipread = .FALSE.
@@ -1417,6 +1433,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(MCNameListType),INTENT(INOUT)      :: mcnl
+!f2py intent(in,out) ::  mcnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -1517,6 +1534,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(MCLIPSSNameListType),INTENT(INOUT)      :: mcnl
+!f2py intent(in,out) ::  mcnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -1635,6 +1653,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(ConvertOrientationsNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -1739,6 +1758,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(OrientationVizNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -1878,6 +1898,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -2001,6 +2022,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(MCCLMultiLayerNameListType),INTENT(INOUT)      :: mcnl
+!f2py intent(in,out) ::  mcnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -2114,6 +2136,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(DisorientationsNameListType),INTENT(INOUT)      :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -2185,6 +2208,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(AverageOrientationNameListType),INTENT(INOUT)      :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -2267,6 +2291,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(OrientationSimilarityNameListType),INTENT(INOUT)      :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -2332,6 +2357,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(KAMNameListType),INTENT(INOUT)     :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -2400,6 +2426,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(DvsDNameListType),INTENT(INOUT)    :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -2486,6 +2513,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(EBSDMasterNameListType),INTENT(INOUT)      :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)                     :: initonly
 
 logical                                         :: skipread = .FALSE.
@@ -2577,6 +2605,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(EBSDSingleMasterNameListType),INTENT(INOUT):: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)                     :: initonly
 
 logical                                         :: skipread = .FALSE.
@@ -2661,6 +2690,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(TKDMasterNameListType),INTENT(INOUT)       :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)                     :: initonly
 
 logical                                         :: skipread = .FALSE.
@@ -2743,6 +2773,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(EBSDMasterOpenCLNameListType),INTENT(INOUT):: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)                     :: initonly
 
 logical                                         :: skipread = .FALSE.
@@ -2828,6 +2859,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(EBSDclusterNameListType),INTENT(INOUT)     :: emnl
+!f2py intent(in,out) ::  emnl
 logical,OPTIONAL,INTENT(IN)                     :: initonly
 
 logical                                         :: skipread = .FALSE.
@@ -2908,6 +2940,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                    :: nmlfile
 type(ECPQCMasterNameListType),INTENT(INOUT)    :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 logical,OPTIONAL,INTENT(IN)                    :: initonly
 
 logical                                        :: skipread = .FALSE.
@@ -2985,6 +3018,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                    :: nmlfile
 type(CTEMQCNameListType),INTENT(INOUT)         :: ctemqcnl
+!f2py intent(in,out) ::  ctemqcnl
 logical,OPTIONAL,INTENT(IN)                    :: initonly
 
 logical                                        :: skipread = .FALSE.
@@ -3079,6 +3113,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                    :: nmlfile
 type(ECPMasterNameListType),INTENT(INOUT)      :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 logical,OPTIONAL,INTENT(IN)                    :: initonly
 
 logical                                        :: skipread = .FALSE.
@@ -3162,6 +3197,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                    :: nmlfile
 type(reflectorNameListType),INTENT(INOUT)      :: rnl
+!f2py intent(in,out) ::  rnl
 logical,OPTIONAL,INTENT(IN)                    :: initonly
 
 logical                                        :: skipread = .FALSE.
@@ -3238,6 +3274,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                    :: nmlfile
 type(kinematicalNameListType),INTENT(INOUT)    :: knl
+!f2py intent(in,out) ::  knl
 logical,OPTIONAL,INTENT(IN)                    :: initonly
 
 logical                                        :: skipread = .FALSE.
@@ -3309,6 +3346,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -3506,6 +3544,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -3663,6 +3702,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(EBSDoverlapNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -3763,6 +3803,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(TKDoverlapNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -3862,6 +3903,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(TKDspotsNameListType),INTENT(INOUT):: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -3979,6 +4021,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(ECPZANameListType),INTENT(INOUT)   :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4061,6 +4104,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(ECPNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4202,6 +4246,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(LACBEDNameListType),INTENT(INOUT)  :: lacbednl
+!f2py intent(in,out) ::  lacbednl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4296,6 +4341,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(CBEDNameListType),INTENT(INOUT)    :: cbednl
+!f2py intent(in,out) ::  cbednl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4390,6 +4436,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(ECPpatternNameListType),INTENT(INOUT)             :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4460,6 +4507,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(PEDkinNameListType),INTENT(INOUT)             :: pednl
+!f2py intent(in,out) ::  pednl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4551,6 +4599,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(PEDZANameListType),INTENT(INOUT)   :: pednl
+!f2py intent(in,out) ::  pednl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4655,6 +4704,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(ECCINameListType),INTENT(INOUT)    :: eccinl
+!f2py intent(in,out) ::  eccinl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -4793,6 +4843,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: nmlfile
 type(RFZNameListType),INTENT(INOUT)             :: rfznl
+!f2py intent(in,out) ::  rfznl
 logical,OPTIONAL,INTENT(IN)                     :: initonly
 
 logical                                         :: skipread = .FALSE.
@@ -4890,6 +4941,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                                 :: nmlfile
 type(DictIndxOpenCLListType),INTENT(INOUT)                  :: dictindxnl
+!f2py intent(in,out) ::  dictindxnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -5005,6 +5057,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(PEDKINIndxListType),INTENT(INOUT)  :: pednl
+!f2py intent(in,out) ::  pednl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 logical                                 :: skipread = .FALSE.
 
@@ -5143,6 +5196,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EBSDDIpreviewNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -5262,6 +5316,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EBSDIndexingNameListType),INTENT(INOUT)      :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -5524,6 +5579,7 @@ end subroutine GetEBSDIndexingNameList
 
 ! character(fnlen),INTENT(IN)                       :: nmlfile
 ! type(SphInxNameListType),INTENT(INOUT)            :: enl
+!f2py intent(in,out) ::  enl
 ! logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 ! logical                                           :: skipread = .FALSE.
@@ -5717,6 +5773,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(ADPNameListType),INTENT(INOUT)               :: adpnl
+!f2py intent(in,out) ::  adpnl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -5839,6 +5896,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(OSMNameListType),INTENT(INOUT)               :: osmnl
+!f2py intent(in,out) ::  osmnl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -5905,6 +5963,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(dpmergeNameListType),INTENT(INOUT)           :: dpmnl
+!f2py intent(in,out) ::  dpmnl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -5983,6 +6042,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(TKDIndexingNameListType),INTENT(INOUT)       :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -6222,6 +6282,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
 type(ZAdefectnameListType),INTENT(INOUT)      :: ZAdefect
+!f2py intent(in,out) ::  ZAdefect
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -6365,6 +6426,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(ECPIndexingNameListType),INTENT(INOUT)       :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -6492,6 +6554,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMDPFit4ListType),INTENT(INOUT)              :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -6748,6 +6811,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMDPFitListType),INTENT(INOUT)               :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -6937,6 +7001,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(ECPSingleNameListType),INTENT(INOUT)         :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -7036,6 +7101,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)              :: nmlfile
 type(STEMDCINameListType), INTENT(INOUT) :: dcinl
+!f2py intent(in,out) ::  dcinl
 logical, OPTIONAL, INTENT(IN)            :: initonly
 
 logical                                  :: skipread = .FALSE.
@@ -7143,6 +7209,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)              :: nmlfile
 type(STEMGeometryNameListType), INTENT(INOUT) :: dcinl
+!f2py intent(in,out) ::  dcinl
 logical, OPTIONAL, INTENT(IN)            :: initonly
 
 logical                                  :: skipread = .FALSE.
@@ -7224,6 +7291,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(RefineOrientationtype),INTENT(INOUT)         :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -7319,6 +7387,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(Fitalphavarianttype),INTENT(INOUT)           :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -7403,6 +7472,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(FitOrientationPStype),INTENT(INOUT)          :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -7482,6 +7552,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(RefineMartensitetype),INTENT(INOUT)          :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -7565,6 +7636,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -7689,6 +7761,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)             :: nmlfile
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
 logical                                 :: skipread = .FALSE.
@@ -7802,6 +7875,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
 type(EBSDFullNameListType),INTENT(INOUT)      :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
 logical                                   :: skipread = .FALSE.
@@ -7970,6 +8044,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)              :: nmlfile
 type(SRdefectNameListType), INTENT(INOUT) :: srdnl
+!f2py intent(in,out) ::  srdnl
 logical, OPTIONAL, INTENT(IN)            :: initonly
 
 logical                                  :: skipread = .FALSE.
@@ -8112,6 +8187,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(PFInversionNameListType),INTENT(INOUT)       :: epf
+!f2py intent(in,out) ::  epf
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8193,6 +8269,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMgammaNameListType),INTENT(INOUT)           :: epf
+!f2py intent(in,out) ::  epf
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8292,6 +8369,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMgammaOpenCLNameListType),INTENT(INOUT)     :: epf
+!f2py intent(in,out) ::  epf
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8386,6 +8464,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMTwoPhaseNameListType),INTENT(INOUT)        :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8465,6 +8544,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(MDElectronPropNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8566,6 +8646,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMgammaSTEMNameListType),INTENT(INOUT)       :: epf
+!f2py intent(in,out) ::  epf
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8654,6 +8735,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMTGBSTEMNameListType),INTENT(INOUT)         :: epf
+!f2py intent(in,out) ::  epf
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8738,6 +8820,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMCBEDQCNameListType),INTENT(INOUT)          :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8814,6 +8897,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                       :: nmlfile
 type(EMCBED2DQCNameListType),INTENT(INOUT)        :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
@@ -8892,6 +8976,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                           :: nmlfile
 type(EBSDQCMasterNameListType),INTENT(INOUT)          :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                           :: initonly
 
 logical                                               :: skipread = .FALSE.
@@ -8959,6 +9044,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                           :: nmlfile
 type(EBSD2DQCMasterNameListType),INTENT(INOUT)        :: enl
+!f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)                           :: initonly
 
 logical                                               :: skipread = .FALSE.
@@ -9036,6 +9122,7 @@ use io
 IMPLICIT NONE
 
 type(EMmdSTEMNameListType),INTENT(INOUT)          :: msnml
+!f2py intent(in,out) ::  msnml
 character(fnlen),INTENT(IN)                       :: nmlfile
 
 logical,OPTIONAL,INTENT(IN)                       :: initonly
@@ -9119,6 +9206,7 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: nmlfile
 type(EMhh4NameListType),INTENT(INOUT)       :: hhnl
+!f2py intent(in,out) ::  hhnl
 logical,OPTIONAL,INTENT(IN)                 :: initonly
 
 logical                                     :: skipread = .FALSE.

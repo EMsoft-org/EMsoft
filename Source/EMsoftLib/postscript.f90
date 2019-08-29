@@ -156,8 +156,10 @@ use files
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)    :: PS
+!f2py intent(in,out) ::  PS
 character(fnlen),INTENT(IN)            :: progdesc
 integer(kind=irg),INTENT(INOUT)        :: imanum
+!f2py intent(in,out) ::  imanum
 logical,INTENT(IN),optional            :: dontask		!< optional parameter to select file opening route
 logical	                                :: loadingfile
 
@@ -227,6 +229,7 @@ use files
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)    :: PS
+!f2py intent(in,out) ::  PS
 
 ! write the trailer to the file 
  write (psunit,*) 'showpage'
@@ -263,6 +266,7 @@ recursive subroutine PS_newpage(PS, frm, btxt)
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)    :: PS
+!f2py intent(in,out) ::  PS
 
 logical,INTENT(IN)        	        :: frm		!< logical draw frame or not
 character(*),INTENT(IN)   	        :: btxt		!< character string for header balloon
@@ -316,6 +320,7 @@ recursive subroutine PS_cellinfo(PS, cell, xo, yo)
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)        :: PS
+!f2py intent(in,out) ::  PS
 type(unitcell)                             :: cell
 
 real(kind=sgl),INTENT(IN)                  :: xo,yo		!< starting location for output 
@@ -876,6 +881,7 @@ recursive subroutine PS_setdash(PS, num)
 IMPLICIT NONE
 
 type(postscript_type), INTENT(INOUT)        :: PS
+!f2py intent(in,out) ::  PS
 integer(kind=irg),INTENT(IN)  	           :: num	!< dash pattern number of components/segments
 
 integer(kind=irg)  		           :: i	!< loop counter
@@ -1475,6 +1481,7 @@ use crystal
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)      :: PS
+!f2py intent(in,out) ::  PS
 logical,INTENT(IN)                    :: hexset
 character(1),INTENT(IN)           	:: S			!< space character 'd' or 'r'
 integer(kind=irg),INTENT(IN)      	:: h,k,l		!< Miller index triplet
@@ -1646,6 +1653,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN) 	        :: imaint(npx,npy)
 integer(kind=irg),INTENT(INOUT)       :: imanum
+!f2py intent(in,out) ::  imanum
 real(kind=sgl),INTENT(IN)             :: x0,y0		!< image position
 integer(kind=irg),INTENT(IN)         	:: npx,npy		!< image size
 real(kind=sgl),INTENT(IN)             :: scl			!< image scale factor
@@ -1686,6 +1694,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN) 	        :: imaint(npx,npy)
 integer(kind=irg),INTENT(INOUT)       :: imanum
+!f2py intent(in,out) ::  imanum
 real(kind=sgl),INTENT(IN)             :: x0,y0		!< image position
 integer(kind=irg),INTENT(IN)         	:: npx,npy		!< image size
 real(kind=sgl),INTENT(IN)             :: sclx,scly	!< image scale factors
@@ -1750,6 +1759,7 @@ recursive subroutine IndexReduce(hkl)
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT)  		:: hkl(3)		!< indices
+!f2py intent(in,out) ::  hkl
 integer(kind=irg)  				:: mi,i,j
 real(kind=sgl)     				:: rhkl(3),ir
 
@@ -1793,6 +1803,7 @@ IMPLICIT NONE
 
 
 integer(kind=irg),INTENT(INOUT)  		:: hkl(4)		!< indices
+!f2py intent(in,out) ::  hkl
 integer(kind=irg)  				:: mi,i,j
 real(kind=sgl)     				:: rhkl(4),ir
 
@@ -1842,6 +1853,7 @@ IMPLICIT NONE
 logical,INTENT(IN)                            :: hexset
 character(12),INTENT(OUT)            		:: st		!< output string
 integer(kind=irg),INTENT(INOUT)        	:: hkl(3)	!< index triplet
+!f2py intent(in,out) ::  hkl
 character(1),INTENT(IN)             		:: sp		!< space character 'd' or 'r'
 
 integer(kind=irg)        			:: l,hkil(4),i
@@ -1938,10 +1950,12 @@ recursive subroutine DrawSPFrame(PS,cell,CX,CY,CRad,iview,sp)
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)           :: PS
+!f2py intent(in,out) ::  PS
 type(unitcell)        	                       :: cell
 real(kind=sgl),INTENT(IN)    			:: CX, CY		!< circle center coordinates 
 real(kind=sgl),INTENT(IN)    			:: CRad 		!< circle radius
 integer(kind=irg),INTENT(INOUT)		:: iview(3)		!< zone axis indices
+!f2py intent(in,out) ::  iview
 character(1),INTENT(IN)	      		:: sp			!< drawing space
 
 character(12)     :: instr

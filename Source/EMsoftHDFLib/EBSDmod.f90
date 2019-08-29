@@ -140,6 +140,7 @@ IMPLICIT NONE
 
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
 type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -249,6 +250,7 @@ IMPLICIT NONE
 
 
 type(EBSDFullNameListType),INTENT(INOUT):: enl
+!f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
 type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -349,6 +351,7 @@ IMPLICIT NONE
 
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
 type(EBSDAnglePCDefType),pointer        :: orpcdef
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -446,8 +449,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: MCfile
 type(MCCLNameListType),INTENT(INOUT)                :: mcnl
+!f2py intent(in,out) ::  mcnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
 logical,INTENT(IN),OPTIONAL                         :: getAccume
 logical,INTENT(IN),OPTIONAL                         :: getAccumz
 logical,INTENT(IN),OPTIONAL                         :: getAccumSP
@@ -706,8 +711,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: MPfile
 type(EBSDMasterNameListType),INTENT(INOUT)          :: mpnl
+!f2py intent(in,out) ::  mpnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(EBSDMPdataType),INTENT(INOUT)                  :: EBSDMPdata
+!f2py intent(in,out) ::  EBSDMPdata
 logical,INTENT(IN),OPTIONAL                         :: getkeVs
 logical,INTENT(IN),OPTIONAL                         :: getmLPNH
 logical,INTENT(IN),OPTIONAL                         :: getmLPSH
@@ -1011,9 +1018,13 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
 type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
 type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
+!f2py intent(in,out) ::  EBSDdetector
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate arrays [microns]
@@ -1186,15 +1197,22 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
 type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
 integer(kind=irg),INTENT(IN)            :: nsx
 integer(kind=irg),INTENT(IN)            :: nsy
 integer(kind=irg),INTENT(IN)            :: numE
 real(kind=sgl),INTENT(INOUT)            :: tgx(nsx,nsy)
+!f2py intent(in,out) ::  tgx
 real(kind=sgl),INTENT(INOUT)            :: tgy(nsx,nsy)
+!f2py intent(in,out) ::  tgy
 real(kind=sgl),INTENT(INOUT)            :: tgz(nsx,nsy)
+!f2py intent(in,out) ::  tgz
 real(kind=sgl),INTENT(INOUT)            :: accum_e_detector(numE,nsx,nsy)
+!f2py intent(in,out) ::  accum_e_detector
 real(kind=sgl),INTENT(IN)               :: patcntr(3)
 logical,INTENT(IN),OPTIONAL             :: bg
 
@@ -1393,6 +1411,7 @@ real(kind=sgl),INTENT(IN)                       :: mask(ipar(2)/ipar(1),ipar(3)/
 real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3)
 character(1),INTENT(IN),OPTIONAL                :: removebackground
 integer(K4B),INTENT(INOUT),OPTIONAL             :: applynoise
+!f2py intent(in,out) ::  applynoise
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
 real(kind=sgl),allocatable                      :: wf(:)
@@ -1647,7 +1666,9 @@ use error
 IMPLICIT NONE
 
 type(EBSDFullNameListType),INTENT(INOUT):: enl
+!f2py intent(in,out) ::  enl
 type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
+!f2py intent(in,out) ::  EBSDdetector
 integer(kind=irg),INTENT(IN)            :: numEbins, numzbins
 logical,INTENT(IN),OPTIONAL             :: verbose
 

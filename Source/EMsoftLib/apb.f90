@@ -74,6 +74,7 @@ use crystal
 IMPLICIT NONE
 
 type(defecttype),INTENT(INOUT) :: defects
+!f2py intent(in,out) ::  defects
 type(unitcell)        	       :: cell
 integer(kind=irg),INTENT(IN)   :: dinfo,DF_npix,DF_npiy
 real(kind=sgl),INTENT(IN)      :: DF_L
