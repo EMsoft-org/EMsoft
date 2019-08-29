@@ -2354,12 +2354,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:1), TARGET                 :: wdata
+real(real_kind4), dimension(1:1), TARGET                 :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2439,12 +2439,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:1), TARGET                 :: wdata
+real(real_kind8), dimension(1:1), TARGET                 :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2527,12 +2527,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:dim0), TARGET              :: wdata
+real(real_kind4), dimension(1:dim0), TARGET              :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2615,12 +2615,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1), TARGET       :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1), TARGET       :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2703,12 +2703,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2), TARGET :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1,1:dim2), TARGET :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2792,12 +2792,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2884,12 +2884,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:6)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2,1:dim3,1:dim4,1:dim5), TARGET :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1,1:dim2,1:dim3,1:dim4,1:dim5), TARGET :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2969,12 +2969,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:dim0), TARGET              :: wdata
+real(real_kind8), dimension(1:dim0), TARGET              :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -3056,12 +3056,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1), TARGET       :: wdata
+real(real_kind8), dimension(1:dim0,1:dim1), TARGET       :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -3144,12 +3144,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2), TARGET  :: wdata
+real(real_kind8), dimension(1:dim0,1:dim1,1:dim2), TARGET  :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -3233,12 +3233,12 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET  :: wdata
+real(real_kind8), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET  :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -3938,12 +3938,12 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), TARGET, INTENT(OUT)                                 :: rdata
+real(real_kind4), TARGET, INTENT(OUT)                                 :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 
@@ -4001,13 +4001,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
+real(real_kind4), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4072,13 +4072,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
+real(real_kind4), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4143,13 +4143,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
+real(real_kind4), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4214,13 +4214,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
+real(real_kind4), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4284,12 +4284,12 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), TARGET, INTENT(OUT)                                 :: rdata
+real(real_kind8), TARGET, INTENT(OUT)                                 :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 
@@ -4348,13 +4348,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
+real(real_kind8), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4419,13 +4419,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
+real(real_kind8), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4490,13 +4490,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
+real(real_kind8), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4562,13 +4562,13 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
+real(real_kind8), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -5093,14 +5093,14 @@ recursive function HDF_writeHyperslabFloatArray2D(dataname, wdata, hdims, offset
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1)
+real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
@@ -5167,7 +5167,7 @@ recursive function HDF_writeHyperslabFloatArray3D(dataname, wdata, hdims, offset
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
@@ -5175,7 +5175,7 @@ integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
+real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
@@ -5242,7 +5242,7 @@ recursive function HDF_writeHyperslabFloatArray4D(dataname, wdata, hdims, offset
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
@@ -5251,7 +5251,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
+real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
@@ -5318,14 +5318,14 @@ recursive function HDF_writeHyperslabDoubleArray2D(dataname, wdata, hdims, offse
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1)
+real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
@@ -5392,7 +5392,7 @@ recursive function HDF_writeHyperslabDoubleArray3D(dataname, wdata, hdims, offse
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
@@ -5400,7 +5400,7 @@ integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
+real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
@@ -5467,7 +5467,7 @@ recursive function HDF_writeHyperslabDoubleArray4D(dataname, wdata, hdims, offse
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
@@ -5476,7 +5476,7 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
+real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
@@ -5932,13 +5932,13 @@ recursive function HDF_readHyperslabFloatArray2D(dataname, offset, dims, HDF_hea
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:), allocatable, TARGET    :: rdata
+real(real_kind4), dimension(:,:), allocatable, TARGET    :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
@@ -5998,13 +5998,13 @@ recursive function HDF_readHyperslabFloatArray3D(dataname, offset, dims, HDF_hea
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:), allocatable, TARGET  :: rdata
+real(real_kind4), dimension(:,:,:), allocatable, TARGET  :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
@@ -6064,13 +6064,13 @@ recursive function HDF_readHyperslabFloatArray4D(dataname, offset, dims, HDF_hea
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET:: rdata
+real(real_kind4), dimension(:,:,:,:), allocatable, TARGET:: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
@@ -6130,13 +6130,13 @@ recursive function HDF_readHyperslabDoubleArray2D(dataname, offset, dims, HDF_he
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:), allocatable, TARGET    :: rdata
+real(real_kind8), dimension(:,:), allocatable, TARGET    :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
@@ -6196,13 +6196,13 @@ recursive function HDF_readHyperslabDoubleArray3D(dataname, offset, dims, HDF_he
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:), allocatable, TARGET  :: rdata
+real(real_kind8), dimension(:,:,:), allocatable, TARGET  :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
@@ -6262,13 +6262,13 @@ recursive function HDF_readHyperslabDoubleArray4D(dataname, offset, dims, HDF_he
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
 type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET:: rdata
+real(real_kind8), dimension(:,:,:,:), allocatable, TARGET:: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
@@ -6960,7 +6960,7 @@ type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: aspace_id, dset, atype_id, attr_id ! Handles
 integer                                                 :: hdferr, rnk
 integer(SIZE_T)                                         :: attrlen
