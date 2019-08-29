@@ -1939,7 +1939,18 @@ type EMmdSTEMNameListType
         real(kind=sgl)          :: convergence
         integer(kind=irg)       :: platid
         integer(kind=irg)       :: devid
+        integer(kind=irg)       :: usenumd
+        integer(kind=irg)       :: selnumd(4)
         integer(kind=irg)       :: discsize
+        real(kind=dbl)          :: stride
+        integer(kind=irg)       :: maxnumincell
+        logical                 :: hypslab
+        logical                 :: dwflag
+        real(kind=dbl)          :: thk
+        logical                 :: presorted
+        integer(kind=irg)       :: subslice
+        integer(kind=irg)       :: ZAindex(3)
+        real(kind=sgl)          :: lauec(2)
 end type EMmdSTEMNameListType
 
 type EMhh4NameListType
