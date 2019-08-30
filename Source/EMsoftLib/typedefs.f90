@@ -569,7 +569,7 @@ type symdata
   real(kind=dbl)        :: SYM_recip(48,3,3)            !< reciprocal space point group matrices
   real(kind=dbl)        :: SYM_c(4,4)                   !< dummy 4x4 matrix used for various computations
   character(11)         :: SYM_name                     !< current space group name
-end type
+end type symdata
 
 ! in Release 3.0 and beyond, there are no more global variables
 ! declare global variables
@@ -584,7 +584,7 @@ type symdata2D
   integer(kind=irg)     :: SYM_pgnum                    !< 2D point group number
   integer(kind=irg)     :: SYM_MATnum                   !< number of non-zero symmetry matrices (order)
   integer(kind=irg)     :: SYM_direc(12,2,2)            !< point group matrices (filled in by Generate2DSymmetry)
-end type
+end type symdata2D
 
 ! finally, we define the rotational crystal symmetry operators in terms of quaternions (q0, q1,q2,q3) with q0 the scalar part;
 ! these are used in the dictmod EBSD dictionary indexing module, and are defined with respect to the standard cartesian reference frame
@@ -970,7 +970,7 @@ end type Laue_g_list
 type HOLZentries
   real(kind=sgl)        :: g1(3),g2(3),g3(3),gx(3),gy(3),LC1,LC2,H,FNr(3),FNg(3),gp(2),gtoc(2,2),gshort(3)
   integer(kind=irg)     :: uvw(3),FN(3)
-end type
+end type HOLZentries
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1093,7 +1093,7 @@ end type multicell
 !> directions and two parallel planes
 type orientation
   real(kind=sgl)                        :: tA(3), tB(3), gA(3), gB(3)
-end type
+end type orientation
 
 !> cell is a pointer to the generic unit cell variable used in all programs.  
 ! This pointer is allocated by the InitializeCell routine in the initializers.f90 module
@@ -1301,19 +1301,19 @@ type postscript_type
  integer(kind=irg)      :: pspage
  real(kind=sgl)         :: psdash(20),psfigwidth,psfigheight,psscale
  character(fnlen)       :: psname
-end type
+end type postscript_type
 
 ! used by axonometry-related routines
 type axonotype
  integer(kind=irg)      :: xi,yi,beta,xmod,ymod,countx,county
  real(kind=sgl)         :: grid,scle,vscle,xstart,ystart
  logical                :: visibility
-end type
+end type axonotype
 
 ! used by axis and its routines
 type axistype
  real(kind=sgl)         :: axw,xll,yll
-end type
+end type axistype
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1330,7 +1330,7 @@ type timetype
   integer(kind=irg)     :: TIME_count
   integer(kind=irg)     :: TIME_old
   integer(kind=irg)     :: TIME_loops
-end type
+end type timetype
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1443,7 +1443,7 @@ TYPE COMP_WKS_TYP
 		DOUBLE PRECISION,POINTER :: X(:)
 		DOUBLE PRECISION,POINTER :: D(:)
 		INTEGER					 :: NUMCOST
-	END TYPE
+END TYPE COMP_WKS_TYP
 
 
 !--------------------------------------------------------------------------
@@ -1477,7 +1477,7 @@ type QCsymdata
   real(kind=dbl)                    :: SYM_c(7,7)                   !< dummy 6x6 matrix used for various computations
   character(11)                     :: SYM_name
   character(100)				    :: SYM_GL(11)
-end type
+end type QCsymdata
 
 type QCStructureType
   integer(kind=irg)                     :: atno
@@ -1532,7 +1532,7 @@ type TDQCsymdata
   character(11)                     :: SYM_name
   integer(kind=irg)                 :: N_Axial
   character(40),allocatable         :: SYM_GL(:)
-end type
+end type TDQCsymdata
 
 ! 2-D Quasi-Crystal data structures
 type TDQCStructureType
@@ -1748,23 +1748,23 @@ end type AngleType
 type MAPN_block
   integer(kind=irg)        :: KRASH, NEW
   real(kind=sgl)           :: ZR, ZI, QR(9), QI(9)
-end type
+end type MAPN_block
 
 ! COMMON/MA/PR(4),PI(4),AR(4,4),AI(4,4),EMR(4,4),EMI(4,4),H(4,4) 
 type MA_block
   real(kind=sgl)           :: PR(4), PI(4), AR(4,4), AI(4,4), EMR(4,4), EMI(4,4), H(4,4) 
-end type
+end type MA_block
 
 ! COMMON/MKAP/D1(6,6),EP(3,6),EA(3,3) 
 type MKAP_block
  real(kind=sgl)            :: D1(6,6), EP(3,6), EA(3,3) 
-end type
+end type MKAP_block
 
 ! COMMON/MRD/CN(61),X,X1,Y(8),ERROR,Q,KOUNT,D(8),YT(8),DT(8,4),ANO,SKIP 
 type MRD_block
  real(kind=sgl)            :: CN(61), X, X1, Y(8), ERROR, Q, D(8), YT(8), DT(8,4), ANO, SKIP 
  integer(kind=irg)         :: KOUNT
-end type
+end type MRD_block
 
 ! COMMON/MT/LU(3),LG(3),LBM(3),LFN(3),LB(3),LB2(3),LB3(3),LB4(3), 
 !           LFP(3),LFP1(3),LFP3(3),LS1(3),LS2(3),LS3(3),TLU(3),TLG(3),
@@ -1777,27 +1777,27 @@ type MT_block
  integer(kind=irg)         :: LU(3), LG(3), LBM(3), LFN(3), LB(3), LB2(3), LB3(3), LB4(3), LD, LD2, LD3, LD4, &
                               LFP(3), LFP1(3), LFP3(3), LS1(3), LS2(3), LS3(3), LF1(3), LF2(3), LF3(3), LF4(3), &
                               LQ1, LQ2, LQ3
-end type
+end type MT_block
 
 ! COMMON/MKT/AT(3,3),ATR(3,3)
 type MKT_block
  real(kind=sgl)            :: AT(3,3), ATR(3,3)
-end type
+end type MKT_block
 
 ! COMMON/SCALE30/LTEST
 type SCALE30_block
  integer(kind=irg)         :: LTEST
-end type
+end type SCALE30_block
 
 ! COMMON/MP/PC(4),AS(4,4),EL(4,4) 
 type MP_block
  complex(kind=sgl)         :: PC(4), AS(4,4), EL(4,4) 
-end type
+end type MP_block
 
 ! COMMON/MAP/DC(3,3)
 type MAP_block
  real(kind=sgl)            :: DC(3,3)
-end type
+end type MAP_block
 
 !=======================================
 !=======================================
