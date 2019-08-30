@@ -35,6 +35,7 @@ resources/EMSphInx.wisdom
 /Source/pyEMsoft/*.f90
 /Source/pyEMsoft/pyEMsoft.py
 /Source/pyEMsoft/.f2py_f2cmap
+/Source/pyEMsoft/source
 
 
 
