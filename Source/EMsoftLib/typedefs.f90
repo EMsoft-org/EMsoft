@@ -1803,7 +1803,21 @@ end type
 !=======================================
 !=======================================
 
-
+! the following is a type definition for a 3D magnetization state 
+type LTEM_Magnetization
+  integer(kind=irg)                 :: nx
+  integer(kind=irg)                 :: ny
+  integer(kind=irg)                 :: nz
+  real(kind=dbl)                    :: dx
+  real(kind=dbl)                    :: dy
+  real(kind=dbl)                    :: dz
+  real(kind=dbl),allocatable        :: originalMag(:,:,:)
+  real(kind=dbl),allocatable        :: resampledMag(:,:,:)
+  real(kind=dbl)                    :: Mmagnitude
+  real(kind=dbl)                    :: Bzero
+  real(kind=dbl)                    :: thick
+  character(fnlen)                  :: origin 
+end type LTEM_Magnetization
 
 
 
