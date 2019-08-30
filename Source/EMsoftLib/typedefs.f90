@@ -1,4 +1,4 @@
-! ###################################################################
+xi! ###################################################################
 ! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
@@ -275,7 +275,7 @@ character(11), parameter :: extendedHMOrthsymbols(6,59) = reshape( (/ &
 !DEC$ ATTRIBUTES DLLEXPORT :: extendedHMOrthsymbols
 
 
-!>  SYM_GL	encoded generator strings
+!>  SYM_GL  encoded generator strings
 character(40),parameter :: SYM_GL(237)= (/  &
 "000                                     ","100                                     ","01cOOO0                                 ", &
 "01cODO0                                 ","02aDDOcOOO0                             ","01jOOO0                                 ", &
@@ -550,8 +550,8 @@ logical,parameter       :: DGPG(32,31) = reshape((/ &
 
 
 ! these lines are from an older version; not sure if they are still needed...
-! SYM_SGtworig	= point symmetries for two origin choices
-! SYM_NUMtworig	= number of space groups with two origin settings
+! SYM_SGtworig  = point symmetries for two origin choices
+! SYM_NUMtworig = number of space groups with two origin settings
 
 
 ! declare user-defined types
@@ -569,7 +569,7 @@ type symdata
   real(kind=dbl)        :: SYM_recip(48,3,3)            !< reciprocal space point group matrices
   real(kind=dbl)        :: SYM_c(4,4)                   !< dummy 4x4 matrix used for various computations
   character(11)         :: SYM_name                     !< current space group name
-end type
+end type symdata
 
 ! in Release 3.0 and beyond, there are no more global variables
 ! declare global variables
@@ -584,7 +584,7 @@ type symdata2D
   integer(kind=irg)     :: SYM_pgnum                    !< 2D point group number
   integer(kind=irg)     :: SYM_MATnum                   !< number of non-zero symmetry matrices (order)
   integer(kind=irg)     :: SYM_direc(12,2,2)            !< point group matrices (filled in by Generate2DSymmetry)
-end type
+end type symdata2D
 
 ! finally, we define the rotational crystal symmetry operators in terms of quaternions (q0, q1,q2,q3) with q0 the scalar part;
 ! these are used in the dictmod EBSD dictionary indexing module, and are defined with respect to the standard cartesian reference frame
@@ -970,7 +970,7 @@ end type Laue_g_list
 type HOLZentries
   real(kind=sgl)        :: g1(3),g2(3),g3(3),gx(3),gy(3),LC1,LC2,H,FNr(3),FNg(3),gp(2),gtoc(2,2),gshort(3)
   integer(kind=irg)     :: uvw(3),FN(3)
-end type
+end type HOLZentries
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -995,41 +995,41 @@ end type
 !> The following are the components of the unitcell type:
 !
 !> lattice parameters
-!> a		= a parameter [nm]
-!> b		= b parameter [nm]
-!> c		= c parameter [nm]
-!> alpha	= alpha angle [deg]
-!> beta	        = beta angle [deg]
-!> gamma	= gamma angle [deg]
-!> vol		= unit cell volume [nm^3]
+!> a        = a parameter [nm]
+!> b        = b parameter [nm]
+!> c        = c parameter [nm]
+!> alpha    = alpha angle [deg]
+!> beta         = beta angle [deg]
+!> gamma    = gamma angle [deg]
+!> vol      = unit cell volume [nm^3]
 !
 !> metric information
-!> dmt	        = direct space metric tensor
-!> rmt		= reciprocal space metric tensor
-!> dsm	        = direct space structure matrix
-!> rsm	        = reciprocal space structure matrix
+!> dmt          = direct space metric tensor
+!> rmt      = reciprocal space metric tensor
+!> dsm          = direct space structure matrix
+!> rsm          = reciprocal space structure matrix
 !> trigmat      = direct structure matrix for the trigonal/rhombohedral case, used for Lambert projections
-!> [removed on 1/10/14] krdel	= Kronecker delta (unit matrix)
+!> [removed on 1/10/14] krdel   = Kronecker delta (unit matrix)
 !
 !> asymmetric unit contents
-!> ATOM_ntype	= actual number of occupied positions in asymmetric unit
-!> ATOM_type	= atomic number for each atom in asymmetric unit
-!> ATOM_pos	= fractional coordinates (x,y,z), occupation, Debye-Waller factor for each atom in asymmetric unit
+!> ATOM_ntype   = actual number of occupied positions in asymmetric unit
+!> ATOM_type    = atomic number for each atom in asymmetric unit
+!> ATOM_pos = fractional coordinates (x,y,z), occupation, Debye-Waller factor for each atom in asymmetric unit
 !
 !> the structure file name
-!> fname	= crystal structure file name
+!> fname    = crystal structure file name
 !
 !> use hexagonal or regular indices (comes from old local.f90 module)
-!> hexset	= logical to determine whether to use 3(FALSE) or 4(TRUE) index notation 
+!> hexset   = logical to determine whether to use 3(FALSE) or 4(TRUE) index notation 
 !
 !> atom coordinate array
 !> apos        = allocatable array for atom coordinates
 !
 !> storage space for the potential Fourier coefficient lookup table
-!> LUT	        = lookup table (allocatable)
+!> LUT          = lookup table (allocatable)
 !
 !> double diffraction logical array
-!> dbdiff	= indicates whether a reflection could be due to double diffraction
+!> dbdiff   = indicates whether a reflection could be due to double diffraction
 !
 !> is this space group non-symmorphic or not ?
 !> nonsymmorphic = logical .TRUE. or .FALSE.
@@ -1040,7 +1040,7 @@ end type
 !> linked g-vector list (used to be in gvectors.f90)
 !> reflist     = starting point of linked list of g-vectors
 !
-!> firstw	= pointer to first weak beam entry in list
+!> firstw   = pointer to first weak beam entry in list
         
 !> number of beams in linked list (used to be in dynamical.f90)
 !> DynNbeams   = current number being considered
@@ -1080,6 +1080,11 @@ type unitcell
   real(kind=dbl)                       :: voltage, mLambda, mRelcor, mSigma, mPsihat   ! voltage always in keV !
 end type unitcell
 
+! used to hold an array of pointers to multiple cell objects
+type multicell
+    class(unitcell), pointer :: cell
+end type multicell
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1088,7 +1093,7 @@ end type unitcell
 !> directions and two parallel planes
 type orientation
   real(kind=sgl)                        :: tA(3), tB(3), gA(3), gB(3)
-end type
+end type orientation
 
 !> cell is a pointer to the generic unit cell variable used in all programs.  
 ! This pointer is allocated by the InitializeCell routine in the initializers.f90 module
@@ -1296,19 +1301,19 @@ type postscript_type
  integer(kind=irg)      :: pspage
  real(kind=sgl)         :: psdash(20),psfigwidth,psfigheight,psscale
  character(fnlen)       :: psname
-end type
+end type postscript_type
 
 ! used by axonometry-related routines
 type axonotype
  integer(kind=irg)      :: xi,yi,beta,xmod,ymod,countx,county
  real(kind=sgl)         :: grid,scle,vscle,xstart,ystart
  logical                :: visibility
-end type
+end type axonotype
 
 ! used by axis and its routines
 type axistype
  real(kind=sgl)         :: axw,xll,yll
-end type
+end type axistype
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1325,7 +1330,7 @@ type timetype
   integer(kind=irg)     :: TIME_count
   integer(kind=irg)     :: TIME_old
   integer(kind=irg)     :: TIME_loops
-end type
+end type timetype
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1433,12 +1438,12 @@ end type HOLZvartype
 
 ! typedef for simulated annealing minimization routine
 TYPE COMP_WKS_TYP
-		DOUBLE PRECISION		 :: FOB,ALFAMAX,ALFANR2,FSTOP
-		DOUBLE PRECISION,POINTER :: DOLDALFA(:)
-		DOUBLE PRECISION,POINTER :: X(:)
-		DOUBLE PRECISION,POINTER :: D(:)
-		INTEGER					 :: NUMCOST
-	END TYPE
+        DOUBLE PRECISION         :: FOB,ALFAMAX,ALFANR2,FSTOP
+        DOUBLE PRECISION,POINTER :: DOLDALFA(:)
+        DOUBLE PRECISION,POINTER :: X(:)
+        DOUBLE PRECISION,POINTER :: D(:)
+        INTEGER                  :: NUMCOST
+END TYPE COMP_WKS_TYP
 
 
 !--------------------------------------------------------------------------
@@ -1471,8 +1476,8 @@ type QCsymdata
   real(kind=dbl)                    :: SYM_recip(5000,6,6)           !< reciprocal space point group matrices
   real(kind=dbl)                    :: SYM_c(7,7)                   !< dummy 6x6 matrix used for various computations
   character(11)                     :: SYM_name
-  character(100)				    :: SYM_GL(11)
-end type
+  character(100)                    :: SYM_GL(11)
+end type QCsymdata
 
 type QCStructureType
   integer(kind=irg)                     :: atno
@@ -1487,9 +1492,9 @@ type QCStructureType
   real(kind=dbl)                        :: eovec(3,6), eperp(6,3)
   real(kind=dbl)                        :: Mp(6,6), Picos(6,6)
   real(kind=dbl)                        :: Mo(6,6), Qicos(6,6)
-  real(kind=dbl)						:: dsm(6,6), rsm(6,6)
-  real(kind=dbl)						:: dmt(6,6), rmt(6,6)
-  real(kind=dbl)						:: scaling(6,6)
+  real(kind=dbl)                        :: dsm(6,6), rsm(6,6)
+  real(kind=dbl)                        :: dmt(6,6), rmt(6,6)
+  real(kind=dbl)                        :: scaling(6,6)
   real(kind=dbl)                        :: SYM_icos(6,6,120)              ! 532 rotational group in matrix representation
   real(kind=dbl)                        :: QClatparm, alphaij, alphastarij
   real(kind=dbl)                        :: dmin
@@ -1527,7 +1532,7 @@ type TDQCsymdata
   character(11)                     :: SYM_name
   integer(kind=irg)                 :: N_Axial
   character(40),allocatable         :: SYM_GL(:)
-end type
+end type TDQCsymdata
 
 ! 2-D Quasi-Crystal data structures
 type TDQCStructureType
@@ -1743,23 +1748,23 @@ end type AngleType
 type MAPN_block
   integer(kind=irg)        :: KRASH, NEW
   real(kind=sgl)           :: ZR, ZI, QR(9), QI(9)
-end type
+end type MAPN_block
 
 ! COMMON/MA/PR(4),PI(4),AR(4,4),AI(4,4),EMR(4,4),EMI(4,4),H(4,4) 
 type MA_block
   real(kind=sgl)           :: PR(4), PI(4), AR(4,4), AI(4,4), EMR(4,4), EMI(4,4), H(4,4) 
-end type
+end type MA_block
 
 ! COMMON/MKAP/D1(6,6),EP(3,6),EA(3,3) 
 type MKAP_block
  real(kind=sgl)            :: D1(6,6), EP(3,6), EA(3,3) 
-end type
+end type MKAP_block
 
 ! COMMON/MRD/CN(61),X,X1,Y(8),ERROR,Q,KOUNT,D(8),YT(8),DT(8,4),ANO,SKIP 
 type MRD_block
  real(kind=sgl)            :: CN(61), X, X1, Y(8), ERROR, Q, D(8), YT(8), DT(8,4), ANO, SKIP 
  integer(kind=irg)         :: KOUNT
-end type
+end type MRD_block
 
 ! COMMON/MT/LU(3),LG(3),LBM(3),LFN(3),LB(3),LB2(3),LB3(3),LB4(3), 
 !           LFP(3),LFP1(3),LFP3(3),LS1(3),LS2(3),LS3(3),TLU(3),TLG(3),
@@ -1772,33 +1777,47 @@ type MT_block
  integer(kind=irg)         :: LU(3), LG(3), LBM(3), LFN(3), LB(3), LB2(3), LB3(3), LB4(3), LD, LD2, LD3, LD4, &
                               LFP(3), LFP1(3), LFP3(3), LS1(3), LS2(3), LS3(3), LF1(3), LF2(3), LF3(3), LF4(3), &
                               LQ1, LQ2, LQ3
-end type
+end type MT_block
 
 ! COMMON/MKT/AT(3,3),ATR(3,3)
 type MKT_block
  real(kind=sgl)            :: AT(3,3), ATR(3,3)
-end type
+end type MKT_block
 
 ! COMMON/SCALE30/LTEST
 type SCALE30_block
  integer(kind=irg)         :: LTEST
-end type
+end type SCALE30_block
 
 ! COMMON/MP/PC(4),AS(4,4),EL(4,4) 
 type MP_block
  complex(kind=sgl)         :: PC(4), AS(4,4), EL(4,4) 
-end type
+end type MP_block
 
 ! COMMON/MAP/DC(3,3)
 type MAP_block
  real(kind=sgl)            :: DC(3,3)
-end type
+end type MAP_block
 
 !=======================================
 !=======================================
 !=======================================
 
-
+! the following is a type definition for a 3D magnetization state 
+type LTEM_Magnetization
+  integer(kind=irg)                 :: nx
+  integer(kind=irg)                 :: ny
+  integer(kind=irg)                 :: nz
+  real(kind=dbl)                    :: dx
+  real(kind=dbl)                    :: dy
+  real(kind=dbl)                    :: dz
+  real(kind=dbl),allocatable        :: originalMag(:,:,:)
+  real(kind=dbl),allocatable        :: resampledMag(:,:,:)
+  real(kind=dbl)                    :: Mmagnitude
+  real(kind=dbl)                    :: Bzero
+  real(kind=dbl)                    :: thick
+  character(fnlen)                  :: origin 
+end type LTEM_Magnetization
 
 
 
