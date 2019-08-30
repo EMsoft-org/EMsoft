@@ -105,7 +105,7 @@ end do
 !cell%SG%SYM_reduce=.TRUE.
 !cell%fname = xtalname2
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(xtalname2)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)
@@ -196,7 +196,7 @@ end do
 !cell%SG%SYM_reduce=.TRUE.
 !cell%fname = xtalname2
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(xtalname2)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)
@@ -492,7 +492,7 @@ verbose2 = .FALSE.
 cell%SG%SYM_reduce=.TRUE.
 cell%fname = trim(epf%xtalname)
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)
@@ -679,7 +679,7 @@ delta       = 1.D0/dble(nLam)
 !nullify(cell)        
 !allocate(cell)        
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname   = trim(EMsoft_getXtalpathname())//trim(xtalname)
 fname   = EMsoft_toNativePath(fname)
 hdferr  =  HDF_openFile(fname, HDF_head_cell)

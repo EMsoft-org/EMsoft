@@ -129,7 +129,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'LauemasterNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call HDF_pop(HDF_head,.TRUE.)
     call FatalError('readLaueMasterFile','this is not a Laue Master Pattern file')

@@ -1531,7 +1531,7 @@ end if
 ! open the fortran HDF interface
 if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -2368,7 +2368,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'EBSDDictionaryIndexingNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call FatalError('readEBSDDotProductFile','this is not an EBSD dot product file')
 end if
@@ -2397,7 +2397,7 @@ dataset = SC_ncubochoric
 ! There is an issue with the capitalization on this variable; needs to be resolved 
 ! [MDG 10/18/17]  We test to see if Ncubochoric exists; if it does not then we check
 ! for ncubochoric ...
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
 else
@@ -2406,7 +2406,7 @@ else
 end if
 
 dataset = SC_ROI
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then
     call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, iarray)
     ebsdnl%ROI(1:4) = iarray(1:4)
@@ -2735,7 +2735,7 @@ end if
 if (present(getRefinedDotProducts)) then
   if (getRefinedDotProducts.eqv..TRUE.) then
     dataset = SC_RefinedDotProducts
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%RefinedDotProducts)
     else
@@ -2747,7 +2747,7 @@ end if
 if (present(getRefinedEulerAngles)) then
   if (getRefinedEulerAngles.eqv..TRUE.) then
     dataset = SC_RefinedEulerAngles
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%RefinedEulerAngles)
     else

@@ -210,7 +210,7 @@ hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 ! next we need to make sure that this EM file actually contains a Monte Carlo 
 ! data set; if it does, then we can try to read all the information
 datagroupname = '/EMData/MCfoil'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain any TKD Monte Carlo data')
 end if
@@ -219,7 +219,7 @@ end if
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
 ! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
 datagroupname = '/EMheader/MCfoil'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
 end if
@@ -278,7 +278,7 @@ call HDF_pop(HDF_head)
 ! initialize the crystallographic parameters; we need to do this here rather than
 ! above because we need the EkeV parameter ... 
 datagroupname = '/CrystalData'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call Message('Master file does not contain crystal structure data; will look for .xtal file instead.')
 else
@@ -586,7 +586,7 @@ groupname = SC_EMData
 
 dataset = SC_xtalname
   stringarray(1)= trim(xtalname)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head, overwrite)
   else
@@ -594,7 +594,7 @@ dataset = SC_xtalname
   end if
 
 dataset = SC_numset
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head, overwrite)
   else
@@ -603,7 +603,7 @@ dataset = SC_numset
 
 dataset = SC_BetheParameters
   bp = (/ BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff /)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetFloatArray1D(dataset, bp, 4, HDF_head, overwrite)
   else
@@ -611,7 +611,7 @@ dataset = SC_BetheParameters
   end if
 
 dataset = SC_lastEnergy
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetInteger(dataset, lastEnergy, HDF_head, overwrite)
   else
@@ -620,7 +620,7 @@ dataset = SC_lastEnergy
   
   if (emnl%Esel.eq.-1) then
 dataset = SC_numEbins
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetInteger(dataset, numEbins, HDF_head, overwrite)
     else
@@ -628,7 +628,7 @@ dataset = SC_numEbins
     end if
   
 dataset = SC_EkeVs
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloatArray1D(dataset, EkeVs, numEbins, HDF_head, overwrite)
     else
@@ -636,7 +636,7 @@ dataset = SC_EkeVs
     end if
   else
 dataset = SC_numEbins
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetInteger(dataset, one, HDF_head, overwrite)
     else
@@ -644,7 +644,7 @@ dataset = SC_numEbins
     end if
   
 dataset = SC_selE
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloat(dataset, selE, HDF_head, overwrite)
     else
@@ -657,7 +657,7 @@ dataset = SC_mLPNH
   dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
   cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, 0, 0 /)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
   else
@@ -668,7 +668,7 @@ dataset = SC_mLPSH
   dims4 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins, numsites /)
   cnt4 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1, numsites /)
   offset4 = (/ 0, 0, 0, 0 /)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
   else
@@ -679,7 +679,7 @@ dataset = SC_masterSPNH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, 0 /)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
   else
@@ -690,7 +690,7 @@ dataset = SC_masterSPSH
   dims3 = (/  2*emnl%npx+1, 2*emnl%npx+1, numEbins /)
   cnt3 = (/ 2*emnl%npx+1, 2*emnl%npx+1, 1 /)
   offset3 = (/ 0, 0, 0 /)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
   else
@@ -1011,7 +1011,7 @@ dataset = SC_StopTime
   call CPU_TIME(tstop)
 dataset = SC_Duration
   tstop = tstop - tstart
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then     
     hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head, overwrite)
   else

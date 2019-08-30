@@ -247,7 +247,7 @@ groupname = SC_EMData
 
 ! finally, write all the necessary data:  orientations and simulated patterns along with geometrical parameters
 dataset = 'kouter'
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloat(dataset, kouter, HDF_head, overwrite)
     else
@@ -255,7 +255,7 @@ dataset = 'kouter'
     end if
 
 dataset = 'kinner'
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloat(dataset, kinner, HDF_head, overwrite)
     else
@@ -282,7 +282,7 @@ dataset = 'kinner'
 	patternbatch = 0.0
 
 dataset = 'numangles'
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head, overwrite)
     else
@@ -295,7 +295,7 @@ dataset = 'LauePatterns'
 	  dims3 = (/ npx, npy, numangles /)
 	  cnt3 = (/ npx, npy, numangles /)
 	  offset3 = (/ 0, 0, 0 /)
-	  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 	  if (g_exists) then 
 	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 	  else
@@ -305,7 +305,7 @@ dataset = 'LauePatterns'
 	  dims3 = (/ npx, npy, numangles /)
 	  cnt3 = (/ npx, npy, batchnumangles(1) /)
 	  offset3 = (/ 0, 0, 0 /)
-	  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 	  if (g_exists) then 
 	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 	  else
@@ -329,7 +329,7 @@ dataset = 'backprojections'
     dims3 = (/ BPnpx, BPnpy, numangles /)
     cnt3 = (/ BPnpx, BPnpy, numangles /)
     offset3 = (/ 0, 0, 0 /)
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
     else
@@ -339,7 +339,7 @@ dataset = 'backprojections'
     dims3 = (/ BPnpx, BPnpy, numangles /)
     cnt3 = (/ BPnpx, BPnpy, batchnumangles(1) /)
     offset3 = (/ 0, 0, 0 /)
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
     else

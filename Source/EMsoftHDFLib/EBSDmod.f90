@@ -494,7 +494,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
 ! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
 datagroupname = '/EMheader/MCOpenCL'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
 end if
@@ -518,7 +518,7 @@ call HDF_pop(HDF_head)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'MCOpenCLNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call HDF_pop(HDF_head,.TRUE.)
     call FatalError('readEBSDMonteCarloFile','this is not an EBSD Monte Carlo file')
@@ -571,7 +571,7 @@ dataset = SC_mode
     deallocate(stringarray)
 
 dataset = SC_multiplier
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%multiplier)
 else
@@ -588,7 +588,7 @@ dataset = SC_omega
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%omega)
 
 dataset = SC_platid
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%platid)
 else
@@ -623,7 +623,7 @@ groupname = SC_MCOpenCL
 
 ! integers
 dataset = SC_multiplier
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%multiplier)
 else
@@ -763,7 +763,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
 ! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
 datagroupname = '/EMheader/EBSDmaster'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Master Pattern header data')
 end if
@@ -787,7 +787,7 @@ call HDF_pop(HDF_head)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'EBSDmasterNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call HDF_pop(HDF_head,.TRUE.)
     call FatalError('readEBSDMasterPatternFile','this is not an EBSD Master Pattern file')
@@ -798,7 +798,7 @@ call HDF_pop(HDF_head)
 ! check if this is an overlap EBSD pattern or a regular one  [ added by MDG, 06/19/19 ]
 !====================================
 dataset = 'READMEFIRST'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 EBSDMPdata%AveragedMP = .FALSE.
 EBSDMPdata%newPGnumber = -1
 if (g_exists.eqv..TRUE.) then
@@ -811,7 +811,7 @@ if (EBSDMPdata%AveragedMP.eqv..TRUE.) then
       hdferr = HDF_openGroup(groupname, HDF_head)
 
   dataset = 'PointGroupNumber'
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%newPGnumber)
 
   call HDF_pop(HDF_head)
@@ -827,19 +827,19 @@ groupname = SC_EBSDMasterNameList
 
 ! we'll read these roughly in the order that the HDFView program displays them...
 dataset = SC_Esel
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%Esel)
 
 ! we need to set the newPGnumber parameter to the correct value, to reflect the fact that 
 ! the symmetry of the overlap pattern will be different [ added by MDG, 06/20/19 ]
 if (EBSDMPdata%AveragedMP.eqv..TRUE.) then 
   dataset = 'newpgnumber'
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%newPGnumber)
 end if
 
 dataset = SC_combinesites
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 mpnl%combinesites = .FALSE.
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, combinesites)
@@ -847,7 +847,7 @@ if (g_exists.eqv..TRUE.) then
 end if
 
 dataset = SC_copyfromenergyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     mpnl%copyfromenergyfile = trim(stringarray(1))
@@ -871,7 +871,7 @@ dataset = SC_nthreads
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%nthreads)
 
 dataset = SC_restart
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, restart)
     mpnl%restart = .FALSE.
@@ -879,14 +879,14 @@ if(g_exists) then
 end if
 
 dataset = SC_stdout
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%stdout)
 end if
 
 dataset = SC_uniform
 mpnl%uniform = .FALSE.
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, uniform)
     if (uniform.ne.0) mpnl%uniform = .TRUE.
@@ -906,7 +906,7 @@ groupname = SC_EBSDmaster
 
 ! integers
 dataset = SC_lastEnergy
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%lastEnergy)
 end if

@@ -309,7 +309,7 @@ else
   end do
 end if 
 
-call h5immake_image_8bit_f(HDF_head%objectID,dataset,width,height,image,hdferr)
+call h5immake_image_8bit_f(HDF_head%next%objectID,dataset,width,height,image,hdferr)
 deallocate(image, newvec)
 
 end subroutine h5ebsd_write2DImageFromVector
@@ -367,7 +367,7 @@ do jj = 1,height
   image(1:width,jj) = int(255.0*newvec((jj-1)*width+1:jj*width)/ma)
 end do
 
-call h5immake_image_8bit_f(HDF_head%objectID,dataset,width,height,image,hdferr)
+call h5immake_image_8bit_f(HDF_head%next%objectID,dataset,width,height,image,hdferr)
 deallocate(image, newvec)
 
 end subroutine h5tkd_write2DImageFromVector
@@ -421,7 +421,7 @@ EBSDview = ichar(chararr)
 dataset = 'EBSD View Reference Frame'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(EBSDview),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(EBSDview),hdferr)
 deallocate(EBSDview,chararr)
 
 !=====================================================
@@ -439,7 +439,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 1'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 !=====================================================
 ! Schematic 2
@@ -454,7 +454,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 2'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 !=====================================================
 ! Schematic 3
@@ -469,7 +469,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 3'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 !=====================================================
 ! Schematic 4
@@ -484,7 +484,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 4'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 deallocate(schematic,chararr)
 !=====================================================
@@ -625,7 +625,7 @@ stat = .FALSE.
 call h5fis_hdf5_f(filename, stat, hdferr)
 
 if (stat) then
-  nullify(HDF_head_local)
+  nullify(HDF_head_local%next)
 
 ! open the xtal file using the default properties.
   readonly = .TRUE.
@@ -1035,7 +1035,7 @@ dataset = SC_Valid
   deallocate(valid)
 
 dataset = SC_EulerAngles
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   allocate(eangles(3,ipar(3)),stat=istat)
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)

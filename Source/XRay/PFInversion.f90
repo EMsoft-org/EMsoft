@@ -158,7 +158,7 @@ delta = 1.D0/dble(nLam)
 !nullify(cell)        
 !allocate(cell)        
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(xtalname)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)

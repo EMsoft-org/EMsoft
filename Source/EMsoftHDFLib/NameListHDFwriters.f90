@@ -81,7 +81,7 @@ recursive subroutine HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 integer(kind=irg),INTENT(IN)                          :: io_int(n_int)
 character(20),INTENT(IN)                              :: intlist(n_int)
@@ -93,7 +93,7 @@ logical                                               :: g_exists, overwrite=.TR
 
 do i=1,n_int
   dataset = intlist(i)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetInteger(dataset, io_int(i), HDF_head, overwrite)
    else
@@ -124,7 +124,7 @@ recursive subroutine HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 real(kind=sgl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
@@ -136,7 +136,7 @@ logical                                               :: g_exists, overwrite=.TR
 
 do i=1,n_real
   dataset = reallist(i)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetFloat(dataset, io_real(i), HDF_head, overwrite)
   else
@@ -167,7 +167,7 @@ recursive subroutine HDF_writeNMLdbles(HDF_head, io_real, reallist, n_real)
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 real(kind=dbl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
@@ -179,7 +179,7 @@ logical                                               :: g_exists, overwrite=.TR
 
 do i=1,n_real
   dataset = reallist(i)
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetDouble(dataset, io_real(i), HDF_head, overwrite)
   else
@@ -219,7 +219,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LorentzNameListType),INTENT(IN)                  :: knl
 
@@ -343,7 +343,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(KosselNameListType),INTENT(IN)                   :: knl
 
@@ -422,7 +422,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(KosselMasterNameListType),INTENT(IN)             :: knl
 
@@ -495,7 +495,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LaueMasterNameListType),INTENT(IN)               :: knl
 
@@ -570,7 +570,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LaueNameListType),INTENT(IN)                     :: lnl
 
@@ -659,7 +659,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(OMmasterNameListType),INTENT(IN)                 :: knl
 
@@ -736,7 +736,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(OMNameListType),INTENT(IN)                       :: knl
 
@@ -804,7 +804,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(MCNameListType),INTENT(INOUT)                    :: mcnl
 !f2py intent(in,out) ::  mcnl
@@ -888,7 +888,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(MCLIPSSNameListType),INTENT(INOUT)                    :: mcnl
 !f2py intent(in,out) ::  mcnl
@@ -973,7 +973,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
 !f2py intent(in,out) ::  mcnl
@@ -1075,7 +1075,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(MCCLMultiLayerNameListType),INTENT(INOUT)        :: mcnl
 !f2py intent(in,out) ::  mcnl
@@ -1165,7 +1165,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1210,7 +1210,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
 dataset = SC_dmin
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%dmin, HDF_head, overwrite)
 else
@@ -1225,7 +1225,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable
 
 dataset = SC_copyfromenergyfile
 line2(1) = emnl%copyfromenergyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1235,7 +1235,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable
 
 dataset = SC_energyfile
 line2(1) = emnl%energyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1268,7 +1268,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDoverlapNameListType),INTENT(INOUT)           :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1293,7 +1293,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
 dataset = 'fracA'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%fracA, HDF_head, overwrite)
 else
@@ -1328,7 +1328,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unabl
 
 dataset = 'masterfileA'
 line2(1) = emnl%masterfileA
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1338,7 +1338,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unabl
 
 dataset = 'masterfileB'
 line2(1) = emnl%masterfileB
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1348,7 +1348,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unabl
 
 dataset = 'datafile'
 line2(1) = emnl%datafile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1359,7 +1359,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDoverlapNameList: unabl
 
 dataset = 'overlapmode'
 line2(1) = emnl%overlapmode
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1393,7 +1393,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDSingleMasterNameListType),INTENT(INOUT)      :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1424,7 +1424,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write two reals
 dataset = SC_dmin
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%dmin, HDF_head, overwrite)
 else
@@ -1433,7 +1433,7 @@ end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDSingleMasterNameList: unable to create dmin dataset',.TRUE.)
 
 dataset = SC_kV
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%kV, HDF_head, overwrite)
 else
@@ -1442,7 +1442,7 @@ end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDSingleMasterNameList: unable to create kV dataset',.TRUE.)
 
 dataset = 'tstep'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%tstep, HDF_head, overwrite)
 else
@@ -1453,7 +1453,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDSingleMasterNameList: 
 ! strings
 dataset = SC_outname
 line2(1) = emnl%outname
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1463,7 +1463,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDSingleMasterNameList: 
 
 dataset = SC_xtalname
 line2(1) = emnl%xtalname
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1496,7 +1496,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(RefineMartensitetype),INTENT(INOUT)              :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1525,7 +1525,7 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 dataset = 'outputfile'
 line2(1) = emnl%outputfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1536,7 +1536,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRefineMartensiteNameList: 
 
 dataset = 'martensiteMPprefix'
 line2(1) = emnl%martensiteMPprefix
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1547,7 +1547,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRefineMartensiteNameList: 
 
 dataset = 'martensiteMPpostfix'
 line2(1) = emnl%martensiteMPpostfix
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1558,7 +1558,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteRefineMartensiteNameList: 
 
 dataset = 'ferritedotproductfile'
 line2(1) = emnl%ferritedotproductfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1593,7 +1593,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDQCMasterNameListType),INTENT(INOUT)          :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1623,7 +1623,7 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 dataset = SC_energyfile
 line2(1) = emnl%energyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1656,7 +1656,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSD2DQCMasterNameListType),INTENT(INOUT)        :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1690,7 +1690,7 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 dataset = SC_energyfile
 line2(1) = emnl%energyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1700,7 +1700,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDQCMasterNameList: unab
 
 dataset = SC_centering
 line2(1) = emnl%centering
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1710,7 +1710,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDQCMasterNameList: unab
 
 dataset = SC_QCtype
 line2(1) = emnl%QCtype
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1742,7 +1742,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(TKDMasterNameListType),INTENT(INOUT)            :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1787,7 +1787,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
 dataset = SC_dmin
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%dmin, HDF_head, overwrite)
 else
@@ -1797,7 +1797,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDMasterNameList: unable 
 
 dataset = SC_energyfile
 line2(1) = emnl%energyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1830,7 +1830,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(TKDspotsNameListType),INTENT(INOUT)              :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1871,7 +1871,7 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 dataset = SC_outname
 line2(1) = emnl%outname
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1881,7 +1881,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDspotsNameList: unable t
 
 dataset = SC_xtalname
 line2(1) = emnl%xtalname
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1891,7 +1891,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteTKDspotsNameList: unable t
 
 dataset = SC_eulerfile
 line2(1) = emnl%eulerfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -1924,7 +1924,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDMasterOpenCLNameListType),INTENT(INOUT)      :: emnl
 !f2py intent(in,out) ::  emnl
@@ -1967,7 +1967,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
 dataset = SC_dmin
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloat(dataset, emnl%dmin, HDF_head, overwrite)
 else
@@ -1977,7 +1977,7 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable
 
 dataset = SC_energyfile
 line2(1) = emnl%energyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 else
@@ -2011,7 +2011,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(BetheParameterType),INTENT(INOUT)                :: BetheParameters
 !f2py intent(in,out) ::  BetheParameters
@@ -2065,7 +2065,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDclusterNameListType),INTENT(INOUT)           :: emnl
 !f2py intent(in,out) ::  emnl
@@ -2130,7 +2130,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPQCMasterNameListType),INTENT(INOUT)           :: ecpnl
 !f2py intent(in,out) ::  ecpnl
@@ -2192,7 +2192,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPMasterNameListType),INTENT(INOUT)             :: ecpnl
 !f2py intent(in,out) ::  ecpnl
@@ -2266,7 +2266,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPZANameListType),INTENT(INOUT)                 :: ecpnl
 !f2py intent(in,out) ::  ecpnl
@@ -2345,7 +2345,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
 !f2py intent(in,out) ::  enl
@@ -2505,7 +2505,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(TKDNameListType),INTENT(INOUT)                   :: enl
 !f2py intent(in,out) ::  enl
@@ -2629,7 +2629,7 @@ use error
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPNameListType),INTENT(INOUT)                   :: ecpnl
 !f2py intent(in,out) ::  ecpnl
@@ -2808,7 +2808,7 @@ use error
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPSingleNameListType),INTENT(INOUT)             :: ecpnl
 !f2py intent(in,out) ::  ecpnl
@@ -2907,7 +2907,7 @@ use error
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPIndexingNameListType),INTENT(INOUT)           :: ecpnl
 !f2py intent(in,out) ::  ecpnl
@@ -3025,7 +3025,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LACBEDNameListType),INTENT(INOUT)                :: lacbednl
 !f2py intent(in,out) ::  lacbednl
@@ -3104,7 +3104,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(CBEDNameListType),INTENT(INOUT)                  :: cbednl
 !f2py intent(in,out) ::  cbednl
@@ -3186,7 +3186,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPpatternNameListType),INTENT(INOUT)            :: ecpnl
 !f2py intent(in,out) ::  ecpnl
@@ -3254,7 +3254,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(PEDkinNameListType),INTENT(INOUT)                :: pednl
 !f2py intent(in,out) ::  pednl
@@ -3331,7 +3331,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(kinematicalNameListType),INTENT(INOUT)                :: knl
 !f2py intent(in,out) ::  knl
@@ -3391,7 +3391,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(PEDZANameListType),INTENT(INOUT)                   :: pednl
 !f2py intent(in,out) ::  pednl
@@ -3477,7 +3477,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECCINameListType),INTENT(INOUT)                  :: eccinl
 !f2py intent(in,out) ::  eccinl
@@ -3605,7 +3605,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(RFZNameListType),INTENT(INOUT)                   :: rfznl
 !f2py intent(in,out) ::  rfznl
@@ -3692,7 +3692,7 @@ use local
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(DictIndxOpenCLListType),INTENT(INOUT)            :: dictindxnl
 !f2py intent(in,out) ::  dictindxnl
@@ -3771,7 +3771,7 @@ use local
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EBSDIndexingNameListType),INTENT(INOUT)          :: ebsdnl
 !f2py intent(in,out) ::  ebsdnl
@@ -3971,7 +3971,7 @@ use local
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(TKDIndexingNameListType),INTENT(INOUT)           :: tkdnl
 !f2py intent(in,out) ::  tkdnl
@@ -4158,7 +4158,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
 !f2py intent(in,out) ::  mcnl
@@ -4265,7 +4265,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
 !f2py intent(in,out) ::  mcnl
@@ -4348,7 +4348,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(PFInversionNameListType),INTENT(IN)              :: epf
 
@@ -4420,7 +4420,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(STEMDCINameListType),INTENT(IN)                  :: epf
 
@@ -4526,7 +4526,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EMgammaSTEMNameListType),INTENT(IN)              :: dcinl
 
@@ -4608,7 +4608,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EMTGBSTEMNameListType),INTENT(IN)              :: dcinl
 
@@ -4685,7 +4685,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(STEMGeometryNameListType),INTENT(IN)             :: epf
 
@@ -4753,7 +4753,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EMCBEDQCNameListType),INTENT(INOUT)              :: cbednl
 !f2py intent(in,out) ::  cbednl
@@ -4825,7 +4825,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EMCBED2DQCNameListType),INTENT(INOUT)            :: cbednl
 !f2py intent(in,out) ::  cbednl
@@ -4898,7 +4898,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(EMhh4NameListType),INTENT(INOUT)                 :: hhnl
 !f2py intent(in,out) ::  hhnl

@@ -96,7 +96,7 @@ use error
 IMPLICIT NONE
 
 type(TDQCStructureType),pointer         :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType)                :: HDF_head
@@ -112,9 +112,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("SaveDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -218,7 +218,7 @@ use error
 IMPLICIT NONE
 
 type(QCStructureType),pointer            :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType)                :: HDF_head
@@ -234,9 +234,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("SaveDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -337,7 +337,7 @@ use error
 IMPLICIT NONE
 
 type(TDQCStructureType),pointer         :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType)                :: HDF_head
@@ -353,9 +353,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("Read2DQCDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -457,7 +457,7 @@ use error
 IMPLICIT NONE
 
 type(QCStructureType),pointer            :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType)                :: HDF_head
@@ -473,9 +473,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("Read2DQCDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 

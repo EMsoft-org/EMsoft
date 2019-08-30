@@ -309,7 +309,7 @@ select case (itype)
 ! patterns stored in it... Hence this option is currently non-existent.
 
     case(4, 7)  ! "TSLHDF", "EMEBSD"
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -323,7 +323,7 @@ select case (itype)
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
     case(8)  !  "BrukerHDF"
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -854,7 +854,7 @@ select case (itype)
 
     case(4, 7)  ! "TSLHDF" "EMEBSD"
         call HDF_pop(pmHDF_head,.TRUE.)
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
 
     case(5)  ! "OxfordBinary"
         close(unit=funit,status='keep')
@@ -864,7 +864,7 @@ select case (itype)
 
     case(8)  !  "BrukerHDF"
         call HDF_pop(pmHDF_head,.TRUE.)
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
         deallocate(semix, semiy)
 
     case default 

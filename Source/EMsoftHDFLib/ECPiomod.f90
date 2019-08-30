@@ -139,7 +139,7 @@ filename = EMsoft_toNativePath(filename)
 stat = .FALSE.
 
 call h5fis_hdf5_f(filename, stat, hdferr)
-nullify(HDF_head_local)
+nullify(HDF_head_local%next)
 
 
 if (stat) then

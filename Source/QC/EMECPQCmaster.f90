@@ -224,7 +224,7 @@ hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
 ! next we need to make sure that this EM file actually contains a Monte Carlo 
 ! data set; if it does, then we can open the file and read all the information
 datagroupname = '/EMData/MCOpenCL'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ECPQCmasterpattern','This HDF file does not contain any Monte Carlo data')
 end if
@@ -414,7 +414,7 @@ end if
 ! if this file already contains an ECPmaster dataset, then we let the user
 ! know and gracefully abort the program.
 !dataset = 'EMData/ECPmaster'
-!call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+!call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 !if (g_exists) then 
 !  call FatalError('ECQCmasterpattern','This file already contains an ECPQCmaster dataset') 
 !end if
@@ -449,7 +449,7 @@ hdferr = HDF_createGroup(groupname, HDF_head)
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 
 dataset = SC_numset
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetInteger(dataset, numset, HDF_head, overwrite)
 else
@@ -457,7 +457,7 @@ else
 end if
 
 dataset = SC_EkeV
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetDouble(dataset, EkeV, HDF_head, overwrite)
 else
@@ -469,7 +469,7 @@ dataset = SC_mLPNH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 else
@@ -480,7 +480,7 @@ dataset = SC_mLPSH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 else
@@ -491,7 +491,7 @@ dataset = SC_masterSPNH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 else
@@ -502,7 +502,7 @@ dataset = SC_masterSPSH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 else

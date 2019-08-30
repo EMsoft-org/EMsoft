@@ -410,7 +410,7 @@ end subroutine ECPreadQCMCMasterfile
 
 ! ! next we need to make sure that this file has Monte Carlo data in it...
 !   datagroupname = 'MCOpenCL'
-!   call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+!   call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 !   if (.not.g_exists) then
 !     call Message('This file does not appear to contain any Monte Carlo data or the file')
 !     call Message('has the old data format; please use the EMmergeEBSD script to update')
@@ -463,7 +463,7 @@ end subroutine ECPreadQCMCMasterfile
 !   call HDF_pop(HDF_head)
 
 ! datagroupname = 'EBSDmaster'
-! call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+! call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 !   if (.not.g_exists) then
 !     call Message('This file does not appear to contain any EBSD master data or the file')
 !     call Message('has the old data format; please use the EMmergeEBSD script to update')

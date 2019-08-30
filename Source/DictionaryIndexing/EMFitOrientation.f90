@@ -799,7 +799,7 @@ groupname = SC_Data
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 dataset = SC_RefinedDotProducts
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloatArray1D(dataset, CIlist, Nexp, HDF_head, overwrite)
 else
@@ -807,7 +807,7 @@ else
 end if
  
 dataset = SC_RefinedEulerAngles
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloatArray2D(dataset, sngl(euler_best*cPi/180.0), 3, Nexp, HDF_head, overwrite)
 else

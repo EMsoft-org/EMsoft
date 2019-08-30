@@ -123,7 +123,7 @@ end if
 ! open the fortran HDF interface
 if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then

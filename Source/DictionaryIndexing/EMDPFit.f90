@@ -438,7 +438,7 @@ else if(trim(enl%modalityname) .eq. 'ECP') then
 ! open the fortran HDF interface
     call h5open_EMsoft(hdferr)
 
-    nullify(HDF_head, HDF_head)
+    nullify(HDF_head%next)
 
 ! is this a propoer HDF5 file ?
     call h5fis_hdf5_f(trim(EMsoft_getEMdatapathname())//trim(enl%masterfile), stat, hdferr)

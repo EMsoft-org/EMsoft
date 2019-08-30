@@ -312,7 +312,7 @@ groupname = SC_EMheader
 
 ! next we need to make sure that this file has Monte Carlo data in it...
   datagroupname = 'MCfoil'
-  call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
   if (.not.g_exists) then
     call FatalError('TKDreadMCfile','This HDF file does not contain any Monte Carlo data')
   end if
@@ -465,7 +465,7 @@ groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
   datagroupname = 'TKDmaster'
-  call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
   if (.not.g_exists) then
     call FatalError('TKDreadMasterfile','This HDF file does not contain any TKD master pattern data')
   end if
@@ -583,7 +583,7 @@ character(fnlen),allocatable            :: stringarray(:)
 
 type(HDFobjectStackType)                :: HDF_head
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then

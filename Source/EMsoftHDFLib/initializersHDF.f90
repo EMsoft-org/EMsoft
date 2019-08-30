@@ -90,7 +90,7 @@ character(fnlen),INTENT(IN)                :: xtalname
 real(kind=sgl),INTENT(IN)                  :: dmin
 real(kind=sgl),INTENT(IN)                  :: voltage
 logical,INTENT(IN),OPTIONAL                :: verbose
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
 logical,INTENT(IN),OPTIONAL                :: interpolate

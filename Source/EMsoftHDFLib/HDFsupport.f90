@@ -100,7 +100,7 @@ type HDFobjectStackType   ! this is a push-pop stack to keep track of the open o
   character(LEN=1)                      :: objectType
   character(fnlen)                      :: objectName
   integer(HID_T)                        :: objectID
-  type(HDFobjectStackType)              :: next
+  type(HDFobjectStackType),pointer      :: next
 end type HDFobjectStackType
 
 logical, private, save                  :: FixedLengthflag
@@ -293,7 +293,7 @@ end if
 ! version number /EMheader/Version 'character'
 line = 'Version'
 line2(1) = trim(EMsoft_getEMsoftversion())
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -307,7 +307,7 @@ end if
 ! execution data /EMheader/Date 'character'
 line = 'Date'
 line2(1) = dstr
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -321,7 +321,7 @@ end if
 ! start time /EMheader/StartTime 'character'
 line = 'StartTime'
 line2(1) = dstr//', '//tstrb
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -337,7 +337,7 @@ end if
 call timestamp(datestring=dstr)
 line = 'StopTime'
 line2(1) = dstr//', '//tstre
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -351,7 +351,7 @@ end if
 ! program name /EMheader/ProgramName 'character'
 line = 'ProgramName'
 line2(1) = prn 
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -365,7 +365,7 @@ end if
 ! user name /EMheader/UserName 'character'
 line = 'UserName'
 line2(1) = EMsoft_getUsername()
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -379,7 +379,7 @@ end if
 ! user location /EMheader/UserLocation 'character'
 line = 'UserLocation'
 line2(1) = EMsoft_getUserlocation()
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -393,7 +393,7 @@ end if
 ! user email /EMheader/UserEmail 'character'
 line = 'UserEmail'
 line2(1) = EMsoft_getUseremail()
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -415,7 +415,7 @@ do i=1,nlen
 end do 
 line = 'HostName'
 line2(1) = c
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -478,7 +478,7 @@ integer(HID_T),INTENT(IN)                             :: oID
 character(fnlen),INTENT(IN)                           :: oName
 logical,INTENT(IN),OPTIONAL                           :: verbose
 
-type(HDFobjectStackType)                              :: node
+type(HDFobjectStackType),pointer                      :: node
 integer(kind=irg)                                     :: istat
 
 ! the stack always exists but we never use the top level
@@ -536,7 +536,7 @@ logical,INTENT(IN),optional                             :: closeall
 logical,INTENT(IN),optional                             :: verbose
 
 integer                                                 :: error, istat
-type(HDFobjectStackType)                                :: tmp
+type(HDFobjectStackType),pointer                        :: tmp
 
 nullify(tmp)
 
@@ -637,9 +637,9 @@ use io
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(IN),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(IN)                  :: HDF_head
 
-type(HDFobjectStackType)                             :: tmp
+type(HDFobjectStackType),pointer                     :: tmp
 integer(kind=irg)                                    :: io_int(1)
 
 tmp => HDF_head % next
@@ -882,11 +882,11 @@ logical                                                 :: g_exists
 
 success = 0
 
-call H5Lexists_f(HDF_head%objectID,cstringify(groupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,cstringify(groupname),g_exists, hdferr)
 call HDFerror_check('HDF_createGroup:H5Lexists_f:'//trim(groupname), hdferr)
 
 if (g_exists) then 
-  call H5Gopen_f(HDF_head%objectID, cstringify(groupname), group_id, hdferr)
+  call H5Gopen_f(HDF_head%next%objectID, cstringify(groupname), group_id, hdferr)
   call HDFerror_check('HDF_createGroup:H5Gopen_f:'//trim(groupname), hdferr)
 
   if (hdferr.lt.0) then
@@ -896,7 +896,7 @@ if (g_exists) then
     call HDF_push(HDF_head, 'g', group_id, groupname)
   end if
 else 
-  call H5Gcreate_f(HDF_head%objectID, cstringify(groupname), group_id, hdferr)
+  call H5Gcreate_f(HDF_head%next%objectID, cstringify(groupname), group_id, hdferr)
   call HDFerror_check('HDF_createGroup:H5Gcreate_f:'//trim(groupname), hdferr)
 
   if (hdferr.lt.0) then
@@ -939,7 +939,7 @@ integer                                                 :: hdferr  ! hdferr flag
 
 success = 0
 
-call H5Gopen_f(HDF_head%objectID, cstringify(groupname), group_id, hdferr)
+call H5Gopen_f(HDF_head%next%objectID, cstringify(groupname), group_id, hdferr)
 call HDFerror_check('HDF_openGroup:H5Gopen_f:'//trim(groupname), hdferr)
 
 if (hdferr.lt.0) then
@@ -981,7 +981,7 @@ integer                                                 :: hdferr  ! hdferr flag
 
 success = 0
 
-call H5dopen_f(HDF_head%objectID, cstringify(dataname), data_id, hdferr)
+call H5dopen_f(HDF_head%next%objectID, cstringify(dataname), data_id, hdferr)
 call HDFerror_check('HDF_openDataset:H5dopen_f:'//trim(dataname), hdferr)
 
 if (hdferr.lt.0) then
@@ -1068,14 +1068,14 @@ call HDFerror_check('HDF_writeDatasetTextFile:h5screate_simple_f:'//trim(datanam
 !
 ! Create the dataset and write the variable-length string data to it.
 !
-call H5Lexists_f(HDF_head%objectID,cstringify(dataname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,cstringify(dataname),g_exists, hdferr)
 call HDFerror_check('HDF_writeDatasetTextFile:H5Lexists_f:'//trim(dataname), hdferr)
 
 if (g_exists) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetTextFile:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), filetype, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), filetype, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetTextFile:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1217,7 +1217,7 @@ hdferr = HDF_openDataset(dataname, HDF_head)
 !
 ! Get the datatype.
 !
-call H5Dget_type_f(HDF_head%objectID, filetype, hdferr)
+call H5Dget_type_f(HDF_head%next%objectID, filetype, hdferr)
 call HDFerror_check('HDF_readDatasetStringArray:H5Dget_type_f:'//trim(dataname), hdferr)
 
 if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one single string into stringarray...
@@ -1226,7 +1226,7 @@ if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one si
 
 ! Get dataspace and allocate memory for read buffer.
 !
-  call H5Dget_space_f(HDF_head%objectID, space, hdferr)
+  call H5Dget_space_f(HDF_head%next%objectID, space, hdferr)
   call HDFerror_check('HDF_readDatasetStringArray:H5Dget_space_f:'//trim(dataname), hdferr)
  
   call H5Tcopy_f(H5T_FORTRAN_S1, memtype, hdferr)
@@ -1239,7 +1239,7 @@ if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one si
 ! Read the data.
 !
   f_ptr = C_LOC(fl_rdata(1:1))
-  call h5dread_f(HDF_head%objectID, memtype, f_ptr, hdferr) !, space)
+  call h5dread_f(HDF_head%next%objectID, memtype, f_ptr, hdferr) !, space)
   call HDFerror_check('HDF_readDatasetStringArray:h5dread_f:'//trim(dataname), hdferr)
 
   allocate(stringarray(1))
@@ -1249,7 +1249,7 @@ if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one si
   nlines = 1
 else ! there could be multiple variable length strings to be read...
 ! Get dataspace and allocate memory for read buffer.
-  call H5Dget_space_f(HDF_head%objectID, space, hdferr)
+  call H5Dget_space_f(HDF_head%next%objectID, space, hdferr)
   call HDFerror_check('HDF_readDatasetStringArray:H5Dget_space_f:'//trim(dataname), hdferr)
 
   ! this routine returns the rank of the data set in the hdferr variable when successful, otherwise -1
@@ -1263,7 +1263,7 @@ else ! there could be multiple variable length strings to be read...
 ! Read the data.
 !
   f_ptr = C_LOC(rdata(1))
-  call h5dread_f(HDF_head%objectID, H5T_STRING, f_ptr, hdferr)
+  call h5dread_f(HDF_head%next%objectID, H5T_STRING, f_ptr, hdferr)
   call HDFerror_check('HDF_readDatasetStringArray:h5dread_f:'//trim(dataname), hdferr)
 
 !
@@ -1339,12 +1339,12 @@ hdferr = HDF_openDataset(dataname, HDF_head)
 !
 ! Get the datatype.
 !
-call H5Dget_type_f(HDF_head%objectID, filetype, hdferr)
+call H5Dget_type_f(HDF_head%next%objectID, filetype, hdferr)
 call HDFerror_check('HDF_extractDatasetTextfile:H5Dget_type_f:'//trim(dataname), hdferr)
 
 ! Get dataspace and allocate memory for read buffer.
 !
-call H5Dget_space_f(HDF_head%objectID, space, hdferr)
+call H5Dget_space_f(HDF_head%next%objectID, space, hdferr)
 call HDFerror_check('HDF_extractDatasetTextfile:H5Dget_space_f:'//trim(dataname), hdferr)
 
 call H5Sget_simple_extent_dims_f(space, dims, maxdims, hdferr)
@@ -1357,7 +1357,7 @@ ALLOCATE(rdata(1:dims(1)))
 ! Read the data.
 !
 f_ptr = C_LOC(rdata(1))
-call h5dread_f(HDF_head%objectID, H5T_STRING, f_ptr, hdferr)
+call h5dread_f(HDF_head%next%objectID, H5T_STRING, f_ptr, hdferr)
 call HDFerror_check('HDF_extractDatasetTextfile:h5dread_f:'//trim(dataname), hdferr)
 
 !
@@ -1473,10 +1473,10 @@ end if
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetStringArray:h5dopen_f:'//trim(dataname)//':overwrite', hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), filetype, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), filetype, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetStringArray:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1563,10 +1563,10 @@ call HDFerror_check('HDF_writeDatasetCharArray1D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1647,10 +1647,10 @@ call HDFerror_check('HDF_writeDatasetCharArray2D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -1732,10 +1732,10 @@ call HDFerror_check('HDF_writeDatasetCharArray3D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1818,10 +1818,10 @@ call HDFerror_check('HDF_writeDatasetCharArray4D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -1905,10 +1905,10 @@ call HDFerror_check('HDF_writeDatasetInteger:h5screate_simple_f:'//trim(dataname
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -1993,10 +1993,10 @@ call HDFerror_check('HDF_writeDatasetInteger1byteArray1D:h5screate_simple_f:'//t
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger1byteArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger1byteArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2080,10 +2080,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2167,10 +2167,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2256,10 +2256,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2345,10 +2345,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -2431,10 +2431,10 @@ call HDFerror_check('HDF_writeDatasetFloat:h5screate_simple_f:'//trim(dataname),
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloat:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloat:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2517,10 +2517,10 @@ call HDFerror_check('HDF_writeDatasetDouble:h5screate_simple_f:'//trim(dataname)
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDouble:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDouble:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2606,10 +2606,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray1D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2695,10 +2695,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray2D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2784,10 +2784,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray3D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2874,10 +2874,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray4D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2967,10 +2967,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray6D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the 6D float data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -3053,10 +3053,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray1D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -3141,10 +3141,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray2D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -3230,10 +3230,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray3D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -3320,10 +3320,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray4D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -3396,7 +3396,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3466,7 +3466,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3537,7 +3537,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3608,7 +3608,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3676,7 +3676,7 @@ integer(HID_T)                                          :: space, dset ! Handles
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetInteger:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3741,7 +3741,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3811,7 +3811,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3881,7 +3881,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3952,7 +3952,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4021,7 +4021,7 @@ integer(HID_T)                                          :: space, dset ! Handles
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloat:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4088,7 +4088,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4160,7 +4160,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4232,7 +4232,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4304,7 +4304,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4372,7 +4372,7 @@ integer(HID_T)                                          :: space, dset ! Handles
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDouble:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4440,7 +4440,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4512,7 +4512,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4584,7 +4584,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4657,7 +4657,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4752,10 +4752,10 @@ call HDFerror_check('HDF_writeHyperslabCharArray2D:h5screate_simple_f:'//trim(da
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -4830,10 +4830,10 @@ call HDFerror_check('HDF_writeHyperslabCharArray3D:h5screate_simple_f:'//trim(da
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -4908,10 +4908,10 @@ call HDFerror_check('HDF_writeHyperslabCharArray4D:h5screate_simple_f:'//trim(da
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -4981,10 +4981,10 @@ call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5screate_simple_f:'//trim
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5055,10 +5055,10 @@ call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5screate_simple_f:'//trim
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5130,10 +5130,10 @@ call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5screate_simple_f:'//trim
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5205,10 +5205,10 @@ call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5screate_simple_f:'//trim(d
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5281,10 +5281,10 @@ call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5screate_simple_f:'//trim(d
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5358,10 +5358,10 @@ call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5screate_simple_f:'//trim(d
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5433,10 +5433,10 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5screate_simple_f:'//trim(
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5509,10 +5509,10 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5screate_simple_f:'//trim(
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5586,10 +5586,10 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5screate_simple_f:'//trim(
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5646,7 +5646,7 @@ integer                                                 :: hdferr, rnk
 
 allocate(rdata(1:dims(1),1:dims(2)))
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5715,7 +5715,7 @@ integer                                                 :: hdferr, rnk
 
 allocate(rdata(1:dims(1),1:dims(2),1:dims(3)))
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5780,7 +5780,7 @@ integer                                                 :: hdferr, rnk
 
 allocate(rdata(1:dims(1),1:dims(2),1:dims(3),1:dims(4)))
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5846,7 +5846,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5911,7 +5911,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5976,7 +5976,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabIntegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6043,7 +6043,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6110,7 +6110,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6177,7 +6177,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6244,7 +6244,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6311,7 +6311,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6378,7 +6378,7 @@ integer(HID_T)                                          :: memspace, space, dset
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('hdf_readHyperslabDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6451,7 +6451,7 @@ IMPLICIT NONE
 type(unitcell),INTENT(INOUT)            :: cell
 !f2py intent(in,out) ::  cell
 logical,INTENT(IN),OPTIONAL             :: verbose
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
 integer(kind=irg)                       :: i, ipg, isave
@@ -6523,7 +6523,7 @@ IMPLICIT NONE
 
 type(unitcell)         , INTENT(INOUT)  :: cell
 !f2py intent(in,out) ::  cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType)                :: HDF_head
@@ -6539,9 +6539,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("SaveDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -6668,7 +6668,7 @@ IMPLICIT NONE
 
 type(unitcell)         , INTENT(INOUT)  :: cell
 !f2py intent(in,out) ::  cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
 type(HDFobjectStackType)                :: HDF_head
@@ -6686,9 +6686,9 @@ character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("ReadDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -6757,7 +6757,7 @@ cell%ATOM_pos(1:cell%ATOM_ntype,1:5) = atompos(1:cell%ATOM_ntype,1:5)
 deallocate(atompos)
 
 dataset = SC_Source
-call H5Lexists_f(HDF_head%objectID,trim(dataset),d_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),d_exists, hdferr)
 if (d_exists) then 
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   cell%source = trim(stringarray(1))
@@ -7106,10 +7106,10 @@ call HDFerror_check('HDF_addStringAttribute:h5tset_size_f:'//trim(dataname), hdf
 ! Create the attribute and write the string data to it.
 !
 if (present(overwrite)) then
-  call h5aopen_f(HDF_head%objectID, cstringify(dataname), attr_id, hdferr)
+  call h5aopen_f(HDF_head%next%objectID, cstringify(dataname), attr_id, hdferr)
   call HDFerror_check('HDF_addStringAttribute:h5aopen_f:'//trim(dataname), hdferr)
 else
-  call h5acreate_f(HDF_head%objectID, cstringify(dataname), atype_id, aspace_id, attr_id, hdferr)
+  call h5acreate_f(HDF_head%next%objectID, cstringify(dataname), atype_id, aspace_id, attr_id, hdferr)
   call HDFerror_check('HDF_addStringAttribute:h5acreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -7184,7 +7184,7 @@ dims(1) = slen
 success = 0
 
 ! open the attribute for this group
-  call h5aopen_f(HDF_head%objectID, cstringify(dataname), attr_id, hdferr)
+  call h5aopen_f(HDF_head%next%objectID, cstringify(dataname), attr_id, hdferr)
   call HDFerror_check('HDF_getStringAttributeFromGroup:h5aopen_f:'//trim(dataname), hdferr)
 
   ! Get the datatype and its size.
@@ -7255,7 +7255,7 @@ integer(kind=irg)                                   :: hdferr
 
 ! read the image from the file
 allocate(vec(numx*numy))
-call h5imread_image_f(HDF_head%objectID,dataset,vec,hdferr)
+call h5imread_image_f(HDF_head%next%objectID,dataset,vec,hdferr)
 
 ! reorganize it into a regular image
 image = reshape( vec, (/ numx, numy/) )
