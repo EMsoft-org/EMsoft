@@ -160,7 +160,7 @@ type(HDFobjectStackType),pointer  :: HDF_head
 
 verbose = .FALSE.
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 thr = 1.E-5
 space = 'r'

@@ -158,7 +158,7 @@ character(15)                              :: tstre
 ! hdfname
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 !nullify(cell)        
 
 call timestamp(datestring=dstr, timestring=tstrb)
@@ -308,7 +308,7 @@ deallocate(TIFF_image)
 ! save everything to HDF5 file
   call timestamp(datestring=dstr, timestring=tstre)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 

@@ -157,7 +157,7 @@ integer(int8)                              :: i8 (3,4)
 integer(int8), allocatable                 :: TIFF_image(:,:)
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 !nullify(cell)        
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = ''

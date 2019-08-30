@@ -180,7 +180,7 @@ integer(kind=irg)       :: numangle, iang
 type(HDFobjectStackType),pointer  :: HDF_head
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 

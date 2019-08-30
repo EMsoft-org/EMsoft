@@ -395,7 +395,7 @@ logical                                 :: includeFmatrix=.FALSE., noise
 ! max number of OpenMP threads on this platform
 maxthreads = omp_get_max_threads()
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 !nullify(cell)        
 
 !====================================
@@ -1307,7 +1307,7 @@ logical                                 :: includeFmatrix=.FALSE.
 ! max number of OpenMP threads on this platform
 maxthreads = omp_get_max_threads()
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 !nullify(cell)        
 
 !====================================

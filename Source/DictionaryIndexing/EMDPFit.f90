@@ -243,7 +243,7 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
 
 ! open the fortran HDF interface
     call h5open_EMsoft(hdferr)
-    nullify(HDF_head)
+    nullify(HDF_head%next)
 
     ! 1. read the Monte Carlo data 
     call readEBSDMonteCarloFile(enl%masterfile, mcnl, hdferr, EBSDMCdata, getAccume=.TRUE.)

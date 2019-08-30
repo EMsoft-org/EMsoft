@@ -201,7 +201,7 @@ character(100)                     :: c
 
 !$OMP THREADPRIVATE(rlp) 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call CPU_TIME(tstart)
@@ -481,7 +481,7 @@ mLPSH = 0.0
 masterSPNH = 0.0
 masterSPSH = 0.0
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
@@ -812,7 +812,7 @@ call CPU_TIME(tstop)
 
 datagroupname = 'ECPmaster'
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
 call h5open_EMsoft(hdferr)
 

@@ -331,7 +331,7 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 
 allocate(stringarray(1))
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 call timestamp(timestring=tstre)
 
 ! Create a new file using the default properties.

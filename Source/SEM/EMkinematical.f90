@@ -176,7 +176,7 @@ verbose = .FALSE.
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 space = 'r'
 

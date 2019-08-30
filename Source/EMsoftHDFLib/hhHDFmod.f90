@@ -91,7 +91,7 @@ irow = hhnl%IROW
 icol = hhnl%ICOL
 imnum = hhnl%wnum
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! Create a new file using the default properties.
 hhfile = trim(EMsoft_getEMdatapathname())//trim(hhnl%outname)

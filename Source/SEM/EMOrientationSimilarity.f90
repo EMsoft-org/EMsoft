@@ -79,7 +79,7 @@ real(kind=sgl),allocatable              :: osm(:,:)
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 nmldeffile = 'EMOrientationSimilarity.nml'
 progname = 'EMOrientationSimilarity.f90'

@@ -635,7 +635,7 @@ call Message(' ')
 !===============================
 ! HDF5 I/O
 ! write out the data to the file
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)

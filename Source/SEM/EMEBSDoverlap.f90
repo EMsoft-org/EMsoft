@@ -393,7 +393,7 @@ if (trim(enl%overlapmode).eq.'series') then
   call Message('completed LC conversion')
 
   ! finally, create simple HDF5 file with only the overlap master array in it
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   ! Initialize FORTRAN interface.
   call h5open_f(hdferr)
 
@@ -482,7 +482,7 @@ else    ! overlapmode = 'full'
   call Message(' completed SP conversion')
 
 ! overwrite the existing arrays in the output file 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)

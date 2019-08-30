@@ -105,7 +105,7 @@ close(dataunit,status='keep')
 
 !====================================
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! initialize the fortran HDF interface
 CALL h5open_EMsoft(hdferr)
@@ -148,7 +148,7 @@ write(*,*) '   --> done'
 !====================================
 ! next, we read this data set from the HDF5 file
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! initialize the fortran HDF interface
 CALL h5open_EMsoft(hdferr)

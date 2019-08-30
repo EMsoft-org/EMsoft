@@ -781,7 +781,7 @@ end if
 
 ! add fitted dot product values to HDF5 file
 ! open the fortran HDF interface
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 dpfile = trim(EMsoft_getEMdatapathname())//trim(ronl%dotproductfile)
 dpfile = EMsoft_toNativePath(dpfile)

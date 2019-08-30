@@ -190,7 +190,7 @@ real(kind=sgl)                  :: kpg(3),tkpg(3),xnom,xden,q1,q2,sg,gvec(3)
 
 ! end interface
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call CPU_TIME(tstart)
@@ -400,7 +400,7 @@ masterSPNH = 0.0
 masterSPSH = 0.0
 Iarray = -1.0      ! negative to make sure we do not use unassigned values in the interpolation process
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
@@ -650,7 +650,7 @@ end do
 
 datagroupname = 'ECPmaster'
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
 call h5open_EMsoft(hdferr)
 

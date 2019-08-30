@@ -103,7 +103,7 @@ EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 
 
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! initialize the fortran HDF interface
 CALL h5open_EMsoft(hdferr)

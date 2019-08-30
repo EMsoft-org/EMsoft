@@ -204,7 +204,7 @@ integer(kind=irg)                 :: NumLines
 character(fnlen)                  :: SlackUsername, exectime
 character(100)                    :: c
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 

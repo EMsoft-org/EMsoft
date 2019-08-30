@@ -195,7 +195,7 @@ integer(int8), allocatable              :: montage(:,:)
 
  ECCI = .TRUE.
  
- nullify(HDF_head)
+ nullify(HDF_head%next)
  nullify(khead)
  nullify(ktmp)
 
@@ -522,7 +522,7 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
 ! store necessary data in data file
   call Message('Storing output ECCIs in '//trim(eccinl%dataname),"(A/)")
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -822,7 +822,7 @@ call Message('  done',"(A)")
 ! and here we write the current image to the datafile; we also update the timestamp
   call timestamp(datestring=dstr, timestring=tstre)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)
 

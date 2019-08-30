@@ -286,7 +286,7 @@ call CPU_TIME(tstart)
 call Time_tick(tick)
 
 ! nullify HDF pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! generate xtal structure data
 !nullify(cell)        

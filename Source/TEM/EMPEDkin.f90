@@ -249,7 +249,7 @@ write (*,*) 'Maximum diffracted intensity : ',maxint
 !=============================================
 ! open the HDF5 output file; in the old code, the output was written into two separate binary files
 ! here, we do just one output file in the standard EMsoft style
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)

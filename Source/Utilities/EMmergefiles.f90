@@ -144,7 +144,7 @@ else
 ! CrystalData group in the output file as well...
       energyfile = trim(infile1)
       energyfile = EMsoft_toNativePath(energyfile)
-      nullify(HDF_head)
+      nullify(HDF_head%next)
       call h5open_EMsoft(hdferr)
 ! open the MC file using the default properties.
       readonly = .TRUE.

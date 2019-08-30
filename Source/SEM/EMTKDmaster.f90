@@ -176,7 +176,7 @@ type(HDFobjectStackType),pointer  :: HDF_head
 
 stereog = .TRUE.
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call cpu_time(tstart)
@@ -507,7 +507,7 @@ if (emnl%restart.eqv..TRUE.) then
 ! open the existing HDF5 file 
 !=============================================
   datagroupname = 'TKDmaster'
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -534,7 +534,7 @@ else
 ! create or update the HDF5 output file
 !=============================================
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -992,7 +992,7 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numsites) = mLPNH(-emnl%npx:emnl%npx, emn
 
   datagroupname = 'TKDmaster'
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)
 

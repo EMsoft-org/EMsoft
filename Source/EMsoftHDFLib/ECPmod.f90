@@ -161,7 +161,7 @@ call h5fis_hdf5_f(energyfile, stat, hdferr)
 if (stat) then
 
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -359,7 +359,7 @@ if (stat) then
 ! open the fortran HDF interface
   call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -548,7 +548,7 @@ type(HDFobjectStackType),pointer        :: HDF_head
 
 allocate(master)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -1230,7 +1230,7 @@ if (stat) then
 ! open the fortran HDF interface
   if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -1842,7 +1842,7 @@ if (stat) then
 ! open the fortran HDF interface
   if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the xtal file using the default properties.
   readonly = .TRUE.
@@ -2211,7 +2211,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if
 
 ! open the dot product file
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 

@@ -264,7 +264,7 @@ character(100)                    :: c
 
 stereog = .TRUE.
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 !nullify(cell)        
 
 call timestamp(datestring=dstr, timestring=tstrb)
@@ -324,7 +324,7 @@ if (emnl%restart.eqv..TRUE.) then
 ! open the existing HDF5 file 
 !=============================================
   datagroupname = 'EBSDmaster'
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -507,7 +507,7 @@ if (emnl%restart.eqv..FALSE.) then
 ! create or update the HDF5 output file
 !=============================================
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -1000,7 +1000,7 @@ energyloop: do iE=Estart,1,-1
 
   datagroupname = 'EBSDmaster'
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)
 

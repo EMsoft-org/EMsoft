@@ -189,7 +189,7 @@ type(HDFobjectStackType),pointer  :: HDF_head
 tpi = 2.D0*cPi
 czero = dcmplx(0.D0,0.D0)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call cpu_time(tstart)
@@ -297,7 +297,7 @@ end if
 ! create the HDF5 output file
 !=============================================
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -587,7 +587,7 @@ end if
 ! and here is where the major changes are for version 5.0: all output now in HDF5 format
   call timestamp(datestring=dstr, timestring=tstre)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)
 

@@ -125,7 +125,7 @@ call timestamp(datestring=dstr, timestring=tstr)
 ! Initialize FORTRAN interface if needed.
 !
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('SaveDataHDF:h5open_EMsoft', hdferr)
 
@@ -247,7 +247,7 @@ call timestamp(datestring=dstr, timestring=tstr)
 ! Initialize FORTRAN interface if needed.
 !
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('SaveDataHDF:h5open_EMsoft', hdferr)
 
@@ -362,7 +362,7 @@ if (present(existingHDFhead)) then
 end if
 
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('Read2DQCDataHDF:h5open_EMsoft', hdferr)
 
@@ -482,7 +482,7 @@ if (present(existingHDFhead)) then
 end if
 
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('Read2DQCDataHDF:h5open_EMsoft', hdferr)
 

@@ -485,7 +485,7 @@ if (stat) then
 ! open the fortran HDF interface
   if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.

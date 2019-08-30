@@ -96,7 +96,7 @@ integer(int8)                           :: i8 (3,4)
 integer(int8), allocatable              :: TIFF_image(:,:)
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 nmldeffile = 'EMKAM.nml'
 progname = 'EMKAM.f90'

@@ -119,7 +119,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if 
    
 ! open the Master Pattern file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 

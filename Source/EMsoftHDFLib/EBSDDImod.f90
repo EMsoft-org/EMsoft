@@ -302,7 +302,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
       dictfile = EMsoft_toNativePath(dictfile)
   
       call Message('-->  '//'Opening HDF5 dictionary file '//trim(dinl%dictfile))
-      nullify(HDF_head)
+      nullify(HDF_head%next)
   
       hdferr =  HDF_openFile(dictfile, HDF_head)
       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -1186,7 +1186,7 @@ type(HDFobjectStackType),pointer                :: HDF_head
 
 ! Initialize FORTRAN interface.
 !
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! Open the HDF5 file  in readonly mode
 datafile = trim(EMsoft_getEMdatapathname())//trim(enl%inputfilename)
@@ -2360,7 +2360,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if 
    
 ! open the dot product file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
@@ -2775,7 +2775,7 @@ dataset = SC_StepY
 
 ! and close the HDF5 dot product file
 call HDF_pop(HDF_head,.TRUE.)
-nullify(HDF_head)
+nullify(HDF_head%next)
  
 end subroutine readEBSDDotProductFile
 

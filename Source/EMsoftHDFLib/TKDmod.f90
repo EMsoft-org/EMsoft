@@ -250,7 +250,7 @@ energyfile = EMsoft_toNativePath(energyfile)
 call h5fis_hdf5_f(energyfile, stat, hdferr)
 
 if (stat) then
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -423,7 +423,7 @@ character(fnlen),allocatable            :: stringarray(:)
 
 type(HDFobjectStackType),pointer        :: HDF_head
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then

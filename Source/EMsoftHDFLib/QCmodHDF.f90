@@ -96,7 +96,7 @@ allocate(master)
 call h5fis_hdf5_f(energyfile, stat, hdferr)
 
 if (stat) then
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -340,7 +340,7 @@ end subroutine ECPreadQCMCMasterfile
 ! ! open the fortran HDF interface
 !   call h5open_EMsoft(hdferr)
 
-!   nullify(HDF_head)
+!   nullify(HDF_head%next)
 
 ! ! open the MC file using the default properties.
 !   readonly = .TRUE.

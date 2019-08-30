@@ -181,7 +181,7 @@ integer(HSIZE_T)                    :: dims4(4), cnt4(4), offset4(4), dims2(2), 
 
 !$OMP THREADPRIVATE(rlp)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call CPU_TIME(tstart)
@@ -318,7 +318,7 @@ allocate(mLPNH(1:ecpnl%npix,1:ecpnl%npix),stat=istat)
 mLPNH = 0.0
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
@@ -478,7 +478,7 @@ end do beamloop
 ! and here is where the major changes are for this version 5.0: all output now in HDF5 format
 call timestamp(timestring=tstre)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
 call h5open_EMsoft(hdferr)
 

@@ -200,7 +200,7 @@ integer(kind=irg)									:: numthreads
 call timestamp(datestring=dstr, timestring=tstrb)
 call CPU_TIME(tstart)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 !=============================================================
 ! READ THE NECESSARY INFORMATION FROM THE MC FILE
@@ -414,7 +414,7 @@ masterSPSH 	= 0.0
 ! HDF5 I/O
 !===========================================================================================
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
@@ -741,7 +741,7 @@ energyloop: do iE = numEbins,1,-1
 
   datagroupname = 'EBSDmaster'
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)
 

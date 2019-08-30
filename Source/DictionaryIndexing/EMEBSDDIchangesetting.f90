@@ -79,7 +79,7 @@ character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 type(HDFobjectStackType),pointer            :: HDF_head
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 nmldeffile = 'EMEBSDDIchangesetting.nml'
 progname = 'EMEBSDDIchangesetting.f90'
@@ -235,7 +235,7 @@ infile = EMsoft_toNativePath(infile)
 
 !===================================================================================
 ! open the dot product file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 hdferr =  HDF_openFile(infile, HDF_head)
 
 ! open the Scan 1/EBSD/Data group
