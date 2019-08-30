@@ -87,7 +87,7 @@ integer(kind=irg)                     :: hdferr, pgnum, i
 integer(HSIZE_T)                      :: dims(1)
 real(kind=dbl),allocatable            :: cpm(:)
 
-type(HDFobjectStackType),pointer      :: HDF_head_local
+type(HDFobjectStackType)              :: HDF_head_local
 
 nullify(HDF_head_local)
 

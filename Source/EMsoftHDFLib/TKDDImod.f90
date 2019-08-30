@@ -113,7 +113,7 @@ integer(HSIZE_T)                                :: dims(1), dims4(4)
 character(fnlen)                                :: groupname, dataset, masterfile
 character(fnlen),allocatable                    :: stringarray(:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
@@ -458,7 +458,7 @@ character(fnlen),allocatable                    :: stringarray(:)
 
 integer(kind=irg),allocatable                   :: acc_e(:,:,:),acc_z(:,:,:,:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter

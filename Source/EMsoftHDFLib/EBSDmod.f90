@@ -459,7 +459,7 @@ logical,INTENT(IN),OPTIONAL                         :: getAccumSP
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, nx
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
@@ -724,7 +724,7 @@ logical,INTENT(IN),OPTIONAL                         :: keep4
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL, keepall
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, restart, combinesites, uniform, istat
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
@@ -1791,7 +1791,7 @@ character(fnlen),INTENT(IN)       :: outputfile
 character(fnlen)                  :: infile, outfile, h5copypath, groupname
 character(512)                    :: cmd, cmd2
 logical                           :: f_exists, readonly
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 integer(kind=irg)                 :: hdferr
 
 ! first make sure that the input file exists and has MC data in it
@@ -1886,7 +1886,7 @@ logical,INTENT(IN),OPTIONAL       :: skipCrystalData
 character(fnlen)                  :: infile, outfile, h5copypath, groupname
 character(512)                    :: cmd, cmd2
 logical                           :: f_exists, readonly
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 integer(kind=irg)                 :: hdferr
 
 ! first make sure that the input file exists and has MP data in it

@@ -100,7 +100,7 @@ character(15)                      :: tstrb
 integer(kind=irg)                  :: mm, nn, kwidth
 real(kind=dbl),allocatable,target  :: X(:)
 
-type(HDFobjectStackType),pointer   :: HDF_head_cell
+type(HDFobjectStackType)           :: HDF_head_cell
 type(sparse_ll),pointer            :: sparseA, sparseA2, tailA, tailA2
 
 type(MRCstruct)                    :: MRCheader

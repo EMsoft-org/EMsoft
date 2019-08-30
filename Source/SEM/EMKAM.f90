@@ -85,7 +85,7 @@ integer(kind=irg),allocatable           :: tmi(:,:), tmitmp(:,:), indexmain(:,:)
 real(kind=sgl),allocatable              :: kam(:,:), eulers(:,:), Eulerstmp(:,:), Eulervals(:,:), avEuler(:,:), &
                                            dplist(:,:), dplisttmp(:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 ! declare variables for use in object oriented image module
 integer                                 :: iostat

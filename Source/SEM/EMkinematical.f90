@@ -151,7 +151,7 @@ real(kind=sgl),allocatable                   :: masterNH(:,:), masterSH(:,:), st
 type(unitcell)          :: cell
 type(DynType),save      :: Dyn
 type(gnode),save        :: rlp
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 interface
   subroutine AntiAlias(master,ixy,nix,niy,nx,inten)

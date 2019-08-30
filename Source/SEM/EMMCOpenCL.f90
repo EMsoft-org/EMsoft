@@ -197,7 +197,7 @@ integer(c_size_t)      :: cnum, cnuminfo
 character(fnlen)        :: groupname, dataset, instring, dataname, fname, sourcefile, datagroupname, attributename, HDF_FileVersion
 integer(kind=irg)       :: numangle, iang
 
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)
 integer(kind=irg)                 :: NumLines

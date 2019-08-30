@@ -143,7 +143,7 @@ character(15)                                   :: tstrb
 character(15)                                   :: tstre
 logical                                         :: overwrite = .TRUE., insert = .TRUE., readonly, stat, verbose
 integer(kind=irg)                               :: hdferr
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 integer(kind=irg)                               :: i, j
 

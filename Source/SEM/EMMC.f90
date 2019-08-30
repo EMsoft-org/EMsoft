@@ -174,7 +174,7 @@ character(15)           :: tstre
 logical                 :: f_exists
 
 ! HDF output stuff
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 character(fnlen)                  :: groupname, dataset, datagroupname, dataname
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)

@@ -100,7 +100,7 @@ type HDFobjectStackType   ! this is a push-pop stack to keep track of the open o
   character(LEN=1)                      :: objectType
   character(fnlen)                      :: objectName
   integer(HID_T)                        :: objectID
-  type(HDFobjectStackType),pointer      :: next
+  type(HDFobjectStackType)              :: next
 end type HDFobjectStackType
 
 logical, private, save                  :: FixedLengthflag
@@ -478,7 +478,7 @@ integer(HID_T),INTENT(IN)                             :: oID
 character(fnlen),INTENT(IN)                           :: oName
 logical,INTENT(IN),OPTIONAL                           :: verbose
 
-type(HDFobjectStackType),pointer                      :: node
+type(HDFobjectStackType)                              :: node
 integer(kind=irg)                                     :: istat
 
 ! the stack always exists but we never use the top level
@@ -536,7 +536,7 @@ logical,INTENT(IN),optional                             :: closeall
 logical,INTENT(IN),optional                             :: verbose
 
 integer                                                 :: error, istat
-type(HDFobjectStackType),pointer                        :: tmp
+type(HDFobjectStackType)                                :: tmp
 
 nullify(tmp)
 
@@ -639,7 +639,7 @@ IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(IN),pointer          :: HDF_head
 
-type(HDFobjectStackType),pointer                     :: tmp
+type(HDFobjectStackType)                             :: tmp
 integer(kind=irg)                                    :: io_int(1)
 
 tmp => HDF_head % next
@@ -6526,7 +6526,7 @@ type(unitcell)         , INTENT(INOUT)  :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(11)                           :: dstr
 character(15)                           :: tstr
@@ -6671,7 +6671,7 @@ type(unitcell)         , INTENT(INOUT)  :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(fnlen)                        :: dataset, groupname, fname
 integer(HSIZE_T)                        :: dims(1), dims2(2)
@@ -6811,7 +6811,7 @@ use h5lt
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: dataset
-type(HDFobjectStackType),pointer,INTENT(INOUT)  :: HDFhead
+type(HDFobjectStackType)        ,INTENT(INOUT)  :: HDFhead
 !f2py intent(in,out) ::  HDFhead
 
 logical                                         :: itis
@@ -7248,7 +7248,7 @@ integer(kind=irg),INTENT(IN)                        :: numx
 integer(kind=irg),INTENT(IN)                        :: numy
 integer(kind=irg),INTENT(INOUT)                     :: image(numx,numy)
 !f2py intent(in,out) ::  image
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 integer(kind=irg),allocatable                       :: vec(:)
 integer(kind=irg)                                   :: hdferr

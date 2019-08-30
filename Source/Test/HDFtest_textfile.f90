@@ -65,7 +65,7 @@ integer(kind=irg)               :: i, j, k, l, dim1(1), dim2(2), dim3(3), dim4(4
 integer(kind=irg),allocatable   :: iarr1(:), iarr2(:,:), iarr3(:,:,:), iarr4(:,:,:,:)
 integer(kind=irg),allocatable   :: iarr1r(:), iarr2r(:,:), iarr3r(:,:,:), iarr4r(:,:,:,:)
 
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 character(len=1)                :: EMsoftnativedelimiter
 logical                         :: fexists
 

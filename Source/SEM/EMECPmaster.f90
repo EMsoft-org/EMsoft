@@ -189,7 +189,7 @@ real(kind=dbl),allocatable          :: ecpattern(:,:)
 type(BetheParameterType)            :: BetheParameters
 type(reflisttype),pointer           :: reflist, firstw,rltmp
 integer(kind=irg)                   :: nthreads,TID,ix,hdferr,num_el,etotal, nlines,nsx,nsy,SelE
-type(HDFobjectStackType),pointer    :: HDF_head
+type(HDFobjectStackType)            :: HDF_head
 character(fnlen)                    :: dataset, instring
 character(fnlen)                    :: mode
 integer(HSIZE_T)                    :: dims4(4), cnt4(4), offset4(4), dims3(3), cnt3(3), offset3(3)

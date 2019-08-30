@@ -96,7 +96,7 @@ logical,INTENT(IN),OPTIONAL                         :: getmasterSPSH
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)									:: nlines
 integer(HSIZE_T)                                    :: dims2(2)
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)

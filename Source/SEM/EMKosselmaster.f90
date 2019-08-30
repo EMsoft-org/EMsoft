@@ -181,7 +181,7 @@ integer(kind=irg),allocatable   :: kij(:,:)
 complex(kind=dbl),allocatable   :: DynMat(:,:)
 character(fnlen)                :: dataset, instring
 
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 
 !$OMP THREADPRIVATE(rlp) 

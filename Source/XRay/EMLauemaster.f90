@@ -121,7 +121,7 @@ character(fnlen),INTENT(IN)                :: progname
 character(fnlen),INTENT(IN)                :: nmldeffile
 
 logical 								                   :: verbose
-type(HDFobjectStackType),pointer           :: HDF_head
+type(HDFobjectStackType)                   :: HDF_head
 type(unitcell)                             :: cell
 type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp

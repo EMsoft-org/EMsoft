@@ -234,7 +234,7 @@ character(fnlen)                :: dataset, instring
 type(EBSDMCdataType)            :: EBSDMCdata
 type(MCCLNameListType)          :: mcnl
 
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)
 integer(kind=irg)                 :: NumLines, info

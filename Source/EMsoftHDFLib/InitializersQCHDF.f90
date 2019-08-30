@@ -99,7 +99,7 @@ type(TDQCStructureType),pointer         :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(11)                           :: dstr
 character(15)                           :: tstr
@@ -221,7 +221,7 @@ type(QCStructureType),pointer            :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(11)                           :: dstr
 character(15)                           :: tstr
@@ -340,7 +340,7 @@ type(TDQCStructureType),pointer         :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(fnlen)                        :: dataset, groupname, fname
 integer(HSIZE_T)                        :: dims(1), dims2(2)
@@ -460,7 +460,7 @@ type(QCStructureType),pointer            :: cell
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(fnlen)                        :: dataset, groupname, fname
 integer(HSIZE_T)                        :: dims(1), dims2(2)

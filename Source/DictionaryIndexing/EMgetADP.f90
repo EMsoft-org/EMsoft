@@ -165,7 +165,7 @@ logical                                             :: f_exists, ROIselected
 character(1000)                                     :: charline
 type(EBSDIndexingNameListType)                      :: dinl
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 ! declare variables for use in object oriented image module
 integer                                             :: iostat

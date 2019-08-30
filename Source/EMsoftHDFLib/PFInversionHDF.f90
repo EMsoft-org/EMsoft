@@ -76,7 +76,7 @@ character(fnlen)                                :: xtalname2, fname
 character(1)                                    :: rchar
 type(unitcell)                                  :: cell
 integer(kind=irg)                               :: eqvplanes(48,3), ii, pgnum, hdferr
-type(HDFobjectStackType),pointer                :: HDF_head_cell
+type(HDFobjectStackType)                        :: HDF_head_cell
 
 type(gnode)                                     :: rlp
 type(DynType)                                   :: Dyn
@@ -166,7 +166,7 @@ character(1)                                  :: rchar
 type(unitcell)                                :: cell
 integer(kind=irg)                             :: eqvplanes(48,3), num, ii, pgnum, hdferr
 integer(kind=irg),allocatable                 :: PFhkl_eqv(:,:)
-type(HDFobjectStackType),pointer              :: HDF_head_cell
+type(HDFobjectStackType)                      :: HDF_head_cell
 
 type(gnode)                                   :: rlp
 type(DynType)                                 :: Dyn
@@ -251,7 +251,7 @@ real(kind=dbl),INTENT(IN)                           :: ODF(-epf%ncub:epf%ncub,-e
 !integer(kind=irg),INTENT(IN)                        :: row(epf%nnz), col(epf%nnz)
 real(kind=dbl),INTENT(IN)                           :: PFrecon(-epf%nLam:epf%nLam,-epf%nLam:epf%nLam,epf%nfiles)
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(15)                                       :: tstre
 character(fnlen)                                    :: str
@@ -467,7 +467,7 @@ type(PFInversionNameListType), INTENT(IN)      :: epf
 type(PoleFigures),pointer                      :: PF
 logical, optional                              :: verbose
 type(unitcell)                                 :: cell
-type(HDFobjectStackType),pointer               :: HDF_head_cell
+type(HDFobjectStackType)                       :: HDF_head_cell
 
 logical                                        :: pout, f_exists
 character(fnlen)                               :: ename, fname
@@ -634,7 +634,7 @@ character(1)                       :: rchar
 integer(kind=irg)                  :: kwidth
 real(kind=dbl),allocatable,target  :: X(:)
 
-type(HDFobjectStackType),pointer   :: HDF_head_cell
+type(HDFobjectStackType)           :: HDF_head_cell
 type(sparse_ll),pointer            :: sparseA, sparseA2, tailA, tailA2
 
 type(MRCstruct)                    :: MRCheader

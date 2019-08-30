@@ -141,7 +141,7 @@ character(fnlen),allocatable            :: stringarray(:)
 
 integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
@@ -339,7 +339,7 @@ character(fnlen),allocatable            :: stringarray(:)
 
 integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
   energyfile = efile
@@ -544,7 +544,7 @@ integer(HSIZE_T)                        :: dims(1), dims3(3)
 character(fnlen)                        :: groupname, dataset, masterfile
 character(fnlen),allocatable            :: stringarray(:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 allocate(master)
 
@@ -1203,7 +1203,7 @@ character(fnlen),allocatable                    :: stringarray(:)
 
 integer(kind=irg),allocatable                   :: acc_z(:,:,:,:), acc_e(:,:,:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
@@ -1409,7 +1409,7 @@ integer(HSIZE_T)                                :: dims(1), dims3(3)
 character(fnlen)                                :: groupname, dataset, masterfile
 character(fnlen),allocatable                    :: stringarray(:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 !allocate(master)
 
@@ -1817,7 +1817,7 @@ integer(kind=irg)                       :: hdferr, sgnum, i, naxis
 logical                                 :: stat, readonly, HDFopen, dexists
 character(fnlen)                        :: groupname, dataset
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
@@ -1941,7 +1941,7 @@ integer(HSIZE_T)                        :: dims(1), dims2(2)
 character(fnlen)                        :: groupname, dataset, masterfile
 character(fnlen),allocatable            :: stringarray(:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 allocate(master)
 
@@ -2187,7 +2187,7 @@ logical,INTENT(IN),OPTIONAL                         :: getRefinedEulerAngles
 
 character(fnlen)                                    :: infile, groupname, dataset
 logical                                             :: stat, readonly, g_exists
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)

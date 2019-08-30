@@ -116,7 +116,7 @@ real(kind=dbl)                         :: edge, xy(2), xyz(3), txyz(3), txy(2), 
 type(orientation)                      :: orel    
 real(kind=sgl),allocatable             :: master(:,:,:), masterLC(:,:,:), masterSP(:,:,:), masterNH(:,:,:,:), & 
                                           masterSH(:,:,:,:), ccA(:), ccB(:), SPNH(:,:,:), SPSH(:,:,:)
-type(HDFobjectStackType),pointer       :: HDF_head
+type(HDFobjectStackType)               :: HDF_head
 character(fnlen,kind=c_char)           :: line2(1)
 integer(HSIZE_T)                       :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)                       :: dims3(3), cnt3(3), offset3(3)

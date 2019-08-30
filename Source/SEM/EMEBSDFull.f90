@@ -249,7 +249,7 @@ character(fnlen,kind=c_char)                  :: line2(1)
 integer(kind=irg)                             :: NTHREADS, TID
 ! HDF5 variables
 integer(kind=irg)                             :: hdferr, dims4(4), istat
-type(HDFobjectStackType),pointer              :: HDF_head
+type(HDFobjectStackType)                      :: HDF_head
 character(fnlen)                              :: groupname, dataset, instring, &
                                                  dataname, fname, sourcefile, datagroupname, datafile
 interface

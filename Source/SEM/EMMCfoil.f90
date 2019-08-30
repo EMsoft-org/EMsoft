@@ -177,7 +177,7 @@ integer(c_int)         :: nump, numd, irec, val,val1 ! auxiliary variables
 integer(c_size_t)      :: cnum, cnuminfo
 character(fnlen)        :: groupname, dataset, instring, dataname, fname, sourcefile, datagroupname
 integer(kind=irg)       :: numangle, iang
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 
 nullify(HDF_head%next)

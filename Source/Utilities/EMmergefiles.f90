@@ -63,7 +63,7 @@ character(fnlen)                        :: infile1, infile2, outfile          !<
 character(fnlen)                        :: progname, progdesc, mess, xtalname
 logical                                 :: f_exists, readonly
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 
 progname = 'EMmergefiles.f90'

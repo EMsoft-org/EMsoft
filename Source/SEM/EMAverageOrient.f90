@@ -83,7 +83,7 @@ real(kind=sgl),allocatable              :: Eulers(:,:), dplist(:,:), Eulerstmp(:
                                            resultmain(:,:), disor(:), disorient(:,:), OSMmap(:,:), IQmap(:), ADMap(:,:)
 integer(kind=irg),allocatable           :: tmi(:,:), tmitmp(:,:), indexmain(:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 nullify(HDF_head%next)
 

@@ -173,7 +173,7 @@ logical                                   :: f_exists, firstloop, insert=.TRUE.
 real(kind=sgl),allocatable                :: intensity(:,:,:), thick(:), inten(:,:), slice(:,:,:,:)
 integer(kind=irg)                         :: nthreads, TID, j, jmax, jmin, NUMTHREADS, it, TIFF_nx, TIFF_ny, dgn, icnt, ih, numir
 real(kind=sgl),parameter                  :: DtoR = cPi/180.0
-type(HDFobjectStackType),pointer          :: HDF_head
+type(HDFobjectStackType)                  :: HDF_head
 character(fnlen)                          :: dataset, instring, outname, groupname, fname, TIFF_filename, tmpfile
 character(fnlen)                          :: mode, xtalname
 integer(HSIZE_T)                          :: dims3(3), cnt3(3) 

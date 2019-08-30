@@ -327,7 +327,7 @@ character(100)                                      :: c
 
 
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 

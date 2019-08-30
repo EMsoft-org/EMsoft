@@ -76,7 +76,7 @@ real(kind=sgl),allocatable                  :: eulers(:,:), ang(:), resultmain(:
 logical                                     :: g_exists, readonly, verbose, overwrite = .TRUE., transformRefined
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
-type(HDFobjectStackType),pointer            :: HDF_head
+type(HDFobjectStackType)                    :: HDF_head
 
 
 nullify(HDF_head%next)

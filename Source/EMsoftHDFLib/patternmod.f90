@@ -80,7 +80,7 @@ logical,save,private                                :: up1wdLeven, up1halfshift
 logical,save,private                                :: up2wdLeven, up2halfshift
 integer(kind=ill),save,private                      :: offset
 
-type(HDFobjectStackType),pointer,save,private       :: pmHDF_head 
+type(HDFobjectStackType)        ,save,private       :: pmHDF_head 
 
 contains
 

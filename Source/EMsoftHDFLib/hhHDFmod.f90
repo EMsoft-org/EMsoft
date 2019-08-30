@@ -85,7 +85,7 @@ character(fnlen),INTENT(IN)                         :: nmldeffile
 integer(kind=irg)                                   :: irow, icol, imnum, hdferr, i
 character(fnlen)                                    :: groupname, dataset, hhfile, nmlname, manufacturer
 character(3)                                        :: lnum
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 irow = hhnl%IROW
 icol = hhnl%ICOL
@@ -170,7 +170,7 @@ character(fnlen),INTENT(IN)                         :: progname
 type(EMhh4NameListType),INTENT(INOUT)               :: hhnl
 !f2py intent(in,out) ::  hhnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)									:: dataset, groupname 

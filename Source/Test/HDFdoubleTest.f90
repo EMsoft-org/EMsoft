@@ -67,7 +67,7 @@ integer(HSIZE_T)                :: dims1(1), dims2(2), dims3(3), dims4(4)
 real(kind=dbl),allocatable      :: darr1(:), darr2(:,:), darr3(:,:,:), darr4(:,:,:,:)
 real(kind=dbl),allocatable      :: darr1_save(:), darr2_save(:,:), darr3_save(:,:,:), darr4_save(:,:,:,:)
 
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 character(len=1)                :: EMsoftnativedelimiter
 
 

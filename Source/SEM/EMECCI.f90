@@ -183,7 +183,7 @@ type(BetheParameterType)                :: BetheParameters
 type(reflisttype),pointer               :: reflist, firstw, rltmp, rltmpa, rltmpb
 type(defecttype)                        :: defects
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 ! declare variables for use in object oriented image module
 integer                                 :: iostat

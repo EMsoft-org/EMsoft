@@ -95,7 +95,7 @@ logical                                             :: stat, readonly, donotusei
 integer(HSIZE_T)                                    :: dims(1)
 real(kind=dbl),allocatable                          :: cellparams(:)
 
-type(HDFobjectStackType),pointer                    :: HDF_head_local
+type(HDFobjectStackType)                            :: HDF_head_local
 
 donotuseindexarray = .FALSE.
 if (present(noindex)) then
@@ -321,7 +321,7 @@ real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), res
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 !=============================================================
 ! write the output in the format of an h5ecp file
@@ -504,7 +504,7 @@ character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, nmlname, manufacturer

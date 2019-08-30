@@ -132,7 +132,7 @@ integer(kind=irg)						               :: hdferr, npx, npy, refcnt, io_int(1), NU
 real(kind=sgl) 							               :: kouter, kinner, tstart, tstop, mi, ma
 real(kind=sgl),allocatable 				         :: pattern(:,:), patternbatch(:,:,:), bppatterns(:,:,:), bp(:,:)
 
-type(HDFobjectStackType),pointer           :: HDF_head
+type(HDFobjectStackType)                   :: HDF_head
 type(unitcell)                             :: cell
 logical 								                   :: verbose, g_exists, insert=.TRUE., overwrite=.TRUE.
 

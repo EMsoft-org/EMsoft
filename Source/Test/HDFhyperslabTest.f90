@@ -84,7 +84,7 @@ real(kind=dbl),allocatable      :: darr2(:,:), darr3(:,:,:), darr4(:,:,:,:)
 real(kind=dbl),allocatable      :: darr2_save(:,:), darr3_save(:,:,:), darr4_save(:,:,:,:)
 
 
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 character(len=1)                :: EMsoftnativedelimiter
 
 

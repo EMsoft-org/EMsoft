@@ -288,7 +288,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   character(1000)                                     :: charline
   character(3)                                        :: stratt
   
-  type(HDFobjectStackType),pointer                    :: HDF_head
+  type(HDFobjectStackType)                            :: HDF_head
   
   call timestamp(datestring=dstr, timestring=tstrb)
   
@@ -1182,7 +1182,7 @@ integer(kind=irg)                               :: hdferr, i, j, k
 integer(HSIZE_T)                                :: rdims(3)
 character(fnlen)                                :: datafile, groupname, dataset
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 ! Initialize FORTRAN interface.
 !
@@ -1521,7 +1521,7 @@ integer(HSIZE_T)                                :: dims(1), dims4(4)
 character(fnlen)                                :: groupname, dataset, masterfile
 character(fnlen),allocatable                    :: stringarray(:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
@@ -2331,7 +2331,7 @@ logical,INTENT(IN),OPTIONAL                         :: presentFolder
 
 character(fnlen)                                    :: infile, groupname, dataset
 logical                                             :: stat, readonly, g_exists
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)

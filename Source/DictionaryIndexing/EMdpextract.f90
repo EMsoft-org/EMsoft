@@ -132,7 +132,7 @@ character(fnlen),INTENT(IN)             :: dpfilebase
 character(fnlen),INTENT(IN)             :: cwd
 
 character(fnlen)                        :: dirname, image_filename, dpfile
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 type(EBSDDIdataType)                    :: EBSDDIdata
 type(EBSDIndexingNameListType)          :: dinl
 integer(kind=irg)                       :: hdferr, shp(2), jj, nx, ny

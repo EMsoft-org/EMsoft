@@ -63,7 +63,7 @@ character(fnlen)                :: HDFfilename, nmlname, tmppath, groupname, dat
 
 integer(kind=irg)               :: hdferr, isum
 
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 character(len=1)                :: EMsoftnativedelimiter
 
 ! parameters for the namelist

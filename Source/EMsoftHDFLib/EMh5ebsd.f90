@@ -91,7 +91,7 @@ character(fnlen),INTENT(IN)                         :: progname
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
 !f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, nmlname, manufacturer
@@ -179,7 +179,7 @@ character(fnlen),INTENT(IN)                         :: progname
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
 !f2py intent(in,out) ::  tkdnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, nmlname, manufacturer
@@ -261,7 +261,7 @@ character(fnlen),INTENT(IN)                         :: dataset
 integer(kind=irg),INTENT(IN)                        :: nump
 real(kind=sgl),INTENT(IN)                           :: inpvec(nump)
 type(EBSDIndexingNameListType),INTENT(IN)           :: ebsdnl
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 real(kind=sgl),OPTIONAL,INTENT(IN)                  :: binary
 
 real(kind=sgl)                                      :: mi, ma
@@ -342,7 +342,7 @@ character(fnlen),INTENT(IN)                         :: dataset
 integer(kind=irg),INTENT(IN)                        :: nump
 real(kind=sgl),INTENT(IN)                           :: inpvec(nump)
 type(TKDIndexingNameListType),INTENT(IN)            :: tkdnl
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 real(kind=sgl)                                      :: mi, ma
 integer(kind=irg)                                   :: istat, jj, hdferr
@@ -392,7 +392,7 @@ use error
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen)                                    :: groupname, dataset, fname, resourcepathname
 integer(kind=irg)                                   :: hdferr
@@ -521,7 +521,7 @@ real(kind=sgl),INTENT(IN)                           :: L        ! sample-scintil
 real(kind=sgl),INTENT(IN)                           :: delta    ! scintillator pixel size [micron]
 integer(kind=irg),INTENT(IN)                        :: scdim(2) ! scintillator dimensions [pixels]
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen)                                    :: groupname, dataset
 integer(kind=irg)                                   :: hdferr
@@ -578,7 +578,7 @@ IMPLICIT NONE
 
 character(fnlen),intent(IN)                         :: groupname
 character(fnlen),intent(IN)                         :: xtalname
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen)                                    :: dataset, grname, filename
 integer(kind=irg)                                   :: istat, SGnum, hdferr
@@ -591,7 +591,7 @@ integer(kind=irg)                                   :: i, pgnum
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 ! new HDF_head pointer to handle a new HDF5 while another one is already open ...
-type(HDFobjectStackType),pointer                    :: HDF_head_local
+type(HDFobjectStackType)                            :: HDF_head_local
 
 ! TSL point group labels [courtesy of S. Wright]
 character(26),parameter       :: TSLpgname(32) = (/ "Triclinic (C1) [1]        ", "Triclinic (S2, Ci) [-1]   ",&
@@ -792,7 +792,7 @@ real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), ean
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
 real(kind=sgl)                                      :: isratio, io_real(1)
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 ! copy the dictionary euler angle array 
 eulerarray = dicteulerarray
@@ -1365,7 +1365,7 @@ real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), res
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 
 

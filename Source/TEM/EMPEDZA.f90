@@ -162,7 +162,7 @@ type(kvectorlist),pointer       :: khead, ktmp
 real(kind=sgl),allocatable      :: karray(:,:)
 integer(kind=irg),allocatable   :: kij(:,:)
 complex(kind=dbl),allocatable   :: DynMat(:,:)
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 
 interface
 recursive subroutine CalckvectorsPrecession(khead,cell,k,ga,precangle,prechalfwidth,precsample,precazimuthal,numk)

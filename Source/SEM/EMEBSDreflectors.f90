@@ -156,7 +156,7 @@ character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 type(unitcell)          :: cell
 type(DynType),save      :: Dyn
 type(gnode),save        :: rlp
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 verbose = .FALSE.
 

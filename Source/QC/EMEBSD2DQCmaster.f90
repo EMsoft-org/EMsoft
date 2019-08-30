@@ -134,7 +134,7 @@ character(15)           							:: tstrb
 character(15)           							:: tstre
 
 ! HDF variables
-type(HDFobjectStackType),pointer    				:: HDF_head
+type(HDFobjectStackType)            				:: HDF_head
 integer(kind=irg)									:: hdferr
 character(fnlen)									:: datagroupname, groupname, dataset
 character(fnlen, KIND=c_char),allocatable,TARGET 	:: stringarray(:)
