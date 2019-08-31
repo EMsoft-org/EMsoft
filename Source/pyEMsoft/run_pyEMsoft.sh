@@ -87,21 +87,20 @@ EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoft/EMsoftLib
 # are printed due to files not existing]
 echo " run_pyEMsoft.sh: Cleaning up from previous wrapper builds"
 if ls *.so 1> /dev/null 2>&1; then
-	rm -rf *.so 
+	rm -rf source/*.so 
 fi
 
 if ls pyEMsoft.py 1> /dev/null 2>&1; then
-	rm -rf pyEMsoft.py 
-fi
-
-if ls *.f90 1> /dev/null 2>&1; then
-	rm -rf *.f90 
+	rm -rf source/pyEMsoft.py 
 fi
 
 if ls sources/*.f90 1> /dev/null 2>&1; then
-	rm -rf sources/*.f90
+	rm -rf source/*.f90
 fi
 
+if ls *.f90 1> /dev/null 2>&1; then
+    rm -rf *.f90 
+fi
 
 #=======================
 # copy all relevant source files to the present folder 
@@ -148,6 +147,8 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I$EMsoft_BUILDfolder/EMsoft/EMsoftLi
 echo " run_pyEMsoft.sh: moving files into proper locations"
 mkdir source 
 mv f90wrap_*.f90 source
+mv pyEMsoft.py source 
+mv *.so source 
 
 #=======================
 # clean up all the other .f90 files since we no longer need them 
