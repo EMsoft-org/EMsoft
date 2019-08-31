@@ -86,15 +86,15 @@ EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoft/EMsoftLib
 # [this form of test makes sure that no unnecessary messages
 # are printed due to files not existing]
 echo " run_pyEMsoft.sh: Cleaning up from previous wrapper builds"
-if ls *.so 1> /dev/null 2>&1; then
+if ls source/*.so 1> /dev/null 2>&1; then
 	rm -rf source/*.so 
 fi
 
-if ls pyEMsoft.py 1> /dev/null 2>&1; then
+if ls source/pyEMsoft.py 1> /dev/null 2>&1; then
 	rm -rf source/pyEMsoft.py 
 fi
 
-if ls sources/*.f90 1> /dev/null 2>&1; then
+if ls source/*.f90 1> /dev/null 2>&1; then
 	rm -rf source/*.f90
 fi
 
