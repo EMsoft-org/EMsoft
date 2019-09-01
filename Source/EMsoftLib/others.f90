@@ -1120,7 +1120,7 @@ bind(c, name = 'qsortd')
 IMPLICIT NONE
 
 INTEGER, INTENT(IN)    :: n
-REAL*8,  INTENT(IN)    :: x(n)
+REAL(8),  INTENT(IN)   :: x(n)
 INTEGER, INTENT(OUT)   :: ind(n)
 
 !***************************************************************************

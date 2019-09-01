@@ -46,20 +46,21 @@
 #=======================
 #=======================
 
-# declare the arrays of source files that need to be included in this python wrapper build
+# declare the arrays of source files that need to be included in this python wrapper build;
+# these files are listed in the order that they are make'd in a regular EMsoft build.
 declare -a f90_source_files=("io.f90"
                              "error.f90" 
                              "CLsupport.f90" 
                              "constants.f90" 
                              "math.f90"
-                             "typedefs.f90")
-                             # "crystal.f90" 
-                             # "symmetry.f90" 
-                             # "files.f90" 
-                             # "others.f90"
-                             # "quaternions.f90" 
-                             # "Lambert.f90")
-                             # "rotations.f90" 
+                             "typedefs.f90"
+                             "crystal.f90" 
+                             "symmetry.f90" 
+                             "files.f90" 
+                             "others.f90"
+                             "quaternions.f90" 
+                             "Lambert.f90"
+                             "rotations.f90") 
 
 declare -a f90_HDF_source_files=("HDFsupport.f90")
 
