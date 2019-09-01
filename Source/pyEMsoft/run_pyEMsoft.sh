@@ -47,7 +47,7 @@
 #=======================
 
 # declare the arrays of source files that need to be included in this python wrapper build;
-# these files are listed in the order that they are make'd in a regular EMsoft build.
+# these files are listed in the order that they are make'd in a regular single thread EMsoft build.
 declare -a f90_source_files=("io.f90"
                              "error.f90" 
                              "CLsupport.f90" 
@@ -60,7 +60,12 @@ declare -a f90_source_files=("io.f90"
                              "others.f90"
                              "quaternions.f90" 
                              "Lambert.f90"
-                             "rotations.f90") 
+                             "rotations.f90"
+                             "diffraction.f90"
+                             "so3.f90"
+                             "dictmod.f90") 
+                             # "kvectors.f90")
+                             # "gvectors.f90"
 
 declare -a f90_HDF_source_files=("HDFsupport.f90")
 
@@ -130,12 +135,11 @@ done
 #=======================
 # execute the f90wrap program using all the files just copied
 echo " run_pyEMsoft.sh: executing f90wrap"
-#f90wrap -k kind_map -m pyEMsoft  ${f90_generated_source_files[*]} ${f90_source_files[*]} 1>build.log 2>build_error.log # ${f90_HDF_source_files[*]}
-f90wrap -k kind_map -m pyEMsoft  ${f90_generated_source_files[*]} ${f90_source_files[*]} # ${f90_HDF_source_files[*]}
+f90wrap -k kind_map -m pyEMsoft  ${f90_generated_source_files[*]} ${f90_source_files[*]} 1>build.log 2>build_error.log # ${f90_HDF_source_files[*]}
 
 #=======================
 # call f2py-f90wrap to build the wrapper library
-echo " run_pyEMsoft.sh: executing f2py-f90wrap"
+echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a long time ..."
 f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I$EMsoft_BUILDfolder/EMsoft/EMsoftLib \
 -I$EMsoft_BUILDfolder/EMsoft/EMsoftHDFLib \
 -I$EMsoft_SDK/hdf5-1.8.20-Release/include/static \
@@ -148,10 +152,10 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I$EMsoft_BUILDfolder/EMsoft/EMsoftLi
 -L$EMsoft_SDK/hdf5-1.8.20-Release/lib \
 -L$EMsoft_SDK/fftw-3.3.8/lib \
 -L$CondaLib \
--lblas -llapack -lEMsoftLib -ljsonfortran -lhdf5 -lclfortran -lfftw3 # 1>>build.log 2>>build_error.log
+-lblas -llapack -lEMsoftLib -ljsonfortran -lhdf5 -lclfortran -lfftw3  1>>build.log 2>>build_error.log
 
 #=======================
-# move f90wrap files to sources folder and clean up
+# move f90wrap files to source folder and clean up
 echo " run_pyEMsoft.sh: moving files into proper locations"
 mkdir source 
 mv f90wrap_*.f90 source
