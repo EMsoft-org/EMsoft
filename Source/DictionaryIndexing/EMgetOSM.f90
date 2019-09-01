@@ -49,6 +49,7 @@ use files
 use io
 use error
 use initializers
+use HDF5
 use HDFsupport
 use EBSDmod
 use EBSDDImod
@@ -67,9 +68,10 @@ type(EBSDIndexingNameListType)              :: dinl
 type(EBSDDIdataType)                        :: EBSDDIdata
 real(kind=sgl),allocatable                  :: OSMmap(:,:)
 integer(kind=irg)                           :: dims(2), dimsOSM(2), hdferr, io_int(2), osmnum, i
-character(fnlen)                            :: fname, TIFF_filename
+character(fnlen)                            :: fname, TIFF_filename, dpfile, groupname, dataset
 character(2)                                :: fnum
 real(kind=sgl)                              :: ma, mi
+type(HDFobjectStackType),pointer            :: HDF_head
 
 ! declare variables for use in object oriented image module
 integer                                     :: iostat
@@ -145,6 +147,39 @@ do i=1,osmnum
 
   ! output the ADP map as a tiff file 
   write(fnum,"(I2.2)") osmnl%nmatch(i)
+
+! we need to add this as a dataset to the dot product file so that it becomes available 
+! to other programs...
+
+  call h5open_EMsoft(hdferr)
+
+  dpfile = trim(EMsoft_getEMdatapathname())//trim(osmnl%dotproductfile)
+  dpfile = EMsoft_toNativePath(dpfile)
+
+  nullify(HDF_head)
+  hdferr =  HDF_openFile(dpfile, HDF_head)
+
+! open the Scan 1/EBSD/Data group; dictionary indexing files only have one "scan" in them...
+  groupname = 'Scan 1'
+    hdferr = HDF_openGroup(groupname, HDF_head)
+  groupname = SC_EBSD
+    hdferr = HDF_openGroup(groupname, HDF_head)
+  groupname = SC_Data
+    hdferr = HDF_openGroup(groupname, HDF_head)
+
+  dataset = 'OSM_'//fnum
+  if (sum(dinl%ROI).ne.0) then
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, OSMmap, dinl%ROI(3), dinl%ROI(4), HDF_head)
+  else
+    hdferr = HDF_writeDatasetFloatArray2D(dataset, OSMmap, dinl%ipf_wd, dinl%ipf_ht, HDF_head)
+  end if
+
+! and close the HDF5 dot product file
+  call HDF_pop(HDF_head,.TRUE.)
+
+  call h5close_EMsoft(hdferr)
+
+  
   fname = trim(EMsoft_getEMdatapathname())//trim(osmnl%tiffname)//fnum//'.tiff'
   fname = EMsoft_toNativePath(fname)
   TIFF_filename = trim(fname)
@@ -166,7 +201,6 @@ do i=1,osmnum
   end if 
 
   call im%clear()
-
   OSMmap = 0.0
 end do
 

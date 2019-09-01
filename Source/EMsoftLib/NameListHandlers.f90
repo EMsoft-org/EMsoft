@@ -9129,27 +9129,47 @@ logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
 character(fnlen)        :: xtalname,datafile,inputfilename
+logical                 :: hypslab,dwflag
 character(3)            :: eulerconvention
-integer(kind=irg)       :: platid, devid, discsize
-real(kind=sgl)          :: voltage, dmin, eu(3), convergence, scalefactor(6)
-real(kind=dbl)          :: phi1, phi2, phi3
+integer(kind=irg)       :: platid, devid, discsize, usenumd, selnumd(4), maxnumincell
+real(kind=sgl)          :: voltage, dmin, eu(3), convergence, scalefactor(6), stride
+real(kind=dbl)          :: phi1, phi2, phi3, thk 
+logical                 :: presorted
+integer(kind=irg)       :: subslice
+integer(kind=irg)       :: ZAindex(3)
+real(kind=sgl)          :: lauec(2)
+
 
 
 
 namelist /MDSTEMlist/ xtalname, datafile, eu, eulerconvention, phi1, phi2, phi3, dmin, &
-          voltage, convergence, platid, devid, inputfilename, scalefactor, discsize
+  voltage, convergence, platid, devid, inputfilename, scalefactor, usenumd, selnumd, &
+  discsize, stride, maxnumincell, hypslab, dwflag, thk, presorted, subslice, ZAindex, &
+  lauec
 
 
-datafile = 'undefined' ! output filename
-inputfilename = 'undefined' ! input filename
-voltage = 200.0    ! acceleration voltage [kV]
-eu = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
-scalefactor = (/ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 /)
-dmin = 0.04     ! smallest d-spacing to include in dynamical matrix [nm]
-platid = 1
-devid = 1
-convergence = 0.0
-discsize = 10.0
+datafile            = 'undefined' ! output filename
+inputfilename       = 'undefined' ! input filename
+voltage             = 200.0    ! acceleration voltage [kV]
+eu                  = (/ 0.0, 0.0, 0.0 /)   ! beam direction [direction indices]
+scalefactor         = (/ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 /)
+dmin                = 0.04 ! smallest d-spacing to include in dynamical matrix [nm]
+platid              = 1
+devid               = 1
+convergence         = 0.001 
+usenumd             = 1
+selnumd             = (/1, 0, 0, 0/)
+discsize            = 10.0   ! keep this
+stride              = 0.0001 ! keep this
+maxnumincell        = 8
+hypslab             = .TRUE. ! keep this
+dwflag              = .TRUE. ! keep this
+thk                 = 1.0
+presorted           = .False.
+subslice            = 1 ! how many subslices to use, default 0
+ZAindex             = (/ 0, 0, 1 /)
+lauec               = (/ 0.0, 0.0 /)
+
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -9167,6 +9187,9 @@ if (.not.skipread) then
         call FatalError('GetEMmdSTEMNameList:',' output file name is undefined in '//nmlfile)
     end if
 
+    if (trim(inputfilename).eq.'undefined') then
+        call FatalError('GetEMmdSTEMNameList:',' input file name is undefined in '//nmlfile)
+    end if
 end if
 
 msnml%xtalname             = xtalname
@@ -9179,7 +9202,18 @@ msnml%devid                = devid
 msnml%convergence          = convergence
 msnml%inputfilename        = inputfilename
 msnml%scalefactor          = scalefactor
+msnml%usenumd              = usenumd
+msnml%selnumd              = selnumd
 msnml%discsize             = discsize
+msnml%stride               = stride
+msnml%maxnumincell         = maxnumincell
+msnml%hypslab              = hypslab
+msnml%dwflag               = dwflag
+msnml%thk                  = thk
+msnml%presorted            = presorted
+msnml%subslice             = subslice
+msnml%lauec                = lauec
+msnml%ZAindex              = ZAindex
 
 end subroutine GetEMmdSTEMNameList
 
