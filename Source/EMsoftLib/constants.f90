@@ -40,6 +40,9 @@
 !> @details  
 !> physical and mathematical constants used by various programs; periodic
 !>  table information; atomic weights; 
+!
+!> @note mod 5.1: f90wrap does not like arrays of parameters (constants), so we removed the 'parameter' attribute
+!>  in all those cases... we should trust that the user will not modify the values in these arrays...
 ! 
 !> @date 1/5/99   MDG 1.0 original
 !> @date 5/18/01  MDG 2.0 f90
@@ -56,6 +59,7 @@
 !> @date 04/02/17 MDG 4.8 modified definition of fundamental zones types and orders to accomodate two-phase disorientations
 !> @date 10/24/17 MDG 4.9 removed definition of infty and inftyd to be replaced by functions in math.f90 module
 !> @date 01/04/18 MDG 5.0 added quasicrystal constant IcoVertices
+!> @date 09/01/19 MDG 5.1 remove 'parameter' attribute to allow for f90wrap python wrapping of parameter arrays...
 !--------------------------------------------------------------------------
 
 module constants
@@ -143,7 +147,7 @@ real(kind=dbl), parameter :: cPi=3.141592653589793238D0, cLight = 299792458.D0, 
 !DEC$ ATTRIBUTES DLLEXPORT :: cJ2eV
 
 !> element symbols (we'll do 1-98 for all parameter lists)
-character(2), parameter :: ATOM_sym(98)=(/' H','He','Li','Be',' B',' C',' N',' O',' F','Ne', &
+character(2), dimension(98) :: ATOM_sym=(/' H','He','Li','Be',' B',' C',' N',' O',' F','Ne', &
                                           'Na','Mg','Al','Si',' P',' S','Cl','Ar',' K','Ca', &
                                           'Sc','Ti',' V','Cr','Mn','Fe','Co','Ni','Cu','Zn', &
                                           'Ga','Ge','As','Se','Br','Kr','Rb','Sr',' Y','Zr', &
@@ -156,7 +160,7 @@ character(2), parameter :: ATOM_sym(98)=(/' H','He','Li','Be',' B',' C',' N',' O
 !DEC$ ATTRIBUTES DLLEXPORT :: ATOM_sym
 
 !> Shannon-Prewitt ionic radii in nanometer
-real(kind=sgl), parameter :: ATOM_SPradii(98)=(/0.010,0.010,0.680,0.300,0.160,0.150,0.148,0.146,0.133,0.500, &
+real(kind=sgl), dimension(98) :: ATOM_SPradii=(/0.010,0.010,0.680,0.300,0.160,0.150,0.148,0.146,0.133,0.500, &
                                                 0.098,0.065,0.450,0.380,0.340,0.190,0.181,0.500,0.133,0.940, &
                                                 0.068,0.060,0.740,0.690,0.670,0.640,0.630,0.620,0.720,0.740, &
                                                 0.113,0.073,0.580,0.202,0.196,0.500,0.148,0.110,0.880,0.770, &
@@ -169,7 +173,7 @@ real(kind=sgl), parameter :: ATOM_SPradii(98)=(/0.010,0.010,0.680,0.300,0.160,0.
 !DEC$ ATTRIBUTES DLLEXPORT :: ATOM_SPradii
 
 !> atomic (metallic) radii in nanometer (0.100 if not known/applicable)
-real(kind=sgl), parameter :: ATOM_MTradii(98)=(/0.100,0.100,0.156,0.112,0.100,0.100,0.100,0.100,0.100,0.100, &
+real(kind=sgl), dimension(98) :: ATOM_MTradii=(/0.100,0.100,0.156,0.112,0.100,0.100,0.100,0.100,0.100,0.100, &
                                                 0.191,0.160,0.142,0.100,0.100,0.100,0.100,0.100,0.238,0.196, &
                                                 0.160,0.146,0.135,0.128,0.136,0.127,0.125,0.124,0.128,0.137, &
                                                 0.135,0.139,0.125,0.116,0.100,0.100,0.253,0.215,0.181,0.160, &
@@ -182,7 +186,7 @@ real(kind=sgl), parameter :: ATOM_MTradii(98)=(/0.100,0.100,0.156,0.112,0.100,0.
 !DEC$ ATTRIBUTES DLLEXPORT :: ATOM_MTradii
 
 !> atom colors for PostScript drawings
-character(3), parameter :: ATOM_color(98)=(/'blu','grn','blu','blu','red','bro','blu','red','grn','grn', &
+character(3), dimension(98) :: ATOM_color=(/'blu','grn','blu','blu','red','bro','blu','red','grn','grn', &
                                             'blu','pnk','grn','blu','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &
@@ -193,7 +197,7 @@ character(3), parameter :: ATOM_color(98)=(/'blu','grn','blu','blu','red','bro',
                                             'blu','blu','grn','red','pnk','cyn','blu','blu','grn','grn', &
                                             'blu','blu','grn','red','pnk','cyn','blu','grn'/)
 
-real(kind=sgl), parameter :: ATOM_colors(3,92) = reshape( (/ &
+real(kind=sgl), dimension(3,92) :: ATOM_colors = reshape( (/ &
                                             0.90000,0.90000,0.15000, &
                                             0.00000,0.90000,0.15000, &
                                             0.32311,0.53387,0.69078, &
@@ -289,7 +293,7 @@ real(kind=sgl), parameter :: ATOM_colors(3,92) = reshape( (/ &
 !DEC$ ATTRIBUTES DLLEXPORT :: ATOM_colors
 
 !> atomic weights for things like density computations (from NIST elemental data base)
-real(kind=sgl),parameter        :: ATOM_weights(98) = (/1.00794, 4.002602, 6.941, 9.012182, 10.811, &
+real(kind=sgl),dimension(98)    :: ATOM_weights(98) = (/1.00794, 4.002602, 6.941, 9.012182, 10.811, &
                                                         12.0107, 14.0067, 15.9994, 18.9984032, 20.1797, &
                                                         22.98976928, 24.3050, 26.9815386, 28.0855, 30.973762, &
                                                         32.065, 35.453, 39.948, 39.0983, 40.078, &
@@ -403,15 +407,15 @@ type(LambertParametersType)        :: LPs
 !
 ! these parameters are used in the so3 module
 !
-integer(kind=irg),parameter     :: FZtarray(36) = (/ 0,0,1,1,1,2,2,2,1,1,1,2,2,2,2,1,1,2, &
+integer(kind=irg),dimension(36)     :: FZtarray = (/ 0,0,1,1,1,2,2,2,1,1,1,2,2,2,2,1,1,2, &
                                                      2,2,1,1,1,2,2,2,2,3,3,4,3,4,5,2,2,2 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: FZtarray
 
-integer(kind=irg),parameter     :: FZoarray(36) = (/ 0,0,2,2,2,2,2,2,4,4,4,4,4,4,4,3,3,3, &
+integer(kind=irg),dimension(36)     :: FZoarray = (/ 0,0,2,2,2,2,2,2,4,4,4,4,4,4,4,3,3,3, &
                                                      3,3,6,6,6,6,6,6,6,0,0,0,0,0,0,8,10,12 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: FZoarray
 
-real(kind=sgl)                  :: Butterfly9x9(81) = (/-10.0, -15.0, -22.0, -22.0, -22.0, -22.0, -22.0, -15.0, -10.0, &
+real(kind=sgl),dimension(81)        :: Butterfly9x9 = (/-10.0, -15.0, -22.0, -22.0, -22.0, -22.0, -22.0, -15.0, -10.0, &
                                                        -1.0, -6.0, -13.0, -22.0, -22.0, -22.0, -13.0, -6.0, -1.0, &
                                                         3.0, 6.0, 4.0, -3.0, -22.0, -3.0, 4.0, 6.0, 3.0, & 
                                                         3.0, 11.0, 19.0, 28.0, 42.0, 28.0, 19.0, 11.0, 3.0, &
@@ -423,7 +427,7 @@ real(kind=sgl)                  :: Butterfly9x9(81) = (/-10.0, -15.0, -22.0, -22
 !DEC$ ATTRIBUTES DLLEXPORT :: Butterfly9x9
 
 ! vertex coordinates of the icosahedron (normalized)
-real(kind=dbl),parameter        :: IcoVertices(3,12) = reshape( (/ 0D0,0.D0,1.D0, &
+real(kind=dbl),dimension(3,12)      :: IcoVertices = reshape( (/ 0D0,0.D0,1.D0, &
                                      0.89442719099991587856D0,0.D0,0.44721359549995793928D0, &
                                      0.27639320225002103036D0,0.85065080835203993218D0,0.44721359549995793928D0, &
                                     -0.72360679774997896964D0,0.52573111211913360603D0,0.44721359549995793928D0, &

@@ -164,33 +164,33 @@ type ConfigStructureType
  character(fnlen)  :: strvals(wraparraysize)
 end type ConfigStructureType
 
-character(30)      :: ConfigStructureNames(27) = (/ "EMsoftpathname                ", &
-                                                    "EMXtalFolderpathname          ", &
-                                                    "EMdatapathname                ", &
-                                                    "EMtmppathname                 ", &
-                                                    "EMsoftLibraryLocation         ", &
-                                                    "EMSlackWebHookURL             ", &
-                                                    "EMSlackChannel                ", &
-                                                    "UserName                      ", &
-                                                    "UserLocation                  ", &
-                                                    "UserEmail                     ", &
-                                                    "EMNotify                      ", &
-                                                    "Develop                       ", &
-                                                    "Release                       ", &
-                                                    "h5copypath                    ", &
-                                                    "EMsoftplatform                ", &
-                                                    "EMsofttestpath                ", &
-                                                    "EMsoftTestingPath             ", &
-                                                    "EMsoftversion                 ", &
-                                                    "Configpath                    ", &
-                                                    "Templatepathname              ", &
-                                                    "Resourcepathname              ", &
-                                                    "Homepathname                  ", &
-                                                    "OpenCLpathname                ", &
-                                                    "Templatecodefilename          ", &
-                                                    "WyckoffPositionsfilename      ", &
-                                                    "Randomseedfilename            ", &
-                                                    "EMsoftnativedelimiter         " /)
+character(30),dimension(27) :: ConfigStructureNames = (/ "EMsoftpathname                ", &
+                                                         "EMXtalFolderpathname          ", &
+                                                         "EMdatapathname                ", &
+                                                         "EMtmppathname                 ", &
+                                                         "EMsoftLibraryLocation         ", &
+                                                         "EMSlackWebHookURL             ", &
+                                                         "EMSlackChannel                ", &
+                                                         "UserName                      ", &
+                                                         "UserLocation                  ", &
+                                                         "UserEmail                     ", &
+                                                         "EMNotify                      ", &
+                                                         "Develop                       ", &
+                                                         "Release                       ", &
+                                                         "h5copypath                    ", &
+                                                         "EMsoftplatform                ", &
+                                                         "EMsofttestpath                ", &
+                                                         "EMsoftTestingPath             ", &
+                                                         "EMsoftversion                 ", &
+                                                         "Configpath                    ", &
+                                                         "Templatepathname              ", &
+                                                         "Resourcepathname              ", &
+                                                         "Homepathname                  ", &
+                                                         "OpenCLpathname                ", &
+                                                         "Templatecodefilename          ", &
+                                                         "WyckoffPositionsfilename      ", &
+                                                         "Randomseedfilename            ", &
+                                                         "EMsoftnativedelimiter         " /)
 
 !
 contains

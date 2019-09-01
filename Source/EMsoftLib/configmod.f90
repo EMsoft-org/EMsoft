@@ -67,9 +67,12 @@ contains
 subroutine print_EMsoft_configuration_strings(CP, fname)
 !DEC$ ATTRIBUTES DLLEXPORT :: print_EMsoft_configuration_strings
 
+use local
+
 IMPLICIT NONE
 
-type(ConfigStructureType),INTENT(IN)   :: CP
+type(ConfigStructureType),INTENT(INOUT):: CP
+!f2py intent(in,out) :: CP
 character(fnlen),OPTIONAL              :: fname
 
 integer(kind=irg)                      :: ii
@@ -157,10 +160,13 @@ end subroutine print_EMsoft_configuration_strings
 subroutine C2F_configuration_strings(cptr, CS) ! bind(C)
 !DEC$ ATTRIBUTES DLLEXPORT :: C2F_configuration_strings
 
+use local
+
 IMPLICIT NONE
 
 type(c_ptr), INTENT(IN), value        :: cptr
-type(ConfigStructureType),INTENT(OUT) :: CS
+type(ConfigStructureType),INTENT(INOUT) :: CS
+!f2py intent(in,out) :: CS
 
 character(kind=c_char), pointer       :: fptr(:,:)
 integer(kind=irg)               	  :: ii, lenstr

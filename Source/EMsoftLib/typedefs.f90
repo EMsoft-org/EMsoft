@@ -1,4 +1,4 @@
-xi! ###################################################################
+! ###################################################################
 ! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
@@ -39,6 +39,9 @@ xi! ###################################################################
 !> @details  Defines the unitcell type and the orientation type, as well as 
 !> the main cell variable used by all crystallographic computations
 ! 
+!> @note mod 5.3: f90wrap does not like arrays of parameters (constants), so we removed the 'parameter' attribute
+!>  in all those cases... we should trust that the user will not modify the values in these arrays...
+!
 !> @date     1/5/99 MDG 1.0 original
 !> @date    7/16/99 MDG 1.1 added error handling and TransCoor
 !> @date    4/ 5/00 MDG 1.2 modified TransCoor to include new mInvert
@@ -58,6 +61,7 @@ xi! ###################################################################
 !> @date   01/11/15 MDG 5.0 moved HDFobjectStackType to HDFSupport module
 !> @date   05/02/16 MDG 5.1 added SghLUT to unitcell type
 !> @date   05/07/18 MDG 5.2 added CSL types
+!> @date   09/01/19 MDG 5.3 changed parameter arrays to regular array for compatibility with f90wrap python wrapping
 !--------------------------------------------------------------------------
 module typedefs
 
@@ -143,7 +147,7 @@ real(kind=dbl),private,parameter        :: half=0.5D0                   ! 1/2
 
 !>  SYM_SGname all space group names
 ! TRICLINIC SPACE GROUPS
-character(11),parameter :: SYM_SGname(237)= (/" P  1      " ," P -1      ", & ! MONOCLINIC SPACE GROUPS
+character(11),dimension(237) :: SYM_SGname= (/" P  1      " ," P -1      ", & ! MONOCLINIC SPACE GROUPS
         " P 2       " ," P 21      " ," C 2       " ," P m       ", &
         " P c       " ," C m       " ," C c       " ," P 2/m     ", &
         " P 21/m    " ," C 2/m     " ," P 2/c     " ," P 21/c    ", &
@@ -208,11 +212,11 @@ character(11),parameter :: SYM_SGname(237)= (/" P  1      " ," P -1      ", & ! 
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_SGname
 
 !> extended Hermann-Mauguin symbols for the orthorhombic space groups in the following settings:
-character(8), parameter  :: extendedOrthsettings(6) = (/ &
+character(8), dimension(6):: extendedOrthsettings = (/ &
     " a  b  c", " b  a -c", " c  a  b", "-c  b  a", " b  c  a", " a -c  b"  /)
 !DEC$ ATTRIBUTES DLLEXPORT :: extendedOrthsettings
 
-character(11), parameter :: extendedHMOrthsymbols(6,59) = reshape( (/ &
+character(11), dimension(6,59) :: extendedHMOrthsymbols = reshape( (/ &
     " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", " P 2 2 2   ", &
     " P 2 2 21  ", " P 2 2 21  ", " P 21 2 2  ", " P 21 2 2  ", " P 2 21 2  ", " P 2 21 2  ", &
     " P 21 21 2 ", " P 21 21 2 ", " P 2  21 21", " P 2  21 21", " P 21 2  21", " P 21 2  21", &
@@ -276,7 +280,7 @@ character(11), parameter :: extendedHMOrthsymbols(6,59) = reshape( (/ &
 
 
 !>  SYM_GL  encoded generator strings
-character(40),parameter :: SYM_GL(237)= (/  &
+character(40),dimension(237) :: SYM_GL= (/  &
 "000                                     ","100                                     ","01cOOO0                                 ", &
 "01cODO0                                 ","02aDDOcOOO0                             ","01jOOO0                                 ", &
 "01jOOD0                                 ","02aDDOjOOO0                             ","02aDDOjOOD0                             ", &
@@ -359,17 +363,17 @@ character(40),parameter :: SYM_GL(237)= (/  &
 !DEC$ ATTRIBUTES DLLEXPORT :: SYM_GL
 
 !> SGXsym contains the first space group of each crystal system
-integer(kind=irg),parameter :: SGXsym(7) = (/ 1, 3, 16, 75, 143, 168, 195 /)
+integer(kind=irg),dimension(7) :: SGXsym = (/ 1, 3, 16, 75, 143, 168, 195 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: SGXsym
 
 !>  SGPG contains the first space group # for a given point group
-integer(kind=irg),parameter :: SGPG(32) =(/1,2,3,6,10,16,25,47,75,81,83,89,99,111,123,143, &
+integer(kind=irg),dimension(32):: SGPG =(/1,2,3,6,10,16,25,47,75,81,83,89,99,111,123,143, &
                                           147,149,156,162,168,174,175,177,183,187,191,195, &
                                           200,207,215,221/)
 !DEC$ ATTRIBUTES DLLEXPORT :: SGPG
 
 !>  SGsym contains the numbers of all the symmorphic space groups
-integer(kind=irg),parameter :: SGsym(73) =(/1,2,3,5,6,8,10,12,16,21,22,23,25,35,38,42,44,47, &
+integer(kind=irg),dimension(73) :: SGsym =(/1,2,3,5,6,8,10,12,16,21,22,23,25,35,38,42,44,47, &
                                             65,69,71,75,79,81,82,83,87,89,97,99,107,111,115, &
                                             119,121,123,139,143,146,147,148,149,150,155,156, &
                                             157,160,162,164,166,168,174,175,177,183,187,189, &
@@ -380,7 +384,7 @@ integer(kind=irg),parameter :: SGsym(73) =(/1,2,3,5,6,8,10,12,16,21,22,23,25,35,
 !> SGsymnum contains the number of the symmorphic space group with the same point group symmetry
 !>     this is necessary because sometimes the numbering of the space groups is not continuous in
 !>     terms of the underlying point group ... e.g. 158 has the same point group as 156, not 157.
-integer(kind=irg),parameter :: SGsymnum(230) = (/ &
+integer(kind=irg),dimension(230) :: SGsymnum(230) = (/ &
                                            1,   2,   3,   3,   3,   6,   6,   6,   6,  10, &
                                           10,  10,  10,  10,  10,  16,  16,  16,  16,  16, &
                                           16,  16,  16,  16,  25,  25,  25,  25,  25,  25, &
@@ -410,16 +414,16 @@ integer(kind=irg),parameter :: SGsymnum(230) = (/ &
 ! formalism described in the BESR paper.
 
 !> 10 2D point group symbols in International Tables order
-character(10),parameter  :: PGTWD(0:11) = (/ ' none     ','    1     ','    2     ','    m     ','  2mm     ','    4     ', &
+character(10),dimension(0:11)  :: PGTWD = (/ ' none     ','    1     ','    2     ','    m     ','  2mm     ','    4     ', &
                                              '  4mm     ','    3     ','   3m1    ','    6     ','  6mm     ','   31m    ' /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTWD
 
 !> 10 2D point group orders in International Tables order
-integer(kind=irg),parameter       :: PGTWDorder(0:11) = (/0,1,2,2,4,4,8,3,6,6,12,6/)
+integer(kind=irg),dimension(0:11)       :: PGTWDorder = (/0,1,2,2,4,4,8,3,6,6,12,6/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTWDorder
 
 !> inverse table for 2D point groups; this essentially implements the inverse of Table 4 in BESR paper for the Bright Field symmetry.
-integer(kind=irg),parameter       :: PGTWDinverse(12,11) = reshape((/ & 
+integer(kind=irg),dimension(12,11) :: PGTWDinverse = reshape((/ & 
                                    1,0,0,0,0,0,0,0,0,0,0,0,  1,2,0,0,0,0,0,0,0,0,0,0, &
                                    1,3,0,4,0,0,0,0,0,0,0,0,  1,3,0,5,0,0,0,0,0,0,0,0, &
                                    1,3,0,4,0,0,0,6,0,0,0,0,  1,0,7,0,0,0,0,0,0,0,0,0, &
@@ -431,7 +435,7 @@ integer(kind=irg),parameter       :: PGTWDinverse(12,11) = reshape((/ &
 
 !> 32 3D point group symbols in International Tables order; additional quasi-crystal rotational
 !> groups are added at the end of the list
-character(5),parameter  :: PGTHD(36) =(/'    1','   -1','    2','    m','  2/m','  222', &
+character(5),dimension(36):: PGTHD =(/'    1','   -1','    2','    m','  2/m','  222', &
                                         '  mm2','  mmm','    4','   -4','  4/m','  422', &
                                         '  4mm',' -42m','4/mmm','    3','   -3','   32', &
                                         '   3m','  -3m','    6','   -6','  6/m','  622', &
@@ -440,37 +444,36 @@ character(5),parameter  :: PGTHD(36) =(/'    1','   -1','    2','    m','  2/m',
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHD
 
 !> 32 3D point group orders in International Tables order
-integer(kind=irg),parameter       :: PGTHDorder(32) = (/ 1, 2, 2, 2, 4, 4, 4, 8, 4, 8, &
+integer(kind=irg),dimension(32)       :: PGTHDorder = (/ 1, 2, 2, 2, 4, 4, 4, 8, 4, 8, &
                                                          8, 8, 8, 8,16, 3, 6, 6, 6,12, &
                                                          6,12,12,12,12,12,24,12,24,24, &
                                                         24,32 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHDorder
 
-
 !> 3D point groups : purely rotational point groups corresponding to each point group
-integer(kind=irg),parameter       :: PGrot(36) = (/1,1,3,1,3,6,3,6,9,3,9,12,9,6,12,16,16, &
-                                                  18,16,18,21,16,21,24,21,18,24,28,28,30,28,30,33,34,35,36/)
+integer(kind=irg),dimension(36)   :: PGrot = (/1,1,3,1,3,6,3,6,9,3,9,12,9,6,12,16,16, &
+                                              18,16,18,21,16,21,24,21,18,24,28,28,30,28,30,33,34,35,36/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGrot
 
 !> 3D point groups : Laue group number
-integer(kind=irg),parameter       :: PGLaue(36) =(/2,2,5,5,5,8,8,8,11,11,11,15,15,15,15,17,17, &
-                                                  20,20,20,23,23,23,27,27,27,27,29,29,32,32,32,33,34,35,36/)
+integer(kind=irg),dimension(36)   :: PGLaue =(/2,2,5,5,5,8,8,8,11,11,11,15,15,15,15,17,17, &
+                                              20,20,20,23,23,23,27,27,27,27,29,29,32,32,32,33,34,35,36/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGLaue
 
 !> 3D point groups : inverted Laue group number
-integer(kind=irg),parameter       :: PGLaueinv(36) = (/1,1,2,2,2,3,3,3,4,4,4,5,5,5,5,6,6, &
-                                                       7,7,7,8,8,8,9,9,9,9,10,10,11,11,11,12,13,14,15/)
+integer(kind=irg),dimension(36)   :: PGLaueinv = (/1,1,2,2,2,3,3,3,4,4,4,5,5,5,5,6,6, &
+                                                   7,7,7,8,8,8,9,9,9,9,10,10,11,11,11,12,13,14,15/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGLaueinv
 
 !> 3D point groups mapped onto kvector sampling type (used for master pattern computations) [-1 for special cases]
-integer(kind=irg),parameter       :: PGSamplingType(36) = (/1, 2, 3, 4, 5, 5, 5, 6, 5, 5, &
-                                                            6, 6, 7,-1, 9,-1,-1,-1,-1,-1, &
-                                                           15,12,17,16,18,-1,19, 3, 6, 6, &
-                                                            8, 9, -1, -1, -1, -1 /)
+integer(kind=irg),dimension(36)   :: PGSamplingType = (/1, 2, 3, 4, 5, 5, 5, 6, 5, 5, &
+                                                        6, 6, 7,-1, 9,-1,-1,-1,-1,-1, &
+                                                       15,12,17,16,18,-1,19, 3, 6, 6, &
+                                                        8, 9, -1, -1, -1, -1 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGSamplingType
 
 !> 31 diffraction group symbols in BESR order
-character(5),parameter  :: DG(31) =(/'    1','   1R','    2','   2R','  21R','   mR', &
+character(5),dimension(31)  :: DG =(/'    1','   1R','    2','   2R','  21R','   mR', &
                                      '    m','  m1R','2mRmR','  2mm','2RmmR','2mm1R', &
                                      '    4','   4R','  41R','4mRmR','  4mm','4RmmR', &
                                      '4mm1R','    3','   6R','  3mR','   3m','6RmmR', &
@@ -479,30 +482,30 @@ character(5),parameter  :: DG(31) =(/'    1','   1R','    2','   2R','  21R','  
 !DEC$ ATTRIBUTES DLLEXPORT :: DG
 
 !> 31 diffraction group orders in BESR order
-integer(kind=irg),parameter       :: DGorder(31) =(/1, 2, 2, 2, 4, 2, 2, 4, 4, 4, 4, 8, &
-                                          4, 4, 8, 8, 8, 8,16, 3, 6, 6, 6,12, &
-                                          6, 6,12,12,12,12,24/)
+integer(kind=irg),dimension(31) :: DGorder =(/1, 2, 2, 2, 4, 2, 2, 4, 4, 4, 4, 8, &
+                                              4, 4, 8, 8, 8, 8,16, 3, 6, 6, 6,12, &
+                                              6, 6,12,12,12,12,24/)
 !DEC$ ATTRIBUTES DLLEXPORT :: DGorder
 
 !> Bright Field planar point group for 31 diffraction groups (Table 2, column 2, BESR, with change in row ordering)
-integer(kind=irg),parameter       :: BFPG(31) =(/1,2,2,1,2,3,3,4,4,4,3,4,5,5,5,6,6,6,6,7,7,8,8,8,9,9,9,10,10,10,10/)
+integer(kind=irg),dimension(31) :: BFPG =(/1,2,2,1,2,3,3,4,4,4,3,4,5,5,5,6,6,6,6,7,7,8,8,8,9,9,9,10,10,10,10/)
 !DEC$ ATTRIBUTES DLLEXPORT :: BFPG
 
 !> Whole Pattern planar point group for 31 diffraction groups (Table 2, column 3, BESR, with change in row ordering)
-integer(kind=irg),parameter       :: WPPG(31) =(/1,1,2,1,2,1,3,3,2,4,3,4,5,2,5,5,6,4,6,7,7,7,8,8,9,7,9,9,10,8,10/)
+integer(kind=irg),dimension(31) :: WPPG =(/1,1,2,1,2,1,3,3,2,4,3,4,5,2,5,5,6,4,6,7,7,7,8,8,9,7,9,9,10,8,10/)
 !DEC$ ATTRIBUTES DLLEXPORT :: WPPG
 
 !> Dark Field planar point group for 31 diffraction groups (Table 2, column 4, BESR, with change in row ordering)
-integer(kind=irg),parameter       :: DFGN(31) = (/1,2,1,1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,1,1,1,1,2,2,1,1,2,2/)
+integer(kind=irg),dimension(31) :: DFGN = (/1,2,1,1,2,1,1,2,1,1,1,2,1,1,2,1,1,1,2,1,1,1,1,1,1,2,2,1,1,2,2/)
 !DEC$ ATTRIBUTES DLLEXPORT :: DFGN
 
 !> Dark Field planar point group for 31 diffraction groups (Table 2, column 5, BESR, with change in row ordering)
-integer(kind=irg),parameter       :: DFSP(31) = (/0,0,0,0,0,3,3,4,3,3,3,4,0,0,0,3,3,3,4,0,0,3,3,3,0,0,0,3,3,4,4/)
+integer(kind=irg),dimension(31) :: DFSP = (/0,0,0,0,0,3,3,4,3,3,3,4,0,0,0,3,3,3,4,0,0,3,3,3,0,0,0,3,3,4,4/)
 !DEC$ ATTRIBUTES DLLEXPORT :: DFSP
 
 !> 10 projection diffraction groups in BESR order (Table 2, column 8, BESR, with change in row ordering)
-integer(kind=irg),parameter       :: PDG(31) = (/2,2,5,5,5,8,8,8,12,12,12,12,15,15,15,19,19,19,19,26,27,30,30, &
-                                                 31,27,26,27,31,31,30,31/)
+integer(kind=irg),dimension(31) :: PDG = (/2,2,5,5,5,8,8,8,12,12,12,12,15,15,15,19,19,19,19,26,27,30,30, &
+                                          31,27,26,27,31,31,30,31/)
 !DEC$ ATTRIBUTES DLLEXPORT :: PDG
 
 !> short hand for .FALSE. logical parameter
@@ -514,7 +517,7 @@ logical,parameter,private :: TT=.TRUE.
 !DEC$ ATTRIBUTES DLLEXPORT :: TT
 
 !> Table 3 from BESR paper
-logical,parameter       :: DGPG(32,31) = reshape((/ &
+logical,dimension(32,31)  :: DGPG = reshape((/ &
      FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,TT,FF,FF,FF,FF,FF, &
      FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,TT,FF,FF,FF,FF,FF,FF, &
      FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,FF,TT,FF,FF,FF,FF,FF,FF,FF, &
@@ -588,7 +591,7 @@ end type symdata2D
 
 ! finally, we define the rotational crystal symmetry operators in terms of quaternions (q0, q1,q2,q3) with q0 the scalar part;
 ! these are used in the dictmod EBSD dictionary indexing module, and are defined with respect to the standard cartesian reference frame
-real(kind=dbl),parameter :: SYM_Qsymop(4,152) = reshape( (/ &
+real(kind=dbl),dimension(4,152) :: SYM_Qsymop = reshape( (/ &
                                 1.D0, 0.D0, 0.D0, 0.D0, &       ! 1: identity operator
                                 0.D0, 1.D0, 0.D0, 0.D0, &       ! 2: 180@[100]
                                 0.D0, 0.D0, 1.D0, 0.D0, &       ! 3: 180@[010]
@@ -781,7 +784,7 @@ real(kind=dbl),parameter :: SYM_Qsymop(4,152) = reshape( (/ &
 
 ! #define CIs 1         // triclinic        Ci         a!=b!=c  a!=b!=g!=90
 !--------------------------------------------------------------------------
-character(2),PARAMETER :: TSLsymtype(32) = (/' 1',' 1',' 2',' 2',' 2','22','22','22', &
+character(2),dimension(32) :: TSLsymtype = (/' 1',' 1',' 2',' 2',' 2','22','22','22', &
                                              ' 4',' 4',' 4','42','42','42','42',' 3', &
                                              ' 3','32','32','32',' 6',' 6',' 6','62', &
                                              '62','62','62','23','23','43','43','43'/)
@@ -812,7 +815,7 @@ character(2),PARAMETER :: TSLsymtype(32) = (/' 1',' 1',' 2',' 2',' 2','22','22',
 ! or two phase FZ computation; all FZs are also available in the povray.f90 module for 3D visualization.
 ! The new routine getFZtypeandorder in so3.f90 will take two point group numbers, possibly identical,
 ! and return the FZtype and FZorder parameters that are currently used already in other routines.  
-integer(kind=irg), parameter        :: FZtypeTable(32,32) = reshape( (/ &
+integer(kind=irg), dimension(32,32) :: FZtypeTable = reshape( (/ &
  0, 0, 0, 0, 0, 9, 0, 9, 0, 0, 0, 7, 0, 9, 7, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 4, 4, 3, 4, 3, &
  0, 0, 0, 0, 0, 9, 0, 9, 0, 0, 0, 7, 0, 9, 7, 0, 0, 8, 0, 8, 0, 0, 0, 6, 0, 8, 6, 4, 4, 3, 4, 3, &
  0, 0, 0, 0, 0, 9, 9, 9, 7, 9, 7, 7, 7, 7, 7, 8, 8, 6, 8, 6, 6, 8, 6, 6, 6, 6, 6, 4, 4, 3, 4, 3, &
@@ -1081,9 +1084,9 @@ type unitcell
 end type unitcell
 
 ! used to hold an array of pointers to multiple cell objects
-type multicell
-    class(unitcell), pointer :: cell
-end type multicell
+! type multicell
+!     class(unitcell), pointer :: cell
+! end type multicell
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1696,13 +1699,13 @@ end type LTEMstruct
 integer(kind=irg),parameter         :: CSLnumberdefined = 29
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLnumberdefined
 
-character(3), parameter             :: CSLlabels(CSLnumberdefined) = &
+character(3), dimension(CSLnumberdefined) :: CSLlabels = &
                                        (/ 'I  ', '3  ', '5  ', '7  ', '9  ', '11 ', '13a', '13b', '15 ', '17a', '17b', &
                                           '19a', '19b', '21a', '21b', '23 ', '25a', '25b', '27a', '27b', '29a', &
                                           '29b', '31a', '31b', '33a', '33b', '33c', '35a', '35b' /)
 !DEC$ ATTRIBUTES DLLEXPORT :: CSLlabels
 
-integer(kind=irg),parameter         :: CSLintegers(6,CSLnumberdefined) = reshape((/ 0,1,0,1,0,1, &
+integer(kind=irg),dimension(6,CSLnumberdefined)         :: CSLintegers = reshape((/ 0,1,0,1,0,1, &
                                                                                     1,3,1,3,1,3, &
                                                                                     1,3,0,1,0,1, &
                                                                                     1,5,1,5,1,5, &
