@@ -108,18 +108,24 @@ sed -i '.bak' "s|SOURCEPATH|${CODEfolder}|" conf.py
 # generate the doc files
 echo " run_docs.sh: generating doc html files"
 make html
+make latexpdf
 
 #=======================
 # cleaning up
 echo " run_docs.sh: cleaning up"
-# for file in "${doc_source_files[@]}"
-# do
-#     rm ${file} .
-# done
-# for file in "${doc_config_files[@]}"
-# do
-# 	rm ${file} .
-# done
+for file in "${doc_source_files[@]}"
+do
+    rm ${file} 
+done
+for file in "${module_source_files[@]}"
+do
+    rm ${modulefolder}/${file} 
+done
+for file in "${doc_config_files[@]}"
+do
+	rm ${file} 
+done
+rm *.*.bak 
 
 # and return to the starting folder
 echo " run_docs.sh: run_docs build completed"
