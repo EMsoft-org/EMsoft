@@ -1198,6 +1198,7 @@ integer(kind=irg),INTENT(OUT)                           :: nlines
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 integer(kind=irg),INTENT(OUT)                           :: hdferr
+! character(len=fnlen, KIND=c_char),allocatable, TARGET, INTENT(OUT)   :: stringarray(:) 
 character(len=fnlen, KIND=c_char),allocatable, TARGET, INTENT(OUT)   :: stringarray(:) 
 
 integer(HID_T)                                          :: filetype, space, memtype ! Handles

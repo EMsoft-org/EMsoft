@@ -23,7 +23,7 @@ Fellowship, N00014-­16-­1-­2821.
 
    Installation
    pyEMsoft
-   All Modules
+   AllModules
 
 License
 ------------------------------------
