@@ -145,7 +145,7 @@ done
 mv *.log logs
 
 # and return to the starting folder
-echo " run_pyEMsoft.sh: pyEMsoftHDF build completed"
+echo " run_pyEMsoft.sh: pyEMsoft build completed"
 cd ${currentdir}
 
 # that's it

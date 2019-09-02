@@ -3,24 +3,24 @@ Installation
 .. role:: bash(code)
    :language: bash
 
-The pyEMsoft module can only be generated after EMsoft has been built:
+The pyEMsoft modules can only be generated after EMsoft has been built:
 
 - To compile EMsoft, you need to first build the `Software Developer Kit <https://github.com/EMsoft-org/EMsoftSuperbuild>`_ on your operating system. 
-- Then, follow the instructions in `EMsoft <https://github.com/EMsoft-org/EMsoft>`_ to compile the Fortran library. 
+- Then, follow the instructions in `EMsoft <https://github.com/EMsoft-org/EMsoft>`_ to compile the EMsoft modules and programs. 
 - Next, complete the EMsoft package configuration following the `EMsoft Wiki Package Configuration <https://github.com/EMsoft-org/EMsoft/wiki/Package-Configuration>`_.
 - To test if EMsoft has been configured correctly,run a simple example such as `Crystal Data Entry Example <https://github.com/EMsoft-org/EMsoft/wiki/Crystal-Data-Entry-Example>`_.
-- (Suggested) Install a recent version of the `Anaconda <https://www.anaconda.com/distribution/>`_ to get other packages such as Python, numpy, and many other packages.
-- :bash:`conda install lapack`. This should automatically install the blas and tmglib as well. These libraries will be linked later to some of the modules for convinient `linear algebra operations <http://www.netlib.org/lapack/>`_.
-- Install `f90wrap <https://github.com/jameskermode/f90wrap>`_ and check if f90wrap and f2py-f90wrap have been added to path. These are the two important executables..
+- (Suggested) Install a recent version of the `Anaconda <https://www.anaconda.com/distribution/>`_ to get other packages such as Python, numpy, and many others.
+- :bash:`conda install lapack`. This should automatically install the blas and tmglib libraries as well. These libraries will be linked later to some of the modules for convenient `linear algebra operations <http://www.netlib.org/lapack/>`_.
+- Install `f90wrap <https://github.com/jameskermode/f90wrap>`_ and check if f90wrap and f2py-f90wrap have been added to path. These are the two important executables to generate the wrappers.
 - :bash:`cd` into the pyEMsoft folder in the EMsoft repository and execute the shell script with :bash:`./run_pyEMsoft.sh`
 
 
-Dependences
+Dependencies
 ------------------------------------
 * Github
 * EMsoft_SKD
 * EMsoft
-* Python >=2.7 or 3.x (unittest files provided in Python 3.x)
+* Python >=2.7 or 3.x (unittest files and examples provided in Python 3.x)
 * recent version of numpy which includes support for f2py
 * Fortran compiler gfortran 6.3+ or ifort 12+
 * f90wrap

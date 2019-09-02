@@ -78,6 +78,7 @@ EMsoft_SDK=/Users/Shared/EMsoft_SDK
 EMsoftLib=${EMsoft_folder}/Source/EMsoftLib
 EMsoftHDFLib=${EMsoft_folder}/Source/EMsoftHDFLib
 EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoft/EMsoftLib
+EMsoftBuildHDFLib=${EMsoft_BUILDfolder}/EMsoft/EMsoftHDFLib
 
 #=======================
 # set the working directory to pyEMsoft_BUILDfolder (create it if necessary)
@@ -98,7 +99,6 @@ for file in "${f90_source_files[@]}"
 do
 	cp ${EMsoftLib}/${file} .
 done
-
 for file in "${f90_generated_source_files[@]}"
 do
 	cp ${EMsoftBuildLib}/${file} .
@@ -112,8 +112,8 @@ f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoftHDF ${f90_generated_source_fil
 #=======================
 # call f2py-f90wrap to build the wrapper library
 echo " run_pyEMsoftHDF.sh: executing f2py-f90wrap ... this can take a long time ..."
-f2py-f90wrap -c -m _pyEMsoftHDF --latex-doc module.tex f90wrap_*.f90 -I$EMsoft_BUILDfolder/EMsoft/EMsoftLib \
--I$EMsoft_BUILDfolder/EMsoft/EMsoftHDFLib \
+f2py-f90wrap -c -m _pyEMsoftHDF f90wrap_*.f90 -I${EMsoftBuildLib} \
+-I${EMsoftBuildHDFLib} \
 -I$EMsoft_SDK/hdf5-1.8.20-Release/include/static \
 -I$EMsoft_SDK/CLFortran-0.0.1-Release/include \
 -I$EMsoft_SDK/jsonfortran-4.2.1-Release/include \

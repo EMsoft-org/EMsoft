@@ -54,8 +54,10 @@ currentdir=`pwd`
 # declare the arrays of source files that need to be included in this python wrapper docs build;
 declare -a doc_source_files=("index.rst"
 	                         "Installation.rst"
-	                         "AllModules.rst"
 	                         "pyEMsoft.rst")
+
+declare -a module_source_files=("pyEMsoftLib.rst"
+                             "pyEMsoftHDFLib.rst")
 
 declare -a doc_config_files=("conf.py"
 					         "Makefile"
@@ -65,16 +67,19 @@ declare -a doc_config_files=("conf.py"
 # the following folders can probably be set via CMake variables
 EMsoft_BUILDfolder=/Users/mdg/Files/EMsoftBuild
 DOCfolder=${EMsoft_BUILDfolder}/Documentation
+CODEfolder=${EMsoft_BUILDfolder}/pyEMsoft
 pyEMsoft_DOCfolder=${DOCfolder}/pyEMsoft
 EMsoft_folder=/Users/mdg/Files/EMsoftPublic
 pyEMsoft_folder=${EMsoft_folder}/Source/pyEMsoft
 DOCsourcefolder=${pyEMsoft_folder}/docs
 staticfolder=${pyEMsoft_DOCfolder}/_static
+modulefolder=${pyEMsoft_DOCfolder}/Modules
 
 #=======================
 # set the working directory to pyEMsoft_BUILDfolder (create it if necessary)
 [ ! -d ${pyEMsoft_DOCfolder} ] && mkdir -p ${pyEMsoft_DOCfolder}
 [ ! -d ${staticfolder} ] && mkdir -p ${staticfolder}
+[ ! -d ${modulefolder} ] && mkdir -p ${modulefolder}
 cd ${pyEMsoft_DOCfolder}
 
 #=======================
@@ -83,6 +88,10 @@ echo " run_docs.sh: copying source files into place"
 for file in "${doc_source_files[@]}"
 do
     cp ${DOCsourcefolder}/${file} .
+done
+for file in "${module_source_files[@]}"
+do
+    cp ${DOCsourcefolder}/Modules/${file} ${modulefolder}
 done
 for file in "${doc_config_files[@]}"
 do
@@ -93,7 +102,7 @@ done
 # setting the correct document path
 echo " run_docs.sh: setting the correct document path"
 sed -i '.bak' "s|DOCPATH|${pyEMsoft_DOCfolder}|" conf.py 
-sed -i '.bak' "s|SOURCEPATH|${pyEMsoft_folder}|" conf.py 
+sed -i '.bak' "s|SOURCEPATH|${CODEfolder}|" conf.py 
 
 #=======================
 # generate the doc files

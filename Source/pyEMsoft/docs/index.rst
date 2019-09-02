@@ -20,10 +20,16 @@ Fellowship, N00014-­16-­1-­2821.
    :maxdepth: 2
    :caption: Contents:
 
-
+   self
    Installation
    pyEMsoft
-   AllModules
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Modules:
+
+   Modules/pyEMsoftLib
+   Modules/pyEMsoftHDFLib
 
 License
 ------------------------------------
