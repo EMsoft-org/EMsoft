@@ -75,11 +75,14 @@ DOCsourcefolder=${pyEMsoft_folder}/docs
 staticfolder=${pyEMsoft_DOCfolder}/_static
 modulefolder=${pyEMsoft_DOCfolder}/Modules
 
+DYLD_LIBRARY_PATH=${EMsoft_BUILDfolder}/Bin 
+
 #=======================
 # set the working directory to pyEMsoft_BUILDfolder (create it if necessary)
 [ ! -d ${pyEMsoft_DOCfolder} ] && mkdir -p ${pyEMsoft_DOCfolder}
 [ ! -d ${staticfolder} ] && mkdir -p ${staticfolder}
 [ ! -d ${modulefolder} ] && mkdir -p ${modulefolder}
+[ ! -d ${pyEMsoft_DOCfolder}/logs ] && mkdir -p ${pyEMsoft_DOCfolder}/logs
 cd ${pyEMsoft_DOCfolder}
 
 #=======================
@@ -106,9 +109,9 @@ sed -i '.bak' "s|SOURCEPATH|${CODEfolder}|" conf.py
 
 #=======================
 # generate the doc files
-echo " run_docs.sh: generating doc html files"
-make html
-make latexpdf
+echo " run_docs.sh: generating doc html and latex pdf files"
+make html 1>build.log 2>build_error.log
+make latexpdf 1>>build.log 2>>build_error.log
 
 #=======================
 # cleaning up
@@ -126,6 +129,8 @@ do
 	rm ${file} 
 done
 rm *.*.bak 
+mv *.log logs
+rmdir ${modulefolder}
 
 # and return to the starting folder
 echo " run_docs.sh: run_docs build completed"
