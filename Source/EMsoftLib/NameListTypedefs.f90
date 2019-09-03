@@ -100,6 +100,7 @@ end type GBONameListType
 type GBOdmNameListType
         integer(kind=irg)       :: pgnum
         integer(kind=irg)       :: nthreads
+        character(fnlen)        :: metric
         character(fnlen)        :: inname
         character(fnlen)        :: outname
 end type GBOdmNameListType

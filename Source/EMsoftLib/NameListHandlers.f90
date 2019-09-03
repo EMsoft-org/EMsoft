@@ -522,12 +522,14 @@ logical                                     :: skipread = .FALSE.
 
 integer(kind=irg)       :: pgnum
 integer(kind=irg)       :: nthreads
+character(fnlen)        :: metric
 character(fnlen)        :: inname
 character(fnlen)        :: outname
 
-namelist /GBOdmlist/ pgnum, outname, nthreads, inname
+namelist /GBOdmlist/ pgnum, outname, nthreads, inname, metric
 
 nthreads = 0
+metric = 'octonion'   ! or 'Olmsted' or 'Morawiec'
 outname = 'undefined' 
 inname = 'undefined' 
 pgnum = 32
@@ -555,6 +557,7 @@ end if
 gbonl%nthreads = nthreads
 gbonl%pgnum = pgnum
 gbonl%outname = outname
+gbonl%metric = metric
 gbonl%inname = inname
 
 end subroutine GetGBOdmNameList

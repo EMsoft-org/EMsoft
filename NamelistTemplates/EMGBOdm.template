@@ -12,6 +12,8 @@
  pgnum = 32,
 ! number of threads for parallel computation (0 to use the maximum available)
  nthreads = 0,
+! metric to be used:  'octonion', 'Olmsted', 'Morawiec'
+ metric = 'octonion',
 ! input octonion file name (EMsoft relative pathname)
 !    this file must have the number of octonions on the first line, then one octonion per line
  inname = 'undefined'
