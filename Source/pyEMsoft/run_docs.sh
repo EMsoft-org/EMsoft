@@ -108,7 +108,7 @@ sed -i '.bak' "s|DOCPATH|${pyEMsoft_DOCfolder}|" conf.py
 sed -i '.bak' "s|SOURCEPATH|${CODEfolder}|" conf.py 
 
 #=======================
-# generate the doc files
+# generate the doc files; this could have a switch for each (html and latexpdf)
 echo " run_docs.sh: generating doc html and latex pdf files"
 make html 1>build.log 2>build_error.log
 make latexpdf 1>>build.log 2>>build_error.log
