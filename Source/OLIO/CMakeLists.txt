@@ -24,18 +24,18 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
   GetHDF5LinkLibraries(EMSOFT)
   set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib)
 
-  Add_EMsoft_Executable(TARGET EMGBO 
-                        SOURCES ${APP_DIR}/EMGBO.f90 
-                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
-                        TEMPLATE ${TMPLT_DIR}/EMGBO.template 
-                        SOLUTION_FOLDER EMsoftPublic/OLIO 
-                        INSTALL_PROGRAM TRUE)
+  # Add_EMsoft_Executable(TARGET EMGBO 
+  #                       SOURCES ${APP_DIR}/EMGBO.f90 
+  #                       LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
+  #                       TEMPLATE ${TMPLT_DIR}/EMGBO.template 
+  #                       SOLUTION_FOLDER EMsoftPublic/OLIO 
+  #                       INSTALL_PROGRAM TRUE)
 
-  Add_EMsoft_Executable(TARGET EMGBOdm 
-                        SOURCES ${APP_DIR}/EMGBOdm.f90 
-                        LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
-                        TEMPLATE ${TMPLT_DIR}/EMGBOdm.template 
-                        SOLUTION_FOLDER EMsoftPublic/OLIO 
-                        INSTALL_PROGRAM TRUE)
+  # Add_EMsoft_Executable(TARGET EMGBOdm 
+  #                       SOURCES ${APP_DIR}/EMGBOdm.f90 
+  #                       LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES} 
+  #                       TEMPLATE ${TMPLT_DIR}/EMGBOdm.template 
+  #                       SOLUTION_FOLDER EMsoftPublic/OLIO 
+  #                       INSTALL_PROGRAM TRUE)
 
 endif()
