@@ -529,7 +529,7 @@ character(fnlen)        :: outname
 namelist /GBOdmlist/ pgnum, outname, nthreads, inname, metric
 
 nthreads = 0
-metric = 'octonion'   ! or 'Olmsted' or 'Morawiec'
+metric = 'octonion'   ! or 'Olmsted' or 'Riemannian'
 outname = 'undefined' 
 inname = 'undefined' 
 pgnum = 32
