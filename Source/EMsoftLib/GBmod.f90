@@ -164,7 +164,7 @@ end function GBO_minimal_U1_angle_NB
 !
 !> @date 04/20/18 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function GBO_Omega(qa,qb,qc,qd,noU1)  result(Omega)
+recursive function GBO_Omega(qa,qb,qc,qd,metric,noU1)  result(Omega)
 !DEC$ ATTRIBUTES DLLEXPORT :: GBO_Omega
 
 use constants
@@ -180,12 +180,21 @@ real(kind=dbl),INTENT(INOUT)      :: qc(4)
 !f2py intent(in,out) ::  qc
 real(kind=dbl),INTENT(INOUT)      :: qd(4)
 !f2py intent(in,out) ::  qd
+character(fnlen),INTENT(IN)       :: metric
 logical,INTENT(IN),OPTIONAL       :: noU1
 real(kind=dbl)                    :: Omega
 
-real(kind=dbl)                    :: qq(4), zeta, sigma, cac, cbd, cbc, cad, cz, sz, cs, ss, &
+real(kind=dbl)                    :: qq1(4), qq2(4), zeta, sigma, cac, cbd, cbc, cad, cz, sz, cs, ss, &
                                      sum1, sum2, sum3, sum4, sums(4), smax
-integer(kind=irg)                 :: isum(1)                                     
+integer(kind=irg)                 :: isum(1), m
+real(kind=dbl),parameter          :: srt = 1.D0/sqrt(2.D0)     
+
+m = 1
+if (trim(metric).eq.'Olmsted') then 
+  m=2
+else if (trim(metric).eq.'Riemannian') then 
+       m=3
+     end if
 
 if (present(noU1)) then
   if (noU1.eqv..TRUE.) then
@@ -193,277 +202,124 @@ if (present(noU1)) then
     cbd = sum(qb*qd)
     cbc = sum(qb*qc)
     cad = sum(qa*qd)
-    sum1 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
-    sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
-! and determine the smallest geodesic distance on S^7
-    Omega = 2.0 * minval( (/ acos(sum1), acos(sum2) /) )
+   
+    select case(m)
+    case(1) 
+      sum1 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
+      sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
+      Omega = 2.0 * minval( (/ acos(sum1), acos(sum2) /) )
+    case(2)
+      sum1 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
+      sum2 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
+      Omega = sqrt( minval( (/ sum1, sum2 /) ) ) 
+    case(3)
+      cac = 2.D0 * acos(cac)
+      cbd = 2.D0 * acos(cbd)
+      cbc = 2.D0 * acos(cbc)
+      cad = 2.D0 * acos(cad)
+      sum1 = cac*cac + cbd*cbd 
+      sum2 = cbc*cbc + cad*cad 
+      Omega = sqrt( minval( (/ sum1, sum2 /) ) )
+    end select
+
   end if
 else
 ! determine the minimal U(1) angle for the (a,b) - (c,d) boundary pair
   zeta = GBO_minimal_U1_angle(qa,qb,qc,qd)
   cz = cos(zeta*0.5D0)
   sz = sin(zeta*0.5D0)
-  qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
-  cac = sum(qa*qq)
-  qq = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
-  cbd = sum(qb*qq)
+  qq1 = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
+  qq2 = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
+  cac = sum(qa*qq1)
+  cbd = sum(qb*qq2)
   
-  sum1 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
+  select case(m)
+    case(1) 
+      sum1 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
+    case(2)
+      sum1 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
+    case(3)
+      cac = 2.D0 * acos(cac)
+      cbd = 2.D0 * acos(cbd)
+      sum1 = cac*cac + cbd*cbd
+  end select
 
 ! determine the minimal U(1) angle for the (a,-b) - (c,d) boundary pair
   zeta = GBO_minimal_U1_angle(qa,-qb,qc,qd)
   cz = cos(zeta*0.5D0)
   sz = sin(zeta*0.5D0)
-  qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
-  cac = sum(qa*qq)
-  qq = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
-  cbd = sum(-qb*qq)
+  qq1 = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
+  qq2 = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
+  cac = sum(qa*qq1)
+  cbd = sum(-qb*qq2)
   
-  sum3 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
+  select case(m)
+    case(1) 
+      sum3 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
+    case(2)
+      sum3 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
+    case(3)
+      cac = 2.D0 * acos(cac)
+      cbd = 2.D0 * acos(cbd)
+      sum3 = cac*cac + cbd*cbd
+  end select
 
 ! determine the minimal U(1) angle for the (b,a) - (c,d) boundary pair
   sigma = GBO_minimal_U1_angle(qa,qb,qc,qd,exchange=.TRUE.)
   cs = cos(sigma*0.5D0)
   ss = sin(sigma*0.5D0)
-  qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
-  cbc = sum(qb*qq)
-  qq = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
-  cad = sum(qa*qq)
+  qq1 = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
+  qq2 = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
+  cbc = sum(qb*qq1)
+  cad = sum(qa*qq2)
 
-  sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
+  select case(m)
+    case(1) 
+      sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
+    case(2)
+      sum2 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
+    case(3)
+      cbc = 2.D0 * acos(cbc)
+      cad = 2.D0 * acos(cad)
+      sum2 = cbc*cbc + cad*cad
+  end select
 
 ! determine the minimal U(1) angle for the (b,-a) - (c,d) boundary pair
   sigma = GBO_minimal_U1_angle(-qa,qb,qc,qd,exchange=.TRUE.)
   cs = cos(sigma*0.5D0)
   ss = sin(sigma*0.5D0)
-  qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
-  cbc = sum(qb*qq)
-  qq = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
-  cad = sum(-qa*qq)
+  qq1 = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
+  qq2 = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
+  cbc = sum(qb*qq1)
+  cad = sum(-qa*qq2)
 
-  sum4 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
+  select case(m)
+    case(1) 
+      sum4 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
+    case(2)
+      sum4 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
+    case(3)
+      cbc = 2.D0 * acos(cbc)
+      cad = 2.D0 * acos(cad)
+      sum4 = cbc*cbc + cad*cad
+  end select
 
   sums = (/ sum1, sum2, sum3, sum4 /)
   smax = maxval(sums)
   isum = maxloc(sums)
 
 ! and determine the smallest geodesic distance on S^7
-  Omega = 2.0 * acos(smax)
+  select case(m)
+    case(1)
+      Omega = 2.0 * acos(smax)
+    case(2,3)
+      Omega = sqrt( minval(sums) )
+      Omega = Omega * srt
+  end select
 
-! do we also need to reorganize the quaternions depending on the value of isum?
 end if
 
 end function GBO_Omega
-
-
-!--------------------------------------------------------------------------
-!
-! FUNCTION: GBO_Olmsted
-!
-!> @author Marc De Graef, Carnegie Mellon University 
-!
-!> @brief Compute the Olmsted metric arc length for a GBO pair, including U(1) symmetry, grain exchange and SO(3) double cover
-!
-!> @param qa, qb, qc, qd  GBO rotation quaternions
-!
-!> @date 09/03/19 MDG 1.0 original
-!--------------------------------------------------------------------------
-recursive function GBO_Olmsted(qa,qb,qc,qd,noU1)  result(Omega)
-!DEC$ ATTRIBUTES DLLEXPORT :: GBO_Olmsted
-
-use constants
-use quaternions
-
-IMPLICIT NONE
-
-real(kind=dbl),INTENT(INOUT)      :: qa(4)
-!f2py intent(in,out) ::  qa
-real(kind=dbl),INTENT(INOUT)      :: qb(4)
-!f2py intent(in,out) ::  qb
-real(kind=dbl),INTENT(INOUT)      :: qc(4)
-!f2py intent(in,out) ::  qc
-real(kind=dbl),INTENT(INOUT)      :: qd(4)
-!f2py intent(in,out) ::  qd
-logical,INTENT(IN),OPTIONAL       :: noU1
-real(kind=dbl)                    :: Omega
-
-real(kind=dbl)                    :: qq(4), zeta, sigma, cac, cbd, cbc, cad, cz, sz, cs, ss, &
-                                     sum1, sum2, sum3, sum4, sums(4), smax
-integer(kind=irg)                 :: isum(1)            
-real(kind=dbl),parameter          :: srt = 1.D0/sqrt(2.D0)                         
-
-if (present(noU1)) then
-  if (noU1.eqv..TRUE.) then
-    cac = sum(qa*qc)
-    cbd = sum(qb*qd)
-    cbc = sum(qb*qc)
-    cad = sum(qa*qd)
-    sum1 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
-    sum2 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
-! and determine the smallest value
-    Omega = sqrt( minval( (/ sum1, sum2 /) ) )
-  end if
-else
-! determine the minimal U(1) angle for the (a,b) - (c,d) boundary pair
-  zeta = GBO_minimal_U1_angle(qa,qb,qc,qd)
-  cz = cos(zeta*0.5D0)
-  sz = sin(zeta*0.5D0)
-  qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
-  cac = sum(qa*qq)
-  qq = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
-  cbd = sum(qb*qq)
-  
-  sum1 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
-
-! determine the minimal U(1) angle for the (a,-b) - (c,d) boundary pair
-  zeta = GBO_minimal_U1_angle(qa,-qb,qc,qd)
-  cz = cos(zeta*0.5D0)
-  sz = sin(zeta*0.5D0)
-  qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
-  cac = sum(qa*qq)
-  qq = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
-  cbd = sum(-qb*qq)
-  
-  sum3 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
-
-! determine the minimal U(1) angle for the (b,a) - (c,d) boundary pair
-  sigma = GBO_minimal_U1_angle(qa,qb,qc,qd,exchange=.TRUE.)
-  cs = cos(sigma*0.5D0)
-  ss = sin(sigma*0.5D0)
-  qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
-  cbc = sum(qb*qq)
-  qq = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
-  cad = sum(qa*qq)
-
-  sum2 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
-
-! determine the minimal U(1) angle for the (b,-a) - (c,d) boundary pair
-  sigma = GBO_minimal_U1_angle(-qa,qb,qc,qd,exchange=.TRUE.)
-  cs = cos(sigma*0.5D0)
-  ss = sin(sigma*0.5D0)
-  qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
-  cbc = sum(qb*qq)
-  qq = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
-  cad = sum(-qa*qq)
-
-  sum4 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
-
-  sums = (/ sum1, sum2, sum3, sum4 /)
-  Omega = sqrt( minval(sums) )
-  isum = minloc(sums)
-
-! do we also need to reorganize the quaternions depending on the value of isum?
-end if
-
-! divide by sqrt(2) to get the same range as the GBOM angles.
-Omega = Omega * srt
-
-end function GBO_Olmsted
-
-
-!--------------------------------------------------------------------------
-!
-! FUNCTION: GBO_Riemannian
-!
-!> @author Marc De Graef, Carnegie Mellon University 
-!
-!> @brief Compute the Riemannian metric arc length for a GBO pair, including U(1) symmetry, grain exchange and SO(3) double cover
-!
-!> @param qa, qb, qc, qd  GBO rotation quaternions
-!
-!> @date 09/03/19 MDG 1.0 original
-!--------------------------------------------------------------------------
-recursive function GBO_Riemannian(qa,qb,qc,qd,noU1)  result(Omega)
-!DEC$ ATTRIBUTES DLLEXPORT :: GBO_Riemannian
-
-use constants
-use quaternions
-
-IMPLICIT NONE
-
-real(kind=dbl),INTENT(INOUT)      :: qa(4)
-!f2py intent(in,out) ::  qa
-real(kind=dbl),INTENT(INOUT)      :: qb(4)
-!f2py intent(in,out) ::  qb
-real(kind=dbl),INTENT(INOUT)      :: qc(4)
-!f2py intent(in,out) ::  qc
-real(kind=dbl),INTENT(INOUT)      :: qd(4)
-!f2py intent(in,out) ::  qd
-logical,INTENT(IN),OPTIONAL       :: noU1
-real(kind=dbl)                    :: Omega
-
-real(kind=dbl)                    :: qq(4), zeta, sigma, cac, cbd, cbc, cad, cz, sz, cs, ss, &
-                                     sum1, sum2, sum3, sum4, sums(4), smax
-integer(kind=irg)                 :: isum(1)            
-real(kind=dbl),parameter          :: srt = 1.D0/sqrt(2.D0)                         
-
-if (present(noU1)) then
-  if (noU1.eqv..TRUE.) then
-    cac = 2.D0 * acos(sum(qa*qc))
-    cbd = 2.D0 * acos(sum(qb*qd))
-    cbc = 2.D0 * acos(sum(qb*qc))
-    cad = 2.D0 * acos(sum(qa*qd))
-    sum1 = cac*cac + cbd*cbd 
-    sum2 = cbc*cbc + cad*cad 
-! and determine the smallest value
-    Omega = sqrt( minval( (/ sum1, sum2 /) ) )
-  end if
-else
-! determine the minimal U(1) angle for the (a,b) - (c,d) boundary pair
-  zeta = GBO_minimal_U1_angle(qa,qb,qc,qd)
-  cz = cos(zeta*0.5D0)
-  sz = sin(zeta*0.5D0)
-  qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
-  cac = 2.D0 * acos(sum(qa*qq))
-  qq = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
-  cbd = 2.D0 * acos(sum(qb*qq))
-  
-  sum1 = cac*cac + cbd*cbd
-
-! determine the minimal U(1) angle for the (a,-b) - (c,d) boundary pair
-  zeta = GBO_minimal_U1_angle(qa,-qb,qc,qd)
-  cz = cos(zeta*0.5D0)
-  sz = sin(zeta*0.5D0)
-  qq = (/ qc(1)*cz-qc(4)*sz, cz*qc(2)+sz*qc(3), cz*qc(3)-sz*qc(2), cz*qc(4)+sz*qc(1) /)
-  cac = 2.D0 * acos(sum(qa*qq))
-  qq = (/ qd(1)*cz-qd(4)*sz, cz*qd(2)+sz*qd(3), cz*qd(3)-sz*qd(2), cz*qd(4)+sz*qd(1) /)
-  cbd = 2.D0 * acos(sum(-qb*qq))
-  
-  sum3 = cac*cac + cbd*cbd
-
-! determine the minimal U(1) angle for the (b,a) - (c,d) boundary pair
-  sigma = GBO_minimal_U1_angle(qa,qb,qc,qd,exchange=.TRUE.)
-  cs = cos(sigma*0.5D0)
-  ss = sin(sigma*0.5D0)
-  qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
-  cbc = 2.D0 * acos(sum(qb*qq))
-  qq = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
-  cad = 2.D0 * acos(sum(qa*qq))
-
-  sum2 = cbc*cbc + cad*cad 
-
-! determine the minimal U(1) angle for the (b,-a) - (c,d) boundary pair
-  sigma = GBO_minimal_U1_angle(-qa,qb,qc,qd,exchange=.TRUE.)
-  cs = cos(sigma*0.5D0)
-  ss = sin(sigma*0.5D0)
-  qq = (/ qc(1)*cs-qc(4)*ss, cs*qc(2)+ss*qc(3), cs*qc(3)-ss*qc(2), cs*qc(4)+ss*qc(1) /)
-  cbc = 2.D0 * acos(sum(qb*qq))
-  qq = (/ qd(1)*cs-qd(4)*ss, cs*qd(2)+ss*qd(3), cs*qd(3)-ss*qd(2), cs*qd(4)+ss*qd(1) /)
-  cad = 2.D0 * acos(sum(-qa*qq))
-
-  sum4 =cbc*cbc + cad*cad 
-
-  sums = (/ sum1, sum2, sum3, sum4 /)
-  Omega = sqrt( minval(sums) )
-  isum = minloc(sums)
-
-! do we also need to reorganize the quaternions depending on the value of isum?
-end if
-
-! divide by sqrt(2) to get the same range as the GBOM angles.
-Omega = Omega * srt
-
-end function GBO_Riemannian
 
 !--------------------------------------------------------------------------
 !
@@ -477,7 +333,7 @@ end function GBO_Riemannian
 !
 !> @date 04/20/18 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function GBO_Omega_symmetric(qa,qb,qc,qd,dict,solution,arclengths,single,noU1)  result(Omega)
+recursive function GBO_Omega_symmetric(qa,qb,qc,qd,dict,solution,arclengths,single,noU1,metric)  result(Omega)
 !DEC$ ATTRIBUTES DLLEXPORT :: GBO_Omega_symmetric
 
 use constants
@@ -502,11 +358,18 @@ real(kind=dbl),INTENT(OUT),OPTIONAL :: solution(4,4)
 real(kind=dbl),INTENT(OUT),OPTIONAL :: arclengths(dict%Nqsym**2,dict%Nqsym**2)
 logical,INTENT(IN),OPTIONAL       :: single
 logical,INTENT(IN),OPTIONAL       :: noU1
+character(fnlen),INTENT(IN),OPTIONAL :: metric
 real(kind=dbl)                    :: Omega
 
 integer(kind=irg)                 :: i, j, k, l
 logical                           :: keep, arcs, skipU1
 real(kind=dbl)                    :: smallest, Sqa(4), Sqb(4), Sqc(4), Sqd(4), x
+character(fnlen)                  :: usemetric
+
+usemetric = 'octonion'
+if (present(metric)) then
+  usemetric = trim(metric)
+end if
 
 skipU1 = .FALSE.
 if (present(noU1)) then
@@ -527,9 +390,9 @@ smallest = 100.D0
 
 if (dict%Nqsym.eq.1) then
   if (skipU1.eqv..TRUE.) then
-    smallest = GBO_Omega(qa,qb,qc,qd,noU1=.TRUE.)
+    smallest = GBO_Omega(qa,qb,qc,qd,noU1=.TRUE.,metric=usemetric)
   else
-    smallest = GBO_Omega(qa,qb,qc,qd)
+    smallest = GBO_Omega(qa,qb,qc,qd,metric=usemetric)
   end if
   if (keep) then 
     solution(1:4,1) = qa
@@ -550,9 +413,9 @@ else
           Sqd = quat_mult(dict%Pm(1:4,l),qd)
           if (Sqd(1).lt.0.D0) Sqd = -Sqd
           if (skipU1.eqv..TRUE.) then  
-            x = GBO_Omega(qa,qb,Sqc,Sqd,noU1=.TRUE.)
+            x = GBO_Omega(qa,qb,Sqc,Sqd,noU1=.TRUE.,metric=usemetric)
           else
-            x = GBO_Omega(qa,qb,Sqc,Sqd)
+            x = GBO_Omega(qa,qb,Sqc,Sqd,metric=usemetric)
             end if
           if (arcs) then 
             arclengths((i-1)*dict%Nqsym+j,(k-1)*dict%Nqsym+l) = x
@@ -579,9 +442,9 @@ else
           do l=1,dict%Nqsym
             Sqd = quat_mult(dict%Pm(1:4,l), qd)
             if (skipU1.eqv..TRUE.) then  
-             x = GBO_Omega(Sqa,Sqb,Sqc,Sqd,noU1=.TRUE.)
+             x = GBO_Omega(Sqa,Sqb,Sqc,Sqd,noU1=.TRUE.,metric=usemetric)
             else
-              x = GBO_Omega(Sqa,Sqb,Sqc,Sqd)
+              x = GBO_Omega(Sqa,Sqb,Sqc,Sqd,metric=usemetric)
             end if
             if (arcs) then 
               arclengths((i-1)*dict%Nqsym+j,(k-1)*dict%Nqsym+l) = x
@@ -605,289 +468,6 @@ end if
 Omega = smallest
 
 end function GBO_Omega_symmetric
-
-!--------------------------------------------------------------------------
-!
-! FUNCTION: GBO_Olmsted_symmetric
-!
-!> @author Marc De Graef, Carnegie Mellon University 
-!
-!> @brief Compute the Olmsted metric  for a GBO pair (U(1) symmetry, grain exchange and crystal symmetry)
-!
-!> @param qa, qb, qc, qd  GBO rotation quaternions
-!
-!> @date 09/03/19 MDG 1.0 original
-!--------------------------------------------------------------------------
-recursive function GBO_Olmsted_symmetric(qa,qb,qc,qd,dict,solution,arclengths,single,noU1)  result(Omega)
-!DEC$ ATTRIBUTES DLLEXPORT :: GBO_Olmsted_symmetric
-
-use constants
-use so3
-use typedefs
-use dictmod
-use quaternions
-
-IMPLICIT NONE
-
-real(kind=dbl),INTENT(INOUT)      :: qa(4)
-!f2py intent(in,out) ::  qa
-real(kind=dbl),INTENT(INOUT)      :: qb(4)
-!f2py intent(in,out) ::  qb
-real(kind=dbl),INTENT(INOUT)      :: qc(4)
-!f2py intent(in,out) ::  qc
-real(kind=dbl),INTENT(INOUT)      :: qd(4)
-!f2py intent(in,out) ::  qd
-type(dicttype),INTENT(INOUT)      :: dict
-!f2py intent(in,out) ::  dict
-real(kind=dbl),INTENT(OUT),OPTIONAL :: solution(4,4)
-real(kind=dbl),INTENT(OUT),OPTIONAL :: arclengths(dict%Nqsym**2,dict%Nqsym**2)
-logical,INTENT(IN),OPTIONAL       :: single
-logical,INTENT(IN),OPTIONAL       :: noU1
-real(kind=dbl)                    :: Omega
-
-integer(kind=irg)                 :: i, j, k, l
-logical                           :: keep, arcs, skipU1
-real(kind=dbl)                    :: smallest, Sqa(4), Sqb(4), Sqc(4), Sqd(4), x
-
-skipU1 = .FALSE.
-if (present(noU1)) then
-  skipU1 = .TRUE.
-end if
-
-keep = .FALSE.
-if (present(solution)) then
-  keep = .TRUE.
-end if 
-
-arcs = .FALSE.
-if (present(arclengths)) then
-  arcs = .TRUE.
-  write (*,*) 'input array : ',shape(arclengths)
-end if 
-smallest = 100.D0
-
-if (dict%Nqsym.eq.1) then
-  if (skipU1.eqv..TRUE.) then
-    smallest = GBO_Olmsted(qa,qb,qc,qd,noU1=.TRUE.)
-  else
-    smallest = GBO_Olmsted(qa,qb,qc,qd)
-  end if
-  if (keep) then 
-    solution(1:4,1) = qa
-    solution(1:4,2) = qb
-    solution(1:4,3) = qc
-    solution(1:4,4) = qd
-  end if 
-  if (arcs) then
-    arclengths(1,1) = smallest
-  end if
-else
-  if (present(single)) then 
-    if (single.eqv..TRUE.) then
-      do k=1,dict%Nqsym
-        Sqc = quat_mult(dict%Pm(1:4,k),qc)
-        if (Sqc(1).lt.0.D0) Sqc = -Sqc
-        do l=1,dict%Nqsym
-          Sqd = quat_mult(dict%Pm(1:4,l),qd)
-          if (Sqd(1).lt.0.D0) Sqd = -Sqd
-          if (skipU1.eqv..TRUE.) then  
-            x = GBO_Olmsted(qa,qb,Sqc,Sqd,noU1=.TRUE.)
-          else
-            x = GBO_Olmsted(qa,qb,Sqc,Sqd)
-            end if
-          if (arcs) then 
-            arclengths((i-1)*dict%Nqsym+j,(k-1)*dict%Nqsym+l) = x
-          end if
-          if (x.lt.smallest) then 
-            smallest = x
-            if (keep) then 
-              solution(1:4,1) =  qa
-              solution(1:4,2) =  qb
-              solution(1:4,3) = Sqc
-              solution(1:4,4) = Sqd
-            end if 
-          end if
-        end do
-      end do
-    end if 
-  else
-    do i=1,dict%Nqsym
-      Sqa = quat_mult(dict%Pm(1:4,i), qa)
-      do j=1,dict%Nqsym
-        Sqb = quat_mult(dict%Pm(1:4,j), qb)
-        do k=1,dict%Nqsym
-          Sqc = quat_mult(dict%Pm(1:4,k), qc)
-          do l=1,dict%Nqsym
-            Sqd = quat_mult(dict%Pm(1:4,l), qd)
-            if (skipU1.eqv..TRUE.) then  
-             x = GBO_Olmsted(Sqa,Sqb,Sqc,Sqd,noU1=.TRUE.)
-            else
-              x = GBO_Olmsted(Sqa,Sqb,Sqc,Sqd)
-            end if
-            if (arcs) then 
-              arclengths((i-1)*dict%Nqsym+j,(k-1)*dict%Nqsym+l) = x
-            end if
-            if (x.lt.smallest) then 
-              smallest = x
-              if (keep) then 
-                solution(1:4,1) = Sqa
-                solution(1:4,2) = Sqb
-                solution(1:4,3) = Sqc
-                solution(1:4,4) = Sqd
-              end if 
-            end if
-          end do
-        end do
-      end do
-    end do
-  end if 
-end if 
-
-Omega = smallest
-
-end function GBO_Olmsted_symmetric
-
-!--------------------------------------------------------------------------
-!
-! FUNCTION: GBO_Riemannian_symmetric
-!
-!> @author Marc De Graef, Carnegie Mellon University 
-!
-!> @brief Compute the GBO_Riemannian metric  for a GBO pair (U(1) symmetry, grain exchange and crystal symmetry)
-!
-!> @param qa, qb, qc, qd  GBO rotation quaternions
-!
-!> @date 09/03/19 MDG 1.0 original
-!--------------------------------------------------------------------------
-recursive function GBO_Riemannian_symmetric(qa,qb,qc,qd,dict,solution,arclengths,single,noU1)  result(Omega)
-!DEC$ ATTRIBUTES DLLEXPORT :: GBO_Riemannian_symmetric
-
-use constants
-use so3
-use typedefs
-use dictmod
-use quaternions
-
-IMPLICIT NONE
-
-real(kind=dbl),INTENT(INOUT)      :: qa(4)
-!f2py intent(in,out) ::  qa
-real(kind=dbl),INTENT(INOUT)      :: qb(4)
-!f2py intent(in,out) ::  qb
-real(kind=dbl),INTENT(INOUT)      :: qc(4)
-!f2py intent(in,out) ::  qc
-real(kind=dbl),INTENT(INOUT)      :: qd(4)
-!f2py intent(in,out) ::  qd
-type(dicttype),INTENT(INOUT)      :: dict
-!f2py intent(in,out) ::  dict
-real(kind=dbl),INTENT(OUT),OPTIONAL :: solution(4,4)
-real(kind=dbl),INTENT(OUT),OPTIONAL :: arclengths(dict%Nqsym**2,dict%Nqsym**2)
-logical,INTENT(IN),OPTIONAL       :: single
-logical,INTENT(IN),OPTIONAL       :: noU1
-real(kind=dbl)                    :: Omega
-
-integer(kind=irg)                 :: i, j, k, l
-logical                           :: keep, arcs, skipU1
-real(kind=dbl)                    :: smallest, Sqa(4), Sqb(4), Sqc(4), Sqd(4), x
-
-skipU1 = .FALSE.
-if (present(noU1)) then
-  skipU1 = .TRUE.
-end if
-
-keep = .FALSE.
-if (present(solution)) then
-  keep = .TRUE.
-end if 
-
-arcs = .FALSE.
-if (present(arclengths)) then
-  arcs = .TRUE.
-  write (*,*) 'input array : ',shape(arclengths)
-end if 
-smallest = 100.D0
-
-if (dict%Nqsym.eq.1) then
-  if (skipU1.eqv..TRUE.) then
-    smallest = GBO_Riemannian(qa,qb,qc,qd,noU1=.TRUE.)
-  else
-    smallest = GBO_Riemannian(qa,qb,qc,qd)
-  end if
-  if (keep) then 
-    solution(1:4,1) = qa
-    solution(1:4,2) = qb
-    solution(1:4,3) = qc
-    solution(1:4,4) = qd
-  end if 
-  if (arcs) then
-    arclengths(1,1) = smallest
-  end if
-else
-  if (present(single)) then 
-    if (single.eqv..TRUE.) then
-      do k=1,dict%Nqsym
-        Sqc = quat_mult(dict%Pm(1:4,k),qc)
-        if (Sqc(1).lt.0.D0) Sqc = -Sqc
-        do l=1,dict%Nqsym
-          Sqd = quat_mult(dict%Pm(1:4,l),qd)
-          if (Sqd(1).lt.0.D0) Sqd = -Sqd
-          if (skipU1.eqv..TRUE.) then  
-            x = GBO_Riemannian(qa,qb,Sqc,Sqd,noU1=.TRUE.)
-          else
-            x = GBO_Riemannian(qa,qb,Sqc,Sqd)
-            end if
-          if (arcs) then 
-            arclengths((i-1)*dict%Nqsym+j,(k-1)*dict%Nqsym+l) = x
-          end if
-          if (x.lt.smallest) then 
-            smallest = x
-            if (keep) then 
-              solution(1:4,1) =  qa
-              solution(1:4,2) =  qb
-              solution(1:4,3) = Sqc
-              solution(1:4,4) = Sqd
-            end if 
-          end if
-        end do
-      end do
-    end if 
-  else
-    do i=1,dict%Nqsym
-      Sqa = quat_mult(dict%Pm(1:4,i), qa)
-      do j=1,dict%Nqsym
-        Sqb = quat_mult(dict%Pm(1:4,j), qb)
-        do k=1,dict%Nqsym
-          Sqc = quat_mult(dict%Pm(1:4,k), qc)
-          do l=1,dict%Nqsym
-            Sqd = quat_mult(dict%Pm(1:4,l), qd)
-            if (skipU1.eqv..TRUE.) then  
-             x = GBO_Riemannian(Sqa,Sqb,Sqc,Sqd,noU1=.TRUE.)
-            else
-              x = GBO_Riemannian(Sqa,Sqb,Sqc,Sqd)
-            end if
-            if (arcs) then 
-              arclengths((i-1)*dict%Nqsym+j,(k-1)*dict%Nqsym+l) = x
-            end if
-            if (x.lt.smallest) then 
-              smallest = x
-              if (keep) then 
-                solution(1:4,1) = Sqa
-                solution(1:4,2) = Sqb
-                solution(1:4,3) = Sqc
-                solution(1:4,4) = Sqd
-              end if 
-            end if
-          end do
-        end do
-      end do
-    end do
-  end if 
-end if 
-
-Omega = smallest
-
-end function GBO_Riemannian_symmetric
-
 
 !--------------------------------------------------------------------------
 !
