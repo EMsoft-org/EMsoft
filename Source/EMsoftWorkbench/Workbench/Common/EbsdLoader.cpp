@@ -24,7 +24,7 @@ DataArray<uint32_t>::Pointer loadCrystalStructures(AngReader* reader)
 
   // Initialize the zero'th element to unknowns. The other elements will
   // be filled in based on values from the data file
-  DataArray<uint32_t>::Pointer crystalStructures = DataArray<uint32_t>::CreateArray(phases.size() + 1, Ebsd::AngFile::CrystalStructures);
+  DataArray<uint32_t>::Pointer crystalStructures = DataArray<uint32_t>::CreateArray(phases.size() + 1, EbsdLib::AngFile::CrystalStructures);
   crystalStructures->setValue(0, EbsdLib::CrystalStructure::UnknownCrystalStructure);
 
   if(phases.empty())
