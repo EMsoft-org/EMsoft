@@ -171,9 +171,9 @@ do ir = 1,numoct
       if (trim(gbonl%metric).eq.'Olmsted') then 
         tt = GBO_Olmsted_symmetric(qa,qb,qc,qd,dict)
       end if
-      ! if (trim(gbonl%metric).eq.'Morawiec') then 
-      !   tt = GBO_Morawiec_symmetric(qa,qb,qc,qd,dict)
-      ! end if
+      if (trim(gbonl%metric).eq.'Riemannian') then 
+        tt = GBO_Riemannian_symmetric(qa,qb,qc,qd,dict)
+      end if
       distancematrix(ir,ic) = tt
     end if
   end do
