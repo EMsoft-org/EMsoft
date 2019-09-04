@@ -515,14 +515,16 @@ logical                                     :: skipread = .FALSE.
 
 integer(kind=irg)       :: pgnum
 integer(kind=irg)       :: nthreads
+character(fnlen)        :: workmode
 character(fnlen)        :: metric
 character(fnlen)        :: inname
 character(fnlen)        :: outname
 
-namelist /GBOdmlist/ pgnum, outname, nthreads, inname, metric
+namelist /GBOdmlist/ pgnum, outname, nthreads, inname, metric, workmode
 
 nthreads = 0
-metric = 'octonion'   ! or 'Olmsted' or 'Riemannian'
+metric = 'octonion'    ! or 'Olmsted' or 'Riemannian'
+workmode = 'newmatrix' ! or 'addcolumns'
 outname = 'undefined' 
 inname = 'undefined' 
 pgnum = 32
@@ -551,6 +553,7 @@ gbonl%nthreads = nthreads
 gbonl%pgnum = pgnum
 gbonl%outname = outname
 gbonl%metric = metric
+gbonl%workmode = workmode
 gbonl%inname = inname
 
 end subroutine GetGBOdmNameList
