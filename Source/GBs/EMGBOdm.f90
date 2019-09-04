@@ -165,15 +165,7 @@ do ir = 1,numoct
 ! make sure they are unit quaternions
       qc = qc / NORM2(qc)
       qd = qd / NORM2(qd)
-      if (trim(gbonl%metric).eq.'octonion') then 
-        tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict)
-      end if
-      if (trim(gbonl%metric).eq.'Olmsted') then 
-        tt = GBO_Olmsted_symmetric(qa,qb,qc,qd,dict)
-      end if
-      if (trim(gbonl%metric).eq.'Riemannian') then 
-        tt = GBO_Riemannian_symmetric(qa,qb,qc,qd,dict)
-      end if
+      tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict,metric=trim(gbonl%metric))
       distancematrix(ir,ic) = tt
     end if
   end do
