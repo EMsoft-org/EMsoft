@@ -40,6 +40,7 @@
 !> Polarized Light: Fundamentals and Applications, E. Collett, 1993 (M. Decker, Inc)
 !
 !> @date 02/12/17 MDG 1.0 initial version
+!> @date 09/05/19 MDG 1.1 various corrections
 !--------------------------------------------------------------------------
 module MuellerCalculus
 

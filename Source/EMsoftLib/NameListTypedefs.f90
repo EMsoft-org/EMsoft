@@ -1531,7 +1531,7 @@ type EMDPFitListType
     real(kind=dbl)                 :: rhoend
     logical                        :: verbose
     logical                        :: mask
-    real(kind=irg)                 :: maskradius
+    real(kind=sgl)                 :: maskradius
     real(kind=sgl)                 :: gammavalue
     real(kind=sgl)                 :: phi, phi1, phi2
     real(kind=sgl)                 :: L
@@ -1577,7 +1577,7 @@ type EMDPFit4ListType
     real(kind=dbl)                 :: rhoend
     logical                        :: verbose
     logical                        :: mask
-    real(kind=irg)                 :: maskradius
+    real(kind=sgl)                 :: maskradius
     real(kind=sgl)                 :: gammavalue
     real(kind=sgl)                 :: phi_pat1, phi1_pat1, phi2_pat1
     real(kind=sgl)                 :: phi_pat2, phi1_pat2, phi2_pat2

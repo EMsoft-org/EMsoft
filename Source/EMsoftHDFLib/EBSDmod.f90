@@ -1378,15 +1378,6 @@ recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFull
 
 use local
-use typedefs
-use NameListTypedefs
-use NameListHDFwriters
-use symmetry
-use crystal
-use constants
-use io
-use files
-use diffraction
 use Lambert
 use quaternions
 use rotations
@@ -1545,15 +1536,6 @@ recursive subroutine CalcEBSDPatternSingleFullFast(ipar,qu,accum,mLPNH,mLPSH,rgx
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFullFast
 
 use local
-use typedefs
-use NameListTypedefs
-use NameListHDFwriters
-use symmetry
-use crystal
-use constants
-use io
-use files
-use diffraction
 use Lambert
 use quaternions
 use rotations

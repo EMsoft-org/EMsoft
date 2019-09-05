@@ -2,15 +2,19 @@
 
 This package contains a series of programs along with a library, mostly written in fortran-90 with some OpenCL bits, for the computation and visualization of scanning electron microscopy diffraction patterns, notably EBSD, ECP, TKD, and EKP. The programs can be used as standalone command-line programs, and produce HDF5 output files that can then be visualized using an IDL virtual app (Interactive Data Language) or read and processed from any other package with HDF5 capability.
 
-This is the first release of version 4.3; this release provides significant additions to the package and many changes under the hood. See below for a detailed list.  There is also an important change to the open source model: a portion of our source code is now licensed for commercial entities.  Academic and government users can continue to use the source under the BSD2 license, as before.
+This is the first release of version 4.3; this release provides significant additions to the package and many changes under the hood. See below for a detailed list.  There is also an important change to the open source model: a portion of our source code is now licensed for commercial entities.  Academic and government users can continue to use the source code as open source, as before.
 
 The Dictionary Indexing tutorial paper has now been [published](https://link.springer.com/article/10.1007%2Fs40192-019-00137-4) in the journal **Integrating Materials and Manufacturing Innovation**. The EMsoft version that goes along with this paper is version 4.2; this release has the following DOI (through Zenodo):  
 
-
 ![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
 
+The 4.3 release has the following DOI:
+
+
+### **This release of EMsoft requires an updated Software Developer Toolkit (SDK); please go to [this page](https://github.com/EMsoft-org/EMsoftSuperbuild) and follow the instructions before you attempt to build the present release.**
+
 ## Financial Support 
-EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, was started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of TKD and related modalities, including the creation of routines that can generate PoVRay visualization script files, was performed with support from an ONR Vannevar Bush Fellowship, N00014-­16-­1-­2821.
+EBSD/ECP/EKP development of this package, including dictionary indexing for EBSD/ECP, was started with support from an AFOSR/MURI grant, FA9550-12-1-0458; the original EBSD code from CTEMsoft 2.0 was developed with support from an ONR grant, N00014-12-1-0075.  All recent development of EMsoft was performed with support from an ONR Vannevar Bush Faculty Fellowship, N00014-­16-­1-­2821.
 
 ## Current and Past Contributors
 EMsoft started as a source code base used for the creation of all figures in the *Introduction to Conventional Transmission Electron Microscopy* text book (Cambridge University Press, 2003, ISBN 0521629950) by M. De Graef.  It has since grown into an open source project that has had many contributors and testers over the past 15 years (in no particular order):
@@ -20,6 +24,7 @@ EMsoft started as a source code base used for the creation of all figures in the
 - Stuart Wright
 - Elena Pascal
 - Will Lenthe
+- Chaoyi Zhu
 - Joseph Tessmer
 - Ke-Wei Jin
 - Michael Atkinson
@@ -43,7 +48,11 @@ Precompiled binaries (i.e., [nightly builds](http://www.bluequartz.net/binaries/
 | Windows 10 | 64 bit, NVidia GPU with latest (3.88) drivers installed |
 
 
-If you want to build EMsoft yourself, it would make sense to first get a GitHub account, and fork this repository into your account. Then clone the repo *from your account* onto your local computer. Before you can compile things, you need to first build the Software Developer Kit (EMsoft_SDK), which you can find [here](https://github.com/EMsoft-org/EMsoftSuperbuild); follow the instructions for your platform. In addition (as of June 19th, 2019), you will need to clone the *EMsoftData* repository, also from *EMsoft-org*, in a folder at the same level as the Public repository folder. Then, starting in the top folder where you have cloned the EMsoft repository, carry out the following commands (for UNIX-type builds; on Windows, use nmake instead of make):
+If you want to build EMsoft yourself, it would make sense to first get a GitHub account, and fork this repository into your account. Then clone the repo *from your account* onto your local computer. Before you can compile things, you need to first build the Software Developer Kit (EMsoft_SDK), which you can find [here](https://github.com/EMsoft-org/EMsoftSuperbuild); follow the instructions for your platform. In addition (as of June 19th, 2019), you will need to clone the *EMsoftData* repository, also from *EMsoft-org*, in a folder at the same level as the Public repository folder. 
+
+If you are interested in using the new Spherical Indexing algorithm, then you should clone [this repo](https://github.com/EMsoft-org/EMSphInx) into the Source folder of the *EMsoft* distribution before you start compilation of the package. 
+
+Then, starting in the top folder where you have cloned the EMsoft repository, carry out the following commands (for UNIX-type builds; on Windows, use nmake instead of make):
 
 ```fortran
   mkdir EMsoftBuild
@@ -59,33 +68,37 @@ If you want to build EMsoft yourself, it would make sense to first get a GitHub 
   make -j
 
 ```
-Note that *somepath* should be replaced with wherever you installed the SDK.  These commands should compile both a Release and a Debug version of EMsoft. You can then add the path to the EMsoftBuild/Release/Bin folder to your shell path and start using the programs.  Note that the Debug version of the executables will run much more slowly than the Release version.
+Note that *somepath* should be replaced with wherever you installed the SDK.  These commands should compile both a Release and a Debug version of EMsoft. You can then add the path to the EMsoftBuild/Release/Bin folder to your shell path and start using the programs.  Note that the Debug version of the executables will run much more slowly than the Release version, but, if something goes wrong during the run, the error message of the Debug version will be more informative than for the Release version.
 
-To always maintain an up-to-date version of the package, you may want to create a little script that will help you synchronize the repositories and compile in one step.  Here is an example shell script for UNIX-flavored systems; the assumptions are that the repository has been cloned into the folder EMsoftPublic, and the EMsoftData repository into EMsoftData (adjust as needed for your system):
+To always maintain an up-to-date version of the package, you may want to create a little script that will help you synchronize the repositories and compile in one step.  Here is an example shell script for UNIX-flavored systems; the assumptions are that the EMsoft repository has been cloned into the folder EMsoftPublic, and the EMsoftData repository into EMsoftData. In addition, the EMSphInx repository is assumed to be cloned into the EMsoftPublic/Source folder (adjust as needed for your system):
 
 ```fortran
 cd EMsoftData
 git pull --rebase origin develop
 cd ../EMsoftPublic
 git pull --rebase origin develop
-cd ../EMsoftBuild
+cd Source
+git pull --rebase origin develop
+cd ../../EMsoftBuild
 make -j
 
 ```
 
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
+
 ## New features in 4.3
 - There are a few minor bug fixes.
 - EMsoft now has two additional ways to manage file paths; please check the descriptions in the *FilePathConventions.md* file.
 - We introduce a new diffraction pattern indexing algorithm that we call **EMSphInx**. We have successfully indexed patterns from the following modalities: EBSD, TKD, ECP, transmission Laue. Installing EMSphInx will require that you download the repository from [https:/github.com/EMsoft-org/EMSphInx](https:/github.com/EMsoft-org/EMSphInx) and build it along with the rest of *EMsoft*.  Alternatively, you can download the nightly build from [http://www.bluequartz.net/binaries/EMsoft/experimental/](http://www.bluequartz.net/binaries/EMsoft/experimental/) for Windows 10 or Mac OS X.  It is also possible to install a stand-alone version of EMSphInx that is fully self-contained. **Note that *EMSphInx* has a non-profit non-commercial license that is different from the EMsoft BSD2 license, hence it is kept in a separate repository.**
 - The indexing programs (dictionary indexing and spherical indexing) can now read the binary Oxford .ebsp format (provided that file is not compressed), courtesy of Michael Atkinson (U. Manchester).
-- EBSD pattern binning can now handle arbitrary initial and final pattern sizes; the rescaling operation has been implemented using Fourier transforms, so optimal rebinning of a pattern of size 184x184 to one of size 60x60 can now be performed (subject to the usual Nyquist frequency limitations). In addition to the regular  "binning" factors (1x, 2x, 4x etc), the program input files now also accept a rebinned final size whch will override the binning factor. 
+- *EMsoft* now uses Intel's Math Kernel Library instead of fftw for all Fourier transform related operations.  This means that you will need to update your SDK !!!
+- In the *EMSphInx* programs, EBSD pattern binning can handle arbitrary initial and final pattern sizes; the rescaling operation has been implemented using Fourier transforms, so optimal rebinning of a pattern of size 184x184 to one of size 60x60 can now be performed (subject to the usual Nyquist frequency limitations). In addition to the regular  "binning" factors (1x, 2x, 4x etc), the program input files now also accept a rebinned final size whch will override the binning factor. 
 - We have a new *EMEBSDoverlap* program that allows the user to merge two master patterns with a given orientation relation.  This can be useful to index diffraction patterns from samples for which the scale of the microstructure is such that two phases are intermixed over length scales smaller than the size of the interaction volume.  See the *SEM/EBSD Overlap Master Patterns* wiki for more details.
 - In the *EMsampleRFZ* program it is now possible to rotate the entire fundamental zone into an arbitrary orientation; this can be useful in the context of EBSD overlap master patterns or for orientation sampling in non-standard settings.
 - We have a simple forward model for Laue diffraction; as for the EBSD case, the algorithm produces a master pattern based on kinematical structure factors.  This can be used with the new spherical indexing algorithm to automatically index large Laue pattern data sets. There is also a separate new *EMLaue* program that can generate series of transmission or reflection Laue patterns.
-- We now provide support for Python wrapping! Thanks to Saransh Singh (LLNL), we have slightly restructured our source code to allow for Python routines to call any of the EMsoft library routines. For an example, see XXX. There is also a new wiki page describing this wrapping process in more detail.
-- For TEM diffraction contrast we release a series of new programs that allow the user to simulate STEM-DCI images.  These are essentially 4-D data sets in which there is a 2-D convergent beam electron diffraction (EBSD) pattern for each pixel in a 2-D field of view. The new codes allow for the manual definition of a small number of idealized crystallographic defects (straight dislocations, perfect stacking faults, spherical inclusions and voids), or displacement field input from phase field computations (currently only for gamma-gamma' superalloy microstructures), discrete dislocation dynamics, or molecular dynamics.
+- We now provide support for Python wrapping! In collaboration with Saransh Singh (LLNL), we have slightly restructured our source code to allow for Python routines to call any function/subroutine from a selected subset of EMsoft library modules. For examples, see the pyEMsoft/examples folder inside the Source folder. There is also a new [wiki page]() describing the wrapping process in more detail.
+- For TEM diffraction contrast we release a series of new programs that allow the user to simulate STEM-DCI images.  These are essentially 4-D data sets in which there is a 2-D convergent beam electron diffraction (EBSD) pattern for each pixel in a 2-D field of view. The new codes allow for the manual definition of a small number of idealized crystallographic defects (straight dislocations, perfect stacking faults, spherical inclusions and voids), or displacement field input from discrete dislocation dynamics.
 - The original Head&Humble code for the simulation of two-beam TEM diffraction contrast images of up to four parallel dislocations with three stacking faults is now available in a more modern form, *EMhh4.f90*, completely integrated with the EMsoft package. This is based on a version of the hh4.f program created in the 1980s by the group of Prof. Skalicky at the University of Vienna.
 - There is a simple new program to compute a dictionary of kinematical precession electron diffraction patterns for TEM (*EMPEDkin*).  This program does not actually do any precession computation, but uses a simple kinematical model to compute the diffraction patterns.  A more involved program that does use precession is currently under development. 
 - We have a new forward model for polarized light microscopy, based on the Mueller matrix calculus. This includes a model for light scattering from uniaxial crystal structures (e.g., Ti or Zr). Work is underway to incorporate biaxial structures as well as an indexing algorithm to take input images from an optical microscope and return a partial orientation map (c-axis only for uniaxial crystals).
@@ -110,10 +123,14 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 ## What's coming in 4.4? 
 - We are working on improvements to all underlying libraries.
 - Extensive development of the *EMsoftWorkbench* is currently underway at BlueQuartz Software.  We will make the new version, capable of running the either the dictionary indexing algorithm or the new spherical indexing algorithm, available in this release.  
+- We hope to make all of the EMsoft modules available in the form of python wrappers, with extensive examples and help files.
+- The STEM diffraction contrast image simulations will be able to take input from Molecular Dynamics simulations (LAMMPS).
 - We hope to release version 4.4 by the Spring of 2020.
 
 
 ## Licenses ##
+
+Main *EMsoft* license:
 
 	!###################################################################
 	! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
@@ -143,7 +160,7 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 	! USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	! ###################################################################
 
-For anything related to EMSphInx:
+For anything related to *EMSphInx*:
 
     !* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     !*                                                                     *

@@ -296,7 +296,7 @@ type(gnode)                       :: rlp
 real(kind=sgl)                    :: gmax                       !< diameter of limiting sphere
 real(kind=sgl)                    :: ghkl                       !< length of a reciprocal lattice vector
 integer(kind=irg)                 :: imh, imk, iml              !< maximum index along a*, b*, and c*
-real(kind=irg)                    :: g(3), tt                   !< g-vector and 2theta
+real(kind=sgl)                    :: g(3), tt                   !< g-vector and 2theta
 integer(kind=irg)                 :: io_int(3)                  !< io variable
 real(kind=sgl)                    :: io_real(1)                 !< io variable
 integer(kind=irg)                 :: istat, h, k, l, icnt       !< status variables and such

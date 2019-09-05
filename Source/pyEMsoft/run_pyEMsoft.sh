@@ -66,13 +66,16 @@ declare -a f90_source_files=("io.f90"
                              "rotations.f90"
                              "diffraction.f90"
                              "so3.f90"
-                             "dictmod.f90") 
+                             "dictmod.f90"
+                             "NameListTypedefs.f90"
+                             "NameListHandlers.f90") 
                              # "kvectors.f90")
                              # "gvectors.f90"
 
 declare -a f90_HDF_source_files=("commonmod.f90"
                                  "HDFsupport.f90"
-                                 "utilities.f90")
+                                 "utilities.f90"
+                                 "EBSDmod.f90")
 
 declare -a f90_generated_source_files=("stringconstants.f90"
                                        "local.f90")
@@ -122,8 +125,7 @@ done
 #=======================
 # execute the f90wrap program using all the files just copied
 echo " run_pyEMsoft.sh: executing f90wrap"
-# f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} 1>build.log 2>build_error.log 
-f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} 1>build.log 2>build_error.log 
+f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} 1>build.log 2>build_error.log 
 
 #=======================
 # call f2py-f90wrap to build the wrapper library
