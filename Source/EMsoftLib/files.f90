@@ -181,7 +181,7 @@ integer(kind=irg),INTENT(IN)            :: nt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 logical,INTENT(IN),OPTIONAL             :: json
 
-integer(kind=irg),parameter     :: maxnumtemplates = 256
+integer(kind=irg),parameter     :: maxnumtemplates = 512
 character(fnlen)                :: templates(maxnumtemplates)
 character(fnlen)                :: input_name, output_name, tcf, tppath1, tppath2, tpl, tplextension
 integer(kind=irg)               :: ios, i, j, ipos

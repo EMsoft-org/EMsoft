@@ -345,6 +345,38 @@ end function EMsoft_getEMsofttestpath
 
 !--------------------------------------------------------------------------
 !
+! FUNCTION: EMsoft_getEMsoftHDFtest
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the EMsoftHDFtest environment variable 
+!
+!> @param no input parameters
+!
+!> @date  07/02/16 MDG 1.0 new function
+!> @date  02/27/19 MDG 2.0 add functionality for environment variables
+!--------------------------------------------------------------------------
+recursive function EMsoft_getEMsoftHDFtest() result(doHDFtest)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMsoftHDFtest
+
+use, intrinsic :: iso_fortran_env , only: error_unit, wp => real64
+
+IMPLICIT NONE
+
+logical                                 :: doHDFtest
+character(fnlen)                        :: envParam, envReturn
+
+envParam = 'EMsoftHDFtest'
+call getenv(trim(envParam),envReturn)
+doHDFtest = .FALSE.
+if (trim(envReturn).ne.'') then 
+  doHDFtest = .TRUE.
+end if 
+
+end function EMsoft_getEMsoftHDFtest
+
+!--------------------------------------------------------------------------
+!
 ! FUNCTION: EMsoft_getEMsoftTestingPath
 !
 !> @brief Returns the path to the EMsoft binary directory

@@ -133,7 +133,7 @@ integer(kind=irg),INTENT(INOUT) :: hdferr
 !f2py intent(in,out) ::  hdferr
 integer(kind=irg)               :: printonoff
 
-! write (*,*) '>>>>>>>>>>>>>>>  OPENING HDF INTERFACE !!!!!!!!!'
+if (EMsoft_getEMsoftHDFtest().eqv..TRUE.) write (*,*) '>>>>>>>>>>>>>>>  OPENING HDF INTERFACE !!!!!!!!!'
 ! open the HDF fortran interface
 call h5open_f(hdferr)
 call HDFerror_check('h5open_EMsoft:h5open_f', hdferr)
@@ -167,7 +167,7 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(INOUT) :: hdferr
 !f2py intent(in,out) ::  hdferr
 
-! write (*,*) '>>>>>>>>>>>>>>>  CLOSING HDF INTERFACE !!!!!!!!!'
+if (EMsoft_getEMsoftHDFtest().eqv..TRUE.) write (*,*) '>>>>>>>>>>>>>>>  CLOSING HDF INTERFACE !!!!!!!!!'
 
 ! turn standard error reporting on
 !call h5eset_auto_f(1,hdferr)
