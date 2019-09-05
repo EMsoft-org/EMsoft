@@ -288,24 +288,33 @@ end function MC_get_retarder
 !> @param theta rotation angle (radians)
 !
 !> @date   02/12/17 MDG 1.0 original
+!> @date   09/05/19 MDG 1.1 added normalincidence optional parameter
 !--------------------------------------------------------------------------
-recursive function MC_rotate_MuellerMatrix(MM, theta) result(res)
+recursive function MC_rotate_MuellerMatrix(MM, theta, normalincidence) result(res)
 !DEC$ ATTRIBUTES DLLEXPORT :: MC_rotate_MuellerMatrix
 
 IMPLICIT NONE
 
 type(MuellerMatrixType),INTENT(IN)  :: MM 
 real(kind=dbl),INTENT(IN)           :: theta
+logical,INTENT(IN),OPTIONAL         :: normalincidence
 type(MuellerMatrixType)             :: res
 
 type(MuellerMatrixType)             :: Mrot 
+logical                             :: normal 
+
+normal = .FALSE.
+if (present(normalincidence)) normal = .TRUE.
 
 ! initialize the output Mueller matrix descriptor
 res%descriptor = trim(MM%descriptor)//'-rotated'
 
 Mrot = MC_get_rotator(theta)
-
-res%M = matmul(transpose(Mrot%M), matmul(MM%M, Mrot%M))
+if (normal.eqv..FALSE.) then 
+    res%M = matmul(transpose(Mrot%M), matmul(MM%M, Mrot%M))
+else 
+    res%M = matmul(Mrot%M, matmul(MM%M, Mrot%M))
+end if
 
 end function MC_rotate_MuellerMatrix
 
@@ -774,6 +783,7 @@ end subroutine MC_get_EO_from_AD
 !> @param beamtilt tilt angle theta1 [degrees] of parallel illumination w.r.t. to reflection z-axis
 !
 !> @date   08/28/17 MDG 1.0 original
+!> @date   09/05/19 MDG 1.1 corrects sign error in normal incidence rvals(1) parameter
 !--------------------------------------------------------------------------
 recursive function MC_getUniaxialReflectivities(wl, epsac, nincident, dc, beamtilt) result(rvals)
 !DEC$ ATTRIBUTES DLLEXPORT :: MC_getUniaxialReflectivities
@@ -789,73 +799,79 @@ real(kind=dbl),INTENT(IN)           :: dc(3)
 real(kind=dbl),INTENT(IN)           :: beamtilt
 complex(kind=dbl)                   :: rvals(4)
 
-real(kind=dbl)                      :: k, theta1, ct, st, tt
+real(kind=dbl)                      :: k, theta1, ct, st, tt, gamma, theta
 complex(kind=dbl)                   :: eps0, Deps, eps1, epsgam, no, n1, ko, k1, KK, q1, qt, qo, qroot, qe, q
-complex(kind=dbl)                   :: A, B, Ap, Bp, factor, cdc(3), ke, ro, re, nne, ngam
+complex(kind=dbl)                   :: A, B, Ap, Bp, factor, cdc(3), ke, ro, re, nne, ngam, etaO, etaE, cone
 
 rvals = cmplx(0.D0,0.D0)
+cone = cmplx(1.D0,0.D0)
 
 ! get the incident light wave number [m^-1]
-k = 2.D0 * cPi / wl 
+! k = 2.D0 * cPi / wl 
 
 ! turn direction cosines into complex numbers
-cdc(1) = cmplx(dc(1),0.D0)
-cdc(2) = cmplx(dc(2),0.D0)
-cdc(3) = cmplx(dc(3),0.D0)
+! cdc(1) = cmplx(dc(1),0.D0)
+! cdc(2) = cmplx(dc(2),0.D0)
+! cdc(3) = cmplx(dc(3),0.D0)
+
+gamma = atan2(dc(2),dc(1))
+theta = acos(dc(3))
+
+etaO = sqrt(epsac(1))
+etaE = sqrt(epsac(1)*epsac(2) / (epsac(1)+(epsac(2)-epsac(1))*cos(theta)**2) )
 
 ! dielectric parameters and refractive indices (complex valued !)
-Deps = epsac(2)-epsac(1)
-epsgam = epsac(1) + cdc(3)**2 * Deps
-n1 = cmplx(nincident,0.D0)
-nne = sqrt(epsac(2))
-no = sqrt(epsac(1))
-ngam = sqrt(epsgam)
+! Deps = epsac(2)-epsac(1)
+! epsgam = epsac(1) + cdc(3)**2 * Deps
+! n1 = cmplx(nincident,0.D0)
+! nne = sqrt(epsac(2))
+! no = sqrt(epsac(1))
+! ngam = sqrt(epsgam)
 
 if (beamtilt.eq.0.D0) then   ! we'll use the simplified expressions for the reflection coefficients
 ! source:  J. Lekner, "Normal-incidence reflection and tramsission by uniaxial crystals and crystal plates"
 ! J. Phys.: Condens. Matter 4 (1992) 1387-1398
-    ro = (n1 - no)/(n1 + no)
-    re = (n1*ngam - nne*no)/(n1*ngam + nne*no)
-    A = sqrt(cdc(1)**2 + cdc(2)**2)
-    cdc(1:2) = cdc(1:2)/A
-    rvals(1) = ro * cdc(1)**2 + re * cdc(2)**2
-    rvals(2) = (re - ro) * cdc(1) * cdc(2)
-    rvals(3) = rvals(2)
-    rvals(4) = ro * cdc(2)**2 + re * cdc(1)**2
-else   ! if there is a beam tilt, then we need to employ the full expressions
-! source: J. Lekner, "Reflection and refraction by uniaxial crystals"
-! J. Phys.: Condens. Matter 3 (1991) 6121-6133
+    ro = (etaO-cone)/(etaO+cone)  ! (n1 - no)/(n1 + no)
+    re = (etaE-cone)/(etaE+cone)  ! (n1*ngam - nne*no)/(n1*ngam + nne*no)
+ 
+    rvals(1) = - (re * sin(gamma)**2 + ro * cos(gamma)**2)
+    rvals(2) = - (re - ro) * sin(gamma) * cos(gamma)
+    rvals(3) = - rvals(2)
+    rvals(4) = ro * sin(gamma)**2 + re * cos(gamma)**2
+! else   ! if there is a beam tilt, then we need to employ the full expressions
+! ! source: J. Lekner, "Reflection and refraction by uniaxial crystals"
+! ! J. Phys.: Condens. Matter 3 (1991) 6121-6133
 
-! beam tilt angle
-    theta1 = beamtilt * cPi / 180.D0
-    ct = cos(theta1)
-    st = sin(theta1)
-    tt = tan(theta1)
+! ! beam tilt angle
+!     theta1 = beamtilt * cPi / 180.D0
+!     ct = cos(theta1)
+!     st = sin(theta1)
+!     tt = tan(theta1)
 
-! various wave numbers and wave vector components 
-    ko = cmplx(k,0.D0) * no
-    k1 = cmplx(k,0.D0) * nincident
-    KK = cmplx(st,0.D0) * k
-    q1 = cmplx(ct,0.D0) * k1
-    qt = q1 + KK * cmplx(tt,0.D0)
-    qo = sqrt(-KK**2+ko**2)
-    qroot = sqrt( (epsac(1)/epsgam**2) * (k**2 * epsac(2) * epsgam - KK**2*(epsac(2) - cdc(2)**2 * Deps)) )
-    qe = - KK * cdc(1) * cdc(3) * Deps / epsgam + qroot
+! ! various wave numbers and wave vector components 
+!     ko = cmplx(k,0.D0) * no
+!     k1 = cmplx(k,0.D0) * nincident
+!     KK = cmplx(st,0.D0) * k
+!     q1 = cmplx(ct,0.D0) * k1
+!     qt = q1 + KK * cmplx(tt,0.D0)
+!     qo = sqrt(-KK**2+ko**2)
+!     qroot = sqrt( (epsac(1)/epsgam**2) * (k**2 * epsac(2) * epsgam - KK**2*(epsac(2) - cdc(2)**2 * Deps)) )
+!     qe = - KK * cdc(1) * cdc(3) * Deps / epsgam + qroot
 
-! reflection constants
-    A  = (qo*cdc(1)-KK*cdc(3))*(cdc(1)*(qe*ko**2+qo**2*qt)-KK*cdc(3)*(ko**2+qe*qt))
-    Ap = (qo*cdc(1)-KK*cdc(3))*(cdc(1)*(qe*ko**2-qo**2*qt)-KK*cdc(3)*(ko**2-qe*qt))
-    B  = (ko*cdc(2))**2 * (ko**2+qo*qt)
-    Bp = (ko*cdc(2))**2 * (ko**2-qo*qt)
+! ! reflection constants
+!     A  = (qo*cdc(1)-KK*cdc(3))*(cdc(1)*(qe*ko**2+qo**2*qt)-KK*cdc(3)*(ko**2+qe*qt))
+!     Ap = (qo*cdc(1)-KK*cdc(3))*(cdc(1)*(qe*ko**2-qo**2*qt)-KK*cdc(3)*(ko**2-qe*qt))
+!     B  = (ko*cdc(2))**2 * (ko**2+qo*qt)
+!     Bp = (ko*cdc(2))**2 * (ko**2-qo*qt)
 
-! and finally the four reflection parameters rss, rsp, rps, rpp
-    factor = A*(q1+qo)+B*(q1+qe)
+! ! and finally the four reflection parameters rss, rsp, rps, rpp
+!     factor = A*(q1+qo)+B*(q1+qe)
 
-    rvals(1) = (A*(q1-qo)+B*(q1-qe))
-    rvals(2) = 2.0*cdc(2)*(qo-qe)*(qo*cdc(1)+KK*cdc(3))*k1*ko**2
-    rvals(3) = 2.0*cdc(2)*(qo-qe)*(qo*cdc(1)-KK*cdc(3))*k1*ko**2
-    rvals(4) = - (Ap*(q1+qo)+Bp*(q1+qe))
-    rvals = rvals/factor
+!     rvals(1) = (A*(q1-qo)+B*(q1-qe))
+!     rvals(2) = 2.0*cdc(2)*(qo-qe)*(qo*cdc(1)+KK*cdc(3))*k1*ko**2
+!     rvals(3) = 2.0*cdc(2)*(qo-qe)*(qo*cdc(1)-KK*cdc(3))*k1*ko**2
+!     rvals(4) = - (Ap*(q1+qo)+Bp*(q1+qe))
+!     rvals = rvals/factor
 end if 
 
 end function MC_getUniaxialReflectivities
@@ -900,11 +916,6 @@ rsp2 = rvals(2) * conjg(rvals(2))
 rps2 = rvals(3) * conjg(rvals(3))
 rpp2 = rvals(4) * conjg(rvals(4))
 
-MM(1,1) = real(rpp2 + rsp2 + rps2 + rss2)
-MM(1,2) = real(rpp2 + rsp2 - rps2 - rss2)
-MM(2,1) = real(rpp2 - rsp2 + rps2 - rss2)
-MM(2,2) = real(rpp2 - rsp2 - rps2 + rss2)
-
 rssrsp = rvals(1) * conjg(rvals(2))
 rssrps = rvals(1) * conjg(rvals(3))
 rssrpp = rvals(1) * conjg(rvals(4))
@@ -921,20 +932,27 @@ rpprss = rvals(4) * conjg(rvals(1))
 rpprsp = rvals(4) * conjg(rvals(2))
 rpprps = rvals(4) * conjg(rvals(3))
 
-MM(1,3) = real(rpprps + rsprss + rpsrpp + rssrsp)
-MM(1,4) = real(cmplx(0.D0,1.D0) * (rpprps + rsprss - rpsrpp - rssrsp))
-MM(2,3) = real(rpprps - rsprss + rpsrpp - rssrsp)
-MM(2,4) = real(cmplx(0.D0,1.D0) * (rpprps - rsprss - rpsrpp + rssrsp))
+MM(1,1) = real(rpp2 + rsp2 + rps2 + rss2)
+MM(1,2) = real(rpp2 - rsp2 + rps2 - rss2)
+MM(1,3) = real(rsprpp + rssrps + rpprsp + rpsrss)
+MM(1,4) = real(cmplx(0.D0,1.D0) * (rsprpp + rssrps - rpprsp - rpsrss))
 
-MM(3,1) = real(rpprsp + rsprpp + rpsrss + rssrps)
-MM(3,2) = real(rpprsp + rsprpp - rpsrss - rssrps)
-MM(4,1) = real(cmplx(0.D0,-1.D0) * (rpprsp - rsprpp + rpsrss - rssrps))
-MM(4,2) = real(cmplx(0.D0,-1.D0) * (rpprsp - rsprpp - rpsrss + rssrps))
+MM(2,1) = real(rpp2 + rsp2 - rps2 - rss2)
+MM(2,2) = real(rpp2 - rsp2 - rps2 + rss2)
+MM(2,3) = real(rsprpp - rssrps + rpprsp - rpsrss)
+MM(2,4) = real(cmplx(0.D0,1.D0) * (rsprpp - rssrps - rpprsp + rpsrss))
 
-MM(3,3) = real(rpprss + rsprps + rpsrsp + rssrpp)
-MM(3,4) = real(cmplx(0.D0,1.D0) * (rpprss + rsprps - rpsrsp - rssrpp))
-MM(4,3) = real(cmplx(0.D0,-1.D0) * (rpprss - rsprps + rpsrsp - rssrpp))
-MM(4,4) = real(rpprss - rsprps - rpsrsp + rssrpp)
+MM(3,1) = real(rpsrpp + rpprps + rssrsp + rsprss)
+MM(3,2) = real(rpsrpp + rpprps - rssrsp - rsprss)
+MM(3,3) = real(rssrpp + rsprps + rpsrsp + rpprss)
+MM(3,4) = real(cmplx(0.D0,1.D0) * (rssrpp + rsprps - rpsrsp - rpprss))
+
+MM(4,1) = real(cmplx(0.D0,-1.D0) * (rpsrpp - rpprps + rssrsp - rsprss))
+MM(4,2) = real(cmplx(0.D0,-1.D0) * (rpsrpp - rpprps - rssrsp + rsprss))
+MM(4,3) = real(cmplx(0.D0,-1.D0) * (rssrpp - rsprps + rpsrsp - rpprss))
+MM(4,4) = real(rssrpp - rsprps - rpsrsp + rpprss)
+
+MM = MM*0.5D0
 
 end function MC_getSampleMuellerMatrix
 
