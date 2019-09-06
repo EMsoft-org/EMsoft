@@ -13,7 +13,7 @@ endif()
 
 include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
-set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/DictionaryIndexing")
+set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/OM")
 set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
 set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
