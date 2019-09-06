@@ -173,7 +173,8 @@ end subroutine Lauereadangles
 !> @param npy along y
 !> @param refcnt number of reflections in linked list
 !
-!> @date 07/30/19  MDG 1.0 original
+!> @date 07/30/19 MDG 1.0 original
+!> @date 09/06/19 MDG 1.1 correct scale factor
 !--------------------------------------------------------------------------
 recursive function getLauePattern(lnl, qu, reflist, kouter, kinner, npx, npy, refcnt) result(pattern)
 !DEC$ ATTRIBUTES DLLEXPORT :: getLauePattern
@@ -205,7 +206,7 @@ integer(kind=irg)							:: gg, traref
 traref = 1  ! reflection mode = 1
 if (trim(lnl%Lauemode).eq.'transmission') traref = 2 ! transmission mode = 2
 
-scl = lnl%SDdistance / lnl%pixelsize 
+scl = lnl%SDdistance * 1000.0 / lnl%pixelsize 
 
 pattern = 0.0
 
@@ -301,7 +302,9 @@ iy = int(py)-ddd
 
 evals = alog(sfs+1.0) * exp( - ( (xar-dx)**2 + (yar -dy)**2 ) * spotw )
 
-if ( (ix+dd.lt.npx).and.(iy+dd.lt.npy).and.(ix.gt.0).and.(iy.gt.0) ) pattern(ix:ix+dd-1,iy:iy+dd-1) = evals
+if ( (ix+dd.lt.npx).and.(iy+dd.lt.npy).and.(ix.gt.0).and.(iy.gt.0) ) then
+  pattern(ix:ix+dd-1,iy:iy+dd-1) = pattern(ix:ix+dd-1,iy:iy+dd-1) + evals
+end if
 
 end subroutine addLauereflection
 

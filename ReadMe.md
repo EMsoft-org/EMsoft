@@ -105,7 +105,7 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 
 ## New features in 4.2
 - There are a few minor bug fixes
-- The main reason for this release is establishing a DOI number so that this version can be linked to a Dictionary Indexing tutorial paper that waspublished in the journal **Integrating Materials and Manufacturing Innovation** (see top of page).
+- The main reason for this release is establishing a DOI number so that this version can be linked to a Dictionary Indexing tutorial paper that was published in the journal **Integrating Materials and Manufacturing Innovation** (see top of page).
 
 ## New features in 4.1
 - The EMsoft superbuild has been updated and made more robust, so you will need to rebuild your SDK if you are going to work with this release.
@@ -122,9 +122,11 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 
 ## What's coming in 4.4? 
 - We are working on improvements to all underlying libraries.
-- Extensive development of the *EMsoftWorkbench* is currently underway at BlueQuartz Software.  We will make the new version, capable of running the either the dictionary indexing algorithm or the new spherical indexing algorithm, available in this release.  
+- Extensive development of the *EMsoftWorkbench* is currently underway at BlueQuartz Software.  We will make the new version, capable of running either the dictionary indexing algorithm or the new spherical indexing algorithm, available in this release.  
 - We hope to make all of the EMsoft modules available in the form of python wrappers, with extensive examples and help files.
 - The STEM diffraction contrast image simulations will be able to take input from Molecular Dynamics simulations (LAMMPS).
+- For computational polarized light microscopy (CPLM) we will have a new forward model program to predict image series recorded on an optical microscope; we will also release a dictionary indexing program for CPLM.
+- The IDL apps have thus far had some issues on Windows and Linux, so we will make available updated apps that are more likely to work correctly.
 - We hope to release version 4.4 by the Spring of 2020.
 
 

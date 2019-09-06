@@ -134,7 +134,7 @@ real(kind=sgl),allocatable 				         :: pattern(:,:), patternbatch(:,:,:), bp
 
 type(HDFobjectStackType)                   :: HDF_head
 type(unitcell)                             :: cell
-logical 								                   :: verbose, g_exists, insert=.TRUE., overwrite=.TRUE.
+logical 								                   :: verbose, f_exists, g_exists, insert=.TRUE., overwrite=.TRUE.
 
 type(LaueMasterNameListType)               :: lmnl
 type(Laue_g_list),pointer                  :: reflist, rltmp          
@@ -158,7 +158,7 @@ integer(int8), allocatable                 :: TIFF_image(:,:)
 
 
 nullify(HDF_head%next)
-!nullify(cell)        
+
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = ''
 call cpu_time(tstart)
@@ -198,8 +198,6 @@ lmnl%lambdamin = 1.0/kouter
 lmnl%intfactor = 0.0001D0   ! default intensity cutoff factor (from EMLauemaster program)
 call Laue_Init_Reflist(cell, lmnl, reflist, refcnt, verbose)
 
-
-
 !=============================================
 !=============================================
 ! start creation of the output file, using a hyperslab approach for the Laue patterns 
@@ -209,6 +207,14 @@ call Laue_Init_Reflist(cell, lmnl, reflist, refcnt, verbose)
 ! Open a new file
   hdfname = trim(EMsoft_getEMdatapathname())//trim(lnl%hdfname)
   hdfname = EMsoft_toNativePath(hdfname)
+
+  inquire(file=trim(hdfname), exist=f_exists)
+
+  if (f_exists) then
+    open(unit=dataunit, file=trim(hdfname), status='old',form='unformatted')
+    close(unit=dataunit, status='delete')
+  end if
+
   hdferr =  HDF_createFile(hdfname, HDF_head)
 
 ! write the EMheader to the file
