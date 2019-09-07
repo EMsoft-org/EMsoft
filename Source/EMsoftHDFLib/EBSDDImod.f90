@@ -1080,7 +1080,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   tstop = tstop - tstart
   io_real(1) = float(totnumexpt)*float(FZcnt) / tstop
   call WriteValue('Number of pattern comparisons per second : ',io_real,1,"(/,F10.2)")
-  io_real(1) = float(totnumexpt) / tstop
+  io_real(1) = float(totnumexpt)*float(dinl%nthreads) / tstop
   call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F10.2,/)")
   
   ! ===================

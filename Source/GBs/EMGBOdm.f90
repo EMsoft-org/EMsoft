@@ -64,6 +64,7 @@ type(GBOdmNameListType)           :: gbonl
 integer(kind=irg)                 :: numoct, numd, TID, i, j, io_int(2), ival, ic, ir 
 real(kind=dbl),allocatable        :: octarray(:,:), distancematrix(:,:)
 real(kind=dbl)                    :: qa(4) ,qb(4), qc(4), qd(4), is2, io_real(8), tt
+real(kind=sgl)                    :: tstart, tstop
 type(dicttype),pointer            :: dict
 character(fnlen)                  :: fname
 logical                           :: f_exists
@@ -143,6 +144,8 @@ end if
 ! compute the pairwise distance matrix using parallel threads
 call Message(' Computing distance matrix ',"(/A/)")
 
+call cpu_time(tstart)
+
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, qa, qb, qc, qd, ic, tt, io_int)
 TID = OMP_GET_THREAD_NUM()
 
@@ -172,6 +175,9 @@ do ir = 1,numoct
 end do 
 !$OMP END DO 
 !$OMP END PARALLEL 
+
+call cpu_time(tstop)
+write (*,*) 'elapsed cpu_time : ', tstop-tstart
 
 fname = trim(EMsoft_getEMdatapathname())//trim(gbonl%outname)
 fname = EMsoft_toNativePath(fname)
