@@ -70,6 +70,9 @@ type(gnode)             :: rlp
  progdesc = 'Computes the star of a reciprocal lattice vector'
  call EMsoft(progname, progdesc)
 
+! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 924 /), progname)
+
  allocate(cell)
 
 ! initialize crystal

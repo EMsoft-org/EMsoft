@@ -52,6 +52,7 @@ use constants
 use io
 use typedefs
 use symmetry
+use files
 
 IMPLICIT NONE
 
@@ -65,6 +66,9 @@ character(fnlen)                      :: mess
  progname = 'EMlistSG.f90'
  progdesc = 'List equivalent positions for arbitrary space group'
  call EMsoft(progname, progdesc)
+
+! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 915 /), progname)
 
  allocate(cell)
  

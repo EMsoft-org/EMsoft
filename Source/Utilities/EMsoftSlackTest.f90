@@ -42,14 +42,18 @@ program EMsoftSlackTest
 use local
 use io
 use notifications
+use files
 
 IMPLICIT NONE
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)
 integer(kind=irg)                 :: NumLines, i
-character(fnlen)                  :: MessageTitle, line
+character(fnlen)                  :: MessageTitle, line, progname
 character(100)                    :: c
 
+! deal with the command line arguments, if any
+progname = 'EMsoftSlackTest'
+call Interpret_Program_Arguments(1,(/ 922 /), progname)
 
 if (trim(EMsoft_getNotify()).ne.'Off') then
     NumLines = 1

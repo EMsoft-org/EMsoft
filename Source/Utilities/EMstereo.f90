@@ -68,7 +68,10 @@ type(postscript_type)           :: PS
  progname = 'EMstereo.f90'
  progdesc = 'Stereographic projections (direct/ reciprocal space)'
  call EMsoft(progname, progdesc)
- 
+
+! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 925 /), progname)
+  
  allocate(cell)
 
  cell % SG % SYM_reduce=.TRUE.

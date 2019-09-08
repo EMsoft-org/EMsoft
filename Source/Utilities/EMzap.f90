@@ -69,6 +69,9 @@ logical                         :: loadingfile
  progdesc = 'Kinematical Zone Axis Diffraction Patterns'
  call EMsoft(progname, progdesc)
 
+! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 928 /), progname)
+ 
  allocate(cell)
 
 
