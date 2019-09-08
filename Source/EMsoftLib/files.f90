@@ -306,6 +306,7 @@ end subroutine CopyTemplateFiles
 !> @date   06/08/14 MDG 2.0 added stdout argument
 !> @date   05/11/17 MDG 3.0 added support for JSON-formatted template files
 !> @date   03/29/18 MDG 3.1 removed stdout argument
+!> @date   09/08/19 MDG 4.0 add support for automatic pandoc wiki->pdf conversion
 !--------------------------------------------------------------------------
 recursive subroutine Interpret_Program_Arguments(nmldefault,numt,templatelist,progname)
 !DEC$ ATTRIBUTES DLLEXPORT :: Interpret_Program_Arguments
@@ -363,6 +364,20 @@ if (numarg.gt.0) then ! there is at least one argument
                 call Message('Creating program name list template files:', frm = "(/A)")
                 call CopyTemplateFiles(numt,templatelist)
         end if
+        if (trim(arg).eq.'-pdf') then 
+! if the pandoc program is installed (for instance within the anaconda distribution)
+! then the user can ask for the wiki manual page (if it exists) to be converted into a pdf
+! file that will be placed in the current folder.
+!
+! example command to generate the pdf file for the EMGBOdm program:
+!   pandoc -V fontsize=10pt --template ~/templates/default.latex -s EMGBOdm.md -o EMGBOdm.pdf
+!
+! We use the same template codes but now they are linked to the corresponding wiki file
+! which should be located in a folder at the same level as the resources folder.
+!
+          call Message(' User requested wiki-to-pdf conversion', frm = "(/A)")
+          call ConvertWiki2PDF(numt, templatelist)
+        end if 
         if (trim(arg).eq.'-j') then
           json = .TRUE.
 ! with this option the program creates template JSON files in the current folder so that the 
@@ -376,7 +391,7 @@ if (numarg.gt.0) then ! there is at least one argument
         end if
     else
 ! no, the first character is not '-', so this argument must be the filename
-! if it is present, but any of the other arguments were present as well, then
+! If it is present, but any of the other arguments were present as well, then
 ! we stop the program. 
         nmlfile = arg
         if (numarg.eq.1) haltprogram = .FALSE.
