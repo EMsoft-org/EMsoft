@@ -50,7 +50,6 @@ use rotations
 use quaternions
 use io
 use so3
-use files
 
 IMPLICIT NONE
 
@@ -66,10 +65,6 @@ progdesc = 'List equivalent rotations'
 
 ! print some information
 call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
-call Interpret_Program_Arguments(1,(/ 911 /), progname)
-
 
 dtor = cPi/180.D0
 

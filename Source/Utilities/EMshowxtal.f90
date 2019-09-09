@@ -64,9 +64,6 @@ character(1)                   :: yesno
  progdesc = 'Display crystal structure information'
  call EMsoft(progname, progdesc)
 
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 921 /), progname)
- 
  allocate(cell)
  
  call ReadValue(' Enter xtal file name : ', gname,"(A)")

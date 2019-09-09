@@ -40,7 +40,6 @@
 !> @date   05/27/01 MDG 2.0 f90
 !> @date   04/16/13 MDG 3.0 rewrite
 !> @date   11/26/16 MDG 3.1 added handling of systematic absences
-!> @date   09/08/19 MDG 3.2 add wiki-PDF conversion option
 !--------------------------------------------------------------------------
 program EMqg
 
@@ -71,9 +70,6 @@ type(gnode)                    :: rlp
  progname = 'EMqg.f90'
  progdesc = 'Display potential coefficient values'
  call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 920 /), progname)
 
  allocate(cell)
  

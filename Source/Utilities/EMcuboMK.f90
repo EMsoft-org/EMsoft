@@ -50,7 +50,6 @@ use error
 use rotations
 use so3
 use symmetry
-use files
 
 IMPLICIT NONE 
 
@@ -66,9 +65,6 @@ progdesc = 'Generate MacKenzie histogram for a given rotational symmetry based o
 
 ! print some information
 call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
-call Interpret_Program_Arguments(1,(/ 906 /), progname)
 
 ! first ask for the rotational point group number
 call ListPointGroups

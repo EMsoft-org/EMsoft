@@ -63,10 +63,7 @@ logical				:: loadingfile
  progname = 'EMlatgeom.f90'
  progdesc = 'Simple lattice geometry program'
  call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 914 /), progname)
-
+ 
  allocate (cell)
 
 ! load crystal structure data

@@ -92,10 +92,7 @@ end interface
  progname = 'EMdrawcell.f90'
  progdesc='Draw one or more unit cells in perspective mode'
  call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 909 /), progname)
-
+ 
  allocate(cell)
 
  cell % SG % SYM_reduce=.TRUE.

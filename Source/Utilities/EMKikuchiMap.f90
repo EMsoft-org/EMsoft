@@ -37,7 +37,6 @@
 !> @date 02/25/02 MDG 1.0 original
 !> @date 05/14/15 MDG 2.0 rewrite for new version
 !> @date 11/17/15 MDG 2.1 corrected minor errors; tested program
-!> @date 09/08/19 MDG 2.2 add wiki-PDF conversion option
 !--------------------------------------------------------------------------
 program EMKikuchiMap
 
@@ -89,8 +88,6 @@ end interface
  progdesc = 'Kinematical Kikuchi map simulations'
  call EMsoft(progname, progdesc)
 
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 903 /), progname)
 
  allocate(cell)
 

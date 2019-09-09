@@ -60,9 +60,6 @@ type(unitcell),pointer          :: cell
  progname = 'EMorbit.f90'
  progdesc = 'List the orbit of a given position'
  call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 918 /), progname)
  
  allocate(cell)
  cell % SG % SYM_reduce=.TRUE.

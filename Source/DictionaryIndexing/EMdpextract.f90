@@ -48,7 +48,6 @@ use local
 use HDF5
 use HDFsupport
 use io
-use files
 
 IMPLICIT NONE
 
@@ -60,9 +59,6 @@ progdesc = 'Extract a number of images from a dictionary indexing dot product fi
 
 ! print some information
 call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
-call Interpret_Program_Arguments(1,(/ 907 /), progname)
 
 call h5open_EMsoft(hdferr)
 call getcwd(cwd)

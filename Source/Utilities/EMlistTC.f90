@@ -50,7 +50,6 @@ use ECPmod
 use rotations
 use so3
 use io
-use files
 
 IMPLICIT NONE
 
@@ -68,9 +67,6 @@ progdesc = 'List information about texture components'
 
 ! print some information
 call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
-call Interpret_Program_Arguments(1,(/ 916 /), progname)
 
 allocate(cell)
 ! ask for the crystal structure file

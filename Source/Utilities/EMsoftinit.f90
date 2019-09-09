@@ -42,7 +42,6 @@
 program EMsoftinit
 
 use local
-use files
 
 IMPLICIT NONE
 
@@ -50,12 +49,6 @@ character(fnlen)        :: progdesc, progname
 
 progname = 'EMsoftinit'
 progdesc = 'Initialize the EMsoft configuration file'
-
-! deal with the command line arguments, if any
-call Interpret_Program_Arguments(2,(/ 923, 931 /), progname)
-
 call EMsoft(progname, progdesc, makeconfig=.TRUE.)
-
-
 
 end program EMsoftinit

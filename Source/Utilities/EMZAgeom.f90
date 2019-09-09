@@ -39,7 +39,6 @@
 !> @date 12/17/13 MDG 1.0 simple interface
 !> @date 06/13/14 MDG 2.0 removed all globals
 !> @date 11/28/15 MDG 2.1 minor modification
-!> @date 09/08/19 MDG 2.2 add wiki-PDF conversion option
 !--------------------------------------------------------------------------
 program EMZAgeom 
 
@@ -61,9 +60,6 @@ logical                 :: loadingfile
  progname = 'EMZAgeom.f90'
  progdesc = 'Zone axis geometry and symmetry'
  call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 905 /), progname)
 
  allocate(cell)
   

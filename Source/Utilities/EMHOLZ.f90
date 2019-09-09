@@ -40,7 +40,6 @@
 !> @date 04/08/13  MDG 2.0 revision
 !> @date 11/16/15  MDG 3.0 complete revision
 !> @date 11/17/15  MDG 3.1 order of pointer argument list corrected in CalcHOLZ
-!> @date 09/08/19  MDG 3.2 add wiki-PDF conversion option
 !--------------------------------------------------------------------------
 program EMHOLZ
 
@@ -91,9 +90,6 @@ end interface
 progname = 'EMHOLZ.f90'
 progdesc = 'Kinematical HOLZ pattern and HOLZ line simulations'
 call EMsoft(progname, progdesc)
-
-! deal with the command line arguments, if any
- call Interpret_Program_Arguments(1,(/ 902 /), progname)
 
 allocate(cell)
  
