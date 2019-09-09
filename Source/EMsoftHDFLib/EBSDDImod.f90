@@ -819,7 +819,6 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   ! on how powerful the GPU card is...
   !=====================================================
   
-  call cpu_time(tstart)
   call Time_tick(tickstart)
   
   if (trim(dinl%indexingmode).eq.'dynamic') then
@@ -1076,12 +1075,13 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   end if
   
   ! perform some timing stuff
-  call CPU_TIME(tstop)
-  tstop = tstop - tstart
+  tstop = Time_tock(tickstart)
+  io_real(1) = tstop
+  call WriteValue('Indexing duration (system_clock, s)                : ',io_real,1,"(/,F10.3)")
   io_real(1) = float(totnumexpt)*float(FZcnt) / tstop
-  call WriteValue('Number of pattern comparisons per second : ',io_real,1,"(/,F10.2)")
-  io_real(1) = float(totnumexpt)*float(dinl%nthreads) / tstop
-  call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F10.2,/)")
+  call WriteValue('Number of pattern comparisons per second           : ',io_real,1,"(/,F10.3)")
+  io_real(1) = float(totnumexpt) / tstop
+  call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F10.3,/)")
   
   ! ===================
   ! MAIN OUTPUT SECTION
