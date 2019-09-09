@@ -138,12 +138,12 @@ real(kind=sgl),allocatable      :: pedpattern(:,:), xx(:,:), yy(:,:), line(:), d
 character(len=1),allocatable    :: pedp(:,:,:), pedpat(:,:)
 integer(kind=irg),allocatable   :: patinbatch(:)
 integer(kind=irg)               :: totnumberbatch, nextra
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 type(reflisttype),pointer       :: reflist, nexts, rltmpa
 
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 
 sgmax = 0.50
@@ -154,8 +154,8 @@ call cpu_time(tstart)
 !=============================================
 !=============================================
 ! crystallography section
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 verbose = .TRUE.
 
@@ -249,7 +249,7 @@ write (*,*) 'Maximum diffracted intensity : ',maxint
 !=============================================
 ! open the HDF5 output file; in the old code, the output was written into two separate binary files
 ! here, we do just one output file in the standard EMsoft style
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)

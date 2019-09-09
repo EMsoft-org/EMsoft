@@ -86,7 +86,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell), pointer                 :: cell
+type(unitcell)                          :: cell
 
 integer(kind=irg)                       :: i, j, oi_int(3)
 real(kind=dbl)                          :: oi_real(5)
@@ -304,7 +304,7 @@ integer(kind=irg),INTENT(IN)            :: nt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 logical,INTENT(IN),OPTIONAL             :: json
 
-integer(kind=irg),parameter             :: maxnumtemplates = 256
+integer(kind=irg),parameter             :: maxnumtemplates = 512
 character(fnlen)                        :: templates(maxnumtemplates)
 character(fnlen)                        :: input_name, output_name, tcf, tppath1, tppath2, tpl, tplextension
 integer(kind=irg)                       :: ios, i, j, ipos
@@ -441,6 +441,7 @@ use io
 IMPLICIT NONE
 
 character(fnlen),INTENT(INOUT)          :: nmldefault
+!f2py intent(in,out) ::  nmldefault
 integer(kind=irg),INTENT(IN)            :: numt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 character(fnlen),INTENT(IN)             :: progname

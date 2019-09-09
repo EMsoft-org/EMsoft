@@ -60,7 +60,7 @@ character(3)   				:: pos
 integer(kind=irg)        		:: p(4),ii,jj,i, io_int(1)
 real(kind=sgl)           		:: ppp, io_real(1)
 character(fnlen)                      :: progname, progdesc
-type(unitcell),pointer	               :: cell
+type(unitcell)        	               :: cell
 character(fnlen)                      :: mess
 
  progname = 'EMlistSG.f90'
@@ -70,8 +70,6 @@ character(fnlen)                      :: mess
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 915 /), progname)
 
- allocate(cell)
- 
  cell % SG% SYM_reduce=.TRUE.
  pos = 'xyz'
  call ReadValue(' Enter Space Group number : ', io_int, 1) 

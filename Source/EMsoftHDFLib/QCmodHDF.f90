@@ -62,6 +62,7 @@ use ECPmod
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer         :: acc
 type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
@@ -76,7 +77,7 @@ character(fnlen),allocatable            :: stringarray(:)
 integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
 real(kind=sgl),allocatable              :: srtmp(:,:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
@@ -95,7 +96,7 @@ allocate(master)
 call h5fis_hdf5_f(energyfile, stat, hdferr)
 
 if (stat) then
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -299,6 +300,7 @@ end subroutine ECPreadQCMCMasterfile
 ! IMPLICIT NONE
 
 ! type(EBSDNameListType),INTENT(INOUT)      :: enl
+!f2py intent(in,out) ::  enl
 ! type(EBSDAngleType),pointer               :: angles
 ! character(fnlen),INTENT(IN),OPTIONAL      :: efile
 ! logical,INTENT(IN),OPTIONAL               :: verbose
@@ -322,7 +324,7 @@ end subroutine ECPreadQCMCMasterfile
 
 ! real(kind=sgl),allocatable                :: srtmp(:,:,:,:)
 
-! type(HDFobjectStackType),pointer          :: HDF_head
+! type(HDFobjectStackType)                  :: HDF_head
 
 ! ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 ! if (PRESENT(efile)) then
@@ -338,7 +340,7 @@ end subroutine ECPreadQCMCMasterfile
 ! ! open the fortran HDF interface
 !   call h5open_EMsoft(hdferr)
 
-!   nullify(HDF_head)
+!   nullify(HDF_head%next)
 
 ! ! open the MC file using the default properties.
 !   readonly = .TRUE.
@@ -408,7 +410,7 @@ end subroutine ECPreadQCMCMasterfile
 
 ! ! next we need to make sure that this file has Monte Carlo data in it...
 !   datagroupname = 'MCOpenCL'
-!   call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+!   call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 !   if (.not.g_exists) then
 !     call Message('This file does not appear to contain any Monte Carlo data or the file')
 !     call Message('has the old data format; please use the EMmergeEBSD script to update')
@@ -461,7 +463,7 @@ end subroutine ECPreadQCMCMasterfile
 !   call HDF_pop(HDF_head)
 
 ! datagroupname = 'EBSDmaster'
-! call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+! call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 !   if (.not.g_exists) then
 !     call Message('This file does not appear to contain any EBSD master data or the file')
 !     call Message('has the old data format; please use the EMmergeEBSD script to update')

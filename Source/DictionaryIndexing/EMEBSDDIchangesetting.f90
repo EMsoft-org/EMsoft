@@ -76,10 +76,10 @@ real(kind=sgl),allocatable                  :: eulers(:,:), ang(:), resultmain(:
 logical                                     :: g_exists, readonly, verbose, overwrite = .TRUE., transformRefined
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
-type(HDFobjectStackType),pointer            :: HDF_head
+type(HDFobjectStackType)                    :: HDF_head
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 nmldeffile = 'EMEBSDDIchangesetting.nml'
 progname = 'EMEBSDDIchangesetting.f90'
@@ -235,7 +235,7 @@ infile = EMsoft_toNativePath(infile)
 
 !===================================================================================
 ! open the dot product file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 hdferr =  HDF_openFile(infile, HDF_head)
 
 ! open the Scan 1/EBSD/Data group
@@ -249,7 +249,7 @@ hdferr = HDF_openGroup(groupname, HDF_head)
 ! next, create a new EulerAnglesOriginal array and write the original angles to its
 ! same thing for the AverageOrientations array
 dataset = 'EulerAnglesOriginal'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloatArray2D(dataset, EBSDDIdata%EulerAngles, 3, EBSDDIdata%FZcnt, HDF_head, overwrite)
 else
@@ -263,7 +263,7 @@ hdferr = HDF_writeDatasetFloatArray2D(dataset, sngl(newEulers), 3, EBSDDIdata%FZ
 
 ! do the same with the AverageOrientations data set
 dataset = 'AverageOrientationsOriginal'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloatArray2D(dataset, EBSDDIdata%AverageOrientations, 3, EBSDDIdata%Nexp, HDF_head, overwrite)
 else
@@ -277,7 +277,7 @@ hdferr = HDF_writeDatasetFloatArray2D(dataset, sngl(newAvOr), 3, EBSDDIdata%Nexp
 if (transformRefined.eqv..TRUE.) then
   ! next, create a new RefinedEulerAnglesOriginal array and write the original angles to its
   dataset = 'RefinedEulerAnglesOriginal'
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
     hdferr = HDF_writeDatasetFloatArray2D(dataset, EBSDDIdata%RefinedEulerAngles, 3, EBSDDIdata%Nexp, HDF_head, overwrite)
   else
@@ -295,7 +295,7 @@ comment = 'Original orthorhombic setting changed to '//extendedOrthsettings(csnl
 allocate(stringarray(1))
 stringarray(1)= trim(comment)
 dataset = 'Comment'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head, overwrite) 
 else

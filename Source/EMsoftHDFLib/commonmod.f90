@@ -166,7 +166,7 @@ w = sqrt(real(outp)**2 + aimag(outp)**2)
 J = sum(w*ksqarray)
 wtot = sum(w)
 
-! and return the quality parametere
+! and return the quality parameter
 Q = 1.0 - J/Jres/wtot
 
 call fftw_free(p)
@@ -214,7 +214,7 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(IN)            :: ipar(6)
 real(kind=sgl),INTENT(IN)               :: Eulers(3,ipar(2))
 integer(kind=irg),INTENT(IN)            :: tmi(ipar(4),ipar(5))
-real(kind=irg),INTENT(IN)               :: dplist(ipar(4),ipar(5))
+real(kind=sgl),INTENT(IN)               :: dplist(ipar(4),ipar(5))
 real(kind=sgl),INTENT(OUT)              :: avEuler(3,ipar(3))
 real(kind=sgl),INTENT(OUT),OPTIONAL     :: disorient(ipar(3),ipar(6))
 
@@ -476,6 +476,7 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(IN)                :: ipar(10)
 integer(kind=irg),INTENT(IN)                :: tmi(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                :: ea(3,ipar(4))
+!f2py intent(in,out) ::  ea
 type(EBSDIndexingNameListType),INTENT(IN)   :: ebsdnl
 real(kind=sgl),INTENT(OUT)                  :: ism(ipar(7)*ipar(8))
 
@@ -562,7 +563,9 @@ real(kind=sgl),INTENT(IN)        :: eulers(3,numeu)
 integer(kind=irg),INTENT(IN)     :: ipf_wd
 integer(kind=irg),INTENT(IN)     :: ipf_ht
 !type(dicttype),INTENT(INOUT),pointer:: dict
+!f2py intent(in,out) ::  dict
 type(dicttype),INTENT(INOUT):: dict
+!f2py intent(in,out) ::  dict
 real(kind=sgl),INTENT(OUT)       :: kam(ipf_wd,ipf_ht)
 
 real(kind=sgl),allocatable       :: localkam(:)

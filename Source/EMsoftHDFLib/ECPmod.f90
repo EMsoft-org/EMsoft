@@ -128,6 +128,7 @@ use error
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer         :: acc
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -140,7 +141,7 @@ character(fnlen),allocatable            :: stringarray(:)
 
 integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
@@ -160,7 +161,7 @@ call h5fis_hdf5_f(energyfile, stat, hdferr)
 if (stat) then
 
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -325,6 +326,7 @@ use error
 IMPLICIT NONE
 
 type(ECPSingleNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer         :: acc
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -337,7 +339,7 @@ character(fnlen),allocatable            :: stringarray(:)
 
 integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
   energyfile = efile
@@ -357,7 +359,7 @@ if (stat) then
 ! open the fortran HDF interface
   call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -523,6 +525,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -541,11 +544,11 @@ integer(HSIZE_T)                        :: dims(1), dims3(3)
 character(fnlen)                        :: groupname, dataset, masterfile
 character(fnlen),allocatable            :: stringarray(:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 allocate(master)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -874,6 +877,7 @@ IMPLICIT NONE
 
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPAngleType),pointer              :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
@@ -991,6 +995,7 @@ use constants
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer             :: master
 logical, INTENT(IN), OPTIONAL           :: verbose
 
@@ -1093,6 +1098,7 @@ use Lambert
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer             :: master
 type(ECPLargeAccumType),pointer         :: acc
 real(kind=sgl), INTENT(OUT)             :: weightfact(nsig)
@@ -1183,6 +1189,7 @@ use error
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPLargeAccumType),pointer                 :: acc
 character(fnlen),INTENT(IN),OPTIONAL            :: efile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1196,7 +1203,7 @@ character(fnlen),allocatable                    :: stringarray(:)
 
 integer(kind=irg),allocatable                   :: acc_z(:,:,:,:), acc_e(:,:,:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
@@ -1223,7 +1230,7 @@ if (stat) then
 ! open the fortran HDF interface
   if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -1382,6 +1389,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPMasterType),pointer                     :: master
 character(fnlen),INTENT(IN),OPTIONAL            :: mfile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1401,7 +1409,7 @@ integer(HSIZE_T)                                :: dims(1), dims3(3)
 character(fnlen)                                :: groupname, dataset, masterfile
 character(fnlen),allocatable                    :: stringarray(:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 !allocate(master)
 
@@ -1413,7 +1421,7 @@ end if
 ! open the fortran HDF interface
 if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -1612,6 +1620,7 @@ use constants
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer                     :: master
 logical, INTENT(IN), OPTIONAL                   :: verbose
 
@@ -1715,6 +1724,7 @@ use Lambert
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)     :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer                     :: master
 type(ECPLargeAccumType),pointer                 :: acc
 real(kind=sgl), INTENT(OUT)                     :: weightfact(nsig)
@@ -1807,7 +1817,7 @@ integer(kind=irg)                       :: hdferr, sgnum, i, naxis
 logical                                 :: stat, readonly, HDFopen, dexists
 character(fnlen)                        :: groupname, dataset
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
@@ -1832,7 +1842,7 @@ if (stat) then
 ! open the fortran HDF interface
   if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the xtal file using the default properties.
   readonly = .TRUE.
@@ -1843,7 +1853,7 @@ groupname = SC_CrystalData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
 dataset = SC_AxialSymmetry
-  call H5Lexists_f(HDF_head%objectID, trim(dataset), dexists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID, trim(dataset), dexists, hdferr)
 
   if(dexists) then
 
@@ -1912,6 +1922,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(ECPMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -1930,12 +1941,12 @@ integer(HSIZE_T)                        :: dims(1), dims2(2)
 character(fnlen)                        :: groupname, dataset, masterfile
 character(fnlen),allocatable            :: stringarray(:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 allocate(master)
 
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -2149,8 +2160,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: dpfile
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(ECPDIdataType),INTENT(INOUT)                   :: ECPDIdata
+!f2py intent(in,out) ::  ECPDIdata
 logical,INTENT(IN),OPTIONAL                         :: getADP
 logical,INTENT(IN),OPTIONAL                         :: getAverageOrientations
 logical,INTENT(IN),OPTIONAL                         :: getCI
@@ -2174,7 +2187,7 @@ logical,INTENT(IN),OPTIONAL                         :: getRefinedEulerAngles
 
 character(fnlen)                                    :: infile, groupname, dataset
 logical                                             :: stat, readonly, g_exists
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
@@ -2198,7 +2211,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if
 
 ! open the dot product file
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
@@ -2206,7 +2219,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'ECPDictionaryIndexingNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call FatalError('readECPDotProductFile','this is not an ECP dot product file')
 end if
@@ -2235,7 +2248,7 @@ dataset = SC_ncubochoric
 ! There is an issue with the capitalization on this variable; needs to be resolved
 ! [MDG 10/18/17]  We test to see if Ncubochoric exists; if it does not then we check
 ! for ncubochoric ...
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ecpnl%ncubochoric)
 else
@@ -2250,7 +2263,7 @@ dataset = SC_Rout
         call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ecpnl%Rout)
 
 ! dataset = SC_ROI
-! call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+! call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 ! if (g_exists) then
 !     call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, iarray)
 !     ecpnl%ROI(1:4) = iarray(1:4)
@@ -2523,7 +2536,7 @@ end if
 if (present(getRefinedDotProducts)) then
   if (getRefinedDotProducts.eqv..TRUE.) then
     dataset = SC_RefinedDotProducts
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then
       call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, ECPDIdata%RefinedDotProducts)
     else
@@ -2535,7 +2548,7 @@ end if
 if (present(getRefinedEulerAngles)) then
   if (getRefinedEulerAngles.eqv..TRUE.) then
     dataset = SC_RefinedEulerAngles
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then
       call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, ECPDIdata%RefinedEulerAngles)
     else

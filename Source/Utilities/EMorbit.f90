@@ -55,7 +55,7 @@ real(kind=dbl)                  :: ctmp(192,3)
 integer(kind=irg)               :: i,m,n,ans, io_int(1) 
 real(kind=sgl)                  :: io_real(3)
 character(fnlen)                :: progname, progdesc, gname
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 
  progname = 'EMorbit.f90'
  progdesc = 'List the orbit of a given position'
@@ -64,7 +64,7 @@ type(unitcell),pointer          :: cell
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 918 /), progname)
  
- allocate(cell)
+ !allocate(cell)        
  cell % SG % SYM_reduce=.TRUE.
  call ReadValue(' Enter xtal file name : ', gname,"(A)")
  cell%fname = gname

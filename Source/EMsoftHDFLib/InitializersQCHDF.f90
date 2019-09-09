@@ -96,9 +96,10 @@ use error
 IMPLICIT NONE
 
 type(TDQCStructureType),pointer         :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(11)                           :: dstr
 character(15)                           :: tstr
@@ -111,9 +112,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("SaveDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -124,7 +125,7 @@ call timestamp(datestring=dstr, timestring=tstr)
 ! Initialize FORTRAN interface if needed.
 !
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('SaveDataHDF:h5open_EMsoft', hdferr)
 
@@ -217,9 +218,10 @@ use error
 IMPLICIT NONE
 
 type(QCStructureType),pointer            :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(11)                           :: dstr
 character(15)                           :: tstr
@@ -232,9 +234,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("SaveDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -245,7 +247,7 @@ call timestamp(datestring=dstr, timestring=tstr)
 ! Initialize FORTRAN interface if needed.
 !
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('SaveDataHDF:h5open_EMsoft', hdferr)
 
@@ -335,9 +337,10 @@ use error
 IMPLICIT NONE
 
 type(TDQCStructureType),pointer         :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(fnlen)                        :: dataset, groupname, fname
 integer(HSIZE_T)                        :: dims(1), dims2(2)
@@ -350,16 +353,16 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("Read2DQCDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
 end if
 
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('Read2DQCDataHDF:h5open_EMsoft', hdferr)
 
@@ -454,9 +457,10 @@ use error
 IMPLICIT NONE
 
 type(QCStructureType),pointer            :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(fnlen)                        :: dataset, groupname, fname
 integer(HSIZE_T)                        :: dims(1), dims2(2)
@@ -469,16 +473,16 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("Read2DQCDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
 end if
 
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('Read2DQCDataHDF:h5open_EMsoft', hdferr)
 
@@ -684,6 +688,7 @@ IMPLICIT NONE
 type(TDQCStructureType),pointer         :: cell
 logical,INTENT(IN),OPTIONAL             :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 integer(kind=irg)                       :: i, ipg, isave
 
@@ -736,6 +741,7 @@ IMPLICIT NONE
 type(QCStructureType),pointer            :: cell
 logical,INTENT(IN),OPTIONAL             :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 integer(kind=irg)                       :: i, ipg, isave
 
@@ -793,6 +799,7 @@ real(kind=sgl),INTENT(IN)                  :: voltage
 integer(kind=irg),INTENT(IN)            :: nthreads
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
 
 integer(kind=irg)                          :: istat, io_int(5), skip, QCindex, nLUT
@@ -1028,6 +1035,7 @@ real(kind=sgl),INTENT(IN)                  :: voltage
 integer(kind=irg),INTENT(IN)               :: nthreads
 logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
 
 integer(kind=irg)                          :: istat, io_int(6), skip

@@ -153,7 +153,11 @@ use typedefs
 IMPLICIT NONE
 
 type(MRCstruct),INTENT(INOUT) :: MRCheader
+!f2py intent(in,out) ::  MRCheader
+!f2py intent(in,out) ::  MRCheader
 type(FEIstruct),INTENT(INOUT) :: FEIheaders(1024)
+!f2py intent(in,out) ::  FEIheaders
+!f2py intent(in,out) ::  FEIheaders
 character(fnlen),INTENT(IN)   :: mrcname
 integer(kind=irg),INTENT(IN)  :: numx
 integer(kind=irg),INTENT(IN)  :: numy
@@ -225,6 +229,7 @@ use typedefs
 IMPLICIT NONE
 
 type(MRCstruct),INTENT(INOUT)  :: MRCheader
+!f2py intent(in,out) ::  MRCheader
 
 integer(kind=irg)			   :: i
 
@@ -299,6 +304,7 @@ use typedefs
 IMPLICIT NONE
 
 type(FEIstruct),INTENT(INOUT)  :: FEIheaders(1024)
+!f2py intent(in,out) ::  FEIheaders
 
 integer(kind=irg)			   :: i
 
@@ -454,7 +460,7 @@ use local
 
 IMPLICIT NONE
 
-real(kind=irg),INTENT(IN)       :: RWord  !< 4 byte real
+real(kind=sgl),INTENT(IN)       :: RWord  !< 4 byte real
 integer(kind=irg),intent(IN)    :: Length !< length parameter
 
 integer(kind=irg)               :: L_Word

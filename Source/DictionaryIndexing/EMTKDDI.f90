@@ -234,7 +234,7 @@ type(TKDMasterDIType),pointer,Intent(IN)            :: master
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
 
-type(unitcell),pointer                              :: cell
+type(unitcell)                                      :: cell
 type(DynType)                                       :: Dyn
 type(gnode)                                         :: rlp
 logical                                             :: verbose
@@ -327,7 +327,7 @@ character(100)                                      :: c
 
 
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 call timestamp(datestring=dstr, timestring=tstrb)
 

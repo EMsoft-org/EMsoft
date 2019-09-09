@@ -148,10 +148,10 @@ character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 real(kind=sgl),allocatable                   :: masterNH(:,:), masterSH(:,:), stereoNH(:,:), stereoSH(:,:), &
                                                 phi(:), cp(:), sp(:), dc(:,:), mLPNH(:,:,:), mLPSH(:,:,:)
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(DynType),save      :: Dyn
 type(gnode),save        :: rlp
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 interface
   subroutine AntiAlias(master,ixy,nix,niy,nx,inten)
@@ -176,13 +176,13 @@ verbose = .FALSE.
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 space = 'r'
 
 ! initialize the crystal structure and compute a list of potential reflectors 
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 ! get the crystal structure from the *.xtal file
 verbose = .TRUE.

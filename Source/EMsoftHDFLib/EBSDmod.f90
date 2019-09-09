@@ -140,6 +140,7 @@ IMPLICIT NONE
 
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
 type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -249,6 +250,7 @@ IMPLICIT NONE
 
 
 type(EBSDFullNameListType),INTENT(INOUT):: enl
+!f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
 type(EBSDAngleType),pointer             :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -349,6 +351,7 @@ IMPLICIT NONE
 
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
 type(EBSDAnglePCDefType),pointer        :: orpcdef
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -446,15 +449,17 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: MCfile
 type(MCCLNameListType),INTENT(INOUT)                :: mcnl
+!f2py intent(in,out) ::  mcnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
 logical,INTENT(IN),OPTIONAL                         :: getAccume
 logical,INTENT(IN),OPTIONAL                         :: getAccumz
 logical,INTENT(IN),OPTIONAL                         :: getAccumSP
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, nx
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
@@ -481,7 +486,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if 
    
 ! open the Monte Carlo file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
@@ -489,7 +494,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
 ! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
 datagroupname = '/EMheader/MCOpenCL'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
 end if
@@ -513,7 +518,7 @@ call HDF_pop(HDF_head)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'MCOpenCLNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call HDF_pop(HDF_head,.TRUE.)
     call FatalError('readEBSDMonteCarloFile','this is not an EBSD Monte Carlo file')
@@ -566,7 +571,7 @@ dataset = SC_mode
     deallocate(stringarray)
 
 dataset = SC_multiplier
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%multiplier)
 else
@@ -583,7 +588,7 @@ dataset = SC_omega
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%omega)
 
 dataset = SC_platid
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%platid)
 else
@@ -618,7 +623,7 @@ groupname = SC_MCOpenCL
 
 ! integers
 dataset = SC_multiplier
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%multiplier)
 else
@@ -706,8 +711,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: MPfile
 type(EBSDMasterNameListType),INTENT(INOUT)          :: mpnl
+!f2py intent(in,out) ::  mpnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(EBSDMPdataType),INTENT(INOUT)                  :: EBSDMPdata
+!f2py intent(in,out) ::  EBSDMPdata
 logical,INTENT(IN),OPTIONAL                         :: getkeVs
 logical,INTENT(IN),OPTIONAL                         :: getmLPNH
 logical,INTENT(IN),OPTIONAL                         :: getmLPSH
@@ -717,7 +724,7 @@ logical,INTENT(IN),OPTIONAL                         :: keep4
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL, keepall
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, restart, combinesites, uniform, istat
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
@@ -748,7 +755,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if 
    
 ! open the Master Pattern file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
@@ -756,7 +763,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
 ! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
 datagroupname = '/EMheader/EBSDmaster'
-call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Master Pattern header data')
 end if
@@ -780,7 +787,7 @@ call HDF_pop(HDF_head)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'EBSDmasterNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call HDF_pop(HDF_head,.TRUE.)
     call FatalError('readEBSDMasterPatternFile','this is not an EBSD Master Pattern file')
@@ -791,7 +798,7 @@ call HDF_pop(HDF_head)
 ! check if this is an overlap EBSD pattern or a regular one  [ added by MDG, 06/19/19 ]
 !====================================
 dataset = 'READMEFIRST'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 EBSDMPdata%AveragedMP = .FALSE.
 EBSDMPdata%newPGnumber = -1
 if (g_exists.eqv..TRUE.) then
@@ -804,7 +811,7 @@ if (EBSDMPdata%AveragedMP.eqv..TRUE.) then
       hdferr = HDF_openGroup(groupname, HDF_head)
 
   dataset = 'PointGroupNumber'
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%newPGnumber)
 
   call HDF_pop(HDF_head)
@@ -820,19 +827,19 @@ groupname = SC_EBSDMasterNameList
 
 ! we'll read these roughly in the order that the HDFView program displays them...
 dataset = SC_Esel
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%Esel)
 
 ! we need to set the newPGnumber parameter to the correct value, to reflect the fact that 
 ! the symmetry of the overlap pattern will be different [ added by MDG, 06/20/19 ]
 if (EBSDMPdata%AveragedMP.eqv..TRUE.) then 
   dataset = 'newpgnumber'
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%newPGnumber)
 end if
 
 dataset = SC_combinesites
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 mpnl%combinesites = .FALSE.
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, combinesites)
@@ -840,7 +847,7 @@ if (g_exists.eqv..TRUE.) then
 end if
 
 dataset = SC_copyfromenergyfile
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     mpnl%copyfromenergyfile = trim(stringarray(1))
@@ -864,7 +871,7 @@ dataset = SC_nthreads
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%nthreads)
 
 dataset = SC_restart
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, restart)
     mpnl%restart = .FALSE.
@@ -872,14 +879,14 @@ if(g_exists) then
 end if
 
 dataset = SC_stdout
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mpnl%stdout)
 end if
 
 dataset = SC_uniform
 mpnl%uniform = .FALSE.
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if (g_exists.eqv..TRUE.) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, uniform)
     if (uniform.ne.0) mpnl%uniform = .TRUE.
@@ -899,7 +906,7 @@ groupname = SC_EBSDmaster
 
 ! integers
 dataset = SC_lastEnergy
-call H5Lexists_f(HDF_head%objectID, trim(dataset), g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID, trim(dataset), g_exists, hdferr)
 if(g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%lastEnergy)
 end if
@@ -1011,9 +1018,13 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
 type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
 type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
+!f2py intent(in,out) ::  EBSDdetector
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate arrays [microns]
@@ -1186,15 +1197,22 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
 type(EBSDMCdataType),INTENT(INOUT)      :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
 integer(kind=irg),INTENT(IN)            :: nsx
 integer(kind=irg),INTENT(IN)            :: nsy
 integer(kind=irg),INTENT(IN)            :: numE
 real(kind=sgl),INTENT(INOUT)            :: tgx(nsx,nsy)
+!f2py intent(in,out) ::  tgx
 real(kind=sgl),INTENT(INOUT)            :: tgy(nsx,nsy)
+!f2py intent(in,out) ::  tgy
 real(kind=sgl),INTENT(INOUT)            :: tgz(nsx,nsy)
+!f2py intent(in,out) ::  tgz
 real(kind=sgl),INTENT(INOUT)            :: accum_e_detector(numE,nsx,nsy)
+!f2py intent(in,out) ::  accum_e_detector
 real(kind=sgl),INTENT(IN)               :: patcntr(3)
 logical,INTENT(IN),OPTIONAL             :: bg
 
@@ -1360,15 +1378,6 @@ recursive subroutine CalcEBSDPatternSingleFull(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFull
 
 use local
-use typedefs
-use NameListTypedefs
-use NameListHDFwriters
-use symmetry
-use crystal
-use constants
-use io
-use files
-use diffraction
 use Lambert
 use quaternions
 use rotations
@@ -1393,6 +1402,7 @@ real(kind=sgl),INTENT(IN)                       :: mask(ipar(2)/ipar(1),ipar(3)/
 real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3)
 character(1),INTENT(IN),OPTIONAL                :: removebackground
 integer(K4B),INTENT(INOUT),OPTIONAL             :: applynoise
+!f2py intent(in,out) ::  applynoise
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
 real(kind=sgl),allocatable                      :: wf(:)
@@ -1526,15 +1536,6 @@ recursive subroutine CalcEBSDPatternSingleFullFast(ipar,qu,accum,mLPNH,mLPSH,rgx
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternSingleFullFast
 
 use local
-use typedefs
-use NameListTypedefs
-use NameListHDFwriters
-use symmetry
-use crystal
-use constants
-use io
-use files
-use diffraction
 use Lambert
 use quaternions
 use rotations
@@ -1647,7 +1648,9 @@ use error
 IMPLICIT NONE
 
 type(EBSDFullNameListType),INTENT(INOUT):: enl
+!f2py intent(in,out) ::  enl
 type(EBSDDetectorType),INTENT(INOUT)    :: EBSDdetector
+!f2py intent(in,out) ::  EBSDdetector
 integer(kind=irg),INTENT(IN)            :: numEbins, numzbins
 logical,INTENT(IN),OPTIONAL             :: verbose
 
@@ -1770,7 +1773,7 @@ character(fnlen),INTENT(IN)       :: outputfile
 character(fnlen)                  :: infile, outfile, h5copypath, groupname
 character(512)                    :: cmd, cmd2
 logical                           :: f_exists, readonly
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 integer(kind=irg)                 :: hdferr
 
 ! first make sure that the input file exists and has MC data in it
@@ -1787,7 +1790,7 @@ if (f_exists.eqv..FALSE.) then
 end if
 
 ! make sure it has MCopenCL data in it; hdf open is done in the calling program
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
@@ -1865,7 +1868,7 @@ logical,INTENT(IN),OPTIONAL       :: skipCrystalData
 character(fnlen)                  :: infile, outfile, h5copypath, groupname
 character(512)                    :: cmd, cmd2
 logical                           :: f_exists, readonly
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 integer(kind=irg)                 :: hdferr
 
 ! first make sure that the input file exists and has MP data in it
@@ -1882,7 +1885,7 @@ if (f_exists.eqv..FALSE.) then
 end if
 
 ! make sure it has EBSDmaster data in it; hdf open is done in the calling program
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 

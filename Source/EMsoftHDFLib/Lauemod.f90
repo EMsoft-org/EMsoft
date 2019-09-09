@@ -85,8 +85,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: MPfile
 type(LaueMasterNameListType),INTENT(INOUT)          :: lmnl
+!f2py intent(in,out) ::  lmnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(LaueMPdataType),INTENT(INOUT)                  :: LaueMPdata
+!f2py intent(in,out) ::  LaueMPdata
 logical,INTENT(IN),OPTIONAL                         :: getmLPNH
 logical,INTENT(IN),OPTIONAL                         :: getmLPSH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPNH
@@ -94,7 +96,7 @@ logical,INTENT(IN),OPTIONAL                         :: getmasterSPSH
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)									:: nlines
 integer(HSIZE_T)                                    :: dims2(2)
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
@@ -117,7 +119,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if 
    
 ! open the Master Pattern file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
@@ -127,7 +129,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'LauemasterNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call HDF_pop(HDF_head,.TRUE.)
     call FatalError('readLaueMasterFile','this is not a Laue Master Pattern file')

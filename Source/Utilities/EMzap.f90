@@ -60,7 +60,7 @@ IMPLICIT NONE
 real(kind=sgl)                  :: io_real(1), camlen
 character(fnlen)                :: progname, progdesc, gname
 integer(kind=irg)               :: imanum
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(gnode)                     :: rlp
 type(postscript_type)           :: PS
 logical                         :: loadingfile
@@ -71,9 +71,6 @@ logical                         :: loadingfile
 
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 928 /), progname)
- 
- allocate(cell)
-
 
  cell % SG % SYM_reduce=.TRUE.
 

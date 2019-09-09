@@ -58,7 +58,7 @@ real(kind=sgl)          :: camlen, io_real(1)
 integer(kind=irg)       :: imanum
 character(fnlen)        :: progdesc, progname, gname
 logical                 :: loadingfile
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(gnode)             :: rlp
 type(postscript_type)   :: PS
 
@@ -77,7 +77,7 @@ interface
   
   IMPLICIT NONE
   
-    type(unitcell),pointer,INTENT(IN)  :: cell
+    type(unitcell)        ,INTENT(IN)  :: cell
   type(gnode),INTENT(INOUT)          :: rlp
   type(postscript_type),INTENT(INOUT):: PS
   real(kind=sgl),INTENT(IN)          :: camlen
@@ -92,7 +92,7 @@ end interface
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 903 /), progname)
 
- allocate(cell)
+ !allocate(cell)        
 
  cell % SG % SYM_reduce=.TRUE.
 
@@ -149,7 +149,7 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer,INTENT(IN)  :: cell
+type(unitcell)        ,INTENT(IN)  :: cell
 type(gnode),INTENT(INOUT)          :: rlp
 type(postscript_type),INTENT(INOUT):: PS
 real(kind=sgl),INTENT(IN)          :: camlen
@@ -182,7 +182,7 @@ interface
   
   IMPLICIT NONE
   
-  type(unitcell),pointer,INTENT(IN)  :: cell
+  type(unitcell)        ,INTENT(IN)  :: cell
   type(gnode),INTENT(INOUT)          :: rlp
   type(postscript_type),INTENT(INOUT):: PS
   type(kikuchireflection),pointer,INTENT(INOUT)  :: top
@@ -313,7 +313,7 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer,INTENT(IN)  :: cell
+type(unitcell)        ,INTENT(IN)  :: cell
 type(gnode),INTENT(INOUT)          :: rlp
 type(postscript_type),INTENT(INOUT):: PS
 type(kikuchireflection),pointer,INTENT(INOUT)  :: top

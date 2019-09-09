@@ -54,7 +54,7 @@ use io
 
 integer(kind=irg)       :: kk(3), ga(3), gb(3), io_int(6), j, i, dgn
 character(fnlen)        :: progname, progdesc, gname
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 logical                 :: loadingfile
 
 ! display the standard program info
@@ -65,8 +65,6 @@ logical                 :: loadingfile
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 905 /), progname)
 
- allocate(cell)
-  
 ! first get the crystal data and microscope voltage
  call ReadValue('Enter xtal file name : ', gname,"(A)")
  cell%fname = trim(gname)

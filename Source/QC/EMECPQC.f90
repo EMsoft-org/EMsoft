@@ -150,7 +150,7 @@ real(kind=dbl),parameter                :: dtoR = 0.01745329251D0
 logical                                 :: switchwfoff = .FALSE.
 !complex(kind=dbl)                       :: D
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
 integer(HSIZE_T)                        :: dim0, dim1, dim2
 character(fnlen,kind=c_char)            :: line2(1)

@@ -345,10 +345,16 @@ use quaternions
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)      :: qa(4)
+!f2py intent(in,out) ::  qa
 real(kind=dbl),INTENT(INOUT)      :: qb(4)
+!f2py intent(in,out) ::  qb
 real(kind=dbl),INTENT(INOUT)      :: qc(4)
+!f2py intent(in,out) ::  qc
 real(kind=dbl),INTENT(INOUT)      :: qd(4)
+!f2py intent(in,out) ::  qd
 type(dicttype),INTENT(INOUT)      :: dict
+!f2py intent(in,out) ::  dict
+
 real(kind=dbl),INTENT(OUT),OPTIONAL :: solution(4,4)
 real(kind=dbl),INTENT(OUT),OPTIONAL :: arclengths(dict%Nqsym**2,dict%Nqsym**2)
 logical,INTENT(IN),OPTIONAL       :: single
@@ -485,7 +491,9 @@ use quaternions
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)      :: qa(4)
+!f2py intent(in,out) ::  qa
 real(kind=dbl),INTENT(INOUT)      :: qc(4)
+!f2py intent(in,out) ::  qc
 real(kind=dbl)                    :: Omega
 
 real(kind=dbl)                    :: qq(4), pp(4), zeta, sigma, cac, cbc, cz, sz, cs, ss
@@ -520,8 +528,11 @@ use quaternions
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)      :: qa(4)
+!f2py intent(in,out) ::  qa
 real(kind=dbl),INTENT(INOUT)      :: qc(4)
+!f2py intent(in,out) ::  qc
 type(dicttype),INTENT(INOUT)      :: dict
+!f2py intent(in,out) ::  dict
 real(kind=dbl)                    :: Omega
 
 integer(kind=irg)                 :: i, k

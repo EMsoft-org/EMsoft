@@ -336,6 +336,7 @@ integer(kind=irg),INTENT(IN)          :: dunit
 character(fnlen),INTENT(IN)           :: df3name
 integer(kind=irg),INTENT(IN)          :: ndims(3)
 real(kind=sgl),INTENT(INOUT)          :: volume(-ndims(1):ndims(1),-ndims(2):ndims(2),-ndims(3):ndims(3))
+!f2py intent(in,out) ::  volume
 character(3),INTENT(IN)               :: scalingmode
 
 integer(kind=ish)				    :: ivol(-ndims(1):ndims(1),-ndims(2):ndims(2),-ndims(3):ndims(3))
@@ -676,8 +677,11 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)          :: dims(3)
 real(kind=dbl),INTENT(INOUT)          :: cpos(3,dims(1))
+!f2py intent(in,out) ::  cpos
 integer(kind=irg),INTENT(INOUT)       :: s_edge(2,dims(2))
+!f2py intent(in,out) ::  s_edge
 integer(kind=irg),INTENT(INOUT)       :: t_edge(2,dims(3))
+!f2py intent(in,out) ::  t_edge
 integer(kind=irg),INTENT(OUT)         :: ns
 real(kind=dbl),INTENT(OUT)            :: d
 integer(kind=irg),INTENT(OUT)         :: nt
@@ -828,8 +832,11 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)          :: dims(3)
 real(kind=dbl),INTENT(INOUT)          :: cpos(3,dims(1))
+!f2py intent(in,out) ::  cpos
 integer(kind=irg),INTENT(INOUT)       :: s_edge(2,dims(2))
+!f2py intent(in,out) ::  s_edge
 integer(kind=irg),INTENT(INOUT)       :: t_edge(2,dims(3))
+!f2py intent(in,out) ::  t_edge
 integer(kind=irg),INTENT(OUT)         :: ns
 real(kind=dbl),INTENT(OUT)            :: d
 integer(kind=irg),INTENT(OUT)         :: nt
@@ -920,8 +927,11 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)          :: dims(3)
 real(kind=dbl),INTENT(INOUT)          :: cpos(3,dims(1))
+!f2py intent(in,out) ::  cpos
 integer(kind=irg),INTENT(INOUT)       :: s_edge(2,dims(2))
+!f2py intent(in,out) ::  s_edge
 integer(kind=irg),INTENT(INOUT)       :: t_edge(2,dims(3))
+!f2py intent(in,out) ::  t_edge
 integer(kind=irg),INTENT(OUT)         :: ns
 real(kind=dbl),INTENT(OUT)            :: d
 integer(kind=irg),INTENT(OUT)         :: nt
@@ -1075,8 +1085,11 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)          :: dims(3)
 real(kind=dbl),INTENT(INOUT)          :: cpos(3,dims(1))
+!f2py intent(in,out) ::  cpos
 integer(kind=irg),INTENT(INOUT)       :: s_edge(2,dims(2))
+!f2py intent(in,out) ::  s_edge
 integer(kind=irg),INTENT(INOUT)       :: t_edge(2,dims(3))
+!f2py intent(in,out) ::  t_edge
 integer(kind=irg),INTENT(OUT)         :: ns
 real(kind=dbl),INTENT(OUT)            :: d
 integer(kind=irg),INTENT(OUT)         :: nt
@@ -1198,8 +1211,11 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)          :: dims(3)
 real(kind=dbl),INTENT(INOUT)          :: cpos(3,dims(1))
+!f2py intent(in,out) ::  cpos
 integer(kind=irg),INTENT(INOUT)       :: s_edge(2,dims(2))
+!f2py intent(in,out) ::  s_edge
 integer(kind=irg),INTENT(INOUT)       :: t_edge(2,dims(3))
+!f2py intent(in,out) ::  t_edge
 integer(kind=irg),INTENT(OUT)         :: ns
 real(kind=dbl),INTENT(OUT)            :: d
 integer(kind=irg),INTENT(OUT)         :: nt
@@ -1309,8 +1325,11 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)          :: dims(3)
 real(kind=dbl),INTENT(INOUT)          :: cpos(3,dims(1))
+!f2py intent(in,out) ::  cpos
 integer(kind=irg),INTENT(INOUT)       :: s_edge(2,dims(2))
+!f2py intent(in,out) ::  s_edge
 integer(kind=irg),INTENT(INOUT)       :: t_edge(2,dims(3))
+!f2py intent(in,out) ::  t_edge
 integer(kind=irg),INTENT(OUT)         :: ns
 real(kind=dbl),INTENT(OUT)            :: d
 integer(kind=irg),INTENT(OUT)         :: nt

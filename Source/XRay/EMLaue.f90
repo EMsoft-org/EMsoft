@@ -132,9 +132,9 @@ integer(kind=irg)						               :: hdferr, npx, npy, refcnt, io_int(1), NU
 real(kind=sgl) 							               :: kouter, kinner, tstart, tstop, mi, ma
 real(kind=sgl),allocatable 				         :: pattern(:,:), patternbatch(:,:,:), bppatterns(:,:,:), bp(:,:)
 
-type(HDFobjectStackType),pointer           :: HDF_head
-type(unitcell),pointer                     :: cell
-logical 								                   :: verbose, g_exists, insert=.TRUE., overwrite=.TRUE.
+type(HDFobjectStackType)                   :: HDF_head
+type(unitcell)                             :: cell
+logical 								                   :: verbose, f_exists, g_exists, insert=.TRUE., overwrite=.TRUE.
 
 type(LaueMasterNameListType)               :: lmnl
 type(Laue_g_list),pointer                  :: reflist, rltmp          
@@ -157,8 +157,8 @@ integer(int8)                              :: i8 (3,4)
 integer(int8), allocatable                 :: TIFF_image(:,:)
 
 
-nullify(HDF_head)
-nullify(cell)
+nullify(HDF_head%next)
+
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = ''
 call cpu_time(tstart)
@@ -175,7 +175,7 @@ kinner = getXRDwavenumber(lnl%minVoltage)
 !=============================================
 !=============================================
 ! crystallography section 
-allocate(cell)
+!allocate(cell)        
 verbose = .TRUE.
 
 ! clear the cell variable (set everything to zero)
@@ -198,8 +198,6 @@ lmnl%lambdamin = 1.0/kouter
 lmnl%intfactor = 0.0001D0   ! default intensity cutoff factor (from EMLauemaster program)
 call Laue_Init_Reflist(cell, lmnl, reflist, refcnt, verbose)
 
-
-
 !=============================================
 !=============================================
 ! start creation of the output file, using a hyperslab approach for the Laue patterns 
@@ -209,6 +207,14 @@ call Laue_Init_Reflist(cell, lmnl, reflist, refcnt, verbose)
 ! Open a new file
   hdfname = trim(EMsoft_getEMdatapathname())//trim(lnl%hdfname)
   hdfname = EMsoft_toNativePath(hdfname)
+
+  inquire(file=trim(hdfname), exist=f_exists)
+
+  if (f_exists) then
+    open(unit=dataunit, file=trim(hdfname), status='old',form='unformatted')
+    close(unit=dataunit, status='delete')
+  end if
+
   hdferr =  HDF_createFile(hdfname, HDF_head)
 
 ! write the EMheader to the file
@@ -247,7 +253,7 @@ groupname = SC_EMData
 
 ! finally, write all the necessary data:  orientations and simulated patterns along with geometrical parameters
 dataset = 'kouter'
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloat(dataset, kouter, HDF_head, overwrite)
     else
@@ -255,7 +261,7 @@ dataset = 'kouter'
     end if
 
 dataset = 'kinner'
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetFloat(dataset, kinner, HDF_head, overwrite)
     else
@@ -282,7 +288,7 @@ dataset = 'kinner'
 	patternbatch = 0.0
 
 dataset = 'numangles'
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeDatasetInteger(dataset, numangles, HDF_head, overwrite)
     else
@@ -295,7 +301,7 @@ dataset = 'LauePatterns'
 	  dims3 = (/ npx, npy, numangles /)
 	  cnt3 = (/ npx, npy, numangles /)
 	  offset3 = (/ 0, 0, 0 /)
-	  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 	  if (g_exists) then 
 	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 	  else
@@ -305,7 +311,7 @@ dataset = 'LauePatterns'
 	  dims3 = (/ npx, npy, numangles /)
 	  cnt3 = (/ npx, npy, batchnumangles(1) /)
 	  offset3 = (/ 0, 0, 0 /)
-	  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 	  if (g_exists) then 
 	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
 	  else
@@ -329,7 +335,7 @@ dataset = 'backprojections'
     dims3 = (/ BPnpx, BPnpy, numangles /)
     cnt3 = (/ BPnpx, BPnpy, numangles /)
     offset3 = (/ 0, 0, 0 /)
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
     else
@@ -339,7 +345,7 @@ dataset = 'backprojections'
     dims3 = (/ BPnpx, BPnpy, numangles /)
     cnt3 = (/ BPnpx, BPnpy, batchnumangles(1) /)
     offset3 = (/ 0, 0, 0 /)
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
     else

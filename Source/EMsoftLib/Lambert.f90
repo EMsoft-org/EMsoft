@@ -214,6 +214,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl)                          :: res(3), q, qq, xy2(2)
 
 xy2 = xy * sngl(LPs%sPio2)
@@ -269,6 +270,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl)                          :: res(3), q, qq, xy2(2)
 
 xy2 = xy * LPs%sPio2
@@ -327,6 +329,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)               :: xyz(3)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl)                          :: res(2), q
 real(kind=sgl),parameter                :: eps = 1.0E-6
 
@@ -379,6 +382,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: xyz(3)
 integer(kind=irg),INTENT(INOUT) :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl)                          :: res(2), q
 real(kind=dbl),parameter                :: eps = 1.0D-12
 
@@ -439,6 +443,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: xy(2) 
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 
 real(kind=sgl)                  :: res(3), q, XX, YY, xp, yp, XY2(2), xyc(2)
 integer(kind=irg)               :: ks
@@ -510,6 +515,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: xy(2) 
 integer(kind=irg),INTENT(INOUT) :: ierr
+!f2py intent(in,out) ::  ierr
 
 real(kind=dbl)                  :: res(3), q, XX, YY, xp, yp, XY2(2), xyc(2)
 integer(kind=irg)               :: ks
@@ -587,6 +593,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: xyz(3) 
 integer(kind=irg),INTENT(INOUT) :: ierr
+!f2py intent(in,out) ::  ierr
 
 real(kind=sgl)                  :: res(2), q, qq, XX, YY, xxx, yyy, sgnX, XYZ2(3), xy(2)
 integer(kind=irg)               :: ks
@@ -673,6 +680,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: xyz(3) 
 integer(kind=irg),INTENT(INOUT) :: ierr
+!f2py intent(in,out) ::  ierr
 
 real(kind=dbl)                  :: res(2), q, qq, XX, YY, xxx, yyy, sgnX, XYZ2(3), xy(2)
 integer(kind=irg)               :: ks
@@ -864,6 +872,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: xyzin(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl)                  :: res(3)
 
 real(kind=sgl)                  :: XYZ(3), sXYZ(3), T1, T2, c, s, q, LamXYZ(3)
@@ -957,6 +966,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: xyzin(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl)                  :: res(3)
 
 real(kind=dbl)                  :: XYZ(3), sXYZ(3), T1, T2, c, s, q, LamXYZ(3), eps
@@ -1052,6 +1062,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: xyz(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl)                  :: res(3)
 
 real(kind=sgl)                  :: rs, xyz3(3), xyz2(3), qxy, q2xy, sq2xy, q, ac, T1inv, T2inv, &
@@ -1160,6 +1171,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: xyz(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl)                  :: res(3)
 
 real(kind=dbl)                  :: rs, xyz3(3), xyz2(3), qxy, q2xy, sq2xy, q, ac, T1inv, T2inv, &
@@ -1400,6 +1412,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: xyz(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl)                  :: res(4)
 
 real(kind=sgl)                  :: q, x(21), ft, t
@@ -1458,6 +1471,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: xyz(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl)                  :: res(4)
 
 real(kind=dbl)                  :: q, x(21), ft, t
@@ -1516,6 +1530,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: xyz(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl)                  :: res(4)
 
 real(kind=sgl)                  :: q(3)
@@ -1548,6 +1563,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: xyz(3)
 integer(kind=irg),INTENT(INOUT):: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl)                  :: res(4)
 
 real(kind=dbl)                  :: q(3)
@@ -1585,6 +1601,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)               :: xyz(3)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl),INTENT(IN),OPTIONAL      :: Radius
 real(kind=sgl)                          :: res(2)
 
@@ -1626,6 +1643,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: xyz(3)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl),INTENT(IN),OPTIONAL      :: Radius
 real(kind=dbl)                          :: res(2)
 
@@ -1669,6 +1687,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl),INTENT(IN)               :: Radius
 real(kind=sgl),INTENT(IN),OPTIONAL 		:: quat(4)
 real(kind=sgl)                          :: res(3)
@@ -1720,6 +1739,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl),INTENT(IN)               :: Radius
 real(kind=dbl),INTENT(IN),OPTIONAL 		:: quat(4)
 real(kind=dbl)                          :: res(3)
@@ -1775,6 +1795,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)               :: xyz(3)
 integer(kind=irg),INTENT(INOUT) :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl),INTENT(IN),OPTIONAL      :: Radius
 real(kind=sgl)                          :: res(2), q
 
@@ -1823,6 +1844,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: xyz(3)
 integer(kind=irg),INTENT(INOUT) :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl),INTENT(IN),OPTIONAL      :: Radius
 real(kind=dbl)                          :: res(2), q
 
@@ -1873,6 +1895,7 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=sgl),INTENT(IN),OPTIONAL      :: Radius
 real(kind=sgl)                          :: res(3), q, tr
 
@@ -1913,6 +1936,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT) :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl),INTENT(IN),OPTIONAL      :: Radius
 real(kind=dbl)                          :: res(3), q, tr
 
@@ -2095,6 +2119,7 @@ use symmetry
 IMPLICIT NONE
 
 type(symdata2D),INTENT(INOUT)   :: TDPG
+!f2py intent(in,out) ::  TDPG
 integer(kind=irg),INTENT(IN)    :: ipx
 integer(kind=irg),INTENT(IN)    :: ipy
 integer(kind=irg),INTENT(IN)    :: isym
@@ -2178,7 +2203,7 @@ use error
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(IN)    :: ipx
 integer(kind=irg),INTENT(IN)    :: ipy
 integer(kind=irg),INTENT(IN)    :: ipz
@@ -2423,6 +2448,7 @@ use local
 use io
 
 real(kind=dbl),INTENT(INOUT)        :: dc(3)
+!f2py intent(in,out) ::  dc
 real(kind=dbl),INTENT(IN)           :: scl
 integer(kind=irg),INTENT(IN)        :: npx
 integer(kind=irg),INTENT(IN)        :: npy
@@ -2493,6 +2519,7 @@ recursive function InterpolationLambert2DSingle(dc, m, npx) result(res)
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(INOUT)            :: dc(3)
+!f2py intent(in,out) ::  dc
 integer(kind=irg),INTENT(IN)            :: npx 
 real(kind=sgl),INTENT(IN)               :: m(-npx:npx,-npx:npx)
 real(kind=sgl)                          :: res
@@ -2531,6 +2558,7 @@ recursive function InterpolationLambert2DDouble(dc, m, npx) result(res)
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)            :: dc(3)
+!f2py intent(in,out) ::  dc
 integer(kind=irg),INTENT(IN)            :: npx 
 real(kind=dbl),INTENT(IN)               :: m(-npx:npx,-npx:npx)
 real(kind=dbl)                          :: res
@@ -2570,6 +2598,7 @@ recursive function InterpolationLambert3DSingle(dc, m, npx, nn) result(res)
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)            :: dc(3)
+!f2py intent(in,out) ::  dc
 integer(kind=irg),INTENT(IN)            :: npx 
 integer(kind=irg),INTENT(IN)            :: nn
 real(kind=sgl),INTENT(IN)               :: m(-npx:npx,-npx:npx, nn)
@@ -2611,6 +2640,7 @@ recursive function InterpolationLambert3DInteger(dc, m, npx, nn) result(res)
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)            :: dc(3)
+!f2py intent(in,out) ::  dc
 integer(kind=irg),INTENT(IN)            :: npx 
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: m(nn,-npx:npx,-npx:npx)
@@ -2652,6 +2682,7 @@ recursive function InterpolationLambert4DSingle(dc, m, npx, nn) result(res)
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)            :: dc(3)
+!f2py intent(in,out) ::  dc
 integer(kind=irg),INTENT(IN)            :: npx 
 integer(kind=irg),INTENT(IN)            :: nn
 real(kind=sgl),INTENT(IN)               :: m(-npx:npx,-npx:npx, 1, nn)
@@ -2694,6 +2725,7 @@ recursive function InterpolationLambert4DDouble4b4(dc, m, npx) result(res)
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)            :: dc(3)
+!f2py intent(in,out) ::  dc
 integer(kind=irg),INTENT(IN)            :: npx 
 real(kind=dbl),INTENT(IN)               :: m(4,4,-npx:npx,-npx:npx)
 real(kind=dbl)                          :: res(4,4)
@@ -2748,7 +2780,9 @@ integer(kind=irg),INTENT(IN)  :: nix
 integer(kind=irg),INTENT(IN)  :: niy
 integer(kind=irg),INTENT(IN)  :: w
 real(kind=sgl),INTENT(INOUT)  :: mLPNH(-npx:npx, -npx:npx)
+!f2py intent(in,out) ::  mLPNH
 real(kind=sgl),INTENT(INOUT)  :: mLPSH(-npx:npx, -npx:npx)
+!f2py intent(in,out) ::  mLPSH
 
 real(kind=sgl)                :: xyz(3), vmf 
 integer(kind=irg)             :: i, j, ix, iy
@@ -2796,7 +2830,9 @@ recursive function HemiCheck(ix, iy, npx, North) result(xyz)
 IMPLICIT NONE 
 
 integer(kind=irg),INTENT(INOUT)     :: ix
+!f2py intent(in,out) ::  ix
 integer(kind=irg),INTENT(INOUT)     :: iy
+!f2py intent(in,out) ::  iy
 integer(kind=irg),INTENT(IN)        :: npx
 logical,INTENT(IN)                  :: North
 real(kind=sgl)                      :: xyz(3)

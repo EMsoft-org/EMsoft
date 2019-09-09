@@ -100,6 +100,7 @@ IMPLICIT NONE
 
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDAngleType),pointer              :: angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
@@ -219,6 +220,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumType),pointer         :: acc
 character(fnlen),INTENT(IN),OPTIONAL    :: efile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -231,7 +233,7 @@ character(fnlen),allocatable            :: stringarray(:)
 
 integer(kind=irg),allocatable           :: acc_e(:,:,:),acc_z(:,:,:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
@@ -248,7 +250,7 @@ energyfile = EMsoft_toNativePath(energyfile)
 call h5fis_hdf5_f(energyfile, stat, hdferr)
 
 if (stat) then
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.
@@ -310,7 +312,7 @@ groupname = SC_EMheader
 
 ! next we need to make sure that this file has Monte Carlo data in it...
   datagroupname = 'MCfoil'
-  call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
   if (.not.g_exists) then
     call FatalError('TKDreadMCfile','This HDF file does not contain any Monte Carlo data')
   end if
@@ -400,6 +402,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -418,9 +421,9 @@ integer(HSIZE_T)                        :: dims(1), dims4(4)
 character(fnlen)                        :: groupname, dataset, masterfile, datagroupname
 character(fnlen),allocatable            :: stringarray(:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -462,7 +465,7 @@ groupname = SC_EMData
   hdferr = HDF_openGroup(groupname, HDF_head)
 
   datagroupname = 'TKDmaster'
-  call H5Lexists_f(HDF_head%objectID,trim(datagroupname),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
   if (.not.g_exists) then
     call FatalError('TKDreadMasterfile','This HDF file does not contain any TKD master pattern data')
   end if
@@ -560,6 +563,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(TKDoverlapNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(TKDMasterType),pointer             :: master
 character(fnlen),INTENT(IN),OPTIONAL    :: mfile
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -577,9 +581,9 @@ integer(HSIZE_T)                        :: dims(1), dims4(4)
 character(fnlen)                        :: groupname, dataset, masterfile
 character(fnlen),allocatable            :: stringarray(:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -712,6 +716,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumType),pointer         :: acc
 type(TKDMasterType),pointer             :: master
 logical,INTENT(IN),OPTIONAL             :: verbose
@@ -1086,6 +1091,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDFullDetector),pointer           :: scintillator
 logical,INTENT(IN),OPTIONAL             :: verbose
 

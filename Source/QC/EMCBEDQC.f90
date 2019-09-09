@@ -135,7 +135,7 @@ logical                                   :: f_exists
 real(kind=sgl),allocatable                :: intensity(:,:,:)
 integer(kind=irg)                         :: nthreads, TID
 real(kind=sgl),parameter                  :: DtoR = cPi/180.0
-type(HDFobjectStackType),pointer          :: HDF_head
+type(HDFobjectStackType)                  :: HDF_head
 character(fnlen)                          :: dataset, instring, outname, groupname
 character(fnlen)                          :: mode, qxtalname
 integer(HSIZE_T)                          :: dims3(3), cnt3(3)
@@ -298,7 +298,7 @@ call timestamp(datestring=dstr, timestring=tstre)
 
 ! HDF5 I/O
 ! write out the data to the file
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)

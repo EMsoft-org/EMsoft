@@ -80,6 +80,7 @@ use error
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: xtalname
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
@@ -287,6 +288,7 @@ use symmetry
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+!f2py intent(in,out) ::  tkdnl
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
@@ -486,6 +488,7 @@ use constants
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: xtalname
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
@@ -668,6 +671,7 @@ use constants
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+!f2py intent(in,out) ::  tkdnl
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
@@ -848,9 +852,11 @@ use error
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: xtalname(5)
 integer(kind=irg),INTENT(IN)                        :: ipar(4)
 real(kind=sgl),INTENT(INOUT)                        :: eangles(3,ipar(1),ipar(2))
+!f2py intent(in,out) ::  eangles
 integer(kind=irg),INTENT(IN)                        :: phaseID(ipar(1))
 real(kind=sgl),INTENT(IN)                           :: dplist(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: OSMlist(ipar(1),ipar(2))
@@ -1046,6 +1052,7 @@ use constants
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: xtalname(5)
 integer(kind=irg),INTENT(IN)                        :: ipar(4)
 real(kind=sgl),INTENT(IN)                           :: eangles(3,ipar(1),ipar(2))

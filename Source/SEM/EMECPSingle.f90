@@ -165,7 +165,7 @@ type(ECPLargeAccumType),pointer         :: acc
 
 logical                             :: verbose, usehex, switchmirror
 
-type(unitcell), pointer             :: cell
+type(unitcell)                      :: cell
 type(gnode),save                    :: rlp
 type(DynType),save                  :: Dyn
 type(kvectorlist), pointer          :: kheadcone,ktmpcone ! linked list for incident wave vectors for individual pattern
@@ -173,7 +173,7 @@ real(kind=dbl),allocatable          :: ecpattern(:,:)
 type(BetheParameterType)            :: BetheParameters
 type(reflisttype),pointer           :: reflist, firstw,rltmp
 integer(kind=irg)                   :: nthreads,TID,ix,hdferr,num_el,etotal, nlines,nsx,nsy,SelE
-type(HDFobjectStackType),pointer    :: HDF_head
+type(HDFobjectStackType)            :: HDF_head
 character(fnlen)                    :: dataset, instring
 character(fnlen)                    :: mode
 integer(HSIZE_T)                    :: dims4(4), cnt4(4), offset4(4), dims2(2), cnt2(2), offset2(2)
@@ -181,7 +181,7 @@ integer(HSIZE_T)                    :: dims4(4), cnt4(4), offset4(4), dims2(2), 
 
 !$OMP THREADPRIVATE(rlp)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call CPU_TIME(tstart)
@@ -189,7 +189,7 @@ call CPU_TIME(tstart)
 gzero = 1
 frac = 0.05
 
-allocate(cell)
+!allocate(cell)        
 
 !=============================================================
 !read Monte Carlo output file and extract necessary parameters
@@ -206,8 +206,8 @@ call  ECPSinglereadMCfile(ecpnl, acc, verbose=.TRUE.)
 !=============================================
 !=============================================
 ! crystallography section
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 ! load the crystal structure and compute the Fourier coefficient lookup table
 verbose = .TRUE.
@@ -318,7 +318,7 @@ allocate(mLPNH(1:ecpnl%npix,1:ecpnl%npix),stat=istat)
 mLPNH = 0.0
 
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
@@ -478,7 +478,7 @@ end do beamloop
 ! and here is where the major changes are for this version 5.0: all output now in HDF5 format
 call timestamp(timestring=tstre)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
 call h5open_EMsoft(hdferr)
 

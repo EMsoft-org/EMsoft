@@ -80,7 +80,7 @@ logical,save,private                                :: up1wdLeven, up1halfshift
 logical,save,private                                :: up2wdLeven, up2halfshift
 integer(kind=ill),save,private                      :: offset
 
-type(HDFobjectStackType),pointer,save,private       :: pmHDF_head 
+type(HDFobjectStackType)        ,save,private       :: pmHDF_head 
 
 contains
 
@@ -309,7 +309,7 @@ select case (itype)
 ! patterns stored in it... Hence this option is currently non-existent.
 
     case(4, 7)  ! "TSLHDF", "EMEBSD"
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -323,7 +323,7 @@ select case (itype)
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
     case(8)  !  "BrukerHDF"
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
         ! open the file
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -404,6 +404,7 @@ integer(kind=irg),INTENT(IN)            :: funit
 character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
+!f2py intent(in,out) ::  exppatarray
 integer(kind=irg),OPTIONAL,INTENT(IN)   :: ROI(4)
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
@@ -642,6 +643,7 @@ integer(kind=irg),INTENT(IN)            :: funit
 character(fnlen),INTENT(IN)             :: inputtype
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppat(patsz)
+!f2py intent(in,out) ::  exppat
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L), z
@@ -852,7 +854,7 @@ select case (itype)
 
     case(4, 7)  ! "TSLHDF" "EMEBSD"
         call HDF_pop(pmHDF_head,.TRUE.)
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
 
     case(5)  ! "OxfordBinary"
         close(unit=funit,status='keep')
@@ -862,7 +864,7 @@ select case (itype)
 
     case(8)  !  "BrukerHDF"
         call HDF_pop(pmHDF_head,.TRUE.)
-        nullify(pmHDF_head)
+        nullify(pmHDF_head%next)
         deallocate(semix, semiy)
 
     case default 
@@ -959,7 +961,9 @@ real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
 integer(kind=irg),INTENT(IN)                :: correctsize
 integer(kind=irg),INTENT(IN)                :: totnumexpt
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+!f2py intent(in,out) ::  epatterns
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
+!f2py intent(in,out) ::  exptIQ
 
 logical                                     :: ROIselected, f_exists
 character(fnlen)                            :: fname
@@ -1248,7 +1252,9 @@ real(kind=sgl),INTENT(IN)                   :: masklin(binx*biny)
 integer(kind=irg),INTENT(IN)                :: correctsize
 integer(kind=irg),INTENT(IN)                :: totnumexpt
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: epatterns(correctsize, totnumexpt)
+!f2py intent(in,out) ::  epatterns
 real(kind=sgl),INTENT(INOUT),OPTIONAL       :: exptIQ(totnumexpt)
+!f2py intent(in,out) ::  exptIQ
 
 logical                                     :: ROIselected, f_exists
 character(fnlen)                            :: fname

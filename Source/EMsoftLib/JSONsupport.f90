@@ -140,6 +140,7 @@ recursive subroutine JSON_failtest(error_cnt)
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT)         :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 if (json_failed().eqv..TRUE.) then
   call json_print_error_message(error_unit)
@@ -170,10 +171,12 @@ recursive subroutine JSON_writeNMLintegers(inp, io_int, intlist, n_int, error_cn
 IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer                :: inp
+!f2py intent(in,out) ::  inp
 integer(kind=irg),INTENT(IN)                          :: io_int(n_int)
 character(20),INTENT(IN)                              :: intlist(n_int)
 integer(kind=irg),INTENT(IN)                          :: n_int
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 integer(kind=irg)                                     :: i
 character(fnlen)                                      :: dataset
@@ -207,6 +210,7 @@ recursive subroutine JSON_writeNMLreals(inp, io_real, reallist, n_real, error_cn
 IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer                :: inp
+!f2py intent(in,out) ::  inp
 real(kind=sgl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
 integer(kind=irg),INTENT(IN)                          :: n_real
@@ -214,6 +218,7 @@ integer(kind=irg),INTENT(IN)                          :: n_real
 integer(kind=irg)                                     :: hdferr, i
 character(fnlen)                                      :: dataset
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 do i=1,n_real
   dataset = reallist(i)
@@ -244,6 +249,7 @@ recursive subroutine JSON_writeNMLdoubles(inp, io_real, reallist, n_real, error_
 IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer                :: inp
+!f2py intent(in,out) ::  inp
 real(kind=dbl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
 integer(kind=irg),INTENT(IN)                          :: n_real
@@ -251,6 +257,7 @@ integer(kind=irg),INTENT(IN)                          :: n_real
 integer(kind=irg)                                     :: hdferr, i
 character(fnlen)                                      :: dataset
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 do i=1,n_real
   dataset = reallist(i)
@@ -281,8 +288,10 @@ recursive subroutine JSON_initpointers(p, inp, jsonname, namelistname, error_cnt
 IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer  :: p, inp
+!f2py intent(in,out) ::  p, inp
 character(fnlen),INTENT(IN)             :: jsonname, namelistname
 integer(kind=irg),INTENT(INOUT)         :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 ! initialize the json state variables
 error_cnt = 0
@@ -320,8 +329,10 @@ use io
 IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer  :: p, inp
+!f2py intent(in,out) ::  p, inp
 character(fnlen),INTENT(IN)             :: jsonname
 integer(kind=irg),INTENT(INOUT)         :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 character(fnlen)                        :: fname
 
@@ -371,6 +382,7 @@ IMPLICIT NONE
 type(KosselNameListType),INTENT(IN)                   :: knl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -449,6 +461,7 @@ IMPLICIT NONE
 type(KosselMasterNameListType),INTENT(IN)             :: knl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -519,8 +532,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(MCNameListType),INTENT(INOUT)                    :: mcnl
+!f2py intent(in,out) ::  mcnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -594,8 +609,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
+!f2py intent(in,out) ::  mcnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -688,8 +705,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(MCCLMultiLayerNameListType),INTENT(INOUT)        :: mcnl
+!f2py intent(in,out) ::  mcnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -770,8 +789,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
+!f2py intent(in,out) ::  emnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -845,8 +866,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(EBSDclusterNameListType),INTENT(INOUT)           :: emnl
+!f2py intent(in,out) ::  emnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -906,8 +929,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(ECPMasterNameListType),INTENT(INOUT)             :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -984,8 +1009,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
+!f2py intent(in,out) ::  enl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1091,8 +1118,10 @@ use error
 IMPLICIT NONE
 
 type(ECPNameListType),INTENT(INOUT)                   :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 logical,INTENT(IN)                                    :: twolayerflag
 
 type(json_value),pointer                              :: p, inp
@@ -1236,8 +1265,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(LACBEDNameListType),INTENT(INOUT)                :: lacbednl
+!f2py intent(in,out) ::  lacbednl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1311,8 +1342,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(ECPpatternNameListType),INTENT(INOUT)            :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1375,8 +1408,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(PEDkinNameListType),INTENT(INOUT)                :: pednl
+!f2py intent(in,out) ::  pednl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1446,8 +1481,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(PEDZANameListType),INTENT(INOUT)                 :: pednl
+!f2py intent(in,out) ::  pednl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1526,8 +1563,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(ECCINameListType),INTENT(INOUT)                  :: eccinl
+!f2py intent(in,out) ::  eccinl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1627,8 +1666,10 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(RFZNameListType),INTENT(INOUT)                   :: rfznl
+!f2py intent(in,out) ::  rfznl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1702,8 +1743,10 @@ use local
 IMPLICIT NONE
 
 type(DictIndxOpenCLListType),INTENT(INOUT)            :: dictindxnl
+!f2py intent(in,out) ::  dictindxnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_value),pointer                              :: p, inp
 
@@ -1789,8 +1832,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 integer(kind=irg),INTENT(INOUT)         :: ival
+!f2py intent(in,out) ::  ival
 integer(kind=irg),INTENT(IN)            :: dval
 
 logical                                 :: found
@@ -1829,8 +1874,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 integer(kind=irg),INTENT(INOUT)         :: ivec(n)
+!f2py intent(in,out) ::  ivec
 integer(kind=irg),INTENT(IN)            :: dvec(n)
 integer(kind=irg),INTENT(IN)            :: n
 
@@ -1873,8 +1920,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 real(kind=sgl),INTENT(INOUT)            :: rval
+!f2py intent(in,out) ::  rval
 real(kind=sgl),INTENT(IN)               :: dval
 
 logical                                 :: found
@@ -1916,8 +1965,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 real(kind=sgl),INTENT(INOUT)            :: rvec(n)
+!f2py intent(in,out) ::  rvec
 real(kind=sgl),INTENT(IN)               :: dvec(n)
 integer(kind=irg),INTENT(IN)            :: n
 
@@ -1960,8 +2011,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 real(kind=dbl),INTENT(INOUT)            :: rval
+!f2py intent(in,out) ::  rval
 real(kind=dbl),INTENT(IN)               :: dval
 
 logical                                 :: found
@@ -2003,8 +2056,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 real(kind=dbl),INTENT(INOUT)            :: rvec(n)
+!f2py intent(in,out) ::  rvec
 real(kind=dbl),INTENT(IN)               :: dvec(n)
 integer(kind=irg),INTENT(IN)            :: n
 
@@ -2047,8 +2102,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 character(fnlen),INTENT(INOUT)          :: sval
+!f2py intent(in,out) ::  sval
 character(fnlen),INTENT(IN)             :: dval
 
 logical                                 :: found
@@ -2090,8 +2147,10 @@ use io
 IMPLICIT NONE
 
 type(json_file),INTENT(INOUT)           :: json
+!f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
 logical,INTENT(INOUT)                   :: sval
+!f2py intent(in,out) ::  sval
 logical,INTENT(IN)                      :: dval
 
 logical                                 :: found, cval
@@ -2218,9 +2277,11 @@ use, intrinsic :: iso_fortran_env, only: wp => real64
 
 IMPLICIT NONE
 
-type(unitcell),pointer,INTENT(IN)                     :: cell
+type(unitcell)        ,INTENT(IN)                     :: cell
 type(defecttype),INTENT(INOUT)                        :: defects
+!f2py intent(in,out) ::  defects
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 logical,INTENT(IN),OPTIONAL                           :: verbose
 
 type(json_value),pointer                              :: jval, child, child2, child3
@@ -2394,10 +2455,12 @@ use, intrinsic :: iso_fortran_env, only: wp => real64
 
 IMPLICIT NONE
 
-type(unitcell),pointer,INTENT(IN)                     :: cell
+type(unitcell)        ,INTENT(IN)                     :: cell
 character(fnlen),INTENT(IN)                           :: jsonname
 type(defecttype),INTENT(INOUT)                        :: defects
+!f2py intent(in,out) ::  defects
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 logical,INTENT(IN),OPTIONAL                           :: verbose
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
@@ -2756,8 +2819,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(KosselNameListType),INTENT(INOUT)                :: knl
+!f2py intent(in,out) ::  knl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -2844,8 +2909,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(KosselMasterNameListType),INTENT(INOUT)          :: knl
+!f2py intent(in,out) ::  knl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -2928,8 +2995,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(reflectorNameListType),INTENT(INOUT)             :: rnl
+!f2py intent(in,out) ::  rnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -2993,8 +3062,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(MCNameListType),INTENT(INOUT)                    :: mcnl
+!f2py intent(in,out) ::  mcnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -3083,8 +3154,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
+!f2py intent(in,out) ::  mcnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -3184,8 +3257,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(MCCLMultiLayerNameListType),INTENT(INOUT)        :: mcnl
+!f2py intent(in,out) ::  mcnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -3281,8 +3356,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
+!f2py intent(in,out) ::  emnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -3355,8 +3432,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(EBSDclusterNameListType),INTENT(INOUT)           :: emnl
+!f2py intent(in,out) ::  emnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -3428,8 +3507,10 @@ use NameListHandlers
 IMPLICIT NONE
 
 type(ECPMasterNameListType),INTENT(INOUT)             :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -3512,8 +3593,10 @@ use error
 IMPLICIT NONE
 
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
+!f2py intent(in,out) ::  enl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 
@@ -3632,8 +3715,10 @@ use error
 IMPLICIT NONE
 
 type(EBSDoverlapNameListType),INTENT(INOUT)           :: enl
+!f2py intent(in,out) ::  enl
 character(fnlen),INTENT(IN)                           :: jsonname
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
+!f2py intent(in,out) ::  error_cnt
 
 type(json_file)                                       :: json    !the JSON structure read from the file:
 

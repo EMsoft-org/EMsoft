@@ -139,7 +139,7 @@ type(LACBEDNameListType),INTENT(INOUT)    :: cbednl
 character(fnlen),INTENT(IN)               :: progname
 character(fnlen),INTENT(IN)               :: nmlfile
 
-type(unitcell),pointer                    :: cell
+type(unitcell)                            :: cell
 type(reflisttype),pointer                 :: reflist, firstw, nexts, rl, mainreflist, rltmpa, rltmpb
 type(BetheParameterType)                  :: BetheParameters
 type(gnode),save                          :: rlp
@@ -173,7 +173,7 @@ logical                                   :: f_exists, firstloop, insert=.TRUE.
 real(kind=sgl),allocatable                :: intensity(:,:,:), thick(:), inten(:,:), slice(:,:,:,:)
 integer(kind=irg)                         :: nthreads, TID, j, jmax, jmin, NUMTHREADS, it, TIFF_nx, TIFF_ny, dgn, icnt, ih, numir
 real(kind=sgl),parameter                  :: DtoR = cPi/180.0
-type(HDFobjectStackType),pointer          :: HDF_head
+type(HDFobjectStackType)                  :: HDF_head
 character(fnlen)                          :: dataset, instring, outname, groupname, fname, TIFF_filename, tmpfile
 character(fnlen)                          :: mode, xtalname
 integer(HSIZE_T)                          :: dims3(3), cnt3(3) 
@@ -197,8 +197,8 @@ character(2)                              :: str
 call timestamp(datestring=dstr, timestring=tstrb)
 call system_clock(tstart, clock_rate)
 
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 voltage         = cbednl%voltage
 minten          = cbednl%minten
@@ -635,7 +635,7 @@ call Message(' ')
 !===============================
 ! HDF5 I/O
 ! write out the data to the file
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)

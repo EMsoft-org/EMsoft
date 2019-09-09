@@ -110,6 +110,7 @@ IMPLICIT NONE
 type(TDQCreflisttype),pointer       :: listroot 
 type(TDQCreflisttype),pointer       :: rltail
 integer(kind=irg),INTENT(INOUT)     :: nref
+!f2py intent(in,out) ::  nref
 
 integer(kind=irg)                   :: istat
 
@@ -160,6 +161,7 @@ type(TDQCreflisttype),pointer     :: rltail
 type(TDQCreflisttype),pointer     :: listroot
 type(TDQCStructureType),pointer   :: QCcell
 integer(kind=irg),INTENT(INOUT)   :: nref
+!f2py intent(in,out) ::  nref
 integer(kind=irg),INTENT(IN)      :: gg(5)
 
 integer(kind=irg)                 :: istat, QCindex
@@ -293,6 +295,7 @@ IMPLICIT NONE
 type(QCreflisttype),pointer       :: listroot 
 type(QCreflisttype),pointer       :: rltail
 integer(kind=irg),INTENT(INOUT)   :: nref
+!f2py intent(in,out) ::  nref
 
 integer(kind=irg)  :: istat
 
@@ -342,6 +345,7 @@ type(QCreflisttype),pointer     :: rltail
 type(QCreflisttype),pointer     :: listroot
 type(QCStructureType),pointer   :: QCcell
 integer(kind=irg),INTENT(INOUT) :: nref
+!f2py intent(in,out) ::  nref
 integer(kind=irg),INTENT(IN)    :: QCindex               !< QC Miller indices of reflection to be added to list
 integer(kind=irg),INTENT(IN)    :: gg(6)
 
@@ -408,9 +412,11 @@ IMPLICIT NONE
 type(TDQCStructureType),pointer                 :: QCcell
 type(TDQCreflisttype),pointer                   :: listroot
 type(BetheParameterType),INTENT(INOUT)          :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 real(kind=sgl),INTENT(IN)                       :: FN(3)
 real(kind=sgl),INTENT(IN)                       :: k(3)
 integer(kind=irg),INTENT(INOUT)                 :: nref
+!f2py intent(in,out) ::  nref
 logical,INTENT(IN),OPTIONAL                     :: verbose
 
 integer(kind=irg)                               :: imh, imhz, gg(5), i, minholz, RHOLZ, im, istat, N, &
@@ -515,9 +521,11 @@ IMPLICIT NONE
 type(QCStructureType),pointer                   :: QCcell
 type(QCreflisttype),pointer                     :: listroot
 type(BetheParameterType),INTENT(INOUT)          :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 real(kind=sgl),INTENT(IN)                       :: FN(3)
 real(kind=sgl),INTENT(IN)                       :: k(3)
 integer(kind=irg),INTENT(INOUT)                 :: nref
+!f2py intent(in,out) ::  nref
 logical,INTENT(IN),OPTIONAL                     :: verbose
 
 integer(kind=irg)                               :: imh, gg(6), i, minholz, RHOLZ, im, istat, N, &

@@ -58,6 +58,7 @@
 !> @date  11/01/16 MDG 1.9 fixed dimensional error in hyperslab read routines
 !> @date  12/14/16 MDG 2.0 added logical switch to flag DREAM.3D-generated files which require different string handling (fixed length vs variable length)
 !> @date  12/16/16 MDG 3.0 completely reworked HDF error handling; introduced h5open_EMsoft to initialize the fortran HDF interface
+!> @date  08/30/19 MDG 4.0 modified HDF_head definition for python f90wrap compatibility
 !--------------------------------------------------------------------------
 module HDFsupport
 
@@ -66,11 +67,33 @@ use typedefs
 use HDF5
 use stringconstants
 
+! THIS COMMENT NO LONGER APPLIES; KEPT FOR HISTORICAL REASONS
 !--------------------------------------------------------------------------
 !- declared here to allow for a split of the EMSoftLib into 2 dylibs-------
 !- this is needed to avoid a conflict between the HDF5 dylibs needed by ---
 !- DREAM.3D and the static HDF5 libraries used by EMSoft.               ---
 !--------------------------------------------------------------------------
+
+! COMMENT ADDED FOR 4.3 EMsoft release
+! ====================================
+! With the addition of python f90wrap support, the use of the HDF_head variable 
+! had to be changed slightly. Up to this point, HDF_head was always defined as a 
+! pointer linked list.  Pointers are not allowed as function/subroutine arguments
+! in the f90wrap implementation, so we change the top HDF_head variable to be 
+! a regular variable of type HDFobjectStackType, and it will always exist as 
+! soon as it is defined.  The top level is simply not used, ever, other than to
+! point to the real top level via HDF_head%next.  
+!
+! This means that the occurence of the following line:
+! type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+! must be replaced EVERYWHERE by 
+! type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+! and any command
+! nullify(HDF_head%next)
+! must be replaced by 
+! nullify(HDF_head%next)
+!
+
 
 ! type definition for HDF-based output
 type HDFobjectStackType   ! this is a push-pop stack to keep track of the open objects
@@ -107,9 +130,10 @@ use local
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT) :: hdferr
+!f2py intent(in,out) ::  hdferr
 integer(kind=irg)               :: printonoff
 
-! write (*,*) '>>>>>>>>>>>>>>>  OPENING HDF INTERFACE !!!!!!!!!'
+if (EMsoft_getEMsoftHDFtest().eqv..TRUE.) write (*,*) '>>>>>>>>>>>>>>>  OPENING HDF INTERFACE !!!!!!!!!'
 ! open the HDF fortran interface
 call h5open_f(hdferr)
 call HDFerror_check('h5open_EMsoft:h5open_f', hdferr)
@@ -141,8 +165,9 @@ use local
 IMPLICIT NONE
 
 integer(kind=irg),INTENT(INOUT) :: hdferr
+!f2py intent(in,out) ::  hdferr
 
-! write (*,*) '>>>>>>>>>>>>>>>  CLOSING HDF INTERFACE !!!!!!!!!'
+if (EMsoft_getEMsoftHDFtest().eqv..TRUE.) write (*,*) '>>>>>>>>>>>>>>>  CLOSING HDF INTERFACE !!!!!!!!!'
 
 ! turn standard error reporting on
 !call h5eset_auto_f(1,hdferr)
@@ -237,8 +262,10 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(11),INTENT(INOUT)                           :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                              :: tstrb
 character(15),INTENT(IN)                              :: tstre
 character(fnlen),INTENT(IN)                           :: prn
@@ -266,7 +293,7 @@ end if
 ! version number /EMheader/Version 'character'
 line = 'Version'
 line2(1) = trim(EMsoft_getEMsoftversion())
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -280,7 +307,7 @@ end if
 ! execution data /EMheader/Date 'character'
 line = 'Date'
 line2(1) = dstr
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -294,7 +321,7 @@ end if
 ! start time /EMheader/StartTime 'character'
 line = 'StartTime'
 line2(1) = dstr//', '//tstrb
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -310,7 +337,7 @@ end if
 call timestamp(datestring=dstr)
 line = 'StopTime'
 line2(1) = dstr//', '//tstre
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -324,7 +351,7 @@ end if
 ! program name /EMheader/ProgramName 'character'
 line = 'ProgramName'
 line2(1) = prn 
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -338,7 +365,7 @@ end if
 ! user name /EMheader/UserName 'character'
 line = 'UserName'
 line2(1) = EMsoft_getUsername()
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -352,7 +379,7 @@ end if
 ! user location /EMheader/UserLocation 'character'
 line = 'UserLocation'
 line2(1) = EMsoft_getUserlocation()
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -366,7 +393,7 @@ end if
 ! user email /EMheader/UserEmail 'character'
 line = 'UserEmail'
 line2(1) = EMsoft_getUseremail()
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -388,7 +415,7 @@ do i=1,nlen
 end do 
 line = 'HostName'
 line2(1) = c
-call H5Lexists_f(HDF_head%objectID,trim(line),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(line),g_exists, hdferr)
 call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
@@ -433,7 +460,8 @@ end subroutine HDF_writeEMheader
 !> @param oName name
 !> @param verbose (optional) 
 !
-!> @date 03/17/15  MDG 1.0 original
+!> @date 03/17/15 MDG 1.0 original
+!> @date 08/30/19 MDG 2.0 modified HDF_head definition for python f90wrap compatibility
 !--------------------------------------------------------------------------
 recursive subroutine HDF_push(HDF_head, oT, oID, oName, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_push
@@ -443,7 +471,8 @@ use io
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer        :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(LEN=1),INTENT(IN)                           :: oT
 integer(HID_T),INTENT(IN)                             :: oID 
 character(fnlen),INTENT(IN)                           :: oName
@@ -452,12 +481,12 @@ logical,INTENT(IN),OPTIONAL                           :: verbose
 type(HDFobjectStackType),pointer                      :: node
 integer(kind=irg)                                     :: istat
 
-! if the stack doesn't exist yet, create it.
-if (.not.associated(HDF_head)) then 
-   allocate(HDF_head,stat=istat)                        ! allocate new value
+! the stack always exists but we never use the top level
+if (.not.associated(HDF_head%next)) then 
+   allocate(HDF_head%next,stat=istat)                        ! allocate new value
    call HDFerror_check('HDF_push: unable to allocate HDF_head pointer', istat, .TRUE.)
 
-   nullify(HDF_head%next)                               ! nullify next in tail value
+   nullify(HDF_head%next%next)                               ! nullify next in list
    if (PRESENT(verbose)) then 
      if (verbose) call Message('  -> creating HDF_head linked list', frm = "(A)")
    end if
@@ -465,14 +494,14 @@ else
    allocate(node,stat=istat)                        ! allocate new value
    call HDFerror_check('HDF_push: unable to allocate node pointer', istat, .TRUE.)
 
-   node%next => HDF_head
-   HDF_head => node
+   node%next => HDF_head%next
+   HDF_head%next => node
 end if
 
 ! set the values
-HDF_head % objectType = oT
-HDF_head % objectID = oID
-HDF_head % objectname = trim(oName)
+HDF_head%next % objectType = oT
+HDF_head%next % objectID = oID
+HDF_head%next % objectname = trim(oName)
 
 if (present(verbose)) call HDF_stackdump(HDF_head)
 
@@ -489,8 +518,9 @@ end subroutine HDF_push
 !> @param HDF_head top of the current stack
 !> @param closeall (optional) close all open objects
 !
-!> @date 03/17/15  MDG 1.0 original
-!> @date 04/15/15  MDG 1.1 corrected off-by-one error in linked list, causing file to be improperly closed
+!> @date 03/17/15 MDG 1.0 original
+!> @date 04/15/15 MDG 1.1 corrected off-by-one error in linked list, causing file to be improperly closed
+!> @date 08/30/19 MDG 2.0 modified HDF_head definition for python f90wrap compatibility
 !--------------------------------------------------------------------------
 recursive subroutine HDF_pop(HDF_head, closeall, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_pop
@@ -500,7 +530,8 @@ use io
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),optional                             :: closeall
 logical,INTENT(IN),optional                             :: verbose
 
@@ -511,25 +542,25 @@ nullify(tmp)
 
 if (PRESENT(closeall)) then  
 ! this would be called if an error arises that forces a complete shutdown of the program, or at the end of a regular program
-  do while (associated(HDF_head)) 
+  do while (associated(HDF_head%next)) 
 ! close the current object 
-    error = HDF_close_level(HDF_head % objectType, HDF_head % objectID)
-    call HDFerror_check('HDF_pop:unable to close requested level for object type '//HDF_head%objectType, error,.TRUE.)
+    error = HDF_close_level(HDF_head%next % objectType, HDF_head%next % objectID)
+    call HDFerror_check('HDF_pop:unable to close requested level for object type '//HDF_head%next%objectType, error,.TRUE.)
 
 ! and re-point the stack head
-    tmp => HDF_head
-    HDF_head => HDF_head % next  
+    tmp => HDF_head%next
+    HDF_head%next => HDF_head % next % next
 ! delete the old entry
     deallocate(tmp)
   end do
 else
 ! close the current object 
-  error = HDF_close_level(HDF_head % objectType, HDF_head % objectID)
-  call HDFerror_check('HDF_pop:unable to close requested level for object type '//HDF_head%objectType, error,.TRUE.)
+  error = HDF_close_level(HDF_head%next % objectType, HDF_head%next % objectID)
+  call HDFerror_check('HDF_pop:unable to close requested level for object type '//HDF_head%next%objectType, error,.TRUE.)
 
 ! and re-point the stack head
-  tmp => HDF_head
-  HDF_head => HDF_head % next  
+  tmp => HDF_head%next
+  HDF_head%next => HDF_head % next % next
 ! delete the old entry
   deallocate(tmp)
 
@@ -606,12 +637,12 @@ use io
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(IN),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(IN)                  :: HDF_head
 
 type(HDFobjectStackType),pointer                     :: tmp
 integer(kind=irg)                                    :: io_int(1)
 
-tmp => HDF_head
+tmp => HDF_head % next
 if (.not.associated(tmp)) then
   call WriteValue('Stack is empty','')
 
@@ -745,7 +776,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: HDFname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: file_id ! file identifier
@@ -791,7 +823,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: HDFname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: readonly
 integer(kind=irg)                                       :: success
 
@@ -839,7 +872,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: groupname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: group_id!  identifier
@@ -848,11 +882,11 @@ logical                                                 :: g_exists
 
 success = 0
 
-call H5Lexists_f(HDF_head%objectID,cstringify(groupname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,cstringify(groupname),g_exists, hdferr)
 call HDFerror_check('HDF_createGroup:H5Lexists_f:'//trim(groupname), hdferr)
 
 if (g_exists) then 
-  call H5Gopen_f(HDF_head%objectID, cstringify(groupname), group_id, hdferr)
+  call H5Gopen_f(HDF_head%next%objectID, cstringify(groupname), group_id, hdferr)
   call HDFerror_check('HDF_createGroup:H5Gopen_f:'//trim(groupname), hdferr)
 
   if (hdferr.lt.0) then
@@ -862,7 +896,7 @@ if (g_exists) then
     call HDF_push(HDF_head, 'g', group_id, groupname)
   end if
 else 
-  call H5Gcreate_f(HDF_head%objectID, cstringify(groupname), group_id, hdferr)
+  call H5Gcreate_f(HDF_head%next%objectID, cstringify(groupname), group_id, hdferr)
   call HDFerror_check('HDF_createGroup:H5Gcreate_f:'//trim(groupname), hdferr)
 
   if (hdferr.lt.0) then
@@ -896,7 +930,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: groupname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: group_id !  identifier
@@ -904,7 +939,7 @@ integer                                                 :: hdferr  ! hdferr flag
 
 success = 0
 
-call H5Gopen_f(HDF_head%objectID, cstringify(groupname), group_id, hdferr)
+call H5Gopen_f(HDF_head%next%objectID, cstringify(groupname), group_id, hdferr)
 call HDFerror_check('HDF_openGroup:H5Gopen_f:'//trim(groupname), hdferr)
 
 if (hdferr.lt.0) then
@@ -937,7 +972,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: data_id !  identifier
@@ -945,7 +981,7 @@ integer                                                 :: hdferr  ! hdferr flag
 
 success = 0
 
-call H5dopen_f(HDF_head%objectID, cstringify(dataname), data_id, hdferr)
+call H5dopen_f(HDF_head%next%objectID, cstringify(dataname), data_id, hdferr)
 call HDFerror_check('HDF_openDataset:H5dopen_f:'//trim(dataname), hdferr)
 
 if (hdferr.lt.0) then
@@ -983,7 +1019,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 character(fnlen),INTENT(IN)                             :: filename
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 character(len=fnlen, KIND=c_char),allocatable, TARGET   :: stringarray(:) 
@@ -1031,14 +1068,14 @@ call HDFerror_check('HDF_writeDatasetTextFile:h5screate_simple_f:'//trim(datanam
 !
 ! Create the dataset and write the variable-length string data to it.
 !
-call H5Lexists_f(HDF_head%objectID,cstringify(dataname),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,cstringify(dataname),g_exists, hdferr)
 call HDFerror_check('HDF_writeDatasetTextFile:H5Lexists_f:'//trim(dataname), hdferr)
 
 if (g_exists) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetTextFile:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), filetype, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), filetype, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetTextFile:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1158,8 +1195,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(OUT)                           :: nlines
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg),INTENT(OUT)                           :: hdferr
+! character(len=fnlen, KIND=c_char),allocatable, TARGET, INTENT(OUT)   :: stringarray(:) 
 character(len=fnlen, KIND=c_char),allocatable, TARGET, INTENT(OUT)   :: stringarray(:) 
 
 integer(HID_T)                                          :: filetype, space, memtype ! Handles
@@ -1179,7 +1218,7 @@ hdferr = HDF_openDataset(dataname, HDF_head)
 !
 ! Get the datatype.
 !
-call H5Dget_type_f(HDF_head%objectID, filetype, hdferr)
+call H5Dget_type_f(HDF_head%next%objectID, filetype, hdferr)
 call HDFerror_check('HDF_readDatasetStringArray:H5Dget_type_f:'//trim(dataname), hdferr)
 
 if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one single string into stringarray...
@@ -1188,7 +1227,7 @@ if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one si
 
 ! Get dataspace and allocate memory for read buffer.
 !
-  call H5Dget_space_f(HDF_head%objectID, space, hdferr)
+  call H5Dget_space_f(HDF_head%next%objectID, space, hdferr)
   call HDFerror_check('HDF_readDatasetStringArray:H5Dget_space_f:'//trim(dataname), hdferr)
  
   call H5Tcopy_f(H5T_FORTRAN_S1, memtype, hdferr)
@@ -1201,7 +1240,7 @@ if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one si
 ! Read the data.
 !
   f_ptr = C_LOC(fl_rdata(1:1))
-  call h5dread_f(HDF_head%objectID, memtype, f_ptr, hdferr) !, space)
+  call h5dread_f(HDF_head%next%objectID, memtype, f_ptr, hdferr) !, space)
   call HDFerror_check('HDF_readDatasetStringArray:h5dread_f:'//trim(dataname), hdferr)
 
   allocate(stringarray(1))
@@ -1211,7 +1250,7 @@ if (FixedLengthflag.eqv..TRUE.) then ! this option is only set up to read one si
   nlines = 1
 else ! there could be multiple variable length strings to be read...
 ! Get dataspace and allocate memory for read buffer.
-  call H5Dget_space_f(HDF_head%objectID, space, hdferr)
+  call H5Dget_space_f(HDF_head%next%objectID, space, hdferr)
   call HDFerror_check('HDF_readDatasetStringArray:H5Dget_space_f:'//trim(dataname), hdferr)
 
   ! this routine returns the rank of the data set in the hdferr variable when successful, otherwise -1
@@ -1225,7 +1264,7 @@ else ! there could be multiple variable length strings to be read...
 ! Read the data.
 !
   f_ptr = C_LOC(rdata(1))
-  call h5dread_f(HDF_head%objectID, H5T_STRING, f_ptr, hdferr)
+  call h5dread_f(HDF_head%next%objectID, H5T_STRING, f_ptr, hdferr)
   call HDFerror_check('HDF_readDatasetStringArray:h5dread_f:'//trim(dataname), hdferr)
 
 !
@@ -1282,7 +1321,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 character(fnlen),INTENT(IN)                             :: textfile
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: filetype, space ! Handles
@@ -1300,12 +1340,12 @@ hdferr = HDF_openDataset(dataname, HDF_head)
 !
 ! Get the datatype.
 !
-call H5Dget_type_f(HDF_head%objectID, filetype, hdferr)
+call H5Dget_type_f(HDF_head%next%objectID, filetype, hdferr)
 call HDFerror_check('HDF_extractDatasetTextfile:H5Dget_type_f:'//trim(dataname), hdferr)
 
 ! Get dataspace and allocate memory for read buffer.
 !
-call H5Dget_space_f(HDF_head%objectID, space, hdferr)
+call H5Dget_space_f(HDF_head%next%objectID, space, hdferr)
 call HDFerror_check('HDF_extractDatasetTextfile:H5Dget_space_f:'//trim(dataname), hdferr)
 
 call H5Sget_simple_extent_dims_f(space, dims, maxdims, hdferr)
@@ -1318,7 +1358,7 @@ ALLOCATE(rdata(1:dims(1)))
 ! Read the data.
 !
 f_ptr = C_LOC(rdata(1))
-call h5dread_f(HDF_head%objectID, H5T_STRING, f_ptr, hdferr)
+call h5dread_f(HDF_head%next%objectID, H5T_STRING, f_ptr, hdferr)
 call HDFerror_check('HDF_extractDatasetTextfile:h5dread_f:'//trim(dataname), hdferr)
 
 !
@@ -1380,7 +1420,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: nlines
 character(len=fnlen),INTENT(IN)                         :: inputarray(nlines) 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1433,10 +1474,10 @@ end if
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetStringArray:h5dopen_f:'//trim(dataname)//':overwrite', hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), filetype, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), filetype, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetStringArray:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1495,7 +1536,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 character(len=1),TARGET                                 :: chararray(dim0) 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1522,10 +1564,10 @@ call HDFerror_check('HDF_writeDatasetCharArray1D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1579,7 +1621,8 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 character(len=1),TARGET                                 :: chararray(dim0, dim1) 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1605,10 +1648,10 @@ call HDFerror_check('HDF_writeDatasetCharArray2D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then 
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -1663,7 +1706,8 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2) 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1689,10 +1733,10 @@ call HDFerror_check('HDF_writeDatasetCharArray3D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -1748,7 +1792,8 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2, dim3) 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1774,10 +1819,10 @@ call HDFerror_check('HDF_writeDatasetCharArray4D:h5screate_simple_f:'//trim(data
 ! Create the dataset and write the c_char data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetCharArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -1831,7 +1876,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: intval
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1860,10 +1906,10 @@ call HDFerror_check('HDF_writeDatasetInteger:h5screate_simple_f:'//trim(dataname
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -1918,7 +1964,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=1),INTENT(IN)                              :: intarr(dim0)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -1947,10 +1994,10 @@ call HDFerror_check('HDF_writeDatasetInteger1byteArray1D:h5screate_simple_f:'//t
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger1byteArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetInteger1byteArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2004,7 +2051,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: intarr(dim0)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2033,10 +2081,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2090,7 +2138,8 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: intarr(dim0, dim1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2119,10 +2168,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2178,7 +2227,8 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN),TARGET                     :: intarr(dim0, dim1, dim2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2207,10 +2257,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2266,7 +2316,8 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 integer(kind=irg),INTENT(IN)                            :: intarr(dim0, dim1, dim2, dim3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
@@ -2295,10 +2346,10 @@ call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5screate_simple_f:'//trim(d
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -2350,16 +2401,17 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 real(kind=sgl),INTENT(IN)                               :: fltval
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:1), TARGET                 :: wdata
+real(real_kind4), dimension(1:1), TARGET                 :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2380,10 +2432,10 @@ call HDFerror_check('HDF_writeDatasetFloat:h5screate_simple_f:'//trim(dataname),
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloat:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloat:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2435,16 +2487,17 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 real(kind=dbl),INTENT(IN)                               :: dblval
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:1), TARGET                 :: wdata
+real(real_kind8), dimension(1:1), TARGET                 :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2465,10 +2518,10 @@ call HDFerror_check('HDF_writeDatasetDouble:h5screate_simple_f:'//trim(dataname)
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDouble:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDouble:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2523,16 +2576,17 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:dim0), TARGET              :: wdata
+real(real_kind4), dimension(1:dim0), TARGET              :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2553,10 +2607,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray1D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2611,16 +2665,17 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1), TARGET       :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1), TARGET       :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2641,10 +2696,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray2D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2699,16 +2754,17 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, dim2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2), TARGET :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1,1:dim2), TARGET :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2729,10 +2785,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray3D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2788,16 +2844,17 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, dim2, dim3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2818,10 +2875,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray4D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2880,16 +2937,17 @@ integer(kind=irg),INTENT(IN)                            :: dim3
 integer(kind=irg),INTENT(IN)                            :: dim4
 integer(kind=irg),INTENT(IN)                            :: dim5
 real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, dim2, dim3, dim4, dim5)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:6)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2,1:dim3,1:dim4,1:dim5), TARGET :: wdata
+real(real_kind4), dimension(1:dim0,1:dim1,1:dim2,1:dim3,1:dim4,1:dim5), TARGET :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2910,10 +2968,10 @@ call HDFerror_check('HDF_writeDatasetFloatArray6D:h5screate_simple_f:'//trim(dat
 ! Create the dataset and write the 6D float data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetFloatArray6D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -2965,16 +3023,17 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind), dimension(1:dim0), TARGET              :: wdata
+real(real_kind8), dimension(1:dim0), TARGET              :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -2995,10 +3054,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray1D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray1D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray1D:h5dcreate_f:'//trim(dataname), hdferr)
 end if 
 
@@ -3052,16 +3111,17 @@ character(fnlen),INTENT(IN)                             :: dataname
 integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0, dim1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1), TARGET       :: wdata
+real(real_kind8), dimension(1:dim0,1:dim1), TARGET       :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -3082,10 +3142,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray2D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -3140,16 +3200,17 @@ integer(kind=irg),INTENT(IN)                            :: dim0
 integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0, dim1, dim2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2), TARGET  :: wdata
+real(real_kind8), dimension(1:dim0,1:dim1,1:dim2), TARGET  :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -3170,10 +3231,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray3D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -3229,16 +3290,17 @@ integer(kind=irg),INTENT(IN)                            :: dim1
 integer(kind=irg),INTENT(IN)                            :: dim2
 integer(kind=irg),INTENT(IN)                            :: dim3
 real(kind=dbl),INTENT(IN)                               :: dblarr(dim0, dim1, dim2, dim3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
-real(real_kind), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET  :: wdata
+real(real_kind8), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET  :: wdata
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
@@ -3259,10 +3321,10 @@ call HDFerror_check('HDF_writeDatasetDoubleArray4D:h5screate_simple_f:'//trim(da
 ! Create the dataset and write the variable-length string data to it.
 !
 if (present(overwrite)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeDatasetDoubleArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -3323,7 +3385,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:), allocatable, TARGET, INTENT(OUT)     :: rdata
 
@@ -3334,7 +3397,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3392,7 +3455,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:,:), allocatable, TARGET, INTENT(OUT)   :: rdata
 
@@ -3403,7 +3467,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3462,7 +3526,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:,:,:), allocatable, TARGET, INTENT(OUT) :: rdata
 
@@ -3473,7 +3538,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3532,7 +3597,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 character(len=1), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT) :: rdata
 
@@ -3543,7 +3609,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3601,7 +3667,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer,  TARGET, INTENT(OUT)                                        :: rdata
 
@@ -3610,7 +3677,7 @@ integer(HID_T)                                          :: space, dset ! Handles
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetInteger:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3663,7 +3730,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer, dimension(:), allocatable, TARGET, INTENT(OUT)              :: rdata
 
@@ -3674,7 +3742,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3732,7 +3800,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer, dimension(:,:), allocatable, TARGET, INTENT(OUT)            :: rdata
 
@@ -3743,7 +3812,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3801,7 +3870,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 integer, dimension(:,:,:), allocatable, TARGET, INTENT(OUT)          :: rdata
 
@@ -3812,7 +3882,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3870,7 +3940,8 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
 !integer, dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT)        :: rdata
 integer, dimension(:,:,:,:), allocatable, TARGET        :: rdata
@@ -3882,7 +3953,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetIntegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -3938,19 +4009,20 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), TARGET, INTENT(OUT)                                 :: rdata
+real(real_kind4), TARGET, INTENT(OUT)                                 :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloat:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4001,13 +4073,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
+real(real_kind4), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4016,7 +4089,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4072,13 +4145,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
+real(real_kind4), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4087,7 +4161,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4143,13 +4217,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
+real(real_kind4), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4158,7 +4233,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4214,13 +4289,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
+real(real_kind4), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4229,7 +4305,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4284,19 +4360,20 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), TARGET, INTENT(OUT)                                 :: rdata
+real(real_kind8), TARGET, INTENT(OUT)                                 :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDouble:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4348,13 +4425,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
+real(real_kind8), dimension(:), allocatable, TARGET, INTENT(OUT)      :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4363,7 +4441,7 @@ integer(HSIZE_T), DIMENSION(1:1)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray1D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4419,13 +4497,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
+real(real_kind8), dimension(:,:), allocatable, TARGET, INTENT(OUT)    :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4434,7 +4513,7 @@ integer(HSIZE_T), DIMENSION(1:2)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4490,13 +4569,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
+real(real_kind8), dimension(:,:,:), allocatable, TARGET, INTENT(OUT)  :: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4505,7 +4585,7 @@ integer(HSIZE_T), DIMENSION(1:3)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4562,13 +4642,14 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(OUT)                            :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg), INTENT(OUT)                          :: hdferr
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
+real(real_kind8), dimension(:,:,:,:), allocatable, TARGET, INTENT(OUT):: rdata
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: rnk
@@ -4577,7 +4658,7 @@ integer(HSIZE_T), DIMENSION(1:4)                        :: maxdims
 TYPE(C_PTR)                                             :: f_ptr
 
 ! open the data set
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readDatasetDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 ! get dataspace and allocate memory for read buffer 
@@ -4652,7 +4733,8 @@ integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 character(kind=c_char),INTENT(IN),TARGET                :: wdata(dim0,dim1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4671,10 +4753,10 @@ call HDFerror_check('HDF_writeHyperslabCharArray2D:h5screate_simple_f:'//trim(da
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -4731,7 +4813,8 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 character(kind=c_char),INTENT(IN)                       :: wdata(dim0,dim1,dim2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4748,10 +4831,10 @@ call HDFerror_check('HDF_writeHyperslabCharArray3D:h5screate_simple_f:'//trim(da
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -4808,7 +4891,8 @@ integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
 character(kind=c_char),INTENT(IN)                       :: wdata(dim0,dim1,dim2,dim3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4825,10 +4909,10 @@ call HDFerror_check('HDF_writeHyperslabCharArray4D:h5screate_simple_f:'//trim(da
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_U8LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabCharArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -4880,7 +4964,8 @@ integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4897,10 +4982,10 @@ call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5screate_simple_f:'//trim
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -4953,7 +5038,8 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1,dim2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -4970,10 +5056,10 @@ call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5screate_simple_f:'//trim
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5027,7 +5113,8 @@ integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
 integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1,dim2,dim3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5044,10 +5131,10 @@ call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5screate_simple_f:'//trim
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_STD_I32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5093,15 +5180,16 @@ recursive function HDF_writeHyperslabFloatArray2D(dataname, wdata, hdims, offset
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1)
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5118,10 +5206,10 @@ call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5screate_simple_f:'//trim(d
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5167,7 +5255,7 @@ recursive function HDF_writeHyperslabFloatArray3D(dataname, wdata, hdims, offset
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
@@ -5175,8 +5263,9 @@ integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5193,10 +5282,10 @@ call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5screate_simple_f:'//trim(d
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5242,7 +5331,7 @@ recursive function HDF_writeHyperslabFloatArray4D(dataname, wdata, hdims, offset
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
@@ -5251,8 +5340,9 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5269,10 +5359,10 @@ call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5screate_simple_f:'//trim(d
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F32LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5318,15 +5408,16 @@ recursive function HDF_writeHyperslabDoubleArray2D(dataname, wdata, hdims, offse
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1)
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5343,10 +5434,10 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5screate_simple_f:'//trim(
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5392,7 +5483,7 @@ recursive function HDF_writeHyperslabDoubleArray3D(dataname, wdata, hdims, offse
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
@@ -5400,8 +5491,9 @@ integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5418,10 +5510,10 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5screate_simple_f:'//trim(
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5467,7 +5559,7 @@ recursive function HDF_writeHyperslabDoubleArray4D(dataname, wdata, hdims, offse
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
@@ -5476,8 +5568,9 @@ integer(HSIZE_T),INTENT(IN)                             :: dim0
 integer(HSIZE_T),INTENT(IN)                             :: dim1
 integer(HSIZE_T),INTENT(IN)                             :: dim2
 integer(HSIZE_T),INTENT(IN)                             :: dim3
-real(real_kind),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
 integer(kind=irg)                                       :: success
 
@@ -5494,10 +5587,10 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5screate_simple_f:'//trim(
 
 
 if (present(insert)) then
-  call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+  call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 else
-  call h5dcreate_f(HDF_head%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
+  call h5dcreate_f(HDF_head%next%objectID, cstringify(dataname), H5T_IEEE_F64LE, space, dset, hdferr)
   call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5dcreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -5544,7 +5637,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(len=1,kind=c_char), dimension(:,:), allocatable, TARGET   :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5553,7 +5647,7 @@ integer                                                 :: hdferr, rnk
 
 allocate(rdata(1:dims(1),1:dims(2)))
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5612,7 +5706,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(kind=c_char), dimension(:,:,:), allocatable, TARGET   :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5621,7 +5716,7 @@ integer                                                 :: hdferr, rnk
 
 allocate(rdata(1:dims(1),1:dims(2),1:dims(3)))
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5676,7 +5771,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 character(len=1,kind=c_char), dimension(:,:,:,:), allocatable, TARGET   :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
@@ -5685,7 +5781,7 @@ integer                                                 :: hdferr, rnk
 
 allocate(rdata(1:dims(1),1:dims(2),1:dims(3),1:dims(4)))
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabCharArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5743,14 +5839,15 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer, dimension(:,:), allocatable, TARGET            :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabIntegerArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5807,14 +5904,15 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer, dimension(:,:,:), allocatable, TARGET          :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabIntegerArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5871,14 +5969,15 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer, dimension(:,:,:,:), allocatable, TARGET        :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabIntegerArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5932,19 +6031,20 @@ recursive function HDF_readHyperslabFloatArray2D(dataname, offset, dims, HDF_hea
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:), allocatable, TARGET    :: rdata
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+real(real_kind4), dimension(:,:), allocatable, TARGET    :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabFloatArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -5998,19 +6098,20 @@ recursive function HDF_readHyperslabFloatArray3D(dataname, offset, dims, HDF_hea
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:), allocatable, TARGET  :: rdata
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+real(real_kind4), dimension(:,:,:), allocatable, TARGET  :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabFloatArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6064,19 +6165,20 @@ recursive function HDF_readHyperslabFloatArray4D(dataname, offset, dims, HDF_hea
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET:: rdata
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+real(real_kind4), dimension(:,:,:,:), allocatable, TARGET:: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabFloatArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6130,19 +6232,20 @@ recursive function HDF_readHyperslabDoubleArray2D(dataname, offset, dims, HDF_he
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
 integer(HSIZE_T),INTENT(IN)                             :: dims(2)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:), allocatable, TARGET    :: rdata
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+real(real_kind8), dimension(:,:), allocatable, TARGET    :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(2), max_dims(2)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabDoubleArray2D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6196,19 +6299,20 @@ recursive function HDF_readHyperslabDoubleArray3D(dataname, offset, dims, HDF_he
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
 integer(HSIZE_T),INTENT(IN)                             :: dims(3)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:), allocatable, TARGET  :: rdata
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+real(real_kind8), dimension(:,:,:), allocatable, TARGET  :: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(3), max_dims(3)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('HDF_readHyperslabDoubleArray3D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6262,19 +6366,20 @@ recursive function HDF_readHyperslabDoubleArray4D(dataname, offset, dims, HDF_he
 
 IMPLICIT NONE
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_8)
+integer,parameter                                       :: real_kind8 = SELECTED_REAL_KIND(Fortran_REAL_8)
 
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
 integer(HSIZE_T),INTENT(IN)                             :: dims(4)
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
-real(real_kind), dimension(:,:,:,:), allocatable, TARGET:: rdata
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+real(real_kind8), dimension(:,:,:,:), allocatable, TARGET:: rdata
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer(HSIZE_T)                                        :: hdims(4), max_dims(4)
 integer                                                 :: hdferr, rnk
 
-call h5dopen_f(HDF_head%objectID, cstringify(dataname), dset, hdferr)
+call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
 call HDFerror_check('hdf_readHyperslabDoubleArray4D:h5dopen_f:'//trim(dataname), hdferr)
 
 call h5dget_space_f(dset, space, hdferr)
@@ -6344,9 +6449,11 @@ use typedefs
 
 IMPLICIT NONE
 
-type(unitcell), pointer                 :: cell
+type(unitcell),INTENT(INOUT)            :: cell
+!f2py intent(in,out) ::  cell
 logical,INTENT(IN),OPTIONAL             :: verbose
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
 integer(kind=irg)                       :: i, ipg, isave
 
@@ -6415,10 +6522,12 @@ use error
  
 IMPLICIT NONE
 
-type(unitcell), pointer, INTENT(IN)     :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(unitcell)         , INTENT(INOUT)  :: cell
+!f2py intent(in,out) ::  cell
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(11)                           :: dstr
 character(15)                           :: tstr
@@ -6431,9 +6540,9 @@ logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("SaveDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
@@ -6444,7 +6553,7 @@ call timestamp(datestring=dstr, timestring=tstr)
 ! Initialize FORTRAN interface if needed.
 !
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('SaveDataHDF:h5open_EMsoft', hdferr)
 
@@ -6558,10 +6667,12 @@ use ISO_C_BINDING
  
 IMPLICIT NONE
 
-type(unitcell), pointer, INTENT(INOUT)  :: cell
-type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhead
+type(unitcell)         , INTENT(INOUT)  :: cell
+!f2py intent(in,out) ::  cell
+type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
+!f2py intent(in,out) ::  existingHDFhead
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 character(fnlen)                        :: dataset, groupname, fname
 integer(HSIZE_T)                        :: dims(1), dims2(2)
@@ -6576,16 +6687,16 @@ character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 openHDFfile = .TRUE.
 if (present(existingHDFhead)) then
-  if (associated(existingHDFhead)) then
+  if (associated(existingHDFhead%next)) then
     openHDFfile = .FALSE.
-    HDF_head => existingHDFhead
+    HDF_head = existingHDFhead
   else
     call FatalError("ReadDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
 end if
 
 if (openHDFfile) then 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('ReadDataHDF:h5open_EMsoft', hdferr)
 
@@ -6647,7 +6758,7 @@ cell%ATOM_pos(1:cell%ATOM_ntype,1:5) = atompos(1:cell%ATOM_ntype,1:5)
 deallocate(atompos)
 
 dataset = SC_Source
-call H5Lexists_f(HDF_head%objectID,trim(dataset),d_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),d_exists, hdferr)
 if (d_exists) then 
   call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
   cell%source = trim(stringarray(1))
@@ -6701,7 +6812,8 @@ use h5lt
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: dataset
-type(HDFobjectStackType),pointer,INTENT(INOUT)  :: HDFhead
+type(HDFobjectStackType)        ,INTENT(INOUT)  :: HDFhead
+!f2py intent(in,out) ::  HDFhead
 
 logical                                         :: itis
 
@@ -6764,6 +6876,7 @@ recursive SUBROUTINE h5_write_pseudo_bse_image(fname, dsetnm, hdferr, wdata)
 
   INTEGER,PARAMETER               :: real_kind = SELECTED_REAL_KIND(4)
   REAL(KIND=4), DIMENSION(:,:,:),  TARGET, INTENT(INOUT)    :: wdata
+!f2py intent(in,out) :: wdata
 
   INTEGER                         :: rnk
   
@@ -6834,6 +6947,7 @@ recursive SUBROUTINE h5_tsl_read_ebsd_pattern(fname,dsetnm,hdferr,rdata, offset,
   INTEGER,INTENT(OUT)             :: hdferr   !hdferr flag
   INTEGER(HID_T)                  :: fid, dsetid, spaceid, memspace !FILE ID, DATASET ID, DATASPACE ID, MEMORY SPACE
   INTEGER, DIMENSION(:,:), TARGET, INTENT(INOUT)    :: rdata  ! variable for data to be read into
+!f2py intent(in,out) :: rdata
   TYPE(C_PTR)                     :: buff
   INTEGER(KIND=8),INTENT(IN)      :: offset ! 1d index of pattern in nRow x nColumns sized vector
   INTEGER,INTENT(IN)              :: szx, szy ! nColumns, nRows in the scan
@@ -6956,11 +7070,13 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
 character(len=fnlen, KIND=c_char),INTENT(INOUT)         :: stratt 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  stratt 
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer,parameter                                       :: real_kind = SELECTED_REAL_KIND(Fortran_REAL_4)
+integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: aspace_id, dset, atype_id, attr_id ! Handles
 integer                                                 :: hdferr, rnk
 integer(SIZE_T)                                         :: attrlen
@@ -6991,10 +7107,10 @@ call HDFerror_check('HDF_addStringAttribute:h5tset_size_f:'//trim(dataname), hdf
 ! Create the attribute and write the string data to it.
 !
 if (present(overwrite)) then
-  call h5aopen_f(HDF_head%objectID, cstringify(dataname), attr_id, hdferr)
+  call h5aopen_f(HDF_head%next%objectID, cstringify(dataname), attr_id, hdferr)
   call HDFerror_check('HDF_addStringAttribute:h5aopen_f:'//trim(dataname), hdferr)
 else
-  call h5acreate_f(HDF_head%objectID, cstringify(dataname), atype_id, aspace_id, attr_id, hdferr)
+  call h5acreate_f(HDF_head%next%objectID, cstringify(dataname), atype_id, aspace_id, attr_id, hdferr)
   call HDFerror_check('HDF_addStringAttribute:h5acreate_f:'//trim(dataname), hdferr)
 end if
 
@@ -7047,7 +7163,9 @@ use ISO_C_BINDING
 character(fnlen),INTENT(IN)                             :: dataname
 integer(SIZE_T),INTENT(IN)                              :: slen
 character(len=slen, KIND=c_char),INTENT(INOUT)          :: stratt 
-type(HDFobjectStackType),INTENT(INOUT),pointer          :: HDF_head
+!f2py intent(in,out) ::  stratt 
+type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
+!f2py intent(in,out) ::  HDF_head
 integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: aspace_id, filetype, atype_id, attr_id, memtype ! Handles
@@ -7067,7 +7185,7 @@ dims(1) = slen
 success = 0
 
 ! open the attribute for this group
-  call h5aopen_f(HDF_head%objectID, cstringify(dataname), attr_id, hdferr)
+  call h5aopen_f(HDF_head%next%objectID, cstringify(dataname), attr_id, hdferr)
   call HDFerror_check('HDF_getStringAttributeFromGroup:h5aopen_f:'//trim(dataname), hdferr)
 
   ! Get the datatype and its size.
@@ -7130,14 +7248,15 @@ character(fnlen),INTENT(IN)                         :: dataset
 integer(kind=irg),INTENT(IN)                        :: numx
 integer(kind=irg),INTENT(IN)                        :: numy
 integer(kind=irg),INTENT(INOUT)                     :: image(numx,numy)
-type(HDFobjectStackType),pointer                    :: HDF_head
+!f2py intent(in,out) ::  image
+type(HDFobjectStackType)                            :: HDF_head
 
 integer(kind=irg),allocatable                       :: vec(:)
 integer(kind=irg)                                   :: hdferr
 
 ! read the image from the file
 allocate(vec(numx*numy))
-call h5imread_image_f(HDF_head%objectID,dataset,vec,hdferr)
+call h5imread_image_f(HDF_head%next%objectID,dataset,vec,hdferr)
 
 ! reorganize it into a regular image
 image = reshape( vec, (/ numx, numy/) )

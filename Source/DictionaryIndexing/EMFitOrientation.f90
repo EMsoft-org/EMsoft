@@ -151,15 +151,15 @@ type(dicttype),pointer                  :: dict
 integer(kind=irg)                       :: FZtype, FZorder
 character(fnlen)                        :: modalityname
 
-type(HDFobjectStackType),pointer        :: HDF_head
-type(unitcell),pointer                  :: cell
+type(HDFobjectStackType)                :: HDF_head
+type(unitcell)                          :: cell
 
 dtor = sngl(cPi) / 180.0
 
 init = .TRUE.
 overwrite = .TRUE.
 verbose = .FALSE.
-nullify(cell)
+!nullify(cell)        
 
 nmldeffile = 'EMFitOrientationPS.nml'
 progname = 'EMFitOrientationPS.f90'
@@ -383,7 +383,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     ! we need to get the direct structure matrix to convert the axis-angle pair
     ! to the correct reference frame, so we'll read the complete xtal file
     ! and initialize all matrices as usual
-    allocate (cell)
+    ! allocate (cell)
     cell%fname = trim(dinl%MCxtalname)
     call CrystalData(cell)
 
@@ -781,7 +781,7 @@ end if
 
 ! add fitted dot product values to HDF5 file
 ! open the fortran HDF interface
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 dpfile = trim(EMsoft_getEMdatapathname())//trim(ronl%dotproductfile)
 dpfile = EMsoft_toNativePath(dpfile)
@@ -799,7 +799,7 @@ groupname = SC_Data
 hdferr = HDF_openGroup(groupname, HDF_head)
 
 dataset = SC_RefinedDotProducts
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloatArray1D(dataset, CIlist, Nexp, HDF_head, overwrite)
 else
@@ -807,7 +807,7 @@ else
 end if
  
 dataset = SC_RefinedEulerAngles
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloatArray2D(dataset, sngl(euler_best*cPi/180.0), 3, Nexp, HDF_head, overwrite)
 else

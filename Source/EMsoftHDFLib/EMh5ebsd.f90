@@ -84,12 +84,14 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                        :: filetype
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, nmlname, manufacturer
@@ -170,12 +172,14 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)                        :: filetype
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+!f2py intent(in,out) ::  tkdnl
 character(fnlen),INTENT(IN)                         :: nmldeffile
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, nmlname, manufacturer
@@ -257,7 +261,7 @@ character(fnlen),INTENT(IN)                         :: dataset
 integer(kind=irg),INTENT(IN)                        :: nump
 real(kind=sgl),INTENT(IN)                           :: inpvec(nump)
 type(EBSDIndexingNameListType),INTENT(IN)           :: ebsdnl
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 real(kind=sgl),OPTIONAL,INTENT(IN)                  :: binary
 
 real(kind=sgl)                                      :: mi, ma
@@ -305,7 +309,7 @@ else
   end do
 end if 
 
-call h5immake_image_8bit_f(HDF_head%objectID,dataset,width,height,image,hdferr)
+call h5immake_image_8bit_f(HDF_head%next%objectID,dataset,width,height,image,hdferr)
 deallocate(image, newvec)
 
 end subroutine h5ebsd_write2DImageFromVector
@@ -338,7 +342,7 @@ character(fnlen),INTENT(IN)                         :: dataset
 integer(kind=irg),INTENT(IN)                        :: nump
 real(kind=sgl),INTENT(IN)                           :: inpvec(nump)
 type(TKDIndexingNameListType),INTENT(IN)            :: tkdnl
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 real(kind=sgl)                                      :: mi, ma
 integer(kind=irg)                                   :: istat, jj, hdferr
@@ -363,7 +367,7 @@ do jj = 1,height
   image(1:width,jj) = int(255.0*newvec((jj-1)*width+1:jj*width)/ma)
 end do
 
-call h5immake_image_8bit_f(HDF_head%objectID,dataset,width,height,image,hdferr)
+call h5immake_image_8bit_f(HDF_head%next%objectID,dataset,width,height,image,hdferr)
 deallocate(image, newvec)
 
 end subroutine h5tkd_write2DImageFromVector
@@ -388,7 +392,7 @@ use error
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen)                                    :: groupname, dataset, fname, resourcepathname
 integer(kind=irg)                                   :: hdferr
@@ -417,7 +421,7 @@ EBSDview = ichar(chararr)
 dataset = 'EBSD View Reference Frame'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(EBSDview),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(EBSDview),hdferr)
 deallocate(EBSDview,chararr)
 
 !=====================================================
@@ -435,7 +439,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 1'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 !=====================================================
 ! Schematic 2
@@ -450,7 +454,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 2'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 !=====================================================
 ! Schematic 3
@@ -465,7 +469,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 3'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 !=====================================================
 ! Schematic 4
@@ -480,7 +484,7 @@ schematic = ichar(chararr)
 dataset = 'Schematic 4'
 width = dims(2)
 height = dims(3)
-call h5immake_image_24bit_f(HDF_head%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
+call h5immake_image_24bit_f(HDF_head%next%objectID,dataset,width,height,'INTERLACE_PIXEL',int(schematic),hdferr)
 
 deallocate(schematic,chararr)
 !=====================================================
@@ -517,7 +521,7 @@ real(kind=sgl),INTENT(IN)                           :: L        ! sample-scintil
 real(kind=sgl),INTENT(IN)                           :: delta    ! scintillator pixel size [micron]
 integer(kind=irg),INTENT(IN)                        :: scdim(2) ! scintillator dimensions [pixels]
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen)                                    :: groupname, dataset
 integer(kind=irg)                                   :: hdferr
@@ -574,7 +578,7 @@ IMPLICIT NONE
 
 character(fnlen),intent(IN)                         :: groupname
 character(fnlen),intent(IN)                         :: xtalname
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen)                                    :: dataset, grname, filename
 integer(kind=irg)                                   :: istat, SGnum, hdferr
@@ -587,7 +591,7 @@ integer(kind=irg)                                   :: i, pgnum
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 ! new HDF_head pointer to handle a new HDF5 while another one is already open ...
-type(HDFobjectStackType),pointer                    :: HDF_head_local
+type(HDFobjectStackType)                            :: HDF_head_local
 
 ! TSL point group labels [courtesy of S. Wright]
 character(26),parameter       :: TSLpgname(32) = (/ "Triclinic (C1) [1]        ", "Triclinic (S2, Ci) [-1]   ",&
@@ -621,7 +625,7 @@ stat = .FALSE.
 call h5fis_hdf5_f(filename, stat, hdferr)
 
 if (stat) then
-  nullify(HDF_head_local)
+  nullify(HDF_head_local%next)
 
 ! open the xtal file using the default properties.
   readonly = .TRUE.
@@ -756,14 +760,18 @@ IMPLICIT NONE
 
 character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 character(fnlen),INTENT(IN)                         :: xtalname
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
+!f2py intent(in,out) ::  ipar
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: exptIQ(ipar(3))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                        :: dicteulerarray(3,ipar(4))
+!f2py intent(in,out) ::  dicteulerarray
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
@@ -784,7 +792,7 @@ real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), ean
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
 real(kind=sgl)                                      :: isratio, io_real(1)
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 ! copy the dictionary euler angle array 
 eulerarray = dicteulerarray
@@ -803,7 +811,7 @@ end if
 
 allocate(stringarray(1))
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call timestamp(timestring=tstre)
 
 ! Create a new file using the default properties.
@@ -1027,7 +1035,7 @@ dataset = SC_Valid
   deallocate(valid)
 
 dataset = SC_EulerAngles
-  call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   allocate(eangles(3,ipar(3)),stat=istat)
   do ii = 1,ipar(3)
     indx = indexmain(1,ii)
@@ -1327,13 +1335,17 @@ IMPLICIT NONE
 
 character(3),INTENT(IN)                             :: vendor   ! 'TSL' 'HKL' 'BRU'
 type(TKDIndexingNameListType),INTENT(INOUT)         :: tkdnl
+!f2py intent(in,out) ::  tkdnl
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
+!f2py intent(in,out) ::  ipar
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: exptIQ(ipar(3))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
+!f2py intent(in,out) ::  eulerarray
 real(kind=sgl),INTENT(IN)                           :: dpmap(ipar(3))
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
@@ -1353,7 +1365,7 @@ real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), res
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 
 
@@ -1371,7 +1383,7 @@ end if
 
 allocate(stringarray(1))
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   call timestamp(timestring=tstre)
 
 ! Create a new file using the default properties.

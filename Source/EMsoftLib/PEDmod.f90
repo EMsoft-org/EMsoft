@@ -74,7 +74,7 @@ use diffraction
 IMPLICIT NONE
 
 type(PEDKINIndxListType), INTENT(IN)         :: pednl
-type(unitcell), pointer                      :: cell
+type(unitcell)                               :: cell
 integer(kind=irg),INTENT(IN)                 :: reflistarray(3,nref)
 real(kind=sgl),INTENT(IN)                    :: sanglearray(nref)
 
@@ -373,6 +373,7 @@ use NameListTypedefs
 IMPLICIT NONE
 
 type(PEDKINIndxListType),INTENT(INOUT)              :: pednl
+!f2py intent(in,out) ::  pednl
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))

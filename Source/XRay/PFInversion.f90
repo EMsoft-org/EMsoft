@@ -66,7 +66,7 @@ logical                            :: verbose
 type(PFInversionNameListType)      :: epf
 type(PoleFigures),pointer          :: PF
 
-type(unitcell),pointer             :: cell
+type(unitcell)                     :: cell
 type(DynType)                      :: Dyn
 type(gnode)                        :: rlp
 integer(kind=irg)                  :: eqvplanes(48,3)
@@ -100,7 +100,7 @@ character(15)                      :: tstrb
 integer(kind=irg)                  :: mm, nn, kwidth
 real(kind=dbl),allocatable,target  :: X(:)
 
-type(HDFobjectStackType),pointer   :: HDF_head_cell
+type(HDFobjectStackType)           :: HDF_head_cell
 type(sparse_ll),pointer            :: sparseA, sparseA2, tailA, tailA2
 
 type(MRCstruct)                    :: MRCheader
@@ -155,10 +155,10 @@ dtor = cPi/180.D0
 delta = 1.D0/dble(nLam)
 
 ! allocate cell
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(xtalname)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)

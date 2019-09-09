@@ -67,7 +67,7 @@ integer(kind=irg)                       :: acol(n)
 real(kind=sgl)                          :: p(4),q(4),xmax,x(n),y(n),z(n),x1,y1,z1,asize(n),M(4,4),VD,diam, io_real(3)
 integer(kind=irg)                       :: idx(n),iview(3),iform, io_int(3), imanum
 character(fnlen)                        :: progname, progdesc, gname
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 logical                                 :: loadingfile
 type(postscript_type)                   :: PS
 
@@ -82,7 +82,7 @@ interface
         IMPLICIT NONE
 
         type(postscript_type),INTENT(INOUT)     :: PS
-        type(unitcell),pointer          :: cell
+        type(unitcell)                  :: cell
         integer(kind=irg),INTENT(INOUT) :: iview(3)             !< viewing direction
         character(1),INTENT(IN)         :: sp                   !< drawing space character
         real(kind=sgl)                  :: CX, CY               !< center of page		
@@ -95,8 +95,6 @@ end interface
 
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 909 /), progname)
-
- allocate(cell)
 
  cell % SG % SYM_reduce=.TRUE.
  CX=7.0
@@ -224,7 +222,7 @@ use postscript
 IMPLICIT NONE
 
 type(postscript_type),INTENT(INOUT)     :: PS
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(INOUT) :: iview(3)             !< viewing direction
 character(1),INTENT(IN)         :: sp                   !< drawing space character
 real(kind=sgl)                  :: CX, CY               !< center of page		

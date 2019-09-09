@@ -170,7 +170,7 @@ character(fnlen, KIND=c_char)           :: stringarray(1)
 character(fnlen,kind=c_char)            :: line2(1)
 character(fnlen)                :: oldprogname, groupname, energyfile, outname
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 type(reflisttype),pointer       :: reflist,firstw, rltmp
@@ -181,7 +181,7 @@ integer(kind=irg),allocatable   :: kij(:,:)
 complex(kind=dbl),allocatable   :: DynMat(:,:)
 character(fnlen)                :: dataset, instring
 
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 
 !$OMP THREADPRIVATE(rlp) 
@@ -189,7 +189,7 @@ type(HDFobjectStackType),pointer  :: HDF_head
 tpi = 2.D0*cPi
 czero = dcmplx(0.D0,0.D0)
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call cpu_time(tstart)
@@ -198,8 +198,8 @@ call cpu_time(tstart)
 !=============================================
 ! crystallography section
 
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
  verbose = .TRUE.
  call Initialize_Cell(cell,Dyn,rlp,kmnl%xtalname, kmnl%dmin, kmnl%voltage, verbose)
@@ -297,7 +297,7 @@ end if
 ! create the HDF5 output file
 !=============================================
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -587,7 +587,7 @@ end if
 ! and here is where the major changes are for version 5.0: all output now in HDF5 format
   call timestamp(datestring=dstr, timestring=tstre)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)
 

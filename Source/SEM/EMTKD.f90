@@ -277,8 +277,8 @@ character(len=3)                        :: outputformat
 integer, parameter                      :: K4B=selected_int_kind(9)      ! used by ran function in math.f90
 integer(K4B)                            :: idum
 
-type(HDFobjectStackType),pointer        :: HDF_head
-type(unitcell),pointer                  :: cell
+type(HDFobjectStackType)                :: HDF_head
+type(unitcell)                          :: cell
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
 integer(HSIZE_T)                        :: dim0, dim1, dim2
 character(fnlen,kind=c_char)            :: line2(1)
@@ -293,8 +293,8 @@ logical                                 :: overwrite = .TRUE., insert = .TRUE., 
 ! max number of OpenMP threads on this platform
 maxthreads = omp_get_max_threads()
 
-nullify(HDF_head)
-nullify(cell)
+nullify(HDF_head%next)
+!nullify(cell)        
 
 !====================================
 ! what is the output format?  GUI or BIN ?
@@ -340,7 +340,7 @@ deallocate(wf)
   prefactor = 0.25D0 * nAmpere * enl%beamcurrent * enl%dwelltime * 1.0D-15/ nel
 !====================================
 
-allocate(cell)
+!allocate(cell)        
 cell%fname = trim(enl%MCxtalname)
 call ReadDataHDF(cell)
 

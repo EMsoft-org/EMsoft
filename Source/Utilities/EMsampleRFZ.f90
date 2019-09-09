@@ -118,7 +118,7 @@ real(kind=dbl)                          :: eud(3), rtod, cud(3), qud(4), hod(3),
 type(FZpointd),pointer                  :: FZlist, FZtmp
 logical                                 :: doeu = .FALSE., docu = .FALSE., doho = .FALSE., doqu = .FALSE., &
                                            doom = .FALSE., doax = .FALSE., doro = .FALSE., newpoint, rotateFZ = .FALSE.
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 character(fnlen)                        :: filename
 
 rtod = 180.D0/cPi
@@ -162,7 +162,7 @@ if (trim(rfznl%samplemode).eq.'FIB') then
   if (rfznl%xtalname.eq.'undefined') then 
     call FatalError('CreateSampling','Routine requires an .xtal filename for fiber texture mode')
   endif
-  allocate(cell)
+  !allocate(cell)        
 ! initialize crystal
   cell % SG % SYM_reduce=.FALSE.
   cell%fname = rfznl%xtalname

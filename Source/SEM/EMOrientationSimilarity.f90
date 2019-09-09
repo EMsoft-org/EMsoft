@@ -77,9 +77,9 @@ integer(HSIZE_T)                        :: dims2(2)
 integer(kind=irg),allocatable           :: tmi(:,:), tmitmp(:,:)
 real(kind=sgl),allocatable              :: osm(:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 nmldeffile = 'EMOrientationSimilarity.nml'
 progname = 'EMOrientationSimilarity.f90'

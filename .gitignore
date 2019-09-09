@@ -1,5 +1,6 @@
 /DREAM3DProj.includes
 CMakeLists.txt.user
+/wiki/
 /Build/
 /Build-ninja/
 /Build-Xcode/
@@ -30,7 +31,14 @@ UpdateEMSphInxCopyrightStatement.pro
 fixf90
 fixC
 resources/EMSphInx.wisdom
-/Source/pyEMsoft/
+Source/pyEMsoft/__pycache__
+Source/pyEMsoft/*.f90
+Source/pyEMsoft/.f2py_f2cmap
+Source/pyEMsoft/source
+Source/pyEMsoft/docs/_template/
+Source/pyEMsoft/docs/_static/
+Source/pyEMsoft/docs/_build/
+
 
 /EMSphInx/
 

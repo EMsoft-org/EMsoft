@@ -88,7 +88,8 @@ use constants
 IMPLICIT NONE
 
 type(DynType),INTENT(INOUT)     :: Dyn
-type(unitcell),pointer          :: cell
+!f2py intent(in,out) ::  Dyn
+type(unitcell)                  :: cell
 type(kvectorlist),pointer       :: ktmp
 type(BetheParameterType),INTENT(IN) :: BetheParameter
 integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
@@ -96,6 +97,7 @@ integer(kind=irg),INTENT(IN)    :: nw                   !< number of weak beams
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
 real(kind=sgl),INTENT(IN)       :: thick(nt)            !< thickness array
 real(kind=sgl),INTENT(INOUT)    :: inten(nt,nn+nw)      !< output intensities (both strong and weak)
+!f2py intent(in,out) ::  inten
 
 integer(kind=irg)               :: i,j,IPIV(nn), ll(3), jp
 complex(kind=dbl)               :: CGinv(nn,nn), Minp(nn,nn),diag(nn),Wloc(nn), lCG(nn,nn), lW(nn), &
@@ -190,12 +192,13 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: kn
 type(BetheParameterType),INTENT(IN) :: BetheParameter
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
 real(kind=sgl),INTENT(IN)       :: thick(nt)            !< thickness array
 real(kind=sgl),INTENT(INOUT)    :: inten(nt,nn)      !< output intensities (both strong and weak)
+!f2py intent(in,out) ::  inten
 
 integer(kind=irg)               :: i,j,IPIV(nn), ll(3), jp
 complex(kind=dbl)               :: CGinv(nn,nn), Minp(nn,nn),diag(nn),Wloc(nn), lCG(nn,nn), lW(nn), &
@@ -270,12 +273,13 @@ use constants
 IMPLICIT NONE
 
 complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: kn
 integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
 real(kind=sgl),INTENT(IN)       :: thick(nt)            !< thickness array
 real(kind=sgl),INTENT(INOUT)    :: inten(nt,nn)         !< output intensities (both strong and weak)
+!f2py intent(in,out) ::  inten
 
 integer(kind=irg)               :: i,j,IPIV(nn), ll(3), jp
 complex(kind=dbl)               :: CGinv(nn,nn), Minp(nn,nn),diag(nn),Wloc(nn), lCG(nn,nn), lW(nn), &
@@ -357,6 +361,7 @@ integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beam
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
 real(kind=sgl),INTENT(IN)       :: thick(nt)            !< thickness array
 real(kind=sgl),INTENT(INOUT)    :: Iz(nt)               !< output intensities
+!f2py intent(in,out) ::  Iz
 
 integer(kind=irg)               :: j, IPIV(nn), k
 complex(kind=dbl)               :: CGinv(nn,nn), Minp(nn,nn), Wloc(nn), lCG(nn,nn), lW(nn), lalpha(nn)
@@ -433,6 +438,7 @@ real(kind=sgl),INTENT(IN)       :: kn
 integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 real(kind=sgl),INTENT(IN)       :: thresh               !< thickness fraction parameter
 real(kind=sgl),INTENT(INOUT)    :: Iz(1)                !< output (thickness)
+!f2py intent(in,out) ::  Iz
 
 integer(kind=irg)               :: j, IPIV(nn), k
 complex(kind=dbl)               :: CGinv(nn,nn), Minp(nn,nn), Wloc(nn), lCG(nn,nn), lW(nn), lalpha(nn)
@@ -500,10 +506,11 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                     :: cell
+type(unitcell)                             :: cell
 real(kind=sgl),INTENT(IN)                  :: dmin
 integer(kind=sgl),INTENT(IN)               :: numset
 integer(kind=sgl),INTENT(INOUT)            :: nat(100)
+!f2py intent(in,out) ::  nat
 logical,INTENT(IN),optional                :: verbose
 
 integer(kind=irg)                          :: istat, io_int(3), skip
@@ -605,12 +612,13 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 integer(kind=irg),INTENT(IN)            :: nns
 integer(kind=irg),INTENT(IN)            :: numset
 integer(kind=irg),INTENT(IN)            :: nat(100)
 complex(kind=dbl),INTENT(INOUT)         :: Sgh(nns,nns,numset)
+!f2py intent(in,out) ::  Sgh
 
 type(reflisttype),pointer               :: rltmpa, rltmpb
 integer(kind=irg)                       :: ir, ic, kkk(3)
@@ -662,11 +670,13 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 integer(kind=irg),INTENT(IN)            :: kkk(3)
 integer(kind=irg),INTENT(IN)            :: numset
 integer(kind=irg),INTENT(INOUT)         :: nat(100)
+!f2py intent(in,out) ::  nat
 complex(kind=dbl),INTENT(INOUT)         :: Sghvec(numset)
+!f2py intent(in,out) ::  Sghvec
 
 integer(kind=irg)                       :: ip, ir, ic, ikk, n
 real(kind=sgl)                          :: Znsq, DBWF, kkl
@@ -735,12 +745,14 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
 complex(kind=dbl),INTENT(INOUT)         :: Sgh(nn,nn,numset)
+!f2py intent(in,out) ::  Sgh
 integer(kind=irg),INTENT(INOUT)         :: nat(100)
+!f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(3), ikk, n
 real(kind=sgl)                          :: Znsq, DBWF, kkl
@@ -818,12 +830,14 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
 complex(kind=dbl),INTENT(INOUT)         :: Sgh(nn,nn,numset)
+!f2py intent(in,out) ::  Sgh
 integer(kind=irg),INTENT(INOUT)         :: nat(100)
+!f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(3), ikk, n
 real(kind=sgl)                          :: Znsq, DBWF, kkl
@@ -1053,11 +1067,13 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer           :: cell
+type(unitcell)                   :: cell
 type(reflisttype),pointer        :: listroot
 type(reflisttype),pointer        :: listrootw
 type(gnode),INTENT(INOUT)        :: rlp
+!f2py intent(in,out) ::  rlp
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nns,nns)
+!f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)     :: nns
 integer(kind=irg),INTENT(IN)     :: nnw
 character(5),INTENT(IN),OPTIONAL :: BlochMode   ! 'Bloch' or 'Struc'
@@ -1266,9 +1282,10 @@ use constants
 
 IMPLICIT NONE
 
-type(unitcell),pointer           :: cell
+type(unitcell)                   :: cell
 type(reflisttype),pointer        :: listroot
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nref,nref)
+!f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)     :: nref
 
 complex(kind=dbl)                :: czero, ughp, uhph, weaksum, qg0
@@ -1432,7 +1449,7 @@ use symmetry
 
 IMPLICIT NONE
 
-type(unitcell),pointer                      :: cell_subs
+type(unitcell)                              :: cell_subs
 integer(kind=irg),INTENT(IN)                :: nns_film
 type(refliststrongsubstype),pointer         :: refliststrong_subs
 complex(kind=dbl),INTENT(IN)                :: S0(nns_film)
@@ -1592,7 +1609,7 @@ use math
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell_film,cell_subs
+type(unitcell)                          :: cell_film,cell_subs
 type(reflisttype),pointer               :: reflist_film
 type(refliststrongsubstype),pointer     :: refliststrong_subs
 real(kind=sgl),INTENT(IN)               :: k0(3),dmin
@@ -1601,6 +1618,7 @@ real(kind=sgl),INTENT(IN)               :: TTinv(3,3)
 integer(kind=irg),INTENT(IN)            :: nns_film
 real(kind=dbl),INTENT(IN)               :: dthick
 type(gnode),INTENT(INOUT)                             :: rlp_subs
+!f2py intent(in,out) ::  rlp_subs
 
 type(reflisttype),pointer               :: rltmpa,rltmpb,reflist_subs,firstw_subs
 type(refliststrongsubstype),pointer     :: refliststrong_subs_tmp

@@ -167,7 +167,7 @@ character(fnlen),INTENT(IN)                   :: progname
 
 ! crystal structure variables
 logical                                       :: verbose
-type(unitcell),pointer,save                   :: cell
+type(unitcell)        ,save                   :: cell
 type(DynType)                                 :: Dyn
 type(gnode),save                              :: rlp
 type(BetheParameterType)                      :: BetheParameters
@@ -249,7 +249,7 @@ character(fnlen,kind=c_char)                  :: line2(1)
 integer(kind=irg)                             :: NTHREADS, TID
 ! HDF5 variables
 integer(kind=irg)                             :: hdferr, dims4(4), istat
-type(HDFobjectStackType),pointer              :: HDF_head
+type(HDFobjectStackType)                      :: HDF_head
 character(fnlen)                              :: groupname, dataset, instring, &
                                                  dataname, fname, sourcefile, datagroupname, datafile
 interface
@@ -264,7 +264,7 @@ interface
 
         IMPLICIT NONE
 
-        type(unitcell),pointer              :: cell
+        type(unitcell)                      :: cell
         complex(kind=dbl),INTENT(IN)        :: DynMat(nn,nn)
         integer(kind=sgl),INTENT(IN)        :: nn
         real(kind=sgl),INTENT(IN)           :: lambdaZ(1:nt)
@@ -286,11 +286,11 @@ call CPU_TIME(tstart)
 call Time_tick(tick)
 
 ! nullify HDF pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! generate xtal structure data
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 ! get the crystal strucutre from the *.xtal file
 verbose = .TRUE.
@@ -916,7 +916,7 @@ use math
 
 IMPLICIT NONE
 
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 complex(kind=dbl),INTENT(IN)        :: DynMat(nn,nn)
 integer(kind=sgl),INTENT(IN)        :: nn
 real(kind=sgl),INTENT(IN)           :: lambdaZ(1:nt)

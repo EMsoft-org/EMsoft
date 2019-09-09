@@ -86,6 +86,7 @@ IMPLICIT NONE
 type(reflisttype),pointer       :: listroot 
 type(reflisttype),pointer       :: rltail
 integer(kind=irg),INTENT(INOUT) :: nref
+!f2py intent(in,out) ::  nref
 
 integer(kind=irg)  :: istat
 
@@ -136,8 +137,9 @@ IMPLICIT NONE
 
 type(reflisttype),pointer       :: rltail
 type(reflisttype),pointer       :: listroot
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(INOUT) :: nref
+!f2py intent(in,out) ::  nref
 integer(kind=irg),INTENT(IN)    :: hkl(3)               !< Miller indices of reflection to be added to list
 
 integer(kind=irg)               :: istat
@@ -281,8 +283,9 @@ use NameListTypedefs
 
 IMPLICIT NONE
 
-type(unitcell),pointer            :: cell
+type(unitcell)                    :: cell
 type(LaueMasterNameListType),INTENT(INOUT) :: lmnl
+!f2py intent(in,out) ::  lmnl
 type(Laue_g_list),pointer         :: reflist                    ! linked list for allowed g-vector search 
 integer(kind=irg),INTENT(OUT)     :: gcnt
 logical,OPTIONAL,INTENT(IN)       :: verbose                    ! print output or not ?
@@ -293,7 +296,7 @@ type(gnode)                       :: rlp
 real(kind=sgl)                    :: gmax                       !< diameter of limiting sphere
 real(kind=sgl)                    :: ghkl                       !< length of a reciprocal lattice vector
 integer(kind=irg)                 :: imh, imk, iml              !< maximum index along a*, b*, and c*
-real(kind=irg)                    :: g(3), tt                   !< g-vector and 2theta
+real(kind=sgl)                    :: g(3), tt                   !< g-vector and 2theta
 integer(kind=irg)                 :: io_int(3)                  !< io variable
 real(kind=sgl)                    :: io_real(1)                 !< io variable
 integer(kind=irg)                 :: istat, h, k, l, icnt       !< status variables and such
@@ -437,7 +440,7 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                         :: cell
+type(unitcell)                                 :: cell
 type(reflisttype),pointer                      :: listroot
 type(reflisttype),pointer                      :: listrootw
 type(BetheParameterType),INTENT(IN)            :: BetheParameter
@@ -579,11 +582,13 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(kvectorlist),pointer               :: khead
 type(reflisttype),pointer               :: reflist
 type(DynType),INTENT(INOUT)             :: Dyn
+!f2py intent(in,out) ::  Dyn
 type(BetheParameterType),INTENT(INOUT)  :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 integer(kind=irg),INTENT(IN)            :: numk
 integer(kind=irg),INTENT(OUT)           :: nbeams
 
@@ -747,10 +752,12 @@ use io
 
 IMPLICIT NONE
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(reflisttype),pointer               :: reflist
 type(DynType),INTENT(INOUT)            :: Dyn
+!f2py intent(in,out) ::  Dyn
 type(BetheParameterType),INTENT(INOUT) :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 character(*),INTENT(IN)         :: calcmode             !< computation mode
 real(kind=dbl),INTENT(IN)               :: kk(3),kt(3)          !< incident wave vector and tangential component
 logical,INTENT(IN)                      :: IgnoreFoilNormal     !< how to deal with the foil normal
@@ -1083,6 +1090,7 @@ use io
 IMPLICIT NONE
 
 type(BetheParameterType),INTENT(INOUT)        :: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 logical,INTENT(IN),OPTIONAL     :: silent
 
 character(fnlen),parameter      :: Bethefilename = 'BetheParameters.nml'
@@ -1148,7 +1156,7 @@ use error
 
 IMPLICIT NONE
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 integer(kind=irg),INTENT(IN)    :: k(3)
 integer(kind=irg),INTENT(IN)    :: ga(3)
 integer(kind=irg),INTENT(IN)    :: gb(3)
@@ -1222,7 +1230,7 @@ use diffraction
 
 IMPLICIT NONE
 
-type(unitcell),pointer                         :: cell
+type(unitcell)                                 :: cell
 type(reflisttype),pointer                      :: listroot
 type(BetheParameterType),INTENT(IN)            :: BetheParameter
 real(kind=sgl),INTENT(IN)                      :: FN(3)
@@ -1417,11 +1425,12 @@ use typedefs
 
 IMPLICIT NONE
 
-type(unitcell),pointer				:: cell
+type(unitcell)        				:: cell
 type(reflisttype),pointer			:: listroot
 real(kind=sgl),INTENT(IN)			:: FN(3)
 real(kind=sgl),INTENT(IN)			:: dmin
 type(BetheParameterType),INTENT(INOUT)		:: BetheParameter
+!f2py intent(in,out) ::  BetheParameter
 real(kind=sgl),INTENT(IN)			:: k(3)
 integer(kind=irg),INTENT(IN)			:: ga(3)
 integer(kind=irg),INTENT(IN)			:: gb(3)

@@ -2227,6 +2227,7 @@ IMPLICIT NONE
 complex(kind=dbl),INTENT(IN)    :: a(*)
 integer(kind=irg),INTENT(IN)    :: m
 complex(kind=dbl),INTENT(INOUT) :: x
+!f2py intent(in,out) ::  x
 real(kind=sgl),INTENT(IN)       :: eps
 logical,INTENT(IN)              :: polish
 
@@ -2740,6 +2741,8 @@ end function kdelta
 !
 !> @param co
 !> @param roots
+!
+!> @note THIS ROUTINE FAILS FOR CERTAIN COEFFICIENT COMBINATIONS; CHECK sqrt ARGUMENT for C
 ! 
 !> @date 01/18/16   SS 1.0 original
 !> @date 01/25/16  MDG 1.1 minor mods to make more efficient
@@ -2987,6 +2990,7 @@ integer(kind=irg),INTENT(IN)    :: NClusters
 integer(kind=irg),INTENT(IN)    :: NSC
 integer(kind=irg),INTENT(IN)    :: NSR
 integer(kind=irg),INTENT(INOUT) :: IndexArray(NRow)
+!f2py intent(in,out) ::  IndexArray
 
 integer(kind=irg)               :: IA(NSC,NSR), NinC(NClusters)
 integer(kind=irg)               :: i, j, k, ic, nc, ix, px, py, Emax(1), Emin(1), nloop, nchanged, totswap

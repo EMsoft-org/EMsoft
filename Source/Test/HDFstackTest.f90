@@ -64,7 +64,7 @@ character(fnlen)                :: HDFfilename, tmppath, groupname, dataset
 integer(kind=irg)               :: ival, hdferr, i
 real(kind=sgl)                  :: fval, fval_save
 
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 character(len=1)                :: EMsoftnativedelimiter
 
 character(kind=c_char)          :: cstr(fnlen)
@@ -73,13 +73,13 @@ character(kind=c_char)          :: cstr(fnlen)
 !  character(LEN=1)                      :: objectType  'f', 'g', 'd', 'a', 't', 's'
 !  character(fnlen)                      :: objectName
 !  integer(HID_T)                        :: objectID
-!  type(HDFobjectStackType),pointer      :: next
+!  type(HDFobjectStackType)              :: next
 !
 ! currently, the HDFsupport routines only use 'f' and 'g' entries so we only test those.
 
 !====================================
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! determine the pathname delimiter character
 EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()

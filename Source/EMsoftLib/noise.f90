@@ -142,6 +142,7 @@ real(kind=sgl) FUNCTION ran(idum)
  IMPLICIT NONE
  INTEGER, PARAMETER :: K4B=selected_int_kind(9)
  INTEGER(K4B), INTENT(INOUT) :: idum
+!f2py intent(in,out) ::  idum
 ! “Minimal” random number generator of Park and Miller combined with a Marsaglia shift sequence. 
 ! Returns a uniform random deviate between 0.0 and 1.0 (exclusive of the endpoint values). 
 ! This fully portable, scalar generator has the “traditional” (not Fortran 90) calling 
@@ -183,6 +184,7 @@ real(kind=sgl)            :: OLDM=-1.0, T, G, EM, SQ, ALXM, Y
 integer(kind=irg)         :: ifault
 INTEGER, PARAMETER :: K4B=selected_int_kind(9)
 INTEGER(K4B), INTENT(INOUT) :: IDUM
+!f2py intent(in,out) ::  IDUM
 
 
 ! start here:

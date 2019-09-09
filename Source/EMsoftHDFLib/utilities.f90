@@ -87,9 +87,9 @@ integer(kind=irg)                     :: hdferr, pgnum, i
 integer(HSIZE_T)                      :: dims(1)
 real(kind=dbl),allocatable            :: cpm(:)
 
-type(HDFobjectStackType),pointer      :: HDF_head_local
+type(HDFobjectStackType)              :: HDF_head_local
 
-nullify(HDF_head_local)
+nullify(HDF_head_local%next)
 
 filename = trim(EMsoft_getXtalpathname())//trim(xtalname)
 filename = EMsoft_toNativePath(filename)
@@ -118,7 +118,7 @@ dataset = SC_LatticeParameters
 
 ! and close the xtal file
   call HDF_pop(HDF_head_local,.TRUE.)
-  nullify(HDF_head_local)
+  nullify(HDF_head_local%next)
 else
   call Message('getXtalData','Error reading xtal file '//trim(filename))
   call Message('Writing default lattice parameter set; .ctf/.ang file will need to be edited manually')

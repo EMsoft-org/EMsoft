@@ -107,7 +107,7 @@ integer(kind=irg),parameter            :: numfrac = 21
 logical                                :: verbose, iv, overwrite
 character(6)                           :: sqorheA, sqorheB
 character(fnlen)                       :: outstr, datafile, xtalnameA, xtalnameB
-type(unitcell),pointer                 :: cellA, cellB
+type(unitcell)                         :: cellA, cellB
 type(DynType),save                     :: DynA, DynB
 type(gnode),save                       :: rlpA, rlpB
 real(kind=sgl)                         :: dmin, voltage, TTAB(3,3), TT(3,3), io_real(3), cA, cB, scl, fA(numfrac), om(3,3), &
@@ -116,7 +116,7 @@ real(kind=dbl)                         :: edge, xy(2), xyz(3), txyz(3), txy(2), 
 type(orientation)                      :: orel    
 real(kind=sgl),allocatable             :: master(:,:,:), masterLC(:,:,:), masterSP(:,:,:), masterNH(:,:,:,:), & 
                                           masterSH(:,:,:,:), ccA(:), ccB(:), SPNH(:,:,:), SPSH(:,:,:)
-type(HDFobjectStackType),pointer       :: HDF_head
+type(HDFobjectStackType)               :: HDF_head
 character(fnlen,kind=c_char)           :: line2(1)
 integer(HSIZE_T)                       :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)                       :: dims3(3), cnt3(3), offset3(3)
@@ -239,8 +239,8 @@ end if
 !=============================
 ! ok, we're in business... let's initialize the crystal structures so that we
 ! can compute the orientation relation matrix
-nullify(cellA,cellB)
-allocate(cellA,cellB)
+! nullify(cellA,cellB)
+! allocate(cellA,cellB)
 dmin=0.05
 voltage = 30000.0
 
@@ -393,7 +393,7 @@ if (trim(enl%overlapmode).eq.'series') then
   call Message('completed LC conversion')
 
   ! finally, create simple HDF5 file with only the overlap master array in it
-  nullify(HDF_head)
+  nullify(HDF_head%next)
   ! Initialize FORTRAN interface.
   call h5open_f(hdferr)
 
@@ -482,7 +482,7 @@ else    ! overlapmode = 'full'
   call Message(' completed SP conversion')
 
 ! overwrite the existing arrays in the output file 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)

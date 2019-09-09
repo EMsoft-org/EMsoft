@@ -13,7 +13,7 @@ endif()
 
 include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
-set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/DictionaryIndexing")
+set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/OM")
 set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
 set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
@@ -24,6 +24,12 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
   GetHDF5LinkLibraries(EMSOFT)
   set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib)
 
+  Add_EMsoft_Executable(TARGET EMOMmaster
+                              SOURCES ${APP_DIR}/EMOMmaster.f90 
+                              LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
+                              TEMPLATE ${TMPLT_DIR}/EMOMmaster.template 
+                              SOLUTION_FOLDER EMsoftPublic/OM
+                              INSTALL_PROGRAM TRUE)
 
 
 

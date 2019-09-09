@@ -63,7 +63,7 @@ character(fnlen)                        :: infile1, infile2, outfile          !<
 character(fnlen)                        :: progname, progdesc, mess, xtalname
 logical                                 :: f_exists, readonly
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 
 progname = 'EMmergefiles.f90'
@@ -144,7 +144,7 @@ else
 ! CrystalData group in the output file as well...
       energyfile = trim(infile1)
       energyfile = EMsoft_toNativePath(energyfile)
-      nullify(HDF_head)
+      nullify(HDF_head%next)
       call h5open_EMsoft(hdferr)
 ! open the MC file using the default properties.
       readonly = .TRUE.

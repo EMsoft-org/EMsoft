@@ -177,15 +177,21 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   IMPLICIT NONE
   
   type(EBSDIndexingNameListType),INTENT(INOUT)        :: dinl
+!f2py intent(in,out) ::  dinl
   type(MCCLNameListType),INTENT(INOUT)                :: mcnl
+!f2py intent(in,out) ::  mcnl
   type(EBSDMasterNameListType),INTENT(INOUT)          :: mpnl
+!f2py intent(in,out) ::  mpnl
   type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
+!f2py intent(in,out) ::  EBSDMCdata
   type(EBSDMPdataType),INTENT(INOUT)                  :: EBSDMPdata
+!f2py intent(in,out) ::  EBSDMPdata
   type(EBSDDetectorType),INTENT(INOUT)                :: EBSDdetector
+!f2py intent(in,out) ::  EBSDdetector
   character(fnlen),INTENT(IN)                         :: progname
   character(fnlen),INTENT(IN)                         :: nmldeffile
   
-  type(unitcell),pointer                              :: cell
+  type(unitcell)                                      :: cell
   type(DynType)                                       :: Dyn
   type(gnode)                                         :: rlp
   logical                                             :: verbose
@@ -282,7 +288,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   character(1000)                                     :: charline
   character(3)                                        :: stratt
   
-  type(HDFobjectStackType),pointer                    :: HDF_head
+  type(HDFobjectStackType)                            :: HDF_head
   
   call timestamp(datestring=dstr, timestring=tstrb)
   
@@ -296,7 +302,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
       dictfile = EMsoft_toNativePath(dictfile)
   
       call Message('-->  '//'Opening HDF5 dictionary file '//trim(dinl%dictfile))
-      nullify(HDF_head)
+      nullify(HDF_head%next)
   
       hdferr =  HDF_openFile(dictfile, HDF_head)
       if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
@@ -1074,7 +1080,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   tstop = tstop - tstart
   io_real(1) = float(totnumexpt)*float(FZcnt) / tstop
   call WriteValue('Number of pattern comparisons per second : ',io_real,1,"(/,F10.2)")
-  io_real(1) = float(totnumexpt) / tstop
+  io_real(1) = float(totnumexpt)*float(dinl%nthreads) / tstop
   call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F10.2,/)")
   
   ! ===================
@@ -1168,6 +1174,7 @@ use HDF5
 use HDFsupport
 
 type(EBSDclusterNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 real(kind=dbl),allocatable                      :: rdata(:,:,:)
 
 character(len=1), allocatable                   :: cdata(:,:,:)
@@ -1175,11 +1182,11 @@ integer(kind=irg)                               :: hdferr, i, j, k
 integer(HSIZE_T)                                :: rdims(3)
 character(fnlen)                                :: datafile, groupname, dataset
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 ! Initialize FORTRAN interface.
 !
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! Open the HDF5 file  in readonly mode
 datafile = trim(EMsoft_getEMdatapathname())//trim(enl%inputfilename)
@@ -1258,6 +1265,7 @@ type(EBSDclusterNameListType),INTENT(IN):: enl
 integer(kind=irg),INTENT(IN)            :: dims(3)
 integer(kind=irg),INTENT(IN)            :: w
 real(kind=dbl),INTENT(INOUT)            :: rdata(dims(1),dims(2),dims(3))
+!f2py intent(in,out) ::  rdata
 logical,INTENT(IN),OPTIONAL             :: applymask
 logical,INTENT(IN),OPTIONAL             :: normalize
 
@@ -1380,6 +1388,7 @@ use error
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDLargeAccumDIType),pointer              :: acc
 character(fnlen),INTENT(IN),OPTIONAL            :: efile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1492,6 +1501,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDMasterDIType),pointer                  :: master
 character(fnlen),INTENT(IN),OPTIONAL            :: mfile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1511,7 +1521,7 @@ integer(HSIZE_T)                                :: dims(1), dims4(4)
 character(fnlen)                                :: groupname, dataset, masterfile
 character(fnlen),allocatable                    :: stringarray(:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
@@ -1521,7 +1531,7 @@ end if
 ! open the fortran HDF interface
 if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -1665,6 +1675,7 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDLargeAccumDIType),pointer              :: acc
 type(EBSDMasterDIType),pointer                  :: master
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -1838,6 +1849,7 @@ use Lambert
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
 type(EBSDLargeAccumDIType),pointer              :: acc
 type(EBSDMasterDIType),pointer                  :: master
 integer(kind=irg),INTENT(IN)                    :: nlines
@@ -2116,6 +2128,7 @@ use HDFsupport
 IMPLICIT NONE
 
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 logical,INTENT(OUT)                                 :: holdexpt
 logical,INTENT(OUT)                                 :: holddict
 
@@ -2289,8 +2302,10 @@ IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                         :: dpfile
 type(EBSDIndexingNameListType),INTENT(INOUT)        :: ebsdnl
+!f2py intent(in,out) ::  ebsdnl
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(EBSDDIdataType),INTENT(INOUT)                  :: EBSDDIdata
+!f2py intent(in,out) ::  EBSDDIdata
 logical,INTENT(IN),OPTIONAL                         :: getADP
 logical,INTENT(IN),OPTIONAL                         :: getAverageOrientations
 logical,INTENT(IN),OPTIONAL                         :: getCI
@@ -2316,7 +2331,7 @@ logical,INTENT(IN),OPTIONAL                         :: presentFolder
 
 character(fnlen)                                    :: infile, groupname, dataset
 logical                                             :: stat, readonly, g_exists
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
@@ -2345,7 +2360,7 @@ if (stat.eqv..FALSE.) then ! the file exists, so let's open it an first make sur
 end if 
    
 ! open the dot product file 
-nullify(HDF_head)
+nullify(HDF_head%next)
 readonly = .TRUE.
 hdferr =  HDF_openFile(infile, HDF_head, readonly)
 
@@ -2353,7 +2368,7 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
 dataset = 'EBSDDictionaryIndexingNML'
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists.eqv..FALSE.) then
     call FatalError('readEBSDDotProductFile','this is not an EBSD dot product file')
 end if
@@ -2382,7 +2397,7 @@ dataset = SC_ncubochoric
 ! There is an issue with the capitalization on this variable; needs to be resolved 
 ! [MDG 10/18/17]  We test to see if Ncubochoric exists; if it does not then we check
 ! for ncubochoric ...
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%ncubochoric)
 else
@@ -2391,7 +2406,7 @@ else
 end if
 
 dataset = SC_ROI
-call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then
     call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, iarray)
     ebsdnl%ROI(1:4) = iarray(1:4)
@@ -2720,7 +2735,7 @@ end if
 if (present(getRefinedDotProducts)) then
   if (getRefinedDotProducts.eqv..TRUE.) then
     dataset = SC_RefinedDotProducts
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%RefinedDotProducts)
     else
@@ -2732,7 +2747,7 @@ end if
 if (present(getRefinedEulerAngles)) then
   if (getRefinedEulerAngles.eqv..TRUE.) then
     dataset = SC_RefinedEulerAngles
-    call H5Lexists_f(HDF_head%objectID,trim(dataset),g_exists, hdferr)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
       call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%RefinedEulerAngles)
     else
@@ -2760,7 +2775,7 @@ dataset = SC_StepY
 
 ! and close the HDF5 dot product file
 call HDF_pop(HDF_head,.TRUE.)
-nullify(HDF_head)
+nullify(HDF_head%next)
  
 end subroutine readEBSDDotProductFile
 

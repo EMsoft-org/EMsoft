@@ -212,6 +212,7 @@ IMPLICIT NONE
 type(kvectorlist),pointer               :: ktail
 type(TDQCStructureType),pointer         :: QCcell
 integer(kind=irg),INTENT(INOUT)         :: numk
+!f2py intent(in,out) ::  numk
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(IN)            :: i
 integer(kind=irg),INTENT(IN)            :: j
@@ -512,6 +513,7 @@ IMPLICIT NONE
 type(kvectorlist),pointer               :: ktail
 type(QCStructureType),pointer           :: QCcell
 integer(kind=irg),INTENT(INOUT)         :: numk
+!f2py intent(in,out) ::  numk
 real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(IN)            :: i
 integer(kind=irg),INTENT(IN)            :: j
@@ -563,6 +565,7 @@ type(dicttype),pointer            :: dict
 integer(kind=irg),INTENT(IN)      :: npx
 integer(kind=irg),INTENT(IN)      :: numset
 real(kind=sgl),INTENT(INOUT)      :: Iarrayout(-npx:npx,-npx:npx,1:numset)
+!f2py intent(in,out) ::  Iarrayout
 real(kind=sgl),INTENT(IN)         :: Iarray(-npx:npx,-npx:npx,1:numset)
 character(fnlen),INTENT(IN)       :: QCtype
 
@@ -762,7 +765,9 @@ integer(kind=irg),INTENT(IN)      :: nsamples
 integer(kind=irg),INTENT(IN)      :: npy
 integer(kind=irg),INTENT(IN)      :: numset
 real(kind=sgl),INTENT(INOUT)      :: mLPNH(-npx:npx,-npx:npx,1:numset)
+!f2py intent(in,out) ::  mLPNH
 real(kind=sgl),INTENT(INOUT)      :: mLPSH(-npx:npx,-npx:npx,1:numset)
+!f2py intent(in,out) ::  mLPSH
 real(kind=sgl),INTENT(IN)         :: Iarray(0:nsamples-1,-npy:npy,1:numset)
 
 type(dicttype),pointer            :: dict

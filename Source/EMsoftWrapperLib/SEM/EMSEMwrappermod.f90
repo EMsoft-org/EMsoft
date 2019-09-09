@@ -876,7 +876,7 @@ character(fnlen)                        :: clPath=''
 character(len=1),INTENT(IN)             :: cancel
 
 ! local variables and parameters
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 character(4)                            :: mode
 integer(kind=ill)                       :: i=0, j=0, k=0, io_int(1)=0, num_max=0, totnum_el=0, ipg=0, isave=0, istat=0
 integer(kind=irg)                       :: nx=0, numEbins=0, numzbins=0, numangle=0, iang=0, cn=0, dn=0, totn=0
@@ -953,8 +953,8 @@ call C2F_configuration_strings(C_LOC(spar), CS)
 
 ! copy all the unit cell parameters into the proper fields and compute the 
 ! density parameters needed by the Monte Carlo routine; then discard the cell structure
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 ! lattice parameters
 cell%a = dble(latparm(1))
 cell%b = dble(latparm(2))
@@ -1005,7 +1005,7 @@ call CalcPositions(cell,'v')
 ! and now we have all we need to compute the density, average A and average Z
 call CalcDensity(cell, dens, avZ, avA)
 ! deallocate the cell structure
-deallocate(cell)
+! deallocate(cell)        
 
 ! and copy these values into the desired variables
 density = dble(dens)
@@ -1446,7 +1446,7 @@ character(fnlen,kind=c_char)                     :: line2(1)
 integer(kind=irg)       :: imh, imk, iml, gg(3)
 real(kind=sgl)          :: dhkl, ddt
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 type(reflisttype),pointer       :: reflist,firstw, rltmp
@@ -1496,8 +1496,8 @@ BetheParameters%c3 = fpar(14)
 !=============================================
 ! crystallography section
 
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 
 ! lattice parameters
@@ -2100,7 +2100,7 @@ real(kind=sgl),allocatable                   :: Eweights(:)
 real(kind=sgl),allocatable                   :: masterNH(:,:), masterSH(:,:), KBI(:)
 
 
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
 type(gnode),save                :: rlp
 
@@ -2192,8 +2192,8 @@ tpi = 2.D0*cPi
 !=============================================
 ! crystallography section
 
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 ! lattice parameters
 cell%a = dble(latparm(1))

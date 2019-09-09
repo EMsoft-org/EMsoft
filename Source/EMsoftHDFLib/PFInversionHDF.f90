@@ -74,9 +74,9 @@ character(1),dimension(fnlen),INTENT(IN)        :: xtalname
 
 character(fnlen)                                :: xtalname2, fname
 character(1)                                    :: rchar
-type(unitcell),pointer                          :: cell
+type(unitcell)                                  :: cell
 integer(kind=irg)                               :: eqvplanes(48,3), ii, pgnum, hdferr
-type(HDFobjectStackType),pointer                :: HDF_head_cell
+type(HDFobjectStackType)                        :: HDF_head_cell
 
 type(gnode)                                     :: rlp
 type(DynType)                                   :: Dyn
@@ -84,8 +84,8 @@ real(kind=sgl)                                  :: dmin, voltage
 logical                                         :: verbose2
 
 xtalname2 = ''
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 ! just some arbitrary values
 dmin = 0.04
@@ -105,7 +105,7 @@ end do
 !cell%SG%SYM_reduce=.TRUE.
 !cell%fname = xtalname2
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(xtalname2)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)
@@ -163,10 +163,10 @@ character(1),dimension(fnlen),INTENT(IN)      :: xtalname
 
 character(fnlen)                              :: xtalname2, fname
 character(1)                                  :: rchar
-type(unitcell),pointer                        :: cell
+type(unitcell)                                :: cell
 integer(kind=irg)                             :: eqvplanes(48,3), num, ii, pgnum, hdferr
 integer(kind=irg),allocatable                 :: PFhkl_eqv(:,:)
-type(HDFobjectStackType),pointer              :: HDF_head_cell
+type(HDFobjectStackType)                      :: HDF_head_cell
 
 type(gnode)                                   :: rlp
 type(DynType)                                 :: Dyn
@@ -180,8 +180,8 @@ voltage = 30.0
 verbose2 = .FALSE.
 
 xtalname2 = ''
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 call ResetCell(cell)
 
@@ -196,7 +196,7 @@ end do
 !cell%SG%SYM_reduce=.TRUE.
 !cell%fname = xtalname2
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(xtalname2)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)
@@ -243,6 +243,7 @@ use stringconstants
 type(PFInversionNameListType),INTENT(IN)            :: epf
 type(PoleFigures),pointer                           :: PF
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
@@ -250,7 +251,7 @@ real(kind=dbl),INTENT(IN)                           :: ODF(-epf%ncub:epf%ncub,-e
 !integer(kind=irg),INTENT(IN)                        :: row(epf%nnz), col(epf%nnz)
 real(kind=dbl),INTENT(IN)                           :: PFrecon(-epf%nLam:epf%nLam,-epf%nLam:epf%nLam,epf%nfiles)
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(15)                                       :: tstre
 character(fnlen)                                    :: str
@@ -263,7 +264,7 @@ nmlname = 'PFInversionNML'
 
 allocate(stringarray(1))
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 call timestamp(timestring=tstre)
 
 ! Create a new file using the default properties.
@@ -465,8 +466,8 @@ use stringconstants
 type(PFInversionNameListType), INTENT(IN)      :: epf
 type(PoleFigures),pointer                      :: PF
 logical, optional                              :: verbose
-type(unitcell),pointer                         :: cell
-type(HDFobjectStackType),pointer               :: HDF_head_cell
+type(unitcell)                                 :: cell
+type(HDFobjectStackType)                       :: HDF_head_cell
 
 logical                                        :: pout, f_exists
 character(fnlen)                               :: ename, fname
@@ -486,12 +487,12 @@ verbose2 = .FALSE.
 
 ! load the crystal structure file, which also computes all the important 
 ! matrices as well as all the symmetry arrays
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 cell%SG%SYM_reduce=.TRUE.
 cell%fname = trim(epf%xtalname)
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
 fname = EMsoft_toNativePath(fname)
 hdferr =  HDF_openFile(fname, HDF_head_cell)
@@ -589,6 +590,7 @@ IMPLICIT NONE
 
 character(1),dimension(fnlen),INTENT(IN)         :: nmldeffile2
 integer(kind=irg),target,INTENT(INOUT)           :: mm, nn, nnz
+!f2py intent(in,out) ::  mm, nn, nnz
 integer(kind=irg),INTENT(OUT)                    :: nnzcolp(nn+1), nnzcolidp(nnz)
 real(kind=dbl),INTENT(OUT)                       :: nnzvalssortedp(nnz)
 
@@ -597,7 +599,7 @@ logical                            :: verbose
 type(PFInversionNameListType)      :: epf
 type(PoleFigures),pointer          :: PF
 
-type(unitcell),pointer             :: cell
+type(unitcell)                     :: cell
 type(DynType)                      :: Dyn
 type(gnode)                        :: rlp
 integer(kind=irg)                  :: eqvplanes(48,3)
@@ -632,7 +634,7 @@ character(1)                       :: rchar
 integer(kind=irg)                  :: kwidth
 real(kind=dbl),allocatable,target  :: X(:)
 
-type(HDFobjectStackType),pointer   :: HDF_head_cell
+type(HDFobjectStackType)           :: HDF_head_cell
 type(sparse_ll),pointer            :: sparseA, sparseA2, tailA, tailA2
 
 type(MRCstruct)                    :: MRCheader
@@ -674,10 +676,10 @@ dtor        = cPi/180.D0
 delta       = 1.D0/dble(nLam)
 
 ! allocate cell
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
-nullify(HDF_head_cell)
+nullify(HDF_head_cell%next)
 fname   = trim(EMsoft_getXtalpathname())//trim(xtalname)
 fname   = EMsoft_toNativePath(fname)
 hdferr  =  HDF_openFile(fname, HDF_head_cell)

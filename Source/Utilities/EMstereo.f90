@@ -61,7 +61,7 @@ character(1)                    :: sp
 logical                         :: topbot
 integer(kind=irg)               :: iview(3), io_int(3), imanum
 character(fnlen)                :: progname, progdesc, gname
-type(unitcell),pointer          :: cell
+type(unitcell)                  :: cell
 logical                         :: loadingfile
 type(postscript_type)           :: PS
 
@@ -71,8 +71,6 @@ type(postscript_type)           :: PS
 
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 925 /), progname)
-  
- allocate(cell)
 
  cell % SG % SYM_reduce=.TRUE.
  topbot=.FALSE.

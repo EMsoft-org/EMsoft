@@ -143,7 +143,7 @@ character(15)                                   :: tstrb
 character(15)                                   :: tstre
 logical                                         :: overwrite = .TRUE., insert = .TRUE., readonly, stat, verbose
 integer(kind=irg)                               :: hdferr
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 integer(kind=irg)                               :: i, j
 
@@ -243,7 +243,7 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
 
 ! open the fortran HDF interface
     call h5open_EMsoft(hdferr)
-    nullify(HDF_head)
+    nullify(HDF_head%next)
 
     ! 1. read the Monte Carlo data 
     call readEBSDMonteCarloFile(enl%masterfile, mcnl, hdferr, EBSDMCdata, getAccume=.TRUE.)
@@ -438,7 +438,7 @@ else if(trim(enl%modalityname) .eq. 'ECP') then
 ! open the fortran HDF interface
     call h5open_EMsoft(hdferr)
 
-    nullify(HDF_head, HDF_head)
+    nullify(HDF_head%next)
 
 ! is this a propoer HDF5 file ?
     call h5fis_hdf5_f(trim(EMsoft_getEMdatapathname())//trim(enl%masterfile), stat, hdferr)

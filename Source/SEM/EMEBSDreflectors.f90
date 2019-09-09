@@ -153,14 +153,14 @@ real(kind=sgl),allocatable                   :: Eweights(:)
 real(kind=sgl),allocatable                   :: srtmp(:,:,:,:), mLPNH(:,:,:), mLPSH(:,:,:), masterNH(:,:), masterSH(:,:), KBI(:)
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(DynType),save      :: Dyn
 type(gnode),save        :: rlp
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 verbose = .FALSE.
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 thr = 1.E-5
 space = 'r'
@@ -219,8 +219,8 @@ masterSH = masterSH / sd
 ! Kikuchi band...
 
 ! initialize the crystal structure and compute a list of potential reflectors 
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 ! get the crystal structure from the *.xtal file
 verbose = .TRUE.

@@ -73,7 +73,7 @@ integer(kind=irg),INTENT(IN)        :: nLam
 real(kind=dbl),INTENT(OUT)          :: PFLam(-nLam:nLam,-nLam:nLam)
 integer(kind=irg),INTENT(IN)        :: pgnum
 integer(kind=irg),INTENT(IN)        :: neqv
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 
 real(kind=dbl)                      :: lamx(-nlam:nlam), lamy(-nlam:nlam)
 real(kind=dbl)                      :: lam(2), xyz(3), hcrossy(3), PFhkl_f(3), PFhkl_dbl(3)
@@ -241,7 +241,7 @@ integer(kind=irg),INTENT(IN)        :: PFhkl(3)
 integer(kind=irg),INTENT(IN)        :: nLam
 real(kind=dbl),INTENT(IN)           :: PFLam(-nLam:nLam,-nLam:nLam)
 integer(kind=irg),INTENT(IN)        :: pgnum
-type(unitcell),pointer              :: cell
+type(unitcell)                      :: cell
 
 real(kind=dbl)                       :: xy(2), PFhkl_f(3), xyz(3), hcrossy(3), PFhkl_dbl(3)
 integer(kind=irg)                    :: ii, jj, kk, ll, ierr, nth
@@ -391,6 +391,7 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)          :: xy(2)
 real(kind=dbl),INTENT(IN)          :: radius
 integer(kind=irg),INTENT(INOUT)    :: ierr
+!f2py intent(in,out) ::  ierr
 real(kind=dbl),INTENT(OUT)         :: xyz(3)
 real(kind=dbl)                     :: qq, q
 
@@ -440,6 +441,7 @@ use Lambert
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)   :: xyz(3)
+!f2py intent(in,out) ::  xyz
 real(kind=dbl),INTENT(IN)      :: PFLam(-nLam:nLam,-nLam:nLam)
 integer(kind=irg),INTENT(IN)   :: nLam
 real(kind=dbl),INTENT(OUT)     :: res
@@ -736,7 +738,9 @@ use typedefs
 IMPLICIT NONE
 
 type(MRCstruct),INTENT(INOUT)                 :: MRCheader
+!f2py intent(in,out) ::  MRCheader
 type(FEIstruct),INTENT(INOUT)                 :: FEIheaders(1024)
+!f2py intent(in,out) ::  FEIheaders
 character(fnlen),INTENT(IN)                   :: fname
 integer(kind=irg),INTENT(IN)                  :: numx, numy, numz
 
@@ -796,6 +800,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)        :: ncub
 real(kind=dbl),INTENT(INOUT)        :: ODFlin((2*ncub+1)**3)
+!f2py intent(in,out) ::  ODFlin
 type(dicttype),pointer              :: dict
 
 real(kind=dbl),allocatable          :: ODF(:,:,:)

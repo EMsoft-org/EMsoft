@@ -174,7 +174,7 @@ character(15)                           :: tstre
 character(fnlen)                        :: groupname, dataset, outname, Image_filename, fname
 character(fnlen,kind=c_char)            :: line2(1)
 
-type(unitcell),pointer                  :: cell
+type(unitcell)                          :: cell
 type(gnode)                             :: rlp
 type(DynType)                           :: Dyn
 type(kvectorlist),pointer               :: khead, ktmp
@@ -183,7 +183,7 @@ type(BetheParameterType)                :: BetheParameters
 type(reflisttype),pointer               :: reflist, firstw, rltmp, rltmpa, rltmpb
 type(defecttype)                        :: defects
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
 ! declare variables for use in object oriented image module
 integer                                 :: iostat
@@ -195,12 +195,12 @@ integer(int8), allocatable              :: montage(:,:)
 
  ECCI = .TRUE.
  
- nullify(HDF_head)
+ nullify(HDF_head%next)
  nullify(khead)
  nullify(ktmp)
 
- nullify(cell)
- allocate(cell)
+ !nullify(cell)        
+ !allocate(cell)        
   
  call timestamp(datestring=dstr, timestring=tstrb)
  call cpu_time(tstart)
@@ -522,7 +522,7 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
 ! store necessary data in data file
   call Message('Storing output ECCIs in '//trim(eccinl%dataname),"(A/)")
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 
@@ -822,7 +822,7 @@ call Message('  done',"(A)")
 ! and here we write the current image to the datafile; we also update the timestamp
   call timestamp(datestring=dstr, timestring=tstre)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN HDF interface.
   call h5open_EMsoft(hdferr)
 

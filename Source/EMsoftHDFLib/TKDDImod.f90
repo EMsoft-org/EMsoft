@@ -93,6 +93,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDMasterDIType),pointer                   :: master
 character(fnlen),INTENT(IN),OPTIONAL            :: mfile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -112,7 +113,7 @@ integer(HSIZE_T)                                :: dims(1), dims4(4)
 character(fnlen)                                :: groupname, dataset, masterfile
 character(fnlen),allocatable                    :: stringarray(:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 HDFopen = .TRUE.
 if (present(NoHDFInterfaceOpen)) then
@@ -122,7 +123,7 @@ end if
 ! open the fortran HDF interface
 if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-nullify(HDF_head, HDF_head)
+nullify(HDF_head%next)
 
 ! is the mfile parameter present? If so, use it as the filename, otherwise use the enl%masterfile parameter
 if (PRESENT(mfile)) then
@@ -267,6 +268,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumDIType),pointer               :: acc
 type(TKDMasterDIType),pointer                   :: master
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -442,6 +444,7 @@ use stringconstants
 IMPLICIT NONE
 
 type(TKDIndexingNameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
 type(TKDLargeAccumDIType),pointer               :: acc
 character(fnlen),INTENT(IN),OPTIONAL            :: efile
 logical,INTENT(IN),OPTIONAL                     :: verbose
@@ -455,7 +458,7 @@ character(fnlen),allocatable                    :: stringarray(:)
 
 integer(kind=irg),allocatable                   :: acc_e(:,:,:),acc_z(:,:,:,:)
 
-type(HDFobjectStackType),pointer                :: HDF_head
+type(HDFobjectStackType)                        :: HDF_head
 
 
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
@@ -482,7 +485,7 @@ if (stat) then
 ! open the fortran HDF interface
   if (HDFopen.eqv..TRUE.) call h5open_EMsoft(hdferr)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 
 ! open the MC file using the default properties.
   readonly = .TRUE.

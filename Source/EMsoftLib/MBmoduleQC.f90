@@ -116,6 +116,7 @@ type(TDQCStructureType),pointer     :: QCcell
 type(TDQCreflisttype),pointer       :: listroot
 type(TDQCreflisttype),pointer       :: listrootw
 complex(kind=dbl),INTENT(INOUT)     :: DynMat(nns,nns)
+!f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)        :: nns
 integer(kind=irg),INTENT(IN)        :: nnw
 character(5),INTENT(IN),OPTIONAL    :: BlochMode   ! 'Bloch' or 'Struc'
@@ -258,6 +259,7 @@ IMPLICIT NONE
 type(TDQCStructureType),pointer         :: QCcell
 type(TDQCreflisttype),pointer           :: listroot
 complex(kind=dbl),INTENT(INOUT)         :: DynMat(nref,nref)
+!f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)            :: nref
 
 complex(kind=dbl)                       :: czero, ughp, uhph, weaksum, qg0
@@ -350,6 +352,7 @@ type(QCStructureType),pointer    :: QCcell
 type(QCreflisttype),pointer      :: listroot
 type(QCreflisttype),pointer      :: listrootw
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nns,nns)
+!f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)     :: nns
 integer(kind=irg),INTENT(IN)     :: nnw
 character(5),INTENT(IN),OPTIONAL :: BlochMode   ! 'Bloch' or 'Struc'
@@ -498,6 +501,7 @@ IMPLICIT NONE
 type(QCStructureType),pointer           :: QCcell
 type(QCreflisttype),pointer             :: listroot
 complex(kind=dbl),INTENT(INOUT)         :: DynMat(nref,nref)
+!f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)            :: nref
 
 complex(kind=dbl)                       :: czero, ughp, uhph, weaksum, qg0
@@ -571,7 +575,9 @@ type(TDQCreflisttype),pointer           :: reflist
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
 complex(kind=dbl),INTENT(INOUT)         :: Sgh(nn,nn,numset)
+!f2py intent(in,out) ::  Sgh
 integer(kind=irg),INTENT(INOUT)         :: nat(100)
+!f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(5), ikk, n
 real(kind=sgl)                          :: Znsq, DBWF, kkl1, kkl2, kkl3
@@ -656,7 +662,9 @@ type(QCreflisttype),pointer             :: reflist
 integer(kind=irg),INTENT(IN)            :: nn
 integer(kind=irg),INTENT(IN)            :: numset
 complex(kind=dbl),INTENT(INOUT)         :: Sgh(nn,nn,numset)
+!f2py intent(in,out) ::  Sgh
 integer(kind=irg),INTENT(INOUT)         :: nat(100)
+!f2py intent(in,out) ::  nat
 
 integer(kind=irg)                       :: ip, ir, ic, kkk(6), ikk, n
 real(kind=sgl)                          :: Znsq, DBWF, kkl1, kkl2

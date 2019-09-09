@@ -84,7 +84,7 @@ real(kind=dbl),allocatable      :: darr2(:,:), darr3(:,:,:), darr4(:,:,:,:)
 real(kind=dbl),allocatable      :: darr2_save(:,:), darr3_save(:,:,:), darr4_save(:,:,:,:)
 
 
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 character(len=1)                :: EMsoftnativedelimiter
 
 
@@ -124,7 +124,7 @@ darr4 = 0.D0
 
 !====================================
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! determine the pathname delimiter character
 EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
@@ -308,7 +308,7 @@ darr4_save = darr4
 !====================================
 ! next, we overwrite portions of the existing arrays with partial hyperslabs
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! determine the pathname delimiter character
 EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
@@ -473,7 +473,7 @@ deallocate( carr2, carr3, carr4, iarr2, iarr3, iarr4, farr2, farr3, farr4, darr2
 !====================================
 ! next, we read the hyperslabs from the HDF5 file
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! initialize the fortran HDF interface
 CALL h5open_EMsoft(hdferr)

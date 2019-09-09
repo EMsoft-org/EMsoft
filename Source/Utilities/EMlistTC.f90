@@ -58,7 +58,7 @@ integer(kind=irg)           :: io_int3(3), io_int4(4), io_int7(7), nvec(3), bvec
 real(kind=dbl)              :: cnvec(3), cbvec(3), t(3), om(3,3)
 character(fnlen)            :: progname, progdesc, gname
 type(orientationtyped)      :: res
-type(unitcell),pointer      :: cell
+type(unitcell)              :: cell
 integer(kind=irg)           :: ntmp(48,3), btmp(48,3), i, j, k, nnum, bnum, ntc, FZtype, FZorder, pgnum
 integer(kind=irg), allocatable :: ortho(:,:)
 type(dicttype),pointer      :: dict
@@ -72,7 +72,6 @@ call EMsoft(progname, progdesc)
 ! deal with the command line arguments, if any
 call Interpret_Program_Arguments(1,(/ 916 /), progname)
 
-allocate(cell)
 ! ask for the crystal structure file
 cell % SG % SYM_reduce=.FALSE.
 call ReadValue(' Enter xtal file name : ', gname,"(A)")

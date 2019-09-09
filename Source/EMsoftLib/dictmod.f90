@@ -208,6 +208,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: N
 integer(kind=irg),INTENT(INOUT)         :: seed
+!f2py intent(in,out) ::  seed
 real(kind=dbl)                          :: ranSphere(3,N)
 
 real(kind=dbl)                          :: nq, NR(N*3), randNorm(3,N)
@@ -251,6 +252,7 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)            :: N
 integer(kind=irg),INTENT(INOUT)         :: seed
+!f2py intent(in,out) ::  seed
 real(kind=dbl),INTENT(IN)               :: mu(4)
 real(kind=dbl),INTENT(IN)               :: kappa
 character(3),INTENT(IN)                 :: Dtype
@@ -318,6 +320,7 @@ IMPLICIT NONE
 integer(kind=irg),INTENT(IN)            :: N
 real(kind=dbl),INTENT(IN)               :: k
 integer(kind=irg),INTENT(INOUT)         :: seed
+!f2py intent(in,out) ::  seed
 character(3),INTENT(IN)                 :: Dtype
 real(kind=dbl)                          :: t(N)
 
@@ -366,6 +369,7 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: k
 real(kind=dbl),INTENT(INOUT)            :: C
+!f2py intent(in,out) ::  C
 character(3),INTENT(IN)                 :: Dtype
 real(kind=dbl)                          :: LBM(2)
 
@@ -434,6 +438,7 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)       :: x
 real(kind=dbl),INTENT(IN)       :: k
 real(kind=dbl),INTENT(INOUT)    :: C
+!f2py intent(in,out) ::  C
 real(kind=dbl)                  :: y
 
 
@@ -479,6 +484,7 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)       :: x
 real(kind=dbl),INTENT(IN)       :: k
 real(kind=dbl),INTENT(INOUT)    :: C
+!f2py intent(in,out) ::  C
 real(kind=dbl)                  :: y
 
 real(kind=dbl),parameter        :: CC = 144.43253338822560946D0         ! 256/sqrt(pi)
@@ -540,6 +546,7 @@ use math
 IMPLICIT NONE
 
 type(dicttype),INTENT(INOUT)    :: dict
+!f2py intent(in,out) ::  dict
 character(3),INTENT(IN)         :: Dtype
 
 integer(kind=irg)               :: i
@@ -735,8 +742,10 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: X(4,nums)
 type(dicttype),INTENT(INOUT)    :: dict
+!f2py intent(in,out) ::  dict
 integer(kind=irg),INTENT(IN)            :: nums
 integer(kind=irg),INTENT(INOUT)         :: seed
+!f2py intent(in,out) ::  seed
 real(kind=dbl),INTENT(OUT)              :: muhat(4)
 real(kind=dbl),INTENT(OUT)              :: kappahat
 character(3),INTENT(IN)                 :: Dtype
@@ -1047,12 +1056,15 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: X(4,nums)
 type(dicttype),INTENT(INOUT)    :: dict
+!f2py intent(in,out) ::  dict
 integer(kind=irg),INTENT(IN)            :: Pmdims
 integer(kind=irg),INTENT(IN)            :: nums
 real(kind=dbl),INTENT(IN)               :: MuKa(5)
 real(kind=dbl),INTENT(IN)               :: R(nums,Pmdims)
 real(kind=dbl),INTENT(INOUT)            :: Q
+!f2py intent(in,out) ::  Q
 real(kind=dbl),INTENT(INOUT)            :: L
+!f2py intent(in,out) ::  L
 character(3),INTENT(IN)                 :: Dtype
 
 real(kind=dbl)                          :: Phi(nums,Pmdims), PmMu(4), qu(4), C, oldQ, oldL
@@ -1349,7 +1361,7 @@ use symmetry
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)               :: ro(4)
-type(unitcell),pointer,INTENT(IN)       :: cell
+type(unitcell)        ,INTENT(IN)       :: cell
 integer(kind=irg),INTENT(IN)            :: FZtype
 integer(kind=irg),INTENT(IN)            :: FZorder
 real(kind=dbl),INTENT(OUT)              :: roMFZ(4)
@@ -1617,6 +1629,7 @@ IMPLICIT NONE
 real(kind=sgl),INTENT(IN)               :: eu1(3)
 real(kind=sgl),INTENT(IN)               :: eu2(3)
 type(dicttype),INTENT(INOUT)            :: dict
+!f2py intent(in,out) ::  dict
 real(kind=sgl),INTENT(OUT)              :: disang
 real(kind=dbl),OPTIONAL,INTENT(OUT)     :: ax(3)
 
@@ -1829,6 +1842,7 @@ integer(kind=irg),INTENT(IN)            :: wd
 integer(kind=irg),INTENT(IN)            :: ht
 real(kind=sgl),INTENT(IN)               :: eulers(3, wd*ht)
 type(dicttype),INTENT(INOUT)            :: dict
+!f2py intent(in,out) ::  dict
 real(kind=sgl),INTENT(OUT)              :: ADMap(wd,ht)
 
 integer(kind=irg)                       :: i, j, ic, icr, ict
@@ -1910,6 +1924,7 @@ integer(kind=irg),INTENT(IN)            :: wd
 integer(kind=irg),INTENT(IN)            :: ht
 real(kind=dbl),INTENT(IN)               :: eulers(3, wd*ht)
 type(dicttype),INTENT(INOUT)            :: dict
+!f2py intent(in,out) ::  dict
 real(kind=dbl),INTENT(OUT)              :: ADMap(wd,ht)
 
 integer(kind=irg)                       :: i, j, ic, icr, ict

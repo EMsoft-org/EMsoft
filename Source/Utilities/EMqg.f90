@@ -64,7 +64,7 @@ real(kind=sgl)                 :: preg, dmin, gstepsize
 real(kind=dbl)				   :: eps = 1.0D-6
 character(fnlen)               :: progname, progdesc, gname
 character(200)                 :: parta
-type(unitcell),pointer         :: cell
+type(unitcell)                 :: cell
 logical                        :: isallowed
 type(gnode)                    :: rlp
 
@@ -75,8 +75,6 @@ type(gnode)                    :: rlp
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 920 /), progname)
 
- allocate(cell)
- 
  call ReadValue(' Enter xtal file name : ', gname,"(A)")
  cell%fname = trim(gname)
  call CrystalData(cell)

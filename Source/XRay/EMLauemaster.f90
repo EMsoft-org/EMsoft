@@ -121,8 +121,8 @@ character(fnlen),INTENT(IN)                :: progname
 character(fnlen),INTENT(IN)                :: nmldeffile
 
 logical 								                   :: verbose
-type(HDFobjectStackType),pointer           :: HDF_head
-type(unitcell),pointer                     :: cell
+type(HDFobjectStackType)                   :: HDF_head
+type(unitcell)                             :: cell
 type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp
 real(kind=sgl),allocatable                 :: mLPNH(:,:), mLPSH(:,:), masterSPNH(:,:), masterSPSH(:,:)
@@ -158,8 +158,8 @@ character(15)                              :: tstre
 ! hdfname
 
 
-nullify(HDF_head)
-nullify(cell)
+nullify(HDF_head%next)
+!nullify(cell)        
 
 call timestamp(datestring=dstr, timestring=tstrb)
 call cpu_time(tstart)
@@ -167,7 +167,7 @@ call cpu_time(tstart)
 !=============================================
 !=============================================
 ! crystallography section; 
- allocate(cell)
+ !allocate(cell)        
  verbose = .TRUE.
 
 ! clear the cell variable (set everything to zero)
@@ -308,7 +308,7 @@ deallocate(TIFF_image)
 ! save everything to HDF5 file
   call timestamp(datestring=dstr, timestring=tstre)
 
-  nullify(HDF_head)
+  nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
 

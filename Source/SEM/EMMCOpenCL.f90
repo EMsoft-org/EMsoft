@@ -128,7 +128,7 @@ character(fnlen),INTENT(IN)             :: progname
 character(fnlen),INTENT(IN)             :: nmldeffile
 
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(DynType)           :: Dyn
 type(gnode)             :: rlp
 
@@ -197,20 +197,20 @@ integer(c_size_t)      :: cnum, cnuminfo
 character(fnlen)        :: groupname, dataset, instring, dataname, fname, sourcefile, datagroupname, attributename, HDF_FileVersion
 integer(kind=irg)       :: numangle, iang
 
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)
 integer(kind=irg)                 :: NumLines
 character(fnlen)                  :: SlackUsername, exectime
 character(100)                    :: c
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 
 numsy = mcnl%numsx
-nullify(cell)
-allocate(cell)
+!nullify(cell)        
+!allocate(cell)        
 
 ! get the crystal strucutre from the *.xtal file
 verbose = .TRUE.

@@ -79,6 +79,7 @@ use error
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 integer(kind=irg),INTENT(IN)                        :: ipar(10)
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(IN)                           :: eulerarray(3,ipar(4))
@@ -94,7 +95,7 @@ logical                                             :: stat, readonly, donotusei
 integer(HSIZE_T)                                    :: dims(1)
 real(kind=dbl),allocatable                          :: cellparams(:)
 
-type(HDFobjectStackType),pointer                    :: HDF_head_local
+type(HDFobjectStackType)                            :: HDF_head_local
 
 donotuseindexarray = .FALSE.
 if (present(noindex)) then
@@ -138,7 +139,7 @@ filename = EMsoft_toNativePath(filename)
 stat = .FALSE.
 
 call h5fis_hdf5_f(filename, stat, hdferr)
-nullify(HDF_head_local)
+nullify(HDF_head_local%next)
 
 
 if (stat) then
@@ -294,12 +295,16 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 integer(kind=irg),INTENT(INOUT)                     :: ipar(10)
+!f2py intent(in,out) ::  ipar
 real(kind=sgl),INTENT(IN)                           :: resultmain(ipar(1),ipar(2))
 integer(kind=irg),INTENT(IN)                        :: indexmain(ipar(1),ipar(2))
 real(kind=sgl),INTENT(INOUT)                        :: eulerarray(3,ipar(4))
+!f2py intent(in,out) ::  eulerarray
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
 
@@ -316,7 +321,7 @@ real(kind=sgl),allocatable                          :: exptCI(:), eangle(:), res
 integer(kind=1),allocatable                         :: iPhase(:), valid(:)
 integer(kind=irg),allocatable                       :: SEMsignal(:), lindexmain(:,:)
 
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 !=============================================================
 ! write the output in the format of an h5ecp file
@@ -326,7 +331,7 @@ type(HDFobjectStackType),pointer                    :: HDF_head
 
 allocate(stringarray(1))
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 call timestamp(timestring=tstre)
 
 ! Create a new file using the default properties.
@@ -492,12 +497,14 @@ use NameListHDFwriters
 IMPLICIT NONE
 
 type(ECPIndexingNameListType),INTENT(INOUT)         :: ecpnl
+!f2py intent(in,out) ::  ecpnl
 character(11),INTENT(INOUT)                         :: dstr
+!f2py intent(in,out) ::  dstr
 character(15),INTENT(IN)                            :: tstrb
 character(15),INTENT(IN)                            :: tstre
 character(fnlen),INTENT(IN)                         :: progname
 character(fnlen),INTENT(IN)                         :: nmldeffile
-type(HDFobjectStackType),pointer                    :: HDF_head
+type(HDFobjectStackType)                            :: HDF_head
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 character(fnlen)                                    :: groupname, dataset, nmlname, manufacturer

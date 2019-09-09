@@ -56,7 +56,7 @@ IMPLICIT NONE
 
 integer(C_INT32_T),INTENT(OUT)  :: res
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 integer(kind=irg)		:: i, j, k
 real(kind=dbl)			:: diff
 real(kind=sgl)			:: diffs
@@ -112,7 +112,7 @@ res = 0
 !===================================================
 
 ! nullify the cell pointer
-nullify(cell)
+!nullify(cell)        
 
 !===================================================
 ! in this test, we generate a crystal structure and then we test all the distance and angle 
@@ -130,7 +130,7 @@ nullify(cell)
 ! Al @ (0.2, 0.3, 0.4)
 ! Ti @ (0.5, 0.6, 0.7)
 !
-allocate(cell)
+!allocate(cell)        
 cell%fname = 'hypothetical.xtal'
 cell%a = 0.6_dbl
 cell%b = 0.7_dbl

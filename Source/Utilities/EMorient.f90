@@ -65,7 +65,7 @@ real(kind=sgl)    		:: rr(3),gg(3),g(3),r(3),M(3,3),negthresh,p(3),Ep(3,3),E(3,3
 real(kind=dbl)    		:: dE(3,3),dgg(3)
 integer(kind=irg) 		:: h,k,l,cr,hkl(3),iview(3),inm, i, ih, ik, il, imanum
 character(fnlen)		:: progname, progdesc, gname
-type(unitcell),pointer		:: cellA, cellB
+type(unitcell)        		:: cellA, cellB
 type(postscript_type)		:: PS
 logical				:: loadingfile
 
@@ -82,7 +82,7 @@ interface
 	real(kind=sgl),INTENT(IN)               :: CX, CY, CRad
 	integer(kind=irg),INTENT(INOUT)		:: iview(3)
 	character(1),INTENT(IN)		       	:: sp
-	type(unitcell),pointer       		:: cellA,cellB
+	type(unitcell)               		:: cellA,cellB
 	type(orientation),INTENT(IN)  		:: orel
 
 	end subroutine LocalDrawFrame
@@ -97,8 +97,6 @@ end interface
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 919 /), progname)
  
- allocate(cellA, cellB)
-
  inm=2
  cellA % SG % SYM_reduce=.TRUE.
  cellB % SG % SYM_reduce=.TRUE.
@@ -297,7 +295,7 @@ type(postscript_type),INTENT(INOUT)	:: PS
 real(kind=sgl),INTENT(IN)               :: CX, CY, CRad
 integer(kind=irg),INTENT(INOUT)		:: iview(3)
 character(1),INTENT(IN)		       	:: sp
-type(unitcell),pointer       		:: cellA,cellB
+type(unitcell)               		:: cellA,cellB
 type(orientation),INTENT(IN)  		:: orel
 
 character(17)      			:: str

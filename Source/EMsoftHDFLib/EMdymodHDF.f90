@@ -140,7 +140,7 @@ character(fnlen),INTENT(IN)             :: cpar(ncpar)
 real(kind=sgl),INTENT(OUT)              :: PEDpattern(ipar(2),ipar(2),ipar(4))
 real(kind=sgl),INTENT(IN)               :: quats(nq,ipar(4))
 
-type(unitcell),pointer,SAVE             :: cell
+type(unitcell)        ,SAVE             :: cell
 type(DynType),save                      :: Dyn
 type(gnode),save                        :: rlp
 type(reflisttype),pointer,SAVE          :: reflist, nexts, rltmpa
@@ -161,8 +161,8 @@ if (ipar(1).gt.0) then
 
 !=============================================
 ! crystallography section
-  nullify(cell)
-  allocate(cell)
+  !nullify(cell)        
+  !allocate(cell)        
   call Initialize_Cell(cell,Dyn,rlp,cpar(1), fpar(1), fpar(2))
 
 !=============================================
@@ -333,6 +333,7 @@ IMPLICIT NONE
 
 INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
 type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+!f2py intent(in,out) ::  argv
 REAL(c_float)                                   :: SinglePEDPatternWrapper
 
 ! wrapper function dependent declarations; they are all pointers 

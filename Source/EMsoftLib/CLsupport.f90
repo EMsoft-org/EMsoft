@@ -617,6 +617,7 @@ integer(kind=irg), INTENT(IN)            :: selnump
 integer(c_intptr_t),allocatable, target  :: device(:)
 integer(kind=irg), INTENT(OUT)           :: numd
 integer(kind=irg), INTENT(INOUT)         :: usenumd
+!f2py intent(in,out) ::  usenumd
 integer(kind=irg), INTENT(IN)            :: selnumd(usenumd)
 character(fnlen),allocatable,INTENT(OUT) :: devinfo(:)
 integer(c_intptr_t),allocatable, target  :: context(:)

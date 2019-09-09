@@ -83,9 +83,9 @@ real(kind=sgl),allocatable              :: Eulers(:,:), dplist(:,:), Eulerstmp(:
                                            resultmain(:,:), disor(:), disorient(:,:), OSMmap(:,:), IQmap(:), ADMap(:,:)
 integer(kind=irg),allocatable           :: tmi(:,:), tmitmp(:,:), indexmain(:,:)
 
-type(HDFobjectStackType),pointer        :: HDF_head
+type(HDFobjectStackType)                :: HDF_head
 
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 
 nmldeffile = 'EMAverageOrient.nml'
@@ -177,7 +177,7 @@ write (*,*) 'efile = ', trim(efile)
   ! open the fortran HDF interface
     call h5open_EMsoft(hdferr)
 
-    nullify(HDF_head)
+    nullify(HDF_head%next)
 
   ! open the MC file using the default properties.
     readonly = .TRUE.

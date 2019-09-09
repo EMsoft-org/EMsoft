@@ -140,7 +140,7 @@ type(MCNameListType),INTENT(INOUT)      :: mcnl
 character(fnlen),INTENT(IN)             :: progname
 character(fnlen),INTENT(IN)             :: nmldeffile
 
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(DynType)           :: Dyn
 type(gnode)             :: rlp
 
@@ -174,7 +174,7 @@ character(15)           :: tstre
 logical                 :: f_exists
 
 ! HDF output stuff
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 character(fnlen)                  :: groupname, dataset, datagroupname, dataname
 
 character(fnlen),ALLOCATABLE      :: MessageLines(:)
@@ -182,13 +182,13 @@ integer(kind=irg)                 :: NumLines
 character(fnlen)                  :: SlackUsername, exectime
 character(100)                    :: c
 
- nullify(HDF_head)
+ nullify(HDF_head%next)
  call timestamp(datestring=dstr, timestring=tstrb)
 
  numsy = mcnl%numsx
 
- nullify(cell)
- allocate(cell)
+ !nullify(cell)        
+ !allocate(cell)        
 
  verbose = .TRUE.
  dmin = 0.05

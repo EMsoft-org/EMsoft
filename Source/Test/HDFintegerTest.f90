@@ -66,7 +66,7 @@ integer(HSIZE_T)                :: dims1(1), dims2(2), dims3(3), dims4(4)
 integer(kind=irg),allocatable   :: iarr1(:), iarr2(:,:), iarr3(:,:,:), iarr4(:,:,:,:)
 integer(kind=irg),allocatable   :: iarr1_save(:), iarr2_save(:,:), iarr3_save(:,:,:), iarr4_save(:,:,:,:)
 
-type(HDFobjectStackType),pointer:: HDF_head
+type(HDFobjectStackType)        :: HDF_head
 character(len=1)                :: EMsoftnativedelimiter
 
 
@@ -110,7 +110,7 @@ iarr4_save = iarr4
 
 !====================================
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! determine the pathname delimiter character
 EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
@@ -185,7 +185,7 @@ deallocate( iarr1, iarr2, iarr3, iarr4)
 !====================================
 ! next, we read the data sets from the HDF5 file
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! initialize the fortran HDF interface
 CALL h5open_EMsoft(hdferr)

@@ -55,7 +55,7 @@ use postscript
 IMPLICIT NONE
 
 character(fnlen)               :: progname, progdesc, gname
-type(unitcell),pointer         :: cell
+type(unitcell)                 :: cell
 logical                        :: verbose=.TRUE.
 integer(kind=irg)			   :: i, j
 character(1)                   :: yesno
@@ -66,8 +66,6 @@ character(1)                   :: yesno
 
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 921 /), progname)
- 
- allocate(cell)
  
  call ReadValue(' Enter xtal file name : ', gname,"(A)")
  cell%SG%SYM_reduce=.TRUE.

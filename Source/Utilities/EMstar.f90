@@ -63,7 +63,7 @@ real(kind=dbl)          :: kk(3),stmp(0:47,3)
 logical                 :: first, loadingfile
 character(1)            :: space
 character(fnlen)        :: progname, progdesc, gname
-type(unitcell),pointer  :: cell
+type(unitcell)          :: cell
 type(gnode)             :: rlp
 
  progname = 'EMstar.f90'
@@ -72,8 +72,6 @@ type(gnode)             :: rlp
 
 ! deal with the command line arguments, if any
  call Interpret_Program_Arguments(1,(/ 924 /), progname)
-
- allocate(cell)
 
 ! initialize crystal
  cell % SG % SYM_reduce=.FALSE.

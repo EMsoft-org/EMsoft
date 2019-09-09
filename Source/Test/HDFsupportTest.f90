@@ -88,7 +88,7 @@ IMPLICIT NONE
 integer(C_INT32_T),INTENT(OUT)            :: result
 character(fnlen)                          :: HDFfilename, tpn
 character(len=1)                          :: EMsoftnativedelimiter
-type(HDFobjectStackType),pointer  :: HDF_head
+type(HDFobjectStackType)          :: HDF_head
 integer(kind=irg)                 :: hdferr
 integer                 :: dim1, dim2, dim3, dim4
 integer*4                         :: i1, i2, i3, i4
@@ -103,7 +103,7 @@ EMsoftnativedelimiter = EMsoft_getEMsoftnativedelimiter()
 
 
 ! nullify the push/pop stack pointer
-nullify(HDF_head)
+nullify(HDF_head%next)
 
 ! initialize the fortran HDF interface
 CALL h5open_EMsoft(hdferr)
