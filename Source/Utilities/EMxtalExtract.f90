@@ -68,6 +68,9 @@ integer(kind=irg),parameter     :: tworig(24)=(/48,50,59,68,70,85,86,88,125,126,
  progname = 'EMxtalExtract.f90'
  progdesc = 'Extract all information from an HDF crystal structure file and dump it in regular or Wyckoff form to a text file'
 
+! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 926 /), progname)
+
  call EMsoft(progname, progdesc)
  
  numarg = iargc()

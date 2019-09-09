@@ -60,6 +60,7 @@ character(fnlen)                :: progname, progdesc, fname, source
 integer(kind=irg)               :: numarg, i
 integer(kind=irg)               :: iargc        !< external function for command line
 character(fnlen)                :: arg          !< to be read from the command line
+character(fnlen)                :: flag
 logical                         :: useWyckoff
 
  progname = 'EMmkxtal.f90'
@@ -68,26 +69,12 @@ logical                         :: useWyckoff
  call EMsoft(progname, progdesc)
  
  useWyckoff = .FALSE.
- numarg = iargc()
- if (numarg.gt.0) then ! there is at least one argument
-  do i=1,numarg
-    call getarg(i,arg)
-!    mess = 'Found the following argument: '//trim(arg); call Message("(/A/)")
-! does the argument start with a '-' character?    
-    if (arg(1:1).eq.'-') then
-        if (trim(arg).eq.'-h') then
-         call Message(' Program should be called as follows: ', frm = "(/A)")
-         call Message('        '//trim(progname)//' [-h] [-w] ', frm = "(A)")
-         call Message(' To produce this message, type '//trim(progname)//' -h', frm = "(A)")
-         call Message(' To use Wyckoff positions to enter atom coordinates, use -w option', frm = "(A)")
-        end if
-        if (trim(arg).eq.'-w') then
-! with this option the GetAsymPosWyckoff routine will ask the user for Wyckoff Positions instead of regular cordinate strings
-         useWyckoff = .TRUE.
-        end if
-    end if
-  end do
- end if
+
+! deal with the command line arguments, if any
+ flag = '-w'
+ call Interpret_Program_Arguments(1,(/ 917 /), progname, flagset=flag)
+
+ if (trim(flag).eq.'yes') useWyckoff = .TRUE.
 
  allocate(cell)
  

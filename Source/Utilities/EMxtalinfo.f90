@@ -114,6 +114,9 @@ end interface
  progdesc = 'Important crystallographic data for TEM applications'
  call EMsoft(progname, progdesc)
 
+! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 927 /), progname)
+
  nullify(cell)
  allocate(cell)
  

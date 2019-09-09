@@ -53,6 +53,12 @@ module files
 use local
 use typedefs
 
+
+interface Interpret_Program_Arguments
+  module procedure Interpret_Program_Arguments_with_nml
+  module procedure Interpret_Program_Arguments_no_nml
+end interface
+
 contains
 
 !--------------------------------------------------------------------------
@@ -147,6 +153,123 @@ end subroutine DumpXtalInfo
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: ConvertWiki2PDF
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @note programs that do not have a template file will have wiki codes starting at 900 
+!
+!> @param nt number of files to copy
+!> @param wikilist integer array identifying the wiki file(s) to be converted to PDF by pandoc
+! 
+!> @date   09/08/19 MDG 1.0 first attempt
+!--------------------------------------------------------------------------
+recursive subroutine ConvertWiki2PDF(nt,wikilist)
+!DEC$ ATTRIBUTES DLLEXPORT :: ConvertWiki2PDF
+
+use io
+use error 
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: nt
+integer(kind=irg),INTENT(IN)            :: wikilist(*)
+
+logical                                 :: pandoc_found, fexist
+integer(kind=irg)                       :: i, j, ios, nlines
+integer(kind=irg),parameter             :: maxnumtemplates = 1024
+character(fnlen)                        :: wikifiles(maxnumtemplates), wcf, tpl, input_name, output_name, wikipath, &
+                                           pandoc_tpl, defcmd, line, cmd
+character(3)                            :: wplextension = '.md'
+character(4)                            :: pdfextension = '.pdf'
+
+
+! first make sure that pandoc is available on this platform
+! we'll ask for the version number, and if the returned output contains more than one line
+! then the program is available; this will work on UNIX platforms but will need to be 
+! modified for Windows.
+pandoc_found = .FALSE. 
+call system('pandoc -v | wc -l > linecount')
+open(unit=dataunit,file='linecount',status='old',form='formatted')
+read(dataunit,"(I10)") nlines
+close(unit=dataunit,status='delete')
+if (nlines.gt.1) pandoc_found=.TRUE.
+
+if (pandoc_found.eqv..TRUE.) then 
+! read the wikifile resources file to get all relevant file names 
+  wcf = trim(EMsoft_getwikicodefilename())
+  wcf = EMsoft_toNativePath(wcf)
+  inquire(file=trim(wcf),exist=fexist)
+  if (.not.fexist) then 
+    call FatalError('ConvertWiki2PDF','wiki code file not found: '//wcf)
+  end if
+
+  open(UNIT=dataunit,FILE=trim(wcf), STATUS='old', FORM='formatted',ACCESS='sequential')
+
+  wikifiles = ''
+  do
+   read(dataunit,'(I3.3,A)',iostat=ios) j, line
+   if (ios.ne.0) then 
+    exit
+   end if
+   wikifiles(j+1) = trim(line)
+  end do
+  CLOSE(UNIT=dataunit, STATUS='keep')
+
+! get the correct path for the wiki files 
+  wikipath = trim(EMsoft_toNativePath(EMsoft_getwikipathname()))
+
+! then get the pandoc default.latex location (in the resources folder)
+  pandoc_tpl = trim(EMsoft_getResourcepathname())//'default.latex'
+  pandoc_tpl = EMsoft_toNativePath(pandoc_tpl)
+  inquire(file=trim(pandoc_tpl),exist=fexist)
+
+  if (fexist.eqv..TRUE.) then 
+    defcmd = '-V fontsize=10pt --template '//trim(pandoc_tpl)
+  else
+    defcmd = ''
+    call Message(' Warning: the pandoc default.latex template file could not be found; continuing... ')
+  end if
+
+! loop over all relevant wiki files and generate the corresponding PDF file
+  do i=1,nt
+    tpl = trim(wikifiles(wikilist(i)+1))
+    input_name = trim(wikipath)//trim(tpl)//trim(wplextension)
+    input_name = EMsoft_toNativePath(input_name)
+
+    inquire(file=trim(input_name),exist=fexist)
+
+    if (fexist.eqv..TRUE.) then  ! create a shell script that will call pandoc and generate the PDF file 
+      output_name = trim(tpl)//pdfextension
+! example command string:
+!  pandoc -V fontsize=10pt --template EMsoftResourcesFolder/default.latex -s EMGBOdm.md -o EMGBOdm.pdf
+      cmd = 'pandoc '//trim(defcmd)//' -s '//trim(input_name)//' -o '//trim(output_name)
+      open(unit=dataunit,file='wiki2pdf',status='unknown',form='formatted')
+      write(dataunit,"(A)") '#!/bin/bash'
+      write(dataunit,"(A)") 'cdir=`pwd`'
+      write(dataunit,"(A)") 'cd '//trim(wikipath)
+      write(dataunit,"(A)") trim(cmd)
+      write(dataunit,"(A)") 'mv '//trim(output_name)//' ${cdir}'
+      write(dataunit,"(A)") 'cd ${cdir}'
+      close(unit=dataunit, status='keep')
+      call system('chmod +x wiki2pdf')
+      call system('./wiki2pdf')
+      open(unit=dataunit,file='wiki2pdf',status='unknown',form='formatted')
+      close(unit=dataunit, status='delete')
+      call Message(' wiki file converted to PDF: '//trim(output_name))
+    else 
+      call Message(' wiki file '//trim(input_name)//' not found; continuing ...')
+    end if 
+  end do
+else 
+  call FatalError('ConvertWiki2PDF',' pandoc program not found in search PATH')
+end if 
+
+end subroutine ConvertWiki2PDF
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: CopyTemplateFiles
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -181,12 +304,12 @@ integer(kind=irg),INTENT(IN)            :: nt
 integer(kind=irg),INTENT(IN)            :: templatelist(*)
 logical,INTENT(IN),OPTIONAL             :: json
 
-integer(kind=irg),parameter     :: maxnumtemplates = 256
-character(fnlen)                :: templates(maxnumtemplates)
-character(fnlen)                :: input_name, output_name, tcf, tppath1, tppath2, tpl, tplextension
-integer(kind=irg)               :: ios, i, j, ipos
-character(255)                  :: line
-logical                         :: fexist, develop
+integer(kind=irg),parameter             :: maxnumtemplates = 256
+character(fnlen)                        :: templates(maxnumtemplates)
+character(fnlen)                        :: input_name, output_name, tcf, tppath1, tppath2, tpl, tplextension
+integer(kind=irg)                       :: ios, i, j, ipos
+character(255)                          :: line
+logical                                 :: fexist, develop
 
 ! first open and read the resources/templatecodes.txt file
 
@@ -248,45 +371,47 @@ if (develop.eqv..TRUE.) then
 end if
 
 do i=1,nt
- tpl = trim(templates(templatelist(i)+1))
- input_name = trim(tppath1)//trim(tpl)//trim(tplextension)
- input_name = EMsoft_toNativePath(input_name)
-
- inquire(file=trim(input_name),exist=fexist)
- if (.not.fexist) then 
-  if (develop.eqv..TRUE.) then
-   input_name = trim(tppath2)//trim(tpl)//trim(tplextension)
+ if (templatelist(i).lt.900) then  ! exclude programs that haev a wiki file but no template file
+   tpl = trim(templates(templatelist(i)+1))
+   input_name = trim(tppath1)//trim(tpl)//trim(tplextension)
    input_name = EMsoft_toNativePath(input_name)
+
    inquire(file=trim(input_name),exist=fexist)
    if (.not.fexist) then 
-     call FatalError('CopyTemplateFiles','template file '//trim(templates(templatelist(i)+1))//trim(tplextension)// &
-                    ' not found in either template folder')
+    if (develop.eqv..TRUE.) then
+     input_name = trim(tppath2)//trim(tpl)//trim(tplextension)
+     input_name = EMsoft_toNativePath(input_name)
+     inquire(file=trim(input_name),exist=fexist)
+     if (.not.fexist) then 
+       call FatalError('CopyTemplateFiles','template file '//trim(templates(templatelist(i)+1))//trim(tplextension)// &
+                      ' not found in either template folder')
+     end if
+    else
+     call FatalError('CopyTemplateFiles','template file '//trim(templates(templatelist(i)+1))//trim(tplextension)//' not found')
+    end if
    end if
-  else
-   call FatalError('CopyTemplateFiles','template file '//trim(templates(templatelist(i)+1))//trim(tplextension)//' not found')
-  end if
+   output_name = trim(templates(templatelist(i)+1))//trim(tplextension)
+   output_name = EMsoft_toNativePath(output_name)
+   open(UNIT=dataunit,FILE=trim(input_name), STATUS='old', FORM='formatted',ACCESS='sequential')
+   open(UNIT=dataunit2,FILE=trim(output_name), STATUS='unknown', FORM='formatted',ACCESS='sequential')
+   do
+          read(dataunit,'(A)',iostat=ios) line
+          if (ios.ne.0) then 
+            exit
+          end if
+          write(dataunit2,'(A)') trim(line)
+    end do
+   close(UNIT=dataunit, STATUS='keep')
+   close(UNIT=dataunit2, STATUS='keep')
+   call Message('  -> created template file '//trim(templates(templatelist(i)+1))//trim(tplextension), frm = "(A)")
  end if
- output_name = trim(templates(templatelist(i)+1))//trim(tplextension)
- output_name = EMsoft_toNativePath(output_name)
- open(UNIT=dataunit,FILE=trim(input_name), STATUS='old', FORM='formatted',ACCESS='sequential')
- open(UNIT=dataunit2,FILE=trim(output_name), STATUS='unknown', FORM='formatted',ACCESS='sequential')
- do
-        read(dataunit,'(A)',iostat=ios) line
-        if (ios.ne.0) then 
-          exit
-        end if
-        write(dataunit2,'(A)') trim(line)
-  end do
- close(UNIT=dataunit, STATUS='keep')
- close(UNIT=dataunit2, STATUS='keep')
- call Message('  -> created template file '//trim(templates(templatelist(i)+1))//trim(tplextension), frm = "(A)")
 end do
  
 end subroutine CopyTemplateFiles
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE: Interpret_Program_Arguments
+! SUBROUTINE: Interpret_Program_Arguments_with_nml
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
@@ -308,8 +433,8 @@ end subroutine CopyTemplateFiles
 !> @date   03/29/18 MDG 3.1 removed stdout argument
 !> @date   09/08/19 MDG 4.0 add support for automatic pandoc wiki->pdf conversion
 !--------------------------------------------------------------------------
-recursive subroutine Interpret_Program_Arguments(nmldefault,numt,templatelist,progname)
-!DEC$ ATTRIBUTES DLLEXPORT :: Interpret_Program_Arguments
+recursive subroutine Interpret_Program_Arguments_with_nml(nmldefault,numt,templatelist,progname)
+!DEC$ ATTRIBUTES DLLEXPORT :: Interpret_Program_Arguments_with_nml
 
 use io
 
@@ -406,7 +531,113 @@ end if
 
 nmldefault = nmlfile
 
-end subroutine Interpret_Program_Arguments
+end subroutine Interpret_Program_Arguments_with_nml
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: Interpret_Program_Arguments_no_nml
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  interpret the command line arguments
+!
+!> @details This routine assumes that there is no template file, but there 
+!> could still be a wiki file... 
+!
+!> @param numt number of files to (potentially) copy
+!> @param templatelist integer array identifying the template files to be copied
+! 
+!> @date   06/26/13 MDG 1.0 first attempt (this might belong elsewhere...)
+!> @date   09/04/13 MDG 1.1 minor modifications to arguments
+!> @date   06/08/14 MDG 2.0 added stdout argument
+!> @date   05/11/17 MDG 3.0 added support for JSON-formatted template files
+!> @date   03/29/18 MDG 3.1 removed stdout argument
+!> @date   09/08/19 MDG 4.0 add support for automatic pandoc wiki->pdf conversion
+!--------------------------------------------------------------------------
+recursive subroutine Interpret_Program_Arguments_no_nml(numt,templatelist,progname,flagset)
+!DEC$ ATTRIBUTES DLLEXPORT :: Interpret_Program_Arguments_no_nml
+
+use io
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)            :: numt
+integer(kind=irg),INTENT(IN)            :: templatelist(*)
+character(fnlen),INTENT(IN)             :: progname
+character(fnlen),INTENT(INOUT),OPTIONAL :: flagset  
+
+integer(kind=irg)                       :: numarg       !< number of command line arguments
+integer(kind=irg)                       :: iargc        !< external function for command line
+character(fnlen)                        :: arg          !< to be read from the command line
+character(fnlen)                        :: nmlfile      !< nml file name
+integer(kind=irg)                       :: i, io_int(1)
+logical                                 :: haltprogram, json, flags
+
+json = .FALSE.
+
+flags = .FALSE. 
+if (present(flagset)) then
+  flags = .TRUE. 
+end if
+
+!numarg = iargc()
+numarg = command_argument_count()
+
+if (numarg.gt.0) then
+  io_int(1) = numarg
+  call WriteValue('Number of command line arguments detected: ',io_int,1)
+end if
+
+haltprogram = .FALSE.
+if (numarg.ge.1) haltprogram = .TRUE.
+
+if (numarg.gt.0) then ! there is at least one argument
+  do i=1,numarg
+    call getarg(i,arg)
+! does the argument start with a '-' character?    
+    if (arg(1:1).eq.'-') then
+        if (trim(arg).eq.'-h') then
+         call Message(' Program should be called as follows: ', frm = "(/A)")
+         call Message('        '//trim(progname)//' -h -pdf ', frm = "(A)")
+         call Message(' To produce this message, type '//trim(progname)//' -h', frm = "(A)")
+         call Message(' use -pdf to produce a PDF help file if the corresponding wiki file exists ', frm = "(A)")
+        end if
+        if (trim(arg).eq.'-pdf') then 
+! if the pandoc program is installed (for instance within the anaconda distribution)
+! then the user can ask for the wiki manual page (if it exists) to be converted into a pdf
+! file that will be placed in the current folder.
+!
+! example command to generate the pdf file for the EMGBOdm program:
+!   pandoc -V fontsize=10pt --template ~/templates/default.latex -s EMGBOdm.md -o EMGBOdm.pdf
+!
+! We use the same template codes but now they are linked to the corresponding wiki file
+! which should be located in a folder at the same level as the resources folder.
+!
+          call Message(' User requested wiki-to-pdf conversion', frm = "(/A)")
+          call ConvertWiki2PDF(numt, templatelist)
+        end if 
+        if (flags.eqv..TRUE.) then
+          if (trim(arg).eq.trim(flagset)) then 
+            flagset = 'yes'
+            haltprogram = .FALSE.
+          end if
+        end if 
+    else
+! no, the first character is not '-', so this argument must be the filename
+! If it is present, but any of the other arguments were present as well, then
+! we stop the program. 
+        nmlfile = arg
+        if (numarg.eq.1) haltprogram = .FALSE.
+    end if
+  end do
+end if
+
+if (haltprogram) then
+  call Message('To execute program, remove all flags ', frm = "(/A/)")
+  stop
+end if
+
+end subroutine Interpret_Program_Arguments_no_nml
 
 
 

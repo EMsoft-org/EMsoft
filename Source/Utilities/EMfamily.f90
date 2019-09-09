@@ -74,7 +74,10 @@ integer(kind=irg)           	:: itmp(48,3)
  progname = 'EMfamily.f90'
  progdesc = 'Stereographic projection of a family of directions/planes'
  call EMsoft(progname, progdesc)
- 
+
+ ! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 912 /), progname)
+
   allocate(cell)
  cell % SG % SYM_reduce=.TRUE.
  topbot=.TRUE.

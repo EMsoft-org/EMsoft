@@ -47,6 +47,7 @@ use rotations
 use quaternions
 use io
 use so3
+use files 
 
 IMPLICIT NONE
 
@@ -60,6 +61,10 @@ character(fnlen)            :: progname, progdesc
 
 progname = 'EMeqvPS.f90'
 progdesc = 'List equivalent pseudo-symmetric rotations'
+
+! deal with the command line arguments, if any
+call Interpret_Program_Arguments(1,(/ 910 /), progname)
+
 
 ! print some information
 call EMsoft(progname, progdesc)

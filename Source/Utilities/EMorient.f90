@@ -94,6 +94,9 @@ end interface
  progdesc = 'Stereographic projection of orientation relation'
  call EMsoft(progname, progdesc)
 
+! deal with the command line arguments, if any
+ call Interpret_Program_Arguments(1,(/ 919 /), progname)
+ 
  allocate(cellA, cellB)
 
  inm=2

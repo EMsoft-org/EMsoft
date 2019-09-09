@@ -71,6 +71,7 @@
 program EMOpenCLinfo
 
 use local
+use files
 use error
 use clfortran
 use CLsupport
@@ -93,6 +94,8 @@ progname = 'EMOpenCLinfo.f90'
 progdesc = 'List OpenCL platform and device information'
 call EMsoft(progname,progdesc)
 
+! deal with the command line arguments, if any
+call Interpret_Program_Arguments(2,(/ 904, 930 /), progname)
 
 ! Get the number of platforms, prior to allocating an array.
 err = clGetPlatformIDs(0, C_NULL_PTR, num_platforms)

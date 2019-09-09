@@ -975,6 +975,27 @@ end if
 
 end function EMsoft_getTemplatepathname
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getwikipathname
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the wikipathname
+!
+!> @param no input parameters
+!
+!> @date  07/02/16 MDG 1.0 new function
+!> @date  05/11/17 MDG 1.1 added support for JSON template files
+!--------------------------------------------------------------------------
+recursive function EMsoft_getwikipathname() result(wikipathname)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getwikipathname
+
+character(fnlen)                        :: wikipathname
+
+wikipathname = trim(EMsoft_getEMsoftpathname())//SC_wiki//'/'
+
+end function EMsoft_getwikipathname
 
 !--------------------------------------------------------------------------
 !
@@ -1142,6 +1163,26 @@ templatecodefilename = trim(EMsoft_getResourcepathname())//SC_templatecodestxt
 
 end function EMsoft_getTemplatecodefilename
 
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_getwikicodefilename
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the wikicodefilename
+!
+!> @param no input parameters
+!
+!> @date  09/08/19 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_getwikicodefilename() result(wikicodefilename)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getwikicodefilename
+
+character(fnlen)                        :: wikicodefilename
+
+wikicodefilename = trim(EMsoft_getResourcepathname())//SC_wikicodestxt
+
+end function EMsoft_getwikicodefilename
 
 !--------------------------------------------------------------------------
 !
