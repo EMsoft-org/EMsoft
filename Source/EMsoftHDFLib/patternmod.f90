@@ -1194,8 +1194,12 @@ end if
 
 ! print some timing information
 tstop = Time_tock(tickstart)
-io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
-call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+if (tstop.eq.0.0) then 
+  call Message('Number of experimental patterns processed per second : ? [time shorter than system time resolution] ')
+else
+  io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
+  call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
+end if
 
 end subroutine PreProcessPatterns
 

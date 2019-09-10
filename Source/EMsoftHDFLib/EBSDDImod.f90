@@ -1078,11 +1078,11 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   ! perform some timing stuff
   tstop = Time_tock(tickstart2)
   io_real(1) = tstop
-  call WriteValue('Indexing duration (system_clock, s)                : ',io_real,1,"(/,F10.3)")
+  call WriteValue('Indexing duration (system_clock, s)                : ',io_real,1,"(/,F14.3)")
   io_real(1) = float(totnumexpt)*float(FZcnt) / tstop
-  call WriteValue('Number of pattern comparisons per second           : ',io_real,1,"(/,F10.3)")
+  call WriteValue('Number of pattern comparisons per second           : ',io_real,1,"(/,F14.3)")
   io_real(1) = float(totnumexpt) / tstop
-  call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F10.3,/)")
+  call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F14.3,/)")
   
   ! ===================
   ! MAIN OUTPUT SECTION
