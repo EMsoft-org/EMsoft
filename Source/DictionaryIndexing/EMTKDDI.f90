@@ -224,6 +224,7 @@ use notifications
 use NameListHDFwriters
 use ECPmod, only: GetPointGroup
 use Indexingmod
+use timing
 use ISO_C_BINDING
 
 IMPLICIT NONE
@@ -301,10 +302,10 @@ integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq, iiiend, iiistart, jjend, TIFF_nx, TIFF_ny
-integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc
+integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc, tickstart
 type(FZpointd),pointer                              :: FZlist, FZtmp
 integer(kind=irg),allocatable                       :: indexlist(:),indexarray(:),indexmain(:,:),indextmp(:,:)
-real(kind=sgl)                                      :: dmin,voltage,scl,ratio, mi, ma, ratioE, io_real(2), tstart, tmp, &
+real(kind=sgl)                                      :: dmin,voltage,scl,ratio, mi, ma, ratioE, io_real(2), tmp, &
                                                        totnum_el, vlen, tstop
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
@@ -776,8 +777,7 @@ end if
 ! on how powerful the GPU card is...
 !=====================================================
 
-call cpu_time(tstart)
-
+call Time_tick(tickstart)
 
 call OMP_SET_NUM_THREADS(tkdnl%nthreads)
 io_int(1) = tkdnl%nthreads
@@ -988,8 +988,7 @@ ierr = clReleaseKernel(kernel)
 call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
 
 ! perform some timing stuff
-call CPU_TIME(tstop)
-tstop = tstop - tstart
+tstop = Time_tock(tickstart)
 io_real(1) = float(totnumexpt)*float(FZcnt) / tstop
 call WriteValue('Number of pattern comparisons per second : ',io_real,1,"(/,F10.2)")
 io_real(1) = float(totnumexpt) / tstop

@@ -122,6 +122,7 @@ use HDFsupport
 use ISO_C_BINDING
 use omp_lib
 use stringconstants
+use timing
 
 IMPLICIT NONE
 
@@ -131,7 +132,7 @@ character(fnlen),INTENT(IN)     :: nmldeffile
 
 real(kind=sgl)                  :: ktmax, io_real(3), bragg, thetac, sc, minten, pxy(2), galen, DM(2,2),DD,X(2),tstart,tstop, &
                                    frac, startthick, thick(1), klaue(2), thetam, kk(3), goffset,FN(3), kn, pmult
-integer(kind=irg)               :: ijmax,ga(3),gb(3),cnt, PX, numthick, ss, icnt, pgnum, ih, nunique, famnum, &
+integer(kind=irg)               :: ijmax,ga(3),gb(3),cnt, PX, numthick, ss, icnt, pgnum, ih, nunique, famnum, tickstart, &
                                    newcount,count_rate,count_max, io_int(6), i, j, isym, ir, skip, ghkl(3),hdferr, &
                                    npx, npy, numt, numk, ik, ip, jp, istat, dgn, nbeams, refcnt, gzero, TID, &
                                    ifamily, famhkl(3), inum, maxHOLZ, numksame, nns, nnw, nref, nt, NUMTHREADS
@@ -260,7 +261,7 @@ call Initialize_Cell(cell,Dyn,rlp,pednl%xtalname, pednl%dmin, pednl%voltage, ver
 
   call timestamp(datestring=dstr, timestring=tstrb)
   tstre = tstrb
-  call CPU_TIME(tstart)
+  call Time_tick(tickstart)
 
 ! Create a new file using the default properties.
   datafile = trim(EMsoft_getEMdatapathname())//trim(pednl%outname)
@@ -585,9 +586,8 @@ dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-  call CPU_TIME(tstop)
+  tstop = Time_tock(tickstart)
 dataset = SC_Duration
-  tstop = tstop - tstart
   hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 
 ! close the datafile

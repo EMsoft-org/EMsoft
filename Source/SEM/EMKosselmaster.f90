@@ -154,11 +154,11 @@ integer(HSIZE_T)                :: dims3(3), cnt3(3), offset3(3)
 integer(HSIZE_T)                :: dims2(2), cnt2(2), offset2(2)
 integer(kind=irg)               :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
                                   SamplingType,numk,numthick,  & ! number of independent incident beam directions
-                                  ir,kk(3), npyhex, skip, ijmax, one, NUMTHREADS, TID, hdferr, &
+                                  ir,kk(3), npyhex, skip, ijmax, one, NUMTHREADS, TID, hdferr, tickstart, &
                                   n,ix,iy, io_int(6), nns, nnw, nref, nix, niy, nixp, niyp, ierr, &
                                   istat,gzero,ic,ip,ikk, totstrong, totweak     ! counters
 real(kind=dbl)                  :: tpi,Znsq, kkl, DBWF, kin, xy(2), dc(3), edge, scl, tmp, dx, dxm, dy, dym !!
-real(kind=sgl)                  :: io_real(5), selE, kn, FN(3), kkk(3), bp(4), tstart, tstop
+real(kind=sgl)                  :: io_real(5), selE, kn, FN(3), kkk(3), bp(4), tstop
 complex(kind=dbl)               :: czero
 real(kind=sgl),allocatable      :: mLPNH(:,:,:), mLPSH(:,:,:), Iz(:), thick(:), trange(:,:)
 real(kind=sgl),allocatable      :: auxNH(:,:,:), auxSH(:,:,:), auxtrange(:,:)
@@ -192,7 +192,7 @@ czero = dcmplx(0.D0,0.D0)
 nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
-call cpu_time(tstart)
+call Time_tick(tickstart)
 
 !=============================================
 !=============================================
@@ -605,9 +605,8 @@ dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-  call CPU_TIME(tstop)
+  tstop = Time_tock(tickstart)
 dataset = SC_Duration
-  tstop = tstop - tstart
   hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 
   call HDF_pop(HDF_head)

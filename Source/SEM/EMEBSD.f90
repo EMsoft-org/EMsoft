@@ -340,7 +340,7 @@ real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
 integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr, L, correctsize          ! various counters
-integer(kind=irg)                       :: istat, ipar(7), tick, tock
+integer(kind=irg)                       :: istat, ipar(7), tick, tock, tickstart
 integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder, npy     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
@@ -778,7 +778,7 @@ io_int(1) = nthreads
 call WriteValue(' Setting number of threads to ',io_int,1,"(I4)")
 call OMP_SET_NUM_THREADS(nthreads)
 
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 call Time_tick(tick)
 
 write (*,*) 'applying noise ? ', noise
@@ -1110,9 +1110,8 @@ end do
 !====================================
 !====================================
 
-call CPU_TIME(tstop) 
+tstop = Time_tock(tickstart) 
 tock = Time_tock(tick)
-tstop = tstop - tstart
 
 io_real(1) = tstop
 call WriteValue('Execution time [CPU_TIME()] = ',io_real, 1)
@@ -1254,7 +1253,7 @@ real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
 integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr          ! various counters
-integer(kind=irg)                       :: istat, ipar(7), tick, tock
+integer(kind=irg)                       :: istat, ipar(7), tick, tock, tickstart
 integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
@@ -1570,7 +1569,7 @@ io_int(1) = nthreads
 call WriteValue(' Setting number of threads to ',io_int,1,"(I4)")
 call OMP_SET_NUM_THREADS(nthreads)
 
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 call Time_tick(tick)
 
 !====================================
@@ -1822,7 +1821,7 @@ end do
 !====================================
 !====================================
 
-call CPU_TIME(tstop) 
+tstop = Time_tock(tickstart) 
 tock = Time_tock(tick)
 tstop = tstop - tstart
 

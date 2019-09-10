@@ -971,7 +971,8 @@ integer(kind=irg)                           :: istat, L, recordsize, io_int(2), 
                                                iiistart, iiiend, jjend, TID, jj, kk, ierr
 integer(HSIZE_T)                            :: dims3(3), offset3(3)
 integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42
-real(kind=sgl)                              :: tstart, tstop, vlen, tmp, ma, mi, io_real(1)
+integer(kind=irg)                           :: tickstart, tstop 
+real(kind=sgl)                              :: vlen, tmp, ma, mi, io_real(1)
 real(kind=dbl)                              :: w, Jres
 integer(kind=irg),allocatable               :: EBSDpint(:,:)
 real(kind=sgl),allocatable                  :: tmpimageexpt(:), EBSDPattern(:,:), imageexpt(:), exppatarray(:), EBSDpat(:,:)
@@ -1067,7 +1068,7 @@ call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb)
 deallocate(inp, outp)
 
 call Message('Starting processing of experimental patterns')
-call cpu_time(tstart)
+call Time_tick(tickstart)
 
 dims3 = (/ binx, biny, ebsdnl%ipf_wd /)
 
@@ -1192,8 +1193,7 @@ if (inRAM.eqv..FALSE.) then
 end if
 
 ! print some timing information
-call CPU_TIME(tstop)
-tstop = tstop - tstart
+tstop = Time_tock(tickstart)
 io_real(1) = float(ebsdnl%nthreads) * float(totnumexpt)/tstop
 call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
 
@@ -1262,7 +1262,8 @@ integer(kind=irg)                           :: istat, L, recordsize, io_int(2), 
                                                iiistart, iiiend, jjend, TID, jj, kk, ierr
 integer(HSIZE_T)                            :: dims3(3), offset3(3)
 integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42
-real(kind=sgl)                              :: tstart, tstop, vlen, tmp, ma, mi, io_real(1)
+integer(kind=irg)                           :: tickstart, tstop 
+real(kind=sgl)                              :: vlen, tmp, ma, mi, io_real(1)
 real(kind=dbl)                              :: w, Jres
 integer(kind=irg),allocatable               :: TKDpint(:,:)
 real(kind=sgl),allocatable                  :: tmpimageexpt(:), TKDPattern(:,:), imageexpt(:), exppatarray(:), TKDpat(:,:)
@@ -1359,7 +1360,7 @@ call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb)
 deallocate(inp, outp)
 
 call Message('Starting processing of experimental patterns')
-call cpu_time(tstart)
+call Time_tick(tickstart)
 
 dims3 = (/ binx, biny, tkdnl%ipf_wd /)
 
@@ -1484,8 +1485,7 @@ if (inRAM.eqv..FALSE.) then
 end if
 
 ! print some timing information
-call CPU_TIME(tstop)
-tstop = tstop - tstart
+tstop = Time_tock(tickstart)
 io_real(1) = float(tkdnl%nthreads) * float(totnumexpt)/tstop
 call WriteValue('Number of experimental patterns processed per second : ',io_real,1,"(F10.1,/)")
 

@@ -115,7 +115,7 @@ character(fnlen),INTENT(IN)                      	:: nmldeffile
 type(QCStructureType),pointer                       :: QCcell
 
 ! terminal output variables
-integer(kind=irg)									:: io_int(3)
+integer(kind=irg)									:: io_int(3), tickstart
 integer(kind=ill)									:: io_int_ill(1)
 real(kind=sgl)										:: io_real(3)
 
@@ -189,7 +189,7 @@ integer(kind=irg)									:: numthreads
 
 
 call timestamp(datestring=dstr, timestring=tstrb)
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 
 nullify(HDF_head%next)
 
@@ -715,9 +715,8 @@ energyloop: do iE = numEbins,1,-1
   	line2(1) = dstr//', '//tstre
   	hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-  	call CPU_TIME(tstop)
-  	tstop = tstop - tstart
-  	io_real(1) = tstop/nthreads
+  	tstop = Time_tock(tickstart)
+  	io_real(1) = tstop
   	call WriteValue('Execution time: ',io_real,1,'(F10.2," sec")')
 
   	dataset = SC_Duration
@@ -771,10 +770,7 @@ energyloop: do iE = numEbins,1,-1
 
 end do energyloop
 
-io_real(1)  = tstop/nthreads/60.0
+io_real(1)  = tstop/60.0
 call WriteValue("Execution time = ",io_real,1,'(F10.2," min")')
-
-io_real(1)	= tstop/60.0
-call WriteValue("CPU time = ",io_real,1,'(F10.2," min")')
 
 end subroutine EBSDQCmasterpattern

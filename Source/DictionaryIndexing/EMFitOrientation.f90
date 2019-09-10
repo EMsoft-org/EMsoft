@@ -136,7 +136,7 @@ real(kind=dbl),allocatable              :: cubneighbor(:,:)
 real(kind=sgl)                          :: quat(4), quat2(4), ma, mi, dp, tstart, tstop, io_real(4), tmp, &
                                            vlen, avec(3), dtor
 real(kind=dbl)                          :: qu(4), rod(4) 
-integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tick, tock, ierr, L, nvar, niter
+integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tickstart, ierr, L, nvar, niter
 integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2), correctsize, totnumexpt
 
 real(kind=dbl)                          :: prefactor, F, angleaxis(4)
@@ -586,8 +586,7 @@ io_int(1) = ronl%nthreads
 call WriteValue(' Attempting to set number of threads to ',io_int,1,"(I4)")
 call OMP_SET_NUM_THREADS(ronl%nthreads)
 
-call CPU_TIME(tstart)
-call Time_tick(tick)
+call Time_tick(tickstart)
 
 allocate(exptpatterns(binx*biny,dinl%numexptsingle),stat=istat)
 
@@ -846,14 +845,9 @@ if (dinl%ctffile.ne.'undefined') then
   call Message('Data stored in ctf file : '//trim(ronl%ctffile))
 end if
 
-call CPU_TIME(tstop) 
-tock = Time_tock(tick)
-tstop = tstop - tstart
+tstop = Time_tock(tickstart) 
 
 io_real(1) = tstop
-call WriteValue('Execution time [CPU_TIME()] = ',io_real, 1)
-
-io_int(1) = tock
 call WriteValue('Execution time [system_clock()] = ',io_int,1,"(I8,' [s]')")
 
 ! close the fortran HDF interface

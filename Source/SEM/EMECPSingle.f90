@@ -115,6 +115,7 @@ use ECPmod
 use rotations, only:eu2om
 use ISO_C_BINDING
 use stringconstants
+use timing
 
 IMPLICIT NONE
 
@@ -123,7 +124,7 @@ character(fnlen),INTENT(IN)                      :: progname
 character(fnlen),INTENT(IN)                      :: nmldeffile
 
 real(kind=dbl)          :: frac
-integer(kind=irg)       :: gzero, istat
+integer(kind=irg)       :: gzero, istat, tickstart
 
 integer(kind=irg)       :: numEbins, numzbins, nx, ny, totnum_el ! reading from MC file
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, sig, omega  ! reading from MC file
@@ -184,7 +185,7 @@ integer(HSIZE_T)                    :: dims4(4), cnt4(4), offset4(4), dims2(2), 
 nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 
 gzero = 1
 frac = 0.05
@@ -497,8 +498,7 @@ line2(1) = dstr//', '//tstre
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
 dataset = SC_Duration
-call CPU_TIME(tstop)
-tstop = tstop - tstart
+tstop = Time_tock(tickstart)
 hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 
 call HDF_pop(HDF_head)

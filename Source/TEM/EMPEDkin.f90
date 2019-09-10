@@ -98,6 +98,7 @@ use initializersHDF
 use initializers
 use gvectors
 use io
+use timing
 use diffraction
 use symmetry
 use quaternions
@@ -123,7 +124,7 @@ type(FZpointd),pointer          :: FZlist, FZtmp, FZtmp2
 real(kind=sgl)                  :: la, dval, dmin, glen, gmax, io_real(3), om(3,3), k(3), sgmax, FN(3), xgmin, Ig, Igmax, & 
                                    maxint, w, ku(3), kp(3), rnmpp, dx, dy, eu(3), tstart, tstop, x, y, ma, mi
 integer(kind=irg)               :: gp(3), imh, imk, iml, nref, gg(3), ix, iy, iz, io_int(5), ww, nsize, tdp, sx, sy, hdferr, &
-                                   ninbatch, nbatches, nremainder,ibatch,istat, gridtype 
+                                   ninbatch, nbatches, nremainder,ibatch,istat, gridtype, tickstart 
 integer(HSIZE_T)                :: dim0, dim1, dim2, hdims(3), offset(3)
 logical                         :: verbose, insert=.TRUE., overwrite=.TRUE., exists
 character(fnlen)                :: groupname, dataset, outname
@@ -149,7 +150,7 @@ type(HDFobjectStackType)          :: HDF_head
 sgmax = 0.50
 
 call timestamp(datestring=dstr, timestring=tstrb)
-call cpu_time(tstart)
+call Time_tick(tickstart)
 
 !=============================================
 !=============================================
@@ -510,9 +511,8 @@ dataset = SC_StopTime
 line2(1) = dstr//', '//tstre
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-call CPU_TIME(tstop)
+tstop = Time_tock(tickstart)
 dataset = SC_Duration
-tstop = tstop - tstart
 hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
 
 ! close the datafile

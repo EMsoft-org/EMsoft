@@ -150,14 +150,14 @@ character(fnlen),INTENT(IN)             :: nmldeffile
 
 integer(HSIZE_T)                        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)                       :: nn,i,j,k,npix,npiy,ii,jj,kkk, numset, t_interval,nat(100), montage_nx, montage_ny, &
-                                           DF_nums_new,DF_npix_new,DF_npiy_new, numstart,numstop, isg, TID, &
+                                           DF_nums_new,DF_npix_new,DF_npiy_new, numstart,numstop, isg, TID, tickstart, &
                                            NTHR, SETNTHR, isym, ir, ga(3), gb(3),ic,g,numd,ix,iy,nkt,nbeams, ik, ig, &
                                            numk,ixp,iyp, io_int(6), skip, gg(3), error_cnt, dinfo, nref, hdferr, maxXY
 
 integer(kind=irg),parameter             :: numdd=360 ! 180
 real(kind=sgl)                          :: thick, X(2), bragg, thetac, kstar(3), gperp(3), av, mi, ma, &
                                            gdotR,DF_gf(3), tpi, DM(2,2), DD, c(3), gx(3), gy(3), &
-                                           gac(3), gbc(3),zmax, io_real(2), ijmax, tstart, tstop, kk(3)
+                                           gac(3), gbc(3),zmax, io_real(2), ijmax, tstop, kk(3)
 real(kind=dbl)                          :: arg, glen, DynFN(3), xx
 complex(kind=dbl),allocatable           :: DHWM(:,:),DHWMvoid(:,:),DDD(:,:),Sarray(:,:,:,:)
 complex(kind=dbl),allocatable           :: amp(:),amp2(:),Azz(:,:),DF_R(:,:)
@@ -203,7 +203,7 @@ integer(int8), allocatable              :: montage(:,:)
  !allocate(cell)        
   
  call timestamp(datestring=dstr, timestring=tstrb)
- call cpu_time(tstart)
+ call Time_tick(tickstart)
 
 ! copy some of the namelist parameters into the defects structure
  defects%DF_npix = eccinl%DF_npix
@@ -842,9 +842,8 @@ dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-  call CPU_TIME(tstop)
+  tstop = Time_tock(tickstart)
 dataset = SC_Duration
-  tstop = tstop - tstart
   if (isg.eq.numstart) then 
     hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
   else

@@ -196,8 +196,8 @@ integer(kind=ill)                             :: io_int(3)
 real(kind=8)                                  :: delta, rand 
 integer(kind=ill)                             :: i, j, k, num_max, totnum_el_nml, multiplier, totnum_el
 integer(kind=4),allocatable                   :: rnseeds(:)
-real(kind=4)                                  :: tstart, tstop
-integer(kind=irg)                             :: idxy(2), iE, iz, nseeds, tick, tock
+real(kind=4)                                  :: tstop
+integer(kind=irg)                             :: idxy(2), iE, iz, nseeds, tick, tickstart, tock
 integer(kind=irg)                             :: nix, niy, nixp, niyp, skip
 real(kind=sgl)                                :: edis, xy(2), dx, dy, dxm, dym, alpha, om(3,3), xyz(3)
 real(kind=sgl)                                :: tana, cota, sa, ca, r1, r2, r3, rho
@@ -282,7 +282,7 @@ end interface
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = tstrb
 
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 call Time_tick(tick)
 
 ! nullify HDF pointer
@@ -835,9 +835,8 @@ do iang = 1,numangles
     end do
 end do
 
-call CPU_TIME(tstop) 
+tstop = Time_tock(tickstart) 
 tock = Time_tock(tick)
-tstop = tstop - tstart
 
 io_real(1) = tstop
 call WriteValue('Execution time [CPU_TIME()] = ',io_real, 1)

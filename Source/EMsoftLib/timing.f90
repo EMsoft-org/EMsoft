@@ -73,7 +73,6 @@ call system_clock(t)
 
 end subroutine Time_tick
 
-
 !--------------------------------------------------------------------------
 !
 ! FUNCTION: Time_tock
@@ -91,14 +90,12 @@ IMPLICIT NONE
 
 integer(kind=irg), intent(in)   :: t
 integer(kind=irg)               :: now, clock_rate
-integer(kind=irg)               :: tock
+real(kind=sgl)                  :: tock
 
 call system_clock(now,clock_rate)
 tock = real(now - t)/real(clock_rate)
 
 end function Time_tock
-
-
 
 !--------------------------------------------------------------------------
 !

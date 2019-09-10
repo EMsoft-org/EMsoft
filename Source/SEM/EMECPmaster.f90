@@ -130,6 +130,7 @@ use HDFsupport
 use ISO_C_BINDING
 use notifications
 use stringconstants
+use timing 
 
 IMPLICIT NONE
 
@@ -138,7 +139,7 @@ character(fnlen),INTENT(IN)                      :: progname
 character(fnlen),INTENT(IN)                      :: nmldeffile
 
 real(kind=dbl)          :: frac
-integer(kind=irg)       :: gzero, istat
+integer(kind=irg)       :: gzero, istat, tickstart
 
 integer(kind=irg)       :: numEbins, numzbins, nx, ny, npy, totnum_el, numsites ! reading from MC file
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, sig, omega  ! reading from MC file
@@ -160,7 +161,7 @@ complex(kind=dbl),allocatable   :: DynMat(:,:)
 complex(kind=dbl)       :: czero
 
 integer(kind=irg)       :: nt, nns, nnw, tots, totw ! thickness array and BetheParameters strong and weak beams
-real(kind=sgl)          :: FN(3), kk(3), fnat, kn, tstart, tstop
+real(kind=sgl)          :: FN(3), kk(3), fnat, kn, tstop
 integer(kind=irg)       :: numset, nref, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one,ierr
 integer(kind=irg),allocatable   :: kij(:,:), nat(:)
 real(kind=dbl)          :: res(2), xyz(3), ind, nabsl
@@ -204,7 +205,7 @@ character(100)                     :: c
 nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 
 gzero = 1
 frac = 0.05
@@ -808,7 +809,7 @@ mLPSH(-ecpnl%npx:ecpnl%npx, ecpnl%npx,1:numsites) = mLPNH(-ecpnl%npx:ecpnl%npx, 
 ! and here is where the major changes are for this version 5.0: all output now in HDF5 format
 call timestamp(datestring=dstr, timestring=tstre)
 
-call CPU_TIME(tstop)
+tstop = Time_tock(tickstart)
 
 datagroupname = 'ECPmaster'
 

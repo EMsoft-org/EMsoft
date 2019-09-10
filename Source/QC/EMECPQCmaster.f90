@@ -105,6 +105,7 @@ use HDF5
 use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
+use timing 
 
 IMPLICIT NONE
 
@@ -137,7 +138,7 @@ complex(kind=dbl)       :: czero
 
 integer(kind=irg)       :: nt, nns, nnw, tots, totw, QCindex, ggg(6) ! thickness array and BetheParameters strong and weak beams
 real(kind=sgl)          :: FN(3), kk(3), fnat, kn, Radius, xy(2), tstart, tstop, ma, mi, dmin
-integer(kind=irg)       :: numset, nref, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one,ierr, npy
+integer(kind=irg)       :: numset, nref, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one,ierr, npy, tickstart
 integer(kind=irg),allocatable   :: kij(:,:), nat(:)
 real(kind=dbl)          :: res(2), xyz(3), ind
 
@@ -193,7 +194,7 @@ real(kind=sgl)                  :: kpg(3),tkpg(3),xnom,xden,q1,q2,sg,gvec(3)
 nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 
 gzero = 1
 frac = 0.05

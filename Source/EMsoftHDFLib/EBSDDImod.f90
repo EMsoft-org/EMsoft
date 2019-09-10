@@ -223,7 +223,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   
   integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdictsingle,numexptsingle,imght,imgwd,nnk, &
                                                          recordsize, fratio, cratio, fratioE, cratioE, iii, itmpexpt, hdferr,&
-                                                         recordsize_correct, patsz, tickstart, tock, npy, sz(3), jjj
+                                                         recordsize_correct, patsz, tickstart, tickstart2, tock, npy, sz(3), jjj
   integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
   real(kind=sgl),pointer                              :: dict(:), T0dict(:)
   real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
@@ -820,6 +820,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   !=====================================================
   
   call Time_tick(tickstart)
+  call Time_tick(tickstart2)
   
   if (trim(dinl%indexingmode).eq.'dynamic') then
       call OMP_SET_NUM_THREADS(dinl%nthreads)
@@ -1075,7 +1076,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   end if
   
   ! perform some timing stuff
-  tstop = Time_tock(tickstart)
+  tstop = Time_tock(tickstart2)
   io_real(1) = tstop
   call WriteValue('Indexing duration (system_clock, s)                : ',io_real,1,"(/,F10.3)")
   io_real(1) = float(totnumexpt)*float(FZcnt) / tstop

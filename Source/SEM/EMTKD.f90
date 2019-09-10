@@ -251,14 +251,14 @@ integer(kind=irg)                       :: dims2(2),dims3(3)
 real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
-integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), etotal, hdferr          ! various counters
-integer(kind=irg)                       :: istat, ipar(7), tick, tock
+integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), etotal, hdferr, tickstart          ! various counters
+integer(kind=irg)                       :: istat, ipar(7), tick
 integer(kind=irg)                       :: nix, niy, binx, biny,num_el, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
 integer(kind=irg)                       :: ninbatch, nbatches,nremainder,ibatch,nthreads,maskradius,nlastbatches, totnumbatches
 integer(kind=irg),allocatable           :: istart(:,:), istop(:,:), patinbatch(:)
 
-real(kind=sgl)                          :: bindx, sig, ma, mi, tstart, tstop, io_real(1)
+real(kind=sgl)                          :: bindx, sig, ma, mi, tstop, io_real(1), tock
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
 real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
 integer(kind=irg),parameter             :: storemax = 20        ! number of TKD patterns stored in one output block
@@ -583,7 +583,7 @@ io_int(1) = nthreads
 call WriteValue(' Setting number of threads to ',io_int,1,"(I4)")
 call OMP_SET_NUM_THREADS(nthreads)
 
-call CPU_TIME(tstart)
+call Time_tick(tickstart)
 call Time_tick(tick)
 
 !====================================
@@ -707,9 +707,8 @@ end do
 !====================================
 !====================================
 
-call CPU_TIME(tstop) 
+tstop = Time_tock(tickstart) 
 tock = Time_tock(tick)
-tstop = tstop - tstart
 
 io_real(1) = tstop
 call WriteValue('Execution time [CPU_TIME()] = ',io_real, 1)

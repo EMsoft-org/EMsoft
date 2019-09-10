@@ -123,7 +123,7 @@ type(LaueNameListType),INTENT(INOUT)       :: lnl
 character(fnlen),INTENT(IN)                :: progname
 character(fnlen),INTENT(IN)                :: nmldeffile
 
-integer(kind=irg)                          :: numangles, numbatches, remainder, ii, jj, pid
+integer(kind=irg)                          :: numangles, numbatches, remainder, ii, jj, pid, tickstart
 integer(kind=irg),allocatable 			       :: batchnumangles(:)
 integer(kind=irg),parameter 			         :: batchsize = 100
 type(AngleType),pointer                    :: angles
@@ -161,7 +161,7 @@ nullify(HDF_head%next)
 
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = ''
-call cpu_time(tstart)
+call Time_tick(tickstart)
 
 ! read the list of orientations and convert them all to quaternions if they are not already
 nullify(angles)
@@ -483,8 +483,7 @@ dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-  call CPU_TIME(tstop)
-  tstop = tstop - tstart
+  tstop = Time_tock(tickstart)
   io_int(1) = tstop
   call WriteValue('Execution time [s]: ',io_int,1)
 

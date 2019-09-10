@@ -199,7 +199,7 @@ integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, ieq
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
-real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstart, tstop, bp(4), nabsl, etotal, dens, avA, avZ
+real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstop, bp(4), nabsl, etotal, dens, avA, avZ
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:,:,:), auxSH(:,:,:,:), Z2percent(:)  ! results
 real(kind=sgl),allocatable      :: mLPNH(:,:,:,:), mLPSH(:,:,:,:), masterSPNH(:,:,:), masterSPSH(:,:,:)
 real(kind=dbl),allocatable      :: LegendreArray(:), upd(:), diagonal(:)
@@ -268,7 +268,7 @@ nullify(HDF_head%next)
 !nullify(cell)        
 
 call timestamp(datestring=dstr, timestring=tstrb)
-call cpu_time(tstart)
+call Time_tick(timestart)
 
 tpi = 2.D0*cPi
 czero = dcmplx(0.D0,0.D0)
@@ -1016,8 +1016,7 @@ dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-  call CPU_TIME(tstop)
-  tstop = tstop - tstart
+  tstop = Time_tock(timestart)
   io_int(1) = tstop
   call WriteValue('Execution time [s]: ',io_int,1)
 
