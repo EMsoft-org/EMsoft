@@ -1757,24 +1757,47 @@ end subroutine EBSDFullGenerateDetector
 !
 !> @date 08/24/17  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine EBSDcopyMCdata(inputfile, outputfile)
+recursive subroutine EBSDcopyMCdata(inputfile, outputfile, h5)
 !DEC$ ATTRIBUTES DLLEXPORT :: EBSDcopyMCdata
 
 use local
 use error
 use HDFsupport
 use io
+use error
 
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)       :: inputfile
 character(fnlen),INTENT(IN)       :: outputfile
+character(fnlen),INTENT(IN)       :: h5
 
 character(fnlen)                  :: infile, outfile, h5copypath, groupname
 character(512)                    :: cmd, cmd2
-logical                           :: f_exists, readonly
+logical                           :: f_exists, readonly, developer
 type(HDFobjectStackType)          :: HDF_head
 integer(kind=irg)                 :: hdferr
+
+! first we make sure that we actually have the h5copy program available
+! check for EMDevelop parameter 
+developer = EMsoft_getEMdevelop()
+
+if (developer.eqv..TRUE.) then 
+! if TRUE, use EMsoft_geth5copypath which is defined at configure time 
+  h5copypath = trim(EMsoft_geth5copypath())//' -p -v '
+  h5copypath = EMsoft_toNativePath(h5copypath)
+else 
+! if FALSE, check name list h5copypath parameter 
+  if (trim(h5).ne.'undefined') then 
+    h5copypath = trim(h5)//' -p -v '
+    h5copypath = EMsoft_toNativePath(h5copypath)
+  else 
+! if undefined, then fail
+    call FatalError('EBSDcopyMCdata','h5copypath must be set in the name list file ')
+  end if
+end if
+
+call Message(' Using '//trim(h5copypath)//' to copy Monte Carlo data to new file')
 
 ! first make sure that the input file exists and has MC data in it
 infile = trim(EMsoft_getEMdatapathname())//trim(inputfile)
@@ -1813,8 +1836,6 @@ call HDF_pop(HDF_head,.TRUE.)
 call Message('--> Input file contains Monte Carlo data')
 
 ! next, we copy the necessary groups into the new Monte Carlo file
-h5copypath = trim(EMsoft_geth5copypath())//' -p -v '
-h5copypath = EMsoft_toNativePath(h5copypath)
 cmd = trim(h5copypath)//' -i "'//trim(infile)
 cmd = trim(cmd)//'" -o "'//trim(outfile)
 

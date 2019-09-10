@@ -2192,7 +2192,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPMasterNameListType),INTENT(INOUT)             :: ecpnl
 !f2py intent(in,out) ::  ecpnl
