@@ -1637,8 +1637,8 @@ IMPLICIT NONE
 integer(c_int32_t),INTENT(IN)           :: ipar(wraparraysize)
 real(kind=sgl),INTENT(IN)               :: fpar(wraparraysize)
 integer(c_int32_t),INTENT(IN)           :: accum_e(ipar(12),-ipar(1):ipar(1),-ipar(1):ipar(1))
-real(kind=sgl),INTENT(IN)               :: mLPNH(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12), ipar(9))
-real(kind=sgl),INTENT(IN)               :: mLPSH(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12), ipar(9))
+real(kind=sgl),INTENT(IN)               :: mLPNH(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12))
+real(kind=sgl),INTENT(IN)               :: mLPSH(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12))
 real(kind=sgl),INTENT(IN)               :: variants(4,ipar(44))
 real(kind=sgl),INTENT(IN)               :: epatterns(ipar(42),ipar(40))   ! correctsize x totnumexpt
 real(kind=sgl),INTENT(IN)               :: startEulers(3,ipar(40)) 
