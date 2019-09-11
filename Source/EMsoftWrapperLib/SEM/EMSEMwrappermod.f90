@@ -70,7 +70,8 @@
 ! ipar(23): binned x-dimension
 ! ipar(24): binned y-dimension
 ! ipar(25): anglemode  (0 for quaternions, 1 for Euler angles)
-! ipar(26:40) : 0 (unused for now)
+! ipar(26): already initialized 
+! ipar(27:40) : 0 (unused for now)
 
 ! real(kind=dbl) :: fpar(40)  components
 ! fpar(1) : sig
@@ -242,6 +243,7 @@ recursive subroutine EMsoftCgetEBSDPatterns(ipar, fpar, EBSDpattern, quats, accu
 ! ipar(23) = binned x-dimension
 ! ipar(24) = binned y-dimension
 ! ipar(25) = anglemode
+! ipar(26) = already initialized
 
 ! fpar(1)  = enl%MCsig
 ! fpar(2)  = enl%omega
@@ -277,9 +279,9 @@ character(len=1),INTENT(IN)             :: cancel
 
 ! various variables and arrays
 real(kind=sgl)                          :: fullsizepattern(ipar(19),ipar(20)), binned(ipar(23),ipar(24))
-real(kind=irg),allocatable              :: accum_e_detector(:,:,:)
-real(kind=sgl),allocatable              :: rgx(:,:), rgy(:,:), rgz(:,:)
-real(kind=sgl),allocatable              :: mLPNHsum(:,:,:), mLPSHsum(:,:,:)
+real(kind=irg),allocatable,save         :: accum_e_detector(:,:,:)
+real(kind=sgl),allocatable,save         :: rgx(:,:), rgy(:,:), rgz(:,:)
+real(kind=sgl),allocatable,save         :: mLPNHsum(:,:,:), mLPSHsum(:,:,:)
 real(kind=sgl),save                     :: prefactor
 real(kind=sgl),allocatable              :: scin_x(:), scin_y(:)                 ! scintillator coordinate arrays [microns]
 real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
@@ -296,6 +298,7 @@ PROCEDURE(ProgressCallBack), POINTER    :: proc
 ! link the proc procedure to the cproc argument
 CALL C_F_PROCPOINTER (cproc, proc)
 
+if (ipar(26).eq.0) then 
 ! binned pattern dimensions
   binx = ipar(23)
   biny = ipar(24)
@@ -310,7 +313,6 @@ CALL C_F_PROCPOINTER (cproc, proc)
 
   allocate(mLPNHsum(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12)))
   allocate(mLPSHsum(-ipar(17):ipar(17), -ipar(17):ipar(17), ipar(12)))
-
 
   ! Stuart Wright: for some reason the following calls do not work on my Windows 10 computer, VS 2015
   ! so I unwrapped the code to perform this function explicitly [modified with platform check, MDG]
@@ -428,6 +430,7 @@ CALL C_F_PROCPOINTER (cproc, proc)
   end do 
   prefactor = 0.25D0 * nAmpere * fpar(20) * fpar(21)  * 1.0D-15 / sum(accum_e_detector)
   accum_e_detector = accum_e_detector * prefactor
+end if  ! initialize detector arrays 
 
 ! from here on, we simply compute the EBSD patterns by interpolation, using the above arrays
 ! no intensity scaling or anything else...other than multiplication by pre-factor
