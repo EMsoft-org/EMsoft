@@ -267,7 +267,7 @@ if (ipar(1).ge.1) then
   pcxd = fpar(1) * fpar(3)
   pcyd = fpar(2) * fpar(3)
 
-  scin_x = - ( fpar(1) - ( 1.0 - float(ipar(2)) ) * 0.5 - (/ (i-1, i=1,ipar(2)) /) ) * fpar(3)
+  scin_x = - ( -fpar(1) - ( 1.0 - float(ipar(2)) ) * 0.5 - (/ (i-1, i=1,ipar(2)) /) ) * fpar(3)
   scin_y = ( fpar(2) - ( 1.0 - float(ipar(3)) ) * 0.5 - (/ (i-1, i=1,ipar(3)) /) ) * fpar(3)
 
 ! auxiliary angle to rotate between reference frames
@@ -381,7 +381,7 @@ epl = ipar(3)+1
 
 ! interpolate the intensity 
         do k= Emin, Emax
-          accum_e_detector(k,i,epl-j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
+          accum_e_detector(k,i,j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
                                                accum_e(k,nixp,niy) * dx * dym + &
                                                accum_e(k,nix,niyp) * dxm * dy + &
                                                accum_e(k,nixp,niyp) * dx * dy)
@@ -550,7 +550,7 @@ real(kind=dbl),parameter                :: nAmpere = 6.241D+18
   pcxd = fpar(1) * fpar(3)
   pcyd = fpar(2) * fpar(3)
 
-  scin_x = - ( fpar(1) - ( 1.0 - float(ipar(2)) ) * 0.5 - (/ (i-1, i=1,ipar(2)) /) ) * fpar(3)
+  scin_x = - ( -fpar(1) - ( 1.0 - float(ipar(2)) ) * 0.5 - (/ (i-1, i=1,ipar(2)) /) ) * fpar(3)
   scin_y = ( fpar(2) - ( 1.0 - float(ipar(3)) ) * 0.5 - (/ (i-1, i=1,ipar(3)) /) ) * fpar(3)
 
 ! auxiliary angle to rotate between reference frames
@@ -628,12 +628,12 @@ real(kind=dbl),parameter                :: nAmpere = 6.241D+18
   if (ipy .gt. ipar(3)) ipy = ipar(3)
   if (ipy .lt. 1) ipy = 1
   
-  pcvec = (/ rgx(ipx,elp-ipy), rgy(ipx,elp-ipy), rgz(ipx,elp-ipy) /)
+  pcvec = (/ rgx(ipx,ipy), rgy(ipx,ipy), rgz(ipx,ipy) /)
   calpha = cos(alpha)
   do i=1,ipar(2)
     do j=1,ipar(3)
 ! do the coordinate transformation for this detector pixel
-       dc = (/ rgx(i,elp-j), rgy(i,elp-j), rgz(i,elp-j) /)
+       dc = (/ rgx(i,j), rgy(i,j), rgz(i,j) /)
 
 ! make sure the third one is positive; if not, switch all 
        if (dc(3).lt.0.0) dc = -dc
@@ -651,7 +651,7 @@ real(kind=dbl),parameter                :: nAmpere = 6.241D+18
 
 ! interpolate the intensity 
        do k= Emin, Emax
-         accum_e_detector(k,i,elp-j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
+         accum_e_detector(k,i,j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
                                               accum_e(k,nixp,niy) * dx * dym + &
                                               accum_e(k,nix,niyp) * dxm * dy + &
                                               accum_e(k,nixp,niyp) * dx * dy)

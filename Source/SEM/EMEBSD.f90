@@ -64,6 +64,7 @@ use io
 use HDF5
 use HDFsupport
 use error
+use detectors
 use EBSDmod
 use stringconstants
 
@@ -219,6 +220,7 @@ if (trim(enl%anglefiletype).eq.'orientations') then
            EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,enl%numsx,enl%numsy), stat=istat)
 ! 4. generate detector arrays
   call GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
+
   deallocate(EBSDMCdata%accum_e)
 
   ! perform the zone axis computations for the knl input parameters
@@ -1209,6 +1211,7 @@ use constants
 use io
 use files
 use diffraction
+use detectors
 use EBSDmod
 use Lambert
 use quaternions

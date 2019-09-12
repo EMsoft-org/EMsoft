@@ -48,6 +48,7 @@ use local
 use files 
 use NameListTypedefs
 use NameListHandlers
+use detectors
 use EBSDmod
 use JSONsupport
 use io

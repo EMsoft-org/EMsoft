@@ -134,7 +134,9 @@ if keyword_set(single) then begin
     status = 0
   end 
 
-  pattern = EBSDpattern
+; IDL takes the image origin at the bottom left corner, so we need to flip this pattern vertically 
+  pattern = reverse(reform(EBSDpattern),2)
+  pattern = reform(pattern,SEMdata.detnumsx,SEMdata.detnumsy,1)
 
 end else begin ; computation of multiple EBSDpatterns
 
@@ -171,7 +173,11 @@ end else begin ; computation of multiple EBSDpatterns
     status = 0
   end 
 
-  pattern = EBSDpattern
+; IDL takes the image origin at the bottom left corner, so we need to flip this pattern vertically 
+  for ii=0,SEMdata.numangles-1 do begin
+    slice = reverse(reform(EBSDpattern[0:*,0:*,ii]),2)
+    pattern[0:*,0:*,ii] = slice[0:*,0:*]
+  endfor
 endelse
 
 
