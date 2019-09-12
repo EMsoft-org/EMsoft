@@ -1906,7 +1906,7 @@ do iii = 1,cratioE
   
       eulerPS(1:3,ll) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
                                 X(2)*2.0*STEPSIZE(2) - STEPSIZE(2) + INITMEANVAL(2), &
-                                X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) 
+                                X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/))* 180.0/sngl(cPi) 
 
       call EMFitOrientationcalfunEBSD(LOCALIPAR, INITMEANVAL, tmpimageexpt, EBSDdetector%accum_e_detector, &
                                       mLPNH, mLPSH, N, X, F, mask, prefactor, EBSDdetector%rgx, &
