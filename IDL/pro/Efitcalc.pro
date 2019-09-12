@@ -100,7 +100,8 @@ if (!version.os eq 'linux') then begin
                       ipar, fpar, EBSDpattern, quats, float(accum_e), mLPNH, mLPSH, /F_VALUE, /VERBOSE, /SHOW_ALL_OUTPUT)
 endif
 
-EBSDpattern = reform(EBSDpattern)
+; IDL puts the pattern origin in the lower left corner so we need to flip the pattern vertically. 
+EBSDpattern = reverse(reform(EBSDpattern),2)
 
 if (res ne 1.0) then begin
   Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")

@@ -1581,6 +1581,7 @@ use crystal
 use patternmod
 use rotations
 use constants
+use detectors
 use EBSDmod
 use EBSDDImod
 use omp_lib

@@ -52,20 +52,20 @@ end else begin
   WIDGET_CONTROL, event.id, GET_UVALUE = eventval         ;find the user value
   
   CASE eventval OF
-        'CW': begin        ; modified by MDG [08/13/19]
-		  applyrotation = 2; 1
+        'CW': begin
+		  applyrotation = 1
 		endcase
 
-        'CCW': begin       ; modified by MDG [08/13/19]
-		  applyrotation = 1; 2
+        'CCW': begin
+		  applyrotation = 2
 		endcase
 
-        'UP': begin        ; modified by MDG [08/13/19]
-		  applyrotation = 4; 3
+        'UP': begin
+		  applyrotation = 3
 		endcase
 
-        'DOWN': begin      ; modified by MDG [08/13/19]
-		  applyrotation = 3; 4
+        'DOWN': begin
+		  applyrotation = 4
 		endcase
 
         'LEFT': begin

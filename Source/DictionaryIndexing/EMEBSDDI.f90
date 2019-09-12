@@ -58,6 +58,7 @@ use files
 use io
 use error
 use initializers
+use detectors
 use EBSDmod
 use EBSDDImod
 use HDF5

@@ -59,6 +59,7 @@ use HDFsupport
 use rotations
 use so3
 use constants
+use detectors
 use EBSDmod
 use EBSDDImod
 use omp_lib

@@ -222,6 +222,7 @@ contains
 !> @date 07/01/16 MDG 2.3 correction of array subscripts in rgx/y/z arrays.
 !> @date 12/05/16 MDG 2.4 added option to pass in Euler angles instead of quaternions; quats array dimensions are unchanged
 !> @date 02/19/19 MDG 3.0 corrects pattern orientation (manual indexing revealed an unwanted upside down flip)
+!> @date 09/12/19 MDG 3.1 additional corrections for pattern center; view point now from detector to sample
 !--------------------------------------------------------------------------
 recursive subroutine EMsoftCgetEBSDPatterns(ipar, fpar, EBSDpattern, quats, accum_e, mLPNH, mLPSH, cproc, objAddress, cancel) &
            bind(c, name='EMsoftCgetEBSDPatterns')    ! this routine is callable from a C/C++ program
@@ -334,7 +335,7 @@ if (ipar(26).eq.0) then
 
   allocate(scin_x(ipar(19)),scin_y(ipar(20)),stat=istat)
   
-  scin_x = - ( fpar(15) - ( 1.0 - float(ipar(19)) ) * 0.5 - (/ (i-1, i=1,ipar(19)) /) ) * fpar(17)
+  scin_x = - ( -fpar(15) - ( 1.0 - float(ipar(19)) ) * 0.5 - (/ (i-1, i=1,ipar(19)) /) ) * fpar(17)
   scin_y = ( fpar(16) - ( 1.0 - float(ipar(20)) ) * 0.5 - (/ (i-1, i=1,ipar(20)) /) ) * fpar(17)
 
 ! auxiliary angle to rotate between reference frames
@@ -421,10 +422,10 @@ if (ipar(26).eq.0) then
         end if
 ! interpolate the intensity 
         do k= Emin, Emax
-          accum_e_detector(k,i,epl-j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
-                                               accum_e(k,nix+1,niy) * dx * dym + &
-                                               accum_e(k,nix,niy+1) * dxm * dy + &
-                                               accum_e(k,nix+1,niy+1) * dx * dy)
+          accum_e_detector(k,i,j) = gam * (accum_e(k,nix,niy) * dxm * dym + &
+                                           accum_e(k,nix+1,niy) * dx * dym + &
+                                           accum_e(k,nix,niy+1) * dxm * dy + &
+                                           accum_e(k,nix+1,niy+1) * dx * dy)
         end do
     end do
   end do 

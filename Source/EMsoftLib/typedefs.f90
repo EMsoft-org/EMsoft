@@ -1822,6 +1822,50 @@ type LTEM_Magnetization
   character(fnlen)                  :: origin 
 end type LTEM_Magnetization
 
+!=======================================
+!=======================================
+!=======================================
+! these are used by the detectors module and various programs
+type EBSDPixel
+        real(kind=sgl),allocatable      :: lambdaEZ(:,:)
+        real(kind=dbl)                  :: dc(3) ! direction cosine in sample frame
+        real(kind=dbl)                  :: cfactor
+end type EBSDPixel
+
+type EBSDMCdataType
+        integer(kind=irg)               :: multiplier
+        integer(kind=irg)               :: numEbins
+        integer(kind=irg)               :: numzbins
+        integer(kind=irg)               :: totnum_el
+        integer(kind=irg),allocatable   :: accum_e(:,:,:)
+        integer(kind=irg),allocatable   :: accum_z(:,:,:,:)
+        real(kind=sgl),allocatable      :: accumSP(:,:,:)
+end type EBSDMCdataType
+
+type EBSDMPdataType
+        integer(kind=irg)               :: lastEnergy
+        integer(kind=irg)               :: numEbins
+        integer(kind=irg)               :: numset
+        integer(kind=irg)               :: newPGnumber
+        logical                         :: AveragedMP
+        character(fnlen)                :: xtalname
+        real(kind=sgl),allocatable      :: BetheParameters(:)
+        real(kind=sgl),allocatable      :: keVs(:)
+        real(kind=sgl),allocatable      :: mLPNH4(:,:,:,:)
+        real(kind=sgl),allocatable      :: mLPSH4(:,:,:,:)
+        real(kind=sgl),allocatable      :: mLPNH(:,:,:)
+        real(kind=sgl),allocatable      :: mLPSH(:,:,:)
+        real(kind=sgl),allocatable      :: masterSPNH(:,:,:)
+        real(kind=sgl),allocatable      :: masterSPSH(:,:,:)
+end type EBSDMPdataType
+
+type EBSDDetectorType
+        real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)  ! auxiliary detector arrays needed for interpolation
+        real(kind=sgl),allocatable      :: accum_e_detector(:,:,:)
+        type(EBSDPixel),allocatable     :: detector(:,:) 
+end type EBSDDetectorType
+
+
 
 
 end module typedefs

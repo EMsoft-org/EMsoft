@@ -88,6 +88,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/random.f90
   ${EMsoftLib_SOURCE_DIR}/imageOPs.f90
   ${EMsoftLib_SOURCE_DIR}/hhmod.f90
+  ${EMsoftLib_SOURCE_DIR}/detectors.f90
 
 
   ${EMsoftLib_Additional_SRCS}
