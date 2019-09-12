@@ -1605,10 +1605,11 @@ use ISO_C_BINDING
 ! ipar(20): numy of detector pixels
 ! ipar(26): ipf_wd
 ! ipar(27): ipf_ht
+! ipar(28): nregions
 ! ipar(29): maskpattern
 ! ipar(37): numexptsingle  (multiple of 16; number of expt patterns in one dot product chunk)
 ! ipar(38): numdictsingle  (multiple of 16; number of dict patterns in one dot product chunk)
-! ipar(40): totnumexpt     (number of experimental patterns in current batch)
+! ipar(40): totnumexpt
 ! ipar(41): numexptsingle*ceiling(float(totnumexpt)/float(numexptsingle))  
 ! ipar(42): 16*ceiling(float(numsx*numsy)/16.0)
 ! ipar(44): nvariants (number of variants for refinement wrapper)
@@ -1713,6 +1714,7 @@ ebsdnl%thetac = fpar(18)
 ebsdnl%L = fpar(19)
 ebsdnl%energymin = fpar(4)
 ebsdnl%energymax = fpar(3)
+ebsdnl%nregions = ipar(28)
 mcnl%sig = fpar(1)
 mcnl%omega = fpar(2)
 mcnl%numsx = 2*ipar(1)+1
@@ -1723,7 +1725,10 @@ EBSDMCdata%numEbins = ipar(12)
 allocate(EBSDdetector%rgx(ebsdnl%numsx,ebsdnl%numsy), &
          EBSDdetector%rgy(ebsdnl%numsx,ebsdnl%numsy), &
          EBSDdetector%rgz(ebsdnl%numsx,ebsdnl%numsy), &
-         EBSDdetector%accum_e_detector(ipar(12),ebsdnl%numsx,ebsdnl%numsy), stat=istat)
+         EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,ebsdnl%numsx,ebsdnl%numsy), stat=istat)
+
+allocate(EBSDMCdata%accum_e(EBSDMCdata%numEbins,-ipar(1):ipar(1),-ipar(1):ipar(1)) )
+  EBSDMCdata%accum_e = accum_e
 
 call GenerateEBSDDetector(ebsdnl, mcnl, EBSDMCdata, EBSDdetector, verbose)
 
@@ -1774,7 +1779,7 @@ LOCALIPAR(6) = EBSDMCdata%numEbins
 LOCALIPAR(7) = EBSDMCdata%numEbins
 LOCALIPAR(8) = Emin
 LOCALIPAR(9) = Emax
-LOCALIPAR(10)= 0
+LOCALIPAR(10)= ebsdnl%nregions
 
 dims2 = (/binx, biny/)
 
@@ -1783,7 +1788,6 @@ nel = float(ipar(4)) * float(ipar(5))
 emult = nAmpere * 1e-9 / nel  ! multiplicative factor to convert MC data to an equivalent incident beam of 1 nanoCoulomb
 ! intensity prefactor 
 prefactor = emult * fpar(20)* fpar(21) * 1.0D-6
-
 ! point group number 
 pgnum = 0
 do ii=1,32
@@ -1895,13 +1899,14 @@ do iii = 1,cratioE
 
       INITMEANVAL(1:3) = eu2ho(eurfz(1:3)) 
       X = 0.5D0
-      call bobyqa (LOCALIPAR, INITMEANVAL, tmpimageexpt, N, NPT, X, XL, XU, RHOBEG, RHOEND, IPRINT, MAXFUN, &
+
+            call bobyqa (LOCALIPAR, INITMEANVAL, tmpimageexpt, N, NPT, X, XL, XU, RHOBEG, RHOEND, IPRINT, MAXFUN, &
                    EMFitOrientationcalfunEBSD, EBSDdetector%accum_e_detector, mLPNH, mLPSH, mask, prefactor, &
                    EBSDdetector%rgx, EBSDdetector%rgy, EBSDdetector%rgz, STEPSIZE, fpar(22), verbose)
   
       eulerPS(1:3,ll) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
                                 X(2)*2.0*STEPSIZE(2) - STEPSIZE(2) + INITMEANVAL(2), &
-                                X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) 
+                                X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/))* 180.0/sngl(cPi) 
 
       call EMFitOrientationcalfunEBSD(LOCALIPAR, INITMEANVAL, tmpimageexpt, EBSDdetector%accum_e_detector, &
                                       mLPNH, mLPSH, N, X, F, mask, prefactor, EBSDdetector%rgx, &
