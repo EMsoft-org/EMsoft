@@ -225,8 +225,8 @@ type MCNameListType
         character(fnlen)        :: dataname
 end type MCNameListType
 
-! namelist for the EMOMmaster program
-type OMmasterNameListType
+! namelist for the EMCPLMmaster program
+type CPLMmasterNameListType
         integer(kind=irg)       :: npx
         integer(kind=irg)       :: nthreads
         real(kind=sgl)          :: eps1Re
@@ -239,7 +239,7 @@ type OMmasterNameListType
         character(3)            :: Notify
         character(fnlen)        :: xtalname
         character(fnlen)        :: masterfile
-end type OMmasterNameListType
+end type CPLMmasterNameListType
 
 ! namelist for the EMOMmaster program
 type OMNameListType

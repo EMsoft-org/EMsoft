@@ -1061,26 +1061,26 @@ end subroutine GetKosselMasterNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:GetOMmasterNameList
+! SUBROUTINE:GetCPLMmasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief read namelist file and fill mcnl structure (used by EMMC.f90)
+!> @brief read namelist file and fill mcnl structure (used by EMCPLMmaster.f90)
 !
 !> @param nmlfile namelist file name
 !> @param omnl name list structure
 !
 !> @date 06/18/14  MDG 1.0 new routine
 !--------------------------------------------------------------------------
-recursive subroutine GetOMmasterNameList(nmlfile, omnl, initonly)
-!DEC$ ATTRIBUTES DLLEXPORT :: GetOMmasterNameList
+recursive subroutine GetCPLMmasterNameList(nmlfile, omnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetCPLMmasterNameList
 
 use error
 
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
-type(OMmasterNameListType),INTENT(INOUT)      :: omnl
+type(CPLMmasterNameListType),INTENT(INOUT)    :: omnl
 !f2py intent(in,out) ::  omnl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
@@ -1100,7 +1100,7 @@ character(fnlen)                              :: xtalname
 character(fnlen)                              :: masterfile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / OMMasterData / npx, nthreads, eps1Re, eps1Im, eps2Re, eps2Im, wl, theta, &
+namelist  / CPLMasterData / npx, nthreads, eps1Re, eps1Im, eps2Re, eps2Im, wl, theta, &
                            Notify, xtalname, masterfile, normalize
 
 xtalname = 'undefined'
@@ -1123,15 +1123,15 @@ end if
 if (.not.skipread) then
 ! read the namelist file
  open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
- read(UNIT=dataunit,NML=OMMasterdata)
+ read(UNIT=dataunit,NML=CPLMasterData)
  close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
  if (trim(xtalname).eq.'undefined') then
-  call FatalError('GetOMmasterNameList:',' structure file name is undefined in '//nmlfile)
+  call FatalError('GetCPLMmasterNameList:',' structure file name is undefined in '//nmlfile)
  end if
  if (trim(masterfile).eq.'undefined') then
-  call FatalError('GetOMmasterNameList:',' master output file name is undefined in '//nmlfile)
+  call FatalError('GetCPLMmasterNameList:',' master output file name is undefined in '//nmlfile)
  end if
 end if
 
@@ -1148,7 +1148,7 @@ omnl%Notify = Notify
 omnl%xtalname = xtalname
 omnl%masterfile = masterfile
 
-end subroutine GetOMmasterNameList
+end subroutine GetCPLMmasterNameList
 
 !--------------------------------------------------------------------------
 !

@@ -641,7 +641,7 @@ end subroutine HDFwriteLaueNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:HDFwriteOMmasterNameList
+! SUBROUTINE:HDFwriteCPLMmasterNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
@@ -652,16 +652,16 @@ end subroutine HDFwriteLaueNameList
 !
 !> @date 09/06/17  MDG 1.0 new routine
 !--------------------------------------------------------------------------
-recursive subroutine HDFwriteOMmasterNameList(HDF_head, knl)
-!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteOMmasterNameList
+recursive subroutine HDFwriteCPLMmasterNameList(HDF_head, knl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteCPLMmasterNameList
 
 use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
-type(OMmasterNameListType),INTENT(IN)                 :: knl
+type(CPLMmasterNameListType),INTENT(IN)               :: knl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
@@ -671,7 +671,7 @@ character(fnlen)                                      :: dataset,groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = SC_OMmasterNameList
+groupname = SC_CPLMmasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! convert normalize parameter to integer
@@ -699,22 +699,22 @@ call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 !dataset = SC_Notify
 !line2(1) = knl%Notify
 !hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-!if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create Notify dataset',.TRUE.)
+!if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCPLMmasterNameList: unable to create Notify dataset',.TRUE.)
 
 dataset = SC_xtalname
 line2(1) = knl%xtalname
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create xtalname dataset',.TRUE.)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCPLMmasterNameList: unable to create xtalname dataset',.TRUE.)
 
 dataset = SC_masterfile
 line2(1) = knl%masterfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create masterfile dataset',.TRUE.)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCPLMmasterNameList: unable to create masterfile dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 
-end subroutine HDFwriteOMmasterNameList
+end subroutine HDFwriteCPLMmasterNameList
 
 !--------------------------------------------------------------------------
 !

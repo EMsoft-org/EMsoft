@@ -27,18 +27,19 @@
 ! ###################################################################
 
 !--------------------------------------------------------------------------
-! EMsoft:EMOMmaster.f90
+! EMsoft:EMCPLMmaster.f90
 !--------------------------------------------------------------------------
 !
-! PROGRAM: EMOMmaster
+! PROGRAM: EMCPLMmaster
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
 !> @brief program to compute a master Mueller Matrix
 !
 !> @date 09/06/17 MDG 1.0 initial version
+!> @date 09/12/19 MDG 2.0 program name change
 !--------------------------------------------------------------------------
-program EMOMmaster
+program EMCPLMmaster
 
 use local
 use files
@@ -50,11 +51,11 @@ use JSONsupport
 IMPLICIT NONE
 
 character(fnlen)                   :: nmldeffile, progname, progdesc
-type(OMmasterNameListType)         :: omnl
+type(CPLMmasterNameListType)       :: omnl
 integer(kind=irg)                  :: res
 
-nmldeffile = 'EMOMmaster.nml'
-progname = 'EMOMmaster.f90'
+nmldeffile = 'EMCPLMmaster.nml'
+progname = 'EMCPLMmaster.f90'
 progdesc = 'Computation of the master Mueller Matrix for a uniaxial crystal system'
 
 ! print some information
@@ -70,13 +71,13 @@ if (res.eq.0) then
   call Message('JSON input not yet implemented')
   STOP
 else
-  call GetOMmasterNameList(nmldeffile,omnl)
+  call GetCPLMmasterNameList(nmldeffile,omnl)
 end if
 
 ! perform the master pattern simulations
 call ComputeMasterMuellerMatrix(omnl, progname, nmldeffile)
 
-end program EMOMmaster
+end program EMCPLMmaster
 
 !--------------------------------------------------------------------------
 !
@@ -116,7 +117,7 @@ use timing
 
 IMPLICIT NONE
 
-type(OMmasterNameListType),INTENT(IN)    :: omnl
+type(CPLMmasterNameListType),INTENT(IN)  :: omnl
 character(fnlen),INTENT(IN)              :: progname
 character(fnlen),INTENT(IN)              :: nmldeffile
 
@@ -242,7 +243,7 @@ end if
 hdferr =  HDF_createFile(dataname, HDF_head)
 
 ! write the EMheader to the file
-datagroupname = SC_OMmaster
+datagroupname = SC_CPLMmaster
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
 
 ! add the CrystalData group at the top level of the file
@@ -253,7 +254,7 @@ groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
 ! read the text file and write the array to the file
-dataset = SC_OMmasterNML
+dataset = SC_CPLMmasterNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
 ! leave this group
@@ -262,7 +263,7 @@ call HDF_pop(HDF_head)
 ! create a namelist group to write all the namelist files into
 groupname = SC_NMLparameters
 hdferr = HDF_createGroup(groupname, HDF_head)
-call HDFwriteOMmasterNameList(HDF_head, omnl)
+call HDFwriteCPLMmasterNameList(HDF_head, omnl)
 
 ! leave this group
 call HDF_pop(HDF_head)
@@ -273,7 +274,7 @@ hdferr = HDF_createGroup(groupname, HDF_head)
 hdferr = HDF_createGroup(datagroupname, HDF_head)
 
 ! and start writing the data arrays
-dataset = SC_OMmasterLPNH
+dataset = SC_CPLMmasterLPNH
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetDoubleArray4D(dataset, LPNH, 4, 4, nx, ny, HDF_head, overwrite)
@@ -283,7 +284,7 @@ end if
 
 
 ! and also the stereographic projection version of these arrays
-dataset = SC_OMmasterSPNH
+dataset = SC_CPLMmasterSPNH
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   hdferr = HDF_writeDatasetFloatArray4D(dataset, SPNH, 4, 4, nx, ny, HDF_head, overwrite)

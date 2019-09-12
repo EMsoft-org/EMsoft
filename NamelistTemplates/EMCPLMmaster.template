@@ -1,4 +1,4 @@
- &OMMasterData
+ &CPLMMasterData
 ! this file provides the input parameters for the computation of the master Mueller Matrix
 ! for a given uni-axial crystal.
 !
