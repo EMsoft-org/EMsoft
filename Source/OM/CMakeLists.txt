@@ -24,10 +24,10 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
   GetHDF5LinkLibraries(EMSOFT)
   set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib)
 
-  Add_EMsoft_Executable(TARGET EMOMmaster
-                              SOURCES ${APP_DIR}/EMOMmaster.f90 
+  Add_EMsoft_Executable(TARGET EMCPLMmaster
+                              SOURCES ${APP_DIR}/EMCPLMmaster.f90 
                               LINK_LIBRARIES jsonfortran ${EXE_LINK_LIBRARIES}  
-                              TEMPLATE ${TMPLT_DIR}/EMOMmaster.template 
+                              TEMPLATE ${TMPLT_DIR}/EMCPLMmaster.template 
                               SOLUTION_FOLDER EMsoftPublic/OM
                               INSTALL_PROGRAM TRUE)
 
