@@ -718,7 +718,7 @@ end subroutine HDFwriteCPLMmasterNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:HDFwriteOMNameList
+! SUBROUTINE:HDFwriteCPLMNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
@@ -729,16 +729,16 @@ end subroutine HDFwriteCPLMmasterNameList
 !
 !> @date 09/06/17  MDG 1.0 new routine
 !--------------------------------------------------------------------------
-recursive subroutine HDFwriteOMNameList(HDF_head, knl)
-!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteOMNameList
+recursive subroutine HDFwriteCPLMNameList(HDF_head, knl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteCPLMNameList
 
 use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
-type(OMNameListType),INTENT(IN)                       :: knl
+type(CPLMNameListType),INTENT(IN)                     :: knl
 
 integer(kind=irg),parameter                           :: n_int = 3, n_real = 1
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
@@ -748,7 +748,7 @@ character(fnlen)                                      :: dataset,groupname
 character(fnlen,kind=c_char)                          :: line2(1)
 
 ! create the group for this namelist
-groupname = SC_OMNameList
+groupname = SC_CPLMNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
@@ -762,27 +762,27 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 dataset = SC_masterfile
 line2(1) = knl%masterfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create masterfile dataset',.TRUE.)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCPLMNameList: unable to create masterfile dataset',.TRUE.)
 
 dataset = SC_outputfile
 line2(1) = knl%outputfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create outputfile dataset',.TRUE.)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCPLMNameList: unable to create outputfile dataset',.TRUE.)
 
 dataset = SC_anglefile
 line2(1) = knl%anglefile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create anglefile dataset',.TRUE.)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCPLMNameList: unable to create anglefile dataset',.TRUE.)
 
 dataset = SC_tiffprefix
 line2(1) = knl%tiffprefix
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
-if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteOMmasterNameList: unable to create tiffprefix dataset',.TRUE.)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteCPLMNameList: unable to create tiffprefix dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 
-end subroutine HDFwriteOMNameList
+end subroutine HDFwriteCPLMNameList
 
 !--------------------------------------------------------------------------
 !

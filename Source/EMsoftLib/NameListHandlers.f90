@@ -1342,26 +1342,26 @@ end subroutine GetLaueNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:GetOMNameList
+! SUBROUTINE:GetCPLMNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
-!> @brief read namelist file and fill mcnl structure (used by EMMC.f90)
+!> @brief read namelist file and fill mcnl structure (used by EMCPLM.f90)
 !
 !> @param nmlfile namelist file name
 !> @param omnl name list structure
 !
 !> @date 09/21/17  MDG 1.0 new routine
 !--------------------------------------------------------------------------
-recursive subroutine GetOMNameList(nmlfile, omnl, initonly)
-!DEC$ ATTRIBUTES DLLEXPORT :: GetOMNameList
+recursive subroutine GetCPLMNameList(nmlfile, omnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetCPLMNameList
 
 use error
 
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                   :: nmlfile
-type(OMNameListType),INTENT(INOUT)            :: omnl
+type(CPLMNameListType),INTENT(INOUT)          :: omnl
 !f2py intent(in,out) ::  omnl
 logical,OPTIONAL,INTENT(IN)                   :: initonly
 
@@ -1376,7 +1376,7 @@ character(fnlen)        :: outputfile
 character(fnlen)        :: tiffprefix
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / OMData / phinum, numpx, numpy, masterfile, outputfile, anglefile, tiffprefix
+namelist  / CPLMData / phinum, numpx, numpy, masterfile, outputfile, anglefile, tiffprefix
 
 phinum = 36
 numpx = 100
@@ -1393,18 +1393,18 @@ end if
 if (.not.skipread) then
 ! read the namelist file
  open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
- read(UNIT=dataunit,NML=OMdata)
+ read(UNIT=dataunit,NML=CPLMdata)
  close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
  if (trim(masterfile).eq.'undefined') then
-  call FatalError('GetOMmasterNameList:',' master output file name is undefined in '//nmlfile)
+  call FatalError('GetCPLMNameList:',' master output file name is undefined in '//nmlfile)
  end if
  if (trim(anglefile).eq.'undefined') then
-  call FatalError('GetOMmasterNameList:',' angle input file name is undefined in '//nmlfile)
+  call FatalError('GetCPLMNameList:',' angle input file name is undefined in '//nmlfile)
  end if
  if (trim(outputfile).eq.'undefined') then
-  call FatalError('GetOMmasterNameList:',' intensity output file name is undefined in '//nmlfile)
+  call FatalError('GetCPLMNameList:',' intensity output file name is undefined in '//nmlfile)
  end if
 end if
 
@@ -1416,7 +1416,7 @@ omnl%outputfile = outputfile
 omnl%anglefile = anglefile
 omnl%tiffprefix = tiffprefix
 
-end subroutine GetOMNameList
+end subroutine GetCPLMNameList
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:GetMCNameList

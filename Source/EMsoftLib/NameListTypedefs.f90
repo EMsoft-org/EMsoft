@@ -241,8 +241,8 @@ type CPLMmasterNameListType
         character(fnlen)        :: masterfile
 end type CPLMmasterNameListType
 
-! namelist for the EMOMmaster program
-type OMNameListType
+! namelist for the EMCPLM program
+type CPLMNameListType
         integer(kind=irg)       :: phinum
         integer(kind=irg)       :: numpx
         integer(kind=irg)       :: numpy
@@ -250,7 +250,7 @@ type OMNameListType
         character(fnlen)        :: anglefile
         character(fnlen)        :: outputfile
         character(fnlen)        :: tiffprefix
-end type OMNameListType
+end type CPLMNameListType
 
 ! namelist for the EMLauemaster program 
 type LaueMasterNameListType
