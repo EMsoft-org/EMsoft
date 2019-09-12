@@ -432,6 +432,7 @@ type EBSDMasterNameListType
         character(3)            :: Notify
         character(fnlen)        :: latgridtype
         character(fnlen)        :: copyfromenergyfile
+        character(fnlen)        :: h5copypath
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname
         logical                 :: combinesites
@@ -838,6 +839,7 @@ type ECPMasterNameListType
     character(3)            :: Notify
     character(fnlen)        :: compmode
     character(fnlen)        :: copyfromenergyfile
+    character(fnlen)        :: h5copypath
     character(fnlen)        :: energyfile
     logical                 :: combinesites
 end type ECPMasterNameListType

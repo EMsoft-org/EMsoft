@@ -304,6 +304,7 @@ end if
 
 call h5open_EMsoft(hdferr)
 
+
 if (adpnl%usetmpfile.eq.'n') then
 
 ! copy the relevant adpnl parameters into the dinl structure
