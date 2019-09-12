@@ -171,7 +171,6 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   use Indexingmod
   use ISO_C_BINDING
   use notifications
-  use TIFF_f90
   use timing
   
   IMPLICIT NONE
@@ -779,13 +778,9 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   if (ROIselected.eqv..TRUE.) then
     allocate(dpmap(dinl%ROI(3)*dinl%ROI(4)))
     call getADPmap(itmpexpt, dinl%ROI(3)*dinl%ROI(4), L, dinl%ROI(3), dinl%ROI(4), dpmap)
-    TIFF_nx = dinl%ROI(3)
-    TIFF_ny = dinl%ROI(4)
   else
     allocate(dpmap(totnumexpt))
     call getADPmap(itmpexpt, totnumexpt, L, dinl%ipf_wd, dinl%ipf_ht, dpmap)
-    TIFF_nx = dinl%ipf_wd
-    TIFF_ny = dinl%ipf_ht
   end if
   
   ! we will leave the itmpexpt file open, since we'll be reading from it again...
