@@ -3730,12 +3730,13 @@ real(kind=sgl)          :: gB(3)
 real(kind=sgl)          :: fracA
 character(fnlen)        :: masterfileA
 character(fnlen)        :: masterfileB
+character(fnlen)        :: h5copypath
 character(fnlen)        :: overlapmode
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
-                              datafile, HorizontalAxisA, overlapmode, newpgnum
+                              datafile, HorizontalAxisA, overlapmode, newpgnum, h5copypath
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -3749,6 +3750,7 @@ gB              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal B
 fracA           = 0.5                           ! volume fraction of phase A 
 masterfileA     = 'undefined'   ! filename
 masterfileB     = 'undefined'   ! filename
+h5copypath      = 'undefined'   ! filename
 datafile        = 'undefined'   ! output file name
 overlapmode     = 'series'      ! options are 'full' or 'series'
 
@@ -3788,6 +3790,7 @@ enl%gB = gB
 enl%fracA = fracA
 enl%masterfileA = masterfileA
 enl%masterfileB = masterfileB
+enl%h5copypath = h5copypath
 enl%datafile = datafile
 enl%overlapmode = overlapmode
 

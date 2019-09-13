@@ -8,6 +8,9 @@
 ! name of EBSD master files
  masterfileA = 'undefined',
  masterfileB = 'undefined',
+!   - for EMsoft developers who have the EMsoft_SDK installed, the following parameter will be ignored;
+!   - all other users will need to provide the full path to the h5copy program here
+ h5copypath = 'undefined',
 ! name of HDF5 output file (either a small file containing the series or a full master pattern file)
  datafile = 'undefined',
 ! orientation relation vectors:
