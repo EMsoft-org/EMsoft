@@ -2735,11 +2735,11 @@ end function kdelta
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief  all three roots of cubic polynomial
+!> @brief  all three roots of cubic polynomial with real coefficients 
 !
 !> @details the equations were taken from wikipedia article https://en.wikipedia.org/wiki/Cubic_function
 !
-!> @param co
+!> @param co  coefficients in co1 x^3 + co2 x^2 + co3 x + co4 = 0
 !> @param roots
 !
 !> @note THIS ROUTINE FAILS FOR CERTAIN COEFFICIENT COMBINATIONS; CHECK sqrt ARGUMENT for C
@@ -2757,22 +2757,22 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)            :: co(4)
 complex(kind=dbl),INTENT(OUT)        :: X(3)
 
-real(kind=dbl)                       :: del0, del1, C
-complex(kind=dbl)                    :: u(3)
+real(kind=dbl)                       :: del0, del1 
+complex(kind=dbl)                    :: u(3), C, pre
 integer(kind=irg)                    :: i
 
 del0 = co(2)*co(2) - 3.D0*co(1)*co(3)
 del1 = 2.D0*co(2)**3 - 9.D0*co(1)*co(2)*co(3) + 27.D0*co(4)*co(1)**2;
-C = (0.5D0*(del1 + dsqrt(del1*del1 - 4.D0*del0**3)))**(1.D0/3.D0);
+C = (0.5D0*(-del1 + dsqrt(del1*del1 - 4.D0*del0**3)))**(1.D0/3.D0);
 
 u(1) = dcmplx(1.D0,0.D0);
-u(2) = dcmplx(-0.5D0,dsqrt(3.D0)*0.5D0)
-u(3) = dcmplx(-0.5D0,-dsqrt(3.D0)*0.5D0)
+u(2) = dcmplx(0.5D0,dsqrt(3.D0)*0.5D0)
+u(3) = dcmplx(0.5D0,-dsqrt(3.D0)*0.5D0)
 
-do i = 1,3
-    X(i) = -1.D0/3.D0/co(1)*(co(2) + u(i)*C + del0/u(i)/C);
-end do
-
+pre = dcmplx(-1.D0/3.D0/co(1),0.D0)
+X(1) = pre * (dcmplx(co(2)) - C - dcmplx(del0,0.D0)/C);
+X(2) = pre * (dcmplx(co(2)) + u(3) * C + u(2) * dcmplx(del0,0.D0)/C);
+X(3) = pre * (dcmplx(co(2)) + u(2) * C + u(3) * dcmplx(del0,0.D0)/C);
 
 end subroutine cubicroots
 !--------------------------------------------------------------------------
