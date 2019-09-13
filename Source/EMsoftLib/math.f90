@@ -2742,10 +2742,9 @@ end function kdelta
 !> @param co  coefficients in co1 x^3 + co2 x^2 + co3 x + co4 = 0
 !> @param roots
 !
-!> @note THIS ROUTINE FAILS FOR CERTAIN COEFFICIENT COMBINATIONS; CHECK sqrt ARGUMENT for C
-! 
 !> @date 01/18/16   SS 1.0 original
 !> @date 01/25/16  MDG 1.1 minor mods to make more efficient
+!> @date 09/13/19  MDG 2.0 rewrite, verified against Mathematica for a couple of trial cases
 !--------------------------------------------------------------------------
 recursive subroutine cubicroots(co,X)
 !DEC$ ATTRIBUTES DLLEXPORT :: cubicroots
