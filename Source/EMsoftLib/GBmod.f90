@@ -209,17 +209,17 @@ if (present(noU1)) then
       sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
       Omega = 2.0 * minval( (/ acos(sum1), acos(sum2) /) )
     case(2)
-      sum1 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
-      sum2 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
-      Omega = sqrt( minval( (/ sum1, sum2 /) ) ) 
+      sum1 = sqrt(4.0D0 * ( 2.D0 - cac*cac - cbd*cbd ))
+      sum2 = sqrt(4.0D0 * ( 2.D0 - cbc*cbc - cad*cad ))
+      Omega = minval( (/ sum1, sum2 /) )
     case(3)
       cac = 2.D0 * acos(cac)
       cbd = 2.D0 * acos(cbd)
       cbc = 2.D0 * acos(cbc)
       cad = 2.D0 * acos(cad)
-      sum1 = cac*cac + cbd*cbd 
-      sum2 = cbc*cbc + cad*cad 
-      Omega = sqrt( minval( (/ sum1, sum2 /) ) )
+      sum1 = sqrt(cac*cac + cbd*cbd )
+      sum2 = sqrt(cbc*cbc + cad*cad )
+      Omega = minval( (/ sum1, sum2 /) )
     end select
 
   end if
@@ -237,11 +237,11 @@ else
     case(1) 
       sum1 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
     case(2)
-      sum1 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
+      sum1 = sqrt(4.0D0 * ( 2.D0 - cac*cac - cbd*cbd ))
     case(3)
       cac = 2.D0 * acos(cac)
       cbd = 2.D0 * acos(cbd)
-      sum1 = cac*cac + cbd*cbd
+      sum1 = sqrt(cac*cac + cbd*cbd)
   end select
 
 ! determine the minimal U(1) angle for the (a,-b) - (c,d) boundary pair
@@ -257,11 +257,11 @@ else
     case(1) 
       sum3 = 0.5D0 * maxval( abs( (/ cac+cbd, cac-cbd /) ) )
     case(2)
-      sum3 = 4.0D0 * ( 2.D0 - cac*cac - cbd*cbd )
+      sum3 = sqrt(4.0D0 * ( 2.D0 - cac*cac - cbd*cbd ))
     case(3)
       cac = 2.D0 * acos(cac)
       cbd = 2.D0 * acos(cbd)
-      sum3 = cac*cac + cbd*cbd
+      sum3 = sqrt(cac*cac + cbd*cbd)
   end select
 
 ! determine the minimal U(1) angle for the (b,a) - (c,d) boundary pair
@@ -277,11 +277,11 @@ else
     case(1) 
       sum2 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
     case(2)
-      sum2 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
+      sum2 = sqrt(4.0D0 * ( 2.D0 - cbc*cbc - cad*cad ))
     case(3)
       cbc = 2.D0 * acos(cbc)
       cad = 2.D0 * acos(cad)
-      sum2 = cbc*cbc + cad*cad
+      sum2 = sqrt(cbc*cbc + cad*cad)
   end select
 
 ! determine the minimal U(1) angle for the (b,-a) - (c,d) boundary pair
@@ -297,11 +297,11 @@ else
     case(1) 
       sum4 = 0.5D0 * maxval( abs( (/ cbc+cad, cbc-cad /) ) )
     case(2)
-      sum4 = 4.0D0 * ( 2.D0 - cbc*cbc - cad*cad )
+      sum4 = sqrt(4.0D0 * ( 2.D0 - cbc*cbc - cad*cad ))
     case(3)
       cbc = 2.D0 * acos(cbc)
       cad = 2.D0 * acos(cad)
-      sum4 = cbc*cbc + cad*cad
+      sum4 = sqrt(cbc*cbc + cad*cad)
   end select
 
   sums = (/ sum1, sum2, sum3, sum4 /)
@@ -313,7 +313,7 @@ else
     case(1)
       Omega = 2.0 * acos(smax)
     case(2,3)
-      Omega = sqrt( minval(sums) )
+      Omega = minval(sums)
       Omega = Omega * srt
   end select
 
@@ -321,7 +321,7 @@ end if
 
 end function GBO_Omega
 
-!--------------------------------------------------------------------------
+!-------------------------------
 !
 ! FUNCTION: GBO_Omega_symmetric
 !
