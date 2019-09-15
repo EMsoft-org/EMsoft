@@ -89,7 +89,7 @@ use stringconstants
 ! must be replaced EVERYWHERE by 
 ! type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 ! and any command
-! nullify(HDF_head%next)
+! nullify(HDF_head)
 ! must be replaced by 
 ! nullify(HDF_head%next)
 !
@@ -6803,7 +6803,7 @@ end subroutine ReadDataHDF
 !
 !> @date   12/14/16 MDG 1.0 original code 
 !--------------------------------------------------------------------------
-recursive function CheckFixedLengthflag(dataset, HDFhead) result(itis)
+recursive function CheckFixedLengthflag(dataset, HDF_head) result(itis)
 !DEC$ ATTRIBUTES DLLEXPORT :: CheckFixedLengthflag
 
 use HDF5
@@ -6812,7 +6812,7 @@ use h5lt
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: dataset
-type(HDFobjectStackType)        ,INTENT(INOUT)  :: HDFhead
+type(HDFobjectStackType),INTENT(INOUT)          :: HDF_head
 !f2py intent(in,out) ::  HDFhead
 
 logical                                         :: itis
@@ -6823,10 +6823,10 @@ integer(kind=irg)                               :: FL, hdferr, i
 itis = .FALSE.
 
 ! look for the data set
-i = h5ltfind_dataset_f(HDFhead%ObjectID, trim(dataset))
+i = h5ltfind_dataset_f(HDF_head%next%ObjectID, trim(dataset))
 
 if (i.eq.1) then 
-  call HDF_readDatasetInteger(dataset, HDFhead, hdferr, FL)
+  call HDF_readDatasetInteger(dataset, HDF_head, hdferr, FL)
   call HDFerror_check('CheckFixedLengthflag:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
   if (FL.eq.1) then 
