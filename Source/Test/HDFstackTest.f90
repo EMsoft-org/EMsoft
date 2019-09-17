@@ -102,7 +102,7 @@ if (hdferr.ne.0) then
   return
 end if
 
-if (HDF_head%objectType.ne.'f') then
+if (HDF_head%next%objectType.ne.'f') then
   res = 2
   return
 end if
@@ -111,7 +111,7 @@ end if
 groupname = SC_testgroup
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-if (HDF_head%objectType.ne.'g') then
+if (HDF_head%next%objectType.ne.'g') then
   res = 3
   return
 end if
@@ -119,7 +119,7 @@ end if
 groupname = SC_test2group
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-if (HDF_head%objectType.ne.'g') then
+if (HDF_head%next%objectType.ne.'g') then
   res = 4
   return
 end if
@@ -131,7 +131,7 @@ hdferr = HDF_writeDatasetInteger(dataset, ival, HDF_head)
 ! close inner group
 call HDF_pop(HDF_head)
 
-if (HDF_head%objectType.ne.'g') then
+if (HDF_head%next%objectType.ne.'g') then
   res = 5
   return
 end if
