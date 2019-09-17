@@ -673,7 +673,7 @@ if (rlp%method.eq.'IP') then
  s = rlp%g*swk
 
 ! get the atomic scattering factors for all atom types by linear interpolation
- call getScatfac(cell, s, sfarray)
+ call getScatfac(cell, s, sfarray, cell%ATOM_ntype)
 
 ! compute the scaling prefactors
 ! pref contains A to nm conversion, and divides by 4pi
@@ -855,7 +855,7 @@ end subroutine PreCalcFSCATT
 !
 !> @date   08/09/18 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine getScatfac(cell, s, sfarray)
+recursive subroutine getScatfac(cell, s, sfarray, ntypes)
 !DEC$ ATTRIBUTES DLLEXPORT :: getScatfac
 
 use crystal
@@ -867,21 +867,22 @@ IMPLICIT NONE
 
 type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: s
-complex(kind=sgl),INTENT(OUT)   :: sfarray(*)
+integer(kind=irg),INTENT(IN)    :: ntypes
+complex(kind=sgl),INTENT(OUT)   :: sfarray(ntypes)
 
 integer(kind=irg)               :: jj
 real(kind=sgl)                  :: dx
 
 if (s.eq.0.0) then 
-    sfarray(1:cell%ATOM_ntype) = cell%scatfac(1,1:cell%ATOM_ntype)
+    sfarray(1:ntypes) = cell%scatfac(1,1:ntypes)
 else
     jj = ifix(s/cell%scatfacg(2))
     if (jj.ge.cell%numscatfac) then
-        sfarray(1:cell%ATOM_ntype) = cell%scatfac(cell%numscatfac,1:cell%ATOM_ntype)
+        sfarray(1:ntypes) = cell%scatfac(cell%numscatfac,1:ntypes)
     else
         dx = s/cell%scatfacg(2) - float(jj)
-        sfarray(1:cell%ATOM_ntype) = cell%scatfac(jj,1:cell%ATOM_ntype)*(1.0-dx) + &
-                                     cell%scatfac(jj+1,1:cell%ATOM_ntype)*dx
+        sfarray(1:ntypes) = cell%scatfac(jj,1:ntypes)*(1.0-dx) + &
+                                     cell%scatfac(jj+1,1:ntypes)*dx
     end if
 end if
 
