@@ -16,6 +16,8 @@
  metric = 'octonion',
 ! are we computing a new matrix 'newmatrix' or adding column(s) to an existing one 'addcolumns' ?
  workmode = 'newmatrix',
+! do we use the octonion U(1) angle for the other metrics as well, or do we use actual minimization (refine=.TRUE.) ?
+ refine = .FALSE.,
 !=======================
 ! if workmode = 'newmatrix'  [comment the inname and outname parameters in the next section]
 !   input octonion file name (EMsoft relative pathname)

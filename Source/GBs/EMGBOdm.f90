@@ -191,6 +191,15 @@ call cpu_time(tstart)
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, qa, qb, qc, qd, ic, tt, io_int)
 TID = OMP_GET_THREAD_NUM()
 
+! initialize the cosine and sine arrays for the refinement ... 
+if (gbonl%refine.eqv..TRUE.) then 
+  qa = (/ 1.D0, 0.D0, 0.D0, 0.D0 /)
+  qb = qa 
+  qc = qa
+  qd = qa
+  tt = GBO_Omega_Refine(qa,qb,qc,qd,metric=trim(gbonl%metric),init=.TRUE.)
+end if
+
 ! generate nquats random quartets of quaternions
 !$OMP DO SCHEDULE(DYNAMIC)
 do ir = 1,numoct
@@ -210,7 +219,11 @@ do ir = 1,numoct
 ! make sure they are unit quaternions
       qc = qc / NORM2(qc)
       qd = qd / NORM2(qd)
-      tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict,metric=trim(gbonl%metric))
+      if (gbonl%refine.eqv..TRUE.) then 
+        tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict,metric=trim(gbonl%metric),refine=.TRUE.)
+      else
+        tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict,metric=trim(gbonl%metric))
+      end if
       distancematrix(ir,ic) = tt
     end if
   end do
