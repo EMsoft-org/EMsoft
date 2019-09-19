@@ -245,6 +245,8 @@ datafile = trim(EMsoft_getEMdatapathname())//trim(ecpnl%datafile)
 datafile = EMsoft_toNativePath(datafile)
 hdferr =  HDF_createFile(datafile, HDF_head)
 
+nullify(HDF_head%next)
+
 ! write the EMheader to the file
 groupname = SC_ECP
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)

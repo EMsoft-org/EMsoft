@@ -190,8 +190,6 @@ call Time_tick(tickstart)
 gzero = 1
 frac = 0.05
 
-!allocate(cell)        
-
 !=============================================================
 !read Monte Carlo output file and extract necessary parameters
 ! first, we need to load the data from the MC program.
@@ -207,8 +205,6 @@ call  ECPSinglereadMCfile(ecpnl, acc, verbose=.TRUE.)
 !=============================================
 !=============================================
 ! crystallography section
-!nullify(cell)        
-!allocate(cell)        
 
 ! load the crystal structure and compute the Fourier coefficient lookup table
 verbose = .TRUE.
@@ -312,14 +308,16 @@ ktmp => khead
 
 nat = 0
 fnat = 1.0/float(sum(cell%numat(1:numset)))
-intthick = dble(depthmax)
+intthick = dble(ecpnl%depthmax)
+depthstep = ecpnl%depthstep
 
 outname = trim(EMsoft_getEMdatapathname())//trim(ecpnl%datafile)
+outname = EMsoft_toNativePath(outname)
+
 allocate(mLPNH(1:ecpnl%npix,1:ecpnl%npix),stat=istat)
 mLPNH = 0.0
 
 
-nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
@@ -365,13 +363,6 @@ hdferr = HDF_writeDatasetDouble(dataset, EkeV, HDF_head)
 dataset = SC_cellATOMtype
 hdferr = HDF_writeDatasetIntegerArray1D(dataset, cell%ATOM_type(1:numset), numset, HDF_head)
 
-! dataset = SC_squhex
-! if (usehex) then
-! hdferr = HDF_writeDatasetStringArray(dataset, 'hexago', 1, HDF_head)
-! else
-! hdferr = HDF_writeDatasetStringArray(dataset, 'square', 1, HDF_head)
-! end if
-
 ! create the hyperslab and write zeroes to it for now
 dataset = SC_ECP
 dims2 = (/  ecpnl%npix, ecpnl%npix /)
@@ -381,16 +372,12 @@ hdferr = HDF_writeHyperslabFloatArray2D(dataset, mLPNH, dims2, offset2, cnt2(1),
 
 call HDF_pop(HDF_head,.TRUE.)
 
-! and close the fortran hdf interface
-call h5close_EMsoft(hdferr)
-
 call OMP_SET_NUM_THREADS(ecpnl%nthreads)
 io_int(1) = ecpnl%nthreads
 call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
 
 
-!!$OMP PARALLEL default(shared) COPYIN(rlp) &
-!$OMP PARALLEL COPYIN(rlp) &
+!$OMP PARALLEL default(shared) COPYIN(rlp) &
 !$OMP& PRIVATE(DynMat,Sgh,Sghtmp,Lgh,i,FN,TID,kn,ipx,ipy,ix,ip,iequiv,nequiv,reflist,firstw) &
 !$OMP& PRIVATE(kk,kkk,nns,nnw,nref,nat,io_int,io_int_sgl,nthreads,svals)
 !!!!$OMP& SHARED(mLPNH,mLPSH,tots,totw)
@@ -429,6 +416,7 @@ beamloop: do i = 1, numk
     nnw = 0
     call Apply_BethePotentials(cell, reflist, firstw, BetheParameters, nref, nns, nnw)
 
+
     allocate(DynMat(nns,nns))
 
     call GetDynMat(cell, reflist, firstw, rlp, DynMat, nns, nnw)
@@ -443,6 +431,7 @@ beamloop: do i = 1, numk
     Sghtmp = czero
     nat = 0
     call CalcSgh(cell,reflist,nns,numset,Sghtmp,nat)
+
 
 ! solve the dynamical eigenvalue equation
     kn = CalcDot(cell, kk, FN, 'r')
@@ -478,10 +467,6 @@ end do beamloop
 
 ! and here is where the major changes are for this version 5.0: all output now in HDF5 format
 call timestamp(timestring=tstre)
-
-nullify(HDF_head%next)
-! Initialize FORTRAN HDF interface.
-call h5open_EMsoft(hdferr)
 
 ! open the existing file using the default properties.
 hdferr =  HDF_openFile(outname, HDF_head)
