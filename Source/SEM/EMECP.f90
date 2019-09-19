@@ -86,6 +86,7 @@ end program EMECP
 !> @date 13/10/15 SS 2.0 added detector model+new GetVectorCone routine+OpenMP+hdf5
 !> @date 09/13/18 MDG 2.1 fix off-by-one error in writing of pattern byte arrays (fixes issue 26)
 !> @date 02/19/19 MDG 2.2 updates HDF_FileVersion to 4.1
+!> @date 09/18/19 MDG 2.3 removes unnecessary copying of large master pattern arrays
 !-------------------------------------------------------------------------------------
 subroutine ECpattern(ecpnl, progname, nmldeffile)
 
@@ -132,7 +133,6 @@ real(kind=sgl)                          :: dmin, FN(3)
 real(kind=sgl),allocatable              :: mask(:,:), lx(:), ly(:)
 integer(kind=irg)                       :: maskradius, io_int(1), hdferr
 logical                                 :: verbose
-real(kind=sgl),allocatable              :: master_arrayNH(:,:), master_arraySH(:,:)
 real(kind=sgl),allocatable              :: anglewf(:)
 integer(kind=irg)                       :: nsig, isig, isigp
 integer(kind=irg)                       :: numk, nix, niy, nixp, niyp, i, j, ierr, &
@@ -333,12 +333,6 @@ if (ecpnl%maskpattern .eq. 'y') then
   deallocate(lx, ly)
 end if
 
-allocate(master_arrayNH(-ecpnl%npx:ecpnl%npx,-ecpnl%npy:ecpnl%npy))
-allocate(master_arraySH(-ecpnl%npx:ecpnl%npx,-ecpnl%npy:ecpnl%npy))
-
-master_arrayNH = master%mLPNH
-master_arraySH = master%mLPSH
-
 ! determine the scale factor for the Lambert interpolation; the square has
 ! an edge length of 2 x sqrt(pi/2)
 ! This has been changed on 09/01/15 to accommodate the new Lambert module]
@@ -391,10 +385,9 @@ call WriteValue(' Attempting to set number of threads to ',io_int,1,"(I4)")
 call OMP_SET_NUM_THREADS(ecpnl%nthreads)
 
 ! use OpenMP to run on multiple cores
-!$OMP PARALLEL PRIVATE(TID,nthreads,dc,ixy,istat,nix,niy,nixp,niyp,dx,dy,dxm,dym,MCangle,isig,dp,isigp) &
-!$OMP& PRIVATE(ipx,ipy,ECPpattern,bpat,ECPpatternintd,ma,mi,offset,hdims,dim0,dim1,dim2,hdferr,qu,idir,wf) &
-!$OMP& SHARED (ecpnl,numk,angles,kij,master_arrayNH,master_arraySH,anglewf,mask,dataset,nsig) &
-!$OMP& SHARED (HDF_head,insert,switchwfoff)
+!$OMP PARALLEL DEFAULT(SHARED) &
+!$OMP PRIVATE(TID,nthreads,dc,ixy,istat,nix,niy,nixp,niyp,dx,dy,dxm,dym,MCangle,isig,dp,isigp) &
+!$OMP& PRIVATE(ipx,ipy,ECPpattern,bpat,ECPpatternintd,ma,mi,offset,hdims,dim0,dim1,dim2,hdferr,qu,idir,wf)
 
 TID = OMP_GET_THREAD_NUM()
 nthreads = OMP_GET_NUM_THREADS()
@@ -437,31 +430,31 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
         if (switchwfoff .eqv. .FALSE.) then
             if (dc(3) .ge. 0.0) then 
 
-                ECPpattern(ipx,ipy) = wf * ( master_arrayNH(nix,niy) * dxm * dym + &
-                             master_arrayNH(nixp,niy) * dx * dym + &
-                             master_arrayNH(nix,niyp) * dxm * dy + &
-                             master_arrayNH(nixp,niyp) * dx * dy )
+                ECPpattern(ipx,ipy) = wf * ( master%mLPNH(nix,niy) * dxm * dym + &
+                             master%mLPNH(nixp,niy) * dx * dym + &
+                             master%mLPNH(nix,niyp) * dxm * dy + &
+                             master%mLPNH(nixp,niyp) * dx * dy )
 
             else
 
-                 ECPpattern(ipx,ipy) =  wf * ( master_arraySH(nix,niy) * dxm * dym + &
-                             master_arraySH(nixp,niy) * dx * dym + &
-                             master_arraySH(nix,niyp) * dxm * dy + &
-                             master_arraySH(nixp,niyp) * dx * dy )
+                 ECPpattern(ipx,ipy) =  wf * ( master%mLPSH(nix,niy) * dxm * dym + &
+                             master%mLPSH(nixp,niy) * dx * dym + &
+                             master%mLPSH(nix,niyp) * dxm * dy + &
+                             master%mLPSH(nixp,niyp) * dx * dy )
 
             end if
 
         else
             if (dc(3) .ge. 0.0) then 
-                ECPpattern(ipx,ipy) =   master_arrayNH(nix,niy) * dxm * dym + &
-                         master_arrayNH(nixp,niy) * dx * dym + &
-                         master_arrayNH(nix,niyp) * dxm * dy + &
-                         master_arrayNH(nixp,niyp) * dx * dy 
+                ECPpattern(ipx,ipy) =   master%mLPNH(nix,niy) * dxm * dym + &
+                         master%mLPNH(nixp,niy) * dx * dym + &
+                         master%mLPNH(nix,niyp) * dxm * dy + &
+                         master%mLPNH(nixp,niyp) * dx * dy 
             else
-                 ECPpattern(ipx,ipy) =   master_arraySH(nix,niy) * dxm * dym + &
-                         master_arraySH(nixp,niy) * dx * dym + &
-                         master_arraySH(nix,niyp) * dxm * dy + &
-                         master_arraySH(nixp,niyp) * dx * dy 
+                 ECPpattern(ipx,ipy) =   master%mLPSH(nix,niy) * dxm * dym + &
+                         master%mLPSH(nixp,niy) * dx * dym + &
+                         master%mLPSH(nix,niyp) * dxm * dy + &
+                         master%mLPSH(nixp,niyp) * dx * dy 
 
             end if
  
