@@ -491,11 +491,11 @@ hdferr =  HDF_openFile(energyfile, HDF_head)
 
 ! if this file already contains an ECPmaster dataset, then we let the user
 ! know and gracefully abort the program.
-dataset = trim(SC_EMData)//trim(SC_ECPmaster)
+dataset = trim(SC_EMData)//'/'//trim(SC_ECPmaster)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
   call Message('ECmasterpattern: this output file already contains an ECPmaster dataset') 
-  call FatalError('ECmasterpattern','Set the copyfromenergyfile parameter to copy existing MC data into a new EC master file') 
+  call FatalError('ECmasterpattern','Set a new ECP master file in the namelist input file') 
 end if
 
 ! write the EMheader to the file
