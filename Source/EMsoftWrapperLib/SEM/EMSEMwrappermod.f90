@@ -299,13 +299,13 @@ PROCEDURE(ProgressCallBack), POINTER    :: proc
 ! link the proc procedure to the cproc argument
 CALL C_F_PROCPOINTER (cproc, proc)
 
-if (ipar(26).eq.0) then 
 ! binned pattern dimensions
-  binx = ipar(23)
-  biny = ipar(24)
-  binfac = 2**ipar(22)
-  bindx = 1.0/float(binfac)**2
+binx = ipar(23)
+biny = ipar(24)
+binfac = 2**ipar(22)
+bindx = 1.0/float(binfac)**2
 
+if (ipar(26).eq.0) then 
 !====================================
 ! ------ generate the detector rgx, rgy, rgz arrays (and a few others)
 !====================================
