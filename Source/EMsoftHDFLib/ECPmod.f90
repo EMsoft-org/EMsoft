@@ -340,6 +340,7 @@ character(fnlen),allocatable            :: stringarray(:)
 integer(kind=irg),allocatable           :: acc_z(:,:,:,:), acc_e(:,:,:)
 
 type(HDFobjectStackType)                :: HDF_head
+
 ! is the efile parameter present? If so, use it as the filename, otherwise use the enl%energyfile parameter
 if (PRESENT(efile)) then
   energyfile = efile
