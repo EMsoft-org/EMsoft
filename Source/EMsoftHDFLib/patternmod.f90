@@ -113,6 +113,7 @@ if (trim(inputtype).eq."OxfordBinary") itype = 5
 if (trim(inputtype).eq."OxfordHDF") itype = 6    ! to be implemented
 if (trim(inputtype).eq."EMEBSD") itype = 7
 if (trim(inputtype).eq."BrukerHDF") itype = 8
+if (trim(inputtype).eq."NORDIF") itype = 9       ! to be implemented
 
 end function get_input_type
 
@@ -353,6 +354,10 @@ select case (itype)
         end do
         ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
+
+    case(9)  !  "NORDIF"
+        ! to be written
+        call FatalError("openExpPatternFile","NORDIF input format not yet implemented")
 
     case default 
         istat = -1
@@ -601,6 +606,12 @@ select case (itype)
                 end do 
             end do 
         end do 
+
+    case(9)  !  "NORDIF"
+        ! to be written
+        call FatalError("getExpPatternRow","NORDIF input format not yet implemented")
+
+    
     case default 
 end select
 
@@ -813,6 +824,10 @@ select case (itype)
             end do 
         end do 
 
+    case(9)  !  "NORDIF"
+        ! to be written
+        call FatalError("getSingleExpPattern","NORDIF input format not yet implemented")
+        
     case default 
 
 end select
@@ -866,6 +881,10 @@ select case (itype)
         call HDF_pop(pmHDF_head,.TRUE.)
         nullify(pmHDF_head%next)
         deallocate(semix, semiy)
+
+    case(9)  !  "NORDIF"
+        ! to be written
+        call FatalError("closeExpPatternFile","input format not yet implemented")
 
     case default 
         call FatalError("closeExpPatternFile","unknown input format")
