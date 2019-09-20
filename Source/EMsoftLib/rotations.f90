@@ -809,7 +809,7 @@ IMPLICIT NONE
 real(kind=sgl),INTENT(IN)       :: ro(4)
 
 integer(kind=irg)               :: res
-real(kind=sgl), parameter       :: eps = 1.e-10
+real(kind=sgl), parameter       :: eps = 1.e-7
 
 res = 1
 
@@ -1042,7 +1042,7 @@ real(kind=sgl),INTENT(IN)       :: qu(4)
 
 integer(kind=irg)               :: res
 real(kind=sgl)                  :: r
-real(kind=sgl), parameter       :: eps = 1.e-10
+real(kind=sgl), parameter       :: eps = 1.e-7
 
 res = 1
 
@@ -1121,11 +1121,11 @@ use error
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: st(4)
+real(kind=sgl),INTENT(IN)       :: st(3)
 
 integer(kind=irg)               :: res
 real(kind=sgl)                  :: r
-real(kind=sgl), parameter       :: eps = 1.e-10
+real(kind=sgl), parameter       :: eps = 1.e-7
 
 res = 1
 
@@ -1159,11 +1159,11 @@ use error
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: st(4)
+real(kind=dbl),INTENT(IN)       :: st(3)
 
 integer(kind=irg)               :: res
 real(kind=dbl)                  :: r
-real(kind=dbl), parameter       :: eps = 1.d-10
+real(kind=dbl), parameter       :: eps = 1.d-15
 
 res = 1
 
@@ -1202,7 +1202,7 @@ real(kind=sgl),INTENT(IN)       :: ax(4)
 
 integer(kind=irg)               :: res
 real(kind=sgl)                  :: r
-real(kind=sgl), parameter       :: eps = 1.e-10
+real(kind=sgl), parameter       :: eps = 1.e-7
 
 res = 1
 
@@ -1231,8 +1231,8 @@ end function ax_check
 ! 
 !> @date 9/30/14   MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function ax_check_D(ax) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ax_check_D
+recursive function ax_check_d(ax) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ax_check_d
 
 use local
 use constants
@@ -1286,7 +1286,7 @@ real(kind=sgl),INTENT(IN)       :: om(3,3)
 
 integer(kind=irg)               :: res
 real(kind=sgl)                  :: r, det
-real(kind=sgl), parameter       :: eps = 1.e-10
+real(kind=sgl), parameter       :: eps = 1.e-7
 integer(kind=irg)               :: i
 
 res = 1
