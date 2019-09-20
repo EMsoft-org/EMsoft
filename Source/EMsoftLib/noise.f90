@@ -74,24 +74,24 @@ recursive function alogam ( x, ifault )
 !
 !  Parameters:
 !
-!    Input, real ( kind = 8 ) X, the argument of the Gamma function.
+!    Input, real (kind=8) X, the argument of the Gamma function.
 !    X should be greater than 0.
 !
-!    Output, integer ( kind = 4 ) IFAULT, error flag.
+!    Output, integer (kind=4) IFAULT, error flag.
 !    0, no error.
 !    1, X <= 0.
 !
-!    Output, real ( kind = 8 ) ALOGAM, the logarithm of the Gamma 
+!    Output, real (kind=8) ALOGAM, the logarithm of the Gamma 
 !    function of X.
 !
   implicit none
 
-  real    ( kind = 8 ) alogam
-  real    ( kind = 8 ) f
-  integer ( kind = 4 ) ifault
-  real    ( kind = 8 ) x
-  real    ( kind = 8 ) y
-  real    ( kind = 8 ) z
+  real    (kind=8) alogam
+  real    (kind=8) f
+  integer (kind=4) ifault
+  real    (kind=8) x
+  real    (kind=8) y
+  real    (kind=8) z
 
   if ( x <= 0.0D+00 ) then
     ifault = 1
