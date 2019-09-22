@@ -1511,10 +1511,10 @@ select case (intype)
                 res%om = eu2om(orient(1:3))
                 res%quat = eu2qu(orient(1:3))
                 res%rodrigues = eu2ro(orient(1:3))
-                res%axang = eu2ax(res%eulang)
-                res%homochoric = ax2ho(res%axang)
-                res%cubochoric = ho2cu(res%homochoric)
-                res%stereographic = qu2st(res%quat)
+                res%axang = eu2ax(orient(1:3))
+                res%homochoric = eu2ho(orient(1:3))
+                res%cubochoric = eu2cu(orient(1:3))
+                res%stereographic = eu2st(orient(1:3))
         case ('ro')     ! Rodrigues vector
                 ! verify the Rodrigues-Frank vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1522,12 +1522,12 @@ select case (intype)
                 endif
                 res%rodrigues = orient(1:4)
                 res%eulang = ro2eu(orient(1:4))
-                res%om = eu2om(res%eulang)
-                res%quat = eu2qu(res%eulang)
-                res%axang = ro2ax(res%rodrigues)
-                res%homochoric = ax2ho(res%axang)
-                res%cubochoric = ho2cu(res%homochoric)
-                res%stereographic = qu2st(res%quat)
+                res%om = ro2om(orient(1:4))
+                res%quat = ro2qu(orient(1:4))
+                res%axang = ro2ax(orient(1:4))
+                res%homochoric = ro2ho(orient(1:4))
+                res%cubochoric = ro2cu(orient(1:4))
+                res%stereographic = ro2st(orient(1:4))
         case ('ho')     ! homochoric
                 ! verify the homochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1535,51 +1535,51 @@ select case (intype)
                 endif
                 res%homochoric = orient(1:3)
                 res%axang = ho2ax(orient(1:3))
-                res%om = ax2om(res%axang)
-                res%eulang = om2eu(res%om)
-                res%rodrigues = eu2ro(res%eulang)
-                res%quat = eu2qu(res%eulang)
-                res%cubochoric = ho2cu(res%homochoric)
-                res%stereographic = qu2st(res%quat)
+                res%om = ho2om(orient(1:3))
+                res%eulang = ho2eu(orient(1:3))
+                res%rodrigues = ho2ro(orient(1:3))
+                res%quat = ho2qu(orient(1:3))
+                res%cubochoric = ho2cu(orient(1:3))
+                res%stereographic = ho2st(orient(1:3))
         case ('cu')     ! cubochoric
                 ! verify the cubochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
                         if (rotcheck.eqv..TRUE.) i = cu_check(orient)
                 endif
                 res%cubochoric = orient(1:3)
-                res%homochoric = cu2ho(res%cubochoric)
-                res%eulang = cu2eu(res%cubochoric)
-                res%om = cu2om(res%cubochoric)
-                res%quat = cu2qu(res%cubochoric)
-                res%axang = cu2ax(res%cubochoric)
-                res%rodrigues = cu2ro(res%cubochoric)
-                res%stereographic = qu2st(res%quat)
+                res%homochoric = cu2ho(orient(1:3))
+                res%eulang = cu2eu(orient(1:3))
+                res%om = cu2om(orient(1:3))
+                res%quat = cu2qu(orient(1:3))
+                res%axang = cu2ax(orient(1:3))
+                res%rodrigues = cu2ro(orient(1:3))
+                res%stereographic = cu2st(orient(1:3))
         case ('st')     ! stereographic
                 ! verify the cstereographic vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
                         if (rotcheck.eqv..TRUE.) i = st_check(orient)
                 endif
                 res%stereographic = orient(1:3)
-                res%cubochoric = st2cu(res%cubochoric)
-                res%homochoric = st2ho(res%cubochoric)
-                res%eulang = st2eu(res%cubochoric)
-                res%om = st2om(res%cubochoric)
-                res%quat = st2qu(res%cubochoric)
-                res%axang = st2ax(res%cubochoric)
-                res%rodrigues = st2ro(res%cubochoric)
+                res%cubochoric = st2cu(orient(1:3))
+                res%homochoric = st2ho(orient(1:3))
+                res%eulang = st2eu(orient(1:3))
+                res%om = st2om(orient(1:3))
+                res%quat = st2qu(orient(1:3))
+                res%axang = st2ax(orient(1:3))
+                res%rodrigues = st2ro(orient(1:3))
         case ('qu')     ! quaternion
                 ! verify the quaternion; this will abort program if values are outside range
                 if (present(rotcheck)) then 
                         if (rotcheck.eqv..TRUE.) i = qu_check(orient)
                 endif
                 res%quat = orient(1:4)
-                res%eulang = qu2eu(res%quat)
-                res%om = eu2om(res%eulang)
-                res%rodrigues = eu2ro(res%eulang)
-                res%axang = ro2ax(res%rodrigues)
-                res%homochoric = ax2ho(res%axang)
-                res%cubochoric = ho2cu(res%homochoric)
-                res%stereographic = qu2st(res%quat)
+                res%eulang = qu2eu(orient(1:4))
+                res%om = qu2om(orient(1:4))
+                res%rodrigues = qu2ro(orient(1:4))
+                res%axang = qu2ax(orient(1:4))
+                res%homochoric = qu2ho(orient(1:4))
+                res%cubochoric = qu2cu(orient(1:4))
+                res%stereographic = qu2st(orient(1:4))
         case ('ax')     ! axis angle pair
                 ! verify the axis angle pair; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1587,12 +1587,12 @@ select case (intype)
                 endif
                 res%axang = orient(1:4)
                 res%om = ax2om(orient(1:4))
-                res%eulang = om2eu(res%om)
-                res%rodrigues = eu2ro(res%eulang)
-                res%quat = eu2qu(res%eulang)
-                res%homochoric = ax2ho(res%axang)
-                res%cubochoric = ho2cu(res%homochoric)
-                res%stereographic = qu2st(res%quat)
+                res%eulang = ax2eu(orient(1:4))
+                res%rodrigues = ax2ro(orient(1:4))
+                res%quat = ax2qu(orient(1:4))
+                res%homochoric = ax2ho(orient(1:4))
+                res%cubochoric = ax2cu(orient(1:4))
+                res%stereographic = ax2st(orient(1:4))
 end select 
 
 end function init_orientation
@@ -1639,10 +1639,10 @@ select case (intype)
                 res%om = eu2om_d(orient(1:3))
                 res%quat = eu2qu_d(orient(1:3))
                 res%rodrigues = eu2ro_d(orient(1:3))
-                res%axang = eu2ax_d(res%eulang)
-                res%homochoric = ax2ho_d(res%axang)
-                res%cubochoric = ho2cu_d(res%homochoric)
-                res%stereographic = qu2st_d(res%quat)
+                res%axang = eu2ax_d(orient(1:3))
+                res%homochoric = eu2ho_d(orient(1:3))
+                res%cubochoric = eu2cu_d(orient(1:3))
+                res%stereographic = eu2st_d(orient(1:3))
         case ('ro')     ! Rodrigues vector
                 ! verify the Rodrigues-Frank vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1650,12 +1650,12 @@ select case (intype)
                 endif
                 res%rodrigues = orient(1:4)
                 res%eulang = ro2eu_d(orient(1:4))
-                res%om = eu2om_d(res%eulang)
-                res%quat = eu2qu_d(res%eulang)
-                res%axang = ro2ax_d(res%rodrigues)
-                res%homochoric = ax2ho_d(res%axang)
-                res%stereographic = qu2st_d(res%quat)
-                res%cubochoric = ho2cu_d(res%homochoric)
+                res%om = ro2om_d(orient(1:4))
+                res%quat = ro2qu_d(orient(1:4))
+                res%axang = ro2ax_d(orient(1:4))
+                res%homochoric = ro2ho_d(orient(1:4))
+                res%cubochoric = ro2cu_d(orient(1:4))
+                res%stereographic = ro2st_d(orient(1:4))
         case ('ho')     ! homochoric
                 ! verify the homochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1663,51 +1663,51 @@ select case (intype)
                 endif
                 res%homochoric = orient(1:3)
                 res%axang = ho2ax_d(orient(1:3))
-                res%om = ax2om_d(res%axang)
-                res%eulang = om2eu_d(res%om)
-                res%rodrigues = eu2ro_d(res%eulang)
-                res%quat = eu2qu_d(res%eulang)
-                res%stereographic = qu2st_d(res%quat)
-                res%cubochoric = ho2cu_d(res%homochoric)
+                res%om = ho2om_d(orient(1:3))
+                res%eulang = ho2eu_d(orient(1:3))
+                res%rodrigues = ho2ro_d(orient(1:3))
+                res%quat = ho2qu_d(orient(1:3))
+                res%cubochoric = ho2cu_d(orient(1:3))
+                res%stereographic = ho2st_d(orient(1:3))
         case ('cu')     ! cubochoric
                 ! verify the cubochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
                         if (rotcheck.eqv..TRUE.) i = cu_check_d(orient)
                 endif
                 res%cubochoric = orient(1:3)
-                res%homochoric = cu2ho_d(res%cubochoric)
-                res%eulang = cu2eu_d(res%cubochoric)
-                res%om = cu2om_d(res%cubochoric)
-                res%quat = cu2qu_d(res%cubochoric)
-                res%axang = cu2ax_d(res%cubochoric)
-                res%stereographic = qu2st_d(res%quat)
-                res%rodrigues = cu2ro_d(res%cubochoric)
-        case ('qu')     ! quaternion
-                ! verify the quaternion; this will abort program if values are outside range
-                if (present(rotcheck)) then 
-                        if (rotcheck.eqv..TRUE.) i = qu_check_d(orient)
-                endif
-                res%quat = orient(1:4)
-                res%eulang = qu2eu_d(res%quat)
-                res%om = eu2om_d(res%eulang)
-                res%rodrigues = eu2ro_d(res%eulang)
-                res%axang = ro2ax_d(res%rodrigues)
-                res%homochoric = ax2ho_d(res%axang)
-                res%stereographic = qu2st_d(res%quat)
-                res%cubochoric = ho2cu_d(res%homochoric)
+                res%homochoric = cu2ho_d(orient(1:3))
+                res%eulang = cu2eu_d(orient(1:3))
+                res%om = cu2om_d(orient(1:3))
+                res%quat = cu2qu_d(orient(1:3))
+                res%axang = cu2ax_d(orient(1:3))
+                res%rodrigues = cu2ro_d(orient(1:3))
+                res%stereographic = cu2st_d(orient(1:3))
         case ('st')     ! stereographic
                 ! verify the cstereographic vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
                         if (rotcheck.eqv..TRUE.) i = st_check_d(orient)
                 endif
                 res%stereographic = orient(1:3)
-                res%cubochoric = st2cu_d(res%cubochoric)
-                res%homochoric = st2ho_d(res%cubochoric)
-                res%eulang = st2eu_d(res%cubochoric)
-                res%om = st2om_d(res%cubochoric)
-                res%quat = st2qu_d(res%cubochoric)
-                res%axang = st2ax_d(res%cubochoric)
-                res%rodrigues = st2ro_d(res%cubochoric)
+                res%cubochoric = st2cu_d(orient(1:3))
+                res%homochoric = st2ho_d(orient(1:3))
+                res%eulang = st2eu_d(orient(1:3))
+                res%om = st2om_d(orient(1:3))
+                res%quat = st2qu_d(orient(1:3))
+                res%axang = st2ax_d(orient(1:3))
+                res%rodrigues = st2ro_d(orient(1:3))
+        case ('qu')     ! quaternion
+                ! verify the quaternion; this will abort program if values are outside range
+                if (present(rotcheck)) then 
+                        if (rotcheck.eqv..TRUE.) i = qu_check_d(orient)
+                endif
+                res%quat = orient(1:4)
+                res%eulang = qu2eu_d(orient(1:4))
+                res%om = qu2om_d(orient(1:4))
+                res%rodrigues = qu2ro_d(orient(1:4))
+                res%axang = qu2ax_d(orient(1:4))
+                res%homochoric = qu2ho_d(orient(1:4))
+                res%cubochoric = qu2cu_d(orient(1:4))
+                res%stereographic = qu2st(orient(1:4))
         case ('ax')     ! axis angle pair
                 ! verify the axis angle pair; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1715,13 +1715,13 @@ select case (intype)
                 endif
                 res%axang = orient(1:4)
                 res%om = ax2om_d(orient(1:4))
-                res%eulang = om2eu_d(res%om)
-                res%rodrigues = eu2ro_d(res%eulang)
-                res%quat = eu2qu_d(res%eulang)
-                res%homochoric = ax2ho_d(res%axang)
-                res%stereographic = qu2st_d(res%quat)
-                res%cubochoric = ho2cu_d(res%homochoric)
-end select 
+                res%eulang = ax2eu_d(orient(1:4))
+                res%rodrigues = ax2ro_d(orient(1:4))
+                res%quat = ax2qu_d(orient(1:4))
+                res%homochoric = ax2ho_d(orient(1:4))
+                res%cubochoric = ax2cu_d(orient(1:4))
+                res%stereographic = ax2st_d(orient(1:4))
+end select  
 
 end function init_orientation_d
 
@@ -1762,12 +1762,12 @@ select case (intype)
                 endif
                 res%om = orient
                 res%quat = om2qu(orient)
-                res%eulang = qu2eu(res%quat)
-                res%rodrigues = eu2ro(res%eulang)
-                res%axang = ro2ax(res%rodrigues)
-                res%homochoric = ax2ho(res%axang)
-                res%stereographic = qu2st(res%quat)
-                res%cubochoric = ho2cu(res%homochoric)
+                res%eulang = om2eu(orient)
+                res%rodrigues = om2ro(orient)
+                res%axang = om2ax(orient)
+                res%homochoric = om2ho(orient)
+                res%stereographic = om2st(orient)
+                res%cubochoric = om2cu(orient)
 end select 
 
 end function init_orientation_om
@@ -1810,12 +1810,12 @@ select case (intype)
                 endif
                 res%om = orient
                 res%quat = om2qu_d(orient)
-                res%eulang = qu2eu_d(res%quat)
-                res%rodrigues = eu2ro_d(res%eulang)
-                res%axang = ro2ax_d(res%rodrigues)
-                res%homochoric = ax2ho_d(res%axang)
-                res%stereographic = qu2st_d(res%quat)
-                res%cubochoric = ho2cu_d(res%homochoric)
+                res%eulang = om2eu_d(orient)
+                res%rodrigues = om2ro_d(orient)
+                res%axang = om2ax_d(orient)
+                res%homochoric = om2ho_d(orient)
+                res%stereographic = om2st_d(orient)
+                res%cubochoric = om2cu_d(orient)
 end select 
 
 end function init_orientation_om_d
