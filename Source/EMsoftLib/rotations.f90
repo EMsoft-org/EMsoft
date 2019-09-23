@@ -2760,7 +2760,7 @@ real(kind=sgl), INTENT(IN)              :: om(3,3)
 real(kind=sgl)                          :: res(4)
 
 real(kind=sgl)                          :: t, omega, qq(4), o(3,3)
-real(kind=sgl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(100)
+real(kind=sgl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(20)
 complex(kind=sgl)                       :: ev
 complex(kind=sgl),parameter             :: cone = cmplx(1.0,0.0)
 real(kind=sgl),parameter                :: thr = 1.0E-7
@@ -2841,7 +2841,7 @@ real(kind=dbl), INTENT(IN)              :: om(3,3)
 real(kind=dbl)                          :: res(4)
 
 real(kind=dbl)                          :: t, omega, qq(4), o(3,3)
-real(kind=dbl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(100)
+real(kind=dbl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(20)
 complex(kind=dbl)                       :: ev
 complex(kind=dbl),parameter             :: cone = cmplx(1.D0,0.D0)
 real(kind=dbl),parameter                :: thr = 1.0D-10
