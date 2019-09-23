@@ -5372,6 +5372,7 @@ character(fnlen)                                  :: angfile
 character(fnlen)                                  :: eulerfile
 character(fnlen)                                  :: inputtype
 character(fnlen)                                  :: HDFstrings(10)
+character(fnlen)                                  :: refinementNMLfile
 integer(kind=irg)                                 :: ncubochoric
 integer(kind=irg)                                 :: numexptsingle
 integer(kind=irg)                                 :: numdictsingle
@@ -5394,7 +5395,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd, nism, isangle
+section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd, nism, isangle, refinementNMLfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -5451,6 +5452,7 @@ omega           = 0.0
 tmpfile         = 'EMEBSDDict_tmp.data'
 dictfile        = 'undefined'
 maskfile        = 'undefined'
+refinementNMLfile = 'undefined'
 indexingmode    = 'dynamic'
 section         = 0
 inputtype       = 'Binary'    ! Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF 
@@ -5546,7 +5548,7 @@ enl%numsx         = numsx
 enl%numsy         = numsy
 enl%ROI           = ROI
 enl%binning       = binning
-! following parameter is no longer used but may be present in older nm files.
+! following parameter is no longer used but may be present in older nml files.
 enl%energyaverage = -1 ! energyaverage
 enl%thetac        = thetac
 enl%delta         = delta
@@ -5562,6 +5564,7 @@ enl%energymin     = energymin
 enl%energymax     = energymax
 enl%spatialaverage= spatialaverage
 enl%dictfile      = dictfile 
+enl%refinementNMLfile = refinementNMLfile
 
 end subroutine GetEBSDIndexingNameList
 

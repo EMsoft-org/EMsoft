@@ -71,12 +71,13 @@ type(EBSDIndexingNameListType)              :: dinl
 type(MCCLNameListType)                      :: mcnl
 type(EBSDMasterNameListType)                :: mpnl
 type(EBSDNameListType)                      :: enl
+type(RefineOrientationtype)                 :: ronl
 
 type(EBSDMCdataType)                        :: EBSDMCdata
 type(EBSDMPdataType)                        :: EBSDMPdata
 type(EBSDDetectorType)                      :: EBSDdetector
 logical                                     :: verbose
-integer(kind=irg)                           :: istat, res, hdferr
+integer(kind=irg)                           :: i, istat, res, hdferr
 
 nmldeffile = 'EMEBSDDI.nml'
 progname = 'EMEBSDDI.f90'
@@ -139,5 +140,27 @@ end if
 
 ! perform the dictionary indexing computations
 call EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
+
+if (trim(dinl%refinementNMLfile).ne.'undefined') then 
+    do i=1,5 
+      call Message('   ')
+    end do
+
+    nmldeffile = trim(dinl%refinementNMLfile)
+    progname = 'EMFitOrientation.f90'
+    progdesc = 'Refine orientations by searching orientation space about a point including the pseudosymmetric variant(s)'
+
+! print some information
+    call EMsoft(progname, progdesc)
+
+! deal with the command line arguments, if any
+    call Interpret_Program_Arguments(nmldeffile,1,(/ 91 /), progname)
+
+! deal with the namelist stuff
+    call GetRefineOrientationNameList(nmldeffile,ronl)
+
+! and start the refinement
+    call EMEBSDrefinement(progname, ronl, nmldeffile)
+end if
 
 end program EMEBSDDI
