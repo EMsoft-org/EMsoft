@@ -132,6 +132,13 @@
  masterfile = 'undefined',
 !
 !###################################################################
+! IF REFINEMENT IS NEEDED ...
+!###################################################################
+!
+! enter the name of the nml file for the EMFitOrientation program
+ refinementNMLfile = 'undefined',
+!
+!###################################################################
 ! SYSTEM PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'
 !###################################################################
 !

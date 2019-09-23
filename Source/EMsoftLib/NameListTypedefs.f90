@@ -1194,6 +1194,7 @@ type EBSDIndexingNameListType
         character(fnlen)        :: dictfile
         character(fnlen)        :: maskfile
         character(fnlen)        :: indexingmode
+        character(fnlen)        :: refinementNMLfile
         character(fnlen)        :: inputtype
         character(fnlen)        :: HDFstrings(10)
 ! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
