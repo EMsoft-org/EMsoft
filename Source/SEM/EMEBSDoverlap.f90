@@ -263,7 +263,7 @@ else
   if (numvariants.gt.1) then 
     call readEBSDMasterPatternFile(enl%masterfileC, mpnlC, hdferr, EBSDMPdataC, getmLPNH=.TRUE., getmLPSH=.TRUE., keep4=.TRUE.)
     allocate(sC(4))
-    sA = shape(EBSDMPdataC%mLPNH4)
+    sC = shape(EBSDMPdataC%mLPNH4)
     if (numvariants.gt.2) then 
       call readEBSDMasterPatternFile(enl%masterfileD, mpnlD, hdferr, EBSDMPdataD, getmLPNH=.TRUE., getmLPSH=.TRUE., keep4=.TRUE.)
       allocate(sD(4))
