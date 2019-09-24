@@ -641,11 +641,23 @@ type EBSDoverlapNameListType
         integer(kind=irg)       :: HorizontalAxisA(3)
         real(kind=sgl)          :: tA(3)
         real(kind=sgl)          :: tB(3)
+        real(kind=sgl)          :: tA2(3)
+        real(kind=sgl)          :: tC(3)
+        real(kind=sgl)          :: tA3(3)
+        real(kind=sgl)          :: tD(3)
         real(kind=sgl)          :: gA(3)
         real(kind=sgl)          :: gB(3)
-        real(kind=sgl)          :: fracA
+        real(kind=sgl)          :: gA2(3)
+        real(kind=sgl)          :: gC(3)
+        real(kind=sgl)          :: gA3(3)
+        real(kind=sgl)          :: gD(3)
+        real(kind=sgl)          :: fracB
+        real(kind=sgl)          :: fracC
+        real(kind=sgl)          :: fracD
         character(fnlen)        :: masterfileA
         character(fnlen)        :: masterfileB
+        character(fnlen)        :: masterfileC
+        character(fnlen)        :: masterfileD
         character(fnlen)        :: datafile
         character(fnlen)        :: h5copypath
         character(fnlen)        :: overlapmode
@@ -661,6 +673,8 @@ type EBSDoverlapNameListType
         character(fnlen)        :: Masterxtalname
         character(fnlen)        :: xtalnameA
         character(fnlen)        :: xtalnameB
+        character(fnlen)        :: xtalnameC
+        character(fnlen)        :: xtalnameD
         character(fnlen)        :: Masterenergyfile
 end type EBSDoverlapNameListType
 

@@ -3760,7 +3760,7 @@ else
   call JSONreadRealVec(json, ep, enl%gB, defenl%gB, size(enl%gB))
 
   ep = 'EBSDdata.fracA'
-  call JSONreadReal(json, ep, enl%fracA, defenl%fracA)
+  call JSONreadReal(json, ep, enl%fracB, defenl%fracB)
 
   ep = 'EBSDdata.masterfileA'
   call JSONreadString(json, ep, enl%masterfileA, defenl%masterfileA)

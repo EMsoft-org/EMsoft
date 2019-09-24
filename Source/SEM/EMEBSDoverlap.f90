@@ -96,26 +96,28 @@ IMPLICIT NONE
 
 character(fnlen)                       :: nmldeffile, progname, progdesc, dataset
 type(EBSDoverlapNameListType)          :: enl
-type(MCCLNameListType)                 :: mcnlA, mcnlB
-type(EBSDMasterNameListType)           :: mpnlA, mpnlB
-type(EBSDMCdataType)                   :: EBSDMCdataA, EBSDMCdataB
-type(EBSDMPdataType)                   :: EBSDMPdataA, EBSDMPdataB
+type(MCCLNameListType)                 :: mcnlA, mcnlB, mcnlC, mcnlD
+type(EBSDMasterNameListType)           :: mpnlA, mpnlB, mpnlC, mpnlD
+type(EBSDMCdataType)                   :: EBSDMCdataA, EBSDMCdataB, EBSDMCdataC, EBSDMCdataD
+type(EBSDMPdataType)                   :: EBSDMPdataA, EBSDMPdataB, EBSDMPdataC, EBSDMPdataD
 
-integer(kind=irg)                      :: istat, ierr, i, j , hdferr, npx, npy
-integer(kind=irg),allocatable          :: sA(:), sB(:)
+integer(kind=irg)                      :: istat, ierr, i, j , hdferr, npx, npy, numvariants
+integer(kind=irg),allocatable          :: sA(:), sB(:), sC(:), sD(:)
 integer(kind=irg),parameter            :: numfrac = 21
 logical                                :: verbose, iv, overwrite
-character(6)                           :: sqorheA, sqorheB
-character(fnlen)                       :: outstr, datafile, xtalnameA, xtalnameB
-type(unitcell)                         :: cellA, cellB
-type(DynType),save                     :: DynA, DynB
-type(gnode),save                       :: rlpA, rlpB
+character(6)                           :: sqorheA, sqorheB, sqorheC, sqorheD
+character(fnlen)                       :: outstr, datafile, xtalnameA, xtalnameB, xtalnameC, xtalnameD
+type(unitcell)                         :: cellA, cellB, cellC, cellD
+type(DynType),save                     :: DynA, DynB, DynC, DynD
+type(gnode),save                       :: rlpA, rlpB, rlpC, rlpD
 real(kind=sgl)                         :: dmin, voltage, TTAB(3,3), TT(3,3), io_real(3), cA, cB, scl, fA(numfrac), om(3,3), &
-                                          PP(3), HH(3), CC(3)
-real(kind=dbl)                         :: edge, xy(2), xyz(3), txyz(3), txy(2), Radius, dc(3)
+                                          TTAC(3,3), TTAD(3,3), cC, cD, om2(3,3), om3(3,3), TT2(3,3), TT3(3,3), fother(numfrac), &
+                                          fracA 
+real(kind=dbl)                         :: edge, xy(2), xyz(3), txyz(3), txy(2), txyz1(3), txyz2(3), txyz3(3), xyz1(3), xyz2(3), &
+                                          xyz3(3), Radius, dc(3)
 type(orientation)                      :: orel    
 real(kind=sgl),allocatable             :: master(:,:,:), masterLC(:,:,:), masterSP(:,:,:), masterNH(:,:,:,:), & 
-                                          masterSH(:,:,:,:), ccA(:), ccB(:), SPNH(:,:,:), SPSH(:,:,:)
+                                          masterSH(:,:,:,:), ccA(:), ccB(:), ccC(:), ccD(:), SPNH(:,:,:), SPSH(:,:,:)
 type(HDFobjectStackType)               :: HDF_head
 character(fnlen,kind=c_char)           :: line2(1)
 integer(HSIZE_T)                       :: dims4(4), cnt4(4), offset4(4)
@@ -171,6 +173,31 @@ interface
   real(kind=sgl)                          :: res(nf)
   end function OverlapInterpolateLambert
 
+  recursive subroutine getORmatrix(cellA, cellB, gA, gB, tA, tB, paxA, haxA, TTAB, TT, om, &
+                                   xtalnameA, xtalnameB, verbose)
+
+  use local
+  use crystal
+  use typedefs 
+  use error 
+  
+  IMPLICIT NONE 
+  
+  type(unitcell),INTENT(INOUT)          :: cellA
+  type(unitcell),INTENT(INOUT)          :: cellB
+  real(kind=sgl),INTENT(IN)             :: gA(3)
+  real(kind=sgl),INTENT(IN)             :: gB(3)
+  real(kind=sgl),INTENT(IN)             :: tA(3)
+  real(kind=sgl),INTENT(IN)             :: tB(3)
+  integer(kind=irg),INTENT(IN)          :: paxA(3)
+  integer(kind=irg),INTENT(IN)          :: haxA(3)
+  real(kind=sgl),INTENT(INOUT)          :: TTAB(3,3)
+  real(kind=sgl),INTENT(INOUT)          :: TT(3,3)
+  real(kind=sgl),INTENT(INOUT)          :: om(3,3)
+  character(fnlen),INTENT(IN)           :: xtalnameA
+  character(fnlen),INTENT(IN)           :: xtalnameB
+  logical,INTENT(IN),OPTIONAL           :: verbose
+  end subroutine getORmatrix
 end interface
 
 verbose = .FALSE.
@@ -188,6 +215,12 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 23 /), progname)
 ! deal with the namelist stuff
 call GetEBSDoverlapNameList(nmldeffile,enl)
 
+! determine how many variant phases there are:
+numvariants = 1
+if (trim(enl%masterfileC).ne.'undefined') numvariants = numvariants+1
+if (trim(enl%masterfileD).ne.'undefined') numvariants = numvariants+1
+
+
 ! read EBSD master pattern files 
 call h5open_EMsoft(hdferr)
 call readEBSDMonteCarloFile(enl%masterfileA, mcnlA, hdferr, EBSDMCdataA)
@@ -195,12 +228,31 @@ xtalnameA = trim(mcnlA%xtalname)
 call readEBSDMonteCarloFile(enl%masterfileB, mcnlB, hdferr, EBSDMCdataB)
 xtalnameB = trim(mcnlB%xtalname)
 
+if (numvariants.gt.1) then 
+  call readEBSDMonteCarloFile(enl%masterfileC, mcnlC, hdferr, EBSDMCdataC)
+  xtalnameC = trim(mcnlC%xtalname)
+  if (numvariants.gt.2) then 
+    call readEBSDMonteCarloFile(enl%masterfileD, mcnlD, hdferr, EBSDMCdataD)
+    xtalnameD = trim(mcnlD%xtalname)
+  end if
+end if 
+
 if (trim(enl%overlapmode).eq.'series') then 
   call readEBSDMasterPatternFile(enl%masterfileA, mpnlA, hdferr, EBSDMPdataA, getmLPNH=.TRUE.)
   call readEBSDMasterPatternFile(enl%masterfileB, mpnlB, hdferr, EBSDMPdataB, getmLPNH=.TRUE.)
   allocate(sA(3), sB(3))
   sA = shape(EBSDMPdataA%mLPNH)
   sB = shape(EBSDMPdataB%mLPNH)
+  if (numvariants.gt.1) then 
+    call readEBSDMasterPatternFile(enl%masterfileC, mpnlC, hdferr, EBSDMPdataC, getmLPNH=.TRUE.)
+    allocate(sC(3))
+    sC = shape(EBSDMPdataC%mLPNH)
+    if (numvariants.gt.2) then 
+      call readEBSDMasterPatternFile(enl%masterfileD, mpnlD, hdferr, EBSDMPdataD, getmLPNH=.TRUE.)
+      allocate(sD(3))
+      sD = shape(EBSDMPdataD%mLPNH)
+    end if 
+  end if 
 else
   ! we must keep the 4D master arrays in this case, since we want to create a correct new master pattern file
   call readEBSDMasterPatternFile(enl%masterfileA, mpnlA, hdferr, EBSDMPdataA, getmLPNH=.TRUE., getmLPSH=.TRUE., keep4=.TRUE.)
@@ -208,6 +260,16 @@ else
   allocate(sA(4), sB(4))
   sA = shape(EBSDMPdataA%mLPNH4)
   sB = shape(EBSDMPdataB%mLPNH4)
+  if (numvariants.gt.1) then 
+    call readEBSDMasterPatternFile(enl%masterfileC, mpnlC, hdferr, EBSDMPdataC, getmLPNH=.TRUE., getmLPSH=.TRUE., keep4=.TRUE.)
+    allocate(sC(4))
+    sA = shape(EBSDMPdataC%mLPNH4)
+    if (numvariants.gt.2) then 
+      call readEBSDMasterPatternFile(enl%masterfileD, mpnlD, hdferr, EBSDMPdataD, getmLPNH=.TRUE., getmLPSH=.TRUE., keep4=.TRUE.)
+      allocate(sD(4))
+      sD = shape(EBSDMPdataD%mLPNH4)
+    end if 
+  end if 
 end if
 
 call h5close_EMsoft(hdferr)
@@ -216,9 +278,25 @@ call h5close_EMsoft(hdferr)
 write (*,*) 'array sizes : '
 write (*,*) sA
 write (*,*) sB
+if (numvariants.gt.1) then 
+  write (*,*) sC 
+  if (numvariants.gt.2) then 
+    write (*,*) sD 
+  end if 
+end if 
 if (sum(sA(1:3)-sB(1:3)).ne.0) then
-  call FatalError('EMEBSDoverlap','master patterns have different dimensions')
+  call FatalError('EMEBSDoverlap','master patterns A and B have different dimensions')
 end if
+if (numvariants.gt.1) then 
+  if (sum(sA(1:3)-sC(1:3)).ne.0) then
+    call FatalError('EMEBSDoverlap','master patterns A and C have different dimensions')
+  end if
+  if (numvariants.gt.2) then 
+    if (sum(sA(1:3)-sD(1:3)).ne.0) then
+      call FatalError('EMEBSDoverlap','master patterns A and D have different dimensions')
+    end if
+  end if 
+end if 
 
 ! if the overlapmode is 'full', then we need to copy the phase A master pattern file in its entirety,
 ! and replace the master pattern arrays by overlap arrays; this can be useful for dictionary or spherical
@@ -239,71 +317,54 @@ end if
 !=============================
 ! ok, we're in business... let's initialize the crystal structures so that we
 ! can compute the orientation relation matrix
-! nullify(cellA,cellB)
-! allocate(cellA,cellB)
 dmin=0.05
 voltage = 30000.0
 
 call Initialize_Cell(cellA,DynA,rlpA,xtalnameA, dmin, voltage, verbose)
 call Initialize_Cell(cellB,DynB,rlpB,xtalnameB, dmin, voltage, verbose)
+if (numvariants.gt.1) then 
+  call Initialize_Cell(cellC,DynC,rlpC,xtalnameC, dmin, voltage, verbose)
+  if (numvariants.gt.2) then
+    call Initialize_Cell(cellD,DynD,rlpD,xtalnameD, dmin, voltage, verbose)
+  end if 
+end if 
 
 !=============================
 !=============================
-orel%gA = enl%gA
-orel%gB = enl%gB
-orel%tA = enl%tA
-orel%tB = enl%tB
 
-! check the OR for orthogonality
-if (sum(orel%gA*orel%tA).ne.0.0) then
-  call FatalError('EMEBSDoverlap','gA and tA must be orthogonal !!!')
-end if
-
-if (sum(orel%gB*orel%tB).ne.0.0) then
-  call FatalError('EMEBSDoverlap','gB and tB must be orthogonal !!!')
-end if
-
-! compute the rotation matrix for this OR
-TTAB = ComputeOR(orel, cellA, cellB, 'AB')
-TT = transpose(matmul( cellA%rsm, matmul( TTAB, transpose(cellB%dsm))))
-
-! apply the overall rotation to the requested reference frame
-! defined by the PatternAxisA and HorizontalAxisA vectors
+! ensure that PatternAxisA and HorizontalAxisA are orthogonal vectors
 ! make sure that these two directions are orthogonal
 if (abs(CalcDot(cellA,float(enl%PatternAxisA),float(enl%HorizontalAxisA),'d')).gt.1.e-6) then 
   call FatalError('EMEBSDoverlap','PatternAxisA and HorizontalAxisA must be orthogonal !!!')
 end if
 
-! convert the vectors to the standard cartesian frame for structure A
-call TransSpaceSingle(cellA, float(enl%PatternAxisA), PP, 'd', 'c')
-call TransSpaceSingle(cellA, float(enl%HorizontalAxisA), HH, 'd', 'c')
-iv = .FALSE.
-call CalcCross(cellA, PP, HH, CC, 'c', 'c', 0)
+! check the OR for orthogonality
+if (sum(enl%gA*enl%tA).ne.0.0) then
+  call FatalError('EMEBSDoverlap','gA and tA must be orthogonal !!!')
+end if
 
-call NormVec(cellA, PP, 'c')
-call NormVec(cellA, HH, 'c')
-call NormVec(cellA, CC, 'c')
+if (sum(enl%gB*enl%tB).ne.0.0) then
+  call FatalError('EMEBSDoverlap','gB and tB must be orthogonal !!!')
+end if
+verbose = .TRUE. 
 
-! place these normalized vectors in the om array
-om(1,1:3) = HH(1:3)
-om(2,1:3) = CC(1:3)
-om(3,1:3) = PP(1:3)
-om = transpose(om)
+call getORmatrix(cellA, cellB, enl%gA, enl%gB, enl%tA, enl%tB, enl%PatternAxisA, enl%HorizontalAxisA, &
+                 TTAB, TT, om, xtalnameA, xtalnameB, verbose)
 
-outstr = ''
-call WriteValue('Overall Transformation Matrix : ',outstr)
-do i=1,3
-  io_real(1:3) = om(i,1:3)
-  call WriteValue('',io_real,3,"(3f10.6)")
-end do
-
-! output
-outstr = ' '//trim(xtalnameA)//' --> '//trim(xtalnameB)
-call WriteValue('Transformation Matrix : ',outstr)
-do i=1,3
-  io_real(1:3) = TT(i,1:3)
-  call WriteValue('',io_real,3,"(3f10.6)")
-end do
+if (numvariants.gt.1) then 
+  if (sum(enl%gC*enl%tC).ne.0.0) then
+    call FatalError('EMEBSDoverlap','gC and tC must be orthogonal !!!')
+  end if
+  call getORmatrix(cellA, cellC, enl%gA2, enl%gC, enl%tA2, enl%tC, enl%PatternAxisA, enl%HorizontalAxisA, &
+                   TTAC, TT2, om2, xtalnameA, xtalnameC, verbose)
+  if (numvariants.gt.2) then 
+    if (sum(enl%gD*enl%tD).ne.0.0) then
+      call FatalError('EMEBSDoverlap','gD and tD must be orthogonal !!!')
+    end if
+    call getORmatrix(cellA, cellD, enl%gA3, enl%gD, enl%tA3, enl%tD, enl%PatternAxisA, enl%HorizontalAxisA, &
+                     TTAD, TT3, om3, xtalnameA, xtalnameD, verbose)
+  end if
+end if 
 
 !=============================
 !=============================
@@ -317,6 +378,7 @@ if (trim(enl%overlapmode).eq.'series') then
   allocate(master(-npx:npx,-npy:npy,numfrac))
 
   fA = (/ (float(i)*0.05,i=0,numfrac-1) /)
+  fother = (1.0 - fA) / float(numvariants)
 
   call WriteValue('','Each master pattern has its own intensity range.',"(/A)")
   call WriteValue('','This means that one pattern may dominate over another')
@@ -325,6 +387,14 @@ if (trim(enl%overlapmode).eq.'series') then
   call WriteValue('maximum intensity in master A: ',io_real, 1)
   io_real(1) = maxval(EBSDMPdataB%mLPNH)
   call WriteValue('maximum intensity in master B: ',io_real, 1)
+  if (numvariants.gt.1) then 
+    io_real(1) = maxval(EBSDMPdataC%mLPNH)
+    call WriteValue('maximum intensity in master C: ',io_real, 1)
+    if (numvariants.gt.2) then 
+      io_real(1) = maxval(EBSDMPdataC%mLPNH)
+      call WriteValue('maximum intensity in master C: ',io_real, 1)
+    end if 
+  end if 
 
 !=============================
 !=============================
@@ -335,24 +405,53 @@ if (trim(enl%overlapmode).eq.'series') then
       xy = (/ dble(i), dble(j) /) * edge
       xyz = LambertSquareToSphere(xy, ierr)
 ! apply the overall pattern rotation with rotation matrix om
-      xyz = matmul(om, xyz)
-      call NormVec(cellA, xyz, 'c')
+      xyz1 = matmul(om, xyz)
+      call NormVec(cellA, xyz1, 'c')
 ! since A is already square Lambert, all we need to do is compute the 
 ! beam orientation in crystal B, and sample the master pattern for that
 ! location. 
-      txyz = matmul(TT, xyz)
+      txyz1 = matmul(TT, xyz1)
 ! normalize these direction cosines (they are already in a cartesian reference frame!)
-      txyz = txyz/sqrt(sum(txyz*txyz))
+      txyz1 = txyz1/sqrt(sum(txyz1*txyz1))
 ! and interpolate the masterB pattern
-      cA = InterpolateMaster(xyz, EBSDMPdataA, sA)
-      cB = InterpolateMaster(txyz, EBSDMPdataB, sB)
-      master(i,j,1:numfrac) = fA(1:numfrac)*cA+(1.0-fA(1:numfrac))*cB
+      cA = InterpolateMaster(xyz1, EBSDMPdataA, sA)
+      cB = InterpolateMaster(txyz1, EBSDMPdataB, sB)
+      if (numvariants.gt.1) then 
+        xyz2 = matmul(om2, xyz)
+        call NormVec(cellA, xyz2, 'c')
+        txyz2 = matmul(TT2, xyz2)
+        txyz2 = txyz2/sqrt(sum(txyz2*txyz2))
+        cC = InterpolateMaster(txyz2, EBSDMPdataC, sC)
+        if (numvariants.gt.2) then 
+          xyz3 = matmul(om3, xyz)
+          call NormVec(cellA, xyz3, 'c')
+          txyz3 = matmul(TT3, xyz3)
+          txyz3 = txyz3/sqrt(sum(txyz3*txyz3))
+          cD = InterpolateMaster(txyz3, EBSDMPdataD, sD)
+        end if 
+      end if 
+       
+      select case(numvariants)
+        case(1)
+           master(i,j,1:numfrac) = fA(1:numfrac)*cA + fother(1:numfrac)*cB
+        case(2)
+           master(i,j,1:numfrac) = fA(1:numfrac)*cA + fother(1:numfrac)*(cB+cC)
+        case(3)
+           master(i,j,1:numfrac) = fA(1:numfrac)*cA + fother(1:numfrac)*(cB+cC+cD)
+      end select
+
     end do
   end do
   call Message(' completed interpolation ')
 
   ! free up the master pattern memory
   deallocate(EBSDMPdataA%mLPNH, EBSDMPdataB%mLPNH)
+  if (numvariants.gt.1) then 
+    deallocate(EBSDMPdataC%mLPNH)
+    if (numvariants.gt.2) then 
+      deallocate(EBSDMPdataD%mLPNH)
+    end if 
+  end if 
 
   !=============================
   !=============================
@@ -426,9 +525,23 @@ else    ! overlapmode = 'full'
   masterNH = 0.0
   masterSH = 0.0
   allocate(ccA(sA(3)), ccB(sA(3)))
+  if (numvariants.gt.1) then 
+    allocate(ccC(sA(3)))
+    if (numvariants.gt.2) then 
+      allocate(ccD(sA(3)))
+    end if 
+  end if 
 
 !=============================
 !=============================
+  fracA = 1.0 - enl%fracB 
+  if (numvariants.gt.1) then 
+    fracA = fracA - enl%fracC 
+    if (numvariants.gt.2) then
+      fracA = fracA - enl%fracD 
+    end if 
+  end if 
+
   edge = 1.0D0 / dble(npx)
   do i=-npx,npx
     do j=-npy,npy
@@ -436,18 +549,45 @@ else    ! overlapmode = 'full'
       xy = (/ dble(i), dble(j) /) * edge
       xyz = LambertSquareToSphere(xy, ierr)
 ! apply the overall pattern rotation with rotation matrix om
-      xyz = matmul(om, xyz)
-      call NormVec(cellA, xyz, 'c')
+      xyz1 = matmul(om, xyz)
+      call NormVec(cellA, xyz1, 'c')
 ! since A is already square Lambert, all we need to do is compute the 
 ! beam orientation in crystal B, and sample the master pattern for that
 ! location. 
-      txyz = matmul(TT, xyz)
+      txyz1 = matmul(TT, xyz1)
 ! normalize these direction cosines (they are already in a cartesian reference frame!)
-      txyz = txyz/sqrt(sum(txyz*txyz))
+      txyz1 = txyz1/sqrt(sum(txyz1*txyz1))
 ! and interpolate the master patterns
-      ccA = sum(InterpolateCompleteMaster(xyz, EBSDMPdataA, sA), 2)
-      ccB = sum(InterpolateCompleteMaster(txyz, EBSDMPdataB, sB), 2)
-      masterNH(i,j,1:sA(3),1) = enl%fracA*ccA(1:sA(3))+(1.0-enl%fracA)*ccB(1:sA(3))
+      ccA = sum(InterpolateCompleteMaster(xyz1, EBSDMPdataA, sA), 2)
+      ccB = sum(InterpolateCompleteMaster(txyz1, EBSDMPdataB, sB), 2)
+      if (numvariants.gt.1) then
+        xyz2 = matmul(om2, xyz)
+        call NormVec(cellA, xyz2, 'c')
+        txyz2 = matmul(TT2, xyz2)
+        txyz2 = txyz2/sqrt(sum(txyz2*txyz2))
+        ccC = sum(InterpolateCompleteMaster(txyz2, EBSDMPdataC, sC), 2)
+        if (numvariants.gt.2) then 
+          xyz3 = matmul(om3, xyz)
+          call NormVec(cellA, xyz3, 'c')
+          txyz3 = matmul(TT3, xyz3)
+          txyz3 = txyz3/sqrt(sum(txyz3*txyz3))
+          ccD = sum(InterpolateCompleteMaster(txyz3, EBSDMPdataD, sD), 2)
+        end if 
+      end if
+
+      select case(numvariants)
+        case(1)
+          masterNH(i,j,1:sA(3),1) = fracA*ccA(1:sA(3))+enl%fracB*ccB(1:sA(3))
+
+        case(2)
+          masterNH(i,j,1:sA(3),1) = fracA*ccA(1:sA(3))+enl%fracB*ccB(1:sA(3)) + &
+                                                       enl%fracC*ccC(1:sA(3))
+
+        case(3)
+          masterNH(i,j,1:sA(3),1) = fracA*ccA(1:sA(3))+enl%fracB*ccB(1:sA(3)) + &
+                                                       enl%fracC*ccC(1:sA(3)) + &
+                                                       enl%fracD*ccD(1:sA(3))
+      end select 
       masterSH(-i,-j,1:sA(3),1) = masterNH(i,j,1:sA(3),1) 
     end do
   end do
@@ -455,6 +595,12 @@ else    ! overlapmode = 'full'
 
 ! free up the original master pattern memory
   deallocate(EBSDMPdataA%mLPNH4, EBSDMPdataB%mLPNH4, EBSDMPdataA%mLPSH4, EBSDMPdataB%mLPSH4)
+  if (numvariants.gt.1) then 
+    deallocate(EBSDMPdataC%mLPNH4, EBSDMPdataC%mLPSH4)
+    if (numvariants.gt.2) then 
+      deallocate(EBSDMPdataD%mLPNH4, EBSDMPdataD%mLPSH4)
+    end if 
+  end if 
 
 ! recompute the stereographic projection arrays as well 
   allocate(SPNH(-npx:npx,-npy:npy,1:sA(3)), SPSH(-npx:npx,-npy:npy,1:sA(3)))
@@ -715,4 +861,85 @@ if (istat.eq.0) then
 end if
 
 end function InterpolateCompleteMaster
+
+
+
+
+recursive subroutine getORmatrix(cellA, cellB, gA, gB, tA, tB, paxA, haxA, TTAB, TT, om, &
+                                 xtalnameA, xtalnameB, verbose)
+
+use local
+use crystal
+use typedefs 
+use error 
+use io
+
+IMPLICIT NONE 
+
+type(unitcell),INTENT(INOUT)          :: cellA
+type(unitcell),INTENT(INOUT)          :: cellB
+real(kind=sgl),INTENT(IN)             :: gA(3)
+real(kind=sgl),INTENT(IN)             :: gB(3)
+real(kind=sgl),INTENT(IN)             :: tA(3)
+real(kind=sgl),INTENT(IN)             :: tB(3)
+integer(kind=irg),INTENT(IN)          :: paxA(3)
+integer(kind=irg),INTENT(IN)          :: haxA(3)
+real(kind=sgl),INTENT(INOUT)          :: TTAB(3,3)
+real(kind=sgl),INTENT(INOUT)          :: TT(3,3)
+real(kind=sgl),INTENT(INOUT)          :: om(3,3)
+character(fnlen),INTENT(IN)           :: xtalnameA
+character(fnlen),INTENT(IN)           :: xtalnameB
+logical,INTENT(IN),OPTIONAL           :: verbose
+
+type(orientation)                     :: orel 
+real(kind=sgl)                        :: PP(3), HH(3), CC(3), io_real(3)
+character(fnlen)                      :: outstr
+integer(kind=irg)                     :: i 
+
+orel%gA = gA
+orel%gB = gB
+orel%tA = tA
+orel%tB = tB
+
+! compute the rotation matrix for this OR
+TTAB = ComputeOR(orel, cellA, cellB, 'AB')
+TT = transpose(matmul( cellA%rsm, matmul( TTAB, transpose(cellB%dsm))))
+
+! convert the vectors to the standard cartesian frame for structure A
+call TransSpaceSingle(cellA, float(paxA), PP, 'd', 'c')
+call TransSpaceSingle(cellA, float(haxA), HH, 'd', 'c')
+call CalcCross(cellA, PP, HH, CC, 'c', 'c', 0)
+
+call NormVec(cellA, PP, 'c')
+call NormVec(cellA, HH, 'c')
+call NormVec(cellA, CC, 'c')
+
+! place these normalized vectors in the om array
+om(1,1:3) = HH(1:3)
+om(2,1:3) = CC(1:3)
+om(3,1:3) = PP(1:3)
+om = transpose(om)
+
+if (present(verbose)) then 
+  if (verbose.eqv..TRUE.) then 
+    outstr = ''
+    call WriteValue('Overall Transformation Matrix : ',outstr)
+    do i=1,3
+      io_real(1:3) = om(i,1:3)
+      call WriteValue('',io_real,3,"(3f10.6)")
+    end do
+
+! output
+    outstr = ' '//trim(xtalnameA)//' --> '//trim(xtalnameB)
+    call WriteValue('Transformation Matrix : ',outstr)
+    do i=1,3
+      io_real(1:3) = TT(i,1:3)
+      call WriteValue('',io_real,3,"(3f10.6)")
+    end do
+  end if 
+end if 
+
+end subroutine getORmatrix
+
+
 

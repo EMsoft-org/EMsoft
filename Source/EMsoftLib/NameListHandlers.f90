@@ -3704,6 +3704,7 @@ end subroutine GetTKDNameList
 !> @param enl EBSD name list structure
 !
 !> @date 04/29/15  MDG 1.0 new routine
+!> @date 09/24/19  MDG 1.1 expanded for up to three variant phases
 !--------------------------------------------------------------------------
 recursive subroutine GetEBSDoverlapNameList(nmlfile, enl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDoverlapNameList
@@ -3725,18 +3726,31 @@ integer(kind=irg)       :: PatternAxisA(3)
 integer(kind=irg)       :: HorizontalAxisA(3)
 real(kind=sgl)          :: tA(3)
 real(kind=sgl)          :: tB(3)
+real(kind=sgl)          :: tA2(3)
+real(kind=sgl)          :: tC(3)
+real(kind=sgl)          :: tA3(3)
+real(kind=sgl)          :: tD(3)
 real(kind=sgl)          :: gA(3)
 real(kind=sgl)          :: gB(3)
-real(kind=sgl)          :: fracA
+real(kind=sgl)          :: gA2(3)
+real(kind=sgl)          :: gC(3)
+real(kind=sgl)          :: gA3(3)
+real(kind=sgl)          :: gD(3)
+real(kind=sgl)          :: fracB
+real(kind=sgl)          :: fracC
+real(kind=sgl)          :: fracD
 character(fnlen)        :: masterfileA
 character(fnlen)        :: masterfileB
+character(fnlen)        :: masterfileC
+character(fnlen)        :: masterfileD
 character(fnlen)        :: h5copypath
 character(fnlen)        :: overlapmode
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, fracA, masterfileA, masterfileB, & 
-                              datafile, HorizontalAxisA, overlapmode, newpgnum, h5copypath
+namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, masterfileA, masterfileB, & 
+                              datafile, HorizontalAxisA, overlapmode, newpgnum, tC, gC, tD, gD, fracB, &
+                              fracC, fracD, masterfileC, masterfileD, gA2, gA3, tA2, tA3, h5copypath
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -3745,11 +3759,23 @@ PatternAxisA    = (/ 0, 0, 1 /)                 ! center axis for output pattern
 HorizontalAxisA = (/ 1, 0, 0 /)                 ! horizontal axis for output pattern
 tA              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal A
 tB              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal B
+tA2             = (/0.0, 0.0, 1.0/)             ! direction vector in crystal A
+tC              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal C
+tA3             = (/0.0, 0.0, 1.0/)             ! direction vector in crystal A
+tD              = (/0.0, 0.0, 1.0/)             ! direction vector in crystal D
 gA              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal A
 gB              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal B
-fracA           = 0.5                           ! volume fraction of phase A 
+gA2             = (/1.0, 0.0, 0.0/)             ! plane normal in crystal A
+gC              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal C
+gA3             = (/1.0, 0.0, 0.0/)             ! plane normal in crystal A
+gD              = (/1.0, 0.0, 0.0/)             ! plane normal in crystal D
+fracB           = 0.25                          ! volume fraction of phase B 
+fracC           = 0.25                          ! volume fraction of phase C 
+fracD           = 0.25                          ! volume fraction of phase D 
 masterfileA     = 'undefined'   ! filename
 masterfileB     = 'undefined'   ! filename
+masterfileC     = 'undefined'   ! filename
+masterfileD     = 'undefined'   ! filename
 h5copypath      = 'undefined'   ! filename
 datafile        = 'undefined'   ! output file name
 overlapmode     = 'series'      ! options are 'full' or 'series'
@@ -3785,11 +3811,23 @@ enl%PatternAxisA = PatternAxisA
 enl%HorizontalAxisA = HorizontalAxisA
 enl%tA = tA
 enl%tB = tB
+enl%tA2= tA2
+enl%tC = tC
+enl%tA3= tA3
+enl%tD = tD
 enl%gA = gA
 enl%gB = gB
-enl%fracA = fracA
+enl%gA2= gA2
+enl%gC = gC
+enl%gA3= gA3
+enl%gD = gD
+enl%fracB = fracB
+enl%fracC = fracC
+enl%fracD = fracD
 enl%masterfileA = masterfileA
 enl%masterfileB = masterfileB
+enl%masterfileC = masterfileC
+enl%masterfileD = masterfileD
 enl%h5copypath = h5copypath
 enl%datafile = datafile
 enl%overlapmode = overlapmode
