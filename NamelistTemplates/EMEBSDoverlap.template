@@ -5,24 +5,38 @@
 !  'full' = generate a complete new master pattern file that can be used for indexing
 !  'series' = generate a series of 21 overlap patterns for a range of volume fractions
  overlapmode = 'series',
-! name of EBSD master files
+! name of EBSD master files; up to three master patterns can be overlapped onto
+! master pattern A; leave set to 'undefined' if not needed
  masterfileA = 'undefined',
  masterfileB = 'undefined',
+ masterfileC = 'undefined',
+ masterfileD = 'undefined',
 ! name of HDF5 output file (either a small file containing the series or a full master pattern file)
  datafile = 'undefined',
 ! orientation relation vectors:
  gA = 0, 0, 1,
  gB = 0, 0, 1,
+ gA2= 0, 0, 1,
+ gC = 0, 0, 1,
+ gA3= 0, 0, 1,
+ gD = 0, 0, 1,
  tA = 1, 0, 0,
- tB = 1, 0, 0 ,
+ tB = 1, 0, 0,
+ tA2= 1, 0, 0,
+ tC = 1, 0, 0,
+ tA3= 1, 0, 0,
+ tD = 1, 0, 0,
 ! the following two parameters can be used to define the orientation of the merged master pattern
 ! with respect to the cartesian crystallographic reference frame
 ! center axis for output master pattern
  PatternAxisA = 0, 0, 1,
 ! horizontal axis for output pattern
  HorizontalAxisA = 1, 0, 0,
-! volume fraction of phase A  (only used for 'full' overlapmode)
- fracA = 0.5,
+! NOTE: the following parameter is changed from the original version of the overlap program
+! volume fraction of phases B, C, and D  (only used for 'full' overlapmode)
+ fracB = 0.25,
+ fracC = 0.25,
+ fracD = 0.25,
 ! effective new point group number for this overlap symmetry (-1 to use original symmetry of phase A)
 !   valid choices are:
 !   #1:    '1', #2:    '-1', #3:      '2', #4:    'm', #5:  '2/m', #6:   '222', #7:    'mm2', #8:   'mmm'
