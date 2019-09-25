@@ -103,7 +103,8 @@ IMPLICIT NONE
 type(EBSDNameListType),INTENT(INOUT)    :: enl
 !f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
-type(EBSDAngleType),pointer             :: angles
+type(EBSDAngleType),INTENT(INOUT)       :: angles
+!f2py intent(in,out) ::  angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
@@ -213,7 +214,8 @@ IMPLICIT NONE
 type(EBSDFullNameListType),INTENT(INOUT):: enl
 !f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
-type(EBSDAngleType),pointer             :: angles
+type(EBSDAngleType),INTENT(INOUT)       :: angles
+!f2py intent(in,out) ::  angles
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
@@ -314,7 +316,8 @@ IMPLICIT NONE
 type(EBSDNameListType),INTENT(INOUT)    :: enl
 !f2py intent(in,out) ::  enl
 integer(kind=irg),INTENT(OUT)           :: numangles
-type(EBSDAnglePCDefType),pointer        :: orpcdef
+type(EBSDAnglePCDefType),INTENT(INOUT)  :: orpcdef
+!f2py intent(in,out) ::  orpcdef
 logical,INTENT(IN),OPTIONAL             :: verbose
 
 integer(kind=irg)                       :: io_int(1), i
