@@ -2536,6 +2536,7 @@ character(3)            :: Notify
 character(fnlen)        :: latgridtype
 character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: energyfile
+character(fnlen)        :: SHTfile
 character(fnlen)        :: h5copypath
 logical                 :: combinesites
 logical                 :: restart
@@ -2543,7 +2544,7 @@ logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, latgridtype, h5copypath
+                          combinesites, latgridtype, h5copypath, SHTfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2556,6 +2557,7 @@ latgridtype = 'Lambert'        ! 'Lambert' (regular) or 'Legendre' (for EMSphInx
 copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a different Monte Carlo simulation
 h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+SHTfile = 'undefined'           ! for storage of spherical harmonic transform coefficients
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
 uniform = .FALSE.               ! when .TRUE., the output master patterns will contain 1.0 everywhere

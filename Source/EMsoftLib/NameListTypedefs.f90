@@ -436,6 +436,7 @@ type EBSDMasterNameListType
         character(fnlen)        :: h5copypath
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname
+        character(fnlen)        :: SHTfile
         logical                 :: combinesites
         logical                 :: restart
         logical                 :: uniform
