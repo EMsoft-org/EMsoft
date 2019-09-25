@@ -1161,6 +1161,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
 !> @date 09/23/19 MDG 1.0 reorganization of program structure
 !--------------------------------------------------------------------------
 subroutine EMEBSDrefinement(progname, ronl, nmldeffile)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMEBSDrefinement
 
 use local
 use typedefs 
