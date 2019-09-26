@@ -49,6 +49,7 @@
 'integer': {'c_int32_t': 'int',
   			    'c_int64_t': 'long_long',
   			    'irg': 'int',
+				'': 'int',
   			    'ish': 'short',
   			    'ill': 'long_long',
 				'HID_T':'int',
