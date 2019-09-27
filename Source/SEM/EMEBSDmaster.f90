@@ -1751,18 +1751,23 @@ call Message('Computing spherical harmonic transform')
   allocate(almPat   (0:bw-1, 0:bw-1))
   call transformer%analyze(finalmLPNH, finalmLPSH, almMaster)
 
+  timestop = Time_tock(timestart)
+
 ! finally, write the SHT coefficient array to the output h5 file
-call Message('Storing SHT coefficients in binary output file')
+call Message('Storing SHT coefficients in binary output file '//trim(emnl%SHTfile))
+
+! we call a C++ routine here to write the .spx file
 
 
 
-timestop = Time_tock(timestart)
-io_int(1) = timestop
-call WriteValue('Total execution time [s] ',io_int,1)
+
 
 if (emnl%Esel.ne.-1) then
-  call Message('Final data stored in file '//trim(emnl%SHTfile), frm = "(A/)")
+  call Message('Final data stored in binary file '//trim(emnl%SHTfile), frm = "(A/)")
 end if
+
+io_int(1) = timestop
+call WriteValue('Total execution time [s] ',io_int,1)
 
 ! if requested, we notify the user that this program has completed its run
 if (trim(EMsoft_getNotify()).ne.'Off') then
