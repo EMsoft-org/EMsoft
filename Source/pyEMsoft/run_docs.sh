@@ -57,7 +57,7 @@ declare -a doc_source_files=("index.rst"
 	                         "pyEMsoft.rst")
 
 declare -a module_source_files=("pyEMsoftLib.rst"
-                             "pyEMsoftHDFLib.rst")
+                             "pyEMsoftToolsLib.rst")
 
 declare -a doc_config_files=("conf.py"
 					         "Makefile"
