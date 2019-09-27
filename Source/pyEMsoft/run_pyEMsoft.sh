@@ -125,7 +125,7 @@ done
 # execute the f90wrap program using all the files just copied
 echo " run_pyEMsoft.sh: executing f90wrap"
 f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} \
---skip hipassfilterc 1>build.log 2>build_error.log
+--skip hipassfilterc hipassfilter 1>build.log 2>build_error.log
 #=======================
 # call f2py-f90wrap to build the wrapper library
 echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a very long time (>1 hour) ..."
