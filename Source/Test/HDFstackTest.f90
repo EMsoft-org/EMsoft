@@ -139,7 +139,7 @@ end if
 ! close out group
 call HDF_pop(HDF_head)
 
-if (HDF_head%objectType.ne.'f') then
+if (HDF_head%next%objectType.ne.'f') then
   res = 6
   return
 end if
