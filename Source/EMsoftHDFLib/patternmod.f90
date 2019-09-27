@@ -393,8 +393,10 @@ end function openExpPatternFile
 !> @date 05/10/18 MDG 1.3 completely reworked up1 and up2 reading by switching to STREAM access instead of DIRECT access
 !> @date 03/21/19 MDG 1.4 fixed off-by-one error in column labels for up1 and up2 file formats
 !> @date 05/01/19 MA  1.5 add support for Oxford Instruments binary pattern files
+!> @date 09/26/19 MDG 1.6 add option for vertical flip of patterns
 !--------------------------------------------------------------------------
-recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppatarray, ROI) 
+recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, &
+                                      exppatarray, ROI, flipy) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getExpPatternRow
 
 IMPLICIT NONE
@@ -411,6 +413,7 @@ character(fnlen),INTENT(IN)             :: HDFstrings(10)
 real(kind=sgl),INTENT(INOUT)            :: exppatarray(patsz * wd)
 !f2py intent(in,out) ::  exppatarray
 integer(kind=irg),OPTIONAL,INTENT(IN)   :: ROI(4)
+logical,OPTIONAL,INTENT(IN)             :: flipy
 
 integer(kind=irg)                       :: itype, hdfnumg, ierr, ios
 real(kind=sgl)                          :: imageexpt(L), z
@@ -425,6 +428,12 @@ integer(HSIZE_T)                        :: dims3new(3), offset3new(3), newspot
 integer(kind=ill)                       :: recpos, ii, jj, kk, ispot, liii, lpatsz, lwd, lL, buffersize, kspot, jspot, &
                                            kkstart, kkend, multfactor
 integer(kind=8)                         :: patoffsets(wd)
+logical                                 :: flip 
+
+flip = .FALSE.
+if (present(flipy)) then 
+  if (flipy.eqv..TRUE.) flip = .TRUE.
+end if 
 
 itype = get_input_type(inputtype)
 hdfnumg = get_num_HDFgroups(HDFstrings)
@@ -493,7 +502,11 @@ select case (itype)
       do kk=kkstart,kkend   ! loop over all the patterns in this row/ROI
         kspot = (kk-kkstart)*patsz
         do jj=1,dims3(2)
-          jspot = (jj-1)*dims3(1) 
+          if (flip.eqv..TRUE.) then
+            jspot = (dims3(2)-jj)*dims3(1) 
+          else
+            jspot = (jj-1)*dims3(1) 
+          end if 
           do ii=1,dims3(1)
             exppatarray(kspot+jspot+ii) = float(pairs(pixcnt))
             pixcnt = pixcnt + 1

@@ -16,7 +16,7 @@
 ! refinement flag [.TRUE., .FALSE.]
  refine = .TRUE.,
 ! flip patterns vertically flag [.TRUE., .FALSE.]
- pflip = .FALSE.
+ flipy = .FALSE.
 ! define the region of interest as x0 y0 w h;  leave all at 0 for full field of view
 ! region of interest has the point (x0,y0) as its upper left corner and is w x h patterns
  ROImask = 0 0 0 0,
