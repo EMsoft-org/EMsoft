@@ -29,7 +29,7 @@ Fellowship, N00014-­16-­1-­2821.
    :caption: Modules:
 
    Modules/pyEMsoftLib
-   Modules/pyEMsoftHDFLib
+   Modules/pyEMsoftToolsLib
 
 License
 ------------------------------------
