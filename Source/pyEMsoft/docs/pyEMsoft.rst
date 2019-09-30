@@ -105,10 +105,10 @@ One functions defined in the Quaternions module is to determine the norm of a gi
     # check the precision
     print(q.dtype)
 
-Note that the interface function e.g. 'cabs' have both single precision (quat_norm) and double precision 
-(quat_norm_d) routines 'glued together' in the Fortran script. Passing either single precision array (float32) or
-double precision array (float64) will default into the first single precision output routine quat_norm unless 
-the quat_norm_d is explicitly defined.
+Note that the interface function e.g. 'cabs' have both single precision (_quat_norm) and double precision 
+(_quat_norm_d) routines 'glued together' in the Fortran script. Passing either single precision array (float32) or
+double precision array (float64) will default into the first single precision output routine _quat_norm unless 
+the _quat_norm_d is explicitly defined.
 
 .. code-block:: python
 
@@ -137,7 +137,7 @@ For conversion from quaternion to orientation matrix, the qu2eu function can be 
     om = pyEMsoft.Rotations.qu2om(q)
 
 To see if the lapack library is correctly linked, you can check if the om2ax routine outputs the correct value 
-because it uses lapack to calculate the eigenvalue of a given matrix. 
+because it uses lapack to calculate the eigenvalue of a given matrix. A specific unittest is added in the test_rotations.py file to for the verification of the lapack library.
 
 In the rotations module, the init_orientation and init_orientaiton_om functions can be used to communicate with
 all the rotation conversion functions in the rotations module. By providing a random quaterion and looping over 
@@ -245,9 +245,26 @@ In addition, it is also possible to read crystal data from a .xtal file from the
 
 EBSDmod (EBSDmod.f90)
 -----------------------------------------
-This module contains several functions to work with EBSD related data. For instance, we can use it to read in 
-Monte Carlo data and master pattern data. It is required to first open the hdf5 interface through the h5open_emsoft (hdfsupport module)
-before we can use these functions such as readebsdmasterpatternfile.
+This module contains several functions to work with EBSD related data. For instance, we can use it to read in a list of Euler angles, Monte Carlo data and master pattern data. 
+
+A list of Euler angles (.txt) needs to be first created in the EMsoft data folder (EMdatapathname). In the unittests file, the euler.txt is created, which contains two sets of Euler angles. 
+
+.. code-block:: python
+
+	# EBSD name list types
+    enl = pyEMsoft.namelisttypedefs.EBSDNameListType()
+    # define name of the file containing angles
+    enl.anglefile='euler.txt'
+    enl.eulerconvention='hkl'
+    #enl.anglefiletype = 'orientations'
+    angles=pyEMsoft.ebsdmod.EBSDAngleType()
+    # verbose=True converts eu to qu, hkl to tsl
+    numangles = pyEMsoft.ebsdmod.ebsdreadangles(enl,angles,verbose=True)
+    # the quaternions are saved in columns
+    print(angles,'\n')
+
+
+It is required to first open the hdf5 interface through the h5open_emsoft (hdfsupport module) before we can use these functions such as readebsdmasterpatternfile.
 
 .. code-block:: python
 
@@ -273,11 +290,6 @@ before we can use these functions such as readebsdmasterpatternfile.
     # (e.g.EBSDMPdata.mlpnh4, EBSDMPdata.mlpsh4 )
     pyEMsoft.ebsdmod.readebsdmasterpatternfile(MPfile, mpnl, EBSDMPdata, 
     getmlpnh=True, getmlpsh=True, getmasterspnh=True, getmasterspsh=True)
-    print('Dimension of accum_e',EBSDMCdata.accum_e.shape)
-    print('Dimension of mLPNH:', EBSDMPdata.mlpnh.shape)
-    print('Dimension of mLPSH:', EBSDMPdata.mlpsh.shape)
-    print('Dimension of masterSPNH:', EBSDMPdata.masterspnh.shape)
-    print('Dimension of masterSPSH:', EBSDMPdata.masterspsh.shape)
     pyEMsoft.hdfsupport.h5close_emsoft(hdferr)
 
 
@@ -323,10 +335,8 @@ can be obtained in two ways: 1) either read from an exiting .xtal file (as in th
     # file name of the crystal data file
     LatCell.fname = 'Ni.xtal'
     # readin the existing hdf5 data (in the XtalFolder)
+    # this function also uses readDataHDF (HDFsupport.f90) and CalcMatrices (crystal.f90)
     pyEMsoft.hdfsupport.crystaldata(LatCell)
-    # call the calcmatrices from crystal module to modify the LatCell
-    # Computes the direct and reciprocal metric tensors and the direct reciprocal structure matrices 
-    pyEMsoft.crystal.calcmatrices(LatCell)
 
 In some cases, the direct lattice vectors may need to be transformed to reciprocal space or cartesian reference frame. The 
 transspace routine can be used to convert a vector between the three spaces with a single character as a switch
