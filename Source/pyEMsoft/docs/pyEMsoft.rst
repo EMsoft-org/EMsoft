@@ -6,9 +6,7 @@ Executing EMsoft program in Python
 .. role:: bash(code)
    :language: bash
 
-This is directly calling the built EMsoft functions from within Python. First, the :bash:`.../EMsoftBuild/Release/Bin` folder needs to be added to the path. 
-This is directly calling the built EMsoft functions from within Python. First, the :bash:`.../EMsoftBuild/Release/Bin` folder needs to be added to the path. 
-Second, complete the EMsoft package configuration following the `EMsoft Wiki Package Configuration <https://github.com/EMsoft-org/EMsoft/wiki/Package-Configuration>`_. 
+This is directly calling the built EMsoft functions from within Python. First, the :bash:`.../EMsoftBuild/Release/Bin` folder needs to be added to the path. Second, complete the EMsoft package configuration following the `EMsoft Wiki Package Configuration <https://github.com/EMsoft-org/EMsoft/wiki/Package-Configuration>`_. 
 Then, create a Ni.xtal file as defined in `Crystal Data Entry Example <https://github.com/EMsoft-org/EMsoft/wiki/Crystal-Data-Entry-Example>`_. This crystal file
 will later be read into some of the unittests files.
 
