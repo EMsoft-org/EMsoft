@@ -64,7 +64,7 @@ Typedefs (typedefs.f90)
 
 It contains definition of all variables and types for crystallographic computations in EMsoft. More specifically, it defines the unitcell type and the orientation type (class type objects in python) , as well as the main cell variable used by all crystallographic computations.
 
-For instance, one important variable that is used extensively within EMsoft is the :python:`unitcell type`.  
+For instance, one important variable that is used extensively within EMsoft is the :python:`unitcell` type.  
 
 .. code-block:: python
 
