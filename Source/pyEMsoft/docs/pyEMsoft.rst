@@ -6,7 +6,8 @@ Executing EMsoft program in Python
 .. role:: bash(code)
    :language: bash
 
-This is directly calling the built EMsoft functions from within Python. First, the .../EMsoftBuild/Release/Bin folder needs to be added to the path. 
+This is directly calling the built EMsoft functions from within Python. First, the :bash:`.../EMsoftBuild/Release/Bin` folder needs to be added to the path. 
+This is directly calling the built EMsoft functions from within Python. First, the :bash:`.../EMsoftBuild/Release/Bin` folder needs to be added to the path. 
 Second, complete the EMsoft package configuration following the `EMsoft Wiki Package Configuration <https://github.com/EMsoft-org/EMsoft/wiki/Package-Configuration>`_. 
 Then, create a Ni.xtal file as defined in `Crystal Data Entry Example <https://github.com/EMsoft-org/EMsoft/wiki/Crystal-Data-Entry-Example>`_. This crystal file
 will later be read into some of the unittests files.
@@ -26,13 +27,7 @@ How to use the pyEMsoft module?
 .. role:: python(code)
    :language: python 
 
-In a terminal, cd into the folder containing the shared library (mac: .so file and pyEMsoft.py). 
-Run Python interpreter and then :python:`import pyEMsoft`. For Python scripts saved in a different folder 
-to the generated shared library and pyEMsofy.py (e.g. unittests folder). The directory must be set first 
-to the point to the correct folder.In an example below, the shared libray and the pyEMsoft.py are 
-saved in a different folder (one folder level up).In addition, some simple tools dedicated to pyEMsoft 
-have also been created and are saved inside a separate module named pyEMsoftTools. Depending on the need, 
-some other popular modules will also be imported such as the numpy, math, unittest, random, etc. 
+In a terminal, cd into the folder containing the shared library (mac: .so file and pyEMsoft.py). Run Python interpreter and then :python:`import pyEMsoft`. For Python scripts saved in a different folder to the generated shared library and pyEMsoft.py (e.g. unittests folder). The directory must be set first to the point to the correct folder.In an example below, the shared library and the pyEMsoft.py are saved in a different folder (one folder level up).In addition, some simple tools dedicated to :python:`pyEMsoft` have also been created and are saved inside a separate module named :python:`pyEMsoftTools`. Depending on the need, some other popular modules will also be imported such as the :python:`numpy`, :python:`math`, :python:`unittest`, :python:`random`, etc. 
 
 
 .. code-block:: python
@@ -49,10 +44,9 @@ Constants (constants.f90)
 -------------------------------------------------
 
 This module contains physical and mathematical constants used by various programs 
-such as periodic table information, atomic weights, etc. For a complete list of constants, 
-please refer to the the original fortran file.
+such as periodic table information, atomic weights, etc.
 
-Some types have already been tested in the unittest file. For instance, 
+A few examples have been tested in the unittest file. For instance, 
 several examples of basic constants (in SI units) can be found in this module:
 
 .. code-block:: python
@@ -63,25 +57,23 @@ several examples of basic constants (in SI units) can be found in this module:
         print('Planck constant (h) is %e (Js)' % (pyEMsoft.constants.cplanck), '\n')
         print('Boltzmann Constant (k) is %e (mˆ2kgsˆ(-1)Kˆ(-1))' % (pyEMsoft.constants.cboltzmann), '\n')
 
-
+For a complete list of constants, please refer to the original fortran file (constants.f90).
 
 Typedefs (typedefs.f90)
 -------------------------------------------------
 
-It contains definition of all variables and types for crystallographic computations in EMsoft. More specifically, it defines the unitcell type (python class)
-and the orientation type, as well as the main cell variable used by all crystallographic computations.
+It contains definition of all variables and types for crystallographic computations in EMsoft. More specifically, it defines the unitcell type and the orientation type (class type objects in python) , as well as the main cell variable used by all crystallographic computations.
 
-For instance, one important variable that is used extensively within EMsoft is the unitcell type (python class).  
+For instance, one important variable that is used extensively within EMsoft is the :python:`unitcell type`.  
 
 .. code-block:: python
 
     # use the unitcell class defined in the typedefs module
     LatCell=pyEMsoft.typedefs.unitcell()
 
-This can now be used as input/output in other associated routines.
+This :python:`unitcell` can now be used as input/output variable in other associated routines.
 
-Another special case of variable is the character array such as a list of space group name. 
-The output numpy.array is in ASCII encoded format. To retrieve the characters, get_character_array function from the pyEMsoftTools can be used.
+Another special case of variable is the character array such as a list of space group name. The output numpy.array is in ASCII encoded format. To retrieve the characters, get_character_array function from the pyEMsoftTools can be used.
 
 .. code-block:: python
 
@@ -91,10 +83,9 @@ The output numpy.array is in ASCII encoded format. To retrieve the characters, g
 Quaternions (quaternions.f90)
 -------------------------------------------------
 
-Quaternions module contains basic quaternion functions such as quaternion normalization/complex conjugate/multiplication/division/inner product/rotation, 
-interquaternion angle, random quaternion and interpolation between quaternions.
+Quaternions module contains basic quaternion functions such as quaternion normalization/complex conjugate/multiplication/division/inner product/rotation, interquaternion angle, random quaternion and interpolation between quaternions.
 
-One functions defined in the Quaternions module is to determine the norm of a given quaternion.
+One function defined in the Quaternions module is to determine the norm of a given quaternion.
 
 .. code-block:: python
 
@@ -105,10 +96,7 @@ One functions defined in the Quaternions module is to determine the norm of a gi
     # check the precision
     print(q.dtype)
 
-Note that the interface function e.g. 'cabs' have both single precision (_quat_norm) and double precision 
-(_quat_norm_d) routines 'glued together' in the Fortran script. Passing either single precision array (float32) or
-double precision array (float64) will default into the first single precision output routine _quat_norm unless 
-the _quat_norm_d is explicitly defined.
+Note that the interface function e.g. :python:`cabs` have both single precision (:python:`_quat_norm`) and double precision (:python:`_quat_norm_d`) routines 'glued together' in the Fortran script. Passing either single precision array (float32) or double precision array (float64) will default into the first single precision routine :python:`_quat_norm` (at the moment)unless the :python:`_quat_norm_d` is explicitly defined.
 
 .. code-block:: python
 
@@ -122,10 +110,9 @@ the _quat_norm_d is explicitly defined.
 Rotations (rotations.f90)
 ---------------------------------------------
 
-This Rotations module contains everything that has to do with rotations and conversions between rotations. 
-Details regarding this can be referred to the book [1]_ or a more recent tutorial paper [2]_
+This Rotations module contains everything that has to do with rotations and conversions between rotations. Details regarding this can be referred to the book [1]_ or a more recent tutorial paper [2]_
 
-For conversion from quaternion to orientation matrix, the qu2eu function can be called:
+For conversion from quaternion to orientation matrix, the :python:`qu2eu` function can be called:
 
 .. code-block:: python
 
@@ -136,13 +123,9 @@ For conversion from quaternion to orientation matrix, the qu2eu function can be 
     # determining the corresponding orientation matrix of the arbitrary quaternion
     om = pyEMsoft.Rotations.qu2om(q)
 
-To see if the lapack library is correctly linked, you can check if the om2ax routine outputs the correct value 
-because it uses lapack to calculate the eigenvalue of a given matrix. A specific unittest is added in the test_rotations.py file to for the verification of the lapack library.
+To see if the lapack library is correctly linked, you can check if the :python:`om2ax` routine outputs the correct value because it uses lapack to calculate the eigenvalue of a given matrix. A specific unittest is added in the test_rotations.py file to for the verification of the lapack library.
 
-In the rotations module, the init_orientation and init_orientaiton_om functions can be used to communicate with
-all the rotation conversion functions in the rotations module. By providing a random quaterion and looping over 
-the rotation methods, all the rotation conversion functions can be tested. A double precision quaternion is defined
-first for the following example (see unittest script test_rotations.py):
+In the rotations module, the :python:`init_orientation` and :python:`init_orientaiton_om` functions can be used to communicate with all the rotation conversion functions in the rotations module. By providing a random quaterion and looping over the rotation methods, all the rotation conversion functions can be tested. A double precision quaternion is defined first for the following example (see unittest script test_rotations.py):
 
 .. code-block:: python
 
@@ -170,18 +153,17 @@ first for the following example (see unittest script test_rotations.py):
                 res = pyEMsoft.rotations._init_orientation_d(inputtype, i, rotcheck=False)
                 print(i, 'to other types\n', res, '\n')
 
-In addition, functions in the rotations module involving checking the bound and norm of a given type of rotation, coordinate 
-transformation of tensor and vectors (in both passive and active transformation), and a way of computing the geometrical mean
+In addition, functions in the rotations module involving checking the bound and norm of a given type of rotation, coordinate transformation of tensor and vectors (passive or active transformation), and a way of computing the geometrical mean
 of a list of quaternions (including its standard deviation quaternion).
 
 Math (math.f90)
 ------------------------------------
 
-Math module is a collection of mathematical/numerical routines.
+Math module is a collection of mathematical/numerical routines. For instance, mathematical operations to obtain matrix inverse, cross-product, matrix determinant, cubic roots, etc.
 
 Polar decomposition of a `deformation gradient tensor <https://www.continuummechanics.org/deformationgradient.html>`_ can be carried out using the getpolardecomposition function in the math module.
 
-Polar decomposition is one of the special cases (also the minvert function) where a matrix needs to be allocated in python but the results are filled in the fortran code.
+Polar decomposition is one of the special cases (also the minvert function) where a matrix needs to be preallocated in python but the results are filled in the fortran code. The preallocation essentially defines an empty numpy array in Fortran order in memory. 
 
 .. code-block:: python
 
@@ -221,22 +203,22 @@ the Rmatrix or the Smatrix. In this case, Rmatrix is in a single, Fortran-style 
     WRITEBACKIFCOPY : False
     UPDATEIFCOPY : False 
 
+Whenever the output variable is preallocated in python, the interface function such as :python:`minvert` can now switch between the single precision (:python:`_minvert`) and double precision routines (:python:`_minvert_d`), depending on the precision of the preallocated out variable. The try and except python function is wrapped around these routines of different precisions such that the prompted :python:`ValueError` is used as a switch. 
 
 HDFsupport (HDFsupport.f90)
 -----------------------------------------
 
-This module contains some of the HDF5 helper routines that can be used to export or import HDF5 data set. The routines within HDFsupport
-can already read/write EMsoft specific format data.
+This module contains some of the HDF5 helper routines that can be used to export or import HDF5 data set. The routines within HDFsupport can already read/write EMsoft specific format data. This is probably more convenient than writing hdf5 specific module (see Example4_read_crystal_data)
 
-One example routine from this module is able to save crystal data unitcell (Example 1 below shows how to create a crystal unitcell in python)
-to a .xtal file in the default XtalFolder (EMsoft package configuration is required). 
+One example routine from this module is able to save crystal data unitcell (Example 1 below shows how to create a crystal unitcell in python) to a .xtal file in the default XtalFolder (EMsoft package configuration is required). 
 
 .. code-block:: python
 
     # use routine from HDFsupport to save crystal data
     pyEMsoft.hdfsupport.savedatahdf(LatCell)
 
-In addition, it is also possible to read crystal data from a .xtal file from the XtalFolder.
+In addition, it is also possible to read crystal data from a .xtal file from the XtalFolder using :python:`crystaldata` funciton, written based on the :python:`readdatahdf` function from the same HDFsupport module. Within this :python:`crystaldata` function, addtional function :python:`calcmatrices` (from crystal.f90) is called to 
+computes the direct/reciprocal lattice/structure matrices for a given crystal.
 
 .. code-block:: python
 
@@ -245,7 +227,7 @@ In addition, it is also possible to read crystal data from a .xtal file from the
 
 EBSDmod (EBSDmod.f90)
 -----------------------------------------
-This module contains several functions to work with EBSD related data. For instance, we can use it to read in a list of Euler angles, Monte Carlo data and master pattern data. 
+This module contains several functions to work with EBSD input and output data. For instance, we can use it to read in a list of Euler angles, Monte Carlo data and master pattern data. 
 
 A list of Euler angles (.txt) needs to be first created in the EMsoft data folder (EMdatapathname). In the unittests file, the euler.txt is created, which contains two sets of Euler angles. 
 
@@ -264,7 +246,7 @@ A list of Euler angles (.txt) needs to be first created in the EMsoft data folde
     print(angles,'\n')
 
 
-It is required to first open the hdf5 interface through the h5open_emsoft (hdfsupport module) before we can use these functions such as readebsdmasterpatternfile.
+It is required to first open the hdf5 interface through the :python:`h5open_emsoft` (HDFsupport module) before we can use these functions such as :python:`readebsdmasterpatternfile`.
 
 .. code-block:: python
 
@@ -296,10 +278,9 @@ It is required to first open the hdf5 interface through the h5open_emsoft (hdfsu
 Crystal (crystal.f90)
 -----------------------------------------
 
-The Crystal module includes distance and angle computations, coordinate transformations,normalizations, dot and cross products, generation of asymmetric positions; 
-also some routines that deal with reading lattice parameters and atom coordinates and such. 
+The Crystal module includes distance and angle computations, coordinate transformations, normalizations, dot and cross products, generation of asymmetric positions; also some routines that deal with reading lattice parameters and atom coordinates and such. 
 
-Given the space group of a crystal, we can find out the corresponding crystal system:
+Given the space group of a crystal, we can find out the corresponding crystal system using the :python:`getemsoftxtalsystem`:
 
 .. code-block:: python
 
@@ -308,24 +289,23 @@ Given the space group of a crystal, we can find out the corresponding crystal sy
     1
      
 
-To display the periodic table, a displayelements function can be called from the crystal module. This routine simply uses message routine defined in io.f90
-to direclty print out strings to the terminal. 
+To display the periodic table, a :python:`displayelements` function can be called from the crystal module. This routine simply uses message routine defined in io.f90
+to directly print out strings to the terminal. 
 
 .. code-block:: python
 
     # display the elements in the periodic table 
     pyEMsoft.crystal.displayelements()
 
-A more complicated scenario involves use of unitcell defined in the Typedefs module. The following example uses the unitcell as an input/output [(]intent(inout)] in the 
-getlatparm function to define crystal structure and lattice parameters/angles.
+A more complicated scenario involves use of :python:`unitcell` defined in the Typedefs module. The following example uses the unitcell as an input/output [intent(inout)] in the 
+:python:`getlatparm` function to define crystal structure and lattice parameters/angles.
 
 .. code-block:: python
 
     LatCell=pyEMsoft.typedefs.unitcell()
     pyEMsoft.crystal.getlatparm(LatCell)
 
-The calculatematrices routine computes the direct/reciprocal lattice/structure matrices for a given crystal. The crystal structure information
-can be obtained in two ways: 1) either read from an exiting .xtal file (as in the unittest file), 2) or go through the steps in Example 1.
+ The crystal structure information can be obtained in two ways: 1) either read from an existing .xtal file (as in the unittest file), 2) or go through the steps in Example1_make_crystal.py.
 
 .. code-block:: python
 
@@ -338,9 +318,7 @@ can be obtained in two ways: 1) either read from an exiting .xtal file (as in th
     # this function also uses readDataHDF (HDFsupport.f90) and CalcMatrices (crystal.f90)
     pyEMsoft.hdfsupport.crystaldata(LatCell)
 
-In some cases, the direct lattice vectors may need to be transformed to reciprocal space or cartesian reference frame. The 
-transspace routine can be used to convert a vector between the three spaces with a single character as a switch
-: direct space ('d'), reciprocal space ('r'), cartesian reference frame ('c').
+In some cases, the direct lattice vectors may need to be transformed to reciprocal space or cartesian reference frame. The :python:`transspace` routine can be used to convert a vector between the three spaces with a single character as a switch: direct space ('d'), reciprocal space ('r'), cartesian reference frame ('c').
 
 .. code-block:: python
 
@@ -356,7 +334,7 @@ transspace routine can be used to convert a vector between the three spaces with
     pyEMsoft.crystal.transspace(self.LatCell, input_vector, output_vector, inspace, outspace)
     print('The', input_vector, 'in the ', Tools.get_space_string(inspace), 'has been converted to', output_vector,'in', Tools.get_space_string(outspace), '\n')
 
-If coordinate transformation is needed in a given space ('d','c' or 'r'), the trnascoor function can be called to defined a coordinate transformed
+If coordinate transformation is needed in a given space ('d', 'c' or 'r'), the :python:`trnascoor` function can be called to defined a coordinate transformed
 vector from old to new ('on') or new to old ('no').
 
 .. code-block:: python
@@ -371,7 +349,7 @@ vector from old to new ('on') or new to old ('no').
     pyEMsoft.crystal.transcoor(self.LatCell, output_vector, output_vector_t, trans_m, 'c', 'on')
     print('The output vector is', output_vector_t, 'under the transformation matrix\n', trans_m, '\n')  
 
-Furthermore, there is a module called milbrav to help with conversion between Miller indices and Miller-Bravais indices ('34' or '43' is the switch). 
+Furthermore, there is a module called :python:`milbrav` to help with conversion between Miller indices and Miller-Bravais indices ('34' or '43' is the switch). 
 
 .. code-block:: python
 
@@ -386,7 +364,7 @@ Furthermore, there is a module called milbrav to help with conversion between Mi
     print('Miller-Bravais indices', Miller_Bravais_index, 'is converted to Miller indices:', Miller_index,'\n')
 
 To obtain density of a crystal structure (and average atomic weight), we can first find all the atom positions in a unit cell (symmetry.calcpositions) and then use 
-calcdensity from the crystal module.
+:python:`calcdensity` from the crystal module.
 
 .. code-block:: python
 
@@ -399,31 +377,16 @@ calcdensity from the crystal module.
     print('unit cell volume', self.LatCell.vol)
 
 Moreover, the Crystal module contains many other useful tools to work with crystallography such vector normalization, length of vector, angle between
-vectors, cross product of two vectors, etc for any given space. An example is given below in Example 2 to solve some of the problems in the textbook written by Marc De Graef [3]_
-
-
+vectors, cross product of two vectors, etc for any given space. An example is given below in Example2_basic_crystallography to solve some of the problems in the textbook written by Marc De Graef [3]_
 
 Symmetry (symmetry.f90)
 -----------------------------------------
 
-The Symmetry module deals with all symmetry-related routines. This includes routines to generate 
-a space group based on the generator string; computation of orbits and families; computation of all 
-atoms in a single or multiple unit cells. 
+The Symmetry module deals with all symmetry-related routines. This includes routines to generate a space group based on the generator string; computation of orbits and families; computation of all atoms in a single or multiple unit cells. 
 
-In the corresponding unittest file (test_symmetry.py), the crystal structure information is directly read from an
-exiting Ni.xtal file.
+In the corresponding unittest file (test_symmetry.py), the crystal structure information is directly read from an existing Ni.xtal file (if this does not exist, you need to create one).
 
-The Laue group number of a given space group can be determined with the following method:
-
-.. code-block:: python
-
-    # see the test_symmetry.py script for how the LatCell is defined in this symmetry unittest class
-    # use the getlauegroupnumber function and predefined self.LatCell.sym_sgnum
-    LG_N = pyEMsoft.symmetry.getlauegroupnumber(self.LatCell.sym_sgnum)
-    print('The Laue group number of space group', self.LatCell.sym_sgnum, 'is', LG_N, '\n')
-
-For certain type of centering in atoms, some reflections become forbidden. The isgallowed function helps to determine whether
-an input (integer array) reciprocal lattice vector is forbidden.
+The :python:`isgallowed` function helps to determine whether an input (integer array) reciprocal lattice vector is forbidden due to precense of a certain type of atom centering.
 
 .. code-block:: python
 
@@ -446,14 +409,18 @@ an input (integer array) reciprocal lattice vector is forbidden.
     print('Answer:', bool(pyEMsoft.symmetry.isgallowed(self.LatCell, g3)), 
     '\n')
 
+With the :python:`getpatternsymmetry` function, diffraction group, crystal point group, Laune group, projection diffraction group, and many 2D symmetry point groups (for bright field, dark field, whole pattern diffraction) can be accessed through some input variable e.g. crystal structure data (unitcell), crystal point group number, and zone axis ([uvw]).
+
+Another useful routine is the :python:`calcpositions`, which is used to calculate a list of atom positions for every atom type in the crystal. For example, this is used in :python:`calcdensity`.
+
 Lambert (lambert.f90)
 -----------------------------------------
 
 This module contains a number of projection functions for the modified
 Lambert projection between square lattice and 3D hemisphere [4]_, hexagonal lattice
 and 3D hemisphere, as well as the more complex mapping between a 3D cubic grid
-and the unit quaternion hemisphere with positive scalar comoonent.  In addition, there
-are some other projections, such as the stereographic one.  Each function is named
+and the unit quaternion hemisphere with positive scalar component.  In addition, there
+are some other projections, such as the stereographic ones.  Each function is named
 by the projection, the dimensionality of the starting grid, and the forward or inverse
 character.  For each function, there is also a single precision and a double precision
 version, but we use the interface formalism to have only a single call. The Forward
@@ -476,20 +443,15 @@ operations on those grids.
     print('3D coordinates', xyz, 'is transformed into 2D square coordinates',
     xy, '\n')
 
-An example that involves use of the lambertsquaretosphere is given in the jupyter notebook file 
-to plot Kikuchi sphere. First, master lamber projection patterns (weighted by atom occupancy)
-are weighted average based on Monte Carlo yield. 2D square coordinates are prescaled into the bounds
-and are then converted into 3D hemispherical coordiantes for the southern and northern 
+An example that involves use of the :python:`lambertsquaretosphere` is given in the jupyter notebook file to plot Kikuchi sphere Example3_plot_Kikuchi_Sphere. First, master lamber projection patterns (weighted by atom occupancy) are weighted average based on Monte Carlo yield. 2D square coordinates are prescaled into the bounds and are then converted into 3D hemispherical coordiantes for the southern and northern 
 hemispheress respectively.
 
 Diffraction (diffraction.f90)
 -----------------------------------------
 
-This modules contains many routines used in the dynamical diffraction. In the unittests script, two classes of 
-derived are used: unitcell (crystal) and gnode (diffraction related quantaties). Moreover, a crystal data
-file is read from the XtalFolder.
+This module contains many routines used in the dynamical diffraction. In the unittests script, two classes of derived are used: :python:`unitcell` (crystal) and :python:`gnode` (diffraction related quantaties). Moreover, an example crystal data file (Ni.xtal) is read from the XtalFolder.
 
-Most of the physical quantaties related to dyanmical diffraction can be obtained through the following function:
+Most of the physical quantaties related to dyanmical diffraction can be obtained through the following :python:`getvoltage` function, which communates to many other routines in the diffraction module.
 
 .. code-block:: python
 
@@ -499,10 +461,10 @@ Most of the physical quantaties related to dyanmical diffraction can be obtained
     # this routine uses many other rountines such as getscatfac, CalcUcg, Calcwavelength
     pyEMsoft.diffraction.getvoltage(self.LatCell, self.rlp, True)
     
-From the kinematical diffraction theory, the 2theta diffraction angle can be calculated for any diffracting plane:
+From the kinematical diffraction theory, the 2 theta diffraction angle can be calculated for any diffracting plane:
+
 
 .. code-block:: python
-
     # calculate 2theta diffraction angle for a plane (hkl)
     Angle = pyEMsoft.diffraction.calcdiffangle(self.LatCell, 1, 1, 1)
     print('\nDiffraction angle for (111) is:', Angle, '(rad)\n')
@@ -511,8 +473,7 @@ Examples
 -----------------------------------------
 
 The Symmetry module in combination with some functions in the Crystal module. 
-A unitcell containing all the crystllographic information can be generated. User can either interact with the terminal 
-to populate the unitcell with crystallographic information or define the values in the unicell manually e.g. LatCell.xtal_system=1.
+A :python:`unitcell` containing all the crystllographic information can be generated. User can either interact with the terminal to populate the unitcell with crystallographic information or define the values in the :python:`unicell` manually e.g. LatCell.xtal_system=1.
 
 
 Example 1: Make a crystal
@@ -570,7 +531,7 @@ In the following example, several routines in the Crystal module are utilized to
     import numpy as np
     import math
 
-    # Examples here are taken from A text book written by Professor Marc De Graef:
+    # Examples here are taken from A textbook written by Professor Marc De Graef:
     # De Graef, M., 2003. Introduction to conventional transmission electron microscopy.
     # Cambridge University Press.
 
