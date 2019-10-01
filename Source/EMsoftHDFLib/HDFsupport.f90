@@ -2054,19 +2054,22 @@ integer(kind=irg),INTENT(IN)                            :: intarr(dim0)
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-integer, dimension(1:dim0), TARGET                      :: wdata
+integer(kind=4),allocatable,TARGET                      :: wdata(:)
+
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
-dims(1) = dim0
+allocate(wdata(dim0), stat=istat)
+
 wdata = intarr
+dims(1) = dim0
 
 ! get a C pointer to the integer array
 f_ptr = C_LOC(wdata(1))
@@ -2106,6 +2109,7 @@ call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5dclose_f:'//trim(dataname)
 
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetIntegerArray1D:h5sclose_f:'//trim(dataname), hdferr)
+DEALLOCATE(wdata, stat=istat)
 
 ! that's it
 
@@ -2141,19 +2145,24 @@ integer(kind=irg),INTENT(IN)                            :: intarr(dim0, dim1)
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
-integer, dimension(1:dim0,1:dim1), TARGET               :: wdata
+integer(kind=4),allocatable,TARGET                      :: wdata(:,:)
+
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
-dims(1:2) = (/ dim0, dim1 /)
+allocate(wdata(dim0, dim1), stat=istat)
+
 wdata = intarr
+
+dims(1:2) = (/ dim0, dim1 /)
+
 
 ! get a C pointer to the integer array
 f_ptr = C_LOC(wdata(1,1))
@@ -2193,6 +2202,7 @@ call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5dclose_f:'//trim(dataname)
 
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetIntegerArray2D:h5sclose_f:'//trim(dataname), hdferr)
+DEALLOCATE(wdata, stat=istat)
 
 ! that's it
 
@@ -2230,19 +2240,21 @@ integer(kind=irg),INTENT(IN),TARGET                     :: intarr(dim0, dim1, di
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
-!integer, dimension(1:dim0,1:dim1,1:dim2), TARGET        :: wdata
+integer(kind=4),allocatable,TARGET                      :: wdata(:,:,:)
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
+allocate(wdata(dim0, dim1, dim2), stat=istat)
+
 dims(1:3) = (/ dim0, dim1, dim2 /)
-!wdata = intarr
+wdata = intarr
 
 ! get a C pointer to the integer array
 f_ptr = C_LOC(intarr(1, 1, 1))
@@ -2283,6 +2295,8 @@ call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5dclose_f:'//trim(dataname)
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetIntegerArray3D:h5sclose_f:'//trim(dataname), hdferr)
 
+DEALLOCATE(wdata, stat=istat)
+
 ! that's it
 
 end function HDF_writeDatasetIntegerArray3D
@@ -2319,18 +2333,19 @@ integer(kind=irg),INTENT(IN)                            :: intarr(dim0, dim1, di
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
-integer, dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET :: wdata
+integer(kind=4),allocatable,TARGET                      :: wdata(:,:,:,:)
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
-dims(1:4) = (/ dim0, dim1, dim2, dim3 /)
+allocate(wdata(dim0, dim1, dim2, dim3), stat=istat)
+
 wdata = intarr
 
 ! get a C pointer to the integer array
@@ -2339,6 +2354,8 @@ f_ptr = C_LOC(wdata(1,1,1,1))
 ! Create dataspace.
 !
 rnk = 4
+dims(1:4) = (/ dim0, dim1, dim2, dim3 /)
+
 call h5screate_simple_f(rnk, dims, space, hdferr)
 call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5screate_simple_f:'//trim(dataname), hdferr)
 
@@ -2371,6 +2388,8 @@ call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5dclose_f:'//trim(dataname)
 
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetIntegerArray4D:h5sclose_f:'//trim(dataname), hdferr)
+
+DEALLOCATE(wdata, stat=istat)
 
 ! that's it
 
@@ -2579,19 +2598,22 @@ real(kind=sgl),INTENT(IN)                               :: fltarr(dim0)
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
-real(real_kind4), dimension(1:dim0), TARGET              :: wdata
+real(real_kind4),allocatable,TARGET                      :: wdata(:)
+
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
 dims(1) = dim0
+allocate(wdata(dim0), stat=istat)
+
 wdata = fltarr
 
 ! get a C pointer to the integer array
@@ -2632,6 +2654,7 @@ call HDFerror_check('HDF_writeDatasetFloatArray1D:h5dclose_f:'//trim(dataname), 
 
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetFloatArray1D:h5sclose_f:'//trim(dataname), hdferr)
+DEALLOCATE(wdata, stat=istat)
 
 ! that's it
 
@@ -2668,20 +2691,24 @@ real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1)
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
-real(real_kind4), dimension(1:dim0,1:dim1), TARGET       :: wdata
+real(real_kind4),allocatable,TARGET                     :: wdata(:,:)
+
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
+allocate(wdata(dim0, dim1), stat=istat)
+
+wdata = fltarr
+
 
 dims(1:2) = (/ dim0, dim1 /)
-wdata = fltarr
 
 ! get a C pointer to the integer array
 f_ptr = C_LOC(wdata(1,1))
@@ -2721,6 +2748,7 @@ call HDFerror_check('HDF_writeDatasetFloatArray2D:h5dclose_f:'//trim(dataname), 
 
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetFloatArray2D:h5sclose_f:'//trim(dataname), hdferr)
+DEALLOCATE(wdata, stat=istat)
 
 ! that's it
 
@@ -2757,20 +2785,24 @@ real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, di
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
-real(real_kind4), dimension(1:dim0,1:dim1,1:dim2), TARGET :: wdata
+real(real_kind4),allocatable,TARGET                           :: wdata(:,:,:)
+
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
-dims(1:3) = (/ dim0, dim1, dim2 /)
+allocate(wdata(dim0, dim1, dim2), stat=istat)
+
 wdata = fltarr
+
+dims(1:3) = (/ dim0, dim1, dim2 /)
 
 ! get a C pointer to the integer array
 f_ptr = C_LOC(wdata(1,1,1))
@@ -2810,6 +2842,7 @@ call HDFerror_check('HDF_writeDatasetFloatArray3D:h5dclose_f:'//trim(dataname), 
 
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetFloatArray3D:h5sclose_f:'//trim(dataname), hdferr)
+DEALLOCATE(wdata, stat=istat)
 
 ! that's it
 
@@ -2847,20 +2880,24 @@ real(kind=sgl),INTENT(IN)                               :: fltarr(dim0, dim1, di
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
-integer(kind=irg)                                       :: success
+integer(kind=irg)                                       :: success, istat
 
 integer,parameter                                       :: real_kind4 = SELECTED_REAL_KIND(Fortran_REAL_4)
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, rnk
 integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
-real(real_kind4), dimension(1:dim0,1:dim1,1:dim2,1:dim3), TARGET :: wdata
+real(real_kind4),allocatable,TARGET                      :: wdata(:,:,:,:)
+
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
-dims(1:4) = (/ dim0, dim1, dim2, dim3 /)
+allocate(wdata(dim0, dim1, dim2, dim3), stat=istat)
+
 wdata = fltarr
+
+dims(1:4) = (/ dim0, dim1, dim2, dim3 /)
 
 ! get a C pointer to the integer array
 f_ptr = C_LOC(wdata(1,1,1,1))
@@ -2900,6 +2937,7 @@ call HDFerror_check('HDF_writeDatasetFloatArray4D:h5dclose_f:'//trim(dataname), 
 
 call h5sclose_f(space, hdferr)
 call HDFerror_check('HDF_writeDatasetFloatArray4D:h5sclose_f:'//trim(dataname), hdferr)
+DEALLOCATE(wdata, stat=istat)
 
 ! that's it
 
