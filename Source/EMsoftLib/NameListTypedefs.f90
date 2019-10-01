@@ -433,6 +433,7 @@ type EBSDMasterNameListType
         character(3)            :: Notify
         character(fnlen)        :: latgridtype
         character(fnlen)        :: copyfromenergyfile
+        character(fnlen)        :: h5copypath
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname
         logical                 :: combinesites
@@ -659,6 +660,7 @@ type EBSDoverlapNameListType
         character(fnlen)        :: masterfileC
         character(fnlen)        :: masterfileD
         character(fnlen)        :: datafile
+        character(fnlen)        :: h5copypath
         character(fnlen)        :: overlapmode
 ! everything below here is not part of the namelist input structure, but is used to pass arguments to subroutines
         integer(kind=irg)       :: numset
@@ -853,6 +855,7 @@ type ECPMasterNameListType
     character(3)            :: Notify
     character(fnlen)        :: compmode
     character(fnlen)        :: copyfromenergyfile
+    character(fnlen)        :: h5copypath
     character(fnlen)        :: energyfile
     logical                 :: combinesites
 end type ECPMasterNameListType

@@ -54,6 +54,7 @@ declare -a f90_source_files=("io.f90"
                              "CLsupport.f90" 
                              "constants.f90" 
                              "math.f90"
+                             "rng.f90"
                              "typedefs.f90"
                              "crystal.f90" 
                              "symmetry.f90" 
@@ -64,7 +65,10 @@ declare -a f90_source_files=("io.f90"
                              "rotations.f90"
                              "diffraction.f90"
                              "so3.f90"
+                             "noise.f90"
                              "dictmod.f90"
+                             "filters.f90"
+                             "fftw3mod.f90"
                              "NameListTypedefs.f90"
                              "NameListHandlers.f90") 
 
@@ -120,13 +124,14 @@ done
 #=======================
 # execute the f90wrap program using all the files just copied
 echo " run_pyEMsoft.sh: executing f90wrap"
-f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} 1>build.log 2>build_error.log 
-
+f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} \
+--skip hipassfilterc hipassfilter 1>build.log 2>build_error.log
 #=======================
 # call f2py-f90wrap to build the wrapper library
 echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a very long time (>1 hour) ..."
 f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -I${EMsoftBuildHDFLib} \
+-I$EMsoft_SDK/hdf5-1.8.20-Release/include/static \
 -I$EMsoft_SDK/CLFortran-0.0.1-Release/include \
 -I$EMsoft_SDK/jsonfortran-4.2.1-Release/include \
 -I$EMsoft_SDK/fftw-3.3.8/include \
@@ -134,8 +139,13 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -L$EMsoft_SDK/jsonfortran-4.2.1-Release/lib \
 -L$EMsoft_SDK/CLFortran-0.0.1-Release/lib \
 -L$EMsoft_SDK/fftw-3.3.8/lib \
+-L$EMsoft_SDK/hdf5-1.8.20-Release/lib \
 -L$CondaLib \
--lblas -llapack -lEMsoftLib -lEMsoftHDFLib -ljsonfortran -lhdf5 -lclfortran -lfftw3  1>>build.log 2>>build_error.log
+--link-lapack_opt \
+-lgomp -lpthread -lomp \
+-lEMsoftLib -lEMsoftHDFLib -ljsonfortran -lhdf5 -lhdf5_fortran \
+-lclfortran -lfftw3 -lhdf5_cpp -lhdf5_f90cstub -lhdf5_hl_cpp \
+-lhdf5_tools -lhdf5_hl -lhdf5_hl_fortran -lhdf5_hl_f90cstub  1>>build.log 2>>build_error.log
 
 #=======================
 # clean up all the .f90 files that we no longer need

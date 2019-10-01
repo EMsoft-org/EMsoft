@@ -80,7 +80,7 @@ call GetECPMasterNameList(nmldeffile,ecpnl)
 ! will then be read from and written to by the ECmasterpattern routine.
 if (ecpnl%copyfromenergyfile.ne.'undefined') then
   call h5open_EMsoft(hdferr)  
-  call EBSDcopyMCdata(ecpnl%copyfromenergyfile, ecpnl%energyfile)
+  call EBSDcopyMCdata(ecpnl%copyfromenergyfile, ecpnl%energyfile, ecpnl%h5copypath)
   call h5close_EMsoft(hdferr)  
 end if
 

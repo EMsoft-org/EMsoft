@@ -107,12 +107,12 @@ end if
 ! will then be read from and written to by the ComputeMasterPattern routine.
 if (emnl%copyfromenergyfile.ne.'undefined') then
   call h5open_EMsoft(hdferr)
-  call EBSDcopyMCdata(emnl%copyfromenergyfile, emnl%energyfile)
+  call EBSDcopyMCdata(emnl%copyfromenergyfile, emnl%energyfile, emnl%h5copypath)
   call h5close_EMsoft(hdferr)
 end if
 
 ! generate a set of master EBSD patterns
- call ComputeMasterPattern(emnl, progname, nmldeffile)
+call ComputeMasterPattern(emnl, progname, nmldeffile)
 
 end program EMEBSDmaster
 

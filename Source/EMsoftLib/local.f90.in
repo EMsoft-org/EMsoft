@@ -825,20 +825,29 @@ end function EMsoft_getUseremail
 !> @param no input parameters
 !
 !> @date  08/18/16 MDG 1.0 new function
+!> @date  09/10/19 MDG 1.1 add environment variable option for EMdevelop
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMdevelop() result(EMdevelop)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMdevelop
 
 IMPLICIT NONE
 
-character(fnlen)                        :: EMstring, ep
+character(fnlen)                        :: EMstring, ep, envParam, envReturn
 logical                                 :: EMdevelop
+
+! default: not in developer mode
+EMdevelop = .FALSE.
 
 ep = SC_Develop
 EMstring = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
 
-EMdevelop = .FALSE.
-if (trim(EMstring).eq.'Yes') EMdevelop = .TRUE.
+if (trim(EMstring).eq.'Yes') then 
+  EMdevelop = .TRUE.
+else if (trim(EMstring).eq.'tryEnvironmentVariable') then
+       envParam = 'EMdevelop'
+       call getenv(trim(envParam),envReturn)
+       if (trim(envReturn).eq.'Yes') EMdevelop = .TRUE.
+     end if
 
 end function EMsoft_getEMdevelop
 
