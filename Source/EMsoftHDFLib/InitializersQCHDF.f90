@@ -890,8 +890,8 @@ if(.not. justinit) then
 
  end if 
 
-cell%LUT = dcmplx(0.D0,0.D0)
-cell%LUTqg = dcmplx(0.D0,0.D0)
+cell%LUT = complex(0.D0,0.D0)
+cell%LUTqg = complex(0.D0,0.D0)
 cell%dbdiff = .FALSE.
 ddt = 1.0e-5 
 ! ! changed from 1.0e-10 on 08/14/15 by MDG in response to some issues with double
@@ -1117,8 +1117,8 @@ if(.not. justinit) then
 
 end if  
 
-!cell%LUT = dcmplx(0.D0,0.D0)
-!cell%LUTqg = dcmplx(0.D0,0.D0)
+!cell%LUT = complex(0.D0,0.D0)
+!cell%LUTqg = complex(0.D0,0.D0)
 !cell%dbdiff = .FALSE.
 ddt = 1.0e-5
 
@@ -1208,8 +1208,8 @@ do id = 1,nLUT
        end if
 
     else
-       cell%LUT(id)    = dcmplx(0.D0,0.D0)
-       cell%LUTqg(id)  = dcmplx(0.D0,0.D0)
+       cell%LUT(id)    = complex(0.D0,0.D0)
+       cell%LUTqg(id)  = complex(0.D0,0.D0)
        cell%dbdiff(id) = .FALSE.
     end if
 

@@ -806,7 +806,7 @@ real(kind=dbl),parameter              :: eps = 1.0D-12
 real(kind=dbl),parameter              :: tau = (1.D0 + dsqrt(5.D0))/2.D0
 
 
-imagj = dcmplx(0.D0, 1.D0)
+imagj = complex(0.D0, 1.D0)
 
 if(trim(QCcell%QCtype) .eq. 'DoD') then
 
@@ -887,12 +887,12 @@ case(2)
   stt   = Ar * t1 / prod
 
 case(3)
-  t1    = imagj * a2 * exp(imagj * a2) - exp(imagj * a2) + dcmplx(1.D0, 0.D0)
+  t1    = imagj * a2 * exp(imagj * a2) - exp(imagj * a2) + complex(1.D0, 0.D0)
   prod  = a2 * a2
   stt   = -Ar * t1 / prod
 
 case(4)
-  stt = dcmplx(Ar/2, 0.D0)
+  stt = complex(Ar/2, 0.D0)
 
 case DEFAULT
   t1    = a2 * exp(imagj * a1)
@@ -935,7 +935,7 @@ complex(kind=dbl)                     :: stp
 integer(kind=irg)                     :: Pmdims, ii
 real(kind=dbl)                        :: A_Polygon, hkl2(5), mat(5,5), mat2(5,5)
 
-stp = dcmplx(0.D0,0.D0)
+stp = complex(0.D0,0.D0)
 
 if(trim(QCcell%QCtype) .eq. 'DoD') then
   ar        = QCcell%ATOM_pos(asite, 10) * dsqrt(2.D0/3.D0) * (QCcell%QClatparm_a)
@@ -998,7 +998,7 @@ real(kind=dbl)                        :: e1_c(3), e2_c(3), e3_c(3), gperp(3), vl
 real(kind=dbl),parameter              :: eps = 1.0D-12
 integer(kind=irg)                     :: icase
 
-imagj = dcmplx(0.D0, 1.D0)
+imagj = complex(0.D0, 1.D0)
 
 ! edges of tetrahedron in perp space
 e1    = (/1.D0, -1.D0, -1.D0, -1.D0, -1.D0, -1.D0/) * 0.5D0 
@@ -1089,7 +1089,7 @@ end if
 select case (icase)
 
 case(1)
-  stp = dcmplx(Vr/6.D0, 0.D0)
+  stp = complex(Vr/6.D0, 0.D0)
   
 case(2)
   t1    = 2.D0 * exp(imagj * a3)
@@ -1216,7 +1216,7 @@ real(kind=dbl)                        :: V_Triacontahedron, hkl2(6), ar
 
 ar = QCcell%ATOM_pos(asite,10) * QCcell%QClatparm
 
-stt = dcmplx(0.D0,0.D0)
+stt = complex(0.D0,0.D0)
 
 Pmdims = QCcell%SG%SYM_NUMpt
 
