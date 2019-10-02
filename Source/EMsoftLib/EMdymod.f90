@@ -1269,7 +1269,7 @@ eu3 = (/X(11)*2.0*stepsize(3) - stepsize(3) + initmeanval(10), X(12)*2.0*stepsiz
 eu4 = (/X(14)*2.0*stepsize(3) - stepsize(3) + initmeanval(13), X(15)*2.0*stepsize(4) - stepsize(4) + initmeanval(14), &
        X(16)*2.0*stepsize(5) - stepsize(5) + initmeanval(15)/)*dtor ! mean +/- 2 degrees
 
-!D = dcmplx(X(8)*0.000002D0 - 0.000001D0 + dble(initmeanval(5)), X(9)*0.000002D0 - 0.000001D0 + dble(initmeanval(6)))
+!D = complex(X(8)*0.000002D0 - 0.000001D0 + dble(initmeanval(5)), X(9)*0.000002D0 - 0.000001D0 + dble(initmeanval(6)))
 
 binx = ipar(2)/ipar(12)
 biny = ipar(3)/ipar(12)
@@ -1898,7 +1898,7 @@ ho = (/X(2)*2.0*stepsize(2) - stepsize(2) + initmeanval(2), X(3)*2.0*stepsize(3)
 !quats(1:4,1) = eu2qu(eu)
 quats(1:4,1) = ho2qu(ho)
 
-!D = dcmplx(0.D0,0.D0)
+!D = complex(0.D0,0.D0)
 ! read all the files 
 
 allocate(ECPvector(ipar(2)*ipar(3)),mask(ipar(2),ipar(3)))
