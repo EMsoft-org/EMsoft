@@ -182,7 +182,7 @@ call timestamp(datestring=dstr, timestring=tstrb)
 call Time_tick(tickstart)
 
 tpi = 2.D0*cPi
-czero = complex (0.D0,0.D0)
+czero = dcmplx(0.D0,0.D0)
 
 !=============================================
 !=============================================

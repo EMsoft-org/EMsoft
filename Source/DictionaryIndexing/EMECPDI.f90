@@ -342,7 +342,7 @@ source_l = source_length
 ! nullify the dict  and T0dict pointers
 nullify(dict,T0dict)
 
-!D = complex (0.000001,-0.00000185)
+!D = dcmplx(0.000001,-0.00000185)
 
 if (mod(L,16) .ne. 0) then
     correctsize = 16*ceiling(float(L)/16.0)

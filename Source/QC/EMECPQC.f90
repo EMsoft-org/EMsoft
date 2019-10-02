@@ -361,7 +361,7 @@ if (ecpnl%outputformat .eq. 'gui') then
                                           HDF_head)
 end if
 
-!D = complex (0.000001,-0.0000014)
+!D = dcmplx(0.000001,-0.0000014)
 
 ! set the number of OpenMP threads
 io_int(1) = ecpnl%nthreads

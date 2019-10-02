@@ -185,8 +185,8 @@ if(.not. justinit) then
 ! diffraction spots not being taken into account in EBSD master pattern simulations 
 end if
 
- cell%LUT = complex (0.D0,0.D0)
- cell%LUTqg = complex (0.D0,0.D0)
+ cell%LUT = dcmplx(0.D0,0.D0)
+ cell%LUTqg = dcmplx(0.D0,0.D0)
  cell%dbdiff = .FALSE.
  ddt = 1.0e-5 
 
@@ -398,8 +398,8 @@ if(.not. justinit) then
 ! diffraction spots not being taken into account in EBSD master pattern simulations 
 end if
 
- cell%LUT = complex (0.D0,0.D0)
- cell%LUTqg = complex (0.D0,0.D0)
+ cell%LUT = dcmplx(0.D0,0.D0)
+ cell%LUTqg = dcmplx(0.D0,0.D0)
  cell%dbdiff = .FALSE.
  ddt = 1.0e-5 
 

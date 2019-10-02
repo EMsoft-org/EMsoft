@@ -1992,7 +1992,7 @@ complex(kind=dbl),allocatable   :: MIWORK(:)
  MILWORK = 64*nn 
  allocate(MIWORK(MILWORK))
 
- MIWORK = complex (0.0_dbl,0.0_dbl)
+ MIWORK = dcmplx(0.0_dbl,0.0_dbl)
  call zgetri(nn,CGinv,LDA,JPIV,MIWORK,MILWORK,INFO)
  if (INFO.ne.0) then
   io_int(1) = INFO

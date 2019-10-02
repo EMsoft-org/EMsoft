@@ -929,12 +929,12 @@ complex(kind=dbl),allocatable       :: Minp(:,:),Azz(:,:),ampl(:),ampl2(:)
   
 allocate(Minp(nn,nn),Azz(nn,nn),ampl(nn),ampl2(nn))
 
-Minp = DynMat * complex (0.D0,cPi * cell%mLambda)
+Minp = DynMat * dcmplx(0.D0,cPi * cell%mLambda)
 call MatrixExponential(Minp, Azz, dble(dthick), 'Pade', nn)  
 
-ampl = complex (0.D0,0.D0)
-ampl(1) = complex (1.0D0,0.D0)
-Lgh = complex (0.D0,0.D0)
+ampl = dcmplx(0.D0,0.D0)
+ampl(1) = dcmplx(1.0D0,0.D0)
+Lgh = dcmplx(0.D0,0.D0)
 
 ! add some thickness handling here !!!
 ! thge integration uses a small step size, but there might

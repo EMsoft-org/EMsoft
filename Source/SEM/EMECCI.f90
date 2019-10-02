@@ -161,7 +161,7 @@ real(kind=sgl)                          :: thick, X(2), bragg, thetac, kstar(3),
 real(kind=dbl)                          :: arg, glen, DynFN(3), xx
 complex(kind=dbl),allocatable           :: DHWM(:,:),DHWMvoid(:,:),DDD(:,:),Sarray(:,:,:,:)
 complex(kind=dbl),allocatable           :: amp(:),amp2(:),Azz(:,:),DF_R(:,:)
-complex(kind=dbl)                       :: czero=complex (0.D0,0.D0),cone=dcmplx(1.D0,0.D0)
+complex(kind=dbl)                       :: czero=dcmplx(0.D0,0.D0),cone=dcmplx(1.D0,0.D0)
 complex(kind=dbl)                       :: para(0:numdd),dx,dy,dxm,dym, xgp
 real(kind=sgl),allocatable              :: sgarray(:,:)
 real(kind=sgl),allocatable              :: disparray(:,:,:,:),imatvals(:,:), ECCIimages(:,:,:), XYarray(:,:), ECCIstore(:,:,:)
@@ -316,7 +316,7 @@ integer(int8), allocatable              :: montage(:,:)
  DM(2,2) = CalcDot(cell,float(ga),float(ga),'c')
  DD = DM(1,1)*DM(2,2) - DM(1,2)*DM(2,1)
 
- cone = complex (0.D0,cPi)
+ cone = dcmplx(0.D0,cPi)
 
  rltmpa => reflist%next    ! point to the front of the list
 ! ir is the row index
@@ -500,7 +500,7 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
 ! define the numd complex defect parameters (i.e., precompute the sin and cos arrays
   do i=0,numd
     arg = 2.D0*cPi*dble(i)/dble(numd)
-    para(i) = complex (dcos(arg),-dsin(arg))
+    para(i) = dcmplx(dcos(arg),-dsin(arg))
   end do
 
 ! determine the Sgh array, which is sort of a glorified structure factor...
@@ -670,7 +670,7 @@ dataset = SC_ECCIimages
   io_int(1) = numk
   call WriteValue('ECCI: number of beam directions =  ', io_int, 1, "(I5)")
   
-  cone = complex (1.D0,0.D0)
+  cone = dcmplx(1.D0,0.D0)
   
 !--------------------------------------------------------------
 !--------------------------------------------------------------
@@ -695,7 +695,7 @@ mainloop: do isg = numstart,numstop   ! this is the main computational loop
 ! fill the diagonal of the reference dynamical matrix and the void matrix
 ! make sure that normal absorption is properly taken into account...
   forall (i=1:nn)
-   DHWMz(i,i)= complex (0.D0,2.D0*cPi*sgarray(i,isg)) + xgp ! xgp already has i Pi in it.
+   DHWMz(i,i)= dcmplx(0.D0,2.D0*cPi*sgarray(i,isg)) + xgp ! xgp already has i Pi in it.
    DHWMvoid(i,i) = DHWMz(i,i)
   end forall
 

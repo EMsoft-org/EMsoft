@@ -298,7 +298,7 @@ real(kind=sgl)                  :: th
 ! make sure the alpha excitation coefficients are normalized 
 ! s = sum(cdabs(lalpha(1:nn))**2)
 ! if (s.ne.1.D0) then
-!  s = complex (1.D0/dsqrt(s),0.D0)
+!  s = dcmplx(1.D0/dsqrt(s),0.D0)
 !  lalpha = lalpha*s
 ! endif 
 
@@ -381,7 +381,7 @@ real(kind=dbl)                  :: s, q, t
 ! make sure the alpha excitation coefficients are normalized 
  s = sum(cdabs(lalpha(1:nn))**2)
  if (s.ne.1.D0) then
-  s = complex (1.D0/dsqrt(s),0.D0)
+  s = dcmplx(1.D0/dsqrt(s),0.D0)
   lalpha = lalpha*s
  endif 
  
@@ -458,7 +458,7 @@ real(kind=dbl)                  :: s(nn), q(nn), t, ss
 ! make sure the alpha excitation coefficients are normalized 
  ss = sum(cdabs(lalpha(1:nn))**2)
  if (ss.ne.1.D0) then
-  ss = complex (1.D0/dsqrt(ss),0.D0)
+  ss = dcmplx(1.D0/dsqrt(ss),0.D0)
   lalpha = lalpha*ss
  endif 
  
@@ -550,7 +550,7 @@ complex(kind=dbl)                          :: Sghvec(numset)
 ! the SghLUT array stores all the structure-factor-like quantities of the Sgh matrix needed for EBSD, ECP, etc simulations
  allocate(cell%SghLUT(1:numset,-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
  if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%SghLUT array')
- cell%SghLUT = complex (0.D0,0.D0)
+ cell%SghLUT = dcmplx(0.D0,0.D0)
 
  if (present(verbose)) then
   if (verbose) then
@@ -686,7 +686,7 @@ real(kind=dbl)                          :: arg, tpi
 type(reflisttype),pointer               :: rltmpa, rltmpb
 
   tpi = 2.D0 * cPi
-  Sghvec = complex (0.D0,0.D0)
+  Sghvec = dcmplx(0.D0,0.D0)
 
 ! for each special position we need to compute its contribution to the Sgh array
   do ip=1,cell % ATOM_ntype
@@ -706,9 +706,9 @@ type(reflisttype),pointer               :: rltmpa, rltmpb
     do ikk=1,n ! sum over all the atoms in this orbit
 ! get the argument of the complex exponential
       arg = tpi*sum(dble(kkk(1:3))*cell%apos(ip,ikk,1:3))
-      carg = complex (dcos(arg),dsin(arg))
+      carg = dcmplx(dcos(arg),dsin(arg))
 ! multiply with the prefactor and add
-      Sghvec(ip) = Sghvec(ip) + carg * complex (DBWF,0.D0)
+      Sghvec(ip) = Sghvec(ip) + carg * dcmplx(DBWF,0.D0)
     end do
   end do
   
@@ -761,7 +761,7 @@ real(kind=dbl)                          :: ctmp(192,3),arg, tpi
 type(reflisttype),pointer               :: rltmpa, rltmpb
 
   tpi = 2.D0 * cPi
-  Sgh = complex (0.D0,0.D0)
+  Sgh = dcmplx(0.D0,0.D0)
 
 ! for each special position we need to compute its contribution to the Sgh array
   do ip=1,cell % ATOM_ntype
@@ -790,9 +790,9 @@ type(reflisttype),pointer               :: rltmpa, rltmpb
         do ikk=1,n
 ! get the argument of the complex exponential
           arg = tpi*sum(dble(kkk(1:3))*cell%apos(ip,ikk,1:3))
-          carg = complex (dcos(arg),dsin(arg))
+          carg = dcmplx(dcos(arg),dsin(arg))
 ! multiply with the prefactor and add
-          Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * complex (DBWF,0.D0)
+          Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * dcmplx(DBWF,0.D0)
         end do
         rltmpb => rltmpb%nexts  ! move to next column-entry
       end do
@@ -846,7 +846,7 @@ real(kind=dbl)                          :: ctmp(192,3),arg, tpi
 type(reflisttype),pointer               :: rltmpa, rltmpb
 
 tpi = 2.D0 * cPi
-Sgh = complex (0.D0,0.D0)
+Sgh = dcmplx(0.D0,0.D0)
 
 ! for each special position we need to compute its contribution to the Sgh array
 do ip=1,cell % ATOM_ntype
@@ -875,9 +875,9 @@ do ip=1,cell % ATOM_ntype
 ! get the argument of the complex exponential
 !         arg = tpi*sum(kkk(1:3)*ctmp(ikk,1:3))
                 arg = tpi*sum(kkk(1:3)*cell%apos(ip,ikk,1:3))
-                carg = complex (dcos(arg),dsin(arg))
+                carg = dcmplx(dcos(arg),dsin(arg))
 ! multiply with the prefactor and add
-                Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * complex (DBWF,0.D0)
+                Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * dcmplx(DBWF,0.D0)
             end do
             rltmpb => rltmpb%next  ! move to next column-entry
         end do
@@ -979,7 +979,7 @@ integer(kind=sgl)                   :: LWORK
  call zgetri(nn,CGinv,LDA,JPIV,getMIWORK,MILWORK,INFO)
  MILWORK =  INT(real(getMIWORK))
  if (.not.allocated(MIWORK)) allocate(MIWORK(MILWORK))
- MIWORK = complex (0.D0,0.D0)
+ MIWORK = dcmplx(0.D0,0.D0)
  call zgetri(nn,CGinv,LDA,JPIV,MIWORK,MILWORK,INFO)
  deallocate(MIWORK)
 
@@ -1005,8 +1005,8 @@ tpi = 2.D0*cPi*depthstep
 dzt = depthstep/thick
  do j=1,nn
   do k=1,nn
-     q =  complex (0.D0,0.D0)
-     qold = complex (tpi*(aimag(W(j))+aimag(W(k))),tpi*(real(W(j))-real(W(k))))
+     q =  dcmplx(0.D0,0.D0)
+     qold = dcmplx(tpi*(aimag(W(j))+aimag(W(k))),tpi*(real(W(j))-real(W(k))))
      if(real(qold) .lt. 0.0) qold = -qold
      !if(real(qold) .lt. 0.D0) qold = -qold
      do iz = 1,izz
@@ -1473,7 +1473,7 @@ integer(kind=irg),allocatable               :: nat(:)
 
 dthick = thick(2) - thick(1)
 Sigmagg = 0.D0
-czero = complex (0.D0,0.D0)
+czero = dcmplx(0.D0,0.D0)
 allocate(nat(1:cell_subs%ATOM_ntype))
 nullify(refliststrongtmp1)
 nullify(refliststrongtmp2)
@@ -1548,7 +1548,7 @@ do ii = 1,nns_film
                         arg2 = (refliststrongtmp2%hlist(kk,1:3)-refliststrongtmp1%hlist(pp,1:3))
                         arg3 = 2.0*cPi*sum(arg1(1:3)*cell_subs%apos(ll,qq,1:3))
                         arg4 = 2.0*cPi*sum(arg2(1:3)*cell_subs%apos(ll,qq,1:3))
-                        Shhp(pp,kk) = Shhp(pp,kk) + Znsq*exp(-cell_subs%ATOM_pos(ll,5)*s)*complex (dcos(arg3+arg4),dsin(arg3+arg4))
+                        Shhp(pp,kk) = Shhp(pp,kk) + Znsq*exp(-cell_subs%ATOM_pos(ll,5)*s)*dcmplx(dcos(arg3+arg4),dsin(arg3+arg4))
                     end do
                 end do
             end do
@@ -1653,7 +1653,7 @@ refliststrong_subs_tmp%nns = nns_subs
 
 call GetDynMat(cell_subs,reflist_subs,firstw_subs,rlp_subs,refliststrong_subs_tmp%DynMat,nns_subs,nnw_subs)
 
-refliststrong_subs_tmp%DynMat = refliststrong_subs_tmp%DynMat*complex (0.D0,cPi*cell_subs%mLambda)
+refliststrong_subs_tmp%DynMat = refliststrong_subs_tmp%DynMat*dcmplx(0.D0,cPi*cell_subs%mLambda)
 
 if(allocated(ScatMat)) deallocate(ScatMat)
 allocate(ScatMat(nns_subs,nns_subs),stat=istat)
@@ -1705,7 +1705,7 @@ do ii = 1,nns_film-1
     refliststrong_subs_tmp%g(1:3) = dble(rltmpa%hkl)
 
     refliststrong_subs_tmp%nns = nns_subs
-    refliststrong_subs_tmp%DynMat = refliststrong_subs_tmp%DynMat*complex (0.D0,cPi*cell_subs%mLambda)
+    refliststrong_subs_tmp%DynMat = refliststrong_subs_tmp%DynMat*dcmplx(0.D0,cPi*cell_subs%mLambda)
 
     if(allocated(ScatMat)) deallocate(ScatMat)
     allocate(ScatMat(nns_subs,nns_subs),stat=istat)
