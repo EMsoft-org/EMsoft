@@ -144,7 +144,7 @@ izl:   do iz=-iml,iml
               rltail%dbdiff = .TRUE.
             end if
           else
-            r_g = la * abs(sgp)/cdabs(cell%LUT(ix, iy, iz))
+            r_g = la * abs(sgp)/abs(cell%LUT(ix, iy, iz))
             if (r_g.le.rBethe_i) then 
               call AddReflection(rltail, listroot, cell, nref, gg )
               rltail%sg = sgp

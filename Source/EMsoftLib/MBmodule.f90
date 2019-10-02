@@ -144,12 +144,12 @@ real(kind=sgl)                  :: th
   end do
 ! strong beams
   do j=1,nn
-   inten(i,j) = cdabs(sum(delta(j,1:nn)))**2
+   inten(i,j) = abs(sum(delta(j,1:nn)))**2
   end do 
 ! weak beams
   tmp = matmul(Ucross,delta)
   do jp=1,nw
-   inten(i,nn+jp) = cdabs( sum(weak(jp,1:nn)*tmp(jp,1:nn)) )**2
+   inten(i,nn+jp) = abs( sum(weak(jp,1:nn)*tmp(jp,1:nn)) )**2
   end do  
  end do
    
@@ -233,7 +233,7 @@ real(kind=sgl)                  :: th
   end do
 ! strong beams
   do j=1,nn
-   inten(i,j) = cdabs(sum(delta(j,1:nn)))**2
+   inten(i,j) = abs(sum(delta(j,1:nn)))**2
   end do 
  end do
    
@@ -296,7 +296,7 @@ real(kind=sgl)                  :: th
  lalpha(1:nn) = CGinv(1:nn,1)
 
 ! make sure the alpha excitation coefficients are normalized 
-! s = sum(cdabs(lalpha(1:nn))**2)
+! s = sum(abs(lalpha(1:nn))**2)
 ! if (s.ne.1.D0) then
 !  s = complex(1.D0/dsqrt(s),0.D0)
 !  lalpha = lalpha*s
@@ -312,7 +312,7 @@ real(kind=sgl)                  :: th
   end do
 ! strong beams
   do j=1,nn
-   inten(i,j) = cdabs(sum(delta(j,1:nn)))**2
+   inten(i,j) = abs(sum(delta(j,1:nn)))**2
   end do 
  end do
    
@@ -379,7 +379,7 @@ real(kind=dbl)                  :: s, q, t
  lalpha(1:nn) = CGinv(1:nn,1)
 
 ! make sure the alpha excitation coefficients are normalized 
- s = sum(cdabs(lalpha(1:nn))**2)
+ s = sum(abs(lalpha(1:nn))**2)
  if (s.ne.1.D0) then
   s = complex(1.D0/dsqrt(s),0.D0)
   lalpha = lalpha*s
@@ -389,7 +389,7 @@ real(kind=dbl)                  :: s, q, t
  Iz = 0.D0
  do j=1,nn
     q = -4.D0*cPi*aimag(lW(j))
-    s = cdabs(lalpha(j))**2
+    s = abs(lalpha(j))**2
     do k=1,nt
       t = q*thick(k)
       if (abs(t).lt.30.D0) Iz(k) = Iz(k) +  s * exp(t)
@@ -456,7 +456,7 @@ real(kind=dbl)                  :: s(nn), q(nn), t, ss
  lalpha(1:nn) = CGinv(1:nn,1)
 
 ! make sure the alpha excitation coefficients are normalized 
- ss = sum(cdabs(lalpha(1:nn))**2)
+ ss = sum(abs(lalpha(1:nn))**2)
  if (ss.ne.1.D0) then
   ss = complex(1.D0/dsqrt(ss),0.D0)
   lalpha = lalpha*ss
@@ -465,7 +465,7 @@ real(kind=dbl)                  :: s(nn), q(nn), t, ss
 ! compute the thickness value in steps of 0.25 nm until less than thresh
  do j=1,nn
   q(j) = -4.D0*cPi*aimag(lW(j))
-  s(j) = cdabs(lalpha(j))**2
+  s(j) = abs(lalpha(j))**2
  end do
  t = 0.D0
  do 
@@ -1010,7 +1010,7 @@ dzt = depthstep/thick
      if(real(qold) .lt. 0.0) qold = -qold
      !if(real(qold) .lt. 0.D0) qold = -qold
      do iz = 1,izz
-       q = q + dble(lambdaE(iz)) * cdexp( - qold * dble(iz) ) !MNS changed cexp to cdexp to be compatible with gfortran
+       q = q + dble(lambdaE(iz)) * exp( - qold * dble(iz) ) !MNS changed cexp to cdexp to be compatible with gfortran
      end do
      Ijk(j,k) = conjg(CGinv(j,gzero)) * q * CGinv(k,gzero)
   end do
@@ -1149,7 +1149,7 @@ if (AorD.eq.'D') then
                if (.not.associated(rlw)) EXIT
                 ll = rlr%hkl - rlw%hkl
                 ughp = cell%LUT(ll(1),ll(2),ll(3)) 
-                weaksgsum = weaksgsum +  cdabs(ughp)**2/rlw%sg
+                weaksgsum = weaksgsum +  abs(ughp)**2/rlw%sg
                 rlw => rlw%nextw
               end do
               weaksgsum = weaksgsum * cell%mLambda/2.D0

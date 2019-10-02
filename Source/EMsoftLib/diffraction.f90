@@ -1972,7 +1972,7 @@ complex(kind=dbl),allocatable   :: MIWORK(:)
 ! it appears that the eigenvectors may not always be normalized ...
 ! so we renormalize them here...
 ! do i=1,nn
-!   normsum = sum(cdabs(CGG(1:nn,i))**2)
+!   normsum = sum(abs(CGG(1:nn,i))**2)
 !   normsum = cmplx(1.0,0.0,dbl)/sqrt(normsum)
 !   CGG(1:nn,i) = CGG(1:nn,i)*normsum
 ! end do
@@ -2000,9 +2000,9 @@ complex(kind=dbl),allocatable   :: MIWORK(:)
   call FatalError('Error in BWsolve: ','ZGETRI return not zero')
  end if
 
-! if ((cdabs(sum(matmul(CGG,CGinv)))-dble(nn)).gt.1.E-8) then
+! if ((abs(sum(matmul(CGG,CGinv)))-dble(nn)).gt.1.E-8) then
 !  call Message('Error in matrix inversion; continuing', frm = "(A)")
-!  io_real(1) = cdabs(sum(matmul(CGG,CGinv)))-dble(nn)
+!  io_real(1) = abs(sum(matmul(CGG,CGinv)))-dble(nn)
 !  call WriteValue('   Matrix inversion error; this number should be zero: ',io_real,1,"(F)")
 ! endif
   
