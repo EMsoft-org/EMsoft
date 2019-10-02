@@ -462,19 +462,19 @@ character(*),INTENT(IN)       :: what
 
  write (*,'(3(/))')
  if (what.eq.'change_xi') then 
-  write (*,"('1- xi        : ',$)") 
+  write (*,"('1- xi        : ')",advance="no") 
   read (*,"(I8)") AXO%xi
  else 
   write (*,"('1- xi        : ',i4)") AXO%xi
  end if
  if (what.eq.'change_yi') then 
-  write (*,"('2- yi        : ',$)") 
+  write (*,"('2- yi        : ')",advance="no") 
   read (*,"(I8)") AXO%yi
  else 
   write (*,"('2- yi        : ',i4)") AXO%yi
  end if
  if (what.eq.'change_beta') then 
-  write (*,"('3- beta      : ',$)") 
+  write (*,"('3- beta      : ')",advance="no") 
   read (*,"(I8)") AXO%beta
  else 
   write (*,"('3- beta      : ',i4)") AXO%beta
@@ -482,32 +482,32 @@ character(*),INTENT(IN)       :: what
  if (what.eq.'change_vis') then 
   AXO%visibility = .not. AXO%visibility 
  end if
- write (*,"('4- draw mode :',$)") 
+ write (*,"('4- draw mode :')",advance="no") 
  if (AXO%visibility) then 
   write (*,"(' Phong shading')")
  else 
   write (*,"(' Wireframe')")
  end if
  if (what.eq.'change_scale') then 
-  write (*,"('5- scale     : ',$)") 
+  write (*,"('5- scale     : ')",advance="no") 
   read (*,*) AXO%scle
  else 
   write (*,"('5- scale     : ',f10.4)") AXO%scle
  end if
  if (what.eq.'change_xmod') then 
-  write (*,"('6- xmod      : ',$)") 
+  write (*,"('6- xmod      : ')",advance="no") 
   read (*,"(I8)") AXO%xmod
  else 
   write (*,"('6- xmod      : ',i4)") AXO%xmod
  end if
  if (what.eq.'change_ymod') then 
-  write (*,"('7- ymod      : ',$)") 
+  write (*,"('7- ymod      : ')",advance="no") 
   read (*,"(I8)") AXO%ymod
  else 
   write (*,"('7- ymod      : ',i4)") AXO%ymod
  end if
  if (what.eq.'change_vscale') then 
-  write (*,"('8- vscale    : ',$)") 
+  write (*,"('8- vscale    : ')",advance="no") 
   read (*,*) AXO%vscle
  else 
   write (*,"('8- vscale    : ',f10.4)") AXO%vscle
@@ -2031,7 +2031,7 @@ integer(kind=irg)        ::  Cit_save
  call plot_contour
  call PS_stroke  ! to make sure the last line is drawn
 
-! mess = 'Level : '; oi_real(1)=Cparam%level; call WriteReal(1,"(F10.5,';',$)")
+! mess = 'Level : '; oi_real(1)=Cparam%level; call WriteReal(1,"(F10.5,';')",advance="no")
 ! mess = 'vectors/triangles : '; oi_int(1) = Civ; oi_int(2) = Cit_save
 ! call WriteInt(2,"(I6,'/',I6)")
 end subroutine

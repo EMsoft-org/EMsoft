@@ -218,7 +218,7 @@ real(kind=sgl)				:: io_real(1)
  TT%TIME_unit_count = TT%TIME_t_count
  io_real(1) = TT%TIME_unit_count
  call WriteValue(' Time for first computation step [s, typically overestimate] :', io_real, 1, frm = "(F10.5)")
- call Message('  Anticipated total computation time :', frm = "(A$)")
+ call Message('  Anticipated total computation time :', frm = "(A)",advance="no")
  call PrintTime(TT%TIME_unit_count*float(numk))
  
 end subroutine Time_estimate
@@ -273,10 +273,10 @@ real(kind=sgl)				:: io_real(1)
 
 ! print estimated remaining time
  io_int(1) = nint(100.0*TT%TIME_t_count/(TT%TIME_t_count+TT%TIME_unit_count*(float(numk)-float(ik))))
- call WriteValue (' ',io_int, 1, frm = "(1x,I3,' % completed; '$)") 
+ call WriteValue (' ',io_int, 1, frm = "(1x,I3,' % completed; ')",advance="no") 
  io_real(1) = TT%TIME_t_count
- call WriteValue(' Total computation time [s] ', io_real, 1, frm = "(F$)")
- call Message(';  Estimated remaining time : ', frm = "(A$)")
+ call WriteValue(' Total computation time [s] ', io_real, 1, frm = "(F)",advance="no")
+ call Message(';  Estimated remaining time : ', frm = "(A)",advance="no")
  call PrintTime(TT%TIME_unit_count*(float(numk)-float(ik)))
 !
 end subroutine Time_remaining
@@ -356,7 +356,7 @@ real(kind=sgl)				:: io_real(1)
 
 
   call system_clock(TT%TIME_newcount, TT%TIME_count_rate, TT%TIME_count_max)
-  call Message('  Total computation time [s] ', frm = "(A$)")
+  call Message('  Total computation time [s] ', frm = "(A)",advance="no")
   call PrintTime((float(TT%TIME_loops)*float(TT%TIME_count_max)+float(TT%TIME_newcount-TT%TIME_count))/float(TT%TIME_count_rate))
   io_real(1)= float(TT%TIME_loops)*float(TT%TIME_count_max)+float(TT%TIME_newcount-TT%TIME_count)
   io_real(1) = io_real(1)/float(TT%TIME_count_rate)/float(numk)

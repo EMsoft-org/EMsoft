@@ -149,7 +149,7 @@ do i=1,nnum
       k = k+1
       io_int3(1) = k
       call Message('-------')
-      call WriteValue(' TC ',io_int3,1,"(I3,'  -->  ',$)")
+      call WriteValue(' TC ',io_int3,1,"(I3,'  -->  ')",advance="no")
 ! transform the two vectors to the Cartesian crystallographic reference frame
       call TransSpace(cell, dble(ntmp(i,1:3)), cnvec, 'r', 'c') 
       call TransSpace(cell, dble(btmp(j,1:3)), cbvec, 'd', 'c') 

@@ -139,7 +139,7 @@ real(kind=dbl)                          :: oi_real(5)
  call WriteValue('  Number of asymmetric atom positions ', oi_int, 1)
  do i=1,cell%ATOM_ntype
   oi_int(1:3) = (/i, cell%ATOM_type(i), cell%numat(i)/)
-  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3,$)")
+  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3)",advance="no")
   call Message(' ('//ATOM_sym(cell%ATOM_type(i))//')', frm = "(A)")
   call Message('   Equivalent positions  (x y z  occ  DWF) ', frm = "(A)")
   do j=1,cell%numat(i)

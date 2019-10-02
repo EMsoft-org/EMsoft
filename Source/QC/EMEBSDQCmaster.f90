@@ -539,8 +539,8 @@ call HDF_pop(HDF_head,.TRUE.)
 energyloop: do iE = numEbins,1,-1
 	io_int(1)=iE
    	io_int(2)=numEbins
-   	call Message('Starting computation for energy bin (in reverse order)', frm = "(/A$)")
-   	call WriteValue(' ',io_int,2,"(I4,' of ',I4$)")
+   	call Message('Starting computation for energy bin (in reverse order)', frm = "(/A)",advance="no")
+   	call WriteValue(' ',io_int,2,"(I4,' of ',I4)",advance="no")
    	io_real(1) = EkeVs(iE)
    	call WriteValue('; energy [keV] = ',io_real,1,"(F6.2/)")
    	selE = EkeVs(iE)

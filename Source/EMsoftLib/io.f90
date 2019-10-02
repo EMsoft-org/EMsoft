@@ -48,6 +48,7 @@
 !> @date 05/16/13 MDG 3.1 added stdout as an option to run from IDL
 !> @date 06/05/14 MDG 4.0 changed stdout to regular argument; removed global "mess" declaration
 !> @date 03/29/18 MDG 4.0 changed stdout handling to instrinsic io definitions in fortran 2003
+!> @date 10/02/19 MDG 4.1 changed $ descriptor to advance="no" f03 standard
 !--------------------------------------------------------------------------
 
 module io
@@ -105,15 +106,20 @@ contains
 !> @date 06/05/14 MDG 4.0 added stdout and mess as mandatory arguments
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 !--------------------------------------------------------------------------
-recursive subroutine Message(mess,frm)
+recursive subroutine Message(mess,frm,advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: Message
 
 character(*),INTENT(IN)                 :: mess         !< message string
 character(*),OPTIONAL,INTENT(IN)        :: frm          !< optional formatting string
+character(*),OPTIONAL,INTENT(IN)        :: advance      !< optional formatting string
 
 ! default format or not ?
 if (PRESENT(frm)) then
- write (stdout,fmt=frm) trim(mess)
+ if (present(advance)) then
+   write (stdout,fmt=frm,advance="no") trim(mess)
+ else 
+   write (stdout,fmt=frm) trim(mess)
+ end if
 else    ! default output format: a simple string
  write (stdout,fmt="(A)") trim(mess)
 end if 
@@ -148,7 +154,7 @@ character(*),INTENT(IN)                         :: Qstring
 character(*),INTENT(OUT)                        :: rd_string
 character(*),INTENT(IN),OPTIONAL                :: frm
 
-call Message(Qstring, frm = "(' ',A,' ',$)")
+call Message(Qstring, frm = "(' ',A,' ')",advance="no")
 
 if (PRESENT(frm)) then
   read (stdin, fmt=frm) rd_string
@@ -185,7 +191,7 @@ character(*),INTENT(IN),OPTIONAL                :: frm
 
 integer(kind=irg)                               :: i
 
-call Message(Qstring, frm = "(' ',A,' ',$)")
+call Message(Qstring, frm = "(' ',A,' ')",advance="no")
 
 if (PRESENT(frm)) then 
   do i=1,num
@@ -224,7 +230,7 @@ integer(kind=irg),INTENT(IN),OPTIONAL           :: num
 
 integer(kind=irg)                               :: i
 
-call Message(Qstring, frm = "(' ',A,' ',$)")
+call Message(Qstring, frm = "(' ',A,' ')",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
@@ -260,7 +266,7 @@ integer(kind=irg),INTENT(IN),OPTIONAL           :: num
 
 integer(kind=irg)                               :: i
 
-call Message(Qstring, frm = "(' ',A,' ',$)")
+call Message(Qstring, frm = "(' ',A,' ')",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
@@ -296,7 +302,7 @@ integer(kind=irg),INTENT(IN),OPTIONAL           :: num
 
 integer(kind=irg)                               :: i
 
-call Message(Qstring, frm = "(' ',A,' ',$)")
+call Message(Qstring, frm = "(' ',A,' ')",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
@@ -333,7 +339,7 @@ integer(kind=irg),INTENT(IN),OPTIONAL           :: num
 
 integer(kind=irg)                               :: i
 
-call Message(Qstring, frm = "(' ',A,' ',$)")
+call Message(Qstring, frm = "(' ',A,' ')",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
@@ -365,19 +371,24 @@ end subroutine ReadValueRealDouble
 !> @date 06/05/14 MDG 2.0 changed io handling
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine WriteValueString(Qstring, out_string, frm)
+recursive subroutine WriteValueString(Qstring, out_string, frm, advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: WriteValueString
 
 character(*),INTENT(IN)                         :: Qstring 
 character(*),INTENT(IN)                         :: out_string
 character(*),INTENT(IN),OPTIONAL                :: frm
+character(*),INTENT(IN),OPTIONAL                :: advance
 
 ! send Qstring to the output only if it is non-zero length
-if (len(Qstring).ne.0) call Message(Qstring, frm = "(A$)")
+if (len(Qstring).ne.0) call Message(Qstring, frm = "(A)",advance="no")
 
 
 if (PRESENT(frm)) then 
-  call Message(out_string, frm = frm)
+  if (present(advance)) then 
+    call Message(out_string, frm = frm, advance="no")
+  else 
+    call Message(out_string, frm = frm)
+  end if
 else
  call Message(out_string, frm = "(A)")
 end if
@@ -401,26 +412,35 @@ end subroutine WriteValueString
 !> @date 06/05/14 MDG 2.0 changed io handling
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine WriteValueIntShort(Qstring, out_int, num, frm)
+recursive subroutine WriteValueIntShort(Qstring, out_int, num, frm, advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: WriteValueIntShort
 
 character(*), INTENT(IN)                        :: Qstring
 integer(kind=ish),INTENT(IN)                    :: out_int(*)
 character(*),INTENT(IN),OPTIONAL                :: frm
 integer(kind=irg),INTENT(IN),OPTIONAL           :: num
+character(*),INTENT(IN),OPTIONAL                :: advance
 
-if (len(Qstring).ne.0) call Message(Qstring, frm = "(A$)")
+if (len(Qstring).ne.0) call Message(Qstring, frm = "(A)",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) (out_int(i),i=1,num)
+   if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") (out_int(i),i=1,num)
+  else
+    write (stdout, fmt=frm) (out_int(i),i=1,num)
+  end if 
  else
   write (stdout,*) (out_int(i),i=1,num)
  end if
 else
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) out_int(1)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") out_int(1)
+  else
+    write (stdout, fmt=frm) out_int(1)
+  end if
  else
   write (stdout,*) out_int(1)
  end if
@@ -445,26 +465,35 @@ end subroutine WriteValueIntShort
 !> @date 06/05/14 MDG 2.0 changed io handling
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine WriteValueIntLong(Qstring, out_int, num, frm)
+recursive subroutine WriteValueIntLong(Qstring, out_int, num, frm, advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: WriteValueIntLong
 
 character(*), INTENT(IN)                        :: Qstring
 integer(kind=irg),INTENT(IN)                    :: out_int(*)
 character(*),INTENT(IN),OPTIONAL                :: frm
 integer(kind=irg),INTENT(IN),OPTIONAL           :: num
+character(*),INTENT(IN),OPTIONAL                :: advance
 
-if (len(Qstring).ne.0) call Message(Qstring, frm = "(A$)")
+if (len(Qstring).ne.0) call Message(Qstring, frm = "(A)",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) (out_int(i),i=1,num)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") (out_int(i),i=1,num)
+  else
+    write (stdout, fmt=frm) (out_int(i),i=1,num)
+  end if 
  else
   write (stdout,*) (out_int(i),i=1,num)
  end if
 else
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) out_int(1)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") out_int(1)
+  else
+    write (stdout, fmt=frm) out_int(1)
+  end if
  else
   write (stdout,*) out_int(1)
  end if
@@ -489,26 +518,35 @@ end subroutine WriteValueIntLong
 !> @date 06/05/14 MDG 2.0 changed io handling
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine WriteValueIntLongLong(Qstring, out_int, num, frm)
+recursive subroutine WriteValueIntLongLong(Qstring, out_int, num, frm, advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: WriteValueIntLongLong
 
 character(*), INTENT(IN)                        :: Qstring
 integer(kind=ill),INTENT(IN)                    :: out_int(*)
 character(*),INTENT(IN),OPTIONAL                :: frm
 integer(kind=irg),INTENT(IN),OPTIONAL           :: num
+character(*),INTENT(IN),OPTIONAL                :: advance
 
-if (len(Qstring).ne.0) call Message(Qstring, frm = "(A$)")
+if (len(Qstring).ne.0) call Message(Qstring, frm = "(A)",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) (out_int(i),i=1,num)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") (out_int(i),i=1,num)
+  else
+    write (stdout, fmt=frm) (out_int(i),i=1,num)
+  end if 
  else
   write (stdout,*) (out_int(i),i=1,num)
  end if
 else
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) out_int(1)
+    if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") out_int(1)
+  else
+    write (stdout, fmt=frm) out_int(1)
+  end if
  else
   write (stdout,*) out_int(1)
  end if
@@ -535,26 +573,35 @@ end subroutine WriteValueIntLongLong
 !> @date 06/05/14 MDG 2.0 changed io handling
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine WriteValueRealSingle(Qstring, out_real, num, frm)
+recursive subroutine WriteValueRealSingle(Qstring, out_real, num, frm, advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: WriteValueRealSingle
 
 character(*), INTENT(IN)                        :: Qstring
 real(kind=sgl),INTENT(IN)                       :: out_real(*)
 character(*),INTENT(IN),OPTIONAL                :: frm
 integer(kind=irg),INTENT(IN),OPTIONAL           :: num
+character(*),INTENT(IN),OPTIONAL                :: advance
 
-if (len(Qstring).ne.0) call Message(Qstring, frm = "(A$)")
+if (len(Qstring).ne.0) call Message(Qstring, frm = "(A)",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) (out_real(i),i=1,num)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") (out_real(i),i=1,num)
+  else
+    write (stdout, fmt=frm) (out_real(i),i=1,num)
+  end if  
  else
   write (stdout,*) (out_real(i),i=1,num)
  end if
 else
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) out_real(1)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") out_real(1)
+  else
+    write (stdout, fmt=frm) out_real(1)
+  end if
  else
   write (stdout,*) out_real(1)
  end if
@@ -581,26 +628,35 @@ end subroutine WriteValueRealSingle
 !> @date 06/05/14 MDG 2.0 changed io handling
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine WriteValueRealDouble(Qstring, out_real, num, frm)
+recursive subroutine WriteValueRealDouble(Qstring, out_real, num, frm, advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: WriteValueRealDouble
 
 character(*), INTENT(IN)                        :: Qstring
 real(kind=dbl),INTENT(IN)                       :: out_real(*)
 character(*),INTENT(IN),OPTIONAL                :: frm
 integer(kind=irg),INTENT(IN),OPTIONAL           :: num
+character(*),INTENT(IN),OPTIONAL                :: advance
 
-if (len(Qstring).ne.0) call Message(Qstring, frm = "(A$)")
+if (len(Qstring).ne.0) call Message(Qstring, frm = "(A)",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) (out_real(i),i=1,num)
+    if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") (out_real(i),i=1,num)
+  else
+    write (stdout, fmt=frm) (out_real(i),i=1,num)
+  end if  
  else
   write (stdout,*) (out_real(i),i=1,num)
  end if
 else
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) out_real(1)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") out_real(1)
+  else
+    write (stdout, fmt=frm) out_real(1)
+  end if
  else
   write (stdout,*) out_real(1)
  end if
@@ -626,26 +682,35 @@ end subroutine WriteValueRealDouble
 !> @date 06/05/14 MDG 2.0 changed io handling
 !> @date 03/29/18 MDG 4.1 removed stdout argument
 ! ###################################################################
-recursive subroutine WriteValueRealComplex(Qstring, out_cmplx, num, frm)
+recursive subroutine WriteValueRealComplex(Qstring, out_cmplx, num, frm, advance)
 !DEC$ ATTRIBUTES DLLEXPORT :: WriteValueRealComplex
 
 character(*), INTENT(IN)                        :: Qstring
 complex(kind=sgl),INTENT(IN)                    :: out_cmplx(*)
 character(*),INTENT(IN),OPTIONAL                :: frm
 integer(kind=irg),INTENT(IN),OPTIONAL           :: num
+character(*),INTENT(IN),OPTIONAL                :: advance
 
-if (len(Qstring).ne.0) call Message(Qstring, frm = "(A$)")
+if (len(Qstring).ne.0) call Message(Qstring, frm = "(A)",advance="no")
 
 ! one or more than one values expected ?
 if (PRESENT(num)) then
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) (out_cmplx(i),i=1,num)
+    if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") (out_cmplx(i),i=1,num)
+  else
+    write (stdout, fmt=frm) (out_cmplx(i),i=1,num)
+  end if  
  else
   write (stdout,*) (out_cmplx(i),i=1,num)
  end if
 else
  if (PRESENT(frm)) then
-  write (stdout, fmt=frm) out_cmplx(1)
+  if (present(advance)) then 
+    write (stdout, fmt=frm, advance="no") out_cmplx(1)
+  else
+    write (stdout, fmt=frm) out_cmplx(1)
+  end if
  else
   write (stdout,*) out_cmplx(1)
  end if

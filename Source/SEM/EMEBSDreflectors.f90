@@ -483,9 +483,9 @@ do k=1,icnt-1   ! ignore the last point
  end if
  if (mod(k,50).eq.0) then
   if (mod(k,500).eq.0) then
-     write (*,"('|',$)")
+     write (*,"('|')",advance="no")
    else 
-     write (*,"('.',$)")
+     write (*,"('.')",advance="no")
    end if
  end if
 end do
@@ -528,19 +528,19 @@ if ((trim(rnl%outputformat).eq.'latex').or.(trim(rnl%outputformat).eq.'all')) th
     k = idx(i)
     if ((sum(abs(gcrys(:,k))).ne.0.0).and.(KBI(k).ne.0.0)) then
       glen = CalcLength(cell,gcrys(:,k),'r')
-        write (80,"(I2,'& $(',$)") i
+        write (80,"(I2,'& $(')",advance="no") i
         do jj=1,3
           if (int(gcrys(jj,k)).lt.0) then
             if (jj.lt.3) then
-              write (80,"('\bar{',I3,'}\,',$)") abs(int(gcrys(jj,k)))
+              write (80,"('\bar{',I3,'}\,')",advance="no") abs(int(gcrys(jj,k)))
             else
-              write (80,"('\bar{',I3,'}',$)") abs(int(gcrys(jj,k)))
+              write (80,"('\bar{',I3,'}')",advance="no") abs(int(gcrys(jj,k)))
             end if
           else
             if (jj.lt.3) then
-              write (80,"(I3,'\,',$)") int(gcrys(jj,k))
+              write (80,"(I3,'\,')",advance="no") int(gcrys(jj,k))
             else
-              write (80,"(I3,$)") int(gcrys(jj,k))
+              write (80,"(I3)",advance="no") int(gcrys(jj,k))
             end if
           end if
         end do
@@ -581,9 +581,9 @@ if ((trim(rnl%outputformat).eq.'markdown').or.(trim(rnl%outputformat).eq.'all'))
   do i=1,rnl%numlist
     k = idx(i)
     if ((sum(abs(gcrys(:,k))).ne.0.0).and.(KBI(k).ne.0.0)) then
-        write (80,"('|',I2,'| (',$)") i
+        write (80,"('|',I2,'| (')",advance="no") i
         do jj=1,3
-          write (80,"(I3,$)") int(gcrys(jj,k))
+          write (80,"(I3)",advance="no") int(gcrys(jj,k))
         end do
         write (80,"(')|',F6.2,'|',F6.2,'|',F6.2,'|')") KBI(k), Vg(k), VgX(k)
     end if

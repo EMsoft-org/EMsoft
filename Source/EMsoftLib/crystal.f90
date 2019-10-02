@@ -1384,7 +1384,7 @@ character(fnlen)                        :: instring
 
 ! general atom coordinate
   list = (/ (' ',j=1,256) /)
-  call Message(' ->  Fractional coordinates, site occupation, and Debye-Waller Factor [nm^2] : ', frm = "(A,' ',$)")
+  call Message(' ->  Fractional coordinates, site occupation, and Debye-Waller Factor [nm^2] : ', frm = "(A,' ')",advance="no")
   read (5,"(A)") instring
 ! read (5,"(256A)") list
   sl = len(trim(instring))

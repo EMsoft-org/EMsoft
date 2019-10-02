@@ -84,7 +84,7 @@ character(fnlen)                      :: mess
 ! loop over all symmetry matrices
  do i=1,cell%SG % SYM_MATnum
   io_int(1) = i; 
-  call WriteValue(' ', io_int, 1,"(1x,i3,2x,'-> (',$)")
+  call WriteValue(' ', io_int, 1,"(1x,i3,2x,'-> (')",advance="no")
 
 ! loop over all rows
   do ii=1,3
@@ -100,7 +100,7 @@ character(fnlen)                      :: mess
      mess(1:1)='+'
      if (p(jj).eq.-1) mess(1:1)='-'
      mess(2:2) = pos(jj:jj)
-     call Message(mess, frm = "(A2,$)")
+     call Message(mess, frm = "(A2)",advance="no")
     end if
    end do 
 
@@ -108,14 +108,14 @@ character(fnlen)                      :: mess
    if (ppp.ne.0.0) then
     mess(1:1)='+'
     if (ppp.lt.0.0) mess(1:1)='-'
-    call Message(mess, frm = "(A1,$)");
+    call Message(mess, frm = "(A1)",advance="no");
     io_real(1) = abs(ppp); 
-    call WriteValue('', io_real, 1, "(f5.3,$)")
+    call WriteValue('', io_real, 1, "(f5.3)",advance="no")
    end if
 
 ! print a comma, or close the brackets and do a newline
    if (ii.ne.3) then 
-     mess(1:1) = ','; call Message(mess, frm = "(A1,$)")
+     mess(1:1) = ','; call Message(mess, frm = "(A1)",advance="no")
     else
      mess(1:1) = ')'; call Message(mess, frm = "(A1)")
    end if

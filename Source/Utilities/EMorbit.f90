@@ -83,8 +83,8 @@ type(unitcell)                  :: cell
   do i=1,n
    io_int(1) = i
    io_real(1:3) = ctmp(i,1:3)
-   call WriteValue('', io_int, 1, "(1x,i3,' -> (',$)")
-   call WriteValue('', io_real, 3, "(f7.4,',',f7.4,',',f7.4,');   ',$)") 
+   call WriteValue('', io_int, 1, "(1x,i3,' -> (')",advance="no")
+   call WriteValue('', io_real, 3, "(f7.4,',',f7.4,',',f7.4,');   ')",advance="no") 
    if (mod(i+1,2).eq.1) then
      call Message(' ', frm = "(A)")
    end if

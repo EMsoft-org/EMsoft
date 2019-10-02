@@ -2708,7 +2708,7 @@ else
          if (v.eq.1) then 
            io_real(1:4) = v4(1:4)
            io_int(1) = jj
-           call WriteValue(' void   ',io_int,1,"(I4,$)")
+           call WriteValue(' void   ',io_int,1,"(I4)",advance="no")
            call WriteValue('',io_real,4)
          end if
         end do
@@ -2729,7 +2729,7 @@ else
          if (v.eq.1) then 
            io_real(1:5) = v5(1:5)
            io_int(1) = jj
-           call WriteValue(' inclusion    ',io_int,1,"(I4,$)")
+           call WriteValue(' inclusion    ',io_int,1,"(I4)",advance="no")
            call WriteValue('',io_real,5)
          end if
         end do

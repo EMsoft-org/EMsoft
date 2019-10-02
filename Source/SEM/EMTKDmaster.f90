@@ -745,8 +745,8 @@ energyloop: do iE=Estart,1,-1
    
 ! print a message to indicate where we are in the computation
    io_int(1)=iE
-   call Message('Starting computation for energy bin', frm = "(/A$)")
-   call WriteValue(' ',io_int,1,"(I4$)")
+   call Message('Starting computation for energy bin', frm = "(/A)",advance="no")
+   call WriteValue(' ',io_int,1,"(I4)",advance="no")
    io_real(1) = EkeVs(iE)
    call WriteValue('; energy [keV] = ',io_real,1,"(F6.2/)")
    selE = EkeVs(iE)

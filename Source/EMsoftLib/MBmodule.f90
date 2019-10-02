@@ -554,7 +554,7 @@ complex(kind=dbl)                          :: Sghvec(numset)
 
  if (present(verbose)) then
   if (verbose) then
-   call Message('Generating Sgh coefficient lookup table ... ', frm = "(/A,$)")
+   call Message('Generating Sgh coefficient lookup table ... ', frm = "(/A)",advance="no")
   end if
  end if
  

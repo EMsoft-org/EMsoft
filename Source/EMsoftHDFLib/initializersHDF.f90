@@ -216,7 +216,7 @@ end if
 
  if (present(verbose)) then
   if (verbose) then
-   call Message(' Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+   call Message(' Generating Fourier coefficient lookup table ... ', frm = "(/A)",advance="no")
   end if
  end if
  
@@ -429,7 +429,7 @@ end if
 
  if (present(verbose)) then
   if (verbose) then
-   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A)",advance="no")
   end if
  end if
  

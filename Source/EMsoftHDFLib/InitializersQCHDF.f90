@@ -589,7 +589,7 @@ real(kind=dbl)                          :: oi_real(10)
  call WriteValue('  Number of asymmetric atom positions ', oi_int, 1)
  do i=1,cell%ATOM_ntype
   oi_int(1:3) = (/i, cell%ATOM_type(i), cell%numat(i)/)
-  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3,$)")
+  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3)",advance="no")
   call Message(' ('//ATOM_sym(cell%ATOM_type(i))//')', frm = "(A)")
   call Message('   Equivalent positions  (a_1 a_2 a_3 a_4 a_5  occ  Bpar_11 Bpar_33 Bperp lambda_k) ', frm = "(A)")
   do j=1,cell%numat(i)
@@ -645,7 +645,7 @@ real(kind=dbl)                          :: oi_real(10)
  call WriteValue('  Number of asymmetric atom positions ', oi_int, 1)
  do i=1,cell%ATOM_ntype
   oi_int(1:3) = (/i, cell%ATOM_type(i), cell%numat(i)/)
-  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3,$)")
+  call WriteValue('  General position / atomic number / multiplicity :', oi_int, 3,"(1x,I3,'/',I2,'/',I3)",advance="no")
   call Message(' ('//ATOM_sym(cell%ATOM_type(i))//')', frm = "(A)")
   call Message('   Equivalent positions  (a_1 a_2 a_3 a_4 a_5 a_6  occ  Bpar Bperp lambda_k) ', frm = "(A)")
   do j=1,cell%numat(i)
@@ -914,7 +914,7 @@ ddt = 1.0e-5
 
  if (present(verbose)) then
   if (verbose) then
-   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+   call Message('Generating Fourier coefficient lookup table ... ', frm = "(/A)",advance="no")
   end if
  end if
  
@@ -1144,7 +1144,7 @@ cell%LUTqg(id)  = qg
 
  if (present(verbose)) then
   if (verbose) then
-   call Message(' Generating Fourier coefficient lookup table ... ', frm = "(/A,$)")
+   call Message(' Generating Fourier coefficient lookup table ... ', frm = "(/A)",advance="no")
   end if
  end if
 
