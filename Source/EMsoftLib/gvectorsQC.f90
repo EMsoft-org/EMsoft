@@ -465,7 +465,7 @@ i1l: do i1=-imh,imh
         QCindex = QC_getindex(QCcell, gg)
         sgp     = QC_Calcsg(QCcell,gg,k,FN)
         Ucg     = QCcell%LUT(QCindex)		!QCcell%LUT(gg(1),gg(2),gg(3),gg(4),gg(5))
-        r_g     = la * abs(sgp)/cdabs(Ucg)
+        r_g     = la * abs(sgp)/abs(Ucg)
         
         if (r_g.le.rBethe_i) then 
           call AddQCReflection( rltail, listroot, QCcell, nref, gg )
@@ -569,7 +569,7 @@ i1l: do i1=-imh,imh
           QCindex = QC_getindex(QCcell, gg)
           sgp = QC_Calcsg(QCcell,gg,k,FN)
           Ucg = QCcell%LUT(QCindex)
-          r_g = la * abs(sgp)/cdabs(Ucg)
+          r_g = la * abs(sgp)/abs(Ucg)
           if (r_g.le.rBethe_i) then 
             call AddQCReflection( rltail, listroot, QCcell, nref, QCindex, gg )
             rltail%sg = sgp
@@ -685,10 +685,10 @@ irloop: do ir = 2,icnt
     !QCindex = QC_get6Dindex(QCcell, gmh)
     QCindex = QC_getindex(QCcell, gmh)
     Ugh = QCcell%LUT(QCindex)
-    if (cdabs(Ugh).eq.0.D0) then 
+    if (abs(Ugh).eq.0.D0) then 
       rh(ih) = 10000.D0
     else
-      rh(ih) = sgp/cdabs(Ugh)
+      rh(ih) = sgp/abs(Ugh)
     end if
   end do
 
@@ -827,10 +827,10 @@ irloop: do ir = 2,icnt
     QCindex  = QC_getindex(QCcell, gmh)
     Ugh      = QCcell%LUT(QCindex) !QCcell%LUT(gmh(1),gmh(2),gmh(3),gmh(4),gmh(5))
 
-    if (cdabs(Ugh) .lt. eps) then 
+    if (abs(Ugh) .lt. eps) then 
       rh(ih) = 10000.D0
     else
-      rh(ih) = sgp/cdabs(Ugh)
+      rh(ih) = sgp/abs(Ugh)
     end if
   end do
 

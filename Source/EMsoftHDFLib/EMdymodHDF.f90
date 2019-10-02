@@ -203,9 +203,9 @@ izl:   do iz=-iml,iml
          if ((IsGAllowed(cell,gg)).and.(glen.le.gmax)) then ! allowed by the lattice centering, if any
             call AddReflection(rltmpa, reflist, cell, nref, gg )
 ! we'll use the sangle field of the rltail structure to store |Ug|^2; we will also need the extinction distance
-            rltmpa%sangle = cdabs(cell%LUT(ix, iy, iz))**2
+            rltmpa%sangle = abs(cell%LUT(ix, iy, iz))**2
             if (rltmpa%sangle.gt.Igmax) Igmax = rltmpa%sangle
-            rltmpa%xg = 1.0/(cdabs(cell%LUT(ix,iy,iz))*cell%mLambda)
+            rltmpa%xg = 1.0/(abs(cell%LUT(ix,iy,iz))*cell%mLambda)
             if (rltmpa%xg.lt.xgmin) xgmin = rltmpa%xg
          end if ! IsGAllowed
         end if

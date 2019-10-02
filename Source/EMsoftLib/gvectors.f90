@@ -496,7 +496,7 @@ irloop: do ir = 2,icnt
 ! to be written
      rh(ih) = 10000.D0 
    else 
-     rh(ih) = sgp/cdabs( cell%LUT(gmh(1), gmh(2), gmh(3)) )
+     rh(ih) = sgp/abs( cell%LUT(gmh(1), gmh(2), gmh(3)) )
    end if
   end do
 
@@ -614,7 +614,7 @@ nbeams = 0
 !!!! this will all need to be changed with the new Bethe potential criteria ...  
   rltmpa => rltmpa%next
   reflectionloop: do ig=2,cell%DynNbeamsLinked
-    lUg = cdabs(rltmpa%Ucg) * cell%mLambda
+    lUg = abs(rltmpa%Ucg) * cell%mLambda
     cut1 = BetheParameter%cutoff * lUg
     cut2 = BetheParameter%weakcutoff * lUg
 
@@ -911,7 +911,7 @@ else  ! this is the Bloch wave + Bethe potentials initialization (originally imp
 !  weakcutoff lambda |Ug| > |sg|  -> strong reflection
 !
         sgp = abs(rltmpa%sg) 
-        lUg = cdabs(rltmpa%Ucg) * cell%mLambda
+        lUg = abs(rltmpa%Ucg) * cell%mLambda
         cut1 = BetheParameter%cutoff * lUg
         cut2 = BetheParameter%weakcutoff * lUg
 
@@ -1047,7 +1047,7 @@ else  ! this is the Bloch wave + Bethe potentials initialization (originally imp
                   do iw=1,BetheParameter%nnw
                       ll = BetheParameter%stronghkl(1:3,ir) - BetheParameter%weakhkl(1:3,iw)
                       ughp = cell%LUT(ll(1),ll(2),ll(3)) 
-                      weaksgsum = weaksgsum +  cdabs(ughp)**2/BetheParameter%weaksg(iw)
+                      weaksgsum = weaksgsum +  abs(ughp)**2/BetheParameter%weaksg(iw)
                  end do
                  weaksgsum = weaksgsum * cell%mLambda/2.D0
                  Dyn%DynMat(ir,ir) = cmplx(2.D0*BetheParameter%strongsg(ir)/cell%mLambda-weaksgsum,Dyn%Upz,dbl)
@@ -1307,7 +1307,7 @@ irloop: do ir = 2,icnt
 ! to be written
      rh(ih) = 10000.D0 
    else 
-     rh(ih) = sgp/cdabs( cell%LUT(gmh(1), gmh(2), gmh(3)) )
+     rh(ih) = sgp/abs( cell%LUT(gmh(1), gmh(2), gmh(3)) )
    end if
   end do
 
@@ -1483,7 +1483,7 @@ do ix=-imh,imh
 							rltail%dbdiff = .TRUE.
 						end if 
 					else
-						r_g = la * abs(sgp)/cdabs(cell%LUT(gg(1), gg(2), gg(3)))
+						r_g = la * abs(sgp)/abs(cell%LUT(gg(1), gg(2), gg(3)))
 						if (r_g.le.rBethe_i) then 
 							call AddReflection(rltail, listroot, cell, nref, gg )
 							rltail%sg = sgp

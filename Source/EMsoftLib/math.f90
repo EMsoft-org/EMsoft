@@ -459,7 +459,7 @@ integer(kind=irg),parameter             :: jPade(6) = (/ 0, 0, 1, 5, 8, 11 /)
 E = complex(0.D0,0.D0)
 
 !get the max( ||A|| ) value and determine index into (k,j) or (q,j) pairs
-modA = maxval(cdabs(A)*z0)
+modA = maxval(abs(A)*z0)
 ilev = nint(log10(modA))+3
 if (ilev.le.0) ilev = 1         ! can not be smaller than 1
 
