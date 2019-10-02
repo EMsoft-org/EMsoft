@@ -187,7 +187,7 @@ type(HDFobjectStackType)          :: HDF_head
 !$OMP THREADPRIVATE(rlp) 
 
 tpi = 2.D0*cPi
-czero = dcmplx(0.D0,0.D0)
+czero = complex (0.D0,0.D0)
 
 nullify(HDF_head%next)
 

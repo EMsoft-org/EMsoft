@@ -276,12 +276,12 @@ do ik = 1,numk
     DynMat(ii,ii) = (cmplx(2.D0*sg,0.D0) + qg0) * cmplx(cPi, 0.D0)
   end do
 
-  DynMat  = DynMat * dcmplx(0.D0,1.D0)
+  DynMat  = DynMat * complex (0.D0,1.D0)
 
   call MatrixExponential(DynMat, S, 1.D0, 'Pade', nref)
 
-  wave    = dcmplx(0.D0, 0.D0)
-  wave(1) = dcmplx(1.D0,0.D0)
+  wave    = complex (0.D0, 0.D0)
+  wave(1) = complex (1.D0,0.D0)
 
   do ithick = 1,thick
 	 wave = matmul(S,wave)

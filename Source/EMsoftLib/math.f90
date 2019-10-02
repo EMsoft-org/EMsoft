@@ -456,7 +456,7 @@ integer(kind=irg),parameter             :: qPade(6) = (/ 2, 3, 4, 4, 4, 4 /)
 integer(kind=irg),parameter             :: jPade(6) = (/ 0, 0, 1, 5, 8, 11 /)
 
 ! set output array to zero
-E = dcmplx(0.D0,0.D0)
+E = complex (0.D0,0.D0)
 
 !get the max( ||A|| ) value and determine index into (k,j) or (q,j) pairs
 modA = maxval(cdabs(A)*z0)
@@ -475,16 +475,16 @@ if (TP.eq.'Tayl') then ! use scaling and squaring for the Taylor expansion
         if (istat.ne.0) call FatalError('MatrixExponential',' Error allocating arrays for Taylor approximation')
         
         ! perform the scaling step
-        B = (A * z0) / 2.0D0**j ! dcmplx(2.0**j,0.0)
+        B = (A * z0) / 2.0D0**j ! complex (2.0**j,0.0)
         
         ! initialize the diagonal of E
-        forall (i=1:nn) E(i,i) = dcmplx(1.0D0,0.D0)
+        forall (i=1:nn) E(i,i) = complex (1.0D0,0.D0)
         
         ! loop over the Taylor series
         add = B
         E = E + add
         do icnt=2,k
-          add = matmul( add, B/dcmplx(icnt) )
+          add = matmul( add, B/complex (icnt, 0) )
           E = E + add
         end do
         
@@ -500,12 +500,12 @@ else ! Pade approximation for target accuracy 10^(-9)
         if (istat.ne.0) call FatalError('MatrixExponential',' Error allocating arrays for Pade approximation')
         
         ! perform the scaling step
-        B = (A * z0) / 2.D0**j  ! dcmplx(2.0**j,0.0)
+        B = (A * z0) / 2.D0**j  ! complex (2.0**j,0.0)
         C = B
                 
         ! initialize the diagonal of both arrays
-        Nqq = dcmplx(0.D0,0.D0)
-        forall (i=1:nn) Nqq(i,i) = dcmplx(1.0D0,0.D0)
+        Nqq = complex (0.D0,0.D0)
+        forall (i=1:nn) Nqq(i,i) = complex (1.0D0,0.D0)
         Dqq = Nqq
 
         ! init some constants
@@ -530,7 +530,7 @@ else ! Pade approximation for target accuracy 10^(-9)
         MILWORK = 64*nn 
         allocate(MIWORK(MILWORK))
 
-        MIWORK = dcmplx(0.0_dbl,0.0_dbl)
+        MIWORK = complex (0.0_dbl,0.0_dbl)
         call zgetri(nn,Dqq,LDA,JPIV,MIWORK,MILWORK,INFO)
         if (INFO.ne.0) call FatalError('Error in MatrixExponential: ',' ZGETRI return not zero')
 
@@ -2765,9 +2765,9 @@ del0 = co(2)*co(2) - 3.D0*co(1)*co(3)
 del1 = 2.D0*co(2)**3 - 9.D0*co(1)*co(2)*co(3) + 27.D0*co(4)*co(1)**2;
 C = (0.5D0*(del1 + dsqrt(del1*del1 - 4.D0*del0**3)))**(1.D0/3.D0);
 
-u(1) = dcmplx(1.D0,0.D0);
-u(2) = dcmplx(-0.5D0,dsqrt(3.D0)*0.5D0)
-u(3) = dcmplx(-0.5D0,-dsqrt(3.D0)*0.5D0)
+u(1) = complex (1.D0,0.D0);
+u(2) = complex (-0.5D0,dsqrt(3.D0)*0.5D0)
+u(3) = complex (-0.5D0,-dsqrt(3.D0)*0.5D0)
 
 do i = 1,3
     X(i) = -1.D0/3.D0/co(1)*(co(2) + u(i)*C + del0/u(i)/C);

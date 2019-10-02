@@ -313,7 +313,7 @@ complex(kind=dbl)                       :: carg
 real(kind=dbl)                          :: ctmp(192,3),arg, tpi
 
   tpi = 2.D0 * cPi
-  Sgh = dcmplx(0.D0,0.D0)
+  Sgh = complex (0.D0,0.D0)
   numset = cell % ATOM_ntype  ! number of special positions in the unit cell
 
 ! comment: this can likely be further simplified and we'll take a closer look at this for 
@@ -331,7 +331,7 @@ real(kind=dbl)                          :: ctmp(192,3),arg, tpi
 !   rltmpa => reflist%next    ! point to the front of the list
 !   do ir=1,nn  ! we only need a single summation loop since Sgh is a column vector
 ! Debye-Waller exponential times Z^2
-     Sgh = Sgh + dcmplx(n * Znsq, 0.D0) 
+     Sgh = Sgh + complex (n * Znsq, 0.D0) 
 !    rltmpa => rltmpa%next  ! move to next row-entry
 !   end do  
   end do
@@ -363,9 +363,9 @@ real(kind=dbl)                          :: ctmp(192,3),arg, tpi
 !        do ikk=1,n
 !! get the argument of the complex exponential
 !          arg = tpi*sum(kkk(1:3)*ctmp(ikk,1:3))
-!          carg = dcmplx(dcos(arg),dsin(arg))
+!          carg = complex (dcos(arg),dsin(arg))
 !! multiply with the prefactor and add
-!          Sgh(ir,ic) = Sgh(ir,ic) + carg * dcmplx(DBWF,0.D0)
+!          Sgh(ir,ic) = Sgh(ir,ic) + carg * complex (DBWF,0.D0)
 !        end do
 !        rltmpb => rltmpb%next  ! move to next column-entry
 !      end do
