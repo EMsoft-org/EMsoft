@@ -113,13 +113,13 @@ type(gnode)                    :: rlp
     call Message(parta, frm = "(200A)") 
 
     oi_int(1:3) = rlp%hkl(1:3)
-    call WriteValue('',oi_int, 3, "(1x,3I3,1x,$)")
+    call WriteValue('',oi_int, 3, "(1x,3I3,1x)",advance="no")
     oi_real(1) = rlp%g
-    call WriteValue('',oi_real, 1, "(F9.4,$)")
+    call WriteValue('',oi_real, 1, "(F9.4)",advance="no")
     oi_cmplx(1) = rlp%Ucg
-    call WriteValue('',oi_cmplx, 1, "(2F10.6,1x,$)")
+    call WriteValue('',oi_cmplx, 1, "(2F10.6,1x)",advance="no")
     oi_real(1:7)  = (/ rlp%Umod,rlp%Vphase*180.0/sngl(cPi),rlp%Upmod,rlp%Vpphase*180.0/sngl(cPi),rlp%xg,rlp%xgp,rlp%ar /)
-    call WriteValue('',oi_real, 7, "(4F10.5,3F8.1,$)")
+    call WriteValue('',oi_real, 7, "(4F10.5,3F8.1)",advance="no")
     oi_cmplx(1) = rlp%qg
     call WriteValue('',oi_cmplx, 1, "(2F8.5)")
   end if

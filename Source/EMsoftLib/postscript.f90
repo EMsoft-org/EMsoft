@@ -1052,8 +1052,8 @@ real(kind=sgl),INTENT(IN)	:: x,y	!< text start coordinates
 character(*),INTENT(IN)	:: line	!< output string
 
  write (psunit,"(F12.7,' ',F12.7,' M')") x,y
- write (psunit,"('(',$)") 
- write (psunit,"(A,$)") line
+ write (psunit,"('(')",advance="no") 
+ write (psunit,"(A)",advance="no") line
  write (psunit,"(') show')") 
 
 end subroutine
@@ -1118,8 +1118,8 @@ character(*),INTENT(IN)	:: line	!< output string
 real(kind=sgl),INTENT(IN)	:: q	!< 
 
  write (psunit,"(F12.7,' ',F12.7,' M')") x,y
- write (psunit,"('(',$)") 
- write (psunit,"(A,$)") line
+ write (psunit,"('(')",advance="no") 
+ write (psunit,"(A)",advance="no") line
  write (psunit,"('  [x',1PE8.0,'] ) show')") q
 
 end subroutine
@@ -1154,8 +1154,8 @@ real(kind=sgl),INTENT(IN)	:: q		!<
  write (psunit,"('gsave ')") 
  write (psunit,"(F12.7,' ',F12.7,' M')") x,y
  write (psunit,"('90.0 rotate')") 
- write (psunit,"('(',$)") 
- write (psunit,"(A,$)") line
+ write (psunit,"('(')",advance="no") 
+ write (psunit,"(A)",advance="no") line
  write (psunit,"('  [x',1PE8.0,'] ) show')") q
  write (psunit,"('-90.0 rotate grestore')") 
 
@@ -1189,9 +1189,9 @@ character(*),INTENT(IN)	:: line	        !< output string
 integer(kind=irg),INTENT(IN)	:: vl		!< integer output value
 
  write (psunit,"(F12.7,' ',F12.7,' M')") x,y
- write (psunit,"('(',$)") 
- write (psunit,"(A,$)") line
- write (psunit,"(I4,$)") vl
+ write (psunit,"('(')",advance="no") 
+ write (psunit,"(A)",advance="no") line
+ write (psunit,"(I4)",advance="no") vl
  write (psunit,"(') show')") 
 
 end subroutine
@@ -1224,9 +1224,9 @@ character(*),INTENT(IN)	:: line	        !< output string
 real(kind=sgl),INTENT(IN)	:: vl		!< real output value
 
  write (psunit,"(F12.7,' ',F12.7,' M')") x,y
- write (psunit,"('(',$)") 
- write (psunit,"(A,$)") line
- write (psunit,"(F14.4,$)") vl
+ write (psunit,"('(')",advance="no") 
+ write (psunit,"(A)",advance="no") line
+ write (psunit,"(F14.4)",advance="no") vl
  write (psunit,"(') show')") 
 
 end subroutine
@@ -1259,9 +1259,9 @@ character(*),INTENT(IN)	:: line	        !< output string
 real(kind=dbl),INTENT(IN)	:: vl		!< double output value
 
  write (psunit,"(F12.7,' ',F12.7,' M')") x,y
- write (psunit,"('(',$)") 
- write (psunit,"(A,$)") line
- write (psunit,"(F12.6,$)") vl
+ write (psunit,"('(')",advance="no") 
+ write (psunit,"(A)",advance="no") line
+ write (psunit,"(F12.6)",advance="no") vl
  write (psunit,"(') show')") 
 
 end subroutine
@@ -1296,8 +1296,8 @@ character(*),INTENT(IN)	:: font	!< font string
 real(kind=sgl),INTENT(IN)	:: sc	!< scale factor
 
  call PS_setfont(font,sc)
- write (psunit,"('/length (',$)") 
- write (psunit,"(A,$)") line
+ write (psunit,"('/length (')",advance="no") 
+ write (psunit,"(A)",advance="no") line
  write (psunit,"(') stringwidth pop def')") 
  write (psunit,"('/height ',F6.4,' def /border ',F6.4,' def')") 0.11*sc/0.2,0.06*sc/0.2
  write (psunit,"('/bottom ',F12.7,' border sub def')") y
@@ -1306,8 +1306,8 @@ real(kind=sgl),INTENT(IN)	:: sc	!< scale factor
  write (psunit,"('/right ',F12.7,' length add border add def')") x
  write (psunit,"('/rad 0.04 def frame')") 
  write (psunit,"(F12.7,' ',F12.7,' M')") x,y
- write (psunit,"('(',$)") 
- write (psunit,"(A,$)") line
+ write (psunit,"('(')",advance="no") 
+ write (psunit,"(A)",advance="no") line
  write (psunit,"(') show')") 
  
 end subroutine
@@ -1373,8 +1373,8 @@ IMPLICIT NONE
 real(kind=sgl),INTENT(IN)	:: sc	!< font scale factor  
 character(*),INTENT(IN)	:: line	!< font string
 
- write (psunit,"($)") 
- write (psunit,"('/',A,$)") line
+ write (psunit,"()",advance="no") 
+ write (psunit,"('/',A)",advance="no") line
  write (psunit,"(' findfont')") 
  write (psunit,"(F6.4,' scalefont ')") sc
  write (psunit,"('setfont')")

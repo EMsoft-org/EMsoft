@@ -210,7 +210,7 @@ complex(kind=sgl)                       :: oi_cmplx(1)
 
 if (present(first)) then
  if (first) then
-  call Message('     Scattering factors : ', frm = "(/A,$)")
+  call Message('     Scattering factors : ', frm = "(/A)",advance="no")
     if (rlp%method.eq.'WK') then 
    if (rlp%absorption.eqv..TRUE.) then 
     call Message(' Weickenmeier-Kohl (with absorption)', frm = "(A/)")
@@ -233,24 +233,24 @@ end if
 
 if (rlp%absorption.eqv..TRUE.) then
  oi_int(1:3) = rlp%hkl(1:3)
- call WriteValue('',oi_int, 3, "(1x,3I3,1x,$)")
+ call WriteValue('',oi_int, 3, "(1x,3I3,1x)",advance="no")
  oi_real(1) = rlp%g
- call WriteValue('',oi_real, 1, "(F9.4,$)")
+ call WriteValue('',oi_real, 1, "(F9.4)",advance="no")
  oi_cmplx(1) = rlp%Ucg
- call WriteValue('',oi_cmplx, 1, "(2F7.3,1x,$)")
+ call WriteValue('',oi_cmplx, 1, "(2F7.3,1x)",advance="no")
  oi_real(1:7)  = (/ rlp%Umod,rlp%Vphase*180.0/sngl(cPi),rlp%Upmod,rlp%Vpphase*180.0/sngl(cPi),rlp%xg,rlp%xgp,rlp%ar /)
- call WriteValue('',oi_real, 7, "(4F8.3,3F8.1,$)")
+ call WriteValue('',oi_real, 7, "(4F8.3,3F8.1)",advance="no")
  oi_cmplx(1) = rlp%qg
  call WriteValue('',oi_cmplx, 1, "(2F8.3)")
 else
  oi_int(1:3) = rlp%hkl(1:3)
- call WriteValue('',oi_int, 3, "(1x,3I3,1x,$)")
+ call WriteValue('',oi_int, 3, "(1x,3I3,1x)",advance="no")
  oi_real(1) = rlp%g
- call WriteValue('',oi_real, 1, "(F9.4,$)")
+ call WriteValue('',oi_real, 1, "(F9.4)",advance="no")
  oi_real(1) = real(rlp%Ucg)
- call WriteValue('',oi_real, 1, "(F7.3,1x,$)")
+ call WriteValue('',oi_real, 1, "(F7.3,1x)",advance="no")
  oi_real(1:3)  = (/ rlp%Umod,rlp%Vphase*180.0/sngl(cPi),rlp%xg /)
- call WriteValue('',oi_real, 3, "(2F8.3,F8.1,$)")
+ call WriteValue('',oi_real, 3, "(2F8.3,F8.1)",advance="no")
  oi_cmplx(1) = rlp%qg
  call WriteValue('',oi_cmplx, 1, "(2F8.3)")
 end if

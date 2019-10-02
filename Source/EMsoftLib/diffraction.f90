@@ -1443,13 +1443,13 @@ integer(kind=irg),allocatable   :: rfamily(:,:,:),rnumfam(:)
   if (mod(i,4).eq.0) then 
    call WriteValue('', io_int,4,"(I3,' [',3I3,'];')")
   else
-   call WriteValue('', io_int,4,"(I3,' [',3I3,'];',$)")
+   call WriteValue('', io_int,4,"(I3,' [',3I3,'];')",advance="no")
   endif
  end do
  call Message('Enter selection (e.g. 4,10-20, ... ) ', frm = "(//,A)")
  call Message('[Include 0 to also draw a powder pattern] ', frm = "(A)")
  list = (/ (' ',j=1,256) /)
- call Message(' -> ', frm = "(A,' ',$)")
+ call Message(' -> ', frm = "(A,' ')",advance="no")
  read (5,"(256A)") list
  call studylist(list,slect,fmax,ppat)
 
@@ -1480,7 +1480,7 @@ integer(kind=irg),allocatable   :: rfamily(:,:,:),rnumfam(:)
    ppat=.FALSE.
   else
    io_int(1:3) = family(j,1:3)
-   call WriteValue('Creating ZAP ', io_int,3, "('[',3i3,'] : ',$)")
+   call WriteValue('Creating ZAP ', io_int,3, "('[',3i3,'] : ')",advance="no")
    call DumpZAP(PS,cell,xoff(imo),yoff(imo),family(j,1),family(j,2),family(j,3),numfam(j),np,first,iref,laL,ricnt,dbdiff, &
         Vg, Vgsave, rg, rfamily, rnumfam, hhcc)
   endif

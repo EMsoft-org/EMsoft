@@ -1020,7 +1020,7 @@ do i=1,32
  if (mod(i,8).eq.0) then
   write (6,"(1x,i3,':',A5,5x)") i,PGTHD(i)
  else
-  write (6,"(1x,i3,':',A5,5x,$)") i,PGTHD(i)
+  write (6,"(1x,i3,':',A5,5x)",advance="no") i,PGTHD(i)
  end if
 end do
 
@@ -1089,7 +1089,7 @@ logical                 :: skip                                         !< logic
               if ((mod(i,4).eq.0).or.(i.eq.7)) then
                 write (6,"(1x,i3,':',A11,5x)") TRIG(i),SYM_SGname(TRIG(i))
               else
-                write (6,"(1x,i3,':',A11,5x,$)") TRIG(i),SYM_SGname(TRIG(i))
+                write (6,"(1x,i3,':',A11,5x)",advance="no") TRIG(i),SYM_SGname(TRIG(i))
               end if
              end do 
              call Message(' -------------------------- ', frm = "(A)")
@@ -1123,7 +1123,7 @@ logical                 :: skip                                         !< logic
    if ((mod(j,4).eq.0).or.(i.eq.sgmax)) then
     write (6,"(1x,i3,':',A11,5x)") i,SYM_SGname(i)
    else
-    write (6,"(1x,i3,':',A11,5x,$)") i,SYM_SGname(i)
+    write (6,"(1x,i3,':',A11,5x)",advance="no") i,SYM_SGname(i)
    end if
   end do
   cell%SYM_SGnum = sgmin-1
@@ -2817,7 +2817,7 @@ write (*,*) 'WPstring : ',trim(wpstring)
   do while (found.eqv..FALSE.)
 ! ask for the Wyckoff position
     list = (/ (' ',j=1,6) /)
-    call Message(' ->  Wyckoff position : ', frm = "(A,' ',$)")
+    call Message(' ->  Wyckoff position : ', frm = "(A,' ')",advance="no")
     read (5,"(6A)") list
 
 ! find the corresponding encoded triplet
@@ -2838,7 +2838,7 @@ write (*,*) 'WPstring : ',trim(wpstring)
       end if
     end do 
     if (found.eqv..FALSE.) then
-      call Message(' incorrect Wyckoff position; please try again ', frm = "(A,' ',$)")
+      call Message(' incorrect Wyckoff position; please try again ', frm = "(A,' ')",advance="no")
 !   else
 !     write (*,*) 'Found Wyckoff position '//Wyckoffpos
     end if

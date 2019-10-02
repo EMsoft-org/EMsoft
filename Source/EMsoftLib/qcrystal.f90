@@ -1034,7 +1034,7 @@ more=.TRUE.
   list = (/ (' ',j=1,256) /)
   call Message(' ->  Fractional coordinates, site occupation, Bpar [nm^2],'&
   'Bperp [nm^2], radial atomic size (fraction of a_i) : ',&
-  frm = "(A,' ',$)")
+  frm = "(A,' ')",advance="no")
   read (*,"(256A)") list
 
 ! interpret this string and extract coordinates and such ...
@@ -1106,7 +1106,7 @@ integer(kind=irg)                       :: j, io_int(1) , std   !< auxiliary var
   list = (/ (' ',j=1,256) /)
   call Message(' ->  Fractional coordinates, site occupation, Bpar_11 [nm^2],'&
   ' Bpar_33 [nm^2], Bperp [nm^2], radial atomic size (fraction of a_i) : ',&
-  frm = "(A,' ',$)")
+  frm = "(A,' ')",advance="no")
   read (*,"(256A)") list
 
 ! interpret this string and extract coordinates and such ...

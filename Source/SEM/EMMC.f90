@@ -476,7 +476,7 @@ real(kind=dbl), parameter :: cDtoR = 0.017453293D0
 ! every million steps, print something to the screen
     if ((TID.eq.0).and.(mod(el,1000000_k12).eq.0)) then
         io_int(1) = el
-        call WriteValue(' Completed electron # ',io_int, 1, "(I15,$)")
+        call WriteValue(' Completed electron # ',io_int, 1, "(I15)",advance="no")
         io_int(1) = sum(accum_e)
         call WriteValue('; BSE hits = ',io_int, 1, frm = "(I15)")
     end if

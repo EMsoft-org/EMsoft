@@ -230,8 +230,8 @@ integer(int8), allocatable              :: montage(:,:)
 ! determine and display the shortest reciprocal lattice vectors for this zone
  call ShortestG(cell,eccinl%k,ga,gb,isym)
  io_int(1:3) = eccinl%k(1:3)
- call WriteValue('', io_int, 3,  "(//,' ','[',3I2,'] has Bright Field symmetry ',$)")
- call Message(PGTWD(isym),"(A,$)")
+ call WriteValue('', io_int, 3,  "(//,' ','[',3I2,'] has Bright Field symmetry ')",advance="no")
+ call Message(PGTWD(isym),"(A)",advance="no")
  io_int(1) = ir
  call WriteValue(' order = ', io_int, 1, "(I4/)")
  io_int(1:3) = ga(1:3)
@@ -508,7 +508,7 @@ call WriteValue('disparray bounds: ', io_real, 2, "(2(F10.5,' '))")
 ! we can compute Sgh here instead of inside the main loop.  This will need
 ! to be modified when we start using Bethe potentials.
 
-  call Message('Computing Sgh array ...',"(A,$)")
+  call Message('Computing Sgh array ...',"(A)",advance="no")
   numset = cell % ATOM_ntype  ! number of special positions in the unit cell
   allocate(Sgh(nn))
   nat = 0
@@ -708,8 +708,8 @@ allocate(Azz(nn,nn), DDD(nn,nn))   ! these are private variables, so each thread
 
 if (TID.eq.0) then
   io_int(1) = isg
-  call WriteValue(' -> ',io_int,1,"(I4,' ',$)")
-  call Message('starting Sarray computation',"(A,$)")
+  call WriteValue(' -> ',io_int,1,"(I4,' ')",advance="no")
+  call Message('starting Sarray computation',"(A)",advance="no")
 end if
 
 !$OMP DO SCHEDULE(STATIC)
@@ -733,7 +733,7 @@ do j=0,numd
    Sarray(1:nn,1:nn,i,j) = Azz(1:nn,1:nn)
  end do
  if ((TID.eq.0).and.(mod(j,10).eq.0)) then
-    call Message('.',"(A1,$)")
+    call Message('.',"(A1)",advance="no")
  end if
 end do
 !$OMP END DO
@@ -741,7 +741,7 @@ end do
 deallocate(Azz, DDD)
 !$OMP END PARALLEL
 
-call Message(' done; scattering matrix computation ',"(A,$)")
+call Message(' done; scattering matrix computation ',"(A)",advance="no")
 
 !----------------------------------------------------!
 ! Finally, here it is: the actual image computation  !
@@ -759,7 +759,7 @@ call Message(' done; scattering matrix computation ',"(A,$)")
 !$OMP DO SCHEDULE (STATIC)
  donpix: do i=1,npix
  if ((TID.eq.0).and.(mod(i,10).eq.0)) then
-   call Message('.',"(A1,$)")
+   call Message('.',"(A1)",advance="no")
  end if
  donpiy:   do j=1,npiy
 ! initialize the wave function for this pixel with (1.0,0.0) for the incident beam

@@ -653,7 +653,7 @@ else
 
   do
     if (.not.associated(tmp)) EXIT
-    call WriteValue('','>'//tmp%objectType//'<  >'//trim(tmp%objectName)//'<', frm = "(A$)") 
+    call WriteValue('','>'//tmp%objectType//'<  >'//trim(tmp%objectName)//'<', frm = "(A)",advance="no") 
 
     io_int(1) = tmp%objectID
     call WriteValue('',io_int,1,frm="(I12)")
