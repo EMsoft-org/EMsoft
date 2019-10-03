@@ -2769,9 +2769,9 @@ u(2) = complex(0.5D0,dsqrt(3.D0)*0.5D0)
 u(3) = complex(0.5D0,-dsqrt(3.D0)*0.5D0)
 
 pre = complex(-1.D0/3.D0/co(1),0.D0)
-X(1) = pre * (complex(co(2)) - C - complex(del0,0.D0)/C);
-X(2) = pre * (complex(co(2)) + u(3) * C + u(2) * complex(del0,0.D0)/C);
-X(3) = pre * (complex(co(2)) + u(2) * C + u(3) * complex(del0,0.D0)/C);
+X(1) = pre * (complex(co(2),0.D0) - C - complex(del0,0.D0)/C);
+X(2) = pre * (complex(co(2),0.D0) + u(3) * C + u(2) * complex(del0,0.D0)/C);
+X(3) = pre * (complex(co(2),0.D0) + u(2) * C + u(3) * complex(del0,0.D0)/C);
 
 end subroutine cubicroots
 !--------------------------------------------------------------------------
