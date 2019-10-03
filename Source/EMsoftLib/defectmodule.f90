@@ -2051,7 +2051,7 @@ q = complex( -2.D0*rsq**3 - 3.D0*defects%Einclusions(i)%eta*rsq**2 + rsq*(3.D0*d
           sum(defects%Einclusions(i)%qvec1*r2))-sum(defects%Einclusions(i)%qvec2*r2)-defects%Einclusions(i)%qs1, 0.D0 )
 t = (q + sqrt( q*q - 4.D0*s*s*s) )**(1.D0/3.D0)
 v = real(t)
-w = abs(imag(t))
+w = abs(aimag(t))
 modt = v**2+w**2
 lambda = (rsq-defects%Einclusions(i)%eta)/3.D0 + &
          (v+defects%Einclusions(i)%s3*w)*(2.D0*real(s)+defects%Einclusions(i)%c1*modt)/defects%Einclusions(i)%c2/modt
@@ -2201,7 +2201,7 @@ if (dd.gt.1.D0) then
       sum(defects%Einclusions(i)%qvec1*r2))-sum(defects%Einclusions(i)%qvec2*r2)-defects%Einclusions(i)%qs1, 0.D0 )
   t = (q + sqrt( q*q - 4.D0*s*s*s) )**(1.D0/3.D0)
   v = real(t)
-  w = abs(imag(t))
+  w = abs(aimag(t))
   modt = v**2+w**2
   lambda = (rsq-defects%Einclusions(i)%eta)/3.D0 + (v+defects%Einclusions(i)%s3*w)* &
            (2.D0*real(s)+defects%Einclusions(i)%c1*modt)/defects%Einclusions(i)%c2/modt
