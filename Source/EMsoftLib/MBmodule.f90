@@ -137,7 +137,7 @@ real(kind=sgl)                  :: th
 ! as the strong beams, plus a few other factors (excitation error, wave length, Fourier coefficients)
  do i=1,nt
   th = thick(i)
-  diag(1:nn)=exp(-th*imag(lW(1:nn)))*cmplx(cos(th*real(lW(1:nn))),sin(th*real(lW(1:nn))))*lalpha(1:nn)
+  diag(1:nn)=exp(-th*aimag(lW(1:nn)))*cmplx(cos(th*real(lW(1:nn))),sin(th*real(lW(1:nn))))*lalpha(1:nn)
 ! the delta array is common to the strong and weak beam intensity computation, so we compute it first
   do j=1,nn
    delta(j,1:nn) = lCG(j,1:nn)*diag(1:nn)
@@ -226,7 +226,7 @@ real(kind=sgl)                  :: th
 ! that part would need to rewritten entirely
  do i=1,nt
   th = thick(i)
-  diag(1:nn)=exp(-th*imag(lW(1:nn)))*cmplx(cos(th*real(lW(1:nn))),sin(th*real(lW(1:nn))))*lalpha(1:nn)
+  diag(1:nn)=exp(-th*aimag(lW(1:nn)))*cmplx(cos(th*real(lW(1:nn))),sin(th*real(lW(1:nn))))*lalpha(1:nn)
 ! the delta array is common to the strong and weak beam intensity computation, so we compute it first
   do j=1,nn
    delta(j,1:nn) = lCG(j,1:nn)*diag(1:nn)
@@ -305,7 +305,7 @@ real(kind=sgl)                  :: th
 ! compute the strong beam intensities, stored in the first nn slots of inten 
  do i=1,nt
   th = thick(i)
-  diag(1:nn)=exp(-th*imag(lW(1:nn)))*cmplx(cos(th*real(lW(1:nn))),sin(th*real(lW(1:nn))))*lalpha(1:nn)
+  diag(1:nn)=exp(-th*aimag(lW(1:nn)))*cmplx(cos(th*real(lW(1:nn))),sin(th*real(lW(1:nn))))*lalpha(1:nn)
 ! the delta array is common to the strong and weak beam intensity computation, so we compute it first
   do j=1,nn
    delta(j,1:nn) = lCG(j,1:nn)*diag(1:nn)

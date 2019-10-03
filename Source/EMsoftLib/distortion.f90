@@ -88,7 +88,7 @@ real(kind=dbl)                                      :: x_new, y_new, dx, dy, dxm
 real(kind=dbl),parameter                            :: epsdp = 1.0D-8,epsth = 1.0D-2
 
 Dp = abs(D)
-thetad = datan2(imag(D),real(D))
+thetad = datan2(aimag(D),real(D))
 if (Dp .le. epsdp) return
 
 allocate(dimg(nnx,nny))
@@ -118,12 +118,12 @@ do ii = 1,nnx
             if (abs(thetad) .le. epsth) then
                 co = (/Dp, 0.D0, 1.D0,  -dsqrt(x2 + y*y)/)  
                 call cubicroots(co,roots)
-                I = MINLOC((/abs(imag(roots(1))),abs(imag(roots(2))),abs(imag(roots(3)))/))
+                I = MINLOC((/abs(aimag(roots(1))),abs(aimag(roots(2))),abs(aimag(roots(3)))/))
                 r = real(roots(I(1)))
                 theta = datan2(y,x)
             else
                 call cubicroots(co,roots)
-                I = MINLOC((/abs(imag(roots(1))),abs(imag(roots(2))),abs(imag(roots(3)))/))
+                I = MINLOC((/abs(aimag(roots(1))),abs(aimag(roots(2))),abs(aimag(roots(3)))/))
                 r = dsqrt(real(roots(I(1))))
                 tmp = Dp*r*r*r/r0
                 Ap = r/r0 + tmp*dcos(thetad)
