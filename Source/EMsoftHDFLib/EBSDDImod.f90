@@ -2453,8 +2453,7 @@ else
 end if
 !====================================
 
-if (present(verbose)) call Message(' -> completed reading dynamical scattering data from &
-'//trim(enl%masterfile), frm = "(A)")
+if (present(verbose)) call Message(' -> completed reading dynamical scattering data from '//trim(enl%masterfile),frm="(A)")
 
 end subroutine EBSDIndexingreadMasterfile
 
