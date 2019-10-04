@@ -131,14 +131,14 @@ contains
 
         implicit none
                 
+        integer(irg),intent(in)             :: ninit
+        integer(irg),intent(in)             :: nipar
+        integer(irg),intent(in)             :: nfpar
+        integer(irg),intent(in)             :: nstep        
         integer(8),intent(in)               :: ipar(nipar)
         real(sgl),intent(inout)             :: fpar(nfpar)
         real(sgl),intent(in)                :: initmeanval(ninit)
         real(sgl),intent(in)                :: stepsize(nstep)
-        integer(irg),intent(in)             :: ninit
-        integer(irg),intent(in)             :: nipar
-        integer(irg),intent(in)             :: nfpar
-        integer(irg),intent(in)             :: nstep
         real(c_float),intent(in)            :: expt1(ipar(2)*ipar(3)/ipar(12)**2)
         real(sgl),intent(in)                :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
         real(sgl),intent(in)                :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))

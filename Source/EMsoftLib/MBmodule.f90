@@ -272,10 +272,10 @@ use constants
 
 IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
 type(unitcell)                  :: cell
 real(kind=sgl),INTENT(IN)       :: kn
-integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
 real(kind=sgl),INTENT(IN)       :: thick(nt)            !< thickness array
 real(kind=sgl),INTENT(INOUT)    :: inten(nt,nn)         !< output intensities (both strong and weak)
@@ -355,9 +355,9 @@ use constants
 
 IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
 real(kind=sgl),INTENT(IN)       :: kn
-integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 integer(kind=irg),INTENT(IN)    :: nt                   !< number of thickness values
 real(kind=sgl),INTENT(IN)       :: thick(nt)            !< thickness array
 real(kind=sgl),INTENT(INOUT)    :: Iz(nt)               !< output intensities
@@ -433,9 +433,9 @@ use constants
 
 IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 complex(kind=dbl),INTENT(IN)    :: DynMat(nn,nn)
 real(kind=sgl),INTENT(IN)       :: kn
-integer(kind=irg),INTENT(IN)    :: nn                   !< number of strong beams
 real(kind=sgl),INTENT(IN)       :: thresh               !< thickness fraction parameter
 real(kind=sgl),INTENT(INOUT)    :: Iz(1)                !< output (thickness)
 !f2py intent(in,out) ::  Iz
@@ -922,15 +922,15 @@ use error
 
 IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)        :: nn
 complex(kind=dbl),INTENT(IN)        :: DMat(nn,nn)
 complex(kind=dbl),INTENT(OUT)       :: Lgh(nn,nn)
 real(kind=dbl),INTENT(IN)           :: thick
 real(kind=dbl),INTENT(IN)           :: kn
-integer(kind=irg),INTENT(IN)        :: nn
 integer(kind=irg),INTENT(IN)        :: gzero
 real(kind=dbl),INTENT(IN)           :: depthstep
-real(kind=sgl),INTENT(IN)           :: lambdaE(izz)
 integer(kind=irg),INTENT(IN)        :: izz
+real(kind=sgl),INTENT(IN)           :: lambdaE(izz)
 
 integer                             :: i,j,k, iz
 complex(kind=dbl)                   :: CGinv(nn,nn), Minp(nn,nn), tmp3(nn,nn)
@@ -1072,9 +1072,9 @@ type(reflisttype),pointer        :: listroot
 type(reflisttype),pointer        :: listrootw
 type(gnode),INTENT(INOUT)        :: rlp
 !f2py intent(in,out) ::  rlp
+integer(kind=irg),INTENT(IN)     :: nns
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nns,nns)
 !f2py intent(in,out) ::  DynMat
-integer(kind=irg),INTENT(IN)     :: nns
 integer(kind=irg),INTENT(IN)     :: nnw
 character(5),INTENT(IN),OPTIONAL :: BlochMode   ! 'Bloch' or 'Struc'
 
@@ -1284,9 +1284,9 @@ IMPLICIT NONE
 
 type(unitcell)                   :: cell
 type(reflisttype),pointer        :: listroot
+integer(kind=irg),INTENT(IN)     :: nref
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nref,nref)
 !f2py intent(in,out) ::  DynMat
-integer(kind=irg),INTENT(IN)     :: nref
 
 complex(kind=dbl)                :: czero, ughp, uhph, weaksum, qg0
 real(kind=dbl)                   :: weaksgsum
@@ -1356,10 +1356,10 @@ use constants
 
 IMPLICIT NONE
 
-complex(kind=dbl),INTENT(IN)        :: DMat(nn,nn)
-complex(kind=dbl),INTENT(OUT)       :: Lgh(nn,nn,nt)
 integer(kind=sgl),INTENT(IN)        :: nn
 integer(kind=sgl),INTENT(IN)        :: nt
+complex(kind=dbl),INTENT(IN)        :: DMat(nn,nn)
+complex(kind=dbl),INTENT(OUT)       :: Lgh(nn,nn,nt)
 real(kind=sgl),INTENT(IN)           :: thick(nt)
 real(kind=dbl),INTENT(IN)           :: kn
 integer(kind=sgl),INTENT(IN)        :: gzero
@@ -1454,11 +1454,11 @@ integer(kind=irg),INTENT(IN)                :: nns_film
 type(refliststrongsubstype),pointer         :: refliststrong_subs
 complex(kind=dbl),INTENT(IN)                :: S0(nns_film)
 real(kind=dbl),INTENT(OUT)                  :: Sigmagg(nns_film,nns_film)
+integer(kind=irg),INTENT(IN)                :: nt
 real(kind=sgl),INTENT(IN)                   :: thick(nt)
 real(kind=sgl),INTENT(IN)                   :: lambdaZ(nt)
 integer(kind=irg),INTENT(IN)                :: filmthickness
 integer(kind=irg),INTENT(IN)                :: substhickness
-integer(kind=irg),INTENT(IN)                :: nt
 
 real(kind=sgl)                              :: dthick
 type(refliststrongsubstype),pointer         :: refliststrongtmp1,refliststrongtmp2

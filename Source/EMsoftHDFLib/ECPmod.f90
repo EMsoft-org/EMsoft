@@ -1102,8 +1102,8 @@ type(ECPNameListType),INTENT(INOUT)     :: ecpnl
 !f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer             :: master
 type(ECPLargeAccumType),pointer         :: acc
-real(kind=sgl), INTENT(OUT)             :: weightfact(nsig)
 integer(kind=irg), INTENT(IN)           :: nsig
+real(kind=sgl), INTENT(OUT)             :: weightfact(nsig)
 logical, INTENT(IN), OPTIONAL           :: verbose
 
 integer(kind=irg)                       :: isig, ipolar, iazimuth, istat
@@ -1728,8 +1728,8 @@ type(ECPIndexingNameListType),INTENT(INOUT)     :: ecpnl
 !f2py intent(in,out) ::  ecpnl
 type(ECPMasterType),pointer                     :: master
 type(ECPLargeAccumType),pointer                 :: acc
-real(kind=sgl), INTENT(OUT)                     :: weightfact(nsig)
 integer(kind=irg), INTENT(IN)                   :: nsig
+real(kind=sgl), INTENT(OUT)                     :: weightfact(nsig)
 logical, INTENT(IN), OPTIONAL                   :: verbose
 
 integer(kind=irg)                               :: isig, ipolar, iazimuth, istat

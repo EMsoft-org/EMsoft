@@ -537,11 +537,11 @@ type(axistype),INTENT(INOUT)              :: AX
 character(fnlen),INTENT(IN)               :: progdesc
 integer(kind=irg),INTENT(INOUT)           :: imanum
 !f2py intent(in,out) ::  imanum
+integer(kind=irg),INTENT(IN)              :: nx
+integer(kind=irg),INTENT(IN)              :: ny
 real(kind=sgl),INTENT(IN)                 :: zz(nx,ny)
 real(kind=sgl),INTENT(INOUT)              :: inten(nx,ny)
 !f2py intent(in,out) ::  inten
-integer(kind=irg),INTENT(IN)              :: nx
-integer(kind=irg),INTENT(IN)              :: ny
 character(6),INTENT(IN)                   :: dmode
 character(fnlen),INTENT(IN)               :: axname
 
@@ -837,12 +837,12 @@ type(axistype),INTENT(INOUT)         :: AX
 character(fnlen),INTENT(IN)          :: progdesc
 integer(kind=irg),INTENT(INOUT)      :: imanum
 !f2py intent(in,out) ::  imanum
-real(kind=sgl),INTENT(INOUT)         :: zz(nx,ny)
-!f2py intent(in,out) ::  zz
 integer(kind=irg),INTENT(INOUT)      :: nx
 !f2py intent(in,out) ::  nx
 integer(kind=irg),INTENT(INOUT)      :: ny
 !f2py intent(in,out) ::  ny
+real(kind=sgl),INTENT(INOUT)         :: zz(nx,ny)
+!f2py intent(in,out) ::  zz
 real(kind=sgl),INTENT(IN)            :: g
 character(fnlen),INTENT(IN)          :: axname
 

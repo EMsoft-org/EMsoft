@@ -767,8 +767,8 @@ use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(OUT)              :: cubneighbor(3,(2*nn+1)**3)
 integer(kind=irg),INTENT(IN)            :: nn ! number of nearest neighbor in each direction (should be an odd number for symmetric meshing)
+real(kind=dbl),INTENT(OUT)              :: cubneighbor(3,(2*nn+1)**3)
 real(kind=dbl),INTENT(IN)               :: cub(3)
 real(kind=dbl),INTENT(IN)               :: stepsize
 

@@ -70,11 +70,11 @@ IMPLICIT NONE
 
 integer(kind=irg),INTENT(IN)        :: ncub
 real(kind=dbl),INTENT(IN)           :: ODF(-ncub:ncub,-ncub:ncub,-ncub:ncub)
+integer(kind=irg),INTENT(IN)        :: neqv
 integer(kind=irg),INTENT(IN)        :: PFhkl_eqv(neqv,3)
 integer(kind=irg),INTENT(IN)        :: nLam
 real(kind=dbl),INTENT(OUT)          :: PFLam(-nLam:nLam,-nLam:nLam)
 integer(kind=irg),INTENT(IN)        :: pgnum
-integer(kind=irg),INTENT(IN)        :: neqv
 type(unitcell)                      :: cell
 
 real(kind=dbl)                      :: lamx(-nlam:nlam), lamy(-nlam:nlam)
@@ -444,8 +444,8 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(INOUT)   :: xyz(3)
 !f2py intent(in,out) ::  xyz
-real(kind=dbl),INTENT(IN)      :: PFLam(-nLam:nLam,-nLam:nLam)
 integer(kind=irg),INTENT(IN)   :: nLam
+real(kind=dbl),INTENT(IN)      :: PFLam(-nLam:nLam,-nLam:nLam)
 real(kind=dbl),INTENT(OUT)     :: res
 real(kind=dbl)                 :: xy(2), scl
 integer(kind=irg)              :: ierr, nix, niy, nixp, niyp

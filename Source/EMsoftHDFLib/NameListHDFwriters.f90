@@ -83,9 +83,9 @@ IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
+integer(kind=irg),INTENT(IN)                          :: n_int
 integer(kind=irg),INTENT(IN)                          :: io_int(n_int)
 character(20),INTENT(IN)                              :: intlist(n_int)
-integer(kind=irg),INTENT(IN)                          :: n_int
 
 integer(kind=irg)                                     :: hdferr, i
 character(fnlen)                                      :: dataset
@@ -126,9 +126,9 @@ IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
+integer(kind=irg),INTENT(IN)                          :: n_real
 real(kind=sgl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
-integer(kind=irg),INTENT(IN)                          :: n_real
 
 integer(kind=irg)                                     :: hdferr, i
 character(fnlen)                                      :: dataset
@@ -169,9 +169,9 @@ IMPLICIT NONE
 
 type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
+integer(kind=irg),INTENT(IN)                          :: n_real
 real(kind=dbl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
-integer(kind=irg),INTENT(IN)                          :: n_real
 
 integer(kind=irg)                                     :: hdferr, i
 character(fnlen)                                      :: dataset
