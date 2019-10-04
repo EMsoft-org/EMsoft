@@ -1128,6 +1128,7 @@ use error
 use gvectors
 use kvectors
 use io
+use math
 use local
 use files
 use diffraction
@@ -1145,6 +1146,32 @@ use DSHT
 
 IMPLICIT NONE
 
+interface 
+  recursive function writeSHTfile (fn, nt, sgN, sgS, nAt, aTy, aCd, lat, fprm, iprm, bw, flg, alm) result(res) &
+  bind(C, name ='EMsoftEBSDRet')
+
+  use ISO_C_BINDING
+
+  IMPLICIT NONE 
+
+  character(c_char)             :: fn
+  character(c_char)             :: nt 
+  integer(c_int)                :: sgN 
+  integer(c_int)                :: sgS 
+  integer(c_int)                :: nAt
+  integer(c_int)                :: aTy(nAt)
+  real(c_float)                 :: aCd(nAt,5)
+  real(c_double)                :: lat(6) 
+  real(c_float)                 :: fprm(20)
+  integer(c_int)                :: iprm(5) 
+  integer(c_int)                :: bw 
+  character(len=1,kind=c_char)  :: flg(2)
+  complex(C_DOUBLE_COMPLEX)     :: alm(0:bw-1, 0:bw-1)
+  integer(c_int)                :: res
+  end function writeSHTfile
+end interface 
+
+
 type(EBSDMasterNameListType),INTENT(INOUT) :: emnl
 character(fnlen),INTENT(IN)                :: progname
 character(fnlen),INTENT(IN)                :: nmldeffile
@@ -1153,12 +1180,12 @@ real(kind=dbl)          :: ctmp(192,3), arg, Radius, xyz(3)
 integer(HSIZE_T)        :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
-                           numk, timestart, timestop, numsites, & ! number of independent incident beam directions
+                           numk, timestart, timestop, numsites, res, & ! number of independent incident beam directions
                            ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, bw, d, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
-real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstop, bp(4), nabsl, etotal, dens, avA, avZ
+real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstop, bp(4), nabsl, etotal, dens, avA, avZ, xxxxx
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:), auxSH(:,:), Z2percent(:)  ! results
 real(kind=sgl),allocatable      :: mLPNH(:,:,:), mLPSH(:,:,:)
 real(kind=dbl),allocatable      :: LegendreArray(:), upd(:), diagonal(:)
@@ -1205,7 +1232,36 @@ type(DiscreteSHT)               :: transformer
 complex(kind=dbl), allocatable  :: almMaster(:,:)   ! spectra of master pattern to index against
 complex(kind=dbl), allocatable  :: almPat   (:,:)   ! work space to hold spectra of exerimental pattern
 
+
+! parameters for the .sht output file 
+integer(kind=irg),parameter     :: nipar=5, nfpar=20
+character(fnlen)                :: EMversion
+integer(kind=irg)               :: sgN      ! space group number [1,230]
+integer(kind=irg)               :: sgS      ! space group setting [1,2]
+integer(kind=irg)               :: numAt    ! number of atoms
+integer(kind=irg),allocatable   :: aTy(:)   ! atom types (nAt atomic numbers)
+real(kind=sgl),allocatable      :: aCd(:,:) ! atom coordinates, (nAt * 5 floats {x, y, z, occupancy, Debye-Waller in nm^2})
+real(kind=dbl)                  :: lat(6)   ! lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
+real(kind=sgl)                  :: fprm(nfpar) ! floating point parameters (float32 EMsoftED parameters in order)
+integer(kind=irg)               :: iprm(nipar) ! integer parameters {# electrons, electron multiplier, numsx, npx, latgridtype}
+character(1)                    :: zRot, mirInv 
+character(1),dimension(2)       :: flg      ! flg: symmetry flags {zRot, mirInv}
+! alm: actual harmonics (uncompressed format)
+
 !$OMP THREADPRIVATE(rlp) 
+
+
+! the SHT bandwidth is set to 384, which means that the master pattern size must
+! be set to 387x387 (odd number and excluding the poles); we override the user 
+! input value and print a message 
+if ((2*emnl%npx+1).ne.387) then 
+  call Message('===========================================================')
+  call Message(' Master pattern size MUST be 387x387 for the Legendre mode')
+  call Message('  -> redefining master pattern size with npx = 193.')
+  call Message('===========================================================')
+  emnl%npx = 193
+end if 
+
 
 ! this routine computes a full master pattern without the restart option
 ! or the copyfromenergyfile option and subsequently computes the SHT for 
@@ -1709,18 +1765,10 @@ energyloop: do iE=Estart,1,-1
   io_int(1) = nint(float(totweak)/float(numk))
   call WriteValue(' -> Average number of weak reflections   = ',io_int, 1, "(I5)")
 
- if ((emnl%Esel.eq.-1).and.(iE.ne.1)) then 
-  call Message('Intermediate data stored in file '//trim(emnl%outname), frm = "(A/)")
- end if
-
- if ((emnl%Esel.eq.-1).and.(iE.eq.1)) then 
-  call Message('Final data stored in file '//trim(emnl%outname), frm = "(A/)")
- end if
-
 end do energyloop
 
 ! next, we compute the final energy weighted master pattern and its spherical harmonic transform
-call Message('Computing energy weighted master pattern')
+call Message(' Computing energy weighted master pattern')
   n = size(EBSDMCdata%accum_e, 1) ! get number of energy bins
   allocate(weights(n)) ! allocate space for energy histogram
   do i = 1, n
@@ -1740,14 +1788,14 @@ call Message('Computing energy weighted master pattern')
   enddo
 
 ! build transformer
-call Message('initializing the spherical harmonic transformer')
+call Message(' Initializing the spherical harmonic transformer')
   layout = 'legendre'
   bw = 384
   d = bw / 2 + 1
   call transformer%init(d, bw, layout)
 
 ! compute spherical harmonic transform of master pattern
-call Message('Computing spherical harmonic transform')
+call Message(' Computing spherical harmonic transform')
   allocate(almMaster(0:bw-1, 0:bw-1))
   allocate(almPat   (0:bw-1, 0:bw-1))
   call transformer%analyze(finalmLPNH, finalmLPSH, almMaster)
@@ -1755,40 +1803,37 @@ call Message('Computing spherical harmonic transform')
   timestop = Time_tock(timestart)
 
 ! finally, write the SHT coefficient array to the output h5 file
-call Message('Storing SHT coefficients in binary output file '//trim(emnl%SHTfile))
+call Message(' Storing SHT coefficients in binary output file '//trim(emnl%SHTfile))
 
-! we call a C++ routine here to write the .sht file
-
-! character(fnlen) file name string  % null-terminated
-! character(fnlen) notes % null-terminated  [ EMsoftversionstring ]
-! integer(kind=irg) SG number
-! integer(kind=irg) SG setting
-! integer(kind=irg) Natomtypes
-! integer(kind=irg),dimension(Natomtypes) atomtypes 
-! real(kind=sgl),dimension(Natomtypes,5) atomcoordinates
-! real(kind=dbl),dimension(6)  latticeparameters
-! integer(kind=irg) bandwidth
-! character,dimension(2) symflags
-! complex(kind=dbl), dimension(l,m) transpose(almMaster) ! l fast, m slow
-
-! second call for Vendor specific simulation data
-
-! in order defined in file spec 
-! nipar = 5
-! nfpar = 20
-! integer(kind=irg),dimension(nipar) ipar    [# electrons, multiplier, MC grid, EBSD grid, lattype]
-! real(kind=irg),dimension(nfpar) fpar [in the order of the document]
+! prepare all parameters for the writing of the final .sht file 
+sgN = cell%SYM_SGnum
+sgS = cell%SYM_SGset
+numAt = cell%ATOM_ntype
+allocate(aTy(numAt))
+aTy = cell%ATOM_type(1:numAt)
+allocate(aCd(numAt,5))
+aCd = cell%ATOM_pos(1:numAt,1:5)
+lat = (/ cell%a, cell%b, cell%c, cell%alpha, cell%beta, cell%gamma /)
+fprm = (/ sngl(mcnl%sig), nan(), nan(), sngl(mcnl%omega), sngl(mcnl%EkeV), sngl(mcnl%Ehistmin), &
+          sngl(mcnl%Ebinsize), sngl(mcnl%depthmax), sngl(mcnl%depthstep), &
+          infty(), BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff, &
+          emnl%dmin, 0.0, 0.0, 0.0, 0.0, 0.0 /)
+iprm = (/ mcnl%num_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
+bw = 384
+zRot = char(1)
+mirInv =  char(2)
+flg = (/ zRot, mirInv /)
 
 
+! write an .sht file using EMsoft style EBSD data
+EMversion = EMsoft_getEMsoftversion()
+res = writeSHTfile(cstringify(emnl%SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
+                   aTy, aCd, lat, fprm, iprm, bw, flg, almMaster)
 
-
-
-if (emnl%Esel.ne.-1) then
-  call Message('Final data stored in binary file '//trim(emnl%SHTfile), frm = "(A/)")
-end if
+call Message(' Final data stored in binary file '//trim(emnl%SHTfile), frm = "(A/)")
 
 io_int(1) = timestop
-call WriteValue('Total execution time [s] ',io_int,1)
+call WriteValue(' Total execution time [s] ',io_int,1)
 
 ! if requested, we notify the user that this program has completed its run
 if (trim(EMsoft_getNotify()).ne.'Off') then
@@ -1798,10 +1843,10 @@ if (trim(EMsoft_getNotify()).ne.'Off') then
 
     call hostnm(c)
  
-    MessageLines(1) = 'EMEBSDmaster program has ended successfully'
-    MessageLines(2) = 'Master pattern data stored in '//trim(outname)
+    MessageLines(1) = ' EMEBSDmaster program has ended successfully'
+    MessageLines(2) = ' Master pattern data stored in '//trim(outname)
     write (exectime,"(F10.4)") tstop  
-    MessageLines(3) = 'Total execution time [s]: '//trim(exectime)
+    MessageLines(3) = ' Total execution time [s]: '//trim(exectime)
     SlackUsername = 'EMsoft on '//trim(c)
     i = PostMessage(MessageLines, NumLines, SlackUsername)
   end if

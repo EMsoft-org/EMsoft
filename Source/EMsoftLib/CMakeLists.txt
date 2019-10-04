@@ -102,6 +102,7 @@ set(EMsoftLib_C_SRCS
   ${EMsoftLib_SOURCE_DIR}/cs_malloc.c
   ${EMsoftLib_SOURCE_DIR}/cs_util.c
   ${EMsoftLib_SOURCE_DIR}/cs.h
+  ${EMsoftLib_SOURCE_DIR}/sht_file.hpp
   ${EMsoftLib_Additional_C_SRCS}
 )
 if(NOT WIN32 AND BUILD_SHARED_LIBS)

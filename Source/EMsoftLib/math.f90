@@ -45,6 +45,7 @@
 !> @date 10/24/17 MDG 4.2 added infty()/inftyd() functions to return the IEEE infinity value
 !> @date 08/23/19 MDG 4.3 removed spaces around "kind" statements to facilitate f90wrap python wrapper generation
 !> @date 10/04/19 MDG 4.4 adds vecnorm to replace non-standard NORM2 calls  (F2003 compliance)
+!> @date 10/04/19 MDG 4.5 adds nan() function, returning a single or double precision IEEE NaN value
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -214,6 +215,55 @@ big = HUGE(1.D0)
 infinity = big + HUGE(1.D0)
 
 end function inftyd
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: nan
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the single precision IEEE value for nan
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function nan() result(x)
+!DEC$ ATTRIBUTES DLLEXPORT :: nan
+
+ use, intrinsic :: iso_fortran_env
+ use, intrinsic :: ieee_arithmetic
+
+ IMPLICIT NONE 
+
+real(kind=sgl)        :: x
+
+x = ieee_value(x, ieee_quiet_nan)
+
+end function nan
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: nan_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the sngle precision IEEE value for nan
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function nan_d() result(x)
+!DEC$ ATTRIBUTES DLLEXPORT :: nan_d
+
+ use, intrinsic :: iso_fortran_env
+ use, intrinsic :: ieee_arithmetic
+
+ IMPLICIT NONE 
+
+real(kind=dbl)        :: x
+
+x = ieee_value(x, ieee_quiet_nan)
+
+end function nan_d
+
 
 !--------------------------------------------------------------------------
 !

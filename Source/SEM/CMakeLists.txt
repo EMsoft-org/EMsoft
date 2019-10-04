@@ -40,7 +40,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
   
   Add_EMsoft_Executable(TARGET EMEBSDmaster 
                         SOURCES ${APP_DIR}/EMEBSDmaster.f90 
-                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMsoftLib_C}
                         TEMPLATE ${TMPLT_DIR}/EMEBSDmaster.template 
                         SOLUTION_FOLDER EMsoftPublic/SEM 
                         INSTALL_PROGRAM TRUE)
