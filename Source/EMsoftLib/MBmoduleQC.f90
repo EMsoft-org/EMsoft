@@ -115,9 +115,9 @@ IMPLICIT NONE
 type(TDQCStructureType),pointer     :: QCcell
 type(TDQCreflisttype),pointer       :: listroot
 type(TDQCreflisttype),pointer       :: listrootw
+integer(kind=irg),INTENT(IN)        :: nns
 complex(kind=dbl),INTENT(INOUT)     :: DynMat(nns,nns)
 !f2py intent(in,out) ::  DynMat
-integer(kind=irg),INTENT(IN)        :: nns
 integer(kind=irg),INTENT(IN)        :: nnw
 character(5),INTENT(IN),OPTIONAL    :: BlochMode   ! 'Bloch' or 'Struc'
 
@@ -258,9 +258,9 @@ IMPLICIT NONE
 
 type(TDQCStructureType),pointer         :: QCcell
 type(TDQCreflisttype),pointer           :: listroot
+integer(kind=irg),INTENT(IN)            :: nref
 complex(kind=dbl),INTENT(INOUT)         :: DynMat(nref,nref)
 !f2py intent(in,out) ::  DynMat
-integer(kind=irg),INTENT(IN)            :: nref
 
 complex(kind=dbl)                       :: czero, ughp, uhph, weaksum, qg0
 real(kind=dbl)                          :: weaksgsum
@@ -351,9 +351,9 @@ IMPLICIT NONE
 type(QCStructureType),pointer    :: QCcell
 type(QCreflisttype),pointer      :: listroot
 type(QCreflisttype),pointer      :: listrootw
+integer(kind=irg),INTENT(IN)     :: nns
 complex(kind=dbl),INTENT(INOUT)  :: DynMat(nns,nns)
 !f2py intent(in,out) ::  DynMat
-integer(kind=irg),INTENT(IN)     :: nns
 integer(kind=irg),INTENT(IN)     :: nnw
 character(5),INTENT(IN),OPTIONAL :: BlochMode   ! 'Bloch' or 'Struc'
 
@@ -500,9 +500,9 @@ IMPLICIT NONE
 
 type(QCStructureType),pointer           :: QCcell
 type(QCreflisttype),pointer             :: listroot
+integer(kind=irg),INTENT(IN)            :: nref
 complex(kind=dbl),INTENT(INOUT)         :: DynMat(nref,nref)
 !f2py intent(in,out) ::  DynMat
-integer(kind=irg),INTENT(IN)            :: nref
 
 complex(kind=dbl)                       :: czero, ughp, uhph, weaksum, qg0
 real(kind=dbl)                          :: weaksgsum

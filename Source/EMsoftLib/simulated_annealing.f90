@@ -61,12 +61,12 @@ abstract interface
  
             implicit none
 
-            integer(8),intent(in)                :: ipar(nipar)
-            real(sgl),intent(inout)              :: fpar(nfpar)
-            real(sgl),intent(in)                 :: initmeanval(ninit)
             integer(irg),intent(in)              :: ninit
             integer(irg),intent(in)              :: nipar
             integer(irg),intent(in)              :: nfpar
+            integer(8),intent(in)                :: ipar(nipar)
+            real(sgl),intent(inout)              :: fpar(nfpar)
+            real(sgl),intent(in)                 :: initmeanval(ninit)
             real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
             real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
             real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -95,16 +95,16 @@ contains
       integer :: ni,num_fal
       integer :: iprint,i_corr_fall
       integer :: ifront,ielle
-      real*8  :: x(n),d(n),alfa_d(n),z(n),bl(n),bu(n)
-      real*8  :: f,alfa,alfa_max,alfaex, fz,gamma, gamma_int
-      real*8  :: delta,delta1,fpar,fzdelta
+      real(kind=dbl)  :: x(n),d(n),alfa_d(n),z(n),bl(n),bu(n)
+      real(kind=dbl)  :: f,alfa,alfa_max,alfaex, fz,gamma, gamma_int
+      real(kind=dbl)  :: delta,delta1,fpar,fzdelta
 
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -335,7 +335,7 @@ contains
 
 	  return      
 	  
-      end
+      end subroutine
 
 !PROGRAM MAIN_GLOB
 
@@ -371,15 +371,16 @@ SUBROUTINE SENZADERGLOB(ipar,fparebsd,initmeanval,ninit,nipar,nfpar,&
 	use typedefs
 	IMPLICIT NONE
 
-	INTEGER, PARAMETER				:: IRUNS      = 10
+	INTEGER, PARAMETER				       :: IRUNS      = 10
 
-	PROCEDURE(func)                    :: calfun
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
+	PROCEDURE(func)                        :: calfun
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(irg),intent(inout)           :: N
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -391,7 +392,7 @@ SUBROUTINE SENZADERGLOB(ipar,fparebsd,initmeanval,ninit,nipar,nfpar,&
 
 !	INCLUDE 'TYPEDECL.FI'
 
-	INTEGER						:: N, NF, NFAILS, IDIMWKS, NUMFAL, IOTT, ISTOP
+	INTEGER						:: NF, NFAILS, IDIMWKS, NUMFAL, IOTT, ISTOP
 	INTEGER						:: VECTNF(IRUNS), VECTNFOTT(IRUNS)
 	INTEGER						:: LSTOT, NFTOT, NPCTOT, NLMTOT, IT, IMAX
 	INTEGER						:: LS, NPC, NLM, ICONTFAL, IDFAL, NUMITER
@@ -1493,23 +1494,23 @@ SUBROUTINE RICERCA_LUNGO_ASSI(N,X,FF,ALFA,DOLDALFA,D,FFSTOP,XINF,XSUP,FMAX_EFF,i
 	INTEGER IPRINT
 	INTEGER	ENV, LINK
         PROCEDURE(func) calfun
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
       real(sgl),intent(in)                 :: mLPSH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
       logical,intent(in),optional          :: verbose
 
-	REAL*8 FMAX_EFF
-	REAL*8 X(N),DIREZIONI(N),Z(N),Z1(N),D(N),XOLD(N)
-	REAL*8 GAMMA,RHO,ALFA,F,FF,FZ,FTAR,F0,DSTOP,FFSTOP   
-	REAL*8 DOLDALFA(N),DCONV(N),FINIT(N,2) 
-	REAL*8 FSTOP(N+1),XFSTOP(N,N+1),XINF(N),XSUP(N),ALFA_MIN(N)
+	real(kind=dbl) FMAX_EFF
+	real(kind=dbl) X(N),DIREZIONI(N),Z(N),Z1(N),D(N),XOLD(N)
+	real(kind=dbl) GAMMA,RHO,ALFA,F,FF,FZ,FTAR,F0,DSTOP,FFSTOP   
+	real(kind=dbl) DOLDALFA(N),DCONV(N),FINIT(N,2) 
+	real(kind=dbl) FSTOP(N+1),XFSTOP(N,N+1),XINF(N),XSUP(N),ALFA_MIN(N)
 
 	COMMON /NUM/F
 	COMMON /NUMNEW2/NUM_FUNCT
@@ -1573,12 +1574,12 @@ SUBROUTINE INTERFACCIA(N,X,FF,ALFA,DOLDALFA,D,FFSTOP,FFSTOPTOL,XINF,XSUP,FOTT,AL
 	INTEGER IPUNT,NUM_PARAM
 	INTEGER IPRINT
 	INTEGER	ENV, LINK
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -1587,11 +1588,11 @@ SUBROUTINE INTERFACCIA(N,X,FF,ALFA,DOLDALFA,D,FFSTOP,FFSTOPTOL,XINF,XSUP,FOTT,AL
       procedure(func)                      :: calfun
 
 
-	REAL*8 X(N),DIREZIONI(N),Z(N),Z1(N),D(N),XOLD(N),XOTT(N),fglob
-	REAL*8 GAMMA,RHO,ALFA,F,FF,FZ,FTAR,F0,DSTOP,ALFAOTT    
-	REAL*8 FFSTOP,FFSTOPTOL,FOTT,ALFAMAX
-	REAL*8 DOLDALFA(N),DCONV(N),FINIT(N,2) 
-	REAL*8 FSTOP(N+1),XFSTOP(N,N+1),XINF(N),XSUP(N),ALFA_MIN(N)
+	real(kind=dbl) X(N),DIREZIONI(N),Z(N),Z1(N),D(N),XOLD(N),XOTT(N),fglob
+	real(kind=dbl) GAMMA,RHO,ALFA,F,FF,FZ,FTAR,F0,DSTOP,ALFAOTT    
+	real(kind=dbl) FFSTOP,FFSTOPTOL,FOTT,ALFAMAX
+	real(kind=dbl) DOLDALFA(N),DCONV(N),FINIT(N,2) 
+	real(kind=dbl) FSTOP(N+1),XFSTOP(N,N+1),XINF(N),XSUP(N),ALFA_MIN(N)
 	TYPE(COMP_WKS_TYP)	:: WKS(IDIMWKS)
 	LOGICAL MASCH(IDIMWKS)
 
@@ -1651,12 +1652,12 @@ SUBROUTINE GENERA_PUNTO_SA(N,XPROP,FPROP,XINF,XSUP,FOTT,TCOEFF,IVAR,IVAR2, &
 	INTEGER					:: I
 	REAL					:: RRAND
         PROCEDURE(func)                         :: calfun
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -1753,20 +1754,20 @@ END SUBROUTINE GENERA_PUNTO_SA
       INTEGER IPRINT
       INTEGER IMIN,IMAX,IMINALFA,IMAXALFA
 
-      REAL*8 DCONV(N),DNR,FFM
-      REAL*8 X(N),Z(N),Z1(N),D(N),D1(N),XOLD(N)
-      REAL*8 DOLDALFA(N),ALFA,BL(N),BU(N)
-      REAL*8 F,FZ 
-      REAL*8 DOLDALFAMEDIO,DALFAMAX
-      REAL*8 FMIN,FMAX,ALFA0,DOLDALFAMIN,DOLDALFAMAX
-      REAL*8 RAPALFA,FINIT(N,2)
+      real(kind=dbl) DCONV(N),DNR,FFM
+      real(kind=dbl) X(N),Z(N),Z1(N),D(N),D1(N),XOLD(N)
+      real(kind=dbl) DOLDALFA(N),ALFA,BL(N),BU(N)
+      real(kind=dbl) F,FZ 
+      real(kind=dbl) DOLDALFAMEDIO,DALFAMAX
+      real(kind=dbl) FMIN,FMAX,ALFA0,DOLDALFAMIN,DOLDALFAMAX
+      real(kind=dbl) RAPALFA,FINIT(N,2)
 
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -1777,7 +1778,7 @@ END SUBROUTINE GENERA_PUNTO_SA
 
 !     VETTORE DEI VALORI DI F SUI PUNTI DI UN SIMPLESSO N+1 DIM.
 
-      REAL*8 FSTOP(N+1),XFSTOP(N,N+1),FFSTOP,FMM
+      real(kind=dbl) FSTOP(N+1),XFSTOP(N,N+1),FFSTOP,FMM
 
 !    num_fal rappresenta il numero di fallimenti consecutivi
 
@@ -1953,14 +1954,14 @@ END SUBROUTINE GENERA_PUNTO_SA
 		    DO I=1,N+1
 			  FFM=FFM+FSTOP(I)
 			ENDDO
-			FFM=FFM/DFLOAT((N+1))
+			FFM=FFM/dble((N+1))
 
 			FFSTOP=0.D0
 			DO I=1,N+1
 			  FFSTOP=FFSTOP+(FSTOP(I)-FFM)*(FSTOP(I)-FFM)
 			ENDDO
 		!	write(*,*) ' ffstop =',ffstop,  ' dfloat =',dfloat(n+1),' ffm =',ffm
-			FFSTOP=DSQRT(FFSTOP/DFLOAT(N+1))
+			FFSTOP=DSQRT(FFSTOP/dble(N+1))
 
              RETURN
           END IF
@@ -1969,7 +1970,7 @@ END SUBROUTINE GENERA_PUNTO_SA
 
       GO TO 1
 
-      END
+      END subroutine
         
 !************************************************************
 !*
@@ -1988,21 +1989,21 @@ END SUBROUTINE GENERA_PUNTO_SA
       INTEGER IPRINT
 	INTEGER IMIN,IMAX,IMINALFA,IMAXALFA
 
-      REAL*8 DCONV(N),DNR,ALFA_STOP,fglob,BL(N),BU(N)
-      REAL*8 X(N),Z(N),Z1(N),D(N),D1(N),XOLD(N),XOTT(N)
-      REAL*8 DOLDALFA(N),ALFA,FOTT,ALFAOTT
-      REAL*8 F,FZ 
-      REAL*8 DOLDALFAMEDIO,DALFAMAX
-      REAL*8 FMIN,FMAX,ALFA0,DOLDALFAMIN,DOLDALFAMAX
-      REAL*8 RAPALFA,FINIT(N,2)
+      real(kind=dbl) DCONV(N),DNR,ALFA_STOP,fglob,BL(N),BU(N)
+      real(kind=dbl) X(N),Z(N),Z1(N),D(N),D1(N),XOLD(N),XOTT(N)
+      real(kind=dbl) DOLDALFA(N),ALFA,FOTT,ALFAOTT
+      real(kind=dbl) F,FZ 
+      real(kind=dbl) DOLDALFAMEDIO,DALFAMAX
+      real(kind=dbl) FMIN,FMAX,ALFA0,DOLDALFAMIN,DOLDALFAMAX
+      real(kind=dbl) RAPALFA,FINIT(N,2)
 	TYPE(COMP_WKS_TYP)	:: WKS(IDIMWKS)
 
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -2013,7 +2014,7 @@ END SUBROUTINE GENERA_PUNTO_SA
 
 !     VETTORE DEI VALORI DI F SUI PUNTI DI UN SIMPLESSO N+1 DIM.
 
-      REAL*8 FSTOP(N+1),XFSTOP(N,N+1),FFSTOP,FFSTOPTOL
+      real(kind=dbl) FSTOP(N+1),XFSTOP(N,N+1),FFSTOP,FFSTOPTOL
 	LOGICAL MASCH(IDIMWKS)
 
 !     num_fal rappresenta il numero di fallimenti consecutivi
@@ -2192,7 +2193,7 @@ END SUBROUTINE GENERA_PUNTO_SA
 
       GO TO 1
 
-      END
+      END subroutine
 
 
 !     #######################################################
@@ -2207,9 +2208,9 @@ END SUBROUTINE GENERA_PUNTO_SA
 !	INCLUDE 'TYPEDECL.FI'
       
       INTEGER N,ISTOP,I,NUM_FUNCT,IDIMWKS,J,IMAX,MAXNF
-      REAL*8 DOLDALFA(N),DALFAMAX,FSTOP(N+1),FFSTOP,FFM,ALFA_STOP,F &
+      real(kind=dbl) DOLDALFA(N),DALFAMAX,FSTOP(N+1),FFSTOP,FFM,ALFA_STOP,F &
      	,XOTT(N),X(N)
-	REAL*8 FFSTOPTOL,FOTT,ALFAOTT,fglob
+	real(kind=dbl) FFSTOPTOL,FOTT,ALFAOTT,fglob
 	TYPE(COMP_WKS_TYP)	:: WKS(IDIMWKS)
 
 	LOGICAL NORMADUE,L_F_DISTANTI,NON_MINIMIZZ,L_F_VICINI
@@ -2240,14 +2241,14 @@ END SUBROUTINE GENERA_PUNTO_SA
       DO I=1,N+1
         FFM=FFM+FSTOP(I)
       ENDDO
-      FFM=FFM/DFLOAT((N+1))
+      FFM=FFM/dble((N+1))
 
       FFSTOP=0.D0
       DO I=1,N+1
         FFSTOP=FFSTOP+(FSTOP(I)-FFM)*(FSTOP(I)-FFM)
       ENDDO
 !	write(*,*) ' ffstop =',ffstop,  ' dfloat =',dfloat(n+1),' ffm =',ffm
-      FFSTOP=DSQRT(FFSTOP/DFLOAT(N+1))
+      FFSTOP=DSQRT(FFSTOP/dble(N+1))
 
 	IF(NORMADUE) THEN
 		IF(DSQRT(DOT_PRODUCT(DOLDALFA,DOLDALFA)).LE.ALFA_STOP) THEN
@@ -2360,19 +2361,19 @@ END SUBROUTINE GENERA_PUNTO_SA
       INTEGER I,J,L,LL
       INTEGER NUM_FAL
       INTEGER IPRINT
-      REAL*8 X(N),D(N),DOLDALFA(N),Z(N),Z1(N)
-      REAL*8 F,ALFA,FZ,GAMMA,DNR
-      REAL*8 DELTA,DELTA1,FPAR,FZDELTA
-      REAL*8 ALFAEX,FMIN,ALFAMIN 
-      REAL*8 DALFAMAX,FCOMMON
-      REAL*8 ALFAOLD,FZOLD
+      real(kind=dbl) X(N),D(N),DOLDALFA(N),Z(N),Z1(N)
+      real(kind=dbl) F,ALFA,FZ,GAMMA,DNR
+      real(kind=dbl) DELTA,DELTA1,FPAR,FZDELTA
+      real(kind=dbl) ALFAEX,FMIN,ALFAMIN 
+      real(kind=dbl) DALFAMAX,FCOMMON
+      real(kind=dbl) ALFAOLD,FZOLD
       LOGICAL PRIMA_VOLTA
-      integer(8),intent(in)                :: ipar(nipar)
-      real(sgl),intent(inout)              :: fparebsd(nfpar)
-      real(sgl),intent(in)                 :: initmeanval(ninit)
       integer(irg),intent(in)              :: ninit
       integer(irg),intent(in)              :: nipar
       integer(irg),intent(in)              :: nfpar
+      integer(8),intent(in)                :: ipar(nipar)
+      real(sgl),intent(inout)              :: fparebsd(nfpar)
+      real(sgl),intent(in)                 :: initmeanval(ninit)
       real(sgl),intent(in)                 :: expt(ipar(2)*ipar(3))
       real(sgl),intent(in)                 :: accum_e(ipar(4),-ipar(5):ipar(5),-ipar(5):ipar(5))
       real(sgl),intent(in)                 :: mLPNH(-ipar(6):ipar(6), -ipar(6):ipar(6), ipar(10), ipar(7))
@@ -2495,6 +2496,6 @@ END SUBROUTINE GENERA_PUNTO_SA
 
       END IF
 
-      END
+      END subroutine
 
 end module SimAnn

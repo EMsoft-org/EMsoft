@@ -1853,12 +1853,12 @@ use Indexingmod, ONLY:Jaccard_Distance
 
 IMPLICIT NONE
 
-integer(c_size_t),intent(in)            :: ipar(nipar)
-real(sgl),intent(inout)                 :: fpar(nfpar)
-real(sgl),intent(in)                    :: initmeanval(ninit)
 integer(irg),intent(in)                 :: nipar
 integer(irg),intent(in)                 :: nfpar
 integer(irg),intent(in)                 :: ninit
+integer(c_size_t),intent(in)            :: ipar(nipar)
+real(sgl),intent(inout)                 :: fpar(nfpar)
+real(sgl),intent(in)                    :: initmeanval(ninit)
 real(c_float),intent(in)                :: expt(ipar(2)*ipar(3)/ipar(12)**2)
 integer(irg),intent(in)                 :: nstep
 real(sgl),intent(in)                    :: stepsize(nstep)

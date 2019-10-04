@@ -84,14 +84,15 @@ use error
 
 IMPLICIT NONE
 
+integer(kind=4),INTENT(IN)                          :: Ne
+integer(kind=4),INTENT(IN)                          :: Nd
 real(kind=4),INTENT(OUT),target                     :: results(Ne*Nd)
 integer(c_intptr_t),target,INTENT(INOUT)            :: cl_expt
 !f2py intent(in,out) ::  cl_expt
 integer(c_intptr_t),target,INTENT(INOUT)            :: cl_dict
 !f2py intent(in,out) ::  cl_dict
 
-integer(kind=4),INTENT(IN)                          :: Ne
-integer(kind=4),INTENT(IN)                          :: Nd
+
 integer(kind=4),INTENT(IN)                          :: correctsize
 integer(kind=irg),INTENT(IN)                        :: numd, selnumd
 integer(c_intptr_t),target,INTENT(INOUT)            :: context
@@ -172,9 +173,9 @@ use local
 
 IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)      :: nn
 integer(kind=irg),INTENT(IN)      :: img1(nn)
 integer(kind=irg),INTENT(IN)      :: img2(nn)
-integer(kind=irg),INTENT(IN)      :: nn
 logical,INTENT(IN),OPTIONAL       :: mutualinformation
 
 real(kind=dbl)                    :: JD

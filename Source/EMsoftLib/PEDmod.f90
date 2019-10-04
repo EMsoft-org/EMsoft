@@ -75,11 +75,11 @@ IMPLICIT NONE
 
 type(PEDKINIndxListType), INTENT(IN)         :: pednl
 type(unitcell)                               :: cell
+integer(kind=irg), INTENT(IN)                :: nref
 integer(kind=irg),INTENT(IN)                 :: reflistarray(3,nref)
 real(kind=sgl),INTENT(IN)                    :: sanglearray(nref)
 
 !type(reflisttype), pointer                   :: reflist, rltmpa, nexts
-integer(kind=irg), INTENT(IN)                :: nref
 real(kind=sgl), INTENT(IN)                   :: qu(4)
 real(kind=sgl), INTENT(OUT)                  :: pedpattern(1:pednl%npix, 1:pednl%npix)
 

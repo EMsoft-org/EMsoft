@@ -742,10 +742,10 @@ use so3, only:IsinsideFZ                ! we only need to do a test ...
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)               :: X(4,nums)
-type(dicttype),INTENT(INOUT)    :: dict
-!f2py intent(in,out) ::  dict
 integer(kind=irg),INTENT(IN)            :: nums
+real(kind=dbl),INTENT(IN)               :: X(4,nums)
+type(dicttype),INTENT(INOUT)            :: dict
+!f2py intent(in,out) ::  dict
 integer(kind=irg),INTENT(INOUT)         :: seed
 !f2py intent(in,out) ::  seed
 real(kind=dbl),INTENT(OUT)              :: muhat(4)
@@ -888,10 +888,10 @@ use quaternions
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)               :: X(4,nums)
-type(dicttype),INTENT(IN)       :: dict
-integer(kind=irg),INTENT(IN)            :: Pmdims
 integer(kind=irg),INTENT(IN)            :: nums
+real(kind=dbl),INTENT(IN)               :: X(4,nums)
+type(dicttype),INTENT(IN)               :: dict
+integer(kind=irg),INTENT(IN)            :: Pmdims
 real(kind=dbl),INTENT(IN)               :: Mu(4)
 real(kind=dbl),INTENT(IN)               :: Kappa
 character(3),INTENT(IN)                 :: Dtype
@@ -947,10 +947,10 @@ use quaternions
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)               :: X(4,nums)
-type(dicttype),INTENT(IN)       :: dict
-integer(kind=irg),INTENT(IN)            :: Pmdims
 integer(kind=irg),INTENT(IN)            :: nums
+real(kind=dbl),INTENT(IN)               :: X(4,nums)
+type(dicttype),INTENT(IN)               :: dict
+integer(kind=irg),INTENT(IN)            :: Pmdims
 real(kind=dbl),INTENT(IN)               :: R(nums,Pmdims)
 character(3),INTENT(IN)                 :: Dtype
 real(kind=dbl)                          :: MuKa(5)
@@ -1056,11 +1056,11 @@ use quaternions
 
 IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)            :: nums
 real(kind=dbl),INTENT(IN)               :: X(4,nums)
-type(dicttype),INTENT(INOUT)    :: dict
+type(dicttype),INTENT(INOUT)            :: dict
 !f2py intent(in,out) ::  dict
 integer(kind=irg),INTENT(IN)            :: Pmdims
-integer(kind=irg),INTENT(IN)            :: nums
 real(kind=dbl),INTENT(IN)               :: MuKa(5)
 real(kind=dbl),INTENT(IN)               :: R(nums,Pmdims)
 real(kind=dbl),INTENT(INOUT)            :: Q
@@ -1130,8 +1130,8 @@ use local
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)               :: X(4,nums)
 integer(kind=irg),INTENT(IN)            :: nums
+real(kind=dbl),INTENT(IN)               :: X(4,nums)
 real(kind=dbl),INTENT(IN)               :: mu(4)
 real(kind=dbl),INTENT(IN)               :: kappa
 real(kind=dbl),INTENT(IN)               :: C
@@ -1249,10 +1249,10 @@ use local
 
 IMPLICIT NONE
 
-integer(kind=sgl),INTENT(IN)            :: array(npx,npy,k)
 integer(kind=irg),INTENT(IN)            :: k
 integer(kind=irg),INTENT(IN)            :: npx
 integer(kind=irg),INTENT(IN)            :: npy
+integer(kind=sgl),INTENT(IN)            :: array(npx,npy,k)
 real(kind=sgl),INTENT(OUT)              :: returnarr(npx,npy)
 
 integer(kind=irg)                       :: ii,jj,ki,kj,similarity_measure_sum,res
@@ -1306,9 +1306,9 @@ use local
 
 IMPLICIT NONE
 
+integer(kind=irg),INTENT(IN)            :: k
 integer(kind=irg),INTENT(IN)            :: set1(k)
 integer(kind=irg),INTENT(IN)            :: set2(k)
-integer(kind=irg),INTENT(IN)            :: k
 integer(kind=irg),INTENT(OUT)           :: res
 
 integer(kind=irg)                       :: ii,jj

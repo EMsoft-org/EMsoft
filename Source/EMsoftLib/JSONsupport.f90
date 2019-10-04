@@ -172,9 +172,9 @@ IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer                :: inp
 !f2py intent(in,out) ::  inp
+integer(kind=irg),INTENT(IN)                          :: n_int
 integer(kind=irg),INTENT(IN)                          :: io_int(n_int)
 character(20),INTENT(IN)                              :: intlist(n_int)
-integer(kind=irg),INTENT(IN)                          :: n_int
 integer(kind=irg),INTENT(INOUT)                       :: error_cnt
 !f2py intent(in,out) ::  error_cnt
 
@@ -211,9 +211,9 @@ IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer                :: inp
 !f2py intent(in,out) ::  inp
+integer(kind=irg),INTENT(IN)                          :: n_real
 real(kind=sgl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
-integer(kind=irg),INTENT(IN)                          :: n_real
 
 integer(kind=irg)                                     :: hdferr, i
 character(fnlen)                                      :: dataset
@@ -250,9 +250,9 @@ IMPLICIT NONE
 
 type(json_value),INTENT(INOUT),pointer                :: inp
 !f2py intent(in,out) ::  inp
+integer(kind=irg),INTENT(IN)                          :: n_real
 real(kind=dbl),INTENT(IN)                             :: io_real(n_real)
 character(20),INTENT(IN)                              :: reallist(n_real)
-integer(kind=irg),INTENT(IN)                          :: n_real
 
 integer(kind=irg)                                     :: hdferr, i
 character(fnlen)                                      :: dataset
@@ -1876,10 +1876,10 @@ IMPLICIT NONE
 type(json_file),INTENT(INOUT)           :: json
 !f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
+integer(kind=irg),INTENT(IN)            :: n
 integer(kind=irg),INTENT(INOUT)         :: ivec(n)
 !f2py intent(in,out) ::  ivec
 integer(kind=irg),INTENT(IN)            :: dvec(n)
-integer(kind=irg),INTENT(IN)            :: n
 
 logical                                 :: found
 integer(kind=irg),dimension(:),allocatable :: rv
@@ -1967,10 +1967,10 @@ IMPLICIT NONE
 type(json_file),INTENT(INOUT)           :: json
 !f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
+integer(kind=irg),INTENT(IN)            :: n
 real(kind=sgl),INTENT(INOUT)            :: rvec(n)
 !f2py intent(in,out) ::  rvec
 real(kind=sgl),INTENT(IN)               :: dvec(n)
-integer(kind=irg),INTENT(IN)            :: n
 
 logical                                 :: found
 real(kind=dbl),dimension(:),allocatable :: rv
@@ -2058,10 +2058,10 @@ IMPLICIT NONE
 type(json_file),INTENT(INOUT)           :: json
 !f2py intent(in,out) ::  json
 character(fnlen),INTENT(IN)             :: ep
+integer(kind=irg),INTENT(IN)            :: n
 real(kind=dbl),INTENT(INOUT)            :: rvec(n)
 !f2py intent(in,out) ::  rvec
 real(kind=dbl),INTENT(IN)               :: dvec(n)
-integer(kind=irg),INTENT(IN)            :: n
 
 logical                                 :: found
 real(kind=dbl),dimension(:),allocatable :: rv
