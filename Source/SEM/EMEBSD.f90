@@ -937,7 +937,7 @@ do ibatch=1,totnumbatches
 
 ! apply circular mask and normalize
         binnedvec(1:L) = binnedvec(1:L) * masklin(1:L)
-        binnedvec(1:correctsize) = binnedvec(1:correctsize)/NORM2(binnedvec(1:correctsize))
+        binnedvec(1:correctsize) = binnedvec(1:correctsize)/vecnorm(binnedvec(1:correctsize))
 
 ! store in array for hyperslab writing
         threadbatchpatterns32lin(1:correctsize, iang-istart(TID,ibatch)+1) = binnedvec

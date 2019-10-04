@@ -319,7 +319,7 @@ if (trim(enl%modalityname) .eq. 'EBSD') then
     close(dataunit)
 
 
-    EXPT = EXPT/NORM2(EXPT)
+    EXPT = EXPT/vecnorm(EXPT)
 
     do ii = 1,NRUN
 
@@ -550,7 +550,7 @@ dataset = SC_sigstep
     read(dataunit,rec=1) EXPT
     close(dataunit)
 
-    EXPT = EXPT/NORM2(EXPT)
+    EXPT = EXPT/vecnorm(EXPT)
     
     do ii = 1,NRUN
 

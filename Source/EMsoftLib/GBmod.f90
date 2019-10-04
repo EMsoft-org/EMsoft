@@ -41,6 +41,7 @@
 module GBmod
 
 use local
+use math 
 
 IMPLICIT NONE
 
@@ -939,7 +940,7 @@ rod(1:3) = (/ dble(CSLintegers(1,CSLnumber))/dble(CSLintegers(2,CSLnumber)), &
               dble(CSLintegers(3,CSLnumber))/dble(CSLintegers(4,CSLnumber)), &
               dble(CSLintegers(5,CSLnumber))/dble(CSLintegers(6,CSLnumber)) /)
 
-l = NORM2(rod(1:3))
+l = vecnorm(rod(1:3))
 rod(1:3) = rod(1:3)/l
 rod(4) = l
 

@@ -91,7 +91,7 @@ call ReadValue('Enter the pseudo-symmetry axis-angle pair (axis, angle°) ',io_d
 ax(1:4) = io_dbl(1:4)
 
 ! normalize the vector part and convert the angle to radians
-ax(1:3) = ax(1:3) / NORM2(ax(1:3))
+ax(1:3) = ax(1:3) / vecnorm(ax(1:3))
 ax(4) = ax(4) *cPi/180.D0 
 
 ! convert to quaternion

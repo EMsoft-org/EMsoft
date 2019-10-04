@@ -40,6 +40,8 @@
 !--------------------------------------------------------------------------
 module detectors
 
+use math 
+
 IMPLICIT NONE
 
 contains
@@ -446,6 +448,7 @@ use typedefs
 use NameListTypedefs
 use files
 use constants
+use math
 use io
 use Lambert
 use error
@@ -510,7 +513,7 @@ do j=1,enl%numsx
                                     (-sa * scin_y(i) + ca * Ls) * rhos/)
 
    EBSDdetector%detector(j,i)%dc =  &
-         EBSDdetector%detector(j,i)%dc/NORM2(EBSDdetector%detector(j,i)%dc)
+         EBSDdetector%detector(j,i)%dc/vecnorm(EBSDdetector%detector(j,i)%dc)
 
 !  if (ierr .ne. 0) then
 !      call FatalError('EBSDFullGenerateDetector:','Lambert Projection coordinate undefined')

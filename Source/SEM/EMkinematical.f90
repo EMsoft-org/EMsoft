@@ -366,7 +366,7 @@ allocate(stereoSH(-nx:nx,-nx:nx),stat=istat)
     do j=-nx,nx 
       xy = (/ float(i), float(j) /) / float(nx)
       xyz = StereoGraphicInverse( xy, ierr, Radius )
-      xyz = xyz/NORM2(xyz)
+      xyz = xyz/vecnorm(xyz)
       if (ierr.ne.0) then 
         stereoNH(i,j) = 0.0
         stereoSH(i,j) = 0.0

@@ -568,7 +568,7 @@ mainloop: do i = 1,(totnum_el/num_max+1)
             xyz = LambertSquareToSphere((/Lamresx(j), Lamresy(j)/), ierr)
 
             if(ierr .eq. 0) then
-                xyz = xyz/NORM2(xyz)
+                xyz = xyz/vecnorm(xyz)
             end if
  
             r1 = xyz(1)

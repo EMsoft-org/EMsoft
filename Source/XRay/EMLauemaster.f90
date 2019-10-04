@@ -100,6 +100,7 @@ use error
 use gvectors
 use kvectors
 use io
+use math
 use local
 use files
 use timing
@@ -258,7 +259,7 @@ call cpu_time(tstart)
     do j=-npx,npx 
       xy = (/ float(i), float(j) /) / float(npx)
       xyz = StereoGraphicInverse( xy, ierr, Radius )
-      xyz = xyz/NORM2(xyz)
+      xyz = xyz/vecnorm(xyz)
       if (ierr.ne.0) then 
         masterSPNH(i,j) = 0.0
         masterSPSH(i,j) = 0.0

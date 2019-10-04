@@ -98,6 +98,7 @@ use kvectors, only:Delete_kvectorlist
 use gvectors, only:Set_Bethe_Parameters
 use error
 use io
+use math
 use files
 use diffraction
 use omp_lib
@@ -617,7 +618,7 @@ mLPSH = mLPNH
     do j=-ecpnl%npx,ecpnl%npx 
       xy = (/ float(i), float(j) /) / float(ecpnl%npx)
       xyz = StereoGraphicInverse( xy, ierr, Radius )
-      xyz = xyz/NORM2(xyz)
+      xyz = xyz/vecnorm(xyz)
       if (ierr.ne.0) then 
         masterSPNH(i,j,1:numset) = 0.0
         masterSPSH(i,j,1:numset) = 0.0

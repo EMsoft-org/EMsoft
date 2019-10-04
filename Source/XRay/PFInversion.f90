@@ -276,7 +276,7 @@ do k = 1,epf%nfiles ! each pole figure
             xyz = LambertSquareToSphere(xy,ierr)
 
             if (ierr .eq. 0) then
-               xyz = xyz/NORM2(xyz)
+               xyz = xyz/vecnorm(xyz)
             else
                 call FatalError('LambertSquareToSphere:','Coulnd not convert lambert square to sphere')
             end if
@@ -287,7 +287,7 @@ do k = 1,epf%nfiles ! each pole figure
                           hkl_f(1)*xyz(2) - hkl_f(2)*xyz(1)/)
   
             if(sum(abs(hcrossy)) .ne. 0.D0) then
-                hcrossy = hcrossy/NORM2(hcrossy)
+                hcrossy = hcrossy/vecnorm(hcrossy)
             else
                 hcrossy = (/1.D0, 0.D0, 0.D0/)
             end if

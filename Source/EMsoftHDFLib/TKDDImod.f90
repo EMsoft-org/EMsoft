@@ -44,6 +44,7 @@ module TKDDImod
 
 use local
 use typedefs
+use math
 
 IMPLICIT NONE
 
@@ -374,7 +375,7 @@ deallocate(z)
     pcvec = (/enl%ypc*enl%delta*ca + enl%xpc*enl%delta*sa*sw + enl%L*cw*sa, &
              enl%L*sw - enl%xpc*enl%delta*cw,&
              enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
-    pcvec = pcvec/NORM2(pcvec)
+    pcvec = pcvec/vecnorm(pcvec)
   else
     pcvec = (/ master%rgx(ipx,ipy), master%rgy(ipx,ipy), master%rgz(ipx,ipy) /)
   end if

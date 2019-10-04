@@ -188,11 +188,11 @@ if (trim(onl%GBmode).eq.'normal') then
     ! get the rotations to bring the normals to the z-axis
     phiA = acos(abs(msA(3))) * 0.5D0
     pp = (/ msA(2), -msA(1), 0.D0 /)
-    pp = sin(phiA) * pp / NORM2(pp)
+    pp = sin(phiA) * pp / vecnorm(pp)
     rhoA = (/ cos(phiA), pp(1), pp(2), pp(3) /)    
     phiC = acos(abs(msC(3))) * 0.5D0
     pp = (/ msC(2), -msC(1), 0.D0 /)
-    pp = sin(phiC) * pp / NORM2(pp)
+    pp = sin(phiC) * pp / vecnorm(pp)
     rhoC = (/ cos(phiC), pp(1), pp(2), pp(3) /)
     ! transform the quaternions and form the octonions
     oct1 = (/ quat_mult(qmc, rhoA), rhoA /)
@@ -205,13 +205,13 @@ end if
 ! make sure the octonions are properly normalized, as are the component quaternions
 ! i.e., normalize each quaternion separately 
 ! we need to have for o = (u,v):  ||u||=||v|| and ||o||=2 
-p = NORM2(oct1(1:4))
+p = vecnorm(oct1(1:4))
 oct1(1:4) = oct1(1:4)/p
-p = NORM2(oct1(5:8))
+p = vecnorm(oct1(5:8))
 oct1(5:8) = oct1(5:8)/p
-p = NORM2(oct2(1:4))
+p = vecnorm(oct2(1:4))
 oct2(1:4) = oct2(1:4)/p
-p = NORM2(oct2(5:8))
+p = vecnorm(oct2(5:8))
 oct2(5:8) = oct2(5:8)/p
 
 ! define the subfolder name for the frames
@@ -259,9 +259,9 @@ end do
 
 ! convert the octonions to the correct parameters for POVray visualization
 qn1 = conjg(oct1(1:4))
-qn1 = qn1/NORM2(qn1)
+qn1 = qn1/vecnorm(qn1)
 qn2 = conjg(oct2(1:4))
-qn2 = qn2/NORM2(qn2)
+qn2 = qn2/vecnorm(qn2)
 
 do i=1,numf+1
     ! interpolate the octonions

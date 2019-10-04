@@ -44,6 +44,7 @@
 !> @date 11/23/15 MDG 4.1 moved several routines from other mods into this one
 !> @date 10/24/17 MDG 4.2 added infty()/inftyd() functions to return the IEEE infinity value
 !> @date 08/23/19 MDG 4.3 removed spaces around "kind" statements to facilitate f90wrap python wrapper generation
+!> @date 10/04/19 MDG 4.4 adds vecnorm to replace non-standard NORM2 calls  (F2003 compliance)
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -64,7 +65,111 @@ interface cross3
         module procedure cross3_d
 end interface 
 
+interface vecnorm
+        module procedure vecnorm 
+        module procedure vecnorm_d
+        module procedure vecnorm2 
+        module procedure vecnorm2_d
+end interface
+
 contains
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: vecnorm
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the single precision length of a 1D vector
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function vecnorm(vec) result(veclen)
+!DEC$ ATTRIBUTES DLLEXPORT :: vecnorm
+
+real(kind=sgl),dimension(:)      :: vec
+real(kind=sgl)                   :: veclen
+
+integer(kind=irg)                :: sz(1)
+
+sz = size(vec)
+
+veclen = sqrt(sum(vec(1:sz(1))*vec(1:sz(1))))
+
+end function vecnorm
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: vecnorm_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the double precision length of a 1D vector
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function vecnorm_d(vec) result(veclen)
+!DEC$ ATTRIBUTES DLLEXPORT :: vecnorm_d
+
+real(kind=dbl),dimension(:)     :: vec(:)
+real(kind=dbl)                  :: veclen
+
+integer(kind=irg)               :: sz(1)
+
+sz = size(vec)
+
+veclen = sqrt(sum(vec(1:sz(1))*vec(1:sz(1))))
+
+end function vecnorm_d
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: vecnorm2
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the single precision length of a 2D array
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function vecnorm2(vec) result(veclen)
+!DEC$ ATTRIBUTES DLLEXPORT :: vecnorm2
+
+real(kind=sgl),dimension(:,:)    :: vec
+real(kind=sgl)                   :: veclen
+
+integer(kind=irg)                :: sz(2)
+
+sz = size(vec)
+
+veclen = sqrt(sum(vec(1:sz(1),1:sz(2))*vec(1:sz(1),1:sz(2))))
+
+end function vecnorm2
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: vecnorm2_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the double precision length of a 2D array
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function vecnorm2_d(vec) result(veclen)
+!DEC$ ATTRIBUTES DLLEXPORT :: vecnorm2_d
+
+real(kind=dbl),dimension(:,:)    :: vec
+real(kind=dbl)                   :: veclen
+
+integer(kind=irg)                :: sz(2)
+
+sz = size(vec)
+
+veclen = sqrt(sum(vec(1:sz(1),1:sz(2))*vec(1:sz(1),1:sz(2))))
+
+end function vecnorm2_d
 
 
 !--------------------------------------------------------------------------

@@ -114,6 +114,7 @@ use iso_c_binding
 use MuellerCalculus
 use omp_lib
 use timing
+use math 
 
 IMPLICIT NONE
 
@@ -166,7 +167,7 @@ allocate(LPNH(4,4,-omnl%npx:omnl%npx,-omnl%npx:omnl%npx),stat=istat)
 allocate(SPNH(4,4,-omnl%npx:omnl%npx,-omnl%npx:omnl%npx),stat=istat)
 
 ! dc = (/ 5.D0, 1.D0, 0.D0 /)
-! dc = dc/NORM2(dc)
+! dc = dc/vecnorm(dc)
 
 ! rvals = MC_getUniaxialReflectivities(lambda, eps, 1.D0, dc, dble(omnl%theta))
 ! MM=  MC_getSampleMuellerMatrix(rvals)
@@ -198,7 +199,7 @@ do ii=-omnl%npx,omnl%npx
   do jj=-omnl%npx,omnl%npx 
     xy = (/ dble(ii), dble(jj) /) * edge
     xyz = StereoGraphicInverse( xy, ierr, Radius )
-    xyz = xyz/NORM2(xyz)
+    xyz = xyz/vecnorm(xyz)
     if (ierr.ne.0) then 
       SPNH(1:4,1:4,ii,jj) = 0.0
     else

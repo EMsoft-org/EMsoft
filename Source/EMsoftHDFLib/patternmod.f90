@@ -62,6 +62,7 @@ use error
 use HDF5
 use HDFsupport
 use commonmod
+use math
 
 IMPLICIT NONE
 
@@ -1178,7 +1179,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
 
 ! apply circular mask and normalize for the dot product computation
         exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
-        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        vlen = vecnorm(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
         if (vlen.ne.0.0) then
           exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
         else
@@ -1474,7 +1475,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
 
 ! apply circular mask and normalize for the dot product computation
         exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) * masklin(1:L)
-        vlen = NORM2(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
+        vlen = vecnorm(exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L))
         if (vlen.ne.0.0) then
           exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L) = exppatarray((jj-1)*patsz+1:(jj-1)*patsz+L)/vlen
         else

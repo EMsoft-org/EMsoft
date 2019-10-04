@@ -120,6 +120,7 @@ use HDFsupport
 use ISO_C_BINDING
 use notifications
 use stringconstants
+use math
 
 IMPLICIT NONE
 
@@ -696,7 +697,7 @@ if (mode .eq. 'full') then
     do j=-nx,nx 
       xy = (/ float(i), float(j) /) / float(nx)
       xyz = StereoGraphicInverse( xy, ierr, Radius )
-      xyz = xyz/NORM2(xyz)
+      xyz = xyz/vecnorm(xyz)
       if (ierr.ne.0) then 
         accumSP(1:numEbins,i,j) = 0.0
       else

@@ -41,7 +41,7 @@
 !--------------------------------------------------------------------------
 module EBSDDImod
 
-
+use math
 use local
 use typedefs
 use stringconstants
@@ -1004,7 +1004,7 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
   
   ! normalize and apply circular mask 
          imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
-         vlen = NORM2(imagedictflt(1:correctsize))
+         vlen = vecnorm(imagedictflt(1:correctsize))
          if (vlen.ne.0.0) then
            imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/vlen
          else
@@ -1722,7 +1722,7 @@ if (ronl%method.eq.'FIT') then
             eindex = (iii - 1)*Ne + jj
             if (ronl%inRAM.eqv..TRUE.) then
                 tmpimageexpt(1:correctsize) = epatterns(1:correctsize,eindex)
-                tmpimageexpt = tmpimageexpt/NORM2(tmpimageexpt)
+                tmpimageexpt = tmpimageexpt/vecnorm(tmpimageexpt)
             else
                 tmpimageexpt = exptpatterns(:,jj)
             end if
@@ -1814,7 +1814,7 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
                eindex = (iii - 1)*dinl%numexptsingle + ii
                if (ronl%inRAM.eqv..TRUE.) then
                     tmpimageexpt(1:correctsize) = epatterns(1:correctsize,eindex)
-                    tmpimageexpt = tmpimageexpt/NORM2(tmpimageexpt)
+                    tmpimageexpt = tmpimageexpt/vecnorm(tmpimageexpt)
                 else
                     tmpimageexpt = exptpatterns(:, ii)
                 end if
@@ -1848,7 +1848,7 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
                         end do
                     end do
 
-                    imagedictflt = imagedictflt/NORM2(imagedictflt)
+                    imagedictflt = imagedictflt/vecnorm(imagedictflt)
 
                     dp = DOT_PRODUCT(tmpimageexpt,imagedictflt)
 
@@ -2592,7 +2592,7 @@ deallocate(z)
   !pcvec = (/enl%ypc*enl%delta*ca + enl%xpc*enl%delta*sa*sw + enl%L*cw*sa, &
   !         enl%L*sw - enl%xpc*enl%delta*cw,&
   !         enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
-  !pcvec = pcvec/NORM2(pcvec)
+  !pcvec = pcvec/vecnorm(pcvec)
 
   do i=1,enl%numsx
     do j=1,enl%numsy
@@ -2773,7 +2773,7 @@ deallocate(z)
   pcvec = (/enl%ypc*enl%delta*ca + enl%xpc*enl%delta*sa*sw + enl%L*cw*sa, &
            enl%L*sw - enl%xpc*enl%delta*cw,&
            enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
-  pcvec = pcvec/NORM2(pcvec)
+  pcvec = pcvec/vecnorm(pcvec)
 
   do i=1,enl%numsx
     do j=1,nlines

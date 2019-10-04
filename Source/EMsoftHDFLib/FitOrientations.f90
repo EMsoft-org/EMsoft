@@ -195,8 +195,8 @@ do i = 1,biny
     end do
 end do
 
-if(NORM2(EBSDvector) .ne. 0.0) then
-    EBSDvector = EBSDvector/NORM2(EBSDvector)
+if(vecnorm(EBSDvector) .ne. 0.0) then
+    EBSDvector = EBSDvector/vecnorm(EBSDvector)
 else
     call FatalError('EMFitOrientationcalfunEBSD:','Norm of calculated pattern is zero...check input data.')
 end if
@@ -418,8 +418,8 @@ do i=1,biny
     end do
 end do
 
-if(NORM2(ECPvector) .ne. 0.0) then
-    ECPvector = ECPvector/NORM2(ECPvector)
+if(vecnorm(ECPvector) .ne. 0.0) then
+    ECPvector = ECPvector/vecnorm(ECPvector)
 else
     print*,'Norm of calculated pattern is zero...check input data.'
     stop
