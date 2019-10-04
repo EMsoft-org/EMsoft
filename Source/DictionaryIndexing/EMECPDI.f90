@@ -619,7 +619,7 @@ prepexperimentalloop: do jj = 1,totnumexpt
     tmpimageexpt(1:L) = imageexpt(1:L)
 !   projweight = DOT_PRODUCT(imageexpt,meanexpt)
 !   tmpimageexpt(1:L) = imageexpt - projweight*meanexpt(1:L)
-    tmpimageexpt = tmpimageexpt/NORM2(tmpimageexpt)
+    tmpimageexpt = tmpimageexpt/vecnorm(tmpimageexpt)
 
 ! and write this pattern into the temporary file
     write(itmpexpt,rec=jj) tmpimageexpt
@@ -797,14 +797,14 @@ dictionaryloop: do ii = 1,cratio+1      ! +1 is needed to make sure that the fin
             imagedict(1:L) = imagedict(1:L) * masklin(1:L)
 
 ! normalize pattern vector
-            dict((pp-1)*correctsize+1:pp*correctsize) = imagedict(1:correctsize)/NORM2(imagedict(1:correctsize))
+            dict((pp-1)*correctsize+1:pp*correctsize) = imagedict(1:correctsize)/vecnorm(imagedict(1:correctsize))
 ! dot product with mean dictionary pattern (not used at the moment)
 !           projweight = DOT_PRODUCT(meandict,dict((pp-1)*correctsize+1:pp*correctsize))
 ! project out the mean dictionary pattern
 !           dict((pp-1)*correctsize+1:pp*correctsize) = dict((pp-1)*correctsize+1:pp*correctsize) - projweight*meandict
 ! normalize the resulting pattern
 !           dict((pp-1)*correctsize+1:pp*correctsize) = dict((pp-1)*correctsize+1:pp*correctsize)&
-!           /NORM2(dict((pp-1)*correctsize+1:pp*correctsize))    
+!           /vecnorm(dict((pp-1)*correctsize+1:pp*correctsize))    
 
             eulerarray(1:3,(ii-1)*Nd+pp) = 180.0/cPi*ro2eu(FZarray(1:4,(ii-1)*Nd+pp))
         end do

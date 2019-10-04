@@ -653,12 +653,12 @@ do ii = 1,nsym
 
   xyz             = LambertSquareToSphere(xy, ierr)
   if(ierr .ne. 0) then
-    xyz = xyz/NORM2(xyz)
+    xyz = xyz/vecnorm(xyz)
     if(xyz(3) .lt. 0.D0) xyz = -xyz
   end if
   xyzp            = quat_LP(dict%Pm(1:4,ii),xyz)
   if(xyzp(3) .lt. 0.D0) xyzp = -xyzp
-  xyzp            = xyzp/NORM2(xyzp)
+  xyzp            = xyzp/vecnorm(xyzp)
   xyp             = LambertSphereToSquare(xyzp, ierr)
   equivxy(ii,1:2) = (/nint(xyp(1)*dble(npx)), nint(xyp(2)*dble(npx))/)
 

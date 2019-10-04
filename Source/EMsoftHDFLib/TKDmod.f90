@@ -42,6 +42,7 @@ module TKDmod
 
 use local
 use typedefs
+use math
 
 IMPLICIT NONE
 
@@ -818,7 +819,7 @@ deallocate(z)
     pcvec = (/enl%ypc*enl%delta*ca + enl%xpc*enl%delta*sa*sw + enl%L*cw*sa, &
              enl%L*sw - enl%xpc*enl%delta*cw,&
              enl%L*ca*cw + enl%xpc*enl%delta*ca*sw - enl%ypc*enl%delta*sa/)
-    pcvec = pcvec/NORM2(pcvec)
+    pcvec = pcvec/vecnorm(pcvec)
   else
     pcvec = (/ master%rgx(ipx,ipy), master%rgy(ipx,ipy), master%rgz(ipx,ipy) /)
   end if
@@ -938,7 +939,7 @@ end if
 TKDBackground = TKDBackground**enl%gammavalue
 
 ! normalize the pattern
-TKDBackground = TKDBackground/NORM2(TKDBackground)
+TKDBackground = TKDBackground/vecnorm(TKDBackground)
 
 end subroutine GenerateTKDBackground
 
@@ -1145,7 +1146,7 @@ do j=1,enl%numsx
    scintillator%detector(j,epl-i)%dc = (/(scin_y(i) * ca + sa * Ls) * rhos, Lc * rhos,&
                                     (-sa * scin_y(i) + ca * Ls) * rhos/)
 
-   scintillator%detector(j,epl-i)%dc = scintillator%detector(j,i)%dc/NORM2(scintillator%detector(j,epl-i)%dc)
+   scintillator%detector(j,epl-i)%dc = scintillator%detector(j,i)%dc/vecnorm(scintillator%detector(j,epl-i)%dc)
 
 !  if (ierr .ne. 0) then
 !      call FatalError('TKDFullGenerateDetector:','Lambert Projection coordinate undefined')

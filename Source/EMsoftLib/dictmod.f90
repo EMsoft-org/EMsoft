@@ -107,6 +107,8 @@
 !--------------------------------------------------------------------------
 module dictmod
 
+use math
+
 IMPLICIT NONE
 
 public  :: DI_Init, DI_EMforDD, DD_Density, DI_Similarity_Classifier, DI_SampleDD, getDisorientationAngle, &
@@ -1583,7 +1585,7 @@ if (a.ne.0.D0) then
       if (a.lt.ac) then
           ac = a
           if(present(ax)) then
-              ax(1:3) = p(2:4)/NORM2(p(2:4))
+              ax(1:3) = p(2:4)/vecnorm(p(2:4))
           end if
       end if
       p = quat_mult(qus,conjg(Mus))
@@ -1592,7 +1594,7 @@ if (a.ne.0.D0) then
       if (a.lt.ac) then
           ac = a
           if(present(ax)) then
-              ax(1:3) = p(2:4)/NORM2(p(2:4))
+              ax(1:3) = p(2:4)/vecnorm(p(2:4))
           end if
       end if
     end do
@@ -1658,7 +1660,7 @@ if (a.ne.0.0) then
       if (a.lt.ac) then 
           ac = a
           if(present(ax)) then
-              ax(1:3) = p(2:4)/NORM2(p(2:4))
+              ax(1:3) = p(2:4)/vecnorm(p(2:4))
           end if
       end if
       p = quat_mult(qus,conjg(Mus))
@@ -1667,7 +1669,7 @@ if (a.ne.0.0) then
       if (a.lt.ac) then
           ac = a
           if(present(ax)) then
-              ax(1:3) = p(2:4)/NORM2(p(2:4))
+              ax(1:3) = p(2:4)/vecnorm(p(2:4))
           end if
       end if 
     end do
@@ -1729,14 +1731,14 @@ if (a.ne.0.D0) then
       a = 2.0*acos(p(1))
       if (a.lt.ac) then
         ac = a
-        ax(1:3) = p(2:4)/NORM2(p(2:4))
+        ax(1:3) = p(2:4)/vecnorm(p(2:4))
       end if
       p = quat_mult(qus,conjg(Mus))
       if (p(1).lt.0.D0) p=-p
       a = 2.0*acos(p(1))
       if (a.lt.ac) then
         ac = a
-        ax(1:3) = p(2:4)/NORM2(p(2:4))
+        ax(1:3) = p(2:4)/vecnorm(p(2:4))
       end if
     end do
   end do 
@@ -1802,7 +1804,7 @@ if (a.ne.0.D0) then
       a = 2.0*acos(p(1))
       if (a.lt.ac) then
         ac = a
-        ax(1:3) = p(2:4)/NORM2(p(2:4))
+        ax(1:3) = p(2:4)/vecnorm(p(2:4))
       end if
     end do
   end do 

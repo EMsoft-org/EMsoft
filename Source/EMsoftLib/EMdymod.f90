@@ -143,6 +143,8 @@
 !
 module EMdymod
 
+use math
+
 contains
 
 !--------------------------------------------------------------------------
@@ -354,7 +356,7 @@ epl = ipar(3)+1
     pcvec = (/pcyd*ca + pcxd*sa*sw + fpar(7)*cw*sa, &
              fpar(7)*sw - pcxd*cw,&
              fpar(7)*ca*cw + pcxd*ca*sw - pcyd*sa/)
-    pcvec = pcvec/NORM2(pcvec)
+    pcvec = pcvec/vecnorm(pcvec)
   else
     pcvec = (/ rgx(ipx,ipy), rgy(ipx,ipy), rgz(ipx,ipy) /)
   end if
@@ -1747,7 +1749,7 @@ do i=1,biny
         EBSDvector((i-1)*binx+j) = binned(j,i)
     end do
 end do
-EBSDvector = EBSDvector/NORM2(EBSDvector)
+EBSDvector = EBSDvector/vecnorm(EBSDvector)
 
 if(IPAR(13) .eq. 1) then
     ma = maxval(EBSDvector)
@@ -1951,7 +1953,7 @@ end do
 !end do
 
 ECPvector = ECPvector**fpar(9)
-ECPvector = ECPvector/NORM2(ECPvector)
+ECPvector = ECPvector/vecnorm(ECPvector)
 
 if(IPAR(11) .eq. 0) then
     F = 1.0 - DOT_PRODUCT(ECPvector,expt)

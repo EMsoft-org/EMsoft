@@ -169,6 +169,7 @@ use error
 use gvectors
 use kvectors
 use io
+use math
 use local
 use files
 use diffraction
@@ -963,7 +964,7 @@ energyloop: do iE=Estart,1,-1
     do j=-emnl%npx,emnl%npx 
       xy = (/ float(i), float(j) /) / float(emnl%npx)
       xyz = StereoGraphicInverse( xy, ierr, Radius )
-      xyz = xyz/NORM2(xyz)
+      xyz = xyz/vecnorm(xyz)
       if (ierr.ne.0) then 
         masterSPNH(i,j,1) = 0.0
         masterSPSH(i,j,1) = 0.0

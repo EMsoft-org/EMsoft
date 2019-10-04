@@ -101,6 +101,7 @@ use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
 use stringconstants
+use math
 
 IMPLICIT NONE
 
@@ -549,7 +550,7 @@ do i=-nx,nx
   do j=-nx,nx 
     xy = (/ float(i), float(j) /) / float(nx)
     xyz = StereoGraphicInverse( xy, ierr, Radius )
-    xyz = xyz/NORM2(xyz)
+    xyz = xyz/vecnorm(xyz)
     if (ierr.ne.0) then 
       accum_e_SP(1:numEbins,i,j) = 0.0
     else

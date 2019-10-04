@@ -120,6 +120,7 @@ use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
 use omp_lib
+use math
 use stringconstants
 
 IMPLICIT NONE
@@ -967,7 +968,7 @@ mLPSH(-emnl%npx:emnl%npx, emnl%npx,1,1:numsites) = mLPNH(-emnl%npx:emnl%npx, emn
     do j=-emnl%npx,emnl%npx 
       xy = (/ float(i), float(j) /) / float(emnl%npx)
       xyz = StereoGraphicInverse( xy, ierr, Radius )
-      xyz = xyz/NORM2(xyz)
+      xyz = xyz/vecnorm(xyz)
       if (ierr.ne.0) then 
         masterSPNH(i,j,1) = 0.0
         masterSPSH(i,j,1) = 0.0

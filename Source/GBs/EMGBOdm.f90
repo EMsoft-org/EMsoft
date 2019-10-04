@@ -210,15 +210,15 @@ do ir = 1,numoct
   qa = octarray(1:4,ir)
   qb = octarray(5:8,ir)
 ! make sure they are unit quaternions
-  qa = qa / NORM2(qa)
-  qb = qb / NORM2(qb)
+  qa = qa / vecnorm(qa)
+  qb = qb / vecnorm(qb)
   do ic = ir,numoct
     if (ic.ne.ir) then 
       qc = octarray(1:4,ic)
       qd = octarray(5:8,ic)
 ! make sure they are unit quaternions
-      qc = qc / NORM2(qc)
-      qd = qd / NORM2(qd)
+      qc = qc / vecnorm(qc)
+      qd = qd / vecnorm(qd)
       if (gbonl%refine.eqv..TRUE.) then 
         tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict,metric=trim(gbonl%metric),refine=.TRUE.)
       else
@@ -402,15 +402,15 @@ do ic = oldnumoct+1,numoct
   qa = octarray(1:4,ic)
   qb = octarray(5:8,ic)
 ! make sure they are unit quaternions
-  qa = qa / NORM2(qa)
-  qb = qb / NORM2(qb)
+  qa = qa / vecnorm(qa)
+  qb = qb / vecnorm(qb)
   do ir = 1,ic
     if (ic.ne.ir) then 
       qc = octarray(1:4,ir)
       qd = octarray(5:8,ir)
 ! make sure they are unit quaternions
-      qc = qc / NORM2(qc)
-      qd = qd / NORM2(qd)
+      qc = qc / vecnorm(qc)
+      qd = qd / vecnorm(qd)
       tt = GBO_Omega_symmetric(qa,qb,qc,qd,dict,metric=trim(gbonl%metric))
       distancematrix(ir,ic) = tt
     end if

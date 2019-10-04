@@ -952,7 +952,7 @@ dictionaryloop: do ii = 1,cratio+1
 
 ! normalize and apply circular mask 
        imagedictflt = imagedictflt * masklin
-       vlen = NORM2(imagedictflt(1:correctsize))
+       vlen = vecnorm(imagedictflt(1:correctsize))
        if (vlen.ne.0.0) then
          imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/vlen
        else

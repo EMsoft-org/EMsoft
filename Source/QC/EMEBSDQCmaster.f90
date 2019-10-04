@@ -103,6 +103,7 @@ use gvectors, only:Set_Bethe_Parameters
 use Lambert
 use timing
 use omp_lib
+use math
 
 IMPLICIT NONE
 
@@ -684,7 +685,7 @@ energyloop: do iE = numEbins,1,-1
     	do jj = -ebsdnl%npx,ebsdnl%npx 
       		xy 	= (/ float(ii), float(jj) /) / float(ebsdnl%npx)
       		xyz = StereoGraphicInverse( xy, ierr, Radius )
-      		xyz = xyz/NORM2(xyz)
+      		xyz = xyz/vecnorm(xyz)
       		if (ierr.ne.0) then 
         		masterSPNH(ii,jj,1) = 0.0
         		masterSPSH(ii,jj,1) = 0.0

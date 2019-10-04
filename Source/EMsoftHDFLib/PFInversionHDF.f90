@@ -29,6 +29,7 @@ module PFInversionHDF
 
 use local
 use constants
+use math
 
 contains
 
@@ -420,7 +421,7 @@ do kk = 1,epf%nfiles
             xyz = LambertSquareToSphere(xy,ierr)
             
             if(ierr .eq. 0) then
-                xyz = xyz/NORM2(xyz)
+                xyz = xyz/vecnorm(xyz)
                 pol = acos(xyz(3))*180.D0/cPi
                 azi = atan2(xyz(2),xyz(1))*180.D0/cPi
                 write(iunitf,'(3F15.6)')pol, azi, PFrecon(ii,jj,kk)
@@ -789,7 +790,7 @@ do k = 1,epf%nfiles ! each pole figure
             xyz = LambertSquareToSphere(xy,ierr)
 
             if (ierr .eq. 0) then
-               xyz = xyz/NORM2(xyz)
+               xyz = xyz/vecnorm(xyz)
             else
                 call FatalError('LambertSquareToSphere:','Coulnd not convert lambert square to sphere')
             end if
@@ -800,7 +801,7 @@ do k = 1,epf%nfiles ! each pole figure
                           hkl_f(1)*xyz(2) - hkl_f(2)*xyz(1)/)
   
             if(sum(abs(hcrossy)) .ne. 0.D0) then
-                hcrossy = hcrossy/NORM2(hcrossy)
+                hcrossy = hcrossy/vecnorm(hcrossy)
             else
                 hcrossy = (/1.D0, 0.D0, 0.D0/)
             end if

@@ -640,7 +640,7 @@ energyloop: do iE = numEbins,1,-1
 
     	kk = klist(1:3,ik)
 
-    	FN = kk/NORM2(kk)
+    	FN = kk/vecnorm(kk)
 
     	nullify(reflist)
 
@@ -728,7 +728,7 @@ energyloop: do iE = numEbins,1,-1
     	do jj = -ebsdnl%npx,ebsdnl%npx 
       		xy 	= (/ float(ii), float(jj) /) / float(ebsdnl%npx)
       		xyz = StereoGraphicInverse( xy, ierr, Radius )
-      		xyz = xyz/NORM2(xyz)
+      		xyz = xyz/vecnorm(xyz)
       		if (ierr.ne.0) then 
         		masterSPNH(ii,jj,1) = 0.0
         		masterSPSH(ii,jj,1) = 0.0

@@ -27,6 +27,8 @@
 ! ###################################################################
 module PFInversionmod
 
+use math
+
 contains
 
 !--------------------------------------------------------------------------
@@ -117,7 +119,7 @@ do ii = -nLam,nLam
         xyz = LambertSquareToSphere(lam,ierr)
         
         if (ierr .eq. 0) then
-           xyz = xyz/NORM2(xyz)
+           xyz = xyz/vecnorm(xyz)
         end if
 
         do ll = 1,neqv 
@@ -133,7 +135,7 @@ do ii = -nLam,nLam
                       PFhkl_f(3)*xyz(1) - PFhkl_f(1)*xyz(3),&
                       PFhkl_f(1)*xyz(2) - PFhkl_f(2)*xyz(1)/)
 
-            if(sum(abs(hcrossy)) .ne. 0) hcrossy = hcrossy/NORM2(hcrossy)
+            if(sum(abs(hcrossy)) .ne. 0) hcrossy = hcrossy/vecnorm(hcrossy)
 
             cth = sum(PFhkl_f*xyz)
             qu(ll,1:4) = ax2qu((/hcrossy(1),hcrossy(2),hcrossy(3),acos(cth)/))
@@ -287,7 +289,7 @@ do ii = -nLam,nLam
         xyz = LambertSquareToSphere(xy,ierr)
 
         if (ierr .eq. 0) then
-           xyz = xyz/NORM2(xyz)
+           xyz = xyz/vecnorm(xyz)
         else
             call FatalError('LambertSquareToSphere:','Coulnd not convert lambert square to sphere')
         end if
@@ -297,7 +299,7 @@ do ii = -nLam,nLam
                       PFhkl_f(3)*xyz(1) - PFhkl_f(1)*xyz(3),&
                       PFhkl_f(1)*xyz(2) - PFhkl_f(2)*xyz(1)/)
 
-        if(sum(abs(hcrossy)) .ne. 0) hcrossy = hcrossy/NORM2(hcrossy)
+        if(sum(abs(hcrossy)) .ne. 0) hcrossy = hcrossy/vecnorm(hcrossy)
 ! rotation by -omega about cross(h,y)
 
         cth = sum(PFhkl_f*xyz)
@@ -517,7 +519,7 @@ do ii = -nLam,nLam
 
         xy = (/float(ii)/float(nLam), float(jj)/float(nLam)/);
         call StereoInverse(xy,1.D0,xyz,ierr);
-        xyz = xyz/NORM2(xyz)
+        xyz = xyz/vecnorm(xyz)
 
         if (ierr .eq. 0) then
             res = InterpolateLambert(xyz,PFLam,nLam)
@@ -589,8 +591,8 @@ do i = -ncux,ncux
           if(qu2(1) .lt. 0.D0) qu2 = -qu2
 
           r = qu2(2:4)
-          if(NORM2(r) .ne. 0.D0) then
-              r = r/NORM2(r)
+          if(vecnorm(r) .ne. 0.D0) then
+              r = r/vecnorm(r)
               st(1:3) = tan(0.5D0*acos(qu2(1)))*r(1:3)
           else
               st(1:3) = 0.D0
@@ -651,9 +653,9 @@ do i = -ncux,ncux
 
         !    r = (/dble(k)/dble(ncux), dble(j)/dble(ncuy), dble(i)/dble(ncuz)/)
 
-        !    if(NORM2(r) .ne. 0) then
-        !        tanwo4 = NORM2(r)
-        !        r = r/NORM2(r)
+        !    if(vecnorm(r) .ne. 0) then
+        !        tanwo4 = vecnorm(r)
+        !        r = r/vecnorm(r)
         !        ax(1:4) = (/r,4.D0*atan(tanwo4)/)
         !        !qu = ax2qu(ax)
         !    else
