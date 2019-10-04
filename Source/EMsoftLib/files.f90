@@ -470,7 +470,8 @@ if (numarg.ge.1) haltprogram = .TRUE.
 
 if (numarg.gt.0) then ! there is at least one argument
   do i=1,numarg
-    call getarg(i,arg)
+!   call getarg(i,arg)
+    call get_command_argument(i,arg)
 !    mess = 'Found the following argument: '//trim(arg); call Message("(/A/)")
 ! does the argument start with a '-' character?    
     if (arg(1:1).eq.'-') then
@@ -594,7 +595,8 @@ if (numarg.ge.1) haltprogram = .TRUE.
 
 if (numarg.gt.0) then ! there is at least one argument
   do i=1,numarg
-    call getarg(i,arg)
+!   call getarg(i,arg)
+    call get_command_argument(i,arg)
 ! does the argument start with a '-' character?    
     if (arg(1:1).eq.'-') then
         if (trim(arg).eq.'-h') then
