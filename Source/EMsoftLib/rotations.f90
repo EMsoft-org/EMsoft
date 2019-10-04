@@ -2798,7 +2798,7 @@ else
   call sgeev(JOBVL,JOBVR,nn,o,LDA,Wr,Wi,VL,LDVL,VR,LDVR,WORK,LWORK,INFO)
   if (INFO.ne.0) call FatalError('Error in om2ax/sgeev : ','SGEEV return not zero')
 
-! next, find the eigenvalue complex(1,0)
+! next, find the eigenvalue cmplx(1,0)
   do i=1,3 
     ev = cmplx(Wr(i),Wi(i))
     if (abs(ev-cone).lt.thr) then
@@ -2879,7 +2879,7 @@ else
   call dgeev(JOBVL,JOBVR,nn,o,LDA,Wr,Wi,VL,LDVL,VR,LDVR,WORK,LWORK,INFO)
   if (INFO.ne.0) call FatalError('Error in om2ax/dgeev : ','DGEEV return not zero')
 
-! next, find the eigenvalue complex(1,0)
+! next, find the eigenvalue cmplx(1,0)
  do i=1,3 
     if ((abs(Wr(i)-1.D0).lt.thr).and.(abs(Wi(i)).lt.thr)) then
       res(1:3) = VR(1:3,i)

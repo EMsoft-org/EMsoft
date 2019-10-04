@@ -219,7 +219,7 @@ nullify(rlw)
           rlr => rlr%nexts
           ir = ir+1
         end do
-        DynMat = DynMat * ccpi ! complex(cPi, 0.D0)
+        DynMat = DynMat * ccpi ! cmplx(cPi, 0.D0)
 
 
 !if (present(BlochMode)) then
@@ -454,7 +454,7 @@ nullify(rlw)
           rlr => rlr%nexts
           ir = ir+1
         end do
-        DynMat = DynMat * ccpi ! complex(cPi, 0.D0)
+        DynMat = DynMat * ccpi ! cmplx(cPi, 0.D0)
 
 
 !if (present(BlochMode)) then
@@ -586,7 +586,7 @@ real(kind=dbl)                          :: ctmp(QCcell%SG%SYM_MATnum,5), arg, tp
 type(TDQCreflisttype),pointer           :: rltmpa, rltmpb
 
 tpi = 2.D0 * cPi
-Sgh = complex(0.D0,0.D0)
+Sgh = cmplx(0.D0,0.D0)
   
 do ip = 1,QCcell % ATOM_ntype
   nat(ip) = QCcell%numat(ip)
@@ -616,9 +616,9 @@ do ip = 1,QCcell % ATOM_ntype
       do ikk=1,nat(ip)
 ! get the argument of the complex exponential
         arg = tpi*sum(dble(kkk(1:5))*QCcell%apos(ip,ikk,1:5))
-        carg = complex(dcos(arg),dsin(arg))
+        carg = cmplx(dcos(arg),dsin(arg))
 ! multiply with the prefactor and add
-        Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * complex(DBWF,0.D0)
+        Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * cmplx(DBWF,0.D0)
       end do
     
       rltmpb => rltmpb%nexts  ! move to next column-entry
@@ -673,7 +673,7 @@ real(kind=dbl)                          :: ctmp(192,3),arg, tpi
 type(QCreflisttype),pointer             :: rltmpa, rltmpb
 
 tpi = 2.D0 * cPi
-Sgh = complex(0.D0,0.D0)
+Sgh = cmplx(0.D0,0.D0)
   
 do ip = 1,QCcell % ATOM_ntype
   nat(ip) = QCcell%numat(ip)
@@ -705,9 +705,9 @@ do ip = 1,QCcell % ATOM_ntype
       do ikk=1,nat(ip)
 ! get the argument of the complex exponential
         arg = tpi*sum(dble(kkk(1:6))*QCcell%apos(ip,ikk,1:6))
-        carg = complex(dcos(arg),dsin(arg))
+        carg = cmplx(dcos(arg),dsin(arg))
 ! multiply with the prefactor and add
-        Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * complex(DBWF,0.D0)
+        Sgh(ir,ic,ip) = Sgh(ir,ic,ip) + carg * cmplx(DBWF,0.D0)
       end do
     
       rltmpb => rltmpb%nexts  ! move to next column-entry
