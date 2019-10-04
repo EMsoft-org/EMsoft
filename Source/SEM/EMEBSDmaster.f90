@@ -1757,7 +1757,27 @@ call Message('Computing spherical harmonic transform')
 ! finally, write the SHT coefficient array to the output h5 file
 call Message('Storing SHT coefficients in binary output file '//trim(emnl%SHTfile))
 
-! we call a C++ routine here to write the .spx file
+! we call a C++ routine here to write the .sht file
+
+! character(fnlen) file name string  % null-terminated
+! character(fnlen) notes % null-terminated  [ EMsoftversionstring ]
+! integer(kind=irg) SG number
+! integer(kind=irg) SG setting
+! integer(kind=irg) Natomtypes
+! integer(kind=irg),dimension(Natomtypes) atomtypes 
+! real(kind=sgl),dimension(Natomtypes,5) atomcoordinates
+! real(kind=dbl),dimension(6)  latticeparameters
+! integer(kind=irg) bandwidth
+! character,dimension(2) symflags
+! complex(kind=dbl), dimension(l,m) transpose(almMaster) ! l fast, m slow
+
+! second call for Vendor specific simulation data
+
+! in order defined in file spec 
+! nipar = 5
+! nfpar = 20
+! integer(kind=irg),dimension(nipar) ipar    [# electrons, multiplier, MC grid, EBSD grid, lattype]
+! real(kind=irg),dimension(nfpar) fpar [in the order of the document]
 
 
 
