@@ -259,7 +259,7 @@ call timestamp(datestring=dstr, timestring=tstrb)
 call Time_tick(timestart)
 
 tpi = 2.D0*cPi
-czero = complex(0.D0,0.D0)
+czero = cmplx(0.D0,0.D0)
 
 ! is the master pattern used for spherical indexing only ?  If so, then we need to modifiy the k-vector sampling
 doLegendre = .FALSE.

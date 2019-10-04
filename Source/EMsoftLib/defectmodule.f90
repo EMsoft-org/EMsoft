@@ -2046,8 +2046,8 @@ defects%Einclusions(i)%math = dasin(dsqrt(defects%Einclusions(i)%Deltaij(1,3)**2
 ! next we need the largest possible lambda value; we'll have the user pass in the coordinates of the furthest point
 r2 = maxr**2
 rsq = sum(r2)
-s = complex( (rsq - defects%Einclusions(i)%eta)**2 + sum(defects%Einclusions(i)%svec*r2)-defects%Einclusions(i)%ss1, 0.D0 )
-q = complex( -2.D0*rsq**3 - 3.D0*defects%Einclusions(i)%eta*rsq**2 + rsq*(3.D0*defects%Einclusions(i)%eta**2+ &
+s = cmplx( (rsq - defects%Einclusions(i)%eta)**2 + sum(defects%Einclusions(i)%svec*r2)-defects%Einclusions(i)%ss1, 0.D0 )
+q = cmplx( -2.D0*rsq**3 - 3.D0*defects%Einclusions(i)%eta*rsq**2 + rsq*(3.D0*defects%Einclusions(i)%eta**2+ &
           sum(defects%Einclusions(i)%qvec1*r2))-sum(defects%Einclusions(i)%qvec2*r2)-defects%Einclusions(i)%qs1, 0.D0 )
 t = (q + sqrt( q*q - 4.D0*s*s*s) )**(1.D0/3.D0)
 v = real(t)
@@ -2196,8 +2196,8 @@ dd = dsqrt(xyz(1)**2/defects%Einclusions(i)%a12+xyz(2)**2/defects%Einclusions(i)
 !  first we need the lambda value for this point
 lambda = 0.D0
 if (dd.gt.1.D0) then 
-  s = complex( (rsq - defects%Einclusions(i)%eta)**2 +sum(defects%Einclusions(i)%svec*r2)-defects%Einclusions(i)%ss1, 0.D0 )
-  q = complex( -2.D0*rsq**3 - 3.D0*defects%Einclusions(i)%eta*rsq**2 + rsq*(3.D0*defects%Einclusions(i)%eta**2+ &
+  s = cmplx( (rsq - defects%Einclusions(i)%eta)**2 +sum(defects%Einclusions(i)%svec*r2)-defects%Einclusions(i)%ss1, 0.D0 )
+  q = cmplx( -2.D0*rsq**3 - 3.D0*defects%Einclusions(i)%eta*rsq**2 + rsq*(3.D0*defects%Einclusions(i)%eta**2+ &
       sum(defects%Einclusions(i)%qvec1*r2))-sum(defects%Einclusions(i)%qvec2*r2)-defects%Einclusions(i)%qs1, 0.D0 )
   t = (q + sqrt( q*q - 4.D0*s*s*s) )**(1.D0/3.D0)
   v = real(t)
