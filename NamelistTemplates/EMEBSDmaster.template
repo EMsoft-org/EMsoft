@@ -37,7 +37,7 @@
 ! name of the SHTmaster pattern file (for Legendre latgridtype only)
 ! we suggest that these files be given names of the following type:
 !
-!  material-SHTmaster-##kV.spx
+!  material-##kV.sht
 !
  SHTfile = 'undefined',
  /

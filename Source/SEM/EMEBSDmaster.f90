@@ -1148,7 +1148,7 @@ IMPLICIT NONE
 
 interface 
   recursive function writeSHTfile (fn, nt, sgN, sgS, nAt, aTy, aCd, lat, fprm, iprm, bw, flg, alm) result(res) &
-  bind(C, name ='EMsoftEBSDRet')
+  bind(C, name ='writeSHTfile_')
 
   use ISO_C_BINDING
 
@@ -1166,7 +1166,7 @@ interface
   integer(c_int)                :: iprm(5) 
   integer(c_int)                :: bw 
   character(len=1,kind=c_char)  :: flg(2)
-  complex(C_DOUBLE_COMPLEX)     :: alm(0:bw-1, 0:bw-1)
+  real(C_DOUBLE_COMPLEX)        :: alm(2*(bw+3)*(bw+3))
   integer(c_int)                :: res
   end function writeSHTfile
 end interface 
@@ -1231,7 +1231,7 @@ real(kind=dbl),allocatable      :: finalmLPNH(:,:), finalmLPSH(:,:), weights(:)
 type(DiscreteSHT)               :: transformer 
 complex(kind=dbl), allocatable  :: almMaster(:,:)   ! spectra of master pattern to index against
 complex(kind=dbl), allocatable  :: almPat   (:,:)   ! work space to hold spectra of exerimental pattern
-
+real(kind=dbl),allocatable      :: alm(:)
 
 ! parameters for the .sht output file 
 integer(kind=irg),parameter     :: nipar=5, nfpar=20
@@ -1445,79 +1445,6 @@ deallocate(EBSDMCdata%accum_z)
   call Set_Bethe_Parameters(BetheParameters,.TRUE.)
 
 !=============================================
-! create the SHTmaster HDF5 output file
-!=============================================
-
-SHTfile = trim(EMsoft_getEMdatapathname())//trim(emnl%SHTfile)
-SHTfile = EMsoft_toNativePath(SHTfile)
-
-  nullify(HDF_head%next)
-! Initialize FORTRAN interface.
-  call h5open_EMsoft(hdferr)
-
-! create a new file using the default properties.
-  hdferr =  HDF_createFile(SHTfile, HDF_head)
-
-! write the EMheader to the file
-  datagroupname = 'SHTmaster'
-  call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)
-
-! open or create a namelist group to write all the namelist files into
-groupname = SC_NMLfiles
-  hdferr = HDF_createGroup(groupname, HDF_head)
-
-! read the text file and write the array to the file
-dataset = SC_EBSDmasterNML
-  hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
-
-! leave this group
-  call HDF_pop(HDF_head)
-
-! create a namelist group to write all the namelist files into
-groupname = SC_NMLparameters
-  hdferr = HDF_createGroup(groupname, HDF_head)
-
-  call HDFwriteEBSDMasterNameList(HDF_head, emnl)
-  call HDFwriteBetheparameterNameList(HDF_head, BetheParameters)
-
-! leave this group
-  call HDF_pop(HDF_head)
-
-! then the remainder of the data in a EMData group
-groupname = SC_EMData
-  hdferr = HDF_createGroup(groupname, HDF_head)
-
-! create the EBSDmaster group and add a HDF_FileVersion attribbute to it 
-  hdferr = HDF_createGroup(datagroupname, HDF_head)
-  HDF_FileVersion = '4.0'
-  attributename = SC_HDFFileVersion
-  hdferr = HDF_addStringAttributeToGroup(attributename, HDF_FileVersion, HDF_head)
-
-dataset = SC_xtalname
-  allocate(stringarray(1))
-  stringarray(1)= trim(mcnl%xtalname)
-  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-  if (g_exists) then 
-    hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head, overwrite)
-  else
-    hdferr = HDF_writeDatasetStringArray(dataset, stringarray, 1, HDF_head)
-  end if
-
-dataset = SC_BetheParameters
-  bp = (/ BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff /)
-  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-  if (g_exists) then 
-    hdferr = HDF_writeDatasetFloatArray1D(dataset, bp, 4, HDF_head, overwrite)
-  else
-    hdferr = HDF_writeDatasetFloatArray1D(dataset, bp, 4, HDF_head)
-  end if
-
-  call HDF_pop(HDF_head,.TRUE.)
-
-! and close the fortran hdf interface
-  call h5close_EMsoft(hdferr)
-
-!=============================================
 !=============================================
 ! precompute the Legendre array for the new lattitudinal grid values
   call Message(' Computing Legendre lattitudinal grid values')
@@ -1526,10 +1453,14 @@ dataset = SC_BetheParameters
   upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,2*emnl%npx+1) /)
   call dsterf(2*emnl%npx-1, diagonal, upd, info) 
 ! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
-  allocate(LegendreArray(2*emnl%npx+1))
-  LegendreArray(1:2*emnl%npx+1) = diagonal(2*emnl%npx+1:1:-1)
+!   allocate(LegendreArray(2*emnl%npx+1))
+!   LegendreArray(1:2*emnl%npx+1) = diagonal(2*emnl%npx+1:1:-1)
+! ! set the center eigenvalue to 0
+!   LegendreArray(emnl%npx+1) = 0.D0
+  allocate(LegendreArray(0:2*emnl%npx))
+  LegendreArray(0:2*emnl%npx) = diagonal(2*emnl%npx+1:1:-1)
 ! set the center eigenvalue to 0
-  LegendreArray(emnl%npx+1) = 0.D0
+  LegendreArray(emnl%npx) = 0.D0
   deallocate(diagonal, upd)
 
 !=============================================
@@ -1768,7 +1699,7 @@ energyloop: do iE=Estart,1,-1
 end do energyloop
 
 ! next, we compute the final energy weighted master pattern and its spherical harmonic transform
-call Message(' Computing energy weighted master pattern')
+call Message(' Computing energy weighted master pattern',"(//A)")
   n = size(EBSDMCdata%accum_e, 1) ! get number of energy bins
   allocate(weights(n)) ! allocate space for energy histogram
   do i = 1, n
@@ -1792,6 +1723,7 @@ call Message(' Initializing the spherical harmonic transformer')
   layout = 'legendre'
   bw = 384
   d = bw / 2 + 1
+  write (*,*) ' parameters ', bw, d, trim(layout)
   call transformer%init(d, bw, layout)
 
 ! compute spherical harmonic transform of master pattern
@@ -1820,15 +1752,20 @@ fprm = (/ sngl(mcnl%sig), nan(), nan(), sngl(mcnl%omega), sngl(mcnl%EkeV), sngl(
           emnl%dmin, 0.0, 0.0, 0.0, 0.0, 0.0 /)
 iprm = (/ mcnl%num_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
 bw = 384
-zRot = char(1)
-mirInv =  char(2)
+zRot = char(SHT_ZRot(cell%SYM_SGnum))
+mirInv =  char(SHT_mirInv(cell%SYM_SGnum))
 flg = (/ zRot, mirInv /)
 
+! transfer the complex almMaster array to a flat array with alternating real and imaginary parts
+allocate(alm( 2 * (2*emnl%npx + 1) * (2*emnl%npx+1)  ))
+alm = transfer(almMaster,alm)
 
 ! write an .sht file using EMsoft style EBSD data
 EMversion = EMsoft_getEMsoftversion()
+write (*,*) 'targeted output file '//trim(emnl%SHTfile)
+write (*,*) 'EMversion string '//trim(EMversion)
 res = writeSHTfile(cstringify(emnl%SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
-                   aTy, aCd, lat, fprm, iprm, bw, flg, almMaster)
+                   aTy, aCd, lat, fprm, iprm, bw, flg, alm)
 
 call Message(' Final data stored in binary file '//trim(emnl%SHTfile), frm = "(A/)")
 

@@ -142,7 +142,7 @@ integer(kind=irg),INTENT(INOUT)         :: ijmax        !< max parameter used fo
 !f2py intent(in,out) ::  ijmax        !< max parameter used for Conical and StandardConical modes
 character(*),INTENT(IN)                 :: mapmode      !< controls the type of mapping used ('Standard' or 'RoscaLambert')
 !real(kind=sgl),INTENT(IN)              :: klaue(2)     !< Laue center coordinates
-real(kind=dbl),INTENT(IN),OPTIONAL      :: LegendreArray(2*npx+1) !< Legendre lattitude grid points for spherical indexing
+real(kind=dbl),INTENT(IN),OPTIONAL      :: LegendreArray(0:2*npx) !< Legendre lattitude grid points for spherical indexing
 logical,INTENT(IN),OPTIONAL             :: usehex       !< hexagonal mode for RoscaLambert mapmode
 
 integer(kind=irg)                       :: istat,i,j,istart,iend,jstart,jend, imin, imax, jmin, jmax, ii, jj, sqring

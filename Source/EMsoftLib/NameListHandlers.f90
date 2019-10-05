@@ -2593,6 +2593,7 @@ emnl%outname = energyfile       ! as off release 3.1, outname must be the same a
 emnl%combinesites = combinesites
 emnl%restart = restart
 emnl%uniform = uniform
+emnl%SHTfile = SHTfile
 
 end subroutine GetEBSDMasterNameList
 

@@ -89,7 +89,8 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/imageOPs.f90
   ${EMsoftLib_SOURCE_DIR}/hhmod.f90
   ${EMsoftLib_SOURCE_DIR}/detectors.f90
-
+  ${EMsoftLib_SOURCE_DIR}/DSHT.f90
+  ${EMsoftLib_SOURCE_DIR}/fft_wrap.f90
 
   ${EMsoftLib_Additional_SRCS}
 )
@@ -102,11 +103,17 @@ set(EMsoftLib_C_SRCS
   ${EMsoftLib_SOURCE_DIR}/cs_malloc.c
   ${EMsoftLib_SOURCE_DIR}/cs_util.c
   ${EMsoftLib_SOURCE_DIR}/cs.h
-  ${EMsoftLib_SOURCE_DIR}/sht_file.hpp
   ${EMsoftLib_Additional_C_SRCS}
 )
+
+set(EMsoftLib_Cpp_SRCS
+  ${EMsoftLib_SOURCE_DIR}/sht_file.hpp
+  ${EMsoftLib_SOURCE_DIR}/sht_file.cpp
+)
+
 if(NOT WIN32 AND BUILD_SHARED_LIBS)
   set_source_files_properties(${EMsoftLib_C_SRCS} PROPERTIES COMPILE_FLAGS -fPIC)
+  set_source_files_properties(${EMsoftLib_Cpp_SRCS} PROPERTIES COMPILE_FLAGS -fPIC)
 endif()
 
 if(EMsoft_ENABLE_TESTING)
@@ -133,6 +140,12 @@ set_target_properties (EMsoftLib_C PROPERTIES
    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
   FOLDER EMsoftPublic
 )
+add_library(EMsoftLib_Cpp STATIC ${EMsoftLib_Cpp_SRCS})
+set_target_properties (EMsoftLib_Cpp PROPERTIES
+  LINKER_LANGUAGE Fortran
+   # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
+  FOLDER EMsoftPublic
+)
 
 #-------------------------------------------------------------------------------
 # On Windows we are NOT going to use FFTW (due to licensing) and instead use MKL
@@ -144,6 +157,7 @@ endif()
 ADD_LIBRARY(EMsoftLib ${LIB_TYPE} ${EMsoftLib_SRCS})
 TARGET_LINK_LIBRARIES(EMsoftLib
                 EMsoftLib_C 
+                EMsoftLib_Cpp 
                 jsonfortran 
                 ${FFTW3_LIBRARY} 
                 ${OpenCL_LIBRARY}
@@ -172,7 +186,7 @@ endif()
 EMsoft_SetupInstallDirs()
 
 #if(BUILD_SHARED_LIBS)
-  INSTALL(TARGETS EMsoftLib EMsoftLib_C
+  INSTALL(TARGETS EMsoftLib EMsoftLib_C EMsoftLib_Cpp
     COMPONENT Applications
     EXPORT EMsoftLibTargets
     RUNTIME DESTINATION ${install_dir}
