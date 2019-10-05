@@ -544,7 +544,7 @@ namespace emsphinx {
 			//@param aTy: atom types (nAt atomic numbers)
 			//@param aCd: atom coordinates, (nAt * 5 floats {x, y, z, occupancy, Debye-Waller in nm^2})
 			//@param lat: lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
-			void setEMDataMat(int32_t sgN, int32_t sgS, int32_t nAt, int32_t * aTy, float * aCd, float * lat);
+			void setEMDataMat(int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, double * lat);
 
 			//@brief     : build up ebsd simulation data from EMsoft style data
 			//@param fprm: floating point parameters (float32 EMsoftED parameters in order)
@@ -555,7 +555,7 @@ namespace emsphinx {
 			//@param bw : bandwidth
 			//@param flg: symmetry flags {zRot, mirInv}
 			//@param alm: actual harmonics (uncompressed format)
-			void setEMDataHrm(int32_t bw, int8_t * flg, double * alm);
+			void setEMDataHrm(int32_t * bw, int8_t * flg, double * alm);
 
 			//@brief    : write a file using EMsoft style EBSD data
 			//@prief fn : file name to write
@@ -572,17 +572,17 @@ namespace emsphinx {
 			//@param flg: symmetry flags {zRot, mirInv}
 			//@param alm: actual harmonics (uncompressed format)
 			static void EMsoftEBSD(char * fn, char const * nt, 
-			                       int32_t sgN, int32_t sgS, int32_t nAt, int32_t * aTy, float * aCd, float * lat,
+			                       int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, double * lat,
 			                       float * fprm, int32_t * iprm,
-			                       int32_t bw, int8_t * flg, double * alm);
+			                       int32_t * bw, int8_t * flg, double * alm);
 
 			//@brief : call the void return version of EMsoftEBSD catching any exceptions
 			//@return: 0 if no exceptions were thrown, 1 otherwise
 			//@note  : for fortran interoperability
 			static int EMsoftEBSDRet(char * fn, char const * nt, 
-			                         int32_t sgN, int32_t sgS, int32_t nAt, int32_t * aTy, float * aCd, float * lat,
+			                         int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, double * lat,
 			                         float * fprm, int32_t * iprm,
-			                         int32_t bw, int8_t * flg, double * alm);
+			                         int32_t * bw, int8_t * flg, double * alm);
 		};
 
 	}
@@ -1506,16 +1506,16 @@ namespace emsphinx {
 		//@param aTy: atom types (nAt atomic numbers)
 		//@param aCd: atom coordinates, (nAt * 5 floats {x, y, z, occupancy, Debye-Waller in nm^2})
 		//@param lat: lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
-		void File::setEMDataMat(int32_t sgN, int32_t sgS, int32_t nAt, int32_t * aTy, float * aCd, float * lat) {
+		void File::setEMDataMat(int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, double * lat) {
 			//set material to single crystal
 			material.numXtal() =           1  ;
-			material.sgEff  () = (uint8_t) sgN;
+			material.sgEff  () = (uint8_t) *sgN;
 			material.xtals.resize(1);
 			CrystalData& xtal = material.xtals.front();
 
 			//build crystal
-			xtal.sgNum () = (uint8_t) sgN;
-			xtal.sgSet () = (uint8_t) sgS;
+			xtal.sgNum () = (uint8_t) *sgN;
+			xtal.sgSet () = (uint8_t) *sgS;
 			xtal.sgAxis() = CrystalData::Axis::Default;
 			xtal.sgCell() = CrystalData::Cell::Default;
 			xtal.oriX  () = 0.0f;
@@ -1524,9 +1524,9 @@ namespace emsphinx {
 			std::copy(lat, lat + 6, xtal.lat());
 			xtal.rot()[0] = 1.0f; xtal.rot()[1] = 0.0f; xtal.rot()[2] = 0.0f; xtal.rot()[3] = 0.0f;
 			xtal.weight() = 1.0f;
-			xtal.numAtoms() = (int16_t) nAt;
-			xtal.atoms.resize((int16_t) nAt);
-			for(int32_t i = 0; i < nAt; i++) {
+			xtal.numAtoms() = (int16_t) *nAt;
+			xtal.atoms.resize((int16_t) *nAt);
+			for(int32_t i = 0; i < *nAt; i++) {
 				//save atomic coordinates * 24
 				for(size_t j = 0; j < 3; j++) {
 					//start by bringing to [0,1]
@@ -1590,20 +1590,20 @@ namespace emsphinx {
 		//@param bw : bandwidth
 		//@param flg: symmetry flags {zRot, mirInv}
 		//@param alm: actual harmonics (uncompressed format)
-		void File::setEMDataHrm(int32_t bw, int8_t * flg, double * alm) {
+		void File::setEMDataHrm(int32_t * bw, int8_t * flg, double * alm) {
 			const bool inv = 0x01 == (0x01 & flg[1]);
 			const bool mir = 0x02 == (0x02 & flg[1]);
-			const int32_t nHrm = HarmonicsData::NumHarm((int16_t) bw, flg[0], inv, mir);
-			harmonics.bw     () = (int16_t) bw      ;
+			const int32_t nHrm = HarmonicsData::NumHarm((int16_t) *bw, flg[0], inv, mir);
+			harmonics.bw     () = (int16_t) *bw     ;
 			harmonics.zRot   () =           flg[0]  ;
 			harmonics.mirInv () =           flg[1]  ;
 			harmonics.doubCnt() = (int32_t) nHrm * 2;
 			harmonics.alm.resize(nHrm * 2);
 			double * pHrm = harmonics.alm.data();
-			for(size_t m = 0; m < bw; m++) {
-				double * const row = alm + m * 2 * bw;
+			for(size_t m = 0; m < *bw; m++) {
+				double * const row = alm + m * 2 * *bw;
 				if(flg[0] > 1 ? 0 != m % flg[0] : false) continue;//systemic zeros
-				for(size_t l = m; l < bw; l++) {
+				for(size_t l = m; l < *bw; l++) {
 					if( (inv && 0 != l % 2) || (mir && 0 != (l + m) % 2) ) continue;
 					*pHrm++ = row[l*2+0];
 					*pHrm++ = row[l*2+1];
@@ -1626,9 +1626,9 @@ namespace emsphinx {
 		//@param flg: symmetry flags {zRot, mirInv}
 		//@param alm: actual harmonics (uncompressed format)
 		void File::EMsoftEBSD(char * fn, char const * nt, 
-		                      int32_t sgN, int32_t sgS, int32_t nAt, int32_t * aTy, float * aCd, float * lat,
+		                      int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, double * lat,
 		                      float * fprm, int32_t * iprm,
-		                      int32_t bw, int8_t * flg, double * alm) {
+		                      int32_t * bw, int8_t * flg, double * alm) {
 			//start by building up actual data
 			File f;
 			f.setEMDataMat(sgN, sgS, nAt, aTy, aCd, lat);
@@ -1652,10 +1652,39 @@ namespace emsphinx {
 		}
 
 		int File::EMsoftEBSDRet(char * fn, char const * nt, 
-		                        int32_t sgN, int32_t sgS, int32_t nAt, int32_t * aTy, float * aCd, float * lat,
+		                        int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, double * lat,
 		                        float * fprm, int32_t * iprm,
-		                        int32_t bw, int8_t * flg, double * alm) {
+		                        int32_t * bw, int8_t * flg, double * alm) {
 			try {
+                std::cout << "Entering EMsoftEBSD routine" << '\n';
+				std::cout << fn << ' ' << nt << ' ' << '\n';
+				std::cout << *sgN << ' ' << *sgS << ' ' << '\n';
+				std::cout << *nAt << ' ' << *aTy << ' ' << '\n';
+				std::cout << *aCd << ' ' << *(aCd+1) << ' ' << *(aCd+2) << ' ' << *(aCd+3) << ' ' << *(aCd+4) << '\n';
+				std::cout << *lat << ' ' << *(lat+1) << ' ' << *(lat+2) << ' ' << *(lat+3) << ' ' << *(lat+4) << ' ' << *(lat+5) << ' ' << '\n';
+				std::cout << *fprm << ' ' << '\n';
+				std::cout << *(fprm+1) << ' ' << '\n';
+				std::cout << *(fprm+2) << ' ' << '\n';
+				std::cout << *(fprm+3) << ' ' << '\n';
+				std::cout << *(fprm+4) << ' ' << '\n';
+				std::cout << *(fprm+5) << ' ' << '\n';
+				std::cout << *(fprm+6) << ' ' << '\n';
+				std::cout << *(fprm+7) << ' ' << '\n';
+				std::cout << *(fprm+8) << ' ' << '\n';
+				std::cout << *(fprm+9) << ' ' << '\n';
+				std::cout << *(fprm+10) << ' ' << '\n';
+				std::cout << *(fprm+11) << ' ' << '\n';
+				std::cout << *(fprm+12) << ' ' << '\n';
+				std::cout << *(fprm+13) << ' ' << '\n';
+				std::cout << *(fprm+14) << ' ' << '\n';
+				std::cout << *iprm << ' ' << '\n';
+				std::cout << *(iprm+1) << ' ' << '\n';
+				std::cout << *(iprm+2) << ' ' << '\n';
+				std::cout << *(iprm+3) << ' ' << '\n';
+				std::cout << *(iprm+4) << ' ' << '\n';
+				std::cout << *bw << ' ' << '\n';
+				std::cout << *(flg+0) << ' ' << *(flg+1) << ' ' << '\n';
+
 				EMsoftEBSD(fn, nt, sgN, sgS, nAt, aTy, aCd, lat,fprm, iprm,bw, flg, alm);
 				return 0;
 			} catch (std::exception& e) {

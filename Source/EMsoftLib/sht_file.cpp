@@ -50,9 +50,9 @@ extern "C" {
   //@param flg: symmetry flags {zRot, mirInv}
   //@param alm: actual harmonics (uncompressed format)
   int writeSHTfile_(char * fn, char const * nt, 
-                  int32_t sgN, int32_t sgS, int32_t nAt, int32_t * aTy, float * aCd, float * lat,
+                  int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, double * lat,
                   float * fprm, int32_t * iprm,
-                  int32_t bw, int8_t * flg, double * alm) {
+                  int32_t * bw, int8_t * flg, double * alm) {
 	  return emsphinx::sht::File::EMsoftEBSDRet(fn, nt, sgN, sgS, nAt, aTy, aCd, lat, fprm, iprm, bw, flg, alm);
   }
 }

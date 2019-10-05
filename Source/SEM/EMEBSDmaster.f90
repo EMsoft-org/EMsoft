@@ -1236,16 +1236,16 @@ real(kind=dbl),allocatable      :: alm(:)
 ! parameters for the .sht output file 
 integer(kind=irg),parameter     :: nipar=5, nfpar=20
 character(fnlen)                :: EMversion
-integer(kind=irg)               :: sgN      ! space group number [1,230]
-integer(kind=irg)               :: sgS      ! space group setting [1,2]
-integer(kind=irg)               :: numAt    ! number of atoms
-integer(kind=irg),allocatable   :: aTy(:)   ! atom types (nAt atomic numbers)
-real(kind=sgl),allocatable      :: aCd(:,:) ! atom coordinates, (nAt * 5 floats {x, y, z, occupancy, Debye-Waller in nm^2})
-real(kind=dbl)                  :: lat(6)   ! lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
-real(kind=sgl)                  :: fprm(nfpar) ! floating point parameters (float32 EMsoftED parameters in order)
-integer(kind=irg)               :: iprm(nipar) ! integer parameters {# electrons, electron multiplier, numsx, npx, latgridtype}
-character(1)                    :: zRot, mirInv 
-character(1),dimension(2)       :: flg      ! flg: symmetry flags {zRot, mirInv}
+integer(c_int32_t)              :: sgN      ! space group number [1,230]
+integer(c_int32_t)              :: sgS      ! space group setting [1,2]
+integer(c_int32_t)              :: numAt    ! number of atoms
+integer(c_int32_t),allocatable  :: aTy(:)   ! atom types (nAt atomic numbers)
+real(c_float),allocatable       :: aCd(:,:) ! atom coordinates, (nAt * 5 floats {x, y, z, occupancy, Debye-Waller in nm^2})
+real(c_double)                  :: lat(6)   ! lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
+real(c_float)                   :: fprm(nfpar) ! floating point parameters (float32 EMsoftED parameters in order)
+integer(c_int32_t)              :: iprm(nipar) ! integer parameters {# electrons, electron multiplier, numsx, npx, latgridtype}
+character(1,kind=c_char)                    :: zRot, mirInv 
+character(1,kind=c_char),dimension(2)       :: flg      ! flg: symmetry flags {zRot, mirInv}
 ! alm: actual harmonics (uncompressed format)
 
 !$OMP THREADPRIVATE(rlp) 
@@ -1719,18 +1719,18 @@ call Message(' Computing energy weighted master pattern',"(//A)")
   enddo
 
 ! build transformer
-call Message(' Initializing the spherical harmonic transformer')
-  layout = 'legendre'
-  bw = 384
-  d = bw / 2 + 1
-  write (*,*) ' parameters ', bw, d, trim(layout)
-  call transformer%init(d, bw, layout)
+ call Message(' Initializing the spherical harmonic transformer')
+   layout = 'legendre'
+   bw = 384
+   d = bw / 2 + 1
+   write (*,*) ' parameters ', bw, d, trim(layout)
+!   call transformer%init(d, bw, layout)
 
-! compute spherical harmonic transform of master pattern
-call Message(' Computing spherical harmonic transform')
-  allocate(almMaster(0:bw-1, 0:bw-1))
-  allocate(almPat   (0:bw-1, 0:bw-1))
-  call transformer%analyze(finalmLPNH, finalmLPSH, almMaster)
+! ! compute spherical harmonic transform of master pattern
+ call Message(' Computing spherical harmonic transform')
+   allocate(almMaster(0:bw-1, 0:bw-1))
+   allocate(almPat   (0:bw-1, 0:bw-1))
+!   call transformer%analyze(finalmLPNH, finalmLPSH, almMaster)
 
   timestop = Time_tock(timestart)
 
@@ -1750,20 +1750,34 @@ fprm = (/ sngl(mcnl%sig), nan(), nan(), sngl(mcnl%omega), sngl(mcnl%EkeV), sngl(
           sngl(mcnl%Ebinsize), sngl(mcnl%depthmax), sngl(mcnl%depthstep), &
           infty(), BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff, &
           emnl%dmin, 0.0, 0.0, 0.0, 0.0, 0.0 /)
-iprm = (/ mcnl%num_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
+iprm = (/ mcnl%totnum_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
 bw = 384
 zRot = char(SHT_ZRot(cell%SYM_SGnum))
 mirInv =  char(SHT_mirInv(cell%SYM_SGnum))
 flg = (/ zRot, mirInv /)
 
 ! transfer the complex almMaster array to a flat array with alternating real and imaginary parts
-allocate(alm( 2 * (2*emnl%npx + 1) * (2*emnl%npx+1)  ))
+allocate(alm( 2 * bw * bw ))
 alm = transfer(almMaster,alm)
+write (*,*) 'shape(almMaster) ', shape(almMaster)
+write (*,*) 'shape(alm) ', shape(alm)
 
 ! write an .sht file using EMsoft style EBSD data
 EMversion = EMsoft_getEMsoftversion()
 write (*,*) 'targeted output file '//trim(emnl%SHTfile)
 write (*,*) 'EMversion string '//trim(EMversion)
+write (*,*) 'sgN ',sgN
+write (*,*) 'sgS ',sgS
+write (*,*) 'numAt ',numAt
+write (*,*) 'aTy ',aTy
+write (*,*) 'aCd ',aCd 
+write (*,*) 'lat ',lat 
+write (*,*) 'fprm ', fprm 
+write (*,*) 'iprm ', iprm 
+write (*,*) 'bw ', bw 
+write (*,*) 'zRot/mirInv ', SHT_ZRot(cell%SYM_SGnum), SHT_mirInv(cell%SYM_SGnum)
+write (*,*) 'flg ', ichar(flg) 
+write (*,*) 'shape(alm) ', shape(alm), 2 * bw * bw  
 res = writeSHTfile(cstringify(emnl%SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
                    aTy, aCd, lat, fprm, iprm, bw, flg, alm)
 
