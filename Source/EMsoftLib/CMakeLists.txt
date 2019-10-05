@@ -89,6 +89,8 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/imageOPs.f90
   ${EMsoftLib_SOURCE_DIR}/hhmod.f90
   ${EMsoftLib_SOURCE_DIR}/detectors.f90
+  ${EMsoftLib_SOURCE_DIR}/DSHT.f90
+  ${EMsoftLib_SOURCE_DIR}/fft_wrap.f90
 
 
   ${EMsoftLib_Additional_SRCS}
