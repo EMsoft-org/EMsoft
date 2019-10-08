@@ -1624,7 +1624,7 @@ dataset = SC_Phi2
   if (sum(tkdnl%ROI).ne.0) then
     do jj=1,tkdnl%ROI(3)
       do ii=1,tkdnl%ROI(4)
-        results(tkdnl%ipf_wd*(jj-1)+ii) = (ii-1)*tkdnl%StepX 
+        results(tkdnl%ROI(4)*(jj-1)+ii) = (ii-1)*tkdnl%StepX 
       end do
     end do
   else
@@ -1645,7 +1645,7 @@ dataset = SC_Phi2
   if (sum(tkdnl%ROI).ne.0) then
     do jj=1,tkdnl%ROI(3)
       do ii=1,tkdnl%ROI(4)
-        results(tkdnl%ipf_wd*(jj-1)+ii) = (jj-1)*tkdnl%StepY 
+        results(tkdnl%ROI(4)*(jj-1)+ii) = (jj-1)*tkdnl%StepY 
       end do
     end do
   else
