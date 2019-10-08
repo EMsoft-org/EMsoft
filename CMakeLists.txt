@@ -185,15 +185,6 @@ cmpRevisionString( GENERATED_HEADER_FILE_PATH "${EMsoft_VERSION_HDR_FILE}"
                         NAMESPACE "EMsoft"
                         PROJECT_NAME "${PROJECT_NAME}"
                         EXPORT_MACRO "EMsoft_EXPORT")
-
-
-execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
-                          OUTPUT_VARIABLE EMsoft_GIT_HASH
-                          RESULT_VARIABLE did_run
-                          ERROR_VARIABLE git_error
-                          WORKING_DIRECTORY ${EMsoft_SOURCE_DIR}
-                          OUTPUT_STRIP_TRAILING_WHITESPACE
-)
 string(TIMESTAMP EMsoft_BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%SZ" UTC)
 
 include (${CMP_SOURCE_DIR}/cmpProject.cmake)
@@ -329,3 +320,24 @@ if(EMsoft_ENABLE_TESTING)
   include(CTest)
   add_subdirectory(${EMsoft_SOURCE_DIR}/Source/Test ${PROJECT_BINARY_DIR}/Test)
 endif()
+
+# --------------------------------------------------------------------
+# Print out the current Git Infomation. This is useful to help debug the dashboards
+execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
+                OUTPUT_VARIABLE EMsoft_GIT_HASH
+                RESULT_VARIABLE did_run
+                ERROR_VARIABLE git_error
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+string(REPLACE "\n" "" EMsoft_GIT_HASH "${EMsoft_GIT_HASH}")
+
+execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --pretty='%cd' --date=format:%Y-%m-%d-%H:%M:%S
+                OUTPUT_VARIABLE GVS_GIT_COMMIT_DATE
+                RESULT_VARIABLE did_run
+                ERROR_VARIABLE git_error
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
+)
+string(REPLACE "\n" "" GVS_GIT_COMMIT_DATE "${GVS_GIT_COMMIT_DATE}")
+message(STATUS "${PROJECT_NAME}   Git Hash:${EMsoft_GIT_HASH} committed on ${GVS_GIT_COMMIT_DATE}")
+
