@@ -189,7 +189,6 @@ czero = cmplx(0.D0,0.D0)
 !=============================================
 ! this program needs Monte Carlo information from the EMMCfoil program...
 ! ---------- read Monte Carlo .h5 output file and extract necessary parameters
-call Message('opening '//trim(emnl%energyfile), frm = "(A)" )
 
 xtaldataread = .FALSE.
 
@@ -198,6 +197,7 @@ call h5open_EMsoft(hdferr)
 ! does the file exist ?
 energyfile = trim(EMsoft_getEMdatapathname())//trim(emnl%energyfile)
 energyfile = EMsoft_toNativePath(energyfile)
+call Message('opening '//trim(emnl%energyfile), frm = "(A)" )
 inquire(file=energyfile, exist=f_exists)
 
 if (.not.f_exists) then
@@ -205,25 +205,33 @@ if (.not.f_exists) then
 end if
 
 ! open the MC file using the default properties.
-readonly = .TRUE.
-hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
+! readonly = .TRUE.
+! hdferr =  HDF_openFile(energyfile, HDF_head, readonly)
+
+hdferr =  HDF_openFile(energyfile, HDF_head)
 
 ! next we need to make sure that this EM file actually contains a Monte Carlo 
 ! data set; if it does, then we can try to read all the information
-datagroupname = '/EMData/MCfoil'
+groupname = SC_EMData
+hdferr = HDF_openGroup(groupname, HDF_head)
+datagroupname = SC_MCfoil
 call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain any TKD Monte Carlo data')
 end if
+call HDF_pop(HDF_head)
 
 ! check whether or not the MC file was generated using DREAM.3D
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
-! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
-datagroupname = '/EMheader/MCfoil'
+! this test sets a flag inside the HDFsupport module so that the proper reading routines will be employed
+groupname = SC_EMheader
+hdferr = HDF_openGroup(groupname, HDF_head)
+datagroupname = SC_MCfoil
 call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Monte Carlo header data')
 end if
+call HDF_pop(HDF_head)
 
 groupname = SC_EMheader
 hdferr = HDF_openGroup(groupname, HDF_head)
@@ -237,7 +245,6 @@ if (FL.eqv..TRUE.) then
 end if
 call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
-
 
 ! open the namelist group
 groupname = SC_NMLparameters

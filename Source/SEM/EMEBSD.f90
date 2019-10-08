@@ -483,6 +483,17 @@ datafile = EMsoft_toNativePath(datafile)
 hdferr =  HDF_createFile(datafile, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_createFile ')
 
+!====================================
+! new in Release 4.3: add a Manufacturer string (null terminated)
+dataset = SC_Manufacturer
+line2(1) = ''
+line2(1) = 'EMsoft'
+i = len(trim(line2(1)))
+i = i+1
+line2(1)(i:i) = C_NULL_CHAR
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+!====================================
+
 ! write the EMheader to the file
 datagroupname = 'EBSD'
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, datagroupname)

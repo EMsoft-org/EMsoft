@@ -77,6 +77,7 @@ end program EMMCfoil
 !> @param nmlfile namelist file name
 !
 !> @date 01/14/17 MDG  1.0 modified EMMCsphere to EMMCfoil
+!> @date 10/08/19 MDG  1.1 replace h5_open_f by EMsoft version
 !--------------------------------------------------------------------------
 subroutine DoMCsimulation(mcnl, progname, nmldeffile)
 
@@ -186,8 +187,6 @@ nullify(HDF_head%next)
 call timestamp(datestring=dstr, timestring=tstrb)
 
 numsy = mcnl%numsx
-!nullify(cell)        
-!allocate(cell)        
 
 ! get the crystal structure from the *.xtal file
 verbose = .TRUE.
@@ -475,7 +474,7 @@ totnum_el = (io_int(1)+1)*num_max
 
 ! Initialize FORTRAN interface.
 !
-call h5open_f(hdferr)
+call h5open_EMsoft(hdferr)
 call timestamp(timestring=tstre)
 
 ! first of all, if the file exists, then delete it 
@@ -565,7 +564,7 @@ hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_e_SP, numEbins, 2*nx+1, 2
 call HDF_pop(HDF_head,.TRUE.)
 
 ! and close the fortran hdf interface
-call h5close_f(hdferr)
+call h5close_EMsoft(hdferr)
 
 !
 !=====================

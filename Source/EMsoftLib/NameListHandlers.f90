@@ -7884,8 +7884,6 @@ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',ST
 read(UNIT=dataunit,NML=MCCLfoildata)
 close(UNIT=dataunit,STATUS='keep')
 
-write(*,NML=MCCLfoildata)
-
 ! check for required entries
 if (trim(xtalname).eq.'undefined') then
 call FatalError('EMMC:',' structure file name is undefined in '//nmlfile)
