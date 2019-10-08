@@ -302,11 +302,11 @@ integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
 
 integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq, iiiend, iiistart, jjend, TIFF_nx, TIFF_ny
-integer(kind=irg)                                   :: FZcnt, pgnum, io_int(3), ncubochoric, pc, tickstart
+integer(kind=irg)                                   :: FZcnt, pgnum, io_int(4), ncubochoric, pc, tickstart, tickstart2, tock
 type(FZpointd),pointer                              :: FZlist, FZtmp
 integer(kind=irg),allocatable                       :: indexlist(:),indexarray(:),indexmain(:,:),indextmp(:,:)
 real(kind=sgl)                                      :: dmin,voltage,scl,ratio, mi, ma, ratioE, io_real(2), tmp, &
-                                                       totnum_el, vlen, tstop
+                                                       totnum_el, vlen, tstop, ttime
 real(kind=dbl)                                      :: prefactor
 character(fnlen)                                    :: xtalname
 integer(kind=irg)                                   :: binx,biny,TID,nthreads,Emin,Emax
@@ -326,12 +326,7 @@ integer(kind=irg)                                   :: NumLines
 character(fnlen)                                    :: TitleMessage, exectime
 character(100)                                      :: c
 
-
-
-type(HDFobjectStackType)                            :: HDF_head
-
 call timestamp(datestring=dstr, timestring=tstrb)
-
 
 if (sum(tkdnl%ROI).ne.0) then
   ROIselected = .TRUE.
@@ -344,7 +339,6 @@ else
   iiiend = tkdnl%ipf_ht
   jjend = tkdnl%ipf_wd
 end if
-
 
 verbose = .FALSE.
 init = .TRUE.
@@ -778,6 +772,7 @@ end if
 !=====================================================
 
 call Time_tick(tickstart)
+call Time_tick(tickstart2)
 
 call OMP_SET_NUM_THREADS(tkdnl%nthreads)
 io_int(1) = tkdnl%nthreads
@@ -819,6 +814,8 @@ dictionaryloop: do ii = 1,cratio+1
 
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int) &
 !$OMP& PRIVATE(binned, ma, mi, TKDpatternintd, TKDpatterninteger, TKDpatternad, quat, imagedictflt,imagedictfltflip)
+
+allocate(TKDpatterninteger(binx,biny),TKDpatternintd(binx,biny),TKDpatternad(binx,biny))
 
         TID = OMP_GET_THREAD_NUM()
 
@@ -885,10 +882,18 @@ dictionaryloop: do ii = 1,cratio+1
       io_real(2) = float(iii)/float(cratio)*100.0
       call WriteValue('',io_real,2,"(' max. dot product = ',F10.6,';',F6.1,'% complete')")
 
-
       if (mod(iii,10) .eq. 0) then
-        io_int(1:2) = (/iii,cratio/)
-        call WriteValue('',io_int,2,"(' -> Completed cycle ',I5,' out of ',I5)")
+        tock = Time_tock(tickstart)
+        ttime = float(tock) * float(cratio) / float(iii)
+        tstop = ttime
+        io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
+        call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. total time ', &
+                       I4,' hrs',I3,' min')")
+      else
+        ttime = tstop * float(cratio-iii) / float(cratio)
+        io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
+        call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. remaining time ', &
+                       I4,' hrs',I3,' min')")
       end if
     else
        if (verbose.eqv..TRUE.) call WriteValue('','        GPU thread is idling')
@@ -988,11 +993,14 @@ ierr = clReleaseKernel(kernel)
 call CLerror_check('InnerProdGPU:clReleaseKernel', ierr)
 
 ! perform some timing stuff
-tstop = Time_tock(tickstart)
-io_real(1) = float(totnumexpt)*float(FZcnt) / tstop
-call WriteValue('Number of pattern comparisons per second : ',io_real,1,"(/,F10.2)")
-io_real(1) = float(totnumexpt) / tstop
-call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F10.2,/)")
+! perform some timing stuff
+  tstop = Time_tock(tickstart2)
+  io_real(1) = tstop
+  call WriteValue('Indexing duration (system_clock, s)                : ',io_real,1,"(/,F14.3)")
+  io_real(1) = float(totnumexpt)*float(FZcnt) / tstop
+  call WriteValue('Number of pattern comparisons per second           : ',io_real,1,"(/,F14.3)")
+  io_real(1) = float(totnumexpt) / tstop
+  call WriteValue('Number of experimental patterns indexed per second : ',io_real,1,"(/,F14.3,/)")
 
 ! ===================
 ! MAIN OUTPUT SECTION
@@ -1020,22 +1028,28 @@ allocate(OSMmap(jjend, iiiend))
 ! Initialize FORTRAN interface.
 call h5open_EMsoft(hdferr)
 
+write (*,*) 'writing h5tkd file', shape(OSMmap), ipar 
 if (tkdnl%datafile.ne.'undefined') then 
   vendor = 'TSL'
   call h5tkd_writeFile(vendor, tkdnl, dstr, tstrb, ipar, resultmain, exptIQ, indexmain, eulerarray, &
                         dpmap, progname, nmldeffile, OSMmap)
   call Message('Data stored in h5tkd file : '//trim(tkdnl%datafile))
 end if
+write (*,*) ' --> done'
 
+write (*,*) 'ctf file'
 if (tkdnl%ctffile.ne.'undefined') then 
   call ctftkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain, OSMmap, exptIQ)
   call Message('Data stored in ctf file : '//trim(tkdnl%ctffile))
 end if
+write (*,*) ' --> done'
 
+write (*,*) 'ctf file'
 if (tkdnl%angfile.ne.'undefined') then 
     call angtkd_writeFile(tkdnl,ipar,indexmain,eulerarray,resultmain,exptIQ)
     call Message('Data stored in ang file : '//trim(tkdnl%angfile))
 end if
+write (*,*) ' --> done'
 
 ! close the fortran HDF5 interface
 call h5close_EMsoft(hdferr)

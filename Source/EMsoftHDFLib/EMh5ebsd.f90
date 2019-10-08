@@ -358,8 +358,13 @@ newvec = inpvec
 mi = minval(newvec)
 newvec = newvec - mi
 ma = maxval(newvec)
-width = tkdnl%ipf_wd
-height = tkdnl%ipf_ht
+if (sum(tkdnl%ROI).ne.0) then
+  width = tkdnl%ROI(3)
+  height = tkdnl%ROI(4)
+else
+  width = tkdnl%ipf_wd
+  height = tkdnl%ipf_ht
+end if
 allocate(image(width,height),stat=istat)
 if (istat.ne.0) call FatalError('h5tkd_write2DImageFromVector','Could not allocate array for output image')
 
