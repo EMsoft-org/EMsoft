@@ -10,6 +10,8 @@
 ! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
 ! this file will also contain the output data of the master program
  energyfile = 'MCoutput.h5',
+! BetheParameters file name
+ BetheParametersFile = 'BetheParameters.nml'
 ! do you wish to receive a notification (Email or Slack) when the program completes ?
  Notify = 'Off', 
 ! lattitudinal grid type:  'Lambert' or 'Legendre'

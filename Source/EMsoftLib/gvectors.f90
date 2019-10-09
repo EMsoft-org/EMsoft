@@ -1082,7 +1082,7 @@ end subroutine Compute_DynMat
 !> @date   10/07/15 MDG 1.1 added c1 etc parameters to namelist file
 !> @date   09/27/16 MDG 1.2 removed defunct variables from name list
 !--------------------------------------------------------------------------
-recursive subroutine Set_Bethe_Parameters(BetheParameter,silent)
+recursive subroutine Set_Bethe_Parameters(BetheParameter,silent,filename)
 !DEC$ ATTRIBUTES DLLEXPORT :: Set_Bethe_Parameters
 
 use io
@@ -1092,12 +1092,19 @@ IMPLICIT NONE
 type(BetheParameterType),INTENT(INOUT)        :: BetheParameter
 !f2py intent(in,out) ::  BetheParameter
 logical,INTENT(IN),OPTIONAL     :: silent
+character(fnlen),INTENT(IN),OPTIONAL :: filename
 
-character(fnlen),parameter      :: Bethefilename = 'BetheParameters.nml'
+character(fnlen)                :: Bethefilename
 logical                         :: fexist
 real(kind=sgl)                  :: c1, c2, c3, sgdbdiff
 
 namelist /BetheList/ c1, c2, c3, sgdbdiff
+
+if (present(filename)) then
+  Bethefilename = trim(filename)
+else 
+  Bethefilename = 'BetheParameters.nml'
+end if 
 
 ! check for the presence of the namelist file in the current folder
 inquire(file=trim(Bethefilename),exist=fexist)

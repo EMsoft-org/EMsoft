@@ -487,9 +487,7 @@ deallocate(EBSDMCdata%accum_z)
 
 ! force dynamical matrix routine to read new Bethe parameters from file
 ! this will all be changed with the new version of the Bethe potentials
-  call Set_Bethe_Parameters(BetheParameters,.TRUE.)
-
-
+  call Set_Bethe_Parameters(BetheParameters,.TRUE.,emnl%BetheParametersFile)
 
 if (emnl%restart.eqv..FALSE.) then
 !=============================================

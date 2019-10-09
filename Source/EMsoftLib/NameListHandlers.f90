@@ -2537,6 +2537,7 @@ character(fnlen)        :: latgridtype
 character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: energyfile
 character(fnlen)        :: SHTfile
+character(fnlen)        :: BetheParametersFile
 character(fnlen)        :: h5copypath
 logical                 :: combinesites
 logical                 :: restart
@@ -2558,6 +2559,7 @@ copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a diff
 h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 SHTfile = 'undefined'           ! for storage of spherical harmonic transform coefficients
+BetheParametersFile='BetheParameters.nml'
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
 uniform = .FALSE.               ! when .TRUE., the output master patterns will contain 1.0 everywhere
@@ -2588,6 +2590,7 @@ emnl%latgridtype = latgridtype
 emnl%copyfromenergyfile = copyfromenergyfile
 emnl%h5copypath = h5copypath
 emnl%energyfile = energyfile
+emnl%BetheParametersFile = BetheParametersFile
 emnl%Notify = Notify
 emnl%outname = energyfile       ! as off release 3.1, outname must be the same as energyfile
 emnl%combinesites = combinesites
