@@ -74,7 +74,7 @@ if (numarg.gt.0) then
   call WriteValue('Number of command line arguments detected: ',io_int,1)
 
   do i=1,numarg
-    call getarg(i,dpfilebase)
+    call get_command_argument(i,dpfilebase)
     call extractImages(dpfilebase, cwd)
   end do
 
