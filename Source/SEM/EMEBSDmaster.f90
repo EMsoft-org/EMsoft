@@ -1758,9 +1758,9 @@ call Message(' Computing energy weighted master pattern',"(//A)")
 ! create the file
   call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
   if(0.ne.iostat) then
-    call Message(" failed to write image to file : "//iomsg)
+    call Message("   --> Failed to write image to file : "//iomsg)
   else  
-    call Message(' Lambert projections written to '//trim(image_filename))
+    call Message('   --> Lambert projections written to '//trim(image_filename))
   end if 
   deallocate(output_image)
 
@@ -1781,9 +1781,6 @@ call Message(' Computing energy weighted master pattern',"(//A)")
 
   timestop = Time_tock(timestart)
 
-! finally, write the SHT coefficient array to the output h5 file
-call Message(' Storing SHT coefficients in binary output file '//trim(emnl%SHTfile))
-
 ! prepare all parameters for the writing of the final .sht file 
 sgN = cell%SYM_SGnum
 sgS = cell%SYM_SGset
@@ -1799,19 +1796,15 @@ fprm = (/ sngl(mcnl%sig), nan(), nan(), sngl(mcnl%omega), sngl(mcnl%EkeV), sngl(
           emnl%dmin, 0.0, 0.0, 0.0, 0.0, 0.0 /)
 iprm = (/ mcnl%totnum_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
 bw = 384
-! these are taken care of in the write routine...
-! zRot = char(SHT_ZRot(cell%SYM_SGnum))
-! mirInv =  char(SHT_mirInv(cell%SYM_SGnum))
-! flg = (/ zRot, mirInv /)
 
 ! transfer the complex almMaster array to a flat array with alternating real and imaginary parts
 allocate(alm( 2 * bw * bw ))
 alm = transfer(almMaster,alm)
-write (*,*) 'shape(almMaster) ', shape(almMaster)
-write (*,*) 'shape(alm) ', shape(alm)
 
 ! write an .sht file using EMsoft style EBSD data
-EMversion = EMsoft_getEMsoftversion()
+EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
+EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
+EMversion = trim(EMversion)//'; database DOI : '
 write (*,*) 'targeted output file '//trim(emnl%SHTfile)
 write (*,*) 'EMversion string '//trim(EMversion)
 write (*,*) 'sgN ',sgN
