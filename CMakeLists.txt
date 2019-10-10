@@ -80,8 +80,8 @@ if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
 endif()
 #
 # Next up, Set the version of EMsoft that is used through out the project.
-set(EMsoft_VER_MAJOR "4")
-set(EMsoft_VER_MINOR "3")
+set(EMsoft_VER_MAJOR "5")
+set(EMsoft_VER_MINOR "0")
 set(EMsoft_VER_PATCH "0")
 #------------------------------------------------------------------------------
 
