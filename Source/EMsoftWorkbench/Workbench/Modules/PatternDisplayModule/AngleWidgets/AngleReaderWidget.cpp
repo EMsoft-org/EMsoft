@@ -252,7 +252,7 @@ std::vector<float> AngleReaderWidget::getEulerAngles() const
   {
     QTextStream in(&file);
 
-    size_t numberOfAngles;
+    int32_t numberOfAngles;
     if(partialFileCB->isChecked())
     {
       numberOfAngles = maxLineNum->value() - minLineNum->value() + 1;
@@ -269,18 +269,19 @@ std::vector<float> AngleReaderWidget::getEulerAngles() const
       numberOfAngles = in.readLine().toInt();
     }
 
-    std::vector<float> angleArray(numberOfAngles * 3);
+    std::vector<float> angleArray(static_cast<size_t>(numberOfAngles * 3), 0.0f);
 
-    for(int i = 0; i < angleArray.size(); i += 3)
+    for(size_t i = 0; i < angleArray.size(); i += 3)
     {
       QString line = in.readLine();
       QStringList parts = line.split(QRegularExpression("[ \t]+"), QString::SkipEmptyParts);
-      for(int j = 0; j < parts.size(); j++)
+      int32_t numParts = parts.size();
+      for(int32_t j = 0; j < numParts; j++)
       {
         QString part = parts[j];
         float value = part.toFloat();
         value = AbstractAngleWidget::ConvertToRadians(value);
-        angleArray.at(i + j) = value;
+        angleArray.at(i + static_cast<size_t>(j)) = value;
       }
     }
 

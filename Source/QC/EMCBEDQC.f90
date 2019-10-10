@@ -101,7 +101,6 @@ use initializersQCHDF
 use gvectorsQC
 use kvectorsQC
 use MBmoduleQC
-use gvectors, only:Set_Bethe_Parameters
 use omp_lib
 
 IMPLICIT NONE

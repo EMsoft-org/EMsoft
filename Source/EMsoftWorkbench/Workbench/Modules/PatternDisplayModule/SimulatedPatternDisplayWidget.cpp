@@ -96,8 +96,8 @@ void SimulatedPatternDisplayWidget::setupGui()
 
   connect(patternListView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(patternListView_doubleClicked(QModelIndex)));
 
-  m_MinSBValue = gammaSpinBox->minimum();
-  m_MaxSBValue = gammaSpinBox->maximum();
+  m_MinSBValue = static_cast<int32_t>(gammaSpinBox->minimum());
+  m_MaxSBValue = static_cast<int32_t>(gammaSpinBox->maximum());
 
   // Create Detector Binning Button Menu
   {
@@ -393,12 +393,10 @@ void SimulatedPatternDisplayWidget::setExpectedPatterns(const std::vector<float>
   int index = 0;
   for(std::vector<float>::size_type iter =0; iter < eulerAngles.size(); iter+=3)
   {
-    float a1 = eulerAngles[iter];
-    float a2 = eulerAngles[iter+1];
-    float a3 = eulerAngles[iter+2];
-    a1 = AbstractAngleWidget::ConvertToDegrees(a1);
-    a2 = AbstractAngleWidget::ConvertToDegrees(a2);
-    a3 = AbstractAngleWidget::ConvertToDegrees(a3);
+
+    double a1 = static_cast<double>(AbstractAngleWidget::ConvertToDegrees(eulerAngles[iter]));
+    double a2 = static_cast<double>(AbstractAngleWidget::ConvertToDegrees(eulerAngles[iter + 1]));
+    double a3 = static_cast<double>(AbstractAngleWidget::ConvertToDegrees(eulerAngles[iter + 2]));
 
     QString name = tr("Pattern %1: (%2, %3, %4)").arg(QString::number(index + 1), QString::number(a1), QString::number(a2), QString::number(a3));
 
@@ -482,7 +480,8 @@ void SimulatedPatternDisplayWidget::displayImage(PatternImageViewer::ImageData i
       imageData.image = PatternTools::ApplyCircularMask(imageData.image);
     }
 
-    imageData.image = imageData.image.scaled(imageData.image.width() / displayData.detectorBinningValue, imageData.image.height() / displayData.detectorBinningValue);
+    imageData.image =
+        imageData.image.scaled(imageData.image.width() / static_cast<int32_t>(displayData.detectorBinningValue), imageData.image.height() / static_cast<int32_t>(displayData.detectorBinningValue));
   }
 
   imageWidget->loadImage(imageData);
@@ -510,7 +509,7 @@ void SimulatedPatternDisplayWidget::patternListView_doubleClicked(const QModelIn
   PatternListModel* model = PatternListModel::Instance();
   model->setPatternStatus(index.row(), PatternListItem::PatternStatus::Priority);
 
-  emit patternNeedsPriority(index.row());
+  emit patternNeedsPriority(static_cast<size_t>(index.row()));
 }
 
 // -----------------------------------------------------------------------------
@@ -556,7 +555,7 @@ size_t SimulatedPatternDisplayWidget::getDetectorBinningValue() const
   if(checkedAction != nullptr)
   {
     bool ok = false;
-    value = checkedAction->text().toInt(&ok);
+    value = checkedAction->text().toULongLong(&ok);
     if(!ok)
     {
       value = 0;

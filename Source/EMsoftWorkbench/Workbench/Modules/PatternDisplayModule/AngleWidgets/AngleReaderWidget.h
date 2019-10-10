@@ -144,7 +144,7 @@ private:
     QString m_OpenDialogLastDirectory;
 
   QString m_LoadedFilePath = "";
-  size_t m_FileAngleCount = 0;
+  int32_t m_FileAngleCount = 0;
 
 public:
   AngleReaderWidget(const AngleReaderWidget&) = delete;            // Copy Constructor Not Implemented

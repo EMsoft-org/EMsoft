@@ -130,7 +130,7 @@ void DictionaryIndexingController::createDI(const DIData &data)
 
   QSharedPointer<QProcess> diProcess = QSharedPointer<QProcess>(new QProcess());
   connect(diProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardOutput().toStdString())); });
-  connect(diProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardOutput().toStdString())); });
+  connect(diProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardError().toStdString())); });
   connect(diProcess.data(), &QProcess::errorOccurred, [=] (QProcess::ProcessError error) { emit stdOutputMessageGenerated(tr("Process Error: %1").arg(QString::number(error))); });
   connect(diProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenDIFinished(exitCode, exitStatus, data); });
 
@@ -144,6 +144,7 @@ void DictionaryIndexingController::createDI(const DIData &data)
     diProcess->setProcessEnvironment(env);
 
     QString nmlFilePath = m_TempDir.path() + QDir::separator() + "EMEBSDDI.nml";
+    //  writeDIDataToFile("/tmp/EMEBSDDI.nml", data);
     writeDIDataToFile(nmlFilePath, data);
     QStringList parameters = {nmlFilePath};
     diProcess->start(diExecutablePath, parameters);
@@ -251,7 +252,7 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
     out << "! distance between scintillator and illumination point [microns]\n";
     out << tr(" L = %1,\n").arg(data.L);
     out << "! tilt angle of the camera (positive below horizontal, [degrees])\n";
-    out << tr(" thetac = %1,\n").arg(data.thetac);
+    out << " thetac = " << data.thetac << ",\n";
     out << "! CCD pixel size on the scintillator surface [microns]\n";
     out << tr(" delta = %1,\n").arg(data.delta);
     out << "! number of CCD pixels along x and y\n";
@@ -344,12 +345,29 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
     out << "! enter the full path of a data set in individual strings for each group, in the correct order,\n";
     out << "! and with the data set name as the last name; leave the remaining strings empty (they should all\n";
     out << "! be empty for the Binary and TSLup2 formats)\n";
-    QString hdfStringsStr = " HDFstrings = @@HDF_STRINGS@@,\n";
-    QString hdfStringsJoined = data.hdfStrings.join("' '");
-    hdfStringsJoined.prepend("'");
-    hdfStringsJoined.append("'");
-    hdfStringsStr.replace("@@HDF_STRINGS@@", hdfStringsJoined);
-    out << hdfStringsStr;
+    out << " HDFstrings = ";
+    for(int k = 0; k < 10; k++)
+    {
+      if(k < data.hdfStrings.size())
+      {
+        out << "'" << data.hdfStrings.at(k) << "'";
+      }
+      else
+      {
+        out << "''";
+      }
+      if(k < 9)
+      {
+        out << " ";
+      }
+    }
+    out << ",\n";
+    //    QString hdfStringsStr = " HDFstrings = @@HDF_STRINGS@@,\n";
+    //    QString hdfStringsJoined = data.hdfStrings.join("' '");
+    //    hdfStringsJoined.prepend("'");
+    //    hdfStringsJoined.append("'");
+    //    hdfStringsStr.replace("@@HDF_STRINGS@@", hdfStringsJoined);
+    //    out << hdfStringsStr;
     out << "!\n";
     out << "!###################################################################\n";
     out << "! OTHER FILE PARAMETERS: COMMON TO 'STATIC' AND 'DYNAMIC'\n";
@@ -389,11 +407,11 @@ void DictionaryIndexingController::writeDIDataToFile(const QString &filePath, co
     out << "!\n";
     if (data.eulerAngleFile.isEmpty())
     {
-      out << " dictfile = 'undefined'\n";
+      out << " dictfile = 'undefined',\n";
     }
     else
     {
-      out << tr(" dictfile = '%1'\n").arg(data.dictFile);
+      out << tr(" dictfile = '%1',\n").arg(data.dictFile);
     }
     out << "!\n";
     out << "!###################################################################\n";

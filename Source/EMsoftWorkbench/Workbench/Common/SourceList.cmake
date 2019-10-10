@@ -10,7 +10,6 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_Moc_HDRS
   ${${SUBDIR_NAME}_DIR}/GLImageViewer.h
   ${${SUBDIR_NAME}_DIR}/PatternImageViewer.h
   ${${SUBDIR_NAME}_DIR}/MonteCarloFileReader.h
-  ${${SUBDIR_NAME}_DIR}/ProjectionConversions.hpp
   #${${SUBDIR_NAME}_DIR}/SVStyle.h
   ${${SUBDIR_NAME}_DIR}/XtalFileReader.h
   ${${SUBDIR_NAME}_DIR}/EMsoftFileWriter.h
@@ -26,6 +25,7 @@ set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS
 #set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
+  ${${SUBDIR_NAME}_DIR}/ProjectionConversions.hpp
   ${${SUBDIR_NAME}_DIR}/AbstractImageGenerator.hpp
   ${${SUBDIR_NAME}_DIR}/Constants.h
   ${${SUBDIR_NAME}_DIR}/EigenConversions.hpp

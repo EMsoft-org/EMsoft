@@ -3,6 +3,8 @@
 
 
 #ifdef __cplusplus
+#include <cstddef>
+#include <cstdint>
 extern "C" {
 #endif
 

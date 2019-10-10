@@ -35,12 +35,10 @@
 
 #pragma once
 
-#include <QtCore/QFutureWatcher>
 #include <QtCore/QObject>
-
-
-class MonteCarloFileReader;
-class EMsoftFileWriter;
+#include <QtCore/QProcess>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QString>
 
 class MasterPatternSimulationController : public QObject
 {
@@ -50,6 +48,9 @@ public:
   MasterPatternSimulationController(QObject* parent = nullptr);
   ~MasterPatternSimulationController() override;
 
+  const QString k_ExeName = QString("EMEBSDmaster");
+  const QString k_NMLName = QString("EMEBSDmaster.nml");
+
   using EnumType = unsigned int;
 
   enum class MonteCarloMode : EnumType
@@ -58,18 +59,10 @@ public:
     ECP
   };
 
-    /**
-    * @brief Setter property for Cancel
-    */
-    void setCancel(const bool& value); 
-
-    /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-    bool getCancel() const;
-
-  struct MasterPatternSimulationData
+  /**
+   *
+   */
+  using InputDataType = struct
   {
     double smallestDSpacing;
     int numOfMPPixels;
@@ -82,17 +75,17 @@ public:
   };
 
   /**
-   * @brief createMonteCarlo
-   * @param data
+   * @brief setData
+   * @param simData
    */
-  void createMasterPattern(MasterPatternSimulationController::MasterPatternSimulationData data);
+  void setData(const InputDataType& simData);
 
   /**
    * @brief validateMonteCarloValues
    * @param data
    * @return
    */
-  bool validateMasterPatternValues(MasterPatternSimulationController::MasterPatternSimulationData data) const;
+  bool validateInput() const;
 
   /**
    * @brief setUpdateProgress
@@ -108,120 +101,40 @@ public:
    */
   int getNumCPUCores() const;
 
-#if 0
-    /**
-     * @brief getPlatformInfo
-     * @return
-     */
-    QStringList getPlatformInfo();
+public slots:
+  /**
+   * @brief execute
+   */
+  void execute();
 
-    /**
-     * @brief getDeviceInfo
-     * @param platformID
-     * @return
-     */
-    QStringList getDeviceInfo(int platformID);
+  /**
+   * @brief cancelProcess
+   */
+  void cancelProcess();
 
-#endif
+protected slots:
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 signals:
   void warningMessageGenerated(const QString& msg) const;
   void errorMessageGenerated(const QString& msg) const;
   void stdOutputMessageGenerated(const QString& msg) const;
 
+  void finished();
+
 private:
-    bool m_Cancel;
-
-  MonteCarloFileReader* m_MonteCarloReader = nullptr;
-
-  QString m_StartTime = "";
-
-  std::vector<int32_t> m_GenericAccumzPtr;
-  std::vector<float> m_GenericLPNHPtr;
-  std::vector<float> m_GenericLPSHPtr;
-
-  std::vector<float> m_Atompos;
-  std::vector<int32_t> m_Atomtypes;
-  std::vector<float> m_Latparm;
-  QString m_CreationDate = "";
-  QString m_CreationTime = "";
-  QString m_Creator = "";
-  QString m_ProgramName = "";
-
-  int m_CrystalSystem = -1;
-  int m_Natomtypes = -1;
-  int m_SpaceGroupNumber = -1;
-  int m_SpaceGroupSetting = -1;
-
+  bool m_Cancel = false;
   size_t m_InstanceKey = 0;
   bool m_Executing = false;
 
-  /**
-   * @brief initializeData
-   */
-  void initializeData();
+  InputDataType m_InputData;
+  QSharedPointer<QProcess> m_CurrentProcess;
 
   /**
-   * @brief writeEMsoftHDFFile
-   * @param simData
-   * @return
+   * @brief MonteCarloSimulationController::generateNMLFile
+   * @param path
    */
-  bool writeEMsoftHDFFile(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
-
-#if 0
-    /**
-     * @brief getnumCLPlatforms
-     * @return
-     */
-    int getnumCLPlatforms();
-
-    /**
-     * @brief getPlatformInfo
-     */
-    void writePlatformInfo();
-
-    /**
-     * @brief getnumCLDevices
-     * @param platformID
-     * @return
-     */
-    int getnumCLDevices(int platformID);
-
-    /**
-     * @brief getDeviceInfo
-     * @param platformID
-     */
-    void writeDeviceInfo(int platformID);
-#endif
-  /**
-   * @brief getEMsoftUserName
-   * @return
-   */
-  QString getEMsoftUserName() const;
-
-  /**
-   * @brief getEMsoftUserEmail
-   * @return
-   */
-  QString getEMsoftUserEmail() const;
-
-  /**
-   * @brief getEMsoftUserLocation
-   * @return
-   */
-  QString getEMsoftUserLocation() const;
-
-  /**
-   * @brief getIParPtr
-   * @return
-   */
-  std::vector<int32_t> getIParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
-
-  /**
-   * @brief getFParPtr
-   * @return
-   */
-  std::vector<float> getFParPtr(MasterPatternSimulationController::MasterPatternSimulationData simData) const;
+  void generateNMLFile(const QString& path);
 
 public:
   MasterPatternSimulationController(const MasterPatternSimulationController&) = delete;            // Copy Constructor Not Implemented

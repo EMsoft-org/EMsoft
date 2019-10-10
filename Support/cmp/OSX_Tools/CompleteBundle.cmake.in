@@ -58,13 +58,13 @@ function(gp_item_default_embedded_path_override item default_embedded_path_var)
     message(STATUS "++ Plugin: ${item}")
     set(path "@executable_path/../Plugins")
     set(overridden 1)
-  endif(item MATCHES "\\.plugin$")
+  #endif(item MATCHES "\\.plugin$")
 
   # Next look for the Qt Image Format Plugins in case those are needed
-  if ( item MATCHES "imageformats/libq?")
-    message(STATUS "^^ Qt Plugin: ${item}")
-    set(path "@executable_path/../Plugins/imageformats")
-    set(overridden 1)
+  # if ( item MATCHES "imageformats/libq?")
+  #   message(STATUS "^^ Qt Plugin: ${item}")
+  #   set(path "@executable_path/../Plugins/imageformats")
+  #   set(overridden 1)
   # Lastly pick up any Plugins that simply have the ".dylib" extension
   elseif(item MATCHES "\\.dylib$")
     message(STATUS "%% Support Library: ${item}")
@@ -144,7 +144,7 @@ if ("@QM_QT_VERSION@" VERSION_LESS "5.10.0")
 endif()
 
 # If we are Qt 5.10.x then also copy the libqmacstyle.dylib library from the Styles plugin dir.
-if ("@QM_QT_VERSION@" VERSION_GREATER 5.9.99 AND "@QM_QT_VERSION@" VERSION_LESS 5.10.99)
+if ("@QM_QT_VERSION@" VERSION_GREATER 5.9.99)
   CopyQt5Plugin(QT5_PLUGIN_DIR "${qtPluginsPath}" PLUGIN_GROUP "styles" PLUGIN_NAME "libqmacstyle.dylib")
 endif()
 
@@ -171,7 +171,7 @@ execute_process(
 
 # ----------------------------------------------------
 # Read up all the library directories where we can find all the external libraries.
-file(READ "@SIMPLibSearchDirs@" lib_search_dirs)
+file(READ "@EMsoftSearchDirs@" lib_search_dirs)
 
 # ----------------------------------------------------
 # This is where the actual patching of the install_names is going to take place.

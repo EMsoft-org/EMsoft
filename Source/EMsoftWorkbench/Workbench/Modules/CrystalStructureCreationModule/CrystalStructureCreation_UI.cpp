@@ -157,6 +157,10 @@ void CrystalStructureCreation_UI::createWidgetConnections()
 {
   connect(createCrystalStructureBtn, &QPushButton::clicked, this, [=] {
     setRunning(true);
+    // Sanity Check the input/output Files
+    QString absPath = FileIOTools::GetAbsolutePath(csFilePathLE->text());
+    csFilePathLE->setText(absPath);
+
     CrystalStructureCreationController::CrystalStructureCreationData data = getCreationData();
     m_Controller->createCrystalStructureFile(data);
     emit validationOfOtherModulesNeeded(this);

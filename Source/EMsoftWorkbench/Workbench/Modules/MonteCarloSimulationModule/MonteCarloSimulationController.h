@@ -35,9 +35,10 @@
 
 #pragma once
 
-#include <QtCore/QFutureWatcher>
 #include <QtCore/QObject>
-
+#include <QtCore/QProcess>
+#include <QtCore/QSharedPointer>
+#include <QtCore/QString>
 
 class XtalFileReader;
 
@@ -49,6 +50,9 @@ public:
   MonteCarloSimulationController(QObject* parent = nullptr);
   ~MonteCarloSimulationController() override;
 
+  const QString k_ExeName = QString("EMMCOpenCL");
+  const QString k_NMLName = QString("EMMCOpenCL.nml");
+
   using EnumType = unsigned int;
 
   enum class MonteCarloMode : EnumType
@@ -57,18 +61,16 @@ public:
     ECP
   };
 
-    /**
-    * @brief Setter property for Cancel
-    */
-    void setCancel(const bool& value); 
+  enum class StringType : EnumType
+  {
+    OpenCLFolder = 22,
+    RandomSeedsFile = 25
+  };
 
-    /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-    bool getCancel() const;
-
-  struct MonteCarloSimulationData
+  /**
+   *
+   */
+  using InputDataType = struct
   {
     double sampleTiltAngleSig;
     double sampleRotAngleOmega;
@@ -92,24 +94,18 @@ public:
     QString outputFilePath;
   };
 
-  enum class StringType : EnumType
-  {
-    OpenCLFolder = 22,
-    RandomSeedsFile = 25
-  };
-
   /**
-   * @brief createMonteCarlo
+   * @brief setData
    * @param simData
    */
-  void createMonteCarlo(MonteCarloSimulationController::MonteCarloSimulationData simData);
+  void setData(const InputDataType& simData);
 
   /**
-   * @brief validateMonteCarloValues
+   * @brief validateInput
    * @param data
    * @return
    */
-  bool validateMonteCarloValues(MonteCarloSimulationController::MonteCarloSimulationData data) const;
+  bool validateInput() const;
 
   /**
    * @brief setUpdateProgress
@@ -119,111 +115,45 @@ public:
    */
   void setUpdateProgress(int loopCompleted, int totalLoops, float bseYield) const;
 
+public slots:
+
+  /**
+   * @brief execute
+   */
+  void execute();
+
+  /**
+   * @brief cancelProcess
+   */
+  void cancelProcess();
+
+protected slots:
+
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
 signals:
   void warningMessageGenerated(const QString& msg) const;
   void errorMessageGenerated(const QString& msg) const;
   void stdOutputMessageGenerated(const QString& msg) const;
+
+  void finished();
+
   void updateMCProgress(int loop, int totalLoops, float bseYield) const;
 
 private:
-    bool m_Cancel;
+  bool m_Cancel = false;
+  size_t m_InstanceKey = 0;
+  bool m_Executing = false;
 
-  XtalFileReader* m_XtalReader = nullptr;
-  QString m_StartTime = "";
+  InputDataType m_InputData;
 
-  std::vector<int32_t> m_GenericAccumePtr;
-  std::vector<int32_t> m_GenericAccumzPtr;
-  std::vector<uint8_t> m_GenericXtalPtr;
-  std::vector<uint8_t> m_GenericMCPtr;
-
-  size_t m_InstanceKey;
-
-  bool m_HasErrors = false;
-
-  char* m_SPar;
+  QSharedPointer<QProcess> m_CurrentProcess;
 
   /**
-   * @brief initializeData
-   * @param data
+   * @brief MonteCarloSimulationController::generateNMLFile
+   * @param path
    */
-  void initializeData(MonteCarloSimulationData data);
-
-  /**
-   * @brief writeEMsoftHDFFile
-   * @param simData
-   * @return
-   */
-  bool writeEMsoftHDFFile(MonteCarloSimulationController::MonteCarloSimulationData simData) const;
-
-  /**
-   * @brief getnumCLPlatforms
-   * @return
-   */
-  int getnumCLPlatforms() const;
-
-  /**
-   * @brief getPlatformInfo
-   */
-  void writePlatformInfo() const;
-
-  /**
-   * @brief getnumCLDevices
-   * @param platformID
-   * @return
-   */
-  int getnumCLDevices(int platformID) const;
-
-  /**
-   * @brief getDeviceInfo
-   * @param platformID
-   */
-  void writeDeviceInfo(int platformID) const;
-
-  /**
-   * @brief getEMsoftUserName
-   * @return
-   */
-  QString getEMsoftUserName() const;
-
-  /**
-   * @brief getEMsoftUserEmail
-   * @return
-   */
-  QString getEMsoftUserEmail() const;
-
-  /**
-   * @brief getEMsoftUserLocation
-   * @return
-   */
-  QString getEMsoftUserLocation() const;
-
-  /**
-   * @brief getIParPtr
-   * @return
-   */
-  std::vector<int32_t> getIParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData) const;
-
-  /**
-   * @brief getFParPtr
-   * @return
-   */
-  std::vector<float> getFParPtr(MonteCarloSimulationController::MonteCarloSimulationData simData) const;
-
-  /**
-   * @brief setSParValue
-   * @param type
-   * @param value
-   * @return
-   */
-  bool setSParValue(StringType type, const QString& value);
-
-  /**
-   * @brief convertToFortran
-   * @param fstring
-   * @param fstring_len
-   * @param cstring
-   */
-  void convertToFortran(char* fstring, size_t fstring_len, const char* cstring) const;
+  void generateNMLFile(const QString& path);
 
 public:
   MonteCarloSimulationController(const MonteCarloSimulationController&) = delete;            // Copy Constructor Not Implemented

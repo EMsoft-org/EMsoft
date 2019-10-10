@@ -1,53 +1,47 @@
-
-set(EXE_LINK_LIBRARIES "EMsoftLib")
-
-if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} gomp gcc_eh)
-endif()
-
-if (Fortran_COMPILER_NAME MATCHES "ifort.*")
-  if(WIN32)
-    add_definitions("/Qopenmp /Qdiag-disable:11082 /Qip")
-  endif()
-endif()
-
-include_directories("${EMsoftHDFLib_BINARY_DIR}")
-
 set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/TEM")
 set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
 set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-
 if(EMsoft_ENABLE_HDF5_SUPPORT)
+
+  
   
   GetHDF5LinkLibraries(EMSOFT)
-  set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMsoftLib)
+  set(EXE_LINK_LIBRARIES ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib)
 
   Add_EMsoft_Executable(TARGET EMPEDkin 
                       SOURCES ${APP_DIR}/EMPEDkin.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
                       TEMPLATE ${TMPLT_DIR}/EMPEDkin.template
                       SOLUTION_FOLDER EMsoftPublic/TEM
-                      INSTALL_PROGRAM TRUE)
+                      INSTALL_PROGRAM TRUE
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                      )
 
-  Add_EMsoft_Executable(TARGET EMhh4
-                      SOURCES ${APP_DIR}/EMhh4.f90 
-                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                      TEMPLATE ${TMPLT_DIR}/EMhh4.template 
-                      SOLUTION_FOLDER EMsoftPublic/TEM 
-                      INSTALL_PROGRAM TRUE)
+  # Add_EMsoft_Executable(TARGET EMhh4
+  #                     SOURCES ${APP_DIR}/EMhh4.f90 
+  #                     LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+  #                     TEMPLATE ${TMPLT_DIR}/EMhh4.template 
+  #                     SOLUTION_FOLDER EMsoftPublic/TEM 
+  #                     INSTALL_PROGRAM TRUE
+  #                     INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+  #                     )
 
   Add_EMsoft_Executable(TARGET EMLACBED
                       SOURCES ${APP_DIR}/EMLACBED.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                       TEMPLATE ${TMPLT_DIR}/EMLACBED.template 
                       SOLUTION_FOLDER EMsoftPublic/TEM 
-                      INSTALL_PROGRAM TRUE)
+                      INSTALL_PROGRAM TRUE
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                      )
 
   Add_EMsoft_Executable(TARGET EMPEDZA 
                       SOURCES ${APP_DIR}/EMPEDZA.f90 
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                       TEMPLATE ${TMPLT_DIR}/EMEBSDmaster.template 
                       SOLUTION_FOLDER EMsoftPublic/TEM 
-                      INSTALL_PROGRAM TRUE)
+                      INSTALL_PROGRAM TRUE
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                      )
 endif()

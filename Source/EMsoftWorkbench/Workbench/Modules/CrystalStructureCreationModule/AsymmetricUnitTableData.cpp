@@ -140,12 +140,12 @@ bool AsymmetricUnitTableData::isEmpty() const
 // -----------------------------------------------------------------------------
 void AsymmetricUnitTableData::checkAndAdjustDimensions()
 {
-  QSize dataSize(m_TableData.size(), 0);
+  QSize dataSize(static_cast<int32_t>(m_TableData.size()), 0);
   QSize headerSize(m_RowHeaders.size(), m_ColHeaders.size());
 
   if(!m_TableData.empty())
   {
-    dataSize.setHeight(m_TableData[0].size());
+    dataSize.setHeight(static_cast<int32_t>(m_TableData[0].size()));
   }
 
   if(dataSize == headerSize)
@@ -489,7 +489,7 @@ void AsymmetricUnitTableData::setTableData(const std::vector<std::vector<double>
 // -----------------------------------------------------------------------------
 int AsymmetricUnitTableData::getNumRows() const
 {
-  return m_TableData.size();
+  return static_cast<int32_t>(m_TableData.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -499,7 +499,7 @@ int AsymmetricUnitTableData::getNumCols() const
 {
   if(!m_TableData.empty())
   {
-    return m_TableData[0].size();
+    return static_cast<int32_t>(m_TableData[0].size());
   }
 
   return 0;
@@ -545,9 +545,9 @@ bool AsymmetricUnitTableData::operator==(const AsymmetricUnitTableData& rhs) con
   if(m_RowHeaders == rhs.m_RowHeaders && m_ColHeaders == rhs.m_ColHeaders && m_DynamicRows == rhs.m_DynamicRows && m_DynamicCols == rhs.m_DynamicCols && m_MinRows == rhs.m_MinRows &&
      m_MinCols == rhs.m_MinCols && m_DefaultRowCount == rhs.m_DefaultRowCount && m_DefaultColCount == rhs.m_DefaultColCount)
   {
-    for(int i = 0; i < m_TableData.size(); i++)
+    for(size_t i = 0; i < m_TableData.size(); i++)
     {
-      for(int j = 0; j < m_TableData[i].size(); j++)
+      for(size_t j = 0; j < m_TableData[i].size(); j++)
       {
         if(m_TableData[i][j] != rhs.m_TableData[i][j])
         {
@@ -569,9 +569,9 @@ bool AsymmetricUnitTableData::operator!=(const AsymmetricUnitTableData& rhs) con
   if(m_RowHeaders == rhs.m_RowHeaders && m_ColHeaders == rhs.m_ColHeaders && m_DynamicRows == rhs.m_DynamicRows && m_DynamicCols == rhs.m_DynamicCols && m_MinRows == rhs.m_MinRows &&
      m_MinCols == rhs.m_MinCols && m_DefaultRowCount == rhs.m_DefaultRowCount && m_DefaultColCount == rhs.m_DefaultColCount)
   {
-    for(int i = 0; i < m_TableData.size(); i++)
+    for(size_t i = 0; i < m_TableData.size(); i++)
     {
-      for(int j = 0; j < m_TableData[i].size(); j++)
+      for(size_t j = 0; j < m_TableData[i].size(); j++)
       {
         if(m_TableData[i][j] != rhs.m_TableData[i][j])
         {

@@ -67,8 +67,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>713</width>
-            <height>839</height>
+            <width>806</width>
+            <height>850</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
@@ -609,7 +609,7 @@
         <number>0</number>
        </property>
        <property name="verticalSpacing">
-        <number>-1</number>
+        <number>6</number>
        </property>
        <item row="0" column="8">
         <widget class="QPushButton" name="adpMapSaveBtn">

@@ -57,11 +57,7 @@ function(AddIFortCopyInstallRules)
       endif()
     endif()
   endforeach()
-
-  #message(STATUS "----------------------------------------------")
 endfunction()
-
-
 
 
 #----------------------------------------------------------------
@@ -80,10 +76,6 @@ set(IFORT_COMPILER_ARCH_DIR "ia32")
 if (${CMAKE_SIZEOF_VOID_P} EQUAL 8)
     set(IFORT_COMPILER_ARCH_DIR "intel64")
 endif()
-
-
-set(CMAKE_FIND_DEBUG_MODE 1)
-
 
 #-------------------------------------------------------------------------------
 # This bit of code finds the "compiler" and "redist" directories based on the 
@@ -107,26 +99,41 @@ endif()
 set(IFORT_COMPILER_RDIST_LIBRARIES "")
 set(IFORT_COMPILER_LIBRARIES "")
 
-AddIFortCopyInstallRules(LIBNAME ifcoremd
-                        LIBPREFIX lib
-                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
-                        TYPES ${BUILD_TYPES})
-AddIFortCopyInstallRules(LIBNAME mmd
-                        LIBPREFIX lib
-                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
-                        TYPES ${BUILD_TYPES})
+if(WIN32)
+  AddIFortCopyInstallRules(LIBNAME ifcoremd
+                          LIBPREFIX lib
+                          LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
+                          TYPES ${BUILD_TYPES})
+  AddIFortCopyInstallRules(LIBNAME mmd
+                          LIBPREFIX lib
+                          LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
+                          TYPES ${BUILD_TYPES})
 
-# These next libraries do not seem to have a debug version....
-set(BUILD_TYPES Release)
-AddIFortCopyInstallRules(LIBNAME ifportmd
-                        LIBPREFIX lib
-                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
-                        TYPES ${BUILD_TYPES})
-AddIFortCopyInstallRules(LIBNAME iomp5md
-                        LIBPREFIX lib
-                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
-                        TYPES ${BUILD_TYPES})
-AddIFortCopyInstallRules(LIBNAME svml_dispmd
-                        LIBPREFIX ""
-                        LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
-                        TYPES ${BUILD_TYPES})
+  # These next libraries do not seem to have a debug version....
+  set(BUILD_TYPES Release)
+  AddIFortCopyInstallRules(LIBNAME ifportmd
+                          LIBPREFIX lib
+                          LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
+                          TYPES ${BUILD_TYPES})
+  AddIFortCopyInstallRules(LIBNAME iomp5md
+                          LIBPREFIX lib
+                          LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
+                          TYPES ${BUILD_TYPES})
+  AddIFortCopyInstallRules(LIBNAME svml_dispmd
+                          LIBPREFIX ""
+                          LIBPATH ${IFORT_COMPILER_RDIST_DIR}/${IFORT_COMPILER_ARCH_DIR}/compiler
+                          TYPES ${BUILD_TYPES})
+endif()
+
+# If we are using IFort
+set(FORTRAN_OPEN_MP_DEFS "")
+if (Fortran_COMPILER_NAME MATCHES "ifort.*")
+  if(WIN32)
+    set(FORTRAN_OPEN_MP_DEFS "/Qopenmp /Qdiag-disable:11082 /Qip")
+  else()
+    set(FORTRAN_OPEN_MP_DEFS "-qopenmp -assume byterecl")
+  endif()
+endif()
+
+
+

@@ -56,17 +56,6 @@ public:
 
   ~MonteCarloSimulation_UI() override;
 
-    /**
-    * @brief Setter property for Controller
-    */
-    void setController(MonteCarloSimulationController* value); 
-
-    /**
-    * @brief Getter property for Controller
-    * @return Value of Controller
-    */
-    MonteCarloSimulationController* getController() const;
-
   /**
    * @brief readModuleSession
    * @param obj
@@ -96,6 +85,9 @@ protected:
    */
   void changeEvent(QEvent* event) override;
 
+signals:
+  void processCompleted();
+
 protected slots:
   void on_mcModeCB_currentIndexChanged(int index) const;
 
@@ -108,13 +100,13 @@ protected slots:
   void on_gpuPlatformCB_currentIndexChanged(int index) const;
 
 private slots:
-  void threadFinished();
+  void processFinished();
 
 private:
-    MonteCarloSimulationController* m_Controller;
+  MonteCarloSimulationController* m_Controller = nullptr;
+  QSharedPointer<QThread> m_WorkerThread;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_Watcher;
 
   /**
    * @brief readCrystalSystemParameters
@@ -159,7 +151,7 @@ private:
    * @brief getCreationData
    * @return
    */
-  MonteCarloSimulationController::MonteCarloSimulationData getCreationData() const;
+  MonteCarloSimulationController::InputDataType getCreationData() const;
 
 public:
   MonteCarloSimulation_UI(const MonteCarloSimulation_UI&) = delete; // Copy Constructor Not Implemented

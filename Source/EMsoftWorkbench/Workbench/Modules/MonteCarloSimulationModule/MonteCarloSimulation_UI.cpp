@@ -73,15 +73,16 @@ MonteCarloSimulation_UI::MonteCarloSimulation_UI(QWidget* parent)
 {
   setupUi(this);
 
-  m_Controller = new MonteCarloSimulationController(this);
-
   setupGui();
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloSimulation_UI::~MonteCarloSimulation_UI() = default;
+MonteCarloSimulation_UI::~MonteCarloSimulation_UI()
+{
+  delete m_Controller;
+}
 
 // -----------------------------------------------------------------------------
 //
@@ -180,12 +181,6 @@ void MonteCarloSimulation_UI::createWidgetConnections() const
 {
   connect(createMonteCarloBtn, &QPushButton::clicked, this, &MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked);
 
-  // Pass errors, warnings, and std output messages up to the user interface
-  connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
-  connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
-
-  connect(m_Controller, SIGNAL(updateMCProgress(int,int,float)), this, SLOT(updateMCProgress(int,int,float)));
 
   connect(csSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
@@ -240,9 +235,10 @@ void MonteCarloSimulation_UI::parametersChanged()
 void MonteCarloSimulation_UI::validateData()
 {
   clearModuleIssues();
-
-  MonteCarloSimulationController::MonteCarloSimulationData data = getCreationData();
-  if(m_Controller->validateMonteCarloValues(data))
+  MonteCarloSimulationController::InputDataType data = getCreationData();
+  MonteCarloSimulationController controller;
+  controller.setData(data);
+  if(controller.validateInput())
   {
     createMonteCarloBtn->setEnabled(true);
   }
@@ -257,43 +253,64 @@ void MonteCarloSimulation_UI::validateData()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
 {
-  if(createMonteCarloBtn->text() == "Cancel")
+  if(createMonteCarloBtn->text() == "Cancel" && m_Controller != nullptr)
   {
-    m_Controller->setCancel(true);
+    m_Controller->cancelProcess();
+    emit processCompleted();
     setRunning(false);
     return;
   }
 
-  setRunning(true);
-  clearModuleIssues();
+  // Sanity Check the input/output Files
+  QString absPath = FileIOTools::GetAbsolutePath(csFilePathLE->text());
+  csFilePathLE->setText(absPath);
+  absPath = FileIOTools::GetAbsolutePath(mcFilePathLE->text());
+  mcFilePathLE->setText(absPath);
 
-  MonteCarloSimulationController::MonteCarloSimulationData data = getCreationData();
+  // Get the input data
+  MonteCarloSimulationController::InputDataType data = getCreationData();
 
+  // Adjust GUI  elements
   createMonteCarloBtn->setText("Cancel");
   inputGrpBox->setDisabled(true);
   monteCarloGrpBox->setDisabled(true);
   gpuGrpBox->setDisabled(true);
   outputGrpBox->setDisabled(true);
 
-  // Single-threaded for now, but we can multi-thread later if needed
-  //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-  for(int i = 0; i < 1; i++)
+  // Clear out the previous (if any) controller instance
+  if(m_Controller != nullptr)
   {
-    m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-    connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
-
-    QFuture<void> future = QtConcurrent::run(m_Controller, &MonteCarloSimulationController::createMonteCarlo, data);
-    m_Watcher->setFuture(future);
+    delete m_Controller;
+    m_Controller = nullptr;
   }
+
+  // Create a new QThread to run the Controller class.
+  m_WorkerThread = QSharedPointer<QThread>(new QThread);
+  m_Controller = new MonteCarloSimulationController;
+  m_Controller->moveToThread(m_WorkerThread.get());
+  m_Controller->setData(data); // Set the input data
+
+  // Conncet Signals & Slots to get the thread started and quit
+  connect(m_WorkerThread.get(), SIGNAL(started()), m_Controller, SLOT(execute()));
+  connect(m_Controller, SIGNAL(finished()), m_WorkerThread.get(), SLOT(quit()));
+  connect(m_WorkerThread.get(), SIGNAL(finished()), this, SLOT(processFinished()));
+
+  // Pass errors, warnings, and std output messages up to the user interface
+  connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
+  connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+
+  connect(m_Controller, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
+
+  m_WorkerThread->start();
+  setRunning(true);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::threadFinished()
+void MonteCarloSimulation_UI::processFinished()
 {
-  m_Controller->setCancel(false);
-
   createMonteCarloBtn->setText("Simulate");
   inputGrpBox->setEnabled(true);
   monteCarloGrpBox->setEnabled(true);
@@ -497,9 +514,9 @@ void MonteCarloSimulation_UI::on_mcModeCB_currentIndexChanged(int index) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-MonteCarloSimulationController::MonteCarloSimulationData MonteCarloSimulation_UI::getCreationData() const
+MonteCarloSimulationController::InputDataType MonteCarloSimulation_UI::getCreationData() const
 {
-  MonteCarloSimulationController::MonteCarloSimulationData data;
+  MonteCarloSimulationController::InputDataType data;
   data.mcMode = mcModeCB->currentIndex() + 1;
   data.sampleTiltAngleSig = sampleTiltAngleSigSB->value();
   data.sampleRotAngleOmega = sampleRotAngleOmegaSB->value();
@@ -521,21 +538,5 @@ MonteCarloSimulationController::MonteCarloSimulationData MonteCarloSimulation_UI
   data.inputFilePath = csFilePathLE->text();
   data.outputFilePath = mcFilePathLE->text();
   return data;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::setController(MonteCarloSimulationController* value)
-{
-  m_Controller = value;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-MonteCarloSimulationController* MonteCarloSimulation_UI::getController() const
-{
-  return m_Controller;
 }
 

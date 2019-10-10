@@ -1,37 +1,37 @@
 /* ============================================================================
-* Copyright (c) 2009-2016 BlueQuartz Software, LLC
-*
-* Redistribution and use in source and binary forms, with or without modification,
-* are permitted provided that the following conditions are met:
-*
-* Redistributions of source code must retain the above copyright notice, this
-* list of conditions and the following disclaimer.
-*
-* Redistributions in binary form must reproduce the above copyright notice, this
-* list of conditions and the following disclaimer in the documentation and/or
-* other materials provided with the distribution.
-*
-* Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
-* contributors may be used to endorse or promote products derived from this software
-* without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-* DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-* SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-* CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-* OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-* USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
-* The code contained herein was partially funded by the followig contracts:
-*    United States Air Force Prime Contract FA8650-07-D-5800
-*    United States Air Force Prime Contract FA8650-10-D-5210
-*    United States Prime Contract Navy N00173-07-C-2068
-*
-* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * Copyright (c) 2009-2016 BlueQuartz Software, LLC
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * Redistributions in binary form must reproduce the above copyright notice, this
+ * list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * Neither the name of BlueQuartz Software, the US Air Force, nor the names of its
+ * contributors may be used to endorse or promote products derived from this software
+ * without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * The code contained herein was partially funded by the followig contracts:
+ *    United States Air Force Prime Contract FA8650-07-D-5800
+ *    United States Air Force Prime Contract FA8650-10-D-5210
+ *    United States Prime Contract Navy N00173-07-C-2068
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 #include "PatternTools.h"
 
@@ -105,19 +105,19 @@ std::vector<float> PatternTools::GeneratePattern(PatternTools::IParValues iParVa
   genericFParPtr[0] = fParValues.sigma;
   genericFParPtr[1] = fParValues.omega;
 
-  genericFParPtr[14] = fParValues.pcPixelsX;         // pattern center x component (in pixel units)
-  genericFParPtr[15] = fParValues.pcPixelsY;         // pattern center y component (in pixel units)
-  genericFParPtr[16] = fParValues.scintillatorPixelSize;       // pixel size (microns) on scintillator surface
-  genericFParPtr[17] = fParValues.detectorTiltAngle;      // detector tilt angle (degrees) from horizontal (positive for detector looking upwards)
-  genericFParPtr[18] = fParValues.scintillatorDist;           // sample-scintillator distance (microns)
-  genericFParPtr[19] = fParValues.beamCurrent; // beam current [nA]
-  genericFParPtr[20] = fParValues.dwellTime;   // beam dwell time per pattern [micro-seconds]
-  genericFParPtr[21] = fParValues.gammaValue;  // intensity scaling gamma value
+  genericFParPtr[14] = static_cast<float>(fParValues.pcPixelsX);             // pattern center x component (in pixel units)
+  genericFParPtr[15] = static_cast<float>(fParValues.pcPixelsY);             // pattern center y component (in pixel units)
+  genericFParPtr[16] = static_cast<float>(fParValues.scintillatorPixelSize); // pixel size (microns) on scintillator surface
+  genericFParPtr[17] = static_cast<float>(fParValues.detectorTiltAngle);     // detector tilt angle (degrees) from horizontal (positive for detector looking upwards)
+  genericFParPtr[18] = static_cast<float>(fParValues.scintillatorDist);      // sample-scintillator distance (microns)
+  genericFParPtr[19] = static_cast<float>(fParValues.beamCurrent);           // beam current [nA]
+  genericFParPtr[20] = static_cast<float>(fParValues.dwellTime);             // beam dwell time per pattern [micro-seconds]
+  genericFParPtr[21] = static_cast<float>(fParValues.gammaValue);            // intensity scaling gamma value
 
   std::vector<float> genericEBSDPatternsPtr;
   genericEBSDPatternsPtr.resize(iParValues.numberOfOrientations * genericIParPtr[22] * genericIParPtr[23]);
 
-  PatternTools::GeneratePattern_Helper(angleIndex, eulerAngles, lpnhData, lpshData, monteCarloSquareData, genericEBSDPatternsPtr, genericIParPtr, genericFParPtr, cancel);
+  PatternTools::GeneratePattern_Helper(static_cast<size_t>(angleIndex), eulerAngles, lpnhData, lpshData, monteCarloSquareData, genericEBSDPatternsPtr, genericIParPtr, genericFParPtr, cancel);
 
   return genericEBSDPatternsPtr;
 }
@@ -144,12 +144,12 @@ void PatternTools::GeneratePattern_Helper(size_t index, const std::vector<float>
 // -----------------------------------------------------------------------------
 QImage PatternTools::ApplyCircularMask(QImage pattern)
 {
-  size_t xDim = pattern.width();
-  size_t yDim = pattern.height();
-  size_t centerX = xDim / 2;
-  size_t centerY = yDim / 2;
+  int32_t xDim = pattern.width();
+  int32_t yDim = pattern.height();
+  int32_t centerX = xDim / 2;
+  int32_t centerY = yDim / 2;
 
-  size_t radius = 0;
+  int32_t radius = 0;
   if (xDim < yDim)
   {
     radius = xDim / 2;
@@ -159,13 +159,13 @@ QImage PatternTools::ApplyCircularMask(QImage pattern)
     radius = yDim / 2;
   }
 
-  size_t radius_sq = radius * radius;
+  int32_t radius_sq = radius * radius;
 
-  for (size_t y = 0; y < yDim; y++)
+  for(int32_t y = 0; y < yDim; y++)
   {
-    for (size_t x = 0; x < xDim; x++)
+    for(int32_t x = 0; x < xDim; x++)
     {
-      size_t dist = (x - centerX) * (x - centerX) + (y - centerY) * (y - centerY);
+      int32_t dist = (x - centerX) * (x - centerX) + (y - centerY) * (y - centerY);
       if (dist > radius_sq)
       {
         pattern.setPixel(x, y, 0);
@@ -185,7 +185,7 @@ std::vector<float> PatternTools::ApplyHipassFilter(const std::vector<float> &pat
 
   std::vector<double> patternPtr(patternData.size());
 
-  for (int i = 0; i < patternData.size(); i++)
+  for(size_t i = 0; i < patternData.size(); i++)
   {
     patternPtr.at(i) = static_cast<double>(patternData.at(i));
   }
@@ -199,7 +199,7 @@ std::vector<float> PatternTools::ApplyHipassFilter(const std::vector<float> &pat
   HiPassFilterC(patternPtr.data(), hiPassDims, &lowCutOff, &init, &destroy, hipassData.data());
 
   std::vector<float> newPatternData = patternData;
-  for (int i = 0; i < hipassData.size(); i++)
+  for(size_t i = 0; i < hipassData.size(); i++)
   {
     newPatternData.at(i) = static_cast<float>(hipassData.at(i));
   }
@@ -268,9 +268,9 @@ QImage PatternTools::CalculateComposite(QImage src, QImage dst, double opacity)
 #ifdef WORDS_BIGENDIAN   // ARGB (skip alpha)
       unsigned char *data1 = (unsigned char *)dst.bits() + 1;
       unsigned char *data2 = (unsigned char *)src.bits() + 1;
-#else                    // BGRA
-      unsigned char *data1 = (unsigned char *)dst.bits();
-      unsigned char *data2 = (unsigned char *)src.bits();
+#else // BGRA
+    unsigned char* data1 = static_cast<unsigned char*>(dst.bits());
+    unsigned char* data2 = static_cast<unsigned char*>(src.bits());
 #endif
 
       for (int i=0; i<pixels; i++)
@@ -283,12 +283,12 @@ QImage PatternTools::CalculateComposite(QImage src, QImage dst, double opacity)
           *data1 += (unsigned char)((*(data2++) - *data1) * opacity);
           data1++;
 #else
-          *data1 += (unsigned char)((*(data2++) - *data1) * opacity);
-          data1++;
-          *data1 += (unsigned char)((*(data2++) - *data1) * opacity);
-          data1++;
-          *data1 += (unsigned char)((*(data2++) - *data1) * opacity);
-          data1++;
+        *data1 += static_cast<unsigned char>((*(data2++) - *data1) * opacity);
+        data1++;
+        *data1 += static_cast<unsigned char>((*(data2++) - *data1) * opacity);
+        data1++;
+        *data1 += static_cast<unsigned char>((*(data2++) - *data1) * opacity);
+        data1++;
 #endif
           data1++; // skip alpha
           data2++;
@@ -313,7 +313,7 @@ QImage PatternTools::CalculateColorChannelBlend(QImage src, QImage dst)
     size_t x = 0, y = 0;
     Idx2Coords(tDims, i, x, y);
 
-    newImage.setPixel(x, y, qRgb(srcBits[i], dstBits[i], dstBits[i]));
+    newImage.setPixel(static_cast<int32_t>(x), static_cast<int32_t>(y), qRgb(srcBits[i], dstBits[i], dstBits[i]));
   }
 
   return newImage;
@@ -381,11 +381,11 @@ QImage PatternTools::RemoveRamp(QImage image)
   Eigen::MatrixXd A(totalPoints, 3);
   Eigen::VectorXd B(totalPoints);
 
-  for(int i = 0; i < totalPoints; ++i)
+  for(Eigen::Index i = 0; i < static_cast<Eigen::Index>(totalPoints); ++i)
   {
     int xval = static_cast<int>(i / image.width());
     int yval = static_cast<int>(i % image.width());
-    B(i) = background[i];
+    B(i) = background[static_cast<size_t>(i)];
     A(i, 0) = 1;
     A(i, 1) = xval;
     A(i, 2) = yval;
@@ -401,17 +401,17 @@ QImage PatternTools::RemoveRamp(QImage image)
 
   Bcalc = A * p;
   average = Bcalc.mean();
-  Bcalc = Bcalc - Eigen::VectorXd::Constant(totalPoints, average);
+  Bcalc = Bcalc - Eigen::VectorXd::Constant(static_cast<Eigen::Index>(totalPoints), average);
 
-  for(int i = 0; i < totalPoints; ++i)
+  for(size_t i = 0; i < totalPoints; ++i)
   {
-    background[i] = Bcalc(i);
+    background[i] = Bcalc(static_cast<Eigen::Index>(i));
   }
 
   int m_lowThresh = 0;
   int m_highThresh = 255;
 
-  for(int64_t t = 0; t < totalPoints; t++)
+  for(size_t t = 0; t < totalPoints; t++)
   {
     if (static_cast<uint8_t>(imageBits[t]) >= m_lowThresh && static_cast<uint8_t>(imageBits[t])  <= m_highThresh)
     {
@@ -486,18 +486,18 @@ std::vector<float> PatternTools::CreateInverseGaussianMask(const std::vector<flo
 // -----------------------------------------------------------------------------
 std::vector<float> PatternTools::GetInverseGaussianGrid(std::vector<size_t> dims)
 {
-  size_t dimsSize = std::accumulate(dims.begin(), dims.end(), 1, std::multiplies<size_t>());
+  size_t dimsSize = std::accumulate(dims.begin(), dims.end(), 1ULL, std::multiplies<size_t>());
 
   std::vector<float> xLine = GetInverseGaussianLine(dims[0]);
 
   std::vector<float> xGrid(dimsSize);
   EigenConversions::FloatMapType xGridMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(xGrid, dims);
 
-  for (int col = 0; col < dims[1]; col++)
+  for(int col = 0; col < static_cast<int32_t>(dims[1]); col++)
   {
-    for (int row = 0; row < dims[0]; row++)
+    for(int row = 0; row < static_cast<int32_t>(dims[0]); row++)
     {
-      xGridMap(row, col) = xLine.at(row);
+      xGridMap(row, col) = xLine.at(static_cast<size_t>(row));
     }
   }
 
@@ -506,11 +506,11 @@ std::vector<float> PatternTools::GetInverseGaussianGrid(std::vector<size_t> dims
   std::vector<float> yGrid(dimsSize);
   EigenConversions::FloatMapType yGridMap = EigenConversions::DataArrayToEigenMatrixMap<float, Eigen::RowMajor>(yGrid, dims);
 
-  for (int row = 0; row < dims[0]; row++)
+  for(int row = 0; row < static_cast<int32_t>(dims[0]); row++)
   {
-    for (int col = 0; col < dims[1]; col++)
+    for(int col = 0; col < static_cast<int32_t>(dims[1]); col++)
     {
-      yGridMap(row, col) = yLine.at(col);
+      yGridMap(row, col) = yLine.at(static_cast<size_t>(col));
     }
   }
 
@@ -520,9 +520,9 @@ std::vector<float> PatternTools::GetInverseGaussianGrid(std::vector<size_t> dims
   if (file.open(QFile::WriteOnly))
   {
     QTextStream out(&file);
-    for (int row = 0; row < dims[0]; row++)
+    for(int row = 0; row < static_cast<int32_t>(dims[0]); row++)
     {
-      for (int col = 0; col < dims[1]; col++)
+      for(int col = 0; col < static_cast<int32_t>(dims[1]); col++)
       {
         out << xGridMap(row, col) << "\t";
       }
@@ -567,7 +567,7 @@ std::vector<float> PatternTools::GetInverseGaussianLine(size_t size)
 std::vector<float> PatternTools::FindGen(size_t size)
 {
   std::vector<float> lineArray(size);
-  for (int i = 0; i < lineArray.size(); i++)
+  for(size_t i = 0; i < lineArray.size(); i++)
   {
     lineArray.at(i) = static_cast<float>(i);
   }

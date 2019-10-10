@@ -37,12 +37,12 @@
 
 
 #include "Modules/IModuleUI.h"
-#include "Modules/MasterPatternSimulationModule/MasterPatternSimulationController.h"
 
 #include "ui_MasterPatternSimulation_UI.h"
 
 class QtSSettings;
 class QSplashScreen;
+class MasterPatternSimulationController;
 
 class MasterPatternSimulation_UI : public IModuleUI, public Ui::MasterPatternSimulation_UI
 {
@@ -56,17 +56,6 @@ public:
   MasterPatternSimulation_UI(QWidget* parent = nullptr);
 
   ~MasterPatternSimulation_UI() override;
-
-    /**
-    * @brief Setter property for Controller
-    */
-    void setController(MasterPatternSimulationController* value); 
-
-    /**
-    * @brief Getter property for Controller
-    * @return Value of Controller
-    */
-    MasterPatternSimulationController* getController() const;
 
   /**
    * @brief readModuleSession
@@ -97,19 +86,22 @@ protected:
    */
   void changeEvent(QEvent* event) override;
 
+signals:
+  void processCompleted();
+
 protected slots:
   void slot_simulateBtn_clicked();
 
   void parametersChanged();
 
 private slots:
-  void threadFinished();
+  void processFinished();
 
 private:
-    MasterPatternSimulationController* m_Controller;
+  MasterPatternSimulationController* m_Controller;
+  QSharedPointer<QThread> m_WorkerThread;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_Watcher;
 
   /**
    * @brief readCrystalSystemParameters
@@ -137,12 +129,6 @@ private:
    * @brief createWidgetConnections
    */
   void createWidgetConnections() const;
-
-  /**
-   * @brief getCreationData
-   * @return
-   */
-  MasterPatternSimulationController::MasterPatternSimulationData getSimulationData() const;
 
 public:
   MasterPatternSimulation_UI(const MasterPatternSimulation_UI&) = delete; // Copy Constructor Not Implemented

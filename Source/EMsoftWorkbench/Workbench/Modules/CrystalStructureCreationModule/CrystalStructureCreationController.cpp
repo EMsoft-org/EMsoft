@@ -46,9 +46,10 @@
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 
-#include "Common/EMsoftFileWriter.h"
+#include "Workbench/Common/EMsoftFileWriter.h"
+#include "Workbench/Common/FileIOTools.h"
 
-#include "H5Support/HDF5ScopedFileSentinel.h"
+#include "H5Support/H5ScopedSentinel.h"
 #include "H5Support/QH5Utilities.h"
 
 // -----------------------------------------------------------------------------
@@ -67,9 +68,9 @@ CrystalStructureCreationController::~CrystalStructureCreationController() = defa
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void CrystalStructureCreationController::createCrystalStructureFile(CrystalStructureCreationController::CrystalStructureCreationData data) const
+void CrystalStructureCreationController::createCrystalStructureFile(const CrystalStructureCreationController::CrystalStructureCreationData& data) const
 {
-  QString outputFilePath = data.outputFilePath;
+  QString outputFilePath = FileIOTools::GetAbsolutePath(data.outputFilePath);
   outputFilePath = QDir::toNativeSeparators(outputFilePath);
 
   QString tmpOutputFilePath = outputFilePath + ".tmp";
@@ -79,7 +80,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   {
     if(!QFile::remove(tmpOutputFilePath))
     {
-      QString ss = QObject::tr("Error creating temporary output file '%1'").arg(tmpFi.fileName());
+      QString ss = QObject::tr("Error removing temporary output file '%1'").arg(tmpFi.fileName());
       emit errorMessageGenerated(ss);
       return;
     }
@@ -108,6 +109,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   // Create the CrystalData group
   if(!writer->openGroup(EMsoft::Constants::CrystalData))
   {
+    std::cout << "Error opening Group " << EMsoft::Constants::CrystalData.toStdString() << std::endl;
     QFile::remove(tmpOutputFilePath);
     return;
   }
@@ -121,16 +123,18 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   {
     iv += 1;
   }
-  if(!writer->writeScalarDataset(EMsoft::Constants::CrystalSystem, iv))
+  herr_t err = writer->writeScalarDataset(EMsoft::Constants::CrystalSystem, iv);
+  if(err < 0)
   {
+    std::cout << "Error writing Crystal System with value " << iv << " to data set " << EMsoft::Constants::CrystalSystem.toStdString() << std::endl;
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // lattice parameters
-  QVector<hsize_t> dims;
+  std::vector<hsize_t> dims;
   dims.push_back(6);
-  QVector<double> lp(6);
+  std::vector<double> lp(6);
   lp[3] = 90.0;
   lp[4] = 90.0;
   lp[5] = 90.0;
@@ -226,21 +230,21 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   }
 
   // SpaceGroupNumber
-  if(!writer->writeScalarDataset(EMsoft::Constants::SpaceGroupNumber, data.spaceGroupNumber))
+  if(writer->writeScalarDataset(EMsoft::Constants::SpaceGroupNumber, data.spaceGroupNumber) < 0)
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // SpaceGroupSetting
-  if(!writer->writeScalarDataset(EMsoft::Constants::SpaceGroupSetting, data.spaceGroupSetting))
+  if(writer->writeScalarDataset(EMsoft::Constants::SpaceGroupSetting, data.spaceGroupSetting) < 0)
   {
     QFile::remove(tmpOutputFilePath);
     return;
   }
 
   // Natomtypes
-  if(!writer->writeScalarDataset(EMsoft::Constants::Natomtypes, data.atomCoordinates.size()))
+  if(writer->writeScalarDataset(EMsoft::Constants::Natomtypes, data.atomCoordinates.size()) < 0)
   {
     QFile::remove(tmpOutputFilePath);
     return;
@@ -249,12 +253,12 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   // AtomTypes
   std::vector<std::vector<double>> td = data.atomCoordinates;
   size_t numOfAtoms = td.size();
-  QVector<hsize_t> dims2;
+  std::vector<hsize_t> dims2;
   dims2.push_back(numOfAtoms);
-  QVector<int> atps(numOfAtoms);
-  for(int i = 0; i < numOfAtoms; i++)
+  std::vector<int> atps(numOfAtoms);
+  for(size_t i = 0; i < numOfAtoms; i++)
   {
-    atps[i] = (int)td[i][0];
+    atps[i] = static_cast<int32_t>(td[i][0]);
   }
   if(!writer->writeVectorDataset(EMsoft::Constants::Atomtypes, atps, dims2))
   {
@@ -263,10 +267,10 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   }
 
   // write AtomData; also perform checks to make sure the fractional coordinates are in [0,1]
-  QVector<double> apos(numOfAtoms * 5);
+  std::vector<double> apos(numOfAtoms * 5);
   double tmp;
   double intpart;
-  for(int i = 0; i < numOfAtoms; i++)
+  for(size_t i = 0; i < numOfAtoms; i++)
   {
     tmp = modf(td[i][1] + 100.0, &intpart); // make sure the coordinates are in [0,1]
     apos[i] = tmp;
@@ -277,7 +281,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
     apos[3 * numOfAtoms + i] = td[i][4];
     apos[4 * numOfAtoms + i] = td[i][5];
   }
-  QVector<hsize_t> dims3;
+  std::vector<hsize_t> dims3;
   dims3.push_back(5);
   dims3.push_back(numOfAtoms);
   if(!writer->writeVectorDataset(EMsoft::Constants::AtomData, apos, dims3))
@@ -319,6 +323,7 @@ void CrystalStructureCreationController::createCrystalStructureFile(CrystalStruc
   }
 
   emit stdOutputMessageGenerated("Crystal Structure File Generation Complete");
+  emit stdOutputMessageGenerated("File Location: " + outputFilePath);
 }
 
 // -----------------------------------------------------------------------------
@@ -527,14 +532,14 @@ bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalS
 
   { // all the following use the table data
     // get the table in a form that can be parsed
-    int iv = data.atomCoordinates.size();
+    size_t iv = data.atomCoordinates.size();
     std::vector<std::vector<double>> td = data.atomCoordinates;
 
     // make sure the site occupation parameters are between 0 and 1
     std::vector<double> row(iv);
     if(0 != iv)
     {
-      for(int i = 0; i < iv; i++)
+      for(size_t i = 0; i < iv; i++)
       {
         row[i] = td[i][4];
       }
@@ -551,7 +556,7 @@ bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalS
     // make sure that Debye-Waller factors are all strictly larger than 0
     if(0 != iv)
     {
-      for(int i = 0; i < iv; i++)
+      for(size_t i = 0; i < iv; i++)
       {
         row[i] = td[i][5];
       }
@@ -567,7 +572,7 @@ bool CrystalStructureCreationController::validateCrystalStructureValues(CrystalS
     // make sure that the atom types are between 1 and 92
     if(0 != iv)
     {
-      for(int i = 0; i < iv; i++)
+      for(size_t i = 0; i < iv; i++)
       {
         row[i] = td[i][0];
       }
