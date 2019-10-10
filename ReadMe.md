@@ -1,14 +1,14 @@
-# EMsoft Version 4.3
+# EMsoft Version 5.0
 
 This package contains a series of programs along with a library, mostly written in fortran-90 with some OpenCL bits, for the computation and visualization of scanning electron microscopy diffraction patterns, notably EBSD, ECP, TKD, and EKP. The programs can be used as standalone command-line programs, and produce HDF5 output files that can then be visualized using an IDL virtual app (Interactive Data Language) or read and processed from any other package with HDF5 capability.
 
-This is the first release of version 4.3; this release provides significant additions to the package and many changes under the hood. See below for a detailed list.  There is also an important change to the open source model: a portion of our source code is now licensed for commercial entities.  Academic and government users can continue to use the source code as open source, as before.
+This is the first release of version 5.0; this release provides significant additions to the package and many changes under the hood. See below for a detailed list.  There is also an important change to the open source model: a portion of our source code is now licensed for commercial entities.  Academic and government users can continue to use the source code as open source, as before.
 
 The Dictionary Indexing tutorial paper has now been [published](https://link.springer.com/article/10.1007%2Fs40192-019-00137-4) in the journal **Integrating Materials and Manufacturing Innovation**. The EMsoft version that goes along with this paper is version 4.2; this release has the following DOI (through Zenodo):  
 
 ![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
 
-The 4.3 release has the following DOI:
+The 5.0 release has the following DOI:
 
 
 ### **This release of EMsoft requires an updated Software Developer Toolkit (SDK); please go to [this page](https://github.com/EMsoft-org/EMsoftSuperbuild) and follow the instructions before you attempt to build the present release.**
@@ -83,7 +83,7 @@ make -j
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
 
-## New features in 4.3
+## New features in 5.0
 - There are a few minor bug fixes.
 - EMsoft now has two additional ways to manage file paths; please check the descriptions in the *FilePathConventions.md* file.
 - We introduce a new diffraction pattern indexing algorithm that we call **EMSphInx**. We have successfully indexed patterns from the following modalities: EBSD, TKD, ECP, transmission Laue. Installing EMSphInx will require that you download the repository from [https:/github.com/EMsoft-org/EMSphInx](https:/github.com/EMsoft-org/EMSphInx) and build it using the CMake configuration scripts (explained on the main EMSphInx page).  Alternatively, you can download executables from [http://www.bluequartz.net/binaries/EMsoft/experimental/](http://www.bluequartz.net/binaries/EMsoft/experimental/) for Windows 10, Mac OS X, and Linux. **Note that *EMSphInx* is distributed under a GPL license, i.e. different from the EMsoft BSD2 license; hence, we keep this program in a separate repository.**
@@ -117,7 +117,7 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 - Unfortunately, work on the *EMsoftWorkbench* has come to a temporary stand-still due to lack of development funds. Hopefully we will be able to pick that thread back up at some point in the near future...
 
 
-## What's coming in 4.4? 
+## What's coming in 5.1? 
 - We are working on improvements to all underlying libraries.
 - Extensive development of the *EMsoftWorkbench* is currently underway at BlueQuartz Software.  We will make the new version, capable of running the dictionary indexing algorithm, available in this release.  
 - We hope to make all of the EMsoft modules available in the form of python wrappers, with extensive examples and help files.
