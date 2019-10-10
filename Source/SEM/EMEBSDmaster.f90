@@ -1127,6 +1127,7 @@ use gvectors
 use kvectors
 use io
 use math
+use image
 use local
 use files
 use diffraction
@@ -1137,15 +1138,17 @@ use HDF5
 use NameListHDFwriters
 use HDFsupport
 use ISO_C_BINDING
+use, intrinsic :: iso_fortran_env
 use omp_lib
 use notifications
 use stringconstants
 use DSHT 
+use fft_wrap
 
 IMPLICIT NONE
 
 interface 
-  recursive function writeSHTfile (fn, nt, sgN, sgS, nAt, aTy, aCd, lat, fprm, iprm, bw, flg, alm) result(res) &
+  recursive function writeSHTfile (fn, nt, sgN, sgS, nAt, aTy, aCd, lat, fprm, iprm, bw, alm) result(res) &
   bind(C, name ='writeSHTfile_')
 
   use ISO_C_BINDING
@@ -1159,11 +1162,10 @@ interface
   integer(c_int)                :: nAt
   integer(c_int)                :: aTy(nAt)
   real(c_float)                 :: aCd(nAt,5)
-  real(c_double)                :: lat(6) 
+  real(c_float)                 :: lat(6) 
   real(c_float)                 :: fprm(20)
   integer(c_int)                :: iprm(5) 
   integer(c_int)                :: bw 
-  character(len=1,kind=c_char)  :: flg(2)
   real(C_DOUBLE_COMPLEX)        :: alm(2*(bw+3)*(bw+3))
   integer(c_int)                :: res
   end function writeSHTfile
@@ -1178,12 +1180,12 @@ real(kind=dbl)          :: ctmp(192,3), arg, Radius, xyz(3)
 integer(HSIZE_T)        :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
-                           numk, timestart, timestop, numsites, res, & ! number of independent incident beam directions
+                           numk, timestart, timestop, numsites, res, ll, & ! number of independent incident beam directions
                            ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, bw, d, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
 real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
-real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstop, bp(4), nabsl, etotal, dens, avA, avZ, xxxxx
+real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstop, bp(4), nabsl, etotal, dens, avA, avZ, xxxxx, mi, ma
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:), auxSH(:,:), Z2percent(:)  ! results
 real(kind=sgl),allocatable      :: mLPNH(:,:,:), mLPSH(:,:,:)
 real(kind=dbl),allocatable      :: LegendreArray(:), upd(:), diagonal(:)
@@ -1239,12 +1241,22 @@ integer(c_int32_t)              :: sgS      ! space group setting [1,2]
 integer(c_int32_t)              :: numAt    ! number of atoms
 integer(c_int32_t),allocatable  :: aTy(:)   ! atom types (nAt atomic numbers)
 real(c_float),allocatable       :: aCd(:,:) ! atom coordinates, (nAt * 5 floats {x, y, z, occupancy, Debye-Waller in nm^2})
-real(c_double)                  :: lat(6)   ! lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
+real(c_float)                   :: lat(6)   ! lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
 real(c_float)                   :: fprm(nfpar) ! floating point parameters (float32 EMsoftED parameters in order)
 integer(c_int32_t)              :: iprm(nipar) ! integer parameters {# electrons, electron multiplier, numsx, npx, latgridtype}
-character(1,kind=c_char)                    :: zRot, mirInv 
-character(1,kind=c_char),dimension(2)       :: flg      ! flg: symmetry flags {zRot, mirInv}
+! character(1,kind=c_char)                    :: zRot, mirInv 
+! character(1,kind=c_char),dimension(2)       :: flg      ! flg: symmetry flags {zRot, mirInv}
 ! alm: actual harmonics (uncompressed format)
+
+! declare variables for use in object oriented image module
+character(fnlen)                        :: image_filename
+integer                                 :: iostat
+character(len=128)                      :: iomsg
+logical                                 :: isInteger
+type(image_t)                           :: im, im2
+integer(int8)                           :: i8 (3,4), int8val
+integer(int8), allocatable              :: output_image(:,:)
+
 
 !$OMP THREADPRIVATE(rlp) 
 
@@ -1716,19 +1728,56 @@ call Message(' Computing energy weighted master pattern',"(//A)")
     finalmLPSH = finalmLPSH + mLPSH(:,:,i) * weights(i)
   enddo
 
+  call Message(' Saving Lambert squares to tiff file ',"(//A)")
+! output these patterns to a tiff file
+  image_filename = trim(emnl%SHTfile)
+  ll = len(trim(image_filename))
+  ll = ll-2
+! replace the .sht extension by .tiff
+  image_filename(ll:ll) = 't'
+  image_filename(ll+1:ll+1) = 'i'
+  image_filename(ll+2:ll+2) = 'f'
+  image_filename(ll+3:ll+3) = 'f'
+  image_filename = trim(EMsoft_getEMdatapathname())//trim(image_filename)
+  image_filename = EMsoft_toNativePath(image_filename)
+
+  allocate(output_image(2*(2*d+1)+2,2*d+1))
+  output_image = -1
+
+  mi = minval( (/ minval(finalmLPNH), minval(finalmLPSH) /) )
+  ma = maxval( (/ maxval(finalmLPNH), maxval(finalmLPSH) /) )
+
+  do i=1,2*d+1
+    output_image(1:2*d+1,i) = int(255*(finalmLPNH(-d:d,i-1-d)-mi)/(ma-mi))
+    output_image(2*d+1+2:2*(2*d+1)+2,i) = int(255*(finalmLPSH(-d:d,i-1-d)-mi)/(ma-mi))
+  end do
+  
+  im2 = image_t(output_image)
+  if(im2%empty()) call Message("ComputeSHTMasterPattern","failed to convert array to image")
+
+! create the file
+  call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+  if(0.ne.iostat) then
+    call Message(" failed to write image to file : "//iomsg)
+  else  
+    call Message(' Lambert projections written to '//trim(image_filename))
+  end if 
+  deallocate(output_image)
+
 ! build transformer
- call Message(' Initializing the spherical harmonic transformer')
+   call FFTWisdom%load()
+   call Message(' Initializing the spherical harmonic transformer')
    layout = 'legendre'
    bw = 384
    d = bw / 2 + 1
-   write (*,*) ' parameters ', bw, d, trim(layout)
-!   call transformer%init(d, bw, layout)
+   call transformer%init(d, bw, layout)
 
-! ! compute spherical harmonic transform of master pattern
- call Message(' Computing spherical harmonic transform')
+! compute spherical harmonic transform of master pattern
+   call Message(' Computing spherical harmonic transform')
    allocate(almMaster(0:bw-1, 0:bw-1))
    allocate(almPat   (0:bw-1, 0:bw-1))
-!   call transformer%analyze(finalmLPNH, finalmLPSH, almMaster)
+   call transformer%analyze(finalmLPNH, finalmLPSH, almMaster)
+   call FFTWisdom%save()
 
   timestop = Time_tock(timestart)
 
@@ -1741,18 +1790,19 @@ sgS = cell%SYM_SGset
 numAt = cell%ATOM_ntype
 allocate(aTy(numAt))
 aTy = cell%ATOM_type(1:numAt)
-allocate(aCd(numAt,5))
-aCd = cell%ATOM_pos(1:numAt,1:5)
-lat = (/ cell%a, cell%b, cell%c, cell%alpha, cell%beta, cell%gamma /)
+allocate(aCd(5,numAt))
+aCd = transpose(cell%ATOM_pos(1:numAt,1:5))
+lat = sngl((/ cell%a, cell%b, cell%c, cell%alpha, cell%beta, cell%gamma /))
 fprm = (/ sngl(mcnl%sig), nan(), nan(), sngl(mcnl%omega), sngl(mcnl%EkeV), sngl(mcnl%Ehistmin), &
           sngl(mcnl%Ebinsize), sngl(mcnl%depthmax), sngl(mcnl%depthstep), &
           infty(), BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff, &
           emnl%dmin, 0.0, 0.0, 0.0, 0.0, 0.0 /)
 iprm = (/ mcnl%totnum_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
 bw = 384
-zRot = char(SHT_ZRot(cell%SYM_SGnum))
-mirInv =  char(SHT_mirInv(cell%SYM_SGnum))
-flg = (/ zRot, mirInv /)
+! these are taken care of in the write routine...
+! zRot = char(SHT_ZRot(cell%SYM_SGnum))
+! mirInv =  char(SHT_mirInv(cell%SYM_SGnum))
+! flg = (/ zRot, mirInv /)
 
 ! transfer the complex almMaster array to a flat array with alternating real and imaginary parts
 allocate(alm( 2 * bw * bw ))
@@ -1773,11 +1823,12 @@ write (*,*) 'lat ',lat
 write (*,*) 'fprm ', fprm 
 write (*,*) 'iprm ', iprm 
 write (*,*) 'bw ', bw 
-write (*,*) 'zRot/mirInv ', SHT_ZRot(cell%SYM_SGnum), SHT_mirInv(cell%SYM_SGnum)
-write (*,*) 'flg ', ichar(flg) 
 write (*,*) 'shape(alm) ', shape(alm), 2 * bw * bw  
-res = writeSHTfile(cstringify(emnl%SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
-                   aTy, aCd, lat, fprm, iprm, bw, flg, alm)
+SHTfile = trim(EMsoft_getEMdatapathname())//trim(emnl%SHTfile)
+SHTfile = EMsoft_toNativePath(SHTfile)
+
+res = writeSHTfile(cstringify(SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
+                   aTy, aCd, lat, fprm, iprm, bw, alm)
 
 call Message(' Final data stored in binary file '//trim(emnl%SHTfile), frm = "(A/)")
 

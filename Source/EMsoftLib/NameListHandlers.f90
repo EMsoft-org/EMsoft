@@ -2545,7 +2545,7 @@ logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, latgridtype, h5copypath, SHTfile
+                          combinesites, latgridtype, h5copypath, SHTfile, BetheParametersFile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6

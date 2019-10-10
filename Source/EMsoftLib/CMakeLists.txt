@@ -16,6 +16,26 @@ add_custom_target(EMsoftLib_Generate_StringConstants ALL
                   )
 
 
+
+
+# fetch SHT file format content
+# this could be done with a git submodule but the user would have to call:
+#   git submodule update
+#   git clone --recursive
+# which is a bit annoying
+include(FetchContent)
+FetchContent_Declare(
+  SHTfile
+  GIT_REPOSITORY "https://github.com/EMsoft-org/SHTfile"
+  # GIT_TAG        "v3.1.2" # just get the most recent version for now
+  # GIT_PROGRESS   TRUE # its currently only 1 file, we probably don't need to print out progress
+)
+# set(FETCHCONTENT_QUIET NO) # again only 1 file
+FetchContent_MakeAvailable(SHTfile)
+FetchContent_GetProperties(SHTfile BINARY_DIR SHTfile_BINARY_DIR)
+include_directories(${SHTfile_BINARY_DIR})
+
+
 #------------------------------------------------------------------------------
 # Setup all the source files
 
@@ -107,7 +127,6 @@ set(EMsoftLib_C_SRCS
 )
 
 set(EMsoftLib_Cpp_SRCS
-  ${EMsoftLib_SOURCE_DIR}/sht_file.hpp
   ${EMsoftLib_SOURCE_DIR}/sht_file.cpp
 )
 
