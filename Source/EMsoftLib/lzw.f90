@@ -210,9 +210,9 @@ contains
    class(stream) , intent(inout) :: this ! stream to extract bits from
     integer(int16)                :: code ! extracted bits padded to 16 wide
     integer(int16)                :: b0, b1, b2
-    integer, parameter            :: magicBytes (19)  = [   1,  3,  7, 15, 31, 63,127,255,&
-                                                          128,192,224,240,248,252,254,255,&
-                                                          255,255,255]
+    integer(int8), parameter      :: magicBytes (19)  = [   1,  3,  7, 15, 31, 63,127, -1,&
+                                                         -128,-64,-32,-16, -8,-4 , -2, -1,&
+                                                           -1, -1, -1]
     b0 = ishft(iand(this%encoded(this%index  ),magicBytes(                 this%bitsLeft)),this%dict%bits-this%bitsLeft  ) ! mask off leading bits and shift
     b1 = ishft(iand(this%encoded(this%index+1),magicBytes(8+this%dict%bits-this%bitsLeft)),this%dict%bits-this%bitsLeft-8) ! mask off middle/trailing bits and shift
     code = ior(b0,b1)
