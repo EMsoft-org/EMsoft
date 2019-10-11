@@ -1189,7 +1189,8 @@ integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, ieq
                            ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, bw, d, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
-real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, dym !
+real(kind=dbl)          :: tpi,Znsq, kkl, DBWF, kin, delta, h, lambda, omtl, srt, dc(3), xy(2), edge, scl, tmp, dx, dxm, dy, &
+                           dym, mean, sdev !
 real(kind=sgl)          :: io_real(5), selE, kn, FN(3), kkk(3), tstop, bp(4), nabsl, etotal, dens, avA, avZ, xxxxx, mi, ma
 real(kind=sgl),allocatable      :: EkeVs(:), svals(:), auxNH(:,:), auxSH(:,:), Z2percent(:)  ! results
 real(kind=sgl),allocatable      :: mLPNH(:,:,:), mLPSH(:,:,:)
@@ -1774,6 +1775,16 @@ call Message(' Computing energy weighted master pattern',"(//A)")
   end if 
   deallocate(output_image)
 
+! normalize the master patterns by subtracting the mean and dividing by the standard deviation 
+  call Message(' Normaling master patterns ')
+  mean = sum(finalmLPNH) / dble( (2*d+1)*(2*d+1) )
+  sdev = sqrt( sum( (finalmLPNH - mean)**2 )/ dble((2*d+1)*(2*d+1) - 1) )
+  finalmLPNH = (finalmLPNH - mean) / sdev 
+
+  mean = sum(finalmLPSH) / dble( (2*d+1)*(2*d+1) )
+  sdev = sqrt( sum( (finalmLPSH - mean)**2 )/ dble((2*d+1)*(2*d+1) - 1) )
+  finalmLPSH = (finalmLPSH - mean) / sdev 
+
 ! build transformer
    call FFTWisdom%load()
    call Message(' Initializing the spherical harmonic transformer')
@@ -1792,48 +1803,38 @@ call Message(' Computing energy weighted master pattern',"(//A)")
   timestop = Time_tock(timestart)
 
 ! prepare all parameters for the writing of the final .sht file 
-sgN = cell%SYM_SGnum
-sgS = cell%SYM_SGset
-numAt = cell%ATOM_ntype
-allocate(aTy(numAt))
-aTy = cell%ATOM_type(1:numAt)
-allocate(aCd(5,numAt))
-aCd = transpose(cell%ATOM_pos(1:numAt,1:5))
-lat = sngl((/ cell%a, cell%b, cell%c, cell%alpha, cell%beta, cell%gamma /))
-fprm = (/ sngl(mcnl%sig), nan(), nan(), sngl(mcnl%omega), sngl(mcnl%EkeV), sngl(mcnl%Ehistmin), &
-          sngl(mcnl%Ebinsize), sngl(mcnl%depthmax), sngl(mcnl%depthstep), &
-          infty(), BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff, &
-          emnl%dmin, 0.0, 0.0, 0.0, 0.0, 0.0 /)
-iprm = (/ mcnl%totnum_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
-bw = 384
+  sgN = cell%SYM_SGnum
+  sgS = cell%SYM_SGset
+  numAt = cell%ATOM_ntype
+  allocate(aTy(numAt))
+  aTy = cell%ATOM_type(1:numAt)
+  allocate(aCd(5,numAt))
+  aCd = transpose(cell%ATOM_pos(1:numAt,1:5))
+  lat = sngl((/ cell%a, cell%b, cell%c, cell%alpha, cell%beta, cell%gamma /))
+  fprm = (/ sngl(mcnl%sig), nan(), nan(), sngl(mcnl%omega), sngl(mcnl%EkeV), sngl(mcnl%Ehistmin), &
+            sngl(mcnl%Ebinsize), sngl(mcnl%depthmax), sngl(mcnl%depthstep), &
+            infty(), BetheParameters%c1, BetheParameters%c2, BetheParameters%c3, BetheParameters%sgdbdiff, &
+            emnl%dmin, 0.0, 0.0, 0.0, 0.0, 0.0 /)
+  iprm = (/ mcnl%totnum_el, mcnl%multiplier, mcnl%numsx, emnl%npx, 2 /)
+  bw = 384
 
 ! transfer the complex almMaster array to a flat array with alternating real and imaginary parts
-allocate(alm( 2 * bw * bw ))
-alm = transfer(almMaster,alm)
+  allocate(alm( 2 * bw * bw ))
+  alm = transfer(almMaster,alm)
 
 ! write an .sht file using EMsoft style EBSD data
-EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
-EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
-EMversion = trim(EMversion)//'; database DOI : '
-write (*,*) 'targeted output file '//trim(emnl%SHTfile)
-write (*,*) 'EMversion string '//trim(EMversion)
-write (*,*) 'sgN ',sgN
-write (*,*) 'sgS ',sgS
-write (*,*) 'numAt ',numAt
-write (*,*) 'aTy ',aTy
-write (*,*) 'aCd ',aCd 
-write (*,*) 'lat ',lat 
-write (*,*) 'fprm ', fprm 
-write (*,*) 'iprm ', iprm 
-write (*,*) 'bw ', bw 
-write (*,*) 'shape(alm) ', shape(alm), 2 * bw * bw  
-SHTfile = trim(EMsoft_getEMdatapathname())//trim(emnl%SHTfile)
-SHTfile = EMsoft_toNativePath(SHTfile)
+  EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
+  EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
+  EMversion = trim(EMversion)//'; database DOI : '
+  SHTfile = trim(EMsoft_getEMdatapathname())//trim(emnl%SHTfile)
+  SHTfile = EMsoft_toNativePath(SHTfile)
 
-res = writeSHTfile(cstringify(SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
-                   aTy, aCd, lat, fprm, iprm, bw, alm)
+  res = writeSHTfile(cstringify(SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
+                     aTy, aCd, lat, fprm, iprm, bw, alm)
 
-call Message(' Final data stored in binary file '//trim(emnl%SHTfile), frm = "(A/)")
+write (*,*) 'return code from writeSHTfile ', res 
+
+call Message(' Final data stored in binary file '//trim(SHTfile), frm = "(A/)")
 
 io_int(1) = timestop
 call WriteValue(' Total execution time [s] ',io_int,1)
