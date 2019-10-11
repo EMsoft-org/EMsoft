@@ -5,7 +5,7 @@
 !   in Legendre mode (see below), this number will be the maximum band width for 
 !   the spherical harmonic transform
  npx = 500,
-! number of OpenMP threads
+! number of OpenMP threads (0 to use the maximum available)
  nthreads = 1,
 ! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
 ! this file will also contain the output data of the master program
@@ -39,7 +39,7 @@
 ! name of the SHTmaster pattern file (for Legendre latgridtype only)
 ! we suggest that these files be given names of the following type:
 !
-!  material-##kV.sht
+!  material-info-##kV.sht
 !
  SHTfile = 'undefined',
  /

@@ -194,7 +194,7 @@ real(kind=dbl)          :: ctmp(192,3), arg, Radius, xyz(3)
 integer(HSIZE_T)        :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
-                           numk, timestart, timestop, numsites, & ! number of independent incident beam directions
+                           numk, timestart, timestop, numsites, nthreads, & ! number of independent incident beam directions
                            ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
@@ -793,8 +793,13 @@ energyloop: do iE=Estart,1,-1
 ! here's where we introduce the OpenMP calls, to speed up the overall calculations...
 
 ! set the number of OpenMP threads 
-  call OMP_SET_NUM_THREADS(emnl%nthreads)
-  io_int(1) = emnl%nthreads
+  if (emnl%nthreads.eq.0) then 
+    nthreads = OMP_GET_MAX_THREADS()
+  else
+    nthreads = emnl%nthreads
+  end if
+  call OMP_SET_NUM_THREADS(nthreads)
+  io_int(1) = nthreads
   call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
 
 ! use OpenMP to run on multiple cores ... 
@@ -1180,7 +1185,7 @@ real(kind=dbl)          :: ctmp(192,3), arg, Radius, xyz(3)
 integer(HSIZE_T)        :: dims4(4), cnt4(4), offset4(4)
 integer(HSIZE_T)        :: dims3(3), cnt3(3), offset3(3)
 integer(kind=irg)       :: isym,i,j,ik,npy,ipx,ipy,ipz,debug,iE,izz, izzmax, iequiv(3,48), nequiv, num_el, MCnthreads, & ! counters
-                           numk, timestart, timestop, numsites, res, ll, & ! number of independent incident beam directions
+                           numk, timestart, timestop, numsites, res, ll, nthreads, & ! number of independent incident beam directions
                            ir,nat(100),kk(3), skip, ijmax, one, NUMTHREADS, TID, SamplingType, &
                            numset,n,ix,iy,iz, io_int(6), nns, nnw, nref, Estart, bw, d, &
                            istat,gzero,ic,ip,ikk, totstrong, totweak, jh, ierr, nix, niy, nixp, niyp     ! counters
@@ -1544,8 +1549,13 @@ energyloop: do iE=Estart,1,-1
 ! here's where we introduce the OpenMP calls, to speed up the overall calculations...
 
 ! set the number of OpenMP threads 
-  call OMP_SET_NUM_THREADS(emnl%nthreads)
-  io_int(1) = emnl%nthreads
+  if (emnl%nthreads.eq.0) then 
+    nthreads = OMP_GET_MAX_THREADS()
+  else
+    nthreads = emnl%nthreads
+  end if
+  call OMP_SET_NUM_THREADS(nthreads)
+  io_int(1) = nthreads
   call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
 
 ! use OpenMP to run on multiple cores ... 
