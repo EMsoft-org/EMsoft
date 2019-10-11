@@ -264,11 +264,11 @@ platform = EMsoft_getEMsoftplatform()
 ! depending on the inputtype, we open the input file in the appropriate way
 select case (itype)
     case(1)  ! "Binary"
-        if (trim(platform).eq.'Windows') then
-            recordsize = L        ! windows record length is in units of 4 bytes
-        else
+        ! if (trim(platform).eq.'Windows') then
+        !     recordsize = L        ! windows record length is in units of 4 bytes
+        ! else
             recordsize = L*4      ! all other platforms use record length in units of bytes
-        end if
+        ! end if
         open(unit=funit,file=trim(ename),&
             status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
         if (ierr.ne.0) then
