@@ -31,6 +31,7 @@ set(MODALITY_DIRS
     GBs
     OLIO
     OM
+    pyEMsoft
     SEM
     TEM
     QC
