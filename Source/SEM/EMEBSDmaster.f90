@@ -1826,7 +1826,7 @@ call Message(' Computing energy weighted master pattern',"(//A)")
   if (trim(emnl%addtoKiltHub).eq.'Yes') then 
     EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
     EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
-    EMversion = trim(EMversion)//'; database DOI : 10.1184/R1/9974612'
+    EMversion = trim(EMversion)//'; database DOI : '//SC_EMSHTDOI
   else
     EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
     EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
