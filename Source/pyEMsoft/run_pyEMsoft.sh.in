@@ -137,7 +137,7 @@ f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[
 --skip hipassfilterc hipassfilter 1>build.log 2>build_error.log
 #=======================
 # call f2py-f90wrap to build the wrapper library
-echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a very long time (>1 hour) ..."
+echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a very long time (several hours) ..."
 f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -I${EMsoftBuildHDFLib} \
 -I@HDF5_INSTALL@/include/static \
@@ -149,7 +149,7 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -L@JSONFORTRAN_INSTALL@/lib \
 -L@FFTW3_INSTALL@/lib \
 -L@HDF5_INSTALL@/lib \
--L$CondaLib \
+-L${CondaLib} \
 --link-lapack_opt \
 -lgomp -lpthread -lomp \
 -lEMsoftLib -lEMsoftHDFLib -ljsonfortran -lhdf5 -lhdf5_fortran \

@@ -1823,9 +1823,14 @@ call Message(' Computing energy weighted master pattern',"(//A)")
   alm = transfer(almMaster,alm)
 
 ! write an .sht file using EMsoft style EBSD data
-  EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
-  EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
-  EMversion = trim(EMversion)//'; database DOI : '
+  if (trim(emnl%addtoKiltHub).eq.'Yes') then 
+    EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
+    EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
+    EMversion = trim(EMversion)//'; database DOI : 10.1184/R1/9974612'
+  else
+    EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
+    EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
+  end if 
   SHTfile = trim(EMsoft_getEMdatapathname())//trim(emnl%SHTfile)
   SHTfile = EMsoft_toNativePath(SHTfile)
 

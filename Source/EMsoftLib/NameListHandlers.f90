@@ -2539,13 +2539,14 @@ character(fnlen)        :: energyfile
 character(fnlen)        :: SHTfile
 character(fnlen)        :: BetheParametersFile
 character(fnlen)        :: h5copypath
+character(fnlen)        :: addtoKiltHub
 logical                 :: combinesites
 logical                 :: restart
 logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, latgridtype, h5copypath, SHTfile, BetheParametersFile
+                          combinesites, latgridtype, h5copypath, SHTfile, BetheParametersFile, addtoKiltHub
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2559,6 +2560,7 @@ copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a diff
 h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 SHTfile = 'undefined'           ! for storage of spherical harmonic transform coefficients
+addtoKiltHub = 'No'             ! file to be added to data base on kilthub.cmu.edu ?
 BetheParametersFile='BetheParameters.nml'
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
@@ -2593,6 +2595,7 @@ emnl%energyfile = energyfile
 emnl%BetheParametersFile = BetheParametersFile
 emnl%Notify = Notify
 emnl%outname = energyfile       ! as off release 3.1, outname must be the same as energyfile
+emnl%addtoKiltHub = addtoKiltHub
 emnl%combinesites = combinesites
 emnl%restart = restart
 emnl%uniform = uniform

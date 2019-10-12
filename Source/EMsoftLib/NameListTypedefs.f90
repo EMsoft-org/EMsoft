@@ -438,6 +438,7 @@ type EBSDMasterNameListType
         character(fnlen)        :: outname
         character(fnlen)        :: BetheParametersFile
         character(fnlen)        :: SHTfile
+        character(fnlen)        :: addtoKiltHub
         logical                 :: combinesites
         logical                 :: restart
         logical                 :: uniform

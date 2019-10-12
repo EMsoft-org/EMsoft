@@ -42,4 +42,7 @@
 !  material-info-##kV.sht
 !
  SHTfile = 'undefined',
+! if this file will be added to the SHT database on kilthub.cmu.edu, then this parameter
+! should be set to 'Yes'; this will add the database DOI number to the Notes field in the file.
+ addtoKiltHub = 'No',
  /
