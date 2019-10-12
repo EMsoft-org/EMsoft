@@ -89,7 +89,8 @@ contains
 recursive function vecnorm(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm
 
-real(kind=sgl),dimension(:)      :: vec
+! real(kind=sgl),dimension(:)      :: vec
+real(kind=sgl),INTENT(IN)        :: vec(:)
 real(kind=sgl)                   :: veclen
 
 integer(kind=irg)                :: sz(1)
@@ -113,7 +114,8 @@ end function vecnorm
 recursive function vecnorm_d(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm_d
 
-real(kind=dbl),dimension(:)     :: vec(:)
+! real(kind=dbl),dimension(:)     :: vec
+real(kind=dbl),INTENT(IN)       :: vec(:)
 real(kind=dbl)                  :: veclen
 
 integer(kind=irg)               :: sz(1)
@@ -137,7 +139,8 @@ end function vecnorm_d
 recursive function vecnorm2(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm2
 
-real(kind=sgl),dimension(:,:)    :: vec
+! real(kind=sgl),dimension(:,:)    :: vec
+real(kind=sgl),INTENT(IN)        :: vec(:,:)
 real(kind=sgl)                   :: veclen
 
 integer(kind=irg)                :: sz(2)
@@ -161,7 +164,8 @@ end function vecnorm2
 recursive function vecnorm2_d(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm2_d
 
-real(kind=dbl),dimension(:,:)    :: vec
+! real(kind=dbl),dimension(:,:)    :: vec
+real(kind=dbl),INTENT(IN)        :: vec(:,:)
 real(kind=dbl)                   :: veclen
 
 integer(kind=irg)                :: sz(2)

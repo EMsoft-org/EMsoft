@@ -81,7 +81,7 @@ declare -a f90_source_files=("io.f90"
                              "NameListTypedefs.f90"
                              "NameListHandlers.f90") 
 
-declare -a f90_HDF_source_files=("commonmod.f90",
+declare -a f90_HDF_source_files=("commonmod.f90"
                                  "HDFsupport.f90"
                                  "utilities.f90"
                                  "EBSDmod.f90")
