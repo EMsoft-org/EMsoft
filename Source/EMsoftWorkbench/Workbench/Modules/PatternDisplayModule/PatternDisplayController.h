@@ -42,7 +42,7 @@
 #include <QtCore/QThreadPool>
 #include <QtGui/QImage>
 
-#include "H5Support/HDF5ScopedFileSentinel.h"
+#include "H5Support/H5ScopedSentinel.h"
 #include "H5Support/QH5Lite.h"
 #include "H5Support/QH5Utilities.h"
 
@@ -190,29 +190,29 @@ private:
 
   MasterPatternFileReader::MasterPatternData m_MP_Data;
 
-  QVector<AbstractImageGenerator::Pointer> m_MasterLPNHImageGenerators;
+  std::vector<AbstractImageGenerator::Pointer> m_MasterLPNHImageGenerators;
   QSemaphore m_MasterLPNHImageGenLock;
 
-  QVector<AbstractImageGenerator::Pointer> m_MasterLPSHImageGenerators;
+  std::vector<AbstractImageGenerator::Pointer> m_MasterLPSHImageGenerators;
   QSemaphore m_MasterLPSHImageGenLock;
 
-  QVector<AbstractImageGenerator::Pointer> m_MasterCircleImageGenerators;
+  std::vector<AbstractImageGenerator::Pointer> m_MasterCircleImageGenerators;
   QSemaphore m_MasterCircleImageGenLock;
 
-  QVector<AbstractImageGenerator::Pointer> m_MasterStereoImageGenerators;
+  std::vector<AbstractImageGenerator::Pointer> m_MasterStereoImageGenerators;
   QSemaphore m_MasterStereoImageGenLock;
 
-  QVector<AbstractImageGenerator::Pointer> m_MCSquareImageGenerators;
+  std::vector<AbstractImageGenerator::Pointer> m_MCSquareImageGenerators;
   QSemaphore m_MCSquareImageGenLock;
 
-  QVector<AbstractImageGenerator::Pointer> m_MCCircleImageGenerators;
+  std::vector<AbstractImageGenerator::Pointer> m_MCCircleImageGenerators;
   QSemaphore m_MCCircleImageGenLock;
 
-  QVector<AbstractImageGenerator::Pointer> m_MCStereoImageGenerators;
+  std::vector<AbstractImageGenerator::Pointer> m_MCStereoImageGenerators;
   QSemaphore m_MCStereoImageGenLock;
 
-  size_t m_NumOfFinishedPatternThreads = 0;
-  QVector<QSharedPointer<QFutureWatcher<void>>> m_PatternWatchers;
+  int32_t m_NumOfFinishedPatternThreads = 0;
+  std::vector<QSharedPointer<QFutureWatcher<void>>> m_PatternWatchers;
 
   /**
    * @brief createMasterPatternImageGenerators Helper function that creates all the image generators for the master pattern images
@@ -236,10 +236,10 @@ private:
    * @param verticalMirror
    */
   template <typename T>
-  void createImageGeneratorTasks(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zDim, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem,
+  void createImageGeneratorTasks(const std::vector<T>& data, size_t xDim, size_t yDim, size_t zDim, std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem,
                                  bool horizontalMirror = false, bool verticalMirror = false)
   {
-    for(int z = 0; z < zDim; z++)
+    for(size_t z = 0; z < zDim; z++)
     {
       ImageGenerationTask<T>* task = new ImageGenerationTask<T>(data, xDim, yDim, z, imageGenerators, sem, z, horizontalMirror, verticalMirror);
       task->setAutoDelete(true);
@@ -247,12 +247,13 @@ private:
     }
   }
 
+  // -----------------------------------------------------------------------------
   template <typename T, typename U>
-  void createProjectionConversionTasks(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
-                                       ModifiedLambertProjection::Square square, QVector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false,
+  void createProjectionConversionTasks(const std::vector<T>& data, size_t xDim, size_t yDim, size_t zDim, size_t projDim, ModifiedLambertProjection::ProjectionType projType,
+                                       ModifiedLambertProjection::Square square, std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, bool horizontalMirror = false,
                                        bool verticalMirror = false)
   {
-    for(int z = 0; z < zDim; z++)
+    for(size_t z = 0; z < zDim; z++)
     {
       ProjectionConversionTask<T, U>* task = new ProjectionConversionTask<T, U>(data, xDim, yDim, projDim, projType, 0, square, imageGenerators, sem, z, horizontalMirror, verticalMirror);
       task->setAutoDelete(true);
@@ -270,13 +271,13 @@ private:
     std::vector<T> newData = data;
     size_t currentIdx = 0;
 
-    for(int z = 0; z < zDim; z++)
+    for(size_t z = 0; z < zDim; z++)
     {
-      for(int y = yDim - 1; y >= 0; y--) // We count down in the y-direction so that the image isn't flipped
+      for(int32_t y = static_cast<int32_t>(yDim) - 1; y >= 0; y--) // We count down in the y-direction so that the image isn't flipped
       {
-        for(int x = 0; x < xDim; x++)
+        for(size_t x = 0; x < xDim; x++)
         {
-          int index = (xDim * zDim * y) + (zDim * x) + z;
+          size_t index = (xDim * zDim * static_cast<size_t>(y)) + (zDim * x) + z;
           T value = data.at(index);
           newData.at(currentIdx) = value;
           currentIdx++;
@@ -293,7 +294,7 @@ private:
    * @param detectorData
    * @param indexOrder
    */
-  void generatePatternImagesUsingThread(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData);
+  void generatePatternImagesUsingThread(const SimulatedPatternDisplayWidget::PatternDisplayData &patternData, const DetectorData &detectorData);
 
   /**
    * @brief generatePatternImage

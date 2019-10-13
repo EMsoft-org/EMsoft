@@ -128,7 +128,7 @@ void PatternPreprocessingController::createPreprocessedPatternsMatrix(const PPMa
 
   QSharedPointer<QProcess> ppMatrixProcess = QSharedPointer<QProcess>(new QProcess());
   connect(ppMatrixProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardOutput().toStdString())); });
-  connect(ppMatrixProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardOutput().toStdString())); });
+  connect(ppMatrixProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(ppMatrixProcess->readAllStandardError().toStdString())); });
   connect(ppMatrixProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenPreprocessedPatternsMatrixFinished(exitCode, exitStatus); });
   QString ppMatrixExecutablePath = getPreprocessedPatternsMatrixExecutablePath();
   if (!ppMatrixExecutablePath.isEmpty())

@@ -188,6 +188,8 @@ if (res ne 1.0) then begin
   Core_print,'getEBSDPatternsWrapper return code = '+string(res,format="(F4.1)")
 end 
 
+EBSDpattern = reverse(EBSDpattern, 2)
+
 ; apply the correct intensity scaling
 Epat = reform(EBSDpattern)^Efitdata.detgamma
 

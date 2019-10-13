@@ -12,6 +12,6 @@ set(EMsoft_Fortran_COMPILER_NAME @Fortran_COMPILER_NAME@)
 set(EMsoft_BUILD_SHARED_LIBS "@BUILD_SHARED_LIBS@")
 
 if (EMsoft_Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  set(EMsoft_Fortran_RT_Libs gfortran gomp)
+  set(EMsoft_Fortran_RT_Libs gfortran @EMsoft_FORTRAN_SUPPORT_LIBS@)
   set(EMsoft_Fortran_Lib_Dir @GFortran_LIB_DIR@)
 endif()

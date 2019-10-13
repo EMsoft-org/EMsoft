@@ -47,13 +47,13 @@
 #include <QtCore/QThreadPool>
 #include <QtWidgets/QFileDialog>
 
-#include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "EMsoftApplication.h"
 
-#include "Common/Constants.h"
-#include "Common/FileIOTools.h"
-#include "Common/PatternTools.h"
+#include "Workbench/Common/Constants.h"
+#include "Workbench/Common/FileIOTools.h"
+#include "Workbench/Common/PatternTools.h"
+#include "Workbench/Modules/MasterPatternSimulationModule/MasterPatternSimulationController.h"
 
 #include "QtSupport/QtSSettings.h"
 
@@ -93,7 +93,7 @@ void MasterPatternSimulation_UI::setupGui()
 
   validateData();
 
-  int numOfCores = m_Controller->getNumCPUCores();
+  int numOfCores = QThread::idealThreadCount();
   numOfOpenMPThreadsSB->setMaximum(numOfCores);
   numOfOpenMPThreadsSB->setValue(numOfCores);
   numOfOpenMPThreadsSB->blockSignals(false);
@@ -182,42 +182,69 @@ void MasterPatternSimulation_UI::createWidgetConnections() const
 // -----------------------------------------------------------------------------
 void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
 {
-  if(simulateBtn->text() == "Cancel")
+  if(simulateBtn->text() == "Cancel" && m_Controller != nullptr)
   {
-    m_Controller->setCancel(true);
+    m_Controller->cancelProcess();
+    emit processCompleted();
     setRunning(false);
     return;
   }
 
-  setRunning(true);
-  clearModuleIssues();
+  // Sanity Check the input/output Files
+  QString absPath = FileIOTools::GetAbsolutePath(mcFilePathLE->text());
+  mcFilePathLE->setText(absPath);
+  absPath = FileIOTools::GetAbsolutePath(mpFilePathLE->text());
+  mpFilePathLE->setText(absPath);
 
-  MasterPatternSimulationController::MasterPatternSimulationData data = getSimulationData();
+  // Get the input data
+  MasterPatternSimulationController::InputDataType data;
+  data.smallestDSpacing = smallestDSpacingSB->value();
+  data.numOfMPPixels = numOfMPPixelsSB->value();
+  data.betheParametersX = betheParametersXSB->value();
+  data.betheParametersY = betheParametersYSB->value();
+  data.betheParametersZ = betheParametersZSB->value();
+  data.numOfOpenMPThreads = numOfOpenMPThreadsSB->value();
+  data.inputFilePath = mcFilePathLE->text();
+  data.outputFilePath = mpFilePathLE->text();
 
+  // Adjust GUI  elements
   simulateBtn->setText("Cancel");
   inputGrpBox->setDisabled(true);
   compParamGrpBox->setDisabled(true);
   outputGrpBox->setDisabled(true);
 
-  // Single-threaded for now, but we can multi-thread later if needed
-  //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-  for(int i = 0; i < 1; i++)
+  // Clear out the previous (if any) controller instance
+  if(m_Controller != nullptr)
   {
-    m_Watcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-    connect(m_Watcher.data(), SIGNAL(finished()), this, SLOT(threadFinished()));
-
-    QFuture<void> future = QtConcurrent::run(m_Controller, &MasterPatternSimulationController::createMasterPattern, data);
-    m_Watcher->setFuture(future);
+    delete m_Controller;
+    m_Controller = nullptr;
   }
+
+  // Create a new QThread to run the Controller class.
+  m_WorkerThread = QSharedPointer<QThread>(new QThread);
+  m_Controller = new MasterPatternSimulationController;
+  m_Controller->moveToThread(m_WorkerThread.get());
+  m_Controller->setData(data); // Set the input data
+
+  // Conncet Signals & Slots to get the thread started and quit
+  connect(m_WorkerThread.get(), SIGNAL(started()), m_Controller, SLOT(execute()));
+  connect(m_Controller, SIGNAL(finished()), m_WorkerThread.get(), SLOT(quit()));
+  connect(m_WorkerThread.get(), SIGNAL(finished()), this, SLOT(processFinished()));
+
+  // Pass errors, warnings, and std output messages up to the user interface
+  connect(m_Controller, &MasterPatternSimulationController::errorMessageGenerated, this, &MasterPatternSimulation_UI::notifyErrorMessage);
+  connect(m_Controller, &MasterPatternSimulationController::warningMessageGenerated, this, &MasterPatternSimulation_UI::notifyWarningMessage);
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
+
+  m_WorkerThread->start();
+  setRunning(true);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MasterPatternSimulation_UI::threadFinished()
+void MasterPatternSimulation_UI::processFinished()
 {
-  m_Controller->setCancel(false);
-
   simulateBtn->setText("Simulate");
   inputGrpBox->setEnabled(true);
   compParamGrpBox->setEnabled(true);
@@ -243,8 +270,19 @@ void MasterPatternSimulation_UI::validateData()
 {
   clearModuleIssues();
 
-  MasterPatternSimulationController::MasterPatternSimulationData data = getSimulationData();
-  if(m_Controller->validateMasterPatternValues(data))
+  MasterPatternSimulationController::InputDataType data;
+  data.smallestDSpacing = smallestDSpacingSB->value();
+  data.numOfMPPixels = numOfMPPixelsSB->value();
+  data.betheParametersX = betheParametersXSB->value();
+  data.betheParametersY = betheParametersYSB->value();
+  data.betheParametersZ = betheParametersZSB->value();
+  data.numOfOpenMPThreads = numOfOpenMPThreadsSB->value();
+  data.inputFilePath = mcFilePathLE->text();
+  data.outputFilePath = mpFilePathLE->text();
+
+  MasterPatternSimulationController controller;
+  controller.setData(data);
+  if(controller.validateInput())
   {
     simulateBtn->setEnabled(true);
   }
@@ -343,37 +381,3 @@ void MasterPatternSimulation_UI::writeComputationalParameters(QJsonObject& obj) 
 
   obj[ioConstants::NumOfOpenMPThreads] = numOfOpenMPThreadsSB->value();
 }
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-MasterPatternSimulationController::MasterPatternSimulationData MasterPatternSimulation_UI::getSimulationData() const
-{
-  MasterPatternSimulationController::MasterPatternSimulationData data;
-  data.smallestDSpacing = smallestDSpacingSB->value();
-  data.numOfMPPixels = numOfMPPixelsSB->value();
-  data.betheParametersX = betheParametersXSB->value();
-  data.betheParametersY = betheParametersYSB->value();
-  data.betheParametersZ = betheParametersZSB->value();
-  data.numOfOpenMPThreads = numOfOpenMPThreadsSB->value();
-  data.inputFilePath = mcFilePathLE->text();
-  data.outputFilePath = mpFilePathLE->text();
-  return data;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void MasterPatternSimulation_UI::setController(MasterPatternSimulationController* value)
-{
-  m_Controller = value;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-MasterPatternSimulationController* MasterPatternSimulation_UI::getController() const
-{
-  return m_Controller;
-}
-

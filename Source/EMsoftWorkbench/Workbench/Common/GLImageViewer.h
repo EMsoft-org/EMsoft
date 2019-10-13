@@ -59,12 +59,6 @@ public:
     void setZoomable(bool value);
 
     /**
-     * @brief loadImage
-     * @param image
-     */
-    void loadImage(QImage image);
-
-    /**
      * @brief zoomIn
      */
     void zoomIn();
@@ -106,9 +100,17 @@ public:
 
     virtual void readSession(const QJsonObject &obj);
 
-    virtual void writeSession(QJsonObject &obj) const;
+    virtual void writeSession(QJsonObject& obj) const;
 
-protected:
+  public slots:
+
+    /**
+     * @brief loadImage
+     * @param image
+     */
+    void loadImage(QImage image);
+
+  protected:
     void paintGL() Q_DECL_OVERRIDE;
     void initializeGL() Q_DECL_OVERRIDE;
 

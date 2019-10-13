@@ -45,6 +45,7 @@
 !> @date 10/24/17 MDG 4.2 added infty()/inftyd() functions to return the IEEE infinity value
 !> @date 08/23/19 MDG 4.3 removed spaces around "kind" statements to facilitate f90wrap python wrapper generation
 !> @date 10/04/19 MDG 4.4 adds vecnorm to replace non-standard NORM2 calls  (F2003 compliance)
+!> @date 10/04/19 MDG 4.5 adds nan() function, returning a single or double precision IEEE NaN value
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -88,7 +89,7 @@ contains
 recursive function vecnorm(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm
 
-real(kind=sgl),dimension(:)      :: vec
+real(kind=sgl),INTENT(IN)        :: vec(:)
 real(kind=sgl)                   :: veclen
 
 integer(kind=irg)                :: sz(1)
@@ -112,7 +113,7 @@ end function vecnorm
 recursive function vecnorm_d(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm_d
 
-real(kind=dbl),dimension(:)     :: vec(:)
+real(kind=dbl),INTENT(IN)       :: vec(:)
 real(kind=dbl)                  :: veclen
 
 integer(kind=irg)               :: sz(1)
@@ -136,7 +137,7 @@ end function vecnorm_d
 recursive function vecnorm2(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm2
 
-real(kind=sgl),dimension(:,:)    :: vec
+real(kind=sgl),INTENT(IN)        :: vec(:,:)
 real(kind=sgl)                   :: veclen
 
 integer(kind=irg)                :: sz(2)
@@ -160,7 +161,7 @@ end function vecnorm2
 recursive function vecnorm2_d(vec) result(veclen)
 !DEC$ ATTRIBUTES DLLEXPORT :: vecnorm2_d
 
-real(kind=dbl),dimension(:,:)    :: vec
+real(kind=dbl),INTENT(IN)        :: vec(:,:)
 real(kind=dbl)                   :: veclen
 
 integer(kind=irg)                :: sz(2)
@@ -214,6 +215,55 @@ big = HUGE(1.D0)
 infinity = big + HUGE(1.D0)
 
 end function inftyd
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: nan
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the single precision IEEE value for nan
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function nan() result(x)
+!DEC$ ATTRIBUTES DLLEXPORT :: nan
+
+ use, intrinsic :: iso_fortran_env
+ use, intrinsic :: ieee_arithmetic
+
+ IMPLICIT NONE 
+
+real(kind=sgl)        :: x
+
+x = ieee_value(x, ieee_quiet_nan)
+
+end function nan
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: nan_d
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief return the sngle precision IEEE value for nan
+!
+!> @date  10/04/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function nan_d() result(x)
+!DEC$ ATTRIBUTES DLLEXPORT :: nan_d
+
+ use, intrinsic :: iso_fortran_env
+ use, intrinsic :: ieee_arithmetic
+
+ IMPLICIT NONE 
+
+real(kind=dbl)        :: x
+
+x = ieee_value(x, ieee_quiet_nan)
+
+end function nan_d
+
 
 !--------------------------------------------------------------------------
 !
@@ -2840,17 +2890,16 @@ end function kdelta
 !
 !> @author Saransh Singh, Carnegie Mellon University
 !
-!> @brief  all three roots of cubic polynomial
+!> @brief  all three roots of cubic polynomial with real coefficients 
 !
 !> @details the equations were taken from wikipedia article https://en.wikipedia.org/wiki/Cubic_function
 !
-!> @param co
+!> @param co  coefficients in co1 x^3 + co2 x^2 + co3 x + co4 = 0
 !> @param roots
 !
-!> @note THIS ROUTINE FAILS FOR CERTAIN COEFFICIENT COMBINATIONS; CHECK sqrt ARGUMENT for C
-! 
 !> @date 01/18/16   SS 1.0 original
 !> @date 01/25/16  MDG 1.1 minor mods to make more efficient
+!> @date 09/13/19  MDG 2.0 rewrite, verified against Mathematica for a couple of trial cases
 !--------------------------------------------------------------------------
 recursive subroutine cubicroots(co,X)
 !DEC$ ATTRIBUTES DLLEXPORT :: cubicroots
@@ -2862,13 +2911,13 @@ IMPLICIT NONE
 real(kind=dbl),INTENT(IN)            :: co(4)
 complex(kind=dbl),INTENT(OUT)        :: X(3)
 
-real(kind=dbl)                       :: del0, del1, C
-complex(kind=dbl)                    :: pre, u(3)
+real(kind=dbl)                       :: del0, del1 
+complex(kind=dbl)                    :: u(3), C, pre
 integer(kind=irg)                    :: i
 
 del0 = co(2)*co(2) - 3.D0*co(1)*co(3)
 del1 = 2.D0*co(2)**3 - 9.D0*co(1)*co(2)*co(3) + 27.D0*co(4)*co(1)**2;
-C = (0.5D0*(del1 + dsqrt(del1*del1 - 4.D0*del0**3)))**(1.D0/3.D0);
+C = (0.5D0*(-del1 + dsqrt(del1*del1 - 4.D0*del0**3)))**(1.D0/3.D0);
 
 u(1) = cmplx(1.D0,0.D0);
 u(2) = cmplx(-0.5D0,dsqrt(3.D0)*0.5D0)

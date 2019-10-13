@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include <QtCore/QRunnable>
 #include <QtCore/QSemaphore>
 
@@ -56,19 +58,19 @@ class ImageGenerationTask : public QRunnable
     return Pointer(static_cast<Self*>(nullptr));
   }
 
-    ImageGenerationTask(const std::vector<T> &data, size_t xDim, size_t yDim, size_t zSlice, QVector<AbstractImageGenerator::Pointer> &imageGenerators,
-                        QSemaphore &sem, size_t listIdx, bool horizontalMirror = false, bool verticalMirror = false) :
-      QRunnable(),
-      m_Data(data),
-      m_zSlice(zSlice),
-      m_VectorIdx(listIdx),
-      m_xDim(xDim),
-      m_yDim(yDim),
-      m_HorizontalMirror(horizontalMirror),
-      m_VerticalMirror(verticalMirror),
-      m_ImageGenerators(&imageGenerators),
-      m_Semaphore(&sem)
-    {
+  ImageGenerationTask(const std::vector<T>& data, size_t xDim, size_t yDim, size_t zSlice, std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, size_t listIdx,
+                      bool horizontalMirror = false, bool verticalMirror = false)
+  : QRunnable()
+  , m_Data(data)
+  , m_zSlice(zSlice)
+  , m_VectorIdx(listIdx)
+  , m_xDim(xDim)
+  , m_yDim(yDim)
+  , m_HorizontalMirror(horizontalMirror)
+  , m_VerticalMirror(verticalMirror)
+  , m_ImageGenerators(&imageGenerators)
+  , m_Semaphore(&sem)
+  {
 
     }
 
@@ -82,7 +84,7 @@ class ImageGenerationTask : public QRunnable
     {
       beforeImageGeneration();
 
-      AbstractImageGenerator::Pointer imgGen = ImageGenerator<T>::New(m_Data, m_xDim, m_yDim, m_zSlice, m_HorizontalMirror, m_VerticalMirror);
+      AbstractImageGenerator::Pointer imgGen = ImageGenerator<T>::New(m_Data, m_xDim, m_yDim, static_cast<int32_t>(m_zSlice), m_HorizontalMirror, m_VerticalMirror);
       imgGen->createImage();
 
       m_Semaphore->acquire();
@@ -93,17 +95,17 @@ class ImageGenerationTask : public QRunnable
     }
 
   protected:
-    ImageGenerationTask(size_t xDim, size_t yDim, size_t zSlice, QVector<AbstractImageGenerator::Pointer> &imageGenerators,
-                        QSemaphore &sem, size_t vectorIdx, bool horizontalMirror = false, bool verticalMirror = false) :
-      QRunnable(),
-      m_zSlice(zSlice),
-      m_VectorIdx(vectorIdx),
-      m_xDim(xDim),
-      m_yDim(yDim),
-      m_HorizontalMirror(horizontalMirror),
-      m_VerticalMirror(verticalMirror),
-      m_ImageGenerators(&imageGenerators),
-      m_Semaphore(&sem)
+    ImageGenerationTask(size_t xDim, size_t yDim, size_t zSlice, std::vector<AbstractImageGenerator::Pointer>& imageGenerators, QSemaphore& sem, size_t vectorIdx, bool horizontalMirror = false,
+                        bool verticalMirror = false)
+    : QRunnable()
+    , m_zSlice(zSlice)
+    , m_VectorIdx(vectorIdx)
+    , m_xDim(xDim)
+    , m_yDim(yDim)
+    , m_HorizontalMirror(horizontalMirror)
+    , m_VerticalMirror(verticalMirror)
+    , m_ImageGenerators(&imageGenerators)
+    , m_Semaphore(&sem)
     {
 
     }
@@ -127,7 +129,7 @@ class ImageGenerationTask : public QRunnable
     size_t m_yDim;
     bool m_HorizontalMirror;
     bool m_VerticalMirror;
-    QVector<AbstractImageGenerator::Pointer>* m_ImageGenerators;
+    std::vector<AbstractImageGenerator::Pointer>* m_ImageGenerators;
     QSemaphore* m_Semaphore;
 
   public:

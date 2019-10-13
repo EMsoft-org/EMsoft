@@ -958,28 +958,33 @@ integer(kind=sgl)                   :: LWORK
  LDVL = nn
  LDVR = nn
  INFO = 0
- 
-! first initialize the parameters for the LAPACK ZGEEV, CGETRF, and CGETRI routines
+
+ ! first initialize the parameters for the LAPACK ZGEEV, CGETRF, and CGETRI routines
  JOBVL = 'N'   ! do not compute the left eigenvectors
  JOBVR = 'V'   ! do compute the right eigenvectors
  LWORK = -1 ! so that we can ask the routine for the actually needed value
 
 ! call the routine to determine the optimal workspace size
+ LDA = nn
   call zgeev(JOBVL,JOBVR,nn,Minp,LDA,W,VL,LDVL,CGG,LDVR,WORK,LWORK,RWORK,INFO)
   LWORK = MIN( LWMAX, INT( WORK( 1 ) ) )
 
 ! then call the eigenvalue solver
+  LDA = nn
   call zgeev(JOBVL,JOBVR,nn,Minp,LDA,W,VL,LDVL,CGG,LDVR,WORK,LWORK,RWORK,INFO)
   if (INFO.ne.0) call FatalError('Error in CalcLgh3: ','ZGEEV return not zero')
 
  CGinv = CGG
-
+ 
+ LDA=nn
  call zgetrf(nn,nn,CGinv,LDA,JPIV,INFO)
  MILWORK = -1
+ LDA=nn
  call zgetri(nn,CGinv,LDA,JPIV,getMIWORK,MILWORK,INFO)
  MILWORK =  INT(real(getMIWORK))
  if (.not.allocated(MIWORK)) allocate(MIWORK(MILWORK))
  MIWORK = cmplx(0.D0,0.D0)
+ LDA=nn
  call zgetri(nn,CGinv,LDA,JPIV,MIWORK,MILWORK,INFO)
  deallocate(MIWORK)
 

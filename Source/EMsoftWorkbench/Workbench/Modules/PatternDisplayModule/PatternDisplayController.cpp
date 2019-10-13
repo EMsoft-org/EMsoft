@@ -120,7 +120,7 @@ void PatternDisplayController::createMasterPatternImageGenerators()
   emit stdOutputMessageGenerated(tr("Number Of Energy Bins: %1\n").arg(QString::number(m_MP_Data.numMPEnergyBins)));
 
   QString mpDimStr = "";
-  for(int i = 0; i < m_MP_Data.mLPNH_dims.size(); i++)
+  for(size_t i = 0; i < m_MP_Data.mLPNH_dims.size(); i++)
   {
     mpDimStr.append(QString::number(m_MP_Data.mLPNH_dims[i]));
     if(i < m_MP_Data.mLPNH_dims.size() - 1)
@@ -180,13 +180,14 @@ void PatternDisplayController::createMonteCarloImageGenerators()
   std::vector<int32_t> monteCarloSquare_data = deHyperSlabData<int32_t>(m_MP_Data.monteCarloSquareData, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], m_MP_Data.monteCarlo_dims[2]);
 
   // Generate Monte Carlo square projection data
-  m_MCSquareImageGenerators.resize(static_cast<int32_t>(mc_zDim));
+  m_MCSquareImageGenerators.resize(static_cast<size_t>(mc_zDim));
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
-  createImageGeneratorTasks<int32_t>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MCSquareImageGenerators, m_MCSquareImageGenLock);
+  createImageGeneratorTasks<int32_t>(monteCarloSquare_data, static_cast<size_t>(m_MP_Data.monteCarlo_dims[0]), static_cast<size_t>(m_MP_Data.monteCarlo_dims[1]), mc_zDim, m_MCSquareImageGenerators,
+                                     m_MCSquareImageGenLock);
   currentCount++;
 
   // Generate Monte Carlo circular projection data
-  m_MCCircleImageGenerators.resize(static_cast<int32_t>(mc_zDim));
+  m_MCCircleImageGenerators.resize(static_cast<size_t>(mc_zDim));
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
   createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0],
                                                   ModifiedLambertProjection::ProjectionType::Circular, ModifiedLambertProjection::Square::NorthSquare, m_MCCircleImageGenerators,
@@ -194,7 +195,7 @@ void PatternDisplayController::createMonteCarloImageGenerators()
   currentCount++;
 
   // Generate Monte Carlo stereographic projection data
-  m_MCStereoImageGenerators.resize(static_cast<int32_t>(mc_zDim));
+  m_MCStereoImageGenerators.resize(static_cast<size_t>(mc_zDim));
   emit stdOutputMessageGenerated(tr("Reading Monte Carlo data sets (%1/%2)...").arg(currentCount).arg(totalItems));
   createProjectionConversionTasks<int32_t, float>(monteCarloSquare_data, m_MP_Data.monteCarlo_dims[0], m_MP_Data.monteCarlo_dims[1], mc_zDim, m_MP_Data.monteCarlo_dims[0],
                                                   ModifiedLambertProjection::ProjectionType::Stereographic, ModifiedLambertProjection::Square::NorthSquare, m_MCStereoImageGenerators,
@@ -225,7 +226,7 @@ void PatternDisplayController::checkImageGenerationCompletion() const
   else
   {
     // Set the default range of the images to be displayed (masterLPNH is always displayed first by default)
-    emit imageRangeChanged(1, m_MasterLPNHImageGenerators.size());
+    emit imageRangeChanged(1, static_cast<int32_t>(m_MasterLPNHImageGenerators.size()));
 
     emit mpmcGenerationFinished();
   }
@@ -234,7 +235,7 @@ void PatternDisplayController::checkImageGenerationCompletion() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData)
+void PatternDisplayController::generatePatternImagesUsingThread(const SimulatedPatternDisplayWidget::PatternDisplayData& patternData, const PatternDisplayController::DetectorData& detectorData)
 {
   PatternListModel* model = PatternListModel::Instance();
 
@@ -264,26 +265,26 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
       m_CurrentOrderLock.release();
 
       QModelIndex modelIndex = model->index(static_cast<int32_t>(index), PatternListItem::DefaultColumn);
-      model->setPatternStatus(index, PatternListItem::PatternStatus::Loading);
+      model->setPatternStatus(static_cast<int32_t>(index), PatternListItem::PatternStatus::Loading);
       emit rowDataChanged(modelIndex, modelIndex);
 
       // Build up the iParValues object
       PatternTools::IParValues iParValues;
       iParValues.numsx = m_MP_Data.numsx;
       iParValues.numset = m_MP_Data.numset;
-      iParValues.incidentBeamVoltage = m_MP_Data.incidentBeamVoltage;
-      iParValues.minEnergy = m_MP_Data.minEnergy;
-      iParValues.energyBinSize = m_MP_Data.energyBinSize;
+      iParValues.incidentBeamVoltage = static_cast<float>(m_MP_Data.incidentBeamVoltage);
+      iParValues.minEnergy = static_cast<float>(m_MP_Data.minEnergy);
+      iParValues.energyBinSize = static_cast<float>(m_MP_Data.energyBinSize);
       iParValues.npx = m_MP_Data.npx;
       iParValues.numOfPixelsX = detectorData.numOfPixelsX;
       iParValues.numOfPixelsY = detectorData.numOfPixelsY;
-      iParValues.detectorBinningValue = patternData.detectorBinningValue;
+      iParValues.detectorBinningValue = static_cast<int32_t>(patternData.detectorBinningValue);
       iParValues.numberOfOrientations = 1;
 
       // Build up the fParValues object
       PatternTools::FParValues fParValues;
-      fParValues.omega = m_MP_Data.omega;
-      fParValues.sigma = m_MP_Data.sigma;
+      fParValues.omega = static_cast<float>(m_MP_Data.omega);
+      fParValues.sigma = static_cast<float>(m_MP_Data.sigma);
       fParValues.pcPixelsX = detectorData.patternCenterX;
       fParValues.pcPixelsY = detectorData.patternCenterY;
       fParValues.scintillatorPixelSize = detectorData.scintillatorPixelSize;
@@ -293,8 +294,8 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
       fParValues.dwellTime = detectorData.dwellTime;
       fParValues.gammaValue = patternData.gammaValue;
 
-      std::vector<float> pattern =
-          PatternTools::GeneratePattern(iParValues, fParValues, m_MP_Data.masterLPNHData, m_MP_Data.masterLPSHData, m_MP_Data.monteCarloSquareData, patternData.angles, index, m_Cancel);
+      std::vector<float> pattern = PatternTools::GeneratePattern(iParValues, fParValues, m_MP_Data.masterLPNHData, m_MP_Data.masterLPSHData, m_MP_Data.monteCarloSquareData, patternData.angles,
+                                                                 static_cast<int32_t>(index), m_Cancel);
 
       hsize_t xDim = static_cast<hsize_t>(iParValues.numOfPixelsX / iParValues.detectorBinningValue);
       hsize_t yDim = static_cast<hsize_t>(iParValues.numOfPixelsY / iParValues.detectorBinningValue);
@@ -302,20 +303,20 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
       PatternImageViewer::ImageData imageData;
       bool success = generatePatternImage(imageData, pattern, xDim, yDim, 0);
 
-      m_PatternDisplayWidget->loadImage(index, imageData);
+      m_PatternDisplayWidget->loadImage(static_cast<int32_t>(index), imageData);
 
       if(success)
       {
-        model->setPatternStatus(index, PatternListItem::PatternStatus::Loaded);
+        model->setPatternStatus(static_cast<int32_t>(index), PatternListItem::PatternStatus::Loaded);
       }
       else
       {
-        model->setPatternStatus(index, PatternListItem::PatternStatus::Error);
+        model->setPatternStatus(static_cast<int32_t>(index), PatternListItem::PatternStatus::Error);
       }
 
       m_NumOfFinishedPatternsLock.acquire();
       m_NumOfFinishedPatterns++;
-      emit newProgressBarValue(m_NumOfFinishedPatterns);
+      emit newProgressBarValue(static_cast<int32_t>(m_NumOfFinishedPatterns));
       m_NumOfFinishedPatternsLock.release();
 
       emit rowDataChanged(modelIndex, modelIndex);
@@ -328,7 +329,7 @@ void PatternDisplayController::generatePatternImagesUsingThread(SimulatedPattern
 // -----------------------------------------------------------------------------
 bool PatternDisplayController::generatePatternImage(PatternImageViewer::ImageData& imageData, const std::vector<float> &pattern, hsize_t xDim, hsize_t yDim, hsize_t zValue) const
 {
-  AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, zValue);
+  AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(pattern, xDim, yDim, static_cast<int32_t>(zValue));
   imgGen->createImage();
 
   imageData.image = imgGen->getGeneratedImage();
@@ -353,12 +354,12 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
 
   std::vector<float> eulerAngles = patternData.angles;
   size_t angleCount = eulerAngles.size() / 3;
-  emit newProgressBarMaximumValue(angleCount);
+  emit newProgressBarMaximumValue(static_cast<int32_t>(angleCount));
 
   PatternListModel* model = PatternListModel::Instance();
-  for(int i = 0; i < angleCount; i++)
+  for(size_t i = 0; i < angleCount; i++)
   {
-    model->setPatternStatus(i, PatternListItem::PatternStatus::WaitingToLoad);
+    model->setPatternStatus(static_cast<int32_t>(i), PatternListItem::PatternStatus::WaitingToLoad);
     if(i == patternData.currentRow)
     {
       // We want to render the current index first
@@ -370,8 +371,8 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
     }
   }
 
-  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-  for(int i = 0; i < threads; i++)
+  int32_t threads = 1; // QThreadPool::globalInstance()->maxThreadCount();
+  for(int32_t i = 0; i < threads; i++)
   {
     QSharedPointer<QFutureWatcher<void>> watcher(new QFutureWatcher<void>());
     connect(watcher.data(), SIGNAL(finished()), this, SLOT(patternThreadFinished()));
@@ -399,7 +400,7 @@ void PatternDisplayController::updateMPImage(MPMCDisplayWidget::MPMCData mpData)
   QImage image;
   VariantPair variantPair;
   MPMCDisplayWidget::ProjectionMode mode = mpData.mode;
-  int energyBin = mpData.energyBin;
+  size_t energyBin = static_cast<size_t>(mpData.energyBin);
   float keV;
 
   // If any of the arrays are going to go out of bounds, set a blank image with blank data
@@ -454,7 +455,7 @@ void PatternDisplayController::updateMCImage(MPMCDisplayWidget::MPMCData mcData)
   QImage image;
   VariantPair variantPair;
   MPMCDisplayWidget::ProjectionMode mode = mcData.mode;
-  int energyBin = mcData.energyBin;
+  size_t energyBin = static_cast<size_t>(mcData.energyBin);
   float keV;
 
   // If any of the arrays are going to go out of bounds, set a blank image with blank data

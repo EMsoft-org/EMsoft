@@ -2,22 +2,47 @@
 ! smallest d-spacing to take into account [nm]
  dmin = 0.05,
 ! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
+!   in Legendre mode (see below), this number will be the maximum band width for 
+!   the spherical harmonic transform
  npx = 500,
+! number of OpenMP threads (0 to use the maximum available)
+ nthreads = 1,
+! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
+! this file will also contain the output data of the master program
+ energyfile = 'MCoutput.h5',
+! BetheParameters file name
+ BetheParametersFile = 'BetheParameters.nml',
+! do you wish to receive a notification (Email or Slack) when the program completes ?
+ Notify = 'Off', 
 ! lattitudinal grid type:  'Lambert' or 'Legendre'
+!   'Lambert' will produce a standard master pattern file that can be used
+!    for dictionary indexing etc...
+!   'Legendre' will produce a much smaller binary SHT-master pattern file that can only 
+!    be used for spherical indexing; this file does not contain any MC data
  latgridtype = 'Lambert', 
+! ========================================================
+! =============== if latgridtype = 'Lambert' =============
 ! name of EMMCOpenCL output file to be used to copy the MC data from for this master pattern run;
 ! This can be used to perform multiple master pattern runs starting from the same MC data set without
 ! having to rerun the MC computation.  Leave this variable set to 'undefined' if not needed.
  copyfromenergyfile = 'undefined',
-! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
-! this file will also contain the output data of the master program
- energyfile = 'MCoutput.h5',
-! number of OpenMP threads
- nthreads = 1,
-! do you wish to receive a notification (Email or Slack) when the program completes ?
- Notify = 'Off', 
+! if copyfromenergyfile is not 'undefined', then:
+!   - for EMsoft developers who have the EMsoft_SDK installed, the following parameter will be ignored;
+!   - all other users will need to provide the full path to the h5copy program here
+ h5copypath = 'undefined',
 ! restart computation ?
  restart = .FALSE.,
 ! create output file with uniform master patterns set to 1.0 (used to study background only)
  uniform = .FALSE.,
+! ========================================================
+! =============== if latgridtype = 'Legendre' =============
+! name of the SHTmaster pattern file (for Legendre latgridtype only)
+! we suggest that these files be given names of the following type:
+!
+!  material-info-##kV.sht
+!
+ SHTfile = 'undefined',
+! if this file will be added to the SHT database on kilthub.cmu.edu, then this parameter
+! should be set to 'Yes'; this will add the database DOI number to the Notes field in the file.
+ addtoKiltHub = 'No',
  /

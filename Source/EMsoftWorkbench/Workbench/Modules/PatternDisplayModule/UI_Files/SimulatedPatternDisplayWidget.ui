@@ -67,7 +67,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset resource="../../../Resources/icons/images/Icons.qrc">
          <normaloff>:/zoom_in.png</normaloff>:/zoom_in.png</iconset>
        </property>
        <property name="iconSize">
@@ -99,7 +99,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset resource="../../../Resources/icons/images/Icons.qrc">
          <normaloff>:/zoom_out.png</normaloff>:/zoom_out.png</iconset>
        </property>
        <property name="iconSize">
@@ -131,7 +131,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset resource="../../../Resources/icons/images/Icons.qrc">
          <normaloff>:/fit_to_size.png</normaloff>:/fit_to_size.png</iconset>
        </property>
        <property name="iconSize">
@@ -256,7 +256,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset resource="../../../../Resources/icons/images/Icons.qrc">
+        <iconset resource="../../../Resources/icons/images/Icons.qrc">
          <normaloff>:/disk_blue.png</normaloff>:/disk_blue.png</iconset>
        </property>
        <property name="iconSize">
@@ -395,6 +395,9 @@
        <property name="enabled">
         <bool>true</bool>
        </property>
+       <property name="decimals">
+        <number>4</number>
+       </property>
        <property name="minimum">
         <double>0.010000000000000</double>
        </property>
@@ -405,7 +408,7 @@
         <double>0.010000000000000</double>
        </property>
        <property name="value">
-        <double>0.010000000000000</double>
+        <double>0.333000000000000</double>
        </property>
       </widget>
      </item>
@@ -462,7 +465,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../Resources/icons/images/Icons.qrc"/>
+  <include location="../../../Resources/icons/images/Icons.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -271,6 +271,9 @@
           </item>
           <item row="0" column="1" colspan="3">
            <widget class="QLineEdit" name="scintillatorDist">
+            <property name="text">
+             <string>15949.859</string>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -286,7 +289,7 @@
           <item row="4" column="3">
            <widget class="QLineEdit" name="numOfPixelsY">
             <property name="text">
-             <string/>
+             <string>60</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -329,6 +332,9 @@
           </item>
           <item row="2" column="1" colspan="3">
            <widget class="QLineEdit" name="detectorOmegaAngle">
+            <property name="text">
+             <string>0.0</string>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -351,7 +357,7 @@
           <item row="10" column="1" colspan="3">
            <widget class="QLineEdit" name="barrelDistortion">
             <property name="text">
-             <string/>
+             <string>0.0</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -360,6 +366,9 @@
           </item>
           <item row="4" column="1">
            <widget class="QLineEdit" name="numOfPixelsX">
+            <property name="text">
+             <string>60</string>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -378,7 +387,7 @@
           <item row="8" column="1" colspan="3">
            <widget class="QLineEdit" name="beamCurrent">
             <property name="text">
-             <string/>
+             <string>150</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -401,6 +410,9 @@
           </item>
           <item row="4" column="5">
            <widget class="QLineEdit" name="patternCenterX">
+            <property name="text">
+             <string>0.4198</string>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -409,7 +421,7 @@
           <item row="4" column="7">
            <widget class="QLineEdit" name="patternCenterY">
             <property name="text">
-             <string/>
+             <string>13.3782</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -418,6 +430,9 @@
           </item>
           <item row="2" column="5" colspan="3">
            <widget class="QLineEdit" name="scintillatorPixSize">
+            <property name="text">
+             <string>473.6</string>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -425,6 +440,9 @@
           </item>
           <item row="0" column="5" colspan="3">
            <widget class="QLineEdit" name="detectorTiltAngle">
+            <property name="text">
+             <string>10</string>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -439,6 +457,9 @@
           </item>
           <item row="6" column="5">
            <widget class="QLineEdit" name="samplingStepSizeX">
+            <property name="text">
+             <string>1.5</string>
+            </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
             </property>
@@ -457,7 +478,7 @@
           <item row="6" column="7">
            <widget class="QLineEdit" name="samplingStepSizeY">
             <property name="text">
-             <string/>
+             <string>1.5</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -474,7 +495,7 @@
           <item row="8" column="5" colspan="3">
            <widget class="QLineEdit" name="dwellTime">
             <property name="text">
-             <string/>
+             <string>100.0</string>
             </property>
             <property name="alignment">
              <set>Qt::AlignCenter</set>
@@ -548,6 +569,29 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>scintillatorDist</tabstop>
+  <tabstop>detectorOmegaAngle</tabstop>
+  <tabstop>numOfPixelsX</tabstop>
+  <tabstop>numOfPixelsY</tabstop>
+  <tabstop>pixelCoordinateX</tabstop>
+  <tabstop>pixelCoordinateY</tabstop>
+  <tabstop>beamCurrent</tabstop>
+  <tabstop>barrelDistortion</tabstop>
+  <tabstop>detectorTiltAngle</tabstop>
+  <tabstop>scintillatorPixSize</tabstop>
+  <tabstop>patternCenterX</tabstop>
+  <tabstop>patternCenterY</tabstop>
+  <tabstop>samplingStepSizeX</tabstop>
+  <tabstop>samplingStepSizeY</tabstop>
+  <tabstop>dwellTime</tabstop>
+  <tabstop>energyMinCB</tabstop>
+  <tabstop>energyMaxCB</tabstop>
+  <tabstop>angleTypeCB</tabstop>
+  <tabstop>generateBtn</tabstop>
+  <tabstop>patternDisplayTabWidget</tabstop>
+  <tabstop>mpSelectBtn</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

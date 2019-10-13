@@ -1,17 +1,8 @@
-
-
-#configure_file("${EMsoft_SOURCE_DIR}/Source/Test/TestFileLocations.f90.in"
-#  "${EMsoft_BINARY_DIR}/EMsoftPublicTestFileLocations.f90")
-
-
 include("${EMsoft_SOURCE_DIR}/Source/EMsoft_Functions.cmake")
 set(APP_DIR "${EMsoft_SOURCE_DIR}/Source/Test")
 set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
 
 set(EMsoftTestDir "${EMsoft_SOURCE_DIR}/Source/Test")
-include_directories("${EMsoftTestDir}")
-include_directories("${EMsoft_BINARY_DIR}")
-include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
 
 #------------------------------------------------------------------------------
@@ -46,20 +37,8 @@ include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
 if(EMsoft_ENABLE_HDF5_SUPPORT)
   
-  set(lib_type "static")
-  if(BUILD_SHARED_LIBS)
-    set(lib_type "shared")
-  endif()
-  set(hdf5LinkLibs hdf5 hdf5_f90cstub hdf5_fortran hdf5_hl hdf5_hl_f90cstub hdf5_hl_fortran)
-  set(comps ${hdf5LinkLibs})
-  set(hdf5LinkLibs "")
-  foreach(comp ${comps})
-    if(TARGET hdf5::${comp}-${lib_type})
-      set(hdf5LinkLibs ${hdf5LinkLibs} hdf5::${comp}-${lib_type})
-    endif() 
-  endforeach()
-
-  set(EXE_LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${hdf5LinkLibs} EMsoftHDFLib)
+  GetHDF5LinkLibraries(EMSOFT)
+  set(EXE_LINK_LIBRARIES ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib)
 
   set(EMsoft_UNIT_TESTS 
     HDFtextfile
@@ -81,7 +60,9 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       SOURCES ${EMsoftTestDir}/${test}Test.f90
                       TEST_NAME ${test}
                       LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
-                      SOLUTION_FOLDER EMsoftPublic/Test)
+                      SOLUTION_FOLDER EMsoftPublic/Test
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                                    ${EMsoft_SOURCE_DIR}/Source/Test)
     if(MSVC)
         target_compile_options( ${test}Test PRIVATE "/MT$<$<CONFIG:Debug>:d>")
         target_link_options(${test}Test PRIVATE "/NODEFAULTLIB:MSVCRT")
@@ -94,8 +75,11 @@ endif()
 # Create CTest entries for a basic indexing workflow
 #------------------------------------------------------------------------------
 # Use multiple CPU cores to Test
-include(ProcessorCount)
-ProcessorCount(EMsoft_TEST_CPU_COUNT)
+if(NOT DEFINED EMsoft_TEST_CPU_COUNT) 
+  include(ProcessorCount)
+  ProcessorCount(EMsoft_TEST_CPU_COUNT)
+endif()
+message(STATUS "Using ${EMsoft_TEST_CPU_COUNT} CPU Cores for tests")
 
 set(EXE_EXT "")
 if(WIN32)
@@ -172,7 +156,15 @@ function(create_workflow_test)
 
 endfunction()
 
+#------------------------------------------------------------------------------
+# If the developer did not set these values then we need something.
+if("${EMsoft_TEST_GPU_PLATFORM_ID}" STREQUAL "")
+  set(EMsoft_TEST_GPU_PLATFORM_ID 1)
+endif()
 
+if("${EMsoft_TEST_GPU_DEVICE_ID}" STREQUAL "")
+  set(EMsoft_TEST_GPU_DEVICE_ID 1)
+endif()
 #------------------------------------------------------------------------------
 # 1: The Ni.xtal file should have been copied into the proper spot via some other external means
 # We are just going to have to trust that it is there. We are numbering the tests
@@ -198,7 +190,11 @@ create_workflow_test( EXE_NAME EMEBSDmaster
                       OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
                       EXTRA_NML BetheParameters.nml
                     )
-
+math(EXPR test_index "${test_index} + 1")
+create_workflow_test( EXE_NAME EMEBSD
+                      INDEX ${test_index}
+                      OUTPUT_DIR ${EMsoft_NML_TEST_DIR}
+                    )
 
 #------------------------------------------------------------------------------
 # 4: Setup the ADP executable

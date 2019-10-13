@@ -2536,13 +2536,17 @@ character(3)            :: Notify
 character(fnlen)        :: latgridtype
 character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: energyfile
+character(fnlen)        :: SHTfile
+character(fnlen)        :: BetheParametersFile
+character(fnlen)        :: h5copypath
+character(fnlen)        :: addtoKiltHub
 logical                 :: combinesites
 logical                 :: restart
 logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, latgridtype
+                          combinesites, latgridtype, h5copypath, SHTfile, BetheParametersFile, addtoKiltHub
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2553,7 +2557,11 @@ dmin = 0.025                    ! smallest d-spacing to include in dynamical mat
 Notify = 'Off'
 latgridtype = 'Lambert'        ! 'Lambert' (regular) or 'Legendre' (for EMSphInx indexing)
 copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a different Monte Carlo simulation
+h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+SHTfile = 'undefined'           ! for storage of spherical harmonic transform coefficients
+addtoKiltHub = 'No'             ! file to be added to data base on kilthub.cmu.edu ?
+BetheParametersFile='BetheParameters.nml'
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
 uniform = .FALSE.               ! when .TRUE., the output master patterns will contain 1.0 everywhere
@@ -2582,12 +2590,16 @@ emnl%nthreads = nthreads
 emnl%dmin = dmin
 emnl%latgridtype = latgridtype
 emnl%copyfromenergyfile = copyfromenergyfile
+emnl%h5copypath = h5copypath
 emnl%energyfile = energyfile
+emnl%BetheParametersFile = BetheParametersFile
 emnl%Notify = Notify
 emnl%outname = energyfile       ! as off release 3.1, outname must be the same as energyfile
+emnl%addtoKiltHub = addtoKiltHub
 emnl%combinesites = combinesites
 emnl%restart = restart
 emnl%uniform = uniform
+emnl%SHTfile = SHTfile
 
 end subroutine GetEBSDMasterNameList
 
@@ -3135,11 +3147,12 @@ real(kind=sgl)          :: dmin
 character(3)            :: Notify
 character(fnlen)        :: compmode
 character(fnlen)        :: copyfromenergyfile
+character(fnlen)        :: h5copypath
 character(fnlen)        :: energyfile
 logical                 :: combinesites
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /ECPmastervars/ stdout, dmin, compmode, Notify, &
+namelist /ECPmastervars/ stdout, dmin, compmode, Notify, h5copypath, &
     energyfile, Esel, npx, nthreads, copyfromenergyfile, combinesites
 
 ! set the input parameters to default values (except for xtalname, which must be present)
@@ -3150,6 +3163,7 @@ dmin = 0.04                    ! smallest d-spacing to include in dynamical matr
 npx = 256
 Notify = 'Off'
 compmode = 'Blochwv'
+h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 copyfromenergyfile = 'undefined'
 combinesites = .FALSE.
@@ -3178,6 +3192,7 @@ ecpnl%nthreads = nthreads
 ecpnl%dmin = dmin
 ecpnl%Notify = Notify
 ecpnl%compmode = compmode
+ecpnl%h5copypath = h5copypath
 ecpnl%copyfromenergyfile = copyfromenergyfile
 ecpnl%energyfile = energyfile
 ecpnl%combinesites = combinesites
@@ -3740,13 +3755,14 @@ character(fnlen)        :: masterfileA
 character(fnlen)        :: masterfileB
 character(fnlen)        :: masterfileC
 character(fnlen)        :: masterfileD
+character(fnlen)        :: h5copypath
 character(fnlen)        :: overlapmode
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDoverlapdata / stdout, PatternAxisA, tA, tB, gA, gB, masterfileA, masterfileB, & 
                               datafile, HorizontalAxisA, overlapmode, newpgnum, tC, gC, tD, gD, fracB, &
-                              fracC, fracD, masterfileC, masterfileD, gA2, gA3, tA2, tA3
+                              fracC, fracD, masterfileC, masterfileD, gA2, gA3, tA2, tA3, h5copypath
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -3772,6 +3788,7 @@ masterfileA     = 'undefined'   ! filename
 masterfileB     = 'undefined'   ! filename
 masterfileC     = 'undefined'   ! filename
 masterfileD     = 'undefined'   ! filename
+h5copypath      = 'undefined'   ! filename
 datafile        = 'undefined'   ! output file name
 overlapmode     = 'series'      ! options are 'full' or 'series'
 
@@ -3823,6 +3840,7 @@ enl%masterfileA = masterfileA
 enl%masterfileB = masterfileB
 enl%masterfileC = masterfileC
 enl%masterfileD = masterfileD
+enl%h5copypath = h5copypath
 enl%datafile = datafile
 enl%overlapmode = overlapmode
 

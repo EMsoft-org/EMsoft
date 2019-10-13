@@ -306,9 +306,9 @@ end if
 if (trim(enl%overlapmode).eq.'full') then
   call h5open_EMsoft(hdferr)
   if (enl%newpgnum.eq.-1) then
-    call EBSDcopyMPdata(enl%masterfileA, enl%datafile)
+    call EBSDcopyMPdata(enl%masterfileA, enl%datafile, enl%h5copypath)
   else
-    call EBSDcopyMPdata(enl%masterfileA, enl%datafile, skipCrystalData=.TRUE.)
+    call EBSDcopyMPdata(enl%masterfileA, enl%datafile, enl%h5copypath, skipCrystalData=.TRUE.)
   end if
   call h5close_EMsoft(hdferr)
 end if

@@ -148,7 +148,6 @@ use initializers
 use gvectors
 use error
 use diffraction, only:CalcWavelength, CalcUcg
-use crystal, only:CalcLength
 use quaternions
 use MBmodule
 use Lambert

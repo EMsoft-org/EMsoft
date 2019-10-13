@@ -37,6 +37,7 @@
 #> @note: bash script to generate the pyEMsoft documentation
 #
 #> @date 09/02/19 MDG 1.0 original 
+#> @date 19/13/19 MDG 1.1 added automatic CMake substitution of all folder paths 
 #--------------------------------------------------------------------------
 
 #=======================
@@ -57,21 +58,23 @@ declare -a doc_source_files=("index.rst"
 	                         "pyEMsoft.rst")
 
 declare -a module_source_files=("pyEMsoftLib.rst"
-                             "pyEMsoftHDFLib.rst")
+                                "pyEMsoftToolsLib.rst")
 
-declare -a doc_config_files=("conf.py"
+declare -a doc_config_files=("conf.py.in"
 					         "Makefile"
 					         "make.bat")
 
 #=======================
-# the following folders can probably be set via CMake variables
-EMsoft_BUILDfolder=/Users/mdg/Files/EMsoftBuild
-DOCfolder=${EMsoft_BUILDfolder}/Documentation
+# the following folders are set via CMake variables
+EMsoft_BUILDfolder=@EMsoft_BUILD_DIR@
 CODEfolder=${EMsoft_BUILDfolder}/pyEMsoft
-pyEMsoft_DOCfolder=${DOCfolder}/pyEMsoft
-EMsoft_folder=/Users/mdg/Files/EMsoftPublic
-pyEMsoft_folder=${EMsoft_folder}/Source/pyEMsoft
+
+EMsoft_folder=@EMsoft_SOURCE_DIR@ 
+pyEMsoft_folder=@EMsoft_SOURCE_DIR@/Source/pyEMsoft
+
 DOCsourcefolder=${pyEMsoft_folder}/docs
+DOCfolder=${EMsoft_BUILDfolder}/Documentation
+pyEMsoft_DOCfolder=${DOCfolder}/pyEMsoft
 staticfolder=${pyEMsoft_DOCfolder}/_static
 modulefolder=${pyEMsoft_DOCfolder}/Modules
 
@@ -104,6 +107,7 @@ done
 #=======================
 # setting the correct document path
 echo " run_docs.sh: setting the correct document path"
+cp conf.py.in conf.py
 sed -i '.bak' "s|DOCPATH|${pyEMsoft_DOCfolder}|" conf.py 
 sed -i '.bak' "s|SOURCEPATH|${CODEfolder}|" conf.py 
 
@@ -135,9 +139,5 @@ rmdir ${modulefolder}
 # and return to the starting folder
 echo " run_docs.sh: run_docs build completed"
 cd ${currentdir}
-
-
-
-
 
 # that's it

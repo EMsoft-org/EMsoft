@@ -98,7 +98,6 @@ use constants
 use gvectorsQC
 use kvectorsQC
 use MBmoduleQC
-use gvectors, only:Set_Bethe_Parameters
 use InitializersQCHDF
 use rotations
 use omp_lib

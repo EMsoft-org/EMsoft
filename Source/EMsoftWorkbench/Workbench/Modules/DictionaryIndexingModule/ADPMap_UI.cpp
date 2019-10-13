@@ -51,8 +51,6 @@ ADPMap_UI::ADPMap_UI(QWidget *parent)
 {
   m_Ui->setupUi(this);
 
-  m_ADPController = new ADPMapController(this);
-
   setupGui();
 }
 
@@ -115,7 +113,7 @@ void ADPMap_UI::createValidators()
   m_Ui->numOfRegionsLE->setValidator(new QIntValidator(1, std::numeric_limits<int>::max(), m_Ui->numOfRegionsLE));
   m_Ui->numOfThreadsLE->setValidator(new QIntValidator(1, QThreadPool::globalInstance()->maxThreadCount(), m_Ui->numOfThreadsLE));
 
-  m_Ui->adpMapZoomSB->setMaximum(std::numeric_limits<int>::max());
+  //  m_Ui->adpMapZoomSB->setMaximum(std::numeric_limits<int>::max());
 }
 
 // -----------------------------------------------------------------------------
@@ -174,7 +172,7 @@ void ADPMap_UI::createWidgetConnections()
   connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, this, &ADPMap_UI::listenPatternDataFileChanged);
 
   connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
-  connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &ADPMap_UI::updateZoomFactor);
+  // connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &ADPMap_UI::updateZoomFactor);
   connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedADPCoordinateChanged, [=] (const QPoint &pixel) {
     m_Ui->adpMapSelectedPixelLabel->setText(tr("Selected Pixel: (%1, %2)").arg(QString::number(pixel.x()), QString::number(pixel.y())));
     emit selectedADPCoordinateChanged(pixel);
@@ -183,7 +181,7 @@ void ADPMap_UI::createWidgetConnections()
   connect(m_Ui->adpMapZoomInBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomIn);
   connect(m_Ui->adpMapZoomOutBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomOut);
   connect(m_Ui->adpMapFitToScreenBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::fitToScreen);
-  connect(m_Ui->adpMapZoomSB, QOverload<int>::of(&QSpinBox::valueChanged), [=] (int value) { m_Ui->adpViewer->setZoomFactor(value / 100.0f); });
+  //  connect(m_Ui->adpMapZoomSB, QOverload<int>::of(&QSpinBox::valueChanged), [=](int value) { m_Ui->adpViewer->setZoomFactor(value / 100.0f); });
 
   connect(m_Ui->adpMapSaveBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::saveImage);
 }
@@ -193,9 +191,9 @@ void ADPMap_UI::createWidgetConnections()
 // -----------------------------------------------------------------------------
 void ADPMap_UI::updateZoomFactor(float zoomFactor)
 {
-  m_Ui->adpMapZoomSB->blockSignals(true);
-  m_Ui->adpMapZoomSB->setValue(zoomFactor * 100);
-  m_Ui->adpMapZoomSB->blockSignals(false);
+  //  m_Ui->adpMapZoomSB->blockSignals(true);
+  //  m_Ui->adpMapZoomSB->setValue(zoomFactor * 100);
+  //  m_Ui->adpMapZoomSB->blockSignals(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -278,7 +276,7 @@ void ADPMap_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths
 // -----------------------------------------------------------------------------
 void ADPMap_UI::listenADPGenerationStarted()
 {
-  if(m_Ui->generateADPBtn->text() == "Cancel")
+  if(m_Ui->generateADPBtn->text() == "Cancel" && m_ADPController != nullptr)
   {
     m_ADPController->setCancel(true);
     emit adpMapGenerationFinished();
@@ -290,6 +288,27 @@ void ADPMap_UI::listenADPGenerationStarted()
   m_Ui->generateADPBtn->setText("Cancel");
   m_Ui->adpParametersGroupBox->setDisabled(true);
 
+  if(m_ADPController != nullptr)
+  {
+    delete m_ADPController;
+    m_ADPController = nullptr;
+  }
+  QThread* m_Thread = new QThread; // This will leak and needs to be fixed.
+  m_ADPController = new ADPMapController;
+  m_ADPController->moveToThread(m_Thread);
+  m_ADPController->setData(data);
+  connect(m_Thread, SIGNAL(started()), m_ADPController, SLOT(createADPMap()));
+  connect(m_ADPController, SIGNAL(finished()), m_Thread, SLOT(quit()));
+  connect(m_Thread, SIGNAL(finished()), this, SLOT(listenADPGenerationFinished()));
+
+  connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), m_Ui->adpViewer, SLOT(loadImage(const QImage&)));
+  connect(m_ADPController, &ADPMapController::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
+  connect(m_ADPController, &ADPMapController::warningMessageGenerated, this, &ADPMap_UI::warningMessageGenerated);
+  connect(m_ADPController, &ADPMapController::stdOutputMessageGenerated, this, &ADPMap_UI::stdOutputMessageGenerated);
+
+  m_Thread->start();
+
+#if 0
   // Single-threaded for now, but we can multi-thread later if needed
   //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
   for(int i = 0; i < 1; i++)
@@ -302,6 +321,7 @@ void ADPMap_UI::listenADPGenerationStarted()
   }
 
   emit adpMapGenerationStarted();
+#endif
 }
 
 // -----------------------------------------------------------------------------

@@ -78,7 +78,7 @@ public:
    * @brief createCrystalStructureFile
    * @param data
    */
-  void createCrystalStructureFile(CrystalStructureCreationController::CrystalStructureCreationData data) const;
+  void createCrystalStructureFile(const CrystalStructureCreationData& data) const;
 
   /**
    * @brief validateCrystalStructureValues

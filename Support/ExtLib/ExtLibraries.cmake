@@ -32,7 +32,7 @@ if (Fortran_COMPILER_NAME MATCHES "ifort.*")
   endif()
 endif()
 
-
+set(CMAKE_FIND_DEBUG_MODE 0)
 GET_FILENAME_COMPONENT (jsonfortran_LIBRARY_DIRS "${jsonfortran_INCLUDE_DIRS}" PATH)
 set(jsonfortran_LIBRARY_DIRS ${jsonfortran_LIBRARY_DIRS}/lib)
 message(STATUS "jsonfortran Location: ${JSONFORTRAN_INSTALL}")
@@ -41,43 +41,52 @@ message(STATUS "jsonfortran Location: ${JSONFORTRAN_INSTALL}")
 include_directories(${jsonfortran_INCLUDE_DIRS})
 
 #------------------------------------------------------------------------------
-# Find the BLAS/LAPACK library
-# On mac systems, we likely have to link against the vecLib framework
-if(APPLE)
-  find_library(EMsoft_BLAS_LAPACK_LIBS Accelerate)
- # include_directories(" -FvecLib")
-elseif(UNIX AND NOT APPLE)
-  find_package(LAPACK REQUIRED)
-  if(LAPACK_FOUND)
+# Find the Intel Math Kernel Library (MKL) which has FFT functions
+# On mac systems, we will also need to build up the RPATH
+if (Fortran_COMPILER_NAME MATCHES "ifort.*")
+  # Define the interface layers and link type for MKL
+  set(MKL_Link_Type Static)
+  set(MKL_Interface_Layer 32)
+  set(MKL_ThreadingLayer Sequential)
+  set(MKL_OpenMP_Library iomp5)
+  set(MKL_F95Interface BLAS95 LAPACK95)
+  find_package(MKL REQUIRED)
+  if(NOT MKL_FOUND)
+    message(FATAL_ERROR "MKL is Required when using the Intel Fortran Compiler")
+  endif()
+  set(EMsoft_OpenMP_LIBRARY ${MKL_${MKL_OpenMP_Library}_LIBRARY})
+  if(EMsoft_OpenMP_LIBRARY)
+    get_filename_component(EMsoft_OpenMP_LIB_DIR ${EMsoft_OpenMP_LIBRARY} DIRECTORY)
+    message(STATUS "EMsoft_OpenMP_LIB_DIR: ${EMsoft_OpenMP_LIB_DIR}")
+    set(EMsoft_OpenMP_LIB_DIR ${EMsoft_OpenMP_LIB_DIR} CACHE PATH "")
+    get_property(EMsoftSearchDirs GLOBAL PROPERTY EMsoftSearchDirs)
+    file(APPEND "${EMsoftSearchDirs}" "${EMsoft_OpenMP_LIB_DIR};")
+  endif()
+
+
+endif()
+
+
+#------------------------------------------------------------------------------
+# Find the GFotran Specific or matched libraries
+if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
+  include(${CMP_SOURCE_DIR}/Modules/FindFFTW3.cmake)
+
+  set(EMsoft_FORTRAN_SUPPORT_LIBS ${EMsoft_FORTRAN_SUPPORT_LIBS} gcc_eh gomp)
+  # Find an OpenMP Library
+  set(EMsoft_OpenMP_LIBRARY gomp)
+
+
+  # Find BLAS/LAPACK Library
+  if(APPLE)
+    find_library(EMsoft_BLAS_LAPACK_LIBS Accelerate)
+  else()
+    find_package(LAPACK REQUIRED)
     set(EMsoft_BLAS_LAPACK_LIBS ${LAPACK_LIBRARIES})
-  else()
-    message(STATUS "LAPACK NOT Found for LINUX. Install LAPACK/BLAS on your system")
   endif()
-elseif(WIN32)
+endif()
 
-  if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-    message(FATAL_ERROR "EMsoft does not currently support GFotran on Windows. Please contact the developers.")
-  endif()
-
-  if (Fortran_COMPILER_NAME MATCHES "ifort.*")
-    set(USE_MKL TRUE)
-    find_package(MKL REQUIRED)
-    if(MKL_FOUND)
-      set(EMsoft_BLAS_LAPACK_LIBS ${MKL_LIBRARIES})
-    else()
-      message(FATAL_ERROR "Intel MKL libraries were not found.")
-    endif()
-  else()
-
-  endif()
-
-else()
-  message(FATAL_ERROR "This platform needs to have CMake code inserted to find the BLAS/LAPACK Libraries.")
-endif(APPLE)
-
-
-
-include_directories(${JSONFORTRAN_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${CLFortran_INCLUDE_DIR})
+#include_directories(${JSONFORTRAN_INCLUDE_DIR} ${FFTW3_INCLUDE_DIR} ${CLFortran_INCLUDE_DIR})
 
 #------------------------------------------------------------------------------
 # Find the OpenCL Package
@@ -118,17 +127,6 @@ else()
   get_target_property(CLFortran_LIB_PATH clfortran IMPORTED_LOCATION)
   message(STATUS "CLFortran Found: ${CLFortran_LIB_PATH}")
 endif()
-
-# ---------- Find FFTW3 Headers/Libraries -----------------------
-if(NOT WIN32)
-  include(${CMP_SOURCE_DIR}/Modules/FindFFTW3.cmake)
-#  CMP_COPY_DEPENDENT_LIBRARIES(fftw3)
-#  CMP_LIBRARIES_INSTALL_RULES(fftw3 bin)
-endif()
-
-
-
-
 
 #----------------------------------------------------------------
 # 

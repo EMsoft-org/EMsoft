@@ -95,9 +95,9 @@ std::vector<float> PatternFitController::generatePattern(PatternFitController::S
   PatternTools::IParValues iParValues;
   iParValues.numsx = m_MPFileData.numsx;
   iParValues.numset = m_MPFileData.numset;
-  iParValues.incidentBeamVoltage = m_MPFileData.incidentBeamVoltage;
-  iParValues.minEnergy = m_MPFileData.minEnergy;
-  iParValues.energyBinSize = m_MPFileData.energyBinSize;
+  iParValues.incidentBeamVoltage = static_cast<float>(m_MPFileData.incidentBeamVoltage);
+  iParValues.minEnergy = static_cast<float>(m_MPFileData.minEnergy);
+  iParValues.energyBinSize = static_cast<float>(m_MPFileData.energyBinSize);
   iParValues.npx = m_MPFileData.npx;
   iParValues.numOfPixelsX = detectorData.numOfPixelsX;
   iParValues.numOfPixelsY = detectorData.numOfPixelsY;
@@ -106,8 +106,8 @@ std::vector<float> PatternFitController::generatePattern(PatternFitController::S
 
   // Build up the fParValues object
   PatternTools::FParValues fParValues;
-  fParValues.omega = m_MPFileData.omega;
-  fParValues.sigma = m_MPFileData.sigma;
+  fParValues.omega = static_cast<float>(m_MPFileData.omega);
+  fParValues.sigma = static_cast<float>(m_MPFileData.sigma);
   fParValues.pcPixelsX = detectorData.patternCenterX;
   fParValues.pcPixelsY = detectorData.patternCenterY;
   fParValues.scintillatorPixelSize = detectorData.scintillatorPixelSize;
@@ -128,12 +128,7 @@ std::vector<float> PatternFitController::generatePattern(PatternFitController::S
 PatternImageViewer::ImageData PatternFitController::generatePatternImage(PatternFitController::SimulationData detectorData)
 {
   std::vector<float> patternData = generatePattern(detectorData);
-
-  QVector<size_t> tDims;
-  tDims.push_back(detectorData.numOfPixelsX);
-  tDims.push_back(detectorData.numOfPixelsY);
-
-  PatternImageViewer::ImageData imageData = generatePatternImage(patternData, tDims[0], tDims[1]);
+  PatternImageViewer::ImageData imageData = generatePatternImage(patternData, static_cast<size_t>(detectorData.numOfPixelsX), static_cast<size_t>(detectorData.numOfPixelsY));
 
   return imageData;
 }
@@ -145,7 +140,7 @@ PatternImageViewer::ImageData PatternFitController::generatePatternImage(const s
 {
   PatternImageViewer::ImageData imageData;
 
-  AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(patternData, xDim, yDim, zValue, false, true);
+  AbstractImageGenerator::Pointer imgGen = ImageGenerator<float>::New(patternData, xDim, yDim, static_cast<int32_t>(zValue), false, true);
   imgGen->createImage();
 
   imageData.image = imgGen->getGeneratedImage();

@@ -92,11 +92,7 @@ public:
     std::vector<char> getSParVector() const;
   };
 
-  /**
-   * @brief createADPMap
-   * @param data
-   */
-  void createADPMap(const ADPMapData &data);
+  void setData(const ADPMapData& data);
 
   /**
    * @brief setUpdateProgress
@@ -111,6 +107,13 @@ public:
      */
   int getNumCPUCores();
 
+public slots:
+  /**
+   * @brief createADPMap
+   * @param data
+   */
+  void createADPMap();
+
 protected slots:
   void listenADPMapFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
@@ -119,19 +122,21 @@ signals:
   void warningMessageGenerated(const QString& msg) const;
   void errorMessageGenerated(const QString& msg) const;
   void stdOutputMessageGenerated(const QString& msg) const;
+  void finished();
 
 private:
   QString m_StartTime = "";
-
-  std::vector<float> m_OutputMaskVector;
-  std::vector<float> m_OutputIQMapVector;
-  std::vector<float> m_OutputADPMapVector;
-
   bool m_Cancel = false;
   size_t m_InstanceKey = 0;
   bool m_Executing = false;
 
   QTemporaryDir m_TempDir;
+
+  ADPMapData m_Data;
+
+  std::vector<float> m_OutputMaskVector;
+  std::vector<float> m_OutputIQMapVector;
+  std::vector<float> m_OutputADPMapVector;
 
   /**
    * @brief initializeData
@@ -145,11 +150,11 @@ private:
   QString getADPMapExecutablePath() const;
 
   /**
-   * @brief writeADPDataToFile
+   * @brief generateNMLFile
    * @param file
    * @param data
    */
-  void writeADPDataToFile(const QString &filePath, const ADPMapController::ADPMapData &data) const;
+  void generateNMLFile(const QString& filePath, const ADPMapController::ADPMapData& data) const;
 
 public:
   ADPMapController(const ADPMapController&) = delete; // Copy Constructor Not Implemented

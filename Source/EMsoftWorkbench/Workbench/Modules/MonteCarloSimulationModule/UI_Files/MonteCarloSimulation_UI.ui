@@ -189,7 +189,7 @@
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>30.000000000000000</double>
+         <double>20.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -328,7 +328,7 @@
          <number>1</number>
         </property>
         <property name="value">
-         <double>15.000000000000000</double>
+         <double>10.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -354,7 +354,7 @@
          <number>1</number>
         </property>
         <property name="value">
-         <double>5.000000000000000</double>
+         <double>1.000000000000000</double>
         </property>
        </widget>
       </item>
@@ -397,7 +397,7 @@
          <double>0.100000000000000</double>
         </property>
         <property name="value">
-         <double>70.000000000000000</double>
+         <double>75.700000000000003</double>
         </property>
        </widget>
       </item>
@@ -506,7 +506,7 @@
          <number>1024</number>
         </property>
         <property name="value">
-         <number>150</number>
+         <number>256</number>
         </property>
        </widget>
       </item>
@@ -532,7 +532,7 @@
          <number>2000000001</number>
         </property>
         <property name="value">
-         <number>20000000</number>
+         <number>200000000</number>
         </property>
        </widget>
       </item>
@@ -600,33 +600,13 @@
       <property name="horizontalSpacing">
        <number>4</number>
       </property>
-      <item row="0" column="3">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="csFilePathLE">
         <property name="text">
-         <string/>
+         <string notr="true">Ni.xtal</string>
         </property>
         <property name="placeholderText">
          <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_10">
-        <property name="text">
-         <string>Crystal Structure File Path</string>
         </property>
        </widget>
       </item>
@@ -634,6 +614,13 @@
        <widget class="QPushButton" name="csSelectBtn">
         <property name="text">
          <string>Select</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>Crystal Structure File Path</string>
         </property>
        </widget>
       </item>
@@ -658,30 +645,17 @@
       <property name="bottomMargin">
        <number>4</number>
       </property>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="mcFilePathLE">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="outputFileNameLabel">
         <property name="text">
          <string>Monte Carlo File Path</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="mcFilePathLE">
+        <property name="text">
+         <string notr="true">Ni-master.h5</string>
         </property>
        </widget>
       </item>

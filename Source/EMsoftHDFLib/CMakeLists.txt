@@ -51,49 +51,22 @@ add_library(EMsoftHDFLib ${LIB_TYPE} ${EMsoftHDFLib_SRCS})
 target_include_directories(EMsoftHDFLib 
                           PUBLIC 
                             ${HDF5_INCLUDE_DIR}
+                            ${HDF5_INCLUDE_DIR_FORTRAN}
+                            $<BUILD_INTERFACE:${EMsoftLib_BINARY_DIR}>
                           PRIVATE
-                            "${EMsoft_SOURCE_DIR}/Source"
-                            "${EMsoftLib_BINARY_DIR}"
+                            "${EMsoft_SOURCE_DIR}/Source"                            
                     )
-if (HDF5_VERSION_STRING VERSION_GREATER 1.8.15)
-  if(${HDF5_BUILD_FORTRAN})
-    if(${HDF5_BUILD_SHARED_LIBS})
-      target_include_directories(EMsoftHDFLib 
-                          PUBLIC 
-                          ${HDF5_INCLUDE_DIR_FORTRAN}
-                          )
-      #include_directories("${HDF5_INCLUDE_DIR}/shared")
-    else()
 
-      target_include_directories(EMsoftHDFLib 
-                          PUBLIC 
-                          ${HDF5_INCLUDE_DIR_FORTRAN}
-                          )
-
-      #include_directories("${HDF5_INCLUDE_DIR}/static")
-    endif()
-  endif()
-endif()
-
-if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  target_link_libraries(EMsoftHDFLib ${EMSOFT_hdf5LinkLibs} gomp EMsoftLib)
-endif()
-
-if (Fortran_COMPILER_NAME MATCHES "ifort.*")
-  target_link_libraries(EMsoftHDFLib ${EMSOFT_hdf5LinkLibs} EMsoftLib)
-endif()
+target_link_libraries(EMsoftHDFLib 
+                          ${EMSOFT_hdf5LinkLibs} 
+                          EMsoftLib 
+)
 
 set_target_properties (EMsoftHDFLib PROPERTIES
   LINKER_LANGUAGE Fortran
-   # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
   FOLDER EMsoftPublic
+  BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}"
 )
-
-if(APPLE AND BUILD_SHARED_LIBS)
-  # set_target_properties(EMsoftLib PROPERTIES MACOSX_RPATH TRUE)
-  # set_target_properties(EMsoftLib PROPERTIES INSTALL_NAME_DIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
-  # set_target_properties(EMsoftLib PROPERTIES BUILD_WITH_INSTALL_RPATH ON)
-endif()
 
 EMsoft_SetupInstallDirs()
 

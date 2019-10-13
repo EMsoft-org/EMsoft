@@ -94,7 +94,6 @@ use NameListTypedefs
 use NameListHandlers
 use initializersHDF
 use initializers
-use Lauemod
 use xrdmod
 use symmetry
 use crystal
@@ -115,6 +114,7 @@ use omp_lib
 use notifications
 use stringconstants
 use image
+use Lauemod
 use, intrinsic :: iso_fortran_env
 
 IMPLICIT NONE 

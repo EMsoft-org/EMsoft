@@ -1,8 +1,8 @@
 
 # #---------------------------------------------------------------------
 # # Set some variables to shorten up the call to the function below
-include_directories(${EMsoft_BINARY_DIR}/EMsoftLib)
-include_directories(${EMsoftLib_BINARY_DIR})
+# include_directories(${EMsoft_BINARY_DIR}/EMsoftLib)
+# include_directories(${EMsoftLib_BINARY_DIR})
 
 macro (EMsoft_SetupInstallDirs)
   set(install_dir "bin")
@@ -28,6 +28,10 @@ macro (EMsoft_SetupInstallDirs)
   endif()
 endmacro()
 
+
+#-------------------------------------------------------------------------------
+#
+#
 macro(GetHDF5LinkLibraries PREFIX)
   
   set(lib_type "static")
@@ -65,56 +69,44 @@ endmacro()
 function(Add_EMsoft_Executable)
   set(options )
   set(oneValueArgs TARGET TEMPLATE SOLUTION_FOLDER INSTALL_PROGRAM)
-  set(multiValueArgs SOURCES LINK_LIBRARIES)
+  set(multiValueArgs SOURCES LINK_LIBRARIES INCLUDE_DIRS)
   cmake_parse_arguments(Z "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
-  # option(EMsoft_BUILD_${Z_TARGET} "Build ${Z_TARGET}" ON)
-  # mark_as_advanced(EMsoft_BUILD_${Z_TARGET})
-
-  include_directories(${CLFortran_INCLUDE_DIRS})
-  include_directories(${HDF5_INCLUDE_DIR})
-
-  #if(EMsoft_BUILD_${Z_TARGET})  
+  set(install_dir "bin")
+  set(lib_install_dir "lib")
+  if("${Z_INSTALL_PROGRAM}" STREQUAL "")
+    set(install_dir "")
+    set(lib_install_dir "")
+  elseif(APPLE)
+    get_property(EMsoft_PACKAGE_DEST_PREFIX GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX)
+    set(install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/bin")
+    set(lib_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/lib")
+  elseif(WIN32)
     set(install_dir "bin")
     set(lib_install_dir "lib")
-    if("${Z_INSTALL_PROGRAM}" STREQUAL "")
-      set(install_dir "")
-      set(lib_install_dir "")
-    elseif(APPLE)
-      get_property(EMsoft_PACKAGE_DEST_PREFIX GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX)
-      set(install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/bin")
-      set(lib_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}/lib")
-    elseif(WIN32)
-      set(install_dir "bin")
-      set(lib_install_dir "lib")
-    endif()
-    BuildToolBundle(TARGET ${Z_TARGET}
-                  DEBUG_EXTENSION ${EXE_DEBUG_EXTENSION}
-                  VERSION_MAJOR ${EMsoft_VER_MAJOR}
-                  VERSION_MINOR ${EMsoft_VER_MINOR}
-                  VERSION_PATCH ${EMsoft_VER_PATCH}
-                  BINARY_DIR ${EMsoft_BINARY_DIR}/Applications/${Z_TARGET}
-                  COMPONENT Applications
-                  INSTALL_DEST "${install_dir}"
-                  SOLUTION_FOLDER ${Z_SOLUTION_FOLDER}
-                  SOURCES ${Z_SOURCES}
-                  LINK_LIBRARIES ${Z_LINK_LIBRARIES}
-    )
-    if( NOT ${Z_SOLUTION_FOLDER} STREQUAL "")
-      SET_TARGET_PROPERTIES(${Z_TARGET} PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
-    endif()
-
-  #endif()
-
-  if(NOT "${Z_TEMPLATE}" STREQUAL "" AND NOT EXISTS ${Z_TEMPLATE})
-    message(STATUS "Missing Template File for Executable ${Z_TARGET}")
-    message(STATUS "  ${Z_TEMPLATE}")
-  # else()
-  #   install(FILES ${Z_TEMPLATE}
-  #     DESTINATION "NamelistTemplates"
-  #     COMPONENT Applications
-  #   )
   endif()
+
+  BuildToolBundle(TARGET ${Z_TARGET}
+                DEBUG_EXTENSION ${EXE_DEBUG_EXTENSION}
+                VERSION_MAJOR ${EMsoft_VER_MAJOR}
+                VERSION_MINOR ${EMsoft_VER_MINOR}
+                VERSION_PATCH ${EMsoft_VER_PATCH}
+                BINARY_DIR ${EMsoft_BINARY_DIR}/Applications/${Z_TARGET}
+                COMPONENT Applications
+                INSTALL_DEST "${install_dir}"
+                SOLUTION_FOLDER ${Z_SOLUTION_FOLDER}
+                SOURCES ${Z_SOURCES}
+                LINK_LIBRARIES ${Z_LINK_LIBRARIES}
+  )
+  if( NOT ${Z_SOLUTION_FOLDER} STREQUAL "")
+    SET_TARGET_PROPERTIES(${Z_TARGET} PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
+  endif()
+
+  foreach(idir ${Z_INCLUDE_DIRS})
+    target_include_directories(${Z_TARGET} PUBLIC ${idir})
+  endforeach(idir )
+
+  set_target_properties(${Z_TARGET} PROPERTIES BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}")
 
 endfunction()
 
@@ -135,7 +127,7 @@ endmacro()
 function(AddEMsoftUnitTest)
     set(options)
     set(oneValueArgs TARGET SOLUTION_FOLDER TEST_NAME)
-    set(multiValueArgs SOURCES LINK_LIBRARIES)
+    set(multiValueArgs SOURCES LINK_LIBRARIES INCLUDE_DIRS)
     cmake_parse_arguments(Z "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
 
     if("${Z_SOLUTION_FOLDER}" STREQUAL "")
@@ -155,11 +147,14 @@ function(AddEMsoftUnitTest)
     set_target_properties (${Z_TARGET}Lib PROPERTIES LINKER_LANGUAGE Fortran)
     target_link_libraries(${Z_TARGET}Lib ${Z_LINK_LIBRARIES})
     set_target_properties( ${Z_TARGET}Lib PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
+    target_include_directories(${Z_TARGET}Lib PUBLIC ${Z_INCLUDE_DIRS})
 
     add_executable( ${Z_TARGET} "${TEST_SOURCE_FILE}")
-    target_link_libraries( ${Z_TARGET} ${Z_TARGET}Lib)
-    set_target_properties( ${Z_TARGET} PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
+    target_link_libraries(${Z_TARGET} ${Z_TARGET}Lib)
+    set_target_properties(${Z_TARGET} PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
+    set_target_properties(${Z_TARGET} PROPERTIES BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}")
 
+    
     if(WIN32)
       set_target_properties(${Z_TARGET} PROPERTIES 
           LINK_FLAGS_DEBUG "/NODEFAULTLIB:msvcrt.lib /NODEFAULTLIB:msvcmrt.lib /NODEFAULTLIB:msvcurt.lib /NODEFAULTLIB:msvcrtd.lib"

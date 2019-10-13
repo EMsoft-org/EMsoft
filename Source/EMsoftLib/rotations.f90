@@ -1286,7 +1286,7 @@ real(kind=sgl),INTENT(IN)       :: om(3,3)
 
 integer(kind=irg)               :: res
 real(kind=sgl)                  :: r, det
-real(kind=sgl), parameter       :: eps = 1.e-7
+real(kind=sgl), parameter       :: eps = 1.e-6
 integer(kind=irg)               :: i
 
 res = 1
@@ -2763,7 +2763,7 @@ real(kind=sgl)                          :: t, omega, qq(4), o(3,3)
 real(kind=sgl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(20)
 complex(kind=sgl)                       :: ev
 complex(kind=sgl),parameter             :: cone = cmplx(1.0,0.0)
-real(kind=sgl),parameter                :: thr = 1.0E-7
+real(kind=sgl),parameter                :: thr = 1.0E-6
 integer(kind=irg)                       :: nn, LDA, LDVL, LDVR, INFO, LWORK
 character(1)                            :: JOBVL, JOBVR
 
@@ -2844,7 +2844,7 @@ real(kind=dbl)                          :: t, omega, qq(4), o(3,3)
 real(kind=dbl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(20)
 complex(kind=dbl)                       :: ev
 complex(kind=dbl),parameter             :: cone = cmplx(1.D0,0.D0)
-real(kind=dbl),parameter                :: thr = 1.0D-10
+real(kind=dbl),parameter                :: thr = 1.0D-14
 integer(kind=irg)                       :: nn, LDA, LDVL, LDVR, INFO, LWORK
 character(1)                            :: JOBVL, JOBVR
 

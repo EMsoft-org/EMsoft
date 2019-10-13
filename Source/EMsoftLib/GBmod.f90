@@ -322,7 +322,6 @@ end if
 
 end function GBO_Omega
 
-
 !--------------------------------------------------------------------------
 !
 ! FUNCTION: GBO_minimize_U1_angle

@@ -25,19 +25,20 @@ set(EMsoftWrapperLib_SOURCES
 )
 
 set(EMsoftWrapperLib_HEADERS
- ${DictionaryIndexing_Wrapper_HEADERS} 
- ${SEM_Wrapper_HEADERS} 
- ${TEM_Wrapper_HEADERS} 
+  ${DictionaryIndexing_Wrapper_HEADERS} 
+  ${SEM_Wrapper_HEADERS} 
+  ${TEM_Wrapper_HEADERS} 
 )
 
-include_directories(${FFTW3_INCLUDE_DIR})
-include_directories(${CLFORTRAN_INCLUDE_DIR})
-include_directories("${EMsoftHDFLib_BINARY_DIR}")
 
 
-ADD_LIBRARY(EMsoftWrapperLib ${LIB_TYPE} ${EMsoftWrapperLib_SOURCES})
-TARGET_LINK_LIBRARIES(EMsoftWrapperLib
-                EMsoftHDFLib
+add_library(EMsoftWrapperLib ${LIB_TYPE} ${EMsoftWrapperLib_SOURCES} ${EMsoftWrapperLib_HEADERS})
+target_link_libraries(EMsoftWrapperLib EMsoftHDFLib)
+
+target_include_directories(EMsoftWrapperLib 
+      PUBLIC ${FFTW3_INCLUDE_DIR} 
+      PUBLIC ${CLFORTRAN_INCLUDE_DIR}
+      $<BUILD_INTERFACE:${EMsoftHDFLib_BINARY_DIR}>
 )
 
 set_target_properties (EMsoftWrapperLib PROPERTIES

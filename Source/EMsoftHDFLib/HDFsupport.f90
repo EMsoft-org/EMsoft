@@ -91,7 +91,7 @@ use stringconstants
 ! must be replaced EVERYWHERE by 
 ! type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 ! and any command
-! nullify(HDF_head%next)
+! nullify(HDF_head)
 ! must be replaced by 
 ! nullify(HDF_head%next)
 !
@@ -6859,7 +6859,7 @@ use h5lt
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                     :: dataset
-type(HDFobjectStackType)        ,INTENT(INOUT)  :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)          :: HDF_head
 !f2py intent(in,out) ::  HDFhead
 
 logical                                         :: itis

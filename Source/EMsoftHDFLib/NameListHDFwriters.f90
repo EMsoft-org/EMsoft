@@ -1243,6 +1243,17 @@ else
 end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create energyfile dataset',.TRUE.)
 
+dataset = 'BetheParametersFile'
+line2(1) = emnl%BetheParametersFile
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create BetheParametersFile dataset',.TRUE.)
+
+
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 
@@ -2266,7 +2277,7 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(ECPMasterNameListType),INTENT(INOUT)             :: ecpnl
 !f2py intent(in,out) ::  ecpnl

@@ -35,43 +35,40 @@
 
 #pragma once
 
-#include <QtCore/QObject>
 
 #include "EbsdLib/Utilities/ModifiedLambertProjection.h"
 
-class ProjectionConversions : public QObject
+class ProjectionConversions
 {
-  Q_OBJECT
 
 public:
-    ProjectionConversions(const QObject* parent = nullptr) {}
-    ~ProjectionConversions() override = default;
+  ProjectionConversions() = default;
+  ~ProjectionConversions() = default;
 
-    template <typename T>
-    std::vector<float> convertLambertSquareData(const std::vector<T> &lsData, size_t dim,
-                                                       ModifiedLambertProjection::ProjectionType projType, size_t zValue = 0,
-                                                       ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare) const
+  template <typename T>
+  std::vector<float> convertLambertSquareData(const std::vector<T>& lsData, size_t dim, ModifiedLambertProjection::ProjectionType projType, size_t zValue = 0,
+                                              ModifiedLambertProjection::Square square = ModifiedLambertProjection::Square::NorthSquare) const
+  {
+    ModifiedLambertProjection::Pointer lambertProjection = ModifiedLambertProjection::New();
+    lambertProjection->initializeSquares(static_cast<int32_t>(dim), 1.0f);
+
+    for(size_t y = 0; y < dim; y++)
     {
-      ModifiedLambertProjection::Pointer lambertProjection = ModifiedLambertProjection::New();
-      lambertProjection->initializeSquares(dim, 1.0f);
-
-      for (size_t y = 0; y < dim; y++)
+      for(size_t x = 0; x < dim; x++)
       {
-        for (size_t x = 0; x < dim; x++)
-        {
-          size_t index = dim*dim*zValue + dim*y + x;
-          size_t projIdx = dim*y + x;
-          lambertProjection->setValue(square, projIdx, static_cast<double>(lsData.at(index)));
-        }
+        size_t index = dim * dim * zValue + dim * y + x;
+        int32_t projIdx = static_cast<int32_t>(dim * y + x);
+        lambertProjection->setValue(square, projIdx, static_cast<double>(lsData.at(index)));
       }
-
-      std::vector<float> stereoProj = lambertProjection->createProjection(dim, projType);
-      return stereoProj;
     }
 
-  public:
-    ProjectionConversions(const ProjectionConversions&) = delete; // Copy Constructor Not Implemented
-    ProjectionConversions(ProjectionConversions&&) = delete;      // Move Constructor Not Implemented
-    ProjectionConversions& operator=(const ProjectionConversions&) = delete; // Copy Assignment Not Implemented
-    ProjectionConversions& operator=(ProjectionConversions&&) = delete;      // Move Assignment Not Implemented
+    std::vector<float> stereoProj = lambertProjection->createProjection(static_cast<int32_t>(dim), projType);
+    return stereoProj;
+  }
+
+public:
+  ProjectionConversions(const ProjectionConversions&) = delete;            // Copy Constructor Not Implemented
+  ProjectionConversions(ProjectionConversions&&) = delete;                 // Move Constructor Not Implemented
+  ProjectionConversions& operator=(const ProjectionConversions&) = delete; // Copy Assignment Not Implemented
+  ProjectionConversions& operator=(ProjectionConversions&&) = delete;      // Move Assignment Not Implemented
 };

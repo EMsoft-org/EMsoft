@@ -269,29 +269,6 @@ end function EMsoft_getSlackChannel
 
 !--------------------------------------------------------------------------
 !
-! FUNCTION: EMsoft_geth5copypath
-!
-!> @author Marc De Graef, Carnegie Mellon University
-!
-!> @brief returns the location of the h5copy program
-!
-!> @param no input parameters
-!
-!> @date  08/18/16 MDG 1.0 new function
-!--------------------------------------------------------------------------
-recursive function EMsoft_geth5copypath() result(h5copypath)
-!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_geth5copypath
-
-IMPLICIT NONE
-
-character(fnlen) :: h5copypath
-
-h5copypath = "@HDF5_INSTALL@"//SC_h5copy
-
-end function EMsoft_geth5copypath
-
-!--------------------------------------------------------------------------
-!
 ! FUNCTION: EMsoft_getEMsoftplatform
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -312,6 +289,33 @@ character(fnlen) :: platform
 platform = "@CMAKE_SYSTEM_NAME@"
 
 end function EMsoft_getEMsoftplatform
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION: EMsoft_geth5copypath
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief returns the location of the h5copy program
+!
+!> @param no input parameters
+!
+!> @date  08/18/16 MDG 1.0 new function
+!--------------------------------------------------------------------------
+recursive function EMsoft_geth5copypath() result(h5copypath)
+!DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_geth5copypath
+
+IMPLICIT NONE
+
+character(fnlen) :: h5copypath
+
+if (trim(EMsoft_getEMsoftplatform()).eq.SC_Windows) then
+  h5copypath = "@HDF5_INSTALL@"//SC_h5copy//".exe"
+else
+  h5copypath = "@HDF5_INSTALL@"//SC_h5copy
+end if
+
+end function EMsoft_geth5copypath
 
 !--------------------------------------------------------------------------
 !
@@ -652,8 +656,8 @@ if (trim(EMXtalFolderpathname).eq.'tryEnvironmentVariable') then
     if (EMXtalFolderpathname(l:l).ne.'/') EMXtalFolderpathname = trim(EMXtalFolderpathname)//'/'
   else
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
-      write (error_unit,"(/A)") '  WARNING: EMXTALFOLDERPATHNAME environment variable was NOT defined as a backup.'
+      write (error_unit,"(A/)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
+      write (error_unit,"(A/)") '  WARNING: EMXTALFOLDERPATHNAME environment variable was NOT defined as a backup.'
       write (error_unit,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
@@ -825,20 +829,29 @@ end function EMsoft_getUseremail
 !> @param no input parameters
 !
 !> @date  08/18/16 MDG 1.0 new function
+!> @date  09/10/19 MDG 1.1 add environment variable option for EMdevelop
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMdevelop() result(EMdevelop)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMdevelop
 
 IMPLICIT NONE
 
-character(fnlen)                        :: EMstring, ep
+character(fnlen)                        :: EMstring, ep, envParam, envReturn
 logical                                 :: EMdevelop
+
+! default: not in developer mode
+EMdevelop = .FALSE.
 
 ep = SC_Develop
 EMstring = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
 
-EMdevelop = .FALSE.
-if (trim(EMstring).eq.'Yes') EMdevelop = .TRUE.
+if (trim(EMstring).eq.'Yes') then 
+  EMdevelop = .TRUE.
+else if (trim(EMstring).eq.'tryEnvironmentVariable') then
+       envParam = 'EMdevelop'
+       call getenv(trim(envParam),envReturn)
+       if (trim(envReturn).eq.'Yes') EMdevelop = .TRUE.
+     end if
 
 end function EMsoft_getEMdevelop
 

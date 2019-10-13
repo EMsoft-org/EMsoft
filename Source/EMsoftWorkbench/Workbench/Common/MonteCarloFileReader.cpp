@@ -41,7 +41,7 @@
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 
-#include "H5Support/HDF5ScopedFileSentinel.h"
+#include "H5Support/H5ScopedSentinel.h"
 
 // -----------------------------------------------------------------------------
 //

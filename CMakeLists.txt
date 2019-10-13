@@ -14,7 +14,21 @@ if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.13.0")
   cmake_policy(SET CMP0079 NEW)
 endif()
 
-cmake_minimum_required(VERSION 3.8.0)
+cmake_minimum_required(VERSION 3.12.0)
+
+# use, i.e. don't skip the full RPATH for the build tree
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+# the RPATH to be used when installing
+SET(CMAKE_INSTALL_RPATH "${FCL_SOURCE_DIR}/libs")
+
+# don't add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
 
 if(NOT "${EMsoft_SDK}" STREQUAL "")
   include("${EMsoft_SDK}/EMsoft_SDK.cmake")
@@ -78,11 +92,22 @@ if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
   set(EMsoft_RELEASE_TYPE "Development")  # <============ SET THIS FOR RELEASE
   set_property(GLOBAL PROPERTY PACKAGE_RELEASE_TYPE "${EMsoft_RELEASE_TYPE}")
 endif()
-#
+
+
+if (NOT DEFINED CMP_SOURCE_DIR)
+  set(CMP_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Support/cmp)
+endif()
+include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
+
 # Next up, Set the version of EMsoft that is used through out the project.
-set(EMsoft_VER_MAJOR "4")
-set(EMsoft_VER_MINOR "3")
+
+set(EMsoft_VER_MAJOR "5")
+set(EMsoft_VER_MINOR "0")
 set(EMsoft_VER_PATCH "0")
+cmpGenerateBuildDate(PROJECT_NAME EMsoft)
+string(REPLACE "/" "" EMsoft_VER_PATCH ${EMsoft_BUILD_DATE})
+#message(STATUS "EMsoft_BUILD_DATE: ${EMsoft_BUILD_DATE}")
+
 #------------------------------------------------------------------------------
 
 project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
@@ -124,7 +149,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Build shared libraries
 OPTION(BUILD_SHARED_LIBS "Build Shared Libraries" OFF)
 if(WIN32)
-  set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
+  #set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)
 endif()
 set(LIB_TYPE STATIC)
 if(BUILD_SHARED_LIBS)
@@ -156,9 +181,7 @@ if("${EMsoftSearchDirs}" STREQUAL "")
 endif()
 
 
-if (NOT DEFINED CMP_SOURCE_DIR)
-  set(CMP_SOURCE_DIR ${EMsoft_SOURCE_DIR}/Support/cmp)
-endif()
+
 
 # Set the Application Name to with the correct icons and badges
 set(CMP_HEADER_DIR ${EMsoft_BINARY_DIR})
@@ -170,7 +193,7 @@ set(EMsoft_VERSION_SRC_FILE "EMsoftVersion.cpp")
 set(EXE_DEBUG_EXTENSION "_debug")
 
 include(${CMP_SOURCE_DIR}/cmpProject.cmake)
-include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
+include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake)
 
 
 
@@ -197,36 +220,27 @@ set(CMAKE_MODULE_PATH ${EMsoft_SOURCE_DIR}/Support/CMakeModules ${CMAKE_MODULE_P
 
 # set(EXE_DEBUG_EXTENSION "_debug")
 set(EXE_DEBUG_EXTENSION "")
-	   
-# FFLAGS depend on the compiler
+
+# Get the name of the Fortran compiler for easier decisions
 get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 
 if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
-  # gfortran
-  set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fopenmp -fno-sign-zero")
-# set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}")
-  set (CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -funroll-all-loops -fno-f2c -O3 -fno-sign-zero -std=gnu")
-  set (CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -fcheck=bounds -fno-f2c -O0 -g -fno-sign-zero -std=gnu")
+  # These have been moved to the EMsoftLib library declaration as target_compile_options
   get_filename_component (Fortran_COMPILER_PATH ${CMAKE_Fortran_COMPILER} DIRECTORY)
   set(GFortran_LIB_DIR "${Fortran_COMPILER_PATH}/../lib")
 
 elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
-  # ifort (untested)
-
   if(WIN32)
-    set (CMAKE_Fortran_FLAGS_RELEASE "/Qopenmp /Qdiag-disable:11082 /Qip")
-    set (CMAKE_Fortran_FLAGS_DEBUG   "/Qopenmp /Qdiag-disable:11082 /Qip")
     set (CMAKE_SHARED_LINKER_FLAGS "/ignore:4217 /ignore:4049")
   else()
-    set (CMAKE_Fortran_FLAGS_RELEASE "-O3 -qopenmp")
-    set (CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -qopenmp")
+    # These have been moved to the EMsoftLib library declaration as target_compile_options
   endif()
 
-else (Fortran_COMPILER_NAME MATCHES "gfortran.*")
+else ()
   message (STATUS "CMAKE_Fortran_COMPILER full path: " ${CMAKE_Fortran_COMPILER})
   message (STATUS "Fortran compiler: " ${Fortran_COMPILER_NAME})
   message (STATUS "No optimized Fortran compiler flags are known.")
-endif (Fortran_COMPILER_NAME MATCHES "gfortran.*")
+endif()
 
 # --------------------------------------------------------------------
 # This should all be for macOS RPath Handling.
@@ -249,7 +263,6 @@ LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib"
 IF("${isSystemDir}" STREQUAL "-1")
    SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 ENDIF("${isSystemDir}" STREQUAL "-1")
-
 
 include (${PROJECT_SOURCE_DIR}/Support/ExtLib/ExtLibraries.cmake)
 
