@@ -2844,7 +2844,7 @@ real(kind=dbl)                          :: t, omega, qq(4), o(3,3)
 real(kind=dbl)                          :: VL(3,3), VR(3,3), Wr(3), Wi(3), WORK(20)
 complex(kind=dbl)                       :: ev
 complex(kind=dbl),parameter             :: cone = cmplx(1.D0,0.D0)
-real(kind=dbl),parameter                :: thr = 1.0D-15
+real(kind=dbl),parameter                :: thr = 1.0D-14
 integer(kind=irg)                       :: nn, LDA, LDVL, LDVR, INFO, LWORK
 character(1)                            :: JOBVL, JOBVR
 
