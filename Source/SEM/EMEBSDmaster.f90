@@ -1153,7 +1153,7 @@ use fft_wrap
 IMPLICIT NONE
 
 interface 
-  recursive function writeSHTfile (fn, nt, sgN, sgS, nAt, aTy, aCd, lat, fprm, iprm, bw, alm) result(res) &
+  recursive function writeSHTfile (fn, nt, doi, sgN, sgS, nAt, aTy, aCd, lat, fprm, iprm, bw, alm) result(res) &
   bind(C, name ='writeSHTfile_')
 
   use ISO_C_BINDING
@@ -1162,6 +1162,7 @@ interface
 
   character(c_char)             :: fn
   character(c_char)             :: nt 
+  character(c_char)             :: doi
   integer(c_int)                :: sgN 
   integer(c_int)                :: sgS 
   integer(c_int)                :: nAt
@@ -1230,7 +1231,7 @@ type(HDFobjectStackType)        :: HDF_head
 
 character(fnlen),ALLOCATABLE    :: MessageLines(:)
 integer(kind=irg)               :: NumLines, info
-character(fnlen)                :: SlackUsername, exectime, layout
+character(fnlen)                :: SlackUsername, exectime, layout, doiString
 character(100)                  :: c
 
 real(kind=dbl),allocatable      :: finalmLPNH(:,:), finalmLPSH(:,:), weights(:)
@@ -1823,18 +1824,16 @@ call Message(' Computing energy weighted master pattern',"(//A)")
   alm = transfer(almMaster,alm)
 
 ! write an .sht file using EMsoft style EBSD data
+  EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
+  EMversion = trim(EMversion)//'; structure source : '//trim(cell%source) 
+  doiString = ''
   if (trim(emnl%addtoKiltHub).eq.'Yes') then 
-    EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
-    EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
-    EMversion = trim(EMversion)//'; database DOI : '//SC_EMSHTDOI
-  else
-    EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
-    EMversion = trim(EMversion)//'; structure source : '//trim(cell%source)
+    doiString = SC_EMSHTDOI
   end if 
   SHTfile = trim(EMsoft_getEMdatapathname())//trim(emnl%SHTfile)
   SHTfile = EMsoft_toNativePath(SHTfile)
 
-  res = writeSHTfile(cstringify(SHTfile), cstringify(EMversion), sgN, sgS, numAt, &
+  res = writeSHTfile(cstringify(SHTfile), cstringify(EMversion), cstringify(doiString), sgN, sgS, numAt, &
                      aTy, aCd, lat, fprm, iprm, bw, alm)
 
 write (*,*) 'return code from writeSHTfile ', res 

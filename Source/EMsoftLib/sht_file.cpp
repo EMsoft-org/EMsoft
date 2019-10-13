@@ -48,10 +48,10 @@ extern "C" {
   //@param iprm: integer parameters {# electrons, electron multiplier, numsx, npx, latgridtype}
   //@param bw : bandwidth
   //@param alm: actual harmonics (uncompressed format)
-  int writeSHTfile_(char * fn, char const * nt, 
+  int writeSHTfile_(char * fn, char const * nt, char const * doi,
                   int32_t * sgN, int32_t * sgS, int32_t * nAt, int32_t * aTy, float * aCd, float * lat,
                   float * fprm, int32_t * iprm,
                   int32_t * bw,double * alm) {
-	  return sht::File::EMsoftEBSDRet(fn, nt, *sgN, *sgS, *nAt, aTy, aCd, lat, fprm, iprm, *bw, alm);
+	  return sht::File::EMsoftEBSDRet(fn, nt, doi, *sgN, *sgS, *nAt, aTy, aCd, lat, fprm, iprm, *bw, alm);
   }
 }
