@@ -1,0 +1,31 @@
+ &IntegrateSTEMNamelist
+! DO NOT CHANGE THIS LINE
+!------------------------
+! IO Filenames
+!------------------------
+! Name of the file containing diffraction data
+ inputfilename = 'undefined',
+!------------------------
+! Detector Parameters
+!------------------------
+! Size of detector pixels in nm
+ pixsize = 9000,
+! Inner diameter of the annular detector, if used [mm]
+ id = 4,
+! Outer diamater of the annular detector, if used [mm]
+ od = 10,
+! Camera length [cm]
+ camlen = 3,
+!------------------------
+! Operating Parameters
+!------------------------
+! Operating mode
+! 1 = single reflection, 2 = annular detector
+! default is annular detector 
+ mode = 2,
+! If using a single reflection integration, specify the reflection here
+! Default is the through-beam 0,0,0
+ ref = 0,0,0,
+! Generate a CBED pattern, only works if mode = 2
+ CBED = .False.,
+/ 

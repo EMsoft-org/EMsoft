@@ -9016,7 +9016,7 @@ end subroutine GetEBSD2DQCMasterNameList
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:GetEMgammaSTEMNameList
+! SUBROUTINE:GetEMmdSTEMNameList
 !
 !> @author JosephTessmer, Carnegie Mellon University
 !
@@ -9105,6 +9105,12 @@ if (.not.skipread) then
     end if
 end if
 
+
+! both 
+msnml%thk                  = thk
+msnml%subslice             = subslice
+msnml%lauec                = lauec
+msnml%ZAindex              = ZAindex
 msnml%xtalname             = xtalname
 msnml%datafile             = datafile
 msnml%voltage              = voltage
@@ -9114,21 +9120,100 @@ msnml%platid               = platid
 msnml%devid                = devid
 msnml%convergence          = convergence
 msnml%inputfilename        = inputfilename
-msnml%scalefactor          = scalefactor
 msnml%usenumd              = usenumd
 msnml%selnumd              = selnumd
 msnml%discsize             = discsize
+msnml%hypslab              = hypslab
+
+! DDD
+msnml%presorted            = presorted
+msnml%scalefactor          = scalefactor
+
+! MD
+msnml%dwflag               = dwflag
 msnml%stride               = stride
 msnml%maxnumincell         = maxnumincell
-msnml%hypslab              = hypslab
-msnml%dwflag               = dwflag
-msnml%thk                  = thk
-msnml%presorted            = presorted
-msnml%subslice             = subslice
-msnml%lauec                = lauec
-msnml%ZAindex              = ZAindex
 
 end subroutine GetEMmdSTEMNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEMIntegrateSTEMNameList
+!
+!> @author JosephTessmer, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mdstem structure (used by EMgammaSTEM.f90)
+
+!
+!> @date 06/28/17 jt 1.0 original
+!--------------------------------------------------------------------------
+
+recursive subroutine GetEMIntegrateSTEMNameList(nmlfile, isnml, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEMIntegrateSTEMNameList
+
+use error
+use constants
+use io
+
+IMPLICIT NONE
+
+type(EMIntegrateSTEMNameListType),INTENT(INOUT)   :: isnml
+character(fnlen),INTENT(IN)                       :: nmlfile
+
+logical,OPTIONAL,INTENT(IN)                       :: initonly
+
+logical                                           :: skipread = .FALSE.
+character(fnlen)        :: inputfilename
+integer(kind=irg)       :: mode
+integer(kind=irg)       :: ref(3)
+integer(kind=irg)       :: camlen
+integer(kind=irg)       :: pixsize
+real(kind=sgl)          :: id 
+real(kind=sgl)          :: od
+logical                 :: CBED
+
+
+
+
+namelist /IntegrateSTEMNamelist/ inputfilename, mode, ref, camlen, pixsize, id, od, CBED
+
+
+inputfilename       = 'undefined'    ! input filename
+mode                = 2              ! annular detector mode
+ref                 = (/ 0, 0, 0 /)  ! default reflection for single ref is the through beam
+camlen              = 3              ! camera length in cm 
+pixsize             = 9000           ! pixel size of detector in nanometers
+id                  = 9              ! id in mm
+od                  = 18             ! od in mm
+CBED                = .False.        ! generate a cbed pattern
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+    open(UNIT=dataunit,FILE=trim(nmlfile),DELIM='apostrophe',STATUS='old')
+    read(UNIT=dataunit,NML=IntegrateSTEMNamelist)
+    close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+    if (trim(inputfilename).eq.'undefined') then
+        call FatalError('GetEMIntegrateSTEMNameList:',' input file name is undefined in '//nmlfile)
+    end if
+end if
+
+
+isnml%inputfilename = inputfilename
+isnml%mode          = mode
+isnml%ref           = ref
+isnml%camlen        = camlen
+isnml%pixsize       = pixsize
+isnml%id            = id
+isnml%od            = od
+isnml%CBED          = CBED
+
+end subroutine GetEMIntegrateSTEMNameList
 
 !--------------------------------------------------------------------------
 !
