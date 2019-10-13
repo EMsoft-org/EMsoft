@@ -96,7 +96,7 @@ EMsoft_Binfolder=@EMsoft_BUILD_DIR@/Bin
 pyEMsoft_BUILDfolder=@EMsoft_BUILD_DIR@/pyEMsoft
 EMsoft_folder=@EMsoft_SOURCE_DIR@ 
 pyEMsoft_folder=@EMsoft_SOURCE_DIR@/Source/pyEMsoft
-CondaLib=@USERHOMEDIR@/anaconda3/lib
+#CondaLib=@USERHOMEDIR@/anaconda3/lib
 EMsoft_SDK=@EMsoft_SDK@
 
 #=======================
@@ -149,9 +149,8 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -L@JSONFORTRAN_INSTALL@/lib \
 -L@FFTW3_INSTALL@/lib \
 -L@HDF5_INSTALL@/lib \
--L${CondaLib} \
 --link-lapack_opt \
--lgomp -lpthread -lomp \
+-lgomp -lgfortran \
 -lEMsoftLib -lEMsoftHDFLib -ljsonfortran -lhdf5 -lhdf5_fortran \
 -lclfortran -lfftw3 -lhdf5_cpp -lhdf5_f90cstub -lhdf5_hl_cpp \
 -lhdf5_tools -lhdf5_hl -lhdf5_hl_fortran -lhdf5_hl_f90cstub  1>>build.log 2>>build_error.log

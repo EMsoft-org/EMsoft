@@ -12,9 +12,9 @@ will later be read into some of the unittests files.
 
 .. code-block:: bash
 
-    (base) ChaoyideAir:source chaoyizhu$ python3.7
+    ChaoyideAir:source chaoyizhu$ python3.7
     Python 3.7.3 (default, Mar 27 2019, 16:54:48) 
-    [Clang 4.0.1 (tags/RELEASE_401/final)] :: Anaconda, Inc. on darwin
+    [Clang 4.0.1 (tags/RELEASE_401/final)] 
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import os
     >>> os.system('EMmkxtal')
@@ -463,6 +463,7 @@ From the kinematical diffraction theory, the 2 theta diffraction angle can be ca
 
 
 .. code-block:: python
+
     # calculate 2theta diffraction angle for a plane (hkl)
     Angle = pyEMsoft.diffraction.calcdiffangle(self.LatCell, 1, 1, 1)
     print('\nDiffraction angle for (111) is:', Angle, '(rad)\n')
@@ -481,7 +482,6 @@ Example 1: Make a crystal
     import sys
     sys.path.append('../')
     import pyEMsoft
-
     # define the unitcell usinge typedefs
     LatCell = pyEMsoft.typedefs.unitcell()
     # set the crystal system and lattice parameters/angles
@@ -496,7 +496,6 @@ Example 1: Make a crystal
     LatCell.fname=input('File name of the crystal file (.xtal):')
     # source of crystal data
     LatCell.source=input('Source of crystal data:')
-
     # print the unitcell containing crystallographic information
     print('\nCrystal System:', LatCell.xtal_system,'\n')
     print('Lattice Parameters:\na= %.04f nm\nb= %.04f nm\nc= %.04f nm\n' 
