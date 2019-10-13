@@ -181,7 +181,14 @@ if [ "$myos" = "Darwin" ]; then
 fi
 
 # and return to the starting folder
-echo " run_pyEMsoft.sh: pyEMsoft build completed"
+echo " run_pyEMsoft.sh: pyEMsoft wrapper .so file build completed"
+
+# copy the examples and unittests folders into the python wrapper folder
+echo " copying examples and unittests folders into build folder"
+cp -R ${pyEMsoft_folder}/examples .
+cp -R ${pyEMsoft_folder}/unittests .
+
+echo " Done."
 cd ${currentdir}
 
 # that's it
