@@ -650,12 +650,15 @@ select case (itype)
 
         ! Place patterns in experimental pattern array 
         exppatarray = 0.0
+        ! Pattern pixels to read (might not be full pattern, depending on ROI)
         pixcnt = (kkstart-1)*dims3(1)*dims3(2) + 1
+        ! Loop over row (might not be full row, depending on ROI)
         do kk = kkstart, kkend
             kspot = (kk-kkstart) * patsz
+            ! Loop over rows of pattern pixels
             do jj = 1, dims3(2)
-                ! Flip pattern
-                jspot = (dims3(2)-jj) * dims3(1)
+                jspot = (jj-1) * dims3(1)
+                ! Loop over columns of pattern pixels, converting into float32
                 do ii = 1, dims3(1)
                     exppatarray(kspot + jspot + ii) = float(pairs(pixcnt))
                     pixcnt = pixcnt + 1
@@ -664,7 +667,7 @@ select case (itype)
         end do
         deallocate(pairs)
 
-    case default 
+    case default
 end select
 
 end subroutine getExpPatternRow
@@ -888,7 +891,7 @@ select case (itype)
 
         ! Read single pattern into buffer
         ! offset3(3) = row * scan width + column
-        offset =  (offset3(3) - lwd - 1) * lL + 1
+        offset = offset3(3)*lL + 1
         read(unit=funit, pos=offset, iostat=ios) buffer
 
         ! Convert byte values into single byte integers
@@ -898,9 +901,10 @@ select case (itype)
         ! Place pattern in experimental pattern array
         exppat = 0.0
         pixcnt = 1
+        ! Loop over rows of pattern pixels
         do jj = 1, dims3(2)
-            ! Flip pattern
-            jspot = (dims3(2)-jj) * dims3(1)
+            jspot = (jj-1)*dims3(1)
+            ! Loop over columns of pattern pixels, converting into float32
             do ii = 1, dims3(1)
                 exppat(jspot + ii) = float(pairs(pixcnt))
                 pixcnt = pixcnt + 1
