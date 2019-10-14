@@ -89,7 +89,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 # Development: This is currently in development and probably has bugs.
 get_property(EMsoft_RELEASE_TYPE GLOBAL PROPERTY PACKAGE_RELEASE_TYPE)
 if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
-  set(EMsoft_RELEASE_TYPE "Development")  # <============ SET THIS FOR RELEASE
+  set(EMsoft_RELEASE_TYPE "Official")  # <============ SET THIS FOR RELEASE
   set_property(GLOBAL PROPERTY PACKAGE_RELEASE_TYPE "${EMsoft_RELEASE_TYPE}")
 endif()
 
@@ -142,7 +142,11 @@ set(EMsoft_VER_MAJOR "5")
 set(EMsoft_VER_MINOR "0")
 set(EMsoft_VER_PATCH "0")
 cmpGenerateBuildDate(PROJECT_NAME EMsoft)
-string(REPLACE "/" "" EMsoft_VER_PATCH ${EMsoft_BUILD_DATE})
+if(NOT "${EMsoft_RELEASE_TYPE}" STREQUAL "Official")
+  string(REPLACE "/" "" EMsoft_VER_PATCH ${EMsoft_BUILD_DATE})
+endif()
+
+
 #message(STATUS "EMsoft_BUILD_DATE: ${EMsoft_BUILD_DATE}")
 
 #------------------------------------------------------------------------------
