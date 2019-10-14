@@ -2005,4 +2005,16 @@ type EMhh4NameListType
         character(fnlen)        :: imagetype 
  end type EMhh4NameListType
 
+!typedef for EMIntegrateSTEM program
+type EMIntegrateSTEMNameListType
+        character(fnlen)        :: inputfilename
+        integer(kind=irg)       :: mode
+        integer(kind=irg)       :: ref(3)
+        integer(kind=irg)       :: camlen
+        integer(kind=irg)       :: pixsize
+        real(kind=sgl)          :: id 
+        real(kind=sgl)          :: od
+        logical                 :: CBED
+end type EMIntegrateSTEMNameListType
+
 end module NameListTypedefs
