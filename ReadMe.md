@@ -6,12 +6,9 @@ This is the first release of version 5.0; this release provides significant addi
 
 This release also offers, for the first time, a series of python wrappers (*pyEMsoft*) that can be used to access selected *EMsoft* modules from python; an extensive set of examples is provided to illustrate how our library routines can be used. 
 
-The Dictionary Indexing tutorial paper has now been [published](https://link.springer.com/article/10.1007%2Fs40192-019-00137-4) in the journal **Integrating Materials and Manufacturing Innovation**. The EMsoft version that goes along with this paper is version 4.2; release 4.2 has the following DOI (through Zenodo):  
+Release v5.0.0 has the following DOI (through Zenodo):  
 
-![Zenodo DOI Badge](https://zenodo.org/badge/109896059.svg)
-
-The present 5.0 release has the following DOI:
-
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3489720.svg)](https://doi.org/10.5281/zenodo.3489720)
 
 
 ### **This release of EMsoft requires an updated Software Developer Toolkit (SDK); please go to [this page](https://github.com/EMsoft-org/EMsoftSuperbuild) and follow the instructions to install a new SDK before you attempt to build the present release.**
