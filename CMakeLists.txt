@@ -118,7 +118,7 @@ if("${SHTfile_SOURCE_DIR}" STREQUAL "")
    
     if(Git_FOUND)
       message(STATUS "SHTfile_SOURCE_DIR does not exist at ${SHTfile_SOURCE_DIR}. Attempting to clone it from Github....")
-      execute_process(COMMAND ${GIT_EXECUTABLE} clone git@github.com:EMsoft-org/SHTfile.git ${SHTfile_SOURCE_DIR}
+      execute_process(COMMAND ${GIT_EXECUTABLE} clone http://github.com/EMsoft-org/SHTfile.git ${SHTfile_SOURCE_DIR}
                       OUTPUT_VARIABLE CLONE_OUTPUT
                       RESULT_VARIABLE did_run
                       ERROR_VARIABLE git_error
