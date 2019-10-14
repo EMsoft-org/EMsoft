@@ -215,6 +215,7 @@ end subroutine invert_ordering_arrays
 !> @date 05/10/18 MDG 1.5 changed .up2 access mode to STREAM to facilitate record positioning
 !> @date 06/21/18 SS  1.6 changed recorsize to L*4 instead of recsize (correctsize*4); recsize has padded 0's
 !> @date 05/01/19 MA  1.7 add support for Oxford Instruments binary pattern files
+!> @date 10/09/19 HWÅ 1.8 support for NORDIF binary pattern files
 !--------------------------------------------------------------------------
 recursive function openExpPatternFile(filename, npat, L, inputtype, recsize, funit, HDFstrings) result(istat)
 !DEC$ ATTRIBUTES DLLEXPORT :: openExpPatternFile
@@ -357,8 +358,13 @@ select case (itype)
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
 
     case(9)  !  "NORDIF"
-        ! to be written
-        call FatalError("openExpPatternFile","NORDIF input format not yet implemented")
+        open(unit=funit, file=trim(ename), status='old', access='stream', &
+            iostat=ios)
+        if (ios.ne.0) then
+            io_int(1) = ios
+            call WriteValue("File open error; error type ", io_int, 1)
+            call FatalError("openExpPatternFile", "Cannot continue program")
+        end if
 
     case default 
         istat = -1
@@ -395,6 +401,7 @@ end function openExpPatternFile
 !> @date 03/21/19 MDG 1.4 fixed off-by-one error in column labels for up1 and up2 file formats
 !> @date 05/01/19 MA  1.5 add support for Oxford Instruments binary pattern files
 !> @date 09/26/19 MDG 1.6 add option for vertical flip of patterns
+!> @date 10/09/19 HWÅ 1.7 support for NORDIF binary pattern files
 !--------------------------------------------------------------------------
 recursive subroutine getExpPatternRow(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, &
                                       exppatarray, ROI, flipy) 
@@ -622,11 +629,45 @@ select case (itype)
         end do 
 
     case(9)  !  "NORDIF"
-        ! to be written
-        call FatalError("getExpPatternRow","NORDIF input format not yet implemented")
+        ! Buffer for single patterns
+        buffersize = lL
+        allocate(buffer(buffersize))
 
-    
-    case default 
+        ! Pairs to store all patterns in a row
+        buffersize = lwd * lL
+        allocate(pairs(buffersize))
+
+        ! Loop over pixels and convert byte values into single byte integers
+        do ii = 1, lwd
+            ! pos = [(row-1)*scan_width + column - 1]*pattern_size + 1
+            read(unit=funit, pos=((liii-1)*lwd + ii - 1)*lL + 1, &
+                iostat=ios) buffer
+            do jj = 1_ill, lL
+                pairs((ii-1)*lL + jj) = ichar(buffer(jj))
+            end do
+        end do
+        deallocate(buffer)
+
+        ! Place patterns in experimental pattern array 
+        exppatarray = 0.0
+        ! Pattern pixels to read (might not be full pattern, depending on ROI)
+        pixcnt = (kkstart-1)*dims3(1)*dims3(2) + 1
+        ! Loop over row (might not be full row, depending on ROI)
+        do kk = kkstart, kkend
+            kspot = (kk-kkstart) * patsz
+            ! Loop over rows of pattern pixels
+            do jj = 1, dims3(2)
+                jspot = (jj-1) * dims3(1)
+                ! Loop over columns of pattern pixels, converting into float32
+                do ii = 1, dims3(1)
+                    exppatarray(kspot + jspot + ii) = float(pairs(pixcnt))
+                    pixcnt = pixcnt + 1
+                end do
+            end do
+        end do
+        deallocate(pairs)
+
+    case default
 end select
 
 end subroutine getExpPatternRow
@@ -652,6 +693,7 @@ end subroutine getExpPatternRow
 !
 !> @date 02/20/18 MDG 1.0 original
 !> @date 07/13/19 MDG 1.1 added option to read single pattern from OxfordBinary file
+!> @date 10/09/19 HWÅ 1.7 support for reading single pattern from NORDIF binary file
 !--------------------------------------------------------------------------
 recursive subroutine getSingleExpPattern(iii, wd, patsz, L, dims3, offset3, funit, inputtype, HDFstrings, exppat) 
 !DEC$ ATTRIBUTES DLLEXPORT :: getSingleExpPattern
@@ -839,10 +881,38 @@ select case (itype)
         end do 
 
     case(9)  !  "NORDIF"
-        ! to be written
-        call FatalError("getSingleExpPattern","NORDIF input format not yet implemented")
-        
-    case default 
+        ! Use ill-type integers
+        lL = L
+        lwd = wd
+
+        ! Buffers for single patterns
+        buffersize = lL
+        allocate(buffer(buffersize), pairs(buffersize))
+
+        ! Read single pattern into buffer
+        ! offset3(3) = row * scan width + column
+        offset = offset3(3)*lL + 1
+        read(unit=funit, pos=offset, iostat=ios) buffer
+
+        ! Convert byte values into single byte integers
+        pairs = ichar(buffer)
+        deallocate(buffer)
+
+        ! Place pattern in experimental pattern array
+        exppat = 0.0
+        pixcnt = 1
+        ! Loop over rows of pattern pixels
+        do jj = 1, dims3(2)
+            jspot = (jj-1)*dims3(1)
+            ! Loop over columns of pattern pixels, converting into float32
+            do ii = 1, dims3(1)
+                exppat(jspot + ii) = float(pairs(pixcnt))
+                pixcnt = pixcnt + 1
+            end do
+        end do
+        deallocate(pairs)
+
+    case default
 
 end select
 
@@ -897,8 +967,7 @@ select case (itype)
         deallocate(semix, semiy)
 
     case(9)  !  "NORDIF"
-        ! to be written
-        call FatalError("closeExpPatternFile","input format not yet implemented")
+        close(unit=funit, status='keep')
 
     case default 
         call FatalError("closeExpPatternFile","unknown input format")
