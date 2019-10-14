@@ -17,23 +17,27 @@ add_custom_target(EMsoftLib_Generate_StringConstants ALL
 
 
 
+if(0)
+  # fetch SHT file format content
+  # this could be done with a git submodule but the user would have to call:
+  #   git submodule update
+  #   git clone --recursive
+  # which is a bit annoying
+  include(FetchContent)
+  FetchContent_Declare(
+    SHTfile
+    GIT_REPOSITORY "https://github.com/EMsoft-org/SHTfile"
+    # GIT_TAG        "v3.1.2" # just get the most recent version for now
+    # GIT_PROGRESS   TRUE # its currently only 1 file, we probably don't need to print out progress
+  )
+  # set(FETCHCONTENT_QUIET NO) # again only 1 file
+  FetchContent_MakeAvailable(SHTfile)
+  FetchContent_GetProperties(SHTfile BINARY_DIR SHTfile_BINARY_DIR)
+  include_directories(${SHTfile_BINARY_DIR})
+endif()
 
-# fetch SHT file format content
-# this could be done with a git submodule but the user would have to call:
-#   git submodule update
-#   git clone --recursive
-# which is a bit annoying
-include(FetchContent)
-FetchContent_Declare(
-  SHTfile
-  GIT_REPOSITORY "https://github.com/EMsoft-org/SHTfile"
-  # GIT_TAG        "v3.1.2" # just get the most recent version for now
-  # GIT_PROGRESS   TRUE # its currently only 1 file, we probably don't need to print out progress
-)
-# set(FETCHCONTENT_QUIET NO) # again only 1 file
-FetchContent_MakeAvailable(SHTfile)
-FetchContent_GetProperties(SHTfile BINARY_DIR SHTfile_BINARY_DIR)
-include_directories(${SHTfile_BINARY_DIR})
+
+
 
 
 #------------------------------------------------------------------------------
@@ -131,6 +135,7 @@ set(EMsoftLib_C_SRCS
 
 set(EMsoftLib_Cpp_SRCS
   ${EMsoftLib_SOURCE_DIR}/sht_file.cpp
+  ${EMSphInx_BINARY_DIR}/sht_file.hpp
 )
 
 if(NOT WIN32 AND BUILD_SHARED_LIBS)
@@ -168,7 +173,7 @@ set_target_properties (EMsoftLib_Cpp PROPERTIES
    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
   FOLDER EMsoftPublic
 )
-
+target_include_directories(EMsoftLib_Cpp PRIVATE ${EMSphInx_BINARY_DIR})
 
 add_library(EMsoftLib ${LIB_TYPE} ${EMsoftLib_SRCS})
 target_link_libraries(EMsoftLib
@@ -176,9 +181,7 @@ target_link_libraries(EMsoftLib
                 EMsoftLib_Cpp 
                 jsonfortran 
                 ${OpenCL_LIBRARY}
-                bcls::bcls 
-                
-               
+                bcls::bcls            
 )
 if (Fortran_COMPILER_NAME MATCHES "ifort.*")
   target_link_libraries(EMsoftLib
@@ -196,6 +199,7 @@ endif()
 
 
 target_include_directories(EMsoftLib PUBLIC ${CLFortran_INCLUDE_DIRS} ${FFTW3_INCLUDE_DIR})
+
 set_target_properties (EMsoftLib PROPERTIES
                   LINKER_LANGUAGE Fortran
                    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}

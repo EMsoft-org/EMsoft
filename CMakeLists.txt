@@ -99,6 +99,43 @@ if (NOT DEFINED CMP_SOURCE_DIR)
 endif()
 include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
 
+#get_filename_component(EMsoft_PARENT ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY CACHE)
+
+find_package(Git REQUIRED)
+
+#------------------------------------------------------------------------------
+# If the developer has set another EMsoft directory then use that, otherwise look
+# for the EMsoft directory at the same level as the EMsoftPrivate directory
+if("${SHTfile_SOURCE_DIR}" STREQUAL "")
+  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects")
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects")
+  endif()
+  set(SHTfile_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects/SHTfile")
+  message(STATUS "Locating EMsoft Source directory at ${SHTfile_SOURCE_DIR}")
+  if(EXISTS "${SHTfile_SOURCE_DIR}")
+      message(STATUS "SHTfile_SOURCE_DIR: ${SHTfile_SOURCE_DIR}")
+  else()
+   
+    if(Git_FOUND)
+      message(STATUS "SHTfile_SOURCE_DIR does not exist at ${SHTfile_SOURCE_DIR}. Attempting to clone it from Github....")
+      execute_process(COMMAND ${GIT_EXECUTABLE} clone git@github.com:EMsoft-org/SHTfile.git ${SHTfile_SOURCE_DIR}
+                      OUTPUT_VARIABLE CLONE_OUTPUT
+                      RESULT_VARIABLE did_run
+                      ERROR_VARIABLE git_error
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects)
+    endif()
+    # One last check. If it does not exist at this point then we simply Abort CMake 
+    if(NOT EXISTS "${SHTfile_SOURCE_DIR}")
+      message(FATAL_ERROR "SHTfile_SOURCE_DIR does not exist. We attempted to clone it from the GitHub repo but that also seemed\
+        to fail. EMsoft can not proceed without the SHTfile directory. Please ask a EMsoft developer for more\
+        information about this error. Can you access http://github.com/EMsoft-org/SHTfile.git is\
+        a firewall blocking the 'git' protocol? ")
+    endif()
+
+  endif()
+endif()
+
+
 # Next up, Set the version of EMsoft that is used through out the project.
 
 set(EMsoft_VER_MAJOR "5")
@@ -179,9 +216,6 @@ if("${EMsoftSearchDirs}" STREQUAL "")
   endif()
 
 endif()
-
-
-
 
 # Set the Application Name to with the correct icons and badges
 set(CMP_HEADER_DIR ${EMsoft_BINARY_DIR})
@@ -270,6 +304,10 @@ OPTION(EMsoft_ENABLE_TESTING "Compile the test programs" ON)
 set(EMsoft_TESTING_DIR "${EMsoft_BINARY_DIR}/Testing")
 
 
+# -----------------------------------------------------------------------
+# Build SHTfile Project
+# -----------------------------------------------------------------------
+add_subdirectory(${SHTfile_SOURCE_DIR} ${EMsoft_BINARY_DIR}/SHTfile)
 
 # -----------------------------------------------------------------------
 # Set a Global Prefix where everthing is going to get intalled. For OS X we are
