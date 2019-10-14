@@ -135,7 +135,7 @@ set(EMsoftLib_C_SRCS
 
 set(EMsoftLib_Cpp_SRCS
   ${EMsoftLib_SOURCE_DIR}/sht_file.cpp
-  ${EMSphInx_BINARY_DIR}/sht_file.hpp
+  ${SHTfile_BINARY_DIR}/sht_file.hpp
 )
 
 if(NOT WIN32 AND BUILD_SHARED_LIBS)
@@ -173,7 +173,7 @@ set_target_properties (EMsoftLib_Cpp PROPERTIES
    # Fortran_MODULE_DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}
   FOLDER EMsoftPublic
 )
-target_include_directories(EMsoftLib_Cpp PRIVATE ${EMSphInx_BINARY_DIR})
+target_include_directories(EMsoftLib_Cpp PRIVATE ${SHTfile_BINARY_DIR})
 
 add_library(EMsoftLib ${LIB_TYPE} ${EMsoftLib_SRCS})
 target_link_libraries(EMsoftLib
