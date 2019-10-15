@@ -173,7 +173,7 @@ configure_file("${EMsoft_SOURCE_DIR}/Source/Test/TestFileLocations.in.h"
   )
 
 add_executable(DIWorkflowTestPrep DIWorkflowTestPrep.cpp ${EMsoft_BINARY_DIR}/Test/TestFileLocations.h)
-
+target_compile_features(DIWorkflowTestPrep PUBLIC cxx_std_11)
 
 #------------------------------------------------------------------------------
 # 1: The Ni.xtal file should have been copied into the proper spot via some other external means
