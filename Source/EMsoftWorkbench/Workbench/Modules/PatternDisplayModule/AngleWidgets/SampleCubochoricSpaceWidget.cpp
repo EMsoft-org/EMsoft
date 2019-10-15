@@ -42,10 +42,9 @@
 #include "Modules/PatternDisplayModule/PatternDisplay_UI.h"
 
 #include "EbsdLib/Core/EbsdLibConstants.h"
-#include "EbsdLib/OrientationMath/OrientationTransforms.hpp"
+#include "EbsdLib/Core/OrientationTransformation.hpp"
 
-using OrientationListArrayType = std::list<DOrientArrayType>;
-using OrientationTransformsType = OrientationTransforms<DOrientArrayType, double>;
+using OrientationListArrayType = std::list<OrientationD>;
 
 // -----------------------------------------------------------------------------
 //
@@ -244,9 +243,9 @@ void SampleCubochoricSpaceWidget::on_samplingModeCB_currentIndexChanged(int inde
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void SampleCubochoricSpaceWidget::RodriguesComposition(const DOrientArrayType& sigma, DOrientArrayType& rod) const
+void SampleCubochoricSpaceWidget::RodriguesComposition(const OrientationD& sigma, OrientationD& rod) const
 {
-  DOrientArrayType rho(3), rhomis(3);
+  OrientationD rho(3), rhomis(3);
   rho[0] = -rod[0] * rod[3];
   rho[1] = -rod[1] * rod[3];
   rho[2] = -rod[2] * rod[3];
@@ -411,10 +410,13 @@ bool SampleCubochoricSpaceWidget::insideCubicFZ(const double* rod, int ot) const
   // primary cube planes (only needed for octahedral case)
   if(ot == EMsoftWorkbenchConstants::Constants::OctahedralType)
   {
+    using VectorDoubleType = std::vector<double>;
+    using OMHelperType = ArrayHelpers<VectorDoubleType, double>;
 
-    using OrientationTransformsType = OrientationTransforms<std::vector<double>, double>;
+    VectorDoubleType out = OMHelperType::absValue(r);
+    double maxValue = OMHelperType::maxval(out);
 
-    c1 = OrientationTransformsType::OMHelperType::maxval(OrientationTransformsType::OMHelperType::absValue(r)) <= EbsdLib::LPs::BP[3];
+    c1 = maxValue <= EbsdLib::LPs::BP[3];
   }
   else
   {
@@ -499,9 +501,7 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
               {
 
                 // convert to Rodrigues representation
-                DOrientArrayType cu(x, y, z);
-                DOrientArrayType rod(4);
-                OrientationTransformsType::cu2ro(cu, rod);
+                OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(x, y, z));
 
                 // If insideFZ=true, then add this point to FZlist
                 bool b = IsinsideFZ(rod.data(), FZtype, FZorder);
@@ -545,11 +545,12 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
     delta = semi / static_cast<double>(numOfSamplingPts);
 
     // convert the reference orientation to a 3-component Rodrigues vector sigma
-    DOrientArrayType sigm(4), sigma(3), referenceOrientation(3);
+    OrientationD sigma(4), referenceOrientation(3);
     referenceOrientation[0] = static_cast<double>(refOrientationX *EbsdLib::Constants::k_Pi / 180.0f);
     referenceOrientation[1] = static_cast<double>(refOrientationY *EbsdLib::Constants::k_Pi / 180.0f);
     referenceOrientation[2] = static_cast<double>(refOrientationZ *EbsdLib::Constants::k_Pi / 180.0f);
-    OrientationTransformsType::eu2ro(referenceOrientation, sigm);
+    OrientationD sigm = OrientationTransformation::eu2ro<OrientationD, OrientationD>(referenceOrientation);
+
     sigma[0] = sigm[0] * sigm[3];
     sigma[1] = sigm[1] * sigm[3];
     sigma[2] = sigm[2] * sigm[3];
@@ -572,17 +573,13 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
           y = static_cast<double>(j) * delta;
           // convert to Rodrigues representation and apply Rodrigues composition formula
           {
-            DOrientArrayType cu(-x, -y, -semi);
-            DOrientArrayType rod(4);
-            OrientationTransformsType::cu2ro(cu, rod);
+            OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(-x, -y, -semi));
             RodriguesComposition(sigma, rod);
             FZlist.push_back(rod);
             Dg += 1;
           }
           {
-            DOrientArrayType cu(-x, -y, semi);
-            DOrientArrayType rod(4);
-            OrientationTransformsType::cu2ro(cu, rod);
+            OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(-x, -y, semi));
             RodriguesComposition(sigma, rod);
             FZlist.push_back(rod);
             Dg += 1;
@@ -598,17 +595,13 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
           z = static_cast<double>(k) * delta;
           // convert to Rodrigues representation and apply Rodrigues composition formula
           {
-            DOrientArrayType cu(-semi, -y, -z);
-            DOrientArrayType rod(4);
-            OrientationTransformsType::cu2ro(cu, rod);
+            OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(-semi, -y, -z));
             RodriguesComposition(sigma, rod);
             FZlist.push_back(rod);
             Dg += 1;
           }
           {
-            DOrientArrayType cu(semi, -y, -z);
-            DOrientArrayType rod(4);
-            OrientationTransformsType::cu2ro(cu, rod);
+            OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(semi, -y, -z));
             RodriguesComposition(sigma, rod);
             FZlist.push_back(rod);
             Dg += 1;
@@ -624,17 +617,13 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
           z = static_cast<double>(k) * delta;
           // convert to Rodrigues representation and apply Rodrigues composition formula
           {
-            DOrientArrayType cu(-x, -semi, -z);
-            DOrientArrayType rod(4);
-            OrientationTransformsType::cu2ro(cu, rod);
+            OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(-x, -semi, -z));
             RodriguesComposition(sigma, rod);
             FZlist.push_back(rod);
             Dg += 1;
           }
           {
-            DOrientArrayType cu(-x, semi, -z);
-            DOrientArrayType rod(4);
-            OrientationTransformsType::cu2ro(cu, rod);
+            OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(-x, semi, -z));
             RodriguesComposition(sigma, rod);
             FZlist.push_back(rod);
             Dg += 1;
@@ -670,9 +659,7 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
             z = static_cast<double>(k) * delta;
             // convert to Rodrigues representation and apply Rodrigues composition formula
             {
-              DOrientArrayType cu(-x, -y, -z);
-              DOrientArrayType rod(4);
-              OrientationTransformsType::cu2ro(cu, rod);
+              OrientationD rod = OrientationTransformation::cu2ro<OrientationD, OrientationD>(OrientationD(-x, -y, -z));
               RodriguesComposition(sigma, rod);
               FZlist.push_back(rod);
               Dg += 1;
@@ -695,10 +682,9 @@ std::vector<float> SampleCubochoricSpaceWidget::getEulerAngles() const
 
   // copy the Rodrigues vectors as Euler angles into the eulerAngles array; convert doubles to floats along the way
   int j = 0;
-  for(const DOrientArrayType& rod : FZlist)
+  for(const OrientationD& rod : FZlist)
   {
-    DOrientArrayType eu(3, 0.0f);
-    OrientationTransformsType::ro2eu(rod, eu);
+    OrientationD eu = OrientationTransformation::ro2eu<OrientationD, OrientationD>(rod);
 
     eulerAngles.at(j + 0) = static_cast<float>(eu[0]);
     eulerAngles.at(j + 1) = static_cast<float>(eu[1]);

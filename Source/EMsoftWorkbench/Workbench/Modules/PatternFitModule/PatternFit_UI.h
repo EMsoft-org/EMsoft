@@ -37,7 +37,7 @@
 
 #include <QtCore/QObject>
 
-#include "EbsdLib/Core/QuaternionMath.hpp"
+#include "EbsdLib/Core/Quaternion.hpp"
 
 #include "Common/IObserver.h"
 
@@ -175,9 +175,9 @@ private:
   std::vector<float> m_SimulatedPatternData;
   std::vector<size_t> m_SimulatedPatternDims;
 
-  QuaternionMath<double>::Quaternion m_NavigationQuatX;
-  QuaternionMath<double>::Quaternion m_NavigationQuatY;
-  QuaternionMath<double>::Quaternion m_NavigationQuatZ;
+  Quaternion<double> m_NavigationQuatX;
+  Quaternion<double> m_NavigationQuatY;
+  Quaternion<double> m_NavigationQuatZ;
 
   bool m_ShowSplash = true;
   QSplashScreen* m_SplashScreen = nullptr;
