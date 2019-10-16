@@ -287,13 +287,13 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
   // Create a new QThread to run the Controller class.
   m_WorkerThread = QSharedPointer<QThread>(new QThread);
   m_Controller = new MonteCarloSimulationController;
-  m_Controller->moveToThread(m_WorkerThread.get());
+  m_Controller->moveToThread(m_WorkerThread.data());
   m_Controller->setData(data); // Set the input data
 
   // Conncet Signals & Slots to get the thread started and quit
-  connect(m_WorkerThread.get(), SIGNAL(started()), m_Controller, SLOT(execute()));
-  connect(m_Controller, SIGNAL(finished()), m_WorkerThread.get(), SLOT(quit()));
-  connect(m_WorkerThread.get(), SIGNAL(finished()), this, SLOT(processFinished()));
+  connect(m_WorkerThread.data(), SIGNAL(started()), m_Controller, SLOT(execute()));
+  connect(m_Controller, SIGNAL(finished()), m_WorkerThread.data(), SLOT(quit()));
+  connect(m_WorkerThread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
 
   // Pass errors, warnings, and std output messages up to the user interface
   connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);

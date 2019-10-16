@@ -42,15 +42,14 @@
 #include <QtCore/QTimer>
 
 #include <QtWidgets/QFileDialog>
-
 #include <QtWidgets/QSplashScreen>
 
 #include "EMsoftWrapperLib/SEM/EMsoftSEMwrappers.h"
 
 #include "EMsoftApplication.h"
 
-#include "EbsdLib/OrientationMath/OrientationArray.hpp"
-#include "EbsdLib/OrientationMath/OrientationTransforms.hpp"
+#include "EbsdLib/Core/Orientation.hpp"
+#include "EbsdLib/Core/OrientationTransformation.hpp"
 
 #include "Common/Constants.h"
 #include "Common/FileIOTools.h"
@@ -435,7 +434,7 @@ void PatternFit_UI::slot_controlsChoicePressed(PatternControlsWidget::ControlsCh
   }
   else
   {
-    QuaternionMath<double>::Quaternion choiceQuat;
+    Quaternion<double> choiceQuat;
     if(choice == PatternControlsWidget::ControlsChoice::CW)
     {
       choiceQuat = m_NavigationQuatZ;
@@ -443,9 +442,9 @@ void PatternFit_UI::slot_controlsChoicePressed(PatternControlsWidget::ControlsCh
     else if(choice == PatternControlsWidget::ControlsChoice::CCW)
     {
       choiceQuat = m_NavigationQuatZ;
-      choiceQuat.x *= -1;
-      choiceQuat.y *= -1;
-      choiceQuat.z *= -1;
+      choiceQuat.x() *= -1;
+      choiceQuat.y() *= -1;
+      choiceQuat.z() *= -1;
     }
     else if(choice == PatternControlsWidget::ControlsChoice::UP)
     {
@@ -454,16 +453,16 @@ void PatternFit_UI::slot_controlsChoicePressed(PatternControlsWidget::ControlsCh
     else if(choice == PatternControlsWidget::ControlsChoice::DOWN)
     {
       choiceQuat = m_NavigationQuatX;
-      choiceQuat.x *= -1;
-      choiceQuat.y *= -1;
-      choiceQuat.z *= -1;
+      choiceQuat.x() *= -1;
+      choiceQuat.y() *= -1;
+      choiceQuat.z() *= -1;
     }
     else if(choice == PatternControlsWidget::ControlsChoice::LEFT)
     {
       choiceQuat = m_NavigationQuatY;
-      choiceQuat.x *= -1;
-      choiceQuat.y *= -1;
-      choiceQuat.z *= -1;
+      choiceQuat.x() *= -1;
+      choiceQuat.y() *= -1;
+      choiceQuat.z() *= -1;
     }
     else if(choice == PatternControlsWidget::ControlsChoice::RIGHT)
     {
@@ -475,16 +474,13 @@ void PatternFit_UI::slot_controlsChoicePressed(PatternControlsWidget::ControlsCh
       return;
     }
 
-    DOrientArrayType euArray(phi1->value() *EbsdLib::Constants::k_PiOver180, phi->value() *EbsdLib::Constants::k_PiOver180, phi2->value() *EbsdLib::Constants::k_PiOver180);
-    DOrientArrayType quArray(4, 0.0);
-    OrientationTransforms<DOrientArrayType, double>::eu2qu(euArray, quArray, QuaternionMath<double>::QuaternionScalarVector);
+    OrientationD euArray(phi1->value() * EbsdLib::Constants::k_PiOver180, phi->value() * EbsdLib::Constants::k_PiOver180, phi2->value() * EbsdLib::Constants::k_PiOver180);
+    QuatType quat = OrientationTransformation::eu2qu<OrientationD, QuatType>(euArray, QuatType::Order::ScalarVector);
 
-    QuaternionMath<double>::Quaternion quat = quArray.toQuaternion(QuaternionMath<double>::QuaternionScalarVector);
+    QuatType resultQuat = quat * choiceQuat;
 
-    QuaternionMath<double>::Quaternion resultQuat = QuaternionMath<double>::Multiply(quat, choiceQuat);
-    quArray.fromQuaternion(resultQuat);
+    euArray = OrientationTransformation::qu2eu<QuatType, OrientationD>(resultQuat, QuatType::Order::VectorScalar);
 
-    OrientationTransforms<DOrientArrayType, double>::qu2eu(quArray, euArray, QuaternionMath<double>::QuaternionVectorScalar);
     double* eulerData = euArray.data();
 
     phi1->blockSignals(true);
@@ -658,20 +654,20 @@ void PatternFit_UI::updateRotationQuaternions(double rot, double detValue)
   double cdelta = cos(delta);
   double sdelta = sin(delta);
 
-  m_NavigationQuatX.w = cang;
-  m_NavigationQuatX.x = 0.0;
-  m_NavigationQuatX.y = sang;
-  m_NavigationQuatX.z = 0.0;
+  m_NavigationQuatX.w() = cang;
+  m_NavigationQuatX.x() = 0.0;
+  m_NavigationQuatX.y() = sang;
+  m_NavigationQuatX.z() = 0.0;
 
-  m_NavigationQuatY.w = cang;
-  m_NavigationQuatY.x = sang * cdelta;
-  m_NavigationQuatY.y = 0.0;
-  m_NavigationQuatY.z = -sang * sdelta;
+  m_NavigationQuatY.w() = cang;
+  m_NavigationQuatY.x() = sang * cdelta;
+  m_NavigationQuatY.y() = 0.0;
+  m_NavigationQuatY.z() = -sang * sdelta;
 
-  m_NavigationQuatZ.w = cang;
-  m_NavigationQuatZ.x = sang * ceta;
-  m_NavigationQuatZ.y = 0.0;
-  m_NavigationQuatZ.z = sang * seta;
+  m_NavigationQuatZ.w() = cang;
+  m_NavigationQuatZ.x() = sang * ceta;
+  m_NavigationQuatZ.y() = 0.0;
+  m_NavigationQuatZ.z() = sang * seta;
 }
 
 // -----------------------------------------------------------------------------

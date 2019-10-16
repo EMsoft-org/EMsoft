@@ -94,7 +94,7 @@ if("${EMsoftData_DIR}" STREQUAL "")
     set(EMsoftData_DIR ${EMSOFT_PARENT}/EMsoftData)
   else()
     message(WARNING "EMsoftData_DIR not found or empty folder, cloning automatically from https://github.com/emsoft-org/EMsoftData")
-message(FATAL_ERROR "${EMSOFT_PARENT}/EMsoftData")
+    message(FATAL_ERROR "${EMSOFT_PARENT}/EMsoftData")
     include(ExternalProject)
     ExternalProject_Add("EMsoftDataClone"
       GIT_REPOSITORY https://github.com/emsoft-org/EMsoftData
@@ -165,6 +165,16 @@ endif()
 if("${EMsoft_TEST_GPU_DEVICE_ID}" STREQUAL "")
   set(EMsoft_TEST_GPU_DEVICE_ID 1)
 endif()
+
+
+
+configure_file("${EMsoft_SOURCE_DIR}/Source/Test/TestFileLocations.in.h"
+  ${EMsoft_BINARY_DIR}/Test/TestFileLocations.h @ONLY
+  )
+
+add_executable(DIWorkflowTestPrep DIWorkflowTestPrep.cpp ${EMsoft_BINARY_DIR}/Test/TestFileLocations.h)
+target_compile_features(DIWorkflowTestPrep PUBLIC cxx_std_11)
+
 #------------------------------------------------------------------------------
 # 1: The Ni.xtal file should have been copied into the proper spot via some other external means
 # We are just going to have to trust that it is there. We are numbering the tests
@@ -172,6 +182,11 @@ endif()
 set(test_index  "1")
 set(EMsoft_NML_TEST_DIR "${EMsoft_BINARY_DIR}/DItutorial/Ni")
 file(MAKE_DIRECTORY ${EMsoft_NML_TEST_DIR})
+message(STATUS "Adding Unit Test: EMsoft_${test_index}_DIWorkflowTestPrep")
+add_test(NAME EMsoft_${test_index}_DIWorkflowTestPrep
+        COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DIWorkflowTestPrep${EXE_EXT}
+        WORKING_DIRECTORY ${EMsoft_NML_TEST_DIR}
+        )
 
 #------------------------------------------------------------------------------
 # 2: Setup the EMMCOpenCL executable

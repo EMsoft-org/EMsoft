@@ -47,7 +47,7 @@
 #include "Common/EigenConversions.hpp"
 #include "Common/Constants.h"
 
-#include "EbsdLib/OrientationMath/OrientationTransforms.hpp"
+#include "EbsdLib/Core/OrientationTransformation.hpp"
 
 // -----------------------------------------------------------------------------
 //
@@ -127,14 +127,18 @@ std::vector<float> PatternTools::GeneratePattern(PatternTools::IParValues iParVa
 // -----------------------------------------------------------------------------
 void PatternTools::GeneratePattern_Helper(size_t index, const std::vector<float> &eulerAngles, std::vector<float> &genericLPNHPtr, std::vector<float> &genericLPSHPtr, std::vector<int32_t> &genericAccum_ePtr, std::vector<float> &genericEBSDPatternsPtr, std::vector<int32_t> &genericIParPtr, std::vector<float> &genericFParPtr, bool &cancel)
 {
-  std::vector<float> eulerAngle;
+  using EulerType = std::vector<float>;
+  EulerType eulerAngle(3);
   std::vector<float>::const_iterator iter = eulerAngles.begin() + (index * 3);
-  eulerAngle.push_back(*(iter + 0));
-  eulerAngle.push_back(*(iter + 1));
-  eulerAngle.push_back(*(iter + 2));
+  eulerAngle[0] = (*(iter + 0));
+  eulerAngle[1] = (*(iter + 1));
+  eulerAngle[2] = (*(iter + 2));
 
-  std::vector<float> quat(4);
-  OrientationTransforms<std::vector<float>,float>::eu2qu(eulerAngle, quat, QuaternionMath<float>::QuaternionScalarVector);
+  using QuatType = std::vector<float>;
+
+  QuatType quat = OrientationTransformation::eu2qu<EulerType, QuatType>(eulerAngle, Quaternion<float>::Order::ScalarVector);
+
+  // OrientationTransforms<std::vector<float>, float>::eu2qu(eulerAngle, quat, QuaternionMath<float>::QuaternionScalarVector);
 
   EMsoftCgetEBSDPatterns(genericIParPtr.data(), genericFParPtr.data(), genericEBSDPatternsPtr.data(), quat.data(), genericAccum_ePtr.data(), genericLPNHPtr.data(), genericLPSHPtr.data(), nullptr, 0, &cancel);
 }

@@ -240,6 +240,9 @@ if(MKL_FOUND)
   set_target_properties(${PROJECT_NAME} PROPERTIES BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}")
 endif()
 
+if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
+  target_link_options(${PROJECT_NAME} PUBLIC $<$<CONFIG:Release>:LINKER:-no_compact_unwind>)
+endif()
 
 #   target_link_directories(${PROJECT_NAME} 
 #     PUBLIC "/Users/Shared/EMsoft_SDK/intel/mkl/lib/"

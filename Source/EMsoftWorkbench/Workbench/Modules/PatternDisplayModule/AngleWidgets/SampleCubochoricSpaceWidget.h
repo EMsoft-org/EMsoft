@@ -38,7 +38,7 @@
 
 #include "Modules/PatternDisplayModule/AngleWidgets/AbstractAngleWidget.h"
 
-#include "EbsdLib/OrientationMath/OrientationArray.hpp"
+#include "EbsdLib/Core/Orientation.hpp"
 
 #include "ui_SampleCubochoricSpaceWidget.h"
 
@@ -109,7 +109,7 @@ private:
 
   void valuesChanged() const;
 
-  void RodriguesComposition(const DOrientArrayType& sigma, DOrientArrayType& rod) const;
+  void RodriguesComposition(const OrientationD& sigma, OrientationD& rod) const;
 
   bool IsinsideFZ(double* rod, int FZtype, int FZorder) const;
   bool insideCyclicFZ(const double* rod, int order) const;

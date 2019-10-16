@@ -107,7 +107,9 @@ function(Add_EMsoft_Executable)
   endforeach(idir )
 
   set_target_properties(${Z_TARGET} PROPERTIES BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}")
-
+  if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
+    target_link_options(${Z_TARGET} PUBLIC $<$<CONFIG:Release>:LINKER:-no_compact_unwind>)
+  endif()
 endfunction()
 
 # --------------------------------------------------------------------------
@@ -153,7 +155,9 @@ function(AddEMsoftUnitTest)
     target_link_libraries(${Z_TARGET} ${Z_TARGET}Lib)
     set_target_properties(${Z_TARGET} PROPERTIES FOLDER ${Z_SOLUTION_FOLDER})
     set_target_properties(${Z_TARGET} PROPERTIES BUILD_RPATH "${EMsoft_OpenMP_LIB_DIR}")
-
+    if (Fortran_COMPILER_NAME MATCHES "gfortran.*")
+      target_link_options(${Z_TARGET} PUBLIC $<$<CONFIG:Release>:LINKER:-no_compact_unwind>)
+    endif()
     
     if(WIN32)
       set_target_properties(${Z_TARGET} PROPERTIES 

@@ -89,7 +89,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 # Development: This is currently in development and probably has bugs.
 get_property(EMsoft_RELEASE_TYPE GLOBAL PROPERTY PACKAGE_RELEASE_TYPE)
 if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
-  set(EMsoft_RELEASE_TYPE "Official")  # <============ SET THIS FOR RELEASE
+  set(EMsoft_RELEASE_TYPE "Development")  # <============ SET THIS FOR RELEASE
   set_property(GLOBAL PROPERTY PACKAGE_RELEASE_TYPE "${EMsoft_RELEASE_TYPE}")
 endif()
 
@@ -99,48 +99,10 @@ if (NOT DEFINED CMP_SOURCE_DIR)
 endif()
 include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
 
-#get_filename_component(EMsoft_PARENT ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY CACHE)
-
-find_package(Git REQUIRED)
-
-#------------------------------------------------------------------------------
-# If the developer has set another EMsoft directory then use that, otherwise look
-# for the EMsoft directory at the same level as the EMsoftPrivate directory
-if("${SHTfile_SOURCE_DIR}" STREQUAL "")
-  if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects")
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects")
-  endif()
-  set(SHTfile_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects/SHTfile")
-  message(STATUS "Locating EMsoft Source directory at ${SHTfile_SOURCE_DIR}")
-  if(EXISTS "${SHTfile_SOURCE_DIR}")
-      message(STATUS "SHTfile_SOURCE_DIR: ${SHTfile_SOURCE_DIR}")
-  else()
-   
-    if(Git_FOUND)
-      message(STATUS "SHTfile_SOURCE_DIR does not exist at ${SHTfile_SOURCE_DIR}. Attempting to clone it from Github....")
-      execute_process(COMMAND ${GIT_EXECUTABLE} clone http://github.com/EMsoft-org/SHTfile.git ${SHTfile_SOURCE_DIR}
-                      OUTPUT_VARIABLE CLONE_OUTPUT
-                      RESULT_VARIABLE did_run
-                      ERROR_VARIABLE git_error
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ExternalProjects)
-    endif()
-    # One last check. If it does not exist at this point then we simply Abort CMake 
-    if(NOT EXISTS "${SHTfile_SOURCE_DIR}")
-      message(FATAL_ERROR "SHTfile_SOURCE_DIR does not exist. We attempted to clone it from the GitHub repo but that also seemed\
-        to fail. EMsoft can not proceed without the SHTfile directory. Please ask a EMsoft developer for more\
-        information about this error. Can you access http://github.com/EMsoft-org/SHTfile.git is\
-        a firewall blocking the 'git' protocol? ")
-    endif()
-
-  endif()
-endif()
-
-
 # Next up, Set the version of EMsoft that is used through out the project.
-
 set(EMsoft_VER_MAJOR "5")
 set(EMsoft_VER_MINOR "0")
-set(EMsoft_VER_PATCH "0")
+set(EMsoft_VER_PATCH "1")
 cmpGenerateBuildDate(PROJECT_NAME EMsoft)
 if(NOT "${EMsoft_RELEASE_TYPE}" STREQUAL "Official")
   string(REPLACE "/" "" EMsoft_VER_PATCH ${EMsoft_BUILD_DATE})
@@ -220,6 +182,23 @@ if("${EMsoftSearchDirs}" STREQUAL "")
   endif()
 
 endif()
+
+#------------------------------------------------------------------------------
+# Download (During CMake Time) the SHTfile project from GitHub.com
+# This will configure the "sht_file.hpp" file that is included in several of the 
+# libraries and executables.
+include(FetchContent)
+set(FETCHCONTENT_BASE_DIR  ${EMsoft_BINARY_DIR}/SHTfile)
+FetchContent_Declare(
+  SHTfile
+  GIT_REPOSITORY "https://github.com/EMsoft-org/SHTfile"
+  # GIT_TAG        "v3.1.2" # just get the most recent version for now
+  GIT_PROGRESS    TRUE # its currently only 1 file, we probably don't need to print out progress
+)
+
+set(FETCHCONTENT_QUIET NO) # again only 1 file
+FetchContent_MakeAvailable(SHTfile)
+FetchContent_GetProperties(SHTfile BINARY_DIR SHTfile_BINARY_DIR)
 
 # Set the Application Name to with the correct icons and badges
 set(CMP_HEADER_DIR ${EMsoft_BINARY_DIR})
