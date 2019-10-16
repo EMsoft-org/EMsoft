@@ -89,7 +89,7 @@ set(CMAKE_CXX_EXTENSIONS False)
 # Development: This is currently in development and probably has bugs.
 get_property(EMsoft_RELEASE_TYPE GLOBAL PROPERTY PACKAGE_RELEASE_TYPE)
 if("${EMsoft_RELEASE_TYPE}" STREQUAL "")
-  set(EMsoft_RELEASE_TYPE "Official")  # <============ SET THIS FOR RELEASE
+  set(EMsoft_RELEASE_TYPE "Development")  # <============ SET THIS FOR RELEASE
   set_property(GLOBAL PROPERTY PACKAGE_RELEASE_TYPE "${EMsoft_RELEASE_TYPE}")
 endif()
 
