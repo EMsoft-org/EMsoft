@@ -190,6 +190,7 @@ type(unitcell)          :: cell
 
 ! and deallocate any arrays
  if (allocated(cell%LUT)) deallocate(cell%LUT)
+ if (allocated(cell%LUTqg)) deallocate(cell%LUTqg)
  if (allocated(cell%dbdiff)) deallocate(cell%dbdiff)
  if (allocated(cell%apos)) deallocate(cell%apos)
  
