@@ -182,7 +182,7 @@ target_compile_features(DIWorkflowTestPrep PUBLIC cxx_std_11)
 set(test_index  "1")
 set(EMsoft_NML_TEST_DIR "${EMsoft_BINARY_DIR}/DItutorial/Ni")
 file(MAKE_DIRECTORY ${EMsoft_NML_TEST_DIR})
-
+message(STATUS "Adding Unit Test: EMsoft_${test_index}_DIWorkflowTestPrep")
 add_test(NAME EMsoft_${test_index}_DIWorkflowTestPrep
         COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/DIWorkflowTestPrep${EXE_EXT}
         WORKING_DIRECTORY ${EMsoft_NML_TEST_DIR}
