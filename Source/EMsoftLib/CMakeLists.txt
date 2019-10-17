@@ -217,7 +217,7 @@ if(WIN32)
                           $<$<COMPILE_LANGUAGE:Fortran>:/Qdiag-disable:11082>
                           $<$<COMPILE_LANGUAGE:Fortran>:/Qdiag-disable:7025>
                           $<$<COMPILE_LANGUAGE:Fortran>:/Qip>
-                          $<$<COMPILE_LANGUAGE:Fortran>:/heap-arrays>
+                        #  $<$<COMPILE_LANGUAGE:Fortran>:/heap-arrays>
                           )
   target_link_options(EMsoftLib PUBLIC /STACK:2000000000 /machine:x64)
 else()
