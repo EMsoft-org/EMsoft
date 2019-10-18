@@ -759,10 +759,11 @@ end if
 call HDF_pop(HDF_head)
 
 !====================================
-! check if this is an overlap EBSD pattern or a regular one  [ added by MDG, 06/19/19 ]
+! check if this is an overlap EBSD pattern or a regular one  [ added by MDG, 06/19/19 ]; revised [10/18/19]
 !====================================
 dataset = 'READMEFIRST'
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+! if the dataset exists, then this is an overlap EBSD pattern file 
 EBSDMPdata%AveragedMP = .FALSE.
 EBSDMPdata%newPGnumber = -1
 if (g_exists.eqv..TRUE.) then
@@ -771,13 +772,17 @@ if (g_exists.eqv..TRUE.) then
 end if
 
 if (EBSDMPdata%AveragedMP.eqv..TRUE.) then
-  groupname = SC_CrystalData
+  ! read the new point group number from the newpgnum data set in the EBSDoverlapNameList NMLparameters group
+  groupname = SC_NMLparameters
+      hdferr = HDF_openGroup(groupname, HDF_head)
+  groupname = 'EBSDoverlapNameList'
       hdferr = HDF_openGroup(groupname, HDF_head)
 
-  dataset = 'PointGroupNumber'
+  dataset = 'newpgnum'
   call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if(g_exists) call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMPdata%newPGnumber)
 
+  call HDF_pop(HDF_head)
   call HDF_pop(HDF_head)
 end if
 

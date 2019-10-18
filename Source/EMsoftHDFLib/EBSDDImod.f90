@@ -311,6 +311,8 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
       ! overlap master patterns  [ added by MDG, 06/19/19 ]
       if (EBSDMPdata%AveragedMP.eqv..TRUE.) then 
           pgnum = EBSDMPdata%newPGnumber
+          io_int = pgnum 
+          call WriteValue(' Setting point group number to ',io_int,1)
       else
           groupname = SC_CrystalData
           hdferr = HDF_openGroup(groupname, HDF_head)
@@ -330,6 +332,8 @@ subroutine EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetect
             end do
             pgnum = i
           end if
+          io_int = pgnum 
+          call WriteValue(' Setting point group number to ',io_int,1)
       end if
   
       ! then read some more data from the EMData group
