@@ -64,6 +64,7 @@
 !> @date  09/29/16  MDG 5.5 added option to read structure data from master file instead of external .xtal file
 !> @date  08/16/17  MDG 5.6 added option to reuse the Monte Carlo results from a different input file
 !> @date  09/25/19  MDG 6.0 added option to produce an SHT master pattern file
+!> @date  10/21/19  MDG 6.1 modified filename convention for .sht file 
 !--------------------------------------------------------------------------
 program EMEBSDmaster
 
@@ -1243,6 +1244,8 @@ real(kind=dbl),allocatable      :: alm(:)
 ! parameters for the .sht output file 
 integer(kind=irg),parameter     :: nipar=5, nfpar=20
 character(fnlen)                :: EMversion
+character(6)                    :: vstring
+character(8)                    :: vstring2
 integer(c_int32_t)              :: sgN      ! space group number [1,230]
 integer(c_int32_t)              :: sgS      ! space group setting [1,2]
 integer(c_int32_t)              :: numAt    ! number of atoms
@@ -1740,9 +1743,32 @@ call Message(' Computing energy weighted master pattern',"(//A)")
     finalmLPSH = finalmLPSH + mLPSH(:,:,i) * weights(i)
   enddo
 
+!=====================================
+! form the .sht file name from the formula, name, structuresymbol and voltage parameters
+  SHTfile = trim(emnl%SHT_folder)//'/'//trim(emnl%SHT_formula)
+! compound name (:brass, forsterite, alpha-quartz ... )
+  if (trim(emnl%SHT_name).ne.'undefined') then 
+    SHTfile = trim(SHTfile)//' ('//trim(emnl%SHT_name)//')'
+  end if
+! structure symbol (StrukturBericht, Pearson, ...)
+  if (trim(emnl%SHT_structuresymbol).ne.'undefined') then 
+    SHTfile = trim(SHTfile)//' ['//trim(emnl%SHT_structuresymbol)//']'
+  end if
+! voltage string 
+  write(vstring,"(' {',I2.2,'kV')") int(mcnl%EkeV) 
+  SHTfile = trim(SHTfile)//trim(vstring)
+! if the sample tilt is NOT equal to 70 deg, then add it in F4.1 format to the comment string 
+  if (mcnl%sig.ne.70.0) then 
+    write (vstring2,"(' ',F4.1,'deg')") sngl(mcnl%sig)
+    SHTfile = trim(SHTfile)//trim(vstring2)//'}.sht'
+  else
+    SHTfile = trim(SHTfile)//'}.sht'
+  end if
+
+!=====================================
   call Message(' Saving Lambert squares to tiff file ',"(//A)")
 ! output these patterns to a tiff file
-  image_filename = trim(emnl%SHTfile)
+  image_filename = trim(SHTfile)
   ll = len(trim(image_filename))
   ll = ll-2
 ! replace the .sht extension by .tiff
@@ -1827,18 +1853,25 @@ call Message(' Computing energy weighted master pattern',"(//A)")
   EMversion = 'Pattern computed with EMsoft version '//trim(EMsoft_getEMsoftversion())
   EMversion = trim(EMversion)//'; structure source : '//trim(cell%source) 
   doiString = ''
+! the 'addtoKiltHub' option should only be used for the original 120 structures in the KiltHub data base
   if (trim(emnl%addtoKiltHub).eq.'Yes') then 
     doiString = SC_EMSHTDOI
+  else
+    if (trim(emnl%useDOI).ne.'undefined') then ! use the user-defined DOI string
+      doiString = trim(emnl%useDOI)
+    else
+! if we get here, then we use the generic DOI for the Zenodo link to the GitHub .sht data base repository
+      doiString = SC_ZENODODOI
+    end if 
   end if 
-  SHTfile = trim(EMsoft_getEMdatapathname())//trim(emnl%SHTfile)
+  SHTfile = trim(EMsoft_getEMdatapathname())//trim(SHTfile)
   SHTfile = EMsoft_toNativePath(SHTfile)
+
+  call Message(' Final data stored in binary file '//trim(SHTfile), frm = "(A/)")
 
   res = writeSHTfile(cstringify(SHTfile), cstringify(EMversion), cstringify(doiString), sgN, sgS, numAt, &
                      aTy, aCd, lat, fprm, iprm, bw, alm)
 
-write (*,*) 'return code from writeSHTfile ', res 
-
-call Message(' Final data stored in binary file '//trim(SHTfile), frm = "(A/)")
 
 io_int(1) = timestop
 call WriteValue(' Total execution time [s] ',io_int,1)

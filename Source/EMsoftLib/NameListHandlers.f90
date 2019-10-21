@@ -2512,6 +2512,7 @@ end subroutine GetDvsDNameList
 !> @param emnl EBSD master name list structure
 !
 !> @date 06/19/14  MDG 1.0 new routine
+!> @date 10/21/19  MDG 2.0 adds support for .sht file format
 !--------------------------------------------------------------------------
 recursive subroutine GetEBSDMasterNameList(nmlfile, emnl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDMasterNameList
@@ -2536,17 +2537,22 @@ character(3)            :: Notify
 character(fnlen)        :: latgridtype
 character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: energyfile
-character(fnlen)        :: SHTfile
+character(fnlen)        :: SHT_folder
+character(fnlen)        :: SHT_formula
+character(fnlen)        :: SHT_name
+character(fnlen)        :: SHT_structuresymbol
+character(fnlen)        :: addtoKiltHub
+character(fnlen)        :: useDOI
 character(fnlen)        :: BetheParametersFile
 character(fnlen)        :: h5copypath
-character(fnlen)        :: addtoKiltHub
 logical                 :: combinesites
 logical                 :: restart
 logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, latgridtype, h5copypath, SHTfile, BetheParametersFile, addtoKiltHub
+                          combinesites, latgridtype, h5copypath, BetheParametersFile, addtoKiltHub, &
+                          useDOI, SHT_formula, SHT_name, SHT_structuresymbol, SHT_folder
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2559,8 +2565,12 @@ latgridtype = 'Lambert'        ! 'Lambert' (regular) or 'Legendre' (for EMSphInx
 copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a different Monte Carlo simulation
 h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
-SHTfile = 'undefined'           ! for storage of spherical harmonic transform coefficients
+SHT_folder = 'undefined'        ! folder to store SHT files, relative to EMDatapathname
+SHT_formula = 'undefined'       ! compound chemical formula, e.g., SiO2
+SHT_name = 'undefined'          ! compund name (e.g., forsterite)
+SHT_structuresymbol = 'undefined' ! StrukturBericht symbol (e.g., D0_22) or Pearson symbol (e.g., hP12), or ...
 addtoKiltHub = 'No'             ! file to be added to data base on kilthub.cmu.edu ?
+useDOI = 'undefined'            ! if no DOI is entered, then we use the Zenodo DOI for the .sht repository
 BetheParametersFile='BetheParameters.nml'
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
@@ -2580,6 +2590,15 @@ if (.not.skipread) then
  if (trim(energyfile).eq.'undefined') then
   call FatalError('EMEBSDmaster:',' output (energy) file name is undefined in '//nmlfile)
  end if
+
+! for Legendre mode, the SHT_formula parameter MUST be present 
+ if ((trim(latgridtype).eq.'Legendre').and.(trim(SHT_formula).eq.'undefined')) then 
+  call FatalError('EMEBSDmaster:',' for Legendre lattitude grid mode, SHT_formula must be defined in '//nmlfile)
+ end if
+
+ if ((trim(latgridtype).eq.'Legendre').and.(trim(SHT_folder).eq.'undefined')) then 
+  call FatalError('EMEBSDmaster:',' for Legendre lattitude grid mode, SHT_folder must be defined in '//nmlfile)
+ end if
 end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the emnl fields
@@ -2596,10 +2615,14 @@ emnl%BetheParametersFile = BetheParametersFile
 emnl%Notify = Notify
 emnl%outname = energyfile       ! as off release 3.1, outname must be the same as energyfile
 emnl%addtoKiltHub = addtoKiltHub
+emnl%useDOI = useDOI
 emnl%combinesites = combinesites
 emnl%restart = restart
 emnl%uniform = uniform
-emnl%SHTfile = SHTfile
+emnl%SHT_formula = SHT_formula
+emnl%SHT_name = SHT_name
+emnl%SHT_structuresymbol = SHT_structuresymbol
+emnl%SHT_folder = trim(SHT_folder)
 
 end subroutine GetEBSDMasterNameList
 

@@ -437,8 +437,12 @@ type EBSDMasterNameListType
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname
         character(fnlen)        :: BetheParametersFile
-        character(fnlen)        :: SHTfile
+        character(fnlen)        :: SHT_folder
+        character(fnlen)        :: SHT_formula
+        character(fnlen)        :: SHT_name
+        character(fnlen)        :: SHT_structuresymbol
         character(fnlen)        :: addtoKiltHub
+        character(fnlen)        :: useDOI
         logical                 :: combinesites
         logical                 :: restart
         logical                 :: uniform
