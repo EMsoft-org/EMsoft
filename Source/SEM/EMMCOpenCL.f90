@@ -218,7 +218,7 @@ verbose = .TRUE.
 dmin = 0.05
 val = 0
 val1 = 0
-call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, dmin, sngl(mcnl%EkeV), verbose)
+call Initialize_Cell(cell,Dyn,rlp,mcnl%xtalname, dmin, sngl(mcnl%EkeV), noLUT=.TRUE., verbose=verbose)
 
 ! then calculate density, average atomic number and average atomic weight
 call CalcDensity(cell, dens, avZ, avA)

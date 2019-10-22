@@ -65,7 +65,7 @@ contains
 !> @date 08/09/18 MDG 5.4 added FSCATT interpolation option
 !--------------------------------------------------------------------------
 recursive subroutine Initialize_Cell(cell,Dyn,rlp,xtalname, dmin, voltage, &
-                                     verbose, existingHDFhead, initLUT, interpolate)
+                                     verbose, existingHDFhead, initLUT, noLUT, interpolate)
 !DEC$ ATTRIBUTES DLLEXPORT :: Initialize_Cell
 
 use local
@@ -93,12 +93,13 @@ logical,INTENT(IN),OPTIONAL                :: verbose
 type(HDFobjectStackType),OPTIONAL,INTENT(INOUT)        :: existingHDFhead
 !f2py intent(in,out) ::  existingHDFhead
 logical,INTENT(IN),OPTIONAL                :: initLUT
+logical,INTENT(IN),OPTIONAL                :: noLUT
 logical,INTENT(IN),OPTIONAL                :: interpolate
 
 integer(kind=irg)                          :: istat, io_int(3), skip
 integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
 real(kind=sgl)                             :: dhkl, io_real(3), ddt
-logical                                    :: loadingfile, justinit, interp
+logical                                    :: loadingfile, justinit, interp, compute
 real(kind=sgl),parameter                   :: gstepsize = 0.001  ! [nm^-1] interpolation stepsize
 
 interp = .FALSE.
@@ -111,7 +112,12 @@ end if
 
 justinit = .FALSE.
 if(present(initLUT)) then
-	if(initLUT) justinit = .TRUE.
+  if(initLUT) justinit = .TRUE.
+end if
+
+compute = .TRUE.
+if(present(noLUT)) then
+  if(noLUT) compute= .FALSE.
 end if
 
 if(.not. justinit) then
@@ -195,6 +201,7 @@ end if
 ! it is better to decouple these two computations. In this new approach, we'll compute a much
 ! shorter linked list based on the incident wave vector direction.
 
+if (compute) then 
 ! first, we deal with the transmitted beam
  gg = (/ 0,0,0 /)
  if (interp.eqv..TRUE.) then
@@ -250,7 +257,7 @@ izl:   do iz=-2*iml,2*iml
     call Message('Done', frm = "(A/)")
    end if
   end if
-  
+ end if  
 
 ! that's it
 end subroutine Initialize_Cell

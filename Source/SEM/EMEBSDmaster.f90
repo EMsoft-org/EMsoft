@@ -1747,11 +1747,11 @@ call Message(' Computing energy weighted master pattern',"(//A)")
 ! form the .sht file name from the formula, name, structuresymbol and voltage parameters
   SHTfile = trim(emnl%SHT_folder)//'/'//trim(emnl%SHT_formula)
 ! compound name (:brass, forsterite, alpha-quartz ... )
-  if (trim(emnl%SHT_name).ne.'undefined') then 
+  if ((trim(emnl%SHT_name).ne.'undefined').and.(trim(emnl%SHT_name).ne.'')) then
     SHTfile = trim(SHTfile)//' ('//trim(emnl%SHT_name)//')'
   end if
 ! structure symbol (StrukturBericht, Pearson, ...)
-  if (trim(emnl%SHT_structuresymbol).ne.'undefined') then 
+  if ((trim(emnl%SHT_structuresymbol).ne.'undefined').and.(trim(emnl%SHT_structuresymbol).ne.'')) then
     SHTfile = trim(SHTfile)//' ['//trim(emnl%SHT_structuresymbol)//']'
   end if
 ! voltage string 
