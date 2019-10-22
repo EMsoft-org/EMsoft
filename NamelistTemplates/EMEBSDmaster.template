@@ -41,23 +41,23 @@
 !
 ! We build the SHT output file name from the following four components:
 !
-!  formula (name) [structuresymbol]_##kV.sht
+!  formula (name) [structuresymbol] {xxx}.sht
 !
 ! where "formula" is the chemical formula (e.g. SiO2, or SrTiO3), "name" is the compound name
 ! (e.g. brass, garnet, diamond), "structuresymbol" is a reserved symbol for the structure prototype,
-! (e.g. D0_22 for StrukturBericht, hP12 for Pearson symbol).  The ## characters are replaced by 
-! the microscope accelerating voltage in kV.  "formula" MUST be defined, "name" and "structuresymbol"
+! (e.g. D0_22 for StrukturBericht, hP12 for Pearson symbol).  The xxx characters are by default replaced by 
+! the microscope accelerating voltage in kV; if the sample tilt angle is different from the standard 70°, 
+! then that angle is also part of the argument xxx.  "formula" MUST be defined, "name" and "structuresymbol"
 ! are optional. Example file names are:  (note the presence and use of spaces in the file names)
-!     Ag_10kV.sht 
-!     SrTiO3 (perovskite)_25kV.sht
-!     Mg2SiO4 (forsterite) [S1_2]_30kV.sht
-!     Cu [A1]_10kV.sht
+!     Ag {10kV}.sht 
+!     SrTiO3 (perovskite) {25kV}.sht
+!     Mg2SiO4 (forsterite) [S1_2] {30kV 75.0deg}.sht
+!     Cu [A1] {10kV}.sht
 !
  SHT_folder = 'undefined',
  SHT_formula = 'undefined',
  SHT_name = 'undefined',
  SHT_structuresymbol = 'undefined',
-! if this file will be added to the SHT database on kilthub.cmu.edu, then this parameter
-! should be set to 'Yes'; this will add the database DOI number to the Notes field in the file.
+! If a DOI number is known, enter it here; otherwise the default Zenodo DOI string for the sht repository will be used 
  useDOI = 'undefined',
  /
