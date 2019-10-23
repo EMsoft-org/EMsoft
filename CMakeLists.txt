@@ -14,7 +14,7 @@ if(${CMAKE_MAJOR_VERSION} VERSION_GREATER_EQUAL "3.13.0")
   cmake_policy(SET CMP0079 NEW)
 endif()
 
-cmake_minimum_required(VERSION 3.12.0)
+cmake_minimum_required(VERSION 3.14.5)
 
 # use, i.e. don't skip the full RPATH for the build tree
 SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
@@ -107,6 +107,33 @@ cmpGenerateBuildDate(PROJECT_NAME EMsoft)
 if(NOT "${EMsoft_RELEASE_TYPE}" STREQUAL "Official")
   string(REPLACE "/" "" EMsoft_VER_PATCH ${EMsoft_BUILD_DATE})
 endif()
+
+# --------------------------------------------------------------------
+# Print out the current Git Infomation. This is useful to help debug the dashboards
+execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
+                OUTPUT_VARIABLE EMsoft_GIT_HASH
+                RESULT_VARIABLE did_run
+                ERROR_VARIABLE git_error
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+string(REPLACE "\n" "" EMsoft_GIT_HASH "${EMsoft_GIT_HASH}")
+
+execute_process( # get abbreviated hash
+  COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE EMsoft_SHORT_GIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --pretty='%cd' --date=format:%Y-%m-%d-%H:%M:%S
+                OUTPUT_VARIABLE GVS_GIT_COMMIT_DATE
+                RESULT_VARIABLE did_run
+                ERROR_VARIABLE git_error
+                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
+)
+string(REPLACE "\n" "" GVS_GIT_COMMIT_DATE "${GVS_GIT_COMMIT_DATE}")
+message(STATUS "${PROJECT_NAME}   Git Hash:${EMsoft_GIT_HASH} committed on ${GVS_GIT_COMMIT_DATE}")
 
 
 #message(STATUS "EMsoft_BUILD_DATE: ${EMsoft_BUILD_DATE}")
@@ -355,23 +382,4 @@ if(EMsoft_ENABLE_TESTING)
   add_subdirectory(${EMsoft_SOURCE_DIR}/Source/Test ${PROJECT_BINARY_DIR}/Test)
 endif()
 
-# --------------------------------------------------------------------
-# Print out the current Git Infomation. This is useful to help debug the dashboards
-execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --verify HEAD
-                OUTPUT_VARIABLE EMsoft_GIT_HASH
-                RESULT_VARIABLE did_run
-                ERROR_VARIABLE git_error
-                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-string(REPLACE "\n" "" EMsoft_GIT_HASH "${EMsoft_GIT_HASH}")
-
-execute_process(COMMAND ${GIT_EXECUTABLE} log -1 --pretty='%cd' --date=format:%Y-%m-%d-%H:%M:%S
-                OUTPUT_VARIABLE GVS_GIT_COMMIT_DATE
-                RESULT_VARIABLE did_run
-                ERROR_VARIABLE git_error
-                WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} 
-)
-string(REPLACE "\n" "" GVS_GIT_COMMIT_DATE "${GVS_GIT_COMMIT_DATE}")
-message(STATUS "${PROJECT_NAME}   Git Hash:${EMsoft_GIT_HASH} committed on ${GVS_GIT_COMMIT_DATE}")
 
