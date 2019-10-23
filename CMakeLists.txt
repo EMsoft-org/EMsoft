@@ -103,6 +103,11 @@ include (${CMP_SOURCE_DIR}/cmpCMakeMacros.cmake )
 set(EMsoft_VER_MAJOR "5")
 set(EMsoft_VER_MINOR "0")
 set(EMsoft_VER_PATCH "1")
+
+project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
+
+include(CMakeParseArguments)
+
 cmpGenerateBuildDate(PROJECT_NAME EMsoft)
 if(NOT "${EMsoft_RELEASE_TYPE}" STREQUAL "Official")
   string(REPLACE "/" "" EMsoft_VER_PATCH ${EMsoft_BUILD_DATE})
@@ -139,10 +144,6 @@ message(STATUS "${PROJECT_NAME}   Git Hash:${EMsoft_GIT_HASH} committed on ${GVS
 #message(STATUS "EMsoft_BUILD_DATE: ${EMsoft_BUILD_DATE}")
 
 #------------------------------------------------------------------------------
-
-project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
-
-include(CMakeParseArguments)
 
 set(EMsoft_TEST_DIR "EMsofttmp")
 
