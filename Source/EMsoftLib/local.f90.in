@@ -439,9 +439,9 @@ recursive function EMsoft_getEMsoftRevision() result(revision)
 
 IMPLICIT NONE
 
-character(40) :: revision
+character(7) :: revision
 
-revision = "@EMsoft_GIT_HASH@"
+revision = "@EMsoft_SHORT_GIT_HASH@"
 
 end function EMsoft_getEMsoftRevision
 

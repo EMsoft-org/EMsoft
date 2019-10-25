@@ -1219,7 +1219,7 @@ end if
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create dmin dataset',.TRUE.)
 
 dataset = SC_latgridtype
-line2(1) = emnl%latgridtype
+line2(1) = 'Lambert'
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable to create latgridtype dataset',.TRUE.)
 

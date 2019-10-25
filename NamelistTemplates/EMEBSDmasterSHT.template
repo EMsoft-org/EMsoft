@@ -1,0 +1,59 @@
+ &EBSDmasterSHTvars
+! smallest d-spacing to take into account [nm]
+ dmin = 0.05,
+!
+! number of pixels along x-direction is fixed at 2*193+1=387 and can not be changed via this name list.
+!
+! number of OpenMP threads (0 to use the maximum available)
+ nthreads = 1,
+! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
+ energyfile = 'MCoutput.h5',
+! BetheParameters file name
+ BetheParametersFile = 'BetheParameters.nml',
+! do you wish to receive a notification (Email or Slack) when the program completes ?
+ Notify = 'Off', 
+!
+! The Spherical Indexing approach uses input master pattern files of the type .sht;
+! this file type is defined in the following repository: https://github.com/EMsoft-org/SHTfile
+!
+! We build the SHT output file name from the following four components:
+!
+!  formula (name) [structuresymbol] {xxx}.sht
+!
+! where "formula" is the chemical formula (e.g. SiO2, or SrTiO3), "name" is the compound name
+! (e.g. brass, garnet, diamond), "structuresymbol" is a reserved symbol for the structure prototype,
+! (e.g. D0_22 for StrukturBericht, hP12 for Pearson symbol).  The xxx characters are by default replaced by 
+! the microscope accelerating voltage in kV; if the sample tilt angle is different from the standard 70°, 
+! then that angle is also part of the argument xxx.  "formula" MUST be defined, "name" and "structuresymbol"
+! are optional. Example file names are:  (note the presence and use of spaces in the file names)
+!     Ag {10kV}.sht 
+!     SrTiO3 (perovskite) {25kV}.sht
+!     Mg2SiO4 (forsterite) [S1_2] {30kV 75.0deg}.sht
+!     Cu [A1] {10kV}.sht
+!
+ SHT_formula = 'undefined',
+ SHT_name = 'undefined',
+ SHT_structuresymbol = 'undefined',
+!
+! where do you want to store the file? (standard EMsoft EMdatapathname handling)
+ SHT_folder = 'undefined',
+!
+! There are three options for the useDOI parameter; this parameter should contain information on 
+! the source for the crystallographic information:
+! -  If a DOI number is known, enter it here as a complete URL: 'https://doi.org/somenumbersequence'
+! -  If a BiBTeX entry is known, format it as a single string (see example below)
+! -  If the useDOI string is left to 'undefined', then the default Zenodo DOI string will be used:
+!      'https://doi.org/10.5281/zenodo.3515408'
+!
+! for a BiBtex entry, format it as a single string with a maximum of 512 characters, 
+! like so: (no line breaks!)
+!
+! '@article{label1999a,Author={Author1, F. and Author2, G. (use et al. for more than 4 authors)},Journal={Phys. Rev B},Title={This is the title, if necessary abbreviated},Volume={124},Pages={100-120},Year={1999}}'
+!
+! FYI, 512 characters corresponds to the following four lines of 128 characters each.
+! --------------------------------------------------------------------------------------------------------------------------------
+! --------------------------------------------------------------------------------------------------------------------------------
+! --------------------------------------------------------------------------------------------------------------------------------
+! --------------------------------------------------------------------------------------------------------------------------------
+ useDOI = 'undefined',
+ /

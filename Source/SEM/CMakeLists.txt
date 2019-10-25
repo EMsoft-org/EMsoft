@@ -5,8 +5,6 @@ set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIR
 
 if(EMsoft_ENABLE_HDF5_SUPPORT)
 
-  
-  
   GetHDF5LinkLibraries(EMSOFT)
   set(EXE_LINK_LIBRARIES ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib )
 
@@ -30,8 +28,17 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
 
   Add_EMsoft_Executable(TARGET EMEBSDmaster 
                         SOURCES ${APP_DIR}/EMEBSDmaster.f90 
-                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMsoftLib_C}
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
                         TEMPLATE ${TMPLT_DIR}/EMEBSDmaster.template 
+                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                        )
+
+  Add_EMsoft_Executable(TARGET EMEBSDmasterSHT 
+                        SOURCES ${APP_DIR}/EMEBSDmasterSHT.f90 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMsoftLib_C}
+                        TEMPLATE ${TMPLT_DIR}/EMEBSDmasterSHT.template 
                         SOLUTION_FOLDER EMsoftPublic/SEM 
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}

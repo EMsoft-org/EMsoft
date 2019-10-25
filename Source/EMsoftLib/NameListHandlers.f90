@@ -2513,6 +2513,7 @@ end subroutine GetDvsDNameList
 !
 !> @date 06/19/14  MDG 1.0 new routine
 !> @date 10/21/19  MDG 2.0 adds support for .sht file format
+!> @date 10/25/19  MDG 2.1 remove .sht support; moved to new GetEBSDMasterSHTNameList routine
 !--------------------------------------------------------------------------
 recursive subroutine GetEBSDMasterNameList(nmlfile, emnl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDMasterNameList
@@ -2534,15 +2535,8 @@ integer(kind=irg)       :: Esel
 integer(kind=irg)       :: nthreads
 real(kind=sgl)          :: dmin
 character(3)            :: Notify
-character(fnlen)        :: latgridtype
 character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: energyfile
-character(fnlen)        :: SHT_folder
-character(fnlen)        :: SHT_formula
-character(fnlen)        :: SHT_name
-character(fnlen)        :: SHT_structuresymbol
-character(fnlen)        :: addtoKiltHub
-character(fnlen)        :: useDOI
 character(fnlen)        :: BetheParametersFile
 character(fnlen)        :: h5copypath
 logical                 :: combinesites
@@ -2551,8 +2545,7 @@ logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, latgridtype, h5copypath, BetheParametersFile, addtoKiltHub, &
-                          useDOI, SHT_formula, SHT_name, SHT_structuresymbol, SHT_folder
+                          combinesites, h5copypath, BetheParametersFile, stdout
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2561,16 +2554,9 @@ nthreads = 1
 Esel = -1                       ! selected energy value for single energy run
 dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
 Notify = 'Off'
-latgridtype = 'Lambert'        ! 'Lambert' (regular) or 'Legendre' (for EMSphInx indexing)
 copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a different Monte Carlo simulation
 h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
-SHT_folder = 'undefined'        ! folder to store SHT files, relative to EMDatapathname
-SHT_formula = 'undefined'       ! compound chemical formula, e.g., SiO2
-SHT_name = 'undefined'          ! compund name (e.g., forsterite)
-SHT_structuresymbol = 'undefined' ! StrukturBericht symbol (e.g., D0_22) or Pearson symbol (e.g., hP12), or ...
-addtoKiltHub = 'No'             ! file to be added to data base on kilthub.cmu.edu ?
-useDOI = 'undefined'            ! if no DOI is entered, then we use the Zenodo DOI for the .sht repository
 BetheParametersFile='BetheParameters.nml'
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
@@ -2588,17 +2574,9 @@ if (.not.skipread) then
 
 ! check for required entries
  if (trim(energyfile).eq.'undefined') then
-  call FatalError('EMEBSDmaster:',' output (energy) file name is undefined in '//nmlfile)
+  call FatalError('GetEBSDMasterNameList:',' output (energy) file name is undefined in '//nmlfile)
  end if
 
-! for Legendre mode, the SHT_formula parameter MUST be present 
- if ((trim(latgridtype).eq.'Legendre').and.(trim(SHT_formula).eq.'undefined')) then 
-  call FatalError('EMEBSDmaster:',' for Legendre lattitude grid mode, SHT_formula must be defined in '//nmlfile)
- end if
-
- if ((trim(latgridtype).eq.'Legendre').and.(trim(SHT_folder).eq.'undefined')) then 
-  call FatalError('EMEBSDmaster:',' for Legendre lattitude grid mode, SHT_folder must be defined in '//nmlfile)
- end if
 end if
 
 ! if we get here, then all appears to be ok, and we need to fill in the emnl fields
@@ -2607,25 +2585,121 @@ emnl%npx = npx
 emnl%Esel = Esel
 emnl%nthreads = nthreads
 emnl%dmin = dmin
-emnl%latgridtype = latgridtype
 emnl%copyfromenergyfile = copyfromenergyfile
 emnl%h5copypath = h5copypath
 emnl%energyfile = energyfile
 emnl%BetheParametersFile = BetheParametersFile
 emnl%Notify = Notify
 emnl%outname = energyfile       ! as off release 3.1, outname must be the same as energyfile
-emnl%addtoKiltHub = addtoKiltHub
-emnl%useDOI = useDOI
 emnl%combinesites = combinesites
 emnl%restart = restart
 emnl%uniform = uniform
+
+end subroutine GetEBSDMasterNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEBSDMasterSHTNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill mcnl structure (used by EMEBSDmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl EBSD master name list structure
+!
+!> @date 06/19/14  MDG 1.0 new routine
+!> @date 10/21/19  MDG 2.0 adds support for .sht file format
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDMasterSHTNameList(nmlfile, emnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDMasterSHTNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(EBSDMasterSHTNameListType),INTENT(INOUT)   :: emnl
+!f2py intent(in,out) ::  emnl
+logical,OPTIONAL,INTENT(IN)                     :: initonly
+
+logical                                         :: skipread = .FALSE.
+
+integer(kind=irg)       :: stdout
+integer(kind=irg)       :: nthreads
+real(kind=sgl)          :: dmin
+character(3)            :: Notify
+character(fnlen)        :: energyfile
+character(fnlen)        :: BetheParametersFile
+character(fnlen)        :: SHT_folder
+character(fnlen)        :: SHT_formula
+character(fnlen)        :: SHT_name
+character(fnlen)        :: SHT_structuresymbol
+character(fnlen)        :: addtoKiltHub
+character(fnlen)        :: useDOI
+logical                 :: combinesites
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /EBSDmasterSHTvars/ dmin,nthreads,energyfile,Notify, &
+                             combinesites, BetheParametersFile, addtoKiltHub, &
+                             useDOI, SHT_formula, SHT_name, SHT_structuresymbol, SHT_folder
+
+! set the input parameters to default values (except for xtalname, which must be present)
+stdout = 6
+nthreads = 1
+dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
+Notify = 'Off'
+energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
+BetheParametersFile='BetheParameters.nml'
+SHT_folder = 'undefined'        ! folder to store SHT files, relative to EMDatapathname
+SHT_formula = 'undefined'       ! compound chemical formula, e.g., SiO2
+SHT_name = 'undefined'          ! compund name (e.g., forsterite)
+SHT_structuresymbol = 'undefined' ! StrukturBericht symbol (e.g., D0_22) or Pearson symbol (e.g., hP12), or ...
+addtoKiltHub = 'No'             ! file to be added to data base on kilthub.cmu.edu ?
+useDOI = 'undefined'            ! if no DOI is entered, then we use the Zenodo DOI for the .sht repository
+combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=EBSDmasterSHTvars)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(energyfile).eq.'undefined') then
+  call FatalError('GetEBSDMasterSHTNameList:',' output (energy) file name is undefined in '//nmlfile)
+ end if
+
+! for Legendre mode, the SHT_formula parameter MUST be present 
+ if (trim(SHT_formula).eq.'undefined') then 
+  call FatalError('GetEBSDMasterSHTNameList:',' SHT_formula must be defined in '//nmlfile)
+ end if
+
+ if (trim(SHT_folder).eq.'undefined') then 
+  call FatalError('GetEBSDMasterSHTNameList:',' SHT_folder must be defined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+emnl%stdout = stdout
+emnl%nthreads = nthreads
+emnl%dmin = dmin
+emnl%energyfile = energyfile
+emnl%BetheParametersFile = BetheParametersFile
+emnl%Notify = Notify
+emnl%addtoKiltHub = addtoKiltHub
+emnl%useDOI = useDOI
+emnl%combinesites = combinesites
 emnl%SHT_formula = SHT_formula
 emnl%SHT_name = SHT_name
 emnl%SHT_structuresymbol = SHT_structuresymbol
 emnl%SHT_folder = trim(SHT_folder)
 
-end subroutine GetEBSDMasterNameList
-
+end subroutine GetEBSDMasterSHTNameList
 
 !--------------------------------------------------------------------------
 !
@@ -2710,6 +2784,79 @@ emnl%outname = trim(outname)
 emnl%combinesites = combinesites
 
 end subroutine GetEBSDSingleMasterNameList
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetlocalOSMMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill emnl structure (used by EMgetlocalOSM.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl name list structure
+!
+!> @date 10/22/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetlocalOSMMasterNameList(nmlfile, emnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetlocalOSMMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(localOSMNameListType),INTENT(INOUT)        :: emnl
+!f2py intent(in,out) ::  emnl
+logical,OPTIONAL,INTENT(IN)                     :: initonly
+
+logical                                         :: skipread = .FALSE.
+
+integer(kind=irg)       :: numnm
+character(fnlen)        :: dpfile
+character(fnlen)        :: outfile
+character(fnlen)        :: tracemapfile
+character(fnlen)        :: determinantmapfile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /localOSMvars/ numnm, dpfile, outfile, tracemapfile, determinantmapfile 
+
+! set the input parameters to default values (except for xtalname, which must be present)
+numnm = 20                      ! number of near matches to use for maps 
+dpfile = 'undefined'
+outfile = 'undefined'
+tracemapfile = 'undefined'
+determinantmapfile = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=localOSMvars)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(dpfile).eq.'undefined') then
+  call FatalError('GetlocalOSMMasterNameList:',' xtal file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(outfile).eq.'undefined') then
+  call FatalError('GetlocalOSMMasterNameList:',' output file name is undefined in '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+emnl%numnm = numnm
+emnl%dpfile = trim(dpfile)
+emnl%outfile = trim(outfile)
+emnl%tracemapfile = trim(tracemapfile)
+emnl%determinantmapfile = trim(determinantmapfile)
+
+end subroutine GetlocalOSMMasterNameList
 
 !--------------------------------------------------------------------------
 !

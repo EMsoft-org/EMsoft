@@ -220,7 +220,7 @@ set(FETCHCONTENT_BASE_DIR  ${EMsoft_BINARY_DIR}/SHTfile)
 FetchContent_Declare(
   SHTfile
   GIT_REPOSITORY "https://github.com/EMsoft-org/SHTfile"
-  # GIT_TAG        "v3.1.2" # just get the most recent version for now
+  GIT_TAG        "cd75885" # just get the most recent version for now
   GIT_PROGRESS    TRUE # its currently only 1 file, we probably don't need to print out progress
 )
 

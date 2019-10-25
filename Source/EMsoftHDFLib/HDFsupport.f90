@@ -1427,7 +1427,7 @@ type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
 integer(kind=irg)                                       :: success
 
-integer(kind=irg),parameter                             :: fnlenp = 133
+integer(kind=irg),parameter                             :: fnlenp = fnlen+1
 character(len=fnlenp, KIND=c_char),TARGET               :: stringarray(nlines) 
 integer(HSIZE_T)                                        :: dim0 
 integer(SIZE_T)                                         :: sdim 

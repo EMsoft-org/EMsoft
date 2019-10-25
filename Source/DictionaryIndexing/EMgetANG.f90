@@ -99,7 +99,7 @@ logical                                 :: verbose
 logical                                 :: f_exists, init, overwrite =.TRUE., refined
 real(kind=sgl)                          :: quat(4), ma, mi, dp, tstart, tstop, io_real(1), tmp, totnum_el, genfloat, vlen
 integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tick, tock, ierr, L 
-integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2)
+integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2), ss(1)
 real(kind=dbl)                          :: prefactor, F
 
 character(fnlen)                        :: modalityname
@@ -150,7 +150,12 @@ call h5open_EMsoft(hdferr)
                                 getPhi2=.TRUE.) 
     end if
 
-    Nexp = EBSDDIdata%Nexp
+    if (EBSDDIdata%Nexp.eq.-1) then 
+        ss = shape(EBSDDIdata%Phi1)
+        Nexp = ss(1)
+    else
+        Nexp = EBSDDIdata%Nexp
+    end if 
     allocate(euler_best(3,Nexp),CIlist(Nexp),stat=istat)
     if (istat .ne. 0) then
         dpfile = 'Failed to allocate CIlist_new and/or euler_bestmatch array'
@@ -162,49 +167,25 @@ call h5open_EMsoft(hdferr)
         euler_best(1,1:Nexp) = EBSDDIdata%Phi1(1:Nexp)*180.0/cPi
         euler_best(2,1:Nexp) = EBSDDIdata%Phi(1:Nexp)*180.0/cPi
         euler_best(3,1:Nexp) = EBSDDIdata%Phi2(1:Nexp)*180.0/cPi
-        deallocate(EBSDDIdata%Phi1,EBSDDIdata%Phi,EBSDDIdata%Phi2)
-        call Message(' Using original Euler angles from dot product file')
+        if (allocated(EBSDDIdata%Phi1)) deallocate(EBSDDIdata%Phi1)
+        if (allocated(EBSDDIdata%Phi)) deallocate(EBSDDIdata%Phi)
+        if (allocated(EBSDDIdata%Phi2)) deallocate(EBSDDIdata%Phi2)
+        call Message(' Using original Euler angles from dot product/SI file')
     else
         euler_best(1,1:Nexp) = EBSDDIdata%RefinedEulerAngles(1,1:Nexp)*180.0/cPi
         euler_best(2,1:Nexp) = EBSDDIdata%RefinedEulerAngles(2,1:Nexp)*180.0/cPi
         euler_best(3,1:Nexp) = EBSDDIdata%RefinedEulerAngles(3,1:Nexp)*180.0/cPi
-        deallocate(EBSDDIdata%RefinedEulerAngles)
-        call Message(' Using refined Euler angles from dot product file')
+        if (allocated(EBSDDIdata%RefinedEulerAngles)) deallocate(EBSDDIdata%RefinedEulerAngles)
+        call Message(' Using refined Euler angles from dot product/SI file')
     end if 
-    CIlist(1:Nexp) = EBSDDIdata%CI(1:Nexp)
-    deallocate(EBSDDIdata%CI)
+    if (allocated(EBSDDIdata%CI)) then 
+        CIlist(1:Nexp) = EBSDDIdata%CI(1:Nexp)
+        deallocate(EBSDDIdata%CI)
+    else
+        CIlist = 0.0
+    end if
 
-    call Message('  --> dot product EBSD HDF5 file read')
-
-! else if (trim(modalityname) .eq. 'ECP') then
-! ! fill ecpnl namelist structure here
-!     call readECPDotProductFile(enl%dotproductfile, ecpnl, hdferr, ECPDIdata, &
-!                                getCI=.TRUE., &
-!                                getPhi1=.TRUE., &
-!                                getPhi=.TRUE., &
-!                                getPhi2=.TRUE.) 
-
-!     Nexp = ECPDIdata%Nexp
-!     allocate(euler_best(3,Nexp),CIlist(Nexp),stat=istat)
-!     if (istat .ne. 0) then
-!         dpfile = 'Failed to allocate CIlist_new and/or euler_bestmatch array'
-!         call FatalError('EMAverageOrient',dpfile)
-!     end if 
-!     euler_best = 0.0
-!     CIlist = 0.0
-!     euler_best(1,1:Nexp) = ECPDIdata%Phi1(1:Nexp)*180.0/cPi
-!     euler_best(2,1:Nexp) = ECPDIdata%Phi(1:Nexp)*180.0/cPi
-!     euler_best(3,1:Nexp) = ECPDIdata%Phi2(1:Nexp)*180.0/cPi
-!     deallocate(ECPDIdata%Phi1,ECPDIdata%Phi,ECPDIdata%Phi2)
-!     CIlist(1:Nexp) = ECPDIdata%CI(1:Nexp)
-!     deallocate(ECPDIdata%CI)
-
-!     call Message('  --> dot product ECP HDF5 file read')
-
-! else
-!     dpfile = 'File '//trim(dpfile)//' is not an HDF5 file'
-!     call FatalError('EMgetCTF:',dpfile)
-! end if
+    call Message('  --> dot product EBSD HDF5 file read; xtalname = ')
 
     pgnum = GetPointGroup(enl%xtalname,NoHDFInterfaceOpen=.FALSE.)
 
@@ -235,28 +216,6 @@ call h5open_EMsoft(hdferr)
       call angebsd_writeFile(dinl,enl%xtalname,ipar,indexmain,euler_best,resultmain,EBSDDIdata%IQ,noindex=.TRUE.)
       call Message('Data stored in ang file : '//trim(enl%newangfile))
     end if
-! else if(modalityname .eq. 'ECP') then
-
-!     ecpnl%ctffile = enl%newctffile
-
-!     ipar = 0
-!     ipar(1) = 1
-!     ipar(2) = Nexp
-!     ipar(3) = Nexp
-!     ipar(4) = Nexp
-!     ipar(5) = FZcnt
-!     ipar(6) = pgnum
-
-!     allocate(indexmain(ipar(1),1:ipar(2)),resultmain(ipar(1),1:ipar(2)))
-!     indexmain = 0
-!     resultmain(1,1:ipar(2)) = CIlist(1:Nexp)
-
-!     if (ecpnl%ctffile.ne.'undefined') then 
-!       call ctfecp_writeFile(ecpnl,ipar,indexmain,euler_best,resultmain,noindex=.TRUE.)
-!       call Message('Data stored in ctf file : '//trim(enl%newctffile))
-!     end if
-
-! end if
 
 ! close the fortran HDF interface
 call h5close_EMsoft(hdferr)

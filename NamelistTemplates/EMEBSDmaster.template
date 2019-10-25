@@ -14,14 +14,6 @@
  BetheParametersFile = 'BetheParameters.nml',
 ! do you wish to receive a notification (Email or Slack) when the program completes ?
  Notify = 'Off', 
-! lattitudinal grid type:  'Lambert' or 'Legendre'
-!   'Lambert' will produce a standard master pattern file that can be used
-!    for dictionary indexing etc...
-!   'Legendre' will produce a much smaller binary SHT-master pattern file that can only 
-!    be used for spherical indexing; this file does not contain any MC data
- latgridtype = 'Lambert', 
-! ========================================================
-! =============== if latgridtype = 'Lambert' =============
 ! name of EMMCOpenCL output file to be used to copy the MC data from for this master pattern run;
 ! This can be used to perform multiple master pattern runs starting from the same MC data set without
 ! having to rerun the MC computation.  Leave this variable set to 'undefined' if not needed.
@@ -34,30 +26,4 @@
  restart = .FALSE.,
 ! create output file with uniform master patterns set to 1.0 (used to study background only)
  uniform = .FALSE.,
-! ========================================================
-! =============== if latgridtype = 'Legendre' =============
-! The Spherical Indexing approach uses input master pattern files of the type .sht;
-! this file type is defined in the following repository: https://github.com/EMsoft-org/SHTfile
-!
-! We build the SHT output file name from the following four components:
-!
-!  formula (name) [structuresymbol] {xxx}.sht
-!
-! where "formula" is the chemical formula (e.g. SiO2, or SrTiO3), "name" is the compound name
-! (e.g. brass, garnet, diamond), "structuresymbol" is a reserved symbol for the structure prototype,
-! (e.g. D0_22 for StrukturBericht, hP12 for Pearson symbol).  The xxx characters are by default replaced by 
-! the microscope accelerating voltage in kV; if the sample tilt angle is different from the standard 70°, 
-! then that angle is also part of the argument xxx.  "formula" MUST be defined, "name" and "structuresymbol"
-! are optional. Example file names are:  (note the presence and use of spaces in the file names)
-!     Ag {10kV}.sht 
-!     SrTiO3 (perovskite) {25kV}.sht
-!     Mg2SiO4 (forsterite) [S1_2] {30kV 75.0deg}.sht
-!     Cu [A1] {10kV}.sht
-!
- SHT_folder = 'undefined',
- SHT_formula = 'undefined',
- SHT_name = 'undefined',
- SHT_structuresymbol = 'undefined',
-! If a DOI number is known, enter it here; otherwise the default Zenodo DOI string for the sht repository will be used 
- useDOI = 'undefined',
  /

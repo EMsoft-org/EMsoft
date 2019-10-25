@@ -3147,7 +3147,7 @@ logical,INTENT(IN),OPTIONAL                         :: getRefinedEulerAngles
 logical,INTENT(IN),OPTIONAL                         :: presentFolder 
 
 character(fnlen)                                    :: infile, groupname, dataset
-logical                                             :: stat, readonly, g_exists
+logical                                             :: stat, readonly, g_exists, h_exists
 type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines
 integer(kind=irg),allocatable                       :: iarray(:)
@@ -3184,13 +3184,32 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 ! make sure this is an EBSD dot product file
 groupname = SC_NMLfiles
     hdferr = HDF_openGroup(groupname, HDF_head)
+
 dataset = 'EBSDDictionaryIndexingNML'
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
-if (g_exists.eqv..FALSE.) then
-    call FatalError('readEBSDDotProductFile','this is not an EBSD dot product file')
+
+dataset = 'IndexEBSD'
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),h_exists, hdferr)
+
+if ((g_exists.eqv..FALSE.).and.(h_exists.eqv..FALSE.)) then
+    call FatalError('readEBSDDotProductFile','this is not an EBSD dot product or SI file')
 end if
+
+if (g_exists) then 
+  call Message(' --> EBSD dictionary indexing file found')
+end if
+
+if (h_exists) then 
+  call Message(' --> EBSD spherical indexing file found')
+end if
+
 call HDF_pop(HDF_head)
 
+! set this value to -1 initially to trigger steps in the calling routine 
+
+EBSDDIdata%Nexp = -1
+
+if (g_exists.eqv..TRUE.) then
 !====================================
 ! read all NMLparameters group datasets
 !====================================
@@ -3201,9 +3220,9 @@ groupname = SC_EBSDIndexingNameListType
 
 ! we'll read these roughly in the order that the HDFView program displays them...
 dataset = SC_HDFstrings
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    call hdf_readdatasetstringarray(dataset, nlines, hdf_head, hdferr, stringarray)
     do ii=1,10
-      ebsdnl%HDFstrings(ii) = trim(stringarray(ii))
+      ebsdnl%hdfstrings(ii) = trim(stringarray(ii))
     end do
     deallocate(stringarray)
 
@@ -3391,6 +3410,7 @@ dataset = SC_ypc
 ! and close the NMLparameters group
     call HDF_pop(HDF_head)
     call HDF_pop(HDF_head)
+end if 
 !====================================
 !====================================
 
@@ -3404,76 +3424,145 @@ groupname = SC_Data
 
 ! integers
 dataset = SC_FZcnt
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%FZcnt)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%FZcnt)
+    else
+      call Message('  --> no FZcnt data set found ... continuing ... ')
+    end if
 
 dataset = SC_NumExptPatterns
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%Nexp)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%Nexp)
+    else
+      call Message('  --> no NumExptPatterns data set found ... continuing ... ')
+    end if
 
 dataset = SC_PointGroupNumber
-    call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%pgnum)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDDIdata%pgnum)
+    else
+      call Message('  --> no PointGroupNumber data set found ... continuing ... ')
+    end if
 
 ! various optional arrays
 if (present(getADP)) then
   if (getADP.eqv..TRUE.) then
    dataset = SC_AvDotProductMap
-   allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
-   call HDF_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
+   call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+   if (g_exists.eqv..TRUE.) then
+    allocate(EBSDDIdata%ADP(ebsdnl%ipf_wd, ebsdnl%ipf_ht))
+    call HDF_read2DImage(dataset, EBSDDIdata%ADP, ebsdnl%ipf_wd, ebsdnl%ipf_ht, HDF_head)
+   else
+        call Message('  --> no AvDotProductMap data set found ... continuing ... ')
+   end if
   end if 
 end if
 
 if (present(getAverageOrientations)) then
   if (getAverageOrientations.eqv..TRUE.) then
     dataset = SC_AverageOrientations
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%AverageOrientations)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%AverageOrientations)
+    else
+      call Message('  --> no AverageOrientations data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getCI)) then
   if (getCI.eqv..TRUE.) then
+! if this is a Spherical Indexing file, then we should look for the 'Metric' data set,
+! otherwise the CI data set 
     dataset = SC_CI
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%CI)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%CI)
+    else
+      call Message('  --> no CI data set found ... continuing ... ')
+      dataset = 'Metric'
+      call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+      if (g_exists.eqv..TRUE.) then
+        call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%CI)
+      else
+        call Message('  --> no Metric data set found ... continuing ... ')
+      end if
+    end if
   end if 
 end if
 
 if (present(getEulerAngles)) then
   if (getEulerAngles.eqv..TRUE.) then
     dataset = SC_EulerAngles
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%EulerAngles)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%EulerAngles)
+   else
+      call Message('  --> no EulerAngles data set found ... continuing ... ')
+   end if
   end if 
 end if
 
 if (present(getDictionaryEulerAngles)) then
   if (getDictionaryEulerAngles.eqv..TRUE.) then
     dataset = 'DictionaryEulerAngles'
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%DictionaryEulerAngles)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%DictionaryEulerAngles)
+    else
+      call Message('  --> no DictionaryEulerAngles data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getFit)) then
   if (getFit.eqv..TRUE.) then
     dataset = SC_Fit
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Fit)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Fit)
+    else
+      call Message('  --> no Fit data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getIQ)) then
   if (getIQ.eqv..TRUE.) then
     dataset = SC_IQ
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%IQ)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%IQ)
+    else
+      call Message('  --> no IQ data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getKAM)) then
   if (getKAM.eqv..TRUE.) then
     dataset = SC_KAM
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%KAM)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%KAM)
+    else
+      call Message('  --> no KAM data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getOSM)) then
   if (getOSM.eqv..TRUE.) then
     dataset = SC_OSM
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%OSM)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%OSM)
+    else
+      call Message('  --> no OSM data set found ... continuing ... ')
+    end if
   end if 
 end if
 
@@ -3488,42 +3577,72 @@ end if
 if (present(getPhi)) then
   if (getPhi.eqv..TRUE.) then
     dataset = SC_Phi
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi)
+    else
+      call Message('  --> no Phi data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getPhi1)) then
   if (getPhi1.eqv..TRUE.) then
     dataset = SC_Phi1
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi1)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi1)
+    else
+      call Message('  --> no Phi1 data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getPhi2)) then
   if (getPhi2.eqv..TRUE.) then
     dataset = SC_Phi2
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi2)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%Phi2)
+    else
+      call Message('  --> no Phi2 data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getSEMsignal)) then
   if (getSEMsignal.eqv..TRUE.) then
     dataset = SC_SEMsignal
-    call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%SEMsignal)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%SEMsignal)
+    else
+      call Message('  --> no SEMsignal data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getTopDotProductList)) then
   if (getTopDotProductList.eqv..TRUE.) then
     dataset = SC_TopDotProductList
-    call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%TopDotProductList)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%TopDotProductList)
+    else
+      call Message('  --> no TopDotProductList data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getTopMatchIndices)) then
   if (getTopMatchIndices.eqv..TRUE.) then
     dataset = SC_TopMatchIndices
-    call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%TopMatchIndices)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetIntegerArray2D(dataset, dims2, HDF_head, hdferr, EBSDDIdata%TopMatchIndices)
+    else
+      call Message('  --> no TopMatchIndices data set found ... continuing ... ')
+    end if
   end if 
 end if
 
@@ -3538,14 +3657,24 @@ end if
 if (present(getXPosition)) then
   if (getXPosition.eqv..TRUE.) then
     dataset = SC_XPosition
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%XPosition)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%XPosition)
+    else
+      call Message('  --> no XPosition data set found ... continuing ... ')
+    end if
   end if 
 end if
 
 if (present(getYPosition)) then
   if (getYPosition.eqv..TRUE.) then
     dataset = SC_YPosition
-    call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%YPosition)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetFloatArray1D(dataset, dims, HDF_head, hdferr, EBSDDIdata%YPosition)
+    else
+      call Message('  --> no YPosition data set found ... continuing ... ')
+    end if
   end if 
 end if
 
@@ -3579,10 +3708,20 @@ groupname = SC_Header
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 dataset = SC_StepX
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepX)
-    
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then 
+      call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepX)
+    else
+      call Message('readEBSDDotProductFile','There is no StepX data set in this file')
+    end if
+ 
 dataset = SC_StepY
-    call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepY)
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists) then 
+      call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%StepY)
+    else
+      call Message('readEBSDDotProductFile','There is no StepY data set in this file')
+    end if
 
 ! if (present()) then
 !   if (get.eqv..TRUE.) then

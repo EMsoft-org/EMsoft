@@ -431,11 +431,23 @@ type EBSDMasterNameListType
         integer(kind=irg)       :: nthreads
         real(kind=sgl)          :: dmin
         character(3)            :: Notify
-        character(fnlen)        :: latgridtype
         character(fnlen)        :: copyfromenergyfile
         character(fnlen)        :: h5copypath
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname
+        character(fnlen)        :: BetheParametersFile
+        logical                 :: combinesites
+        logical                 :: restart
+        logical                 :: uniform
+end type EBSDMasterNameListType
+
+! namelist for the EMEBSDmaster program
+type EBSDMasterSHTNameListType
+        integer(kind=irg)       :: stdout
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: dmin
+        character(3)            :: Notify
+        character(fnlen)        :: energyfile
         character(fnlen)        :: BetheParametersFile
         character(fnlen)        :: SHT_folder
         character(fnlen)        :: SHT_formula
@@ -444,9 +456,7 @@ type EBSDMasterNameListType
         character(fnlen)        :: addtoKiltHub
         character(fnlen)        :: useDOI
         logical                 :: combinesites
-        logical                 :: restart
-        logical                 :: uniform
-end type EBSDMasterNameListType
+end type EBSDMasterSHTNameListType
 
 ! namelist for the EMEBSDsinglemaster program
 type EBSDSingleMasterNameListType
@@ -568,6 +578,14 @@ type EBSDFullNameListType
         character(fnlen)        :: datafile
         character(fnlen)        :: xtalname
 end type EBSDFullNameListType
+
+type localOSMNameListType
+        integer(kind=irg)       :: numnm
+        character(fnlen)        :: dpfile
+        character(fnlen)        :: outfile
+        character(fnlen)        :: tracemapfile
+        character(fnlen)        :: determinantmapfile
+end type localOSMNameListType
 
 ! namelist for the EMTKD program
 ! note that not all of these are actually entered via a namelist file
