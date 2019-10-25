@@ -44,4 +44,20 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       INSTALL_PROGRAM TRUE
                       INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                       )
+
+  Add_EMsoft_Executable(TARGET EMIntegrateSTEM
+                      SOURCES ${APP_DIR}/EMIntegrateSTEM.f90
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      TEMPLATE ${TMPLT_DIR}/EMIntegrateSTEM.template 
+                      SOLUTION_FOLDER EMsoftPublic/TEM
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                      )
+
+  Add_EMsoft_Executable(TARGET EMdddSTEM
+                      SOURCES ${APP_DIR}/EMdddSTEM.f90
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}
+                      TEMPLATE ${TMPLT_DIR}/EMmdSTEM.template 
+                      SOLUTION_FOLDER EMsoftPublic/TEM
+                      INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
+                      )
 endif()
