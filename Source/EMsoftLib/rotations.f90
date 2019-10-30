@@ -6175,9 +6175,11 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = om2ax(o)
+res = eu2ex(om2eu(o))
 
-res = ax(1:3) * ax(4)
+!ax = om2ax(o)
+
+!res = ax(1:3) * ax(4)
 
 end function om2ex
 
@@ -6206,9 +6208,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = om2ax(o)
+res = eu2ex(om2eu(o))
+!ax = om2ax(o)
 
-res = ax(1:3) * ax(4)
+!res = ax(1:3) * ax(4)
 
 end function om2ex_d
 
@@ -6299,9 +6302,11 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = qu2ax(q)
+res = eu2ex(qu2eu(q))
 
-res = ax(1:3) * ax(4)
+! ax = qu2ax(q)
+
+! res = ax(1:3) * ax(4)
 
 end function qu2ex
 
@@ -6330,9 +6335,11 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = qu2ax(q)
+res = eu2ex(qu2eu(q))
 
-res = ax(1:3) * ax(4)
+! ax = qu2ax(q)
+
+! res = ax(1:3) * ax(4)
 
 end function qu2ex_d
 
@@ -6508,7 +6515,7 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = cu2ax(h)
+ax = ho2ax(h)
 
 res = ax(1:3) * ax(4)
 
@@ -6604,7 +6611,7 @@ real(kind=dbl), parameter       :: tol = 1.0D-10
 
 an = NORM2(e)
 
-if(abs(an) .gt. tol) then
+if(an .gt. tol) then
         n = e / an
 else
         n = (/0.0, 0.0, 1.0/)
@@ -6642,7 +6649,7 @@ real(kind=dbl), parameter       :: tol = 1.0D-10
 
 an = NORM2(e)
 
-if(abs(an) .gt. tol) then
+if(an .gt. tol) then
         n = e / an
 else
         n = (/0.0, 0.0, 1.0/)

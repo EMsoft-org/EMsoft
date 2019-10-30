@@ -1193,10 +1193,12 @@ testcounter = testcounter + 1
 ! adding all ex2xx-xx2ex tests where xx are all the other rotation representations 
 ! already implemented [added 10/29/2019 by SS]
 
+if(verbose) write(6,*) 'ex test'
 testcounter = testcounter + 1
   iex = ot%expomap
   oex = eu2ex(ex2eu(iex))
-  diff = maxval(abs(oex-ot%expomap))
+  omm = ex2om(oex)
+  diff = maxval(abs(omm-ot%om))
   if (verbose)   write (*,*) 'ex2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
@@ -1210,7 +1212,8 @@ testcounter = testcounter + 1
 testcounter = testcounter + 1
   iex = ot%expomap
   oex = om2ex(ex2om(iex))
-
+  print*,'iex = ',iex
+  print*,'oex = ',oex
   diff = maxval(abs(oex-ot%expomap))
   if (verbose)   write (*,*) 'ex2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
