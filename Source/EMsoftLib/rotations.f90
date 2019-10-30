@@ -6175,11 +6175,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(om2eu(o))
+res = qu2ex(om2qu(o))
+! ax = om2ax(o)
 
-!ax = om2ax(o)
-
-!res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function om2ex
 
@@ -6208,10 +6207,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(om2eu(o))
-!ax = om2ax(o)
+res = qu2ex(om2qu(o))
+! ax = om2ax(o)
 
-!res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function om2ex_d
 
@@ -6240,9 +6239,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = ro2ax(r)
+res = eu2ex(ro2eu(r))
+!ax = ro2ax(r)
 
-res = ax(1:3) * ax(4)
+!res = ax(1:3) * ax(4)
 
 end function ro2ex
 
@@ -6271,9 +6271,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = ro2ax(r)
+res = eu2ex(ro2eu(r))
+! ax = ro2ax(r)
 
-res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function ro2ex_d
 
@@ -6368,9 +6369,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = cu2ax(c)
+res = eu2ex(cu2eu(c))
+! ax = cu2ax(c)
 
-res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function cu2ex
 
@@ -6399,9 +6401,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = cu2ax(c)
+res = eu2ex(cu2eu(c))
+! ax = cu2ax(c)
 
-res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function cu2ex_d
 
@@ -6427,6 +6430,8 @@ IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: a(4)        
 real(kind=dbl)                  :: res(3)       !< output exponential map
+integer(kind=irg)               :: ii, ctr
+real(kind=sgl),parameter        :: thr = 1.0E-6
 
 res = a(1:3) * a(4)
 
@@ -6454,6 +6459,8 @@ IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: a(4)         
 real(kind=dbl)                  :: res(3)       !< output exponential map
+integer(kind=irg)               :: ii, ctr
+real(kind=sgl),parameter        :: thr = 1.0D-8
 
 res = a(1:3) * a(4)
 
@@ -6484,9 +6491,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = ho2ax(h)
+res = eu2ex(ho2eu(h))
+! ax = ho2ax(h)
 
-res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function ho2ex
 
@@ -6515,9 +6523,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = ho2ax(h)
+res = eu2ex(ho2eu(h))
+! ax = ho2ax(h)
 
-res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function ho2ex_d
 
@@ -6546,9 +6555,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = st2ax(s)
+res = eu2ex(st2eu(s))
+! ax = st2ax(s)
 
-res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function st2ex
 
@@ -6577,9 +6587,10 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 
 real(kind=dbl)                  :: ax(4)
 
-ax = st2ax(s)
+res = eu2ex(st2eu(s))
+! ax = st2ax(s)
 
-res = ax(1:3) * ax(4)
+! res = ax(1:3) * ax(4)
 
 end function st2ex_d
 
