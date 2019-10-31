@@ -219,7 +219,8 @@ contains
                this%dict%bits-this%bitsLeft-8) ! mask off middle/trailing bits and shift
     code = ior(b0,b1)
     if(this%bitsLeft.le.(this%dict%bits-9)) then ! code is split across 3 instead of 2 bytes
-      b2 = ishft(iand(this%encoded(this%index+2),magicBytes(8+this%dict%bits-this%bitsLeft)),this%dict%bits-this%bitsLeft-16) ! mask off middle/trailing bits and shift
+      b2 = ishft(iand(int(this%encoded(this%index+2),int16),magicBytes(8+this%dict%bits-this%bitsLeft)),&
+                 this%dict%bits-this%bitsLeft-16) ! mask off middle/trailing bits and shift
       code = ior(code,b2)
       this%index = this%index + 1
       this%bitsLeft = 16 - this%dict%bits + this%bitsLeft
