@@ -1510,7 +1510,7 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 
 res = 1
 
-r = NORM2(ex)
+r = vecnorm(ex)
 if ((r - cPi) .ge. eps) then
    call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
 endif
@@ -1549,7 +1549,7 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 
 res = 1
 
-r = NORM2(ex)
+r = vecnorm(ex)
 if ((r - cPi) .ge. eps) then
    call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
 endif
@@ -6620,7 +6620,7 @@ real(kind=dbl)                  :: res(4)       !< output axis angle pair
 real(kind=dbl)                  :: an, n(3)
 real(kind=dbl), parameter       :: tol = 1.0D-10
 
-an = NORM2(e)
+an = vecnorm(e)
 
 if(an .gt. tol) then
         n = e / an
@@ -6658,7 +6658,7 @@ real(kind=dbl)                  :: res(4)       !< output exponential map
 real(kind=dbl)                  :: an, n(3)
 real(kind=dbl), parameter       :: tol = 1.0D-10
 
-an = NORM2(e)
+an = vecnorm(e)
 
 if(an .gt. tol) then
         n = e / an
