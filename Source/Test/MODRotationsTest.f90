@@ -7540,12 +7540,6 @@ testcounter = testcounter + 1
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     print*,'iex = ',ist
-     print*,'oex = ',oex
-     print*,'om = ',iom
-     print*,'om2 = ',ot%om
-     print*,'diff = ',diff
-     print*,'diffmax = ',diffmax
      write (*,*) 'test # ',testcounter,' failed : ax2ex-om2ax-ex2om ',rots(1:3,i)
      res = testcounter
      return
