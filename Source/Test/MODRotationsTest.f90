@@ -65,7 +65,7 @@ integer(C_INT32_T),INTENT(OUT)  :: res
 real(kind=dbl)        :: ieu(3), oeu(3), iro(4), oro(4), iho(3), oho(3), icu(3), ocu(3), ist(3)
 real(kind=dbl)        :: iax(4), oax(4), iqu(4), oqu(4), ivec(3), ovec(3), ost(3), iex(3), oex(3)
 real(kind=dbl)        :: iom(3,3), oom(3,3), omm(3,3), diff, diffmax, dtor, aux
-real(kind=dbl),parameter :: maxerr = 1.0D-9
+real(kind=dbl),parameter :: maxerr = 5.0D-8
 integer(kind=irg)     :: tcnt, i,  numarg, testcounter, testsfailed
 integer(kind=irg),parameter :: rcnt = 75
 character(fnlen)      :: arg
@@ -7540,6 +7540,12 @@ testcounter = testcounter + 1
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
+     print*,'iex = ',ist
+     print*,'oex = ',oex
+     print*,'om = ',iom
+     print*,'om2 = ',ot%om
+     print*,'diff = ',diff
+     print*,'diffmax = ',diffmax
      write (*,*) 'test # ',testcounter,' failed : ax2ex-om2ax-ex2om ',rots(1:3,i)
      res = testcounter
      return
