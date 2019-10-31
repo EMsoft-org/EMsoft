@@ -1510,7 +1510,8 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 
 res = 1
 
-r = sqrt(sum(ex**2))
+r = vecnorm(ex)
+
 if ((r - cPi) .ge. eps) then
    call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
 endif
@@ -1549,7 +1550,8 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 
 res = 1
 
-r = sqrt(sum(ex**2))
+r = vecnorm(ex)
+
 if ((r - cPi) .ge. eps) then
    call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
 endif
