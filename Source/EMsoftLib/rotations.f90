@@ -1511,6 +1511,7 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 res = 1
 
 r = vecnorm(ex)
+
 if ((r - cPi) .ge. eps) then
    call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
 endif
@@ -1550,6 +1551,7 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 res = 1
 
 r = vecnorm(ex)
+
 if ((r - cPi) .ge. eps) then
    call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
 endif
@@ -6176,9 +6178,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = qu2ex(om2qu(o))
-! ax = om2ax(o)
-
-! res = ax(1:3) * ax(4)
 
 end function om2ex
 
@@ -6208,9 +6207,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = qu2ex(om2qu(o))
-! ax = om2ax(o)
-
-! res = ax(1:3) * ax(4)
 
 end function om2ex_d
 
@@ -6240,9 +6236,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(ro2eu(r))
-!ax = ro2ax(r)
-
-!res = ax(1:3) * ax(4)
 
 end function ro2ex
 
@@ -6272,9 +6265,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(ro2eu(r))
-! ax = ro2ax(r)
-
-! res = ax(1:3) * ax(4)
 
 end function ro2ex_d
 
@@ -6305,10 +6295,6 @@ real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(qu2eu(q))
 
-! ax = qu2ax(q)
-
-! res = ax(1:3) * ax(4)
-
 end function qu2ex
 
 !--------------------------------------------------------------------------
@@ -6338,10 +6324,6 @@ real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(qu2eu(q))
 
-! ax = qu2ax(q)
-
-! res = ax(1:3) * ax(4)
-
 end function qu2ex_d
 
 !--------------------------------------------------------------------------
@@ -6370,9 +6352,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(cu2eu(c))
-! ax = cu2ax(c)
-
-! res = ax(1:3) * ax(4)
 
 end function cu2ex
 
@@ -6402,9 +6381,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(cu2eu(c))
-! ax = cu2ax(c)
-
-! res = ax(1:3) * ax(4)
 
 end function cu2ex_d
 
@@ -6492,9 +6468,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(ho2eu(h))
-! ax = ho2ax(h)
-
-! res = ax(1:3) * ax(4)
 
 end function ho2ex
 
@@ -6524,9 +6497,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(ho2eu(h))
-! ax = ho2ax(h)
-
-! res = ax(1:3) * ax(4)
 
 end function ho2ex_d
 
@@ -6556,9 +6526,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(st2eu(s))
-! ax = st2ax(s)
-
-! res = ax(1:3) * ax(4)
 
 end function st2ex
 
@@ -6588,9 +6555,6 @@ real(kind=dbl)                  :: res(3)       !< output exponential map
 real(kind=dbl)                  :: ax(4)
 
 res = eu2ex(st2eu(s))
-! ax = st2ax(s)
-
-! res = ax(1:3) * ax(4)
 
 end function st2ex_d
 
@@ -6620,7 +6584,7 @@ real(kind=dbl)                  :: res(4)       !< output axis angle pair
 real(kind=dbl)                  :: an, n(3)
 real(kind=dbl), parameter       :: tol = 1.0D-10
 
-an = vecnorm(e)
+an = sqrt(sum(e**2))
 
 if(an .gt. tol) then
         n = e / an
@@ -6658,7 +6622,7 @@ real(kind=dbl)                  :: res(4)       !< output exponential map
 real(kind=dbl)                  :: an, n(3)
 real(kind=dbl), parameter       :: tol = 1.0D-10
 
-an = vecnorm(e)
+an = sqrt(sum(e**2))
 
 if(an .gt. tol) then
         n = e / an
