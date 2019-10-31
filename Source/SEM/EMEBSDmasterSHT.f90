@@ -760,7 +760,7 @@ call Message(' Computing energy weighted master pattern',"(//A)")
 
 !=====================================
 ! normalize the master patterns by subtracting the mean and dividing by the standard deviation 
-  call Message(' Normaling master patterns ')
+  call Message(' Normalizing master patterns ')
   mean = sum(finalmLPNH) / dble( (2*d+1)*(2*d+1) )
   sdev = sqrt( sum( (finalmLPNH - mean)**2 )/ dble((2*d+1)*(2*d+1) - 1) )
   finalmLPNH = (finalmLPNH - mean) / sdev 
@@ -836,7 +836,7 @@ call Message(' Computing energy weighted master pattern',"(//A)")
 
   revision = trim(EMsoft_getEMsoftRevision())
   notestring = ''
-  
+
   cprm = cstringify(emnl%SHT_formula)// &
          cstringify(emnl%SHT_name)// &
          cstringify(emnl%SHT_structuresymbol)// &

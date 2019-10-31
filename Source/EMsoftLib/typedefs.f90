@@ -1377,7 +1377,7 @@ type orientationtype
   real(kind=sgl)        :: homochoric(3)        ! homochoric representation according to Frank's paper  
   real(kind=sgl)        :: cubochoric(3)        ! cubic grid representation (derived from homochoric)
   real(kind=sgl)        :: stereographic(3)     ! 3D stereographic  [added 10/05/17]
-  real(kind=sgl)        :: expomap(3)           ! exponential map [added 10/25/19]
+  real(kind=sgl)        :: rvmap(3)             ! exponential map [added 10/25/19]
 end type orientationtype
 
 
@@ -1391,7 +1391,7 @@ type orientationtyped
   real(kind=dbl)        :: homochoric(3)        ! homochoric representation according to Frank's paper  
   real(kind=dbl)        :: cubochoric(3)        ! cubic grid representation (derived from homochoric)
   real(kind=dbl)        :: stereographic(3)     ! 3D stereographic  [added 10/05/17]
-  real(kind=dbl)        :: expomap(3)           ! exponential map [added 10/25/19]
+  real(kind=dbl)        :: rvmap(3)             ! exponential map [added 10/25/19]
 end type orientationtyped
 
 !--------------------------------------------------------------------------
