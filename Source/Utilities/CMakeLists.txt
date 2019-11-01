@@ -228,7 +228,7 @@ Add_EMsoft_Executable(TARGET EMcuboMK
 
 Add_EMSoft_Executable(TARGET EMOpenCLinfo 
                               SOURCES ${APP_DIR}/EMOpenCLinfo.f90 
-                              LINK_LIBRARIES EMsoftLib
+                              LINK_LIBRARIES EMsoftLib EMOpenCLLib
                               SOLUTION_FOLDER EMsoftPublic/Utilities 
                               INSTALL_PROGRAM TRUE
                               INCLUDE_DIRS ${EMsoftLib_BINARY_DIR}

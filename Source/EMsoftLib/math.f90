@@ -46,6 +46,7 @@
 !> @date 08/23/19 MDG 4.3 removed spaces around "kind" statements to facilitate f90wrap python wrapper generation
 !> @date 10/04/19 MDG 4.4 adds vecnorm to replace non-standard NORM2 calls  (F2003 compliance)
 !> @date 10/04/19 MDG 4.5 adds nan() function, returning a single or double precision IEEE NaN value
+!> @date 11/01/19 MDG 4.6 adds Jaccard_Distance routine (moved from Indexingmod)
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -3475,5 +3476,82 @@ end do
 
 end function CalcDeterminant
 
+!--------------------------------------------------------------------------
+!
+! function: Jaccard_Distance
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief calculate mutual information or Jaquard distance
+!
+!> @param img1 input image 1
+!> @param img2 input image 1
+!> @param nn size of (square) image 
+!> @param mutualinformation logical switch
+! 
+!> @date 11/17/15 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive function Jaccard_Distance(img1,img2,nn,mutualinformation) result(JD)
+!DEC$ ATTRIBUTES DLLEXPORT :: Jaccard_Distance
+
+use local
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)      :: nn
+integer(kind=irg),INTENT(IN)      :: img1(nn)
+integer(kind=irg),INTENT(IN)      :: img2(nn)
+logical,INTENT(IN),OPTIONAL       :: mutualinformation
+
+real(kind=dbl)                    :: JD
+real(kind=sgl)                    :: hist1(256), hist2(256), jhist(256,256), H1, H2, H12
+integer(kind=irg)                 :: ii, jj, kk
+
+hist1 = 0.D0
+hist2 = 0.D0
+jhist = 0.D0
+
+H1 = 0.D0
+H2 = 0.D0
+H12 = 0.D0
+
+do ii = 1,nn
+    jj = img1(ii)+1
+    kk = img2(ii)+1
+    jhist(jj,kk) =  jhist(jj,kk) + 1.D0
+end do
+
+jhist = jhist/nn
+
+hist1(1:256) = sum(jhist,2)
+hist2(1:256) = sum(jhist,1)
+
+do ii = 0,255
+
+    if (hist1(ii+1) .ne. 0.0) then
+        H1 = H1 + hist1(ii+1)*log(hist1(ii+1))
+    end if
+    if (hist2(ii+1) .ne. 0.0) then
+        H2 = H2 + hist2(ii+1)*log(hist2(ii+1))
+    end if
+
+    do jj = 0,255
+        if (jhist(ii+1,jj+1) .ne. 0.0) then
+            H12 = H12 + jhist(ii+1,jj+1)*log(jhist(ii+1,jj+1))
+        end if
+    end do
+end do
+
+if (present(mutualinformation)) then
+  if (mutualinformation.eqv..TRUE.) then 
+    JD = (H1 + H2) - H12
+  else
+    JD = 2.D0 - (H1 + H2)/H12  
+  end if
+else
+    JD = 2.D0 - (H1 + H2)/H12  
+end if
+
+end function Jaccard_Distance
 
 end module math

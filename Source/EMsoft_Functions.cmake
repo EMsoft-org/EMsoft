@@ -56,6 +56,16 @@ macro(GetHDF5LinkLibraries PREFIX)
   endif()
 endmacro()
 
+# #-------------------------------------------------------------------------------
+# #
+# #
+# macro(GetOpenCLLinkLibraries PREFIX)
+  
+#   set(lib_type "static")
+#   set(${PREFIX}_OpenCLLinkLibs ${${PREFIX}_OpenCLLinkLibs} ${lib_type})
+  
+# endmacro()
+
 
 #---------------------------------------------------------------------
 # This function creates an executable that is to be compiled. The valid
