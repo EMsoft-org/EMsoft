@@ -94,7 +94,7 @@ use local
 use rotations
 use constants
 use filters
-use Indexingmod, ONLY:Jaccard_Distance
+use math, ONLY:Jaccard_Distance
 use EBSDmod
 use error
 
@@ -317,7 +317,7 @@ use local
 use rotations
 use constants
 use filters
-use Indexingmod, ONLY:Jaccard_Distance
+use math, ONLY:Jaccard_Distance
 use ECPmod
 
 use,INTRINSIC :: ISO_C_BINDING

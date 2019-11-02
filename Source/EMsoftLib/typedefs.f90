@@ -1895,7 +1895,50 @@ type EBSDDetectorType
         type(EBSDPixel),allocatable     :: detector(:,:) 
 end type EBSDDetectorType
 
+!=======================================
+!=======================================
+!=======================================
+! these are used by the various indexing modules
+type EBSDAngleDIType
+        real(kind=sgl),allocatable      :: quatang(:,:)
+end type EBSDAngleDIType
 
+type EBSDLargeAccumDIType
+        integer(kind=irg),allocatable   :: accum_e(:,:,:),accum_z(:,:,:,:)
+        real(kind=sgl),allocatable      :: accum_e_detector(:,:,:)
+end type EBSDLargeAccumDIType
+
+type EBSDMasterDIType
+        real(kind=sgl),allocatable      :: mLPNH(:,:,:) , mLPSH(:,:,:)
+        real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)          ! auxiliary detector arrays needed for interpolation
+end type EBSDMasterDIType
+        
+type EBSDDIdataType
+  integer(kind=irg)             :: FZcnt
+  integer(kind=irg)             :: Nexp
+  integer(kind=irg)             :: pgnum
+  integer(kind=sgl),allocatable :: ADP(:,:)
+  real(kind=sgl),allocatable    :: AverageOrientations(:,:)
+  real(kind=sgl),allocatable    :: CI(:)
+  real(kind=sgl),allocatable    :: EulerAngles(:,:)
+  real(kind=sgl),allocatable    :: DictionaryEulerAngles(:,:)
+  real(kind=sgl),allocatable    :: Fit(:)
+  real(kind=sgl),allocatable    :: IQ(:)
+  real(kind=sgl),allocatable    :: KAM(:,:)
+  real(kind=sgl),allocatable    :: OSM(:,:)
+  integer(kind=irg),allocatable :: Phase(:)
+  real(kind=sgl),allocatable    :: Phi1(:)
+  real(kind=sgl),allocatable    :: Phi(:)
+  real(kind=sgl),allocatable    :: Phi2(:)
+  integer(kind=irg),allocatable :: SEMsignal(:)
+  real(kind=sgl),allocatable    :: TopDotProductList(:,:)
+  integer(kind=irg),allocatable :: TopMatchIndices(:,:)
+  integer(kind=irg),allocatable :: Valid(:)
+  real(kind=sgl),allocatable    :: XPosition(:)
+  real(kind=sgl),allocatable    :: YPosition(:)
+  real(kind=sgl),allocatable    :: RefinedEulerAngles(:,:)
+  real(kind=sgl),allocatable    :: RefinedDotProducts(:)
+end type EBSDDIdataType
 
 
 end module typedefs

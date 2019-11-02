@@ -1201,7 +1201,7 @@ use rotations
 use constants
 use distortion
 use filters
-use Indexingmod, ONLY:Jaccard_Distance
+use math, ONLY:Jaccard_Distance
 use,INTRINSIC :: ISO_C_BINDING
            
 implicit none
@@ -1618,7 +1618,7 @@ use rotations
 use constants
 use distortion
 use filters
-use Indexingmod, ONLY:Jaccard_Distance
+use math, ONLY:Jaccard_Distance
 use,INTRINSIC :: ISO_C_BINDING
            
 implicit none
@@ -1849,7 +1849,7 @@ use constants
 use distortion 
 use,INTRINSIC :: ISO_C_BINDING
 use filters
-use Indexingmod, ONLY:Jaccard_Distance
+use math, ONLY:Jaccard_Distance
 
 IMPLICIT NONE
 

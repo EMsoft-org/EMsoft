@@ -59,6 +59,7 @@ use io
 use error
 use initializers
 use detectors
+use Indexingmod
 use EBSDmod
 use EBSDDImod
 use HDF5

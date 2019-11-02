@@ -46,7 +46,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/bmp.f90
   ${EMsoftLib_SOURCE_DIR}/bobyqa_refinement.f90
   ${EMsoftLib_SOURCE_DIR}/bobyqa.f90
-  ${EMsoftLib_SOURCE_DIR}/CLsupport.f90
+  # ${EMsoftLib_SOURCE_DIR}/CLsupport.f90
   ${EMsoftLib_SOURCE_DIR}/configmod.f90
   ${EMsoftLib_SOURCE_DIR}/constants.f90
   ${EMsoftLib_SOURCE_DIR}/crystal.f90
@@ -71,7 +71,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/image_io.f90
   ${EMsoftLib_SOURCE_DIR}/image.f90
   ${EMsoftLib_SOURCE_DIR}/imageOPs.f90
-  ${EMsoftLib_SOURCE_DIR}/Indexingmod.f90
+  # ${EMsoftLib_SOURCE_DIR}/Indexingmod.f90
   ${EMsoftLib_SOURCE_DIR}/initializers.f90
   ${EMsoftLib_SOURCE_DIR}/io.f90
   ${EMsoftLib_SOURCE_DIR}/JSONsupport.f90
