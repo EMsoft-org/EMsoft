@@ -22,14 +22,13 @@ set(EMOpenCLLib_SRCS
 # 	${EMOpenCLLib_SOURCE_DIR}/EMdymodHDF.f90
 )
 
-# GetOpenCLLinkLibraries(EMSOFT)
-
 add_library(EMOpenCLLib ${LIB_TYPE} ${EMOpenCLLib_SRCS})
 
 target_include_directories(EMOpenCLLib 
                           PUBLIC 
                             ${CLFortran_INSTALL}/include
                             $<BUILD_INTERFACE:${EMsoftLib_BINARY_DIR}>
+                            $<BUILD_INTERFACE:${EMsoftHDFLib_BINARY_DIR}>
                           PRIVATE
                             "${EMsoft_SOURCE_DIR}/Source"                            
                     )
@@ -37,6 +36,7 @@ target_include_directories(EMOpenCLLib
 target_link_libraries(EMOpenCLLib 
                           ${CLFortran_INSTALL}/lib/libclfortran.a 
                           EMsoftLib 
+                          EMsoftHDFLib 
 )
 
 set_target_properties (EMOpenCLLib PROPERTIES

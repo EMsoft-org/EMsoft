@@ -33,12 +33,13 @@ set(EMsoftWrapperLib_HEADERS
 
 
 add_library(EMsoftWrapperLib ${LIB_TYPE} ${EMsoftWrapperLib_SOURCES} ${EMsoftWrapperLib_HEADERS})
-target_link_libraries(EMsoftWrapperLib EMsoftHDFLib)
+target_link_libraries(EMsoftWrapperLib EMsoftHDFLib EMOpenCLLib)
 
 target_include_directories(EMsoftWrapperLib 
       PUBLIC ${FFTW3_INCLUDE_DIR} 
       PUBLIC ${CLFORTRAN_INCLUDE_DIR}
       $<BUILD_INTERFACE:${EMsoftHDFLib_BINARY_DIR}>
+      $<BUILD_INTERFACE:${EMOpenCLLib_BINARY_DIR}>
 )
 
 set_target_properties (EMsoftWrapperLib PROPERTIES
