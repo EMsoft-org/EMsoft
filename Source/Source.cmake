@@ -21,14 +21,14 @@ include("${EMsoft_SOURCE_DIR}/Source/EMsoft_Functions.cmake")
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftLib ${PROJECT_BINARY_DIR}/EMsoftLib)
 
-option(EMsoft_ENABLE_OpenCL_SUPPORT "Enable OpenCL support" ON)
-if( ${EMsoft_ENABLE_OpenCL_SUPPORT} )
-  add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMOpenCLLib ${PROJECT_BINARY_DIR}/EMOpenCLLib)
-endif()
-
 option(EMsoft_ENABLE_HDF5_SUPPORT "Enable HDF5 based I/O" ON)
 if( ${EMsoft_ENABLE_HDF5_SUPPORT} )
   add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftHDFLib ${PROJECT_BINARY_DIR}/EMsoftHDFLib)
+endif()
+
+option(EMsoft_ENABLE_OpenCL_SUPPORT "Enable OpenCL support" ON)
+if( ${EMsoft_ENABLE_OpenCL_SUPPORT} )
+  add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMOpenCLLib ${PROJECT_BINARY_DIR}/EMOpenCLLib)
 endif()
 
 set(MODALITY_DIRS
