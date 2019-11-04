@@ -14,8 +14,9 @@ if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
                         )
+endif()
 
-elseif(EMsoft_ENABLE_HDF5_SUPPORT)
+if(EMsoft_ENABLE_HDF5_SUPPORT)
 
       GetHDF5LinkLibraries(EMSOFT)
       set(EXE_LINK_LIBRARIES ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib)
