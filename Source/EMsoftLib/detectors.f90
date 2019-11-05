@@ -423,6 +423,102 @@ end if
 end subroutine GeneratemyEBSDDetector
 
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GeneratedefectEBSDDetector
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief generate the detector arrays for the case where each pattern has a (slightly) different detector configuration
+!
+!> @param enl EBSD name list structure
+!
+!> @date 11/05/19  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GeneratedefectEBSDDetector(enl, mcnl, nsx, nsy, tgx, tgy, tgz, patcntr)
+!DEC$ ATTRIBUTES DLLEXPORT :: GeneratedefectEBSDDetector
+
+use local
+use typedefs
+use NameListTypedefs
+use files
+use constants
+use io
+use Lambert
+
+IMPLICIT NONE
+
+type(EBSDNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
+type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+!f2py intent(in,out) ::  mcnl
+integer(kind=irg),INTENT(IN)            :: nsx
+integer(kind=irg),INTENT(IN)            :: nsy
+real(kind=sgl),INTENT(INOUT)            :: tgx(nsx,nsy)
+!f2py intent(in,out) ::  tgx
+real(kind=sgl),INTENT(INOUT)            :: tgy(nsx,nsy)
+!f2py intent(in,out) ::  tgy
+real(kind=sgl),INTENT(INOUT)            :: tgz(nsx,nsy)
+!f2py intent(in,out) ::  tgz
+real(kind=sgl),INTENT(IN)               :: patcntr(3)
+
+real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
+real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
+real(kind=sgl)                          :: alp, ca, sa, cw, sw
+real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
+real(kind=sgl),allocatable              :: z(:,:)           
+integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp     ! various parameters
+real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
+real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
+real(kind=sgl)                          :: ixy(2)
+
+!====================================
+! ------ generate the detector arrays
+!====================================
+xpc = patcntr(1)
+ypc = patcntr(2)
+L = patcntr(3)
+
+allocate(scin_x(nsx),scin_y(nsy),stat=istat)
+! if (istat.ne.0) then ...
+scin_x = - ( -xpc - ( 1.0 - nsx ) * 0.5 - (/ (i-1, i=1,nsx) /) ) * enl%delta
+scin_y = ( ypc - ( 1.0 - nsy ) * 0.5 - (/ (i-1, i=1,nsy) /) ) * enl%delta
+
+! auxiliary angle to rotate between reference frames
+alp = 0.5 * cPi - (mcnl%sig - enl%thetac) * dtor
+ca = cos(alp)
+sa = sin(alp)
+
+cw = cos(mcnl%omega * dtor)
+sw = sin(mcnl%omega * dtor)
+
+elp = nsy + 1
+L2 = L * L
+do j=1,nsx
+  sx = L2 + scin_x(j) * scin_x(j)
+  Ls = -sw * scin_x(j) + L*cw
+  Lc = cw * scin_x(j) + L*sw
+  do i=1,nsy
+   rhos = 1.0/sqrt(sx + scin_y(i)**2)
+   tgx(j,elp-i) = (scin_y(i) * ca + sa * Ls) * rhos!Ls * rhos
+   tgy(j,elp-i) = Lc * rhos!(scin_x(i) * cw + Lc * sw) * rhos
+   tgz(j,elp-i) = (-sa * scin_y(i) + ca * Ls) * rhos!(-sw * scin_x(i) + Lc * cw) * rhos
+  end do
+end do
+deallocate(scin_x, scin_y)
+
+! normalize the direction cosines.
+allocate(z(enl%numsx,enl%numsy))
+  z = 1.0/sqrt(tgx*tgx+tgy*tgy+tgz*tgz)
+  tgx = tgx*z
+  tgy = tgy*z
+  tgz = tgz*z
+deallocate(z)
+!====================================
+
+! for the defect EBSD mode we do not create a realistic background,
+! so no need to deal with the energy arrays at all...
+end subroutine GeneratedefectEBSDDetector
 
 !--------------------------------------------------------------------------
 !
