@@ -3718,6 +3718,121 @@ end subroutine GetEBSDNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetEBSDdefectNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMEBSDdefect.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl EBSD name list structure
+!
+!> @date 11/05/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDdefectNameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDdefectNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                   :: nmlfile
+type(EBSDdefectNameListType),INTENT(INOUT)    :: enl
+!f2py intent(in,out) ::  enl
+logical,OPTIONAL,INTENT(IN)                   :: initonly
+
+logical                                       :: skipread = .FALSE.
+
+integer(kind=irg)       :: stdout
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: binning
+integer(kind=irg)       :: nthreads
+real(kind=sgl)          :: thetac
+real(kind=sgl)          :: delta
+real(kind=sgl)          :: omega
+real(kind=sgl)          :: gammavalue
+real(kind=dbl)          :: beamcurrent
+real(kind=dbl)          :: dwelltime
+character(3)            :: scalingmode
+character(fnlen)        :: deformationfile
+character(fnlen)        :: masterfile
+character(fnlen)        :: datafile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, &
+                             masterfile, datafile, beamcurrent, dwelltime, gammavalue, &
+                             scalingmode, nthreads, omega
+
+! set the input parameters to default values (except for xtalname, which must be present)
+stdout          = 6
+numsx           = 0             ! [dimensionless]
+numsy           = 0             ! [dimensionless]
+nthreads        = 1             ! number of OpenMP threads
+thetac          = 0.0           ! [degrees]
+delta           = 25.0          ! [microns]
+omega           = 0.0
+gammavalue      = 1.0           ! gamma factor
+beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
+dwelltime       = 100.0D0       ! in microseconds
+scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
+eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
+deformationfile = 'undefined'   ! filename
+masterfile      = 'undefined'   ! filename
+datafile        = 'undefined'   ! output file name
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=EBSDdefectdata)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(deformationfile).eq.'undefined') then
+  call FatalError('GetEBSDdefectNameList:',' deformationfile file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(masterfile).eq.'undefined') then
+  call FatalError('GetEBSDdefectNameList:',' master pattern file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('GetEBSDdefectNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDdefectNameList:',' pattern size numsx is zero '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDdefectNameList:',' pattern size numsy is zero '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the enl fields
+enl%stdout = stdout
+enl%numsx = numsx
+enl%numsy = numsy
+enl%nthreads = nthreads
+enl%thetac = thetac
+enl%delta = delta
+enl%gammavalue = gammavalue
+enl%beamcurrent = beamcurrent
+enl%dwelltime = dwelltime
+enl%scalingmode = scalingmode
+enl%deformationfile = deformationfile
+enl%masterfile = masterfile
+enl%datafile = datafile
+enl%omega = omega
+
+end subroutine GetEBSDdefectNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetTKDNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University
