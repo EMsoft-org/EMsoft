@@ -460,7 +460,7 @@ real(kind=sgl),INTENT(INOUT)                  :: tgy(nsx,nsy)
 !f2py intent(in,out) ::  tgy      
 real(kind=sgl),INTENT(INOUT)                  :: tgz(nsx,nsy)
 !f2py intent(in,out) ::  tgz      
-real(kind=sgl),INTENT(IN)                     :: patcntr(3)
+real(kind=dbl),INTENT(IN)                     :: patcntr(3)
       
 real(kind=sgl),allocatable                    :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
 real(kind=sgl),parameter                      :: dtor = 0.0174533  ! convert from degrees to radians
@@ -475,9 +475,9 @@ real(kind=sgl)                                :: ixy(2)
 !====================================
 ! ------ generate the detector arrays
 !====================================
-xpc = patcntr(1)
-ypc = patcntr(2)
-L = patcntr(3)
+xpc = sngl(patcntr(1))
+ypc = sngl(patcntr(2))
+L = sngl(patcntr(3))
 
 allocate(scin_x(nsx),scin_y(nsy),stat=istat)
 ! if (istat.ne.0) then ...
@@ -508,7 +508,7 @@ end do
 deallocate(scin_x, scin_y)
 
 ! normalize the direction cosines.
-allocate(z(enl%numsx,enl%numsy))
+allocate(z(nsx,nsy))
   z = 1.0/sqrt(tgx*tgx+tgy*tgy+tgz*tgz)
   tgx = tgx*z
   tgy = tgy*z

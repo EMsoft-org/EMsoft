@@ -57,8 +57,8 @@ type EBSDAnglePCDefType
         real(kind=sgl),allocatable      :: quatang(:,:)
         real(kind=sgl),allocatable      :: pcs(:,:)
         real(kind=sgl),allocatable      :: deftensors(:,:,:)
-        real(kind=sgl),allocatable      :: pcfield(:,:,:)
-        real(kind=sgl),allocatable      :: deftensorfield(:,:,:,:)
+        real(kind=dbl),allocatable      :: pcfield(:,:,:)
+        real(kind=dbl),allocatable      :: deftensorfield(:,:,:,:)
 end type EBSDAnglePCDefType
 
 type EBSDLargeAccumType
@@ -1176,7 +1176,7 @@ real(kind=sgl),INTENT(IN)                       :: rgx(ipar(2),ipar(3))
 real(kind=sgl),INTENT(IN)                       :: rgy(ipar(2),ipar(3))
 real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(3))
 real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2),ipar(3))
-real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3,ipar(7))
+real(kind=dbl),INTENT(IN)                       :: Fmatrix(3,3,ipar(7))
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
 real(kind=sgl)                                  :: dc(3),ixy(2),scl
@@ -1191,7 +1191,6 @@ integer(kind=irg)                               :: nix,niy,nixp,niyp
 ! ipar(5) = ebsdnl%npy
 ! ipar(6) = not used 
 ! ipar(7) = number of depth steps
-
 
 allocate(EBSDpattern(ipar(2),ipar(3)),stat=istat)
 
