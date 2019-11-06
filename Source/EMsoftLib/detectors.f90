@@ -448,29 +448,29 @@ use Lambert
 
 IMPLICIT NONE
 
-type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(EBSDdefectNameListType),INTENT(INOUT)    :: enl
 !f2py intent(in,out) ::  enl
-type(MCCLNameListType),INTENT(INOUT)    :: mcnl
+type(MCCLNameListType),INTENT(INOUT)          :: mcnl
 !f2py intent(in,out) ::  mcnl
-integer(kind=irg),INTENT(IN)            :: nsx
-integer(kind=irg),INTENT(IN)            :: nsy
-real(kind=sgl),INTENT(INOUT)            :: tgx(nsx,nsy)
-!f2py intent(in,out) ::  tgx
-real(kind=sgl),INTENT(INOUT)            :: tgy(nsx,nsy)
-!f2py intent(in,out) ::  tgy
-real(kind=sgl),INTENT(INOUT)            :: tgz(nsx,nsy)
-!f2py intent(in,out) ::  tgz
-real(kind=sgl),INTENT(IN)               :: patcntr(3)
-
-real(kind=sgl),allocatable              :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
-real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
-real(kind=sgl)                          :: alp, ca, sa, cw, sw
-real(kind=sgl)                          :: L2, Ls, Lc, calpha     ! distances
-real(kind=sgl),allocatable              :: z(:,:)           
-integer(kind=irg)                       :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp     ! various parameters
-real(kind=sgl)                          :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
-real(kind=sgl)                          :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
-real(kind=sgl)                          :: ixy(2)
+integer(kind=irg),INTENT(IN)                  :: nsx
+integer(kind=irg),INTENT(IN)                  :: nsy
+real(kind=sgl),INTENT(INOUT)                  :: tgx(nsx,nsy)
+!f2py intent(in,out) ::  tgx      
+real(kind=sgl),INTENT(INOUT)                  :: tgy(nsx,nsy)
+!f2py intent(in,out) ::  tgy      
+real(kind=sgl),INTENT(INOUT)                  :: tgz(nsx,nsy)
+!f2py intent(in,out) ::  tgz      
+real(kind=sgl),INTENT(IN)                     :: patcntr(3)
+      
+real(kind=sgl),allocatable                    :: scin_x(:), scin_y(:), testarray(:,:)                 ! scintillator coordinate ararays [microns]
+real(kind=sgl),parameter                      :: dtor = 0.0174533  ! convert from degrees to radians
+real(kind=sgl)                                :: alp, ca, sa, cw, sw
+real(kind=sgl)                                :: L2, Ls, Lc, calpha     ! distances
+real(kind=sgl),allocatable                    :: z(:,:)           
+integer(kind=irg)                             :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nx, ny, elp     ! various parameters
+real(kind=sgl)                                :: dc(3), scl, alpha, theta, g, pcvec(3), s, dp           ! direction cosine array
+real(kind=sgl)                                :: sx, dx, dxm, dy, dym, rhos, x, bindx, xpc, ypc, L         ! various parameters
+real(kind=sgl)                                :: ixy(2)
 
 !====================================
 ! ------ generate the detector arrays

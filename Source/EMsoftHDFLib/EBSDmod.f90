@@ -696,7 +696,7 @@ type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, restart, combinesites, uniform, istat
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
-real(kind=sgl),allocatable                          :: mLPNH(:,:,:,:)
+real(kind=sgl),allocatable                          :: mLPNH(:,:,:,:), mLPNH3(:,:,:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3), dims4(4) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
@@ -923,9 +923,10 @@ if (present(getmLPNH)) then
   if (getmLPNH.eqv..TRUE.) then
     dataset = SC_mLPNH
     if (dfMP.eqv..TRUE.) then 
-      call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPNH)
+      call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPNH3)
       allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,dims3(3)),stat=istat)
-      EBSDMPdata%mLPNH = mLPNH
+      EBSDMPdata%mLPNH = mLPNH3
+      deallocate(mLPNH3)
     else
       call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
       if (keepall) then
@@ -935,8 +936,8 @@ if (present(getmLPNH)) then
         allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
         EBSDMPdata%mLPNH = sum(mLPNH,4)
       end if
+      deallocate(mLPNH)
     end if
-    deallocate(mLPNH)
   end if 
 end if
 
@@ -944,9 +945,10 @@ if (present(getmLPSH)) then
   if (getmLPSH.eqv..TRUE.) then
     dataset = SC_mLPSH
     if (dfMP.eqv..TRUE.) then 
-      call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPNH)
+      call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPNH3)
       allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,dims3(3)),stat=istat)
-      EBSDMPdata%mLPSH = mLPNH
+      EBSDMPdata%mLPSH = mLPNH3
+      deallocate(mLPNH3)
     else
       call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
       if (keepall) then
@@ -956,8 +958,8 @@ if (present(getmLPSH)) then
         allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
         EBSDMPdata%mLPSH = sum(mLPNH,4)
       end if
+      deallocate(mLPNH)
     end if
-    deallocate(mLPNH)
   end if 
 end if
 
@@ -1155,62 +1157,41 @@ end subroutine CalcEBSDPatternSingleFull
 !
 !> @date 11/05/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine CalcEBSDPatternDefect(ipar,qu,accum,mLPNH,mLPSH,rgx,rgy,rgz,binned,Emin,Emax,mask, &
-                                               prefactor, Fmatrix, removebackground, applynoise)
+recursive subroutine CalcEBSDPatternDefect(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
 !DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect
 
 use local
 use Lambert
 use quaternions
 use rotations
-use filters
 
 IMPLICIT NONE
-
-integer, parameter                              :: K4B=selected_int_kind(9)
 
 integer(kind=irg),INTENT(IN)                    :: ipar(7)
 real(kind=sgl),INTENT(IN)                       :: qu(4) 
 real(kind=dbl),INTENT(IN)                       :: prefactor
-integer(kind=irg),INTENT(IN)                    :: Emin, Emax
-real(kind=sgl),INTENT(IN)                       :: accum(ipar(6),ipar(2),ipar(3))
 real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
 real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
 real(kind=sgl),INTENT(IN)                       :: rgx(ipar(2),ipar(3))
 real(kind=sgl),INTENT(IN)                       :: rgy(ipar(2),ipar(3))
 real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(3))
-real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2)/ipar(1),ipar(3)/ipar(1))
-real(kind=sgl),INTENT(IN)                       :: mask(ipar(2)/ipar(1),ipar(3)/ipar(1))
-real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3)
-character(1),INTENT(IN),OPTIONAL                :: removebackground
-integer(K4B),INTENT(INOUT),OPTIONAL             :: applynoise
-!f2py intent(in,out) ::  applynoise
+real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2),ipar(3))
+real(kind=dbl),INTENT(IN),optional              :: Fmatrix(3,3,ipar(7))
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
-real(kind=sgl),allocatable                      :: wf(:)
-real(kind=sgl)                                  :: dc(3),ixy(2),scl,bindx, tmp
-real(kind=sgl)                                  :: dx,dy,dxm,dym, x, y, z
+real(kind=sgl)                                  :: dc(3),ixy(2),scl
+real(kind=sgl)                                  :: dx,dy,dxm,dym
 integer(kind=irg)                               :: ii,jj,kk,istat
 integer(kind=irg)                               :: nix,niy,nixp,niyp
-logical                                         :: nobg, noise
 
-! ipar(1) = ebsdnl%binning
+! ipar(1) = not used 
 ! ipar(2) = ebsdnl%numsx
 ! ipar(3) = ebsdnl%numsy
 ! ipar(4) = ebsdnl%npx
 ! ipar(5) = ebsdnl%npy
-! ipar(6) = ebsdnl%numEbins
-! ipar(7) = ebsdnl%nE
+! ipar(6) = not used 
+! ipar(7) = number of depth steps
 
-nobg = .FALSE.
-if (present(removebackground)) then
-  if (removebackground.eq.'y') nobg = .TRUE.
-end if
-
-noise = .FALSE.
-if (present(applynoise)) then
-  if (applynoise.ne.0_K4B) noise = .TRUE.
-end if
 
 allocate(EBSDpattern(ipar(2),ipar(3)),stat=istat)
 
@@ -1224,82 +1205,36 @@ do ii = 1,ipar(2)
 ! get the pixel direction cosines from the pre-computed array
         dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
 ! apply the grain rotation 
-        dc = quat_Lp(qu(1:4),  dc)
-! apply the deformation if present
-        if (present(Fmatrix)) then
-          dc = matmul(sngl(Fmatrix), dc)
-        end if
+        dc = quat_Lp( qu(1:4), dc)
+
+! here we loop over the depth instead of the energy, and we employ the deformation tensor at each depth 
+! to determine the direction cosines of the sampling unit vector.        
+        do kk = 1, ipar(7)
+! apply the deformation
+          dc = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
 ! and normalize the direction cosines (to remove any rounding errors)
-        dc = dc/sqrt(sum(dc**2))
+          dc = dc/sqrt(sum(dc**2))
 
 ! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
-        call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+          call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
 ! interpolate the intensity
-        if (nobg.eqv..TRUE.) then 
           if (dc(3) .ge. 0.0) then
-            do kk = Emin, Emax
                 EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + ( mLPNH(nix,niy,kk) * dxm * dym + &
                                                mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
                                                mLPNH(nixp,niyp,kk) * dx * dy )
-
-            end do
           else
-            do kk = Emin, Emax
                 EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + ( mLPSH(nix,niy,kk) * dxm * dym + &
                                                mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
                                                mLPSH(nixp,niyp,kk) * dx * dy )
-
-            end do
-
           end if
-        else
-          if (dc(3) .ge. 0.0) then
-            do kk = Emin, Emax
-                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + accum(kk,ii,jj) * ( mLPNH(nix,niy,kk) * dxm * dym + &
-                                               mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
-                                               mLPNH(nixp,niyp,kk) * dx * dy )
-
-            end do
-          else
-            do kk = Emin, Emax
-                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + accum(kk,ii,jj) * ( mLPSH(nix,niy,kk) * dxm * dym + &
-                                               mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
-                                               mLPSH(nixp,niyp,kk) * dx * dy )
-
-            end do
-
-          end if
-        end if 
+        end do 
     end do
 end do
 
-EBSDpattern = prefactor * EBSDpattern
-
-! do we need to apply Poisson noise ?  (slow...)
-if (noise.eqv..TRUE.) then 
-  EBSDpattern = applyPoissonNoise( EBSDpattern, ipar(2), ipar(3), applynoise )
-end if
-
-! do we need to bin the pattern ?
-if (ipar(1) .ne. 1) then
-    do ii=1,ipar(2),ipar(1)
-        do jj=1,ipar(3),ipar(1)
-            binned(ii/ipar(1)+1,jj/ipar(1)+1) = &
-            sum(EBSDpattern(ii:ii+ipar(1)-1,jj:jj+ipar(1)-1))
-        end do
-    end do
-! and divide by binning^2
-!   binned = binned * bindx
-else
-    binned = EBSDpattern
-end if
-
-binned = binned * mask
+binned = prefactor * EBSDpattern
 
 end subroutine CalcEBSDPatternDefect
-
-
 
 !--------------------------------------------------------------------------
 !

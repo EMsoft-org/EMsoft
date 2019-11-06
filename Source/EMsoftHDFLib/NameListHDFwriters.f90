@@ -2614,14 +2614,14 @@ io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%nthreads /)
 intlist(1) = 'stdout'
 intlist(2) = 'numsx'
 intlist(3) = 'numsy'
-intlist(5) = 'nthreads'
+intlist(4) = 'nthreads'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals 
 io_real = (/ enl%thetac, enl%delta, enl%gammavalue /)
-reallist(2) = 'thetac'
-reallist(3) = 'delta'
-reallist(8) = 'gammavalue'
+reallist(1) = 'thetac'
+reallist(2) = 'delta'
+reallist(3) = 'gammavalue'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! a few doubles
@@ -2645,7 +2645,7 @@ hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create masterfile dataset',.TRUE.)
 
 dataset = SC_deformationfile
-line2(1) = trim(enl%anglefile)
+line2(1) = trim(enl%deformationfile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create deformationfile dataset',.TRUE.)
 

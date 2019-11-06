@@ -3776,7 +3776,6 @@ gammavalue      = 1.0           ! gamma factor
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
-eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
 deformationfile = 'undefined'   ! filename
 masterfile      = 'undefined'   ! filename
 datafile        = 'undefined'   ! output file name
