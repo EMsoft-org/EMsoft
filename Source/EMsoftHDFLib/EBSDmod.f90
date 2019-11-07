@@ -57,6 +57,8 @@ type EBSDAnglePCDefType
         real(kind=sgl),allocatable      :: quatang(:,:)
         real(kind=sgl),allocatable      :: pcs(:,:)
         real(kind=sgl),allocatable      :: deftensors(:,:,:)
+        real(kind=dbl),allocatable      :: pcfield(:,:,:)
+        real(kind=dbl),allocatable      :: deftensorfield(:,:,:,:)
 end type EBSDAnglePCDefType
 
 type EBSDLargeAccumType
@@ -657,9 +659,10 @@ end subroutine readEBSDMonteCarloFile
 !
 !> @date 04/02/18 MDG 1.0 started new routine, to eventually replace all other EBSD Monte Carlo reading routines
 !> @date 08/28/18 MDG 1.1 added keep4 parameter to pass 4D master patterns instead of 3D
+!> @date 11/05/19 MDG 1.2 added functionality for defect EBSD simulations
 !--------------------------------------------------------------------------
 recursive subroutine readEBSDMasterPatternFile(MPfile, mpnl, hdferr, EBSDMPdata, getkeVs, getmLPNH, getmLPSH, &
-                                               getmasterSPNH, getmasterSPSH, keep4)
+                                               getmasterSPNH, getmasterSPSH, keep4, defectMP)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDMasterPatternFile
 
 use local
@@ -685,16 +688,22 @@ logical,INTENT(IN),OPTIONAL                         :: getmLPSH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPNH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPSH
 logical,INTENT(IN),OPTIONAL                         :: keep4
+logical,INTENT(IN),OPTIONAL                         :: defectMP
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
-logical                                             :: stat, readonly, g_exists, f_exists, FL, keepall
+logical                                             :: stat, readonly, g_exists, f_exists, FL, keepall, dfMP
 type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, restart, combinesites, uniform, istat
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
-real(kind=sgl),allocatable                          :: mLPNH(:,:,:,:)
+real(kind=sgl),allocatable                          :: mLPNH(:,:,:,:), mLPNH3(:,:,:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3), dims4(4) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
+dfMP = .FALSE.
+if (present(defectMP)) then
+  if (defectMP.eqv..TRUE.) dfMP = .TRUE.
+end if
 
 keepall = .FALSE.
 if (present(keep4)) then
@@ -726,7 +735,11 @@ hdferr =  HDF_openFile(infile, HDF_head, readonly)
 ! check whether or not the MC file was generated using DREAM.3D
 ! this is necessary so that the proper reading of fixed length vs. variable length strings will occur.
 ! this test sets a flag in side the HDFsupport module so that the proper reading routines will be employed
-datagroupname = '/EMheader/EBSDmaster'
+if (dfMP.eqv..TRUE.) then 
+  datagroupname = '/EMheader/EBSDdefectmaster'
+else
+  datagroupname = '/EMheader/EBSDmaster'
+end if
 call H5Lexists_f(HDF_head%next%objectID,trim(datagroupname),g_exists, hdferr)
 if (.not.g_exists) then
   call FatalError('ComputeMasterPattern','This HDF file does not contain Master Pattern header data')
@@ -870,7 +883,11 @@ end if
 ! open the Monte Carlo data group
 groupname = SC_EMData
     hdferr = HDF_openGroup(groupname, HDF_head)
-groupname = SC_EBSDmaster
+if (dfMP.eqv..TRUE.) then 
+  groupname = SC_EBSDdefectmaster
+else
+  groupname = SC_EBSDmaster
+end if
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! integers
@@ -905,30 +922,44 @@ end if
 if (present(getmLPNH)) then 
   if (getmLPNH.eqv..TRUE.) then
     dataset = SC_mLPNH
-    call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
-    if (keepall) then
-      allocate(EBSDMPdata%mLPNH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
-      EBSDMPdata%mLPNH4 = mLPNH
+    if (dfMP.eqv..TRUE.) then 
+      call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPNH3)
+      allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,dims3(3)),stat=istat)
+      EBSDMPdata%mLPNH = mLPNH3
+      deallocate(mLPNH3)
     else
-      allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
-      EBSDMPdata%mLPNH = sum(mLPNH,4)
+      call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
+      if (keepall) then
+        allocate(EBSDMPdata%mLPNH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
+        EBSDMPdata%mLPNH4 = mLPNH
+      else
+        allocate(EBSDMPdata%mLPNH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
+        EBSDMPdata%mLPNH = sum(mLPNH,4)
+      end if
+      deallocate(mLPNH)
     end if
-    deallocate(mLPNH)
   end if 
 end if
 
 if (present(getmLPSH)) then 
   if (getmLPSH.eqv..TRUE.) then
     dataset = SC_mLPSH
-    call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
-    if (keepall) then
-      allocate(EBSDMPdata%mLPSH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
-      EBSDMPdata%mLPSH4 = mLPNH
+    if (dfMP.eqv..TRUE.) then 
+      call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, mLPNH3)
+      allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,dims3(3)),stat=istat)
+      EBSDMPdata%mLPSH = mLPNH3
+      deallocate(mLPNH3)
     else
-      allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
-      EBSDMPdata%mLPSH = sum(mLPNH,4)
+      call HDF_readDatasetFloatArray4D(dataset, dims4, HDF_head, hdferr, mLPNH)
+      if (keepall) then
+        allocate(EBSDMPdata%mLPSH4(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins, dims4(4)),stat=istat)
+        EBSDMPdata%mLPSH4 = mLPNH
+      else
+        allocate(EBSDMPdata%mLPSH(-mpnl%npx:mpnl%npx,-mpnl%npx:mpnl%npx,EBSDMPdata%numEbins),stat=istat)
+        EBSDMPdata%mLPSH = sum(mLPNH,4)
+      end if
+      deallocate(mLPNH)
     end if
-    deallocate(mLPNH)
   end if 
 end if
 
@@ -1114,6 +1145,95 @@ binned = binned * mask
 
 end subroutine CalcEBSDPatternSingleFull
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: CalcEBSDPatternDefect
+!
+!> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute a single EBSD pattern for a defect containing column
+!
+!> @param ebsdnl EBSD namelist
+!
+!> @date 11/05/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine CalcEBSDPatternDefect(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect
+
+use local
+use Lambert
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                    :: ipar(7)
+real(kind=sgl),INTENT(IN)                       :: qu(4) 
+real(kind=dbl),INTENT(IN)                       :: prefactor
+real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: rgx(ipar(2),ipar(3))
+real(kind=sgl),INTENT(IN)                       :: rgy(ipar(2),ipar(3))
+real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(3))
+real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2),ipar(3))
+real(kind=dbl),INTENT(IN)                       :: Fmatrix(3,3,ipar(7))
+
+real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
+real(kind=sgl)                                  :: dc(3),ixy(2),scl
+real(kind=sgl)                                  :: dx,dy,dxm,dym
+integer(kind=irg)                               :: ii,jj,kk,istat
+integer(kind=irg)                               :: nix,niy,nixp,niyp
+
+! ipar(1) = not used 
+! ipar(2) = ebsdnl%numsx
+! ipar(3) = ebsdnl%numsy
+! ipar(4) = ebsdnl%npx
+! ipar(5) = ebsdnl%npy
+! ipar(6) = not used 
+! ipar(7) = number of depth steps
+
+allocate(EBSDpattern(ipar(2),ipar(3)),stat=istat)
+
+binned = 0.0
+EBSDpattern = 0.0
+
+scl = float(ipar(4)) 
+
+do ii = 1,ipar(2)
+    do jj = 1,ipar(3)
+! get the pixel direction cosines from the pre-computed array
+        dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
+! apply the grain rotation 
+        dc = quat_Lp( qu(1:4), dc)
+
+! here we loop over the depth instead of the energy, and we employ the deformation tensor at each depth 
+! to determine the direction cosines of the sampling unit vector.        
+        do kk = 1, ipar(7)
+! apply the deformation
+          dc = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
+! and normalize the direction cosines (to remove any rounding errors)
+          dc = dc/sqrt(sum(dc**2))
+
+! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
+          call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+! interpolate the intensity
+          if (dc(3) .ge. 0.0) then
+                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + ( mLPNH(nix,niy,kk) * dxm * dym + &
+                                               mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
+                                               mLPNH(nixp,niyp,kk) * dx * dy )
+          else
+                EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + ( mLPSH(nix,niy,kk) * dxm * dym + &
+                                               mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
+                                               mLPSH(nixp,niyp,kk) * dx * dy )
+          end if
+        end do 
+    end do
+end do
+
+binned = prefactor * EBSDpattern
+
+end subroutine CalcEBSDPatternDefect
 
 !--------------------------------------------------------------------------
 !

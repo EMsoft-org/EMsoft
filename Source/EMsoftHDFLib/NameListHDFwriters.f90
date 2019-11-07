@@ -2570,6 +2570,95 @@ call HDF_pop(HDF_head)
 
 end subroutine HDFwriteEBSDNameList
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteEBSDdefectNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param enl EBSD name list structure
+!
+!> @date 03/22/15 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEBSDdefectNameList(HDF_head, enl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEBSDdefectNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+type(EBSDdefectNameListType),INTENT(INOUT)            :: enl
+!f2py intent(in,out) ::  enl
+
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 3
+integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: t(1)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+
+! create the group for this namelist
+groupname = SC_EBSDdefectNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%nthreads /)
+intlist(1) = 'stdout'
+intlist(2) = 'numsx'
+intlist(3) = 'numsy'
+intlist(4) = 'nthreads'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals 
+io_real = (/ enl%thetac, enl%delta, enl%gammavalue /)
+reallist(1) = 'thetac'
+reallist(2) = 'delta'
+reallist(3) = 'gammavalue'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! a few doubles
+dataset = SC_beamcurrent
+hdferr = HDF_writeDatasetDouble(dataset, enl%beamcurrent, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create beamcurrent dataset',.TRUE.)
+
+dataset = SC_dwelltime
+hdferr = HDF_writeDatasetDouble(dataset, enl%dwelltime, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create dwelltime dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_scalingmode
+line2(1) = trim(enl%scalingmode)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create scalingmode dataset',.TRUE.)
+
+dataset = SC_masterfile
+line2(1) = trim(enl%masterfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create masterfile dataset',.TRUE.)
+
+dataset = SC_deformationfile
+line2(1) = trim(enl%deformationfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create deformationfile dataset',.TRUE.)
+
+dataset = SC_datafile
+line2(1) = trim(enl%datafile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create datafile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEBSDdefectNameList
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:HDFwriteTKDNameList

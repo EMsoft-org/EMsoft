@@ -543,6 +543,25 @@ type EBSDNameListType
         character(fnlen)        :: datafile
 end type EBSDNameListType
 
+! namelist for the EMEBSDdefect program
+type EBSDdefectNameListType
+        integer(kind=irg)       :: stdout
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        integer(kind=irg)       :: binning
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
+        real(kind=sgl)          :: omega
+        real(kind=sgl)          :: gammavalue
+        real(kind=dbl)          :: beamcurrent
+        real(kind=dbl)          :: dwelltime
+        character(3)            :: scalingmode
+        character(fnlen)        :: deformationfile
+        character(fnlen)        :: masterfile
+        character(fnlen)        :: datafile
+end type EBSDdefectNameListType
+
 ! namelist for the EMEBSDFull program
 type EBSDFullNameListType
         real(kind=dbl)          :: dmin
