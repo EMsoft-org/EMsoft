@@ -1529,7 +1529,7 @@ end function HDF_writeDatasetStringArray
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray1D(dataname, chararray, dim0, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray1D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray1D
 
 use ISO_C_BINDING
@@ -1537,8 +1537,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-character(len=1),TARGET                                 :: chararray(dim0) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(1)
+character(len=1),TARGET                                 :: chararray(dims(1)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1546,7 +1546,6 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
 TYPE(C_PTR), dimension(1:1), TARGET                     :: wdata
 TYPE(C_PTR)                                             :: f_ptr
@@ -1554,7 +1553,6 @@ TYPE(C_PTR)                                             :: f_ptr
 success = 0
 
 wdata(1) = C_LOC(chararray(1))
-dims(1) = dim0
 
 ! then we write this C_ptr to the HDF file in the proper data set
 
@@ -1613,7 +1611,7 @@ end function HDF_writeDatasetCharArray1D
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray2D(dataname, chararray, dim0, dim1, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray2D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray2D
 
 use ISO_C_BINDING
@@ -1621,9 +1619,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-integer(kind=irg),INTENT(IN)                            :: dim1
-character(len=1),TARGET                                 :: chararray(dim0, dim1) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(2)
+character(len=1),TARGET                                 :: chararray(dims(1), dims(2)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1631,15 +1628,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
 TYPE(C_PTR), dimension(1:1), TARGET                     :: wdata
 
 success = 0
 
 wdata(1) = C_LOC(chararray(1,1))
-dims(1:2) = (/ dim0, dim1 /)
-
 ! then we write this C_ptr to the HDF file in the proper data set
 
 ! Create dataspace.
@@ -1697,7 +1691,7 @@ end function HDF_writeDatasetCharArray2D
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray3D(dataname, chararray, dim0, dim1, dim2, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray3D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray3D
 
 use ISO_C_BINDING
@@ -1705,10 +1699,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-integer(kind=irg),INTENT(IN)                            :: dim1
-integer(kind=irg),INTENT(IN)                            :: dim2
-character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(3)
+character(len=1),TARGET                                 :: chararray(dims(1), dims(2), dims(3)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1716,15 +1708,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
 TYPE(C_PTR), dimension(1:3), TARGET                     :: wdata
 
 success = 0
 
 wdata(1) = C_LOC(chararray(1,1,1))
-dims(1:3) = (/ dim0, dim1, dim2 /)
-
 ! then we write this C_ptr to the HDF file in the proper data set
 
 ! Create dataspace.
@@ -1782,7 +1771,7 @@ end function HDF_writeDatasetCharArray3D
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray4D(dataname, chararray, dim0, dim1, dim2, dim3, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray4D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray4D
 
 use ISO_C_BINDING
@@ -1790,11 +1779,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-integer(kind=irg),INTENT(IN)                            :: dim1
-integer(kind=irg),INTENT(IN)                            :: dim2
-integer(kind=irg),INTENT(IN)                            :: dim3
-character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2, dim3) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(4)
+character(len=1),TARGET                                 :: chararray(dims(1), dims(2), dims(3), dims(4)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1802,14 +1788,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
 TYPE(C_PTR), dimension(1:4), TARGET                     :: wdata
 
 success = 0
 
 wdata(1) = C_LOC(chararray(1,1,1,1))
-dims(1:4) = (/ dim0, dim1, dim2, dim3 /)
 
 ! then we write this C_ptr to the HDF file in the proper data set
 

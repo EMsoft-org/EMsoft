@@ -153,6 +153,7 @@ real(kind=sgl),allocatable      :: xx(:,:),yy(:,:),line(:),dot(:,:),pedpattern(:
 character(len=1),allocatable    :: ped(:,:),pedpat(:,:)
 real(kind=sgl)                  :: rnmpp,Igmax,xc,yc,dx,dy,k(3),kp(3),sg,Ig,ma,mi
 integer(kind=irg)               :: ww,tdp,sx,sy,nsize
+integer(HSIZE_T)                :: dims2(2)
 
 type(unitcell)                  :: cell
 type(DynType),save              :: Dyn
@@ -569,7 +570,8 @@ dataset = SC_positions
   ped(1:pednl%npix,1:pednl%npix) = pedpat(-nsize+ww+1:nsize-ww,-nsize+ww+1:nsize-ww)
 
 dataset = SC_pedpattern
-  hdferr = HDF_writeDatasetCharArray2D(dataset, ped, pednl%npix, pednl%npix, HDF_head) 
+  dims2 =  (/ pednl%npix, pednl%npix /)
+  hdferr = HDF_writeDatasetCharArray2D(dataset, ped, dims2, HDF_head) 
 
   call HDF_pop(HDF_head)
 
