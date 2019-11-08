@@ -759,7 +759,7 @@ dataset = 'disks'
   dims4 = (/  2*cbednl%npix+1, 2*cbednl%npix+1, numt, numir /)
   cnt4 = (/ 2*cbednl%npix+1, 2*cbednl%npix+1, numt, 1 /)
   offset4 = (/ 0, 0, 0, 0 /)
-  hdferr = HDF_writeHyperslabFloatArray4D(dataset, slice, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
+  hdferr = HDF_writeHyperslabFloatArray4D(dataset, slice, dims4, offset4, cnt4, HDF_head)
 
 ! Finally, write the correct diffraction disks to the hyperslab array
 ! Note that in the original EMLACBED program, the first subscript into the diffraction disks was reversed,
@@ -771,7 +771,7 @@ dataset = 'disks'
       slice(kpix(1,ik),kpix(2,ik),1:numt,1) = intensity(rranking(ir),ik,1:numt)
     end do 
     offset4 = (/ 0, 0, 0, ir-1 /)
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, slice, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, slice, dims4, offset4, cnt4, HDF_head, insert)
   end do
 
 ! write the icnt number to the file

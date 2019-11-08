@@ -152,7 +152,7 @@ logical                                 :: switchwfoff = .FALSE.
 
 type(HDFobjectStackType)                :: HDF_head
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
-integer(HSIZE_T)                        :: dim0, dim1, dim2
+integer(HSIZE_T)                        :: dims3(3)
 character(fnlen,kind=c_char)            :: line2(1)
 character(fnlen)                        :: groupname, dataset
 character(11)                           :: dstr
@@ -344,21 +344,15 @@ if (ecpnl%outputformat .eq. 'bin') then
 ! write dictionary pattern to h5 file
     offset = (/ 0, 0, 0 /)
     hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
-    dim0 = ecpnl%npix
-    dim1 = ecpnl%npix
-    dim2 = 1
-    hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head)
+    dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+    hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dims3, HDF_head)
 end if
 
 if (ecpnl%outputformat .eq. 'gui') then
     offset = (/ 0, 0, 0 /)
     hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
-    dim0 = ecpnl%npix
-    dim1 = ecpnl%npix
-    dim2 = 1
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head)
+    dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dims3, HDF_head)
 end if
 
 !D = cmplx(0.000001,-0.0000014)
@@ -370,7 +364,7 @@ call OMP_SET_NUM_THREADS(ecpnl%nthreads)
 
 ! use OpenMP to run on multiple cores
 !$OMP PARALLEL PRIVATE(TID,nthreads,dc,ixy,istat,nix,niy,nixp,niyp,dx,dy,dxm,dym,MCangle,isig,dp,isigp) &
-!$OMP& PRIVATE(ipx,ipy,ECPpattern,bpat,ECPpatternintd,ma,mi,offset,hdims,dim0,dim1,dim2,hdferr,qu,idir,wf) &
+!$OMP& PRIVATE(ipx,ipy,ECPpattern,bpat,ECPpatternintd,ma,mi,offset,hdims,dims3,hdferr,qu,idir,wf) &
 !$OMP& SHARED (ecpnl,numk,angles,kij,master_arrayNH,master_arraySH,anglewf,mask,dataset,nsig) &
 !$OMP& SHARED (HDF_head,insert,switchwfoff)
 
@@ -482,11 +476,8 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
 ! write dictionary pattern to h5 file
         offset = (/ 0, 0, iang-1 /)
         hdims = (/ ecpnl%npix+1, ecpnl%npix+1, ecpnl%numangle_anglefile /)
-        dim0 = ecpnl%npix
-        dim1 = ecpnl%npix
-        dim2 = 1
-        hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head, insert)
+        dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+        hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dims3, HDF_head, insert)
  
     end if
 
@@ -495,11 +486,8 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
           if (ecpnl%maskpattern.eq.'y')  ECPpattern = ECPpattern * mask
           offset = (/ 0, 0, iang-1 /)
           hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
-          dim0 = ecpnl%npix
-          dim1 = ecpnl%npix
-          dim2 = 1
-          hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head, insert)
+          dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+          hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dims3, HDF_head, insert)
     end if
 !$OMP END CRITICAL
 

@@ -473,9 +473,9 @@ cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3, HDF_head, insert)
 else
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3, HDF_head)
 end if
 
 dataset = SC_mLPSH
@@ -484,9 +484,9 @@ cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3, HDF_head, insert)
 else
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3, HDF_head)
 end if
 
 dataset = SC_masterSPNH
@@ -495,9 +495,9 @@ cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head, insert)
 else
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head)
 end if
 
 dataset = SC_masterSPSH
@@ -506,9 +506,9 @@ cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head, insert)
 else
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head)
 end if
 
 call HDF_pop(HDF_head,.TRUE.)
@@ -680,25 +680,25 @@ dataset = SC_mLPNH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset/)
 offset3 = (/ 0, 0, 0 /)
-hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3, HDF_head, insert)
 
 dataset = SC_mLPSH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset/)
 offset3 = (/ 0, 0, 0 /)
-hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3, HDF_head, insert)
 
 dataset = SC_masterSPNH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
-hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head, insert)
 
 dataset = SC_masterSPSH
 dims3 = (/  2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 cnt3 = (/ 2*ecpnl%npx+1, 2*ecpnl%npx+1, numset /)
 offset3 = (/ 0, 0, 0/)
-hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head, insert)
 
 call HDF_pop(HDF_head,.TRUE.)
 

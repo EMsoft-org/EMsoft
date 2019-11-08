@@ -688,11 +688,11 @@ dataset = SC_mLPNH
   dims4 = (/  2*npx+1, 2*npx+1, sA(3), sA(4) /)
   cnt4 = (/ 2*npx+1, 2*npx+1, sA(3), sA(4) /)
   offset4 = (/ 0, 0, 0, 0 /)
-  hdferr = HDF_writeHyperslabFloatArray4D(dataset, masterNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), &
+  hdferr = HDF_writeHyperslabFloatArray4D(dataset, masterNH, dims4, offset4, cnt4, &
                                           HDF_head, overwrite)
 
 dataset = SC_mLPSH
-  hdferr = HDF_writeHyperslabFloatArray4D(dataset, masterSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), &
+  hdferr = HDF_writeHyperslabFloatArray4D(dataset, masterSH, dims4, offset4, cnt4, &
                                           HDF_head, overwrite)
 
   deallocate(masterNH, masterSH)
@@ -701,10 +701,10 @@ dataset = SC_masterSPNH
   dims3 = (/  2*npx+1, 2*npx+1, sA(3) /)
   cnt3 = (/ 2*npx+1, 2*npx+1, sA(3) /)
   offset3 = (/ 0, 0, 0 /)
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, SPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, overwrite)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, SPNH, dims3, offset3, cnt3, HDF_head, overwrite)
 
 dataset = SC_masterSPSH
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, SPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, overwrite)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, SPSH, dims3, offset3, cnt3, HDF_head, overwrite)
 
   deallocate(SPNH, SPSH)
 

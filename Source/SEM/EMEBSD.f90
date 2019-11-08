@@ -335,13 +335,12 @@ real(kind=sgl),allocatable              :: energywf(:), eulerangles(:,:)
 real(kind=sgl),allocatable              :: tmLPNH(:,:,:) , tmLPSH(:,:,:)
 real(kind=sgl),allocatable              :: trgx(:,:), trgy(:,:), trgz(:,:)          ! auxiliary detector arrays needed for interpolation
 real(kind=sgl),allocatable              :: taccum(:,:,:)
-integer(kind=irg)                       :: dims2(2),dims3(3)
 
 ! quaternion variables
 real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
-integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr, L, correctsize          ! various counters
+integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr, L, correctsize, dim1, dim2          ! various counters
 integer(kind=irg)                       :: istat, ipar(7), tick, tock, tickstart
 integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder, npy     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
@@ -375,7 +374,7 @@ type(HDFobjectStackType)                :: HDF_head
 type(unitcell)                          :: cell
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
 integer(HSIZE_T), dimension(1:2)        :: hdims2, offset2 
-integer(HSIZE_T)                        :: dim0, dim1, dim2
+integer(HSIZE_T)                        :: dims2(2), dims3(3)
 character(fnlen,kind=c_char)            :: line2(1)
 character(fnlen)                        :: groupname, dataset, datagroupname, attributename, HDF_FileVersion
 character(11)                           :: dstr
@@ -1057,55 +1056,54 @@ dataset = SC_EBSDpatterns
    if (trim(bitmode).eq.'dict') then 
      offset2 = (/ 0, (ibatch-1)*ninbatch*enl%nthreads /)
      hdims2 = (/ correctsize, numangles /)
-     dim0 = correctsize
+     dims2 = (/ correctsize, patinbatch(ibatch) /)
      dim1 = patinbatch(ibatch)
    else
      offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
      hdims = (/ binx, biny, numangles /)
-     dim0 = binx
-     dim1 = biny
+     dims3 = (/ binx, biny, patinbatch(ibatch) /)
      dim2 = patinbatch(ibatch)
    end if
    if (ibatch.eq.1) then
      if (trim(bitmode).eq.'char') then 
        hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head)
+                                              dims3, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'int') then 
        hdferr = HDF_writeHyperslabIntegerArray3D(dataset, batchpatternsint(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head)
+                                              dims3, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabIntegerArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'float') then 
        hdferr = HDF_writeHyperslabFloatArray3D(dataset, batchpatterns32(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head)
+                                              dims3, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'dict') then 
        hdferr = HDF_writeHyperslabFloatArray2D(dataset, batchpatterns32lin(1:correctsize,1:dim1), hdims2, offset2, &
-                                              dim0, dim1, HDF_head)
+                                              dims2, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray2D EBSDpatterns')
      end if
    else
      if (trim(bitmode).eq.'char') then 
        hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head, insert)
+                                              dims3, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'int') then 
        hdferr = HDF_writeHyperslabIntegerArray3D(dataset, batchpatternsint(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head, insert)
+                                              dims3, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabIntegerArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'float') then 
        hdferr = HDF_writeHyperslabFloatArray3D(dataset, batchpatterns32(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head, insert)
+                                              dims3, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'dict') then 
        hdferr = HDF_writeHyperslabFloatArray2D(dataset, batchpatterns32lin(1:correctsize,1:dim1), hdims2, offset2, &
-                                              dim0, dim1, HDF_head, insert)
+                                              dims2, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
      end if
    end if
@@ -1260,13 +1258,12 @@ real(kind=sgl),allocatable              :: energywf(:), eulerangles(:,:)
 real(kind=sgl),allocatable              :: tmLPNH(:,:,:) , tmLPSH(:,:,:)
 real(kind=sgl),allocatable              :: trgx(:,:), trgy(:,:), trgz(:,:)          ! auxiliary detector arrays needed for interpolation
 real(kind=sgl),allocatable              :: taccum(:,:,:)
-integer(kind=irg)                       :: dims2(2),dims3(3)
 
 ! quaternion variables
 real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
 
 ! various items
-integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr          ! various counters
+integer(kind=irg)                       :: i, j, iang, jang, k, io_int(6), hdferr, dim2          ! various counters
 integer(kind=irg)                       :: istat, ipar(7), tick, tock, tickstart
 integer(kind=irg)                       :: nix, niy, binx, biny, nixp, niyp, maxthreads,nextra,ninlastbatch,nlastremainder     ! various parameters
 integer(kind=irg)                       :: NUMTHREADS, TID   ! number of allocated threads, thread ID
@@ -1298,7 +1295,7 @@ integer(K4B)                            :: idum
 type(HDFobjectStackType)                :: HDF_head
 type(unitcell)                          :: cell
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
-integer(HSIZE_T)                        :: dim0, dim1, dim2
+integer(HSIZE_T)                        :: dims2(2), dims3(3)
 character(fnlen,kind=c_char)            :: line2(1)
 character(fnlen)                        :: groupname, dataset, datagroupname
 character(11)                           :: dstr
@@ -1789,39 +1786,38 @@ dataset = SC_EBSDpatterns
  !if (outputformat.eq.'bin') then
    offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
    hdims = (/ binx, biny, numangles /)
-   dim0 = binx
-   dim1 = biny
+   dims3 = (/ binx, biny, patinbatch(ibatch) /)
    dim2 = patinbatch(ibatch)
    if (ibatch.eq.1) then
      if (trim(bitmode).eq.'char') then 
        hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head)
+                                              dims3, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'int') then 
        hdferr = HDF_writeHyperslabIntegerArray3D(dataset, batchpatternsint(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head)
+                                              dims3, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabIntegerArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'float') then 
        hdferr = HDF_writeHyperslabFloatArray3D(dataset, batchpatterns32(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head)
+                                              dims3, HDF_head)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
      end if
    else
      if (trim(bitmode).eq.'char') then 
        hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head, insert)
+                                              dims3, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'int') then 
        hdferr = HDF_writeHyperslabIntegerArray3D(dataset, batchpatternsint(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head, insert)
+                                              dims3, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabIntegerArray3D EBSDpatterns')
      end if
      if (trim(bitmode).eq.'float') then 
        hdferr = HDF_writeHyperslabFloatArray3D(dataset, batchpatterns32(1:binx,1:biny,1:dim2), hdims, offset, &
-                                              dim0, dim1, dim2, HDF_head, insert)
+                                              dims3, HDF_head, insert)
        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabFloatArray3D EBSDpatterns')
      end if
    end if

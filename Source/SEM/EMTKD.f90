@@ -245,7 +245,7 @@ real(kind=sgl),allocatable              :: accum_e_MC(:,:,:)
 real(kind=sgl),allocatable              :: tmLPNH(:,:,:) , tmLPSH(:,:,:)
 real(kind=sgl),allocatable              :: trgx(:,:), trgy(:,:), trgz(:,:)          ! auxiliary detector arrays needed for interpolation
 real(kind=sgl),allocatable              :: taccum(:,:,:)
-integer(kind=irg)                       :: dims2(2),dims3(3)
+integer(kind=HSIZE_T)                   :: dims2(2),dims3(3)
 
 ! quaternion variables
 real(kind=dbl)                          :: qq(4), qq1(4), qq2(4), qq3(4)
@@ -682,16 +682,12 @@ dataset = SC_TKDpatterns
  !if (outputformat.eq.'bin') then
    offset = (/ 0, 0, (ibatch-1)*ninbatch*enl%nthreads /)
    hdims = (/ binx, biny, enl%numangles /)
-   dim0 = binx
-   dim1 = biny
-   dim2 = patinbatch(ibatch)
+   dims3 = (/ binx, biny, patinbatch(ibatch) /)
    if (ibatch.eq.1) then
-     hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head)
+     hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, dims3, HDF_head)
      if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D TKDpatterns')
    else
-     hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head, insert)
+     hdferr = HDF_writeHyperslabCharArray3D(dataset, batchpatterns(1:binx,1:biny,1:dim2), hdims, offset, dims3, HDF_head, insert)
      if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_writeHyperslabCharArray3D TKDpatterns')
    end if
  !end if

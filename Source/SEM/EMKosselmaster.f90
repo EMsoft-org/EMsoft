@@ -371,19 +371,19 @@ dataset = SC_mLPNH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3, HDF_head)
 
 dataset = SC_mLPSH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3, HDF_head)
   else
 dataset = SC_trange
     dims2 = (/  2*kmnl%npx+1, 2*kmnl%npx+1 /)
     cnt2 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1 /)
     offset2 = (/ 0, 0 /)
-    hdferr = HDF_writeHyperslabFloatArray2D(dataset, trange, dims2, offset2, cnt2(1), cnt2(2), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray2D(dataset, trange, dims2, offset2, cnt2, HDF_head)
   end if
 
   call HDF_pop(HDF_head,.TRUE.)
@@ -624,19 +624,19 @@ dataset = SC_mLPNH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPNH, dims3, offset3, cnt3, HDF_head, insert)
 
 dataset = SC_mLPSH
     dims3 = (/  2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     cnt3 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1, numthick /)
     offset3 = (/ 0, 0, 0 /)
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, mLPSH, dims3, offset3, cnt3, HDF_head, insert)
   else
 dataset = SC_trange
     dims2 = (/  2*kmnl%npx+1, 2*kmnl%npx+1 /)
     cnt2 = (/ 2*kmnl%npx+1, 2*kmnl%npx+1 /)
     offset2 = (/ 0, 0 /)
-    hdferr = HDF_writeHyperslabFloatArray2D(dataset, trange, dims2, offset2, cnt2(1), cnt2(2), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray2D(dataset, trange, dims2, offset2, cnt2, HDF_head, insert)
   end if
 
   call HDF_pop(HDF_head,.TRUE.)

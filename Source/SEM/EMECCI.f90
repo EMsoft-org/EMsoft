@@ -648,7 +648,7 @@ dataset = SC_ECCIimages
   dims3 = (/  npix, npiy, numk /)
   cnt3 = (/ npix, npiy, 1 /)
   offset3 = (/ 0, 0, 0 /)
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECCIimages, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECCIimages, dims3, offset3, cnt3, HDF_head)
 
 ! the following 6 lines are temporary for testing
   call HDF_pop(HDF_head,.TRUE.)
@@ -865,7 +865,7 @@ dataset = SC_ECCIimages
   dims3 = (/  npix, npiy, numk /)
   cnt3 = (/ npix, npiy, 1 /)
   offset3 = (/ 0, 0, isg-1 /)           ! offsets start at 0
-  hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECCIimages, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECCIimages, dims3, offset3, cnt3, HDF_head, insert)
 
   call HDF_pop(HDF_head,.TRUE.)
 

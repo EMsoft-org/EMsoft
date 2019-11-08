@@ -368,7 +368,7 @@ dataset = SC_ECP
 dims2 = (/  ecpnl%npix, ecpnl%npix /)
 cnt2 = (/ ecpnl%npix, ecpnl%npix /)
 offset2 = (/ 0, 0/)
-hdferr = HDF_writeHyperslabFloatArray2D(dataset, mLPNH, dims2, offset2, cnt2(1), cnt2(2), HDF_head)
+hdferr = HDF_writeHyperslabFloatArray2D(dataset, mLPNH, dims2, offset2, cnt2, HDF_head)
 
 call HDF_pop(HDF_head,.TRUE.)
 
@@ -497,7 +497,7 @@ dataset = SC_ECP
 dims2 = (/  ecpnl%npix, ecpnl%npix /)
 cnt2 = (/ ecpnl%npix, ecpnl%npix/)
 offset2 = (/ 0, 0 /)
-hdferr = HDF_writeHyperslabFloatArray2D(dataset, mLPNH, dims2, offset2, cnt2(1), cnt2(2), HDF_head, insert)
+hdferr = HDF_writeHyperslabFloatArray2D(dataset, mLPNH, dims2, offset2, cnt2, HDF_head, insert)
 
 call HDF_pop(HDF_head,.TRUE.)
 

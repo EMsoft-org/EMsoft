@@ -1434,11 +1434,9 @@ dataset = SC_Intensities
   offset4 = (/ 0, 0, 0, 0 /)
   call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4(1), cnt4(2), cnt4(3),& 
-                cnt4(4), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4, HDF_head, insert)
   else
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4(1), cnt4(2), cnt4(3),&
-                cnt4(4), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4, HDF_head)
   end if
 
 
@@ -1832,8 +1830,7 @@ do ixy = 0, (symboxx)*(symboxy) - 1
         dims4 = (/  kji(3), kji(2), nsam, nref /)
         cnt4 = (/ 1, kji(2), nsam, nref /)
         offset4 = (/ currentx - 1, 0, 0, 0 /)
-        hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4(1), cnt4(2), cnt4(3),&
-                    cnt4(4), HDF_head, insert)
+        hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4, HDF_head, insert)
 
         call HDF_pop(HDF_head,.TRUE.)
 
