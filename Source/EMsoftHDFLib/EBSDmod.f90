@@ -1179,7 +1179,7 @@ real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2),ipar(3))
 real(kind=dbl),INTENT(IN)                       :: Fmatrix(3,3,ipar(7))
 
 real(kind=sgl),allocatable                      :: EBSDpattern(:,:)
-real(kind=sgl)                                  :: dc(3),ixy(2),scl
+real(kind=sgl)                                  :: dc(3),dcnew(3),ixy(2),scl
 real(kind=sgl)                                  :: dx,dy,dxm,dym
 integer(kind=irg)                               :: ii,jj,kk,istat
 integer(kind=irg)                               :: nix,niy,nixp,niyp
@@ -1210,15 +1210,15 @@ do ii = 1,ipar(2)
 ! to determine the direction cosines of the sampling unit vector.        
         do kk = 1, ipar(7)
 ! apply the deformation
-          dc = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
+          dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
 ! and normalize the direction cosines (to remove any rounding errors)
-          dc = dc/sqrt(sum(dc**2))
+          dcnew = dcnew/sqrt(sum(dcnew**2))
 
 ! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
-          call LambertgetInterpolation(dc, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+          call LambertgetInterpolation(dcnew, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
 
 ! interpolate the intensity
-          if (dc(3) .ge. 0.0) then
+          if (dcnew(3) .ge. 0.0) then
                 EBSDpattern(ii,jj) = EBSDpattern(ii,jj) + ( mLPNH(nix,niy,kk) * dxm * dym + &
                                                mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
                                                mLPNH(nixp,niyp,kk) * dx * dy )
