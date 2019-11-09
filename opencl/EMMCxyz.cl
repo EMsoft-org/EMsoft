@@ -1,5 +1,5 @@
 // ###################################################################
-// Copyright (c) 2014, Saransh Singh/Carnegie Mellon University
+// Copyright (c) 2014-2019, Saransh Singh/De Graef Research Group, Carnegie Mellon University
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification, are
@@ -27,7 +27,7 @@
 // ###################################################################
 
 //--------------------------------------------------------------------------
-// CTEMsoft2013:EMMCxyz.cl
+// EMsoft:EMMCxyz.cl
 //--------------------------------------------------------------------------
 //
 // PROGRAM: EMMCxyz.cl
@@ -36,18 +36,16 @@
 //
 //> @brief OpenCL kernel for Monte Carlo BSE simulation (Volume version)
 //
-//> @detail Monte Carlo Electron Trajectory Simulation for EBSD
-//>	This version uses the modified Lambert projection to store
-//>	the MC output data, so that we are not dependent on a
-//>	particular detector geometry.  We store the energy and direction
-//>	cosines of a BSE electron along with depth information in the
-//>	Lambert projection array, which needs to be sufficiently fine in
-//>	terms of sampling so that we can deal with a detector that's relatively
-//>	far away.
-//> This is the part which runs on the GPU. This is independent of the platform. The data/memory management is done using MainMC.c.
+//> @detail Monte Carlo Electron Trajectory Simulation for EBSD. This version
+//> of the code stores the exit coordinates in a 3D box (Cartesian, nanometer)
+//> for all backscattered electrons.  The calling program can then generate
+//> a spatial histogram to determine the extent of the interaction volume.
+//> This is the part which runs on the GPU. This is independent of the platform. 
+//> The data/memory management is done using the calling program.
 //
 //> @date 06/13/14  SS  1.0 OpenCL implementation
 //> @date 09/01/15 MDG  1.1 modified Lambert mapping due to changes in main Lambert module
+//> @date 11/10/19 MDG  1.2 clean up and correction of some comments
 //--------------------------------------------------------------------------
 
 #define RAND_MAX  2147483647.0f
@@ -57,8 +55,6 @@ struct LambertStruct{
     float x;
     float y;
 };
-
-
 
 struct lfsrret{
     int z1;
@@ -160,11 +156,17 @@ struct LambertStruct LambertSphereToPlane(float normxyz[3]){
 //
 //> @brief Kernel which does MC simulations for electron scattering
 //
-//> @details This is the OpenCL kernel which runs on the device and does the simulation. the output variables are Lamx and Lamy (this can only be a void function). The input variables include the energy of the beam, the material parameters and the parameter count and num_max. count is the no. of threads started in each dimension and num_max is the maximum no. of electrons to carry out the simulation for in one run of the kernel. the kernel also needs a prime number to seed the random number generator
+//> @details This is the OpenCL kernel which runs on the device and does the simulation. 
+//> The output variables are Lamx, Lamy, and Lamz (this can only be a void function). The input 
+//> variables include the energy of the beam, the material parameters and the parameter 
+//> count and num_max. count is the no. of threads started in each dimension and num_max 
+//> is the maximum no. of electrons to carry out the simulation for in one run of the 
+//> kernel. The kernel also needs a prime number to seed the random number generator
 //
-//> @param Lamx, Lamy, energy of electron, no. of threads, material parameters, maximum electrons for which the simulation is done and a prime number seed
+//> @param Lamx, Lamy, Lamz, energy of electron, no. of threads, material parameters, maximum 
+//> electrons for which the simulation is done and a prime number seed
 //> @date 05/14/14    SS 1.0 original
-//> @date 12/04/15 MDG 1.1 modification for interaction volume display
+//> @date 12/04/15   MDG 1.1 modification for interaction volume display
 //--------------------------------------------------------------------------
 
 __kernel void MCxyz(__global float* Lamx, __global float* Lamy, __global float* Lamz, const float E, const int count, const float z, const float rho, const float A, const int num_el, __global int* seeds, const float sig, const float omega, const int steps)
@@ -191,7 +193,7 @@ __kernel void MCxyz(__global float* Lamx, __global float* Lamy, __global float* 
     float escape_depth;
 
 
-// Setting all values to -10. Any value other than -10 will denote a backscattered electron with the x and y component of the Lambert Projection
+// Setting all values to -100000.0f. Any value other than this will denote a backscattered electron with the x, y, and z exit coordinates
 
 	for (int i = 0; i < num_el; ++i){
 		Lamx[num_el*id + i] = -100000.0f;
@@ -200,7 +202,7 @@ __kernel void MCxyz(__global float* Lamx, __global float* Lamy, __global float* 
 	}
 
     
-    
+// main loop    
     for (int i = 0; i < num_el; ++i){
         //rand_seed = rando();
         //seed = rand_seed;
@@ -226,7 +228,7 @@ __kernel void MCxyz(__global float* Lamx, __global float* Lamy, __global float* 
         r_new = r0 + step*c_new*1.0e7f;
         //r_new = (float4)(r0.x + step*c_new.x, r0.y + step*c_new.y, r0.z + step*c_new.z, 0.0f);
         r0 = r_new;
-        counter1 = 0;   // This is used as a counter for the number of monte carlo steps to carry out for each electron. This is due to the lock step nature of the GPU code. We have arbitly set this to a 1000, though this is material dependent
+        counter1 = 0;   // This is used as a counter for the number of monte carlo steps to carry out for each electron. This is due to the lock step nature of the GPU code. We have arbitrarily set this to a 1000, though this is material dependent
         
         counter2 = 0;   // This counter is used to figure out if the electron has left the sample or not. Again, this is because of the lock step nature. All steps have to be executed on each thread irrespective of the fact that the electron may have actually left the sample
         
@@ -252,7 +254,7 @@ __kernel void MCxyz(__global float* Lamx, __global float* Lamy, __global float* 
             seeds[4*id + 3] = retrnd.z4;
             rand = fabs(retrnd.rand/RAND_MAX); //some random no. generator in gpu
             step = -mfp * log(rand);
-// This is the Continuous Slowing Down approximation that we want to get rid of
+// This is the Continuous Slowing Down approximation that we want to get rid of (eventually)
 
             de_ds = -78500.0f*(z/(A*E_new)) * log(1.166f*E_new/J + 0.9911f);
             

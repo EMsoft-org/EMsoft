@@ -95,6 +95,7 @@ end program EMMCOpenCL
 !> @date 02/23/16  MDG 5.6 converted to CLFortran
 !> @date 05/21/16  MDG 5.7 changes for HDF internal file reorganization
 !> @date 01/11/18  MDG 5.8 added stereographic projection version of accum_e array to output file (EBSD only)
+!> @date 11/10/19  MDG 5.9 correction to units for Ivol mode 
 !--------------------------------------------------------------------------
 subroutine DoMCsimulation(mcnl, progname, nmldeffile)
 
@@ -617,15 +618,15 @@ end if
         end if
 
         if (mode .eq. 'Ivol') then
-           sclf = 1.0E-1
+           ! sclf = 1.0 !E-1
 
            subloopIvol: do j = 1, num_max
                if ((Lamresx(j) .ne. -100000.0) .and. (Lamresy(j) .ne. -100000.0) &
                .and. (Lamresz(j) .ne. -100000.0) &
                .and. .not.isnan(Lamresx(j)) .and. .not.isnan(Lamresy(j)) .and. .not.isnan(Lamresz(j))) then
-                  xs = Lamresx(j)*sclf
-                  ys = Lamresy(j)*sclf
-                  zs = Lamresz(j)*sclf/mcnl%depthstep
+                  xs = Lamresx(j) ! *sclf
+                  ys = Lamresy(j) ! *sclf
+                  zs = Lamresz(j)/mcnl%depthstep ! *sclf
                   if ((maxval( (/ abs(xs), abs(ys) /)) .lt. nx) .and. (zs.lt.numzbins) ) then
                     accum_xyz(nint(xs),nint(ys),nint(zs)+1) = accum_xyz(nint(xs),nint(ys),nint(zs)+1) + 1
                   end if
