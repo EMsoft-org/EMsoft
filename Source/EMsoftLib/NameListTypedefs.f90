@@ -373,12 +373,18 @@ end type ConvertOrientationsNameListType
 type MCCLNameListType
         integer(kind=irg)       :: stdout
         integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: ivolx 
+        integer(kind=irg)       :: ivoly 
+        integer(kind=irg)       :: ivolz 
         integer(kind=irg)       :: globalworkgrpsz
         integer(kind=irg)       :: num_el
         integer(kind=irg)       :: totnum_el
         integer(kind=irg)       :: multiplier
         integer(kind=irg)       :: devid
         integer(kind=irg)       :: platid
+        real(kind=sgl)          :: ivolstepx 
+        real(kind=sgl)          :: ivolstepy 
+        real(kind=sgl)          :: ivolstepz 
         real(kind=dbl)          :: sig
         real(kind=dbl)          :: sigstart
         real(kind=dbl)          :: sigend

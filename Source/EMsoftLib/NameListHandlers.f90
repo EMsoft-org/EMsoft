@@ -1897,6 +1897,7 @@ end subroutine GetOrientationVizNameList
 !
 !> @date 06/18/14  SS 1.0 new routine
 !> @date 09/09/15 MDG 1.1 added devid (GPU device id)
+!> @date 11/10/19 MDG 1.2 added interaction volume parameters
 !--------------------------------------------------------------------------
 recursive subroutine GetMCCLNameList(nmlfile, mcnl, initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetMCCLNameList
@@ -1914,12 +1915,18 @@ logical                                 :: skipread = .FALSE.
 
 integer(kind=irg)       :: stdout
 integer(kind=irg)       :: numsx
+integer(kind=irg)       :: ivolx 
+integer(kind=irg)       :: ivoly 
+integer(kind=irg)       :: ivolz 
 integer(kind=irg)       :: globalworkgrpsz
 integer(kind=irg)       :: num_el
 integer(kind=irg)       :: totnum_el
 integer(kind=irg)       :: multiplier
 integer(kind=irg)       :: devid
 integer(kind=irg)       :: platid
+real(kind=sgl)          :: ivolstepx 
+real(kind=sgl)          :: ivolstepy 
+real(kind=sgl)          :: ivolstepz 
 real(kind=dbl)          :: sig
 real(kind=dbl)          :: sigstart
 real(kind=dbl)          :: sigend
@@ -1939,10 +1946,13 @@ character(fnlen)        :: mode
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / MCCLdata / stdout, xtalname, sigstart, numsx, num_el, globalworkgrpsz, EkeV, multiplier, &
 dataname, totnum_el, Ehistmin, Ebinsize, depthmax, depthstep, omega, MCmode, mode, devid, platid, &
-sigend, sigstep, sig, Notify
+sigend, sigstep, sig, Notify, ivolx, ivoly, ivolz, ivolstepx, ivolstepy, ivolstepz
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
+ivolx = 1001
+ivoly = 1001
+ivolz = 101
 numsx = 1501
 globalworkgrpsz = 100
 num_el = 10
@@ -1950,6 +1960,9 @@ totnum_el = 2000000000
 multiplier = 1
 devid = 1
 platid = 1
+ivolstepx = 1.0
+ivolstepy = 1.0
+ivolstepz = 1.0
 sig = 70.D0
 sigstart = 70.D0
 sigend = 70.D0
@@ -1985,12 +1998,18 @@ end if
 ! if we get here, then all appears to be ok, and we need to fill in the mcnl fields
 mcnl%stdout = stdout
 mcnl%numsx = numsx
+mcnl%ivolx = ivolx
+mcnl%ivoly = ivoly 
+mcnl%ivolz = ivolz
 mcnl%globalworkgrpsz = globalworkgrpsz
 mcnl%num_el = num_el
 mcnl%totnum_el = totnum_el
 mcnl%multiplier = multiplier
 mcnl%devid = devid
 mcnl%platid = platid
+mcnl%ivolstepx = ivolstepx 
+mcnl%ivolstepy = ivolstepy
+mcnl%ivolstepz = ivolstepz
 mcnl%sigstart = sigstart
 mcnl%sigend = sigend
 mcnl%sigstep = sigstep

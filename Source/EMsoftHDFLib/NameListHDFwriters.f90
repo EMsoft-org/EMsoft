@@ -978,10 +978,12 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
 !f2py intent(in,out) ::  mcnl
 
-integer(kind=irg),parameter                           :: n_int = 8, n_real_bse1 = 9, n_real_full = 7
+integer(kind=irg),parameter                           :: n_int = 11, n_real_bse1 = 9, n_real_full = 7, n_real_ivol= 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
-real(kind=dbl)                                        :: io_real_bse1(n_real_bse1), io_real_full(n_real_full)
-character(20)                                         :: reallist_bse1(n_real_bse1), reallist_full(n_real_full)
+real(kind=dbl)                                        :: io_real_bse1(n_real_bse1), io_real_full(n_real_full), &
+                                                         io_real_ivol(n_real_ivol)
+character(20)                                         :: reallist_bse1(n_real_bse1), reallist_full(n_real_full), &
+                                                         reallist_ivol(n_real_ivol)
 character(20)                                         :: intlist(n_int)
 character(fnlen)                                      :: dataset, sval(1),groupname
 character(fnlen,kind=c_char)                          :: line2(1)
@@ -991,7 +993,8 @@ groupname = SC_MCCLNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%globalworkgrpsz, mcnl%num_el, mcnl%totnum_el, mcnl%multiplier, mcnl%devid, mcnl%platid /)
+io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%globalworkgrpsz, mcnl%num_el, mcnl%totnum_el, mcnl%multiplier, mcnl%devid, &
+            mcnl%platid, mcnl%ivolx, mcnl%ivoly, mcnl%ivolz /)
 intlist(1) = 'stdout'
 intlist(2) = 'numsx'
 intlist(3) = 'globalworkgrpsz'
@@ -1000,6 +1003,9 @@ intlist(5) = 'totnum_el'
 intlist(6) = 'multiplier'
 intlist(7) = 'devid'
 intlist(8) = 'platid'
+intlist(8) = 'ivolx'
+intlist(10) = 'ivoly'
+intlist(11) = 'ivolz'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single doubles
@@ -1027,6 +1033,15 @@ else if (mcnl%mode .eq. 'full') then
    reallist_full(6) = 'depthmax'
    reallist_full(7) = 'depthstep'
    call HDF_writeNMLdbles(HDF_head, io_real_full, reallist_full, n_real_full)
+else if (mcnl%mode .eq. 'Ivol') then
+   io_real_ivol = (/ mcnl%sig, mcnl%omega, mcnl%EkeV, dble(mcnl%ivolstepx), dble(mcnl%ivolstepy), dble(mcnl%ivolstepz) /)
+   reallist_ivol(1) = 'sig'
+   reallist_ivol(2) = 'omega'
+   reallist_ivol(3) = 'EkeV'
+   reallist_ivol(4) = 'ivolstepx'
+   reallist_ivol(5) = 'ivolstepy'
+   reallist_ivol(6) = 'ivolstepz'
+   call HDF_writeNMLdbles(HDF_head, io_real_ivol, reallist_ivol, n_real_ivol)
 end if
 
 ! write all the strings

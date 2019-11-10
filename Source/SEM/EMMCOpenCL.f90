@@ -95,7 +95,8 @@ end program EMMCOpenCL
 !> @date 02/23/16  MDG 5.6 converted to CLFortran
 !> @date 05/21/16  MDG 5.7 changes for HDF internal file reorganization
 !> @date 01/11/18  MDG 5.8 added stereographic projection version of accum_e array to output file (EBSD only)
-!> @date 11/10/19  MDG 5.9 correction to units for Ivol mode 
+!> @date 11/09/19  MDG 5.9 correction to units for Ivol mode 
+!> @date 11/10/19  MDG 6.0 adds functionality for interaction volume scaling and sampling (Ivol mode only)
 !--------------------------------------------------------------------------
 subroutine DoMCsimulation(mcnl, progname, nmldeffile)
 
@@ -138,7 +139,7 @@ integer(kind=irg)       :: numsy        ! number of Lambert map points along y
 integer(kind=irg)       :: numEbins     ! number of energy bins
 integer(kind=irg)       :: numzbins     ! number of depth bins
 integer(kind=irg)       :: nx           ! no. of pixels
-integer(kind=irg)       :: j,k,l,ip,istat
+integer(kind=irg)       :: j,k,l,ip,istat, ivx, ivy, ivz
 integer(kind=ill)       :: i, io_int(1), num_max, totnum_el_nml, multiplier
 real(kind=4),target     :: Ze           ! average atomic number
 real(kind=4),target     :: density      ! density in g/cm^3
@@ -290,6 +291,9 @@ else if (mode .eq. 'Ivol') then
    numangle = 1
    allocate(accum_xyz(-nx:nx,-nx:nx,numzbins),stat=istat)
    accum_xyz = 0
+   ivx = (mcnl%ivolx-1)/2
+   ivy = (mcnl%ivoly-1)/2
+   ivz = (mcnl%ivolz-1)/2
 else
    call FatalError('EMMCOpenCL:','Unknown mode specified in namelist file')
 end if
@@ -617,19 +621,18 @@ end if
            end do subloopbse1
         end if
 
+! this simulation mode produces a 3D histogram of the interaction volume with potentially different step
+! sizes in the plane as opposed to the depth direction.  The scaling parameters are new name list parameters
+! (new as of version 5.0.2).  
         if (mode .eq. 'Ivol') then
-           ! sclf = 1.0 !E-1
-
            subloopIvol: do j = 1, num_max
                if ((Lamresx(j) .ne. -100000.0) .and. (Lamresy(j) .ne. -100000.0) &
                .and. (Lamresz(j) .ne. -100000.0) &
                .and. .not.isnan(Lamresx(j)) .and. .not.isnan(Lamresy(j)) .and. .not.isnan(Lamresz(j))) then
-                  xs = Lamresx(j) ! *sclf
-                  ys = Lamresy(j) ! *sclf
-                  zs = Lamresz(j)/mcnl%depthstep ! *sclf
-                  if ((maxval( (/ abs(xs), abs(ys) /)) .lt. nx) .and. (zs.lt.numzbins) ) then
-                    accum_xyz(nint(xs),nint(ys),nint(zs)+1) = accum_xyz(nint(xs),nint(ys),nint(zs)+1) + 1
-                  end if
+                  xs = nint( Lamresx(j) / mcnl%ivolstepx )
+                  ys = nint( Lamresy(j) / mcnl%ivolstepy )
+                  zs = nint( Lamresz(j) / mcnl%ivolstepz )
+                  if ((abs(xs).lt.ivx).and.(abs(ys).lt.ivy).and.(zs.lt.ivz) ) accum_xyz(xs,ys,zs+1) = accum_xyz(xs,ys,zs+1) + 1
                end if
            end do subloopIvol
         end if
