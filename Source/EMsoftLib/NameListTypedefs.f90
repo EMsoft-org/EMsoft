@@ -559,11 +559,13 @@ type EBSDdefectNameListType
         real(kind=sgl)          :: thetac
         real(kind=sgl)          :: delta
         real(kind=sgl)          :: omega
+        real(kind=sgl)          :: spotsize
         real(kind=sgl)          :: gammavalue
         real(kind=dbl)          :: beamcurrent
         real(kind=dbl)          :: dwelltime
         character(3)            :: scalingmode
         character(fnlen)        :: deformationfile
+        character(fnlen)        :: ivolfile
         character(fnlen)        :: masterfile
         character(fnlen)        :: datafile
 end type EBSDdefectNameListType

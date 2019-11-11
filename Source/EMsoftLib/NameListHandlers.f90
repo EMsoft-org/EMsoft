@@ -1899,7 +1899,7 @@ end subroutine GetOrientationVizNameList
 !> @date 09/09/15 MDG 1.1 added devid (GPU device id)
 !> @date 11/10/19 MDG 1.2 added interaction volume parameters
 !--------------------------------------------------------------------------
-recursive subroutine GetMCCLNameList(nmlfile, mcnl, initonly)
+recursive subroutine GetMCCLNameList(nmlfile, mcnl, initonly, writetofile)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetMCCLNameList
 
 use error
@@ -1910,6 +1910,7 @@ character(fnlen),INTENT(IN)             :: nmlfile
 type(MCCLNameListType),INTENT(INOUT)    :: mcnl
 !f2py intent(in,out) ::  mcnl
 logical,OPTIONAL,INTENT(IN)             :: initonly
+character(fnlen),INTENT(IN),optional    :: writetofile
 
 logical                                 :: skipread = .FALSE.
 
@@ -1947,6 +1948,36 @@ character(fnlen)        :: mode
 namelist  / MCCLdata / stdout, xtalname, sigstart, numsx, num_el, globalworkgrpsz, EkeV, multiplier, &
 dataname, totnum_el, Ehistmin, Ebinsize, depthmax, depthstep, omega, MCmode, mode, devid, platid, &
 sigend, sigstep, sig, Notify, ivolx, ivoly, ivolz, ivolstepx, ivolstepy, ivolstepz
+
+if (present(writetofile)) then
+  if (trim(writetofile).ne.'') then 
+    xtalname = trim(mcnl%xtalname)
+    mode = mcnl%mode
+    ivolx = mcnl%ivolx
+    ivoly = mcnl%ivoly
+    ivolz = mcnl%ivolz
+    ivolstepx = mcnl%ivolstepx
+    ivolstepy = mcnl%ivolstepy
+    ivolstepz = mcnl%ivolstepz
+    globalworkgrpsz = mcnl%globalworkgrpsz
+    num_el = mcnl%num_el
+    totnum_el = mcnl%totnum_el 
+    multiplier = mcnl%multiplier
+    devid = mcnl%devid 
+    platid = mcnl%platid
+    sig = mcnl%sig  
+    omega = mcnl%omega
+    EkeV = mcnl%EkeV 
+    Ehistmin = mcnl%Ehistmin
+    Ebinsize = mcnl%Ebinsize
+    dataname = mcnl%dataname
+
+    open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='unknown')
+    write(UNIT=dataunit,NML=MCCLdata)
+    close(UNIT=dataunit,STATUS='keep')
+    return 
+  end if 
+end if 
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -3769,19 +3800,21 @@ integer(kind=irg)       :: binning
 integer(kind=irg)       :: nthreads
 real(kind=sgl)          :: thetac
 real(kind=sgl)          :: delta
+real(kind=sgl)          :: spotsize
 real(kind=sgl)          :: omega
 real(kind=sgl)          :: gammavalue
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
 character(3)            :: scalingmode
 character(fnlen)        :: deformationfile
+character(fnlen)        :: ivolfile
 character(fnlen)        :: masterfile
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, &
                              masterfile, datafile, beamcurrent, dwelltime, gammavalue, &
-                             scalingmode, nthreads, omega
+                             scalingmode, nthreads, omega, ivolfile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -3790,11 +3823,13 @@ numsy           = 0             ! [dimensionless]
 nthreads        = 1             ! number of OpenMP threads
 thetac          = 0.0           ! [degrees]
 delta           = 25.0          ! [microns]
+spotsize        = 2.0           ! [nanometer]
 omega           = 0.0
 gammavalue      = 1.0           ! gamma factor
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
+ivolfile        = 'undefined'   ! filename
 deformationfile = 'undefined'   ! filename
 masterfile      = 'undefined'   ! filename
 datafile        = 'undefined'   ! output file name
@@ -3838,12 +3873,14 @@ enl%numsy = numsy
 enl%nthreads = nthreads
 enl%thetac = thetac
 enl%delta = delta
+enl%spotsize = spotsize
 enl%gammavalue = gammavalue
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%scalingmode = scalingmode
 enl%deformationfile = deformationfile
 enl%masterfile = masterfile
+enl%ivolfile = ivolfile
 enl%datafile = datafile
 enl%omega = omega
 

@@ -398,8 +398,9 @@ end subroutine EBSDreadorpcdef
 !> @param hdferr error code
 !
 !> @date 04/02/18 MDG 1.0 started new routine, to eventually replace all other EBSD Monte Carlo reading routines
+!> @date 11/11/19 MDG 1.1 adds support for interaction volume array reading
 !--------------------------------------------------------------------------
-recursive subroutine readEBSDMonteCarloFile(MCfile, mcnl, hdferr, EBSDMCdata, getAccume, getAccumz, getAccumSP)
+recursive subroutine readEBSDMonteCarloFile(MCfile, mcnl, hdferr, EBSDMCdata, getAccume, getAccumz, getAccumSP, getAccumxyz)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDMonteCarloFile
 
 use local
@@ -422,14 +423,16 @@ type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
 logical,INTENT(IN),OPTIONAL                         :: getAccume
 logical,INTENT(IN),OPTIONAL                         :: getAccumz
 logical,INTENT(IN),OPTIONAL                         :: getAccumSP
+logical,INTENT(IN),OPTIONAL                         :: getAccumxyz   ! for interaction volume array
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
 type(HDFobjectStackType)                            :: HDF_head
-integer(kind=irg)                                   :: ii, nlines, nx
+integer(kind=irg)                                   :: ii, nlines, nx, ny, nz
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
 integer(kind=irg),allocatable                       :: accum_e(:,:,:)
+integer(kind=irg),allocatable                       :: accum_xyz(:,:,:)
 integer(kind=irg),allocatable                       :: accum_z(:,:,:,:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3), dims4(4) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
@@ -500,30 +503,38 @@ groupname = SC_MCCLNameList
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! we'll read these roughly in the order that the HDFView program displays them...
-dataset = SC_Ebinsize
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ebinsize)
+dataset = SC_mode
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    mcnl%mode = trim(stringarray(1))
+    deallocate(stringarray)
 
-dataset = SC_Ehistmin
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ehistmin)
+
+if (trim(mcnl%mode).ne.'Ivol') then
+    dataset = SC_Ebinsize
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ebinsize)
+
+    dataset = SC_Ehistmin
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ehistmin)
+
+    dataset = SC_depthmax
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthmax)
+
+    dataset = SC_depthstep
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthstep)
+end if
 
 dataset = SC_EkeV
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%EkeV)
-
-dataset = SC_MCmode
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    mcnl%MCmode = trim(stringarray(1))
-    deallocate(stringarray)
 
 dataset = SC_dataname
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     mcnl%dataname = trim(stringarray(1))
     deallocate(stringarray)
 
-dataset = SC_depthmax
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthmax)
-
-dataset = SC_depthstep
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthstep)
+dataset = SC_MCmode
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    mcnl%MCmode = trim(stringarray(1))
+    deallocate(stringarray)
 
 dataset = SC_devid
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%devid)
@@ -531,10 +542,6 @@ dataset = SC_devid
 dataset = SC_globalworkgrpsz
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%globalworkgrpsz)
 
-dataset = SC_mode
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    mcnl%mode = trim(stringarray(1))
-    deallocate(stringarray)
 
 dataset = SC_multiplier
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
@@ -596,8 +603,10 @@ else
     EBSDMCdata%multiplier = 1
 end if
 
-dataset = SC_numEbins
+if (trim(mcnl%mode).ne.'Ivol') then 
+  dataset = SC_numEbins
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%numEbins)
+end if
 
 dataset = SC_numzbins
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%numzbins)
@@ -632,6 +641,19 @@ if (present(getAccumSP)) then
   if (getAccumSP.eqv..TRUE.) then
     dataset = SC_accumSP
     call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, EBSDMCdata%accumSP)
+  end if 
+end if
+
+if (present(getAccumxyz)) then 
+  if (getAccumxyz.eqv..TRUE.) then
+    dataset = SC_accumxyz
+    call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, accum_xyz)
+    nx = (dims3(1)-1)/2
+    ny = (dims3(2)-1)/2
+    nz = dims3(3)
+    allocate(EBSDMCdata%accum_xyz(-nx:nx, -ny:ny, nz))
+    EBSDMCdata%accum_xyz = accum_xyz
+    deallocate(accum_xyz)  
   end if 
 end if
 

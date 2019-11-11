@@ -1870,6 +1870,7 @@ type EBSDMCdataType
         integer(kind=irg),allocatable   :: accum_e(:,:,:)
         integer(kind=irg),allocatable   :: accum_z(:,:,:,:)
         real(kind=sgl),allocatable      :: accumSP(:,:,:)
+        integer(kind=irg),allocatable   :: accum_xyz(:,:,:)
 end type EBSDMCdataType
 
 type EBSDMPdataType
