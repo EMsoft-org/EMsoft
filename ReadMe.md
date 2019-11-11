@@ -8,7 +8,7 @@ This release also offers, for the first time, a series of python wrappers (*pyEM
 
 Release v5.0.0 has the following DOI (through Zenodo):  
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3489720.svg)](https://doi.org/10.5281/zenodo.3489720)
+![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3489720.svg)
 
 
 - ### **This release of EMsoft requires an updated Software Developer Toolkit (SDK); please go to [this page](https://github.com/EMsoft-org/EMsoftSuperbuild) and follow the instructions to install a new SDK before you attempt to build the present release.**
@@ -88,6 +88,12 @@ make -j
 
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
+
+## Changes in 5.0.2
+This update implements simplifications of the HDFsupport module, in particular the argument list for the hyperslab writing and reading routines.  It also provides a modified EMMCOpenCL program with better parameter control for interaction volume runs, as well as a new EMEBSDdefect program (still in further development) for the computation of EBSD patterns when there is a deformation tensor field in the region of interest.
+
+## Changes in 5.0.1
+This update makes internal changes to the CMake code that configures the SHT library; the relevant source file is now loaded with the FetchContent function rather than relying on manual git pulls. The EMEBSDmaster program is split into two separate programs, one for standard master patterns, the other (EMEBSDmasterSHT) for the generation of compressed master pattern representations (.sht files) using the spherical harmonic transform.
 
 ## New features in 5.0
 - There are a few minor bug fixes.

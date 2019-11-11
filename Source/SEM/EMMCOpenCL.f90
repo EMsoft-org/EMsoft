@@ -163,7 +163,8 @@ real(kind=sgl),allocatable  :: accumSP(:,:,:)
 integer(kind=ill),allocatable :: accum_e_ill(:,:,:)
 integer(kind=4),allocatable,target  :: init_seeds(:)
 integer(kind=4)         :: idxy(2), iE, px, py, iz, nseeds, hdferr, tstart, tstop ! auxiliary variables
-real(kind=4)            :: cxyz(3), edis, xy(2), xs, ys, zs, sclf ! auxiliary variables
+real(kind=4)            :: cxyz(3), edis, xy(2) ! auxiliary variables
+integer(kind=irg)       :: xs, ys, zs
 real(kind=8)            :: delta,rand, xyz(3)
 character(11)           :: dstr
 character(15)           :: tstrb
@@ -288,12 +289,12 @@ else if (mode .eq. 'bse1') then
    accum_e = 0
    accum_z = 0
 else if (mode .eq. 'Ivol') then
-   numangle = 1
-   allocate(accum_xyz(-nx:nx,-nx:nx,numzbins),stat=istat)
-   accum_xyz = 0
    ivx = (mcnl%ivolx-1)/2
    ivy = (mcnl%ivoly-1)/2
    ivz = (mcnl%ivolz-1)/2
+   numangle = 1
+   allocate(accum_xyz(-ivx:ivx,-ivy:ivy,ivz),stat=istat)
+   accum_xyz = 0
 else
    call FatalError('EMMCOpenCL:','Unknown mode specified in namelist file')
 end if
@@ -820,7 +821,7 @@ dataset = SC_accumz
 else if (mode .eq. 'Ivol') then
 
 dataset = SC_accumxyz
-    hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_xyz, 2*nx+1, 2*nx+1, numzbins, HDF_head)
+    hdferr = HDF_writeDatasetIntegerArray3D(dataset, accum_xyz, 2*ivx+1, 2*ivy+1, ivz, HDF_head)
 
 end if
 
