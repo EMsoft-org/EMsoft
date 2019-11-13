@@ -442,6 +442,7 @@ type EBSDMasterNameListType
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname
         character(fnlen)        :: BetheParametersFile
+        logical                 :: useEnergyWeighting
         logical                 :: combinesites
         logical                 :: restart
         logical                 :: uniform
@@ -564,6 +565,7 @@ type EBSDdefectNameListType
         real(kind=dbl)          :: beamcurrent
         real(kind=dbl)          :: dwelltime
         character(3)            :: scalingmode
+        logical                 :: sampleInteractionVolume
         character(fnlen)        :: deformationfile
         character(fnlen)        :: ivolfile
         character(fnlen)        :: masterfile

@@ -71,6 +71,10 @@ type EBSDMasterType
         real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)          ! auxiliary detector arrays needed for interpolation
 end type EBSDMasterType
 
+interface CalcEBSDPatternDefect
+  module procedure CalcEBSDPatternDefect_zint
+  module procedure CalcEBSDPatternDefect_noint
+end interface
 
 
 contains
@@ -1169,7 +1173,7 @@ end subroutine CalcEBSDPatternSingleFull
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE: CalcEBSDPatternDefect
+! SUBROUTINE: CalcEBSDPatternDefect_zint
 !
 !> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
 !
@@ -1179,8 +1183,8 @@ end subroutine CalcEBSDPatternSingleFull
 !
 !> @date 11/05/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine CalcEBSDPatternDefect(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
-!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect
+recursive subroutine CalcEBSDPatternDefect_zint(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect_zint
 
 use local
 use Lambert
@@ -1255,7 +1259,100 @@ end do
 
 binned = prefactor * EBSDpattern
 
-end subroutine CalcEBSDPatternDefect
+end subroutine CalcEBSDPatternDefect_zint
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: CalcEBSDPatternDefect_noint
+!
+!> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute a column of EBSD patterns for a defect containing column
+!
+!> @param ebsdnl EBSD namelist
+!
+!> @date 11/12/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine CalcEBSDPatternDefect_noint(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect_noint
+
+use local
+use Lambert
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                    :: ipar(7)
+real(kind=sgl),INTENT(IN)                       :: qu(4) 
+real(kind=dbl),INTENT(IN)                       :: prefactor
+real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: rgx(ipar(2),ipar(3))
+real(kind=sgl),INTENT(IN)                       :: rgy(ipar(2),ipar(3))
+real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(3))
+real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2),ipar(3),ipar(7))
+real(kind=dbl),INTENT(IN)                       :: Fmatrix(3,3,ipar(7))
+
+real(kind=sgl),allocatable                      :: EBSDpattern(:,:,:)
+real(kind=sgl)                                  :: dc(3),dcnew(3),ixy(2),scl
+real(kind=sgl)                                  :: dx,dy,dxm,dym
+integer(kind=irg)                               :: ii,jj,kk,istat
+integer(kind=irg)                               :: nix,niy,nixp,niyp
+
+! ipar(1) = not used 
+! ipar(2) = ebsdnl%numsx
+! ipar(3) = ebsdnl%numsy
+! ipar(4) = ebsdnl%npx
+! ipar(5) = ebsdnl%npy
+! ipar(6) = not used 
+! ipar(7) = number of depth steps
+
+allocate(EBSDpattern(ipar(2),ipar(3),ipar(7)),stat=istat)
+
+binned = 0.0
+EBSDpattern = 0.0
+
+scl = float(ipar(4)) 
+
+do ii = 1,ipar(2)
+    do jj = 1,ipar(3)
+! get the pixel direction cosines from the pre-computed array
+        dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
+! apply the grain rotation 
+        dc = quat_Lp( qu(1:4), dc)
+
+! here we loop over the depth instead of the energy, and we employ the deformation tensor at each depth 
+! to determine the direction cosines of the sampling unit vector.        
+        do kk = 1, ipar(7)
+! apply the deformation
+          dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
+! and normalize the direction cosines (to remove any rounding errors)
+          dcnew = dcnew/sqrt(sum(dcnew**2))
+
+! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
+          call LambertgetInterpolation(dcnew, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+! interpolate the intensity
+          if (dcnew(3) .ge. 0.0) then
+                EBSDpattern(ii,jj,kk) = ( mLPNH(nix,niy,kk) * dxm * dym + &
+                                          mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
+                                          mLPNH(nixp,niyp,kk) * dx * dy )
+          else
+                EBSDpattern(ii,jj,kk) = ( mLPSH(nix,niy,kk) * dxm * dym + &
+                                          mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
+                                          mLPSH(nixp,niyp,kk) * dx * dy )
+          end if
+        end do 
+    end do
+end do
+
+binned = prefactor * EBSDpattern
+
+deallocate(EBSDpattern)
+
+end subroutine CalcEBSDPatternDefect_noint
 
 !--------------------------------------------------------------------------
 !

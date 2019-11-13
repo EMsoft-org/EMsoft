@@ -1185,8 +1185,9 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
 !f2py intent(in,out) ::  emnl
 
-integer(kind=irg),parameter                           :: n_int = 7, n_real = 1
-integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
+integer(kind=irg),parameter                           :: n_int = 8, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites, &
+                                                         useEnergyWeighting
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, groupname
@@ -1203,6 +1204,11 @@ if (emnl%combinesites) then
 else 
   combinesites = 0
 end if
+if (emnl%useEnergyWeighting) then 
+  useEnergyWeighting = 1
+else 
+  useEnergyWeighting = 0
+end if
 if (emnl%restart) then 
   restart = 1
 else 
@@ -1213,7 +1219,7 @@ if (emnl%uniform) then
 else 
   uniform = 0
 end if
-io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, combinesites, restart, uniform /)
+io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, combinesites, restart, uniform, useEnergyWeighting /)
 intlist(1) = 'stdout'
 intlist(2) = 'npx'
 intlist(3) = 'Esel'
@@ -1221,6 +1227,7 @@ intlist(4) = 'nthreads'
 intlist(5) = 'combinesites'
 intlist(6) = 'restart'
 intlist(7) = 'uniform'
+intlist(8) = 'useEnergyWeighting'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
@@ -2611,8 +2618,8 @@ type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 type(EBSDdefectNameListType),INTENT(INOUT)            :: enl
 !f2py intent(in,out) ::  enl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 4
-integer(kind=irg)                                     :: hdferr,  io_int(n_int)
+integer(kind=irg),parameter                           :: n_int = 5, n_real = 4
+integer(kind=irg)                                     :: hdferr, sampleIV, io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: t(1)
 character(20)                                         :: intlist(n_int), reallist(n_real)
@@ -2624,12 +2631,16 @@ character(fnlen,kind=c_char)                          :: line2(1)
 groupname = SC_EBSDdefectNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
+sampleIV = 0
+if (enl%sampleInteractionVolume.eqv..TRUE.) sampleIV = 1
+
 ! write all the single integers
-io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%nthreads /)
+io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%nthreads, sampleIV /)
 intlist(1) = 'stdout'
 intlist(2) = 'numsx'
 intlist(3) = 'numsy'
 intlist(4) = 'nthreads'
+intlist(5) = 'sampleInteractionVolume'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals 

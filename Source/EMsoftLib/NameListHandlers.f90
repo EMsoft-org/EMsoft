@@ -2589,13 +2589,14 @@ character(fnlen)        :: copyfromenergyfile
 character(fnlen)        :: energyfile
 character(fnlen)        :: BetheParametersFile
 character(fnlen)        :: h5copypath
+logical                 :: useEnergyWeighting
 logical                 :: combinesites
 logical                 :: restart
 logical                 :: uniform
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist /EBSDmastervars/ dmin,npx,nthreads,copyfromenergyfile,energyfile,Esel,restart,uniform,Notify, &
-                          combinesites, h5copypath, BetheParametersFile, stdout
+                          combinesites, h5copypath, BetheParametersFile, stdout, useEnergyWeighting
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout = 6
@@ -2608,6 +2609,7 @@ copyfromenergyfile = 'undefined'! default filename for z_0(E_e) data from a diff
 h5copypath = 'undefined'
 energyfile = 'undefined'        ! default filename for z_0(E_e) data from EMMC Monte Carlo simulations
 BetheParametersFile='BetheParameters.nml'
+useEnergyWeighting = .FALSE.    ! use the Monte Carlo depth histogram to scale the slice intensities (EMEBSDdepthmaster program)
 combinesites = .FALSE.          ! combine all atom sites into one BSE yield or not
 restart = .FALSE.               ! when .TRUE. an existing file will be assumed 
 uniform = .FALSE.               ! when .TRUE., the output master patterns will contain 1.0 everywhere
@@ -2641,6 +2643,7 @@ emnl%energyfile = energyfile
 emnl%BetheParametersFile = BetheParametersFile
 emnl%Notify = Notify
 emnl%outname = energyfile       ! as off release 3.1, outname must be the same as energyfile
+emnl%useEnergyWeighting = useEnergyWeighting
 emnl%combinesites = combinesites
 emnl%restart = restart
 emnl%uniform = uniform
@@ -3805,6 +3808,7 @@ real(kind=sgl)          :: omega
 real(kind=sgl)          :: gammavalue
 real(kind=dbl)          :: beamcurrent
 real(kind=dbl)          :: dwelltime
+logical                 :: sampleInteractionVolume
 character(3)            :: scalingmode
 character(fnlen)        :: deformationfile
 character(fnlen)        :: ivolfile
@@ -3814,7 +3818,7 @@ character(fnlen)        :: datafile
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, &
                              masterfile, datafile, beamcurrent, dwelltime, gammavalue, &
-                             scalingmode, nthreads, omega, ivolfile
+                             scalingmode, nthreads, omega, ivolfile, sampleInteractionVolume
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 stdout          = 6
@@ -3828,6 +3832,7 @@ omega           = 0.0
 gammavalue      = 1.0           ! gamma factor
 beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
+sampleInteractionVolume = .FALSE.  ! should we sample an MC-generated interaction volume?
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
 ivolfile        = 'undefined'   ! filename
 deformationfile = 'undefined'   ! filename
@@ -3878,6 +3883,7 @@ enl%gammavalue = gammavalue
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%scalingmode = scalingmode
+enl%sampleInteractionVolume = sampleInteractionVolume
 enl%deformationfile = deformationfile
 enl%masterfile = masterfile
 enl%ivolfile = ivolfile

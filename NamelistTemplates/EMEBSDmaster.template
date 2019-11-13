@@ -22,8 +22,11 @@
 !   - for EMsoft developers who have the EMsoft_SDK installed, the following parameter will be ignored;
 !   - all other users will need to provide the full path to the h5copy program here
  h5copypath = 'undefined',
-! restart computation ?
+ ! restart computation ?
  restart = .FALSE.,
 ! create output file with uniform master patterns set to 1.0 (used to study background only)
  uniform = .FALSE.,
+! ===============================
+! for the EMEBSDdepthmaster program only, set the following parameter
+ useEnergyWeighting = .FALSE.,
  /
