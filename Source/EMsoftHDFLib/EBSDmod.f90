@@ -433,6 +433,7 @@ character(fnlen)                                    :: infile, groupname, datagr
 logical                                             :: stat, readonly, g_exists, f_exists, FL
 type(HDFobjectStackType)                            :: HDF_head
 integer(kind=irg)                                   :: ii, nlines, nx, ny, nz
+real(kind=dbl)                                      :: x
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
 integer(kind=irg),allocatable                       :: accum_e(:,:,:)
@@ -525,6 +526,27 @@ if (trim(mcnl%mode).ne.'Ivol') then
 
     dataset = SC_depthstep
       call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthstep)
+else
+    dataset = 'ivolx'
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%ivolx) 
+
+    dataset = 'ivoly'
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%ivoly) 
+
+    dataset = 'ivolz'
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%ivolz) 
+
+    dataset = 'ivolstepx'
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, x)
+      mcnl%ivolstepx = sngl(x)
+
+    dataset = 'ivolstepy'
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, x)
+      mcnl%ivolstepy = sngl(x)
+
+    dataset = 'ivolstepz'
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, x)
+      mcnl%ivolstepz = sngl(x)
 end if
 
 dataset = SC_EkeV
