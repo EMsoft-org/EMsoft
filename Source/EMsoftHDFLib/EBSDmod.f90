@@ -71,6 +71,10 @@ type EBSDMasterType
         real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)          ! auxiliary detector arrays needed for interpolation
 end type EBSDMasterType
 
+interface CalcEBSDPatternDefect
+  module procedure CalcEBSDPatternDefect_zint
+  module procedure CalcEBSDPatternDefect_noint
+end interface
 
 
 contains
@@ -398,8 +402,9 @@ end subroutine EBSDreadorpcdef
 !> @param hdferr error code
 !
 !> @date 04/02/18 MDG 1.0 started new routine, to eventually replace all other EBSD Monte Carlo reading routines
+!> @date 11/11/19 MDG 1.1 adds support for interaction volume array reading
 !--------------------------------------------------------------------------
-recursive subroutine readEBSDMonteCarloFile(MCfile, mcnl, hdferr, EBSDMCdata, getAccume, getAccumz, getAccumSP)
+recursive subroutine readEBSDMonteCarloFile(MCfile, mcnl, hdferr, EBSDMCdata, getAccume, getAccumz, getAccumSP, getAccumxyz)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDMonteCarloFile
 
 use local
@@ -422,14 +427,16 @@ type(EBSDMCdataType),INTENT(INOUT)                  :: EBSDMCdata
 logical,INTENT(IN),OPTIONAL                         :: getAccume
 logical,INTENT(IN),OPTIONAL                         :: getAccumz
 logical,INTENT(IN),OPTIONAL                         :: getAccumSP
+logical,INTENT(IN),OPTIONAL                         :: getAccumxyz   ! for interaction volume array
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
 type(HDFobjectStackType)                            :: HDF_head
-integer(kind=irg)                                   :: ii, nlines, nx
+integer(kind=irg)                                   :: ii, nlines, nx, ny, nz
 integer(kind=irg),allocatable                       :: iarray(:)
 real(kind=sgl),allocatable                          :: farray(:)
 integer(kind=irg),allocatable                       :: accum_e(:,:,:)
+integer(kind=irg),allocatable                       :: accum_xyz(:,:,:)
 integer(kind=irg),allocatable                       :: accum_z(:,:,:,:)
 integer(HSIZE_T)                                    :: dims(1), dims2(2), dims3(3), offset3(3), dims4(4) 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
@@ -500,30 +507,38 @@ groupname = SC_MCCLNameList
     hdferr = HDF_openGroup(groupname, HDF_head)
 
 ! we'll read these roughly in the order that the HDFView program displays them...
-dataset = SC_Ebinsize
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ebinsize)
+dataset = SC_mode
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    mcnl%mode = trim(stringarray(1))
+    deallocate(stringarray)
 
-dataset = SC_Ehistmin
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ehistmin)
+
+if (trim(mcnl%mode).ne.'Ivol') then
+    dataset = SC_Ebinsize
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ebinsize)
+
+    dataset = SC_Ehistmin
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%Ehistmin)
+
+    dataset = SC_depthmax
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthmax)
+
+    dataset = SC_depthstep
+      call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthstep)
+end if
 
 dataset = SC_EkeV
     call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%EkeV)
-
-dataset = SC_MCmode
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    mcnl%MCmode = trim(stringarray(1))
-    deallocate(stringarray)
 
 dataset = SC_dataname
     call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
     mcnl%dataname = trim(stringarray(1))
     deallocate(stringarray)
 
-dataset = SC_depthmax
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthmax)
-
-dataset = SC_depthstep
-    call HDF_readDatasetDouble(dataset, HDF_head, hdferr, mcnl%depthstep)
+dataset = SC_MCmode
+    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
+    mcnl%MCmode = trim(stringarray(1))
+    deallocate(stringarray)
 
 dataset = SC_devid
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%devid)
@@ -531,10 +546,6 @@ dataset = SC_devid
 dataset = SC_globalworkgrpsz
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, mcnl%globalworkgrpsz)
 
-dataset = SC_mode
-    call HDF_readDatasetStringArray(dataset, nlines, HDF_head, hdferr, stringarray)
-    mcnl%mode = trim(stringarray(1))
-    deallocate(stringarray)
 
 dataset = SC_multiplier
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
@@ -596,8 +607,10 @@ else
     EBSDMCdata%multiplier = 1
 end if
 
-dataset = SC_numEbins
+if (trim(mcnl%mode).ne.'Ivol') then 
+  dataset = SC_numEbins
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%numEbins)
+end if
 
 dataset = SC_numzbins
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, EBSDMCdata%numzbins)
@@ -632,6 +645,19 @@ if (present(getAccumSP)) then
   if (getAccumSP.eqv..TRUE.) then
     dataset = SC_accumSP
     call HDF_readDatasetFloatArray3D(dataset, dims3, HDF_head, hdferr, EBSDMCdata%accumSP)
+  end if 
+end if
+
+if (present(getAccumxyz)) then 
+  if (getAccumxyz.eqv..TRUE.) then
+    dataset = SC_accumxyz
+    call HDF_readDatasetIntegerArray3D(dataset, dims3, HDF_head, hdferr, accum_xyz)
+    nx = (dims3(1)-1)/2
+    ny = (dims3(2)-1)/2
+    nz = dims3(3)
+    allocate(EBSDMCdata%accum_xyz(-nx:nx, -ny:ny, nz))
+    EBSDMCdata%accum_xyz = accum_xyz
+    deallocate(accum_xyz)  
   end if 
 end if
 
@@ -1147,7 +1173,7 @@ end subroutine CalcEBSDPatternSingleFull
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE: CalcEBSDPatternDefect
+! SUBROUTINE: CalcEBSDPatternDefect_zint
 !
 !> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
 !
@@ -1157,8 +1183,8 @@ end subroutine CalcEBSDPatternSingleFull
 !
 !> @date 11/05/19 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine CalcEBSDPatternDefect(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
-!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect
+recursive subroutine CalcEBSDPatternDefect_zint(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect_zint
 
 use local
 use Lambert
@@ -1233,7 +1259,100 @@ end do
 
 binned = prefactor * EBSDpattern
 
-end subroutine CalcEBSDPatternDefect
+end subroutine CalcEBSDPatternDefect_zint
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: CalcEBSDPatternDefect_noint
+!
+!> @author Saransh Singh/Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute a column of EBSD patterns for a defect containing column
+!
+!> @param ebsdnl EBSD namelist
+!
+!> @date 11/12/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine CalcEBSDPatternDefect_noint(ipar,qu,mLPNH,mLPSH,rgx,rgy,rgz,binned, prefactor, Fmatrix)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEBSDPatternDefect_noint
+
+use local
+use Lambert
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                    :: ipar(7)
+real(kind=sgl),INTENT(IN)                       :: qu(4) 
+real(kind=dbl),INTENT(IN)                       :: prefactor
+real(kind=sgl),INTENT(IN)                       :: mLPNH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: mLPSH(-ipar(4):ipar(4),-ipar(5):ipar(5),ipar(7))
+real(kind=sgl),INTENT(IN)                       :: rgx(ipar(2),ipar(3))
+real(kind=sgl),INTENT(IN)                       :: rgy(ipar(2),ipar(3))
+real(kind=sgl),INTENT(IN)                       :: rgz(ipar(2),ipar(3))
+real(kind=sgl),INTENT(OUT)                      :: binned(ipar(2),ipar(3),ipar(7))
+real(kind=dbl),INTENT(IN)                       :: Fmatrix(3,3,ipar(7))
+
+real(kind=sgl),allocatable                      :: EBSDpattern(:,:,:)
+real(kind=sgl)                                  :: dc(3),dcnew(3),ixy(2),scl
+real(kind=sgl)                                  :: dx,dy,dxm,dym
+integer(kind=irg)                               :: ii,jj,kk,istat
+integer(kind=irg)                               :: nix,niy,nixp,niyp
+
+! ipar(1) = not used 
+! ipar(2) = ebsdnl%numsx
+! ipar(3) = ebsdnl%numsy
+! ipar(4) = ebsdnl%npx
+! ipar(5) = ebsdnl%npy
+! ipar(6) = not used 
+! ipar(7) = number of depth steps
+
+allocate(EBSDpattern(ipar(2),ipar(3),ipar(7)),stat=istat)
+
+binned = 0.0
+EBSDpattern = 0.0
+
+scl = float(ipar(4)) 
+
+do ii = 1,ipar(2)
+    do jj = 1,ipar(3)
+! get the pixel direction cosines from the pre-computed array
+        dc = (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /)
+! apply the grain rotation 
+        dc = quat_Lp( qu(1:4), dc)
+
+! here we loop over the depth instead of the energy, and we employ the deformation tensor at each depth 
+! to determine the direction cosines of the sampling unit vector.        
+        do kk = 1, ipar(7)
+! apply the deformation
+          dcnew = matmul(sngl(Fmatrix(1:3,1:3,kk)), dc)
+! and normalize the direction cosines (to remove any rounding errors)
+          dcnew = dcnew/sqrt(sum(dcnew**2))
+
+! convert these direction cosines to interpolation coordinates in the Rosca-Lambert projection
+          call LambertgetInterpolation(dcnew, scl, ipar(4), ipar(5), nix, niy, nixp, niyp, dx, dy, dxm, dym)
+
+! interpolate the intensity
+          if (dcnew(3) .ge. 0.0) then
+                EBSDpattern(ii,jj,kk) = ( mLPNH(nix,niy,kk) * dxm * dym + &
+                                          mLPNH(nixp,niy,kk) * dx * dym + mLPNH(nix,niyp,kk) * dxm * dy + &
+                                          mLPNH(nixp,niyp,kk) * dx * dy )
+          else
+                EBSDpattern(ii,jj,kk) = ( mLPSH(nix,niy,kk) * dxm * dym + &
+                                          mLPSH(nixp,niy,kk) * dx * dym + mLPSH(nix,niyp,kk) * dxm * dy + &
+                                          mLPSH(nixp,niyp,kk) * dx * dy )
+          end if
+        end do 
+    end do
+end do
+
+binned = prefactor * EBSDpattern
+
+deallocate(EBSDpattern)
+
+end subroutine CalcEBSDPatternDefect_noint
 
 !--------------------------------------------------------------------------
 !
