@@ -40,6 +40,7 @@
 !> @date 02/02/16 MDG 1.1 added Hough Transform
 !> @date 01/09/18 MDG 1.2 added getADPmap
 !> @date 09/14/18 MDG 1.3 added fftw_cleanup() calls to eliminate momory leaks
+!> @date 11/16/19 MDG 1.4 added Gaussian beam broadening filter for EBSD
 !--------------------------------------------------------------------------
 
 module filters
@@ -49,6 +50,100 @@ use local
 IMPLICIT NONE
 
 contains 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: applyGaussianBeamSpread
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief  apply a 2D Gaussian beam broadening kernel to the planes of a 3D array 
+!
+!> @param ipar array dimensions
+!> @param fpar step sizes
+!> @param Vxyz counts array; will contain convolved array on exit
+!> @param w FWHM of Gaussian beam
+! 
+!> @date 11/16/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine applyGaussianBeamSpread(ipar, fpar, Vxyz, w, verbose) 
+!DEC$ ATTRIBUTES DLLEXPORT :: applyGaussianBeamSpread
+
+use constants
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)                :: ipar(3)
+real(kind=sgl),INTENT(IN)                   :: fpar(2)
+integer(kind=irg),INTENT(INOUT)             :: Vxyz(ipar(1),ipar(2),ipar(3))
+real(kind=dbl),INTENT(IN)                   :: w 
+logical,OPTIONAL,INTENT(IN)                 :: verbose
+
+real(kind=dbl)                              :: sigma, pre, x, y, bd
+integer(kind=irg)                           :: smax, ix, iy
+real(kind=dbl),allocatable                  :: gkernel(:,:), accum(:,:,:), V(:,:,:)
+
+! convert w to sigma
+sigma = w / (2.D0*sqrt(2.D0*log(2.D0)))
+pre = 1.D0/(sigma**2*2.0*cPi)
+
+! get the largest distance from the origin for the convolution kernel
+smax =  ceiling(2.5758*sigma) + 1  ! determined by requiring that kernel contains at least 98.5% of the Gaussian intensity
+
+if (present(verbose)) then 
+  if (verbose.eqv..TRUE.) write (*,*) 'w, sigma, pre, smax : ',w, sigma, pre, smax 
+end if 
+
+! convert sigma to effective exponential argument
+sigma = 1.D0/(2.D0 * sigma*sigma)
+
+! generate the Gaussian kernel
+allocate(gkernel(-smax:smax,-smax:smax))
+do ix = -smax, smax
+  x = (fpar(1) * ix)**2 
+  do iy = -smax, smax
+    y = (fpar(2) * iy)**2
+    gkernel(ix,iy) = exp( -sigma * (x+y) )
+  end do
+end do 
+gkernel = pre * gkernel 
+
+if (present(verbose)) then 
+  if (verbose.eqv..TRUE.) then 
+    do ix = -smax, smax 
+      write (*,*) gkernel(ix,-smax:smax) 
+    end do
+    write (*,*) 'sum of all kernel elements : ', sum(gkernel) * fpar(1) * fpar(2)
+  end if
+end if 
+
+! generate the accumulator array accum; the nint version of this will be returned in Vxyz
+allocate(accum(ipar(1),ipar(2),ipar(3)))
+accum = 0.D0
+bd = 0.D0
+
+if (present(verbose)) then 
+  if (verbose.eqv..TRUE.) write(*,*) shape(Vxyz), shape(accum)
+end if
+
+! loop over x and y range and add the weighted eoshift() array to the accumulator 
+! we begin by eoshifting the input array to row -smax
+allocate(V(ipar(1),ipar(2),ipar(3)))
+V = eoshift(Vxyz, shift=-smax, boundary=0, dim=1)
+do ix = 1,2*smax+1
+! loop over all the column shifts
+  do iy = -smax, smax
+    accum = accum + gkernel(ix-1-smax,iy) * eoshift(V, shift = iy, boundary = bd, dim=2)
+  end do
+! go to the next row 
+  if (ix.lt.2*smax+1) V = eoshift(V, shift=1, boundary=bd, dim=1)
+end do 
+
+! and copy the accumulator array into the input array as nearest integers
+Vxyz = nint( accum * fpar(1) * fpar(2) )
+deallocate(V, accum, gkernel)
+
+end subroutine applyGaussianBeamSpread
 
 !--------------------------------------------------------------------------
 !
