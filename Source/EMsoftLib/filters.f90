@@ -129,7 +129,8 @@ end if
 ! loop over x and y range and add the weighted eoshift() array to the accumulator 
 ! we begin by eoshifting the input array to row -smax
 allocate(V(ipar(1),ipar(2),ipar(3)))
-V = eoshift(Vxyz, shift=-smax, boundary=0, dim=1)
+V = dble(Vxyz)
+V = eoshift(V, shift=-smax, boundary=bd, dim=1)
 do ix = 1,2*smax+1
 ! loop over all the column shifts
   do iy = -smax, smax

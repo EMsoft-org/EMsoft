@@ -3816,7 +3816,7 @@ character(fnlen)        :: masterfile
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, &
+namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, spotsize, &
                              masterfile, datafile, beamcurrent, dwelltime, gammavalue, &
                              scalingmode, nthreads, omega, ivolfile, sampleInteractionVolume
 

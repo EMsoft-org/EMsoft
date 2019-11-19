@@ -415,6 +415,7 @@ recursive subroutine mInvert_d(a,b,uni)
 !DEC$ ATTRIBUTES DLLEXPORT :: mInvert_d
 
 use error
+use io
 
 IMPLICIT NONE
 
@@ -422,6 +423,7 @@ real(kind=dbl),INTENT(IN)               :: a(3,3)               !< input matrix
 real(kind=dbl),INTENT(OUT)              :: b(3,3)               !< output matrix
 logical,INTENT(IN)                      :: uni                  !< unitary logical
 real(kind=dbl)                          :: d                    !< auxiliary variable
+integer(kind=irg)                       :: i, j 
 
 ! it is a regular (non-unitary) matrix
  if (.not.uni) then 
@@ -440,7 +442,12 @@ real(kind=dbl)                          :: d                    !< auxiliary var
    b(3,3)=a(1,1)*a(2,2)-a(1,2)*a(2,1)
    b = b/d
   else
-   call FatalError('mInvert','matrix has zero determinant')
+    do i=1,3
+      write (*,*) (a(i,j),j=1,3)
+    end do 
+!  call FatalError('mInvert','matrix has zero determinant')
+   call Message('mInvert: matrix has zero determinant')
+   b = a
   end if
  else
 ! it is a unitary matrix, so simply get the transpose
@@ -475,6 +482,7 @@ recursive subroutine mInvert(a,b,uni)
 !DEC$ ATTRIBUTES DLLEXPORT :: mInvert
 
 use error
+use io
 
 IMPLICIT NONE
 
@@ -482,7 +490,7 @@ real(kind=sgl),INTENT(IN)               :: a(3,3)               !< input matrix
 real(kind=sgl),INTENT(OUT)              :: b(3,3)               !< output matrix
 logical,INTENT(IN)                      :: uni                  !< unitary logical
 real(kind=sgl)                          :: d                    !< auxiliary variable
-
+integer(kind=irg)                       :: i, j 
 ! it is a regular (non-unitary) matrix
  if (.not.uni) then 
   d = a(1,1)*a(2,2)*a(3,3)+a(1,2)*a(2,3)*a(3,1)+ &
@@ -500,7 +508,12 @@ real(kind=sgl)                          :: d                    !< auxiliary var
    b(3,3)=a(1,1)*a(2,2)-a(1,2)*a(2,1)
    b = b/d
   else
-   call FatalError('mInvert','matrix has zero determinant')
+    do i=1,3
+      write (*,*) (a(i,j),j=1,3)
+    end do 
+!  call FatalError('mInvert','matrix has zero determinant')
+   call Message('mInvert: matrix has zero determinant')
+   b = a
   end if
  else
 ! it is a unitary matrix, so simply get the transpose
