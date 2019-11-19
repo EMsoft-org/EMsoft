@@ -291,7 +291,7 @@ else if (mode .eq. 'bse1') then
 else if (mode .eq. 'Ivol') then
    ivx = (mcnl%ivolx-1)/2
    ivy = (mcnl%ivoly-1)/2
-   ivz = (mcnl%ivolz-1)/2
+   ivz = mcnl%ivolz
    numangle = 1
    allocate(accum_xyz(-ivx:ivx,-ivy:ivy,ivz),stat=istat)
    accum_xyz = 0
