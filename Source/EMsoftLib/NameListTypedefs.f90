@@ -570,6 +570,7 @@ type EBSDdefectNameListType
         character(fnlen)        :: ivolfile
         character(fnlen)        :: masterfile
         character(fnlen)        :: datafile
+        character(fnlen)        :: tmpfspath
 end type EBSDdefectNameListType
 
 ! namelist for the EMEBSDFull program

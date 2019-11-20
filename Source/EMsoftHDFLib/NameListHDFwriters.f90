@@ -2686,6 +2686,11 @@ line2(1) = trim(enl%ivolfile)
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create ivolfile dataset',.TRUE.)
 
+dataset = 'tmpfspath'
+line2(1) = trim(enl%tmpfspath)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create tmpfspath dataset',.TRUE.)
+
 ! and pop this group off the stack
 call HDF_pop(HDF_head)
 

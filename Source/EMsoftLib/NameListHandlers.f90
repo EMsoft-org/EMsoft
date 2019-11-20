@@ -3814,10 +3814,11 @@ character(fnlen)        :: deformationfile
 character(fnlen)        :: ivolfile
 character(fnlen)        :: masterfile
 character(fnlen)        :: datafile
+character(fnlen)        :: tmpfspath
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDdefectdata / stdout, thetac, delta, numsx, numsy, deformationfile, spotsize, &
-                             masterfile, datafile, beamcurrent, dwelltime, gammavalue, &
+                             masterfile, datafile, beamcurrent, dwelltime, gammavalue, tmpfspath, &
                              scalingmode, nthreads, omega, ivolfile, sampleInteractionVolume
 
 ! set the input parameters to default values (except for xtalname, which must be present)
@@ -3838,6 +3839,7 @@ ivolfile        = 'undefined'   ! filename
 deformationfile = 'undefined'   ! filename
 masterfile      = 'undefined'   ! filename
 datafile        = 'undefined'   ! output file name
+tmpfspath       = 'undefined'   ! path to memory file system, if it exists
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3889,6 +3891,7 @@ enl%masterfile = masterfile
 enl%ivolfile = ivolfile
 enl%datafile = datafile
 enl%omega = omega
+enl%tmpfspath = tmpfspath
 
 end subroutine GetEBSDdefectNameList
 
