@@ -1050,6 +1050,7 @@ end subroutine CalcLgh
 !> @param nns number of strong reflections
 !> @param nnw number of weak reflections
 !> @param BlochMode [optional] Bloch or Struc
+!> @param noNormAbs [optional and experimental] no normal absorption
 !
 !> @date  04/22/14 MDG 1.0 new library version
 !> @date  06/15/14 MDG 2.0 updated for removal of globals
@@ -1057,8 +1058,9 @@ end subroutine CalcLgh
 !> @date  06/18/14 MDG 2.2 corrected some pointer allocation errors in other routines; this one now works fine.
 !> @date  09/08/15 MDG 3.0 rewrite to allow either dynamical matrix type (Bloch/structure matrix) to be generated
 !> @date  09/14/15 SS  3.1 added exp(-pi/xgp) to the diagonal elements of the bloch dynamical matrix
+!> @date  11/21/19 MDG 3.2 optional parameter to turn off inclusion of normal absorption on diagonal
 !--------------------------------------------------------------------------
-recursive subroutine GetDynMat(cell, listroot, listrootw, rlp, DynMat, nns, nnw, BlochMode)
+recursive subroutine GetDynMat(cell, listroot, listrootw, rlp, DynMat, nns, nnw, BlochMode, noNormAbs)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetDynMat
 
 use local
@@ -1082,6 +1084,7 @@ complex(kind=dbl),INTENT(INOUT)  :: DynMat(nns,nns)
 !f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)     :: nnw
 character(5),INTENT(IN),OPTIONAL :: BlochMode   ! 'Bloch' or 'Struc'
+logical,INTENT(IN),OPTIONAL      :: noNormAbs
 
 complex(kind=dbl)                :: czero, ughp, uhph, weaksum, cv, Agh, Ahgp, Ahmgp, Ahg, weakdiagsum, pq0, Ahh, Agpgp, ccpi 
 real(kind=dbl)                   :: weaksgsum, tpi, Pioxgp
@@ -1114,6 +1117,11 @@ if (AorD.eq.'D') then
         DynMat = czero
         call CalcUcg(cell, rlp, (/0,0,0/) )
         Upz = rlp%Upmod
+        if (present(noNormAbs)) then 
+          if (noNormAbs.eqv..TRUE.) then 
+            Upz = 0.0
+          end if
+        end if
         !Pioxgp = cPi/rlp%xgp
 
         rlr => listroot%next
