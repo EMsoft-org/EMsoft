@@ -5,8 +5,15 @@ set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIR
 
 if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
 
-  GetHDF5LinkLibraries(EMSOFT)
-  set(EXE_LINK_LIBRARIES ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib EMOpenCLLib)
+  # The libraries are specifically laid out this way in order to ensure the link line
+  # has the correct ordering. This seems to be more important on Windows than on macOS/Linux
+  set(EXE_LINK_LIBRARIES  
+          ${OpenCL_LIBRARY}
+          clfortran
+          EMsoftLib 
+          EMsoftHDFLib
+          EMOpenCLLib
+  )
 
   Add_EMSoft_Executable(TARGET EMMCOpenCL 
                         SOURCES ${APP_DIR}/EMMCOpenCL.f90 
