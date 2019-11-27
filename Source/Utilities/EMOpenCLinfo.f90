@@ -94,7 +94,7 @@ progname = 'EMOpenCLinfo.f90'
 progdesc = 'List OpenCL platform and device information'
 call EMsoft(progname,progdesc)
 
-! deal with the command line arguments, if any
+! deal with the command line arguments, if any (mostly to generate pdf version of wiki pages)
 call Interpret_Program_Arguments(2,(/ 904, 930 /), progname)
 
 ! Get the number of platforms, prior to allocating an array.
@@ -103,30 +103,37 @@ if (err /= CL_SUCCESS) call FatalError('clGetPlatformIDs: ','Error quering platf
 io_int(1) = num_platforms
 call WriteValue('Number of Platforms: ',io_int,1,"(I2)") 
 
+if (num_platforms.gt.0) then 
 ! Allocate an array to hold platform handles.
-allocate(platform_ids(num_platforms))
+    allocate(platform_ids(num_platforms))
 
 ! Get platforms IDs.
-err = clGetPlatformIDs(num_platforms, C_LOC(platform_ids), num_platforms)
-if (err /= CL_SUCCESS) call FatalError('clGetPlatformIDs: ','Error quering platforms')
+    err = clGetPlatformIDs(num_platforms, C_LOC(platform_ids), num_platforms)
+    if (err /= CL_SUCCESS) call FatalError('clGetPlatformIDs: ','Error quering platforms')
 
 !
 ! Header for platform details and devices.
 !
-call Message('--------')
+    call Message('--------')
 
 ! Loop over platforms and print information.
-do i = 1, num_platforms
+    do i = 1, num_platforms
 ! Iterate over platforms and get number of devices.
-  io_int(1) = i
-  call WriteValue('Platform: ', io_int, 1, "(I2/)")
+      io_int(1) = i
+      call WriteValue('Platform: ', io_int, 1, "(I2/)")
 
 ! Query platform information.
-  call CLquery_platform_info(platform_ids(i))
+      call CLquery_platform_info(platform_ids(i))
 
 ! Print separator between platforms, half size.
-  call Message('--------')
-end do
+      call Message('--------')
+    end do
+else
+! the number of platforms is 0 which means that OpenCL is either absent or incorrectly set up
+  call Message('No OpenCL platforms were found; this means that EMsoft programs with OpenCL')
+  call Message('functionality will not work properly.  Please check your OpenCL configuration.')
+  call Message('    ----> EMOpenCLinfo: No OpenCL functionality detected on this system')
+end if
 
 end program EMOpenCLinfo
 
