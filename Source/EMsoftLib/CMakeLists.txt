@@ -180,7 +180,6 @@ target_link_libraries(EMsoftLib
                 EMsoftLib_C 
                 EMsoftLib_Cpp 
                 jsonfortran 
-                ${OpenCL_LIBRARY}
                 bcls::bcls            
 )
 if (Fortran_COMPILER_NAME MATCHES "ifort.*")
