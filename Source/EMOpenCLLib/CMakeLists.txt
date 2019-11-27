@@ -33,19 +33,13 @@ target_include_directories(EMOpenCLLib
                             "${EMsoft_SOURCE_DIR}/Source"                            
                     )
 
-if(WIN32)
-  target_link_libraries(EMOpenCLLib 
-                            ${CLFortran_INSTALL}/lib/clfortran.lib 
-                            EMsoftLib 
-                            EMsoftHDFLib 
-  )
-else()
-  target_link_libraries(EMOpenCLLib 
-                            ${CLFortran_INSTALL}/lib/libclfortran.a 
-                            EMsoftLib 
-                            EMsoftHDFLib 
-  )
-endif()
+target_link_libraries(EMOpenCLLib 
+                          ${OpenCL_LIBRARY}
+                          clfortran
+                          EMsoftLib 
+                          EMsoftHDFLib 
+)
+
 
 set_target_properties (EMOpenCLLib PROPERTIES
   LINKER_LANGUAGE Fortran
