@@ -277,7 +277,7 @@ interface
 end interface
 
 
-!$OMP THREADPRIVATE(rlp,cell) 
+!!$OMP THREADPRIVATE(rlp,cell) 
 
 call timestamp(datestring=dstr, timestring=tstrb)
 tstre = tstrb
@@ -717,17 +717,6 @@ EBSDPatterns = 0.0
 ! allocate and compute the Sgh loop-up table
 call Initialize_SghLUT(cell, dmin, numset, nat, verbose)
 
-allocate(svals(numset),lambdaZ(numzbins),stat=istat)
-
-
-lambdafile = 0.0
-open(unit=13,file='/Users/saranshsingh/EMPlay/Playarea/DiscreteLoss/lambda.txt',form='formatted',&
-status='old',action='read')
-
-do i = 1,200
-    read(13,*)lambdafile(i)
-end do
-close(13)
 
 ! force dynamical matrix routine to read new Bethe parameters from file
 ! this will all be changed with the new version of the Bethe potentials
@@ -749,19 +738,23 @@ do iang = 1,numangles
         cell%voltage = EkeV
         call CalcWaveLength(cell, rlp, skip) 
 
-!$OMP PARALLEL default(PRIVATE) COPYIN(rlp,cell) SHARED(EBSDdetector, enl, qu) &
-!$OMP& SHARED(BetheParameters, dmin, verbose, czero, gzero, numset, nat) &
-!$OMP& SHARED(EBSDPatterns, NTHREADS, iang, prefactor, iE, nabsfact, lambdafile)
+!!$OMP PARALLEL default(PRIVATE) COPYIN(rlp,cell) SHARED(EBSDdetector, enl, qu) &
+!!$OMP& SHARED(BetheParameters, dmin, verbose, czero, gzero, numset, nat) &
+!!$OMP& SHARED(EBSDPatterns, NTHREADS, iang, prefactor, iE, nabsfact)
+
+
+!$OMP PARALLEL default(SHARED) PRIVATE(TID, i, ix, j, k, kk, kkk, nref, lambdaZ) &
+!$OMP& PRIVATE(FN, reflist, firstw, nns, nnw, DynMat, Sgh, Lghtmp, nat, kn, svals) 
 
         if (iE .eq. numEbins) then
-            if (TID .eq. 0) NTHREADS = OMP_GET_NUM_THREADS()
             TID = OMP_GET_THREAD_NUM()
-
-!$OMP BARRIER
-            io_int(1) = NTHREADS
-            if (TID .eq. 0)call WriteValue(' Number of threads set to',io_int, 1, "(2I8)") 
+            if (TID.eq.0) then
+              io_int(1) = OMP_GET_NUM_THREADS()
+              call WriteValue(' Number of threads set to',io_int, 1, "(2I8)") 
+            end if
         end if
 
+        allocate(svals(numset),lambdaZ(numzbins),stat=istat)
 
 !$OMP DO SCHEDULE(DYNAMIC)
         do k = 1,enl%numsx*enl%numsy
