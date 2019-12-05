@@ -167,9 +167,9 @@ character(fnlen),INTENT(IN)                   :: progname
 
 ! crystal structure variables
 logical                                       :: verbose
-type(unitcell)        ,save                   :: cell
+type(unitcell)                                :: cell
 type(DynType)                                 :: Dyn
-type(gnode),save                              :: rlp
+type(gnode)                                   :: rlp, myrlp
 type(BetheParameterType)                      :: BetheParameters
 
 ! MC and Dynamical simulation variables
@@ -187,13 +187,13 @@ integer(kind=4),target                        :: globalworkgrpsz, num_el, steps
 integer(kind=8)                               :: size_in_bytes,size_in_bytes_seeds ! size of arrays passed to kernel. Only accepts kind=8 integers by clCreateBuffer etc., so donot change
 
 integer(kind=8),target                        :: globalsize(2), localsize(2) ! size of global and local work groups. Again only kind=8 is accepted by clEnqueueNDRangeKernel
-integer(kind=irg)                             :: mcnx
+integer(kind=irg)                             :: mcnx, hkl(3)
 ! results from kernel stored here
 real(kind=4),allocatable, target              :: Lamresx(:), Lamresy(:), Lamresz(:), depthres(:), energyres(:)
 integer(kind=4),allocatable,target            :: init_seeds(:)
 integer(kind=ill)                             :: io_int(3)
 
-real(kind=8)                                  :: delta, rand 
+real(kind=8)                                  :: delta, rand, mRelcor, mPsihat, mLambda, temp1, temp2 
 integer(kind=ill)                             :: i, j, k, num_max, totnum_el_nml, multiplier, totnum_el
 integer(kind=4),allocatable                   :: rnseeds(:)
 real(kind=4)                                  :: tstop
@@ -717,14 +717,17 @@ EBSDPatterns = 0.0
 ! allocate and compute the Sgh loop-up table
 call Initialize_SghLUT(cell, dmin, numset, nat, verbose)
 
-
 ! force dynamical matrix routine to read new Bethe parameters from file
 ! this will all be changed with the new version of the Bethe potentials
 call Set_Bethe_Parameters(BetheParameters,.TRUE.)
 
+write (*,*) 'Starting parallel section'
 call OMP_SET_NUM_THREADS(enl%nthreads)
-io_int(1) = enl%nthreads
+io_int(1) = nthreads
 call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
+temp1 = 1.0D+9*cPlanck/dsqrt(2.D0*cRestmass*cCharge)
+
+
 
 do iang = 1,numangles
 
@@ -733,24 +736,30 @@ do iang = 1,numangles
     do iE = numEbins,1,-1
 
         EkeV = EkeVs(iE) !(iE - 1)*enl%Ebinsize + enl%Ehistmin
-! calculate wavelength for the energy
-        skip = 3
-        cell%voltage = EkeV
-        call CalcWaveLength(cell, rlp, skip) 
 
-!!$OMP PARALLEL default(PRIVATE) COPYIN(rlp,cell) SHARED(EBSDdetector, enl, qu) &
-!!$OMP& SHARED(BetheParameters, dmin, verbose, czero, gzero, numset, nat) &
-!!$OMP& SHARED(EBSDPatterns, NTHREADS, iang, prefactor, iE, nabsfact)
+!$OMP PARALLEL default(SHARED) PRIVATE(TID, i, ix, j, k, kk, kkk, nref, lambdaZ, myrlp, temp2, mLambda) &
+!$OMP& PRIVATE(FN, reflist, firstw, nns, nnw, DynMat, Sgh, Lghtmp, nat, kn, svals, mRelcor, mPsihat, hkl) 
 
+        temp2 = cCharge*0.5D0*EkeV*1000.D0/cRestmass/(cLight**2)
+! relativistic correction factor (known as gamma)      
+        mRelcor = 1.0D0+2.0D0*temp2
+! relativistic acceleration voltage
+        mPsihat = EkeV*(1.D0+temp2)*1000.D0
+! correct for refraction        
+        hkl=(/0,0,0/)
+        myrlp%method='WK'
+        call CalcUcg(cell,myrlp,hkl) 
+        mPsihat = mPsihat + dble(myrlp%Vmod)
+        mLambda = temp1/dsqrt(mPsihat)
 
-!$OMP PARALLEL default(SHARED) PRIVATE(TID, i, ix, j, k, kk, kkk, nref, lambdaZ) &
-!$OMP& PRIVATE(FN, reflist, firstw, nns, nnw, DynMat, Sgh, Lghtmp, nat, kn, svals) 
+!       call CalcWaveLength(cell, myrlp, skip) 
 
+        TID = OMP_GET_THREAD_NUM()
         if (iE .eq. numEbins) then
-            TID = OMP_GET_THREAD_NUM()
             if (TID.eq.0) then
               io_int(1) = OMP_GET_NUM_THREADS()
               call WriteValue(' Number of threads set to',io_int, 1, "(2I8)") 
+              write (*,*) ' wavelength ', mLambda
             end if
         end if
 
@@ -765,10 +774,11 @@ do iang = 1,numangles
             lambdaZ = 0.0
             lambdaZ(1:numzbins) = EBSDdetector%detector(i,j)%lambdaEZ(iE,1:numzbins)
             lambdaZ = lambdaZ*nabsfact
+
 ! get the incident wavevector of the electron in xtal frame
             kk = EBSDdetector%detector(i,j)%dc(1:3)           
             kk = quat_Lp(conjg(qu), kk) 
-            kk = kk/cell%mLambda
+            kk = kk/mLambda
 
             call TransSpace(cell,kk,kkk,'c','r')
             FN = kkk
@@ -785,7 +795,7 @@ do iang = 1,numangles
             allocate(DynMat(nns,nns))
             DynMat = czero
 
-            call GetDynMat(cell, reflist, firstw, rlp, DynMat, nns, nnw)
+            call GetDynMat(cell, reflist, firstw, myrlp, DynMat, nns, nnw)
                
 ! then we need to initialize the Sgh and Lgh arrays
             if (allocated(Sgh)) deallocate(Sgh)
@@ -819,8 +829,14 @@ do iang = 1,numangles
              EBSDPatterns(i,j,iE,iang) = sum(svals)*prefactor
              call Delete_gvectorlist(reflist)
 
+             if (mod(k,100).eq.0) then 
+               io_int(1) = k 
+               io_int(2) = enl%numsx*enl%numsy
+               call WriteValue(' completed ',io_int,2,"(I6,' of ',I6)")
+             end if
          end do
 !$OMP END DO
+         deallocate(svals, lambdaZ)
 !$OMP END PARALLEL
     io_int(1) = iE
     io_int(2) = iang
