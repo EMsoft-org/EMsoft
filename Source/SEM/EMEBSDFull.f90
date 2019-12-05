@@ -829,10 +829,10 @@ do iang = 1,numangles
              EBSDPatterns(i,j,iE,iang) = sum(svals)*prefactor
              call Delete_gvectorlist(reflist)
 
-             if (mod(k,100).eq.0) then 
+             if (mod(k,10000).eq.0) then 
                io_int(1) = k 
                io_int(2) = enl%numsx*enl%numsy
-               call WriteValue(' completed ',io_int,2,"(I6,' of ',I6)")
+               call WriteValue(' completed ',io_int,2,"(I8,' of ',I8)")
              end if
          end do
 !$OMP END DO
