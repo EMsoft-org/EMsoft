@@ -76,6 +76,7 @@
 111EMOM
 112EMgetEulers
 120EMSphInx
+121EMEECmaster
 200EMdefectdata
 210MDElectronProp
 211EMmdSTEM

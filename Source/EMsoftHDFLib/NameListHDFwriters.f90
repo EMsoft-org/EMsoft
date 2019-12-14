@@ -1283,6 +1283,97 @@ end subroutine HDFwriteEBSDMasterNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:HDFwriteEECMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param emnl EEC master name list structure
+!
+!> @date 12/13/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEECMasterNameList(HDF_head, emnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEECMasterNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+type(EECMasterNameListType),INTENT(INOUT)             :: emnl
+!f2py intent(in,out) ::  emnl
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 3
+integer(kind=irg)                                     :: hdferr,  io_int(n_int) 
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+logical                                               :: g_exists, overwrite=.TRUE.
+
+! create the group for this namelist
+groupname = SC_EECMasterNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ emnl%npx, emnl%nthreads /)
+intlist(1) = 'npx'
+intlist(2) = 'nthreads'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single floats
+io_real = (/ emnl%dmin, emnl%IsotopeEnergy, emnl%mfp /)
+reallist(1) = 'dmin'
+reallist(2) = 'IsotopeEnergy'
+reallist(3) = 'mfp'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! vectors
+dataset = 'IsotopeSite'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, emnl%IsotopeSite, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create IsotopeSite dataset',.TRUE.)
+
+! strings
+dataset = SC_mpfile
+line2(1) = emnl%mpfile
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create mpfile dataset',.TRUE.)
+
+dataset = 'BetheParametersFile'
+line2(1) = emnl%BetheParametersFile
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create BetheParametersFile dataset',.TRUE.)
+
+dataset = SC_xtalname
+line2(1) = emnl%xtalname
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create xtalname dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEECMasterNameList
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:HDFwriteEBSDoverlapNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

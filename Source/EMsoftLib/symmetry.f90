@@ -721,6 +721,93 @@ end subroutine CalcOrbit
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: CalcEquivPos
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the equivalent positions for a given point
+!
+!> @param cell unit cell pointer
+!> @param site input fractional coordinates 
+!> @param n output number of orbit members generated
+!> @param ctmp output coordinate array
+!
+!> @date  12/13/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine CalcEquivPos(cell,site,n,ctmp)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEquivPos
+
+IMPLICIT NONE
+
+type(unitcell)                          :: cell
+real(kind=dbl),INTENT(OUT)              :: ctmp(192,3)          !< output array with orbit coordinates
+real(kind=sgl),INTENT(IN)               :: site(3)              !< input position
+integer(kind=irg),INTENT(INOUT)         :: n                    !< number of generated atom positions
+
+real(kind=dbl)                          :: r(3),s(3),diff       !< auxiliary variables
+real(kind=dbl), parameter               :: eps = 1.0D-4         !< comparison threshold
+real(kind=dbl), parameter               :: eps2= 1.0D-6         !< comparison threshold
+integer(kind=irg)                       :: i,j,k,mm             !< auxiliary variables
+logical                                 :: new                  !< is this a new point ?
+
+! get the atom coordinates
+! and store them in the temporary array
+n = 1
+r = dble(site)
+ctmp(n,:)=r(:)
+ 
+! get all the equivalent atom positions
+ do i=2,cell%SG%SYM_MATnum
+  do j=1,3
+   s(j)=cell%SG%SYM_data(i,j,4)
+   do k=1,3
+    s(j)=s(j)+cell%SG%SYM_data(i,j,k)*r(k)
+   end do
+  end do
+
+! sometimes the code below produces an incorrect answer when one of the fractional coordinates
+! is slightly negative... we intercept such issues here ... 
+  do j=1,3
+    if (abs(s(j)).lt.eps2) s(j) = 0.D0
+  end do
+
+! reduce to the fundamental unit cell if necessary
+  if (cell%SG%SYM_reduce.eqv..TRUE.) then
+   do j=1,3
+    s(j) = mod(s(j)+100.0_dbl,1.0_dbl)
+   end do
+  end if
+
+  do j=1,3
+    if (abs(s(j)).lt.eps2) s(j) = 0.D0
+  end do
+
+! is this a new point ?
+  new = .TRUE.
+  do mm=1,n
+   diff=0.0_dbl
+   do j=1,3
+    diff=diff+abs(ctmp(mm,j)-s(j))
+   end do
+   if (diff.lt.eps) then
+     new = .FALSE.
+   end if
+  end do 
+
+! yes, it is a new point
+  if (new.eqv..TRUE.) then
+   n=n+1
+   do j=1,3
+    ctmp(n,j)=s(j)
+   end do
+  end if
+
+ end do
+
+end subroutine CalcEquivPos
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: CalcStar
 !
 !> @author Marc De Graef, Carnegie Mellon University

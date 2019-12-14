@@ -448,6 +448,20 @@ type EBSDMasterNameListType
         logical                 :: uniform
 end type EBSDMasterNameListType
 
+! namelist for the EMEECmaster program
+type EECMasterNameListType
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: dmin
+        character(3)            :: Notify
+        character(fnlen)        :: mpfile
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: BetheParametersFile
+        real(kind=sgl)          :: IsotopeSite(3)        
+        real(kind=sgl)          :: IsotopeEnergy
+        real(kind=sgl)          :: mfp
+end type EECMasterNameListType
+
 ! namelist for the EMEBSDmaster program
 type EBSDMasterSHTNameListType
         integer(kind=irg)       :: stdout

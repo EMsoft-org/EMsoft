@@ -2650,6 +2650,96 @@ emnl%uniform = uniform
 
 end subroutine GetEBSDMasterNameList
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEECMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill emnl structure (used by EMEECmaster.f90)
+!
+!> @param nmlfile namelist file name
+!> @param emnl EEC master name list structure
+!
+!> @date 12/13/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEECMasterNameList(nmlfile, emnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEECMasterNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                     :: nmlfile
+type(EECMasterNameListType),INTENT(INOUT)       :: emnl
+!f2py intent(in,out) ::  emnl
+logical,OPTIONAL,INTENT(IN)                     :: initonly
+
+logical                                         :: skipread = .FALSE.
+
+integer(kind=irg)       :: npx
+integer(kind=irg)       :: nthreads
+real(kind=sgl)          :: dmin
+character(3)            :: Notify
+character(fnlen)        :: mpfile
+character(fnlen)        :: xtalname
+character(fnlen)        :: BetheParametersFile
+real(kind=sgl)          :: IsotopeSite(3)        
+real(kind=sgl)          :: IsotopeEnergy
+real(kind=sgl)          :: mfp
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist /EECmastervars/ dmin,npx,nthreads,Notify, BetheParametersFile,mpfile, IsotopeSite, IsotopeEnergy, mfp, xtalname 
+
+! set the input parameters to default values (except for xtalname, which must be present)
+npx = 500                       ! Nx pixels (total = 2Nx+1)
+nthreads = 1
+dmin = 0.025                    ! smallest d-spacing to include in dynamical matrix [nm]
+Notify = 'Off'
+mpfile = 'undefined'            ! default output HDF5 file name
+xtalname = 'undefined'          ! default xtal file name
+BetheParametersFile='BetheParameters.nml'
+IsotopeSite = (/ 0.0, 0.0, 0.0 /)
+IsotopeEnergy = 100.0           ! keV (emitted electron energy)
+mfp = 50.0                      ! mean free path [nm] for depth integration
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=EECmastervars)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(mpfile).eq.'undefined') then
+  call FatalError('GetEECMasterNameList:',' output file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetEECMasterNameList:',' xtalname is undefined in '//nmlfile)
+ end if
+
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+emnl%npx = npx
+emnl%nthreads = nthreads
+emnl%dmin = dmin
+emnl%mpfile = mpfile
+emnl%xtalname = xtalname
+emnl%BetheParametersFile = BetheParametersFile
+emnl%Notify = Notify
+emnl%IsotopeEnergy = IsotopeEnergy
+emnl%IsotopeSite = IsotopeSite
+emnl%mfp = mfp
+
+end subroutine GetEECMasterNameList
+
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:GetEBSDMasterSHTNameList
