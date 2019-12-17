@@ -34,6 +34,7 @@ endif()
 set(MODALITY_DIRS
     DictionaryIndexing
     GBs
+    EEC
     OLIO
     OM
     pyEMsoft
