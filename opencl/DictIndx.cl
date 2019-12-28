@@ -1,6 +1,6 @@
 /*
  ###################################################################
- ! Copyright (c) 2013-2014, Saransh Singh/Carnegie Mellon University
+ ! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
  ! All rights reserved.
  !
  ! Redistribution and use in source and binary forms, with or without modification, are
@@ -26,6 +26,8 @@
  ! OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  ! USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ! ###################################################################
+ !
+ ! Code written by Saransh Singh, 2014.
  */
 
  #define PI 3.14159265359f
