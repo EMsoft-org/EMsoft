@@ -86,6 +86,85 @@ end program EMLACBED
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: Calc2DFamily
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the indices of equivalent planes/directions
+!
+!> @details compute the indices of equivalent planes w.r.t. 2D symmetry and store them in the itmp array
+!               
+!> @param cell unit cell pointer
+!> @param ind input index triplet
+!> @param ksame logical list with symmetry operators to consider
+!> @param numksame number of entries in ksame to be considered
+!> @param nunique number of unique entries in itmp
+!
+!> @date  10/13/98 MDG 1.0 original
+!> @date   5/19/01 MDG 2.0 f90
+!> @date  11/27/01 MDG 2.1 added kind support
+!> @date  01/10/14 MDG 4.0 SG is now part of the unitcell type
+!> @date  06/05/14 MDG 4.1 made cell an argument instead of global variable; replaced itmp by argument
+!--------------------------------------------------------------------------
+recursive subroutine Calc2DFamily(cell,ind,ksame,numksame,nunique,itmp)
+!DEC$ ATTRIBUTES DLLEXPORT :: Calc2DFamily
+        
+use local
+use typedefs
+use files
+use io
+use crystal
+use symmetry
+
+IMPLICIT NONE
+
+type(unitcell)          :: cell
+integer(kind=irg),INTENT(IN)            :: ind(3)                       !< input triplet
+logical,INTENT(IN)                      :: ksame(*)                     !< list of symmetry operators
+integer(kind=irg),INTENT(IN)            :: numksame                     !< number on the input list
+integer(kind=irg),INTENT(OUT)           :: nunique                      !< number of equivalent entries generated
+integer(kind=irg),INTENT(OUT)           :: itmp(48,3)                   !< array used for family computations etc
+
+integer(kind=irg)                       :: m,i,j                        !< loop counters and such
+real(kind=sgl)                          :: h,k,l,ih,ik,il,idiff !< auxiliary variables
+logical                                 :: newpoint                     !< is this a new point ?
+real,parameter                          :: eps=0.0001_sgl               !< comparison threshold
+
+! first take the identity
+ j=1
+ itmp(j,1:3)=ind(1:3)
+ h=float(ind(1))
+ k=float(ind(2))
+ l=float(ind(3))
+
+! multiply with all point group elements that have the value .TRUE. in ksame
+ do i=2,cell%SG%SYM_NUMpt 
+  if (ksame(i)) then 
+    ih=cell%SG%SYM_direc(i,1,1)*h+cell%SG%SYM_direc(i,1,2)*k+cell%SG%SYM_direc(i,1,3)*l
+    ik=cell%SG%SYM_direc(i,2,1)*h+cell%SG%SYM_direc(i,2,2)*k+cell%SG%SYM_direc(i,2,3)*l
+    il=cell%SG%SYM_direc(i,3,1)*h+cell%SG%SYM_direc(i,3,2)*k+cell%SG%SYM_direc(i,3,3)*l
+
+! is this a new point ?
+   newpoint=.TRUE.
+   do m=1,j+1
+    idiff=(itmp(m,1)-ih)**2+(itmp(m,2)-ik)**2+(itmp(m,3)-il)**2
+    if (idiff.lt.eps) newpoint=.FALSE.
+   end do
+
+   if (newpoint) then 
+    j=j+1
+    itmp(j,1)=nint(ih)
+    itmp(j,2)=nint(ik)
+    itmp(j,3)=nint(il)
+   end if
+  end if
+ end do 
+ nunique=j
+
+end subroutine Calc2DFamily
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:LACBEDcomputation
 !
 !> @author Marc De Graef, Carnegie Mellon University

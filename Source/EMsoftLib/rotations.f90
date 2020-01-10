@@ -59,6 +59,7 @@
 !> ho : homochoric representation (3)
 !> cu : cubochoric representation (3)
 !> st : 3D stereographic representation (3)  [added in October 2017]
+!> rv : rotation vector representation (3)  [added in Summer 2019]
 !>
 !> hence, conversion from homochoric to euler angle is called as ho2eu(); the argument of 
 !> each routine must have the correct number of dimensions and entries.
