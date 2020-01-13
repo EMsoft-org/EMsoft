@@ -174,9 +174,13 @@ void MonteCarloSimulationController::generateNMLFile(const QString& path)
   }
 
   nml.emplace_back(std::string("! name of the crystal structure file"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry("xtalname", m_InputData.inputFilePath));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::xtalname, m_InputData.inputFilePath));
+  nml.emplace_back(std::string("! number of pixels along x-direction of square projection [odd number!]"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::numsx, m_InputData.numOfPixelsN));
   nml.emplace_back(std::string("! for full mode: sample tilt angle from horizontal [degrees]"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::sig, static_cast<float>(m_InputData.sampleTiltAngleSig)));
+  nml.emplace_back(std::string("! sample tilt angle around RD axis [degrees]"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::omega, static_cast<float>(m_InputData.sampleRotAngleOmega)));
 
   nml.emplace_back(std::string("! for bse1 mode: start angle"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::sigstart, static_cast<float>(m_InputData.sampleStartTiltAngle)));
@@ -186,11 +190,14 @@ void MonteCarloSimulationController::generateNMLFile(const QString& path)
   nml.emplace_back(std::string("! for bse1 mode: sig step size"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::sigstep, static_cast<float>(m_InputData.sampleTiltStepSize)));
 
-  nml.emplace_back(std::string("! sample tilt angle around RD axis [degrees]"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::omega, static_cast<float>(m_InputData.sampleRotAngleOmega)));
-
-  nml.emplace_back(std::string("! number of pixels along x-direction of square projection [odd number!]"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::numsx, m_InputData.numOfPixelsN));
+  nml.emplace_back(std::string("! x, y, z number of voxels [odd numbers!]"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::ivolx, m_InputData.ivolx));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::ivoly, m_InputData.ivoly));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::ivolz, m_InputData.ivolz));
+  nml.emplace_back(std::string("! x, y, z voxel step sizes [nm]"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::ivolstepx, static_cast<float>(m_InputData.ivolstepx)));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::ivolstepy, static_cast<float>(m_InputData.ivolstepy)));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::ivolstepz, static_cast<float>(m_InputData.ivolstepz)));
 
   nml.emplace_back(std::string("! number of incident electrons per thread"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::num_el, m_InputData.numOfEPerWorkitem));

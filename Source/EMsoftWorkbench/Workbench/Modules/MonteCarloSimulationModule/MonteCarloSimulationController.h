@@ -82,6 +82,9 @@ public:
     double energyBinSize;
     double maxDepthConsider;
     double depthStepSize;
+    double ivolstepx;
+    double ivolstepy;
+    double ivolstepz;
     int mcMode;
     int numOfPixelsN;
     int numOfEPerWorkitem;
@@ -90,6 +93,9 @@ public:
     int gpuPlatformID;
     int gpuDeviceID;
     int globalWorkGroupSize;
+    int ivolx;
+    int ivoly;
+    int ivolz;
     QString inputFilePath;
     QString outputFilePath;
   };
