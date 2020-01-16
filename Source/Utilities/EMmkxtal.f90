@@ -57,9 +57,6 @@ IMPLICIT NONE
 
 type(unitcell)                  :: cell
 character(fnlen)                :: progname, progdesc, fname, source
-integer(kind=irg)               :: numarg, i
-integer(kind=irg)               :: iargc        !< external function for command line
-character(fnlen)                :: arg          !< to be read from the command line
 character(fnlen)                :: flag
 logical                         :: useWyckoff
 
