@@ -120,7 +120,14 @@ This update makes internal changes to the CMake code that configures the SHT lib
 - The STEM diffraction contrast image simulations will be able to take input from Molecular Dynamics simulations (LAMMPS).
 - For computational polarized light microscopy (CPLM) we will have a new forward model program to predict image series recorded on an optical microscope; we will also release a dictionary indexing program for CPLM.
 - The IDL apps have thus far had some issues on Windows and Linux, so we will make available updated apps that are more likely to work correctly.
-- We hope to release version 5.1 by the early Spring of 2020.
+- We hope to release version 5.1 by the Summer of 2020.
+
+## What's coming in 6.0? 
+- We are currently rewriting the entire code base of EMsoft using Object Oriented fortran 2018; this is a major rewrite that completely changes the API, meaning that users who have written their own code to link to or extend EMsoft will likely need to update that code (or continue using the most recent 5.x version).
+- All the data types defined in the former typedefs.f90 module are replaced by classes and methods, leading to a significantly cleaner code base.
+- We started to use a different package documentation model (FORD for FORtran Documentation) that will have every function, subroutine, class, etc. fully documented in HTML format.
+- This is a major recoding effort so for now we won't put a release date on it; it will likely be late 2020 if not Spring of 2021.
+
 
 ## New features in 4.2
 - There are a few minor bug fixes
