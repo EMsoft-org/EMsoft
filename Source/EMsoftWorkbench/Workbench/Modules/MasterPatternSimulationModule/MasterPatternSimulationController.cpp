@@ -166,40 +166,26 @@ void MasterPatternSimulationController::execute()
 // -----------------------------------------------------------------------------
 void MasterPatternSimulationController::generateNMLFile(const QString& path)
 {
+  QFileInfo fi(path);
+  QString betheParametersFilePath = fi.path() + QDir::separator() + "BetheParameters.nml";
+  generateBetheParametersFile(betheParametersFilePath);
+
   std::vector<std::string> nml;
 
   m_InputData.inputFilePath = FileIOTools::GetAbsolutePath(m_InputData.inputFilePath);
 
   nml.emplace_back(std::string(" &EBSDmastervars"));
-  nml.emplace_back(std::string("! smallest d-spacing to take into account [nm]"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::dmin, static_cast<float>(m_InputData.smallestDSpacing)));
-  nml.emplace_back(std::string("! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::npx, m_InputData.numOfMPPixels));
-
-  nml.emplace_back(std::string("! lattitudinal grid type:  'Lambert' or 'Legendre'"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::latgridtype, QString("Lambert")));
-
-  nml.emplace_back(std::string("! name of EMMCOpenCL output file to be used to copy the MC data from for this master pattern run;"));
-  nml.emplace_back(std::string("! This can be used to perform multiple master pattern runs starting from the same MC data set without"));
-  nml.emplace_back(std::string("! having to rerun the MC computation.  Leave this variable set to 'undefined' if not needed."));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::copyfromenergyfile, QString("undefined")));
-
-  nml.emplace_back(std::string("! if copyfromenergyfile is not 'undefined', then:"));
-  nml.emplace_back(std::string("!   - for EMsoft developers who have the EMsoft_SDK installed, the following parameter will be ignored;"));
-  nml.emplace_back(std::string("!   - all other users will need to provide the full path to the h5copy program here"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::h5copypath, QString("undefined")));
-
-  nml.emplace_back(std::string("! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;"));
-  nml.emplace_back(std::string("! this file will also contain the output data of the master program"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::energyfile, m_InputData.inputFilePath));
-  nml.emplace_back(std::string("! number of OpenMP threads"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::nthreads, m_InputData.numOfOpenMPThreads));
-  nml.emplace_back(std::string("! do you wish to receive a notification (Email or Slack) when the program completes ?"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::energyfile, m_InputData.inputFilePath));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::BetheParametersFile, betheParametersFilePath));
   nml.emplace_back(FileIOTools::CreateNMLEntry(QString("Notify"), QString("Off")));
-  nml.emplace_back(std::string("! restart computation ?"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::copyfromenergyfile, QString("undefined")));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::h5copypath, QString("undefined")));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::restart, false));
-  nml.emplace_back(std::string("! create output file with uniform master patterns set to 1.0 (used to study background only)"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::uniform, false));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::useEnergyWeighting, false));
 
   nml.emplace_back(std::string(" /"));
 
@@ -215,6 +201,40 @@ void MasterPatternSimulationController::generateNMLFile(const QString& path)
     outputFile.close();
 
     outputFile.copy("/tmp/EMEBSDmaster.nml");
+  }
+  else
+  {
+    emit errorMessageGenerated(QString("Could not create temp NML file at path %1").arg(path));
+  }
+}
+
+// -----------------------------------------------------------------------------
+void MasterPatternSimulationController::generateBetheParametersFile(const QString& path)
+{
+  std::vector<std::string> nml;
+
+  m_InputData.inputFilePath = FileIOTools::GetAbsolutePath(m_InputData.inputFilePath);
+
+  nml.emplace_back(std::string(" &Bethelist"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c1, static_cast<float>(m_InputData.betheParametersX)));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c2, m_InputData.betheParametersY));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c3, m_InputData.betheParametersZ));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::sgdbdiff, m_InputData.sgdbdiff));
+
+  nml.emplace_back(std::string(" /"));
+
+  QFile outputFile(path);
+  if(outputFile.open(QFile::WriteOnly))
+  {
+    QTextStream out(&outputFile);
+
+    for(const auto& entry : nml)
+    {
+      out << QString::fromStdString(entry) << "\n";
+    }
+    outputFile.close();
+
+    outputFile.copy("/tmp/BetheParameters.nml");
   }
   else
   {

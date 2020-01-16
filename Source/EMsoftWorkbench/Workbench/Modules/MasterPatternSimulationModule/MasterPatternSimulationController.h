@@ -65,6 +65,7 @@ public:
   using InputDataType = struct
   {
     double smallestDSpacing;
+    double sgdbdiff;
     int numOfMPPixels;
     int betheParametersX;
     int betheParametersY;
@@ -72,6 +73,7 @@ public:
     int numOfOpenMPThreads;
     QString inputFilePath;
     QString outputFilePath;
+    QString betheParametersFilePath;
   };
 
   /**
@@ -135,6 +137,12 @@ private:
    * @param path
    */
   void generateNMLFile(const QString& path);
+
+  /**
+   * @brief generateBetheParametersFile
+   * @param path
+   */
+  void generateBetheParametersFile(const QString& path);
 
 public:
   MasterPatternSimulationController(const MasterPatternSimulationController&) = delete;            // Copy Constructor Not Implemented
