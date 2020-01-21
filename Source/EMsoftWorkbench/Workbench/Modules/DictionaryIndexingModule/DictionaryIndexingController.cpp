@@ -35,7 +35,8 @@
 
 #include "DictionaryIndexingController.h"
 
-//#include "EMsoftWrapperLib/DictionaryIndexing/EMsoftDIwrappers.h"
+#include <cstring>
+
 
 #include <QtCore/QMimeDatabase>
 #include <QtCore/QDateTime>
@@ -518,31 +519,10 @@ QString DictionaryIndexingController::getDIExecutablePath() const
   // We are on Linux - I think
   // Try the current location of where the application was launched from which is
   // typically the case when debugging from a build tree
-  QDir workingDirectory = workbenchDir;
-  if(workingDirectory.cd("bin"))
+  if (workingDirectory.exists(tr("%1.exe").arg(programName)))
   {
-    if (workingDirectory.exists(programName))
-    {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), programName);
-      return adpExecutablePath;
-    }
-
-    workingDirectory.cdUp();
-  }
-
-  // Now try moving up a directory which is what should happen when running from a
-  // proper distribution of SIMPLView
-  workingDirectory = workbenchDir;
-  workingDirectory.cdUp();
-  if(workingDirectory.cd("bin"))
-  {
-    if (workingDirectory.exists(programName))
-    {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), programName);
-      return adpExecutablePath;
-    }
-
-    workingDirectory.cdUp();
+    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), tr("%1.exe").arg(programName));
+    return adpExecutablePath;
   }
 #endif
 

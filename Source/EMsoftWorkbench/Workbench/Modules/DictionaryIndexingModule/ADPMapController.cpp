@@ -35,6 +35,8 @@
 
 #include "ADPMapController.h"
 
+#include <cstring>
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
 #include <QtCore/QDebug>
@@ -335,31 +337,10 @@ QString ADPMapController::getADPMapExecutablePath() const
   // We are on Linux - I think
   // Try the current location of where the application was launched from which is
   // typically the case when debugging from a build tree
-  QDir workingDirectory = workbenchDir;
-  if(workingDirectory.cd("bin"))
+  if (workingDirectory.exists("EMgetADP.exe"))
   {
-    if (workingDirectory.exists("EMgetADP"))
-    {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-      return adpExecutablePath;
-    }
-
-    workingDirectory.cdUp();
-  }
-
-  // Now try moving up a directory which is what should happen when running from a
-  // proper distribution of SIMPLView
-  workingDirectory = workbenchDir;
-  workingDirectory.cdUp();
-  if(workingDirectory.cd("bin"))
-  {
-    if (workingDirectory.exists("EMgetADP"))
-    {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-      return adpExecutablePath;
-    }
-
-    workingDirectory.cdUp();
+    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP.exe");
+    return adpExecutablePath;
   }
 #endif
 
