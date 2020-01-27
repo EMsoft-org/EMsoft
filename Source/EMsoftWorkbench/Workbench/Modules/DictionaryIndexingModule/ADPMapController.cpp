@@ -53,6 +53,8 @@
 static size_t k_InstanceKey = 0;
 static QMap<size_t, ADPMapController*> s_ControllerInstances;
 
+using InputType = EMsoftWorkbenchConstants::InputType;
+
 namespace SizeConstants = DictionaryIndexingModuleConstants::ArraySizes;
 
 /**

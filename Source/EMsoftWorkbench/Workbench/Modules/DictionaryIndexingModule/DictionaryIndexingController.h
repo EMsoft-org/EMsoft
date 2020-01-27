@@ -37,6 +37,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QProcess>
+#include <QtCore/QSharedPointer>
 #include <QtCore/QTemporaryDir>
 
 #include "Common/Constants.h"
@@ -46,6 +47,9 @@ class DictionaryIndexingController : public QObject
   Q_OBJECT
 
 public:
+  const QString k_ExeName = QString("EMEBSDDI");
+  const QString k_NMLName = QString("EMEBSDDI.nml");
+
   using InputType = EMsoftWorkbenchConstants::InputType;
 
   using EnumType = unsigned int;
@@ -72,18 +76,7 @@ public:
   DictionaryIndexingController(QObject* parent = nullptr);
   ~DictionaryIndexingController() override;
 
-  /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-  bool getCancel() const;
-
-  /**
-    * @brief Setter property for Cancel
-    */
-  void setCancel(const bool& value);
-
-  struct DIData
+  using InputDataType = struct
   {
     IndexingMode indexingMode;
     InputType inputType;
@@ -108,7 +101,7 @@ public:
     float isangle;
     QString maskfile;
     bool useMask;
-    float maskRadius;
+    int maskRadius;
     float hipassValue;
     int numOfRegions;
     int nCubochoric;
@@ -139,19 +132,24 @@ public:
     int numOfThreads;
     int platId;
     int devId;
-
-    std::vector<int32_t> getIParVector() const;
-
-    std::vector<float> getFParVector() const;
-
-    std::vector<char> getSParVector() const;
   };
 
   /**
-   * @brief createDI
-   * @param data
+    * @brief Getter property for Cancel
+    * @return Value of Cancel
+    */
+  bool getCancel() const;
+
+  /**
+    * @brief Setter property for Cancel
+    */
+  void setCancel(const bool& value);
+
+  /**
+   * @brief setData
+   * @param simData
    */
-  void createDI(const DIData &data);
+  void setData(const InputDataType& simData);
 
   /**
    * @brief setUpdateProgress
@@ -166,8 +164,19 @@ public:
      */
   int getNumCPUCores();
 
+public slots:
+  /**
+   * @brief execute
+   */
+  void execute();
+
+  /**
+   * @brief cancelProcess
+   */
+  void cancelProcess();
+
 protected slots:
-  void listenDIFinished(int exitCode, QProcess::ExitStatus exitStatus, const DIData &data);
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 signals:
   void diCreated(const QImage &adpMap) const;
@@ -175,8 +184,12 @@ signals:
   void errorMessageGenerated(const QString& msg) const;
   void stdOutputMessageGenerated(const QString& msg) const;
 
+  void finished();
+
 private:
   QString m_StartTime = "";
+  InputDataType m_InputData;
+  QSharedPointer<QProcess> m_CurrentProcess;
 
   std::vector<float> m_OutputMaskVector;
   std::vector<float> m_OutputIQMapVector;
@@ -200,11 +213,15 @@ private:
   QString getDIExecutablePath() const;
 
   /**
-   * @brief writeDIDataToFile
-   * @param file
-   * @param data
+   * @brief DictionaryIndexingController::generateNMLFile
+   * @param path
    */
-  void writeDIDataToFile(const QString &filePath, const DictionaryIndexingController::DIData &data) const;
+  void generateNMLFile(const QString& path);
+
+  /**
+   * @brief executeWrapper
+   */
+  void executeWrapper();
 
 public:
   DictionaryIndexingController(const DictionaryIndexingController&) = delete; // Copy Constructor Not Implemented

@@ -38,7 +38,6 @@
 #include <QtConcurrent>
 
 #include "Modules/DictionaryIndexingModule/Constants.h"
-#include "Modules/DictionaryIndexingModule/ChoosePatternsDatasetDialog.h"
 
 namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
@@ -62,7 +61,6 @@ PatternPreprocessing_UI::PatternPreprocessing_UI(QWidget *parent)
 PatternPreprocessing_UI::~PatternPreprocessing_UI()
 {
   delete m_PPMatrixController;
-  delete m_ChoosePatternsDatasetDialog;
 }
 
 // -----------------------------------------------------------------------------
@@ -70,8 +68,6 @@ PatternPreprocessing_UI::~PatternPreprocessing_UI()
 // -----------------------------------------------------------------------------
 void PatternPreprocessing_UI::setupGui()
 {
-  m_ChoosePatternsDatasetDialog = new ChoosePatternsDatasetDialog();
-
   // Add limits to all spinboxes
   initializeSpinBoxLimits();
 
@@ -85,9 +81,6 @@ void PatternPreprocessing_UI::setupGui()
   createModificationConnections();
 
   validateData();
-
-  // Run this once so that the HDF5 widget can be either disabled or enabled
-  listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
 
   m_Ui->ppInstructionsLabel->hide();
 }
@@ -124,9 +117,6 @@ void PatternPreprocessing_UI::createValidators()
 // -----------------------------------------------------------------------------
 void PatternPreprocessing_UI::createModificationConnections()
 {
-  // Combo Boxes
-  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PatternPreprocessing_UI::listenInputTypeChanged);
-
   // Line Edits
   connect(m_Ui->patternHeightLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->patternWidthLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
@@ -137,9 +127,6 @@ void PatternPreprocessing_UI::createModificationConnections()
   connect(m_Ui->minNumOfRegionsLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->maxNumOfRegionsLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->numOfRegionsStepSizeLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &PatternPreprocessing_UI::parametersChanged);
 }
 
 // -----------------------------------------------------------------------------
@@ -157,12 +144,6 @@ void PatternPreprocessing_UI::createWidgetConnections()
     m_Ui->ppMatrixViewer->loadImage(image, matrixData.hipassValue, matrixData.hipassNumSteps);
     m_Ui->ppInstructionsLabel->show();
   });
-
-  connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &PatternPreprocessing_UI::listenSelectedPatternDatasetChanged);
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, this, &PatternPreprocessing_UI::listenPatternDataFileChanged);
 
   connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::errorMessageGenerated, this, &PatternPreprocessing_UI::errorMessageGenerated);
   connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::zoomFactorChanged, this, &PatternPreprocessing_UI::updateZoomFactor);
@@ -194,24 +175,9 @@ void PatternPreprocessing_UI::updateZoomFactor(float zoomFactor)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessing_UI::listenInputTypeChanged(int index)
+void PatternPreprocessing_UI::listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType)
 {
-  InputType inputType = static_cast<InputType>(index);
-  switch(inputType)
-  {
-  case InputType::TSLHDF:
-  case InputType::BrukerHDF:
-  case InputType::OxfordHDF:
-    m_Ui->choosePatternsBtn->setEnabled(true);
-    break;
-  default:
-    m_Ui->choosePatternsBtn->setDisabled(true);
-    break;
-  }
-
   setInputType(inputType);
-
-  emit parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
@@ -222,8 +188,6 @@ void PatternPreprocessing_UI::listenPatternDataFileChanged(const QString &filePa
   m_Ui->patternDataFileLabel->setText(filePath);
 
   setPatternDataFile(filePath);
-
-  emit parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
@@ -237,8 +201,7 @@ void PatternPreprocessing_UI::listenSelectedPatternDatasetChanged(QStringList pa
   {
     m_Ui->patternDsetPathLabel->setText(patternDSetPaths[0]);
 
-    InputType inputType = static_cast<InputType>(m_Ui->inputTypeCB->currentIndex());
-    if(inputType == InputType::TSLHDF || inputType == InputType::BrukerHDF || inputType == InputType::OxfordHDF)
+    if(m_InputType == InputType::TSLHDF || m_InputType == InputType::BrukerHDF || m_InputType == InputType::OxfordHDF)
     {
       QStringList hdfTokens = patternDSetPaths[0].trimmed().split('/', QString::SplitBehavior::SkipEmptyParts);
       setSelectedHDF5Path(hdfTokens);
@@ -248,8 +211,6 @@ void PatternPreprocessing_UI::listenSelectedPatternDatasetChanged(QStringList pa
   {
     m_Ui->patternDsetPathLabel->setText("N/A");
   }
-
-  emit parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
@@ -414,9 +375,7 @@ void PatternPreprocessing_UI::readSession(const QJsonObject &obj)
     m_Ui->minNumOfRegionsLE->blockSignals(true);
     m_Ui->maxNumOfRegionsLE->blockSignals(true);
     m_Ui->numOfRegionsStepSizeLE->blockSignals(true);
-    m_Ui->inputTypeCB->blockSignals(true);
 
-    m_Ui->inputTypeCB->setCurrentIndex(ppParamsObj[ioConstants::InputType].toInt());
     m_Ui->patternHeightLE->setText(ppParamsObj[ioConstants::PatternHeight].toString());
     m_Ui->patternWidthLE->setText(ppParamsObj[ioConstants::PatternWidth].toString());
     m_Ui->ipfHeightLE->setText(ppParamsObj[ioConstants::IPFHeight].toString());
@@ -427,10 +386,6 @@ void PatternPreprocessing_UI::readSession(const QJsonObject &obj)
     m_Ui->maxNumOfRegionsLE->setText(ppParamsObj[ioConstants::MaxNumOfRegions].toString());
     m_Ui->numOfRegionsStepSizeLE->setText(ppParamsObj[ioConstants::NumOfRegionsStepSize].toString());
 
-    HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-    hdf5DsetSelectionWidget->readParameters(ppParamsObj);
-
-    m_Ui->inputTypeCB->blockSignals(false);
     m_Ui->patternHeightLE->blockSignals(false);
     m_Ui->patternWidthLE->blockSignals(false);
     m_Ui->ipfHeightLE->blockSignals(false);
@@ -452,7 +407,6 @@ void PatternPreprocessing_UI::writeSession(QJsonObject& obj) const
 {
   QJsonObject ppParamsObj;
 
-  ppParamsObj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
   ppParamsObj[ioConstants::PatternHeight] = m_Ui->patternHeightLE->text().toInt();
   ppParamsObj[ioConstants::PatternWidth] = m_Ui->patternWidthLE->text().toInt();
   ppParamsObj[ioConstants::IPFHeight] = m_Ui->ipfHeightLE->text().toInt();
@@ -464,16 +418,13 @@ void PatternPreprocessing_UI::writeSession(QJsonObject& obj) const
   ppParamsObj[ioConstants::NumOfRegionsStepSize] = m_Ui->numOfRegionsStepSizeLE->text().toInt();
 //  m_Ui->ppMatrixViewer->writeSession(ppParamsObj);
 
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  hdf5DsetSelectionWidget->writeParameters(ppParamsObj);
-
   obj[ioConstants::PPParameters] = ppParamsObj;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessing_UI::setInputType(ADPMapController::InputType inputType)
+void PatternPreprocessing_UI::setInputType(EMsoftWorkbenchConstants::InputType inputType)
 {
   m_InputType = inputType;
 }

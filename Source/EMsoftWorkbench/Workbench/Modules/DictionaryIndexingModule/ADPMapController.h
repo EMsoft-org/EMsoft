@@ -46,8 +46,6 @@ class ADPMapController : public QObject
   Q_OBJECT
 
 public:
-  using InputType = EMsoftWorkbenchConstants::InputType;
-
   ADPMapController(QObject* parent = nullptr);
   ~ADPMapController() override;
 
@@ -65,7 +63,7 @@ public:
   struct ADPMapData
   {
     QString patternDataFile;
-    InputType inputType;
+    EMsoftWorkbenchConstants::InputType inputType;
     int patternHeight;
     int patternWidth;
     bool useROI;

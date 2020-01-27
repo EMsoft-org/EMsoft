@@ -77,6 +77,23 @@ public:
 
 public slots:
   /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString& filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
    * @brief setSelectedADPPatternPixel
    * @param pixel
    */
@@ -98,23 +115,6 @@ protected slots:
    * @brief listenPatternPreprocessingFinished
    */
   void listenPatternPreprocessingFinished();
-
-  /**
-   * @brief listenInputTypeChanged
-   */
-  void listenInputTypeChanged(int index);
-
-  /**
-   * @brief listenPatternDataFileChanged
-   * @param filePath
-   */
-  void listenPatternDataFileChanged(const QString &filePath);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
 
   /**
    * @brief updateZoomFactor
@@ -145,8 +145,6 @@ private:
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
-
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
 
   QString m_CurrentOpenFile;
 
@@ -183,7 +181,7 @@ private:
    * @brief setInputType
    * @param inputType
    */
-  void setInputType(ADPMapController::InputType inputType);
+  void setInputType(EMsoftWorkbenchConstants::InputType inputType);
 
   /**
    * @brief setPatternDataFile

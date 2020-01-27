@@ -57,7 +57,34 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item row="0" column="0">
+       <item row="3" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
+         <item>
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="generatePPMatrixBtn">
+           <property name="text">
+            <string>Generate</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
         <widget class="QScrollArea" name="scrollArea">
          <property name="widgetResizable">
           <bool>true</bool>
@@ -85,24 +112,102 @@
             <number>0</number>
            </property>
            <item>
+            <widget class="QGroupBox" name="groupBox_2">
+             <property name="title">
+              <string>Pattern Dataset Selection</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_10">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
+               <number>4</number>
+              </property>
+              <item row="0" column="1">
+               <widget class="QLabel" name="patternDataFileLabel">
+                <property name="text">
+                 <string>N/A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Pattern Data File:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <spacer name="horizontalSpacer_20">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="2">
+               <spacer name="horizontalSpacer_21">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="patternDsetPathLabel">
+                <property name="text">
+                 <string>N/A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>Pattern Dataset:</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <widget class="QGroupBox" name="groupBox">
              <property name="title">
               <string>Average Dot Product Map Selections</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_8">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
               <property name="topMargin">
-               <number>0</number>
+               <number>4</number>
               </property>
               <property name="rightMargin">
-               <number>0</number>
+               <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>0</number>
+               <number>4</number>
               </property>
-              <item row="0" column="0">
-               <widget class="QLabel" name="inputTypeLabel_4">
+              <item row="0" column="1">
+               <widget class="QLabel" name="ppPatternCoordLabel">
                 <property name="text">
-                 <string>Chosen ADP Coordinate:</string>
+                 <string>N/A</string>
                 </property>
                </widget>
               </item>
@@ -119,10 +224,10 @@
                 </property>
                </spacer>
               </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="ppPatternCoordLabel">
+              <item row="0" column="0">
+               <widget class="QLabel" name="inputTypeLabel_4">
                 <property name="text">
-                 <string>N/A</string>
+                 <string>Chosen ADP Coordinate:</string>
                 </property>
                </widget>
               </item>
@@ -136,163 +241,18 @@
              </property>
              <layout class="QGridLayout" name="gridLayout_9">
               <property name="leftMargin">
-               <number>0</number>
+               <number>4</number>
               </property>
               <property name="topMargin">
-               <number>0</number>
+               <number>4</number>
               </property>
               <property name="rightMargin">
-               <number>0</number>
+               <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>0</number>
+               <number>4</number>
               </property>
-              <item row="1" column="3">
-               <spacer name="horizontalSpacer_13">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="hipassLabel_3">
-                <property name="text">
-                 <string>Hipass Number of Steps</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="2" colspan="2">
-               <spacer name="horizontalSpacer_15">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="4" column="2" colspan="2">
-               <spacer name="horizontalSpacer_16">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="7" column="0">
-               <widget class="QLabel" name="hipassLabel_6">
-                <property name="text">
-                 <string>Number of Regions Step Size</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0">
-               <widget class="QLabel" name="hipassLabel_5">
-                <property name="text">
-                 <string>Max Number of Regions</string>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="hipassLabel_2">
-                <property name="text">
-                 <string>Hipass Parameter Range</string>
-                </property>
-               </widget>
-              </item>
               <item row="1" column="1">
-               <widget class="QLineEdit" name="patternHeightLE">
-                <property name="toolTip">
-                 <string>Number of pattern pixels along x</string>
-                </property>
-                <property name="toolTipDuration">
-                 <number>10000</number>
-                </property>
-                <property name="text">
-                 <string>60</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="1">
-               <widget class="QLineEdit" name="maxNumOfRegionsLE">
-                <property name="text">
-                 <string>10</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="2" colspan="2">
-               <spacer name="horizontalSpacer_19">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="2">
-               <widget class="QLineEdit" name="patternWidthLE">
-                <property name="toolTip">
-                 <string>Number of pattern pixels along y</string>
-                </property>
-                <property name="toolTipDuration">
-                 <number>10000</number>
-                </property>
-                <property name="text">
-                 <string>60</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="3">
-               <spacer name="horizontalSpacer_14">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="3" column="1">
-               <widget class="QLineEdit" name="hipassValueLE">
-                <property name="text">
-                 <string>0.5</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
                <widget class="QLineEdit" name="ipfHeightLE">
                 <property name="toolTip">
                  <string>Number of patterns along x</string>
@@ -308,7 +268,53 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="1">
+              <item row="3" column="0">
+               <widget class="QLabel" name="hipassLabel_3">
+                <property name="text">
+                 <string>Hipass Number of Steps</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="2" colspan="2">
+               <spacer name="horizontalSpacer_16">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="4" column="2" colspan="2">
+               <spacer name="horizontalSpacer_17">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="2" column="2" colspan="2">
+               <spacer name="horizontalSpacer_15">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="6" column="1">
                <widget class="QLineEdit" name="numOfRegionsStepSizeLE">
                 <property name="text">
                  <string>1</string>
@@ -319,6 +325,132 @@
                </widget>
               </item>
               <item row="2" column="0">
+               <widget class="QLabel" name="hipassLabel_2">
+                <property name="text">
+                 <string>Hipass Parameter Range</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="patternHeightLE">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along x</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
+                <property name="text">
+                 <string>60</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <widget class="QLineEdit" name="hipassValueLE">
+                <property name="text">
+                 <string>0.5</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QLineEdit" name="hipassNumOfStepsLE">
+                <property name="text">
+                 <string>10</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="3">
+               <spacer name="horizontalSpacer_14">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="2">
+               <widget class="QLineEdit" name="patternWidthLE">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
+                <property name="text">
+                 <string>60</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="6" column="0">
+               <widget class="QLabel" name="hipassLabel_6">
+                <property name="text">
+                 <string>Number of Regions Step Size</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="hipassLabel_5">
+                <property name="text">
+                 <string>Max Number of Regions</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="hipassLabel_4">
+                <property name="text">
+                 <string>Min Number of Regions</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1">
+               <widget class="QLineEdit" name="minNumOfRegionsLE">
+                <property name="text">
+                 <string>1</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="bLabel_6">
+                <property name="toolTip">
+                 <string>Number of pattern pixels along x and y</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
+                <property name="text">
+                 <string>Pattern Size (pixels, HxW)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1">
+               <widget class="QLineEdit" name="maxNumOfRegionsLE">
+                <property name="text">
+                 <string>10</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
                <widget class="QLabel" name="ipfLabel_2">
                 <property name="toolTip">
                  <string>Number of patterns along x and y</string>
@@ -331,7 +463,33 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="2">
+              <item row="0" column="3">
+               <spacer name="horizontalSpacer_13">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="5" column="2" colspan="2">
+               <spacer name="horizontalSpacer_18">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="1" column="2">
                <widget class="QLineEdit" name="ipfWidthLE">
                 <property name="toolTip">
                  <string>Number of patterns along y</string>
@@ -347,61 +505,8 @@
                 </property>
                </widget>
               </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="hipassLabel_4">
-                <property name="text">
-                 <string>Min Number of Regions</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="1">
-               <widget class="QLineEdit" name="hipassNumOfStepsLE">
-                <property name="text">
-                 <string>10</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLineEdit" name="minNumOfRegionsLE">
-                <property name="text">
-                 <string>1</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="2" colspan="2">
-               <spacer name="horizontalSpacer_17">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="bLabel_6">
-                <property name="toolTip">
-                 <string>Number of pattern pixels along x and y</string>
-                </property>
-                <property name="toolTipDuration">
-                 <number>10000</number>
-                </property>
-                <property name="text">
-                 <string>Pattern Size (pixels, HxW)</string>
-                </property>
-               </widget>
-              </item>
               <item row="6" column="2" colspan="2">
-               <spacer name="horizontalSpacer_18">
+               <spacer name="horizontalSpacer_19">
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
@@ -412,170 +517,6 @@
                  </size>
                 </property>
                </spacer>
-              </item>
-              <item row="0" column="0" colspan="4">
-               <layout class="QGridLayout" name="gridLayout_4">
-                <property name="bottomMargin">
-                 <number>0</number>
-                </property>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="label_3">
-                  <property name="text">
-                   <string>Pattern Dataset:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_2">
-                  <property name="text">
-                   <string>Pattern Data File:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="inputTypeLabel">
-                  <property name="text">
-                   <string>Input Type</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QLabel" name="patternDsetPathLabel">
-                  <property name="text">
-                   <string>N/A</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QPushButton" name="choosePatternsBtn">
-                  <property name="text">
-                   <string>Choose Pattern Dataset...</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QLabel" name="patternDataFileLabel">
-                  <property name="text">
-                   <string>N/A</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="3">
-                 <spacer name="horizontalSpacer_8">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="3" column="2">
-                 <spacer name="horizontalSpacer_7">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="2" column="2">
-                 <spacer name="horizontalSpacer_9">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="1" column="2">
-                 <spacer name="horizontalSpacer_10">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="inputTypeCB">
-                  <property name="currentIndex">
-                   <number>0</number>
-                  </property>
-                  <property name="sizeAdjustPolicy">
-                   <enum>QComboBox::AdjustToContents</enum>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>Binary</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>TSLup1</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>TSLup2</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>TSLHDF</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>OxfordBinary</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>OxfordHDF</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>EMEBSD</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>BrukerHDF</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <spacer name="horizontalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-               </layout>
               </item>
              </layout>
             </widget>
@@ -596,33 +537,6 @@
           </layout>
          </widget>
         </widget>
-       </item>
-       <item row="1" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <property name="sizeConstraint">
-          <enum>QLayout::SetDefaultConstraint</enum>
-         </property>
-         <item>
-          <spacer name="horizontalSpacer_5">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <widget class="QPushButton" name="generatePPMatrixBtn">
-           <property name="text">
-            <string>Generate</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
       </layout>
      </widget>

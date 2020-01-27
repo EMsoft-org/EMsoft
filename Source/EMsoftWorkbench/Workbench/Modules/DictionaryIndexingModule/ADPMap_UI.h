@@ -77,6 +77,24 @@ public:
    */
   void writeSession(QJsonObject& obj) const;
 
+public slots:
+  /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString& filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(const QStringList& patternDSetPaths);
+
 protected:
   /**
    * @brief setupGui
@@ -93,23 +111,6 @@ protected slots:
    * @brief listenADPGenerationFinished
    */
   void listenADPGenerationFinished();
-
-  /**
-   * @brief listenInputTypeChanged
-   */
-  void listenInputTypeChanged(int index);
-
-  /**
-   * @brief listenPatternDataFileChanged
-   * @param filePath
-   */
-  void listenPatternDataFileChanged(const QString &filePath);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
 
   /**
    * @brief listenROICheckboxStateChanged
@@ -144,8 +145,6 @@ private:
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
 
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
-
   QPoint m_SelectedADPPatternCoords = QPoint(-1, -1);
 
   QString m_CurrentOpenFile;
@@ -178,7 +177,7 @@ private:
    * @brief setInputType
    * @param inputType
    */
-  void setInputType(ADPMapController::InputType inputType);
+  void setInputType(EMsoftWorkbenchConstants::InputType inputType);
 
   /**
    * @brief setPatternDataFile
