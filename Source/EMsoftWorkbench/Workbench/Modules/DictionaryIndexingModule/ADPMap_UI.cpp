@@ -236,7 +236,7 @@ void ADPMap_UI::listenADPGenerationStarted()
     return;
   }
 
-  ADPMapController::ADPMapData data = getADPMapData();
+  ADPMapController::InputDataType data = getADPMapData();
 
   m_Ui->generateADPBtn->setText("Cancel");
   m_Ui->adpParametersGroupBox->setDisabled(true);
@@ -250,9 +250,9 @@ void ADPMap_UI::listenADPGenerationStarted()
   m_ADPController = new ADPMapController;
   m_ADPController->moveToThread(m_Thread);
   m_ADPController->setData(data);
-  connect(m_Thread, SIGNAL(started()), m_ADPController, SLOT(createADPMap()));
+  connect(m_Thread, SIGNAL(started()), m_ADPController, SLOT(execute()));
   connect(m_ADPController, SIGNAL(finished()), m_Thread, SLOT(quit()));
-  connect(m_Thread, SIGNAL(finished()), this, SLOT(listenADPGenerationFinished()));
+  connect(m_Thread, SIGNAL(finished()), this, SLOT(processFinished()));
 
   connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), m_Ui->adpViewer, SLOT(loadImage(const QImage&)));
   connect(m_ADPController, SIGNAL(errorMessageGenerated(QString)), this, SIGNAL(errorMessageGenerated(QString)));
@@ -280,7 +280,7 @@ void ADPMap_UI::listenADPGenerationStarted()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMap_UI::listenADPGenerationFinished()
+void ADPMap_UI::processFinished()
 {
   m_ADPController->setCancel(false);
 
@@ -303,7 +303,7 @@ void ADPMap_UI::listenADPGenerationFinished()
 // -----------------------------------------------------------------------------
 bool ADPMap_UI::validateData()
 {
-  ADPMapController::ADPMapData adpData = getADPMapData();
+  ADPMapController::InputDataType adpData = getADPMapData();
 
   if(adpData.inputType == InputType::TSLHDF || adpData.inputType == InputType::BrukerHDF ||
      adpData.inputType == InputType::OxfordHDF)
@@ -324,9 +324,9 @@ bool ADPMap_UI::validateData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ADPMapController::ADPMapData ADPMap_UI::getADPMapData()
+ADPMapController::InputDataType ADPMap_UI::getADPMapData()
 {
-  ADPMapController::ADPMapData data;
+  ADPMapController::InputDataType data;
   data.roi_1 = m_Ui->roi1LE->text().toInt();
   data.roi_2 = m_Ui->roi2LE->text().toInt();
   data.roi_3 = m_Ui->roi3LE->text().toInt();

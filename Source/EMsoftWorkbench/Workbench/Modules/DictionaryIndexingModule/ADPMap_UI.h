@@ -108,9 +108,9 @@ protected slots:
   void listenADPGenerationStarted();
 
   /**
-   * @brief listenADPGenerationFinished
+   * @brief processFinished
    */
-  void listenADPGenerationFinished();
+  void processFinished();
 
   /**
    * @brief listenROICheckboxStateChanged
@@ -171,7 +171,7 @@ private:
    * @brief getData
    * @return
    */
-  ADPMapController::ADPMapData getADPMapData();
+  ADPMapController::InputDataType getADPMapData();
 
   /**
    * @brief setInputType

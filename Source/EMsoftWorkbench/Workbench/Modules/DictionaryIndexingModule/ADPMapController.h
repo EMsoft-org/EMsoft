@@ -37,6 +37,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QProcess>
+#include <QtCore/QSharedPointer>
 #include <QtCore/QTemporaryDir>
 
 #include "Common/Constants.h"
@@ -46,6 +47,9 @@ class ADPMapController : public QObject
   Q_OBJECT
 
 public:
+  const QString k_ExeName = QString("EMgetADP");
+  const QString k_NMLName = QString("EMgetADP.nml");
+
   ADPMapController(QObject* parent = nullptr);
   ~ADPMapController() override;
 
@@ -60,7 +64,7 @@ public:
     */
   void setCancel(const bool& value);
 
-  struct ADPMapData
+  using InputDataType = struct
   {
     QString patternDataFile;
     EMsoftWorkbenchConstants::InputType inputType;
@@ -77,20 +81,14 @@ public:
     int ipfHeight;
     int ipfWidth;
 //    int maskPattern;
-    float maskRadius;
+    int maskRadius;
     float hipassFilter;
     int numOfRegions;
     int numOfThreads;
     QStringList hdfStrings;
-
-    std::vector<int32_t> getIParVector() const;
-
-    std::vector<float> getFParVector() const;
-
-    std::vector<char> getSParVector() const;
   };
 
-  void setData(const ADPMapData& data);
+  void setData(const InputDataType& data);
 
   /**
    * @brief setUpdateProgress
@@ -110,10 +108,15 @@ public slots:
    * @brief createADPMap
    * @param data
    */
-  void createADPMap();
+  void execute();
+
+  /**
+   * @brief cancelProcess
+   */
+  void cancelProcess();
 
 protected slots:
-  void listenADPMapFinished(int exitCode, QProcess::ExitStatus exitStatus);
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 signals:
   void adpMapCreated(const QImage &adpMap) const;
@@ -124,13 +127,14 @@ signals:
 
 private:
   QString m_StartTime = "";
+  InputDataType m_InputData;
+  QSharedPointer<QProcess> m_CurrentProcess;
+
   bool m_Cancel = false;
   size_t m_InstanceKey = 0;
   bool m_Executing = false;
 
   QTemporaryDir m_TempDir;
-
-  ADPMapData m_Data;
 
   std::vector<float> m_OutputMaskVector;
   std::vector<float> m_OutputIQMapVector;
@@ -152,7 +156,18 @@ private:
    * @param file
    * @param data
    */
-  void generateNMLFile(const QString& filePath, const ADPMapController::ADPMapData& data) const;
+  void generateNMLFile(const QString& filePath) const;
+
+  /**
+   * @brief executeWrapper
+   */
+  void executeWrapper();
+
+  //  std::vector<int32_t> getIParVector() const;
+
+  //  std::vector<float> getFParVector() const;
+
+  //  std::vector<char> getSParVector() const;
 
 public:
   ADPMapController(const ADPMapController&) = delete; // Copy Constructor Not Implemented
