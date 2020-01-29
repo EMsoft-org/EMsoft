@@ -37,6 +37,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QProcess>
+#include <QtCore/QSharedPointer>
 #include <QtCore/QTemporaryDir>
 
 #include "ADPMapController.h"
@@ -46,6 +47,9 @@ class PatternPreprocessingController : public QObject
   Q_OBJECT
 
 public:
+  const QString k_ExeName = QString("EMEBSDDIpreview");
+  const QString k_NMLName = QString("EMEBSDDIpreview.nml");
+
   using InputType = EMsoftWorkbenchConstants::InputType;
 
   PatternPreprocessingController(QObject* parent = nullptr);
@@ -62,7 +66,7 @@ public:
     */
   void setCancel(const bool& value);
 
-  struct PPMatrixData
+  using InputDataType = struct
   {
     int patternHeight;
     int patternWidth;
@@ -84,19 +88,13 @@ public:
     int numw;
     int numr;
     float hipassFilter;
-
-    std::vector<int32_t> getIParVector() const;
-
-    std::vector<float> getFParVector() const;
-
-    std::vector<char> getSParVector() const;
   };
 
   /**
-   * @brief createPreprocessedPatternsMatrix
+   * @brief setData
    * @param data
    */
-  void createPreprocessedPatternsMatrix(const PPMatrixData &data);
+  void setData(const InputDataType& data);
 
   /**
    * @brief setUpdateProgress
@@ -111,17 +109,31 @@ public:
      */
   int getNumCPUCores();
 
+public slots:
+  /**
+   * @brief execute
+   */
+  void execute();
+
+  /**
+   * @brief cancelProcess
+   */
+  void cancelProcess();
+
 protected slots:
-  void listenPreprocessedPatternsMatrixFinished(int exitCode, QProcess::ExitStatus exitStatus);
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 
 signals:
   void preprocessedPatternsMatrixCreated(const QImage &adpMap) const;
   void warningMessageGenerated(const QString& msg) const;
   void errorMessageGenerated(const QString& msg) const;
   void stdOutputMessageGenerated(const QString& msg) const;
+  void finished();
 
 private:
   QString m_StartTime = "";
+  InputDataType m_InputData;
+  QSharedPointer<QProcess> m_CurrentProcess;
 
   std::vector<float> m_OutputMaskVector;
   std::vector<float> m_OutputIQMapVector;
@@ -145,11 +157,21 @@ private:
   QString getPreprocessedPatternsMatrixExecutablePath() const;
 
   /**
-   * @brief writePreprocessedPatternsMatrixToFile
-   * @param file
-   * @param data
+   * @brief generateNMLFile
+   * @param filePath
    */
-  void writePreprocessedPatternsMatrixToFile(const QString &filePath, const PatternPreprocessingController::PPMatrixData &data) const;
+  void generateNMLFile(const QString& filePath) const;
+
+  /**
+   * @brief executeWrapper
+   */
+  void executeWrapper();
+
+  //  std::vector<int32_t> getIParVector() const;
+
+  //  std::vector<float> getFParVector() const;
+
+  //  std::vector<char> getSParVector() const;
 
 public:
   PatternPreprocessingController(const PatternPreprocessingController&) = delete; // Copy Constructor Not Implemented

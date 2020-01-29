@@ -136,15 +136,6 @@ void PatternPreprocessing_UI::createWidgetConnections()
 {
   connect(m_Ui->generatePPMatrixBtn, &QPushButton::clicked, this, &PatternPreprocessing_UI::listenPatternPreprocessingStarted);
 
-  connect(m_PPMatrixController, &PatternPreprocessingController::errorMessageGenerated, this, &PatternPreprocessing_UI::errorMessageGenerated);
-  connect(m_PPMatrixController, &PatternPreprocessingController::warningMessageGenerated, this, &PatternPreprocessing_UI::warningMessageGenerated);
-  connect(m_PPMatrixController, &PatternPreprocessingController::stdOutputMessageGenerated, this, &PatternPreprocessing_UI::stdOutputMessageGenerated);
-  connect(m_PPMatrixController, &PatternPreprocessingController::preprocessedPatternsMatrixCreated, [=] (QImage image) {
-    auto matrixData = getPPMatrixData();
-    m_Ui->ppMatrixViewer->loadImage(image, matrixData.hipassValue, matrixData.hipassNumSteps);
-    m_Ui->ppInstructionsLabel->show();
-  });
-
   connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::errorMessageGenerated, this, &PatternPreprocessing_UI::errorMessageGenerated);
   connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::zoomFactorChanged, this, &PatternPreprocessing_UI::updateZoomFactor);
   connect(m_Ui->ppMatrixViewer, &PPMatrixImageViewer::selectedHipassNumOfRegionsChanged, [=] (int numOfRegions) {
@@ -225,21 +216,38 @@ void PatternPreprocessing_UI::listenPatternPreprocessingStarted()
     return;
   }
 
-  PatternPreprocessingController::PPMatrixData data = getPPMatrixData();
+  PatternPreprocessingController::InputDataType data = getPPMatrixData();
 
   m_Ui->generatePPMatrixBtn->setText("Cancel");
   m_Ui->ppParametersGroupBox->setDisabled(true);
 
-  // Single-threaded for now, but we can multi-thread later if needed
-  //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-  for(int i = 0; i < 1; i++)
+  // Clear out the previous (if any) controller instance
+  if(m_PPMatrixController != nullptr)
   {
-    m_PPMatrixWatcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-    connect(m_PPMatrixWatcher.data(), SIGNAL(finished()), this, SLOT(listenPatternPreprocessingFinished()));
-
-    QFuture<void> future = QtConcurrent::run(m_PPMatrixController, &PatternPreprocessingController::createPreprocessedPatternsMatrix, data);
-    m_PPMatrixWatcher->setFuture(future);
+    delete m_PPMatrixController;
+    m_PPMatrixController = nullptr;
   }
+
+  // Create a new QThread to run the Controller class.
+  m_WorkerThread = QSharedPointer<QThread>(new QThread);
+  m_PPMatrixController = new PatternPreprocessingController;
+  m_PPMatrixController->moveToThread(m_WorkerThread.data());
+  m_PPMatrixController->setData(data); // Set the input data
+
+  // Conncet Signals & Slots to get the thread started and quit
+  connect(m_WorkerThread.data(), SIGNAL(started()), m_PPMatrixController, SLOT(execute()));
+  connect(m_PPMatrixController, SIGNAL(finished()), m_WorkerThread.data(), SLOT(quit()));
+  connect(m_WorkerThread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
+
+  // Pass errors, warnings, and std output messages up to the user interface
+  connect(m_PPMatrixController, &PatternPreprocessingController::errorMessageGenerated, this, &PatternPreprocessing_UI::errorMessageGenerated);
+  connect(m_PPMatrixController, &PatternPreprocessingController::warningMessageGenerated, this, &PatternPreprocessing_UI::warningMessageGenerated);
+  connect(m_PPMatrixController, SIGNAL(stdOutputMessageGenerated(QString)), this, SIGNAL(stdOutputMessageGenerated(QString)));
+  connect(m_PPMatrixController, SIGNAL(preprocessedPatternsMatrixCreated(QImage)), this, SLOT(listenMatrixCreated(QImage)));
+
+  //  connect(m_DIController, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
+
+  m_WorkerThread->start();
 
   emit patternPreprocessingStarted();
 }
@@ -247,7 +255,17 @@ void PatternPreprocessing_UI::listenPatternPreprocessingStarted()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void PatternPreprocessing_UI::listenPatternPreprocessingFinished()
+void PatternPreprocessing_UI::listenMatrixCreated(QImage image)
+{
+  PatternPreprocessingController::InputDataType matrixData = getPPMatrixData();
+  m_Ui->ppMatrixViewer->loadImage(image, matrixData.hipassValue, matrixData.hipassNumSteps);
+  m_Ui->ppInstructionsLabel->show();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void PatternPreprocessing_UI::processFinished()
 {
   m_PPMatrixController->setCancel(false);
 
@@ -271,7 +289,7 @@ void PatternPreprocessing_UI::listenPatternPreprocessingFinished()
 // -----------------------------------------------------------------------------
 bool PatternPreprocessing_UI::validateData()
 {
-  PatternPreprocessingController::PPMatrixData ppData = getPPMatrixData();
+  PatternPreprocessingController::InputDataType ppData = getPPMatrixData();
 
   if (ppData.patternCoordinateX < 0 || ppData.patternCoordinateY < 0)
   {
@@ -336,9 +354,9 @@ bool PatternPreprocessing_UI::validateData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-PatternPreprocessingController::PPMatrixData PatternPreprocessing_UI::getPPMatrixData()
+PatternPreprocessingController::InputDataType PatternPreprocessing_UI::getPPMatrixData()
 {
-  PatternPreprocessingController::PPMatrixData data;
+  PatternPreprocessingController::InputDataType data;
   data.patternHeight = m_Ui->patternHeightLE->text().toInt();
   data.patternWidth = m_Ui->patternWidthLE->text().toInt();
   data.ipfHeight = m_Ui->ipfHeightLE->text().toInt();
