@@ -35,17 +35,7 @@
 
 #include "DictionaryIndexingController.h"
 
-#include <cstring>
-
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDateTime>
-#include <QtCore/QMap>
-#include <QtCore/QMimeDatabase>
-#include <QtCore/QSharedPointer>
 #include <QtCore/QTextStream>
-#include <QtCore/QThread>
-
-#include <QtGui/QImage>
 
 #include "Common/EbsdLoader.h"
 
@@ -53,36 +43,15 @@
 
 #include "Workbench/Common/FileIOTools.h"
 
-#include "Constants.h"
-
-static size_t k_InstanceKey = 0;
-static QMap<size_t, DictionaryIndexingController*> s_ControllerInstances;
-
-namespace SizeConstants = DictionaryIndexingModuleConstants::ArraySizes;
-
-/**
- * @brief DIControllerProgress
- * @param instance
- * @param loopCompleted
- * @param totalLoops
- * @param bseYield
- */
-void DIControllerProgress(size_t instance, int loopCompleted, int totalLoops)
-{
-  DictionaryIndexingController* obj = s_ControllerInstances[instance];
-  if(nullptr != obj)
-  {
-    obj->setUpdateProgress(loopCompleted, totalLoops);
-  }
-}
+const QString k_ExeName = QString("EMEBSDDI");
+const QString k_NMLName = QString("EMEBSDDI.nml");
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 DictionaryIndexingController::DictionaryIndexingController(QObject* parent)
-: QObject(parent)
+: IProcessController(k_ExeName, k_NMLName, parent)
 {
-  m_InstanceKey = ++k_InstanceKey;
 }
 
 // -----------------------------------------------------------------------------
@@ -90,7 +59,6 @@ DictionaryIndexingController::DictionaryIndexingController(QObject* parent)
 // -----------------------------------------------------------------------------
 DictionaryIndexingController::~DictionaryIndexingController()
 {
-  k_InstanceKey--;
 }
 
 // -----------------------------------------------------------------------------
@@ -99,15 +67,6 @@ DictionaryIndexingController::~DictionaryIndexingController()
 void DictionaryIndexingController::setData(const InputDataType& data)
 {
   m_InputData = data;
-}
-
-// -----------------------------------------------------------------------------
-void DictionaryIndexingController::cancelProcess()
-{
-  if(m_CurrentProcess != nullptr)
-  {
-    m_CurrentProcess->kill();
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -175,59 +134,6 @@ void DictionaryIndexingController::executeWrapper()
   //    // DictionaryIndexingController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
   //    diProcess->waitForFinished(-1);
   //  }
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void DictionaryIndexingController::execute()
-{
-  QString dtFormat("yyyy:MM:dd hh:mm:ss.zzz");
-
-  QTemporaryDir tempDir;
-  // Set the start time for this run (m_StartTime)
-  QString str;
-  QTextStream out(&str);
-
-  m_CurrentProcess = QSharedPointer<QProcess>(new QProcess());
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardOutput().toStdString())); });
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardError, [=] { emit errorMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardError().toStdString())); });
-  connect(m_CurrentProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { processFinished(exitCode, exitStatus); });
-  std::pair<QString, QString> result = FileIOTools::GetExecutablePath(k_ExeName);
-  if(!result.first.isEmpty())
-  {
-    QProcessEnvironment env = m_CurrentProcess->processEnvironment();
-    env.insert("EMSOFTPATHNAME", QString::fromStdString(FileIOTools::GetEMsoftPathName()));
-    m_CurrentProcess->setProcessEnvironment(env);
-    out << k_ExeName << ": Executable Path:" << result.first << "\n";
-    out << k_ExeName << ": Start Time: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-    out << k_ExeName << ": Insert EMSOFTPATHNAME=" << QString::fromStdString(FileIOTools::GetEMsoftPathName()) << "\n";
-    out << k_ExeName << ": Output from " << k_ExeName << " follows next...."
-        << "\n";
-    out << "===========================================================\n";
-
-    emit stdOutputMessageGenerated(str);
-
-    QString nmlFilePath = tempDir.path() + QDir::separator() + k_NMLName;
-    generateNMLFile(nmlFilePath);
-    QStringList parameters = {nmlFilePath};
-    m_CurrentProcess->start(result.first, parameters);
-
-    // Wait until the QProcess is finished to exit this thread.
-    m_CurrentProcess->waitForFinished(-1);
-  }
-  else
-  {
-    emit errorMessageGenerated(result.second);
-  }
-
-  str = "";
-  out << "===========================================================\n";
-  out << k_ExeName << ": Finished: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-  //  out << k_ExeName << ": Output File Location: " << m_InputData.inputFilePath << "\n";
-  emit stdOutputMessageGenerated(str);
-
-  emit finished();
 }
 
 // -----------------------------------------------------------------------------
@@ -515,7 +421,7 @@ void DictionaryIndexingController::generateNMLFile(const QString& path)
 }
 
 // -----------------------------------------------------------------------------
-void DictionaryIndexingController::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void DictionaryIndexingController::processFinished()
 {
   std::array<float, 3> refDirection = {0.0f, 0.0f, 1.0f};
   std::tuple<QImage, int32_t> ipfColorMapResults = EbsdLoader::CreateIPFColorMap(m_InputData.outputAngFilePath, refDirection);
@@ -524,26 +430,6 @@ void DictionaryIndexingController::processFinished(int exitCode, QProcess::ExitS
   if(!imageResult.isNull() && err == 0)
   {
     emit diCreated(imageResult);
-  }
-
-  m_Executing = false;
-  s_ControllerInstances.remove(m_InstanceKey);
-
-  // do we need to write this accumulator data into an EMsoft .h5 file?
-  // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
-  if(m_Cancel)
-  {
-    emit stdOutputMessageGenerated(QString("%1 was canceled.").arg(k_ExeName));
-  }
-
-  if(exitStatus == QProcess::CrashExit)
-  {
-    emit stdOutputMessageGenerated(QString("%1n process crashed with exit code %2").arg(k_ExeName).arg(exitCode));
-  }
-
-  if(exitStatus == QProcess::NormalExit)
-  {
-    emit stdOutputMessageGenerated(QString("%1 Completed").arg(k_ExeName));
   }
 }
 
@@ -555,40 +441,4 @@ void DictionaryIndexingController::initializeData()
   m_OutputMaskVector.clear();
   m_OutputIQMapVector.clear();
   m_OutputADPMapVector.clear();
-  m_StartTime = "";
-  m_Executing = false;
-  m_Cancel = false;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void DictionaryIndexingController::setUpdateProgress(int loopCompleted, int totalLoops)
-{
-  QString ss = QObject::tr("Average Dot Product: %1 of %2").arg(loopCompleted, totalLoops);
-  emit stdOutputMessageGenerated(ss);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-int DictionaryIndexingController::getNumCPUCores()
-{
-  return QThread::idealThreadCount();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-bool DictionaryIndexingController::getCancel() const
-{
-  return m_Cancel;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void DictionaryIndexingController::setCancel(const bool& value)
-{
-  m_Cancel = value;
 }

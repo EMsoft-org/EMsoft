@@ -231,7 +231,7 @@ void ADPMap_UI::listenADPGenerationStarted()
 {
   if(m_Ui->generateADPBtn->text() == "Cancel" && m_ADPController != nullptr)
   {
-    m_ADPController->setCancel(true);
+    m_ADPController->cancelProcess();
     emit adpMapGenerationFinished();
     return;
   }
@@ -282,8 +282,6 @@ void ADPMap_UI::listenADPGenerationStarted()
 // -----------------------------------------------------------------------------
 void ADPMap_UI::processFinished()
 {
-  m_ADPController->setCancel(false);
-
   m_Ui->adpMapZoomSB->setEnabled(true);
   m_Ui->adpMapSaveBtn->setEnabled(true);
   m_Ui->adpMapZoomInBtn->setEnabled(true);
@@ -308,9 +306,16 @@ bool ADPMap_UI::validateData()
   if(adpData.inputType == InputType::TSLHDF || adpData.inputType == InputType::BrukerHDF ||
      adpData.inputType == InputType::OxfordHDF)
   {
-    if (adpData.hdfStrings.isEmpty())
+    if(m_PatternDataFile.isEmpty())
     {
-      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      QString ss = QObject::tr("Pattern data file is empty.  Please select a pattern data file from the 'Choose Patterns' tab.");
+      emit errorMessageGenerated(ss);
+      m_Ui->generateADPBtn->setDisabled(true);
+      return false;
+    }
+    if(m_SelectedHDF5Path.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern dataset not chosen.  Please select a pattern dataset from the 'Choose Patterns' tab.");
       emit errorMessageGenerated(ss);
       m_Ui->generateADPBtn->setDisabled(true);
       return false;

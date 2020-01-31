@@ -35,36 +35,21 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QProcess>
-#include <QtCore/QSharedPointer>
 #include <QtCore/QTemporaryDir>
 
-#include "ADPMapController.h"
+#include "Common/Constants.h"
 
-class PatternPreprocessingController : public QObject
+#include "Modules/IProcessController.h"
+
+class PatternPreprocessingController : public IProcessController
 {
   Q_OBJECT
 
 public:
-  const QString k_ExeName = QString("EMEBSDDIpreview");
-  const QString k_NMLName = QString("EMEBSDDIpreview.nml");
-
   using InputType = EMsoftWorkbenchConstants::InputType;
 
   PatternPreprocessingController(QObject* parent = nullptr);
   ~PatternPreprocessingController() override;
-
-  /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-  bool getCancel() const;
-
-  /**
-    * @brief Setter property for Cancel
-    */
-  void setCancel(const bool& value);
 
   using InputDataType = struct
   {
@@ -96,52 +81,15 @@ public:
    */
   void setData(const InputDataType& data);
 
-  /**
-   * @brief setUpdateProgress
-   * @param loopCompleted
-   * @param totalLoops
-   */
-  void setUpdateProgress(int loopCompleted, int totalLoops);
-
-  /**
-     * @brief getNumCPUCores
-     * @return
-     */
-  int getNumCPUCores();
-
-public slots:
-  /**
-   * @brief execute
-   */
-  void execute();
-
-  /**
-   * @brief cancelProcess
-   */
-  void cancelProcess();
-
-protected slots:
-  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
 signals:
   void preprocessedPatternsMatrixCreated(const QImage &adpMap) const;
-  void warningMessageGenerated(const QString& msg) const;
-  void errorMessageGenerated(const QString& msg) const;
-  void stdOutputMessageGenerated(const QString& msg) const;
-  void finished();
 
 private:
-  QString m_StartTime = "";
   InputDataType m_InputData;
-  QSharedPointer<QProcess> m_CurrentProcess;
 
   std::vector<float> m_OutputMaskVector;
   std::vector<float> m_OutputIQMapVector;
   std::vector<float> m_OutputADPMapVector;
-
-  bool m_Cancel = false;
-  size_t m_InstanceKey = 0;
-  bool m_Executing = false;
 
   QTemporaryDir m_TempDir;
 
@@ -151,16 +99,15 @@ private:
   void initializeData();
 
   /**
-   * @brief getPreprocessedPatternsMatrixExecutablePath
-   * @return
-   */
-  QString getPreprocessedPatternsMatrixExecutablePath() const;
-
-  /**
    * @brief generateNMLFile
    * @param filePath
    */
-  void generateNMLFile(const QString& filePath) const;
+  void generateNMLFile(const QString& filePath) override;
+
+  /**
+   * @brief processFinished
+   */
+  void processFinished() override;
 
   /**
    * @brief executeWrapper

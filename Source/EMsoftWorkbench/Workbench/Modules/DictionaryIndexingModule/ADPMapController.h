@@ -35,34 +35,19 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QProcess>
-#include <QtCore/QSharedPointer>
 #include <QtCore/QTemporaryDir>
+
+#include "Modules/IProcessController.h"
 
 #include "Common/Constants.h"
 
-class ADPMapController : public QObject
+class ADPMapController : public IProcessController
 {
   Q_OBJECT
 
 public:
-  const QString k_ExeName = QString("EMgetADP");
-  const QString k_NMLName = QString("EMgetADP.nml");
-
   ADPMapController(QObject* parent = nullptr);
   ~ADPMapController() override;
-
-  /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-  bool getCancel() const;
-
-  /**
-    * @brief Setter property for Cancel
-    */
-  void setCancel(const bool& value);
 
   using InputDataType = struct
   {
@@ -90,49 +75,11 @@ public:
 
   void setData(const InputDataType& data);
 
-  /**
-   * @brief setUpdateProgress
-   * @param loopCompleted
-   * @param totalLoops
-   */
-  void setUpdateProgress(int loopCompleted, int totalLoops);
-
-  /**
-     * @brief getNumCPUCores
-     * @return
-     */
-  int getNumCPUCores();
-
-public slots:
-  /**
-   * @brief createADPMap
-   * @param data
-   */
-  void execute();
-
-  /**
-   * @brief cancelProcess
-   */
-  void cancelProcess();
-
-protected slots:
-  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
 signals:
   void adpMapCreated(const QImage &adpMap) const;
-  void warningMessageGenerated(const QString& msg) const;
-  void errorMessageGenerated(const QString& msg) const;
-  void stdOutputMessageGenerated(const QString& msg) const;
-  void finished();
 
 private:
-  QString m_StartTime = "";
   InputDataType m_InputData;
-  QSharedPointer<QProcess> m_CurrentProcess;
-
-  bool m_Cancel = false;
-  size_t m_InstanceKey = 0;
-  bool m_Executing = false;
 
   QTemporaryDir m_TempDir;
 
@@ -146,17 +93,16 @@ private:
   void initializeData();
 
   /**
-   * @brief getADPMapExecutablePath
-   * @return
-   */
-  QString getADPMapExecutablePath() const;
-
-  /**
    * @brief generateNMLFile
    * @param file
    * @param data
    */
-  void generateNMLFile(const QString& filePath) const;
+  void generateNMLFile(const QString& filePath) override;
+
+  /**
+   * @brief processFinished
+   */
+  void processFinished() override;
 
   /**
    * @brief executeWrapper

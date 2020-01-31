@@ -211,7 +211,7 @@ void PatternPreprocessing_UI::listenPatternPreprocessingStarted()
 {
   if(m_Ui->generatePPMatrixBtn->text() == "Cancel")
   {
-    m_PPMatrixController->setCancel(true);
+    m_PPMatrixController->cancelProcess();
     emit patternPreprocessingFinished();
     return;
   }
@@ -267,8 +267,6 @@ void PatternPreprocessing_UI::listenMatrixCreated(QImage image)
 // -----------------------------------------------------------------------------
 void PatternPreprocessing_UI::processFinished()
 {
-  m_PPMatrixController->setCancel(false);
-
   m_Ui->generatePPMatrixBtn->setText("Generate");
   m_Ui->ppParametersGroupBox->setEnabled(true);
 
@@ -304,10 +302,18 @@ bool PatternPreprocessing_UI::validateData()
   if(ppData.inputType == InputType::TSLHDF || ppData.inputType == InputType::BrukerHDF ||
      ppData.inputType == InputType::OxfordHDF)
   {
-    if (ppData.hdfStrings.isEmpty())
+    if(m_PatternDataFile.isEmpty())
     {
-      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      QString ss = QObject::tr("Pattern data file is empty.  Please select a pattern data file from the 'Choose Patterns' tab.");
       emit errorMessageGenerated(ss);
+      m_Ui->generatePPMatrixBtn->setDisabled(true);
+      return false;
+    }
+    if(m_SelectedHDF5Path.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern dataset not chosen.  Please select a pattern dataset from the 'Choose Patterns' tab.");
+      emit errorMessageGenerated(ss);
+      m_Ui->generatePPMatrixBtn->setDisabled(true);
       return false;
     }
   }

@@ -35,52 +35,22 @@
 
 #include "MonteCarloSimulationController.h"
 
-#include <cmath>
-#include <functional>
-#include <iostream>
-#include <sstream>
-#include <utility>
-
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDateTime>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
-#include <QtCore/QProcess>
-#include <QtCore/QProcessEnvironment>
-#include <QtCore/QTemporaryDir>
+#include <QtCore/QTextStream>
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 
-#include "Workbench/Common/Constants.h"
-#include "Workbench/Common/EMsoftFileWriter.h"
 #include "Workbench/Common/FileIOTools.h"
 
-namespace ioConstants = EMsoftWorkbenchConstants::IOStrings;
-
-static size_t s_InstanceKey = 0;
-static QMap<size_t, MonteCarloSimulationController*> s_ControllerInstances;
-
-/**
- * @brief EMsoftMCOpenCLProgress
- * @param instance
- * @param loopCompleted
- * @param totalLoops
- * @param bseYield
- */
-void MonteCarloSimulationControllerProgress(size_t instance, int loopCompleted, int totalLoops, float bseYield)
-{
-  MonteCarloSimulationController* obj = s_ControllerInstances[instance];
-  if(nullptr != obj)
-  {
-    obj->setUpdateProgress(loopCompleted, totalLoops, bseYield);
-  }
-}
+const QString k_ExeName = QString("EMMCOpenCL");
+const QString k_NMLName = QString("EMMCOpenCL.nml");
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 MonteCarloSimulationController::MonteCarloSimulationController(QObject* parent)
-: QObject(parent)
+: IProcessController(k_ExeName, k_NMLName, parent)
 {
 }
 
@@ -89,7 +59,6 @@ MonteCarloSimulationController::MonteCarloSimulationController(QObject* parent)
 // -----------------------------------------------------------------------------
 MonteCarloSimulationController::~MonteCarloSimulationController()
 {
-  s_InstanceKey--;
 }
 
 // -----------------------------------------------------------------------------
@@ -98,64 +67,6 @@ MonteCarloSimulationController::~MonteCarloSimulationController()
 void MonteCarloSimulationController::setData(const InputDataType& data)
 {
   m_InputData = data;
-}
-
-// -----------------------------------------------------------------------------
-void MonteCarloSimulationController::cancelProcess()
-{
-  m_CurrentProcess->kill();
-}
-
-// -----------------------------------------------------------------------------
-void MonteCarloSimulationController::execute()
-{
-  QString dtFormat("yyyy:MM:dd hh:mm:ss.zzz");
-
-  QTemporaryDir tempDir;
-  // Set the start time for this run (m_StartTime)
-  QString str;
-  QTextStream out(&str);
-
-  m_CurrentProcess = QSharedPointer<QProcess>(new QProcess());
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardOutput().toStdString())); });
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardError().toStdString())); });
-  connect(m_CurrentProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { processFinished(exitCode, exitStatus); });
-  std::pair<QString, QString> result = FileIOTools::GetExecutablePath(k_ExeName);
-  if(!result.first.isEmpty())
-  {
-    QProcessEnvironment env = m_CurrentProcess->processEnvironment();
-    env.insert("EMSOFTPATHNAME", QString::fromStdString(FileIOTools::GetEMsoftPathName()));
-    m_CurrentProcess->setProcessEnvironment(env);
-    out << k_ExeName << ": Executable Path:" << result.first << "\n";
-    out << k_ExeName << ": Start Time: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-    out << k_ExeName << ": Insert EMSOFTPATHNAME=" << QString::fromStdString(FileIOTools::GetEMsoftPathName()) << "\n";
-    out << k_ExeName << ": Output from " << k_ExeName << " follows next...."
-        << "\n";
-    out << "===========================================================\n";
-
-    emit stdOutputMessageGenerated(str);
-
-    QString nmlFilePath = tempDir.path() + QDir::separator() + k_NMLName;
-    generateNMLFile(nmlFilePath);
-    QStringList parameters = {nmlFilePath};
-    m_CurrentProcess->start(result.first, parameters);
-
-    // Wait until the QProcess is finished to exit this thread.
-    m_CurrentProcess->waitForFinished(-1);
-  }
-  else
-  {
-    emit errorMessageGenerated(result.second);
-  }
-
-  str = "";
-  out << "===========================================================\n";
-  out << k_ExeName << ": Finished: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-  out << k_ExeName << ": Output File Location: " << m_InputData.outputFilePath << "\n";
-  emit stdOutputMessageGenerated(str);
-
-  emit finished();
-  m_CurrentProcess = nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -246,27 +157,8 @@ void MonteCarloSimulationController::generateNMLFile(const QString& path)
 }
 
 // -----------------------------------------------------------------------------
-void MonteCarloSimulationController::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void MonteCarloSimulationController::processFinished()
 {
-  m_Executing = false;
-  s_ControllerInstances.remove(m_InstanceKey);
-
-  // do we need to write this accumulator data into an EMsoft .h5 file?
-  // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
-  if(m_Cancel)
-  {
-    emit stdOutputMessageGenerated(QString("%1 was canceled.").arg(k_ExeName));
-  }
-
-  if(exitStatus == QProcess::CrashExit)
-  {
-    emit stdOutputMessageGenerated(QString("%1n process crashed with exit code %2").arg(k_ExeName).arg(exitCode));
-  }
-
-  if(exitStatus == QProcess::NormalExit)
-  {
-    emit stdOutputMessageGenerated(QString("%1 Completed").arg(k_ExeName));
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -407,14 +299,4 @@ bool MonteCarloSimulationController::validateInput() const
   }
 
   return true;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void MonteCarloSimulationController::setUpdateProgress(int loopCompleted, int totalLoops, float bseYield) const
-{
-  QString ss = QObject::tr("MonteCarlo steps completed: %1/%2; BSE Yield %3%").arg(loopCompleted).arg(totalLoops).arg(bseYield);
-  emit stdOutputMessageGenerated(ss);
-  emit updateMCProgress(loopCompleted, totalLoops, bseYield);
 }

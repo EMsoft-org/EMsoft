@@ -35,21 +35,17 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QProcess>
-#include <QtCore/QSharedPointer>
 #include <QtCore/QTemporaryDir>
+
+#include "Modules/IProcessController.h"
 
 #include "Common/Constants.h"
 
-class DictionaryIndexingController : public QObject
+class DictionaryIndexingController : public IProcessController
 {
   Q_OBJECT
 
 public:
-  const QString k_ExeName = QString("EMEBSDDI");
-  const QString k_NMLName = QString("EMEBSDDI.nml");
-
   using InputType = EMsoftWorkbenchConstants::InputType;
 
   using EnumType = unsigned int;
@@ -135,69 +131,20 @@ public:
   };
 
   /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-  bool getCancel() const;
-
-  /**
-    * @brief Setter property for Cancel
-    */
-  void setCancel(const bool& value);
-
-  /**
    * @brief setData
    * @param simData
    */
   void setData(const InputDataType& simData);
 
-  /**
-   * @brief setUpdateProgress
-   * @param loopCompleted
-   * @param totalLoops
-   */
-  void setUpdateProgress(int loopCompleted, int totalLoops);
-
-  /**
-     * @brief getNumCPUCores
-     * @return
-     */
-  int getNumCPUCores();
-
-public slots:
-  /**
-   * @brief execute
-   */
-  void execute();
-
-  /**
-   * @brief cancelProcess
-   */
-  void cancelProcess();
-
-protected slots:
-  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
 signals:
   void diCreated(const QImage &adpMap) const;
-  void warningMessageGenerated(const QString& msg) const;
-  void errorMessageGenerated(const QString& msg) const;
-  void stdOutputMessageGenerated(const QString& msg) const;
-
-  void finished();
 
 private:
-  QString m_StartTime = "";
   InputDataType m_InputData;
-  QSharedPointer<QProcess> m_CurrentProcess;
 
   std::vector<float> m_OutputMaskVector;
   std::vector<float> m_OutputIQMapVector;
   std::vector<float> m_OutputADPMapVector;
-
-  bool m_Cancel = false;
-  size_t m_InstanceKey = 0;
-  bool m_Executing = false;
 
   QTemporaryDir m_TempDir;
 
@@ -207,16 +154,15 @@ private:
   void initializeData();
 
   /**
-   * @brief getDIExecutablePath
-   * @return
-   */
-  QString getDIExecutablePath() const;
-
-  /**
    * @brief DictionaryIndexingController::generateNMLFile
    * @param path
    */
-  void generateNMLFile(const QString& path);
+  void generateNMLFile(const QString& path) override;
+
+  /**
+   * @brief processFinished
+   */
+  void processFinished() override;
 
   /**
    * @brief executeWrapper

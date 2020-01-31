@@ -493,7 +493,7 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
 {
   if(m_Ui->generateDIBtn->text() == "Cancel")
   {
-    m_DIController->setCancel(true);
+    m_DIController->cancelProcess();
     emit diGenerationFinished();
     return;
   }
@@ -540,8 +540,6 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
 // -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::processFinished()
 {
-  m_DIController->setCancel(false);
-
   m_Ui->diZoomSB->setEnabled(true);
   m_Ui->diSaveBtn->setEnabled(true);
   m_Ui->diZoomInBtn->setEnabled(true);
@@ -585,9 +583,16 @@ bool DictionaryIndexing_UI::validateData()
   if(m_InputType == DictionaryIndexingController::InputType::TSLHDF || m_InputType == DictionaryIndexingController::InputType::BrukerHDF ||
      m_InputType == DictionaryIndexingController::InputType::OxfordHDF)
   {
+    if(m_PatternDataFile.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern data file is empty.  Please select a pattern data file from the 'Choose Patterns' tab.");
+      emit errorMessageGenerated(ss);
+      m_Ui->generateDIBtn->setDisabled(true);
+      return false;
+    }
     if(m_SelectedHDF5Path.isEmpty())
     {
-      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      QString ss = QObject::tr("Pattern dataset not chosen.  Please select a pattern dataset from the 'Choose Patterns' tab.");
       emit errorMessageGenerated(ss);
       m_Ui->generateDIBtn->setDisabled(true);
       return false;

@@ -35,16 +35,7 @@
 
 #include "ADPMapController.h"
 
-#include <cstring>
-
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDateTime>
-#include <QtCore/QDebug>
-#include <QtCore/QMap>
-#include <QtCore/QMimeDatabase>
-#include <QtCore/QSharedPointer>
 #include <QtCore/QTextStream>
-#include <QtCore/QThread>
 
 #include <QtGui/QImage>
 
@@ -52,38 +43,17 @@
 
 #include "Workbench/Common/FileIOTools.h"
 
-#include "Constants.h"
-
-static size_t k_InstanceKey = 0;
-static QMap<size_t, ADPMapController*> s_ControllerInstances;
-
 using InputType = EMsoftWorkbenchConstants::InputType;
 
-namespace SizeConstants = DictionaryIndexingModuleConstants::ArraySizes;
-
-/**
- * @brief ADPMapControllerProgress
- * @param instance
- * @param loopCompleted
- * @param totalLoops
- * @param bseYield
- */
-void ADPMapControllerProgress(size_t instance, int loopCompleted, int totalLoops)
-{
-  ADPMapController* obj = s_ControllerInstances[instance];
-  if(nullptr != obj)
-  {
-    obj->setUpdateProgress(loopCompleted, totalLoops);
-  }
-}
+const QString k_ExeName = QString("EMgetADP");
+const QString k_NMLName = QString("EMgetADP.nml");
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 ADPMapController::ADPMapController(QObject* parent)
-: QObject(parent)
+: IProcessController(k_ExeName, k_NMLName, parent)
 {
-  m_InstanceKey = ++k_InstanceKey;
 }
 
 // -----------------------------------------------------------------------------
@@ -91,22 +61,12 @@ ADPMapController::ADPMapController(QObject* parent)
 // -----------------------------------------------------------------------------
 ADPMapController::~ADPMapController()
 {
-  k_InstanceKey--;
 }
 
 // -----------------------------------------------------------------------------
 void ADPMapController::setData(const InputDataType& data)
 {
   m_InputData = data;
-}
-
-// -----------------------------------------------------------------------------
-void ADPMapController::cancelProcess()
-{
-  if(m_CurrentProcess != nullptr)
-  {
-    m_CurrentProcess->kill();
-  }
 }
 
 // -----------------------------------------------------------------------------
@@ -169,60 +129,7 @@ void ADPMapController::executeWrapper()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMapController::execute()
-{
-  QString dtFormat("yyyy:MM:dd hh:mm:ss.zzz");
-
-  QTemporaryDir tempDir;
-  // Set the start time for this run (m_StartTime)
-  QString str;
-  QTextStream out(&str);
-
-  m_CurrentProcess = QSharedPointer<QProcess>(new QProcess());
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardOutput().toStdString())); });
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardError, [=] { emit errorMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardError().toStdString())); });
-  connect(m_CurrentProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { processFinished(exitCode, exitStatus); });
-  std::pair<QString, QString> result = FileIOTools::GetExecutablePath(k_ExeName);
-  if(!result.first.isEmpty())
-  {
-    QProcessEnvironment env = m_CurrentProcess->processEnvironment();
-    env.insert("EMSOFTPATHNAME", QString::fromStdString(FileIOTools::GetEMsoftPathName()));
-    m_CurrentProcess->setProcessEnvironment(env);
-    out << k_ExeName << ": Executable Path:" << result.first << "\n";
-    out << k_ExeName << ": Start Time: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-    out << k_ExeName << ": Insert EMSOFTPATHNAME=" << QString::fromStdString(FileIOTools::GetEMsoftPathName()) << "\n";
-    out << k_ExeName << ": Output from " << k_ExeName << " follows next...."
-        << "\n";
-    out << "===========================================================\n";
-
-    emit stdOutputMessageGenerated(str);
-
-    QString nmlFilePath = tempDir.path() + QDir::separator() + k_NMLName;
-    generateNMLFile(nmlFilePath);
-    QStringList parameters = {nmlFilePath};
-    m_CurrentProcess->start(result.first, parameters);
-
-    // Wait until the QProcess is finished to exit this thread.
-    m_CurrentProcess->waitForFinished(-1);
-  }
-  else
-  {
-    emit errorMessageGenerated(result.second);
-  }
-
-  str = "";
-  out << "===========================================================\n";
-  out << k_ExeName << ": Finished: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-  //  out << k_ExeName << ": Output File Location: " << m_InputData.inputFilePath << "\n";
-  emit stdOutputMessageGenerated(str);
-
-  emit finished();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void ADPMapController::generateNMLFile(const QString& filePath) const
+void ADPMapController::generateNMLFile(const QString& filePath)
 {
   std::vector<std::string> nml;
 
@@ -351,7 +258,7 @@ void ADPMapController::generateNMLFile(const QString& filePath) const
 }
 
 // -----------------------------------------------------------------------------
-void ADPMapController::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void ADPMapController::processFinished()
 {
   // EMgetADP program automatically adds "_ADP" onto the end of the output image name
   QString imagePath = tr("%1/Result_ADP.tiff").arg(m_TempDir.path());
@@ -360,85 +267,6 @@ void ADPMapController::processFinished(int exitCode, QProcess::ExitStatus exitSt
   {
     emit adpMapCreated(imageResult);
   }
-
-  m_Executing = false;
-  s_ControllerInstances.remove(m_InstanceKey);
-
-  // do we need to write this accumulator data into an EMsoft .h5 file?
-  // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
-  if(m_Cancel)
-  {
-    emit stdOutputMessageGenerated(QString("%1 was canceled.").arg(k_ExeName));
-  }
-
-  if(exitStatus == QProcess::CrashExit)
-  {
-    emit stdOutputMessageGenerated(QString("%1n process crashed with exit code %2").arg(k_ExeName).arg(exitCode));
-  }
-
-  if(exitStatus == QProcess::NormalExit)
-  {
-    emit stdOutputMessageGenerated(QString("%1 Completed").arg(k_ExeName));
-  }
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-QString ADPMapController::getADPMapExecutablePath() const
-{
-  QString adpExecutablePath;
-
-  QDir workingDirectory = QDir(QCoreApplication::applicationDirPath());
-
-#if defined(Q_OS_WIN)
-  if (workingDirectory.exists("EMgetADP.exe"))
-  {
-    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP.exe");
-    return adpExecutablePath;
-  }
-#elif defined(Q_OS_MAC)
-  // Look to see if we are inside an .app package or inside the 'tools' directory
-  if(workingDirectory.dirName() == "MacOS")
-  {
-    workingDirectory.cdUp();
-    if (workingDirectory.cd("bin"))
-    {
-      if (workingDirectory.exists("EMgetADP"))
-      {
-        adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-        return adpExecutablePath;
-      }
-      workingDirectory.cdUp();
-    }
-
-    workingDirectory.cdUp();
-    workingDirectory.cdUp();
-
-    if(workingDirectory.dirName() == "Bin" && workingDirectory.exists("EMgetADP"))
-    {
-      adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP");
-      return adpExecutablePath;
-    }
-  }
-#else
-  // We are on Linux - I think
-  // Try the current location of where the application was launched from which is
-  // typically the case when debugging from a build tree
-  if (workingDirectory.exists("EMgetADP.exe"))
-  {
-    adpExecutablePath = tr("%1%2%3").arg(workingDirectory.absolutePath(), QDir::separator(), "EMgetADP.exe");
-    return adpExecutablePath;
-  }
-#endif
-
-  if (adpExecutablePath.isEmpty())
-  {
-    QString errMsg = "Could not find Average Dot Product Map executable!";
-    emit errorMessageGenerated(errMsg);
-  }
-
-  return adpExecutablePath;
 }
 
 // -----------------------------------------------------------------------------
@@ -449,9 +277,6 @@ void ADPMapController::initializeData()
   m_OutputMaskVector.clear();
   m_OutputIQMapVector.clear();
   m_OutputADPMapVector.clear();
-  m_StartTime = "";
-  m_Executing = false;
-  m_Cancel = false;
 }
 
 //// -----------------------------------------------------------------------------
@@ -531,36 +356,3 @@ void ADPMapController::initializeData()
 
 //  return sParVector;
 //}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void ADPMapController::setUpdateProgress(int loopCompleted, int totalLoops)
-{
-  QString ss = QObject::tr("Average Dot Product: %1 of %2").arg(loopCompleted, totalLoops);
-  emit stdOutputMessageGenerated(ss);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-int ADPMapController::getNumCPUCores()
-{
-  return QThread::idealThreadCount();
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-bool ADPMapController::getCancel() const
-{
-  return m_Cancel;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void ADPMapController::setCancel(const bool& value)
-{
-  m_Cancel = value;
-}
