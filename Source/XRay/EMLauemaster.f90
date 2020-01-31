@@ -62,7 +62,7 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 250 /), progname)
 ! deal with the namelist stuff, either .nml or .json format
 res = index(nmldeffile,'.nml',kind=irg)
 if (res.eq.0) then
-!  call JSONreadEBSDmasterNameList(emnl, nmldeffile, error_cnt)
+!  call JSONreadEBSDmasterNameList(lmnl, nmldeffile, error_cnt)
 else
   call GetLaueMasterNameList(nmldeffile,lmnl)
 end if
@@ -85,6 +85,7 @@ end program EMLauemaster
 !> @param nmldeffile namelist file name (so that the entire file can be stored inside the HDF5 file)
 !
 !> @date 03/14/19  MDG 1.0 original
+!> @date 01/27/20  MDG 1.1 adds .sht file output (basically copied from EBSD master pattern program)
 !--------------------------------------------------------------------------
 subroutine ComputeLaueMasterPattern(lmnl, progname, nmldeffile)
 
@@ -114,8 +115,33 @@ use notifications
 use stringconstants
 use image
 use, intrinsic :: iso_fortran_env
+use DSHT 
+use fft_wrap
 
 IMPLICIT NONE
+
+interface 
+  recursive function writeShtFile (fn, iprm, fprm, doi, note, alm, aTy, aCd, vers, cprm) result(res) &
+  bind(C, name ='writeShtFile_')
+
+  use ISO_C_BINDING
+
+  IMPLICIT NONE 
+
+  character(c_char)             :: fn
+  integer(c_int)                :: iprm(11) 
+  real(c_float)                 :: fprm(25)
+  character(c_char)             :: doi
+  character(c_char)             :: note 
+  real(C_DOUBLE_COMPLEX)        :: alm(2*(iprm(3)+3)*(iprm(3)+3))
+  integer(c_int)                :: aTy(iprm(6))
+  real(c_float)                 :: aCd(iprm(6),5)
+  character(c_char)             :: vers 
+  character(c_char)             :: cprm
+  integer(c_int)                :: res
+  end function writeShtFile
+end interface 
+
 
 type(LaueMasterNameListType),INTENT(INOUT) :: lmnl
 character(fnlen),INTENT(IN)                :: progname
@@ -128,28 +154,53 @@ type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp
 real(kind=sgl),allocatable                 :: mLPNH(:,:), mLPSH(:,:), masterSPNH(:,:), masterSPSH(:,:)
 integer(kind=irg)						               :: npx, npy, gcnt, ierr, nix, niy, nixp, niyp, i, j, w, istat, TIFF_nx, TIFF_ny, &
-                                              hdferr
-real(kind=sgl)							               :: xy(2), xyz(3), dx, dy, dxm, dym, Radius, ma, tstart, tstop
+                                              hdferr, bw, d, ll, res, timestart, timestop
+real(kind=sgl)							               :: xy(2), xyz(3), dx, dy, dxm, dym, Radius, mi, ma, tstart, tstop, sdev, mean
 real(kind=dbl)                             :: VMFscale, inten
 character(fnlen)                           :: fname, TIFF_filename, attributename, groupname, datagroupname, dataset, &
-                                              HDF_FileVersion, hdfname
+                                              HDF_FileVersion, hdfname, doiString, layout, SHTfile
 
 ! declare variables for use in object oriented image module
-integer                                    :: iostat
-character(len=128)                         :: iomsg
-logical                                    :: isInteger
-type(image_t)                              :: im
-integer(int8)                              :: i8 (3,4)
-integer(int8), allocatable                 :: TIFF_image(:,:)
-character(11)                              :: dstr
-character(15)                              :: tstrb
-character(15)                              :: tstre
+integer                         :: iostat
+character(len=128)              :: iomsg
+logical                         :: isInteger
+integer(int8), allocatable      :: TIFF_image(:,:)
+character(11)                   :: dstr
+character(15)                   :: tstrb
+character(15)                   :: tstre
+character(fnlen)                :: image_filename
+type(image_t)                   :: im, im2
+integer(int8)                   :: i8 (3,4), int8val
+integer(int8), allocatable      :: output_image(:,:)
+
+! parameters for the .sht output file 
+integer(kind=irg),parameter     :: nipar=11, nfpar=25
+character(fnlen)                :: EMversion, cprm, note, notestring
+character(6)                    :: vstring
+character(8)                    :: vstring2
+character(fnlen)                :: revision
+integer(c_int32_t)              :: sgN      ! space group number [1,230]
+integer(c_int32_t)              :: sgS      ! space group setting [1,2]
+integer(c_int32_t)              :: numAt    ! number of atoms
+integer(c_int32_t),allocatable  :: aTy(:)   ! atom types (nAt atomic numbers)
+real(c_float),allocatable       :: aCd(:,:) ! atom coordinates, (nAt * 5 floats {x, y, z, occupancy, Debye-Waller in nm^2})
+real(c_float)                   :: lat(6)   ! lattice parameters {a, b, a, alpha, beta, gamma} (in nm / degree)
+real(c_float)                   :: fprm(nfpar) ! floating point parameters (float32 EMsoftED parameters in order)
+integer(c_int32_t)              :: iprm(nipar) ! integer parameters {# electrons, electron multiplier, numsx, npx, latgridtype}
+real(kind=dbl),allocatable      :: finalmLPNH(:,:), finalmLPSH(:,:), weights(:)
+
+type(DiscreteSHT)               :: transformer 
+complex(kind=dbl), allocatable  :: almMaster(:,:)   ! spectra of master pattern to index against
+complex(kind=dbl), allocatable  :: almPat   (:,:)   ! work space to hold spectra of exerimental pattern
+real(kind=dbl),allocatable      :: alm(:)
+
 
 ! basic explanation: this is a really simple and fast Laue master pattern; we compute all the plane normals 
 ! that fall inside the extended Ewald sphere volume.  For each we compute the kinematic intensity
 ! using the x-ray scattering factors.  Then we add a narrow Gaussian peak to the square Lambert projection
 ! (either Northern or Southern hemisphere) in the correct position, using spherical interpolation 
-! (a von Mises-type distribution might be useful here ...).  Finally, standard output to an HDF5 file.
+! (a von Mises-type distribution might be useful here ...).  Finally, standard output to an HDF5 file, or 
+! output to an .sht file.
 
 ! lmnl components
 ! xtalname
@@ -158,6 +209,10 @@ character(15)                              :: tstre
 ! kappaVMF
 ! hdfname
 
+if (lmnl%outformat.eq.'SHT') then 
+  npx = 193
+  layout = 'legendre'
+end if 
 
 nullify(HDF_head%next)
 !nullify(cell)        
@@ -308,7 +363,7 @@ deallocate(TIFF_image)
 !=============================================
 ! save everything to HDF5 file
   call timestamp(datestring=dstr, timestring=tstre)
-
+if (lmnl%outformat.eq.'lMP') then   ! regular master pattern HDF5 output
   nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
@@ -367,7 +422,171 @@ dataset = SC_masterSPSH
 
 ! and close the file
   call HDF_pop(HDF_head,.TRUE.)
+else  ! spherical harmonic transform of master pattern and storage in .sht file
 
+! build energy weighted master pattern
+  d = npx
+  allocate(finalmLPNH(-d:d,-d:d))
+  allocate(finalmLPSH(-d:d,-d:d))
+  finalmLPNH = mLPNH
+  finalmLPSH = mLPSH
 
+!=====================================
+! form the .sht file name from the formula, name, structuresymbol and voltage parameters
+  SHTfile = trim(lmnl%SHT_folder)//'/'//trim(lmnl%SHT_formula)
+! compound name (:brass, forsterite, alpha-quartz ... )
+  if ((trim(lmnl%SHT_name).ne.'undefined').and.(trim(lmnl%SHT_name).ne.'')) then
+    SHTfile = trim(SHTfile)//' ('//trim(lmnl%SHT_name)//')'
+  end if
+! structure symbol (StrukturBericht, Pearson, ...)
+  if ((trim(lmnl%SHT_structuresymbol).ne.'undefined').and.(trim(lmnl%SHT_structuresymbol).ne.'')) then
+    SHTfile = trim(SHTfile)//' ['//trim(lmnl%SHT_structuresymbol)//']'
+  end if
+! ! voltage string 
+!   write(vstring,"(' {',I2.2,'kV')") int(mcnl%EkeV) 
+!   SHTfile = trim(SHTfile)//trim(vstring)
+! ! if the sample tilt is NOT equal to 70 deg, then add it in F4.1 format to the comment string 
+!   if (mcnl%sig.ne.70.0) then 
+!     write (vstring2,"(' ',F4.1,'deg')") sngl(mcnl%sig)
+!     SHTfile = trim(SHTfile)//trim(vstring2)//'}.sht'
+!   else
+    ! SHTfile = trim(SHTfile)//'}.sht'
+!   end if
+
+    SHTfile = trim(SHTfile)//'.sht'
+
+!=====================================
+  call Message(' Saving Lambert squares to tiff file ',"(//A)")
+! output these patterns to a tiff file
+  image_filename = trim(SHTfile)
+  ll = len(trim(image_filename))
+  ll = ll-2
+! replace the .sht extension by .tiff
+  image_filename(ll:ll) = 't'
+  image_filename(ll+1:ll+1) = 'i'
+  image_filename(ll+2:ll+2) = 'f'
+  image_filename(ll+3:ll+3) = 'f'
+  image_filename = trim(EMsoft_getEMdatapathname())//trim(image_filename)
+  image_filename = EMsoft_toNativePath(image_filename)
+
+  allocate(output_image(2*(2*d+1)+2,2*d+1))
+  output_image = -1
+
+  mi = minval( (/ minval(finalmLPNH), minval(finalmLPSH) /) )
+  ma = maxval( (/ maxval(finalmLPNH), maxval(finalmLPSH) /) )
+
+  do i=1,2*d+1
+    output_image(1:2*d+1,i) = int(255*(finalmLPNH(-d:d,i-1-d)-mi)/(ma-mi))
+    output_image(2*d+1+2:2*(2*d+1)+2,i) = int(255*(finalmLPSH(-d:d,i-1-d)-mi)/(ma-mi))
+  end do
+  
+  im2 = image_t(output_image)
+  if(im2%empty()) call Message("ComputeLaueMasterPattern","failed to convert array to image")
+
+! create the file
+  call im2%write(trim(image_filename), iostat, iomsg) ! format automatically detected from extension
+  if(0.ne.iostat) then
+    call Message("   --> Failed to write image to file : "//iomsg)
+  else  
+    call Message('   --> Lambert projections written to '//trim(image_filename))
+  end if 
+  deallocate(output_image)
+
+!=====================================
+! normalize the master patterns by subtracting the mean and dividing by the standard deviation 
+  call Message(' Normalizing master patterns ')
+  mean = sum(finalmLPNH) / dble( (2*d+1)*(2*d+1) )
+  sdev = sqrt( sum( (finalmLPNH - mean)**2 )/ dble((2*d+1)*(2*d+1) - 1) )
+  finalmLPNH = (finalmLPNH - mean) / sdev 
+
+  mean = sum(finalmLPSH) / dble( (2*d+1)*(2*d+1) )
+  sdev = sqrt( sum( (finalmLPSH - mean)**2 )/ dble((2*d+1)*(2*d+1) - 1) )
+  finalmLPSH = (finalmLPSH - mean) / sdev 
+
+!=====================================
+! build transformer
+   call FFTWisdom%load()
+   call Message(' Initializing the spherical harmonic transformer')
+   layout = 'legendre'
+   bw = 384
+   d = bw / 2 + 1
+   call transformer%init(d, bw, layout)
+
+!=====================================
+! compute spherical harmonic transform of master pattern
+   call Message(' Computing spherical harmonic transform')
+   allocate(almMaster(0:bw-1, 0:bw-1))
+   allocate(almPat   (0:bw-1, 0:bw-1))
+   call transformer%analyze(finalmLPNH, finalmLPSH, almMaster)
+   call FFTWisdom%save()
+
+  timestop = Time_tock(timestart)
+
+!=====================================
+! prepare all parameters for the writing of the final .sht file 
+!
+! first the integers [see EMsoftLib/sht_file.cpp for definitions]
+  bw = 384
+  iprm = (/ cell%SYM_SGnum, 1, bw, & 
+            cell%SYM_SGnum, cell%SYM_SGset, cell%ATOM_ntype, &
+            0, 0, 0, bw, 2 /)
+  lat(1) = sngl(cell%a)
+  lat(2) = sngl(cell%b)
+  lat(3) = sngl(cell%c) 
+  lat(4) = sngl(cell%alpha) 
+  lat(5) = sngl(cell%beta) 
+  lat(6) = sngl(cell%gamma)
+
+! then the floats [see EMsoftLib/sht_file.cpp for definitions]
+  fprm = (/ nan(), nan(), 0.0, nan(), lat(1),lat(2),lat(3),lat(4),lat(5),lat(6), &
+            nan(), nan(), nan(),nan(), nan(), &
+            nan(), nan(), nan(), nan(), infty(), &
+            nan(), nan(), nan(), nan(), nan() /)
+
+! doi string 
+  doiString = ''
+! the 'addtoKiltHub' option should only be used for the original 120 structures in the KiltHub data base
+  if (trim(lmnl%addtoKiltHub).eq.'Yes') then 
+    doiString = SC_EMSHTDOI
+  else
+    if (trim(lmnl%useDOI).ne.'undefined') then ! use the user-defined DOI string
+      doiString = trim(lmnl%useDOI)
+    else
+! if we get here, then we use the generic DOI for the Zenodo link to the GitHub .sht data base repository
+      doiString = SC_ZENODODOI
+    end if 
+  end if 
+
+! atom types and coordinates
+  numAt = cell%ATOM_ntype 
+  allocate(aTy(numAt))
+  aTy = cell%ATOM_type(1:numAt)
+  allocate(aCd(5,numAt))
+  aCd = transpose(cell%ATOM_pos(1:numAt,1:5))
+
+! transfer the complex almMaster array to a flat array with alternating real and imaginary parts
+  allocate(alm( 2 * bw * bw ))
+  alm = transfer(almMaster,alm)
+
+  revision = trim(EMsoft_getEMsoftRevision())
+  notestring = ''
+
+  cprm = cstringify(lmnl%SHT_formula)// &
+         cstringify(lmnl%SHT_name)// &
+         cstringify(lmnl%SHT_structuresymbol)// &
+         cstringify(cell%source)// &
+         trim(notestring)
+  
+! write an .sht file using EMsoft style EBSD data
+  SHTfile = trim(EMsoft_getEMdatapathname())//trim(SHTfile)
+  SHTfile = EMsoft_toNativePath(SHTfile)
+
+  res = writeShtFile(cstringify(SHTfile), iprm, fprm, &
+                     cstringify(doiString), cstringify(note), alm, &
+                     aTy, aCd, cstringify(revision), cstringify(cprm))
+
+  call Message(' Final data stored in binary file '//trim(SHTfile), frm = "(A/)")
+
+end if 
 
 end subroutine ComputeLaueMasterPattern

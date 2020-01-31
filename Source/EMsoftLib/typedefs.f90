@@ -991,6 +991,15 @@ type Laue_g_list
   type(Laue_g_list),pointer :: next   ! connection to next reflector
 end type Laue_g_list
 
+type Laue_grow_list  
+  integer(kind=irg)             :: hkl(3)       ! Miller indices
+  real(kind=dbl)                :: xyz(3)       ! Cartesian components of the unit plane normal
+  real(kind=dbl),allocatable    :: sfs(:)       ! |structure factor|^2
+  real(kind=dbl),allocatable    :: dspacing(:)  ! d-spacing
+  integer(kind=irg)             :: Nentries     ! dimension of the sfs and dspacing arrays
+  type(Laue_grow_list),pointer  :: next         ! connection to next reflector
+end type Laue_grow_list
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------

@@ -120,11 +120,11 @@ if (atype.eq.'eu') then
   close(unit=dataunit,status='keep')
 
 ! are the angles in radians or degrees ?
-  if (maxval(eulang).gt.6.3) then
+  ! if (maxval(eulang).gt.6.3) then
   	degrad = 'deg'
-  else 
-  	degrad = 'rad'
-  end if
+  ! else 
+  ! 	degrad = 'rad'
+  ! end if
 
 ! convert the euler angle triplets to quaternions
   allocate(angles%quatang(4,numangles),stat=istat)
@@ -245,6 +245,156 @@ end do
 
 end function getLauePattern
 
+
+
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION:getLaueSlitPattern
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute a single Laue pattern by summing sample voxels; incident beam direction 
+!> is now a parameter instead of being along a coordinate axis.
+!
+!> @param lnl Laue name list
+!> @param qu orientation quaternion
+!> @param reflist list of potential reflections (of type Laue_grow_list)
+!> @param kouter largest wave number
+!> @param kinner smallest wave number 
+!> @param npx number of pixels along x on detector
+!> @param npy along y
+!> @param refcnt number of reflections in linked list
+!> @param kinpre distance traveled in sample before scattering event 
+!> @param kvec unit wave vector direction for this voxel
+!> @param kvox voxel coordinates w.r.t. back focal plane slit projection center  
+!
+!> @date 01/29/20 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function getLaueSlitPattern(lnl, qu, reflist, lmin, lmax, refcnt, &
+                                      kinpre, kvec, kvox) result(pattern)
+!DEC$ ATTRIBUTES DLLEXPORT :: getLauePattern
+
+use local
+use typedefs
+use constants
+use NameListTypedefs
+use io
+use math
+use files
+use quaternions
+use rotations
+
+IMPLICIT NONE
+
+type(LaueSlitNameListType),INTENT(IN)   :: lnl 
+real(kind=dbl),INTENT(IN)               :: qu(4) 
+type(Laue_grow_list),pointer            :: reflist 
+real(kind=sgl),INTENT(IN)               :: lmin
+real(kind=sgl),INTENT(IN)               :: lmax
+integer(kind=irg),INTENT(IN)            :: refcnt
+real(kind=sgl),INTENT(IN)               :: kinpre
+real(kind=sgl),INTENT(IN)               :: kvec(3)
+real(kind=sgl),INTENT(IN)               :: kvox(3)
+real(kind=sgl)                          :: pattern(lnl%Ny, lnl%Nz)
+    
+real(kind=sgl)                          :: th, la, s0(3), s(3), G(3), d, scl, dvec(3), kexit(3), kinpost, dins, atf, Ly, Lz
+type(Laue_grow_list),pointer            :: rltmp
+integer(kind=irg)                       :: i, j, k 
+
+! this is always in transmission mode; we follow the algorithm suggested in
+! the paper by Arnaud et al., "A laboratory transmission diffraction Laue 
+! setup to evaluate single crystal quality", to appear in JAC.  We take the 
+! unit incident beam direction and dot it with all the unit reciprocal lattice
+! vectors to get the diffraction angle; then we use Bragg's law and the interplanar
+! spacing to extract the wave length that gives rise to the reflection; if this 
+! wavelength falls inside the given interval, then we proceed and add the reflection
+! to the pattern.  
+
+d = lnl%sampletodetector - lnl%samplethickness
+Ly = float(lnl%Ny/2) * lnl%ps
+Lz = float(lnl%Nz/2) * lnl%ps
+
+pattern = 0.0
+
+! first handle the transmitted beam  (normalized to unit intensity)
+if (kvec(1).gt.0.0) then 
+  scl = (d + abs(kvox(1))) / kvec(1)    ! scale factor to get to the detector plane
+  dvec = kvox + kvec * scl             ! this is with respect to the optical axis
+  dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
+  if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
+! correct the intensity for absorption (total distance inside sample dins = kinpre + kinpost)
+    scl = abs(kvox(1)) / kvec(1)    ! scale factor to get to the sample exit plane
+    kexit = kvox + kvec * scl       ! this is with respect to the optical axis
+    kinpost = sqrt(sum((kexit-kvox)**2))
+    dins = kinpre + kinpost 
+    atf = exp( - dins/lnl%absl ) * lnl%beamstopatf
+! and draw the reflection
+    dvec = dvec / lnl%ps 
+    call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, -dvec, atf, lnl%spotw)
+  end if 
+end if
+
+nullify(rltmp)
+rltmp => reflist
+
+! go through the entire linked list and determine for each potential reflector whether or not
+! the corresponding wave length falls inside the allowed range; if so, then compute whether or 
+! not this diffracted beam intersects the detector and generate the correct intensity at that
+! detector pixel 
+
+do i = 1, refcnt 
+! for all the allowed reflections along this systematic row, compute the wave length
+! using Bragg's law 
+  rltmp%xyz = rltmp%xyz / vecnorm(rltmp%xyz)
+  G = sngl(quat_Lp(conjg(qu),rltmp%xyz))
+  if (G(1).lt.0.0) then 
+    G = G / vecnorm(G)
+! get the diffraction angle for the unit vectors
+    th = acos( DOT_PRODUCT(kvec, G) ) - 0.5D0*cPi
+    do j = 1, rltmp%Nentries
+      if (rltmp%sfs(j).ne.0.0) then 
+        la = 2.0 * rltmp%dspacing(j) * sin(th)
+        if ((la.gt.lmin).and.(la.lt.lmax)) then ! we have a potential diffracted beam !
+          ! get the scattered beam 
+          s0 = kvec ! / la
+          s = s0 + la * G / rltmp%dspacing(j)   ! check this relation !!!
+! normalize this back to a Cartesian unit vector 
+          s = s / vecnorm(s)
+! this vector originates at the point kvox in the sample, so next we compute 
+! where the intersection with the detector plane will be; we only need to take 
+! into account those s-vectors that have a positive x-component. 
+          if (s(1).gt.0.0) then 
+            scl = (d + abs(kvox(1))) / s(1)    ! scale factor to get to the detector plane
+            dvec = kvox + s * scl             ! this is with respect to the optical axis
+            dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
+            if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
+! correct the intensity for absorption (total distance inside sample dins = kinpre + kinpost)
+              scl = abs(kvox(1)) / s(1)    ! scale factor to get to the sample exit plane
+              kexit = kvox + s * scl       ! this is with respect to the optical axis
+              kinpost = sqrt(sum((kexit-kvox)**2))
+              dins = kinpre + kinpost 
+              atf = exp( - dins/lnl%absl )
+! and draw the reflection
+              dvec = dvec / lnl%ps 
+              call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, -dvec, sngl(atf*rltmp%sfs(j)), lnl%spotw)
+            end if 
+          else
+            CYCLE
+          end if
+        end if
+      end if 
+    end do 
+  end if
+  rltmp => rltmp%next
+end do 
+
+
+! draw the reflection on the transmission screen 
+ 
+
+end function getLaueSlitPattern
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:addLauereflection
@@ -308,6 +458,73 @@ end if
 
 end subroutine addLauereflection
 
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:addLauereflection
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief add a single reflection to a Laue pattern as a Gaussian spot
+!
+!> @param pattern Laue pattern intensity array
+!> @param npx number of pixels along x on detector
+!> @param npy along y
+!> @param kp diffracted wave vector scaled to the detector geometry
+!> @param sfs kinematical intensity (structure factor squared)
+!> @param spotw spot size parameter 
+!
+!> @date 07/30/19  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine addLaueSlitreflection(pattern, npx, npy, kp, sfs, spotw) 
+!DEC$ ATTRIBUTES DLLEXPORT :: addLauereflection
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)      :: npx
+integer(kind=irg),INTENT(IN)      :: npy
+real(kind=sgl),INTENT(INOUT)      :: pattern(npx, npy)
+!f2py intent(in,out) ::  pattern
+real(kind=sgl),INTENT(IN)         :: kp(3)
+real(kind=sgl),INTENT(IN)         :: sfs 
+real(kind=sgl),INTENT(IN)         :: spotw 
+
+integer(kind=irg),parameter       :: dd = 15
+real(kind=sgl),allocatable,save   :: xar(:,:), yar(:,:) 
+real(kind=sgl)                    :: row(dd), px, py, evals(dd,dd), dx, dy
+integer(kind=irg)                 :: i, ddd, ix, iy
+
+! make sure that the xar and yar arrays are allocated 
+if ( (allocated(xar).eqv..FALSE.) .and. (allocated(yar).eqv..FALSE.) ) then 
+  row = (/ (real(i), i=0,dd-1) /) - real(dd/2)
+  allocate(xar(dd,dd), yar(dd,dd))
+  do i=1,dd 
+    xar(:,i) = row
+    yar(i,:) = row
+  end do
+end if
+
+ddd = (dd-1)/2
+
+px = kp(2) + real(npx/2)
+py = kp(3) + real(npy/2)
+
+dx = px-int(px)
+dy = py-int(py)
+ix = int(px)-ddd
+iy = int(py)-ddd 
+
+! evals = alog(sfs+1.0) * exp( - ( (xar-dx)**2 + (yar -dy)**2 ) * spotw )
+evals = sfs * exp( - ( (xar-dx)**2 + (yar -dy)**2 ) * spotw )
+
+if ( (ix+dd.lt.npx).and.(iy+dd.lt.npy).and.(ix.gt.0).and.(iy.gt.0) ) then
+  pattern(ix:ix+dd-1,iy:iy+dd-1) = pattern(ix:ix+dd-1,iy:iy+dd-1) + evals
+end if
+
+end subroutine addLaueSlitreflection
+
+
 !--------------------------------------------------------------------------
 !
 ! FUNCTION:backprojectLauePattern
@@ -366,8 +583,8 @@ do ix=1,Ldims(1)
   px = dble(ix-Ldims(1)/2) * delta
   do iy=1,Ldims(2)
     py = dble(iy-Ldims(2)/2) * delta
-!   if (Lpat(ix,iy).ne.0.D0) then 
-    if (Lpat(ix,iy).ge.1.D-3) then 
+    if (Lpat(ix,iy).ne.0.D0) then 
+    ! if (Lpat(ix,iy).ge.1.D-3) then 
 ! get the azimuthal angle phi from px and py
         phi = datan2(px, py) - cPi*0.5D0
         quat = (/ cos(phi*0.5D0), -sin(phi*0.5D0), 0.D0, 0.D0 /)
@@ -377,7 +594,8 @@ do ix=1,Ldims(1)
         q = (/ 1.D0/sqrt(2.D0*p(1)**2-2.D0*(kk(1)+L)*p(1)), 1.D0/sqrt(2.D0*p(2)**2-2.D0*(kk(2)+L)*p(2)) /)
         n1 = q(1) * (/ kk(1) + L - p(1), 0.D0, r /)
         n2 = q(2) * (/ kk(2) + L - p(2), 0.D0, r /)
-! these are the normals in the azimuthal plane (x,z); next we need to apply the rotation by phi around x to bring the vector into the correct location
+! these are the normals in the azimuthal plane (x,z); next we need to apply the rotation by phi 
+! around x to bring the vector into the correct location
 ! also rotate these unit vectors by 90° around the y-axis so that they fall in along the equator
         rn1 = quat_Lp(yquat,quat_Lp(quat, n1))
         rn2 = quat_Lp(yquat,quat_Lp(quat, n2))
@@ -385,9 +603,10 @@ do ix=1,Ldims(1)
         rn2 = rn2/norm2(rn2) 
 ! and project both points onto the Lambert square
         slp1 = nint(LambertSphereToSquare(rn1,ierr) * Ledge) - Ledge
-        mLPNH(slp1(1),slp1(2)) = mLPNH(slp1(1),slp1(2)) + Lpat(ix,iy)
         slp2 = nint(LambertSphereToSquare(rn2,ierr) * Ledge) - Ledge
+        mLPNH(slp1(1),slp1(2)) = mLPNH(slp1(1),slp1(2)) + Lpat(ix,iy)
         mLPNH(slp2(1),slp2(2)) = mLPNH(slp2(1),slp2(2)) + Lpat(ix,iy)
+        ! mLPNH(slp1(1):slp2(1),slp1(2):slp2(2)) = mLPNH(slp1(1):slp2(1),slp1(2):slp2(2)) + Lpat(ix,iy)
     end if
   end do 
 end do

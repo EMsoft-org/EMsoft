@@ -1186,13 +1186,21 @@ real(kind=sgl)          :: lambdamin
 real(kind=sgl)          :: lambdamax
 real(kind=dbl)          :: kappaVMF
 real(kind=dbl)          :: intfactor
+character(3)            :: outformat
+character(fnlen)        :: SHT_folder
+character(fnlen)        :: SHT_formula
+character(fnlen)        :: SHT_name
+character(fnlen)        :: SHT_structuresymbol
+character(fnlen)        :: addtoKiltHub
+character(fnlen)        :: useDOI
 character(fnlen)        :: hdfname
 character(fnlen)        :: tiffname
 character(fnlen)        :: xtalname
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname, &
-                             intfactor, tiffname, patchw
+                             intfactor, tiffname, patchw, SHT_folder, SHT_formula, SHT_name, &
+                             SHT_structuresymbol, addtoKiltHub, useDOI, outformat
 
 npx = 500
 patchw = 5
@@ -1200,6 +1208,13 @@ lambdamin = 0.10
 lambdamax = 0.16
 kappaVMF = 50000.D0
 intfactor = 0.0001D0
+outformat = 'LMP'
+SHT_folder = 'undefined'        ! folder to store SHT files, relative to EMDatapathname
+SHT_formula = 'undefined'       ! compound chemical formula, e.g., SiO2
+SHT_name = 'undefined'          ! compund name (e.g., forsterite)
+SHT_structuresymbol = 'undefined' ! StrukturBericht symbol (e.g., D0_22) or Pearson symbol (e.g., hP12), or ...
+addtoKiltHub = 'No'             ! file to be added to data base on kilthub.cmu.edu ?
+useDOI = 'undefined'            ! if no DOI is entered, then we use the Zenodo DOI for the .sht repository
 xtalname = 'undefined'
 hdfname = 'undefined'
 tiffname = 'undefined'
@@ -1221,6 +1236,18 @@ if (.not.skipread) then
  if (trim(hdfname).eq.'undefined') then
   call FatalError('GetLaueMasterNameList:',' master output file name is undefined in '//nmlfile)
  end if
+
+ if (outformat.eq.'SHT') then 
+ ! for Legendre mode, the SHT_formula parameter MUST be present 
+   if (trim(SHT_formula).eq.'undefined') then 
+    call FatalError('GetLaueMasterNameList:',' SHT_formula must be defined in '//nmlfile)
+   end if
+
+   if (trim(SHT_folder).eq.'undefined') then 
+    call FatalError('GetLaueMasterNameList:',' SHT_folder must be defined in '//nmlfile)
+   end if
+ end if 
+
 end if
 
 lmnl%npx = npx
@@ -1230,8 +1257,15 @@ lmnl%lambdamax = lambdamax
 lmnl%kappaVMF = kappaVMF
 lmnl%intfactor = intfactor
 lmnl%xtalname = xtalname
+lmnl%outformat = outformat
 lmnl%hdfname = hdfname
 lmnl%tiffname = tiffname 
+lmnl%addtoKiltHub = addtoKiltHub
+lmnl%useDOI = useDOI
+lmnl%SHT_formula = SHT_formula
+lmnl%SHT_name = SHT_name
+lmnl%SHT_structuresymbol = SHT_structuresymbol
+lmnl%SHT_folder = trim(SHT_folder)
 
 end subroutine GetLaueMasterNameList
 
@@ -1342,6 +1376,153 @@ lnl%hdfname = hdfname
 lnl%tiffprefix = tiffprefix
 
 end subroutine GetLaueNameList
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetLaueSlitNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill lnl structure (used by EMLaue.f90)
+!
+!> @param nmlfile namelist file name
+!> @param lmnl name list structure
+!
+!> @date 03/28/19  MDG 1.0 new routine
+!> @dete 07/30/19  MDG 1.1 reorganization of namelist
+!--------------------------------------------------------------------------
+recursive subroutine GetLaueSlitNameList(nmlfile, lnl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetLaueSlitNameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                   :: nmlfile
+type(LaueSlitNameListType),INTENT(INOUT)      :: lnl
+!f2py intent(in,out) ::  lnl
+logical,OPTIONAL,INTENT(IN)                   :: initonly
+
+logical                                       :: skipread = .FALSE.
+
+real(kind=dbl)          :: Lw               ! slit width (mm)
+real(kind=dbl)          :: Lh               ! slit height (mm)
+real(kind=dbl)          :: Lx               ! distance front face of slit to divergent x-ray source (mm)
+real(kind=dbl)          :: Ly               ! slit center x position (mm)
+real(kind=dbl)          :: Lz               ! slit center y position (mm)
+real(kind=dbl)          :: VoltageH         ! highest tube voltage     
+real(kind=dbl)          :: VoltageL         ! lowest tube voltage     
+real(kind=dbl)          :: Sx               ! distance from source to samplefront (mm)
+real(kind=dbl)          :: sampletodetector ! distance sample front to detector face (mm)
+real(kind=dbl)          :: samplethickness  ! sample thickness (mm)
+real(kind=dbl)          :: ps               ! detector pixel size (mm)
+integer(kind=irg)       :: Ny               ! number of detector pixels horizontally
+integer(kind=irg)       :: Nz               ! number of detector pixels vertically
+real(kind=dbl)          :: Dy               ! detector pattern center y coordinate  [mm]
+real(kind=dbl)          :: Dz               ! detector pattern center z coordinate  [mm]
+real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)
+real(kind=dbl)          :: absl             ! sample absorption length [mm]
+real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
+real(kind=sgl)          :: spotw
+real(kind=sgl)          :: gammavalue
+real(kind=dbl)          :: intcutoffratio
+integer(kind=irg)       :: BPx
+integer(kind=irg)       :: nthreads
+character(fnlen)        :: backprojection
+character(fnlen)        :: orientationfile
+character(fnlen)        :: tiffprefix
+character(fnlen)        :: hdfname
+character(fnlen)        :: xtalname
+
+
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / LaueSlitData / Lw,Lh,Lx,Ly,Lz,VoltageH,VoltageL,Sx,sampletodetector, &
+                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, &
+                           beamstopatf,spotw,BPx,nthreads,backprojection, intcutoffratio, &
+                           orientationfile,tiffprefix,hdfname,xtalname, gammavalue
+
+Lw               = 2.D0    ! slit width (mm)
+Lh               = 2.D0    ! slit height (mm)
+Lx               = 100.D0  ! distance front face of slit to divergent x-ray source (mm)
+Ly               = 0.D0    ! slit center x position (mm)
+Lz               = 0.D0    ! slit center y position (mm)
+VoltageH         = 60.D0   ! highest tube voltage     
+VoltageL         = 40.D0   ! lowest tube voltage     
+Sx               = 120.D0  ! distance from source to samplefront (mm)
+sampletodetector = 120.D0  ! distance sample front to detector face (mm)
+samplethickness  = 2.D0    ! sample thickness (mm)
+ps               = 0.254D0 ! pixel width (mm)
+Ny               = 960     ! number of pixels horizontally
+Nz               = 780     ! number of pixels vertically
+Dy               = 0.D0    ! pattern center y coordinate 
+Dz               = 0.D0    ! pattern center z coordinate 
+vs               = 0.10D0  ! size of the voxels that make up the sample (mm)
+absl             = 0.5D0   ! absorption length (mm)
+beamstopatf      = 0.1D0   ! beam stop attenuation factor
+nthreads         = 1       ! number of parallel threads for pattern computation
+BPx              = 300     ! semi-edge length for back projection square Lambert maps
+spotw            = 0.1     ! spot size weight factor (1/(2*sigma^2))
+gammavalue       = 1.0     ! scaling factor for gamma intensity scaling
+intcutoffratio   = 0.0001D0! intensity ratio cut off
+backprojection   = 'No'    ! 'Yes' or 'No'; adds backprojections to output file
+orientationfile  = 'undefined'  ! input file with orientation list 
+tiffprefix       = 'undefined'  ! prefix for tiff output files with individual patterns
+xtalname         = 'undefined'  ! structure file name
+hdfname          = 'undefined'  ! HDF output file name
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=LaueSlitData)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+ if (trim(xtalname).eq.'undefined') then
+  call FatalError('GetLaueNameList:',' crystal structure file name is undefined in '//nmlfile)
+ end if
+ if (trim(hdfname).eq.'undefined') then
+  call FatalError('GetLaueNameList:',' output file name is undefined in '//nmlfile)
+ end if
+ if (trim(orientationfile).eq.'undefined') then
+  call FatalError('GetLaueNameList:',' orientation file name is undefined in '//nmlfile)
+ end if
+end if
+
+lnl%Lw = Lw               
+lnl%Lh = Lh               
+lnl%Lx = Lx               
+lnl%Ly = Ly               
+lnl%Lz = Lz               
+lnl%VoltageH = VoltageH         
+lnl%VoltageL = VoltageL         
+lnl%Sx = Sx               
+lnl%sampletodetector = sampletodetector 
+lnl%samplethickness  = samplethickness  
+lnl%ps = ps               
+lnl%Ny = Ny               
+lnl%Nz = Nz               
+lnl%Dy = Dy               
+lnl%Dz = Dz               
+lnl%vs = vs               
+lnl%absl = absl             
+lnl%beamstopatf = beamstopatf
+lnl%spotw = spotw
+lnl%BPx = BPx
+lnl%nthreads = nthreads
+lnl%intcutoffratio = intcutoffratio
+lnl%backprojection = backprojection
+lnl%orientationfile = orientationfile
+lnl%tiffprefix = tiffprefix
+lnl%hdfname = hdfname
+lnl%xtalname = xtalname
+
+end subroutine GetLaueSlitNameList
 
 !--------------------------------------------------------------------------
 !
