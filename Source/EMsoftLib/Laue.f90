@@ -273,7 +273,7 @@ end function getLauePattern
 !--------------------------------------------------------------------------
 recursive function getLaueSlitPattern(lnl, qu, reflist, lmin, lmax, refcnt, &
                                       kinpre, kvec, kvox) result(pattern)
-!DEC$ ATTRIBUTES DLLEXPORT :: getLauePattern
+!DEC$ ATTRIBUTES DLLEXPORT :: getLaueSlitPattern
 
 use local
 use typedefs
