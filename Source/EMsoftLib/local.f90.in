@@ -98,6 +98,12 @@ use,intrinsic :: ISO_C_BINDING
 !DEC$ ATTRIBUTES DLLEXPORT :: irg
 !DEC$ ATTRIBUTES DLLEXPORT :: ill
 
+! Define the "kind" parameters for Fortran_REAL_4
+  integer,parameter                     :: Fortran_REAL_4 = 4
+
+! Define the "kind" parameters for Fortran_REAL_4
+  integer,parameter                     :: Fortran_REAL_8 = 8
+
 !> character type used for json routines
   integer,parameter :: jsonCK = selected_char_kind('DEFAULT')
 !DEC$ ATTRIBUTES DLLEXPORT :: jsonCK
