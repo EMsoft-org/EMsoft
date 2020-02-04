@@ -75,9 +75,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-497</y>
+            <y>0</y>
             <width>1022</width>
-            <height>1572</height>
+            <height>1513</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
@@ -93,391 +93,24 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-           <item row="0" column="0">
-            <widget class="QGroupBox" name="ppSelectionsGB">
-             <property name="title">
-              <string>Pattern Preprocessing Selections</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_8">
-              <property name="leftMargin">
-               <number>12</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
-              <item row="1" column="1">
-               <widget class="QLabel" name="ppNumOfRegionsLabel">
-                <property name="text">
-                 <string>N/A</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="2">
-               <spacer name="horizontalSpacer_13">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="numOfRegionsLabel">
-                <property name="text">
-                 <string>Selected Number of Regions:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLabel" name="ppHipassValueLabel">
-                <property name="text">
-                 <string>N/A</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QLabel" name="selectedHipassLabel">
-                <property name="text">
-                 <string>Selected Hipass Value:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="2">
-               <spacer name="horizontalSpacer_12">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QGroupBox" name="inputParamsGB">
-             <property name="title">
-              <string>Input Parameters</string>
-             </property>
-             <layout class="QGridLayout" name="gridLayout_14">
-              <property name="leftMargin">
-               <number>4</number>
-              </property>
-              <property name="topMargin">
-               <number>4</number>
-              </property>
-              <property name="rightMargin">
-               <number>4</number>
-              </property>
-              <property name="bottomMargin">
-               <number>4</number>
-              </property>
-              <item row="8" column="0">
-               <widget class="QLabel" name="masterFileLabel">
-                <property name="text">
-                 <string>Master Pattern File</string>
-                </property>
-               </widget>
-              </item>
-              <item row="8" column="3">
-               <widget class="QPushButton" name="masterFileBtn">
-                <property name="text">
-                 <string>Select</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="0">
-               <widget class="QLabel" name="eulerAngleFileLabel">
-                <property name="text">
-                 <string>Euler Angle File</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="3">
-               <widget class="QPushButton" name="eulerAngleFileBtn">
-                <property name="text">
-                 <string>Select</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="0">
-               <widget class="QLabel" name="dictionaryFileLabel">
-                <property name="text">
-                 <string>Dictionary File</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="bLabel_8">
-                <property name="toolTip">
-                 <string>'Dynamic' for on-the-fly indexing</string>
-                </property>
-                <property name="toolTipDuration">
-                 <number>10000</number>
-                </property>
-                <property name="text">
-                 <string>Indexing Mode</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="0">
-               <widget class="QLabel" name="label_5">
-                <property name="text">
-                 <string>Pattern Dataset:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="0">
-               <widget class="QLabel" name="label_4">
-                <property name="text">
-                 <string>Pattern Data File:</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="0">
-               <widget class="QLabel" name="inputTypeLabel_3">
-                <property name="text">
-                 <string>Input Type</string>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="3">
-               <widget class="QPushButton" name="dictionaryFileBtn">
-                <property name="text">
-                 <string>Select</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="indexingModeCB">
-                <property name="toolTip">
-                 <string>'Dynamic' for on-the-fly indexing</string>
-                </property>
-                <property name="toolTipDuration">
-                 <number>10000</number>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>Dynamic</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="6" column="1" colspan="2">
-               <widget class="QLineEdit" name="eulerAngleFileLE">
-                <property name="minimumSize">
-                 <size>
-                  <width>350</width>
-                  <height>0</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="7" column="1" colspan="2">
-               <widget class="QLineEdit" name="dictionaryFileLE">
-                <property name="minimumSize">
-                 <size>
-                  <width>350</width>
-                  <height>0</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <widget class="QComboBox" name="inputTypeCB">
-                <property name="currentIndex">
-                 <number>3</number>
-                </property>
-                <property name="sizeAdjustPolicy">
-                 <enum>QComboBox::AdjustToContents</enum>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>Binary</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>TSLup1</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>TSLup2</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>TSLHDF</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>OxfordBinary</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>OxfordHDF</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>EMEBSD</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>BrukerHDF</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="2" column="2" colspan="3">
-               <spacer name="horizontalSpacer_34">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="2" colspan="3">
-               <spacer name="horizontalSpacer_35">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="4" column="1">
-               <widget class="QLabel" name="patternDataFileLabel">
-                <property name="text">
-                 <string>N/A</string>
-                </property>
-               </widget>
-              </item>
-              <item row="5" column="1">
-               <widget class="QLabel" name="patternDsetPathLabel">
-                <property name="text">
-                 <string>N/A</string>
-                </property>
-               </widget>
-              </item>
-              <item row="4" column="2" colspan="3">
-               <spacer name="horizontalSpacer_36">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="5" column="2" colspan="3">
-               <spacer name="horizontalSpacer_37">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="8" column="1" colspan="2">
-               <widget class="QLineEdit" name="masterFileLE">
-                <property name="minimumSize">
-                 <size>
-                  <width>350</width>
-                  <height>0</height>
-                 </size>
-                </property>
-               </widget>
-              </item>
-              <item row="3" column="0">
-               <widget class="QPushButton" name="choosePatternsBtn">
-                <property name="text">
-                 <string>Choose Pattern Dataset...</string>
-                </property>
-               </widget>
-              </item>
-              <item row="6" column="4">
-               <spacer name="horizontalSpacer_38">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="7" column="4">
-               <spacer name="horizontalSpacer_39">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="8" column="4">
-               <spacer name="horizontalSpacer_40">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item row="2" column="0">
+           <item row="3" column="0">
             <widget class="QGroupBox" name="paramsGB">
              <property name="title">
               <string>Parameters</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_10">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
+               <number>4</number>
+              </property>
               <item row="1" column="0">
                <widget class="QLabel" name="ipfLabel_3">
                 <property name="toolTip">
@@ -1425,7 +1058,7 @@
              </layout>
             </widget>
            </item>
-           <item row="3" column="0">
+           <item row="4" column="0">
             <widget class="QGroupBox" name="outputParamsGB">
              <property name="title">
               <string>Output Parameters</string>
@@ -1593,6 +1226,329 @@
                  </size>
                 </property>
                </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QGroupBox" name="ppSelectionsGB">
+             <property name="title">
+              <string>Pattern Preprocessing Selections</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_8">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
+               <number>4</number>
+              </property>
+              <item row="0" column="1">
+               <widget class="QLabel" name="ppHipassValueLabel">
+                <property name="text">
+                 <string>N/A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="numOfRegionsLabel">
+                <property name="text">
+                 <string>Selected Number of Regions:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="ppNumOfRegionsLabel">
+                <property name="text">
+                 <string>N/A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2">
+               <spacer name="horizontalSpacer_13">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="selectedHipassLabel">
+                <property name="text">
+                 <string>Selected Hipass Value:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <spacer name="horizontalSpacer_12">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QGroupBox" name="inputParamsGB">
+             <property name="title">
+              <string>Input Parameters</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_14">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
+               <number>4</number>
+              </property>
+              <item row="3" column="0">
+               <widget class="QLabel" name="eulerAngleFileLabel">
+                <property name="text">
+                 <string>Euler Angle File</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="bLabel_8">
+                <property name="toolTip">
+                 <string>'Dynamic' for on-the-fly indexing</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
+                <property name="text">
+                 <string>Indexing Mode</string>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="3">
+               <widget class="QPushButton" name="eulerAngleFileBtn">
+                <property name="text">
+                 <string>Select</string>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="4">
+               <spacer name="horizontalSpacer_40">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="5" column="0">
+               <widget class="QLabel" name="masterFileLabel">
+                <property name="text">
+                 <string>Master Pattern File</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="indexingModeCB">
+                <property name="toolTip">
+                 <string>'Dynamic' for on-the-fly indexing</string>
+                </property>
+                <property name="toolTipDuration">
+                 <number>10000</number>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Dynamic</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="4" column="4">
+               <spacer name="horizontalSpacer_39">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="5" column="3">
+               <widget class="QPushButton" name="masterFileBtn">
+                <property name="text">
+                 <string>Select</string>
+                </property>
+               </widget>
+              </item>
+              <item row="4" column="1" colspan="2">
+               <widget class="QLineEdit" name="dictionaryFileLE">
+                <property name="minimumSize">
+                 <size>
+                  <width>350</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="1" colspan="2">
+               <widget class="QLineEdit" name="eulerAngleFileLE">
+                <property name="minimumSize">
+                 <size>
+                  <width>350</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="5" column="1" colspan="2">
+               <widget class="QLineEdit" name="masterFileLE">
+                <property name="minimumSize">
+                 <size>
+                  <width>350</width>
+                  <height>0</height>
+                 </size>
+                </property>
+               </widget>
+              </item>
+              <item row="3" column="4">
+               <spacer name="horizontalSpacer_38">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="4" column="0">
+               <widget class="QLabel" name="dictionaryFileLabel">
+                <property name="text">
+                 <string>Dictionary File</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="2" colspan="3">
+               <spacer name="horizontalSpacer_35">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="4" column="3">
+               <widget class="QPushButton" name="dictionaryFileBtn">
+                <property name="text">
+                 <string>Select</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QGroupBox" name="ppSelectionsGB_2">
+             <property name="title">
+              <string>Pattern Dataset Selection</string>
+             </property>
+             <layout class="QGridLayout" name="gridLayout_9">
+              <property name="leftMargin">
+               <number>4</number>
+              </property>
+              <property name="topMargin">
+               <number>4</number>
+              </property>
+              <property name="rightMargin">
+               <number>4</number>
+              </property>
+              <property name="bottomMargin">
+               <number>4</number>
+              </property>
+              <item row="1" column="2">
+               <spacer name="horizontalSpacer_42">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLabel" name="patternDataFileLabel">
+                <property name="text">
+                 <string>N/A</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2">
+               <spacer name="horizontalSpacer_41">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_4">
+                <property name="text">
+                 <string>Pattern Data File:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="text">
+                 <string>Pattern Dataset:</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="patternDsetPathLabel">
+                <property name="text">
+                 <string>N/A</string>
+                </property>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -1848,7 +1804,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>scrollArea</tabstop>
-  <tabstop>choosePatternsBtn</tabstop>
   <tabstop>eulerAngleFileLE</tabstop>
   <tabstop>eulerAngleFileBtn</tabstop>
   <tabstop>dictionaryFileLE</tabstop>

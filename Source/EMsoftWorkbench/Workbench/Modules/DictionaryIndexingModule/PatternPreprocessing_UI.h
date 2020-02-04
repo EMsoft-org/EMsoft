@@ -35,8 +35,6 @@
 
 #pragma once
 
-#include <QtCore/QFutureWatcher>
-
 #include "Modules/DictionaryIndexingModule/PatternPreprocessingController.h"
 
 #include "ui_PatternPreprocessing_UI.h"
@@ -77,6 +75,23 @@ public:
 
 public slots:
   /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString& filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
    * @brief setSelectedADPPatternPixel
    * @param pixel
    */
@@ -95,26 +110,15 @@ protected slots:
   void listenPatternPreprocessingStarted();
 
   /**
-   * @brief listenPatternPreprocessingFinished
+   * @brief listenMatrixCreated
+   * @param image
    */
-  void listenPatternPreprocessingFinished();
+  void listenMatrixCreated(QImage image);
 
   /**
-   * @brief listenInputTypeChanged
+   * @brief processFinished
    */
-  void listenInputTypeChanged(int index);
-
-  /**
-   * @brief listenPatternDataFileChanged
-   * @param filePath
-   */
-  void listenPatternDataFileChanged(const QString &filePath);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+  void processFinished();
 
   /**
    * @brief updateZoomFactor
@@ -139,6 +143,7 @@ private:
   QSharedPointer<Ui::PatternPreprocessing_UI> m_Ui;
 
   PatternPreprocessingController* m_PPMatrixController = nullptr;
+  QSharedPointer<QThread> m_WorkerThread;
 
   QPoint m_SelectedADPPatternPixel = QPoint(-1, -1);
 
@@ -146,12 +151,9 @@ private:
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
 
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
-
   QString m_CurrentOpenFile;
 
   QString m_LastFilePath = "";
-  QSharedPointer<QFutureWatcher<void>> m_PPMatrixWatcher;
 
   /**
    * @brief createValidators
@@ -177,13 +179,13 @@ private:
    * @brief getPPMatrixData
    * @return
    */
-  PatternPreprocessingController::PPMatrixData getPPMatrixData();
+  PatternPreprocessingController::InputDataType getPPMatrixData();
 
   /**
    * @brief setInputType
    * @param inputType
    */
-  void setInputType(ADPMapController::InputType inputType);
+  void setInputType(EMsoftWorkbenchConstants::InputType inputType);
 
   /**
    * @brief setPatternDataFile

@@ -35,95 +35,65 @@
 
 #pragma once
 
-#include "Modules/IProcessController.h"
+#include <QtCore/QObject>
+#include <QtCore/QProcess>
+#include <QtCore/QSharedPointer>
 
-class XtalFileReader;
-
-class MonteCarloSimulationController : public IProcessController
+class IProcessController : public QObject
 {
   Q_OBJECT
 
 public:
-  MonteCarloSimulationController(QObject* parent = nullptr);
-  ~MonteCarloSimulationController() override;
+  ~IProcessController() override;
 
-  using EnumType = unsigned int;
-
-  enum class MonteCarloMode : EnumType
-  {
-    EBSD,
-    ECP
-  };
-
-  enum class StringType : EnumType
-  {
-    OpenCLFolder = 22,
-    RandomSeedsFile = 25
-  };
+public slots:
+  /**
+   * @brief execute
+   */
+  void execute();
 
   /**
-   *
+   * @brief cancelProcess
    */
-  using InputDataType = struct
-  {
-    double sampleTiltAngleSig;
-    double sampleRotAngleOmega;
-    double sampleStartTiltAngle;
-    double sampleEndTiltAngle;
-    double sampleTiltStepSize;
-    double acceleratingVoltage;
-    double minEnergyConsider;
-    double energyBinSize;
-    double maxDepthConsider;
-    double depthStepSize;
-    double ivolstepx;
-    double ivolstepy;
-    double ivolstepz;
-    int mcMode;
-    int numOfPixelsN;
-    int numOfEPerWorkitem;
-    int totalNumOfEConsidered;
-    int multiplierForTotalNumOfE;
-    int gpuPlatformID;
-    int gpuDeviceID;
-    int globalWorkGroupSize;
-    int ivolx;
-    int ivoly;
-    int ivolz;
-    QString inputFilePath;
-    QString outputFilePath;
-  };
+  void cancelProcess();
 
-  /**
-   * @brief setData
-   * @param simData
-   */
-  void setData(const InputDataType& simData);
+protected:
+  IProcessController(const QString& exeName, const QString& nmlName, QObject* parent = nullptr);
 
-  /**
-   * @brief validateInput
-   * @param data
-   * @return
-   */
-  bool validateInput() const;
+protected slots:
+  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
+
+signals:
+  void warningMessageGenerated(const QString& msg) const;
+  void errorMessageGenerated(const QString& msg) const;
+  void stdOutputMessageGenerated(const QString& msg) const;
+  void finished();
 
 private:
-  InputDataType m_InputData;
+  QString m_ExeName;
+  QString m_NMLName;
+
+  QString m_StartTime = "";
+  QSharedPointer<QProcess> m_CurrentProcess;
+
+  bool m_Cancel = false;
+  size_t m_InstanceKey = 0;
+  bool m_Executing = false;
 
   /**
-   * @brief MonteCarloSimulationController::generateNMLFile
+   * @brief DictionaryIndexingController::generateNMLFile
    * @param path
    */
-  void generateNMLFile(const QString& path) override;
+  virtual void generateNMLFile(const QString& path) = 0;
 
   /**
    * @brief processFinished
    */
-  void processFinished() override;
+  virtual void processFinished() = 0;
 
 public:
-  MonteCarloSimulationController(const MonteCarloSimulationController&) = delete;            // Copy Constructor Not Implemented
-  MonteCarloSimulationController(MonteCarloSimulationController&&) = delete;                 // Move Constructor Not Implemented
-  MonteCarloSimulationController& operator=(const MonteCarloSimulationController&) = delete; // Copy Assignment Not Implemented
-  MonteCarloSimulationController& operator=(MonteCarloSimulationController&&) = delete;      // Move Assignment Not Implemented
+  IProcessController(const IProcessController&) = delete;            // Copy Constructor Not Implemented
+  IProcessController(IProcessController&&) = delete;                 // Move Constructor Not Implemented
+  IProcessController& operator=(const IProcessController&) = delete; // Copy Assignment Not Implemented
+  IProcessController& operator=(IProcessController&&) = delete;      // Move Assignment Not Implemented
 };

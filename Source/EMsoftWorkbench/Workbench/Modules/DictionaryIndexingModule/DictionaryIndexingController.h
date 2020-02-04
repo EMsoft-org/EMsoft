@@ -35,13 +35,13 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QProcess>
 #include <QtCore/QTemporaryDir>
+
+#include "Modules/IProcessController.h"
 
 #include "Common/Constants.h"
 
-class DictionaryIndexingController : public QObject
+class DictionaryIndexingController : public IProcessController
 {
   Q_OBJECT
 
@@ -72,18 +72,7 @@ public:
   DictionaryIndexingController(QObject* parent = nullptr);
   ~DictionaryIndexingController() override;
 
-  /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-  bool getCancel() const;
-
-  /**
-    * @brief Setter property for Cancel
-    */
-  void setCancel(const bool& value);
-
-  struct DIData
+  using InputDataType = struct
   {
     IndexingMode indexingMode;
     InputType inputType;
@@ -108,7 +97,7 @@ public:
     float isangle;
     QString maskfile;
     bool useMask;
-    float maskRadius;
+    int maskRadius;
     float hipassValue;
     int numOfRegions;
     int nCubochoric;
@@ -139,52 +128,23 @@ public:
     int numOfThreads;
     int platId;
     int devId;
-
-    std::vector<int32_t> getIParVector() const;
-
-    std::vector<float> getFParVector() const;
-
-    std::vector<char> getSParVector() const;
   };
 
   /**
-   * @brief createDI
-   * @param data
+   * @brief setData
+   * @param simData
    */
-  void createDI(const DIData &data);
-
-  /**
-   * @brief setUpdateProgress
-   * @param loopCompleted
-   * @param totalLoops
-   */
-  void setUpdateProgress(int loopCompleted, int totalLoops);
-
-  /**
-     * @brief getNumCPUCores
-     * @return
-     */
-  int getNumCPUCores();
-
-protected slots:
-  void listenDIFinished(int exitCode, QProcess::ExitStatus exitStatus, const DIData &data);
+  void setData(const InputDataType& simData);
 
 signals:
   void diCreated(const QImage &adpMap) const;
-  void warningMessageGenerated(const QString& msg) const;
-  void errorMessageGenerated(const QString& msg) const;
-  void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
-  QString m_StartTime = "";
+  InputDataType m_InputData;
 
   std::vector<float> m_OutputMaskVector;
   std::vector<float> m_OutputIQMapVector;
   std::vector<float> m_OutputADPMapVector;
-
-  bool m_Cancel = false;
-  size_t m_InstanceKey = 0;
-  bool m_Executing = false;
 
   QTemporaryDir m_TempDir;
 
@@ -194,17 +154,20 @@ private:
   void initializeData();
 
   /**
-   * @brief getDIExecutablePath
-   * @return
+   * @brief DictionaryIndexingController::generateNMLFile
+   * @param path
    */
-  QString getDIExecutablePath() const;
+  void generateNMLFile(const QString& path) override;
 
   /**
-   * @brief writeDIDataToFile
-   * @param file
-   * @param data
+   * @brief processFinished
    */
-  void writeDIDataToFile(const QString &filePath, const DictionaryIndexingController::DIData &data) const;
+  void processFinished() override;
+
+  /**
+   * @brief executeWrapper
+   */
+  void executeWrapper();
 
 public:
   DictionaryIndexingController(const DictionaryIndexingController&) = delete; // Copy Constructor Not Implemented
