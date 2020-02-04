@@ -35,55 +35,22 @@
 
 #include "MasterPatternSimulationController.h"
 
-#include <cmath>
-#include <functional>
-#include <sstream>
-#include <utility>
-
-#include <QtCore/QCoreApplication>
-#include <QtCore/QDateTime>
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
-#include <QtCore/QProcess>
-#include <QtCore/QProcessEnvironment>
-#include <QtCore/QTemporaryDir>
+#include <QtCore/QTextStream>
 
 #include "EMsoftLib/EMsoftStringConstants.h"
 
-#include "Workbench/Common/Constants.h"
-#include "Workbench/Common/EMsoftFileWriter.h"
 #include "Workbench/Common/FileIOTools.h"
-#include "Workbench/Common/MonteCarloFileReader.h"
-#include "Workbench/Common/ProjectionConversions.hpp"
 
-#include "EMsoftWorkbenchVersion.h"
-
-#define CL_VECTOR std::vector
-
-static size_t s_InstanceKey = 0;
-static QMap<size_t, MasterPatternSimulationController*> s_ControllerInstances;
-
-/**
- * @brief MasterPatternSimulationControllerProgress
- * @param instance
- * @param loopCompleted
- * @param totalLoops
- * @param bseYield
- */
-void MasterPatternSimulationControllerProgress(size_t instance, int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops)
-{
-  MasterPatternSimulationController* obj = s_ControllerInstances[instance];
-  if(nullptr != obj)
-  {
-    obj->setUpdateProgress(loopCompleted, totalLoops, EloopCompleted, totalEloops);
-  }
-}
+const QString k_ExeName = QString("EMEBSDmaster");
+const QString k_NMLName = QString("EMEBSDmaster.nml");
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 MasterPatternSimulationController::MasterPatternSimulationController(QObject* parent)
-: QObject(parent)
+: IProcessController(k_ExeName, k_NMLName, parent)
 {
 }
 
@@ -92,7 +59,6 @@ MasterPatternSimulationController::MasterPatternSimulationController(QObject* pa
 // -----------------------------------------------------------------------------
 MasterPatternSimulationController::~MasterPatternSimulationController()
 {
-  s_InstanceKey--;
 }
 
 // -----------------------------------------------------------------------------
@@ -104,102 +70,28 @@ void MasterPatternSimulationController::setData(const InputDataType& data)
 }
 
 // -----------------------------------------------------------------------------
-void MasterPatternSimulationController::cancelProcess()
-{
-  if(m_CurrentProcess != nullptr)
-  {
-    m_CurrentProcess->kill();
-  }
-}
-
-// -----------------------------------------------------------------------------
-void MasterPatternSimulationController::execute()
-{
-  QString dtFormat("yyyy:MM:dd hh:mm:ss.zzz");
-
-  QTemporaryDir tempDir;
-  // Set the start time for this run (m_StartTime)
-  QString str;
-  QTextStream out(&str);
-
-  m_CurrentProcess = QSharedPointer<QProcess>(new QProcess());
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardOutput().toStdString())); });
-  connect(m_CurrentProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(m_CurrentProcess->readAllStandardError().toStdString())); });
-  connect(m_CurrentProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { processFinished(exitCode, exitStatus); });
-  std::pair<QString, QString> result = FileIOTools::GetExecutablePath(k_ExeName);
-  if(!result.first.isEmpty())
-  {
-    QProcessEnvironment env = m_CurrentProcess->processEnvironment();
-    env.insert("EMSOFTPATHNAME", QString::fromStdString(FileIOTools::GetEMsoftPathName()));
-    m_CurrentProcess->setProcessEnvironment(env);
-    out << k_ExeName << ": Executable Path:" << result.first << "\n";
-    out << k_ExeName << ": Start Time: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-    out << k_ExeName << ": Insert EMSOFTPATHNAME=" << QString::fromStdString(FileIOTools::GetEMsoftPathName()) << "\n";
-    out << k_ExeName << ": Output from " << k_ExeName << " follows next...."
-        << "\n";
-    out << "===========================================================\n";
-
-    emit stdOutputMessageGenerated(str);
-
-    QString nmlFilePath = tempDir.path() + QDir::separator() + k_NMLName;
-    generateNMLFile(nmlFilePath);
-    QStringList parameters = {nmlFilePath};
-    m_CurrentProcess->start(result.first, parameters);
-
-    // Wait until the QProcess is finished to exit this thread.
-    m_CurrentProcess->waitForFinished(-1);
-  }
-  else
-  {
-    emit errorMessageGenerated(result.second);
-  }
-
-  str = "";
-  out << "===========================================================\n";
-  out << k_ExeName << ": Finished: " << QDateTime::currentDateTime().toString(dtFormat) << "\n";
-  out << k_ExeName << ": Output File Location: " << m_InputData.inputFilePath << "\n";
-  emit stdOutputMessageGenerated(str);
-
-  emit finished();
-}
-
-// -----------------------------------------------------------------------------
 void MasterPatternSimulationController::generateNMLFile(const QString& path)
 {
+  QFileInfo fi(path);
+  QString betheParametersFilePath = fi.path() + QDir::separator() + "BetheParameters.nml";
+  generateBetheParametersFile(betheParametersFilePath);
+
   std::vector<std::string> nml;
 
   m_InputData.inputFilePath = FileIOTools::GetAbsolutePath(m_InputData.inputFilePath);
 
   nml.emplace_back(std::string(" &EBSDmastervars"));
-  nml.emplace_back(std::string("! smallest d-spacing to take into account [nm]"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::dmin, static_cast<float>(m_InputData.smallestDSpacing)));
-  nml.emplace_back(std::string("! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::npx, m_InputData.numOfMPPixels));
-
-  nml.emplace_back(std::string("! lattitudinal grid type:  'Lambert' or 'Legendre'"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::latgridtype, QString("Lambert")));
-
-  nml.emplace_back(std::string("! name of EMMCOpenCL output file to be used to copy the MC data from for this master pattern run;"));
-  nml.emplace_back(std::string("! This can be used to perform multiple master pattern runs starting from the same MC data set without"));
-  nml.emplace_back(std::string("! having to rerun the MC computation.  Leave this variable set to 'undefined' if not needed."));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::copyfromenergyfile, QString("undefined")));
-
-  nml.emplace_back(std::string("! if copyfromenergyfile is not 'undefined', then:"));
-  nml.emplace_back(std::string("!   - for EMsoft developers who have the EMsoft_SDK installed, the following parameter will be ignored;"));
-  nml.emplace_back(std::string("!   - all other users will need to provide the full path to the h5copy program here"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::h5copypath, QString("undefined")));
-
-  nml.emplace_back(std::string("! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;"));
-  nml.emplace_back(std::string("! this file will also contain the output data of the master program"));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::energyfile, m_InputData.inputFilePath));
-  nml.emplace_back(std::string("! number of OpenMP threads"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::nthreads, m_InputData.numOfOpenMPThreads));
-  nml.emplace_back(std::string("! do you wish to receive a notification (Email or Slack) when the program completes ?"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::energyfile, m_InputData.inputFilePath));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::BetheParametersFile, betheParametersFilePath));
   nml.emplace_back(FileIOTools::CreateNMLEntry(QString("Notify"), QString("Off")));
-  nml.emplace_back(std::string("! restart computation ?"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::copyfromenergyfile, QString("undefined")));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::h5copypath, QString("undefined")));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::restart, false));
-  nml.emplace_back(std::string("! create output file with uniform master patterns set to 1.0 (used to study background only)"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::uniform, false));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::useEnergyWeighting, false));
 
   nml.emplace_back(std::string(" /"));
 
@@ -223,27 +115,42 @@ void MasterPatternSimulationController::generateNMLFile(const QString& path)
 }
 
 // -----------------------------------------------------------------------------
-void MasterPatternSimulationController::processFinished(int exitCode, QProcess::ExitStatus exitStatus)
+void MasterPatternSimulationController::generateBetheParametersFile(const QString& path)
 {
-  m_Executing = false;
-  s_ControllerInstances.remove(m_InstanceKey);
+  std::vector<std::string> nml;
 
-  // do we need to write this accumulator data into an EMsoft .h5 file?
-  // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
-  if(m_Cancel)
-  {
-    emit stdOutputMessageGenerated(QString("%1 was canceled.").arg(k_ExeName));
-  }
+  m_InputData.inputFilePath = FileIOTools::GetAbsolutePath(m_InputData.inputFilePath);
 
-  if(exitStatus == QProcess::CrashExit)
-  {
-    emit stdOutputMessageGenerated(QString("%1n process crashed with exit code %2").arg(k_ExeName).arg(exitCode));
-  }
+  nml.emplace_back(std::string(" &Bethelist"));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c1, static_cast<float>(m_InputData.betheParametersX)));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c2, m_InputData.betheParametersY));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c3, m_InputData.betheParametersZ));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::sgdbdiff, m_InputData.sgdbdiff));
 
-  if(exitStatus == QProcess::NormalExit)
+  nml.emplace_back(std::string(" /"));
+
+  QFile outputFile(path);
+  if(outputFile.open(QFile::WriteOnly))
   {
-    emit stdOutputMessageGenerated(QString("%1 Completed").arg(k_ExeName));
+    QTextStream out(&outputFile);
+
+    for(const auto& entry : nml)
+    {
+      out << QString::fromStdString(entry) << "\n";
+    }
+    outputFile.close();
+
+    outputFile.copy("/tmp/BetheParameters.nml");
   }
+  else
+  {
+    emit errorMessageGenerated(QString("Could not create temp NML file at path %1").arg(path));
+  }
+}
+
+// -----------------------------------------------------------------------------
+void MasterPatternSimulationController::processFinished()
+{
 }
 
 // -----------------------------------------------------------------------------
@@ -311,13 +218,4 @@ bool MasterPatternSimulationController::validateInput() const
   }
 
   return valid;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void MasterPatternSimulationController::setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops) const
-{
-  QString ss = QObject::tr("Master Pattern steps completed: %1 of %2; %3 of %4 energy bins").arg(loopCompleted).arg(totalLoops).arg(EloopCompleted).arg(totalEloops);
-  emit stdOutputMessageGenerated(ss);
 }

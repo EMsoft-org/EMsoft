@@ -54,7 +54,8 @@ public:
 
   enum class ModuleTab : EnumType
   {
-    AvgDotProductMap = 0,
+    ChoosePatterns = 0,
+    AvgDotProductMap,
     PatternPreprocessing,
     DictionaryIndexing
   };

@@ -120,10 +120,19 @@ QString FileIOTools::GetAbsolutePath(const QString& path)
 }
 
 // -----------------------------------------------------------------------------
-std::string FileIOTools::CreateNMLEntry(const QString& key, const QString& value, bool last)
+std::string FileIOTools::CreateNMLEntry(const QString& key, const QString& value, bool last, bool useQuotes)
 {
   std::stringstream out;
-  out << " " << key.toStdString() << " = '" << value.toStdString() << "'";
+  out << " " << key.toStdString() << " = ";
+  if(useQuotes)
+  {
+    out << "'";
+  }
+  out << value.toStdString();
+  if(useQuotes)
+  {
+    out << "'";
+  }
   if(!last)
   {
     out << ",";

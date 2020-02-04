@@ -35,13 +35,13 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QProcess>
 #include <QtCore/QTemporaryDir>
 
-#include "ADPMapController.h"
+#include "Common/Constants.h"
 
-class PatternPreprocessingController : public QObject
+#include "Modules/IProcessController.h"
+
+class PatternPreprocessingController : public IProcessController
 {
   Q_OBJECT
 
@@ -51,18 +51,7 @@ public:
   PatternPreprocessingController(QObject* parent = nullptr);
   ~PatternPreprocessingController() override;
 
-  /**
-    * @brief Getter property for Cancel
-    * @return Value of Cancel
-    */
-  bool getCancel() const;
-
-  /**
-    * @brief Setter property for Cancel
-    */
-  void setCancel(const bool& value);
-
-  struct PPMatrixData
+  using InputDataType = struct
   {
     int patternHeight;
     int patternWidth;
@@ -84,52 +73,23 @@ public:
     int numw;
     int numr;
     float hipassFilter;
-
-    std::vector<int32_t> getIParVector() const;
-
-    std::vector<float> getFParVector() const;
-
-    std::vector<char> getSParVector() const;
   };
 
   /**
-   * @brief createPreprocessedPatternsMatrix
+   * @brief setData
    * @param data
    */
-  void createPreprocessedPatternsMatrix(const PPMatrixData &data);
-
-  /**
-   * @brief setUpdateProgress
-   * @param loopCompleted
-   * @param totalLoops
-   */
-  void setUpdateProgress(int loopCompleted, int totalLoops);
-
-  /**
-     * @brief getNumCPUCores
-     * @return
-     */
-  int getNumCPUCores();
-
-protected slots:
-  void listenPreprocessedPatternsMatrixFinished(int exitCode, QProcess::ExitStatus exitStatus);
+  void setData(const InputDataType& data);
 
 signals:
   void preprocessedPatternsMatrixCreated(const QImage &adpMap) const;
-  void warningMessageGenerated(const QString& msg) const;
-  void errorMessageGenerated(const QString& msg) const;
-  void stdOutputMessageGenerated(const QString& msg) const;
 
 private:
-  QString m_StartTime = "";
+  InputDataType m_InputData;
 
   std::vector<float> m_OutputMaskVector;
   std::vector<float> m_OutputIQMapVector;
   std::vector<float> m_OutputADPMapVector;
-
-  bool m_Cancel = false;
-  size_t m_InstanceKey = 0;
-  bool m_Executing = false;
 
   QTemporaryDir m_TempDir;
 
@@ -139,17 +99,26 @@ private:
   void initializeData();
 
   /**
-   * @brief getPreprocessedPatternsMatrixExecutablePath
-   * @return
+   * @brief generateNMLFile
+   * @param filePath
    */
-  QString getPreprocessedPatternsMatrixExecutablePath() const;
+  void generateNMLFile(const QString& filePath) override;
 
   /**
-   * @brief writePreprocessedPatternsMatrixToFile
-   * @param file
-   * @param data
+   * @brief processFinished
    */
-  void writePreprocessedPatternsMatrixToFile(const QString &filePath, const PatternPreprocessingController::PPMatrixData &data) const;
+  void processFinished() override;
+
+  /**
+   * @brief executeWrapper
+   */
+  void executeWrapper();
+
+  //  std::vector<int32_t> getIParVector() const;
+
+  //  std::vector<float> getFParVector() const;
+
+  //  std::vector<char> getSParVector() const;
 
 public:
   PatternPreprocessingController(const PatternPreprocessingController&) = delete; // Copy Constructor Not Implemented
