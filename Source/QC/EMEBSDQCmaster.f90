@@ -358,7 +358,7 @@ QCcell%voltage    = ebsdnl%Ekev
 QCcell%mLambda    = -1.0
 QCcell%dmin       = ebsdnl%dmin
 dmin              = QCcell%dmin
-xtalname 		  = 'iQC.qxtal'
+xtalname 		  = 'AlCuFe.qxtal'
 nthreads 		  = ebsdnl%nthreads
 
 ! define the metric matrices etc...

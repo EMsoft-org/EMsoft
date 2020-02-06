@@ -374,7 +374,7 @@ QCcell%QCtype     = trim(ebsdnl%QCtype)
 
 ! define the unit cell etc...
 !call Initialize_QCCell(QCcell, dble(ebsdnl%QClatparm_a), dble(ebsdnl%QClatparm_c), QCcell%QCtype, verbose=.TRUE.)
-xtalname =  'AlNiCo.qxtal'
+xtalname =  'AlCuCo.qxtal'
 nthreads = ebsdnl%nthreads
 
 call Initialize_QCcell(QCcell, xtalname, dmin_qc, dmin_p, sngl(QCcell%voltage), nthreads, verbose=.TRUE.)
