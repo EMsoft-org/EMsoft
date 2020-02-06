@@ -498,7 +498,6 @@ if (openHDFfile) then
   nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
   call HDFerror_check('Read3DQCDataHDF:h5open_EMsoft', hdferr)
-print*,trim(EMsoft_getXtalpathname()), trim(cell%fname)
   fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
   fname = EMsoft_toNativePath(fname)
   hdferr =  HDF_openFile(fname, HDF_head)
