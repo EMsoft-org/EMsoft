@@ -91,6 +91,12 @@ call EMsoft(progname, progdesc)
 ! deal with the command line arguments, if any
 call Interpret_Program_Arguments(nmldeffile,1,(/ 80 /), progname)
 
+! put EVERYTHING below into a wrapper
+! input to the wrapper will be the nmldeffile and cproc, cerrorproc, objAddress, cancel
+! the latter four are unused in an EMsoft call of the wrapper located in EMDIwrappermod
+! There will a few array pointer that need to be returned: confidence index, Euler angles,
+! progress counter and total counts.
+
 ! deal with the namelist stuff
 res = index(nmldeffile,'.nml',kind=irg)
 if (res.eq.0) then
@@ -132,15 +138,18 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
 
     ! also copy the sample tilt angle into the correct variable for writing to the dot product file
     dinl%MCsig = mcnl%sig
-else    ! this is a static run using an existing dictionary
-! we'll use the same MasterSubroutine so we need to at least allocate the input structures
-! even though we will not make use of them in static mode
-!  allocate(acc, master) 
-
 end if
 
 ! perform the dictionary indexing computations
 call EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
+
+! replace the line above by a call to 
+! EMsoftCEBSDDI(ipar, fpar, spar, dpatterns, epatterns, resultmain, indexmain, &
+!               cproc, cerrorproc, objAddress, cancel)
+
+
+
+
 
 if (trim(dinl%refinementNMLfile).ne.'undefined') then 
     do i=1,5 
