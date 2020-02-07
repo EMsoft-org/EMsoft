@@ -537,6 +537,12 @@ MonteCarloSimulationController::InputDataType MonteCarloSimulation_UI::getCreati
   data.globalWorkGroupSize = globalWorkGroupSizeSB->value();
   data.inputFilePath = csFilePathLE->text();
   data.outputFilePath = mcFilePathLE->text();
+  data.ivolx = ivolx->value();
+  data.ivoly = ivoly->value();
+  data.ivolz = ivolz->value();
+  data.ivolstepx = ivolstepx->value();
+  data.ivolstepy = ivolstepy->value();
+  data.ivolstepz = ivolstepz->value();
   return data;
 }
 

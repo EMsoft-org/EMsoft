@@ -97,7 +97,7 @@ use,intrinsic :: ISO_C_BINDING
 !DEC$ ATTRIBUTES DLLEXPORT :: ish
 !DEC$ ATTRIBUTES DLLEXPORT :: irg
 !DEC$ ATTRIBUTES DLLEXPORT :: ill
-
+@EMsoft_HDF5_110_DEFINES@
 !> character type used for json routines
   integer,parameter :: jsonCK = selected_char_kind('DEFAULT')
 !DEC$ ATTRIBUTES DLLEXPORT :: jsonCK

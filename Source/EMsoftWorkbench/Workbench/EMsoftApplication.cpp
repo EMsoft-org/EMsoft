@@ -109,27 +109,30 @@ EMsoftApplication::~EMsoftApplication()
 //
 // -----------------------------------------------------------------------------
 bool EMsoftApplication::initialize(int argc, char* argv[])
-{
+{ 
   if(argc == 2)
   {
-    // Open EMsoftWorkbench from a compatible file
-    char* two = argv[1];
-    QString filePath = QString::fromLatin1(two);
-    if(!filePath.isEmpty())
+    QString arg(argv[1]);
+    if(!arg.isEmpty())
     {
-      EMsoftWorkbench_UI* instance = newInstanceFromFile(filePath);
-      if(instance != nullptr)
+      // Open EMsoftWorkbench from a compatible file
+      char* two = argv[1];
+      QString filePath = QString::fromLatin1(two);
+      if(!filePath.isEmpty())
       {
-        instance->show();
+        EMsoftWorkbench_UI* instance = newInstanceFromFile(filePath);
+        if(instance != nullptr)
+        {
+          instance->show();
+          return true;
+        }
       }
     }
   }
-  else
-  {
-    // Open blank EMsoftWorkbench
-    EMsoftWorkbench_UI* workbench = getNewWorkbenchInstance();
-    workbench->show();
-  }
+
+  // Open blank EMsoftWorkbench
+  EMsoftWorkbench_UI* workbench = getNewWorkbenchInstance();
+  workbench->show();
 
   // Create the style sheet editor and apply the style sheet
 //  styleSheetEditor = new StyleSheetEditor();

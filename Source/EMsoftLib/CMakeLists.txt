@@ -147,6 +147,19 @@ if(EMsoft_ENABLE_TESTING)
   set(EMsoft_TESTING_DIR "${EMsoft_BINARY_DIR}/Testing")
   file(MAKE_DIRECTORY ${EMsoft_TESTING_DIR})
 endif()
+
+message(STATUS "HDF5_VERSION_MAJOR: ${HDF5_VERSION_MAJOR}")
+
+if(${HDF5_VERSION_MAJOR} EQUAL 1.10)
+set(EMsoft_HDF5_110_DEFINES "
+! For HDF5 1.10, these are needed
+! Define the \"kind\" parameters for Fortran_REAL_4
+  integer,parameter                     :: Fortran_REAL_4 = 4
+
+! Define the \"kind\" parameters for Fortran_REAL_4
+  integer,parameter                     :: Fortran_REAL_8 = 8
+")
+endif()
          
 cmpConfigureFileWithMD5Check( GENERATED_FILE_PATH        ${EMsoftLib_BINARY_DIR}/local.f90
                               CONFIGURED_TEMPLATE_PATH   ${EMsoftLib_SOURCE_DIR}/local.f90.in  )

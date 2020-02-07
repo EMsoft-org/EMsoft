@@ -203,6 +203,7 @@ void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
   data.betheParametersX = betheParametersXSB->value();
   data.betheParametersY = betheParametersYSB->value();
   data.betheParametersZ = betheParametersZSB->value();
+  data.sgdbdiff = sgdbdiff->value();
   data.numOfOpenMPThreads = numOfOpenMPThreadsSB->value();
   data.inputFilePath = mcFilePathLE->text();
   data.outputFilePath = mpFilePathLE->text();

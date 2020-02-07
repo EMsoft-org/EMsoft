@@ -58,9 +58,10 @@ class FileIOTools
      * @param key
      * @param value
      * @param last
+     * @param useQuotes
      * @return
      */
-    static std::string CreateNMLEntry(const QString& key, const QString& value, bool last = false);
+    static std::string CreateNMLEntry(const QString& key, const QString& value, bool last = false, bool useQuotes = true);
 
     /**
      * @brief CreateNMLEntry

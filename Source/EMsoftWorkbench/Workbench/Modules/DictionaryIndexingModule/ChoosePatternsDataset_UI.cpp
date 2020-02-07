@@ -33,14 +33,16 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "ChoosePatternsDatasetDialog.h"
+#include "ChoosePatternsDataset_UI.h"
+
+using InputType = EMsoftWorkbenchConstants::InputType;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ChoosePatternsDatasetDialog::ChoosePatternsDatasetDialog(QWidget* parent, Qt::WindowFlags flags)
-: QDialog(parent, flags)
-, m_Ui(new Ui::ChoosePatternsDatasetDialog())
+ChoosePatternsDataset_UI::ChoosePatternsDataset_UI(QWidget* parent, Qt::WindowFlags flags)
+: QWidget(parent, flags)
+, m_Ui(new Ui::ChoosePatternsDataset_UI())
 {
   m_Ui->setupUi(this);
 
@@ -50,23 +52,28 @@ ChoosePatternsDatasetDialog::ChoosePatternsDatasetDialog(QWidget* parent, Qt::Wi
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ChoosePatternsDatasetDialog::~ChoosePatternsDatasetDialog() = default;
+ChoosePatternsDataset_UI::~ChoosePatternsDataset_UI() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ChoosePatternsDatasetDialog::setupGui()
+void ChoosePatternsDataset_UI::setupGui()
 {
   m_Ui->hdf5DatasetSelectionWidget->setInputFileLabelText("Pattern Data File");
   m_Ui->hdf5DatasetSelectionWidget->setOneSelectionOnly(true);
 
-  connect(m_Ui->buttonBox, &QDialogButtonBox::accepted, this, &ChoosePatternsDatasetDialog::close);
+  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) { emit inputTypeChanged(static_cast<InputType>(index)); });
+  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=] { emit parametersChanged(); });
+  connect(m_Ui->hdf5DatasetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &ChoosePatternsDataset_UI::selectedHDF5PathsChanged);
+  connect(m_Ui->hdf5DatasetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->hdf5DatasetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, this, &ChoosePatternsDataset_UI::patternDataFilePathChanged);
+  connect(m_Ui->hdf5DatasetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, [=] { emit parametersChanged(); });
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HDF5DatasetSelectionWidget* ChoosePatternsDatasetDialog::getHDF5DatasetSelectionWidget() const
+HDF5DatasetSelectionWidget* ChoosePatternsDataset_UI::getHDF5DatasetSelectionWidget() const
 {
   return m_Ui->hdf5DatasetSelectionWidget;
 }
