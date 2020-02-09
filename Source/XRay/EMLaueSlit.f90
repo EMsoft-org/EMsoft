@@ -499,6 +499,10 @@ bppatterns = 0.0
  end do ! outer loop
 ! 
 
+  tstop = Time_tock(tickstart)
+  io_int(1) = tstop
+  call WriteValue('Execution time [s]: ',io_int,1)
+
 
 ! write the hyperslab to the HDF5 file 
 dataset = 'LauePatterns'
@@ -506,6 +510,7 @@ dataset = 'LauePatterns'
 
 
   if (trim(lnl%backprojection).eq.'Yes') then 
+    call Message('Starting pattern back projection computation')
     allocate(bp(1:BPnpx,1:BPnpy))
     do ii=1,numangles
       bp = 0.0
@@ -534,9 +539,6 @@ dataset = SC_StopTime
   line2(1) = dstr//', '//tstre
   hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
-  tstop = Time_tock(tickstart)
-  io_int(1) = tstop
-  call WriteValue('Execution time [s]: ',io_int,1)
 
 dataset = SC_Duration
     hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head)
