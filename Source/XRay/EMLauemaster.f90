@@ -247,7 +247,7 @@ call cpu_time(tstart)
 !=============================================
 !=============================================
 ! populate the master pattern in square Lambert projection
-  npx = lmnl%npx
+! npx = lmnl%npx
   npy = npx
   allocate(mLPNH(-npx:npx,-npy:npy),stat=istat)
   allocate(mLPSH(-npx:npx,-npy:npy),stat=istat)
@@ -430,6 +430,8 @@ else  ! spherical harmonic transform of master pattern and storage in .sht file
   allocate(finalmLPSH(-d:d,-d:d))
   finalmLPNH = mLPNH
   finalmLPSH = mLPSH
+
+write (*,*) 'shape final patterns ', shape(finalmLPNH)
 
 !=====================================
 ! form the .sht file name from the formula, name, structuresymbol and voltage parameters
