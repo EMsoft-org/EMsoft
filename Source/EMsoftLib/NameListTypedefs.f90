@@ -560,9 +560,26 @@ type EBSDNameListType
         character(fnlen)        :: anglefile
         character(fnlen)        :: anglefiletype
         character(fnlen)        :: masterfile
+		character(fnlen)        :: targetfile
         character(fnlen)        :: energyfile
         character(fnlen)        :: datafile
 end type EBSDNameListType
+
+type EBSDDENameListType
+integer(kind=irg)        :: NP
+integer(kind=irg)        :: itermax
+integer(kind=irg)        :: strategy 
+integer(kind=irg)        :: refresh
+integer(kind=irg)        :: iwrite
+integer(kind=irg)        :: method(3)
+real(kind=sgl)           :: VTR 
+real(kind=sgl)           :: CR_XC
+real(kind=sgl)           :: F_XC
+real(kind=sgl)           :: F_CR
+real(kind=sgl)           :: XCmin(3)
+real(kind=sgl)           :: XCmax(3)
+character(fnlen)         :: outputfile
+end type EBSDDENameListType
 
 ! namelist for the EMEBSDdefect program
 type EBSDdefectNameListType

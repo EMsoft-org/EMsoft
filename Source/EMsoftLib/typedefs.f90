@@ -1895,6 +1895,11 @@ type EBSDDetectorType
         real(kind=sgl),allocatable      :: accum_e_detector(:,:,:)
         type(EBSDPixel),allocatable     :: detector(:,:) 
 end type EBSDDetectorType
+! single pattern data
+type EBSDPatterndataType
+        integer(kind=irg),allocatable   :: EBSDPattern(:,:,:)
+end type EBSDPatterndataType
+
 
 !=======================================
 !=======================================
