@@ -16,6 +16,7 @@ set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS
 #set_source_files_properties( ${EMsoftWorkbench_${SUBDIR_NAME}_Generated_MOC_SRCS} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
+  ${${SUBDIR_NAME}_DIR}/IProcessController.h
   ${${SUBDIR_NAME}_DIR}/IModuleFactory.hpp
   ${${SUBDIR_NAME}_DIR}/ModuleFactory.hpp
   ${${SUBDIR_NAME}_DIR}/ModuleManager.h
@@ -25,6 +26,7 @@ set(EMsoftWorkbench_${SUBDIR_NAME}_HDRS
 
 
 set(EMsoftWorkbench_${SUBDIR_NAME}_SRCS
+  ${${SUBDIR_NAME}_DIR}/IProcessController.cpp
   ${${SUBDIR_NAME}_DIR}/IModuleUI.cpp
   ${${SUBDIR_NAME}_DIR}/ModuleManager.cpp
 )

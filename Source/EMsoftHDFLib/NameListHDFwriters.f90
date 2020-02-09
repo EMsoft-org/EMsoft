@@ -639,6 +639,107 @@ call HDF_pop(HDF_head)
 
 end subroutine HDFwriteLaueNameList
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteLaueSlitNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist file into HDF file
+!
+!> @param HDF_head top of push stack
+!> @param lnl name list structure
+!
+!> @date 01/30/20  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteLaueSlitNameList(HDF_head, lnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteLaueSlitNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+type(LaueSlitNameListType),INTENT(IN)                 :: lnl
+
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 2, n_dbl = 17
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: io_dbl(n_dbl)   
+character(20)                                         :: intlist(n_int), reallist(n_real), dbllist(n_dbl)
+character(fnlen)                                      :: dataset,groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_LaueNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ lnl%Ny, lnl%Nz, lnl%nthreads, lnl%BPx /)
+intlist(1) = 'Ny'
+intlist(2) = 'Nz'
+intlist(3) = 'nthreads'
+intlist(4) = 'BPx'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real = (/ lnl%spotw, lnl%gammavalue /)
+reallist(1) = 'spotw'
+reallist(2) = 'gammavalue'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! write all the single reals
+io_dbl = (/ lnl%Lw, lnl%Lh, lnl%Lx, lnl%Ly, lnl%Lz, lnl%VoltageH, lnl%VoltageL, lnl%Sx, &
+            lnl%sampletodetector, lnl%samplethickness, lnl%ps, lnl%Dy, &
+            lnl%Dz, lnl%vs, lnl%absl, lnl%beamstopatf, lnl%intcutoffratio /)
+dbllist(1) = 'Lw'
+dbllist(2) = 'Lh'
+dbllist(3) = 'Lx'
+dbllist(4) = 'Ly'
+dbllist(5) = 'Lz'
+dbllist(6) = 'VoltageH'
+dbllist(7) = 'VoltageL'
+dbllist(8) = 'Sx'
+dbllist(9) = 'sampletodetector'
+dbllist(10) = 'samplethickness'
+dbllist(11) = 'ps'
+dbllist(12) = 'Dy'
+dbllist(13) = 'Dz'
+dbllist(14) = 'vs'
+dbllist(15) = 'absl'
+dbllist(16) = 'beamstopatf'
+dbllist(17) = 'intcutoffratio'
+call HDF_writeNMLdbles(HDF_head, io_dbl, dbllist, n_dbl)
+
+! write all the strings
+dataset = SC_xtalname
+line2(1) = lnl%xtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = 'hdfname'
+line2(1) = lnl%hdfname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create hdfname dataset',.TRUE.)
+
+dataset = 'tiffprefix'
+line2(1) = lnl%tiffprefix
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create tiffprefix dataset',.TRUE.)
+
+dataset = 'orientationfile'
+line2(1) = lnl%orientationfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create orientationfile dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteLaueSlitNameList
+
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:HDFwriteCPLMmasterNameList

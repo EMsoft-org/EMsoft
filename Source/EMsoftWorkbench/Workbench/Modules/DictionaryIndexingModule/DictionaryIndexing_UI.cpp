@@ -41,7 +41,6 @@
 
 #include "Modules/ModuleTools.hpp"
 #include "Modules/DictionaryIndexingModule/Constants.h"
-#include "Modules/DictionaryIndexingModule/ChoosePatternsDatasetDialog.h"
 
 namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
@@ -67,7 +66,6 @@ DictionaryIndexing_UI::DictionaryIndexing_UI(QWidget *parent)
 DictionaryIndexing_UI::~DictionaryIndexing_UI()
 {
   delete m_DIController;
-  delete m_ChoosePatternsDatasetDialog;
 }
 
 // -----------------------------------------------------------------------------
@@ -75,8 +73,6 @@ DictionaryIndexing_UI::~DictionaryIndexing_UI()
 // -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::setupGui()
 {
-  m_ChoosePatternsDatasetDialog = new ChoosePatternsDatasetDialog();
-
   // Create and set the validators on all the line edits
   createValidators();
 
@@ -87,9 +83,6 @@ void DictionaryIndexing_UI::setupGui()
   createModificationConnections();
 
   validateData();
-
-  // Run this once so that the HDF5 widget can be either disabled or enabled
-  listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
 
   listenIndexingModeChanged(0);
 
@@ -173,9 +166,6 @@ void DictionaryIndexing_UI::createValidators()
 // -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::createModificationConnections()
 {
-  // Combo Boxes
-  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &DictionaryIndexing_UI::listenInputTypeChanged);
-
   // Line Edits
   connect(m_Ui->maskRadiusLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->samplingStepSizeXLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
@@ -215,9 +205,6 @@ void DictionaryIndexing_UI::createModificationConnections()
   connect(m_Ui->outputCtfFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->outputAngFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->outputAvgCtfFileLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &DictionaryIndexing_UI::parametersChanged);
 }
 
 // -----------------------------------------------------------------------------
@@ -261,12 +248,6 @@ void DictionaryIndexing_UI::createWidgetConnections()
   connect(m_DIController, &DictionaryIndexingController::warningMessageGenerated, this, &DictionaryIndexing_UI::warningMessageGenerated);
   connect(m_DIController, &DictionaryIndexingController::stdOutputMessageGenerated, this, &DictionaryIndexing_UI::stdOutputMessageGenerated);
   connect(m_DIController, &DictionaryIndexingController::diCreated, m_Ui->diViewer, &GLImageViewer::loadImage);
-
-  connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &DictionaryIndexing_UI::listenSelectedPatternDatasetChanged);
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, this, &DictionaryIndexing_UI::listenPatternDataFileChanged);
 
   connect(m_Ui->diViewer, &GLImageViewer::errorMessageGenerated, this, &DictionaryIndexing_UI::errorMessageGenerated);
   connect(m_Ui->diViewer, &GLImageViewer::zoomFactorChanged, this, &DictionaryIndexing_UI::updateZoomFactor);
@@ -463,24 +444,9 @@ void DictionaryIndexing_UI::setDynamicIndexingMode()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void DictionaryIndexing_UI::listenInputTypeChanged(int index)
+void DictionaryIndexing_UI::listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType)
 {
-  InputType inputType = static_cast<InputType>(index);
-  switch(inputType)
-  {
-  case InputType::TSLHDF:
-  case InputType::BrukerHDF:
-  case InputType::OxfordHDF:
-    m_Ui->choosePatternsBtn->setEnabled(true);
-    break;
-  default:
-    m_Ui->choosePatternsBtn->setDisabled(true);
-    break;
-  }
-
   setInputType(inputType);
-
-  emit parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
@@ -506,8 +472,7 @@ void DictionaryIndexing_UI::listenSelectedPatternDatasetChanged(QStringList patt
   {
     m_Ui->patternDsetPathLabel->setText(patternDSetPaths[0]);
 
-    InputType inputType = static_cast<InputType>(m_Ui->inputTypeCB->currentIndex());
-    if(inputType == InputType::TSLHDF || inputType == InputType::BrukerHDF || inputType == InputType::OxfordHDF)
+    if(m_InputType == InputType::TSLHDF || m_InputType == InputType::BrukerHDF || m_InputType == InputType::OxfordHDF)
     {
       QStringList hdfTokens = patternDSetPaths[0].trimmed().split('/', QString::SplitBehavior::SkipEmptyParts);
       setSelectedHDF5Path(hdfTokens);
@@ -528,12 +493,12 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
 {
   if(m_Ui->generateDIBtn->text() == "Cancel")
   {
-    m_DIController->setCancel(true);
+    m_DIController->cancelProcess();
     emit diGenerationFinished();
     return;
   }
 
-  DictionaryIndexingController::DIData data = getDIData();
+  DictionaryIndexingController::InputDataType data = getDIData();
 
   m_Ui->generateDIBtn->setText("Cancel");
   m_Ui->ppSelectionsGB->setDisabled(true);
@@ -541,27 +506,40 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
   m_Ui->paramsGB->setDisabled(true);
   m_Ui->outputParamsGB->setDisabled(true);
 
-  // Single-threaded for now, but we can multi-thread later if needed
-  //  size_t threads = QThreadPool::globalInstance()->maxThreadCount();
-  for(int i = 0; i < 1; i++)
+  // Clear out the previous (if any) controller instance
+  if(m_DIController != nullptr)
   {
-    m_DIWatcher = QSharedPointer<QFutureWatcher<void>>(new QFutureWatcher<void>());
-    connect(m_DIWatcher.data(), SIGNAL(finished()), this, SLOT(listenDIGenerationFinished()));
-
-    QFuture<void> future = QtConcurrent::run(m_DIController, &DictionaryIndexingController::createDI, data);
-    m_DIWatcher->setFuture(future);
+    delete m_DIController;
+    m_DIController = nullptr;
   }
 
+  // Create a new QThread to run the Controller class.
+  m_WorkerThread = QSharedPointer<QThread>(new QThread);
+  m_DIController = new DictionaryIndexingController;
+  m_DIController->moveToThread(m_WorkerThread.data());
+  m_DIController->setData(data); // Set the input data
+
+  // Conncet Signals & Slots to get the thread started and quit
+  connect(m_WorkerThread.data(), SIGNAL(started()), m_DIController, SLOT(execute()));
+  connect(m_DIController, SIGNAL(finished()), m_WorkerThread.data(), SLOT(quit()));
+  connect(m_WorkerThread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
+
+  // Pass errors, warnings, and std output messages up to the user interface
+  connect(m_DIController, &DictionaryIndexingController::errorMessageGenerated, this, &DictionaryIndexing_UI::errorMessageGenerated);
+  connect(m_DIController, &DictionaryIndexingController::warningMessageGenerated, this, &DictionaryIndexing_UI::warningMessageGenerated);
+  connect(m_DIController, SIGNAL(stdOutputMessageGenerated(QString)), this, SIGNAL(stdOutputMessageGenerated(QString)));
+
+  //  connect(m_DIController, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
+
+  m_WorkerThread->start();
   emit diGenerationStarted();
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void DictionaryIndexing_UI::listenDIGenerationFinished()
+void DictionaryIndexing_UI::processFinished()
 {
-  m_DIController->setCancel(false);
-
   m_Ui->diZoomSB->setEnabled(true);
   m_Ui->diSaveBtn->setEnabled(true);
   m_Ui->diZoomInBtn->setEnabled(true);
@@ -602,13 +580,19 @@ bool DictionaryIndexing_UI::validateData()
     return false;
   }
 
-  InputType inputType = static_cast<InputType>(m_Ui->inputTypeCB->currentIndex());
-  if(inputType == DictionaryIndexingController::InputType::TSLHDF || inputType == DictionaryIndexingController::InputType::BrukerHDF ||
-     inputType == DictionaryIndexingController::InputType::OxfordHDF)
+  if(m_InputType == DictionaryIndexingController::InputType::TSLHDF || m_InputType == DictionaryIndexingController::InputType::BrukerHDF ||
+     m_InputType == DictionaryIndexingController::InputType::OxfordHDF)
   {
-    if (m_SelectedHDF5Path.isEmpty())
+    if(m_PatternDataFile.isEmpty())
     {
-      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      QString ss = QObject::tr("Pattern data file is empty.  Please select a pattern data file from the 'Choose Patterns' tab.");
+      emit errorMessageGenerated(ss);
+      m_Ui->generateDIBtn->setDisabled(true);
+      return false;
+    }
+    if(m_SelectedHDF5Path.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern dataset not chosen.  Please select a pattern dataset from the 'Choose Patterns' tab.");
       emit errorMessageGenerated(ss);
       m_Ui->generateDIBtn->setDisabled(true);
       return false;
@@ -658,9 +642,9 @@ bool DictionaryIndexing_UI::validateData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-DictionaryIndexingController::DIData DictionaryIndexing_UI::getDIData()
+DictionaryIndexingController::InputDataType DictionaryIndexing_UI::getDIData()
 {
-  DictionaryIndexingController::DIData data;
+  DictionaryIndexingController::InputDataType data;
   data.indexingMode = static_cast<IndexingMode>(m_Ui->indexingModeCB->currentIndex());
   data.inputType = m_InputType;
   data.patternDataFile = m_PatternDataFile;
@@ -817,9 +801,6 @@ void DictionaryIndexing_UI::writeSession(QJsonObject& obj) const
 //  adpMapParamsObj[ioConstants::NumberOfRegions] = m_Ui->numOfRegionsLE->text().toInt();
 //  adpMapParamsObj[ioConstants::NumberOfThreads] = m_Ui->numOfThreadsLE->text().toInt();
 //  m_Ui->adpViewer->writeSession(adpMapParamsObj);
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  hdf5DsetSelectionWidget->writeParameters(adpMapParamsObj);
 
   obj[ioConstants::ADPMapParams] = adpMapParamsObj;
 }

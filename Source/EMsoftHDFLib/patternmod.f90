@@ -114,7 +114,7 @@ if (trim(inputtype).eq."OxfordBinary") itype = 5
 if (trim(inputtype).eq."OxfordHDF") itype = 6    ! to be implemented
 if (trim(inputtype).eq."EMEBSD") itype = 7
 if (trim(inputtype).eq."BrukerHDF") itype = 8
-if (trim(inputtype).eq."NORDIF") itype = 9       ! to be implemented
+if (trim(inputtype).eq."NORDIF") itype = 9       
 
 end function get_input_type
 

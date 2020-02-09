@@ -261,6 +261,13 @@ type LaueMasterNameListType
         real(kind=sgl)          :: lambdamax
         real(kind=dbl)          :: kappaVMF
         real(kind=dbl)          :: intfactor
+        character(3)            :: outformat
+        character(fnlen)        :: SHT_folder
+        character(fnlen)        :: SHT_formula
+        character(fnlen)        :: SHT_name
+        character(fnlen)        :: SHT_structuresymbol
+        character(fnlen)        :: addtoKiltHub
+        character(fnlen)        :: useDOI
         character(fnlen)        :: hdfname
         character(fnlen)        :: tiffname
         character(fnlen)        :: xtalname
@@ -285,6 +292,38 @@ type LaueNameListType
         character(fnlen)        :: hdfname
         character(fnlen)        :: xtalname
 end type LaueNameListType
+
+! namelist for the EMLaue program 
+type LaueSlitNameListType
+        real(kind=dbl)          :: Lw               ! slit width (mm)
+        real(kind=dbl)          :: Lh               ! slit height (mm)
+        real(kind=dbl)          :: Lx               ! distance front face of slit to divergent x-ray source (mm)
+        real(kind=dbl)          :: Ly               ! slit center x position (mm)
+        real(kind=dbl)          :: Lz               ! slit center y position (mm)
+        real(kind=dbl)          :: VoltageH         ! highest tube voltage     
+        real(kind=dbl)          :: VoltageL         ! lowest tube voltage     
+        real(kind=dbl)          :: Sx               ! distance from source to samplefront (mm)
+        real(kind=dbl)          :: sampletodetector ! distance sample front to detector face (mm)
+        real(kind=dbl)          :: samplethickness  ! sample thickness (mm)
+        real(kind=dbl)          :: ps               ! detector pixel size (mm)
+        integer(kind=irg)       :: Ny               ! number of detector pixels horizontally
+        integer(kind=irg)       :: Nz               ! number of detector pixels vertically
+        real(kind=dbl)          :: Dy               ! detector pattern center y coordinate  [mm]
+        real(kind=dbl)          :: Dz               ! detector pattern center z coordinate  [mm]
+        real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)
+        real(kind=dbl)          :: absl             ! sample absorption length [mm]
+        real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
+        real(kind=sgl)          :: spotw
+        real(kind=sgl)          :: gammavalue
+        real(kind=dbl)          :: intcutoffratio
+        integer(kind=irg)       :: BPx
+        integer(kind=irg)       :: nthreads
+        character(fnlen)        :: backprojection
+        character(fnlen)        :: orientationfile
+        character(fnlen)        :: tiffprefix
+        character(fnlen)        :: hdfname
+        character(fnlen)        :: xtalname
+end type LaueSlitNameListType
 
 ! namelist for the EMMCLIPSS program ! PGC added 12/01/15
 type MCLIPSSNameListType
@@ -1107,7 +1146,6 @@ type ECCINameListType
     character(fnlen)        :: ECPname
     character(fnlen)        :: sgname
 end type ECCINameListType
-
 
 ! namelist for the EMsampleRFZ program
 type RFZNameListType

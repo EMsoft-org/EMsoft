@@ -94,7 +94,7 @@ if("${EMsoftData_DIR}" STREQUAL "")
     set(EMsoftData_DIR ${EMSOFT_PARENT}/EMsoftData)
   else()
     message(WARNING "EMsoftData_DIR not found or empty folder, cloning automatically from https://github.com/emsoft-org/EMsoftData")
-    message(FATAL_ERROR "${EMSOFT_PARENT}/EMsoftData")
+    message(WARNING "${EMSOFT_PARENT}/EMsoftData")
     include(ExternalProject)
     ExternalProject_Add("EMsoftDataClone"
       GIT_REPOSITORY https://github.com/emsoft-org/EMsoftData

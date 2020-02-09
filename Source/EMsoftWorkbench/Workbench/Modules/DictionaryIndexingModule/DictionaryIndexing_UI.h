@@ -35,15 +35,11 @@
 
 #pragma once
 
-#include <QtCore/QFutureWatcher>
-
 #include "Common/Constants.h"
 
 #include "Modules/DictionaryIndexingModule/DictionaryIndexingController.h"
 
 #include "ui_DictionaryIndexing_UI.h"
-
-class ChoosePatternsDatasetDialog;
 
 class DictionaryIndexing_UI : public QWidget
 {
@@ -78,6 +74,23 @@ public:
   void writeSession(QJsonObject& obj) const;
 
 public slots:
+  /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString& filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
   /**
    * @brief setSelectedHipassValue
    * @param value
@@ -121,24 +134,7 @@ protected slots:
   /**
    * @brief listenADPGenerationFinished
    */
-  void listenDIGenerationFinished();
-
-  /**
-   * @brief listenInputTypeChanged
-   */
-  void listenInputTypeChanged(int index);
-
-  /**
-   * @brief listenPatternDataFileChanged
-   * @param filePath
-   */
-  void listenPatternDataFileChanged(const QString &filePath);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+  void processFinished();
 
   /**
    * @brief listenROICheckboxStateChanged
@@ -174,6 +170,7 @@ private:
   QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
 
   DictionaryIndexingController* m_DIController = nullptr;
+  QSharedPointer<QThread> m_WorkerThread;
 
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;
@@ -182,10 +179,7 @@ private:
   float m_SelectedHipassValue = -1.0f;
   int m_SelectedNumOfRegions = -1;
 
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
-
   QString m_OpenDialogLastDirectory = "";
-  QSharedPointer<QFutureWatcher<void>> m_DIWatcher;
 
   /**
    * @brief createValidators
@@ -206,7 +200,7 @@ private:
    * @brief getData
    * @return
    */
-  DictionaryIndexingController::DIData getDIData();
+  DictionaryIndexingController::InputDataType getDIData();
 
   /**
    * @brief setInputType

@@ -447,7 +447,7 @@ character(5),dimension(36):: PGTHD =(/'    1','   -1','    2','    m','  2/m',' 
 integer(kind=irg),dimension(32)       :: PGTHDorder = (/ 1, 2, 2, 2, 4, 4, 4, 8, 4, 8, &
                                                          8, 8, 8, 8,16, 3, 6, 6, 6,12, &
                                                          6,12,12,12,12,12,24,12,24,24, &
-                                                        24,32 /)
+                                                        24,48 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHDorder
 
 !> 3D point groups : purely rotational point groups corresponding to each point group
@@ -990,6 +990,15 @@ type Laue_g_list
   real(kind=dbl)      :: sfs          ! |structure factor|^2
   type(Laue_g_list),pointer :: next   ! connection to next reflector
 end type Laue_g_list
+
+type Laue_grow_list  
+  integer(kind=irg)             :: hkl(3)       ! Miller indices
+  real(kind=dbl)                :: xyz(3)       ! Cartesian components of the unit plane normal
+  real(kind=dbl),allocatable    :: sfs(:)       ! |structure factor|^2
+  real(kind=dbl),allocatable    :: dspacing(:)  ! d-spacing
+  integer(kind=irg)             :: Nentries     ! dimension of the sfs and dspacing arrays
+  type(Laue_grow_list),pointer  :: next         ! connection to next reflector
+end type Laue_grow_list
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------

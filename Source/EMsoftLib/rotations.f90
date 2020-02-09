@@ -7421,11 +7421,11 @@ if (present(outtype)) then
 
         case ('st')
           ioreal(1:3) = o%stereographic
-          call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+          call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
 
         case ('rv')
           ioreal(1:3) = o%rvmap
-          call WriteValue(trim(pret)//'Rotation vector map                      : ', ioreal, 3, "(3(F8.4,' '))")
+          call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
 
         case ('om')
           ioreal(1:3) = o%om(1,1:3)
@@ -7457,9 +7457,9 @@ else
   ioreal(1:4) = o%quat
   call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F8.4,' '))")
   ioreal(1:3) = o%stereographic
-  call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+  call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%rvmap
-  call WriteValue(trim(pret)//'Rotation vector map                       : ', ioreal, 3, "(3(F8.4,' '))")
+  call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%om(1,1:3)
   call WriteValue('                                   / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
   ioreal(1:3) = o%om(2,1:3)
@@ -7539,11 +7539,11 @@ if (present(outtype)) then
 
         case ('st')
           ioreal(1:3) = o%stereographic
-          call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+          call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
 
         case ('rv')
           ioreal(1:3) = o%rvmap
-          call WriteValue(trim(pret)//'Rotation vector map                      : ', ioreal, 3, "(3(F8.4,' '))")
+          call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
 
         case ('om')
           ioreal(1:3) = o%om(1,1:3)
@@ -7575,9 +7575,9 @@ else
   ioreal(1:4) = o%quat
   call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F12.7,' '))")
   ioreal(1:3) = o%stereographic
-  call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+  call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%rvmap
-  call WriteValue(trim(pret)//'Rotation vector map                       : ', ioreal, 3, "(3(F8.4,' '))")
+  call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%om(1,1:3)
   call WriteValue('                                   / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
   ioreal(1:3) = o%om(2,1:3)

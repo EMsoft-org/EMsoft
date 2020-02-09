@@ -37,6 +37,28 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <widget class="QWidget" name="choosePatternsTab">
+      <attribute name="title">
+       <string>Choose Patterns</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item row="0" column="0">
+        <widget class="ChoosePatternsDataset_UI" name="choosePatternsUI" native="true"/>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="avgDotProductMapTab">
       <attribute name="title">
        <string>Average Dot Product Map</string>
@@ -124,6 +146,12 @@
    <class>DictionaryIndexing_UI</class>
    <extends>QWidget</extends>
    <header location="global">DictionaryIndexing_UI.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ChoosePatternsDataset_UI</class>
+   <extends>QWidget</extends>
+   <header location="global">ChoosePatternsDataset_UI.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
