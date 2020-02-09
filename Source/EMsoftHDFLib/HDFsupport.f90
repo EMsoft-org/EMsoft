@@ -182,7 +182,6 @@ call HDFerror_check('h5close_EMsoft:h5close_f', hdferr)
 
 end subroutine h5close_EMsoft
 
-
 !--------------------------------------------------------------------------
 !
 ! function: cstringify
@@ -204,10 +203,10 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-character(fnlen),INTENT(IN)                :: strin
-character(len=len_trim(strin)+1,kind=c_char):: cstrout
+character(fnlen),INTENT(IN)                  :: strin
+character(len=len_trim(strin)+1,kind=c_char) :: cstrout
 
-integer(kind=irg)                          :: slen, i
+integer(kind=irg)                            :: slen, i
 
 slen = len_trim(strin)
 do i=1,slen
@@ -217,6 +216,75 @@ slen = slen+1
 cstrout(slen:slen) = C_NULL_CHAR 
 
 end function cstringify
+
+!--------------------------------------------------------------------------
+!
+! function: carstringify
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief turn a fortran string into a null-terminated c-string character array
+!
+!> @param strin input fortran string character(len=###)
+!> @param cstrput output null-terminated C-string character(kind=c_char)
+!
+!> @date 02/09/20  MDG 1.0 original
+!--------------------------------------------------------------------------
+pure recursive function carstringify(strin) result(cstrout)
+!DEC$ ATTRIBUTES DLLEXPORT :: carstringify
+
+use local
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: strin
+character(kind=c_char)                      :: cstrout(len_trim(strin)+1)
+
+integer(kind=irg)                           :: slen, i
+
+slen = len_trim(strin)
+do i=1,slen
+  cstrout(i) = strin(i:i)
+end do
+slen = slen+1
+cstrout(slen) = C_NULL_CHAR 
+
+end function carstringify
+
+!--------------------------------------------------------------------------
+!
+! function: fstringify
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief turn a null-terminated c-string into a fortran string
+!
+!> @param strin input null-terminated C-string character array (kind=c_char) :: strin(:)
+!> @param fstrout output fortran string character(fnlen)
+!
+!> @date 02/09/20  MDG 1.0 original
+!--------------------------------------------------------------------------
+pure recursive function fstringify(strin) result(fstrout)
+!DEC$ ATTRIBUTES DLLEXPORT :: fstringify
+
+use local
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+character(kind=c_char),INTENT(IN)         :: strin(:)
+character(fnlen)                          :: fstrout
+
+integer(kind=irg)                         :: slen, i, s(1)
+
+s = shape(strin)
+
+do i=1,s(1)-1    ! don't copy the null character...
+  fstrout(i:i) = strin(i)
+end do
+
+end function fstringify
 
 
 !--------------------------------------------------------------------------!

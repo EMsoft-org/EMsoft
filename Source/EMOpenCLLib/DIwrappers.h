@@ -14,7 +14,7 @@ extern "C" {
 * @param int
 * @param float
 */
-typedef void (*ProgCallBackTypeDIdriver3)(size_t, int, int, float);
+typedef void (*ProgCallBackTypeDIdriver)(size_t, int, int, float, float, int);
 
 /**
 * @brief This is the typedef for an OpenCL error call back function that is used in the EMsoft library.
@@ -26,11 +26,9 @@ typedef void (*ProgCallBackTypeErrorDIdriver)(size_t, int);
 /**
 * EBSD dictionary indexing wrapper:
 * @param nmlfile full path to the EMEBSDDI name list file 
-* @param program name 
-* @param 
-* @param 
-* @param 
-* @param 
+* @param progname program name 
+* @param dparray array of current highest dot product values
+* @param indexarray array of indices into the Euler array for the current best match
 * @param callback callback routine to update progress bar
 * @param errorcallback callback routine to report OpenCL error code
 * @param object unique identifier for calling class instantiation
@@ -38,8 +36,7 @@ typedef void (*ProgCallBackTypeErrorDIdriver)(size_t, int);
 */
 void EBSDDIdriver
     (char* nmlfile, char* progname, 
-     float* , float* , 
-     ProgCallBackTypeDIdriver3 callback, 
+     ProgCallBackTypeDIdriver callback, 
      ProgCallBackTypeErrorDIdriver errorcallback,
      size_t object, bool* cancel);
 
