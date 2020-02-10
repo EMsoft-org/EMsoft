@@ -135,14 +135,14 @@ IMPLICIT NONE
 ! interface for the callback routines
 ABSTRACT INTERFACE
    SUBROUTINE ProgCallBackTypeDIdriver(objAddress, loopCompleted, totalLoops, timeRemaining, &
-                                       dparray, indarray) bind(C)
+                                       dparr_cptr, indarr_cptr) bind(C)
     USE, INTRINSIC :: ISO_C_BINDING
     INTEGER(c_size_t),INTENT(IN), VALUE             :: objAddress
     INTEGER(KIND=4), INTENT(IN), VALUE              :: loopCompleted
     INTEGER(KIND=4), INTENT(IN), VALUE              :: totalLoops
     REAL(KIND=4),INTENT(IN), VALUE                  :: timeRemaining
-    real(c_float), INTENT(OUT)                      :: dparray
-    integer(c_intptr_t), INTENT(OUT)                :: indarray
+    type(c_ptr), INTENT(OUT)                        :: dparr_cptr
+    type(c_ptr), INTENT(OUT)                        :: indarr_cptr
    END SUBROUTINE ProgCallBackTypeDIdriver
 
    SUBROUTINE ProgCallBackTypeErrorDIdriver(objAddress, errorCode) bind(C)
@@ -163,6 +163,7 @@ character(len=1),INTENT(IN), OPTIONAL               :: cancel
 ! callback procedure pointer definitions
 PROCEDURE(ProgCallBackTypeDIdriver), POINTER        :: proc
 PROCEDURE(ProgCallBackTypeErrorDIdriver), POINTER   :: errorproc
+type(c_ptr),pointer                                 :: dparr_cptr, indarr_cptr
 
 type(EBSDIndexingNameListType)                      :: dinl
 type(MCCLNameListType)                              :: mcnl
@@ -178,6 +179,7 @@ logical                                             :: verbose
 type(unitcell)                                      :: cell
 type(DynType)                                       :: Dyn
 type(gnode)                                         :: rlp
+
 
 integer(c_intptr_t),allocatable, target             :: platform(:)
 integer(c_intptr_t),allocatable, target             :: device(:)
@@ -215,9 +217,10 @@ real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:)
                                                        exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
 real(kind=sgl),allocatable                          :: imageexptflt(:),binned(:,:),imagedictflt(:),imagedictfltflip(:), &
                                                        tmpimageexpt(:), OSMmap(:,:)
-real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:),&
+real(kind=sgl),allocatable, target                  :: results(:),expt(:),dicttranspose(:),resultarray(:), dparray(:), &
                                                        eulerarray(:,:),eulerarray2(:,:),resultmain(:,:),resulttmp(:,:)
-integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:) 
+integer(kind=irg),allocatable                       :: acc_array(:,:), ppend(:), ppendE(:)
+integer(kind=irg),allocatable,target                :: indarray(:) 
 integer*4,allocatable                               :: iexptCI(:,:), iexptIQ(:,:)
 real(kind=sgl),allocatable                          :: meandict(:),meanexpt(:),wf(:),mLPNH(:,:,:),mLPSH(:,:,:),accum_e_MC(:,:,:)
 real(kind=sgl),allocatable                          :: mLPNH_simple(:,:), mLPSH_simple(:,:), eangle(:)
@@ -245,7 +248,7 @@ integer(c_int)                                      :: numd, nump
 type(C_PTR)                                         :: planf, HPplanf, HPplanb
 integer(HSIZE_T)                                    :: dims2(2), offset2(2), dims3(3), offset3(3)
 
-integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq
+integer(kind=irg)                                   :: i,j,ii,jj,kk,ll,mm,pp,qq, cn, dn, totn
 integer(kind=irg)                                   :: FZcnt, pgnum, io_int(4), ncubochoric, pc
 type(FZpointd),pointer                              :: FZlist, FZtmp
 integer(kind=irg),allocatable                       :: indexlist(:),indexarray(:),indexmain(:,:),indextmp(:,:)
@@ -260,7 +263,7 @@ integer(kind=irg)                                   :: nix,niy,nixp,niyp
 real(kind=sgl)                                      :: euler(3)
 integer(kind=irg)                                   :: indx
 integer(kind=irg)                                   :: correctsize
-logical                                             :: f_exists, init, ROIselected, Clinked 
+logical                                             :: f_exists, init, ROIselected, Clinked, cancelled 
 
 integer(kind=irg)                                   :: ipar(10)
 
@@ -273,7 +276,7 @@ character(3)                                        :: stratt
 
 type(HDFobjectStackType)                            :: HDF_head
 
-! convert the inpujt strings from C to fortran format
+! convert the input strings from C to fortran format
 nmldeffile = fstringify(Cnmldeffile)
 progname = fstringify(Cprogname)
 
@@ -876,6 +879,20 @@ jpar(7) = dinl%nE
 
 call timestamp()
 
+! do we need to allocate arrays for the cproc callback routine ?
+if (Clinked.eqv..TRUE.) then 
+  allocate(dparray(Ne*ceiling(float(totnumexpt)/float(Ne))), &
+           indexarray(Ne*ceiling(float(totnumexpt)/float(Ne))))
+! and get the C_LOC pointers to those arrays 
+  dparr_cptr = C_LOC(dparray)
+  indarr_cptr = C_LOC(indarray)
+! and set the callback counters
+  totn = cratio+1 
+  dn = 1
+  cn = 1 
+  cancelled = .FALSE.
+end if 
+
 dictionaryloop: do ii = 1,cratio+1
     results = 0.0
 
@@ -992,6 +1009,20 @@ dictionaryloop: do ii = 1,cratio+1
        if (verbose.eqv..TRUE.) call WriteValue('','        GPU thread is idling')
     end if  ! ii.gt.1
 
+! handle the callback routines if requested 
+    if (Clinked.eqv..TRUE.) then 
+! has the cancel flag been set by the calling program ?
+      if (cancel.ne.char(0)) cancelled = .TRUE.
+! extract the first row from the indexmain and resultmain arrays, put them in 
+! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
+      dparray(:) = resultmain(1,:) 
+      indexarray(:) = indexmain(1,:) 
+! and call the callback routine ... 
+! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
+      call proc(objAddress, cn, totn, ttime, dparr_cptr, indarr_cptr)
+      cn = cn + dn
+    end if
+
 !$OMP END MASTER
 
 
@@ -1009,15 +1040,16 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
 !$OMP DO SCHEDULE(DYNAMIC)
 
      do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
-       binned = 0.0
-       quat = ro2qu(FZarray(1:4,(ii-1)*Nd+pp))
+      if (cancelled.eqv..FALSE.) then
+         binned = 0.0
+         quat = ro2qu(FZarray(1:4,(ii-1)*Nd+pp))
 
-       call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,EBSDdetector%rgx,&
-                                      EBSDdetector%rgy,EBSDdetector%rgz,binned,Emin,Emax,mask,prefactor)
+         call CalcEBSDPatternSingleFull(jpar,quat,accum_e_MC,mLPNH,mLPSH,EBSDdetector%rgx,&
+                                        EBSDdetector%rgy,EBSDdetector%rgz,binned,Emin,Emax,mask,prefactor)
 
-       if (dinl%scalingmode .eq. 'gam') then
-         binned = binned**dinl%gammavalue
-       end if
+         if (dinl%scalingmode .eq. 'gam') then
+           binned = binned**dinl%gammavalue
+        end if
 
 ! hi pass filtering
 !      rdata = dble(binned)
@@ -1025,34 +1057,35 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
 !      binned = sngl(fdata)
 
 ! adaptive histogram equalization
-       ma = maxval(binned)
-       mi = minval(binned)
-       
-       EBSDpatternintd = ((binned - mi)/ (ma-mi))
-       EBSDpatterninteger = nint(EBSDpatternintd*255.0)
-       EBSDpatternad =  adhisteq(dinl%nregions,binx,biny,EBSDpatterninteger)
-       binned = float(EBSDpatternad)
+         ma = maxval(binned)
+         mi = minval(binned)
+         
+         EBSDpatternintd = ((binned - mi)/ (ma-mi))
+         EBSDpatterninteger = nint(EBSDpatternintd*255.0)
+         EBSDpatternad =  adhisteq(dinl%nregions,binx,biny,EBSDpatterninteger)
+         binned = float(EBSDpatternad)
 
-       imagedictflt = 0.0
-       imagedictfltflip = 0.0
-       do ll = 1,biny
-         do mm = 1,binx
-           imagedictflt((ll-1)*binx+mm) = binned(mm,ll)
+         imagedictflt = 0.0
+         imagedictfltflip = 0.0
+         do ll = 1,biny
+           do mm = 1,binx
+             imagedictflt((ll-1)*binx+mm) = binned(mm,ll)
+           end do
          end do
-       end do
 
 ! normalize and apply circular mask 
-       imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
-       vlen = vecnorm(imagedictflt(1:correctsize))
-       if (vlen.ne.0.0) then
-         imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/vlen
-       else
-         imagedictflt(1:correctsize) = 0.0
-       end if
-       
-       dict((pp-1)*correctsize+1:pp*correctsize) = imagedictflt(1:correctsize)
+         imagedictflt(1:L) = imagedictflt(1:L) * masklin(1:L)
+         vlen = vecnorm(imagedictflt(1:correctsize))
+         if (vlen.ne.0.0) then
+           imagedictflt(1:correctsize) = imagedictflt(1:correctsize)/vlen
+         else
+           imagedictflt(1:correctsize) = 0.0
+         end if
+         
+         dict((pp-1)*correctsize+1:pp*correctsize) = imagedictflt(1:correctsize)
 
-       eulerarray(1:3,(ii-1)*Nd+pp) = 180.0/cPi*ro2eu(FZarray(1:4,(ii-1)*Nd+pp))
+         eulerarray(1:3,(ii-1)*Nd+pp) = 180.0/cPi*ro2eu(FZarray(1:4,(ii-1)*Nd+pp))
+      end if
      end do
 !$OMP END DO
 
@@ -1091,7 +1124,11 @@ end if
 ! and we end the parallel section here (all threads will synchronize).
 !$OMP END PARALLEL
 
+if (cancelled.eqv..TRUE.) EXIT dictionaryloop
+
 end do dictionaryloop
+
+if (cancelled.eqv..TRUE.) STOP
 
 if (dinl%keeptmpfile.eq.'n') then
     close(itmpexpt,status='delete')
