@@ -13,6 +13,8 @@ extern "C" {
 * @param int
 * @param int
 * @param float
+* @param float  pointer to the array of dot products
+* @param int    pointer to the array of indices into the orientation array
 */
 typedef void (*ProgCallBackTypeDIdriver)(size_t, int, int, float, float, int);
 
