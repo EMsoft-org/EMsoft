@@ -135,12 +135,14 @@ IMPLICIT NONE
 ! interface for the callback routines
 ABSTRACT INTERFACE
    SUBROUTINE ProgCallBackTypeDIdriver(objAddress, loopCompleted, totalLoops, timeRemaining, &
-                                       dparr_cptr, indarr_cptr) bind(C)
+                                       Ndict, euarr_cptr, dparr_cptr, indarr_cptr) bind(C)
     USE, INTRINSIC :: ISO_C_BINDING
     INTEGER(c_size_t),INTENT(IN), VALUE             :: objAddress
     INTEGER(KIND=4), INTENT(IN), VALUE              :: loopCompleted
     INTEGER(KIND=4), INTENT(IN), VALUE              :: totalLoops
     REAL(KIND=4),INTENT(IN), VALUE                  :: timeRemaining
+    INTEGER(KIND=4), INTENT(IN), VALUE              :: Ndict 
+    type(c_ptr), INTENT(OUT)                        :: euarr_cptr
     type(c_ptr), INTENT(OUT)                        :: dparr_cptr
     type(c_ptr), INTENT(OUT)                        :: indarr_cptr
    END SUBROUTINE ProgCallBackTypeDIdriver
@@ -163,7 +165,7 @@ character(len=1),INTENT(IN), OPTIONAL               :: cancel
 ! callback procedure pointer definitions
 PROCEDURE(ProgCallBackTypeDIdriver), POINTER        :: proc
 PROCEDURE(ProgCallBackTypeErrorDIdriver), POINTER   :: errorproc
-type(c_ptr),pointer                                 :: dparr_cptr, indarr_cptr
+type(c_ptr),pointer                                 :: dparr_cptr, indarr_cptr, euarr_cptr
 
 type(EBSDIndexingNameListType)                      :: dinl
 type(MCCLNameListType)                              :: mcnl
@@ -211,7 +213,7 @@ integer(kind=irg)                                   :: Ne,Nd,L,totnumexpt,numdic
                                                        recordsize_correct, patsz, tickstart, tickstart2, tock, npy, sz(3), jjj
 integer(kind=8)                                     :: size_in_bytes_dict,size_in_bytes_expt
 real(kind=sgl),pointer                              :: dict(:), T0dict(:)
-real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:)
+real(kind=sgl),allocatable,TARGET                   :: dict1(:), dict2(:), eudictarray(:)
 !integer(kind=1),allocatable                         :: imageexpt(:),imagedict(:)
 real(kind=sgl),allocatable                          :: imageexpt(:),imagedict(:), mask(:,:),masklin(:), exptIQ(:), &
                                                        exptCI(:), exptFit(:), exppatarray(:), tmpexppatarray(:)
@@ -544,6 +546,16 @@ if (trim(dinl%indexingmode).eq.'dynamic') then
       call WriteValue('Point group number and number of cubochoric sampling points : ',io_int,2,"(I4,',',I5)")
 
       call sampleRFZ(ncubochoric, pgnum, 0, FZcnt, FZlist)
+
+      if (Clinked.eqv..TRUE.) then 
+! generate the Euler dictionary array needed by the EMsoftWorkbench
+        allocate(eudictarray(3*FZcnt))
+        FZtmp => FZlist
+        do ii = 1,FZcnt
+          eudictarray((ii-1)*3+1:(ii-1)*3+3) = ro2eu(FZtmp%rod(1:4))
+          FZtmp => FZtmp%next
+        end do 
+      end if
     else
     ! read the euler angle file and create the linked list
       call getEulersfromFile(dinl%eulerfile, FZcnt, FZlist) 
@@ -881,11 +893,11 @@ call timestamp()
 
 ! do we need to allocate arrays for the cproc callback routine ?
 if (Clinked.eqv..TRUE.) then 
-  allocate(dparray(Ne*ceiling(float(totnumexpt)/float(Ne))), &
-           indexarray(Ne*ceiling(float(totnumexpt)/float(Ne))))
+  allocate(dparray(totnumexpt), indexarray(totnumexpt))
 ! and get the C_LOC pointers to those arrays 
   dparr_cptr = C_LOC(dparray)
   indarr_cptr = C_LOC(indarray)
+  euarr_cptr = C_LOC(eudictarray)
 ! and set the callback counters
   totn = cratio+1 
   dn = 1
@@ -1015,11 +1027,11 @@ dictionaryloop: do ii = 1,cratio+1
       if (cancel.ne.char(0)) cancelled = .TRUE.
 ! extract the first row from the indexmain and resultmain arrays, put them in 
 ! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
-      dparray(:) = resultmain(1,:) 
-      indexarray(:) = indexmain(1,:) 
+      dparray(1:totnumexpt) = resultmain(1,1:totnumexpt) 
+      indexarray(1:totnumexpt) = indexmain(1,1:totnumexpt) 
 ! and call the callback routine ... 
 ! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
-      call proc(objAddress, cn, totn, ttime, dparr_cptr, indarr_cptr)
+      call proc(objAddress, cn, totn, ttime, FZcnt, euarr_cptr, dparr_cptr, indarr_cptr)
       cn = cn + dn
     end if
 
