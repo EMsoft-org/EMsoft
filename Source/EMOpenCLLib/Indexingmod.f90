@@ -165,7 +165,7 @@ character(len=1),INTENT(IN), OPTIONAL               :: cancel
 ! callback procedure pointer definitions
 PROCEDURE(ProgCallBackTypeDIdriver), POINTER        :: proc
 PROCEDURE(ProgCallBackTypeErrorDIdriver), POINTER   :: errorproc
-type(c_ptr),pointer                                 :: dparr_cptr, indarr_cptr, euarr_cptr
+type(c_ptr)                                         :: dparr_cptr=c_null_ptr, euarr_cptr=c_null_ptr, indarr_cptr=c_null_ptr
 
 type(EBSDIndexingNameListType)                      :: dinl
 type(MCCLNameListType)                              :: mcnl

@@ -18,7 +18,7 @@ extern "C" {
 * @param float pointer to the array of dot products
 * @param int   pointer to the array of indices into the orientation array
 */
-typedef void (*ProgCallBackTypeDIdriver)(size_t, int, int, float, int, float*, float*, int32_t*);
+typedef void (*ProgCallBackTypeDIdriver)(size_t, int, int, float, int, float**, float**, int32_t**);
 
 /**
 * @brief This is the typedef for an OpenCL error call back function that is used in the EMsoft library.
