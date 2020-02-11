@@ -1028,7 +1028,7 @@ dictionaryloop: do ii = 1,cratio+1
 ! extract the first row from the indexmain and resultmain arrays, put them in 
 ! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
       dparray(1:totnumexpt) = resultmain(1,1:totnumexpt) 
-      indexarray(1:totnumexpt) = indexmain(1,1:totnumexpt) 
+      indarray(1:totnumexpt) = indexmain(1,1:totnumexpt)
 ! and call the callback routine ... 
 ! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
       call proc(objAddress, cn, totn, ttime, FZcnt, euarr_cptr, dparr_cptr, indarr_cptr)
