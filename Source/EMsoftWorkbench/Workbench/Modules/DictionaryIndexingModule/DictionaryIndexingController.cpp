@@ -61,7 +61,6 @@ static QMap<size_t, DictionaryIndexingController*> instances;
 // -----------------------------------------------------------------------------
 void DIProcessOutput(size_t instance, int loopCompleted, int totalLoops, float timeRemaining, int nDict, float** eulerArray, float** dpArray, int32_t** indexArray)
 {
-  printf("DIProcessOutput: float* eulerArray    %p\n", eulerArray);
   DictionaryIndexingController* obj = instances[instance];
   if(nullptr != obj)
   {
