@@ -893,7 +893,7 @@ call timestamp()
 
 ! do we need to allocate arrays for the cproc callback routine ?
 if (Clinked.eqv..TRUE.) then 
-  allocate(dparray(totnumexpt), indexarray(totnumexpt))
+  allocate(dparray(totnumexpt), indarray(totnumexpt))
 ! and get the C_LOC pointers to those arrays 
   dparr_cptr = C_LOC(dparray)
   indarr_cptr = C_LOC(indarray)
