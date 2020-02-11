@@ -520,7 +520,7 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
   m_DIController->setData(data); // Set the input data
 
   // Conncet Signals & Slots to get the thread started and quit
-  connect(m_WorkerThread.data(), SIGNAL(started()), m_DIController, SLOT(execute()));
+  connect(m_WorkerThread.data(), SIGNAL(started()), m_DIController, SLOT(executeWrapper()));
   connect(m_DIController, SIGNAL(finished()), m_WorkerThread.data(), SLOT(quit()));
   connect(m_WorkerThread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
 
@@ -654,10 +654,10 @@ DictionaryIndexingController::InputDataType DictionaryIndexing_UI::getDIData()
   data.masterFile = m_Ui->masterFileLE->text();
   data.ipfWidth = m_Ui->ipfWidthLE->text().toInt();
   data.ipfHeight = m_Ui->ipfHeightLE->text().toInt();
-  data.roi_1 = m_Ui->roi1LE->text().toInt();
-  data.roi_2 = m_Ui->roi2LE->text().toInt();
-  data.roi_3 = m_Ui->roi3LE->text().toInt();
-  data.roi_4 = m_Ui->roi4LE->text().toInt();
+  data.roi_x = m_Ui->roi1LE->text().toInt();
+  data.roi_y = m_Ui->roi2LE->text().toInt();
+  data.roi_w = m_Ui->roi3LE->text().toInt();
+  data.roi_h = m_Ui->roi4LE->text().toInt();
   data.useROI = m_Ui->roiCB->isChecked();
   data.samplingStepSizeX = m_Ui->samplingStepSizeXLE->text().toFloat();
   data.samplingStepSizeY = m_Ui->samplingStepSizeYLE->text().toFloat();

@@ -35,10 +35,17 @@
 
 #include "DictionaryIndexingController.h"
 
+#include <QtCore/QCoreApplication>
+#include <QtCore/QDateTime>
 #include <QtCore/QTextStream>
+
+#include "EbsdLib/LaueOps/LaueOps.h"
+
+#include "SIMPLib/Common/Constants.h"
 
 #include "Common/EbsdLoader.h"
 
+#include "EMOpenCLLib/DIwrappers.h"
 #include "EMsoftLib/EMsoftStringConstants.h"
 
 #include "Workbench/Common/FileIOTools.h"
@@ -46,12 +53,42 @@
 const QString k_ExeName = QString("EMEBSDDI");
 const QString k_NMLName = QString("EMEBSDDI.nml");
 
+static size_t k_InstanceKey = 0;
+static QMap<size_t, DictionaryIndexingController*> instances;
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DIProcessOutput(size_t instance, int loopCompleted, int totalLoops, float timeRemaining, int nDict, float** eulerArray, float** dpArray, int32_t** indexArray)
+{
+  printf("DIProcessOutput: float* eulerArray    %p\n", eulerArray);
+  DictionaryIndexingController* obj = instances[instance];
+  if(nullptr != obj)
+  {
+    obj->setUpdateProgress(loopCompleted, totalLoops, timeRemaining);
+    obj->updateOutput(nDict, *eulerArray, *dpArray, *indexArray);
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DIProcessError(size_t instance, int errorCode)
+{
+  DictionaryIndexingController* obj = instances[instance];
+  if(nullptr != obj)
+  {
+    obj->reportError(errorCode);
+  }
+}
+
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 DictionaryIndexingController::DictionaryIndexingController(QObject* parent)
 : IProcessController(k_ExeName, k_NMLName, parent)
 {
+  m_InstanceKey = ++k_InstanceKey;
 }
 
 // -----------------------------------------------------------------------------
@@ -59,6 +96,7 @@ DictionaryIndexingController::DictionaryIndexingController(QObject* parent)
 // -----------------------------------------------------------------------------
 DictionaryIndexingController::~DictionaryIndexingController()
 {
+  k_InstanceKey--;
 }
 
 // -----------------------------------------------------------------------------
@@ -74,66 +112,28 @@ void DictionaryIndexingController::setData(const InputDataType& data)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingController::executeWrapper()
 {
-  //  //  initializeData();
+  initializeData();
 
-  //  //  std::vector<int32_t> iParVector = data.getIParVector();
-  //  //  std::vector<float> fParVector = data.getFParVector();
-  //  //  std::vector<char> sParVector = data.getSParVector();
+  QTemporaryDir tempDir;
 
-  //  //  // Create a new Mask Array
-  //  //  m_OutputMaskVector.resize(data.patternHeight * data.patternWidth);
-  //  //  std::fill(m_OutputMaskVector.begin(), m_OutputMaskVector.end(), 0.0f);
+  QString nmlFilePath = tempDir.path() + QDir::separator() + k_NMLName;
+  generateNMLFile(nmlFilePath);
 
-  //  //  // Create a new IQ Map Array
-  //  //  m_OutputIQMapVector.resize(data.patternHeight * data.patternWidth);
-  //  //  std::fill(m_OutputIQMapVector.begin(), m_OutputIQMapVector.end(), 0.0f);
+  //  m_SpaceGroupNumber = readSpaceGroupNumber(m_InputData.masterFile);
 
-  //  //  // Create a new ADP Map Array
-  //  //  m_OutputADPMapVector.resize(data.patternHeight * data.patternWidth);
-  //  //  std::fill(m_OutputADPMapVector.begin(), m_OutputADPMapVector.end(), 0.0f);
+  // the EMsoft call will return two arrays: mLPNH and mLPSH
+  // call the EMsoft EMsoftCgetEBSDmaster routine to compute the patterns;
+  // m_Executing enables the Cancel button to properly work by passing
+  // on a m_Cancel flag to the EMsoft routine; the m_InstanceKey provides
+  // a unique label to this particular instantiation of this filter, so that
+  // multiple simultaneous instantiations of this filter become possible without
+  // incorrect interactions between the callback routines.
+  m_Executing = true;
+  instances[m_InstanceKey] = this;
 
-  //  // Set the start time for this run (m_StartTime)
-  //  m_StartTime = QDateTime::currentDateTime().time().toString();
-
-  //  // the EMsoft call will return two arrays: mLPNH and mLPSH
-  //  // call the EMsoft EMsoftCgetEBSDmaster routine to compute the patterns;
-  //  // m_Executing enables the Cancel button to properly work by passing
-  //  // on a m_Cancel flag to the EMsoft routine; the m_InstanceKey provides
-  //  // a unique label to this particular instantiation of this filter, so that
-  //  // multiple simultaneous instantiations of this filter become possible without
-  //  // incorrect interactions between the callback routines.
-  //  m_Executing = true;
-  //  instances[m_InstanceKey] = this;
-  //  //  EMsoftCpreprocessEBSDPatterns(iParVector.data(), fParVector.data(), sParVector.data(), m_OutputMaskVector.data(), m_OutputIQMapVector.data(), m_OutputADPMapVector.data(),
-  //  /&ADPMapControllerProgress, m_InstanceKey, &m_Cancel);
-
-  //  QString diExecutablePath = getDIExecutablePath();
-
-  //  QSharedPointer<QProcess> diProcess = QSharedPointer<QProcess>(new QProcess());
-  //  connect(diProcess.data(), &QProcess::readyReadStandardOutput, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardOutput().toStdString())); });
-  //  connect(diProcess.data(), &QProcess::readyReadStandardError, [=] { emit stdOutputMessageGenerated(QString::fromStdString(diProcess->readAllStandardError().toStdString())); });
-  //  connect(diProcess.data(), &QProcess::errorOccurred, [=](QProcess::ProcessError error) { emit stdOutputMessageGenerated(tr("Process Error: %1").arg(QString::number(error))); });
-  //  connect(diProcess.data(), QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), [=](int exitCode, QProcess::ExitStatus exitStatus) { listenDIFinished(exitCode, exitStatus, data); });
-
-  //  if(!diExecutablePath.isEmpty())
-  //  {
-  //    QFileInfo fi(diExecutablePath);
-  //    QString emsoftPathName = fi.path();
-
-  //    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-  //    env.insert("EMSOFTPATHNAME", emsoftPathName); // Add an environment variable
-  //    diProcess->setProcessEnvironment(env);
-
-  //    QString nmlFilePath = m_TempDir.path() + QDir::separator() + "EMEBSDDI.nml";
-  //    //  writeDIDataToFile("/tmp/EMEBSDDI.nml", data);
-  //    writeDIDataToFile(nmlFilePath, data);
-  //    QStringList parameters = {nmlFilePath};
-  //    diProcess->start(diExecutablePath, parameters);
-
-  //    // Wait until the QProcess is finished to exit this thread.
-  //    // DictionaryIndexingController::createADPMap is currently on a separate thread, so the GUI will continue to operate normally
-  //    diProcess->waitForFinished(-1);
-  //  }
+  char* nmlFilePathArray = nmlFilePath.toLatin1().data();
+  char* appNameArray = QCoreApplication::applicationName().toLatin1().data();
+  EBSDDIdriver(nmlFilePathArray, appNameArray, &DIProcessOutput, &DIProcessError, m_InstanceKey, &m_Cancel);
 }
 
 // -----------------------------------------------------------------------------
@@ -168,7 +168,7 @@ void DictionaryIndexingController::generateNMLFile(const QString& path)
 
   if(m_InputData.useROI)
   {
-    QString roi = QString("%1 %2 %3 %4").arg(QString::number(m_InputData.roi_1), QString::number(m_InputData.roi_2), QString::number(m_InputData.roi_3), (QString::number(m_InputData.roi_4)));
+    QString roi = QString("%1 %2 %3 %4").arg(QString::number(m_InputData.roi_x), QString::number(m_InputData.roi_y), QString::number(m_InputData.roi_w), (QString::number(m_InputData.roi_h)));
     nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::ROI, roi, false, false));
   }
   else
@@ -421,6 +421,53 @@ void DictionaryIndexingController::generateNMLFile(const QString& path)
 }
 
 // -----------------------------------------------------------------------------
+void DictionaryIndexingController::reportError(int errorCode)
+{
+  QString ss = QObject::tr("Process crashed with error code %1.").arg(errorCode);
+  emit errorMessageGenerated(ss);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexingController::setUpdateProgress(int loopCompleted, int totalLoops, float timeRemaining)
+{
+  QString timeLeft = QDateTime::fromTime_t(timeRemaining).toUTC().toString("hh:mm:ss");
+  QString ss = QObject::tr("%1 of %2 - Time Remaining: %3").arg(loopCompleted).arg(totalLoops).arg(timeLeft);
+  emit stdOutputMessageGenerated(ss);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, float* dpArray, int32_t* indexArray)
+{
+  size_t roiSize = getRegionOfInterestSize(m_InputData);
+
+  std::vector<float> dictVec(nDict * 3, 0.0);
+  std::vector<float> dpVec(roiSize, 0.0);
+  std::vector<int32_t> idxVec(roiSize, 0);
+
+  std::copy(dictArray, dictArray + (nDict * 3), dictVec.begin());
+  std::copy(dpArray, dpArray + roiSize, dpVec.begin());
+  std::copy(indexArray, indexArray + roiSize, idxVec.begin());
+
+  std::cout << "Inside C++ controller...";
+
+  //  LaueOps::Pointer laueOps = LaueOps::getOrientationOpsFromSpaceGroupNumber(m_SpaceGroupNumber);
+
+  //  double refDir[3] = {0, 0, 1};
+  //  for(size_t i = 0; i < arraySize; i++)
+  //  {
+  //    double dEuler[3] = {dpArray[i], dpArray[i+1], [dpArray[i+2]};
+  //    SIMPL::Rgb argb = laueOps->generateIPFColor(dEuler, refDir, false);
+  //    m_CellIPFColors[index] = static_cast<uint8_t>(RgbColor::dRed(argb));
+  //    m_CellIPFColors[index + 1] = static_cast<uint8_t>(RgbColor::dGreen(argb));
+  //    m_CellIPFColors[index + 2] = static_cast<uint8_t>(RgbColor::dBlue(argb));
+  //  }
+}
+
+// -----------------------------------------------------------------------------
 void DictionaryIndexingController::processFinished()
 {
   std::array<float, 3> refDirection = {0.0f, 0.0f, 1.0f};
@@ -438,7 +485,24 @@ void DictionaryIndexingController::processFinished()
 // -----------------------------------------------------------------------------
 void DictionaryIndexingController::initializeData()
 {
-  m_OutputMaskVector.clear();
-  m_OutputIQMapVector.clear();
-  m_OutputADPMapVector.clear();
+}
+
+// -----------------------------------------------------------------------------
+size_t DictionaryIndexingController::getRegionOfInterestSize(InputDataType inputData) const
+{
+  size_t roiSize = inputData.ipfWidth * inputData.ipfHeight;
+  if(inputData.useROI)
+  {
+    roiSize = inputData.roi_w * inputData.roi_h;
+  }
+
+  return roiSize;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+size_t DictionaryIndexingController::readSpaceGroupNumber(const QString& masterFile)
+{
+  return 0;
 }

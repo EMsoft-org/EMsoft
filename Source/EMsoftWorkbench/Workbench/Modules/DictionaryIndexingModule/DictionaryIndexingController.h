@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <array>
+
 #include <QtCore/QTemporaryDir>
 
 #include "Modules/IProcessController.h"
@@ -84,10 +86,10 @@ public:
     int ipfHeight;
     int ipfWidth;
     bool useROI;
-    int roi_1;
-    int roi_2;
-    int roi_3;
-    int roi_4;
+    int roi_x;
+    int roi_y;
+    int roi_w;
+    int roi_h;
     float samplingStepSizeX;
     float samplingStepSizeY;
     int nnk;
@@ -136,15 +138,43 @@ public:
    */
   void setData(const InputDataType& simData);
 
+  /**
+   * @brief reportError
+   * @param errorCode
+   */
+  void reportError(int errorCode);
+
+  /**
+   * @brief setUpdateProgress
+   * @param loopCompleted
+   * @param totalLoops
+   * @param timeRemaining
+   */
+  void setUpdateProgress(int loopCompleted, int totalLoops, float timeRemaining);
+
+  /**
+   * @brief updateOutput
+   * @param nDict
+   * @param eulerArray
+   * @param dpArray
+   * @param indexArray
+   */
+  void updateOutput(int nDict, float* eulerArray, float* dpArray, int32_t* indexArray);
+
+public slots:
+  /**
+   * @brief executeWrapper
+   */
+  void executeWrapper();
+
 signals:
   void diCreated(const QImage &adpMap) const;
 
 private:
   InputDataType m_InputData;
+  size_t m_InstanceKey = 0;
 
-  std::vector<float> m_OutputMaskVector;
-  std::vector<float> m_OutputIQMapVector;
-  std::vector<float> m_OutputADPMapVector;
+  size_t m_SpaceGroupNumber = 0;
 
   QTemporaryDir m_TempDir;
 
@@ -160,14 +190,20 @@ private:
   void generateNMLFile(const QString& path) override;
 
   /**
+   * @brief readSpaceGroupNumber
+   */
+  size_t readSpaceGroupNumber(const QString& masterFile);
+
+  /**
    * @brief processFinished
    */
   void processFinished() override;
 
   /**
-   * @brief executeWrapper
+   * @brief getRegionOfInterestSize
+   * @return
    */
-  void executeWrapper();
+  size_t getRegionOfInterestSize(InputDataType inputData) const;
 
 public:
   DictionaryIndexingController(const DictionaryIndexingController&) = delete; // Copy Constructor Not Implemented
