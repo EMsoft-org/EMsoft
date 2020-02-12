@@ -1183,6 +1183,17 @@ call WriteValue('Number of experimental patterns indexed per second : ',io_real,
 ! ===================
 ! MAIN OUTPUT SECTION
 ! ===================
+! one more callback to send the final results...
+if (Clinked.eqv..TRUE.) then 
+! extract the first row from the indexmain and resultmain arrays, put them in 
+! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
+  dparray(1:totnumexpt) = resultmain(1,1:totnumexpt) 
+  indarray(1:totnumexpt) = indexmain(1,1:totnumexpt)
+  ttime = 0.0
+! and call the callback routine ... 
+! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
+  call proc(objAddress, totn, totn, ttime, FZcnt, euarr_cptr, dparr_cptr, indarr_cptr)
+end if
 
 ! fill the ipar array with integer parameters that are needed to write the h5ebsd file
 ! (anything other than what is already in the dinl structure)
