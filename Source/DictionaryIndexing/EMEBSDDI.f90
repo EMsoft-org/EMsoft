@@ -98,11 +98,7 @@ Cnmldeffile = carstringify(nmldeffile)
 Cprogname = carstringify(progname)
 call EBSDDIdriver(Cnmldeffile, Cprogname, C_NULL_FUNPTR, C_NULL_FUNPTR, 0_ill)
 
-! input to the wrapper will be the nmldeffile path, progname, and cproc, cerrorproc, objAddress, cancel
-! the latter four are unused in an EMsoft call of the wrapper located in EMDIwrappermod
-! There will be a few array pointers that need to be returned: 
-! confidence index, Euler angles, progress counter and total counts.
-
+! refinement step (if defined in the nml file)
 if (trim(dinl%refinementNMLfile).ne.'undefined') then 
     do i=1,5 
       call Message('   ')
