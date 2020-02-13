@@ -404,7 +404,7 @@ end subroutine EBSDreadorpcdef
 !> @date 04/02/18 MDG 1.0 started new routine, to eventually replace all other EBSD Monte Carlo reading routines
 !> @date 11/11/19 MDG 1.1 adds support for interaction volume array reading
 !--------------------------------------------------------------------------
-recursive subroutine readEBSDMonteCarloFile(MCfile, mcnl, hdferr, EBSDMCdata, getAccume, getAccumz, getAccumSP, getAccumxyz)
+recursive subroutine readEBSDMonteCarloFile(MCfile, mcnl, hdferr, EBSDMCdata, getAccume, getAccumz, getAccumSP, getAccumxyz, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDMonteCarloFile
 
 use local
@@ -428,6 +428,7 @@ logical,INTENT(IN),OPTIONAL                         :: getAccume
 logical,INTENT(IN),OPTIONAL                         :: getAccumz
 logical,INTENT(IN),OPTIONAL                         :: getAccumSP
 logical,INTENT(IN),OPTIONAL                         :: getAccumxyz   ! for interaction volume array
+logical,INTENT(IN),OPTIONAL                         :: verbose
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
@@ -686,7 +687,11 @@ end if
 ! and close the HDF5 Monte Carloe file
 call HDF_pop(HDF_head,.TRUE.)
 
-call Message(' -> completed reading Monte Carlo data from '//trim(infile), frm = "(A/)")
+if (present(verbose)) then
+	if (verbose.eqv..TRUE.) then
+		call Message(' -> completed reading Monte Carlo data from '//trim(infile), frm = "(A/)")
+	end if 
+end if
 
 end subroutine readEBSDMonteCarloFile
 
@@ -710,7 +715,7 @@ end subroutine readEBSDMonteCarloFile
 !> @date 11/05/19 MDG 1.2 added functionality for defect EBSD simulations
 !--------------------------------------------------------------------------
 recursive subroutine readEBSDMasterPatternFile(MPfile, mpnl, hdferr, EBSDMPdata, getkeVs, getmLPNH, getmLPSH, &
-                                               getmasterSPNH, getmasterSPSH, keep4, defectMP)
+                                               getmasterSPNH, getmasterSPSH, keep4, defectMP, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDMasterPatternFile
 
 use local
@@ -737,6 +742,7 @@ logical,INTENT(IN),OPTIONAL                         :: getmasterSPNH
 logical,INTENT(IN),OPTIONAL                         :: getmasterSPSH
 logical,INTENT(IN),OPTIONAL                         :: keep4
 logical,INTENT(IN),OPTIONAL                         :: defectMP
+logical,INTENT(IN),OPTIONAL                         :: verbose
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL, keepall, dfMP
@@ -1028,7 +1034,11 @@ end if
 ! and close the HDF5 Master Pattern file
 call HDF_pop(HDF_head,.TRUE.)
 
-call Message(' -> completed reading master pattern data from '//trim(infile), frm = "(A/)")
+if (present(verbose)) then
+	if (verbose.eqv..TRUE.) then
+		call Message(' -> completed reading master pattern data from '//trim(infile), frm = "(A/)")
+	end if 
+end if
 
 end subroutine readEBSDMasterPatternFile
 
@@ -1046,7 +1056,7 @@ end subroutine readEBSDMasterPatternFile
 !
 !> @date 01/30/20 CZ 1.0 new routine
 !--------------------------------------------------------------------------
-recursive subroutine readEBSDPatternFile(EBSDpatternfile, hdferr, EBSDPatterndata, getPattern)
+recursive subroutine readEBSDPatternFile(EBSDpatternfile, hdferr, EBSDPatterndata, getPattern, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: readEBSDPatternFile
 
 use local
@@ -1064,7 +1074,7 @@ character(fnlen),INTENT(IN)                         :: EBSDpatternfile
 integer(kind=irg),INTENT(OUT)                       :: hdferr
 type(EBSDPatterndataType),INTENT(INOUT)             :: EBSDPatterndata
 logical,INTENT(IN),OPTIONAL                         :: getPattern
-
+logical,INTENT(IN),OPTIONAL                         :: verbose
 
 character(fnlen)                                    :: infile, groupname, datagroupname, dataset
 logical                                             :: stat, readonly, g_exists, f_exists, FL
@@ -1165,7 +1175,12 @@ end if
 ! and close the HDF5 Pattern file
 call HDF_pop(HDF_head,.TRUE.)
 
-call Message(' -> completed reading EBSD pattern data from '//trim(infile), frm = "(A/)")
+
+if (present(verbose)) then
+	if (verbose.eqv..TRUE.) then
+		call Message(' -> completed reading EBSD pattern data from '//trim(infile), frm = "(A/)")
+	end if 
+end if
 
 end subroutine readEBSDPatternFile
 
