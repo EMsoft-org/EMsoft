@@ -42,6 +42,8 @@ module Lauemod
 
 use local
 
+private :: ipart, fpart, rfpart, round, swap
+
 contains
 
 !--------------------------------------------------------------------------
@@ -542,6 +544,7 @@ end subroutine addLaueSlitreflection
 !> @param Lauemode 'transmission' or 'reflection'
 !
 !> @date 07/31/19  MDG 1.0 original
+!> @date 02/07/20  MDG 1.1 implement Xiaolin Wu's line aliasing algorithm to draw lines
 !--------------------------------------------------------------------------
 recursive function backprojectLauePattern(kk, delta, L, Ldims, LPdims, Lpat, Lauemode) result(mLPNH)
 !DEC$ ATTRIBUTES DLLEXPORT :: backprojectLauePattern
@@ -569,7 +572,7 @@ real(kind=sgl)                      :: mLPNH(-LPdims(1):LPdims(1), -LPdims(2):LP
 
 integer(kind=irg)                   :: ix, iy, ierr, slp1(2), slp2(2)
 real(kind=dbl)                      :: px, py, phi, quat(4), yquat(4), r, r2, p(2), q(2), n1(3), n2(3), &
-                                       rn1(3), rn2(3), Ledge
+                                       rn1(3), rn2(3), Ledge, xy1(2), xy2(2)
 
 ! scale factor for square Lambert projection
 Ledge = dble((LPdims(1)-1)/2)
@@ -601,17 +604,160 @@ do ix=1,Ldims(1)
         rn2 = quat_Lp(yquat,quat_Lp(quat, n2))
         rn1 = rn1/norm2(rn1) 
         rn2 = rn2/norm2(rn2) 
-! and project both points onto the Lambert square
-        slp1 = nint(LambertSphereToSquare(rn1,ierr) * Ledge) - Ledge
-        slp2 = nint(LambertSphereToSquare(rn2,ierr) * Ledge) - Ledge
-        mLPNH(slp1(1),slp1(2)) = mLPNH(slp1(1),slp1(2)) + Lpat(ix,iy)
-        mLPNH(slp2(1),slp2(2)) = mLPNH(slp2(1),slp2(2)) + Lpat(ix,iy)
-        ! mLPNH(slp1(1):slp2(1),slp1(2):slp2(2)) = mLPNH(slp1(1):slp2(1),slp1(2):slp2(2)) + Lpat(ix,iy)
+! and project both points with an interpolated anti-aliased line onto the Lambert square
+        xy1 = LambertSphereToSquare(rn1,ierr) * Ledge + Ledge
+        if ((.not.isNaN(xy1(1))) .and. (.not.isNaN(xy1(2)))) then 
+          xy2 = LambertSphereToSquare(rn2,ierr) * Ledge + Ledge
+          if ((.not.isNaN(xy2(1))) .and. (.not.isNaN(xy2(2)))) then 
+            call DrawLine(mLPNH, LPdims(1), LPdims(2), xy1(1), xy1(2), xy2(1), xy2(2), Lpat(ix,iy))
+          end if
+        end if 
     end if
   end do 
 end do
 
-
 end function backprojectLauePattern
+
+!--------------------------------------------------------------------------
+!
+! FUNCTION:DrawLine
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief use Xiaolin Wu's anti-aliasing algorithm to draw a line on the back projection array
+!
+!> @param mLPNH  output master pattern 
+!> @param nx x-dimension 
+!> @param ny y-dimension
+!> @param xy0 first end point 
+!> @param xy1 second end point 
+!> @param c intensity value
+!
+!> @date 02/07/20  MDG 1.0 original
+!--------------------------------------------------------------------------
+subroutine DrawLine(mlPNH, nx, ny, x0, y0, x1, y1, c)
+
+IMPLICIT NONE 
+
+integer(kind=irg), INTENT(IN)   :: nx 
+integer(kind=irg), INTENT(IN)   :: ny 
+real(kind=sgl), INTENT(INOUT)   :: mLPNH(2*nx+1,2*ny+1)
+real(kind=dbl), INTENT(INOUT)   :: x0, y0, x1, y1
+real(kind=sgl), INTENT(IN)      :: c 
+  
+real(kind=dbl)                  :: dx, dy, gradient, xend, yend, xgap,  intery, tmp
+integer(kind=irg)               :: xpxl1, ypxl1, xpxl2, ypxl2, x
+logical                         :: steep 
+
+! rearrange the coordinates if necessary
+steep = .FALSE.
+if (abs(y1-y0) .gt. abs(x1-x0)) then 
+  call swap(x0, y0)
+  call swap(x1, y1)
+  steep = .TRUE.
+end if
+
+if (x0 .gt. x1) then 
+  call swap(x0, x1)
+  call swap(y0, y1)
+end if 
+
+dx = x1-x0
+dy = y1-y0
+if (dx.eq.0.D0) then 
+  gradient = 1.D0
+else
+  gradient = dy/dx 
+end if
+
+xend = round(x0)
+yend = y0 + gradient*(xend-x0)
+xgap = rfpart(x0+0.5D0)
+xpxl1 = xend 
+ypxl1 = ipart(yend)
+if (steep.eqv..TRUE.) then 
+  mLPNH(ypxl1, xpxl1) = mLPNH(ypxl1, xpxl1) + rfpart(yend) * xgap * c 
+  mLPNH(ypxl1+1, xpxl1) = mLPNH(ypxl1+1, xpxl1) + fpart(yend) * xgap * c 
+else
+  mLPNH(xpxl1, ypxl1) = mLPNH(xpxl1, ypxl1) + rfpart(yend) * xgap * c 
+  mLPNH(xpxl1, ypxl1+1) = mLPNH(xpxl1, ypxl1+1) + fpart(yend) * xgap * c 
+end if 
+intery = yend + gradient
+
+xend = round(x1)
+yend = y1 + gradient*(xend-x1)
+xgap = fpart(x1+0.5D0)
+xpxl2 = xend 
+ypxl2 = ipart(yend)
+if (steep.eqv..TRUE.) then 
+  mLPNH(ypxl2, xpxl2) = mLPNH(ypxl2, xpxl2) + rfpart(yend) * xgap * c 
+  mLPNH(ypxl2+1, xpxl2) = mLPNH(ypxl2+1, xpxl2) + fpart(yend) * xgap * c 
+else
+  mLPNH(xpxl2, ypxl2) = mLPNH(xpxl2, ypxl2) + rfpart(yend) * xgap * c 
+  mLPNH(xpxl2, ypxl2+1) = mLPNH(xpxl2, ypxl2+1) + fpart(yend) * xgap * c 
+end if 
+
+if (steep.eqv..TRUE.) then 
+  do x = xpxl1+1, xpxl2-1 
+    mLPNH( ipart(intery), x) = mLPNH( ipart(intery), x) + rfpart(intery) * c 
+    mLPNH( ipart(intery)+1, x) = mLPNH( ipart(intery)+1, x) + fpart(intery) * c 
+    intery = intery + gradient
+  end do 
+else
+  do x = xpxl1+1, xpxl2-1 
+    mLPNH( x, ipart(intery)) = mLPNH( x, ipart(intery)) + rfpart(intery) * c 
+    mLPNH( x, ipart(intery)+1) =  mLPNH( x, ipart(intery)+1) + fpart(intery) * c 
+    intery = intery + gradient
+  end do 
+end if 
+
+end subroutine DrawLine
+
+subroutine swap(x,y) 
+
+  real(kind=dbl), INTENT(INOUT)  :: x, y 
+  real(kind=dbl)                 :: tmp 
+
+  tmp = x
+  x = y 
+  y = tmp
+
+end subroutine swap
+
+function ipart(x) result(r)
+
+  real(kind=dbl), INTENT(IN) :: x 
+  integer(kind=irg)          :: r 
+
+  r = floor(x)
+
+end function ipart
+
+function round(x) result(r)
+
+  real(kind=dbl), INTENT(IN) :: x 
+  integer(kind=irg)          :: r 
+
+  r = ipart(x+0.5D0)
+
+end function round
+
+function fpart(x) result(r)
+
+  real(kind=dbl), INTENT(IN) :: x 
+  real(kind=dbl)             :: r 
+
+  r = x-floor(x)
+
+end function fpart
+
+function rfpart(x) result(r)
+
+  real(kind=dbl), INTENT(IN) :: x 
+  real(kind=dbl)             :: r 
+
+  r = 1.D0 - fpart(x)
+
+end function rfpart
 
 end module Lauemod
