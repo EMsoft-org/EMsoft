@@ -168,13 +168,13 @@ public slots:
   void executeWrapper();
 
 signals:
-  void diCreated(const QImage &adpMap) const;
+  void diCreated(const QImage& dIndex) const;
 
 private:
   InputDataType m_InputData;
   size_t m_InstanceKey = 0;
 
-  size_t m_SpaceGroupNumber = 0;
+  int m_SpaceGroupNumber = 0;
 
   QTemporaryDir m_TempDir;
 
@@ -192,7 +192,7 @@ private:
   /**
    * @brief readSpaceGroupNumber
    */
-  size_t readSpaceGroupNumber(const QString& masterFile);
+  int readSpaceGroupNumber(const QString& masterFile);
 
   /**
    * @brief processFinished
@@ -200,10 +200,10 @@ private:
   void processFinished() override;
 
   /**
-   * @brief getRegionOfInterestSize
+   * @brief getRegionOfInterest
    * @return
    */
-  size_t getRegionOfInterestSize(InputDataType inputData) const;
+  QSize getRegionOfInterest(InputDataType inputData) const;
 
 public:
   DictionaryIndexingController(const DictionaryIndexingController&) = delete; // Copy Constructor Not Implemented

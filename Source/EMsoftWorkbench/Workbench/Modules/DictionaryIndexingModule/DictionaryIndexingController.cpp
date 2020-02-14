@@ -39,9 +39,14 @@
 #include <QtCore/QDateTime>
 #include <QtCore/QTextStream>
 
+#include "H5Support/H5ScopedSentinel.h"
+#include "H5Support/QH5Lite.h"
+#include "H5Support/QH5Utilities.h"
+
 #include "EbsdLib/LaueOps/LaueOps.h"
 
 #include "SIMPLib/Common/Constants.h"
+#include "SIMPLib/Utilities/ColorTable.h"
 
 #include "Common/EbsdLoader.h"
 
@@ -118,7 +123,7 @@ void DictionaryIndexingController::executeWrapper()
   QString nmlFilePath = tempDir.path() + QDir::separator() + k_NMLName;
   generateNMLFile(nmlFilePath);
 
-  //  m_SpaceGroupNumber = readSpaceGroupNumber(m_InputData.masterFile);
+  m_SpaceGroupNumber = readSpaceGroupNumber(m_InputData.masterFile);
 
   // the EMsoft call will return two arrays: mLPNH and mLPSH
   // call the EMsoft EMsoftCgetEBSDmaster routine to compute the patterns;
@@ -133,6 +138,8 @@ void DictionaryIndexingController::executeWrapper()
   char* nmlFilePathArray = nmlFilePath.toLatin1().data();
   char* appNameArray = QCoreApplication::applicationName().toLatin1().data();
   EBSDDIdriver(nmlFilePathArray, appNameArray, &DIProcessOutput, &DIProcessError, m_InstanceKey, &m_Cancel);
+
+  emit finished();
 }
 
 // -----------------------------------------------------------------------------
@@ -432,7 +439,8 @@ void DictionaryIndexingController::reportError(int errorCode)
 void DictionaryIndexingController::setUpdateProgress(int loopCompleted, int totalLoops, float timeRemaining)
 {
   QString timeLeft = QDateTime::fromTime_t(timeRemaining).toUTC().toString("hh:mm:ss");
-  QString ss = QObject::tr("%1 of %2 - Time Remaining: %3").arg(loopCompleted).arg(totalLoops).arg(timeLeft);
+  float percent = (static_cast<float>(loopCompleted) / totalLoops) * 100;
+  QString ss = QObject::tr("%1% complete - Time Remaining: %3").arg(percent).arg(timeLeft);
   emit stdOutputMessageGenerated(ss);
 }
 
@@ -441,29 +449,36 @@ void DictionaryIndexingController::setUpdateProgress(int loopCompleted, int tota
 // -----------------------------------------------------------------------------
 void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, float* dpArray, int32_t* indexArray)
 {
-  size_t roiSize = getRegionOfInterestSize(m_InputData);
+  QSize roiSize = getRegionOfInterest(m_InputData);
+  size_t roiArraySize = roiSize.width() * roiSize.height();
 
   std::vector<float> dictVec(nDict * 3, 0.0);
-  std::vector<float> dpVec(roiSize, 0.0);
-  std::vector<int32_t> idxVec(roiSize, 0);
+  std::vector<float> dpVec(roiArraySize, 0.0);
+  std::vector<int32_t> idxVec(roiArraySize, 0);
 
   std::copy(dictArray, dictArray + (nDict * 3), dictVec.begin());
-  std::copy(dpArray, dpArray + roiSize, dpVec.begin());
-  std::copy(indexArray, indexArray + roiSize, idxVec.begin());
+  std::copy(dpArray, dpArray + roiArraySize, dpVec.begin());
+  std::copy(indexArray, indexArray + roiArraySize, idxVec.begin());
 
-  std::cout << "Inside C++ controller...";
+  LaueOps::Pointer laueOps = LaueOps::getOrientationOpsFromSpaceGroupNumber(m_SpaceGroupNumber);
 
-  //  LaueOps::Pointer laueOps = LaueOps::getOrientationOpsFromSpaceGroupNumber(m_SpaceGroupNumber);
+  double refDir[3] = {0, 0, 1};
+  QImage ipfColorImage(roiSize, QImage::Format_RGB32);
+  //    ss << "X Position,Y Position,EulerAngles_0,EulerAngles_1,EulerAngles_2\n";
+  for(int y = 0; y < roiSize.height(); y++)
+  {
+    for(int x = 0; x < roiSize.width(); x++)
+    {
+      size_t i = x + y * roiSize.width();
 
-  //  double refDir[3] = {0, 0, 1};
-  //  for(size_t i = 0; i < arraySize; i++)
-  //  {
-  //    double dEuler[3] = {dpArray[i], dpArray[i+1], [dpArray[i+2]};
-  //    SIMPL::Rgb argb = laueOps->generateIPFColor(dEuler, refDir, false);
-  //    m_CellIPFColors[index] = static_cast<uint8_t>(RgbColor::dRed(argb));
-  //    m_CellIPFColors[index + 1] = static_cast<uint8_t>(RgbColor::dGreen(argb));
-  //    m_CellIPFColors[index + 2] = static_cast<uint8_t>(RgbColor::dBlue(argb));
-  //  }
+      double eulers[3] = {dictVec[(idxVec[i] - 1) * 3], dictVec[(idxVec[i] - 1) * 3 + 1], dictVec[(idxVec[i] - 1) * 3 + 2]};
+
+      SIMPL::Rgb argb = laueOps->generateIPFColor(eulers, refDir, false);
+      ipfColorImage.setPixel(x, y, argb);
+    }
+  }
+
+  emit diCreated(ipfColorImage);
 }
 
 // -----------------------------------------------------------------------------
@@ -487,12 +502,13 @@ void DictionaryIndexingController::initializeData()
 }
 
 // -----------------------------------------------------------------------------
-size_t DictionaryIndexingController::getRegionOfInterestSize(InputDataType inputData) const
+QSize DictionaryIndexingController::getRegionOfInterest(InputDataType inputData) const
 {
-  size_t roiSize = inputData.ipfWidth * inputData.ipfHeight;
+  QSize roiSize(inputData.ipfWidth, inputData.ipfHeight);
   if(inputData.useROI)
   {
-    roiSize = inputData.roi_w * inputData.roi_h;
+    roiSize.setWidth(inputData.roi_w);
+    roiSize.setHeight(inputData.roi_h);
   }
 
   return roiSize;
@@ -501,7 +517,21 @@ size_t DictionaryIndexingController::getRegionOfInterestSize(InputDataType input
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-size_t DictionaryIndexingController::readSpaceGroupNumber(const QString& masterFile)
+int DictionaryIndexingController::readSpaceGroupNumber(const QString& masterFile)
 {
-  return 0;
+  hid_t fileId = QH5Utilities::openFile(masterFile);
+  if(fileId < 0)
+  {
+    return -1;
+  }
+  H5ScopedFileSentinel sentinel(&fileId, true);
+
+  int sgNumber;
+  herr_t err = QH5Lite::readScalarDataset(fileId, "CrystalData/SpaceGroupNumber", sgNumber);
+  if(err < 0)
+  {
+    return -1;
+  }
+
+  return sgNumber;
 }

@@ -243,12 +243,6 @@ void DictionaryIndexing_UI::createWidgetConnections()
     m_Ui->outputAvgCtfFileLE->setText(filePath);
   });
 
-  // Pass errors, warnings, and std output messages up to the user interface
-  connect(m_DIController, &DictionaryIndexingController::errorMessageGenerated, this, &DictionaryIndexing_UI::errorMessageGenerated);
-  connect(m_DIController, &DictionaryIndexingController::warningMessageGenerated, this, &DictionaryIndexing_UI::warningMessageGenerated);
-  connect(m_DIController, &DictionaryIndexingController::stdOutputMessageGenerated, this, &DictionaryIndexing_UI::stdOutputMessageGenerated);
-  connect(m_DIController, &DictionaryIndexingController::diCreated, m_Ui->diViewer, &GLImageViewer::loadImage);
-
   connect(m_Ui->diViewer, &GLImageViewer::errorMessageGenerated, this, &DictionaryIndexing_UI::errorMessageGenerated);
   connect(m_Ui->diViewer, &GLImageViewer::zoomFactorChanged, this, &DictionaryIndexing_UI::updateZoomFactor);
 
@@ -528,8 +522,7 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
   connect(m_DIController, &DictionaryIndexingController::errorMessageGenerated, this, &DictionaryIndexing_UI::errorMessageGenerated);
   connect(m_DIController, &DictionaryIndexingController::warningMessageGenerated, this, &DictionaryIndexing_UI::warningMessageGenerated);
   connect(m_DIController, SIGNAL(stdOutputMessageGenerated(QString)), this, SIGNAL(stdOutputMessageGenerated(QString)));
-
-  //  connect(m_DIController, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
+  connect(m_DIController, &DictionaryIndexingController::diCreated, m_Ui->diViewer, &GLImageViewer::loadImage);
 
   m_WorkerThread->start();
   emit diGenerationStarted();
