@@ -184,7 +184,7 @@ void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
 {
   if(simulateBtn->text() == "Cancel" && m_Controller != nullptr)
   {
-    m_Controller->cancelProcess();
+    m_Controller->cancel();
     emit processCompleted();
     setRunning(false);
     return;

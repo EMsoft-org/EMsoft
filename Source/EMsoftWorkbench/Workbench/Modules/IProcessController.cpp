@@ -59,13 +59,14 @@ IProcessController::~IProcessController()
 }
 
 // -----------------------------------------------------------------------------
-void IProcessController::cancelProcess()
+void IProcessController::cancel()
 {
   if(m_CurrentProcess != nullptr)
   {
     m_CurrentProcess->kill();
-    m_Cancel = true;
   }
+
+  m_Cancel = true;
 }
 
 // -----------------------------------------------------------------------------

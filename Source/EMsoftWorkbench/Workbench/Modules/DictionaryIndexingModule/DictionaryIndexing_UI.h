@@ -103,6 +103,12 @@ public slots:
    */
   void setSelectedNumberOfRegions(int value);
 
+  /**
+   * @brief setADPMap
+   * @param adpMap
+   */
+  void setADPMap(const QImage& adpMap);
+
 protected:
   /**
    * @brief setupGui
@@ -175,6 +181,7 @@ private:
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
+  QImage m_ADPMap;
 
   float m_SelectedHipassValue = -1.0f;
   int m_SelectedNumOfRegions = -1;

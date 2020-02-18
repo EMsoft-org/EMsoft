@@ -106,6 +106,14 @@ DictionaryIndexingController::~DictionaryIndexingController()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
+void DictionaryIndexingController::initializeData()
+{
+  m_Cancel = false;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
 void DictionaryIndexingController::setData(const InputDataType& data)
 {
   m_InputData = data;
@@ -124,6 +132,12 @@ void DictionaryIndexingController::executeWrapper()
   generateNMLFile(nmlFilePath);
 
   m_SpaceGroupNumber = readSpaceGroupNumber(m_InputData.masterFile);
+  if(m_SpaceGroupNumber < 0)
+  {
+    QString ss = QObject::tr("Could not read space group number from master file located at '%1'.").arg(m_InputData.masterFile);
+    emit errorMessageGenerated(ss);
+    return;
+  }
 
   // the EMsoft call will return two arrays: mLPNH and mLPSH
   // call the EMsoft EMsoftCgetEBSDmaster routine to compute the patterns;
@@ -449,6 +463,11 @@ void DictionaryIndexingController::setUpdateProgress(int loopCompleted, int tota
 // -----------------------------------------------------------------------------
 void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, float* dpArray, int32_t* indexArray)
 {
+  QImage adpMapImage = m_InputData.adpMap;
+  adpMapImage = adpMapImage.convertToFormat(QImage::Format_ARGB32, Qt::MonoOnly);
+  QImage ipfColorImage = m_InputData.adpMap;
+  ipfColorImage = ipfColorImage.convertToFormat(QImage::Format_ARGB32, Qt::MonoOnly);
+
   QSize roiSize = getRegionOfInterest(m_InputData);
   size_t roiArraySize = roiSize.width() * roiSize.height();
 
@@ -462,19 +481,31 @@ void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, flo
 
   LaueOps::Pointer laueOps = LaueOps::getOrientationOpsFromSpaceGroupNumber(m_SpaceGroupNumber);
 
+  std::vector<float>::iterator minIter = std::min_element(dpVec.begin(), dpVec.end());
+  float minConfidence = *minIter;
+
+  std::vector<float>::iterator maxIter = std::max_element(dpVec.begin(), dpVec.end());
+  float maxConfidence = *maxIter;
+
   double refDir[3] = {0, 0, 1};
-  QImage ipfColorImage(roiSize, QImage::Format_RGB32);
-  //    ss << "X Position,Y Position,EulerAngles_0,EulerAngles_1,EulerAngles_2\n";
   for(int y = 0; y < roiSize.height(); y++)
   {
     for(int x = 0; x < roiSize.width(); x++)
     {
       size_t i = x + y * roiSize.width();
 
+      float confidence = dpArray[i];
+      float normalizedValue = (static_cast<float>(confidence - minConfidence)) / (static_cast<float>(maxConfidence - minConfidence));
+      float confidenceA = normalizedValue * 255;
+
+      //      if(confidence > 0.81f)
+      //      {
       double eulers[3] = {dictVec[(idxVec[i] - 1) * 3], dictVec[(idxVec[i] - 1) * 3 + 1], dictVec[(idxVec[i] - 1) * 3 + 2]};
 
-      SIMPL::Rgb argb = laueOps->generateIPFColor(eulers, refDir, false);
-      ipfColorImage.setPixel(x, y, argb);
+      SIMPL::Rgb rgb = laueOps->generateIPFColor(eulers, refDir, false);
+      QRgb rgba = qRgba(qRed(rgb), qGreen(rgb), qBlue(rgb), confidenceA);
+      ipfColorImage.setPixel(m_InputData.roi_x + x - 1, m_InputData.roi_y + y - 1, rgba);
+      //      }
     }
   }
 
@@ -492,13 +523,6 @@ void DictionaryIndexingController::processFinished()
   {
     emit diCreated(imageResult);
   }
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void DictionaryIndexingController::initializeData()
-{
 }
 
 // -----------------------------------------------------------------------------

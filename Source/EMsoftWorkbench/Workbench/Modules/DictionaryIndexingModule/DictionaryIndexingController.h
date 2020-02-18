@@ -38,6 +38,7 @@
 #include <array>
 
 #include <QtCore/QTemporaryDir>
+#include <QtGui/QImage>
 
 #include "Modules/IProcessController.h"
 
@@ -130,6 +131,7 @@ public:
     int numOfThreads;
     int platId;
     int devId;
+    QImage adpMap;
   };
 
   /**

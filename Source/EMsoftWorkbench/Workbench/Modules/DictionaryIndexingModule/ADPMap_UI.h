@@ -95,6 +95,12 @@ public slots:
    */
   void listenSelectedPatternDatasetChanged(const QStringList& patternDSetPaths);
 
+  /**
+   * @brief listenADPMapCreated
+   * @param adpMap
+   */
+  void listenADPMapCreated(const QImage& adpMap);
+
 protected:
   /**
    * @brief setupGui
@@ -133,6 +139,7 @@ signals:
 
   void adpMapGenerationStarted();
   void adpMapGenerationFinished();
+  void adpMapCreated(const QImage&);
 
   void parametersChanged();
 

@@ -255,7 +255,7 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
 {
   if(createMonteCarloBtn->text() == "Cancel" && m_Controller != nullptr)
   {
-    m_Controller->cancelProcess();
+    m_Controller->cancel();
     emit processCompleted();
     setRunning(false);
     return;

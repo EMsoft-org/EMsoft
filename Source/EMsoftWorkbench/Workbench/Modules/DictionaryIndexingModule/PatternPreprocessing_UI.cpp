@@ -211,7 +211,7 @@ void PatternPreprocessing_UI::listenPatternPreprocessingStarted()
 {
   if(m_Ui->generatePPMatrixBtn->text() == "Cancel")
   {
-    m_PPMatrixController->cancelProcess();
+    m_PPMatrixController->cancel();
     emit patternPreprocessingFinished();
     return;
   }

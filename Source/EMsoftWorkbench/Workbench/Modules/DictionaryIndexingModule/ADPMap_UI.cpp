@@ -225,13 +225,20 @@ void ADPMap_UI::listenSelectedPatternDatasetChanged(const QStringList& patternDS
 }
 
 // -----------------------------------------------------------------------------
+void ADPMap_UI::listenADPMapCreated(const QImage& adpMap)
+{
+  m_Ui->adpViewer->loadImage(adpMap);
+  emit adpMapCreated(adpMap);
+}
+
+// -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void ADPMap_UI::listenADPGenerationStarted()
 {
   if(m_Ui->generateADPBtn->text() == "Cancel" && m_ADPController != nullptr)
   {
-    m_ADPController->cancelProcess();
+    m_ADPController->cancel();
     emit adpMapGenerationFinished();
     return;
   }
@@ -254,7 +261,7 @@ void ADPMap_UI::listenADPGenerationStarted()
   connect(m_ADPController, SIGNAL(finished()), m_Thread, SLOT(quit()));
   connect(m_Thread, SIGNAL(finished()), this, SLOT(processFinished()));
 
-  connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), m_Ui->adpViewer, SLOT(loadImage(const QImage&)));
+  connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), this, SLOT(listenADPMapCreated(const QImage&)));
   connect(m_ADPController, SIGNAL(errorMessageGenerated(QString)), this, SIGNAL(errorMessageGenerated(QString)));
   connect(m_ADPController, SIGNAL(warningMessageGenerated(QString)), this, SIGNAL(warningMessageGenerated(QString)));
   connect(m_ADPController, SIGNAL(stdOutputMessageGenerated(QString)), this, SIGNAL(stdOutputMessageGenerated(QString)));

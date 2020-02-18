@@ -53,9 +53,9 @@ public slots:
   void execute();
 
   /**
-   * @brief cancelProcess
+   * @brief cancel
    */
-  void cancelProcess();
+  void cancel();
 
 protected:
   IProcessController(const QString& exeName, const QString& nmlName, QObject* parent = nullptr);
@@ -77,7 +77,7 @@ private:
   QString m_NMLName;
 
   QString m_StartTime = "";
-  QSharedPointer<QProcess> m_CurrentProcess;
+  QSharedPointer<QProcess> m_CurrentProcess = nullptr;
 
   /**
    * @brief DictionaryIndexingController::generateNMLFile

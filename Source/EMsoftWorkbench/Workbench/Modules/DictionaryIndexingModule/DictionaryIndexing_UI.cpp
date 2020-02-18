@@ -487,7 +487,7 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
 {
   if(m_Ui->generateDIBtn->text() == "Cancel")
   {
-    m_DIController->cancelProcess();
+    m_DIController->cancel();
     emit diGenerationFinished();
     return;
   }
@@ -692,6 +692,7 @@ DictionaryIndexingController::InputDataType DictionaryIndexing_UI::getDIData()
   data.numOfThreads = m_Ui->numOfThreadsLE->text().toInt();
   data.platId = m_Ui->gpuPlatformCB->currentIndex() + 1;
   data.devId = m_Ui->gpuDeviceCB->currentIndex() + 1;
+  data.adpMap = m_ADPMap;
   return data;
 }
 
@@ -840,4 +841,11 @@ void DictionaryIndexing_UI::setSelectedNumberOfRegions(int value)
   m_SelectedNumOfRegions = value;
 
   m_Ui->ppNumOfRegionsLabel->setText(QString::number(m_SelectedNumOfRegions));
+}
+
+// -----------------------------------------------------------------------------
+void DictionaryIndexing_UI::setADPMap(const QImage& adpMap)
+{
+  m_ADPMap = adpMap;
+  m_Ui->diViewer->loadImage(adpMap);
 }

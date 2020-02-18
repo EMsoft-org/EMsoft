@@ -144,6 +144,8 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::warningMessageGenerated, this, &DictionaryIndexingMain_UI::notifyWarningMessage);
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
+
+  connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapCreated, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setADPMap);
 }
 
 // -----------------------------------------------------------------------------
