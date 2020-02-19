@@ -154,16 +154,16 @@ type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp
 real(kind=sgl),allocatable                 :: mLPNH(:,:), mLPSH(:,:), masterSPNH(:,:), masterSPSH(:,:)
 integer(kind=irg)						               :: npx, npy, gcnt, ierr, nix, niy, nixp, niyp, i, j, w, istat, TIFF_nx, TIFF_ny, &
-                                              hdferr, bw, d, ll, res, timestart, timestop
-real(kind=sgl)							               :: xy(2), xyz(3), dx, dy, dxm, dym, Radius, mi, ma, tstart, tstop, sdev, mean
-real(kind=dbl)                             :: VMFscale, inten
+                                              hdferr, bw, d, ll, res, timestart, timestop, info
+real(kind=sgl)							               :: xy(2), xyz(3), dx, dy, dxm, dym, Radius, mi, ma, tstart, tstop, sdev, mean, kl(2)
+real(kind=dbl)                             :: VMFscale, inten, p, LegendreLattitude
 character(fnlen)                           :: fname, TIFF_filename, attributename, groupname, datagroupname, dataset, &
                                               HDF_FileVersion, hdfname, doiString, layout, SHTfile
 
 ! declare variables for use in object oriented image module
 integer                         :: iostat
 character(len=128)              :: iomsg
-logical                         :: isInteger
+logical                         :: isInteger, north
 integer(int8), allocatable      :: TIFF_image(:,:)
 character(11)                   :: dstr
 character(15)                   :: tstrb
@@ -188,6 +188,7 @@ real(c_float)                   :: lat(6)   ! lattice parameters {a, b, a, alpha
 real(c_float)                   :: fprm(nfpar) ! floating point parameters (float32 EMsoftED parameters in order)
 integer(c_int32_t)              :: iprm(nipar) ! integer parameters {# electrons, electron multiplier, numsx, npx, latgridtype}
 real(kind=dbl),allocatable      :: finalmLPNH(:,:), finalmLPSH(:,:), weights(:)
+real(kind=dbl),allocatable      :: LegendreArray(:), upd(:), diagonal(:)
 
 type(DiscreteSHT)               :: transformer 
 complex(kind=dbl), allocatable  :: almMaster(:,:)   ! spectra of master pattern to index against
@@ -255,6 +256,22 @@ call cpu_time(tstart)
   mLPSH = 0.0
 
 
+!=============================================
+!=============================================
+! precompute the Legendre array for the new lattitudinal grid values
+  call Message(' Computing Legendre lattitudinal grid values')
+  allocate(diagonal(2*npx+1),upd(2*npx+1))
+  diagonal = 0.D0
+  upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,2*npx+1) /)
+  call dsterf(2*npx-1, diagonal, upd, info) 
+! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
+  allocate(LegendreArray(0:2*npx))
+  LegendreArray(0:2*npx) = diagonal(2*npx+1:1:-1)
+! set the center eigenvalue to 0
+  LegendreArray(npx) = 0.D0
+  deallocate(diagonal, upd)
+
+
 ! the von Mises-Fisher distribution is defined by 
 !
 !   vmf(x;mu,kappa) = ( kappa / (4 pi sinh(kappa) ) ) exp[ kappa mu.x ]
@@ -281,6 +298,20 @@ call cpu_time(tstart)
   do i=1,gcnt
 ! locate the nearest Lambert pixel (we need to make sure that the cartesian vector has unit length)
     call NormVec(cell, rltmp%xyz, 'c') 
+
+! do we need to modify the direction cosines to coincide with the Legendre lattitudinal grid values?
+    north = .TRUE.
+    if (rltmp%xyz(3).lt.0) north=.FALSE.
+    if (abs(rltmp%xyz(3)).ne.1.D0) then
+      kl = LambertSpheretoSquare(rltmp%xyz, ierr) * float(npx)
+      LegendreLattitude = LegendreArray( int(maxval( abs(kl) )) )
+write (*,*) kl(1:2), LegendreLattitude
+! the factor p rescales the x and y components of kstar to maintain a unit vector
+      p = sqrt((1.D0-LegendreLattitude**2)/(1.D0-rltmp%xyz(3)**2))
+      rltmp%xyz = (/ p*rltmp%xyz(1), p*rltmp%xyz(2), LegendreLattitude /)
+    end if
+    if (.not.north) rltmp%xyz(3) = -rltmp%xyz(3)
+! and continue with the projection
     call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 ! intensity with polarization correction
     inten = rltmp%sfs * rltmp%polar

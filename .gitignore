@@ -88,7 +88,6 @@ IDL/various
 *.amake
 *.amake.bk
 *.f90.bak
-*.xtal
 
 # DOxygen files
 /doc/
