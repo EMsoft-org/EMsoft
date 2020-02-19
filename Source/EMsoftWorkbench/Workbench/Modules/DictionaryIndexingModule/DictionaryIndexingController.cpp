@@ -463,8 +463,6 @@ void DictionaryIndexingController::setUpdateProgress(int loopCompleted, int tota
 // -----------------------------------------------------------------------------
 void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, float* dpArray, int32_t* indexArray)
 {
-  QImage adpMapImage = m_InputData.adpMap;
-  adpMapImage = adpMapImage.convertToFormat(QImage::Format_ARGB32, Qt::MonoOnly);
   QImage ipfColorImage = m_InputData.adpMap;
   ipfColorImage = ipfColorImage.convertToFormat(QImage::Format_ARGB32, Qt::MonoOnly);
 
@@ -487,25 +485,61 @@ void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, flo
   std::vector<float>::iterator maxIter = std::max_element(dpVec.begin(), dpVec.end());
   float maxConfidence = *maxIter;
 
-  double refDir[3] = {0, 0, 1};
-  for(int y = 0; y < roiSize.height(); y++)
+  if(maxConfidence >= 0.0f && minConfidence >= 0.0f)
   {
-    for(int x = 0; x < roiSize.width(); x++)
+    double refDir[3] = {0, 0, 1};
+    for(int y = 0; y < m_InputData.ipfHeight; y++)
     {
-      size_t i = x + y * roiSize.width();
+      for(int x = 0; x < m_InputData.ipfWidth; x++)
+      {
+        if(x + 1 >= m_InputData.roi_x && x + 1 < m_InputData.roi_x + roiSize.width())
+        {
+          if(y + 1 >= m_InputData.roi_y && y + 1 < m_InputData.roi_y + roiSize.height())
+          {
+            // We are inside the ROI
+            QColor bgColor = ipfColorImage.pixelColor(x, y);
+            int bgRed = bgColor.red();
+            int bgGreen = bgColor.green();
+            int bgBlue = bgColor.blue();
+            int bgAlpha = bgColor.alpha();
 
-      float confidence = dpArray[i];
-      float normalizedValue = (static_cast<float>(confidence - minConfidence)) / (static_cast<float>(maxConfidence - minConfidence));
-      float confidenceA = normalizedValue * 255;
+            size_t i = x + y * roiSize.width();
+            float confidence = dpArray[i];
+            float normalizedValue;
+            if(maxConfidence == minConfidence)
+            {
+              normalizedValue = maxConfidence;
+            }
+            else
+            {
+              normalizedValue = (static_cast<float>(confidence - minConfidence)) / (static_cast<float>(maxConfidence - minConfidence));
+            }
+            float confidenceA = normalizedValue * 255;
 
-      //      if(confidence > 0.81f)
-      //      {
-      double eulers[3] = {dictVec[(idxVec[i] - 1) * 3], dictVec[(idxVec[i] - 1) * 3 + 1], dictVec[(idxVec[i] - 1) * 3 + 2]};
+            double eulers[3] = {dictVec[(idxVec[i] - 1) * 3], dictVec[(idxVec[i] - 1) * 3 + 1], dictVec[(idxVec[i] - 1) * 3 + 2]};
 
-      SIMPL::Rgb rgb = laueOps->generateIPFColor(eulers, refDir, false);
-      QRgb rgba = qRgba(qRed(rgb), qGreen(rgb), qBlue(rgb), confidenceA);
-      ipfColorImage.setPixel(m_InputData.roi_x + x - 1, m_InputData.roi_y + y - 1, rgba);
-      //      }
+            QColor fgColor = QColor(laueOps->generateIPFColor(eulers, refDir, false));
+            fgColor.setAlpha(confidenceA);
+            int fgRed = fgColor.red();
+            int fgGreen = fgColor.green();
+            int fgBlue = fgColor.blue();
+            int fgAlpha = fgColor.alpha();
+
+            QColor newColor;
+            newColor.setRed((fgColor.red() * normalizedValue) + (bgColor.red() * (1.0 - normalizedValue)));
+            newColor.setGreen((fgColor.green() * normalizedValue) + (bgColor.green() * (1.0 - normalizedValue)));
+            newColor.setBlue((fgColor.blue() * normalizedValue) + (bgColor.blue() * (1.0 - normalizedValue)));
+            newColor.setAlpha(255);
+
+            int newRed = newColor.red();
+            int newGreen = newColor.green();
+            int newBlue = newColor.blue();
+            int newAlpha = newColor.alpha();
+
+            ipfColorImage.setPixelColor(m_InputData.roi_x + x - 1, m_InputData.roi_y + y - 1, newColor);
+          }
+        }
+      }
     }
   }
 
