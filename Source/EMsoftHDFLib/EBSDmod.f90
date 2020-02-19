@@ -763,9 +763,12 @@ if (present(keep4)) then
 end if
 
 ! we assume that the calling program has opened the HDF interface
-
-infile = trim(EMsoft_getEMdatapathname())//trim(MPfile)
-infile = EMsoft_toNativePath(infile)
+if (MPfile(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then 
+  infile = trim(EMsoft_getEMdatapathname())//trim(MPfile)
+  infile = EMsoft_toNativePath(infile)
+else
+  infile = trim(MPfile)
+end if
 inquire(file=trim(infile), exist=f_exists)
 
 if (.not.f_exists) then
