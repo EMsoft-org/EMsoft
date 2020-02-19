@@ -488,22 +488,22 @@ void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, flo
   if(maxConfidence >= 0.0f && minConfidence >= 0.0f)
   {
     double refDir[3] = {0, 0, 1};
+    int roiStartX = m_InputData.roi_x - 1;
+    int roiStartY = m_InputData.roi_y - 1;
+    int roiEndX = roiStartX + roiSize.width() - 1;
+    int roiEndY = roiStartY + roiSize.height() - 1;
     for(int y = 0; y < m_InputData.ipfHeight; y++)
     {
       for(int x = 0; x < m_InputData.ipfWidth; x++)
       {
-        if(x + 1 >= m_InputData.roi_x && x + 1 < m_InputData.roi_x + roiSize.width())
+        if(x >= roiStartX && x <= roiEndX)
         {
-          if(y + 1 >= m_InputData.roi_y && y + 1 < m_InputData.roi_y + roiSize.height())
+          if(y >= roiStartY && y <= roiEndY)
           {
             // We are inside the ROI
             QColor bgColor = ipfColorImage.pixelColor(x, y);
-            int bgRed = bgColor.red();
-            int bgGreen = bgColor.green();
-            int bgBlue = bgColor.blue();
-            int bgAlpha = bgColor.alpha();
 
-            size_t i = x + y * roiSize.width();
+            size_t i = (y - roiStartY) * roiSize.width() + (x - roiStartX);
             float confidence = dpArray[i];
             float normalizedValue;
             if(maxConfidence == minConfidence)
@@ -520,10 +520,6 @@ void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, flo
 
             QColor fgColor = QColor(laueOps->generateIPFColor(eulers, refDir, false));
             fgColor.setAlpha(confidenceA);
-            int fgRed = fgColor.red();
-            int fgGreen = fgColor.green();
-            int fgBlue = fgColor.blue();
-            int fgAlpha = fgColor.alpha();
 
             QColor newColor;
             newColor.setRed((fgColor.red() * normalizedValue) + (bgColor.red() * (1.0 - normalizedValue)));
@@ -531,12 +527,7 @@ void DictionaryIndexingController::updateOutput(int nDict, float* dictArray, flo
             newColor.setBlue((fgColor.blue() * normalizedValue) + (bgColor.blue() * (1.0 - normalizedValue)));
             newColor.setAlpha(255);
 
-            int newRed = newColor.red();
-            int newGreen = newColor.green();
-            int newBlue = newColor.blue();
-            int newAlpha = newColor.alpha();
-
-            ipfColorImage.setPixelColor(m_InputData.roi_x + x - 1, m_InputData.roi_y + y - 1, newColor);
+            ipfColorImage.setPixelColor(x, y, newColor);
           }
         }
       }
