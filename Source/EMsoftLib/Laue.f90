@@ -300,7 +300,7 @@ real(kind=sgl),INTENT(IN)               :: kvec(3)
 real(kind=sgl),INTENT(IN)               :: kvox(3)
 real(kind=sgl)                          :: pattern(lnl%Ny, lnl%Nz)
     
-real(kind=sgl)                          :: th, la, s0(3), s(3), G(3), d, scl, dvec(3), kexit(3), kinpost, dins, atf, Ly, Lz
+real(kind=sgl)                          :: th, la, s0(3), s(3), G(3), d, scl, dvec(3), kexit(3), kinpost, dins, atf, Ly, Lz, pre
 type(Laue_grow_list),pointer            :: rltmp
 integer(kind=irg)                       :: i, j, k 
 
@@ -354,15 +354,14 @@ do i = 1, refcnt
     G = G / vecnorm(G)
 ! get the diffraction angle for the unit vectors
     th = acos( DOT_PRODUCT(kvec, G) ) - 0.5D0*cPi
+    pre = -2.D0 * DOT_PRODUCT(kvec, G)
     do j = 1, rltmp%Nentries
       if (rltmp%sfs(j).ne.0.0) then 
         la = 2.0 * rltmp%dspacing(j) * sin(th)
         if ((la.gt.lmin).and.(la.lt.lmax)) then ! we have a potential diffracted beam !
           ! get the scattered beam 
           s0 = kvec ! / la
-          s = s0 + la * G / rltmp%dspacing(j)   ! check this relation !!!
-! normalize this back to a Cartesian unit vector 
-          s = s / vecnorm(s)
+          s = s0 + pre * G 
 ! this vector originates at the point kvox in the sample, so next we compute 
 ! where the intersection with the detector plane will be; we only need to take 
 ! into account those s-vectors that have a positive x-component. 
@@ -391,6 +390,46 @@ do i = 1, refcnt
   rltmp => rltmp%next
 end do 
 
+! do i = 1, refcnt 
+! ! for all the allowed reflections along this systematic row, compute the wave length
+! ! using Bragg's law 
+!   rltmp%xyz = rltmp%xyz / vecnorm(rltmp%xyz)
+!   G = sngl(quat_Lp(conjg(qu),rltmp%xyz))
+!   if (G(1).lt.0.0) then 
+!     G = G / vecnorm(G)
+! ! get the diffraction angle for the unit vectors
+!     pre = -2.D0 * DOT_PRODUCT(kvec, G)
+!     do j = 1, rltmp%Nentries
+!       if (rltmp%sfs(j).ne.0.0) then 
+!           ! get the scattered beam 
+!           s0 = kvec 
+!           s = s0 + pre * G  ! this will always be a unit vector !
+! ! this vector originates at the point kvox in the sample, so next we compute 
+! ! where the intersection with the detector plane will be; we only need to take 
+! ! into account those s-vectors that have a positive x-component. 
+!           if (s(1).gt.0.0) then 
+!             scl = (d + abs(kvox(1))) / s(1)    ! scale factor to get to the detector plane
+!             dvec = kvox + s * scl             ! this is with respect to the optical axis
+!             dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
+!             if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
+! ! correct the intensity for absorption (total distance inside sample dins = kinpre + kinpost)
+!               scl = abs(kvox(1)) / s(1)    ! scale factor to get to the sample exit plane
+!               kexit = kvox + s * scl       ! this is with respect to the optical axis
+!               kinpost = sqrt(sum((kexit-kvox)**2))
+!               dins = kinpre + kinpost 
+!               atf = exp( - dins/lnl%absl )
+! ! and draw the reflection
+!               dvec = dvec / lnl%ps 
+!               call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, -dvec, sngl(atf*rltmp%sfs(j)), lnl%spotw)
+!             end if 
+!           else
+!             CYCLE
+!           end if
+!       end if 
+!     end do 
+!   end if
+!   rltmp => rltmp%next
+! end do 
 
 ! draw the reflection on the transmission screen 
  
