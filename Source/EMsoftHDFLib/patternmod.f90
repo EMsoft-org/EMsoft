@@ -1110,8 +1110,12 @@ end if
 if (inRAM.eqv..FALSE.) then
 ! first, make sure that this file does not already exist
    f_exists = .FALSE.
-   fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
-   fname = EMsoft_toNativePath(fname)
+   if (ebsdnl%tmpfile(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then 
+     fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
+     fname = EMsoft_toNativePath(fname)
+   else 
+     fname = trim(ebsdnl%tmpfile)
+   end if
    inquire(file=trim(trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)), exist=f_exists)
 
    call WriteValue('Creating temporary file :',trim(fname))

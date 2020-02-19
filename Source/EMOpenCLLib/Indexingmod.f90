@@ -337,8 +337,12 @@ if (trim(dinl%indexingmode).eq.'static') then
     CALL h5open_EMsoft(hdferr)
 
     ! get the full filename
-    dictfile = trim(EMsoft_getEMdatapathname())//trim(dinl%dictfile)
-    dictfile = EMsoft_toNativePath(dictfile)
+    if (dinl%dictfile(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then 
+      dictfile = trim(EMsoft_getEMdatapathname())//trim(dinl%dictfile)
+      dictfile = EMsoft_toNativePath(dictfile)
+    else 
+      dictfile = trim(dinl%dictfile)
+    end if 
 
     call Message('-->  '//'Opening HDF5 dictionary file '//trim(dinl%dictfile))
     nullify(HDF_head%next)
@@ -773,8 +777,12 @@ if (trim(dinl%maskfile).ne.'undefined') then
 ! ... etc
 !
     f_exists = .FALSE.
-    fname = trim(EMsoft_getEMdatapathname())//trim(dinl%maskfile)
-    fname = EMsoft_toNativePath(fname)
+    if (dinl%maskfile(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then
+      fname = trim(EMsoft_getEMdatapathname())//trim(dinl%maskfile)
+      fname = EMsoft_toNativePath(fname)
+    else
+      fname = trim(dinl%maskfile)
+    end if 
     inquire(file=trim(fname), exist=f_exists)
     if (f_exists.eqv..TRUE.) then
       mask = 0.0
@@ -822,8 +830,12 @@ call Message(' -> computing Average Dot Product map (ADP)')
 call Message(' ')
 
 ! re-open the temporary file
-fname = trim(EMsoft_getEMtmppathname())//trim(dinl%tmpfile)
-fname = EMsoft_toNativePath(fname)
+if (dinl%tmpfile(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then 
+  fname = trim(EMsoft_getEMtmppathname())//trim(dinl%tmpfile)
+  fname = EMsoft_toNativePath(fname)
+else
+  fname = trim(dinl%tmpfile)
+end if
 
 open(unit=itmpexpt,file=trim(fname),&
      status='old',form='unformatted',access='direct',recl=recordsize_correct,iostat=ierr)
@@ -1183,6 +1195,17 @@ call WriteValue('Number of experimental patterns indexed per second : ',io_real,
 ! ===================
 ! MAIN OUTPUT SECTION
 ! ===================
+! one more callback to send the final results...
+if (Clinked.eqv..TRUE.) then 
+! extract the first row from the indexmain and resultmain arrays, put them in 
+! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
+  dparray(1:totnumexpt) = resultmain(1,1:totnumexpt) 
+  indarray(1:totnumexpt) = indexmain(1,1:totnumexpt)
+  ttime = 0.0
+! and call the callback routine ... 
+! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
+  call proc(objAddress, totn, totn, ttime, FZcnt, euarr_cptr, dparr_cptr, indarr_cptr)
+end if
 
 ! fill the ipar array with integer parameters that are needed to write the h5ebsd file
 ! (anything other than what is already in the dinl structure)

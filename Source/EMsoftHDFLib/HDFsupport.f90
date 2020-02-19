@@ -6741,8 +6741,12 @@ if (openHDFfile) then
   call h5open_EMsoft(hdferr)
   call HDFerror_check('ReadDataHDF:h5open_EMsoft', hdferr)
 
-  fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
-  fname = EMsoft_toNativePath(fname)
+  if (cell%fname(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then
+    fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
+    fname = EMsoft_toNativePath(fname)
+  else 
+    fname = trim(cell%fname)
+  end if
   hdferr =  HDF_openFile(fname, HDF_head)
   call HDFerror_check('ReadDataHDF:HDF_openFile:'//trim(fname), hdferr)
 end if

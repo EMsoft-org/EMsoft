@@ -444,8 +444,12 @@ character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
 
 ! we assume that the calling program has opened the HDF interface
 
-infile = trim(EMsoft_getEMdatapathname())//trim(MCfile)
-infile = EMsoft_toNativePath(infile)
+if (MCfile(1:1).eq.EMsoft_getEMsoftnativedelimiter()) then 
+  infile = trim(MCfile)
+else
+  infile = trim(EMsoft_getEMdatapathname())//trim(MCfile)
+  infile = EMsoft_toNativePath(infile)
+end if
 inquire(file=trim(infile), exist=f_exists)
 
 if (.not.f_exists) then
