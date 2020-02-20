@@ -122,6 +122,11 @@ protected slots:
   void listenDIGenerationStarted();
 
   /**
+   * @brief listenROIChanged
+   */
+  void listenROIChanged();
+
+  /**
    * @brief selectFilePath
    * @param caption
    * @param filter

@@ -47,6 +47,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_Moc_HDRS
   ${${MODULE_NAME}_DIR}/DictionaryIndexing_UI.h
   ${${MODULE_NAME}_DIR}/DictionaryIndexingMain_UI.h
   ${${MODULE_NAME}_DIR}/ADPMapController.h
+  ${${MODULE_NAME}_DIR}/DIImageViewer.h
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.h
   ${${MODULE_NAME}_DIR}/DictionaryIndexingController.h
   ${${MODULE_NAME}_DIR}/ChoosePatternsDataset_UI.h
@@ -72,6 +73,7 @@ set(EMsoftWorkbench_${MODULE_NAME}_SRCS
   ${${MODULE_NAME}_DIR}/DictionaryIndexing_UI.cpp
   ${${MODULE_NAME}_DIR}/DictionaryIndexingMain_UI.cpp
   ${${MODULE_NAME}_DIR}/ADPMapController.cpp
+  ${${MODULE_NAME}_DIR}/DIImageViewer.cpp
   ${${MODULE_NAME}_DIR}/DictionaryIndexingModule.cpp
   ${${MODULE_NAME}_DIR}/DictionaryIndexingController.cpp
   ${${MODULE_NAME}_DIR}/ChoosePatternsDataset_UI.cpp

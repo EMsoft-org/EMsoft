@@ -39,8 +39,8 @@
 
 #include <QtWidgets/QFileDialog>
 
-#include "Modules/ModuleTools.hpp"
 #include "Modules/DictionaryIndexingModule/Constants.h"
+#include "Modules/ModuleTools.hpp"
 
 namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
@@ -169,10 +169,10 @@ void DictionaryIndexing_UI::createModificationConnections()
   // Line Edits
   connect(m_Ui->maskRadiusLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->samplingStepSizeXLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->roi1LE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->roi2LE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->roi3LE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
-  connect(m_Ui->roi4LE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
+  connect(m_Ui->roi1LE, &QLineEdit::textChanged, [=] { listenROIChanged(); });
+  connect(m_Ui->roi2LE, &QLineEdit::textChanged, [=] { listenROIChanged(); });
+  connect(m_Ui->roi3LE, &QLineEdit::textChanged, [=] { listenROIChanged(); });
+  connect(m_Ui->roi4LE, &QLineEdit::textChanged, [=] { listenROIChanged(); });
   connect(m_Ui->samplingStepSizeYLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->isangleLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->LLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
@@ -311,6 +311,18 @@ void DictionaryIndexing_UI::updateZoomFactor(float zoomFactor)
 }
 
 // -----------------------------------------------------------------------------
+void DictionaryIndexing_UI::listenROIChanged()
+{
+  int x = m_Ui->roi1LE->text().toInt();
+  int y = m_Ui->roi2LE->text().toInt();
+  int w = m_Ui->roi3LE->text().toInt();
+  int h = m_Ui->roi4LE->text().toInt();
+  m_Ui->diViewer->setROI(x, y, w, h);
+
+  emit parametersChanged();
+}
+
+// -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::listenROICheckboxStateChanged(int state)
@@ -320,6 +332,19 @@ void DictionaryIndexing_UI::listenROICheckboxStateChanged(int state)
   m_Ui->roi2LE->setEnabled(checkState == Qt::Checked);
   m_Ui->roi3LE->setEnabled(checkState == Qt::Checked);
   m_Ui->roi4LE->setEnabled(checkState == Qt::Checked);
+
+  if(checkState == Qt::Checked)
+  {
+    int x = m_Ui->roi1LE->text().toInt();
+    int y = m_Ui->roi2LE->text().toInt();
+    int w = m_Ui->roi3LE->text().toInt();
+    int h = m_Ui->roi4LE->text().toInt();
+    m_Ui->diViewer->setROI(x, y, w, h);
+  }
+  else
+  {
+    m_Ui->diViewer->clearROI();
+  }
 
   emit parametersChanged();
 }

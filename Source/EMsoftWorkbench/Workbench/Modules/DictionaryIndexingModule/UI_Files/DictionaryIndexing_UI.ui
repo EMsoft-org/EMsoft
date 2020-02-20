@@ -1742,7 +1742,7 @@
         </widget>
        </item>
        <item row="1" column="0" colspan="6">
-        <widget class="GLImageViewer" name="diViewer">
+        <widget class="DIImageViewer" name="diViewer">
          <property name="minimumSize">
           <size>
            <width>300</width>
@@ -1797,9 +1797,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>GLImageViewer</class>
+   <class>DIImageViewer</class>
    <extends>QOpenGLWidget</extends>
-   <header location="global">GLImageViewer.h</header>
+   <header location="global">DIImageViewer.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
