@@ -1005,6 +1005,20 @@ dictionaryloop: do ii = 1,cratio+1
             resultmain(1:nnk,jjj) = resulttmp(1:nnk,jjj)
             indexmain(1:nnk,jjj) = indextmp(1:nnk,jjj)
         end do
+
+! handle the callback routines if requested 
+    if (Clinked.eqv..TRUE.) then 
+! has the cancel flag been set by the calling program ?
+      if (cancel.ne.char(0)) cancelled = .TRUE.
+! extract the first row from the indexmain and resultmain arrays, put them in 
+! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
+      dparray(1:totnumexpt) = resultmain(1,1:totnumexpt) 
+      indarray(1:totnumexpt) = indexmain(1,1:totnumexpt)
+! and call the callback routine ... 
+! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
+      call proc(objAddress, cn, totn, ttime, FZcnt, euarr_cptr, dparr_cptr, indarr_cptr)
+    end if
+
       end do experimentalloop
 
       io_real(1) = mvres
@@ -1034,15 +1048,8 @@ dictionaryloop: do ii = 1,cratio+1
        if (verbose.eqv..TRUE.) call WriteValue('','        GPU thread is idling')
     end if  ! ii.gt.1
 
-! handle the callback routines if requested 
     if (Clinked.eqv..TRUE.) then 
-! has the cancel flag been set by the calling program ?
-      if (cancel.ne.char(0)) cancelled = .TRUE.
-! extract the first row from the indexmain and resultmain arrays, put them in 
-! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
-      dparray(1:totnumexpt) = resultmain(1,1:totnumexpt) 
-      indarray(1:totnumexpt) = indexmain(1,1:totnumexpt)
-! get the timer value 
+      ! get the timer value 
       if (iii.lt.5) then 
         ttime = 0.0
       else 
@@ -1054,11 +1061,33 @@ dictionaryloop: do ii = 1,cratio+1
           ttime = tstop * float(cratio-iii) / float(cratio)
         end if 
       end if 
-! and call the callback routine ... 
-! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
-      call proc(objAddress, cn, totn, ttime, FZcnt, euarr_cptr, dparr_cptr, indarr_cptr)
       cn = cn + dn
     end if
+! ! handle the callback routines if requested 
+!     if (Clinked.eqv..TRUE.) then 
+! ! has the cancel flag been set by the calling program ?
+!       if (cancel.ne.char(0)) cancelled = .TRUE.
+! ! extract the first row from the indexmain and resultmain arrays, put them in 
+! ! 1D arrays, and return the C-pointer to those arrays via the cproc callback routine 
+!       dparray(1:totnumexpt) = resultmain(1,1:totnumexpt) 
+!       indarray(1:totnumexpt) = indexmain(1,1:totnumexpt)
+! ! get the timer value 
+!       if (iii.lt.5) then 
+!         ttime = 0.0
+!       else 
+!         if (iii.eq.5) then 
+!           tock = Time_tock(tickstart)
+!           ttime = float(tock) * float(cratio) / float(iii)
+!           tstop = ttime
+!         else 
+!           ttime = tstop * float(cratio-iii) / float(cratio)
+!         end if 
+!       end if 
+! ! and call the callback routine ... 
+! ! callback arguments:  objAddress, loopCompleted, totalLoops, timeRemaining, dparray, indarray
+!       call proc(objAddress, cn, totn, ttime, FZcnt, euarr_cptr, dparr_cptr, indarr_cptr)
+!       cn = cn + dn
+!     end if
 
 !$OMP END MASTER
 
