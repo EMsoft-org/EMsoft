@@ -457,7 +457,7 @@ end subroutine addLauereflection
 
 !--------------------------------------------------------------------------
 !
-! SUBROUTINE:addLauereflection
+! SUBROUTINE:addLaueSlitreflection
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
@@ -491,16 +491,12 @@ real(kind=sgl)                    :: row(dd), px, py, evals(dd,dd), dx, dy
 integer(kind=irg)                 :: i, ddd, ix, iy
 
 ! make sure that the xar and yar arrays are allocated 
-! if (allocated(xar).eqv..FALSE.) then
- ! if (allocated(yar).eqv..FALSE.) then 
-  row = (/ (real(i), i=0,dd-1) /) - real(dd/2)
-  allocate(xar(dd,dd), yar(dd,dd))
-  do i=1,dd 
-    xar(:,i) = row
-    yar(i,:) = row
-  end do
- ! end if
-! end if
+row = (/ (real(i), i=0,dd-1) /) - real(dd/2)
+allocate(xar(dd,dd), yar(dd,dd))
+do i=1,dd 
+  xar(:,i) = row
+  yar(i,:) = row
+end do
 
 ddd = (dd-1)/2
 
@@ -512,7 +508,6 @@ dy = py-int(py)
 ix = int(px)-ddd
 iy = int(py)-ddd 
 
-! evals = alog(sfs+1.0) * exp( - ( (xar-dx)**2 + (yar -dy)**2 ) * spotw )
 evals = sfs * exp( - ( (xar-dx)**2 + (yar -dy)**2 ) * spotw )
 
 if ( (ix+dd.lt.npx).and.(iy+dd.lt.npy).and.(ix.gt.0).and.(iy.gt.0) ) then
@@ -570,7 +565,7 @@ real(kind=sgl)                      :: mLPNH(-LPdims(1):LPdims(1), -LPdims(2):LP
 
 integer(kind=irg)                   :: iz, iy, ierr, slp1(2), slp2(2), Lgx, Lgy, Lring, edge, j, k, Lx, Ly, Npts, rrr(2)
 real(kind=dbl)                      :: pz, py, phi, quat(4), yquat(4), r, p, q(3), Ledge, xy(2), d, &
-                                       Lpoints(2,4), dc(3,4), Ldc(3,4), LegendreLattitude, Ld(2), rr(2,4), qq(3,4)
+                                       Lpoint(2), dc(3), Ldc(3), LegendreLattitude, Ld(2), rr(2), qq(3)
 integer(kind=irg),allocatable       :: Lxy(:,:)
 
 
@@ -623,11 +618,10 @@ if (trim(BPmode).eq.'backward') then
 else ! we do a forward projection from the square Legendre array, going in concentric squares from the 
      ! edge to the center, but terminating when we go off the detector surface; for each point on the 
      ! square path, we convert to direction cosines, rescale to Legendre lattitudes, and then project
-     ! onto the detector plane.  We do this for four points surrounding the selected point so that we 
-     ! can cover the case where the detector has many more pixels than the square Legendre grid. 
+     ! onto the detector plane.  
   yquat = (/ 1.D0/sqrt(2.D0), 0.D0, 1.D0/sqrt(2.D0), 0.D0 /)  
   allocate(Lxy(2,4*(2*edge+1)))
-  do Lring = Lstart, edge/2 ! -1   ! we skip several outer square rings since their intensity is zero
+  do Lring = Lstart, edge/2 ! we skip several outer square rings since their intensity is zero
     LegendreLattitude = LegendreArray( Lring )
     k=1
     Lxy = 0
@@ -654,33 +648,25 @@ else ! we do a forward projection from the square Legendre array, going in conce
     Npts = k-1
 
     do k=1,Npts
-! get the four neighboring points in the order (/ --, +-, ++, -+ /)
-      Lpoints(1:2, 1) = (/ dble(Lxy(1,k)) - d, dble(Lxy(2,k)) - d /) / Ledge
-      Lpoints(1:2, 2) = (/ dble(Lxy(1,k)) + d, dble(Lxy(2,k)) - d /) / Ledge
-      Lpoints(1:2, 3) = (/ dble(Lxy(1,k)) + d, dble(Lxy(2,k)) + d /) / Ledge
-      Lpoints(1:2, 4) = (/ dble(Lxy(1,k)) - d, dble(Lxy(2,k)) + d /) / Ledge
-! transform them to direction cosines 
-      do j=1,4 
-        dc(1:3, j) = LambertSquaretoSphere(Lpoints(1:2,j), ierr)
-! convert there to have Legendre lattitudes instead of Lambert lattitudes
-        p = sqrt((1.D0-LegendreLattitude**2)/(1.D0-dc(3,j)**2))
-        Ldc(1:3,j) = (/ p*dc(1,j), p*dc(2,j), LegendreLattitude /)
+! get the direction cosines for point k
+      Lpoint = (/ dble(Lxy(1,k)), dble(Lxy(2,k)) /) / Ledge
+      dc = LambertSquaretoSphere(Lpoint, ierr)
+! convert to have Legendre lattitudes instead of Lambert lattitudes
+      p = sqrt((1.D0-LegendreLattitude**2)/(1.D0-dc(3)**2))
+      Ldc = (/ p*dc(1), p*dc(2), LegendreLattitude /)
 ! rotate around the y-axis to the correct quadrant 
-        qq(1:3,j) = quat_LP( yquat, Ldc(1:3,j) )
+      qq = quat_LP( yquat, Ldc )
 ! finally, project these vectors to the detector plane 
-        rr(1:2,j) = 2.D0 * dble(L) * qq(1,j) / (2.D0*qq(1,j)**2-1.D0) * (/ qq(2,j), qq(3,j) /)       
-      end do 
-! if all four points lie on the detector, then we integrate the intensity
-      if ( ( (maxval(abs(rr(1,:))).lt.Ld(1)) .and. (maxval(abs(rr(2,:))).lt.Ld(2)) ).eqv..TRUE.) then 
-        rrr = nint( sum(rr / delta, 2)*0.25 ) + Ldims/2
-        ! mLPNH(Lxy(1,k), Lxy(2,k)) = IntegrateIntensity(rr(1,:), rr(2,:), Lpat, Ldims) 
+      rr = 2.D0 * dble(L) * qq(1) / (2.D0*qq(1)**2-1.D0) * (/ qq(2), qq(3) /)       
+! if the point falls inside the field of view, then get the intensity
+      if ( ( (abs(rr(1)).lt.Ld(1)) .and. (abs(rr(2)).lt.Ld(2)) ).eqv..TRUE.) then 
+        rrr = nint( rr / delta ) + Ldims/2
         if ( ((rrr(1).gt.0).and.(rrr(1).lt.Ldims(1))) .and. ( (rrr(2).gt.0).and.(rrr(2).lt.Ldims(2) ) ) ) then 
           mLPNH(Lxy(1,k), Lxy(2,k)) = Lpat( rrr(1), rrr(2) )
         end if
       end if 
     end do 
   end do 
-
 end if
 
 end function backprojectLauePattern
