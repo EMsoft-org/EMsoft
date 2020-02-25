@@ -192,9 +192,6 @@ kinner = getXRDwavenumber(sngl(lnl%VoltageL))
 lambdamin = 1.0/kouter
 lambdamax = 1.0/kinner
 
-write (*,*) ' wave length limits : ', lambdamin, lambdamax 
-
-
 !=============================================
 !=============================================
 ! crystallography section 
@@ -364,10 +361,10 @@ do i=1,4
   scuvec(1:3,i) = slitcorners(1:3,i) / vecnorm(slitcorners(1:3,i))
 end do
 
-write (*,*) 'slitcorners in slit plane '
-do i=1,4
-  write(*,*) (slitcorners(j,i), j=1,3), (scuvec(j,i), j=1,3)
-end do
+! write (*,*) 'slitcorners in slit plane '
+! do i=1,4
+!   write(*,*) (slitcorners(j,i), j=1,3), (scuvec(j,i), j=1,3)
+! end do
 
 ! slit corner vectors extended to the detector plane; delineates the projected image of the slit
 do i=1, 4
@@ -375,10 +372,10 @@ do i=1, 4
   scdet(1:3,i) = l * scuvec(1:3,i)
 end do
 
-write (*,*) 'slitcorners in detector plane '
-do i=1,4
-  write(*,*) (scdet(j,i), j=1,3)
-end do
+! write (*,*) 'slitcorners in detector plane '
+! do i=1,4
+!   write(*,*) (scdet(j,i), j=1,3)
+! end do
 
 
 ! the same in the sample back plane, which delineates the range of sample voxels to be considered
@@ -387,10 +384,10 @@ do i=1, 4
   scsbp(1:3,i) = l * scuvec(1:3,i)
 end do
 
-write (*,*) 'slitcorners in sample back plane '
-do i=1,4
-  write(*,*)  (scsbp(j,i), j=1,3)
-end do
+! write (*,*) 'slitcorners in sample back plane '
+! do i=1,4
+!   write(*,*)  (scsbp(j,i), j=1,3)
+! end do
 
 
 ! determine the integration range for voxels inside the sample 
@@ -410,7 +407,7 @@ m = (maxvz-minvz)/2
 minvz = -m
 maxvz = m
 
-write (*,*) 'voxel ranges : ', minvy, maxvy, minvz, maxvz, numvx 
+! write (*,*) 'voxel ranges : ', minvy, maxvy, minvz, maxvz, numvx 
 
 ! maximum number of sample voxels that can contribute to the pattern 
 numvox = (maxvy-minvy)*(maxvz-minvz)*numvx 
@@ -418,7 +415,7 @@ numvox = (maxvy-minvy)*(maxvz-minvz)*numvx
 ! the coordinates of the projected center of the sample (in the back plane) 
 samplecenter = sum(scsbp,2) * 0.25D0 
 
-write (*,*) 'sample back plane center : ', samplecenter 
+! write (*,*) 'sample back plane center : ', samplecenter 
 
 ! an incident wave vector is then proportional to a unit vector along the line connecting each of the 
 ! sample voxels to the source location; the complete pattern can then be formed by superimposing all 
@@ -579,7 +576,6 @@ dataset = SC_Duration
 
 npx = lnl%Ny 
 npy = lnl%Nz 
-write (*,*) 'starting patterns ', npx, npy 
 
 ! optionally, write the individual tiff image files 
  do ii=1,numangles

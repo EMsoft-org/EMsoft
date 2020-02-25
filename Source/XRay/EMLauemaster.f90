@@ -305,21 +305,20 @@ call cpu_time(tstart)
     if (abs(rltmp%xyz(3)).ne.1.D0) then
       kl = LambertSpheretoSquare(rltmp%xyz, ierr) * float(npx)
       LegendreLattitude = LegendreArray( int(maxval( abs(kl) )) )
-write (*,*) kl(1:2), LegendreLattitude
 ! the factor p rescales the x and y components of kstar to maintain a unit vector
       p = sqrt((1.D0-LegendreLattitude**2)/(1.D0-rltmp%xyz(3)**2))
       rltmp%xyz = (/ p*rltmp%xyz(1), p*rltmp%xyz(2), LegendreLattitude /)
     end if
     if (.not.north) rltmp%xyz(3) = -rltmp%xyz(3)
 ! and continue with the projection
-    call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+!   call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 ! intensity with polarization correction
     inten = rltmp%sfs * rltmp%polar
 ! depending on the sign of xyz(3) we put this point in the Northern or Southern hemisphere, taking into account the
 ! special case of reflections along the equator which should appear in both hemisphere arrays.  The intensities are 
 ! computed on a small grid of w x w points on the Lambert projection, which are then interpolated from a "Gaussian" on
 ! the sphere. we use the von Mises-Fisher distribution with p=3
-    call sampleVMF(sngl(rltmp%xyz), lmnl%kappaVMF, VMFscale, inten, npx, nix, niy, w, mLPNH, mLPSH)
+    call sampleVMF(sngl(rltmp%xyz), lmnl%kappaVMF, VMFscale, inten, npx, int(kl(1)), int(kl(2)), w, mLPNH, mLPSH)
 ! and go to the next point
     rltmp => rltmp%next
   end do 

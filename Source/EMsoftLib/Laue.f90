@@ -585,37 +585,37 @@ yquat = (/ 1.D0/sqrt(2.D0), 0.D0, -1.D0/sqrt(2.D0), 0.D0 /)
 ! we can either scan the detector and back project onto the square Legendre projection,
 ! or we foward project from the square Legendre array and integrate the corresponding 
 ! area on the detector...
-if (trim(BPmode).eq.'backward') then 
-! this needs to be completed !!!
-  do iy=1,Ldims(1)
-    py = dble(iy-Ldims(1)/2) * delta
-    do iz=1,Ldims(2)
-      pz = dble(iz-Ldims(2)/2) * delta
-      if (Lpat(iy,iz).ne.0.D0) then 
-      ! if (Lpat(ix,iy).ge.1.D-3) then 
-  ! get the azimuthal angle phi from px and py
-          phi = datan2(py, pz) - cPi*0.5D0
-          quat = (/ cos(phi*0.5D0), -sin(phi*0.5D0), 0.D0, 0.D0 /)
-  ! use the analytical backprojection equation
-          p = sqrt(L*L+py*py+pz*pz)
-          r = 1.D0 / sqrt( 2.D0*p*(p+L) )
-          q = (/ -0.5D0*sqrt(1.D0+L/p), py*r, pz*r /)
-  ! this is the normal in the azimuthal plane (x,z); next we need to apply the rotation by phi 
-  ! around x to bring the vector into the correct location
-  ! also rotate these unit vectors by 90° around the y-axis so that they fall in along the equator
-          q = quat_Lp(yquat,quat_Lp(quat, q))
-          q = q/norm2(q) 
-  ! convert to the Legendre lattitude 
+! if (trim(BPmode).eq.'backward') then 
+! ! this needs to be completed !!!
+!   do iy=1,Ldims(1)
+!     py = dble(iy-Ldims(1)/2) * delta
+!     do iz=1,Ldims(2)
+!       pz = dble(iz-Ldims(2)/2) * delta
+!       if (Lpat(iy,iz).ne.0.D0) then 
+!       ! if (Lpat(ix,iy).ge.1.D-3) then 
+!   ! get the azimuthal angle phi from px and py
+!           phi = datan2(py, pz) - cPi*0.5D0
+!           quat = (/ cos(phi*0.5D0), -sin(phi*0.5D0), 0.D0, 0.D0 /)
+!   ! use the analytical backprojection equation
+!           p = sqrt(L*L+py*py+pz*pz)
+!           r = 1.D0 / sqrt( 2.D0*p*(p+L) )
+!           q = (/ -0.5D0*sqrt(1.D0+L/p), py*r, pz*r /)
+!   ! this is the normal in the azimuthal plane (x,z); next we need to apply the rotation by phi 
+!   ! around x to bring the vector into the correct location
+!   ! also rotate these unit vectors by 90° around the y-axis so that they fall in along the equator
+!           q = quat_Lp(yquat,quat_Lp(quat, q))
+!           q = q/norm2(q) 
+!   ! convert to the Legendre lattitude 
 
-  ! and project this point onto the Lambert square 
-          xy = LambertSphereToSquare(q,ierr) * Ledge + Ledge
-          if ((.not.isNaN(xy(1))) .and. (.not.isNaN(xy(2)))) then 
-            call InsertIntensity( mLPNH, LPdims, xy, Lpat(iy,iz) )
-          end if
-      end if
-    end do 
-  end do
-else ! we do a forward projection from the square Legendre array, going in concentric squares from the 
+!   ! and project this point onto the Lambert square 
+!           xy = LambertSphereToSquare(q,ierr) * Ledge + Ledge
+!           if ((.not.isNaN(xy(1))) .and. (.not.isNaN(xy(2)))) then 
+!             call InsertIntensity( mLPNH, LPdims, xy, Lpat(iy,iz) )
+!           end if
+!       end if
+!     end do 
+!   end do
+! else ! we do a forward projection from the square Legendre array, going in concentric squares from the 
      ! edge to the center, but terminating when we go off the detector surface; for each point on the 
      ! square path, we convert to direction cosines, rescale to Legendre lattitudes, and then project
      ! onto the detector plane.  
@@ -656,18 +656,19 @@ else ! we do a forward projection from the square Legendre array, going in conce
       Ldc = (/ p*dc(1), p*dc(2), LegendreLattitude /)
 ! rotate around the y-axis to the correct quadrant 
       qq = quat_LP( yquat, Ldc )
-! finally, project these vectors to the detector plane 
+! finally, forward project the vector to the detector plane 
       rr = 2.D0 * dble(L) * qq(1) / (2.D0*qq(1)**2-1.D0) * (/ qq(2), qq(3) /)       
 ! if the point falls inside the field of view, then get the intensity
       if ( ( (abs(rr(1)).lt.Ld(1)) .and. (abs(rr(2)).lt.Ld(2)) ).eqv..TRUE.) then 
+! convert to units of pixels      
         rrr = nint( rr / delta ) + Ldims/2
-        if ( ((rrr(1).gt.0).and.(rrr(1).lt.Ldims(1))) .and. ( (rrr(2).gt.0).and.(rrr(2).lt.Ldims(2) ) ) ) then 
+        ! if ( ((rrr(1).gt.0).and.(rrr(1).lt.Ldims(1))) .and. ( (rrr(2).gt.0).and.(rrr(2).lt.Ldims(2) ) ) ) then 
           mLPNH(Lxy(1,k), Lxy(2,k)) = Lpat( rrr(1), rrr(2) )
-        end if
+        ! end if
       end if 
     end do 
   end do 
-end if
+! end if
 
 end function backprojectLauePattern
 
