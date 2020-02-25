@@ -62,6 +62,10 @@ QString findEMsoftPathName()
   if(aPathDir.dirName() == "MacOS")
   {
     aPathDir.cdUp();
+    if(aPathDir.cd("bin"))
+    {
+      return aPathDir.absolutePath();
+    }
     aPathDir.cdUp();
     aPathDir.cdUp();
     return aPathDir.absolutePath();
