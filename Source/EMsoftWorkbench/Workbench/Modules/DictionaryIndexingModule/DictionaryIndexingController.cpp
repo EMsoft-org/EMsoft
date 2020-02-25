@@ -64,12 +64,23 @@ static QMap<size_t, DictionaryIndexingController*> instances;
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void DIProcessOutput(size_t instance, int loopCompleted, int totalLoops, float timeRemaining, int nDict, float** eulerArray, float** dpArray, int32_t** indexArray)
+void DIProcessTiming(size_t instance, int loopCompleted, int totalLoops, float timeRemaining)
 {
   DictionaryIndexingController* obj = instances[instance];
   if(nullptr != obj)
   {
     obj->setUpdateProgress(loopCompleted, totalLoops, timeRemaining);
+  }
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DIProcessOutput(size_t instance, int nDict, float** eulerArray, float** dpArray, int32_t** indexArray)
+{
+  DictionaryIndexingController* obj = instances[instance];
+  if(nullptr != obj)
+  {
     obj->updateOutput(nDict, *eulerArray, *dpArray, *indexArray);
   }
 }
@@ -151,7 +162,7 @@ void DictionaryIndexingController::executeWrapper()
 
   char* nmlFilePathArray = nmlFilePath.toLatin1().data();
   char* appNameArray = QCoreApplication::applicationName().toLatin1().data();
-  EBSDDIdriver(nmlFilePathArray, appNameArray, &DIProcessOutput, &DIProcessError, m_InstanceKey, &m_Cancel);
+  EBSDDIdriver(nmlFilePathArray, appNameArray, &DIProcessOutput, &DIProcessTiming, &DIProcessError, m_InstanceKey, &m_Cancel);
 
   emit finished();
 }

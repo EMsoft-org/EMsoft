@@ -96,7 +96,7 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 80 /), progname)
 ! call the EBSDdriver routine to take care of the entire indexing process 
 Cnmldeffile = carstringify(nmldeffile)
 Cprogname = carstringify(progname)
-call EBSDDIdriver(Cnmldeffile, Cprogname, C_NULL_FUNPTR, C_NULL_FUNPTR, 0_ill)
+call EBSDDIdriver(Cnmldeffile, Cprogname, C_NULL_FUNPTR, C_NULL_FUNPTR, C_NULL_FUNPTR, 0_ill)
 
 ! refinement step (if defined in the nml file)
 if (trim(dinl%refinementNMLfile).ne.'undefined') then 

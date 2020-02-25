@@ -34,21 +34,19 @@ typedef void (*ProgCallBackTypeDIdriver)(size_t, int, float**, float**, int32_t*
 typedef void (*ProgCallBackTypeErrorDIdriver)(size_t, int);
 
 /**
-* EBSD dictionary indexing wrapper:
-* @param nmlfile full path to the EMEBSDDI name list file 
-* @param progname program name 
-* @param dparray array of current highest dot product values
-* @param indexarray array of indices into the Euler array for the current best match
-* @param callback callback routine to update progress bar
-* @param errorcallback callback routine to report OpenCL error code
-* @param object unique identifier for calling class instantiation
-* @param cancel boolean to trigger cancellation of computation
-*/
-void EBSDDIdriver
-    (char* nmlfile, char* progname, 
-     ProgCallBackTypeDIdriver callback, 
-     ProgCallBackTypeErrorDIdriver errorcallback,
-     size_t object, bool* cancel);
+ * EBSD dictionary indexing wrapper:
+ * @param nmlfile full path to the EMEBSDDI name list file
+ * @param progname program name
+ * @param dparray array of current highest dot product values
+ * @param indexarray array of indices into the Euler array for the current best match
+ * @param callback callback routine to update progress bar
+ * @param timingcallback callback routine to report time remaining
+ * @param errorcallback callback routine to report OpenCL error code
+ * @param object unique identifier for calling class instantiation
+ * @param cancel boolean to trigger cancellation of computation
+ */
+void EBSDDIdriver(char* nmlfile, char* progname, ProgCallBackTypeDIdriver callback, ProgCallBackTypeTimingdriver timingcallback, ProgCallBackTypeErrorDIdriver errorcallback, size_t object,
+                  bool* cancel);
 
 #ifdef __cplusplus
 }
