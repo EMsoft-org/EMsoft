@@ -89,6 +89,8 @@ MonteCarloSimulation_UI::~MonteCarloSimulation_UI()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::setupGui()
 {
+  m_Controller = new MonteCarloSimulationController;
+
   // Create and set the validators on all the line edits
   createValidators();
 
@@ -179,8 +181,12 @@ void MonteCarloSimulation_UI::createModificationConnections()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::createWidgetConnections() const
 {
-  connect(createMonteCarloBtn, &QPushButton::clicked, this, &MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked);
+  // Pass errors, warnings, and std output messages up to the user interface
+  connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
+  connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
+  connect(createMonteCarloBtn, &QPushButton::clicked, this, &MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked);
 
   connect(csSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
@@ -236,9 +242,8 @@ void MonteCarloSimulation_UI::validateData()
 {
   clearModuleIssues();
   MonteCarloSimulationController::InputDataType data = getCreationData();
-  MonteCarloSimulationController controller;
-  controller.setData(data);
-  if(controller.validateInput())
+  m_Controller->setData(data);
+  if(m_Controller->validateInput())
   {
     createMonteCarloBtn->setEnabled(true);
   }
@@ -277,16 +282,8 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
   gpuGrpBox->setDisabled(true);
   outputGrpBox->setDisabled(true);
 
-  // Clear out the previous (if any) controller instance
-  if(m_Controller != nullptr)
-  {
-    delete m_Controller;
-    m_Controller = nullptr;
-  }
-
   // Create a new QThread to run the Controller class.
   m_WorkerThread = QSharedPointer<QThread>(new QThread);
-  m_Controller = new MonteCarloSimulationController;
   m_Controller->moveToThread(m_WorkerThread.data());
   m_Controller->setData(data); // Set the input data
 
@@ -294,13 +291,6 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
   connect(m_WorkerThread.data(), SIGNAL(started()), m_Controller, SLOT(execute()));
   connect(m_Controller, SIGNAL(finished()), m_WorkerThread.data(), SLOT(quit()));
   connect(m_WorkerThread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
-
-  // Pass errors, warnings, and std output messages up to the user interface
-  connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
-  connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
-
-  connect(m_Controller, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
 
   m_WorkerThread->start();
   setRunning(true);

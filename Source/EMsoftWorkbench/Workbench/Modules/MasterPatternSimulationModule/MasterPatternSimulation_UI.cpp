@@ -281,9 +281,8 @@ void MasterPatternSimulation_UI::validateData()
   data.inputFilePath = mcFilePathLE->text();
   data.outputFilePath = mpFilePathLE->text();
 
-  MasterPatternSimulationController controller;
-  controller.setData(data);
-  if(controller.validateInput())
+  m_Controller->setData(data);
+  if(m_Controller->validateInput())
   {
     simulateBtn->setEnabled(true);
   }
