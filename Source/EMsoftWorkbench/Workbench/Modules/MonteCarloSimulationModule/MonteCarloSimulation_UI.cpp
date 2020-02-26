@@ -220,15 +220,6 @@ void MonteCarloSimulation_UI::createWidgetConnections() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::updateMCProgress(int loopCompleted, int totalLoops, float bseYield) const
-{
-  QString msg = QString("<b>Loop:</b> %1/%2 | <b>BSE Yield:</b> %3%").arg(loopCompleted).arg(totalLoops).arg(bseYield);
-  mcProgressLabel->setText(msg);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::parametersChanged()
 {
   validateData();
