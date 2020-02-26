@@ -728,8 +728,13 @@ call h5open_EMsoft(hdferr)
 call timestamp(datestring=dstr, timestring=tstre)
 
 ! get the filename; if it already exists, then delete it and create a new one
-dataname = trim(EMsoft_getEMdatapathname())//trim(mcnl%dataname)
-dataname = EMsoft_toNativePath(dataname)
+if (mcnl%dataname(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then
+  dataname = trim(EMsoft_getEMdatapathname())//trim(mcnl%dataname)
+  dataname = EMsoft_toNativePath(dataname)
+else
+  dataname = trim(mcnl%dataname)
+end if
+
 inquire(file=trim(dataname), exist=f_exists)
 
 if (f_exists) then
