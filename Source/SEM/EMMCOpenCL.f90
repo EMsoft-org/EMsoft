@@ -271,6 +271,7 @@ Lamresy = 0.0
 size_in_bytes = num_max*sizeof(EkeV)
 size_in_bytes_seeds = 4*globalworkgrpsz*globalworkgrpsz*sizeof(EkeV)
 
+
 if (mode .eq. 'bse1') then
     if (mcnl%sigstep .ne. 0.D0) then
        numangle = nint((mcnl%sigend - mcnl%sigstart)/mcnl%sigstep)+1
@@ -553,7 +554,6 @@ else
         call CLerror_check('DoMCsimulation:clEnqueueReadBuffer:Lamresz', ierr)
 end if
 
-!    call clEnqueueReadBuffer(command_queue, seeds, cl_bool(.true.), 0_8, size_in_bytes_seeds, init_seeds(1), ierr)
         if (mode .eq. 'full') then
            subloopfull: do j = 1, num_max
 
@@ -690,8 +690,6 @@ end if
     else 
         call FatalError('DoMCSimulations','Unknown mode specified in namelist/json file')
     end if
- 
-
 end do angleloop
 
 if (mode .eq. 'full') then
