@@ -358,6 +358,7 @@ type reflectorNameListType
         character(fnlen)        :: outputformat
         character(fnlen)        :: masterfile
         character(fnlen)        :: listfile
+        logical                 :: kinematical
 end type reflectorNameListType
 
 ! namelist for the EMreflectors program

@@ -3727,9 +3727,10 @@ integer(kind=irg)                              :: nthreads
 character(fnlen)                               :: outputformat
 character(fnlen)                               :: masterfile
 character(fnlen)                               :: listfile
+logical                                        :: kinematical
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDreflectors/ increment, dmin, masterfile, listfile, numlist, nthreads, outputformat
+namelist /EBSDreflectors/ increment, dmin, masterfile, listfile, numlist, nthreads, outputformat, kinematical
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 increment = 0.025               ! angular increment [°]
@@ -3739,6 +3740,7 @@ nthreads = 1
 outputformat = 'csv'            ! options: 'latex', 'csv', and 'markdown'
 masterfile = 'undefined'        ! master pattern filename
 listfile = 'undefined'          ! filename for output (no extension)
+kinematical = .FALSE.           ! if .TRUE., a kinematical master pattern will be generated 
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3767,6 +3769,7 @@ rnl%numlist = numlist
 rnl%nthreads = nthreads
 rnl%masterfile = trim(masterfile)
 rnl%listfile = trim(listfile)
+rnl%kinematical = kinematical
 
 end subroutine GetreflectorNameList
 
