@@ -3805,9 +3805,10 @@ real(kind=sgl)                                 :: thr
 real(kind=sgl)                                 :: voltage
 character(fnlen)                               :: xtalname
 character(fnlen)                               :: datafile
+character(5)                                   :: mode
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EMkinematical/ dmin, voltage, thr, xtalname, datafile
+namelist /EMkinematical/ dmin, voltage, thr, xtalname, datafile, mode
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 dmin = 0.05                    ! smallest d-spacing to include in dynamical matrix [nm]
@@ -3815,6 +3816,7 @@ thr = 1.0                      ! smallest |structurefactor|^2 to include
 voltage = 30000.0              ! microscope voltage [V]
 datafile = 'undefined'         ! output file name
 xtalname = 'undefined'         ! structure file name
+mode = 'lines'                 ! default plot mode
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3841,6 +3843,7 @@ knl%thr = thr
 knl%voltage = voltage
 knl%xtalname = xtalname
 knl%datafile = datafile
+knl%mode = mode 
 
 end subroutine GetkinematicalNameList
 

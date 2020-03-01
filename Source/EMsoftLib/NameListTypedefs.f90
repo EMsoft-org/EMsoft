@@ -368,6 +368,7 @@ type kinematicalNameListType
         real(kind=sgl)          :: voltage
         character(fnlen)        :: xtalname
         character(fnlen)        :: datafile
+        character(5)            :: mode
 end type kinematicalNameListType
 
 type OrientationVizNameListType

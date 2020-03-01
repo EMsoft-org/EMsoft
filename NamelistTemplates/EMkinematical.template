@@ -9,4 +9,6 @@
  voltage = 30., 
 ! threshold value for intensity cutoff
  thr = 1.0,
+! mode  =  'lines' or 'bands'
+ mode = 'lines',
  /
