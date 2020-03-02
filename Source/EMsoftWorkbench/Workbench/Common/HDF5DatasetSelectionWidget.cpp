@@ -217,6 +217,8 @@ QString HDF5DatasetSelectionWidget::getSelectedHDF5Path(const QModelIndex& index
       }
     }
   }
+
+  return {};
 }
 
 // -----------------------------------------------------------------------------
