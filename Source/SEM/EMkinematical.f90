@@ -578,7 +578,7 @@ real(kind=sgl),allocatable                   :: Vgg(:),ddg(:),gg(:),th(:), gcart
                                                 phi(:), theta(:), Vg(:), VgX(:), VggX(:), cosnorm(:)
 character(1)                                 :: space
 real(kind=sgl)                               :: dhkl, incrad, glen, sd
-real(kind=sgl)                               :: ixy(2),scl
+real(kind=sgl)                               :: ixy(2),scl, cp2, dp
 real(kind=sgl)                               :: dx,dy,dxm,dym
 integer(kind=irg)                            :: jj,kk
 integer(kind=irg)                            :: nix,niy,nixp,niyp
@@ -668,10 +668,8 @@ call Initialize_Cell(cell,Dyn,rlp,knl%xtalname,knl%dmin, sngl(knl%voltage), verb
 ! copy family in array and label all its members and multiples in z-array
       call CalcFamily(cell,ind,num,space,itmp)
       do i=1,num
-       do j=1,3
-        family(icnt,i,j)=itmp(i,j)
-       end do
-       z(itmp(i,1),itmp(i,2),itmp(i,3))=.TRUE.
+        family(icnt,i,1:3)=itmp(i,1:3)
+        z(itmp(i,1),itmp(i,2),itmp(i,3))=.TRUE.
       end do
 
 ! increment family counter
@@ -690,6 +688,7 @@ call Initialize_Cell(cell,Dyn,rlp,knl%xtalname,knl%dmin, sngl(knl%voltage), verb
  oi_int(1)=totfam
  call WriteValue(' Total number of family members  = ', oi_int, 1, "(I6)")
 
+ icnt = icnt-1   ! to eliminate the origin ... 
 ! compute d-spacings, g-spacings, theta
  allocate(gcart(3,icnt,48))
  do k=1,icnt
@@ -702,35 +701,62 @@ call Initialize_Cell(cell,Dyn,rlp,knl%xtalname,knl%dmin, sngl(knl%voltage), verb
     call TransSpace(cell,g,gc,'r','c')
     call NormVec(cell,gc,'c')
     gcart(1:3,k,j) = gc(1:3) 
+!   write (*,*) family(k,j,1:3), gc(1:3)
   end do
  end do
+
+! we're taking the dot product between the plane normals and the direction cosine
+! vectors, so we will need the complement of the theta angles ... 
+cp2 = sngl(cPi/2.D0)
+th = cp2 - th 
 
 ! next, we scan over the entire Lambert square and, for each point, 
 ! determine which Kikuchi bands it belongs to; then we add all those 
 ! intensities together and place that value in the array. This should
 ! automatically take care of overlapping bands etc...
 
+nx = 500
 allocate(kinmasterNH(-nx:nx,-nx:nx), kinmasterSH(-nx:nx,-nx:nx))
+kinmasterNH = 0.0 
+kinmasterSH = 0.0 
+
 edge = 1.D0 / dble(nx)
 
 do ix=-nx,nx 
   do iy=-nx,nx 
 ! get the direction cosines for this point 
-    dc = LambertSquareToSphere( dble((/ ix, iy /)) * edge, ierr )
+    dc = LambertSquareToSphere( (/ ix, iy /) * edge, ierr )
 
 ! loop over all family members 
     do k=1,icnt
       do j=1,numfam(k) 
-        ang = acos( DOT_PRODUCT( gcart(1:3,k,j), dc(1:3) ) )
-        if (ang.le.th(k)) then 
-          if (dc(3).gt.0.0) then 
+        dp = DOT_PRODUCT( gcart(1:3,k,j), dc(1:3) )
+        if (abs(dp).lt.1.E-5) then 
+          kinmasterNH(ix,iy) = kinmasterNH(ix,iy) + Vgg(k)*0.5 ! to avoid double counting
+        else
+          ang = acos( dp )
+          if  ( (ang.ge.th(k)) .and. (ang.le.cp2) )  then 
             kinmasterNH(ix,iy) = kinmasterNH(ix,iy) + Vgg(k)
-          else 
-            kinmasterSH(ix,iy) = kinmasterSH(ix,iy) + Vgg(k)
           end if 
-        end if  
+        end if 
       end do 
     end do 
+
+      dc(3) = -dc(3)
+      ! loop over all family members 
+      do k=1,icnt
+        do j=1,numfam(k) 
+          dp = DOT_PRODUCT( gcart(1:3,k,j), dc(1:3) )
+          if (abs(dp).lt.1.E-5) then 
+            kinmasterNH(ix,iy) = kinmasterNH(ix,iy) + Vgg(k)*0.5 ! to avoid double counting
+          else
+            ang = acos( dp )
+            if  ( (ang.ge.th(k)) .and. (ang.le.cp2) )  then 
+              kinmasterNH(ix,iy) = kinmasterNH(ix,iy) + Vgg(k)
+            end if 
+          end if 
+        end do 
+      end do 
 
   end do 
 end do 
@@ -810,30 +836,30 @@ dataset = SC_masterSH
 hdferr = HDF_writeDatasetFloatArray2D(dataset, kinmasterSH, 2*nx+1, 2*nx+1, HDF_head)
 
 
-allocate(stereoNH(-nx:nx,-nx:nx),stat=istat)
-allocate(stereoSH(-nx:nx,-nx:nx),stat=istat)
-! get stereographic projections
-  Radius = 1.0
-  do i=-nx,nx 
-    do j=-nx,nx 
-      xy = (/ float(i), float(j) /) / float(nx)
-      xyz = StereoGraphicInverse( xy, ierr, Radius )
-      xyz = xyz/vecnorm(xyz)
-      if (ierr.ne.0) then 
-        stereoNH(i,j) = 0.0
-        stereoSH(i,j) = 0.0
-      else
-        stereoNH(i,j) = InterpolateLambert(xyz, kinmasterNH, nx)
-        stereoSH(i,j) = InterpolateLambert(xyz, kinmasterSH, nx)
-      end if
-    end do
-  end do
+! allocate(stereoNH(-nx:nx,-nx:nx),stat=istat)
+! allocate(stereoSH(-nx:nx,-nx:nx),stat=istat)
+! ! get stereographic projections
+!   Radius = 1.0
+!   do i=-nx,nx 
+!     do j=-nx,nx 
+!       xy = (/ float(i), float(j) /) / float(nx)
+!       xyz = StereoGraphicInverse( xy, ierr, Radius )
+!       xyz = xyz/vecnorm(xyz)
+!       if (ierr.ne.0) then 
+!         stereoNH(i,j) = 0.0
+!         stereoSH(i,j) = 0.0
+!       else
+!         stereoNH(i,j) = InterpolateLambert(xyz, kinmasterNH, nx)
+!         stereoSH(i,j) = InterpolateLambert(xyz, kinmasterSH, nx)
+!       end if
+!     end do
+!   end do
 
-dataset = SC_stereoNH
-hdferr = HDF_writeDatasetFloatArray2D(dataset, stereoNH, 2*nx+1, 2*nx+1, HDF_head)
+! dataset = SC_stereoNH
+! hdferr = HDF_writeDatasetFloatArray2D(dataset, stereoNH, 2*nx+1, 2*nx+1, HDF_head)
 
-dataset = SC_stereoSH
-hdferr = HDF_writeDatasetFloatArray2D(dataset, stereoSH, 2*nx+1, 2*nx+1, HDF_head)
+! dataset = SC_stereoSH
+! hdferr = HDF_writeDatasetFloatArray2D(dataset, stereoSH, 2*nx+1, 2*nx+1, HDF_head)
 
 ! and close everything
 call HDF_pop(HDF_head,.TRUE.)

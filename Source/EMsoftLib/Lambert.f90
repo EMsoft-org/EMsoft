@@ -216,12 +216,13 @@ real(kind=sgl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 !f2py intent(in,out) ::  ierr
 real(kind=sgl)                          :: res(3), q, qq, xy2(2)
+real(kind=sgl), parameter               :: eps = 1.E-4  
 
 xy2 = xy * sngl(LPs%sPio2)
 
 ierr = 0
 ! check to make sure that the input point lies inside the square of edge length 2 sqrt(pi/2)
-if (maxval(abs(xy2)).gt.LPs%sPio2) then
+if (maxval(abs(xy2)).gt.LPs%sPio2+eps) then
   res = (/ 0.0, 0.0, 0.0 /)             
   ierr = 1
 else
@@ -272,12 +273,13 @@ real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 !f2py intent(in,out) ::  ierr
 real(kind=dbl)                          :: res(3), q, qq, xy2(2)
+real(kind=dbl), parameter               :: eps = 1.E-6 
 
 xy2 = xy * LPs%sPio2
 
 ierr = 0
 ! check to make sure that the input point lies inside the square of edge length 2 sqrt(pi)
-if (maxval(dabs(xy2)).gt.LPs%sPio2) then
+if (maxval(dabs(xy2)).gt.LPs%sPio2+eps) then
   res = (/ 0.D0, 0.D0, 0.D0 /)
   ierr = 1   ! input point does not lie inside square with edge length 2 sqrt(pi/2)
 else
