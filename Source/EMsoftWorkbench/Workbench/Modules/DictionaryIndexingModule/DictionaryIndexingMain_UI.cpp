@@ -251,9 +251,15 @@ void DictionaryIndexingMain_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::readModuleSession(QJsonObject& obj)
 {
-  m_Ui->adpMapUI->readSession(obj);
-  m_Ui->patternPreprocessingUI->readSession(obj);
-  m_Ui->dictionaryIndexingUI->readSession(obj);
+  QJsonObject diModuleObj = obj[ioConstants::DIModule].toObject();
+
+  if(!diModuleObj.isEmpty())
+  {
+    m_Ui->choosePatternsUI->readSession(diModuleObj);
+    m_Ui->adpMapUI->readSession(diModuleObj);
+    m_Ui->patternPreprocessingUI->readSession(diModuleObj);
+    m_Ui->dictionaryIndexingUI->readSession(diModuleObj);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -263,6 +269,7 @@ void DictionaryIndexingMain_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject diModuleObj;
 
+  m_Ui->choosePatternsUI->writeSession(diModuleObj);
   m_Ui->adpMapUI->writeSession(diModuleObj);
   m_Ui->patternPreprocessingUI->writeSession(diModuleObj);
   m_Ui->dictionaryIndexingUI->writeSession(diModuleObj);

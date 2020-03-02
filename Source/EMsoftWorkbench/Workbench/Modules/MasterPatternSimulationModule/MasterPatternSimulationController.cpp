@@ -125,7 +125,7 @@ void MasterPatternSimulationController::generateBetheParametersFile(const QStrin
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c1, static_cast<float>(m_InputData.betheParametersX)));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c2, m_InputData.betheParametersY));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c3, m_InputData.betheParametersZ));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::sgdbdiff, m_InputData.sgdbdiff));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::sgdbdiff, 1.0));
 
   nml.emplace_back(std::string(" /"));
 

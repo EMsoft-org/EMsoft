@@ -35,7 +35,11 @@
 
 #include "ChoosePatternsDataset_UI.h"
 
+#include <QtCore/QJsonObject>
+
 using InputType = EMsoftWorkbenchConstants::InputType;
+
+namespace ioConstants = EMsoftWorkbenchConstants::IOStrings;
 
 // -----------------------------------------------------------------------------
 //
@@ -76,4 +80,24 @@ void ChoosePatternsDataset_UI::setupGui()
 HDF5DatasetSelectionWidget* ChoosePatternsDataset_UI::getHDF5DatasetSelectionWidget() const
 {
   return m_Ui->hdf5DatasetSelectionWidget;
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ChoosePatternsDataset_UI::readSession(QJsonObject& obj)
+{
+  m_Ui->inputTypeCB->setCurrentIndex(obj[ioConstants::PatternsInputType].toInt());
+
+  m_Ui->hdf5DatasetSelectionWidget->readParameters(obj);
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void ChoosePatternsDataset_UI::writeSession(QJsonObject& obj) const
+{
+  m_Ui->hdf5DatasetSelectionWidget->writeParameters(obj);
+
+  obj[ioConstants::PatternsInputType] = m_Ui->inputTypeCB->currentIndex();
 }

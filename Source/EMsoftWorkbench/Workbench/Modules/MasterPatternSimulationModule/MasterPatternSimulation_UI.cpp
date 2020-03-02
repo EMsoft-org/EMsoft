@@ -203,7 +203,6 @@ void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
   data.betheParametersX = betheParametersXSB->value();
   data.betheParametersY = betheParametersYSB->value();
   data.betheParametersZ = betheParametersZSB->value();
-  data.sgdbdiff = sgdbdiff->value();
   data.numOfOpenMPThreads = numOfOpenMPThreadsSB->value();
   data.inputFilePath = mcFilePathLE->text();
   data.outputFilePath = mpFilePathLE->text();
@@ -325,13 +324,6 @@ void MasterPatternSimulation_UI::readComputationalParameters(QJsonObject& obj)
 
   if(!compParamObj.isEmpty())
   {
-    smallestDSpacingSB->blockSignals(true);
-    numOfMPPixelsSB->blockSignals(true);
-    betheParametersXSB->blockSignals(true);
-    betheParametersYSB->blockSignals(true);
-    betheParametersZSB->blockSignals(true);
-    numOfOpenMPThreadsSB->blockSignals(true);
-
     smallestDSpacingSB->setValue(compParamObj[ioConstants::SmallestDSpacing].toDouble());
     numOfMPPixelsSB->setValue(compParamObj[ioConstants::NumOfMasterPatternPxls].toInt());
 
@@ -341,13 +333,6 @@ void MasterPatternSimulation_UI::readComputationalParameters(QJsonObject& obj)
     betheParametersZSB->setValue(betheParamObj[ioConstants::Bethe_Z].toInt());
 
     numOfOpenMPThreadsSB->setValue(compParamObj[ioConstants::NumOfOpenMPThreads].toInt());
-
-    smallestDSpacingSB->blockSignals(false);
-    numOfMPPixelsSB->blockSignals(false);
-    betheParametersXSB->blockSignals(false);
-    betheParametersYSB->blockSignals(false);
-    betheParametersZSB->blockSignals(false);
-    numOfOpenMPThreadsSB->blockSignals(false);
   }
 }
 

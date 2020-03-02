@@ -226,6 +226,10 @@ void DictionaryIndexing_UI::createWidgetConnections()
     QString filePath = selectOpenFilePath("Select Master File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)");
     m_Ui->masterFileLE->setText(filePath);
   });
+  connect(m_Ui->maskFilePathBtn, &QPushButton::clicked, [=] {
+    QString filePath = selectSaveFilePath("Select Mask File", "Text Files (*.txt);;All Files(*.*)");
+    m_Ui->maskFilePathLE->setText(filePath);
+  });
   connect(m_Ui->outputDataFileBtn, &QPushButton::clicked, [=] {
     QString filePath = selectSaveFilePath("Select Data File", "HDF5 Files (*.hdf5 *.h5);;All Files(*.*)");
     m_Ui->outputDataFileLE->setText(filePath);
@@ -255,6 +259,7 @@ void DictionaryIndexing_UI::createWidgetConnections()
 
   // Checkboxes
   connect(m_Ui->roiCB, &QCheckBox::stateChanged, this, &DictionaryIndexing_UI::listenROICheckboxStateChanged);
+  connect(m_Ui->useCustomMaskCB, &QCheckBox::stateChanged, this, &DictionaryIndexing_UI::listenMaskCheckboxStateChanged);
   connect(m_Ui->indexingModeCB, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &DictionaryIndexing_UI::listenIndexingModeChanged);
 }
 
@@ -320,6 +325,16 @@ void DictionaryIndexing_UI::listenROIChanged()
   m_Ui->diViewer->setROI(x, y, w, h);
 
   emit parametersChanged();
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+void DictionaryIndexing_UI::listenMaskCheckboxStateChanged(int state)
+{
+  Qt::CheckState checkState = static_cast<Qt::CheckState>(state);
+  m_Ui->maskFilePathLE->setEnabled(checkState == Qt::Checked);
+  m_Ui->maskFilePathBtn->setEnabled(checkState == Qt::Checked);
 }
 
 // -----------------------------------------------------------------------------
@@ -533,7 +548,7 @@ void DictionaryIndexing_UI::listenDIGenerationStarted()
   }
 
   // Create a new QThread to run the Controller class.
-  m_WorkerThread = QSharedPointer<QThread>(new QThread);
+  m_WorkerThread = QSharedPointer<QThread>(new QThread());
   m_DIController = new DictionaryIndexingController;
   m_DIController->moveToThread(m_WorkerThread.data());
   m_DIController->setData(data); // Set the input data
@@ -726,71 +741,60 @@ DictionaryIndexingController::InputDataType DictionaryIndexing_UI::getDIData()
 // -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::readSession(const QJsonObject &obj)
 {
-  QJsonObject adpMapParamsObj = obj[ioConstants::ADPMapParams].toObject();
+  QJsonObject diParamsObj = obj[ioConstants::DIParams].toObject();
 
-  if(!adpMapParamsObj.isEmpty())
+  if(!diParamsObj.isEmpty())
   {
-//    m_Ui->patternHeightLE->blockSignals(true);
-//    m_Ui->patternWidthLE->blockSignals(true);
-//    m_Ui->roiCB->blockSignals(true);
-//    m_Ui->roi1LE->blockSignals(true);
-//    m_Ui->roi2LE->blockSignals(true);
-//    m_Ui->roi3LE->blockSignals(true);
-//    m_Ui->roi4LE->blockSignals(true);
-//    m_Ui->binningFactorLE->blockSignals(true);
-//    m_Ui->binningXLE->blockSignals(true);
-//    m_Ui->binningYLE->blockSignals(true);
-//    m_Ui->ipfHeightLE->blockSignals(true);
-//    m_Ui->ipfWidthLE->blockSignals(true);
-//    m_Ui->maskPatternLE->blockSignals(true);
-//    m_Ui->maskRadiusLE->blockSignals(true);
-//    m_Ui->hipassLE->blockSignals(true);
-//    m_Ui->numOfRegionsLE->blockSignals(true);
-//    m_Ui->numOfThreadsLE->blockSignals(true);
-//    m_Ui->inputTypeCB->blockSignals(true);
+    m_Ui->indexingModeCB->setCurrentIndex(diParamsObj[ioConstants::IndexingMode].toInt());
+    m_Ui->eulerAngleFileLE->setText(diParamsObj[ioConstants::EulerAngleFile].toString());
+    m_Ui->dictionaryFileLE->setText(diParamsObj[ioConstants::DictionaryFile].toString());
+    m_Ui->masterFileLE->setText(diParamsObj[ioConstants::MasterPatternFile].toString());
+    m_Ui->ipfHeightLE->setText(QString::number(diParamsObj[ioConstants::IPFHeight].toInt()));
+    m_Ui->ipfWidthLE->setText(QString::number(diParamsObj[ioConstants::IPFWidth].toInt()));
+    m_Ui->roiCB->setChecked(diParamsObj[ioConstants::UseROI].toBool());
+    m_Ui->roi1LE->setText(QString::number(diParamsObj[ioConstants::ROI_X].toInt()));
+    m_Ui->roi2LE->setText(QString::number(diParamsObj[ioConstants::ROI_Y].toInt()));
+    m_Ui->roi3LE->setText(QString::number(diParamsObj[ioConstants::ROI_W].toInt()));
+    m_Ui->roi4LE->setText(QString::number(diParamsObj[ioConstants::ROI_H].toInt()));
+    m_Ui->samplingStepSizeXLE->setText(QString::number(diParamsObj[ioConstants::SamplingStepSizeX].toInt()));
+    m_Ui->samplingStepSizeYLE->setText(QString::number(diParamsObj[ioConstants::SamplingStepSizeY].toInt()));
+    m_Ui->nnkLE->setText(QString::number(diParamsObj[ioConstants::ADPMatches].toInt()));
+    m_Ui->nosmLE->setText(QString::number(diParamsObj[ioConstants::OrientationSimilarityMM].toInt()));
+    m_Ui->nnavLE->setText(QString::number(diParamsObj[ioConstants::OrientationAveragingMM].toInt()));
+    m_Ui->nismLE->setText(QString::number(diParamsObj[ioConstants::IndexingSuccessMM].toInt()));
+    m_Ui->isangleLE->setText(QString::number(diParamsObj[ioConstants::IndexingSuccessThreshAngle].toDouble()));
+    m_Ui->useCustomMaskCB->setChecked(diParamsObj[ioConstants::UseCustomMask].toBool());
+    m_Ui->maskFilePathLE->setText(diParamsObj[ioConstants::MaskFile].toString());
+    m_Ui->maskRadiusLE->setText(QString::number(diParamsObj[ioConstants::MaskRadius].toDouble()));
+    m_Ui->numdictsingleLE->setText(QString::number(diParamsObj[ioConstants::NumDictSingle].toInt()));
+    m_Ui->numexptsingleLE->setText(QString::number(diParamsObj[ioConstants::NumExptSingle].toInt()));
+    m_Ui->numOfThreadsLE->setText(QString::number(diParamsObj[ioConstants::NumberOfThreads].toInt()));
+    m_Ui->gpuPlatformCB->setCurrentIndex(diParamsObj[ioConstants::GPUPlatform].toInt());
+    m_Ui->gpuDeviceCB->setCurrentIndex(diParamsObj[ioConstants::GPUDevice].toInt());
+    m_Ui->LLE->setText(QString::number(diParamsObj[ioConstants::L].toDouble()));
+    m_Ui->cubochoricPointsLE->setText(QString::number(diParamsObj[ioConstants::CubochoricPoints].toInt()));
+    m_Ui->thetacLE->setText(QString::number(diParamsObj[ioConstants::CameraTiltAngle].toDouble()));
+    m_Ui->deltaLE->setText(QString::number(diParamsObj[ioConstants::Delta].toDouble()));
+    m_Ui->numsxLE->setText(QString::number(diParamsObj[ioConstants::NumsX].toInt()));
+    m_Ui->numsyLE->setText(QString::number(diParamsObj[ioConstants::NumsY].toInt()));
+    m_Ui->xpcLE->setText(QString::number(diParamsObj[ioConstants::PatternCenterX].toDouble()));
+    m_Ui->ypcLE->setText(QString::number(diParamsObj[ioConstants::PatternCenterY].toDouble()));
+    m_Ui->omegaLE->setText(QString::number(diParamsObj[ioConstants::Omega].toDouble()));
+    m_Ui->energyMinLE->setText(QString::number(diParamsObj[ioConstants::EnergyMin].toDouble()));
+    m_Ui->energyMaxLE->setText(QString::number(diParamsObj[ioConstants::EnergyMax].toDouble()));
+    m_Ui->energyAveragingMethodCB->setCurrentIndex(diParamsObj[ioConstants::EnergyAveragingMethod].toInt());
+    m_Ui->spatialAveragingCB->setChecked(diParamsObj[ioConstants::SpatialAveragingMethod].toBool());
+    m_Ui->beamCurrentLE->setText(QString::number(diParamsObj[ioConstants::BeamCurrent].toDouble()));
+    m_Ui->dwellTimeLE->setText(QString::number(diParamsObj[ioConstants::DwellTime].toDouble()));
+    m_Ui->binningCB->setCurrentIndex(diParamsObj[ioConstants::BinningMode].toInt());
+    m_Ui->intensityScalingModeCB->setCurrentIndex(diParamsObj[ioConstants::IntensityScalingMode].toInt());
+    m_Ui->gammaCorrectionFactorLE->setText(QString::number(diParamsObj[ioConstants::GammaCorrectionFactor].toDouble()));
+    m_Ui->outputDataFileLE->setText(diParamsObj[ioConstants::OutputDataFile].toString());
+    m_Ui->outputCtfFileLE->setText(diParamsObj[ioConstants::OutputCtfFile].toString());
+    m_Ui->outputAngFileLE->setText(diParamsObj[ioConstants::OutputAngFile].toString());
+    m_Ui->outputAvgCtfFileLE->setText(diParamsObj[ioConstants::OutputAvgCtfFile].toString());
 
-//    m_Ui->inputTypeCB->setCurrentIndex(adpMapParamsObj[ioConstants::InputType].toInt());
-//    m_Ui->patternHeightLE->setText(adpMapParamsObj[ioConstants::PatternHeight].toString());
-//    m_Ui->patternWidthLE->setText(adpMapParamsObj[ioConstants::PatternWidth].toString());
-//    m_Ui->roiCB->setChecked(adpMapParamsObj[ioConstants::UseROI].toBool());
-//    m_Ui->roi1LE->setText(adpMapParamsObj[ioConstants::ROI_1].toString());
-//    m_Ui->roi2LE->setText(adpMapParamsObj[ioConstants::ROI_2].toString());
-//    m_Ui->roi3LE->setText(adpMapParamsObj[ioConstants::ROI_3].toString());
-//    m_Ui->roi4LE->setText(adpMapParamsObj[ioConstants::ROI_4].toString());
-//    m_Ui->binningFactorLE->setText(adpMapParamsObj[ioConstants::BinningFactor].toString());
-//    m_Ui->binningXLE->setText(adpMapParamsObj[ioConstants::BinningX].toString());
-//    m_Ui->binningYLE->setText(adpMapParamsObj[ioConstants::BinningY].toString());
-//    m_Ui->ipfHeightLE->setText(adpMapParamsObj[ioConstants::IPFHeight].toString());
-//    m_Ui->ipfWidthLE->setText(adpMapParamsObj[ioConstants::IPFWidth].toString());
-//    m_Ui->maskPatternLE->setText(adpMapParamsObj[ioConstants::MaskPattern].toString());
-//    m_Ui->maskRadiusLE->setText(adpMapParamsObj[ioConstants::MaskRadius].toString());
-//    m_Ui->hipassLE->setText(adpMapParamsObj[ioConstants::HipassFilter].toString());
-//    m_Ui->numOfRegionsLE->setText(adpMapParamsObj[ioConstants::NumberOfRegions].toString());
-//    m_Ui->numOfThreadsLE->setText(adpMapParamsObj[ioConstants::NumberOfThreads].toString());
-
-//    HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-//    hdf5DsetSelectionWidget->readParameters(adpMapParamsObj);
-
-//    m_Ui->inputTypeCB->blockSignals(false);
-//    m_Ui->patternHeightLE->blockSignals(false);
-//    m_Ui->patternWidthLE->blockSignals(false);
-//    m_Ui->roiCB->blockSignals(false);
-//    m_Ui->roi1LE->blockSignals(false);
-//    m_Ui->roi2LE->blockSignals(false);
-//    m_Ui->roi3LE->blockSignals(false);
-//    m_Ui->roi4LE->blockSignals(false);
-//    m_Ui->binningFactorLE->blockSignals(false);
-//    m_Ui->binningXLE->blockSignals(false);
-//    m_Ui->binningYLE->blockSignals(false);
-//    m_Ui->ipfHeightLE->blockSignals(false);
-//    m_Ui->ipfWidthLE->blockSignals(false);
-//    m_Ui->maskPatternLE->blockSignals(false);
-//    m_Ui->maskRadiusLE->blockSignals(false);
-//    m_Ui->hipassLE->blockSignals(false);
-//    m_Ui->numOfRegionsLE->blockSignals(false);
-//    m_Ui->numOfThreadsLE->blockSignals(false);
-
-//    m_Ui->adpViewer->readSession(adpMapParamsObj);
+    m_Ui->diViewer->readSession(diParamsObj);
   }
 }
 
@@ -799,29 +803,60 @@ void DictionaryIndexing_UI::readSession(const QJsonObject &obj)
 // -----------------------------------------------------------------------------
 void DictionaryIndexing_UI::writeSession(QJsonObject& obj) const
 {
-  QJsonObject adpMapParamsObj;
+  QJsonObject diParamsObj;
 
-//  adpMapParamsObj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
-//  adpMapParamsObj[ioConstants::PatternHeight] = m_Ui->patternHeightLE->text().toInt();
-//  adpMapParamsObj[ioConstants::PatternWidth] = m_Ui->patternWidthLE->text().toInt();
-//  adpMapParamsObj[ioConstants::UseROI] = m_Ui->roiCB->isChecked();
-//  adpMapParamsObj[ioConstants::ROI_1] = m_Ui->roi1LE->text().toInt();
-//  adpMapParamsObj[ioConstants::ROI_2] = m_Ui->roi2LE->text().toInt();
-//  adpMapParamsObj[ioConstants::ROI_3] = m_Ui->roi3LE->text().toInt();
-//  adpMapParamsObj[ioConstants::ROI_4] = m_Ui->roi4LE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningFactor] = m_Ui->binningFactorLE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningX] = m_Ui->binningXLE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningY] = m_Ui->binningYLE->text().toInt();
-//  adpMapParamsObj[ioConstants::IPFHeight] = m_Ui->ipfHeightLE->text().toInt();
-//  adpMapParamsObj[ioConstants::IPFWidth] = m_Ui->ipfWidthLE->text().toInt();
-//  adpMapParamsObj[ioConstants::MaskPattern] = m_Ui->maskPatternLE->text().toInt();
-//  adpMapParamsObj[ioConstants::MaskRadius] = m_Ui->maskRadiusLE->text().toDouble();
-//  adpMapParamsObj[ioConstants::HipassFilter] = m_Ui->hipassLE->text().toDouble();
-//  adpMapParamsObj[ioConstants::NumberOfRegions] = m_Ui->numOfRegionsLE->text().toInt();
-//  adpMapParamsObj[ioConstants::NumberOfThreads] = m_Ui->numOfThreadsLE->text().toInt();
-//  m_Ui->adpViewer->writeSession(adpMapParamsObj);
+  diParamsObj[ioConstants::IndexingMode] = m_Ui->indexingModeCB->currentIndex();
+  diParamsObj[ioConstants::EulerAngleFile] = m_Ui->eulerAngleFileLE->text();
+  diParamsObj[ioConstants::DictionaryFile] = m_Ui->dictionaryFileLE->text();
+  diParamsObj[ioConstants::MasterPatternFile] = m_Ui->masterFileLE->text();
+  diParamsObj[ioConstants::IPFHeight] = m_Ui->ipfHeightLE->text().toInt();
+  diParamsObj[ioConstants::IPFWidth] = m_Ui->ipfWidthLE->text().toInt();
+  diParamsObj[ioConstants::UseROI] = m_Ui->roiCB->isChecked();
+  diParamsObj[ioConstants::ROI_X] = m_Ui->roi1LE->text().toInt();
+  diParamsObj[ioConstants::ROI_Y] = m_Ui->roi2LE->text().toInt();
+  diParamsObj[ioConstants::ROI_W] = m_Ui->roi3LE->text().toInt();
+  diParamsObj[ioConstants::ROI_H] = m_Ui->roi4LE->text().toInt();
+  diParamsObj[ioConstants::SamplingStepSizeX] = m_Ui->samplingStepSizeXLE->text().toInt();
+  diParamsObj[ioConstants::SamplingStepSizeY] = m_Ui->samplingStepSizeYLE->text().toInt();
+  diParamsObj[ioConstants::ADPMatches] = m_Ui->nnkLE->text().toInt();
+  diParamsObj[ioConstants::OrientationSimilarityMM] = m_Ui->nosmLE->text().toInt();
+  diParamsObj[ioConstants::OrientationAveragingMM] = m_Ui->nnavLE->text().toInt();
+  diParamsObj[ioConstants::IndexingSuccessMM] = m_Ui->nismLE->text().toInt();
+  diParamsObj[ioConstants::IndexingSuccessThreshAngle] = m_Ui->isangleLE->text().toDouble();
+  diParamsObj[ioConstants::UseCustomMask] = m_Ui->useCustomMaskCB->isChecked();
+  diParamsObj[ioConstants::MaskFile] = m_Ui->maskFilePathLE->text();
+  diParamsObj[ioConstants::MaskRadius] = m_Ui->maskRadiusLE->text().toDouble();
+  diParamsObj[ioConstants::NumDictSingle] = m_Ui->numdictsingleLE->text().toInt();
+  diParamsObj[ioConstants::NumExptSingle] = m_Ui->numexptsingleLE->text().toInt();
+  diParamsObj[ioConstants::NumberOfThreads] = m_Ui->numOfThreadsLE->text().toInt();
+  diParamsObj[ioConstants::GPUPlatform] = m_Ui->gpuPlatformCB->currentIndex();
+  diParamsObj[ioConstants::GPUDevice] = m_Ui->gpuDeviceCB->currentIndex();
+  diParamsObj[ioConstants::L] = m_Ui->LLE->text().toDouble();
+  diParamsObj[ioConstants::CubochoricPoints] = m_Ui->cubochoricPointsLE->text().toInt();
+  diParamsObj[ioConstants::CameraTiltAngle] = m_Ui->thetacLE->text().toDouble();
+  diParamsObj[ioConstants::Delta] = m_Ui->deltaLE->text().toDouble();
+  diParamsObj[ioConstants::NumsX] = m_Ui->numsxLE->text().toInt();
+  diParamsObj[ioConstants::NumsY] = m_Ui->numsyLE->text().toInt();
+  diParamsObj[ioConstants::PatternCenterX] = m_Ui->xpcLE->text().toDouble();
+  diParamsObj[ioConstants::PatternCenterY] = m_Ui->ypcLE->text().toDouble();
+  diParamsObj[ioConstants::Omega] = m_Ui->omegaLE->text().toDouble();
+  diParamsObj[ioConstants::EnergyMin] = m_Ui->energyMinLE->text().toDouble();
+  diParamsObj[ioConstants::EnergyMax] = m_Ui->energyMaxLE->text().toDouble();
+  diParamsObj[ioConstants::EnergyAveragingMethod] = m_Ui->energyAveragingMethodCB->currentIndex();
+  diParamsObj[ioConstants::SpatialAveragingMethod] = m_Ui->spatialAveragingCB->isChecked();
+  diParamsObj[ioConstants::BeamCurrent] = m_Ui->beamCurrentLE->text().toDouble();
+  diParamsObj[ioConstants::DwellTime] = m_Ui->dwellTimeLE->text().toDouble();
+  diParamsObj[ioConstants::BinningMode] = m_Ui->binningCB->currentIndex();
+  diParamsObj[ioConstants::IntensityScalingMode] = m_Ui->intensityScalingModeCB->currentIndex();
+  diParamsObj[ioConstants::GammaCorrectionFactor] = m_Ui->gammaCorrectionFactorLE->text().toDouble();
+  diParamsObj[ioConstants::OutputDataFile] = m_Ui->outputDataFileLE->text();
+  diParamsObj[ioConstants::OutputCtfFile] = m_Ui->outputCtfFileLE->text();
+  diParamsObj[ioConstants::OutputAngFile] = m_Ui->outputAngFileLE->text();
+  diParamsObj[ioConstants::OutputAvgCtfFile] = m_Ui->outputAvgCtfFileLE->text();
 
-  obj[ioConstants::ADPMapParams] = adpMapParamsObj;
+  m_Ui->diViewer->writeSession(diParamsObj);
+
+  obj[ioConstants::DIParams] = diParamsObj;
 }
 
 // -----------------------------------------------------------------------------

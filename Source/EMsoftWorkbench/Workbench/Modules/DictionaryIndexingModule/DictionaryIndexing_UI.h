@@ -148,6 +148,12 @@ protected slots:
   void processFinished();
 
   /**
+   * @brief listenMaskCheckboxStateChanged
+   * @param state
+   */
+  void listenMaskCheckboxStateChanged(int state);
+
+  /**
    * @brief listenROICheckboxStateChanged
    * @param state
    */

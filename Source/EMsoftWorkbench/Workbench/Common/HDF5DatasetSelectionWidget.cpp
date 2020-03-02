@@ -163,6 +163,9 @@ void HDF5DatasetSelectionWidget::readParameters(QJsonObject& obj)
 
   m_Ui->value->setText(widgetObj[ioConstants::HDF5DatasetSelectionInputFile].toString());
   setValue(m_Ui->value->text());
+
+  setHDF5Path(widgetObj[ioConstants::HDF5DatasetSelection].toString());
+
   parametersChanged();
 
   m_Ui->value->blockSignals(false);
@@ -177,7 +180,43 @@ void HDF5DatasetSelectionWidget::writeParameters(QJsonObject& obj)
 
   widgetObj[ioConstants::HDF5DatasetSelectionInputFile] = m_Ui->value->text();
 
+  HDF5FileTreeModel* treeModel = dynamic_cast<HDF5FileTreeModel*>(m_Ui->hdfTreeView->model());
+  if(treeModel != nullptr)
+  {
+    QString path = getSelectedHDF5Path(QModelIndex(), treeModel);
+    widgetObj[ioConstants::HDF5DatasetSelection] = path;
+  }
+
   obj[ioConstants::HDF5DatasetSelectionSettings] = widgetObj;
+}
+
+// -----------------------------------------------------------------------------
+QString HDF5DatasetSelectionWidget::getSelectedHDF5Path(const QModelIndex& index, const HDF5FileTreeModel* model) const
+{
+  if(index.isValid() && model->data(index, Qt::CheckStateRole) == Qt::Checked)
+  {
+    QString path = model->indexToHDF5Path(index);
+    return path;
+  }
+
+  if(!model->hasChildren(index) || (index.flags() & Qt::ItemNeverHasChildren))
+  {
+    return {};
+  }
+
+  auto rows = model->rowCount(index);
+  auto cols = model->columnCount(index);
+  for(int i = 0; i < rows; ++i)
+  {
+    for(int j = 0; j < cols; ++j)
+    {
+      QString path = getSelectedHDF5Path(model->index(i, j, index), model);
+      if(!path.isEmpty())
+      {
+        return path;
+      }
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------

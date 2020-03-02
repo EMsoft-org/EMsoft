@@ -122,7 +122,7 @@ public:
    * @param index
    * @return
    */
-  QString indexToHDF5Path(const QModelIndex& index);
+  QString indexToHDF5Path(const QModelIndex& index) const;
 
   /**
    * @brief hdf5PathToIndex

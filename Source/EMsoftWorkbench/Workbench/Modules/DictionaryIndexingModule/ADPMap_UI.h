@@ -95,12 +95,6 @@ public slots:
    */
   void listenSelectedPatternDatasetChanged(const QStringList& patternDSetPaths);
 
-  /**
-   * @brief listenADPMapCreated
-   * @param adpMap
-   */
-  void listenADPMapCreated(const QImage& adpMap);
-
 protected:
   /**
    * @brief setupGui
@@ -117,6 +111,18 @@ protected slots:
    * @brief processFinished
    */
   void processFinished();
+
+  /**
+   * @brief listenADPMapCreated
+   * @param adpMap
+   */
+  void listenADPMapCreated(const QImage& adpMap);
+
+  /**
+   * @brief listenSelectedADPCoordinateChanged
+   * @param pixel
+   */
+  void listenSelectedADPCoordinateChanged(const QPoint& pixel);
 
   /**
    * @brief listenROICheckboxStateChanged
@@ -147,6 +153,7 @@ private:
   QSharedPointer<Ui::ADPMap_UI> m_Ui;
 
   ADPMapController* m_ADPController = nullptr;
+  QSharedPointer<QThread> m_Thread = nullptr;
 
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;

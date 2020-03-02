@@ -336,18 +336,6 @@ void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject& obj)
 
   if(!monteCarloObj.isEmpty())
   {
-    sampleTiltAngleSigSB->blockSignals(true);
-    sampleRotAngleOmegaSB->blockSignals(true);
-    sampleStartTiltAngleSB->blockSignals(true);
-    sampleEndTiltAngleSB->blockSignals(true);
-    sampleTiltStepSizeSB->blockSignals(true);
-    acceleratingVoltageSB->blockSignals(true);
-    minEnergyConsiderSB->blockSignals(true);
-    energyBinSizeSB->blockSignals(true);
-    maxDepthConsiderSB->blockSignals(true);
-    depthStepSizeSB->blockSignals(true);
-    numOfPixelsNSB->blockSignals(true);
-
     mcModeCB->setCurrentIndex(monteCarloObj[ioConstants::MonteCarloMode].toInt());
     sampleTiltAngleSigSB->setValue(monteCarloObj[ioConstants::SampleTiltAngleSigma].toDouble());
     sampleRotAngleOmegaSB->setValue(monteCarloObj[ioConstants::SampleRotationAngleOmega].toDouble());
@@ -360,18 +348,12 @@ void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject& obj)
     maxDepthConsiderSB->setValue(monteCarloObj[ioConstants::MaxDepthToConsider].toDouble());
     depthStepSizeSB->setValue(monteCarloObj[ioConstants::DepthStepSize].toDouble());
     numOfPixelsNSB->setValue(monteCarloObj[ioConstants::NumberOfXPixelsN].toInt());
-
-    sampleTiltAngleSigSB->blockSignals(false);
-    sampleRotAngleOmegaSB->blockSignals(false);
-    sampleStartTiltAngleSB->blockSignals(false);
-    sampleEndTiltAngleSB->blockSignals(false);
-    sampleTiltStepSizeSB->blockSignals(false);
-    acceleratingVoltageSB->blockSignals(false);
-    minEnergyConsiderSB->blockSignals(false);
-    energyBinSizeSB->blockSignals(false);
-    maxDepthConsiderSB->blockSignals(false);
-    depthStepSizeSB->blockSignals(false);
-    numOfPixelsNSB->blockSignals(false);
+    ivolx->setValue(monteCarloObj[ioConstants::InteractionVolumeX].toInt());
+    ivoly->setValue(monteCarloObj[ioConstants::InteractionVolumeY].toInt());
+    ivolz->setValue(monteCarloObj[ioConstants::InteractionVolumeZ].toInt());
+    ivolstepx->setValue(monteCarloObj[ioConstants::InteractionStepX].toDouble());
+    ivolstepy->setValue(monteCarloObj[ioConstants::InteractionStepY].toDouble());
+    ivolstepz->setValue(monteCarloObj[ioConstants::InteractionStepZ].toDouble());
   }
 }
 
@@ -384,26 +366,12 @@ void MonteCarloSimulation_UI::readGPUParameters(QJsonObject& obj)
 
   if(!gpuObj.isEmpty())
   {
-    numOfEPerWorkitemSB->blockSignals(true);
-    totalNumOfEConsideredSB->blockSignals(true);
-    multiplierForTotalNumOfESB->blockSignals(true);
-    gpuPlatformCB->blockSignals(true);
-    gpuDeviceCB->blockSignals(true);
-    globalWorkGroupSizeSB->blockSignals(true);
-
     numOfEPerWorkitemSB->setValue(gpuObj[ioConstants::NumberOfElectronsPerWorkitem].toInt());
     totalNumOfEConsideredSB->setValue(gpuObj[ioConstants::TotalNumOfElectronsToBeConsidered].toInt());
     multiplierForTotalNumOfESB->setValue(gpuObj[ioConstants::MultiplierForTotalNumberOfElectrons].toInt());
     gpuPlatformCB->setCurrentIndex(gpuObj[ioConstants::GPUPlatformID].toInt());
     gpuDeviceCB->setCurrentIndex(gpuObj[ioConstants::GPUDeviceID].toInt());
     globalWorkGroupSizeSB->setValue(gpuObj[ioConstants::GlobalWorkGroupSize].toInt());
-
-    numOfEPerWorkitemSB->blockSignals(false);
-    totalNumOfEConsideredSB->blockSignals(false);
-    multiplierForTotalNumOfESB->blockSignals(false);
-    gpuPlatformCB->blockSignals(false);
-    gpuDeviceCB->blockSignals(false);
-    globalWorkGroupSizeSB->blockSignals(false);
   }
 }
 
@@ -441,6 +409,12 @@ void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject& obj) const
   obj[ioConstants::MaxDepthToConsider] = maxDepthConsiderSB->value();
   obj[ioConstants::DepthStepSize] = depthStepSizeSB->value();
   obj[ioConstants::NumberOfXPixelsN] = numOfPixelsNSB->value();
+  obj[ioConstants::InteractionVolumeX] = ivolx->value();
+  obj[ioConstants::InteractionVolumeY] = ivoly->value();
+  obj[ioConstants::InteractionVolumeZ] = ivolz->value();
+  obj[ioConstants::InteractionStepX] = ivolstepx->value();
+  obj[ioConstants::InteractionStepY] = ivolstepy->value();
+  obj[ioConstants::InteractionStepZ] = ivolstepz->value();
 }
 
 // -----------------------------------------------------------------------------

@@ -229,7 +229,7 @@ void PatternPreprocessing_UI::listenPatternPreprocessingStarted()
   }
 
   // Create a new QThread to run the Controller class.
-  m_WorkerThread = QSharedPointer<QThread>(new QThread);
+  m_WorkerThread = QSharedPointer<QThread>(new QThread());
   m_PPMatrixController = new PatternPreprocessingController;
   m_PPMatrixController->moveToThread(m_WorkerThread.data());
   m_PPMatrixController->setData(data); // Set the input data
@@ -390,37 +390,22 @@ void PatternPreprocessing_UI::readSession(const QJsonObject &obj)
 
   if(!ppParamsObj.isEmpty())
   {
-    m_Ui->patternHeightLE->blockSignals(true);
-    m_Ui->patternWidthLE->blockSignals(true);
-    m_Ui->ipfHeightLE->blockSignals(true);
-    m_Ui->ipfWidthLE->blockSignals(true);
-    m_Ui->hipassValueLE->blockSignals(true);
-    m_Ui->hipassNumOfStepsLE->blockSignals(true);
-    m_Ui->minNumOfRegionsLE->blockSignals(true);
-    m_Ui->maxNumOfRegionsLE->blockSignals(true);
-    m_Ui->numOfRegionsStepSizeLE->blockSignals(true);
+    m_Ui->patternHeightLE->setText(QString::number(ppParamsObj[ioConstants::PatternHeight].toInt()));
+    m_Ui->patternWidthLE->setText(QString::number(ppParamsObj[ioConstants::PatternWidth].toInt()));
+    m_Ui->ipfHeightLE->setText(QString::number(ppParamsObj[ioConstants::IPFHeight].toInt()));
+    m_Ui->ipfWidthLE->setText(QString::number(ppParamsObj[ioConstants::IPFWidth].toInt()));
+    m_Ui->hipassValueLE->setText(QString::number(ppParamsObj[ioConstants::HipassValue].toDouble()));
+    m_Ui->hipassNumOfStepsLE->setText(QString::number(ppParamsObj[ioConstants::HipassNumOfSteps].toInt()));
+    m_Ui->minNumOfRegionsLE->setText(QString::number(ppParamsObj[ioConstants::MinNumOfRegions].toInt()));
+    m_Ui->maxNumOfRegionsLE->setText(QString::number(ppParamsObj[ioConstants::MaxNumOfRegions].toInt()));
+    m_Ui->numOfRegionsStepSizeLE->setText(QString::number(ppParamsObj[ioConstants::NumOfRegionsStepSize].toInt()));
 
-    m_Ui->patternHeightLE->setText(ppParamsObj[ioConstants::PatternHeight].toString());
-    m_Ui->patternWidthLE->setText(ppParamsObj[ioConstants::PatternWidth].toString());
-    m_Ui->ipfHeightLE->setText(ppParamsObj[ioConstants::IPFHeight].toString());
-    m_Ui->ipfWidthLE->setText(ppParamsObj[ioConstants::IPFWidth].toString());
-    m_Ui->hipassValueLE->setText(ppParamsObj[ioConstants::HipassValue].toString());
-    m_Ui->hipassNumOfStepsLE->setText(ppParamsObj[ioConstants::HipassNumOfSteps].toString());
-    m_Ui->minNumOfRegionsLE->setText(ppParamsObj[ioConstants::MinNumOfRegions].toString());
-    m_Ui->maxNumOfRegionsLE->setText(ppParamsObj[ioConstants::MaxNumOfRegions].toString());
-    m_Ui->numOfRegionsStepSizeLE->setText(ppParamsObj[ioConstants::NumOfRegionsStepSize].toString());
+    m_Ui->ppMatrixViewer->readSession(ppParamsObj);
 
-    m_Ui->patternHeightLE->blockSignals(false);
-    m_Ui->patternWidthLE->blockSignals(false);
-    m_Ui->ipfHeightLE->blockSignals(false);
-    m_Ui->ipfWidthLE->blockSignals(false);
-    m_Ui->hipassValueLE->blockSignals(false);
-    m_Ui->hipassNumOfStepsLE->blockSignals(false);
-    m_Ui->minNumOfRegionsLE->blockSignals(false);
-    m_Ui->maxNumOfRegionsLE->blockSignals(false);
-    m_Ui->numOfRegionsStepSizeLE->blockSignals(false);
-
-//    m_Ui->ppMatrixViewer->readSession(ppParamsObj);
+    if(validateData())
+    {
+      listenPatternPreprocessingStarted();
+    }
   }
 }
 
@@ -440,7 +425,7 @@ void PatternPreprocessing_UI::writeSession(QJsonObject& obj) const
   ppParamsObj[ioConstants::MinNumOfRegions] = m_Ui->minNumOfRegionsLE->text().toInt();
   ppParamsObj[ioConstants::MaxNumOfRegions] = m_Ui->maxNumOfRegionsLE->text().toInt();
   ppParamsObj[ioConstants::NumOfRegionsStepSize] = m_Ui->numOfRegionsStepSizeLE->text().toInt();
-//  m_Ui->ppMatrixViewer->writeSession(ppParamsObj);
+  m_Ui->ppMatrixViewer->writeSession(ppParamsObj);
 
   obj[ioConstants::PPParameters] = ppParamsObj;
 }

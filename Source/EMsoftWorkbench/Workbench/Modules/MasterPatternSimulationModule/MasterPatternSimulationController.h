@@ -59,7 +59,6 @@ public:
   using InputDataType = struct
   {
     double smallestDSpacing;
-    double sgdbdiff;
     int numOfMPPixels;
     int betheParametersX;
     int betheParametersY;
