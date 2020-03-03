@@ -358,6 +358,7 @@ type reflectorNameListType
         character(fnlen)        :: outputformat
         character(fnlen)        :: masterfile
         character(fnlen)        :: listfile
+        logical                 :: kinematical
 end type reflectorNameListType
 
 ! namelist for the EMreflectors program
@@ -367,6 +368,7 @@ type kinematicalNameListType
         real(kind=sgl)          :: voltage
         character(fnlen)        :: xtalname
         character(fnlen)        :: datafile
+        character(5)            :: mode
 end type kinematicalNameListType
 
 type OrientationVizNameListType

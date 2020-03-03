@@ -3727,9 +3727,10 @@ integer(kind=irg)                              :: nthreads
 character(fnlen)                               :: outputformat
 character(fnlen)                               :: masterfile
 character(fnlen)                               :: listfile
+logical                                        :: kinematical
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDreflectors/ increment, dmin, masterfile, listfile, numlist, nthreads, outputformat
+namelist /EBSDreflectors/ increment, dmin, masterfile, listfile, numlist, nthreads, outputformat, kinematical
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 increment = 0.025               ! angular increment [°]
@@ -3739,6 +3740,7 @@ nthreads = 1
 outputformat = 'csv'            ! options: 'latex', 'csv', and 'markdown'
 masterfile = 'undefined'        ! master pattern filename
 listfile = 'undefined'          ! filename for output (no extension)
+kinematical = .FALSE.           ! if .TRUE., a kinematical master pattern will be generated 
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3767,6 +3769,7 @@ rnl%numlist = numlist
 rnl%nthreads = nthreads
 rnl%masterfile = trim(masterfile)
 rnl%listfile = trim(listfile)
+rnl%kinematical = kinematical
 
 end subroutine GetreflectorNameList
 
@@ -3802,9 +3805,10 @@ real(kind=sgl)                                 :: thr
 real(kind=sgl)                                 :: voltage
 character(fnlen)                               :: xtalname
 character(fnlen)                               :: datafile
+character(5)                                   :: mode
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EMkinematical/ dmin, voltage, thr, xtalname, datafile
+namelist /EMkinematical/ dmin, voltage, thr, xtalname, datafile, mode
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 dmin = 0.05                    ! smallest d-spacing to include in dynamical matrix [nm]
@@ -3812,6 +3816,7 @@ thr = 1.0                      ! smallest |structurefactor|^2 to include
 voltage = 30000.0              ! microscope voltage [V]
 datafile = 'undefined'         ! output file name
 xtalname = 'undefined'         ! structure file name
+mode = 'lines'                 ! default plot mode
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3838,6 +3843,7 @@ knl%thr = thr
 knl%voltage = voltage
 knl%xtalname = xtalname
 knl%datafile = datafile
+knl%mode = mode 
 
 end subroutine GetkinematicalNameList
 

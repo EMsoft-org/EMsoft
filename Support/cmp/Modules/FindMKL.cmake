@@ -100,10 +100,13 @@ endif()
 
 #-------------------------------------------------------------------------------
 # Find the FFTW3_INCLUDE_DIR by finding known header files that MUST be present
-set(MKL_INCLUDE_SEARCH_DIRS
-    /opt/intel/mkl/include/fftw
-    /opt/intel/cmkl/include/fftw
-)
+set(MKL_INCLUDE_SEARCH_DIRS "")
+if(NOT WIN32)
+    set(MKL_INCLUDE_SEARCH_DIRS
+        /opt/intel/mkl/include/fftw
+        /opt/intel/cmkl/include/fftw
+    )
+endif()
 if(NOT "$ENV{MKLDIR}" STREQUAL "")
     set(MKL_INCLUDE_SEARCH_DIRS ${MKL_INCLUDE_SEARCH_DIRS} $ENV{MKLDIR}/include/fftw)
 endif()
@@ -253,61 +256,7 @@ if(CMAKE_FIND_DEBUG_MODE )
         message(STATUS "    ${lib}")
     endforeach(lib ${MKL_LIBRARIES})
 endif()
-
-if(1)
-else() # UNIX
-
-    set(MKL_LIBRARY_LOCATIONS ${MKL_ROOT_DIR}/lib/${MKL_ARCH_DIR} ${MKL_ROOT_DIR}/lib)
-
-    find_library(MKL_CORE_LIBRARY mkl_core PATHS ${MKL_LIBRARY_LOCATIONS})
-
-    # Threading libraries
-
-    find_library(MKL_RT_LIBRARY mkl_rt PATHS ${MKL_LIBRARY_LOCATIONS})
-    find_library(MKL_SEQUENTIAL_LIBRARY mkl_sequential PATHS ${MKL_LIBRARY_LOCATIONS})
-    find_library(MKL_TBBTHREAD_LIBRARY mkl_intel_thread PATHS ${MKL_LIBRARY_LOCATIONS})
-    find_library(MKL_GNUTHREAD_LIBRARY mkl_gnu_thread PATHS ${MKL_LIBRARY_LOCATIONS})
-
-    # Intel Libraries
-
-    if (NOT "${MKL_ARCH_DIR}" STREQUAL "ia32")
-        set(INTEL_LP_SUFFIX  "_lp64")
-        set(INTEL_ILP_SUFFIX "_ilp64")
-    endif()
-
-    find_library(MKL_LP_LIBRARY mkl_intel%{INTEL_LP_SUFFIX} PATHS ${MKL_LIBRARY_LOCATIONS})
-    find_library(MKL_ILP_LIBRARY mkl_intel${INTEL_ILP_SUFFIX} PATHS ${MKL_LIBRARY_LOCATIONS})
-
-    # Lapack
-
-    find_library(MKL_LAPACK_LIBRARY mkl_lapack PATHS ${MKL_LIBRARY_LOCATIONS})
-
-    if (NOT MKL_LAPACK_LIBRARY)
-        find_library(MKL_LAPACK_LIBRARY mkl_lapack95_lp64 PATHS ${MKL_LIBRARY_LOCATIONS})
-    endif()
-
-    # iomp5
-
-    if (UNIX AND NOT APPLE)
-        find_library(MKL_IOMP5_LIBRARY iomp5 PATHS ${MKL_ROOT_DIR}/../lib/${MKL_ARCH_DIR})
-    endif()
-
-    foreach (MODEVAR ${MKL_MODE_VARIANTS})
-        foreach (THREADVAR ${MKL_THREAD_VARIANTS})
-            if (MKL_CORE_LIBRARY AND MKL_${MODEVAR}_LIBRARY AND MKL_${THREADVAR}_LIBRARY)
-                set(MKL_${MODEVAR}_${THREADVAR}_LIBRARIES
-                    ${MKL_${MODEVAR}_LIBRARY} ${MKL_${THREADVAR}_LIBRARY} ${MKL_CORE_LIBRARY}
-                    ${MKL_LAPACK_LIBRARY} ${MKL_IOMP5_LIBRARY})
-                message("${MODEVAR} ${THREADVAR} ${MKL_${MODEVAR}_${THREADVAR}_LIBRARIES}") # for debug
-            endif()
-        endforeach()
-    endforeach()
-
-    set(MKL_LIBRARIES ${MKL_RT_LIBRARY})
-    mark_as_advanced(MKL_CORE_LIBRARY MKL_LP_LIBRARY MKL_ILP_LIBRARY
-        MKL_SEQUENTIAL_LIBRARY MKL_TBBTHREAD_LIBRARY MKL_GNUTHREAD_LIBRARY)
-endif()
-        
+   
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MKL DEFAULT_MSG MKL_INCLUDE_DIR MKL_LIBRARIES MKL_LIB_DIRS)

@@ -11,6 +11,8 @@
  outputformat = 'csv',
 ! number of reflectors to be listed in final output
  numlist = 20,
+! do we want a kinematical pattern added to the existing master pattern file ?
+ kinematical = .FALSE.,
 ! number of parallel threads to be used for computation
  nthreads = 1,
  /
