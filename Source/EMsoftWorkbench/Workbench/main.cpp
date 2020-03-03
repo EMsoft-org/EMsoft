@@ -74,7 +74,7 @@ QString findEMsoftPathName()
   // We are on Linux - I think
   // Try the current location of where the application was launched from which is
   // typically the case when debugging from a build tree
-  if(aPluginDir.cd("opencl"))
+  if(aPathDir.cd("opencl"))
   {
     aPathDir.cdUp();
     return aPathDir.absolutePath();
