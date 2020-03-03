@@ -154,7 +154,7 @@ type(gnode),save                           :: rlp
 type(Laue_g_list),pointer                  :: reflist, rltmp
 real(kind=sgl),allocatable                 :: mLPNH(:,:), mLPSH(:,:), masterSPNH(:,:), masterSPSH(:,:)
 integer(kind=irg)						               :: npx, npy, gcnt, ierr, nix, niy, nixp, niyp, i, j, w, istat, TIFF_nx, TIFF_ny, &
-                                              hdferr, bw, d, ll, res, timestart, timestop, info
+                                              hdferr, bw, d, ll, res, timestart, timestop, info, Lindex
 real(kind=sgl)							               :: xy(2), xyz(3), dx, dy, dxm, dym, Radius, mi, ma, tstart, tstop, sdev, mean, kl(2)
 real(kind=dbl)                             :: VMFscale, inten, p, LegendreLattitude
 character(fnlen)                           :: fname, TIFF_filename, attributename, groupname, datagroupname, dataset, &
@@ -284,7 +284,7 @@ call cpu_time(tstart)
 !
 ! multiplying this by the intensity I and taking the logarithm, we have
 !
-! log(vmf) = (-1 + mux) kappa + Log(Inten) - Log(Pi) + Log(kappa) - Log(2) 
+! log(vmf) = (-1 + mu.x) kappa + Log(Inten) - Log(Pi) + Log(kappa) - Log(2) 
 ! 
 ! we'll take the constant part of this and call it VMFscale
 
@@ -304,21 +304,28 @@ call cpu_time(tstart)
     if (rltmp%xyz(3).lt.0) north=.FALSE.
     if (abs(rltmp%xyz(3)).ne.1.D0) then
       kl = LambertSpheretoSquare(rltmp%xyz, ierr) * float(npx)
-      LegendreLattitude = LegendreArray( int(maxval( abs(kl) )) )
+! here we need to be very careful to determine the index of the Legendre ring, NOT the Lambert ring !!!
+      Lindex = npx 
+      do while(LegendreArray(Lindex).lt.rltmp%xyz(3)) 
+        Lindex = Lindex - 1
+      end do  
+      LegendreLattitude = LegendreArray( Lindex - 1)
 ! the factor p rescales the x and y components of kstar to maintain a unit vector
       p = sqrt((1.D0-LegendreLattitude**2)/(1.D0-rltmp%xyz(3)**2))
       rltmp%xyz = (/ p*rltmp%xyz(1), p*rltmp%xyz(2), LegendreLattitude /)
+! rescale the coordinates in the Legendre square to be on the correct ring
+      kl = kl * float(Lindex)/maxval(abs(kl))
     end if
     if (.not.north) rltmp%xyz(3) = -rltmp%xyz(3)
 ! and continue with the projection
-!   call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
+    ! call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 ! intensity with polarization correction
     inten = rltmp%sfs * rltmp%polar
 ! depending on the sign of xyz(3) we put this point in the Northern or Southern hemisphere, taking into account the
 ! special case of reflections along the equator which should appear in both hemisphere arrays.  The intensities are 
 ! computed on a small grid of w x w points on the Lambert projection, which are then interpolated from a "Gaussian" on
 ! the sphere. we use the von Mises-Fisher distribution with p=3
-    call sampleVMF(sngl(rltmp%xyz), lmnl%kappaVMF, VMFscale, inten, npx, int(kl(1)), int(kl(2)), w, mLPNH, mLPSH)
+    call sampleVMF(sngl(rltmp%xyz), lmnl%kappaVMF, VMFscale, inten, npx, int(kl(1)), int(kl(2)), w, mLPNH, mLPSH, LegendreArray)
 ! and go to the next point
     rltmp => rltmp%next
   end do 

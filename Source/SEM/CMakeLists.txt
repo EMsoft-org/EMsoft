@@ -177,7 +177,6 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
 
-
   Add_EMsoft_Executable(TARGET EMTKD 
                         SOURCES ${APP_DIR}/EMTKD.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
@@ -213,7 +212,6 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
-
 
 endif()
 
