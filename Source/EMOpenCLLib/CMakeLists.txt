@@ -33,13 +33,14 @@ target_include_directories(EMOpenCLLib
                             "${EMsoft_SOURCE_DIR}/Source"                            
                     )
 
-target_link_libraries(EMOpenCLLib 
-                          ${OpenCL_LIBRARY}
-                          clfortran
-                          EMsoftLib 
-                          EMsoftHDFLib 
-)
+get_property(clfortran_imported_lib TARGET clfortran PROPERTY IMPORTED_LOCATION_RELEASE)
 
+target_link_libraries(EMOpenCLLib 
+  ${OpenCL_LIBRARY}
+  ${clfortran_imported_lib}
+  EMsoftLib 
+  EMsoftHDFLib 
+)
 
 set_target_properties (EMOpenCLLib PROPERTIES
   LINKER_LANGUAGE Fortran
