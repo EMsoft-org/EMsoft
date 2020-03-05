@@ -1432,6 +1432,7 @@ real(kind=sgl)          :: gammavalue
 real(kind=dbl)          :: intcutoffratio
 integer(kind=irg)       :: BPx
 integer(kind=irg)       :: nthreads
+logical                 :: binarize
 character(fnlen)        :: backprojection
 character(fnlen)        :: orientationfile
 character(fnlen)        :: tiffprefix
@@ -1442,7 +1443,7 @@ character(fnlen)        :: xtalname
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueSlitData / Lw,Lh,Lx,Ly,Lz,VoltageH,VoltageL,Sx,sampletodetector, &
-                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, &
+                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, binarize, &
                            beamstopatf,spotw,BPx,nthreads,backprojection, intcutoffratio, &
                            orientationfile,tiffprefix,hdfname,xtalname, gammavalue
 
@@ -1469,6 +1470,7 @@ BPx              = 300     ! semi-edge length for back projection square Lambert
 spotw            = 0.1     ! spot size weight factor (1/(2*sigma^2))
 gammavalue       = 1.0     ! scaling factor for gamma intensity scaling
 intcutoffratio   = 0.0001D0! intensity ratio cut off
+binarize         = .FALSE.
 backprojection   = 'No'    ! 'Yes' or 'No'; adds backprojections to output file
 orientationfile  = 'undefined'  ! input file with orientation list 
 tiffprefix       = 'undefined'  ! prefix for tiff output files with individual patterns
@@ -1524,6 +1526,7 @@ lnl%orientationfile = orientationfile
 lnl%tiffprefix = tiffprefix
 lnl%hdfname = hdfname
 lnl%xtalname = xtalname
+lnl%binarize = binarize
 
 end subroutine GetLaueSlitNameList
 

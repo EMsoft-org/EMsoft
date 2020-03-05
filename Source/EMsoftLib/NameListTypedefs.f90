@@ -319,6 +319,7 @@ type LaueSlitNameListType
         real(kind=dbl)          :: intcutoffratio
         integer(kind=irg)       :: BPx
         integer(kind=irg)       :: nthreads
+        logical                 :: binarize
         character(fnlen)        :: backprojection
         character(fnlen)        :: orientationfile
         character(fnlen)        :: tiffprefix

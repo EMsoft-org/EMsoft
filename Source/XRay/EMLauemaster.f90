@@ -338,6 +338,16 @@ call cpu_time(tstart)
   mLPSH(-npx:npx, npx) = mLPNH(-npx:npx, npx)
 ! that completes the computation of the master pattern
 
+! do we need to rebinarize?
+if (lmnl%binarize.eqv..TRUE.) then 
+  where (mLPNH.gt.0.75) 
+    mLPNH = 1.0
+  end where 
+  where (mLPSH.gt.0.75) 
+    mLPSH = 1.0
+  end where 
+end if 
+
 !=============================================
 !=============================================
 ! convert to stereographic projection

@@ -136,7 +136,7 @@ type(AngleType),pointer                    :: angles
 integer(kind=irg)						               :: i, j, icnt, numvox, hdferr, npx, npy, refcnt, io_int(1), Lstart, &
                                               g(3), gr(3), rf, NUMTHREADS, TID, BPnpx, BPnpy, m, betamin, betamax
 real(kind=sgl) 							               :: l, kouter, kinner, tstart, tstop, mi, ma, lambdamin, lambdamax, kv(3), &
-                                              scl, kv2(3), shortg, info, gg
+                                              scl, kv2(3), shortg, info, gg, mps
 real(kind=sgl),allocatable 				         :: pattern(:,:), patternsum(:,:,:), bppatterns(:,:,:), bp(:,:)
 real(kind=dbl)                             :: qq(4)
 
@@ -506,21 +506,30 @@ bppatterns = 0.0
 !$OMP DO SCHEDULE(DYNAMIC)
     do pid = 1,numvox
       pattern = getLaueSlitPattern(lnl, qq, reflist, lambdamin, lambdamax, refcnt, & 
-                                   kinpre(pid), kvecs(1:3,pid), kvox(1:3,pid) )
+                                   kinpre(pid), kvecs(1:3,pid), kvox(1:3,pid), lnl%binarize )
 !$OMP CRITICAL
      patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :) ! **lnl%gammavalue
 !$OMP END CRITICAL
     end do 
 !$OMP END DO
 
-    if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed ', maxval(patternsum)
+    if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed ', maxval(patternsum(:,:,ii))
     deallocate(pattern)
-
 
 ! end of OpenMP portion
 !$OMP END PARALLEL
 
- end do ! outer loop
+    if (lnl%binarize.eqv..TRUE.) then 
+      mps = maxval(patternsum(:,:,ii))
+      write (*,*) 'max value for this pattern = ', mps
+      where (patternsum(:,:,ii) .gt. mps*0.01)
+        patternsum(:,:,ii) = 1.0
+      end where
+      where (patternsum(:,:,ii) .le. mps*0.01)
+        patternsum(:,:,ii) = 0.0
+      end where
+    end if 
+end do ! outer loop
 ! 
 
   tstop = Time_tock(tickstart)

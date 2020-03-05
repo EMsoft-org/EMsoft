@@ -31,4 +31,5 @@
  tiffprefix       = 'undefined', ! prefix for tiff output files with individual patterns
  xtalname         = 'undefined', ! structure file name
  hdfname          = 'undefined', ! HDF output file name
+ binarize         = .FALSE.,  ! set to .TRUE. to get a binary output pattern (and backprojection)
  /

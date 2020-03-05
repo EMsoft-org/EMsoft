@@ -272,7 +272,7 @@ end function getLauePattern
 !> @date 01/29/20 MDG 1.0 original
 !--------------------------------------------------------------------------
 recursive function getLaueSlitPattern(lnl, qu, reflist, lmin, lmax, refcnt, &
-                                      kinpre, kvec, kvox) result(pattern)
+                                      kinpre, kvec, kvox, binarize) result(pattern)
 !DEC$ ATTRIBUTES DLLEXPORT :: getLaueSlitPattern
 
 use local
@@ -297,6 +297,7 @@ real(kind=sgl),INTENT(IN)               :: kinpre
 real(kind=sgl),INTENT(IN)               :: kvec(3)
 real(kind=sgl),INTENT(IN)               :: kvox(3)
 real(kind=sgl)                          :: pattern(lnl%Ny, lnl%Nz)
+logical                                 :: binarize
     
 real(kind=sgl)                          :: th, la, s0(3), s(3), G(3), d, scl, dvec(3), kexit(3), kinpost, dins, atf, Ly, Lz, pre
 type(Laue_grow_list),pointer            :: rltmp
@@ -329,6 +330,7 @@ if (kvec(1).gt.0.0) then
     kinpost = sqrt(sum((kexit-kvox)**2))
     dins = kinpre + kinpost 
     atf = exp( - dins/lnl%absl ) * lnl%beamstopatf
+    if (binarize.eqv..TRUE.) atf = 1.0
 ! and draw the reflection
     dvec = dvec / lnl%ps 
     dvec(2) = -dvec(2)
@@ -374,11 +376,12 @@ do i = 1, refcnt
               kexit = kvox + s * scl       ! this is with respect to the optical axis
               kinpost = sqrt(sum((kexit-kvox)**2))
               dins = kinpre + kinpost 
-              atf = exp( - dins/lnl%absl )
+              atf = exp( - dins/lnl%absl )*rltmp%sfs(j)
+              if (binarize.eqv..TRUE.) atf = 1.0
 ! and draw the reflection
               dvec = dvec / lnl%ps 
               dvec(2) = -dvec(2)
-              call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, sngl(atf*rltmp%sfs(j)), lnl%spotw)
+              call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, sngl(atf), lnl%spotw)
             end if 
           else
             CYCLE
