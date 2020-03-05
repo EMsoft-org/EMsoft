@@ -321,6 +321,7 @@ call cpu_time(tstart)
     ! call LambertgetInterpolation(sngl(rltmp%xyz), float(npx), npx, npy, nix, niy, nixp, niyp, dx, dy, dxm, dym)
 ! intensity with polarization correction
     inten = rltmp%sfs * rltmp%polar
+    if (lmnl%binarize.eqv..TRUE.) inten = 1.0
 ! depending on the sign of xyz(3) we put this point in the Northern or Southern hemisphere, taking into account the
 ! special case of reflections along the equator which should appear in both hemisphere arrays.  The intensities are 
 ! computed on a small grid of w x w points on the Lambert projection, which are then interpolated from a "Gaussian" on

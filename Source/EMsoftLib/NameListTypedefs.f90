@@ -262,6 +262,7 @@ type LaueMasterNameListType
         real(kind=dbl)          :: kappaVMF
         real(kind=dbl)          :: intfactor
         character(3)            :: outformat
+        logical                 :: binarize
         character(fnlen)        :: SHT_folder
         character(fnlen)        :: SHT_formula
         character(fnlen)        :: SHT_name

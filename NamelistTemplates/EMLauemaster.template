@@ -10,7 +10,9 @@
 ! concentration parameter for von Mises-Fisher distribution
  kappaVMF = 50000.D0,
 ! intensity truncation factor; any reflection with intensity less than intfactor * I(000) will be ignored
- intfactor = 0.0001D0,
+ intfactor = 0.001D0,
+! intensity handling: .FALSE. = use structure factors, .TRUE. = all intensities equal to 1 
+ binarize = .FALSE.,
 ! crystal structure file name
  xtalname = 'undefined',
 ! output file name [relative to EMdatapathname, .h5 extension]

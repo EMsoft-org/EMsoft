@@ -1187,6 +1187,7 @@ real(kind=sgl)          :: lambdamax
 real(kind=dbl)          :: kappaVMF
 real(kind=dbl)          :: intfactor
 character(3)            :: outformat
+logical                 :: binarize
 character(fnlen)        :: SHT_folder
 character(fnlen)        :: SHT_formula
 character(fnlen)        :: SHT_name
@@ -1200,7 +1201,7 @@ character(fnlen)        :: xtalname
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname, &
                              intfactor, tiffname, patchw, SHT_folder, SHT_formula, SHT_name, &
-                             SHT_structuresymbol, addtoKiltHub, useDOI, outformat
+                             SHT_structuresymbol, addtoKiltHub, useDOI, outformat, binarize
 
 npx = 500
 patchw = 5
@@ -1218,6 +1219,7 @@ useDOI = 'undefined'            ! if no DOI is entered, then we use the Zenodo D
 xtalname = 'undefined'
 hdfname = 'undefined'
 tiffname = 'undefined'
+binarize = .FALSE.
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -1266,6 +1268,7 @@ lmnl%SHT_formula = SHT_formula
 lmnl%SHT_name = SHT_name
 lmnl%SHT_structuresymbol = SHT_structuresymbol
 lmnl%SHT_folder = trim(SHT_folder)
+lmnl%binarize = binarize
 
 end subroutine GetLaueMasterNameList
 
