@@ -331,7 +331,8 @@ if (kvec(1).gt.0.0) then
     atf = exp( - dins/lnl%absl ) * lnl%beamstopatf
 ! and draw the reflection
     dvec = dvec / lnl%ps 
-    call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, -dvec, atf, lnl%spotw)
+    dvec(2) = -dvec(2)
+    call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, atf, lnl%spotw)
   end if 
 end if
 
@@ -376,7 +377,8 @@ do i = 1, refcnt
               atf = exp( - dins/lnl%absl )
 ! and draw the reflection
               dvec = dvec / lnl%ps 
-              call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, -dvec, sngl(atf*rltmp%sfs(j)), lnl%spotw)
+              dvec(2) = -dvec(2)
+              call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, sngl(atf*rltmp%sfs(j)), lnl%spotw)
             end if 
           else
             CYCLE
