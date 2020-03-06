@@ -583,11 +583,14 @@ dataset = SC_Duration
 ! and close the fortran hdf interface
  call h5close_EMsoft(hdferr)
 
-npx = lnl%Ny 
-npy = lnl%Nz 
+ call Message("ComputeLauePattern","patterns stored in "//trim(HDFname))
+
+if (trim(lnl%tiffprefix).ne.'undefined') then 
+  npx = lnl%Ny 
+  npy = lnl%Nz 
 
 ! optionally, write the individual tiff image files 
- do ii=1,numangles
+  do ii=1,numangles
 ! output the ADP map as a tiff file 
     write (pnum,"(I4.4)") ii
     fname = trim(EMsoft_getEMdatapathname())//trim(lnl%tiffprefix)//'_'//pnum//'.tiff'
@@ -615,6 +618,7 @@ npy = lnl%Nz
     !   call Message('Laue pattern written to '//trim(TIFF_filename))
     end if 
     deallocate(TIFF_image)
-end do 
+  end do 
+end if 
 
 end subroutine ComputeLauePattern
