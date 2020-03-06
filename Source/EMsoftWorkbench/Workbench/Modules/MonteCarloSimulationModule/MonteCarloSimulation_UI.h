@@ -95,8 +95,6 @@ protected slots:
 
   void parametersChanged();
 
-  void updateMCProgress(int loopCompleted, int totalLoops, float bseYield) const;
-
   void on_gpuPlatformCB_currentIndexChanged(int index) const;
 
 private slots:

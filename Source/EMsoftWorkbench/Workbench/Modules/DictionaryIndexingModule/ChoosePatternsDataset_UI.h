@@ -56,6 +56,18 @@ class ChoosePatternsDataset_UI : public QWidget
      */
     HDF5DatasetSelectionWidget* getHDF5DatasetSelectionWidget() const;
 
+    /**
+     * @brief readSession
+     * @param obj
+     */
+    void readSession(QJsonObject& obj);
+
+    /**
+     * @brief writeSession
+     * @param obj
+     */
+    void writeSession(QJsonObject& obj) const;
+
   protected:
     void setupGui();
 

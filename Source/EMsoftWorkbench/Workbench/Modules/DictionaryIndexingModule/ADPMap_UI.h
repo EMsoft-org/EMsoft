@@ -113,6 +113,18 @@ protected slots:
   void processFinished();
 
   /**
+   * @brief listenADPMapCreated
+   * @param adpMap
+   */
+  void listenADPMapCreated(const QImage& adpMap);
+
+  /**
+   * @brief listenSelectedADPCoordinateChanged
+   * @param pixel
+   */
+  void listenSelectedADPCoordinateChanged(const QPoint& pixel);
+
+  /**
    * @brief listenROICheckboxStateChanged
    * @param state
    */
@@ -133,6 +145,7 @@ signals:
 
   void adpMapGenerationStarted();
   void adpMapGenerationFinished();
+  void adpMapCreated(const QImage&);
 
   void parametersChanged();
 
@@ -140,6 +153,7 @@ private:
   QSharedPointer<Ui::ADPMap_UI> m_Ui;
 
   ADPMapController* m_ADPController = nullptr;
+  QSharedPointer<QThread> m_Thread = nullptr;
 
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;

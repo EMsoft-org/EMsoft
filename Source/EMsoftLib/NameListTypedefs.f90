@@ -262,6 +262,7 @@ type LaueMasterNameListType
         real(kind=dbl)          :: kappaVMF
         real(kind=dbl)          :: intfactor
         character(3)            :: outformat
+        logical                 :: binarize
         character(fnlen)        :: SHT_folder
         character(fnlen)        :: SHT_formula
         character(fnlen)        :: SHT_name
@@ -318,6 +319,7 @@ type LaueSlitNameListType
         real(kind=dbl)          :: intcutoffratio
         integer(kind=irg)       :: BPx
         integer(kind=irg)       :: nthreads
+        logical                 :: binarize
         character(fnlen)        :: backprojection
         character(fnlen)        :: orientationfile
         character(fnlen)        :: tiffprefix
@@ -358,6 +360,7 @@ type reflectorNameListType
         character(fnlen)        :: outputformat
         character(fnlen)        :: masterfile
         character(fnlen)        :: listfile
+        logical                 :: kinematical
 end type reflectorNameListType
 
 ! namelist for the EMreflectors program
@@ -367,6 +370,7 @@ type kinematicalNameListType
         real(kind=sgl)          :: voltage
         character(fnlen)        :: xtalname
         character(fnlen)        :: datafile
+        character(5)            :: mode
 end type kinematicalNameListType
 
 type OrientationVizNameListType

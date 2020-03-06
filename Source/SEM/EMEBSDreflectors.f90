@@ -61,7 +61,6 @@ call Interpret_Program_Arguments(nmldeffile,1,(/ 26 /), progname)
 call GetreflectorNameList(nmldeffile,rnl)
 ! end if
 
-
 ! perform a Monte Carlo simulation
 call GetReflectors(rnl, progname, nmldeffile)
 
@@ -82,6 +81,7 @@ end program EMEBSDreflectors
 !> @date 02/12/18  MDG 1.1 converted to most recent h5 format; modified reflection selection criteria
 !> @date 06/06/18  MDG 1.2 modified discrete integration 
 !> @date 11/29/18  MDG 1.3 added kinematical X-ray intensities to output
+!> @date 03/01/20  MDG 1.4 add ability to compute a kinematical pattern 
 !--------------------------------------------------------------------------
 subroutine GetReflectors(rnl, progname, nmldeffile)
 
@@ -124,14 +124,14 @@ type(EBSDMasterNameListType)                 :: mpnl
 type(EBSDMCdataType)                         :: EBSDMCdata
 type(EBSDMPdataType)                         :: EBSDMPdata
 
-character(fnlen)                             :: listfile, masterfile, groupname, dataset, xtalname, outputfile
+character(fnlen)                             :: listfile, masterfile, groupname, dataset, xtalname, outputfile, infile
 logical                                      :: f_exists, readonly, verbose
 integer(kind=irg)                            :: hdferr, nlines, i, istat, ix, iy, nx, io_int(1), nkeep
 integer(HSIZE_T)                             :: dims3(3), dims4(3)
 real(kind=dbl)                               :: EkeV
 real(kind=sgl)                               :: m
 
-integer(kind=irg)                            :: imh, imk, iml, ii, j, num, nums, mhkl, valpos, numphi, numtheta
+integer(kind=irg)                            :: imh, imk, iml, ii, j, num, nums, mhkl, valpos, numphi,numtheta,iequiv(3,48),nequiv
 integer(kind=irg),allocatable                :: family(:,:,:),numfam(:),idx(:), idx2(:), sfi(:)
 integer(kind=irg)                            :: h,k,l,totfam,ind(3),icnt, oi_int(1), itmp(48,3), g1(3), g2(3), NUMTHREADS, TID
 logical                                      :: first
@@ -147,10 +147,10 @@ integer(kind=irg)                            :: jj,kk
 integer(kind=irg)                            :: nix,niy,nixp,niyp
 logical,allocatable                          :: keep(:)
 
-
 integer(kind=irg),allocatable                :: acc_e(:,:,:)
 real(kind=sgl),allocatable                   :: Eweights(:)
-real(kind=sgl),allocatable                   :: srtmp(:,:,:,:), mLPNH(:,:,:), mLPSH(:,:,:), masterNH(:,:), masterSH(:,:), KBI(:)
+real(kind=sgl),allocatable                   :: srtmp(:,:,:,:), mLPNH(:,:,:), mLPSH(:,:,:), masterNH(:,:), masterSH(:,:), &
+                                                KBI(:), kinmasterNH(:,:), kinmasterSH(:,:), kinNH(:,:), kinSH(:,:)
 character(fnlen, KIND=c_char),allocatable,TARGET :: stringarray(:)
 
 type(unitcell)          :: cell
@@ -202,6 +202,13 @@ do ix=-nx,nx
   end do
 end do
 deallocate(EBSDMPdata%mLPNH, EBSDMPdata%mLPSH)
+
+! do we need to generate a kinematical master pattern ?
+if (rnl%kinematical.eqv..TRUE.) then 
+  allocate(kinmasterNH(-nx:nx, -nx:nx), kinmasterSH(-nx:nx,-nx:nx) )
+  kinmasterNH = 0.0 
+  kinmasterSH = 0.0 
+end if 
 
 ! subtract the average value from the master pattern arrays and divide by the standard deviation
 m = sum(masterNH)/float((2*nx+1)**2)
@@ -400,15 +407,23 @@ scl = float(nx)
 call OMP_SET_NUM_THREADS(rnl%nthreads)
 io_int(1) = rnl%nthreads
 
-write (*,*) 'Total number of integrations to be carried out ',nkeep
+write (*,*) ' Total number of integrations to be carried out ',nkeep
+
+if (rnl%kinematical.eqv..TRUE.) then 
+  write (*,*) ' Computation of symmetrized kinematical pattern will slow things down a bit ... '
+end if 
 
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL DEFAULT(PRIVATE) &
 !$OMP& SHARED(k, nx, cp, sp, icnt, keep, th, incrad, numphi, gcart, cell, scl, masterNH, masterSH) &
-!$OMP& SHARED(Vg, VgX, Vgg, VggX, KBI, nkeep)
+!$OMP& SHARED(Vg, VgX, Vgg, VggX, KBI, nkeep, kinmasterNH, kinmasterSH)
 
 NUMTHREADS = OMP_GET_NUM_THREADS()
 TID = OMP_GET_THREAD_NUM()
+
+allocate(kinNH(-nx:nx,-nx:nx), kinSH(-nx:nx,-nx:nx))
+kinNH = 0.0
+kinSH = 0.0
 
 !$OMP DO SCHEDULE(STATIC,1)
 do k=1,icnt-1   ! ignore the last point
@@ -473,9 +488,19 @@ do k=1,icnt-1   ! ignore the last point
          KBI(k) = KBI(k)+ ( masterSH(nix,niy) * dxm * dym +  masterSH(nixp,niy) * dx * dym + &
                             masterSH(nix,niyp) * dxm * dy +  masterSH(nixp,niyp) * dx * dy ) * 0.25 * cosnorm(i)
       end if
+      Vg(k) = Vgg(k)
+      VgX(k) = VggX(k)
+      if (rnl%kinematical.eqv..TRUE.) then ! add the kinematical intensity and symmetrize it 
+        call Apply3DPGSymmetry(cell,nix,niy,1,nx,iequiv,nequiv)
+        do ix=1,nequiv
+          if (iequiv(3,ix).eq.-1) then 
+            kinSH(iequiv(1,ix),iequiv(2,ix)) = kinSH(iequiv(1,ix),iequiv(2,ix)) + Vg(k)
+          else
+            kinNH(iequiv(1,ix),iequiv(2,ix)) = kinNH(iequiv(1,ix),iequiv(2,ix)) + Vg(k)
+          end if 
+        end do
+      end if 
     end do
-    Vg(k) = Vgg(k)
-    VgX(k) = VggX(k)
     deallocate(theta,ca,sa,cosnorm,dc)
  else
     Vg(k) = 0.0
@@ -490,6 +515,12 @@ do k=1,icnt-1   ! ignore the last point
  end if
 end do
 !$OMP END DO
+
+!$OMP CRITICAL
+  kinmasterNH = kinmasterNH + kinNH
+  kinmasterSH = kinmasterSH + kinSH
+!$OMP END CRITICAL
+
 !$OMP END PARALLEL
 
 call Message(' done ')
@@ -591,5 +622,35 @@ if ((trim(rnl%outputformat).eq.'markdown').or.(trim(rnl%outputformat).eq.'all'))
   close(unit=80,status='keep')
   call Message('Data stored in .md file '//trim(outputfile))
 end if
+
+! do we need to store the kinematical patterns in the MP file ?
+if (rnl%kinematical.eqv..TRUE.) then 
+  call h5open_EMsoft(hdferr)
+
+  infile = trim(EMsoft_getEMdatapathname())//trim(rnl%masterfile)
+  infile = EMsoft_toNativePath(infile)
+
+  nullify(HDF_head%next)
+  hdferr =  HDF_openFile(infile, HDF_head)
+
+  groupname = SC_EMData
+  hdferr = HDF_openGroup(groupname, HDF_head)
+  groupname = SC_EBSDmaster
+  hdferr = HDF_openGroup(groupname, HDF_head)
+
+write (*,*) 'maxval = ', maxval(kinmasterNH), maxval(kinmasterSH)
+
+  dataset = 'kinmasterNH'
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, kinmasterNH, 2*nx+1, 2*nx+1, HDF_head)
+
+  dataset = 'kinmasterSH'
+  hdferr = HDF_writeDatasetFloatArray2D(dataset, kinmasterSH, 2*nx+1, 2*nx+1, HDF_head)
+
+  call HDF_pop(HDF_head,.TRUE.)
+
+  call h5close_EMsoft(hdferr)
+end if 
+
+
 
 end subroutine GetReflectors

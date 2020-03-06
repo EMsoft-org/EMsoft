@@ -133,9 +133,10 @@ integer(kind=irg),allocatable 			       :: batchnumangles(:)
 integer(kind=irg),parameter 			         :: batchsize = 100
 type(AngleType),pointer                    :: angles
 
-integer(kind=irg)						               :: i, j, icnt, numvox, hdferr, npx, npy, refcnt, io_int(1), &
-                                              g(3), gr(3), rf, NUMTHREADS, TID, BPnpx, BPnpy, m
-real(kind=sgl) 							               :: l, kouter, kinner, tstart, tstop, mi, ma, lambdamin, lambdamax, kv(3), scl, kv2(3)
+integer(kind=irg)						               :: i, j, icnt, numvox, hdferr, npx, npy, refcnt, io_int(1), Lstart, &
+                                              g(3), gr(3), rf, NUMTHREADS, TID, BPnpx, BPnpy, m, betamin, betamax
+real(kind=sgl) 							               :: l, kouter, kinner, tstart, tstop, mi, ma, lambdamin, lambdamax, kv(3), &
+                                              scl, kv2(3), shortg, info, gg, mps
 real(kind=sgl),allocatable 				         :: pattern(:,:), patternsum(:,:,:), bppatterns(:,:,:), bp(:,:)
 real(kind=dbl)                             :: qq(4)
 
@@ -147,7 +148,7 @@ type(LaueMasterNameListType)               :: lmnl
 type(Laue_grow_list),pointer               :: reflist, rltmp          
 
 character(fnlen) 						               :: hdfname, groupname, datagroupname, attributename, dataset, fname, &
-                                              TIFF_filename, Lauemode
+                                              TIFF_filename, Lauemode, BPmode
 character(11)                              :: dstr
 character(15)                              :: tstrb
 character(15)                              :: tstre
@@ -164,6 +165,8 @@ type(image_t)                              :: im
 integer(int8)                              :: i8 (3,4)
 integer(int8), allocatable                 :: TIFF_image(:,:)
 
+! Legendre lattitude arrays
+real(kind=dbl),allocatable                 :: LegendreArray(:), upd(:), diagonal(:)
 
 ! new parameters for the slit model 
 real(kind=dbl)    :: ds, dsvec(3), d0, d0vec(3), d, dvec(3), t, slitc(3), sw, sh, slitcorners(3,4), &
@@ -188,9 +191,6 @@ kouter = getXRDwavenumber(sngl(lnl%VoltageH))
 kinner = getXRDwavenumber(sngl(lnl%VoltageL))
 lambdamin = 1.0/kouter
 lambdamax = 1.0/kinner
-
-write (*,*) ' wave length limits : ', lambdamin, lambdamax 
-
 
 !=============================================
 !=============================================
@@ -217,6 +217,18 @@ nullify(reflist)
 lmnl%lambdamin = 1.0/kouter
 lmnl%intfactor = lnl%intcutoffratio   ! default intensity cutoff factor (from EMLauemaster program)
 call Laue_Init_Unit_Reflist(cell, lmnl, reflist, refcnt, verbose)
+
+! go through the reflection list and determine the length of the shortest non-zero G-vector
+rltmp => reflist%next
+shortg = 100.D0 
+do i=2,refcnt 
+  gg = CalcLength(cell, real(rltmp%hkl), 'r') 
+  if (gg.lt.shortg) shortg = gg 
+  rltmp => rltmp%next 
+end do 
+
+! we need to compute the correct value for Lstart... setting to 4 for now
+Lstart = 8
 
 !=============================================
 !=============================================
@@ -349,10 +361,10 @@ do i=1,4
   scuvec(1:3,i) = slitcorners(1:3,i) / vecnorm(slitcorners(1:3,i))
 end do
 
-write (*,*) 'slitcorners in slit plane '
-do i=1,4
-  write(*,*) (slitcorners(j,i), j=1,3), (scuvec(j,i), j=1,3)
-end do
+! write (*,*) 'slitcorners in slit plane '
+! do i=1,4
+!   write(*,*) (slitcorners(j,i), j=1,3), (scuvec(j,i), j=1,3)
+! end do
 
 ! slit corner vectors extended to the detector plane; delineates the projected image of the slit
 do i=1, 4
@@ -360,10 +372,10 @@ do i=1, 4
   scdet(1:3,i) = l * scuvec(1:3,i)
 end do
 
-write (*,*) 'slitcorners in detector plane '
-do i=1,4
-  write(*,*) (scdet(j,i), j=1,3)
-end do
+! write (*,*) 'slitcorners in detector plane '
+! do i=1,4
+!   write(*,*) (scdet(j,i), j=1,3)
+! end do
 
 
 ! the same in the sample back plane, which delineates the range of sample voxels to be considered
@@ -372,10 +384,10 @@ do i=1, 4
   scsbp(1:3,i) = l * scuvec(1:3,i)
 end do
 
-write (*,*) 'slitcorners in sample back plane '
-do i=1,4
-  write(*,*)  (scsbp(j,i), j=1,3)
-end do
+! write (*,*) 'slitcorners in sample back plane '
+! do i=1,4
+!   write(*,*)  (scsbp(j,i), j=1,3)
+! end do
 
 
 ! determine the integration range for voxels inside the sample 
@@ -395,7 +407,7 @@ m = (maxvz-minvz)/2
 minvz = -m
 maxvz = m
 
-write (*,*) 'voxel ranges : ', minvy, maxvy, minvz, maxvz, numvx 
+! write (*,*) 'voxel ranges : ', minvy, maxvy, minvz, maxvz, numvx 
 
 ! maximum number of sample voxels that can contribute to the pattern 
 numvox = (maxvy-minvy)*(maxvz-minvz)*numvx 
@@ -403,7 +415,7 @@ numvox = (maxvy-minvy)*(maxvz-minvz)*numvx
 ! the coordinates of the projected center of the sample (in the back plane) 
 samplecenter = sum(scsbp,2) * 0.25D0 
 
-write (*,*) 'sample back plane center : ', samplecenter 
+! write (*,*) 'sample back plane center : ', samplecenter 
 
 ! an incident wave vector is then proportional to a unit vector along the line connecting each of the 
 ! sample voxels to the source location; the complete pattern can then be formed by superimposing all 
@@ -450,6 +462,18 @@ call WriteValue(' total number of sample voxels : ',io_int, 1, frm = "(I8)")
 io_int(1) = refcnt
 call WriteValue(' total number of potential reflections : ',io_int, 1, frm = "(I8)")
 
+! next we need the Legendre lattitudes for the back projector 
+call Message(' Computing Legendre lattitudinal grid values')
+allocate(diagonal(BPnpx),upd(BPnpx))
+diagonal = 0.D0
+upd = (/ (dble(i) / dsqrt(4.D0 * dble(i)**2 - 1.D0), i=1,BPnpx) /)
+call dsterf(BPnpx-2, diagonal, upd, info) 
+! the eigenvalues are stored from smallest to largest and we need them in the opposite direction
+allocate(LegendreArray(0:BPnpx-1))
+LegendreArray(0:BPnpx-1) = diagonal(BPnpx:1:-1)
+! set the center eigenvalue to 0
+LegendreArray((BPnpx-1)/2) = 0.D0
+deallocate(diagonal, upd)
 
 !=============================================
 !=============================================
@@ -482,21 +506,30 @@ bppatterns = 0.0
 !$OMP DO SCHEDULE(DYNAMIC)
     do pid = 1,numvox
       pattern = getLaueSlitPattern(lnl, qq, reflist, lambdamin, lambdamax, refcnt, & 
-                                   kinpre(pid), kvecs(1:3,pid), kvox(1:3,pid) )
+                                   kinpre(pid), kvecs(1:3,pid), kvox(1:3,pid), lnl%binarize )
 !$OMP CRITICAL
      patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :) ! **lnl%gammavalue
 !$OMP END CRITICAL
     end do 
 !$OMP END DO
 
-    if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed ', maxval(patternsum)
+    if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed ', maxval(patternsum(:,:,ii))
     deallocate(pattern)
-
 
 ! end of OpenMP portion
 !$OMP END PARALLEL
 
- end do ! outer loop
+    if (lnl%binarize.eqv..TRUE.) then 
+      mps = maxval(patternsum(:,:,ii))
+      write (*,*) 'max value for this pattern = ', mps
+      where (patternsum(:,:,ii) .gt. mps*0.01)
+        patternsum(:,:,ii) = 1.0
+      end where
+      where (patternsum(:,:,ii) .le. mps*0.01)
+        patternsum(:,:,ii) = 0.0
+      end where
+    end if 
+end do ! outer loop
 ! 
 
   tstop = Time_tock(tickstart)
@@ -512,11 +545,13 @@ dataset = 'LauePatterns'
   if (trim(lnl%backprojection).eq.'Yes') then 
     call Message('Starting pattern back projection computation')
     allocate(bp(1:BPnpx,1:BPnpy))
+    BPmode = 'forward'
     do ii=1,numangles
       bp = 0.0
 
-      bp = backprojectLauePattern( (/kouter, kinner/), sngl(lnl%ps), sngl(lnl%sampletodetector), (/lnl%Ny, lnl%Nz/), &
-                                   (/BPnpx, BPnpy/), patternsum(1:lnl%Ny,1:lnl%Nz,ii), Lauemode)
+      bp = backprojectLauePattern( (/kouter, kinner/), sngl(lnl%ps), sngl(lnl%sampletodetector), Lstart, (/lnl%Ny, lnl%Nz/), &
+                                   (/lnl%BPx, lnl%BPx/), patternsum(1:lnl%Ny,1:lnl%Nz,ii), BPmode, LegendreArray)
+      write (*,*) ' max intensity in backprojection : ', maxval(bp), maxval(patternsum(1:lnl%Ny,1:lnl%Nz,ii))
       bppatterns(:,:,ii) = bp
     end do
     deallocate(bp)
@@ -548,9 +583,14 @@ dataset = SC_Duration
 ! and close the fortran hdf interface
  call h5close_EMsoft(hdferr)
 
+ call Message("ComputeLauePattern","patterns stored in "//trim(HDFname))
+
+if (trim(lnl%tiffprefix).ne.'undefined') then 
+  npx = lnl%Ny 
+  npy = lnl%Nz 
 
 ! optionally, write the individual tiff image files 
- do ii=1,numangles
+  do ii=1,numangles
 ! output the ADP map as a tiff file 
     write (pnum,"(I4.4)") ii
     fname = trim(EMsoft_getEMdatapathname())//trim(lnl%tiffprefix)//'_'//pnum//'.tiff'
@@ -578,6 +618,7 @@ dataset = SC_Duration
     !   call Message('Laue pattern written to '//trim(TIFF_filename))
     end if 
     deallocate(TIFF_image)
-end do 
+  end do 
+end if 
 
 end subroutine ComputeLauePattern

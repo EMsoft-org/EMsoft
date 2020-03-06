@@ -64,6 +64,7 @@ use EBSDmod
 use EBSDDImod
 use HDF5
 use HDFsupport
+use ISO_C_BINDING
 
 IMPLICIT NONE
 
@@ -79,6 +80,7 @@ type(EBSDMPdataType)                        :: EBSDMPdata
 type(EBSDDetectorType)                      :: EBSDdetector
 logical                                     :: verbose
 integer(kind=irg)                           :: i, istat, res, hdferr
+character(kind=c_char)                      :: Cnmldeffile(fnlen), Cprogname(fnlen)
 
 nmldeffile = 'EMEBSDDI.nml'
 progname = 'EMEBSDDI.f90'
@@ -91,57 +93,12 @@ call EMsoft(progname, progdesc)
 ! deal with the command line arguments, if any
 call Interpret_Program_Arguments(nmldeffile,1,(/ 80 /), progname)
 
-! deal with the namelist stuff
-res = index(nmldeffile,'.nml',kind=irg)
-if (res.eq.0) then
-  call FatalError('EMEBSDIndexing','JSON input not yet implemented')
-!  call JSONreadEBSDIndexingNameList(dinl, nmldeffile, error_cnt)
-else
-  call GetEBSDIndexingNameList(nmldeffile,dinl)
-end if
+! call the EBSDdriver routine to take care of the entire indexing process 
+Cnmldeffile = carstringify(nmldeffile)
+Cprogname = carstringify(progname)
+call EBSDDIdriver(Cnmldeffile, Cprogname, C_NULL_FUNPTR, C_NULL_FUNPTR, C_NULL_FUNPTR, 0_ill)
 
-! is this a dynamic calculation (i.e., do we actually compute the EBSD patterns)?
-if (trim(dinl%indexingmode).eq.'dynamic') then 
-
-    ! 1. read the Monte Carlo data file
-    call h5open_EMsoft(hdferr)
-    call readEBSDMonteCarloFile(dinl%masterfile, mcnl, hdferr, EBSDMCdata, getAccume=.TRUE.)
-
-    ! 2. read EBSD master pattern file
-    call readEBSDMasterPatternFile(dinl%masterfile, mpnl, hdferr, EBSDMPdata, getmLPNH=.TRUE., getmLPSH=.TRUE.)
-    call h5close_EMsoft(hdferr)
-
-    ! 3. allocate detector arrays
-    allocate(EBSDdetector%rgx(dinl%numsx,dinl%numsy), &
-           EBSDdetector%rgy(dinl%numsx,dinl%numsy), &
-           EBSDdetector%rgz(dinl%numsx,dinl%numsy), &
-           EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=istat)
-
-    ! 4. copy a few parameters from dinl to enl, which is the regular EBSDNameListType structure
-    ! and then generate the detector arrays
-    enl%numsx = dinl%numsx
-    enl%numsy = dinl%numsy
-    enl%xpc = dinl%xpc
-    enl%ypc = dinl%ypc
-    enl%delta = dinl%delta
-    enl%thetac = dinl%thetac
-    enl%L = dinl%L
-    enl%energymin = dinl%energymin
-    enl%energymax = dinl%energymax
-    call GenerateEBSDDetector(enl, mcnl, EBSDMCdata, EBSDdetector, verbose)
-
-    ! also copy the sample tilt angle into the correct variable for writing to the dot product file
-    dinl%MCsig = mcnl%sig
-else    ! this is a static run using an existing dictionary
-! we'll use the same MasterSubroutine so we need to at least allocate the input structures
-! even though we will not make use of them in static mode
-!  allocate(acc, master) 
-
-end if
-
-! perform the dictionary indexing computations
-call EBSDDISubroutine(dinl, mcnl, mpnl, EBSDMCdata, EBSDMPdata, EBSDdetector, progname, nmldeffile)
-
+! refinement step (if defined in the nml file)
 if (trim(dinl%refinementNMLfile).ne.'undefined') then 
     do i=1,5 
       call Message('   ')

@@ -152,6 +152,7 @@ signals:
   void rowDataChanged(const QModelIndex&, const QModelIndex&) const;
   void mpmcGenerationFinished() const;
   void patternGenerationFinished() const;
+  void mpInitializationFinished() const;
 
   void errorMessageGenerated(const QString& msg) const;
   void warningMessageGenerated(const QString& msg) const;

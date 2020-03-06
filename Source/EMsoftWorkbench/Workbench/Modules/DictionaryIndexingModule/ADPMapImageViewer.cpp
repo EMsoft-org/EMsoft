@@ -187,6 +187,8 @@ void ADPMapImageViewer::readSession(const QJsonObject &obj)
   m_SelectedImageCoords.setX(obj[ioConstants::SelectedADPCoordX].toInt());
   m_SelectedImageCoords.setY(obj[ioConstants::SelectedADPCoordY].toInt());
 
+  emit selectedADPCoordinateChanged(m_SelectedImageCoords);
+
   update();
 }
 

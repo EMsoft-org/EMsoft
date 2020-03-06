@@ -499,8 +499,8 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LaueMasterNameListType),INTENT(IN)               :: knl
 
-integer(kind=irg),parameter                           :: n_int = 2, n_real = 2, n_double = 2
-integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 2, n_double = 2
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm, binarize
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_double(n_double)
 character(20)                                         :: intlist(n_int), reallist(n_real), dbllist(n_double)
@@ -511,10 +511,14 @@ character(fnlen,kind=c_char)                          :: line2(1)
 groupname = SC_LauemasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
+binarize = 0
+if (knl%binarize.eqv..TRUE.) binarize = 1
+
 ! write all the single integers
-io_int = (/ knl%npx, knl%patchw /)
+io_int = (/ knl%npx, knl%patchw, binarize /)
 intlist(1) = 'npx'
 intlist(2) = 'patchw'
+intlist(3) = 'binarize'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals
@@ -3767,6 +3771,11 @@ dataset = SC_datafile
 line2(1) = knl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritekinematicalNameList: unable to create datafile dataset',.TRUE.)
+
+dataset = 'mode'
+line2(1) = knl%mode
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritekinematicalNameList: unable to create mode dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)

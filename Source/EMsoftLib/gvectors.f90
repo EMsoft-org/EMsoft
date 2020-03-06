@@ -569,9 +569,10 @@ do h=-imh,imh
         ghkl = CalcLength(cell,float(rf*gr),'r')
         if (ghkl.gt.gmax) EXIT 
       end do
-      rf = rf-1
       do i=1,rf 
-        z(i*gr(1), i*gr(2), i*gr(3)) = .TRUE.
+        if ( (abs(i*gr(1)).le.imh) .and. (abs(i*gr(2)).le.imk) .and. (abs(i*gr(3)).le.iml) ) then 
+          z(i*gr(1), i*gr(2), i*gr(3)) = .TRUE.
+        end if 
       end do
 ! the reduction factor is also the Nentries parameter for the linked list, so we create a 
 ! new entry in the list and generate the proper arrays sfs and dspacing

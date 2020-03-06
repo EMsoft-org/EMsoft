@@ -244,8 +244,12 @@ istat = 0
 hdfnumg = get_num_HDFgroups(HDFstrings)
 itype = get_input_type(inputtype)
 
-ename = trim(EMsoft_getEMdatapathname())//trim(filename)
-ename = EMsoft_toNativePath(ename)
+if (filename(1:1).eq.EMsoft_getEMsoftnativedelimiter()) then
+  ename = trim(filename)
+else
+  ename = trim(EMsoft_getEMdatapathname())//trim(filename)
+  ename = EMsoft_toNativePath(ename)
+end if
 
 f_exists = .FALSE.
 inquire(file=trim(ename), exist=f_exists)
@@ -1110,8 +1114,12 @@ end if
 if (inRAM.eqv..FALSE.) then
 ! first, make sure that this file does not already exist
    f_exists = .FALSE.
-   fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
-   fname = EMsoft_toNativePath(fname)
+   if (ebsdnl%tmpfile(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then 
+     fname = trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)
+     fname = EMsoft_toNativePath(fname)
+   else 
+     fname = trim(ebsdnl%tmpfile)
+   end if
    inquire(file=trim(trim(EMsoft_getEMtmppathname())//trim(ebsdnl%tmpfile)), exist=f_exists)
 
    call WriteValue('Creating temporary file :',trim(fname))

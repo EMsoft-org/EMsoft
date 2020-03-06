@@ -97,6 +97,8 @@ void PatternDisplayController::setMasterFilePath(const QString& masterFilePath)
   createMasterPatternImageGenerators();
   createMonteCarloImageGenerators();
   checkImageGenerationCompletion();
+
+  emit mpInitializationFinished();
 }
 
 // -----------------------------------------------------------------------------

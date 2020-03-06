@@ -146,10 +146,7 @@ void ADPMap_UI::createWidgetConnections()
 
   connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
   // connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &ADPMap_UI::updateZoomFactor);
-  connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedADPCoordinateChanged, [=] (const QPoint &pixel) {
-    m_Ui->adpMapSelectedPixelLabel->setText(tr("Selected Pixel: (%1, %2)").arg(QString::number(pixel.x()), QString::number(pixel.y())));
-    emit selectedADPCoordinateChanged(pixel);
-  });
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedADPCoordinateChanged, this, &ADPMap_UI::listenSelectedADPCoordinateChanged);
 
   connect(m_Ui->adpMapZoomInBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomIn);
   connect(m_Ui->adpMapZoomOutBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomOut);
@@ -181,6 +178,13 @@ void ADPMap_UI::listenROICheckboxStateChanged(int state)
   m_Ui->roi4LE->setEnabled(checkState == Qt::Checked);
 
   emit parametersChanged();
+}
+
+// -----------------------------------------------------------------------------
+void ADPMap_UI::listenSelectedADPCoordinateChanged(const QPoint& pixel)
+{
+  m_Ui->adpMapSelectedPixelLabel->setText(tr("Selected Pixel: (%1, %2)").arg(QString::number(pixel.x()), QString::number(pixel.y())));
+  emit selectedADPCoordinateChanged(pixel);
 }
 
 // -----------------------------------------------------------------------------
@@ -225,13 +229,20 @@ void ADPMap_UI::listenSelectedPatternDatasetChanged(const QStringList& patternDS
 }
 
 // -----------------------------------------------------------------------------
+void ADPMap_UI::listenADPMapCreated(const QImage& adpMap)
+{
+  m_Ui->adpViewer->loadImage(adpMap);
+  emit adpMapCreated(adpMap);
+}
+
+// -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void ADPMap_UI::listenADPGenerationStarted()
 {
   if(m_Ui->generateADPBtn->text() == "Cancel" && m_ADPController != nullptr)
   {
-    m_ADPController->cancelProcess();
+    m_ADPController->cancel();
     emit adpMapGenerationFinished();
     return;
   }
@@ -246,15 +257,15 @@ void ADPMap_UI::listenADPGenerationStarted()
     delete m_ADPController;
     m_ADPController = nullptr;
   }
-  QThread* m_Thread = new QThread; // This will leak and needs to be fixed.
+  m_Thread = QSharedPointer<QThread>(new QThread());
   m_ADPController = new ADPMapController;
-  m_ADPController->moveToThread(m_Thread);
+  m_ADPController->moveToThread(m_Thread.data());
   m_ADPController->setData(data);
-  connect(m_Thread, SIGNAL(started()), m_ADPController, SLOT(execute()));
-  connect(m_ADPController, SIGNAL(finished()), m_Thread, SLOT(quit()));
-  connect(m_Thread, SIGNAL(finished()), this, SLOT(processFinished()));
+  connect(m_Thread.data(), SIGNAL(started()), m_ADPController, SLOT(execute()));
+  connect(m_ADPController, SIGNAL(finished()), m_Thread.data(), SLOT(quit()));
+  connect(m_Thread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
 
-  connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), m_Ui->adpViewer, SLOT(loadImage(const QImage&)));
+  connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), this, SLOT(listenADPMapCreated(const QImage&)));
   connect(m_ADPController, SIGNAL(errorMessageGenerated(QString)), this, SIGNAL(errorMessageGenerated(QString)));
   connect(m_ADPController, SIGNAL(warningMessageGenerated(QString)), this, SIGNAL(warningMessageGenerated(QString)));
   connect(m_ADPController, SIGNAL(stdOutputMessageGenerated(QString)), this, SIGNAL(stdOutputMessageGenerated(QString)));
@@ -365,61 +376,26 @@ void ADPMap_UI::readSession(const QJsonObject &obj)
 
   if(!adpMapParamsObj.isEmpty())
   {
-    m_Ui->patternHeightLE->blockSignals(true);
-    m_Ui->patternWidthLE->blockSignals(true);
-    m_Ui->roiCB->blockSignals(true);
-    m_Ui->roi1LE->blockSignals(true);
-    m_Ui->roi2LE->blockSignals(true);
-    m_Ui->roi3LE->blockSignals(true);
-    m_Ui->roi4LE->blockSignals(true);
-//    m_Ui->binningFactorLE->blockSignals(true);
-//    m_Ui->binningXLE->blockSignals(true);
-//    m_Ui->binningYLE->blockSignals(true);
-    m_Ui->ipfHeightLE->blockSignals(true);
-    m_Ui->ipfWidthLE->blockSignals(true);
-//    m_Ui->maskPatternLE->blockSignals(true);
-    m_Ui->maskRadiusLE->blockSignals(true);
-    m_Ui->hipassLE->blockSignals(true);
-    m_Ui->numOfRegionsLE->blockSignals(true);
-    m_Ui->numOfThreadsLE->blockSignals(true);
-
-    m_Ui->patternHeightLE->setText(adpMapParamsObj[ioConstants::PatternHeight].toString());
-    m_Ui->patternWidthLE->setText(adpMapParamsObj[ioConstants::PatternWidth].toString());
+    m_Ui->patternHeightLE->setText(QString::number(adpMapParamsObj[ioConstants::PatternHeight].toInt()));
+    m_Ui->patternWidthLE->setText(QString::number(adpMapParamsObj[ioConstants::PatternWidth].toInt()));
     m_Ui->roiCB->setChecked(adpMapParamsObj[ioConstants::UseROI].toBool());
-    m_Ui->roi1LE->setText(adpMapParamsObj[ioConstants::ROI_1].toString());
-    m_Ui->roi2LE->setText(adpMapParamsObj[ioConstants::ROI_2].toString());
-    m_Ui->roi3LE->setText(adpMapParamsObj[ioConstants::ROI_3].toString());
-    m_Ui->roi4LE->setText(adpMapParamsObj[ioConstants::ROI_4].toString());
-//    m_Ui->binningFactorLE->setText(adpMapParamsObj[ioConstants::BinningFactor].toString());
-//    m_Ui->binningXLE->setText(adpMapParamsObj[ioConstants::BinningX].toString());
-//    m_Ui->binningYLE->setText(adpMapParamsObj[ioConstants::BinningY].toString());
-    m_Ui->ipfHeightLE->setText(adpMapParamsObj[ioConstants::IPFHeight].toString());
-    m_Ui->ipfWidthLE->setText(adpMapParamsObj[ioConstants::IPFWidth].toString());
-//    m_Ui->maskPatternLE->setText(adpMapParamsObj[ioConstants::MaskPattern].toString());
-    m_Ui->maskRadiusLE->setText(adpMapParamsObj[ioConstants::MaskRadius].toString());
-    m_Ui->hipassLE->setText(adpMapParamsObj[ioConstants::HipassFilter].toString());
-    m_Ui->numOfRegionsLE->setText(adpMapParamsObj[ioConstants::NumberOfRegions].toString());
-    m_Ui->numOfThreadsLE->setText(adpMapParamsObj[ioConstants::NumberOfThreads].toString());
+    m_Ui->roi1LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_X].toInt()));
+    m_Ui->roi2LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_Y].toInt()));
+    m_Ui->roi3LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_W].toInt()));
+    m_Ui->roi4LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_H].toInt()));
+    m_Ui->ipfHeightLE->setText(QString::number(adpMapParamsObj[ioConstants::IPFHeight].toInt()));
+    m_Ui->ipfWidthLE->setText(QString::number(adpMapParamsObj[ioConstants::IPFWidth].toInt()));
+    m_Ui->maskRadiusLE->setText(QString::number(adpMapParamsObj[ioConstants::MaskRadius].toDouble()));
+    m_Ui->hipassLE->setText(QString::number(adpMapParamsObj[ioConstants::HipassFilter].toDouble()));
+    m_Ui->numOfRegionsLE->setText(QString::number(adpMapParamsObj[ioConstants::NumberOfRegions].toInt()));
+    m_Ui->numOfThreadsLE->setText(QString::number(adpMapParamsObj[ioConstants::NumberOfThreads].toInt()));
 
-    m_Ui->patternHeightLE->blockSignals(false);
-    m_Ui->patternWidthLE->blockSignals(false);
-    m_Ui->roiCB->blockSignals(false);
-    m_Ui->roi1LE->blockSignals(false);
-    m_Ui->roi2LE->blockSignals(false);
-    m_Ui->roi3LE->blockSignals(false);
-    m_Ui->roi4LE->blockSignals(false);
-//    m_Ui->binningFactorLE->blockSignals(false);
-//    m_Ui->binningXLE->blockSignals(false);
-//    m_Ui->binningYLE->blockSignals(false);
-    m_Ui->ipfHeightLE->blockSignals(false);
-    m_Ui->ipfWidthLE->blockSignals(false);
-//    m_Ui->maskPatternLE->blockSignals(false);
-    m_Ui->maskRadiusLE->blockSignals(false);
-    m_Ui->hipassLE->blockSignals(false);
-    m_Ui->numOfRegionsLE->blockSignals(false);
-    m_Ui->numOfThreadsLE->blockSignals(false);
+    m_Ui->adpViewer->readSession(adpMapParamsObj);
 
-//    m_Ui->adpViewer->readSession(adpMapParamsObj);
+    if(validateData())
+    {
+      listenADPGenerationStarted();
+    }
   }
 }
 
@@ -433,21 +409,17 @@ void ADPMap_UI::writeSession(QJsonObject& obj) const
   adpMapParamsObj[ioConstants::PatternHeight] = m_Ui->patternHeightLE->text().toInt();
   adpMapParamsObj[ioConstants::PatternWidth] = m_Ui->patternWidthLE->text().toInt();
   adpMapParamsObj[ioConstants::UseROI] = m_Ui->roiCB->isChecked();
-  adpMapParamsObj[ioConstants::ROI_1] = m_Ui->roi1LE->text().toInt();
-  adpMapParamsObj[ioConstants::ROI_2] = m_Ui->roi2LE->text().toInt();
-  adpMapParamsObj[ioConstants::ROI_3] = m_Ui->roi3LE->text().toInt();
-  adpMapParamsObj[ioConstants::ROI_4] = m_Ui->roi4LE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningFactor] = m_Ui->binningFactorLE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningX] = m_Ui->binningXLE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningY] = m_Ui->binningYLE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_X] = m_Ui->roi1LE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_Y] = m_Ui->roi2LE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_W] = m_Ui->roi3LE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_H] = m_Ui->roi4LE->text().toInt();
   adpMapParamsObj[ioConstants::IPFHeight] = m_Ui->ipfHeightLE->text().toInt();
   adpMapParamsObj[ioConstants::IPFWidth] = m_Ui->ipfWidthLE->text().toInt();
-//  adpMapParamsObj[ioConstants::MaskPattern] = m_Ui->maskPatternLE->text().toInt();
   adpMapParamsObj[ioConstants::MaskRadius] = m_Ui->maskRadiusLE->text().toDouble();
   adpMapParamsObj[ioConstants::HipassFilter] = m_Ui->hipassLE->text().toDouble();
   adpMapParamsObj[ioConstants::NumberOfRegions] = m_Ui->numOfRegionsLE->text().toInt();
   adpMapParamsObj[ioConstants::NumberOfThreads] = m_Ui->numOfThreadsLE->text().toInt();
-//  m_Ui->adpViewer->writeSession(adpMapParamsObj);
+  m_Ui->adpViewer->writeSession(adpMapParamsObj);
 
   obj[ioConstants::ADPMapParams] = adpMapParamsObj;
 }

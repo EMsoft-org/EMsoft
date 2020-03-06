@@ -144,6 +144,8 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::warningMessageGenerated, this, &DictionaryIndexingMain_UI::notifyWarningMessage);
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
+
+  connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapCreated, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setADPMap);
 }
 
 // -----------------------------------------------------------------------------
@@ -249,9 +251,15 @@ void DictionaryIndexingMain_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::readModuleSession(QJsonObject& obj)
 {
-  m_Ui->adpMapUI->readSession(obj);
-  m_Ui->patternPreprocessingUI->readSession(obj);
-  m_Ui->dictionaryIndexingUI->readSession(obj);
+  QJsonObject diModuleObj = obj[ioConstants::DIModule].toObject();
+
+  if(!diModuleObj.isEmpty())
+  {
+    m_Ui->choosePatternsUI->readSession(diModuleObj);
+    m_Ui->adpMapUI->readSession(diModuleObj);
+    m_Ui->patternPreprocessingUI->readSession(diModuleObj);
+    m_Ui->dictionaryIndexingUI->readSession(diModuleObj);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -261,6 +269,7 @@ void DictionaryIndexingMain_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject diModuleObj;
 
+  m_Ui->choosePatternsUI->writeSession(diModuleObj);
   m_Ui->adpMapUI->writeSession(diModuleObj);
   m_Ui->patternPreprocessingUI->writeSession(diModuleObj);
   m_Ui->dictionaryIndexingUI->writeSession(diModuleObj);

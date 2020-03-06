@@ -413,8 +413,10 @@ void EMsoftWorkbench_UI::openSession(QJsonObject obj)
 
         moduleStackedWidget->insertWidget(i, module_ui); // Add module to stacked widget
       }
-
-      module_ui->readModuleSession(moduleObj);
+      else
+      {
+        module_ui->readModuleSession(moduleObj);
+      }
     }
   }
 }

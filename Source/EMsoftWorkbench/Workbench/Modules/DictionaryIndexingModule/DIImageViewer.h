@@ -35,86 +35,61 @@
 
 #pragma once
 
-#include <QtCore/QMap>
-
 #include "Common/GLImageViewer.h"
 
-class PPMatrixImageViewer : public GLImageViewer
+class DIImageViewer : public GLImageViewer
 {
   Q_OBJECT
 
 public:
-  PPMatrixImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
-  ~PPMatrixImageViewer() override;
+  DIImageViewer(QWidget* parent = nullptr, Qt::WindowFlags windowFlags = Qt::WindowFlags());
+  ~DIImageViewer() override;
 
   /**
-     * @brief loadImage
-     * @param image
-     */
-  void loadImage(const QImage &image, float hipassValue, int hipassNumOfSteps);
-
-  /**
-   * @brief readSession
-   * @param obj
+   * @brief setROI
+   * @param x
+   * @param y
+   * @param w
+   * @param h
    */
-  void readSession(const QJsonObject& obj) override;
+  void setROI(int x, int y, int w, int h);
 
   /**
-   * @brief writeSession
-   * @param obj
+   * @brief clearROI
    */
-  void writeSession(QJsonObject& obj) const override;
+  void clearROI();
 
 protected:
   void paintGL() override;
 
   void mouseDoubleClickEvent(QMouseEvent* event) override;
   void mouseMoveEvent(QMouseEvent* event) override;
-  void enterEvent(QEvent* event) override;
-  void leaveEvent(QEvent* event) override;
 
 signals:
-  void selectedHipassValueChanged(float value);
-  void selectedHipassNumOfRegionsChanged(int value);
+  void selectedADPCoordinateChanged(const QPoint &coord);
 
 private:
-  QPoint m_MouseCoords = QPoint(-1, -1);
-  QPoint m_SelectedImageCoords = QPoint(-1, -1);
-
-  float m_HipassValue = 0.0f;
-  int m_HipassNumOfSteps = 0;
+  int m_RoiX = -1;
+  int m_RoiY = -1;
+  int m_RoiW = -1;
+  int m_RoiH = -1;
 
   /**
-   * @brief Returns whether or not there is a valid mouse coordinate
+   * @brief isMouseCoordinateValid
+   * @param mouseCoord
    * @return
    */
-  bool isMouseCoordinateValid() const;
+  bool isMouseCoordinateValid(QPoint mouseCoord) const;
 
   /**
-   * @brief Returns whether or not there is a pixel selected in the current image
+   * @brief Returns whether or not there is an ROI selected in the current image
    * @return
    */
-  bool isPixelSelected() const;
-
-  /**
-   * @brief invalidateMouseCoordinate
-   */
-  void invalidateMouseCoordinate();
-
-  /**
-   * @brief clearSelectedPixel
-   */
-  void clearSelectedPixel();
-
-  /**
-   * @brief calculateHipassData
-   * @return
-   */
-  std::pair<int, float> calculateHipassData();
+  bool isROISelected() const;
 
 public:
-  PPMatrixImageViewer(const PPMatrixImageViewer&) = delete;            // Copy Constructor Not Implemented
-  PPMatrixImageViewer(PPMatrixImageViewer&&) = delete;                 // Move Constructor Not Implemented
-  PPMatrixImageViewer& operator=(const PPMatrixImageViewer&) = delete; // Copy Assignment Not Implemented
-  PPMatrixImageViewer& operator=(PPMatrixImageViewer&&) = delete;      // Move Assignment Not Implemented
+  DIImageViewer(const DIImageViewer&) = delete;            // Copy Constructor Not Implemented
+  DIImageViewer(DIImageViewer&&) = delete;                 // Move Constructor Not Implemented
+  DIImageViewer& operator=(const DIImageViewer&) = delete; // Copy Assignment Not Implemented
+  DIImageViewer& operator=(DIImageViewer&&) = delete;      // Move Assignment Not Implemented
 };

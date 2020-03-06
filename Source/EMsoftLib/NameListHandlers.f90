@@ -1187,6 +1187,7 @@ real(kind=sgl)          :: lambdamax
 real(kind=dbl)          :: kappaVMF
 real(kind=dbl)          :: intfactor
 character(3)            :: outformat
+logical                 :: binarize
 character(fnlen)        :: SHT_folder
 character(fnlen)        :: SHT_formula
 character(fnlen)        :: SHT_name
@@ -1200,7 +1201,7 @@ character(fnlen)        :: xtalname
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueMasterData / npx, lambdamin, lambdamax, kappaVMF, hdfname, xtalname, &
                              intfactor, tiffname, patchw, SHT_folder, SHT_formula, SHT_name, &
-                             SHT_structuresymbol, addtoKiltHub, useDOI, outformat
+                             SHT_structuresymbol, addtoKiltHub, useDOI, outformat, binarize
 
 npx = 500
 patchw = 5
@@ -1218,6 +1219,7 @@ useDOI = 'undefined'            ! if no DOI is entered, then we use the Zenodo D
 xtalname = 'undefined'
 hdfname = 'undefined'
 tiffname = 'undefined'
+binarize = .FALSE.
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -1266,6 +1268,7 @@ lmnl%SHT_formula = SHT_formula
 lmnl%SHT_name = SHT_name
 lmnl%SHT_structuresymbol = SHT_structuresymbol
 lmnl%SHT_folder = trim(SHT_folder)
+lmnl%binarize = binarize
 
 end subroutine GetLaueMasterNameList
 
@@ -1429,6 +1432,7 @@ real(kind=sgl)          :: gammavalue
 real(kind=dbl)          :: intcutoffratio
 integer(kind=irg)       :: BPx
 integer(kind=irg)       :: nthreads
+logical                 :: binarize
 character(fnlen)        :: backprojection
 character(fnlen)        :: orientationfile
 character(fnlen)        :: tiffprefix
@@ -1439,7 +1443,7 @@ character(fnlen)        :: xtalname
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueSlitData / Lw,Lh,Lx,Ly,Lz,VoltageH,VoltageL,Sx,sampletodetector, &
-                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, &
+                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, binarize, &
                            beamstopatf,spotw,BPx,nthreads,backprojection, intcutoffratio, &
                            orientationfile,tiffprefix,hdfname,xtalname, gammavalue
 
@@ -1466,6 +1470,7 @@ BPx              = 300     ! semi-edge length for back projection square Lambert
 spotw            = 0.1     ! spot size weight factor (1/(2*sigma^2))
 gammavalue       = 1.0     ! scaling factor for gamma intensity scaling
 intcutoffratio   = 0.0001D0! intensity ratio cut off
+binarize         = .FALSE.
 backprojection   = 'No'    ! 'Yes' or 'No'; adds backprojections to output file
 orientationfile  = 'undefined'  ! input file with orientation list 
 tiffprefix       = 'undefined'  ! prefix for tiff output files with individual patterns
@@ -1521,6 +1526,7 @@ lnl%orientationfile = orientationfile
 lnl%tiffprefix = tiffprefix
 lnl%hdfname = hdfname
 lnl%xtalname = xtalname
+lnl%binarize = binarize
 
 end subroutine GetLaueSlitNameList
 
@@ -3727,9 +3733,10 @@ integer(kind=irg)                              :: nthreads
 character(fnlen)                               :: outputformat
 character(fnlen)                               :: masterfile
 character(fnlen)                               :: listfile
+logical                                        :: kinematical
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EBSDreflectors/ increment, dmin, masterfile, listfile, numlist, nthreads, outputformat
+namelist /EBSDreflectors/ increment, dmin, masterfile, listfile, numlist, nthreads, outputformat, kinematical
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 increment = 0.025               ! angular increment [°]
@@ -3739,6 +3746,7 @@ nthreads = 1
 outputformat = 'csv'            ! options: 'latex', 'csv', and 'markdown'
 masterfile = 'undefined'        ! master pattern filename
 listfile = 'undefined'          ! filename for output (no extension)
+kinematical = .FALSE.           ! if .TRUE., a kinematical master pattern will be generated 
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3767,6 +3775,7 @@ rnl%numlist = numlist
 rnl%nthreads = nthreads
 rnl%masterfile = trim(masterfile)
 rnl%listfile = trim(listfile)
+rnl%kinematical = kinematical
 
 end subroutine GetreflectorNameList
 
@@ -3802,9 +3811,10 @@ real(kind=sgl)                                 :: thr
 real(kind=sgl)                                 :: voltage
 character(fnlen)                               :: xtalname
 character(fnlen)                               :: datafile
+character(5)                                   :: mode
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist /EMkinematical/ dmin, voltage, thr, xtalname, datafile
+namelist /EMkinematical/ dmin, voltage, thr, xtalname, datafile, mode
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 dmin = 0.05                    ! smallest d-spacing to include in dynamical matrix [nm]
@@ -3812,6 +3822,7 @@ thr = 1.0                      ! smallest |structurefactor|^2 to include
 voltage = 30000.0              ! microscope voltage [V]
 datafile = 'undefined'         ! output file name
 xtalname = 'undefined'         ! structure file name
+mode = 'lines'                 ! default plot mode
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -3838,6 +3849,7 @@ knl%thr = thr
 knl%voltage = voltage
 knl%xtalname = xtalname
 knl%datafile = datafile
+knl%mode = mode 
 
 end subroutine GetkinematicalNameList
 

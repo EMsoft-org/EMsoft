@@ -90,7 +90,7 @@ void PatternDisplay_UI::setupGui()
   connect(m_Controller, SIGNAL(newProgressBarMaximumValue(int)), m_PatternDisplayWidget, SLOT(setProgressBarMaximum(int)));
   connect(m_Controller, SIGNAL(newProgressBarValue(int)), m_PatternDisplayWidget, SLOT(setProgressBarValue(int)), Qt::QueuedConnection);
   connect(m_Controller, SIGNAL(patternGenerationFinished()), m_PatternDisplayWidget, SLOT(patternGenerationFinished()));
-  connect(m_Controller, SIGNAL(mpmcGenerationFinished()), this, SLOT(resetDisplayWidgets()));
+  //  connect(m_Controller, SIGNAL(mpmcGenerationFinished()), this, SLOT(resetDisplayWidgets()));
   connect(m_PatternDisplayWidget, SIGNAL(cancelRequested()), m_Controller, SLOT(cancelGeneration()));
   connect(m_PatternDisplayWidget, SIGNAL(patternNeedsPriority(size_t)), m_Controller, SLOT(addPriorityIndex(size_t)));
 
@@ -487,8 +487,19 @@ void PatternDisplay_UI::readModuleSession(QJsonObject& obj)
 {
   QString masterFilePath = obj[EMsoftWorkbenchConstants::IOStrings::MasterPatternFilePath].toString();
   mpLabel->setText(masterFilePath);
-  m_Controller->setMasterFilePath(masterFilePath);
 
+  m_Thread = QSharedPointer<QThread>(new QThread());
+  m_Controller->moveToThread(m_Thread.data());
+  connect(m_Thread.data(), &QThread::started, [=] { m_Controller->setMasterFilePath(masterFilePath); });
+  connect(m_Controller, SIGNAL(mpInitializationFinished()), m_Thread.data(), SLOT(quit()));
+  connect(m_Thread.data(), &QThread::finished, [=] { masterPathInitializationFinished(obj); });
+
+  m_Thread->start();
+}
+
+// -----------------------------------------------------------------------------
+void PatternDisplay_UI::masterPathInitializationFinished(const QJsonObject& obj)
+{
   QJsonObject mpDataObj = obj[EMsoftWorkbenchConstants::IOStrings::MasterPatternWidget].toObject();
   QJsonObject mcDataObj = obj[EMsoftWorkbenchConstants::IOStrings::MonteCarloWidget].toObject();
 

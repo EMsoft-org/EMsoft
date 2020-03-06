@@ -41,9 +41,6 @@
 
 #include "Workbench/Common/FileIOTools.h"
 
-static size_t k_InstanceKey = 0;
-static QMap<size_t, IProcessController*> s_ControllerInstances;
-
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
@@ -52,7 +49,6 @@ IProcessController::IProcessController(const QString& exeName, const QString& nm
 , m_ExeName(exeName)
 , m_NMLName(nmlName)
 {
-  m_InstanceKey = ++k_InstanceKey;
 }
 
 // -----------------------------------------------------------------------------
@@ -60,17 +56,17 @@ IProcessController::IProcessController(const QString& exeName, const QString& nm
 // -----------------------------------------------------------------------------
 IProcessController::~IProcessController()
 {
-  k_InstanceKey--;
 }
 
 // -----------------------------------------------------------------------------
-void IProcessController::cancelProcess()
+void IProcessController::cancel()
 {
   if(m_CurrentProcess != nullptr)
   {
     m_CurrentProcess->kill();
-    m_Cancel = true;
   }
+
+  m_Cancel = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -133,7 +129,6 @@ void IProcessController::processFinished(int exitCode, QProcess::ExitStatus exit
   processFinished();
 
   m_Executing = false;
-  s_ControllerInstances.remove(m_InstanceKey);
 
   // do we need to write this accumulator data into an EMsoft .h5 file?
   // This is so that the results can be read by other EMsoft programs outside of DREAM.3D...
