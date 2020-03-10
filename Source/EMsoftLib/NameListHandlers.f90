@@ -1428,11 +1428,13 @@ real(kind=dbl)          :: vs               ! size of the voxels that make up th
 real(kind=dbl)          :: absl             ! sample absorption length [mm]
 real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
 real(kind=sgl)          :: spotw
+real(kind=sgl)          :: sampletilt
 real(kind=sgl)          :: gammavalue
 real(kind=dbl)          :: intcutoffratio
 integer(kind=irg)       :: BPx
 integer(kind=irg)       :: nthreads
 logical                 :: binarize
+character(1)            :: projectionmode
 character(fnlen)        :: backprojection
 character(fnlen)        :: orientationfile
 character(fnlen)        :: tiffprefix
@@ -1443,9 +1445,9 @@ character(fnlen)        :: xtalname
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueSlitData / Lw,Lh,Lx,Ly,Lz,VoltageH,VoltageL,Sx,sampletodetector, &
-                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, binarize, &
+                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, binarize, sampletilt, &
                            beamstopatf,spotw,BPx,nthreads,backprojection, intcutoffratio, &
-                           orientationfile,tiffprefix,hdfname,xtalname, gammavalue
+                           orientationfile,tiffprefix,hdfname,xtalname, gammavalue, projectionmode
 
 Lw               = 2.D0    ! slit width (mm)
 Lh               = 2.D0    ! slit height (mm)
@@ -1468,9 +1470,11 @@ beamstopatf      = 0.1D0   ! beam stop attenuation factor
 nthreads         = 1       ! number of parallel threads for pattern computation
 BPx              = 300     ! semi-edge length for back projection square Lambert maps
 spotw            = 0.1     ! spot size weight factor (1/(2*sigma^2))
+sampletilt       = 40.D0   ! sample tilt for side-reflection mode 
 gammavalue       = 1.0     ! scaling factor for gamma intensity scaling
 intcutoffratio   = 0.0001D0! intensity ratio cut off
 binarize         = .FALSE.
+projectionmode   = 'T'     ! transmission; 'B' for back-reflection, 'S' for side-reflection
 backprojection   = 'No'    ! 'Yes' or 'No'; adds backprojections to output file
 orientationfile  = 'undefined'  ! input file with orientation list 
 tiffprefix       = 'undefined'  ! prefix for tiff output files with individual patterns
@@ -1518,10 +1522,12 @@ lnl%vs = vs
 lnl%absl = absl             
 lnl%beamstopatf = beamstopatf
 lnl%spotw = spotw
+lnl%sampletilt = sampletilt
 lnl%BPx = BPx
 lnl%nthreads = nthreads
 lnl%intcutoffratio = intcutoffratio
 lnl%backprojection = backprojection
+lnl%projectionmode = projectionmode
 lnl%orientationfile = orientationfile
 lnl%tiffprefix = tiffprefix
 lnl%hdfname = hdfname

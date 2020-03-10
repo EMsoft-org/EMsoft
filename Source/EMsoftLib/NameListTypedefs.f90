@@ -315,11 +315,13 @@ type LaueSlitNameListType
         real(kind=dbl)          :: absl             ! sample absorption length [mm]
         real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
         real(kind=sgl)          :: spotw
+        real(kind=sgl)          :: sampletilt       ! for side-reflection mode
         real(kind=sgl)          :: gammavalue
         real(kind=dbl)          :: intcutoffratio
         integer(kind=irg)       :: BPx
         integer(kind=irg)       :: nthreads
         logical                 :: binarize
+        character(1)            :: projectionmode   ! 'B'= back-reflection; 'S' = side-reflection; 'T' = transmission
         character(fnlen)        :: backprojection
         character(fnlen)        :: orientationfile
         character(fnlen)        :: tiffprefix
