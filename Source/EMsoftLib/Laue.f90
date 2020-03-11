@@ -304,7 +304,7 @@ real(kind=sgl)                          :: th, la, s0(3), s(3), G(3), d, scl, dv
 type(Laue_grow_list),pointer            :: rltmp
 integer(kind=irg)                       :: i, j, k , spots
 
-write (*,*) ' projection mode = ', lnl%projectionmode
+!write (*,*) ' projection mode = ', lnl%projectionmode
 
 ! common parameters
 Ly = float(lnl%Ny/2) * lnl%ps
@@ -460,7 +460,7 @@ if (lnl%projectionmode.eq.'S') then ! side-reflection
 
 end if 
 
-write (*,*) ' number of spots generated ', spots, maxval(pattern)
+!write (*,*) ' number of spots generated ', spots, maxval(pattern)
 
 end function getLaueSlitPattern
 

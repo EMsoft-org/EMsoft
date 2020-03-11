@@ -309,6 +309,7 @@ type LaueSlitNameListType
         real(kind=dbl)          :: ps               ! detector pixel size (mm)
         integer(kind=irg)       :: Ny               ! number of detector pixels horizontally
         integer(kind=irg)       :: Nz               ! number of detector pixels vertically
+        real(kind=dbl)          :: Dx               ! detector pattern center x coordinate  [mm]
         real(kind=dbl)          :: Dy               ! detector pattern center y coordinate  [mm]
         real(kind=dbl)          :: Dz               ! detector pattern center z coordinate  [mm]
         real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)

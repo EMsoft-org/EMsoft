@@ -1422,6 +1422,7 @@ real(kind=dbl)          :: samplethickness  ! sample thickness (mm)
 real(kind=dbl)          :: ps               ! detector pixel size (mm)
 integer(kind=irg)       :: Ny               ! number of detector pixels horizontally
 integer(kind=irg)       :: Nz               ! number of detector pixels vertically
+real(kind=dbl)          :: DX               ! detector pattern center x coordinate  [mm]
 real(kind=dbl)          :: Dy               ! detector pattern center y coordinate  [mm]
 real(kind=dbl)          :: Dz               ! detector pattern center z coordinate  [mm]
 real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)
@@ -1445,7 +1446,7 @@ character(fnlen)        :: xtalname
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / LaueSlitData / Lw,Lh,Lx,Ly,Lz,VoltageH,VoltageL,Sx,sampletodetector, &
-                           samplethickness,ps,Ny,Nz,Dy,Dz,vs,absl, binarize, sampletilt, &
+                           samplethickness,ps,Ny,Nz,Dx,Dy,Dz,vs,absl, binarize, sampletilt, &
                            beamstopatf,spotw,BPx,nthreads,backprojection, intcutoffratio, &
                            orientationfile,tiffprefix,hdfname,xtalname, gammavalue, projectionmode
 
@@ -1462,6 +1463,7 @@ samplethickness  = 2.D0    ! sample thickness (mm)
 ps               = 0.254D0 ! pixel width (mm)
 Ny               = 960     ! number of pixels horizontally
 Nz               = 780     ! number of pixels vertically
+Dx               = 0.D0    ! pattern center x coordinate 
 Dy               = 0.D0    ! pattern center y coordinate 
 Dz               = 0.D0    ! pattern center z coordinate 
 vs               = 0.10D0  ! size of the voxels that make up the sample (mm)
@@ -1516,6 +1518,7 @@ lnl%samplethickness  = samplethickness
 lnl%ps = ps               
 lnl%Ny = Ny               
 lnl%Nz = Nz               
+lnl%Dx = Dx               
 lnl%Dy = Dy               
 lnl%Dz = Dz               
 lnl%vs = vs               

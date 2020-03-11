@@ -505,17 +505,17 @@ bppatterns = 0.0
         pattern = getLaueSlitPattern(lnl, qq, reflist, lambdamin, lambdamax, refcnt, & 
                                      kinpre(pid), kvecs(1:3,pid), kvox(1:3,pid), lnl%binarize )
 !$OMP CRITICAL
-        if (lnl%gammavalue.eq.1.0) then 
+        ! if (lnl%gammavalue.eq.1.0) then 
           patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :) ! **lnl%gammavalue
-        else
-          patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :)**lnl%gammavalue
-        end if
+        ! else
+        !   patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :)**lnl%gammavalue
+        ! end if
 !$OMP END CRITICAL
 
      end do 
 !$OMP END DO
 
-      if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed ', maxval(patternsum(:,:,ii))
+      if (TID.eq.0) write (*,*) ' batch ',ii,'; patterns completed ', maxval(patternsum(:,:,ii))
       deallocate(pattern)
 
 ! end of OpenMP portion
