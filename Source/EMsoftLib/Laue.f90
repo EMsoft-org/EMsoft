@@ -270,6 +270,7 @@ end function getLauePattern
 !> @param kvox voxel coordinates w.r.t. back focal plane slit projection center  
 !
 !> @date 01/29/20 MDG 1.0 original
+!> @date 03/10/20 MDG 1.1 added side and back reflection modes
 !--------------------------------------------------------------------------
 recursive function getLaueSlitPattern(lnl, qu, reflist, lmin, lmax, refcnt, &
                                       kinpre, kvec, kvox, binarize) result(pattern)
@@ -301,9 +302,22 @@ logical                                 :: binarize
     
 real(kind=sgl)                          :: th, la, s0(3), s(3), G(3), d, scl, dvec(3), kexit(3), kinpost, dins, atf, Ly, Lz, pre
 type(Laue_grow_list),pointer            :: rltmp
-integer(kind=irg)                       :: i, j, k 
+integer(kind=irg)                       :: i, j, k , spots
 
-! this is always in transmission mode; we follow the algorithm suggested in
+!write (*,*) ' projection mode = ', lnl%projectionmode
+
+! common parameters
+Ly = float(lnl%Ny/2) * lnl%ps
+Lz = float(lnl%Nz/2) * lnl%ps
+
+pattern = 0.0
+
+nullify(rltmp)
+rltmp => reflist
+
+
+if (lnl%projectionmode.eq.'T') then 
+! this is the transmission mode; we follow the algorithm suggested in
 ! the paper by Arnaud et al., "A laboratory transmission diffraction Laue 
 ! setup to evaluate single crystal quality", to appear in JAC.  We take the 
 ! unit incident beam direction and dot it with all the unit reciprocal lattice
@@ -312,86 +326,141 @@ integer(kind=irg)                       :: i, j, k
 ! wavelength falls inside the given interval, then we proceed and add the reflection
 ! to the pattern.  
 
-d = lnl%sampletodetector - lnl%samplethickness
-Ly = float(lnl%Ny/2) * lnl%ps
-Lz = float(lnl%Nz/2) * lnl%ps
-
-pattern = 0.0
-
+  d = lnl%sampletodetector - lnl%samplethickness
+ 
 ! first handle the transmitted beam  (normalized to unit intensity)
-if (kvec(1).gt.0.0) then 
-  scl = (d + abs(kvox(1))) / kvec(1)    ! scale factor to get to the detector plane
-  dvec = kvox + kvec * scl             ! this is with respect to the optical axis
-  dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
-  if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
+  if (kvec(1).gt.0.0) then 
+    scl = (d + abs(kvox(1))) / kvec(1)    ! scale factor to get to the detector plane
+    dvec = kvox + kvec * scl             ! this is with respect to the optical axis
+    dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
+    if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
 ! correct the intensity for absorption (total distance inside sample dins = kinpre + kinpost)
-    scl = abs(kvox(1)) / kvec(1)    ! scale factor to get to the sample exit plane
-    kexit = kvox + kvec * scl       ! this is with respect to the optical axis
-    kinpost = sqrt(sum((kexit-kvox)**2))
-    dins = kinpre + kinpost 
-    atf = exp( - dins/lnl%absl ) * lnl%beamstopatf
-    if (binarize.eqv..TRUE.) atf = 1.0
+      scl = abs(kvox(1)) / kvec(1)    ! scale factor to get to the sample exit plane
+      kexit = kvox + kvec * scl       ! this is with respect to the optical axis
+      kinpost = sqrt(sum((kexit-kvox)**2))
+      dins = kinpre + kinpost 
+      atf = exp( - dins/lnl%absl ) * lnl%beamstopatf
+      if (binarize.eqv..TRUE.) atf = 1.0
 ! and draw the reflection
-    dvec = dvec / lnl%ps 
-    dvec(2) = -dvec(2)
-    call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, atf, lnl%spotw)
-  end if 
-end if
+      dvec = dvec / lnl%ps 
+      dvec(2) = -dvec(2)
+      call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, atf, lnl%spotw)
+    end if 
+  end if
 
-nullify(rltmp)
-rltmp => reflist
 
 ! go through the entire linked list and determine for each potential reflector whether or not
 ! the corresponding wave length falls inside the allowed range; if so, then compute whether or 
 ! not this diffracted beam intersects the detector and generate the correct intensity at that
 ! detector pixel 
 
-do i = 1, refcnt 
+  do i = 1, refcnt 
 ! for all the allowed reflections along this systematic row, compute the wave length
 ! using Bragg's law 
-  rltmp%xyz = rltmp%xyz / vecnorm(rltmp%xyz)
-  G = sngl(quat_Lp(conjg(qu),rltmp%xyz))
-  if (G(1).lt.0.0) then 
-    G = G / vecnorm(G)
+    rltmp%xyz = rltmp%xyz / vecnorm(rltmp%xyz)
+    G = sngl(quat_Lp(conjg(qu),rltmp%xyz))
+    if (G(1).lt.0.0) then 
+      G = G / vecnorm(G)
 ! get the diffraction angle for the unit vectors
-    th = acos( DOT_PRODUCT(kvec, G) ) - 0.5D0*cPi
-    pre = -2.D0 * DOT_PRODUCT(kvec, G)
-    do j = 1, rltmp%Nentries
-      if (rltmp%sfs(j).ne.0.0) then 
-        la = 2.0 * rltmp%dspacing(j) * sin(th)
-        if ((la.gt.lmin).and.(la.lt.lmax)) then ! we have a potential diffracted beam !
-          ! get the scattered beam 
-          s0 = kvec ! / la
-          s = s0 + pre * G 
+      th = acos( DOT_PRODUCT(kvec, G) ) - 0.5D0*cPi
+      pre = -2.D0 * DOT_PRODUCT(kvec, G)
+      do j = 1, rltmp%Nentries
+        if (rltmp%sfs(j).ne.0.0) then 
+          la = 2.0 * rltmp%dspacing(j) * sin(th)
+          if ((la.gt.lmin).and.(la.lt.lmax)) then ! we have a potential diffracted beam !
+            ! get the scattered beam 
+            s0 = kvec ! / la
+            s = s0 + pre * G 
 ! this vector originates at the point kvox in the sample, so next we compute 
 ! where the intersection with the detector plane will be; we only need to take 
 ! into account those s-vectors that have a positive x-component. 
-          if (s(1).gt.0.0) then 
-            scl = (d + abs(kvox(1))) / s(1)    ! scale factor to get to the detector plane
-            dvec = kvox + s * scl             ! this is with respect to the optical axis
-            dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
-            if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
+            if (s(1).gt.0.0) then 
+              scl = (d + abs(kvox(1))) / s(1)    ! scale factor to get to the detector plane
+              dvec = kvox + s * scl             ! this is with respect to the optical axis
+              dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
+              if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
 ! correct the intensity for absorption (total distance inside sample dins = kinpre + kinpost)
-              scl = abs(kvox(1)) / s(1)    ! scale factor to get to the sample exit plane
-              kexit = kvox + s * scl       ! this is with respect to the optical axis
-              kinpost = sqrt(sum((kexit-kvox)**2))
-              dins = kinpre + kinpost 
-              atf = exp( - dins/lnl%absl )*rltmp%sfs(j)
-              if (binarize.eqv..TRUE.) atf = 1.0
+                scl = abs(kvox(1)) / s(1)    ! scale factor to get to the sample exit plane
+                kexit = kvox + s * scl       ! this is with respect to the optical axis
+                kinpost = sqrt(sum((kexit-kvox)**2))
+                dins = kinpre + kinpost 
+                atf = exp( - dins/lnl%absl )*rltmp%sfs(j)
+                if (binarize.eqv..TRUE.) atf = 1.0
 ! and draw the reflection
-              dvec = dvec / lnl%ps 
-              dvec(2) = -dvec(2)
-              call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, sngl(atf), lnl%spotw)
-            end if 
-          else
-            CYCLE
+                dvec = dvec / lnl%ps 
+                dvec(2) = -dvec(2)
+                call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, sngl(atf), lnl%spotw)
+              end if 
+            else
+              CYCLE
+            end if
           end if
-        end if
-      end if 
-    end do 
-  end if
-  rltmp => rltmp%next
-end do 
+        end if 
+      end do 
+    end if
+    rltmp => rltmp%next
+  end do 
+end if  ! transmission mode 
+
+! the following modes are much simpler since they do not require an integration 
+! over the sample voxels
+if (lnl%projectionmode.eq.'B') then ! back-reflection
+! go through the entire linked list and determine for each potential reflector whether or not
+! the corresponding wave length falls inside the allowed range; if so, then compute whether or 
+! not this diffracted beam intersects the detector and generate the correct intensity at that
+! detector pixel 
+d = lnl%sampletodetector
+spots = 0
+rltmp => rltmp%next  ! skip the first reflection ...  ?
+  do i = 1, refcnt-1
+! for all the allowed reflections along this systematic row, compute the wave length
+! using Bragg's law 
+    rltmp%xyz = rltmp%xyz / vecnorm(rltmp%xyz)
+    G = sngl(quat_Lp(conjg(qu),rltmp%xyz))
+    if (G(1).lt.0.0) then 
+      G = G / vecnorm(G)
+! get the diffraction angle for the unit vectors
+      th = acos( DOT_PRODUCT(kvec, G) ) - 0.5D0*cPi
+      pre = -2.D0 * DOT_PRODUCT(kvec, G)
+      do j = 1, rltmp%Nentries
+        if (rltmp%sfs(j).ne.0.0) then 
+          la = 2.0 * rltmp%dspacing(j) * sin(th)
+          if ((la.gt.lmin).and.(la.lt.lmax)) then ! we have a potential diffracted beam !
+            ! get the scattered beam 
+            s0 = kvec ! / la
+            s = s0 + pre * G 
+! this vector originates at the point kvox in the sample, so next we compute 
+! where the intersection with the detector plane will be; we only need to take 
+! into account those s-vectors that have a positive x-component. 
+            if (s(1).lt.0.0) then 
+              scl = d / s(1)    ! scale factor to get to the detector plane
+              dvec = s * scl    ! this is with respect to the optical axis
+              dvec = dvec + (/ 0.D0, lnl%Dy, lnl%Dz  /)   ! correct for the pattern center to get detector coordinates
+              if ((abs(dvec(2)).lt.Ly).or.(abs(dvec(3)).lt.Lz)) then ! we plot this reflection
+                atf = rltmp%sfs(j)
+                if (binarize.eqv..TRUE.) atf = 1.0
+! and draw the reflection
+                dvec = dvec / lnl%ps 
+                dvec(2) = -dvec(2)
+                call addLaueSlitreflection(pattern, lnl%Ny, lnl%Nz, dvec, sngl(atf), lnl%spotw)
+                spots = spots + 1
+              end if 
+            else
+              CYCLE
+            end if
+          end if
+        end if 
+      end do 
+    end if
+    rltmp => rltmp%next
+  end do 
+end if 
+
+if (lnl%projectionmode.eq.'S') then ! side-reflection
+
+end if 
+
+!write (*,*) ' number of spots generated ', spots, maxval(pattern)
 
 end function getLaueSlitPattern
 

@@ -52,7 +52,7 @@ integer(kind=irg)                       :: res, error_cnt, hdferr
 
 nmldeffile = 'EMLaueSlit.nml'
 progname = 'EMLaueSlit.f90'
-progdesc = 'Transmission Laue pattern computation for a divergent beam through a slit'
+progdesc = 'Transmission/side-reflection Laue pattern computation'
 
 ! print some information
 call EMsoft(progname, progdesc)
@@ -89,6 +89,7 @@ end program EMLaueSlit
 !
 !> @date 07/30/19  MDG 1.0 original
 !> @date 08/01/19  MDG 1.1 added optional backprojections to the output file
+!> @date 03/08/20  MDG 2.0 added microLaue (sidereflection) mode for parallel beam illumination
 !--------------------------------------------------------------------------
 subroutine ComputeLauePattern(lnl, progname, nmldeffile)
 
@@ -148,7 +149,7 @@ type(LaueMasterNameListType)               :: lmnl
 type(Laue_grow_list),pointer               :: reflist, rltmp          
 
 character(fnlen) 						               :: hdfname, groupname, datagroupname, attributename, dataset, fname, &
-                                              TIFF_filename, Lauemode, BPmode
+                                              TIFF_filename, BPmode
 character(11)                              :: dstr
 character(15)                              :: tstrb
 character(15)                              :: tstre
@@ -228,6 +229,7 @@ do i=2,refcnt
 end do 
 
 ! we need to compute the correct value for Lstart... setting to 4 for now
+! (this is used for the backprojections)
 Lstart = 8
 
 !=============================================
@@ -332,90 +334,71 @@ if (trim(lnl%backprojection).eq.'Yes') then
 !     offset3 = (/ 0, 0, 0 /)
 !     hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head)
 end if
-! deallocate(bppatterns)
 
 ! leave the output HDF5 file open so that we can write the hyperslabs as they are completed 
 
-
+! projectionmode = 'T'
+if (lnl%projectionmode.eq.'T') then 
+  call Message(' Initializing geometry for Laue Transmission mode')
+  
 ! all computations are done in mm
-ds = lnl%Lx 
-dsvec = (/ ds, 0.D0, 0.D0 /)   ! vector to the slit plane in x-direction 
-d0 = lnl%Sx 
-d0vec = (/ d0, 0.D0, 0.D0 /)   ! vector to the sample front surface in x-direction
-d = lnl%sampletodetector 
-dvec = (/ d0+d, 0.D0, 0.D0 /)  ! vector to the detector in x-direction
-t = lnl%samplethickness 
-slitc = (/ 0.D0, lnl%Ly, lnl%Lz /)  ! location of slit center in slit plane
+  ds = lnl%Lx 
+  dsvec = (/ ds, 0.D0, 0.D0 /)   ! vector to the slit plane in x-direction 
+  d0 = lnl%Sx 
+  d0vec = (/ d0, 0.D0, 0.D0 /)   ! vector to the sample front surface in x-direction
+  d = lnl%sampletodetector 
+  dvec = (/ d0+d, 0.D0, 0.D0 /)  ! vector to the detector in x-direction
+  t = lnl%samplethickness 
+  slitc = (/ 0.D0, lnl%Ly, lnl%Lz /)  ! location of slit center in slit plane
 ! half width and height of the slit 
-sw = lnl%Lw*0.5D0
-sh = lnl%Lh*0.5D0
+  sw = lnl%Lw*0.5D0
+  sh = lnl%Lh*0.5D0
 
 ! vectors to the slit corners
-slitcorners(1:3,1) = dsvec + slitc + (/ 0.D0, sw, sh /)
-slitcorners(1:3,2) = dsvec + slitc + (/ 0.D0,-sw, sh /)
-slitcorners(1:3,3) = dsvec + slitc + (/ 0.D0,-sw,-sh /)
-slitcorners(1:3,4) = dsvec + slitc + (/ 0.D0, sw,-sh /)
+  slitcorners(1:3,1) = dsvec + slitc + (/ 0.D0, sw, sh /)
+  slitcorners(1:3,2) = dsvec + slitc + (/ 0.D0,-sw, sh /)
+  slitcorners(1:3,3) = dsvec + slitc + (/ 0.D0,-sw,-sh /)
+  slitcorners(1:3,4) = dsvec + slitc + (/ 0.D0, sw,-sh /)
 
 ! unit vectors to the slit corners
-do i=1,4 
-  scuvec(1:3,i) = slitcorners(1:3,i) / vecnorm(slitcorners(1:3,i))
-end do
-
-! write (*,*) 'slitcorners in slit plane '
-! do i=1,4
-!   write(*,*) (slitcorners(j,i), j=1,3), (scuvec(j,i), j=1,3)
-! end do
+  do i=1,4 
+    scuvec(1:3,i) = slitcorners(1:3,i) / vecnorm(slitcorners(1:3,i))
+  end do
 
 ! slit corner vectors extended to the detector plane; delineates the projected image of the slit
-do i=1, 4
-  l = dvec(1) / scuvec(1,i)
-  scdet(1:3,i) = l * scuvec(1:3,i)
-end do
-
-! write (*,*) 'slitcorners in detector plane '
-! do i=1,4
-!   write(*,*) (scdet(j,i), j=1,3)
-! end do
-
+  do i=1, 4
+    l = dvec(1) / scuvec(1,i)
+    scdet(1:3,i) = l * scuvec(1:3,i)
+  end do
 
 ! the same in the sample back plane, which delineates the range of sample voxels to be considered
-do i=1, 4
-  l = (d0vec(1)+t) / scuvec(1,i)
-  scsbp(1:3,i) = l * scuvec(1:3,i)
-end do
-
-! write (*,*) 'slitcorners in sample back plane '
-! do i=1,4
-!   write(*,*)  (scsbp(j,i), j=1,3)
-! end do
-
+  do i=1, 4
+    l = (d0vec(1)+t) / scuvec(1,i)
+    scsbp(1:3,i) = l * scuvec(1:3,i)
+  end do
 
 ! determine the integration range for voxels inside the sample 
-minvy = int( minval(scsbp(2,:)) / lnl%vs) - 1
-maxvy = int( maxval(scsbp(2,:)) / lnl%vs) + 1
-minvz = int( minval(scsbp(3,:)) / lnl%vs) - 1
-maxvz = int( maxval(scsbp(3,:)) / lnl%vs) + 1
-numvx = int( t / lnl%vs) 
+  minvy = int( minval(scsbp(2,:)) / lnl%vs) - 1
+  maxvy = int( maxval(scsbp(2,:)) / lnl%vs) + 1
+  minvz = int( minval(scsbp(3,:)) / lnl%vs) - 1
+  maxvz = int( maxval(scsbp(3,:)) / lnl%vs) + 1
+  numvx = int( t / lnl%vs) 
 
 ! the y and z coordinates need to be re-centered around 0 for the 
 ! following loops to function properly 
-m = (maxvy-minvy)/2
-minvy = -m
-maxvy = m
+  m = (maxvy-minvy)/2
+  minvy = -m
+  maxvy = m
 
-m = (maxvz-minvz)/2
-minvz = -m
-maxvz = m
-
-! write (*,*) 'voxel ranges : ', minvy, maxvy, minvz, maxvz, numvx 
+  m = (maxvz-minvz)/2
+  minvz = -m
+  maxvz = m
 
 ! maximum number of sample voxels that can contribute to the pattern 
-numvox = (maxvy-minvy)*(maxvz-minvz)*numvx 
+  numvox = (maxvy-minvy)*(maxvz-minvz)*numvx 
 
 ! the coordinates of the projected center of the sample (in the back plane) 
-samplecenter = sum(scsbp,2) * 0.25D0 
-
-! write (*,*) 'sample back plane center : ', samplecenter 
+  samplecenter = sum(scsbp,2) * 0.25D0 
 
 ! an incident wave vector is then proportional to a unit vector along the line connecting each of the 
 ! sample voxels to the source location; the complete pattern can then be formed by superimposing all 
@@ -423,44 +406,58 @@ samplecenter = sum(scsbp,2) * 0.25D0
 ! in the sample (normal Beer's law absorption). The integration loop over the voxels is then as follows:
 ! (we use OpenMP to loop over the voxels)
 
-allocate(kvecs(3,numvox), kvox(3,numvox), kinpre(numvox))
+  allocate(kvecs(3,numvox), kvox(3,numvox), kinpre(numvox))
 
-icnt = 0
-do ix = 1, numvx
-  dx = lnl%vs*( -0.5D0 - dble(ix-1) )
-  do iy = minvy, maxvy 
-    dy = lnl%vs * (0.5D0 + dble(iy))
-    do iz = minvz, maxvz 
-      dz = lnl%vs * (0.5D0 + dble(iz))
-      kuvec = samplecenter + (/ dx, dy, dz /)
-      kuvec = kuvec / vecnorm(kuvec)
-! make sure this vector falls inside the projection of the slit into the back face of the sample
-      scl = (lnl%Sx+lnl%samplethickness) / kuvec(1)
-      kv = scl * kuvec
-      if ( (kv(2).le.scsbp(2,1)).and.(kv(2).ge.scsbp(2,2)) .and. (kv(3).le.scsbp(3,1)).and.(kv(3).ge.scsbp(3,4)) ) then 
-        icnt = icnt + 1
-! write (*,*) ix, iy, iz, kuvec, scl, kv 
-! get the distance traveled inside the sample for this k vector (we'll do the same after diffraction event)
-        scl = (lnl%Sx) / kuvec(1)
+  icnt = 0
+  do ix = 1, numvx
+    dx = lnl%vs*( -0.5D0 - dble(ix-1) )
+    do iy = minvy, maxvy 
+      dy = lnl%vs * (0.5D0 + dble(iy))
+      do iz = minvz, maxvz 
+        dz = lnl%vs * (0.5D0 + dble(iz))
+        kuvec = samplecenter + (/ dx, dy, dz /)
+        kuvec = kuvec / vecnorm(kuvec)
+  ! make sure this vector falls inside the projection of the slit into the back face of the sample
+        scl = (lnl%Sx+lnl%samplethickness) / kuvec(1)
         kv = scl * kuvec
-        kv2 = samplecenter + (/ dx, dy, dz /)
-        kinpre(icnt) = sqrt(sum( (kv-kv2)**2 ))
-! write (*,*) scl, kv, kv2, kinpre(icnt)
-! consider this vector for the diffraction process 
-        kvecs(1:3, icnt) = kuvec(1:3)
-        kvox(1:3, icnt) = (/ dx, dy+samplecenter(2), dz+samplecenter(3) /)  ! relative to projection center in sample back plane
-        ! kvox(1:3, icnt) = (/ dx, dy, dz /)  ! relative to projection center in sample back plane
-      end if 
+        if ( (kv(2).le.scsbp(2,1)).and.(kv(2).ge.scsbp(2,2)) .and. (kv(3).le.scsbp(3,1)).and.(kv(3).ge.scsbp(3,4)) ) then 
+          icnt = icnt + 1
+  ! write (*,*) ix, iy, iz, kuvec, scl, kv 
+  ! get the distance traveled inside the sample for this k vector (we'll do the same after diffraction event)
+          scl = (lnl%Sx) / kuvec(1)
+          kv = scl * kuvec
+          kv2 = samplecenter + (/ dx, dy, dz /)
+          kinpre(icnt) = sqrt(sum( (kv-kv2)**2 ))
+  ! consider this vector for the diffraction process 
+          kvecs(1:3, icnt) = kuvec(1:3)
+          kvox(1:3, icnt) = (/ dx, dy+samplecenter(2), dz+samplecenter(3) /)  ! relative to projection center in sample back plane
+        end if 
+      end do 
     end do 
   end do 
-end do 
 
-! reset the total number of contributing voxels
-numvox = icnt
-io_int(1) = numvox
-call WriteValue(' total number of sample voxels : ',io_int, 1, frm = "(I8)")
-io_int(1) = refcnt
-call WriteValue(' total number of potential reflections : ',io_int, 1, frm = "(I8)")
+  ! reset the total number of contributing voxels
+  numvox = icnt
+  io_int(1) = numvox
+  call WriteValue(' total number of sample voxels : ',io_int, 1, frm = "(I8)")
+  io_int(1) = refcnt
+  call WriteValue(' total number of potential reflections : ',io_int, 1, frm = "(I8)")
+end if 
+
+if (lnl%projectionmode.eq.'S') then 
+  call Message(' Initializing geometry for Laue Side-Reflection mode')
+  
+end if 
+
+if (lnl%projectionmode.eq.'B') then 
+  call Message(' Initializing geometry for Laue Back-Reflection mode')
+    numvox = 1
+    allocate(kvecs(3,numvox), kvox(3,numvox), kinpre(numvox))
+    kvecs(:,1) = (/ 1.0, 0.0, 0.0 /)
+    kvox = 0.0
+    kinpre = 0.0
+end if 
+
 
 ! next we need the Legendre lattitudes for the back projector 
 call Message(' Computing Legendre lattitudinal grid values')
@@ -482,7 +479,6 @@ deallocate(diagonal, upd)
 ! Then we go to the next orientation.
 ! Write them to the HDF5 output file, along with (optionally) the pattern tiff files
 
-Lauemode = 'transmission'
 patternsum = 0.0 
 bppatterns = 0.0
 
@@ -496,28 +492,52 @@ bppatterns = 0.0
     qq = dble(angles%quatang(1:4,ii))
     write (*,*) 'working on orientation ', qq
 
+    if (lnl%projectionmode.eq.'T') then 
 ! use OpenMP to run on multiple cores ... 
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, pid, pattern)
 
-    NUMTHREADS = OMP_GET_NUM_THREADS()
-    TID = OMP_GET_THREAD_NUM()
-    allocate(pattern(lnl%Ny, lnl%Nz))
+      NUMTHREADS = OMP_GET_NUM_THREADS()
+      TID = OMP_GET_THREAD_NUM()
+      allocate(pattern(lnl%Ny, lnl%Nz))
 
 !$OMP DO SCHEDULE(DYNAMIC)
-    do pid = 1,numvox
-      pattern = getLaueSlitPattern(lnl, qq, reflist, lambdamin, lambdamax, refcnt, & 
-                                   kinpre(pid), kvecs(1:3,pid), kvox(1:3,pid), lnl%binarize )
+      do pid = 1,numvox
+        pattern = getLaueSlitPattern(lnl, qq, reflist, lambdamin, lambdamax, refcnt, & 
+                                     kinpre(pid), kvecs(1:3,pid), kvox(1:3,pid), lnl%binarize )
 !$OMP CRITICAL
-     patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :) ! **lnl%gammavalue
+        ! if (lnl%gammavalue.eq.1.0) then 
+          patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :) ! **lnl%gammavalue
+        ! else
+        !   patternsum(:, :, ii) = patternsum(:, :, ii) + pattern(:, :)**lnl%gammavalue
+        ! end if
 !$OMP END CRITICAL
-    end do 
+
+     end do 
 !$OMP END DO
 
-    if (TID.eq.0) write (*,*) 'batch ',ii,'; patterns completed ', maxval(patternsum(:,:,ii))
-    deallocate(pattern)
+      if (TID.eq.0) write (*,*) ' batch ',ii,'; patterns completed ', maxval(patternsum(:,:,ii))
+      deallocate(pattern)
 
 ! end of OpenMP portion
 !$OMP END PARALLEL
+    end if 
+
+    if (lnl%projectionmode.eq.'B') then 
+      allocate(pattern(lnl%Ny, lnl%Nz))
+
+      pattern = getLaueSlitPattern(lnl, qq, reflist, lambdamin, lambdamax, refcnt, & 
+                                   kinpre(1), kvecs(1:3,1), kvox(1:3,1), lnl%binarize )
+      ! if (lnl%gammavalue.eq.1.0) then 
+        patternsum(:, :, ii) = pattern(:, :) ! **lnl%gammavalue
+      ! else
+      !   patternsum(:, :, ii) = pattern(:, :)**lnl%gammavalue
+      ! end if
+
+      write(*,*) ' pattern completed ', maxval(patternsum(:,:,ii))
+      deallocate(pattern)
+
+    end if 
+
 
     if (lnl%binarize.eqv..TRUE.) then 
       mps = maxval(patternsum(:,:,ii))
@@ -583,7 +603,7 @@ dataset = SC_Duration
 ! and close the fortran hdf interface
  call h5close_EMsoft(hdferr)
 
- call Message("ComputeLauePattern","patterns stored in "//trim(HDFname))
+ call Message("ComputeLauePattern: patterns stored in "//trim(HDFname))
 
 if (trim(lnl%tiffprefix).ne.'undefined') then 
   npx = lnl%Ny 

@@ -309,17 +309,20 @@ type LaueSlitNameListType
         real(kind=dbl)          :: ps               ! detector pixel size (mm)
         integer(kind=irg)       :: Ny               ! number of detector pixels horizontally
         integer(kind=irg)       :: Nz               ! number of detector pixels vertically
+        real(kind=dbl)          :: Dx               ! detector pattern center x coordinate  [mm]
         real(kind=dbl)          :: Dy               ! detector pattern center y coordinate  [mm]
         real(kind=dbl)          :: Dz               ! detector pattern center z coordinate  [mm]
         real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)
         real(kind=dbl)          :: absl             ! sample absorption length [mm]
         real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
         real(kind=sgl)          :: spotw
+        real(kind=sgl)          :: sampletilt       ! for side-reflection mode
         real(kind=sgl)          :: gammavalue
         real(kind=dbl)          :: intcutoffratio
         integer(kind=irg)       :: BPx
         integer(kind=irg)       :: nthreads
         logical                 :: binarize
+        character(1)            :: projectionmode   ! 'B'= back-reflection; 'S' = side-reflection; 'T' = transmission
         character(fnlen)        :: backprojection
         character(fnlen)        :: orientationfile
         character(fnlen)        :: tiffprefix

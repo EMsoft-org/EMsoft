@@ -668,7 +668,7 @@ type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LaueSlitNameListType),INTENT(IN)                 :: lnl
 
-integer(kind=irg),parameter                           :: n_int = 4, n_real = 2, n_dbl = 17
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 3, n_dbl = 17
 integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_dbl(n_dbl)   
@@ -689,9 +689,10 @@ intlist(4) = 'BPx'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals
-io_real = (/ lnl%spotw, lnl%gammavalue /)
+io_real = (/ lnl%spotw, lnl%gammavalue, lnl%sampletilt/)
 reallist(1) = 'spotw'
 reallist(2) = 'gammavalue'
+reallist(3) = 'sampletilt'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! write all the single reals
@@ -737,6 +738,11 @@ dataset = 'orientationfile'
 line2(1) = lnl%orientationfile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create orientationfile dataset',.TRUE.)
+
+dataset = 'projectionmode'
+line2(1) = lnl%projectionmode
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create projectionmode dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)

@@ -141,7 +141,7 @@ void EMsoftCEBSDRefine
 */
 void EBSDDIdriver
     (char* nmlfile, char* progname, 
-     float* dparray, int32_t* indexarray, 
+     // float* dparray, int32_t* indexarray, 
      ProgCallBackTypeDIdriver3 callback, 
      ProgCallBackTypeErrorDIdriver errorcallback,
      size_t object, bool* cancel);

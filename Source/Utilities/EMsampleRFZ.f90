@@ -310,28 +310,28 @@ if (trim(rfznl%samplemode).eq.'RFZ') then
   FZtmp => FZlist
   do i = 1, FZcnt
 ! euler angles
-    if (doeu) write (20,"(3F14.6)") ro2eu(FZtmp%rod) * rtod
+    if (doeu) write (20,"(3F17.9)") ro2eu(FZtmp%rod) * rtod
 
 ! cubochoric
-    if (docu) write (21,"(3F14.6)") ro2cu(FZtmp%rod)
+    if (docu) write (21,"(3F17.9)") ro2cu(FZtmp%rod)
 
 ! homochoric
-    if (doho) write (22,"(3F14.6)") ro2ho(FZtmp%rod)
+    if (doho) write (22,"(3F17.9)") ro2ho(FZtmp%rod)
 
 ! quaternion
-    if (doqu) write (23,"(4F14.6)") ro2qu(FZtmp%rod)
+    if (doqu) write (23,"(4F17.9)") ro2qu(FZtmp%rod)
 
 ! rodrigues
-    if (doro) write (24,"(4F14.6)") FZtmp%rod
+    if (doro) write (24,"(4F17.9)") FZtmp%rod
   
 ! orientation matrix
-    if (doom) write (25,"(9F14.6)") ro2om(FZtmp%rod)
+    if (doom) write (25,"(9F17.9)") ro2om(FZtmp%rod)
 
 ! axis angle pair
     if (doax) then
       ax = ro2ax(FZtmp%rod)
       ax(4) = ax(4) * rtod
-      write (26,"(4F14.6)") ax
+      write (26,"(4F17.9)") ax
     end if
 
 ! next orientation
@@ -342,28 +342,28 @@ else  ! we use the rotated rodrigues vectors ...
   FZtmp => FZlist
   do i = 1, FZcnt
 ! euler angles
-    if (doeu) write (20,"(3F14.6)") ro2eu(FZtmp%trod) * rtod
+    if (doeu) write (20,"(3F17.9)") ro2eu(FZtmp%trod) * rtod
 
 ! cubochoric
-    if (docu) write (21,"(3F14.6)") ro2cu(FZtmp%trod)
+    if (docu) write (21,"(3F17.9)") ro2cu(FZtmp%trod)
 
 ! homochoric
-    if (doho) write (22,"(3F14.6)") ro2ho(FZtmp%trod)
+    if (doho) write (22,"(3F17.9)") ro2ho(FZtmp%trod)
 
 ! quaternion
-    if (doqu) write (23,"(4F14.6)") ro2qu(FZtmp%trod)
+    if (doqu) write (23,"(4F17.9)") ro2qu(FZtmp%trod)
 
 ! rodrigues
-    if (doro) write (24,"(4F14.6)") FZtmp%trod
+    if (doro) write (24,"(4F17.9)") FZtmp%trod
   
 ! orientation matrix
-    if (doom) write (25,"(9F14.6)") ro2om(FZtmp%trod)
+    if (doom) write (25,"(9F17.9)") ro2om(FZtmp%trod)
 
 ! axis angle pair
     if (doax) then
       ax = ro2ax(FZtmp%trod)
       ax(4) = ax(4) * rtod
-      write (26,"(4F14.6)") ax
+      write (26,"(4F17.9)") ax
     end if
 
 ! next orientation
