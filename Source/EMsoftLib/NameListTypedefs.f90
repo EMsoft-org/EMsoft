@@ -621,6 +621,7 @@ real(kind=sgl)           :: F_XC
 real(kind=sgl)           :: F_CR
 real(kind=sgl)           :: XCmin(3)
 real(kind=sgl)           :: XCmax(3)
+integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
 end type EBSDDENameListType
 

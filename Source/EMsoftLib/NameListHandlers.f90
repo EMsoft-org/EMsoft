@@ -4192,7 +4192,7 @@ end subroutine GetEBSDdefectNameList
 !> @param de differential evolution name list structure
 !> @date 01/30/20  CZ 1.0 new routine
 !--------------------------------------------------------------------------
-recursive subroutine GetEBSDDENameList(nmlfile, enl, de, initonly)
+recursive subroutine GetEBSDDENameList(nmlfile, enl, de, p,initonly)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDDENameList
 
 use error
@@ -4202,6 +4202,7 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)             :: nmlfile
 type(EBSDDENameListType),INTENT(INOUT)  :: de
 type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(EBSDDIpreviewNameListType),INTENT(INOUT)     :: p
 !f2py intent(in,out) ::  enl
 logical,OPTIONAL,INTENT(IN)             :: initonly
 
@@ -4219,6 +4220,7 @@ real(kind=sgl)           :: F_XC
 real(kind=sgl)           :: F_CR
 real(kind=sgl)           :: XCmin(3)
 real(kind=sgl)           :: XCmax(3)
+integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
 integer(kind=irg)       :: stdout
 integer(kind=irg)       :: numsx
@@ -4259,14 +4261,21 @@ character(fnlen)        :: masterfile
 character(fnlen)        :: targetfile
 character(fnlen)        :: energyfile  ! removed from template file 05/16/19 [MDG]
 
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
+character(fnlen)        :: inputtype
+character(fnlen)        :: HDFstrings(10)
+
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, outputfile, &
-                        stdout, L, thetac, delta, numsx, numsy, xpc, ypc, anglefile, eulerconvention, masterfile, targetfile, bitdepth, &
-                        energyfile, beamcurrent, dwelltime, energymin, energymax, binning, gammavalue, alphaBD, &
+namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, objective, outputfile, &
+                        stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, eulerconvention, masterfile, targetfile, bitdepth, &
+                        energyfile, beamcurrent, dwelltime, energymin, energymax, gammavalue, alphaBD, &
                         scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
                         applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
-                        maskradius, poisson
+                        maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, ipf_ht
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
@@ -4282,6 +4291,7 @@ F_XC=0.8
 F_CR=0.8
 XCmin=(/-0.002,-0.08,-0.01/)
 XCmax=(/0.002,0.08,0.01/)
+objective=1
 outputfile='undefined'
 stdout          = 6
 numsx           = 0             ! [dimensionless]
@@ -4324,6 +4334,12 @@ masterfile      = 'undefined'   ! filename
 targetfile      = 'undefined'   ! filename
 energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
 spatialaverage  = 'n'
+patx = 1
+paty = 1
+ipf_wd = 100
+ipf_ht = 100
+inputtype = 'Binary'
+HDFstrings = ''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4378,6 +4394,7 @@ de%F_XC=F_XC
 de%F_CR=F_CR
 de%XCmin=XCmin
 de%XCmax=XCmax
+de%objective=objective
 enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
@@ -4418,6 +4435,14 @@ enl%targetfile = targetfile
 enl%energyfile = enl%masterfile       ! changed on 05/16/19 [MDG]
 enl%omega = omega
 enl%spatialaverage = spatialaverage
+
+p%patx = patx
+p%paty = paty
+p%ipf_wd = ipf_wd
+p%ipf_ht = ipf_ht
+p%inputtype = inputtype
+p%HDFstrings = HDFstrings
+
 end subroutine GetEBSDDENameList
 
 !--------------------------------------------------------------------------
