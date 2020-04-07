@@ -411,7 +411,7 @@ deallocate(TIFF_image)
 !=============================================
 ! save everything to HDF5 file
   call timestamp(datestring=dstr, timestring=tstre)
-if (lmnl%outformat.eq.'lMP') then   ! regular master pattern HDF5 output
+if (lmnl%outformat.eq.'LMP') then   ! regular master pattern HDF5 output
   nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)
