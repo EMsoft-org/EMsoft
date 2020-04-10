@@ -213,6 +213,8 @@ real(kind=dbl),allocatable      :: alm(:)
 if (lmnl%outformat.eq.'SHT') then 
   npx = 193
   layout = 'legendre'
+else 
+  npx = lmnl%npx
 end if 
 
 nullify(HDF_head%next)
@@ -270,7 +272,6 @@ call cpu_time(tstart)
 ! set the center eigenvalue to 0
   LegendreArray(npx) = 0.D0
   deallocate(diagonal, upd)
-
 
 ! the von Mises-Fisher distribution is defined by 
 !
