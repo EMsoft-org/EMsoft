@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2017-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2017-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -40,6 +40,7 @@
 ! 
 !> @date 10/27/17 MDG 1.0 original
 !> @date 10/29/19 SS  1.1 added tests for exponential map
+!> @date 10/31/19 MDG 1.2 replaced 'ex' notation by 'rv' for rotation vector
 !--------------------------------------------------------------------------
 module MODRotationsTest
 
@@ -1190,134 +1191,134 @@ testcounter = testcounter + 1
      return
   end if
  
-! adding all ex2xx-xx2ex tests where xx are all the other rotation representations 
+! adding all rv2xx-xx2rv tests where xx are all the other rotation representations 
 ! already implemented [added 10/29/2019 by SS]
 
 if(verbose) write(6,*) 'ex test'
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = eu2ex(ex2eu(iex))
+  iex = ot%rvmap
+  oex = eu2rv(rv2eu(iex))
 
-  omm = ex2om(oex)
+  omm = rv2om(oex)
   diff = maxval(abs(omm-ot%om))
-  if (verbose)   write (*,*) 'ex2eu max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-ex2eu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = om2ex(ex2om(iex))
+  iex = ot%rvmap
+  oex = om2rv(rv2om(iex))
 
-  iom = ex2om(oex)
+  iom = rv2om(oex)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)   write (*,*) 'ex2om max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = ro2ex(ex2ro(iex))
+  iex = ot%rvmap
+  oex = ro2rv(rv2ro(iex))
 
-  iom = ex2om(oex)
+  iom = rv2om(oex)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)   write (*,*) 'ex2ro max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = qu2ex(ex2qu(iex))
+  iex = ot%rvmap
+  oex = qu2rv(rv2qu(iex))
 
-  iom = ex2om(oex)
+  iom = rv2om(oex)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)   write (*,*) 'ex2qu max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = ax2ex(ex2ax(iex))
+  iex = ot%rvmap
+  oex = ax2rv(rv2ax(iex))
 
-  iom = ex2om(oex)
+  iom = rv2om(oex)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)   write (*,*) 'ex2ax max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = ho2ex(ex2ho(iex))
+  iex = ot%rvmap
+  oex = ho2rv(rv2ho(iex))
 
-  iom = ex2om(oex)
+  iom = rv2om(oex)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)   write (*,*) 'ex2ho max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = st2ex(ex2st(iex))
+  iex = ot%rvmap
+  oex = st2rv(rv2st(iex))
 
-  iom = ex2om(oex)
+  iom = rv2om(oex)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)   write (*,*) 'ex2st max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : st2rv-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  iex = ot%expomap
-  oex = cu2ex(ex2cu(iex))
+  iex = ot%rvmap
+  oex = cu2rv(rv2cu(iex))
 
-  iom = ex2om(oex)
+  iom = rv2om(oex)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)   write (*,*) 'ex2cu max st difference = ', diff
+  if (verbose)   write (*,*) 'rv2cu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-rv2cu ',rots(1:3,i)
      res = testcounter
      return
   end if
@@ -7396,856 +7397,856 @@ testcounter = testcounter + 1
 ! [added 10/29/19 by SS]
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = om2ex(eu2om(ex2eu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = om2rv(eu2om(rv2eu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'om2ex-eu2om-ex2eu max st difference = ', diff
+  if (verbose)  write (*,*) 'om2rv-eu2om-rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-eu2om-ex2eu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-eu2om-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(eu2ro(ex2eu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(eu2ro(rv2eu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-eu2ro-ex2eu max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-eu2ro-rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-eu2ro-ex2eu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-eu2ro-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
  
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = qu2ex(eu2qu(ex2eu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = qu2rv(eu2qu(rv2eu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'qu2ex-eu2qu-ex2eu max st difference = ', diff
+  if (verbose)  write (*,*) 'qu2rv-eu2qu-rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-eu2qu-ex2eu ',rots(1:3,i)
-     res = testcounter
-     return
-  end if
-
-testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ax2ex(eu2ax(ex2eu(iex)))
-  iom = ex2om(ost)
-  diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ax2ex-eu2ax-ex2eu max st difference = ', diff
-  diffmax = maxval( (/ diffmax,diff /) )
- 
-  if (diffmax.gt.maxerr) then 
-     testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-eu2ax-ex2eu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-eu2qu-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ho2ex(eu2ho(ex2eu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ax2rv(eu2ax(rv2eu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ho2ex-eu2ho-ex2eu max st difference = ', diff
+  if (verbose)  write (*,*) 'ax2rv-eu2ax-rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-eu2ho-ex2eu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-eu2ax-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = st2ex(eu2st(ex2eu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ho2rv(eu2ho(rv2eu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'st2ex-eu2st-ex2eu max st difference = ', diff
+  if (verbose)  write (*,*) 'ho2rv-eu2ho-rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-eu2st-ex2eu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-eu2ho-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = cu2ex(eu2cu(ex2eu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = st2rv(eu2st(rv2eu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'cu2ex-eu2cu-ex2eu max st difference = ', diff
+  if (verbose)  write (*,*) 'st2rv-eu2st-rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-eu2cu-ex2eu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : st2rv-eu2st-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(om2ro(ex2om(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = cu2rv(eu2cu(rv2eu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-om2ro-ex2om max st difference = ', diff
+  if (verbose)  write (*,*) 'cu2rv-eu2cu-rv2eu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-om2ro-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-eu2cu-rv2eu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = qu2ex(om2qu(ex2om(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(om2ro(rv2om(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'qu2ex-om2qu-ex2om max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-om2ro-rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-om2qu-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-om2ro-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ax2ex(om2ax(ex2om(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = qu2rv(om2qu(rv2om(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ax2ex-om2ax-ex2om max st difference = ', diff
+  if (verbose)  write (*,*) 'qu2rv-om2qu-rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-om2ax-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-om2qu-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ho2ex(om2ho(ex2om(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ax2rv(om2ax(rv2om(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ho2ex-om2ho-ex2om max st difference = ', diff
+  if (verbose)  write (*,*) 'ax2rv-om2ax-rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-om2ho-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-om2ax-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = st2ex(om2st(ex2om(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ho2rv(om2ho(rv2om(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'st2ex-om2st-ex2om max st difference = ', diff
+  if (verbose)  write (*,*) 'ho2rv-om2ho-rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-om2st-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-om2ho-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = cu2ex(om2cu(ex2om(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = st2rv(om2st(rv2om(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'cu2ex-om2cu-ex2om max st difference = ', diff
+  if (verbose)  write (*,*) 'st2rv-om2st-rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-om2cu-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : st2rv-om2st-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = qu2ex(ro2qu(ex2ro(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = cu2rv(om2cu(rv2om(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'qu2ex-ro2qu-ex2ro max st difference = ', diff
+  if (verbose)  write (*,*) 'cu2rv-om2cu-rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-ro2qu-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-om2cu-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ax2ex(ro2ax(ex2ro(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = qu2rv(ro2qu(rv2ro(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ax2ex-ro2ax-ex2ro max st difference = ', diff
+  if (verbose)  write (*,*) 'qu2rv-ro2qu-rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-ro2ax-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-ro2qu-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ho2ex(ro2ho(ex2ro(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ax2rv(ro2ax(rv2ro(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ho2ex-ro2ho-ex2ro max st difference = ', diff
+  if (verbose)  write (*,*) 'ax2rv-ro2ax-rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-ro2ho-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-ro2ax-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = st2ex(ro2st(ex2ro(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ho2rv(ro2ho(rv2ro(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'st2ex-ro2st-ex2ro max st difference = ', diff
+  if (verbose)  write (*,*) 'ho2rv-ro2ho-rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-ro2st-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-ro2ho-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = cu2ex(ro2cu(ex2ro(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = st2rv(ro2st(rv2ro(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'cu2ex-ro2cu-ex2ro max st difference = ', diff
+  if (verbose)  write (*,*) 'st2rv-ro2st-rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-ro2cu-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : st2rv-ro2st-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ax2ex(qu2ax(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = cu2rv(ro2cu(rv2ro(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ax2ex-qu2ax-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'cu2rv-ro2cu-rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-qu2ax-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-ro2cu-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ho2ex(qu2ho(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ax2rv(qu2ax(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ho2ex-qu2ho-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'ax2rv-qu2ax-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-qu2ho-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-qu2ax-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = st2ex(qu2st(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ho2rv(qu2ho(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'st2ex-qu2st-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'ho2rv-qu2ho-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-qu2st-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-qu2ho-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = cu2ex(qu2cu(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = st2rv(qu2st(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'cu2ex-qu2cu-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'st2rv-qu2st-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-qu2cu-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : st2rv-qu2st-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ho2ex(ax2ho(ex2ax(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = cu2rv(qu2cu(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ho2ex-ax2ho-ex2ax max st difference = ', diff
+  if (verbose)  write (*,*) 'cu2rv-qu2cu-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-ax2ho-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-qu2cu-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = st2ex(ax2st(ex2ax(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ho2rv(ax2ho(rv2ax(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'st2ex-ax2st-ex2ax max st difference = ', diff
+  if (verbose)  write (*,*) 'ho2rv-ax2ho-rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-ax2st-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-ax2ho-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = cu2ex(ax2cu(ex2ax(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = st2rv(ax2st(rv2ax(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'cu2ex-ax2cu-ex2ax max st difference = ', diff
+  if (verbose)  write (*,*) 'st2rv-ax2st-rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-ax2cu-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : st2rv-ax2st-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = st2ex(ho2st(ex2ho(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = cu2rv(ax2cu(rv2ax(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'st2ex-ho2st-ex2ho max st difference = ', diff
+  if (verbose)  write (*,*) 'cu2rv-ax2cu-rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-ho2st-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-ax2cu-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = cu2ex(ho2cu(ex2ho(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = st2rv(ho2st(rv2ho(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'cu2ex-ho2cu-ex2ho max st difference = ', diff
+  if (verbose)  write (*,*) 'st2rv-ho2st-rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-ho2cu-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : st2rv-ho2st-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = cu2ex(st2cu(ex2st(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = cu2rv(ho2cu(rv2ho(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'cu2ex-st2cu-ex2st max st difference = ', diff
+  if (verbose)  write (*,*) 'cu2rv-ho2cu-rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : cu2ex-st2cu-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-ho2cu-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = eu2ex(om2eu(ex2om(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = cu2rv(st2cu(rv2st(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'eu2ex-om2eu-ex2om max st difference = ', diff
+  if (verbose)  write (*,*) 'cu2rv-st2cu-rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-om2eu-ex2om ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : cu2rv-st2cu-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = eu2ex(ro2eu(ex2ro(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = eu2rv(om2eu(rv2om(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'eu2ex-ro2eu-ex2ro max st difference = ', diff
+  if (verbose)  write (*,*) 'eu2rv-om2eu-rv2om max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-ro2eu-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-om2eu-rv2om ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = om2ex(ro2om(ex2ro(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = eu2rv(ro2eu(rv2ro(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'om2ex-ro2om-ex2ro max st difference = ', diff
+  if (verbose)  write (*,*) 'eu2rv-ro2eu-rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-ro2om-ex2ro ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-ro2eu-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = eu2ex(qu2eu(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = om2rv(ro2om(rv2ro(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'eu2ex-qu2eu-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'om2rv-ro2om-rv2ro max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-qu2eu-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-ro2om-rv2ro ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = om2ex(qu2om(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = eu2rv(qu2eu(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'om2ex-qu2om-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'eu2rv-qu2eu-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-qu2om-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-qu2eu-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(qu2ro(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = om2rv(qu2om(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-qu2ro-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'om2rv-qu2om-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-qu2ro-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-qu2om-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(qu2ro(ex2qu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(qu2ro(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-qu2ro-ex2qu max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-qu2ro-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-qu2ro-ex2qu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-qu2ro-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = eu2ex(ax2eu(ex2ax(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(qu2ro(rv2qu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'eu2ex-ax2eu-ex2ax max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-qu2ro-rv2qu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-ax2eu-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-qu2ro-rv2qu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = om2ex(ax2om(ex2ax(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = eu2rv(ax2eu(rv2ax(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'om2ex-ax2om-ex2ax max st difference = ', diff
+  if (verbose)  write (*,*) 'eu2rv-ax2eu-rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-ax2om-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-ax2eu-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(ax2ro(ex2ax(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = om2rv(ax2om(rv2ax(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-ax2ro-ex2ax max st difference = ', diff
+  if (verbose)  write (*,*) 'om2rv-ax2om-rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-ax2ro-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-ax2om-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = qu2ex(ax2qu(ex2ax(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(ax2ro(rv2ax(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'qu2ex-ax2qu-ex2ax max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-ax2ro-rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-ax2qu-ex2ax ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-ax2ro-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = eu2ex(ho2eu(ex2ho(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = qu2rv(ax2qu(rv2ax(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'eu2ex-ho2eu-ex2ho max st difference = ', diff
+  if (verbose)  write (*,*) 'qu2rv-ax2qu-rv2ax max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-ho2eu-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-ax2qu-rv2ax ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = om2ex(ho2om(ex2ho(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = eu2rv(ho2eu(rv2ho(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'om2ex-ho2om-ex2ho max st difference = ', diff
+  if (verbose)  write (*,*) 'eu2rv-ho2eu-rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-ho2om-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-ho2eu-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(ho2ro(ex2ho(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = om2rv(ho2om(rv2ho(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-ho2ro-ex2ho max st difference = ', diff
+  if (verbose)  write (*,*) 'om2rv-ho2om-rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-ho2ro-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-ho2om-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = qu2ex(ho2qu(ex2ho(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(ho2ro(rv2ho(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'qu2ex-ho2qu-ex2ho max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-ho2ro-rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-ho2qu-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-ho2ro-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ax2ex(ho2ax(ex2ho(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = qu2rv(ho2qu(rv2ho(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ax2ex-ho2ax-ex2ho max st difference = ', diff
+  if (verbose)  write (*,*) 'qu2rv-ho2qu-rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-ho2ax-ex2ho ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-ho2qu-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = eu2ex(st2eu(ex2st(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ax2rv(ho2ax(rv2ho(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'eu2ex-st2eu-ex2st max st difference = ', diff
+  if (verbose)  write (*,*) 'ax2rv-ho2ax-rv2ho max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-st2eu-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-ho2ax-rv2ho ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = om2ex(st2om(ex2st(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = eu2rv(st2eu(rv2st(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'om2ex-st2om-ex2st max st difference = ', diff
+  if (verbose)  write (*,*) 'eu2rv-st2eu-rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-st2om-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-st2eu-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(st2ro(ex2st(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = om2rv(st2om(rv2st(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-st2ro-ex2st max st difference = ', diff
+  if (verbose)  write (*,*) 'om2rv-st2om-rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-st2ro-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-st2om-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = qu2ex(st2qu(ex2st(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(st2ro(rv2st(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'qu2ex-st2qu-ex2st max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-st2ro-rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-st2qu-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-st2ro-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ax2ex(st2ax(ex2st(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = qu2rv(st2qu(rv2st(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ax2ex-st2ax-ex2st max st difference = ', diff
+  if (verbose)  write (*,*) 'qu2rv-st2qu-rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-st2ax-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-st2qu-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ho2ex(st2ho(ex2st(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ax2rv(st2ax(rv2st(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ho2ex-st2ho-ex2st max st difference = ', diff
+  if (verbose)  write (*,*) 'ax2rv-st2ax-rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-st2ho-ex2st ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-st2ax-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = eu2ex(cu2eu(ex2cu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ho2rv(st2ho(rv2st(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'eu2ex-cu2eu-ex2cu max st difference = ', diff
+  if (verbose)  write (*,*) 'ho2rv-st2ho-rv2st max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : eu2ex-cu2eu-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-st2ho-rv2st ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = om2ex(cu2om(ex2cu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = eu2rv(cu2eu(rv2cu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'om2ex-cu2om-ex2cu max st difference = ', diff
+  if (verbose)  write (*,*) 'eu2rv-cu2eu-rv2cu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : om2ex-cu2om-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : eu2rv-cu2eu-rv2cu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ro2ex(cu2ro(ex2cu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = om2rv(cu2om(rv2cu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ro2ex-cu2ro-ex2cu max st difference = ', diff
+  if (verbose)  write (*,*) 'om2rv-cu2om-rv2cu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ro2ex-cu2ro-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : om2rv-cu2om-rv2cu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = qu2ex(cu2qu(ex2cu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ro2rv(cu2ro(rv2cu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'qu2ex-cu2qu-ex2cu max st difference = ', diff
+  if (verbose)  write (*,*) 'ro2rv-cu2ro-rv2cu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : qu2ex-cu2qu-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ro2rv-cu2ro-rv2cu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ax2ex(cu2ax(ex2cu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = qu2rv(cu2qu(rv2cu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ax2ex-cu2ax-ex2cu max st difference = ', diff
+  if (verbose)  write (*,*) 'qu2rv-cu2qu-rv2cu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ax2ex-cu2ax-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : qu2rv-cu2qu-rv2cu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = ho2ex(cu2ho(ex2cu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ax2rv(cu2ax(rv2cu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'ho2ex-cu2ho-ex2cu max st difference = ', diff
+  if (verbose)  write (*,*) 'ax2rv-cu2ax-rv2cu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : ho2ex-cu2ho-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ax2rv-cu2ax-rv2cu ',rots(1:3,i)
      res = testcounter
      return
   end if
 
 testcounter = testcounter + 1
-  ist = ot%expomap
-  ost = st2ex(cu2st(ex2cu(iex)))
-  iom = ex2om(ost)
+  ist = ot%rvmap
+  ost = ho2rv(cu2ho(rv2cu(iex)))
+  iom = rv2om(ost)
   diff = maxval(abs(iom-ot%om))
-  if (verbose)  write (*,*) 'st2ex-cu2st-ex2cu max st difference = ', diff
+  if (verbose)  write (*,*) 'ho2rv-cu2ho-rv2cu max st difference = ', diff
   diffmax = maxval( (/ diffmax,diff /) )
  
   if (diffmax.gt.maxerr) then 
      testsfailed = testsfailed+1
-     write (*,*) 'test # ',testcounter,' failed : st2ex-cu2st-ex2cu ',rots(1:3,i)
+     write (*,*) 'test # ',testcounter,' failed : ho2rv-cu2ho-rv2cu ',rots(1:3,i)
+     res = testcounter
+     return
+  end if
+
+testcounter = testcounter + 1
+  ist = ot%rvmap
+  ost = st2rv(cu2st(rv2cu(iex)))
+  iom = rv2om(ost)
+  diff = maxval(abs(iom-ot%om))
+  if (verbose)  write (*,*) 'st2rv-cu2st-rv2cu max st difference = ', diff
+  diffmax = maxval( (/ diffmax,diff /) )
+ 
+  if (diffmax.gt.maxerr) then 
+     testsfailed = testsfailed+1
+     write (*,*) 'test # ',testcounter,' failed : st2rv-cu2st-rv2cu ',rots(1:3,i)
      res = testcounter
      return
   end if

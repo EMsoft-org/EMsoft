@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -36,7 +36,7 @@
 !
 !> @brief Indexing of TKD patterns using the dictionary approach. 
 !
-!> @date 05/07/17 MDG 1.0 original, forked from EMTKDDI program
+!> @date 05/07/17 MDG 1.0 original, forked from EMEBSDDI program
 !--------------------------------------------------------------------------
 
 program EMTKDDI
@@ -150,6 +150,7 @@ allocate(acc%accum_e_detector(tkdnl%numEbins,tkdnl%numsx,tkdnl%numsy), stat=ista
 
 call TKDIndexingGenerateDetector(tkdnl, acc, master)
 deallocate(acc%accum_e)
+
 ! perform the dictionary indexing computations
 call EMTKDDISubroutine(tkdnl,acc,master,progname, nmldeffile)
 
@@ -181,6 +182,7 @@ end program EMTKDDI
 !> @date 05/07/17 MDG 2.0 forked routine from original EBSD program; modified for TKD indexing
 !> @date 11/13/17 MDG 2.1 moved OpenCL code from InnerProdGPU routine to main code
 !> @date 11/30/18 MDG 3.0 replaced pattern preprocessing with standard routine from patternmod, allowing other fileformats
+!> @date 11/06/19 MDG 3.1 modified timing and progress reporting code to give more useful information
 !--------------------------------------------------------------------------
 
 subroutine EMTKDDISubroutine(tkdnl,acc,master,progname, nmldeffile)
@@ -883,17 +885,19 @@ allocate(TKDpatterninteger(binx,biny),TKDpatternintd(binx,biny),TKDpatternad(bin
       call WriteValue('',io_real,2,"(' max. dot product = ',F10.6,';',F6.1,'% complete')")
 
       if (mod(iii,10) .eq. 0) then
-        tock = Time_tock(tickstart)
-        ttime = float(tock) * float(cratio) / float(iii)
-        tstop = ttime
-        io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
-        call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. total time ', &
-                       I4,' hrs',I3,' min')")
-      else
-        ttime = tstop * float(cratio-iii) / float(cratio)
-        io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
-        call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. remaining time ', &
-                       I4,' hrs',I3,' min')")
+        if (iii.eq.10) then
+          tock = Time_tock(tickstart)
+          ttime = float(tock) * float(cratio) / float(iii)
+          tstop = ttime
+          io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
+          call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. total time ', &
+                          I4,' hrs',I3,' min')")
+        else
+          ttime = tstop * float(cratio-iii) / float(cratio)
+          io_int(1:4) = (/iii,cratio, int(ttime/3600.0), int(mod(ttime,3600.0)/60.0)/)
+          call WriteValue('',io_int,4,"(' -> Completed cycle ',I5,' out of ',I5,'; est. remaining time ', &
+                         I4,' hrs',I3,' min')")
+        end if
       end if
     else
        if (verbose.eqv..TRUE.) call WriteValue('','        GPU thread is idling')

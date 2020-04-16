@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -466,7 +466,7 @@ if(pflag) then
           call Message(trim(str)//' '//sgname1//trim(str1)//' '//sgname2)
         end do
       end if
-    end if
+end if
 
 end subroutine Print3DQCSGTable
 
@@ -1180,6 +1180,7 @@ end do
    nsym=nsym+1
    QCcell%SG%SYM_data(nsym,:,:) = QCcell%SG%SYM_c(:,:)
   end if
+ if(nsym .eq. 3840) EXIT
  end do
 
 ! generate the remainder of the factorgroup
@@ -1195,6 +1196,7 @@ end do
    k2=k2+1
   end do
   k1=k1+1
+ if(nsym .eq. 3840) EXIT
  end do
  QCcell%SG%SYM_MATnum = nsym
 

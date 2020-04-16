@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -125,7 +125,7 @@ real(kind=sgl)                  :: la, dval, dmin, glen, gmax, io_real(3), om(3,
                                    maxint, w, ku(3), kp(3), rnmpp, dx, dy, eu(3), tstart, tstop, x, y, ma, mi
 integer(kind=irg)               :: gp(3), imh, imk, iml, nref, gg(3), ix, iy, iz, io_int(5), ww, nsize, tdp, sx, sy, hdferr, &
                                    ninbatch, nbatches, nremainder,ibatch,istat, gridtype, tickstart 
-integer(HSIZE_T)                :: dim0, dim1, dim2, hdims(3), offset(3)
+integer(HSIZE_T)                :: dims3(3), hdims(3), offset(3)
 logical                         :: verbose, insert=.TRUE., overwrite=.TRUE., exists
 character(fnlen)                :: groupname, dataset, outname
 character(11)                   :: dstr
@@ -477,18 +477,14 @@ batchloop: do i = 1, totnumberbatch       ! loop over all batches in the eulerar
 
     offset = (/ 0, 0, (i-1)*patinbatch(i) /)
     hdims = (/ pednl%npix, pednl%npix, FZcnt /)
-    dim0 = pednl%npix
-    dim1 = pednl%npix
-    dim2 = patinbatch(i)
+    dims3 = (/ pednl%npix, pednl%npix, patinbatch(i) /)
 
     if (i.eq.1) then
         dataset = SC_PEDpatterns
-        hdferr = HDF_writeHyperslabCharArray3D(dataset, pedp, hdims, offset, dim0, dim1, dim2, &
-                 HDF_head)
+        hdferr = HDF_writeHyperslabCharArray3D(dataset, pedp, hdims, offset, dims3, HDF_head)
     else
         dataset = SC_PEDpatterns
-        hdferr = HDF_writeHyperslabCharArray3D(dataset, pedp, hdims, offset, dim0, dim1, dim2, &
-                 HDF_head, insert)
+        hdferr = HDF_writeHyperslabCharArray3D(dataset, pedp, hdims, offset, dims3, HDF_head, insert)
     end if
 
     io_real(1) = float(sum(patinbatch(1:i)))*100/float(sum(patinbatch))

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2016-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2016-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -78,6 +78,12 @@ dim2 = 10
 dim3 = 15
 dim4 = 20
 
+dims1 = (/ dim1 /)
+dims2 = (/ dim1, dim2 /)
+dims3 = (/ dim1, dim2, dim3 /)
+dims4 = (/ dim1, dim2, dim3, dim4 /)
+
+
 ALLOCATE (carr1(dim1))
 ALLOCATE (carr2(dim1,dim2))
 ALLOCATE (carr3(dim1,dim2,dim3))
@@ -133,28 +139,28 @@ end if
 
 ! write the char arrays to the file
 dataset = SC_char1D
-hdferr = HDF_writeDatasetCharArray1D(dataset, carr1, dim1, HDF_head)
+hdferr = HDF_writeDatasetCharArray1D(dataset, carr1, dims1, HDF_head)
 if (hdferr.ne.0) then
   res = 3
   return
 end if
 
 dataset = SC_char2D
-hdferr = HDF_writeDatasetCharArray2D(dataset, carr2, dim1, dim2, HDF_head)
+hdferr = HDF_writeDatasetCharArray2D(dataset, carr2, dims2, HDF_head)
 if (hdferr.ne.0) then
   res = 4
   return
 end if
 
 dataset = SC_char3D
-hdferr = HDF_writeDatasetCharArray3D(dataset, carr3, dim1, dim2, dim3, HDF_head)
+hdferr = HDF_writeDatasetCharArray3D(dataset, carr3, dims3, HDF_head)
 if (hdferr.ne.0) then
   res = 5
   return
 end if
 
 dataset = SC_char4D
-hdferr = HDF_writeDatasetCharArray4D(dataset, carr4, dim1, dim2, dim3, dim4, HDF_head)
+hdferr = HDF_writeDatasetCharArray4D(dataset, carr4, dims4, HDF_head)
 if (hdferr.ne.0) then
   res = 6
   return

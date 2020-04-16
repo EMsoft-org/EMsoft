@@ -46,7 +46,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/bmp.f90
   ${EMsoftLib_SOURCE_DIR}/bobyqa_refinement.f90
   ${EMsoftLib_SOURCE_DIR}/bobyqa.f90
-  ${EMsoftLib_SOURCE_DIR}/CLsupport.f90
+  # ${EMsoftLib_SOURCE_DIR}/CLsupport.f90
   ${EMsoftLib_SOURCE_DIR}/configmod.f90
   ${EMsoftLib_SOURCE_DIR}/constants.f90
   ${EMsoftLib_SOURCE_DIR}/crystal.f90
@@ -71,7 +71,7 @@ set(EMsoftLib_SRCS
   ${EMsoftLib_SOURCE_DIR}/image_io.f90
   ${EMsoftLib_SOURCE_DIR}/image.f90
   ${EMsoftLib_SOURCE_DIR}/imageOPs.f90
-  ${EMsoftLib_SOURCE_DIR}/Indexingmod.f90
+  # ${EMsoftLib_SOURCE_DIR}/Indexingmod.f90
   ${EMsoftLib_SOURCE_DIR}/initializers.f90
   ${EMsoftLib_SOURCE_DIR}/io.f90
   ${EMsoftLib_SOURCE_DIR}/JSONsupport.f90
@@ -147,6 +147,19 @@ if(EMsoft_ENABLE_TESTING)
   set(EMsoft_TESTING_DIR "${EMsoft_BINARY_DIR}/Testing")
   file(MAKE_DIRECTORY ${EMsoft_TESTING_DIR})
 endif()
+
+message(STATUS "HDF5_VERSION_MAJOR: ${HDF5_VERSION_MAJOR}")
+
+if(${HDF5_VERSION_MAJOR} EQUAL 1.10)
+set(EMsoft_HDF5_110_DEFINES "
+! For HDF5 1.10, these are needed
+! Define the \"kind\" parameters for Fortran_REAL_4
+  integer,parameter                     :: Fortran_REAL_4 = 4
+
+! Define the \"kind\" parameters for Fortran_REAL_4
+  integer,parameter                     :: Fortran_REAL_8 = 8
+")
+endif()
          
 cmpConfigureFileWithMD5Check( GENERATED_FILE_PATH        ${EMsoftLib_BINARY_DIR}/local.f90
                               CONFIGURED_TEMPLATE_PATH   ${EMsoftLib_SOURCE_DIR}/local.f90.in  )
@@ -180,7 +193,6 @@ target_link_libraries(EMsoftLib
                 EMsoftLib_C 
                 EMsoftLib_Cpp 
                 jsonfortran 
-                ${OpenCL_LIBRARY}
                 bcls::bcls            
 )
 if (Fortran_COMPILER_NAME MATCHES "ifort.*")

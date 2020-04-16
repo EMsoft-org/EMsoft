@@ -3,19 +3,60 @@ set(TMPLT_DIR "${EMsoft_SOURCE_DIR}/NamelistTemplates")
 set(LIB_SEARCH_DIRS ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
 
+if((EMsoft_ENABLE_HDF5_SUPPORT) AND (EMsoft_ENABLE_OpenCL_SUPPORT))
+
+  # The libraries are specifically laid out this way in order to ensure the link line
+  # has the correct ordering. This seems to be more important on Windows than on macOS/Linux
+  set(EXE_LINK_LIBRARIES  
+          ${OpenCL_LIBRARY}
+          clfortran
+          EMsoftLib 
+          EMsoftHDFLib
+          EMOpenCLLib
+  )
+
+  Add_EMSoft_Executable(TARGET EMMCOpenCL 
+                        SOURCES ${APP_DIR}/EMMCOpenCL.f90 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
+                        TEMPLATE ${TMPLT_DIR}/EMMCOpenCL.template 
+                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                        )
+
+  Add_EMSoft_Executable(TARGET EMMCfoil
+                        SOURCES ${APP_DIR}/EMMCfoil.f90 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
+                        TEMPLATE ${TMPLT_DIR}/EMMfoil.template 
+                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                        )
+ 
+  Add_EMsoft_Executable(TARGET EMEBSDFull
+                        SOURCES ${APP_DIR}/EMEBSDFull.f90 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
+                        TEMPLATE ${TMPLT_DIR}/EMEBSDFull.template 
+                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                        )
+
+  Add_EMsoft_Executable(TARGET EMEBSDreflectors 
+                        SOURCES ${APP_DIR}/EMEBSDreflectors.f90 
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
+                        TEMPLATE ${TMPLT_DIR}/EMEBSDreflectors.template 
+                        SOLUTION_FOLDER EMsoftPublic/SEM 
+                        INSTALL_PROGRAM TRUE
+                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR} ${EMOpenCLLib_BINARY_DIR}
+                        )
+endif()
+
 if(EMsoft_ENABLE_HDF5_SUPPORT)
 
   GetHDF5LinkLibraries(EMSOFT)
   set(EXE_LINK_LIBRARIES ${EMSOFT_hdf5LinkLibs} EMsoftHDFLib )
 
-  Add_EMsoft_Executable(TARGET EMEBSDreflectors 
-                        SOURCES ${APP_DIR}/EMEBSDreflectors.f90 
-                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
-                        TEMPLATE ${TMPLT_DIR}/EMEBSDreflectors.template 
-                        SOLUTION_FOLDER EMsoftPublic/SEM 
-                        INSTALL_PROGRAM TRUE
-                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
-                        )
 
   Add_EMsoft_Executable(TARGET EMEBSD 
                         SOURCES ${APP_DIR}/EMEBSD.f90 
@@ -37,21 +78,13 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
 
   Add_EMsoft_Executable(TARGET EMEBSDmasterSHT 
                         SOURCES ${APP_DIR}/EMEBSDmasterSHT.f90 
-                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} ${EMsoftLib_C}
+                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
                         TEMPLATE ${TMPLT_DIR}/EMEBSDmasterSHT.template 
                         SOLUTION_FOLDER EMsoftPublic/SEM 
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
 
-  Add_EMsoft_Executable(TARGET EMEBSDFull
-                        SOURCES ${APP_DIR}/EMEBSDFull.f90 
-                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
-                        TEMPLATE ${TMPLT_DIR}/EMEBSDFull.template 
-                        SOLUTION_FOLDER EMsoftPublic/SEM 
-                        INSTALL_PROGRAM TRUE
-                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
-                        )
   
   Add_EMsoft_Executable(TARGET EMECP 
                         SOURCES ${APP_DIR}/EMECP.f90 
@@ -98,15 +131,7 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
   
-  Add_EMSoft_Executable(TARGET EMMCOpenCL 
-                        SOURCES ${APP_DIR}/EMMCOpenCL.f90 
-                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
-                        TEMPLATE ${TMPLT_DIR}/EMMCOpenCL.template 
-                        SOLUTION_FOLDER EMsoftPublic/SEM 
-                        INSTALL_PROGRAM TRUE
-                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
-                        )
-  
+
   Add_EMsoft_Executable(TARGET EMECPSingle 
                         SOURCES ${APP_DIR}/EMECPSingle.f90 
                         LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
@@ -152,14 +177,6 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
 
-  Add_EMSoft_Executable(TARGET EMMCfoil
-                        SOURCES ${APP_DIR}/EMMCfoil.f90 
-                        LINK_LIBRARIES ${EXE_LINK_LIBRARIES} 
-                        TEMPLATE ${TMPLT_DIR}/EMMfoil.template 
-                        SOLUTION_FOLDER EMsoftPublic/SEM 
-                        INSTALL_PROGRAM TRUE
-                        INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
-                        )
 
   Add_EMsoft_Executable(TARGET EMTKD 
                         SOURCES ${APP_DIR}/EMTKD.f90 
@@ -187,7 +204,6 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                         INSTALL_PROGRAM TRUE
                         INCLUDE_DIRS ${EMsoftHDFLib_BINARY_DIR}
                         )
-
 
 endif()
 

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -439,7 +439,7 @@ real(kind=dbl)                  :: q,sm                         !< auxiliary var
   end do
  end do
 
- if (dopg) then
+ if (dopg.eqv..TRUE.) then
 ! tag the point symmetry operators
 ! this is used to determine families of directions;
 ! for planes we must determine the transformed point symmetry
@@ -475,77 +475,6 @@ real(kind=dbl)                  :: q,sm                         !< auxiliary var
 
 end subroutine GenerateSymmetry
 
-!--------------------------------------------------------------------------
-!
-! SUBROUTINE: Calc2DFamily
-!
-!> @author Marc De Graef, Carnegie Mellon University
-!
-!> @brief compute the indices of equivalent planes/directions
-!
-!> @details compute the indices of equivalent planes w.r.t. 2D symmetry and store them in the itmp array
-!               
-!> @param cell unit cell pointer
-!> @param ind input index triplet
-!> @param ksame logical list with symmetry operators to consider
-!> @param numksame number of entries in ksame to be considered
-!> @param nunique number of unique entries in itmp
-!
-!> @date  10/13/98 MDG 1.0 original
-!> @date   5/19/01 MDG 2.0 f90
-!> @date  11/27/01 MDG 2.1 added kind support
-!> @date  01/10/14 MDG 4.0 SG is now part of the unitcell type
-!> @date  06/05/14 MDG 4.1 made cell an argument instead of global variable; replaced itmp by argument
-!--------------------------------------------------------------------------
-recursive subroutine Calc2DFamily(cell,ind,ksame,numksame,nunique,itmp)
-!DEC$ ATTRIBUTES DLLEXPORT :: Calc2DFamily
-        
-IMPLICIT NONE
-
-type(unitcell)          :: cell
-integer(kind=irg),INTENT(IN)            :: ind(3)                       !< input triplet
-logical,INTENT(IN)                      :: ksame(*)                     !< list of symmetry operators
-integer(kind=irg),INTENT(IN)            :: numksame                     !< number on the input list
-integer(kind=irg),INTENT(OUT)           :: nunique                      !< number of equivalent entries generated
-integer(kind=irg),INTENT(OUT)           :: itmp(48,3)                   !< array used for family computations etc
-
-integer(kind=irg)                       :: m,i,j                        !< loop counters and such
-real(kind=sgl)                          :: h,k,l,ih,ik,il,idiff !< auxiliary variables
-logical                                 :: newpoint                     !< is this a new point ?
-real,parameter                          :: eps=0.0001_sgl               !< comparison threshold
-
-! first take the identity
- j=1
- itmp(j,1:3)=ind(1:3)
- h=float(ind(1))
- k=float(ind(2))
- l=float(ind(3))
-
-! multiply with all point group elements that have the value .TRUE. in ksame
- do i=2,cell%SG%SYM_NUMpt 
-  if (ksame(i)) then 
-    ih=cell%SG%SYM_direc(i,1,1)*h+cell%SG%SYM_direc(i,1,2)*k+cell%SG%SYM_direc(i,1,3)*l
-    ik=cell%SG%SYM_direc(i,2,1)*h+cell%SG%SYM_direc(i,2,2)*k+cell%SG%SYM_direc(i,2,3)*l
-    il=cell%SG%SYM_direc(i,3,1)*h+cell%SG%SYM_direc(i,3,2)*k+cell%SG%SYM_direc(i,3,3)*l
-
-! is this a new point ?
-   newpoint=.TRUE.
-   do m=1,j+1
-    idiff=(itmp(m,1)-ih)**2+(itmp(m,2)-ik)**2+(itmp(m,3)-il)**2
-    if (idiff.lt.eps) newpoint=.FALSE.
-   end do
-
-   if (newpoint) then 
-    j=j+1
-    itmp(j,1)=nint(ih)
-    itmp(j,2)=nint(ik)
-    itmp(j,3)=nint(il)
-   end if
-  end if
- end do 
- nunique=j
-
-end subroutine Calc2DFamily
 
 !--------------------------------------------------------------------------
 !
@@ -718,6 +647,93 @@ logical                                 :: new                  !< is this a new
  end do
 
 end subroutine CalcOrbit
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: CalcEquivPos
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute the equivalent positions for a given point
+!
+!> @param cell unit cell pointer
+!> @param site input fractional coordinates 
+!> @param n output number of orbit members generated
+!> @param ctmp output coordinate array
+!
+!> @date  12/13/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine CalcEquivPos(cell,site,n,ctmp)
+!DEC$ ATTRIBUTES DLLEXPORT :: CalcEquivPos
+
+IMPLICIT NONE
+
+type(unitcell)                          :: cell
+real(kind=dbl),INTENT(OUT)              :: ctmp(192,3)          !< output array with orbit coordinates
+real(kind=sgl),INTENT(IN)               :: site(3)              !< input position
+integer(kind=irg),INTENT(INOUT)         :: n                    !< number of generated atom positions
+
+real(kind=dbl)                          :: r(3),s(3),diff       !< auxiliary variables
+real(kind=dbl), parameter               :: eps = 1.0D-4         !< comparison threshold
+real(kind=dbl), parameter               :: eps2= 1.0D-6         !< comparison threshold
+integer(kind=irg)                       :: i,j,k,mm             !< auxiliary variables
+logical                                 :: new                  !< is this a new point ?
+
+! get the atom coordinates
+! and store them in the temporary array
+n = 1
+r = dble(site)
+ctmp(n,:)=r(:)
+ 
+! get all the equivalent atom positions
+ do i=2,cell%SG%SYM_MATnum
+  do j=1,3
+   s(j)=cell%SG%SYM_data(i,j,4)
+   do k=1,3
+    s(j)=s(j)+cell%SG%SYM_data(i,j,k)*r(k)
+   end do
+  end do
+
+! sometimes the code below produces an incorrect answer when one of the fractional coordinates
+! is slightly negative... we intercept such issues here ... 
+  do j=1,3
+    if (abs(s(j)).lt.eps2) s(j) = 0.D0
+  end do
+
+! reduce to the fundamental unit cell if necessary
+  if (cell%SG%SYM_reduce.eqv..TRUE.) then
+   do j=1,3
+    s(j) = mod(s(j)+100.0_dbl,1.0_dbl)
+   end do
+  end if
+
+  do j=1,3
+    if (abs(s(j)).lt.eps2) s(j) = 0.D0
+  end do
+
+! is this a new point ?
+  new = .TRUE.
+  do mm=1,n
+   diff=0.0_dbl
+   do j=1,3
+    diff=diff+abs(ctmp(mm,j)-s(j))
+   end do
+   if (diff.lt.eps) then
+     new = .FALSE.
+   end if
+  end do 
+
+! yes, it is a new point
+  if (new.eqv..TRUE.) then
+   n=n+1
+   do j=1,3
+    ctmp(n,j)=s(j)
+   end do
+  end if
+
+ end do
+
+end subroutine CalcEquivPos
 
 !--------------------------------------------------------------------------
 !

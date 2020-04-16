@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -97,7 +97,7 @@ use,intrinsic :: ISO_C_BINDING
 !DEC$ ATTRIBUTES DLLEXPORT :: ish
 !DEC$ ATTRIBUTES DLLEXPORT :: irg
 !DEC$ ATTRIBUTES DLLEXPORT :: ill
-
+@EMsoft_HDF5_110_DEFINES@
 !> character type used for json routines
   integer,parameter :: jsonCK = selected_char_kind('DEFAULT')
 !DEC$ ATTRIBUTES DLLEXPORT :: jsonCK
@@ -610,9 +610,9 @@ if (trim(EMdatapathname).eq.'tryEnvironmentVariable') then
     if (EMdatapathname(l:l).ne.'/') EMdatapathname = trim(EMdatapathname)//'/'
   else
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(A)") 'EMdatapathname was not defined in the json file'
-      write (error_unit,"(/A)") '  WARNING: EMDATAPATHNAME environment variable was NOT defined as a backup.'
-      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      write (*,"(A)") 'EMdatapathname was not defined in the json file'
+      write (*,"(/A)") '  WARNING: EMDATAPATHNAME environment variable was NOT defined as a backup.'
+      write (*,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
     EMdatapathname = ''
@@ -656,9 +656,9 @@ if (trim(EMXtalFolderpathname).eq.'tryEnvironmentVariable') then
     if (EMXtalFolderpathname(l:l).ne.'/') EMXtalFolderpathname = trim(EMXtalFolderpathname)//'/'
   else
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(A/)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
-      write (error_unit,"(A/)") '  WARNING: EMXTALFOLDERPATHNAME environment variable was NOT defined as a backup.'
-      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      write (*,"(A/)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
+      write (*,"(A/)") '  WARNING: EMXTALFOLDERPATHNAME environment variable was NOT defined as a backup.'
+      write (*,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
     EMXtalFolderpathname = ''
@@ -703,9 +703,9 @@ if (trim(EMtmppathname).eq.'tryEnvironmentVariable') then
     if (EMtmppathname(l:l).ne.'/') EMtmppathname = trim(EMtmppathname)//'/'
   else
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMtmppathname'
-      write (error_unit,"(/A)") '  WARNING: EMTMPPATHNAME environment variable was NOT defined as a backup.'
-      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      write (*,"(/A)") '  WARNING: Unable to find definition for EMtmppathname'
+      write (*,"(/A)") '  WARNING: EMTMPPATHNAME environment variable was NOT defined as a backup.'
+      write (*,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
     EMtmppathname = ''
@@ -976,9 +976,9 @@ if (jexists) then
   end if
 else
   if (displayConfigFileMissingMessage.eq.0) then 
-    write(error_unit,'(A)') '  WARNING: USER='//trim(EMsoft_getUser())
-    write(error_unit,'(A)') '  WARNING: file '//trim(jsonname)//' not found '
-    write(error_unit,'(A/)') '  -----> Trying environment variables next ... '
+    write(*,'(A)') '  WARNING: USER='//trim(EMsoft_getUser())
+    write(*,'(A)') '  WARNING: file '//trim(jsonname)//' not found '
+    write(*,'(A/)') '  -----> Trying environment variables next ... '
     displayConfigFileMissingMessage = 1
   end if
   param = 'tryEnvironmentVariable'

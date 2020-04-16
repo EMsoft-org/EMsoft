@@ -1,0 +1,20 @@
+ &EECmastervars
+! smallest d-spacing to take into account [nm]
+ dmin = 0.05,
+! number of pixels along x-direction of the square master pattern  (2*npx+1 = total number)
+ npx = 500,
+! number of OpenMP threads (0 to use the maximum available)
+ nthreads = 1,
+! name of the energy statistics file produced by EMMCOpenCL program; relative to EMdatapathname;
+! this file will also contain the output data of the master program
+ mpfile = 'MCoutput.h5',
+! BetheParameters file name
+ BetheParametersFile = 'BetheParameters.nml',
+! do you wish to receive a notification (Email or Slack) when the program completes ?
+ Notify = 'Off', 
+! crystal structure file name
+ xtalname = 'undefined',
+! isotope parameters
+ IsotopeSite = 0.0 0.0 0.0,
+ IsotopeEnergy = 100.0,
+ /

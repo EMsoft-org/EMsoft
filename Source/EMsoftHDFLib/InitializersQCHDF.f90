@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -490,28 +490,27 @@ if (present(existingHDFhead)) then
     openHDFfile = .FALSE.
     HDF_head = existingHDFhead
   else
-    call FatalError("Read2DQCDataHDF","HDF_head pointer passed in to routine is not associated")
+    call FatalError("Read3DQCDataHDF","HDF_head pointer passed in to routine is not associated")
   end if 
 end if
 
 if (openHDFfile) then 
   nullify(HDF_head%next)
   call h5open_EMsoft(hdferr)
-  call HDFerror_check('Read2DQCDataHDF:h5open_EMsoft', hdferr)
-
+  call HDFerror_check('Read3DQCDataHDF:h5open_EMsoft', hdferr)
   fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
   fname = EMsoft_toNativePath(fname)
   hdferr =  HDF_openFile(fname, HDF_head)
-  call HDFerror_check('Read2DQCDataHDF:HDF_openFile:'//trim(fname), hdferr)
+  call HDFerror_check('Read3DQCDataHDF:HDF_openFile:'//trim(fname), hdferr)
 end if
 
 groupname = SC_CrystalData
 hdferr = HDF_openGroup(groupname, HDF_head)
-call HDFerror_check('Read2DQCDataHDF:HDF_openGroup:'//trim(groupname), hdferr)
+call HDFerror_check('Read3DQCDataHDF:HDF_openGroup:'//trim(groupname), hdferr)
 
 dataset = SC_LatticeParameters
 call HDF_readDatasetDoubleArray1D(dataset, dims, HDF_head, hdferr, cellparams)
-call HDFerror_check('Read2DQCDataHDF:HDF_readDatasetDoubleArray1D:'//trim(dataset), hdferr)
+call HDFerror_check('Read3DQCDataHDF:HDF_readDatasetDoubleArray1D:'//trim(dataset), hdferr)
 
 cell%QClatparm   = cellparams(1)
 cell%alphaij     = cellparams(2)
@@ -519,24 +518,24 @@ cell%alphastarij = cellparams(3)
 
 dataset = SC_SpaceGroupNumber
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%SYM_SGnum) 
-call HDFerror_check('Read2DQCDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+call HDFerror_check('Read3DQCDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
 cell%QCType = 'Ico'
 
 dataset = SC_Natomtypes
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, cell%ATOM_ntype)
-call HDFerror_check('ReadDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
+call HDFerror_check('Read3DQCDataHDF:HDF_readDatasetInteger:'//trim(dataset), hdferr)
 
 dataset = SC_Atomtypes
 call HDF_readDatasetIntegerArray1D(dataset, dims, HDF_head, hdferr, atomtypes)
-call HDFerror_check('ReadDataHDF:HDF_readDatasetIntegerArray1D:'//trim(dataset), hdferr)
+call HDFerror_check('Read3DQCDataHDF:HDF_readDatasetIntegerArray1D:'//trim(dataset), hdferr)
 
 cell%ATOM_type(1:cell%ATOM_ntype) = atomtypes(1:cell%ATOM_ntype) 
 deallocate(atomtypes)
 
 dataset = SC_AtomData
 call HDF_readDatasetFloatArray2D(dataset, dims2, HDF_head, hdferr, atompos)
-call HDFerror_check('ReadDataHDF:HDF_readDatasetFloatArray2D:'//trim(dataset), hdferr)
+call HDFerror_check('Read3DQCDataHDF:HDF_readDatasetFloatArray2D:'//trim(dataset), hdferr)
 
 cell%ATOM_pos(1:cell%ATOM_ntype,1:10) = atompos(1:cell%ATOM_ntype,1:10) 
 deallocate(atompos)
@@ -545,7 +544,7 @@ if (openHDFfile) then
   call HDF_pop(HDF_head,.TRUE.)
 
   call h5close_EMsoft(hdferr)
-  call HDFerror_check('ReadDataHDF:h5close_EMsoft', hdferr)
+  call HDFerror_check('Read3DQCDataHDF:h5close_EMsoft', hdferr)
 else ! just close this group, but not the file
   call HDF_pop(HDF_head)
 end if
@@ -705,7 +704,11 @@ type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhea
 
 integer(kind=irg)                       :: i, ipg, isave
 
-call ReadQCDataHDF(cell, existingHDFhead)
+if(present(existingHDFhead)) then
+        call ReadQCDataHDF(cell, existingHDFhead)
+else
+        call ReadQCDataHDF(cell)
+end if
 
 call PrintSGTable(cell,toprint=.FALSE.)
 
@@ -758,7 +761,11 @@ type(HDFobjectStackType),OPTIONAL,pointer,INTENT(INOUT)        :: existingHDFhea
 
 integer(kind=irg)                       :: i, ipg, isave
 
-call ReadQCDataHDF(cell, existingHDFhead)
+if(present(existingHDFhead)) then
+        call ReadQCDataHDF(cell, existingHDFhead)
+else
+        call ReadQCDataHDF(cell)
+end if
 
 call PrintSGTable(cell,toprint=.FALSE.)
 

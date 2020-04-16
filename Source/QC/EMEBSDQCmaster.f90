@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2017-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2017-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -358,7 +358,7 @@ QCcell%voltage    = ebsdnl%Ekev
 QCcell%mLambda    = -1.0
 QCcell%dmin       = ebsdnl%dmin
 dmin              = QCcell%dmin
-xtalname 		  = 'iQC.qxtal'
+xtalname 		  = 'AlCuFe.qxtal'
 nthreads 		  = ebsdnl%nthreads
 
 ! define the metric matrices etc...
@@ -490,9 +490,9 @@ cnt4 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1, numset /)
 offset4 = (/ 0, 0, 0, 0 /)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-	hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
+	hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4, HDF_head, insert)
 else
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4, HDF_head)
 end if
 
 dataset = SC_mLPSH
@@ -501,9 +501,9 @@ cnt4 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1, numset /)
 offset4 = (/ 0, 0, 0, 0 /)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4, HDF_head, insert)
 else
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4, HDF_head)
 end if
 
 dataset = SC_masterSPNH
@@ -512,9 +512,9 @@ cnt3 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1 /)
 offset3 = (/ 0, 0, 0 /)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head, insert)
 else
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head)
 end if
 
 dataset = SC_masterSPSH
@@ -523,9 +523,9 @@ cnt3 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1 /)
 offset3 = (/ 0, 0, 0 /)
 call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 if (g_exists) then 
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head, insert)
 else
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head)
 end if
 
 ! leave this group
@@ -744,25 +744,25 @@ energyloop: do iE = numEbins,1,-1
   	dims4 = (/  2*ebsdnl%npx+1, 2*ebsdnl%npx+1, numEbins, numset /)
   	cnt4 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1, numset /)
   	offset4 = (/ 0, 0, iE-1, 0 /)
-  	hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
+  	hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPNH, dims4, offset4, cnt4, HDF_head, insert)
 
 	dataset = SC_mLPSH
   	dims4 = (/  2*ebsdnl%npx+1, 2*ebsdnl%npx+1, numEbins, numset /)
   	cnt4 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1, numset /)
   	offset4 = (/ 0, 0, iE-1, 0 /)
-  	hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4(1), cnt4(2), cnt4(3), cnt4(4), HDF_head, insert)
+  	hdferr = HDF_writeHyperslabFloatArray4D(dataset, mLPSH, dims4, offset4, cnt4, HDF_head, insert)
 
 	dataset = SC_masterSPNH
   	dims3 = (/  2*ebsdnl%npx+1, 2*ebsdnl%npx+1, numEbins /)
   	cnt3 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1 /)
   	offset3 = (/ 0, 0, iE-1 /)
-  	hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  	hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPNH, dims3, offset3, cnt3, HDF_head, insert)
 
 	dataset = SC_masterSPSH
   	dims3 = (/  2*ebsdnl%npx+1, 2*ebsdnl%npx+1, numEbins /)
   	cnt3 = (/ 2*ebsdnl%npx+1, 2*ebsdnl%npx+1, 1 /)
   	offset3 = (/ 0, 0, iE-1 /)
-  	hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+  	hdferr = HDF_writeHyperslabFloatArray3D(dataset, masterSPSH, dims3, offset3, cnt3, HDF_head, insert)
 
     call HDF_pop(HDF_head,.TRUE.)
 

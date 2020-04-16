@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -59,6 +59,7 @@
 !> ho : homochoric representation (3)
 !> cu : cubochoric representation (3)
 !> st : 3D stereographic representation (3)  [added in October 2017]
+!> rv : rotation vector representation (3)  [added in Summer 2019]
 !>
 !> hence, conversion from homochoric to euler angle is called as ho2eu(); the argument of 
 !> each routine must have the correct number of dimensions and entries.
@@ -108,6 +109,8 @@
 !> @date 04/17/15 MDG 3.91 simplification to qu2eu routines
 !> @date 09/23/15 MDG 3.92 changes to .eq. tests on reals; replaced all by close_enough calls
 !> @date 10/05/17 MDG 4.0 added 3D stereographic representation
+!> @date 10/29/19  SS 5.0 added rotation vector representation
+!> @date 10/31/19 MDG 5.1 replaced 'ex' notation by 'rv' for rotation vector
 !--------------------------------------------------------------------------
 module rotations
 
@@ -167,10 +170,10 @@ interface st_check
         module procedure st_check_d
 end interface 
 
-public :: ex_check
-interface ex_check
-        module procedure ex_check
-        module procedure ex_check_d
+public :: rv_check
+interface rv_check
+        module procedure rv_check
+        module procedure rv_check_d
 end interface 
 !--------------------------------
 ! general rotation creation routine, to make sure that a rotation representation is 
@@ -240,11 +243,11 @@ interface eu2st
         module procedure eu2st_d
 end interface
 
-! convert Euler angles to exponential map
-public :: eu2ex
-interface eu2ex
-        module procedure eu2ex
-        module procedure eu2ex_d
+! convert Euler angles to rotation vector map
+public :: eu2rv
+interface eu2rv
+        module procedure eu2rv
+        module procedure eu2rv_d
 end interface
 
 !--------------------------------
@@ -297,11 +300,11 @@ interface om2st
         module procedure om2st_d
 end interface
 
-! convert rotation matrix to exponential map
-public :: om2ex
-interface om2ex
-        module procedure om2ex
-        module procedure om2ex_d
+! convert rotation matrix to rotation vector map
+public :: om2rv
+interface om2rv
+        module procedure om2rv
+        module procedure om2rv_d
 end interface
 
 !--------------------------------
@@ -354,11 +357,11 @@ interface ax2st
         module procedure ax2st_d
 end interface
 
-! convert axis angle pair to exponential map
-public :: ax2ex
-interface ax2ex
-        module procedure ax2ex
-        module procedure ax2ex_d
+! convert axis angle pair to rotation vector map
+public :: ax2rv
+interface ax2rv
+        module procedure ax2rv
+        module procedure ax2rv_d
 end interface
 
 !--------------------------------
@@ -411,11 +414,11 @@ interface ro2st
         module procedure ro2st_d
 end interface
 
-! convert Rodrigues vector to exponential map
-public :: ro2ex
-interface ro2ex
-        module procedure ro2ex
-        module procedure ro2ex_d
+! convert Rodrigues vector to rotation vector map
+public :: ro2rv
+interface ro2rv
+        module procedure ro2rv
+        module procedure ro2rv_d
 end interface
 
 !--------------------------------
@@ -468,11 +471,11 @@ interface qu2st
         module procedure qu2st_d
 end interface
 
-! convert quaternion to exponential map
-public :: qu2ex
-interface qu2ex
-        module procedure qu2ex
-        module procedure qu2ex_d
+! convert quaternion to rotation vector map
+public :: qu2rv
+interface qu2rv
+        module procedure qu2rv
+        module procedure qu2rv_d
 end interface
 
 !--------------------------------
@@ -525,11 +528,11 @@ interface ho2st
         module procedure ho2st_d
 end interface
 
-! convert homochoric to exponential map
-public :: ho2ex
-interface ho2ex
-        module procedure ho2ex
-        module procedure ho2ex_d
+! convert homochoric to rotation vector map
+public :: ho2rv
+interface ho2rv
+        module procedure ho2rv
+        module procedure ho2rv_d
 end interface
 
 !--------------------------------
@@ -582,11 +585,11 @@ interface cu2st
         module procedure cu2st_d
 end interface
 
-! convert cubochoric to exponential map
-public :: cu2ex
-interface cu2ex
-        module procedure cu2ex
-        module procedure cu2ex_d
+! convert cubochoric to rotation vector map
+public :: cu2rv
+interface cu2rv
+        module procedure cu2rv
+        module procedure cu2rv_d
 end interface
 
 !--------------------------------
@@ -639,68 +642,68 @@ interface st2cu
         module procedure st2cu_d
 end interface
 
-! convert stereographic to exponential map
-public :: st2ex
-interface st2ex
-        module procedure st2ex
-        module procedure st2ex_d
+! convert stereographic to rotation vector map
+public :: st2rv
+interface st2rv
+        module procedure st2rv
+        module procedure st2rv_d
 end interface
 
 !-----------------------------------
-! exponential map to axis-angle pair
-public :: ex2ax
-interface ex2ax
-        module procedure ex2ax
-        module procedure ex2ax_d
+! rotation vector map to axis-angle pair
+public :: rv2ax
+interface rv2ax
+        module procedure rv2ax
+        module procedure rv2ax_d
 end interface
 
-! exponential map to quaternion
-public :: ex2qu
-interface ex2qu
-        module procedure ex2qu
-        module procedure ex2qu_d
+! rotation vector map to quaternion
+public :: rv2qu
+interface rv2qu
+        module procedure rv2qu
+        module procedure rv2qu_d
 end interface
 
-! exponential map to euler
-public :: ex2eu
-interface ex2eu
-        module procedure ex2eu
-        module procedure ex2eu_d
+! rotation vector map to euler
+public :: rv2eu
+interface rv2eu
+        module procedure rv2eu
+        module procedure rv2eu_d
 end interface
 
-! exponential map to rodrigues vector
-public :: ex2ro
-interface ex2ro
-        module procedure ex2ro
-        module procedure ex2ro_d
+! rotation vector map to rodrigues vector
+public :: rv2ro
+interface rv2ro
+        module procedure rv2ro
+        module procedure rv2ro_d
 end interface
 
-! exponential map to orientation matrix
-public :: ex2om
-interface ex2om
-        module procedure ex2om
-        module procedure ex2om_d
+! rotation vector map to orientation matrix
+public :: rv2om
+interface rv2om
+        module procedure rv2om
+        module procedure rv2om_d
 end interface
 
-! exponential map to cubochoric vector
-public :: ex2cu
-interface ex2cu
-        module procedure ex2cu
-        module procedure ex2cu_d
+! rotation vector map to cubochoric vector
+public :: rv2cu
+interface rv2cu
+        module procedure rv2cu
+        module procedure rv2cu_d
 end interface
 
-! exponential map to stereographic vector
-public :: ex2st
-interface ex2st
-        module procedure ex2st
-        module procedure ex2st_d
+! rotation vector map to stereographic vector
+public :: rv2st
+interface rv2st
+        module procedure rv2st
+        module procedure rv2st_d
 end interface
 
-! exponential map to homochoric vector
-public :: ex2ho
-interface ex2ho
-        module procedure ex2ho
-        module procedure ex2ho_d
+! rotation vector map to homochoric vector
+public :: rv2ho
+interface rv2ho
+        module procedure rv2ho
+        module procedure rv2ho_d
 end interface
 
 !--------------------------------
@@ -1482,19 +1485,19 @@ end function om_check_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex_check
+! Function: rv_check
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief verify that the exponentioal map has magnitude in range [0, pi]
+!> @brief verify that the rotation vector has magnitude in range [0, pi]
 !
 !> @param ex 3-component vector (single precision)  
 !>  
 ! 
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex_check(ex) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex_check
+recursive function rv_check(rv) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv_check
 
 use local
 use constants
@@ -1502,7 +1505,7 @@ use error
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: ex(3)
+real(kind=sgl),INTENT(IN)       :: rv(3)
 
 integer(kind=irg)               :: res
 real(kind=dbl)                  :: r
@@ -1510,31 +1513,31 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 
 res = 1
 
-r = vecnorm(ex)
+r = vecnorm(rv)
 
 if ((r - cPi) .ge. eps) then
-   call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
+   call FatalError('rotations:rv_check_d','magnitude must be in range [0,pi]')
 endif
 
 res = 0
 
-end function ex_check
+end function rv_check
 
 !--------------------------------------------------------------------------
 !
-! Function: ex_check_d
+! Function: rv_check_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief verify that the exponentioal map has magnitude in range [0, pi]
+!> @brief verify that the rotation vector map has magnitude in range [0, pi]
 !
 !> @param ex 3-component vector (double precision)  
 !>  
 ! 
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex_check_d(ex) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex_check_d
+recursive function rv_check_d(rv) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv_check_d
 
 use local
 use constants
@@ -1542,7 +1545,7 @@ use error
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: ex(3)
+real(kind=dbl),INTENT(IN)       :: rv(3)
 
 integer(kind=irg)               :: res
 real(kind=dbl)                  :: r
@@ -1550,15 +1553,15 @@ real(kind=dbl), parameter       :: eps = 1.e-15
 
 res = 1
 
-r = vecnorm(ex)
+r = vecnorm(rv)
 
 if ((r - cPi) .ge. eps) then
-   call FatalError('rotations:ex_check_d','magnitude must be in range [0,pi]')
+   call FatalError('rotations:rv_check_d','magnitude must be in range [0,pi]')
 endif
 
 res = 0
 
-end function ex_check_d
+end function rv_check_d
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1713,7 +1716,7 @@ select case (intype)
                 res%homochoric = eu2ho(orient(1:3))
                 res%cubochoric = eu2cu(orient(1:3))
                 res%stereographic = eu2st(orient(1:3))
-                res%expomap = eu2ex(orient(1:3))
+                res%rvmap = eu2rv(orient(1:3))
         case ('ro')     ! Rodrigues vector
                 ! verify the Rodrigues-Frank vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1727,7 +1730,7 @@ select case (intype)
                 res%homochoric = ro2ho(orient(1:4))
                 res%cubochoric = ro2cu(orient(1:4))
                 res%stereographic = ro2st(orient(1:4))
-                res%expomap = ro2ex(orient(1:4))
+                res%rvmap = ro2rv(orient(1:4))
         case ('ho')     ! homochoric
                 ! verify the homochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1741,7 +1744,7 @@ select case (intype)
                 res%quat = ho2qu(orient(1:3))
                 res%cubochoric = ho2cu(orient(1:3))
                 res%stereographic = ho2st(orient(1:3))
-                res%expomap = ho2ex(orient(1:3))
+                res%rvmap = ho2rv(orient(1:3))
         case ('cu')     ! cubochoric
                 ! verify the cubochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1755,7 +1758,7 @@ select case (intype)
                 res%axang = cu2ax(orient(1:3))
                 res%rodrigues = cu2ro(orient(1:3))
                 res%stereographic = cu2st(orient(1:3))
-                res%expomap = cu2ex(orient(1:3))
+                res%rvmap = cu2rv(orient(1:3))
         case ('st')     ! stereographic
                 ! verify the cstereographic vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1769,7 +1772,7 @@ select case (intype)
                 res%quat = st2qu(orient(1:3))
                 res%axang = st2ax(orient(1:3))
                 res%rodrigues = st2ro(orient(1:3))
-                res%expomap = st2ex(orient(1:3))
+                res%rvmap = st2rv(orient(1:3))
         case ('qu')     ! quaternion
                 ! verify the quaternion; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1783,7 +1786,7 @@ select case (intype)
                 res%homochoric = qu2ho(orient(1:4))
                 res%cubochoric = qu2cu(orient(1:4))
                 res%stereographic = qu2st(orient(1:4))
-                res%expomap = qu2ex(orient(1:4))
+                res%rvmap = qu2rv(orient(1:4))
         case ('ax')     ! axis angle pair
                 ! verify the axis angle pair; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1797,21 +1800,21 @@ select case (intype)
                 res%homochoric = ax2ho(orient(1:4))
                 res%cubochoric = ax2cu(orient(1:4))
                 res%stereographic = ax2st(orient(1:4))
-                res%expomap = ax2ex(orient(1:4))
-        case('ex')      ! exponential map
-                ! verify the exponential map; this will abort program if values are outside range
+                res%rvmap = ax2rv(orient(1:4))
+        case('rv')      ! rotation vector map
+                ! verify the rotation vector map; this will abort program if values are outside range
                 if (present(rotcheck)) then 
                         if (rotcheck.eqv..TRUE.) i = qu_check(orient)
                 endif
-                res%expomap = orient(1:3)
-                res%stereographic = ex2st(orient(1:3))
-                res%cubochoric = ex2cu(orient(1:3))
-                res%homochoric = ex2ho(orient(1:3))
-                res%eulang = ex2eu(orient(1:3))
-                res%om = ex2om(orient(1:3))
-                res%quat = ex2qu(orient(1:3))
-                res%axang = ex2ax(orient(1:3))
-                res%rodrigues = ex2ro(orient(1:3))
+                res%rvmap = orient(1:3)
+                res%stereographic = rv2st(orient(1:3))
+                res%cubochoric = rv2cu(orient(1:3))
+                res%homochoric = rv2ho(orient(1:3))
+                res%eulang = rv2eu(orient(1:3))
+                res%om = rv2om(orient(1:3))
+                res%quat = rv2qu(orient(1:3))
+                res%axang = rv2ax(orient(1:3))
+                res%rodrigues = rv2ro(orient(1:3))
                 
 end select 
 
@@ -1863,7 +1866,7 @@ select case (intype)
                 res%homochoric = eu2ho_d(orient(1:3))
                 res%cubochoric = eu2cu_d(orient(1:3))
                 res%stereographic = eu2st_d(orient(1:3))
-                res%expomap = eu2ex_d(orient(1:3))
+                res%rvmap = eu2rv_d(orient(1:3))
         case ('ro')     ! Rodrigues vector
                 ! verify the Rodrigues-Frank vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1877,7 +1880,7 @@ select case (intype)
                 res%homochoric = ro2ho_d(orient(1:4))
                 res%cubochoric = ro2cu_d(orient(1:4))
                 res%stereographic = ro2st_d(orient(1:4))
-                res%expomap = ro2ex_d(orient(1:4))
+                res%rvmap = ro2rv_d(orient(1:4))
         case ('ho')     ! homochoric
                 ! verify the homochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1891,7 +1894,7 @@ select case (intype)
                 res%quat = ho2qu_d(orient(1:3))
                 res%cubochoric = ho2cu_d(orient(1:3))
                 res%stereographic = ho2st_d(orient(1:3))
-                res%expomap = ho2ex_d(orient(1:4))
+                res%rvmap = ho2rv_d(orient(1:4))
         case ('cu')     ! cubochoric
                 ! verify the cubochoric vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1905,7 +1908,7 @@ select case (intype)
                 res%axang = cu2ax_d(orient(1:3))
                 res%rodrigues = cu2ro_d(orient(1:3))
                 res%stereographic = cu2st_d(orient(1:3))
-                res%expomap = cu2ex_d(orient(1:3))
+                res%rvmap = cu2rv_d(orient(1:3))
         case ('st')     ! stereographic
                 ! verify the cstereographic vector; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1919,7 +1922,7 @@ select case (intype)
                 res%quat = st2qu_d(orient(1:3))
                 res%axang = st2ax_d(orient(1:3))
                 res%rodrigues = st2ro_d(orient(1:3))
-                res%expomap = st2ex_d(orient(1:3))
+                res%rvmap = st2rv_d(orient(1:3))
         case ('qu')     ! quaternion
                 ! verify the quaternion; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1933,7 +1936,7 @@ select case (intype)
                 res%homochoric = qu2ho_d(orient(1:4))
                 res%cubochoric = qu2cu_d(orient(1:4))
                 res%stereographic = qu2st(orient(1:4))
-                res%expomap = qu2ex_d(orient(1:4))
+                res%rvmap = qu2rv_d(orient(1:4))
         case ('ax')     ! axis angle pair
                 ! verify the axis angle pair; this will abort program if values are outside range
                 if (present(rotcheck)) then 
@@ -1947,21 +1950,21 @@ select case (intype)
                 res%homochoric = ax2ho_d(orient(1:4))
                 res%cubochoric = ax2cu_d(orient(1:4))
                 res%stereographic = ax2st_d(orient(1:4))
-                res%expomap = ax2ex_d(orient(1:4))
-        case('ex')      ! exponential map
-                ! verify the exponential map; this will abort program if values are outside range
+                res%rvmap = ax2rv_d(orient(1:4))
+        case('rv')      ! rotation vector map
+                ! verify the rotation vector map; this will abort program if values are outside range
                 if (present(rotcheck)) then 
                         if (rotcheck.eqv..TRUE.) i = qu_check(orient)
                 endif
-                res%expomap = orient(1:3)
-                res%stereographic = ex2st_d(orient(1:3))
-                res%cubochoric = ex2cu_d(orient(1:3))
-                res%homochoric = ex2ho_d(orient(1:3))
-                res%eulang = ex2eu_d(orient(1:3))
-                res%om = ex2om_d(orient(1:3))
-                res%quat = ex2qu_d(orient(1:3))
-                res%axang = ex2ax_d(orient(1:3))
-                res%rodrigues = ex2ro_d(orient(1:3))
+                res%rvmap = orient(1:3)
+                res%stereographic = rv2st_d(orient(1:3))
+                res%cubochoric = rv2cu_d(orient(1:3))
+                res%homochoric = rv2ho_d(orient(1:3))
+                res%eulang = rv2eu_d(orient(1:3))
+                res%om = rv2om_d(orient(1:3))
+                res%quat = rv2qu_d(orient(1:3))
+                res%axang = rv2ax_d(orient(1:3))
+                res%rodrigues = rv2ro_d(orient(1:3))
 end select  
 
 end function init_orientation_d
@@ -2009,7 +2012,7 @@ select case (intype)
                 res%homochoric = om2ho(orient)
                 res%stereographic = om2st(orient)
                 res%cubochoric = om2cu(orient)
-                res%expomap = om2ex(orient)
+                res%rvmap = om2rv(orient)
 end select 
 
 end function init_orientation_om
@@ -2058,7 +2061,7 @@ select case (intype)
                 res%homochoric = om2ho_d(orient)
                 res%stereographic = om2st_d(orient)
                 res%cubochoric = om2cu_d(orient)
-                res%expomap = om2ex_d(orient)
+                res%rvmap = om2rv_d(orient)
 end select 
 
 end function init_orientation_om_d
@@ -6092,18 +6095,18 @@ end function st2cu_d
 
 !--------------------------------------------------------------------------
 !
-! Function: eu2ex
+! Function: eu2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief Euler angles to exponential map 
+!> @brief Euler angles to rotation vector map 
 !
 !> @param e 3 Euler angles in radians (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function eu2ex(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: eu2ex
+recursive function eu2rv(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: eu2rv
 
 use local
 use constants
@@ -6111,7 +6114,7 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: e(3)         !< input Euler angles in radians
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
@@ -6119,22 +6122,22 @@ ax = eu2ax(e)
 
 res = ax(1:3) * ax(4)
 
-end function eu2ex
+end function eu2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: eu2ex_d
+! Function: eu2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief Euler angles to exponential map 
+!> @brief Euler angles to rotation vector map 
 !
 !> @param e 3 Euler angles in radians (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function eu2ex_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: eu2ex_d
+recursive function eu2rv_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: eu2rv_d
 
 use local
 use constants
@@ -6142,7 +6145,7 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: e(3)         !< input Euler angles in radians
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
@@ -6150,22 +6153,22 @@ ax = eu2ax(e)
 
 res = ax(1:3) * ax(4)
 
-end function eu2ex_d
+end function eu2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: om2ex
+! Function: om2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief rotation matrix to exponential map 
+!> @brief rotation matrix to rotation vector map 
 !
 !> @param  o 3x3 rotation matrix (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function om2ex(o) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: om2ex
+recursive function om2rv(o) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: om2rv
 
 use local
 use constants
@@ -6173,28 +6176,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: o(3,3)        
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = qu2ex(om2qu(o))
+res = qu2rv(om2qu(o))
 
-end function om2ex
+end function om2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: om2ex_d
+! Function: om2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief rotation matrix to exponential map 
+!> @brief rotation matrix to rotation vector map 
 !
 !> @param o 3x3 rotation matrix (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function om2ex_d(o) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: om2ex_d
+recursive function om2rv_d(o) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: om2rv_d
 
 use local
 use constants
@@ -6202,28 +6205,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: o(3,3)       
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = qu2ex(om2qu(o))
+res = qu2rv(om2qu(o))
 
-end function om2ex_d
+end function om2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ro2ex
+! Function: ro2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief rodrigues vector to exponential map 
+!> @brief rodrigues vector to rotation vector map 
 !
 !> @param r rodrigues vector (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ro2ex(r) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ro2ex
+recursive function ro2rv(r) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ro2rv
 
 use local
 use constants
@@ -6231,28 +6234,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: r(4)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(ro2eu(r))
+res = eu2rv(ro2eu(r))
 
-end function ro2ex
+end function ro2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: ro2ex_d
+! Function: ro2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief rodrigues vector to exponential map 
+!> @brief rodrigues vector to rotation vector map 
 !
 !> @param r rodrigues vector (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ro2ex_d(r) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ro2ex_d
+recursive function ro2rv_d(r) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ro2rv_d
 
 use local
 use constants
@@ -6260,28 +6263,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: r(4)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(ro2eu(r))
+res = eu2rv(ro2eu(r))
 
-end function ro2ex_d
+end function ro2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: qu2ex
+! Function: qu2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief quaternion to exponential map 
+!> @brief quaternion to rotation vector map 
 !
 !> @param q quaternion (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function qu2ex(q) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: qu2ex
+recursive function qu2rv(q) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: qu2rv
 
 use local
 use constants
@@ -6289,28 +6292,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: q(4)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(qu2eu(q))
+res = eu2rv(qu2eu(q))
 
-end function qu2ex
+end function qu2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: qu2ex_d
+! Function: qu2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief quaternion to exponential map 
+!> @brief quaternion to rotation vector map 
 !
 !> @param q quaternion (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function qu2ex_d(q) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: qu2ex_d
+recursive function qu2rv_d(q) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: qu2rv_d
 
 use local
 use constants
@@ -6318,28 +6321,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: q(4)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(qu2eu(q))
+res = eu2rv(qu2eu(q))
 
-end function qu2ex_d
+end function qu2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: cu2ex
+! Function: cu2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief cubochoric vector to exponential map 
+!> @brief cubochoric vector to rotation vector map 
 !
 !> @param c cubochoric vector (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function cu2ex(c) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: cu2ex
+recursive function cu2rv(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: cu2rv
 
 use local
 use constants
@@ -6347,28 +6350,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: c(3)        
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(cu2eu(c))
+res = eu2rv(cu2eu(c))
 
-end function cu2ex
+end function cu2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: cu2ex_d
+! Function: cu2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief cubochoric vector to exponential map 
+!> @brief cubochoric vector to rotation vector map 
 !
 !> @param c cubochoric vector (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function cu2ex_d(c) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: cu2ex_d
+recursive function cu2rv_d(c) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: cu2rv_d
 
 use local
 use constants
@@ -6376,28 +6379,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: c(3)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(cu2eu(c))
+res = eu2rv(cu2eu(c))
 
-end function cu2ex_d
+end function cu2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ax2ex
+! Function: ax2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief axis angle pair to exponential map 
+!> @brief axis angle pair to rotation vector map 
 !
 !> @param a axis angle pair (single precision)
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ax2ex(a) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ax2ex
+recursive function ax2rv(a) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ax2rv
 
 use local
 use constants
@@ -6405,28 +6408,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: a(4)        
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 integer(kind=irg)               :: ii, ctr
 real(kind=sgl),parameter        :: thr = 1.0E-6
 
 res = a(1:3) * a(4)
 
-end function ax2ex
+end function ax2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: ax2ex_d
+! Function: ax2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief axis angle to exponential map 
+!> @brief axis angle to rotation vector map 
 !
 !> @param a axis angle pair (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ax2ex_d(a) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ax2ex_d
+recursive function ax2rv_d(a) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ax2rv_d
 
 use local
 use constants
@@ -6434,28 +6437,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: a(4)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 integer(kind=irg)               :: ii, ctr
 real(kind=sgl),parameter        :: thr = 1.0D-8
 
 res = a(1:3) * a(4)
 
-end function ax2ex_d
+end function ax2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ho2ex
+! Function: ho2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief homochoric vector to exponential map 
+!> @brief homochoric vector to rotation vector map 
 !
 !> @param h homochoric vector (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ho2ex(h) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ho2ex
+recursive function ho2rv(h) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ho2rv
 
 use local
 use constants
@@ -6463,28 +6466,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: h(3)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(ho2eu(h))
+res = eu2rv(ho2eu(h))
 
-end function ho2ex
+end function ho2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: ho2ex_d
+! Function: ho2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief homochoric vector to exponential map 
+!> @brief homochoric vector to rotation vector map 
 !
 !> @param h homochoric vector (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ho2ex_d(h) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ho2ex_d
+recursive function ho2rv_d(h) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: ho2rv_d
 
 use local
 use constants
@@ -6492,28 +6495,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: h(3)        
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(ho2eu(h))
+res = eu2rv(ho2eu(h))
 
-end function ho2ex_d
+end function ho2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: st2ex
+! Function: st2rv
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief stereographic vector to exponential map 
+!> @brief stereographic vector to rotation vector map 
 !
 !> @param s stereographic vector (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function st2ex(s) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: st2ex
+recursive function st2rv(s) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2rv
 
 use local
 use constants
@@ -6521,28 +6524,28 @@ use constants
 IMPLICIT NONE
 
 real(kind=sgl),INTENT(IN)       :: s(3)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(st2eu(s))
+res = eu2rv(st2eu(s))
 
-end function st2ex
+end function st2rv
 
 !--------------------------------------------------------------------------
 !
-! Function: st2ex_d
+! Function: st2rv_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief stereographic vector to exponential map 
+!> @brief stereographic vector to rotation vector map 
 !
 !> @param s stereographic vector (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function st2ex_d(s) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: st2ex_d
+recursive function st2rv_d(s) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: st2rv_d
 
 use local
 use constants
@@ -6550,35 +6553,35 @@ use constants
 IMPLICIT NONE
 
 real(kind=dbl),INTENT(IN)       :: s(3)         
-real(kind=dbl)                  :: res(3)       !< output exponential map
+real(kind=dbl)                  :: res(3)       !< output rotation vector map
 
 real(kind=dbl)                  :: ax(4)
 
-res = eu2ex(st2eu(s))
+res = eu2rv(st2eu(s))
 
-end function st2ex_d
+end function st2rv_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2ax
+! Function: rv2ax
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to axis angle pair 
+!> @brief rotation vector map to axis angle pair 
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2ax(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2ax
+recursive function rv2ax(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2ax
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(4)       !< output axis angle pair
 
 real(kind=dbl)                  :: an, n(3)
@@ -6594,30 +6597,30 @@ end if
 
 res = (/n, an/)
 
-end function ex2ax
+end function rv2ax
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2ax_d
+! Function: rv2ax_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to axis angle pair 
+!> @brief rotation vector map to axis angle pair 
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2ax_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2ax_d
+recursive function rv2ax_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2ax_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
-real(kind=dbl)                  :: res(4)       !< output exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
+real(kind=dbl)                  :: res(4)       !< output rotation vector map
 
 real(kind=dbl)                  :: an, n(3)
 real(kind=dbl), parameter       :: tol = 1.0D-10
@@ -6632,385 +6635,385 @@ end if
 
 res = (/n, an/)
 
-end function ex2ax_d
+end function rv2ax_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2om
+! Function: rv2om
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to rotation matrix
+!> @brief rotation vector map to rotation matrix
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2om(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2om
+recursive function rv2om(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2om
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(3,3)     !< output rotation matrix
 
-res = ax2om(ex2ax(e))
+res = ax2om(rv2ax(e))
 
-end function ex2om
+end function rv2om
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2om_d
+! Function: rv2om_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to rotation matrix
+!> @brief rotation vector map to rotation matrix
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2om_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2om_d
+recursive function rv2om_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2om_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
 real(kind=dbl)                  :: res(3,3)     !< output rotation matrix
 
-res = ax2om(ex2ax(e))
+res = ax2om(rv2ax(e))
 
-end function ex2om_d
+end function rv2om_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2eu
+! Function: rv2eu
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to euler angles in radians
+!> @brief rotation vector map to euler angles in radians
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2eu(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2eu
+recursive function rv2eu(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2eu
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(3)       !< output euler angles in radians
 
-res = ax2eu(ex2ax(e))
+res = ax2eu(rv2ax(e))
 
-end function ex2eu
+end function rv2eu
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2eu_d
+! Function: rv2eu_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to euler angles in radians
+!> @brief rotation vector map to euler angles in radians
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2eu_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2eu_d
+recursive function rv2eu_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2eu_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
 real(kind=dbl)                  :: res(3)       !< output euler angles in radians
 
-res = ax2eu(ex2ax(e))
+res = ax2eu(rv2ax(e))
 
-end function ex2eu_d
+end function rv2eu_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2qu
+! Function: rv2qu
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to quaternion
+!> @brief rotation vector map to quaternion
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2qu(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2qu
+recursive function rv2qu(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2qu
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(4)       !< output quaternion
 
-res = ax2qu(ex2ax(e))
+res = ax2qu(rv2ax(e))
 
-end function ex2qu
+end function rv2qu
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2qu_d
+! Function: rv2qu_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to quaternion
+!> @brief rotation vector map to quaternion
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2qu_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2qu_d
+recursive function rv2qu_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2qu_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
 real(kind=dbl)                  :: res(4)       !< output quaternion
 
-res = ax2qu(ex2ax(e))
+res = ax2qu(rv2ax(e))
 
-end function ex2qu_d
+end function rv2qu_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2ro
+! Function: rv2ro
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to rodrigues vector
+!> @brief rotation vector map to rodrigues vector
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2ro(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2ro
+recursive function rv2ro(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2ro
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(4)       !< output rodrigues vector
 
-res = ax2ro(ex2ax(e))
+res = ax2ro(rv2ax(e))
 
-end function ex2ro
+end function rv2ro
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2ro_d
+! Function: rv2ro_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to rodrigues vector
+!> @brief rotation vector map to rodrigues vector
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2ro_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2ro_d
+recursive function rv2ro_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2ro_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
 real(kind=dbl)                  :: res(4)       !< output rodrigues vector
 
-res = ax2ro(ex2ax(e))
+res = ax2ro(rv2ax(e))
 
-end function ex2ro_d
+end function rv2ro_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2cu
+! Function: rv2cu
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to cubochoric vector
+!> @brief rotation vector map to cubochoric vector
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2cu(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2cu
+recursive function rv2cu(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2cu
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(3)       !< output cubochoric vector
 
-res = ax2cu(ex2ax(e))
+res = ax2cu(rv2ax(e))
 
-end function ex2cu
+end function rv2cu
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2cu_d
+! Function: rv2cu_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to cubochoric vector
+!> @brief rotation vector map to cubochoric vector
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2cu_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2cu_d
+recursive function rv2cu_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2cu_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
 real(kind=dbl)                  :: res(3)       !< output cubochoric vector
 
-res = ax2cu(ex2ax(e))
+res = ax2cu(rv2ax(e))
 
-end function ex2cu_d
+end function rv2cu_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2ho
+! Function: rv2ho
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to homochoric vector
+!> @brief rotation vector map to homochoric vector
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2ho(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2ho
+recursive function rv2ho(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2ho
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(3)       !< output homochoric vector
 
-res = ax2ho(ex2ax(e))
+res = ax2ho(rv2ax(e))
 
-end function ex2ho
+end function rv2ho
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2ho_d
+! Function: rv2ho_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to homochoric vector
+!> @brief rotation vector map to homochoric vector
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2ho_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2ho_d
+recursive function rv2ho_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2ho_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
 real(kind=dbl)                  :: res(3)       !< output homochoric vector
 
-res = ax2ho(ex2ax(e))
+res = ax2ho(rv2ax(e))
 
-end function ex2ho_d
+end function rv2ho_d
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2st
+! Function: rv2st
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to stereographic vector
+!> @brief rotation vector map to stereographic vector
 !
-!> @param e exponential map (single precision)  
+!> @param e rotation vector map (single precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2st(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2st
+recursive function rv2st(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2st
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=sgl),INTENT(IN)       :: e(3)         !< input exponential map     
+real(kind=sgl),INTENT(IN)       :: e(3)         !< input rotation vector map     
 real(kind=dbl)                  :: res(3)       !< output stereographic vector
 
-res = ax2st(ex2ax(e))
+res = ax2st(rv2ax(e))
 
-end function ex2st
+end function rv2st
 
 !--------------------------------------------------------------------------
 !
-! Function: ex2st_d
+! Function: rv2st_d
 !
 !> @author Saransh Singh, Lawrence Livermore National Lab
 !
-!> @brief exponential map to stereographic vector
+!> @brief rotation vector map to stereographic vector
 !
-!> @param e exponential map (double precision)  
+!> @param e rotation vector map (double precision)  
 !>  
 !> @date 10/25/19   SS 1.0 original
 !--------------------------------------------------------------------------
-recursive function ex2st_d(e) result(res)
-!DEC$ ATTRIBUTES DLLEXPORT :: ex2st_d
+recursive function rv2st_d(e) result(res)
+!DEC$ ATTRIBUTES DLLEXPORT :: rv2st_d
 
 use local
 use constants
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)       :: e(3)         !< input exponential map
+real(kind=dbl),INTENT(IN)       :: e(3)         !< input rotation vector map
 real(kind=dbl)                  :: res(3)       !< output stereographic vector
 
-res = ax2st(ex2ax(e))
+res = ax2st(rv2ax(e))
 
-end function ex2st_d
+end function rv2st_d
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -7418,11 +7421,11 @@ if (present(outtype)) then
 
         case ('st')
           ioreal(1:3) = o%stereographic
-          call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+          call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
 
-        case ('ex')
-          ioreal(1:3) = o%expomap
-          call WriteValue(trim(pret)//'Exponential Map                      : ', ioreal, 3, "(3(F8.4,' '))")
+        case ('rv')
+          ioreal(1:3) = o%rvmap
+          call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
 
         case ('om')
           ioreal(1:3) = o%om(1,1:3)
@@ -7454,9 +7457,9 @@ else
   ioreal(1:4) = o%quat
   call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F8.4,' '))")
   ioreal(1:3) = o%stereographic
-  call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
-  ioreal(1:3) = o%expomap
-  call WriteValue(trim(pret)//'Exponential Map                       : ', ioreal, 3, "(3(F8.4,' '))")
+  call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
+  ioreal(1:3) = o%rvmap
+  call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%om(1,1:3)
   call WriteValue('                                   / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
   ioreal(1:3) = o%om(2,1:3)
@@ -7536,11 +7539,11 @@ if (present(outtype)) then
 
         case ('st')
           ioreal(1:3) = o%stereographic
-          call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
+          call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
 
-        case ('ex')
-          ioreal(1:3) = o%expomap
-          call WriteValue(trim(pret)//'Exponential Map                      : ', ioreal, 3, "(3(F8.4,' '))")
+        case ('rv')
+          ioreal(1:3) = o%rvmap
+          call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
 
         case ('om')
           ioreal(1:3) = o%om(1,1:3)
@@ -7572,9 +7575,9 @@ else
   ioreal(1:4) = o%quat
   call WriteValue(trim(pret)//'Quaternion                       : ', ioreal, 4, "(4(F12.7,' '))")
   ioreal(1:3) = o%stereographic
-  call WriteValue(trim(pret)//'Stereographic                       : ', ioreal, 3, "(3(F8.4,' '))")
-  ioreal(1:3) = o%expomap
-  call WriteValue(trim(pret)//'Exponential Map                       : ', ioreal, 3, "(3(F8.4,' '))")
+  call WriteValue(trim(pret)//'Stereographic                    : ', ioreal, 3, "(3(F8.4,' '))")
+  ioreal(1:3) = o%rvmap
+  call WriteValue(trim(pret)//'Rotation vector map              : ', ioreal, 3, "(3(F8.4,' '))")
   ioreal(1:3) = o%om(1,1:3)
   call WriteValue('                                   / ', ioreal, 3, "(2(F8.4,' '),F8.4,' \')")
   ioreal(1:3) = o%om(2,1:3)

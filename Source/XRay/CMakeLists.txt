@@ -36,5 +36,15 @@ if(EMsoft_ENABLE_HDF5_SUPPORT)
                       INSTALL_PROGRAM TRUE
                       INCLUDE_DIRS ${EMsoftLib_BINARY_DIR} ${EMsoftHDFLib_BINARY_DIR} ${EMsoft_BINARY_DIR}/EMsoftLib
                       )
+
+  Add_EMsoft_Executable(TARGET EMLaueSlit
+                      SOURCES ${APP_DIR}/EMLaueSlit.f90
+                      LINK_LIBRARIES ${EXE_LINK_LIBRARIES}  
+                      TEMPLATE ${TMPLT_DIR}/EMLaue.template
+                      SOLUTION_FOLDER EMsoftPublic/XRay
+                      INSTALL_PROGRAM TRUE
+                      INCLUDE_DIRS ${EMsoftLib_BINARY_DIR} ${EMsoftHDFLib_BINARY_DIR} ${EMsoft_BINARY_DIR}/EMsoftLib
+                      )
+
 endif()
 

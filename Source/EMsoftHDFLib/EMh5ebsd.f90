@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2016-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2016-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -663,18 +663,38 @@ hdferr = HDF_createGroup(groupname, HDF_head)
 ! software, so we do not necessarily have to fill them in here.
 
 ! lattice parameters [in Angstrom]
-dataset = 'Lattice Constant a'
-hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(1))*10.0, HDF_head)
-dataset = 'Lattice Constant b'
-hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(2))*10.0, HDF_head)
-dataset = 'Lattice Constant c'
-hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(3))*10.0, HDF_head)
-dataset = 'Lattice Constant alpha'
-hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(4)), HDF_head)
-dataset = 'Lattice Constant beta'
-hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(5)), HDF_head)
-dataset = 'Lattice Constant gamma'
-hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(6)), HDF_head)
+if(size(cellparams) .eq. 6) then
+        dataset = 'Lattice Constant a'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(1))*10.0, HDF_head)
+        dataset = 'Lattice Constant b'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(2))*10.0, HDF_head)
+        dataset = 'Lattice Constant c'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(3))*10.0, HDF_head)
+        dataset = 'Lattice Constant alpha'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(4)), HDF_head)
+        dataset = 'Lattice Constant beta'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(5)), HDF_head)
+        dataset = 'Lattice Constant gamma'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(6)), HDF_head)
+else if(size(cellparams) .eq. 5) then ! this is case of 2D quasicrystal
+        dataset = 'Lattice Constant a_i, i=1,2,3,4'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(1))*10.0, HDF_head)
+        dataset = 'Lattice Constant a_5'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(2))*10.0, HDF_head)
+        dataset = 'Lattice Constant alpha_ij i,j=1,2,3,4'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(3)), HDF_head)
+        dataset = 'Lattice Constant alpha_i5 i=1,2,3,4'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(4)), HDF_head)
+        dataset = 'Lattice Constant alpha*_ij i,j=1,2,3,4'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(5)), HDF_head)
+else if(size(cellparams) .eq. 3) then ! case of icosahedral quasicrystal
+        dataset = 'Lattice Constant a_i'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(1))*10.0, HDF_head)
+        dataset = 'Lattice Constant alpha_ij'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(2)), HDF_head)
+        dataset = 'Lattice Constant alpha*_ij'
+        hdferr = HDF_writeDatasetFloat(dataset, sngl(cellparams(3)), HDF_head)
+end if
 
 allocate(stringarray(1))
 

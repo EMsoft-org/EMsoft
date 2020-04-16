@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -261,6 +261,13 @@ type LaueMasterNameListType
         real(kind=sgl)          :: lambdamax
         real(kind=dbl)          :: kappaVMF
         real(kind=dbl)          :: intfactor
+        character(3)            :: outformat
+        character(fnlen)        :: SHT_folder
+        character(fnlen)        :: SHT_formula
+        character(fnlen)        :: SHT_name
+        character(fnlen)        :: SHT_structuresymbol
+        character(fnlen)        :: addtoKiltHub
+        character(fnlen)        :: useDOI
         character(fnlen)        :: hdfname
         character(fnlen)        :: tiffname
         character(fnlen)        :: xtalname
@@ -285,6 +292,38 @@ type LaueNameListType
         character(fnlen)        :: hdfname
         character(fnlen)        :: xtalname
 end type LaueNameListType
+
+! namelist for the EMLaue program 
+type LaueSlitNameListType
+        real(kind=dbl)          :: Lw               ! slit width (mm)
+        real(kind=dbl)          :: Lh               ! slit height (mm)
+        real(kind=dbl)          :: Lx               ! distance front face of slit to divergent x-ray source (mm)
+        real(kind=dbl)          :: Ly               ! slit center x position (mm)
+        real(kind=dbl)          :: Lz               ! slit center y position (mm)
+        real(kind=dbl)          :: VoltageH         ! highest tube voltage     
+        real(kind=dbl)          :: VoltageL         ! lowest tube voltage     
+        real(kind=dbl)          :: Sx               ! distance from source to samplefront (mm)
+        real(kind=dbl)          :: sampletodetector ! distance sample front to detector face (mm)
+        real(kind=dbl)          :: samplethickness  ! sample thickness (mm)
+        real(kind=dbl)          :: ps               ! detector pixel size (mm)
+        integer(kind=irg)       :: Ny               ! number of detector pixels horizontally
+        integer(kind=irg)       :: Nz               ! number of detector pixels vertically
+        real(kind=dbl)          :: Dy               ! detector pattern center y coordinate  [mm]
+        real(kind=dbl)          :: Dz               ! detector pattern center z coordinate  [mm]
+        real(kind=dbl)          :: vs               ! size of the voxels that make up the sample (mm)
+        real(kind=dbl)          :: absl             ! sample absorption length [mm]
+        real(kind=dbl)          :: beamstopatf      ! beam stop attenuation factor
+        real(kind=sgl)          :: spotw
+        real(kind=sgl)          :: gammavalue
+        real(kind=dbl)          :: intcutoffratio
+        integer(kind=irg)       :: BPx
+        integer(kind=irg)       :: nthreads
+        character(fnlen)        :: backprojection
+        character(fnlen)        :: orientationfile
+        character(fnlen)        :: tiffprefix
+        character(fnlen)        :: hdfname
+        character(fnlen)        :: xtalname
+end type LaueSlitNameListType
 
 ! namelist for the EMMCLIPSS program ! PGC added 12/01/15
 type MCLIPSSNameListType
@@ -373,12 +412,18 @@ end type ConvertOrientationsNameListType
 type MCCLNameListType
         integer(kind=irg)       :: stdout
         integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: ivolx 
+        integer(kind=irg)       :: ivoly 
+        integer(kind=irg)       :: ivolz 
         integer(kind=irg)       :: globalworkgrpsz
         integer(kind=irg)       :: num_el
         integer(kind=irg)       :: totnum_el
         integer(kind=irg)       :: multiplier
         integer(kind=irg)       :: devid
         integer(kind=irg)       :: platid
+        real(kind=sgl)          :: ivolstepx 
+        real(kind=sgl)          :: ivolstepy 
+        real(kind=sgl)          :: ivolstepz 
         real(kind=dbl)          :: sig
         real(kind=dbl)          :: sigstart
         real(kind=dbl)          :: sigend
@@ -436,10 +481,25 @@ type EBSDMasterNameListType
         character(fnlen)        :: energyfile
         character(fnlen)        :: outname
         character(fnlen)        :: BetheParametersFile
+        logical                 :: useEnergyWeighting
         logical                 :: combinesites
         logical                 :: restart
         logical                 :: uniform
 end type EBSDMasterNameListType
+
+! namelist for the EMEECmaster program
+type EECMasterNameListType
+        integer(kind=irg)       :: npx
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: dmin
+        character(3)            :: Notify
+        character(fnlen)        :: mpfile
+        character(fnlen)        :: xtalname
+        character(fnlen)        :: BetheParametersFile
+        real(kind=sgl)          :: IsotopeSite(3)        
+        real(kind=sgl)          :: IsotopeEnergy
+        real(kind=sgl)          :: mfp
+end type EECMasterNameListType
 
 ! namelist for the EMEBSDmaster program
 type EBSDMasterSHTNameListType
@@ -542,6 +602,29 @@ type EBSDNameListType
         character(fnlen)        :: energyfile
         character(fnlen)        :: datafile
 end type EBSDNameListType
+
+! namelist for the EMEBSDdefect program
+type EBSDdefectNameListType
+        integer(kind=irg)       :: stdout
+        integer(kind=irg)       :: numsx
+        integer(kind=irg)       :: numsy
+        integer(kind=irg)       :: binning
+        integer(kind=irg)       :: nthreads
+        real(kind=sgl)          :: thetac
+        real(kind=sgl)          :: delta
+        real(kind=sgl)          :: omega
+        real(kind=sgl)          :: spotsize
+        real(kind=sgl)          :: gammavalue
+        real(kind=dbl)          :: beamcurrent
+        real(kind=dbl)          :: dwelltime
+        character(3)            :: scalingmode
+        logical                 :: sampleInteractionVolume
+        character(fnlen)        :: deformationfile
+        character(fnlen)        :: ivolfile
+        character(fnlen)        :: masterfile
+        character(fnlen)        :: datafile
+        character(fnlen)        :: tmpfspath
+end type EBSDdefectNameListType
 
 ! namelist for the EMEBSDFull program
 type EBSDFullNameListType
@@ -1046,7 +1129,6 @@ type ECCINameListType
     character(fnlen)        :: ECPname
     character(fnlen)        :: sgname
 end type ECCINameListType
-
 
 ! namelist for the EMsampleRFZ program
 type RFZNameListType

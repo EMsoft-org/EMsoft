@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -85,17 +85,18 @@ use,INTRINSIC :: ISO_C_BINDING
 
 IMPLICIT NONE
 
-integer(C_INT32_T),INTENT(OUT)            :: result
-character(fnlen)                          :: HDFfilename, tpn
-character(len=1)                          :: EMsoftnativedelimiter
-type(HDFobjectStackType)          :: HDF_head
-integer(kind=irg)                 :: hdferr
-integer                 :: dim1, dim2, dim3, dim4
-integer*4                         :: i1, i2, i3, i4
-character(fnlen)                  :: dataset
-character, DIMENSION(:), ALLOCATABLE :: array1
-character, DIMENSION(:, :), ALLOCATABLE :: array2
-character, DIMENSION(:, :, :), ALLOCATABLE :: array3
+integer(C_INT32_T),INTENT(OUT)                :: result
+character(fnlen)                              :: HDFfilename, tpn
+character(len=1)                              :: EMsoftnativedelimiter
+type(HDFobjectStackType)                      :: HDF_head
+integer(kind=irg)                             :: hdferr
+integer                                       :: dim1, dim2, dim3, dim4
+integer(HSIZE_T)                              :: dims1(1), dims2(2), dims3(3), dims4(4)
+integer*4                                     :: i1, i2, i3, i4
+character(fnlen)                              :: dataset
+character, DIMENSION(:), ALLOCATABLE          :: array1
+character, DIMENSION(:, :), ALLOCATABLE       :: array2
+character, DIMENSION(:, :, :), ALLOCATABLE    :: array3
 character, DIMENSION(:, :, :, :), ALLOCATABLE :: array4
 
 ! determine the pathname delimiter character
@@ -119,6 +120,11 @@ dim1 = 10
 dim2 = 10
 dim3 = 10
 dim4 = 20
+
+dims1 = (/ dim1 /)
+dims2 = (/ dim1, dim2 /)
+dims3 = (/ dim1, dim2, dim3 /)
+dims4 = (/ dim1, dim2, dim3, dim4 /)
 
 write (*,*) "Before Allocate"
 ALLOCATE (array1(dim1))
@@ -144,7 +150,7 @@ end do
 write (*,*) "Before Writing"
 
 dataset = 'char_1D'//CHAR(0)
-hdferr = HDF_writeDatasetCharArray1D(dataset, array1, dim1, HDF_head)
+hdferr = HDF_writeDatasetCharArray1D(dataset, array1, dims1, HDF_head)
 if(hdferr.lt.0) then
   result = -1000
   DEALLOCATE (array1)

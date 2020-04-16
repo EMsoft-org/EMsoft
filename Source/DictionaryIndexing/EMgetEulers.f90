@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2015-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2015-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -161,9 +161,9 @@ if (refined.eqv..TRUE.) then
   call Message(' Extracting refined Euler angles from dot product file')
 else
   if (eunl%raddeg.eq.'deg') then 
-    euler_best(1:3,1:Nexp) = EBSDDIdata%EulerAngles(1:3,1:Nexp)
+    euler_best(1:3,1:Nexp) = EBSDDIdata%EulerAngles(1:3,1:Nexp)*180.0/cPi
   else
-    euler_best(1:3,1:Nexp) = EBSDDIdata%EulerAngles(1:3,1:Nexp)*cPi/180.0
+    euler_best(1:3,1:Nexp) = EBSDDIdata%EulerAngles(1:3,1:Nexp)
   end if 
   deallocate(EBSDDIdata%EulerAngles)
   call Message(' Extracting Euler angles from dot product file')
