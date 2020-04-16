@@ -57,18 +57,18 @@ IMPLICIT NONE
 integer(C_INT32_T),INTENT(OUT)  :: res
 
 type(unitcell)          :: cell
-integer(kind=irg)		:: i, j, k
-real(kind=dbl)			:: diff
-real(kind=sgl)			:: diffs
+integer(kind=irg)		    :: i, j, k
+real(kind=dbl)			    :: diff
+real(kind=sgl)			    :: diffs
 
 ! reference values
 real(kind=dbl),parameter:: eps = 1.0D-10
 real(kind=sgl),parameter:: epss = 1.0E-7
-real(kind=dbl)   		:: dmt_ref(3,3), rmt_ref(3,3), dsm_ref(3,3), rsm_ref(3,3), vol_ref
-real(kind=sgl)			:: trsps_ref(27)
-real(kind=dbl)			:: trspd_ref(27)
-real(kind=sgl)			:: tins(3), touts(3)
-real(kind=dbl)			:: tind(3), toutd(3)
+real(kind=dbl)   		    :: dmt_ref(3,3), rmt_ref(3,3), dsm_ref(3,3), rsm_ref(3,3), vol_ref
+real(kind=sgl)			    :: trsps_ref(27)
+real(kind=dbl)			    :: trspd_ref(27)
+real(kind=sgl)			    :: tins(3), touts(3)
+real(kind=dbl)			    :: tind(3), toutd(3), toutd2(3)
 character(1)            :: inspace(3), outspace(3)
 
 !===================================================
@@ -104,7 +104,7 @@ trspd_ref =  (/ 2.000000000000D+00,3.000000000000D+00,-4.000000000000D+00, &
                 0.947431464964D+01,0.128966052150D+02,-.143225696224D+02, &
                 2.000000000000D+00,3.000000000000D+00,-4.000000000000D+00, &
                 0.333333333333D+01,0.376407173429D+01,-.946833545571D+01, &
-                0.333333333333D+01,0.376407173429D+01,-.946833545571D+01, &
+                4.574537496651D+00,7.493418424301D+00,-6.050723356545D+00, &
                 0.120000000000D+01,0.231120373006D+01,-.102330548366D+01, &
                 2.000000000000D+00,3.000000000000D+00,-4.000000000000D+00 /)
 
@@ -226,6 +226,21 @@ do i=1,3
     end if
   end do
 end do
+
+! do a back and forth test 
+! d -> c -> d 
+call TransSpace(cell,tind,toutd,'d','c')
+call TransSpace(cell,toutd,toutd2,'c','d')
+write (*,*) tind
+write (*,*) toutd2
+
+call TransSpace(cell,tind,toutd,'r','c')
+call TransSpace(cell,toutd,toutd2,'c','r')
+write (*,*) tind
+write (*,*) toutd2
+
+
+
 !===================================================
 
 ! TransCoor 
