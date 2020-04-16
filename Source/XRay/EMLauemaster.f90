@@ -213,6 +213,8 @@ real(kind=dbl),allocatable      :: alm(:)
 if (lmnl%outformat.eq.'SHT') then 
   npx = 193
   layout = 'legendre'
+else 
+  npx = lmnl%npx
 end if 
 
 nullify(HDF_head%next)
@@ -270,7 +272,6 @@ call cpu_time(tstart)
 ! set the center eigenvalue to 0
   LegendreArray(npx) = 0.D0
   deallocate(diagonal, upd)
-
 
 ! the von Mises-Fisher distribution is defined by 
 !
@@ -411,7 +412,7 @@ deallocate(TIFF_image)
 !=============================================
 ! save everything to HDF5 file
   call timestamp(datestring=dstr, timestring=tstre)
-if (lmnl%outformat.eq.'lMP') then   ! regular master pattern HDF5 output
+if (lmnl%outformat.eq.'LMP') then   ! regular master pattern HDF5 output
   nullify(HDF_head%next)
 ! Initialize FORTRAN interface.
   call h5open_EMsoft(hdferr)

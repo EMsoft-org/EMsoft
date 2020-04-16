@@ -891,7 +891,15 @@ end if
 call Time_tick(tickstart)
 call Time_tick(tickstart2)
 
+! get the maximum number of available threads and check against
+! the requested number 
 if (trim(dinl%indexingmode).eq.'dynamic') then
+    if (OMP_GET_MAX_THREADS().lt.dinl%nthreads) then 
+       write (*,*) ' Number of threads requested : ', dinl%nthreads 
+       write (*,*) ' Number of threads available : ', OMP_GET_MAX_THREADS() 
+       dinl%nthreads = OMP_GET_MAX_THREADS()
+       write (*,*) ' --> setting thread number to : ',dinl%nthreads
+     end if 
     call OMP_SET_NUM_THREADS(dinl%nthreads)
     io_int(1) = dinl%nthreads
 else
