@@ -4279,12 +4279,13 @@ character(fnlen)        :: HDFstrings(10)
 
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, objective, outputfile, &
-                        stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, eulerconvention, masterfile, targetfile, bitdepth, &
-                        energyfile, beamcurrent, dwelltime, energymin, energymax, gammavalue, alphaBD, &
-                        scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
-                        applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
-                        maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, ipf_ht
+namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, &
+                         objective, outputfile, stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, &
+                         eulerconvention, masterfile, targetfile, bitdepth, energyfile, beamcurrent, dwelltime, energymin, &
+                         energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
+                         energyaverage, omega, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
+                         makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
+                         ipf_ht
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
