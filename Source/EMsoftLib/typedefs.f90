@@ -1905,6 +1905,8 @@ type EBSDDetectorType
         type(EBSDPixel),allocatable     :: detector(:,:) 
 end type EBSDDetectorType
 
+
+
 !=======================================
 !=======================================
 !=======================================

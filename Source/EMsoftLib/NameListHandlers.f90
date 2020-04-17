@@ -4187,6 +4187,273 @@ enl%tmpfspath = tmpfspath
 
 end subroutine GetEBSDdefectNameList
 
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:GetEBSDDENameList
+!
+!> @author Chaoyi Zhu/Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill de and enl structures
+!
+!> @param nmlfile namelist file name
+!> @param enl EBSD name list structure
+!> @param de differential evolution name list structure
+!> @date 01/30/20  CZ 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetEBSDDENameList(nmlfile, enl, de, p,initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetEBSDDENameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)             :: nmlfile
+type(EBSDDENameListType),INTENT(INOUT)  :: de
+type(EBSDNameListType),INTENT(INOUT)    :: enl
+type(EBSDDIpreviewNameListType),INTENT(INOUT)     :: p
+!f2py intent(in,out) ::  enl
+logical,OPTIONAL,INTENT(IN)             :: initonly
+
+logical                                 :: skipread = .FALSE.
+
+integer(kind=irg)        :: NP
+integer(kind=irg)        :: itermax
+integer(kind=irg)        :: strategy 
+integer(kind=irg)        :: refresh
+integer(kind=irg)        :: iwrite
+integer(kind=irg)        :: method(3)
+real(kind=sgl)           :: VTR 
+real(kind=sgl)           :: CR_XC
+real(kind=sgl)           :: F_XC
+real(kind=sgl)           :: F_CR
+real(kind=sgl)           :: XCmin(3)
+real(kind=sgl)           :: XCmax(3)
+integer(kind=irg)        :: objective
+character(fnlen)         :: outputfile
+integer(kind=irg)       :: stdout
+integer(kind=irg)       :: numsx
+integer(kind=irg)       :: numsy
+integer(kind=irg)       :: binning
+integer(kind=irg)       :: nthreads
+integer(kind=irg)       :: energyaverage
+integer(kind=irg)       :: maskradius
+integer(kind=irg)       :: nregions
+real(kind=sgl)          :: L
+real(kind=sgl)          :: thetac
+real(kind=sgl)          :: delta
+real(kind=sgl)          :: xpc
+real(kind=sgl)          :: ypc
+real(kind=sgl)          :: omega
+real(kind=sgl)          :: energymin
+real(kind=sgl)          :: energymax
+real(kind=sgl)          :: gammavalue
+real(kind=sgl)          :: alphaBD
+real(kind=sgl)          :: axisangle(4)
+real(kind=sgl)          :: hipassw
+real(kind=dbl)          :: Ftensor(3,3)
+real(kind=dbl)          :: beamcurrent
+real(kind=dbl)          :: dwelltime
+character(1)            :: includebackground
+character(1)            :: poisson
+character(1)            :: makedictionary
+character(1)            :: applyDeformation
+character(1)            :: maskpattern
+character(1)            :: spatialaverage
+character(3)            :: scalingmode
+character(3)            :: eulerconvention
+character(3)            :: outputformat
+character(5)            :: bitdepth
+character(fnlen)        :: anglefile
+character(fnlen)        :: anglefiletype
+character(fnlen)        :: masterfile
+character(fnlen)        :: targetfile
+character(fnlen)        :: energyfile  ! removed from template file 05/16/19 [MDG]
+
+integer(kind=irg)       :: patx
+integer(kind=irg)       :: paty
+integer(kind=irg)       :: ipf_wd
+integer(kind=irg)       :: ipf_ht
+character(fnlen)        :: inputtype
+character(fnlen)        :: HDFstrings(10)
+
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, objective, outputfile, &
+                        stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, eulerconvention, masterfile, targetfile, bitdepth, &
+                        energyfile, beamcurrent, dwelltime, energymin, energymax, gammavalue, alphaBD, &
+                        scalingmode, axisangle, nthreads, outputformat, maskpattern, energyaverage, omega, spatialaverage, &
+                        applyDeformation, Ftensor, includebackground, anglefiletype, makedictionary, hipassw, nregions, &
+                        maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, ipf_ht
+
+! set the input parameters to default values (except for xtalname, which must be present)
+                        
+NP=120
+itermax=200
+strategy=6
+refresh=500
+iwrite=7
+method=(/0,1,0/)
+VTR= -1e-4
+CR_XC=0.5
+F_XC=0.8
+F_CR=0.8
+XCmin=(/-0.002,-0.08,-0.01/)
+XCmax=(/0.002,0.08,0.01/)
+objective=1
+outputfile='undefined'
+stdout          = 6
+numsx           = 0             ! [dimensionless]
+numsy           = 0             ! [dimensionless]
+binning         = 1             ! binning mode  (1, 2, 4, or 8)
+L               = 20000.0       ! [microns]
+nthreads        = 1             ! number of OpenMP threads
+nregions        = 10            ! number of regions in adaptive histogram equalization
+energyaverage   = 0             ! apply energy averaging (1) or not (0); useful for dictionary computations
+thetac          = 0.0           ! [degrees]
+delta           = 25.0          ! [microns]
+xpc             = 0.0           ! [pixels]
+ypc             = 0.0           ! [pixels]
+omega           = 0.0
+energymin       = 15.0          ! minimum energy to consider
+energymax       = 30.0          ! maximum energy to consider
+gammavalue      = 1.0           ! gamma factor
+alphaBD         = 0.0           ! transfer lens barrel distortion parameter
+maskradius      = 240           ! mask radius
+hipassw         = 0.05          ! hi-pass filter radius
+axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotation
+Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
+beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
+dwelltime       = 100.0D0       ! in microseconds
+makedictionary  = 'y'
+poisson         = 'n'           ! apply poisson noise ? 
+includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
+applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
+maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
+scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
+eulerconvention = 'tsl'         ! convention for the first Euler angle ['tsl' or 'hkl']
+outputformat    = 'gui'         ! output format for 'bin' or 'gui' use
+bitdepth        = '8bit'        ! format for output; '8char' for [0..255], '##int' for integers, 'float' for floats
+! the '##int' notation stands for the actual bitdepth; all values are stored as 32bit integers, but they are scaled
+! from the float values to a maximum that is given by the first two digits, which indicate the bit depth; so, valid
+! values would be '10int' for a 10-bit integer scale, '16int' for a 16-bit integer scale, and so on.
+anglefile       = 'undefined'   ! filename
+anglefiletype   = 'orientations'! 'orientations' or 'orpcdef'
+masterfile      = 'undefined'   ! filename
+targetfile      = 'undefined'   ! filename
+energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
+spatialaverage  = 'n'
+patx = 1
+paty = 1
+ipf_wd = 100
+ipf_ht = 100
+inputtype = 'Binary'
+HDFstrings = ''
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=EBSDDEdata)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+! we no longer require the energyfile parameter, but for backwards compatibility
+! we still allow the user to include it (it doesn't do anything though)
+! if (trim(energyfile).eq.'undefined') then
+!  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
+! end if
+
+ if (trim(anglefile).eq.'undefined') then
+  call FatalError('GetEBSDDENameList:',' angle file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(masterfile).eq.'undefined') then
+  call FatalError('GetEBSDDENameList:',' master pattern file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(targetfile).eq.'undefined') then
+  call FatalError('GetEBSDDENameList:',' target pattern file name is undefined in '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDDENameList:',' pattern size numsx is zero '//nmlfile)
+ end if
+
+ if (numsx.eq.0) then 
+  call FatalError('GetEBSDDENameList:',' pattern size numsy is zero '//nmlfile)
+ end if
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the emnl fields
+de%outputfile=outputfile
+de%NP=NP
+de%itermax=itermax
+de%strategy=strategy
+de%refresh=refresh
+de%iwrite=iwrite
+de%method=method
+de%VTR=VTR
+de%CR_XC=CR_XC
+de%F_XC=F_XC
+de%F_CR=F_CR
+de%XCmin=XCmin
+de%XCmax=XCmax
+de%objective=objective
+enl%stdout = stdout
+enl%numsx = numsx
+enl%numsy = numsy
+enl%binning = binning
+enl%nregions = nregions
+enl%maskradius = maskradius
+enl%L = L
+enl%nthreads = nthreads
+enl%energyaverage = energyaverage
+enl%thetac = thetac
+enl%delta = delta
+enl%xpc = xpc
+enl%ypc = ypc
+enl%energymin = energymin
+enl%energymax = energymax
+enl%gammavalue = gammavalue
+enl%alphaBD = alphaBD
+enl%hipassw = hipassw
+enl%axisangle = axisangle
+enl%Ftensor = Ftensor
+enl%beamcurrent = beamcurrent
+enl%dwelltime = dwelltime
+enl%includebackground = includebackground
+enl%makedictionary = makedictionary
+enl%poisson = poisson
+enl%applyDeformation = applyDeformation
+enl%maskpattern = maskpattern
+enl%scalingmode = scalingmode
+enl%eulerconvention = eulerconvention
+enl%outputformat = outputformat
+enl%bitdepth = bitdepth
+enl%anglefile = anglefile
+enl%anglefiletype = anglefiletype
+enl%masterfile = masterfile
+enl%targetfile = targetfile
+! we require energyfile to be identical to masterfile, so the 
+! user definition, if any, in the namelist file is overwritten here...
+enl%energyfile = enl%masterfile       ! changed on 05/16/19 [MDG]
+enl%omega = omega
+enl%spatialaverage = spatialaverage
+
+p%patx = patx
+p%paty = paty
+p%ipf_wd = ipf_wd
+p%ipf_ht = ipf_ht
+p%inputtype = inputtype
+p%HDFstrings = HDFstrings
+
+end subroutine GetEBSDDENameList
+
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE:GetTKDNameList
