@@ -479,6 +479,17 @@ size_in_bytes_expt = Ne*correctsize*sizeof(correctsize)
 recordsize_correct = correctsize*4
 patsz              = correctsize
 
+write (*,*) 'Array size analysis'
+write (*,*) '==================='
+write (*,*) 'Ne           : ', Ne 
+write (*,*) 'Nd           : ', Nd 
+write (*,*) 'L            : ', L 
+write (*,*) 'size result array  : ', Ne * Nd * 4 
+write (*,*) 'size_in_bytes_dict : ', size_in_bytes_dict
+write (*,*) 'size_in_bytes_expt : ', size_in_bytes_expt
+
+write (*,*) 'Total allocations on GPU (Mb): ', (Ne*Nd*4 + size_in_bytes_expt + size_in_bytes_dict)/1024/1024
+
 
 if (trim(dinl%indexingmode).eq.'dynamic') then 
     !=====================================================
@@ -667,7 +678,7 @@ if (istat .ne. 0) stop 'Could not allocate arrays for masks'
 mask = 1.0
 masklin = 0.0
 
-allocate(imageexpt(L),imageexptflt(correctsize),imagedictflt(correctsize),imagedictfltflip(correctsize),stat=istat)
+allocate(imageexpt(L),imageexptflt(correctsize),stat=istat)
 allocate(tmpimageexpt(correctsize),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for reading experimental image patterns'
 imageexpt = 0.0
@@ -744,11 +755,11 @@ fdata = 0.D0
 ! are in the region of interest.  For now we get those from the nml until we actually 
 ! implement the HDF5 reading bit
 ! this portion of code was first tested in IDL.
-allocate(EBSDpatterninteger(binx,biny))
-EBSDpatterninteger = 0
-allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
-EBSDpatternad = 0.0
-EBSDpatternintd = 0.0
+! allocate(EBSDpatterninteger(binx,biny))
+! EBSDpatterninteger = 0
+! allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
+! EBSDpatternad = 0.0
+! EBSDpatternintd = 0.0
 
 !=====================================================
 ! determine loop variables to avoid having to duplicate 
@@ -956,11 +967,19 @@ dictionaryloop: do ii = 1,cratio+1
     end if
 
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, tock, ttime) &
-!$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt,imagedictfltflip)
+!$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt, imagedictfltflip)
 
-        TID = OMP_GET_THREAD_NUM()
+! allocate the local arrays that are used by each thread
+    allocate(EBSDpatterninteger(binx,biny))
+    EBSDpatterninteger = 0
+    allocate(EBSDpatternad(binx,biny),EBSDpatternintd(binx,biny))
+    EBSDpatternad = 0.0
+    EBSDpatternintd = 0.0
+    allocate(imagedictflt(correctsize),imagedictfltflip(correctsize))
 
-      if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' actual number of OpenMP threads  = ',OMP_GET_NUM_THREADS()
+    TID = OMP_GET_THREAD_NUM()
+
+    if ((ii.eq.1).and.(TID.eq.0)) write(*,*) ' actual number of OpenMP threads  = ',OMP_GET_NUM_THREADS()
 
 ! the master thread should be the one working on the GPU computation
 !$OMP MASTER
@@ -1178,6 +1197,8 @@ dictionaryloop: do ii = 1,cratio+1
     end if
    end if
 
+    deallocate(EBSDpatterninteger,EBSDpatternad,EBSDpatternintd,imagedictflt,imagedictfltflip)
+
 ! and we end the parallel section here (all threads will synchronize).
 !$OMP END PARALLEL
 
@@ -1348,7 +1369,6 @@ integer(c_intptr_t),target,INTENT(INOUT)            :: command_queue
 integer(c_int32_t)                                  :: ierr, ierr2, pcnt
 integer(c_intptr_t),target                          :: cl_result
 
-real(kind=4)                                        :: dicttranspose(Nd*correctsize)
 integer(kind=4),parameter                           :: iunit = 40
 character(fnlen)                                    :: info ! info about the GPU
 integer(kind=8),target                              :: globalsize(2),localsize(2)
