@@ -1055,9 +1055,8 @@ dictionaryloop: do ii = 1,cratio+1
 
       end do experimentalloop
 
-      ierr = clReleaseMemObject(cl_dict)
-      call CLerror_check('EBSDDISubroutine:clReleaseMemObject:cl_dict', ierr)
-
+      deallocate(dicttranspose)
+      
       io_real(1) = mvres
       io_real(2) = float(iii)/float(cratio)*100.0
       call WriteValue('',io_real,2,"(' max. dot product = ',F10.6,';',F6.1,'% complete')")
@@ -1103,10 +1102,9 @@ dictionaryloop: do ii = 1,cratio+1
       call timeproc(objAddress, cn, totn, ttime) 
       cn = cn + dn
 
-      deallocate(dicttranspose)
     end if
-!$OMP END MASTER
 
+!$OMP END MASTER
 
 ! here we carry out the dictionary pattern computation, unless we are in the ii=cratio+1 step
     if (ii.lt.cratio+1) then
@@ -1211,6 +1209,14 @@ dictionaryloop: do ii = 1,cratio+1
 if (cancelled.eqv..TRUE.) EXIT dictionaryloop
 
 end do dictionaryloop
+
+!-----
+ierr = clReleaseMemObject(cl_dict)
+call CLerror_check('EBSDDISubroutine:clReleaseMemObject:cl_dict', ierr)
+
+!-----
+ierr = clReleaseMemObject(cl_expt)
+call CLerror_check('EBSDDISubroutine:clReleaseMemObject:cl_expt', ierr)
 
 if (cancelled.eqv..FALSE.) then
 
