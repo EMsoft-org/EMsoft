@@ -1002,7 +1002,7 @@ dictionaryloop: do ii = 1,cratio+1
 
       ierr = clEnqueueWriteBuffer(command_queue, cl_dict, CL_TRUE, 0_8, size_in_bytes_dict, C_LOC(dicttranspose(1)), &
                                   0, C_NULL_PTR, C_NULL_PTR)
-      call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer', ierr)
+      call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer:cl_dict', ierr)
 
       mvres = 0.0
 
@@ -1017,7 +1017,7 @@ dictionaryloop: do ii = 1,cratio+1
 
         ierr = clEnqueueWriteBuffer(command_queue, cl_expt, CL_TRUE, 0_8, size_in_bytes_expt, C_LOC(expt(1)), &
                                     0, C_NULL_PTR, C_NULL_PTR)
-        call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer', ierr)
+        call CLerror_check('EBSDDISubroutine:clEnqueueWriteBuffer:cl_expt', ierr)
 
         call InnerProdGPU(cl_expt,cl_dict,Ne,Nd,correctsize,results,numd,dinl%devid,kernel,context,command_queue)
 
@@ -1054,9 +1054,6 @@ dictionaryloop: do ii = 1,cratio+1
         end if
 
       end do experimentalloop
-
-      ierr = clReleaseMemObject(cl_dict)
-      call CLerror_check('EBSDDISubroutine:clReleaseMemObject:cl_dict', ierr)
 
       io_real(1) = mvres
       io_real(2) = float(iii)/float(cratio)*100.0
