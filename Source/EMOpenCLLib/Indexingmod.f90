@@ -662,12 +662,11 @@ allocate(expt(Ne*correctsize),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for experimental patterns'
 expt = 0.0
 
-allocate(dict1(Nd*correctsize),dict2(Nd*correctsize),dicttranspose(Nd*correctsize),stat=istat)
+allocate(dict1(Nd*correctsize),dict2(Nd*correctsize),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for dictionary patterns'
 dict1 = 0.0
 dict2 = 0.0
 dict => dict1
-dicttranspose = 0.0
 
 allocate(results(Ne*Nd),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for results'
@@ -690,10 +689,9 @@ meandict = 0.0
 meanexpt = 0.0
 
 ! allocate(EBSDpattern(dinl%numsx,dinl%numsy),binned(binx,biny),stat=istat)
-allocate(EBSDpattern(binx,biny),binned(binx,biny),stat=istat)
+allocate(EBSDpattern(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'Could not allocate array for EBSD pattern'
 EBSDpattern = 0.0
-binned = 0.0
 
 allocate(resultarray(1:Nd),stat=istat)
 if (istat .ne. 0) stop 'could not allocate result arrays'
@@ -966,7 +964,7 @@ dictionaryloop: do ii = 1,cratio+1
       call WriteValue('Dictionaryloop index = ',io_int,1)
     end if
 
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, tock, ttime) &
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,iii,jj,ll,mm,pp,ierr,io_int, vlen, tock, ttime, dicttranspose, EBSDdictpatflt) &
 !$OMP& PRIVATE(binned, ma, mi, EBSDpatternintd, EBSDpatterninteger, EBSDpatternad, quat, imagedictflt, imagedictfltflip)
 
 ! allocate the local arrays that are used by each thread
@@ -993,6 +991,7 @@ dictionaryloop: do ii = 1,cratio+1
         end if
       end if
 
+      allocate(dicttranspose(Nd*correctsize))
       dicttranspose = 0.0
 
       do ll = 1,correctsize
@@ -1056,6 +1055,9 @@ dictionaryloop: do ii = 1,cratio+1
 
       end do experimentalloop
 
+      ierr = clReleaseMemObject(cl_dict)
+      call CLerror_check('EBSDDISubroutine:clReleaseMemObject:cl_dict', ierr)
+
       io_real(1) = mvres
       io_real(2) = float(iii)/float(cratio)*100.0
       call WriteValue('',io_real,2,"(' max. dot product = ',F10.6,';',F6.1,'% complete')")
@@ -1100,6 +1102,8 @@ dictionaryloop: do ii = 1,cratio+1
       end if 
       call timeproc(objAddress, cn, totn, ttime) 
       cn = cn + dn
+
+      deallocate(dicttranspose)
     end if
 !$OMP END MASTER
 
@@ -1115,8 +1119,9 @@ dictionaryloop: do ii = 1,cratio+1
      end if
 
      if (trim(dinl%indexingmode).eq.'dynamic') then
-!$OMP DO SCHEDULE(DYNAMIC)
+      allocate(binned(binx,biny))
 
+!$OMP DO SCHEDULE(DYNAMIC)
       do pp = 1,ppend(ii)  !Nd or MODULO(FZcnt,Nd)
        if (cancelled.eqv..FALSE.) then
          binned = 0.0
@@ -1166,6 +1171,7 @@ dictionaryloop: do ii = 1,cratio+1
        end if
       end do
 !$OMP END DO
+      deallocate(binned)
     else  ! we are doing static indexing, so only 2 threads in total
 
 ! get a set of patterns from the precomputed dictionary file... 
@@ -1197,7 +1203,7 @@ dictionaryloop: do ii = 1,cratio+1
     end if
    end if
 
-    deallocate(EBSDpatterninteger,EBSDpatternad,EBSDpatternintd,imagedictflt,imagedictfltflip)
+   deallocate(EBSDpatterninteger,EBSDpatternad,EBSDpatternintd,imagedictflt,imagedictfltflip)
 
 ! and we end the parallel section here (all threads will synchronize).
 !$OMP END PARALLEL
