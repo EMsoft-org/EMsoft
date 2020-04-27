@@ -252,7 +252,8 @@ else()
 
   elseif (Fortran_COMPILER_NAME MATCHES "ifort.*")
   # First, Flags that should be used under any build condition
-    target_compile_options(EMsoftLib PUBLIC $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
+    target_compile_options(EMsoftLib PUBLIC 
+                                            #$<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
                                             $<$<COMPILE_LANGUAGE:Fortran>:-qopenmp>
                                             $<$<COMPILE_LANGUAGE:Fortran>:-assume byterecl>
                                             $<$<COMPILE_LANGUAGE:Fortran>:-stand f08 -diag-disable=7025>
