@@ -65,6 +65,7 @@ contains
 !> @param nmldeffile namelist filename
 !
 !> @date 09/23/19 MDG 1.0 reorganization of program structure
+!> @date 04/27/20 MDG 1.1 move array (de)allocation inside parallel region (resolves issue on Windows)
 !--------------------------------------------------------------------------
 subroutine EMEBSDrefinement(progname, ronl, nmldeffile)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMEBSDrefinement
@@ -104,82 +105,82 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-character(fnlen),INTENT(IN)             :: nmldeffile, progname
-type(RefineOrientationtype),INTENT(INOUT):: ronl
+character(fnlen),INTENT(IN)               :: nmldeffile, progname
+type(RefineOrientationtype),INTENT(INOUT) :: ronl
 
-character(fnlen)                        :: progdesc
-type(EBSDIndexingNameListType)          :: dinl
-type(MCCLNameListType)                  :: mcnl
-type(EBSDMasterNameListType)            :: mpnl
-type(EBSDNameListType)                  :: ebsdnl
-type(EBSDMCdataType)                    :: EBSDMCdata
-type(EBSDMPdataType)                    :: EBSDMPdata
-type(EBSDDetectorType)                  :: EBSDdetector
-type(EBSDDIdataType)                    :: EBSDDIdata
-
-logical                                 :: stat, readonly, noindex, ROIselected
-character(fnlen)                        :: dpfile, masterfile, energyfile
-integer(kind=irg)                       :: hdferr, ii, jj, kk, iii, istat, npy, jjj
-
-real(kind=dbl)                          :: misang       ! desired misorientation angle (degrees)
-integer(kind=irg)                       :: Nmis         ! desired number of sampling points along cube edge
-integer(kind=irg)                       :: CMcnt        ! number of entries in linked list
-type(FZpointd),pointer                  :: CMlist, CMtmp       ! pointer to start of linked list and temporary one
-real(kind=dbl)                          :: rhozero(4), hipassw
-
-real(kind=sgl),allocatable              :: euPS(:,:), euler_bestmatch(:,:,:), CIlist(:), CMarray(:,:,:)
-integer(kind=irg),allocatable           :: indexmain(:,:) 
-real(kind=sgl),allocatable              :: resultmain(:,:)                                         
-integer(HSIZE_T)                        :: dims(1),dims2D(2),dims3(3),offset3(3) 
+character(fnlen)                          :: progdesc
+type(EBSDIndexingNameListType)            :: dinl
+type(MCCLNameListType)                    :: mcnl
+type(EBSDMasterNameListType)              :: mpnl
+type(EBSDNameListType)                    :: ebsdnl
+type(EBSDMCdataType)                      :: EBSDMCdata
+type(EBSDMPdataType)                      :: EBSDMPdata
+type(EBSDDetectorType)                    :: EBSDdetector
+type(EBSDDIdataType)                      :: EBSDDIdata
+  
+logical                                   :: stat, readonly, noindex, ROIselected
+character(fnlen)                          :: dpfile, masterfile, energyfile
+integer(kind=irg)                         :: hdferr, ii, jj, kk, iii, istat, npy, jjj
+  
+real(kind=dbl)                            :: misang       ! desired misorientation angle (degrees)
+integer(kind=irg)                         :: Nmis         ! desired number of sampling points along cube edge
+integer(kind=irg)                         :: CMcnt        ! number of entries in linked list
+type(FZpointd),pointer                    :: CMlist, CMtmp       ! pointer to start of linked list and temporary one
+real(kind=dbl)                            :: rhozero(4), hipassw
+  
+real(kind=sgl),allocatable                :: euPS(:,:), euler_bestmatch(:,:,:), CIlist(:), CMarray(:,:,:)
+integer(kind=irg),allocatable             :: indexmain(:,:) 
+real(kind=sgl),allocatable                :: resultmain(:,:)                                         
+integer(HSIZE_T)                          :: dims(1),dims2D(2),dims3(3),offset3(3) 
 
 character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
-character(fnlen)                        :: dataset, groupname  
-character(fnlen)                        :: ename, fname    
-character(2)                            :: anglemode
-real(kind=dbl),parameter                :: nAmpere = 6.241D+18   ! Coulomb per second
-
-integer(c_size_t),allocatable           :: IPAR2(:)
-real(kind=dbl),allocatable              :: X(:), XL(:), XU(:)
-real(kind=sgl),allocatable              :: INITMEANVAL(:)
-real(kind=dbl)                          :: RHOBEG, RHOEND
-integer(kind=irg)                       :: NPT, N, IPRINT, NSTEP, NINIT
-integer(kind=irg),parameter             :: MAXFUN = 10000
-logical                                 :: verbose
-
-logical                                 :: f_exists, init, g_exists, overwrite
-integer(kind=irg),parameter             :: iunitexpt = 41, itmpexpt = 42
-integer(kind=irg)                       :: binx, biny, recordsize, pos(2)
-real(kind=sgl),allocatable              :: tmpimageexpt(:), EBSDPattern(:,:), imageexpt(:), mask(:,:), masklin(:)
-real(kind=sgl),allocatable              :: imagedictflt(:), exppatarray(:)
-real(kind=sgl),allocatable              :: EBSDpatternintd(:,:), binned(:,:), euler_best(:,:)
-real(kind=sgl),allocatable              :: epatterns(:,:)
-integer(kind=irg),allocatable           :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:), Rvar(:)
-type(C_PTR)                             :: planf, HPplanf, HPplanb
-integer(kind=8)                         :: size_in_bytes_dict,size_in_bytes_expt
-
-real(kind=dbl)                          :: w, Jres, nel, emult 
-real(kind=dbl)                          :: stpsz, cu0(3)
-real(kind=dbl),allocatable              :: cubneighbor(:,:)
-real(kind=sgl)                          :: quat(4), quat2(4), ma, mi, dp, tstart, tstop, io_real(4), tmp, &
-                                           vlen, avec(3), dtor
-real(kind=dbl)                          :: qu(4), rod(4) 
-integer(kind=irg)                       :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tickstart, ierr, L, nvar, niter
-integer(kind=irg)                       :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2), correctsize, totnumexpt
-
-real(kind=dbl)                          :: prefactor, F, angleaxis(4)
-real(kind=sgl),allocatable              :: quPS(:,:), axPS(:,:), dpPS(:,:), eulerPS(:,:,:)
-real(kind=dbl)                          :: ratioE, eurfz(3), euinp(3)
-integer(kind=irg)                       :: cratioE, fratioE, eindex, jjend, iiistart, iiiend, Nd, Ne, patsz, pp
-integer(kind=irg),allocatable           :: ppendE(:)
-real(kind=sgl),allocatable              :: exptpatterns(:,:)
-
-real(kind=sgl),allocatable              :: STEPSIZE(:), OSMmap(:,:), IQmap(:)
-type(dicttype),pointer                  :: dict
-integer(kind=irg)                       :: FZtype, FZorder
-character(fnlen)                        :: modalityname
-
-type(HDFobjectStackType)                :: HDF_head
-type(unitcell)                          :: cell
+character(fnlen)                          :: dataset, groupname  
+character(fnlen)                          :: ename, fname    
+character(2)                              :: anglemode
+real(kind=dbl),parameter                  :: nAmpere = 6.241D+18   ! Coulomb per second
+  
+integer(c_size_t),allocatable             :: IPAR2(:)
+real(kind=dbl),allocatable                :: X(:), XL(:), XU(:)
+real(kind=sgl),allocatable                :: INITMEANVAL(:)
+real(kind=dbl)                            :: RHOBEG, RHOEND
+integer(kind=irg)                         :: NPT, N, IPRINT, NSTEP, NINIT
+integer(kind=irg),parameter               :: MAXFUN = 10000
+logical                                   :: verbose
+  
+logical                                   :: f_exists, init, g_exists, overwrite
+integer(kind=irg),parameter               :: iunitexpt = 41, itmpexpt = 42
+integer(kind=irg)                         :: binx, biny, recordsize, pos(2)
+real(kind=sgl),allocatable                :: tmpimageexpt(:), mask(:,:), masklin(:)
+real(kind=sgl),allocatable                :: imagedictflt(:), exppatarray(:)
+real(kind=sgl),allocatable                :: EBSDpatternintd(:,:), binned(:,:), euler_best(:,:)
+real(kind=sgl),allocatable                :: epatterns(:,:)
+integer(kind=irg),allocatable             :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:), Rvar(:)
+type(C_PTR)                               :: planf, HPplanf, HPplanb
+integer(kind=8)                           :: size_in_bytes_dict,size_in_bytes_expt
+  
+real(kind=dbl)                            :: w, Jres, nel, emult 
+real(kind=dbl)                            :: stpsz, cu0(3)
+real(kind=dbl),allocatable                :: cubneighbor(:,:)
+real(kind=sgl)                            :: quat(4), quat2(4), ma, mi, dp, tstart, tstop, io_real(4), tmp, &
+                                             vlen, avec(3), dtor
+real(kind=dbl)                            :: qu(4), rod(4) 
+integer(kind=irg)                         :: ipar(10), Emin, Emax, nthreads, TID, io_int(2), tickstart, ierr, L, nvar, niter
+integer(kind=irg)                         :: ll, mm, jpar(7), Nexp, pgnum, FZcnt, nlines, dims2(2), correctsize, totnumexpt
+  
+real(kind=dbl)                            :: prefactor, F, angleaxis(4)
+real(kind=sgl),allocatable                :: quPS(:,:), axPS(:,:), dpPS(:,:), eulerPS(:,:,:)
+real(kind=dbl)                            :: ratioE, eurfz(3), euinp(3)
+integer(kind=irg)                         :: cratioE, fratioE, eindex, jjend, iiistart, iiiend, Nd, Ne, patsz, pp
+integer(kind=irg),allocatable             :: ppendE(:)
+real(kind=sgl),allocatable                :: exptpatterns(:,:)
+  
+real(kind=sgl),allocatable                :: STEPSIZE(:), OSMmap(:,:), IQmap(:)
+type(dicttype),pointer                    :: dict
+integer(kind=irg)                         :: FZtype, FZorder
+character(fnlen)                          :: modalityname
+  
+type(HDFobjectStackType)                  :: HDF_head
+type(unitcell)                            :: cell
 
 dtor = sngl(cPi) / 180.0
 
@@ -491,21 +492,6 @@ allocate(mask(binx,biny),masklin(binx*biny))
 mask = 1.0
 masklin = 0.0
 
-allocate(EBSDPattern(binx,biny),tmpimageexpt(binx*biny),imageexpt(binx*biny),binned(binx,biny))
-EBSDPattern = 0.0
-tmpimageexpt = 0.0
-imageexpt = 0.0
-binned = 0.0
-
-
-allocate(EBSDpatternintd(binx,biny),EBSDpatterninteger(binx,biny),EBSDpatternad(binx,biny))
-EBSDpatternintd = 0.0
-EBSDpatterninteger = 0
-EBSDpatternad = 0.0
-
-allocate(imagedictflt(binx*biny))
-imagedictflt = 0.0
-
 !===============================================================
 ! define the circular mask if necessary and convert to 1D vector
 !===============================================================
@@ -620,6 +606,16 @@ if (ronl%method.eq.'FIT') then
     !$OMP& PRIVATE(EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt,kk,ll,mm) &
     !$OMP& PRIVATE(X,INITMEANVAL,dpPS,eulerPS,eurfz,euinp,pos)
          
+          allocate(tmpimageexpt(binx*biny),binned(binx,biny))
+          allocate(EBSDpatternintd(binx,biny),EBSDpatterninteger(binx,biny),EBSDpatternad(binx,biny))
+          allocate(imagedictflt(binx*biny))
+          tmpimageexpt = 0.0
+          binned = 0.0
+          EBSDpatternintd = 0.0
+          EBSDpatterninteger = 0
+          EBSDpatternad = 0.0
+          imagedictflt = 0.0
+
           TID = OMP_GET_THREAD_NUM()
 
     !$OMP DO SCHEDULE(DYNAMIC)
@@ -687,6 +683,9 @@ if (ronl%method.eq.'FIT') then
 
         end do
     !$OMP END DO
+
+        deallocate(tmpimageexpt,binned,EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt)
+
     !$OMP END PARALLEL
      
     end do
@@ -697,11 +696,13 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
         stpsz = LPs%ap/2.D0/dinl%ncubochoric/2.D0
 
         if (ronl%inRAM.eqv..FALSE.) then
+            allocate(tmpimageexpt(binx*biny))
             do jj = 1,ppendE(iii)
                 eindex = (iii - 1)*dinl%numexptsingle + jj
                 read(itmpexpt,rec=eindex) tmpimageexpt
                 exptpatterns(1:binx*biny,jj) = tmpimageexpt(1:binx*biny)
             end do
+            deallocate(tmpimageexpt)
         end if
 
         do kk = 1,niter
@@ -713,8 +714,18 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(ii,tmpimageexpt,jj,quat,binned,ma,mi,eindex) &
     !$OMP& PRIVATE(EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt,ll,mm,dp) &
     !$OMP& PRIVATE(cubneighbor,cu0)
-    !$OMP DO SCHEDULE(DYNAMIC)
 
+            allocate(tmpimageexpt(binx*biny),binned(binx,biny))
+            allocate(EBSDpatternintd(binx,biny),EBSDpatterninteger(binx,biny),EBSDpatternad(binx,biny))
+            allocate(imagedictflt(binx*biny))
+            tmpimageexpt = 0.0
+            binned = 0.0
+            EBSDpatternintd = 0.0
+            EBSDpatterninteger = 0
+            EBSDpatternad = 0.0
+            imagedictflt = 0.0
+
+    !$OMP DO SCHEDULE(DYNAMIC)
             do ii = 1,ppendE(iii)
 
                eindex = (iii - 1)*dinl%numexptsingle + ii
@@ -774,6 +785,9 @@ else  ! sub-divide the cubochoric grid in half steps and determine for which gri
             end do
 
     !$OMP END DO
+
+            deallocate(tmpimageexpt,binned,EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt)
+
     !$OMP END PARALLEL
 
         stpsz = stpsz/2.D0
