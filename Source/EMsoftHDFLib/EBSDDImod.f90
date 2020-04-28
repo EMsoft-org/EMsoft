@@ -412,7 +412,6 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     if ((anglemode.ne.'ax').and.(anglemode.ne.'eu')) call FatalError('EMFitOrientationPS','angle type must be eu or ax')
     read (53,*) nvar
     nvar = nvar + 1     ! identity operation is first entry
-    allocate(dpPS(ronl%matchdepth, nvar),eulerPS(3, ronl%matchdepth, nvar))
 
     if (anglemode.eq.'ax') then 
     ! allocate some arrays
@@ -467,7 +466,7 @@ if (trim(ronl%PSvariantfile).ne.'undefined') then
     call Message('--------')
 else  ! there are no pseudo-symmetric variants in this run
     nvar = 1     ! identity operation is the only entry
-    allocate(dpPS(ronl%matchdepth, nvar),eulerPS(3, ronl%matchdepth, nvar), quPS(4,nvar))
+    allocate(quPS(4,nvar))
     quPS(1:4,1) = (/  1.0, 0.0, 0.0, 0.0 /)
 end if 
 !=====================================================
@@ -558,16 +557,12 @@ end if
 !===================================================================================
 !===============BOBYQA VARIABLES====================================================
 !===================================================================================
+! these are shared by all threads
 N = 3
-allocate(X(N),XL(N),XU(N),INITMEANVAL(N),STEPSIZE(N))
-
-XL = 0.D0
-XU = 1.D0
 RHOBEG = 0.1D0
 RHOEND = 0.0001D0
 IPRINT = 0
 NPT = N + 6
-STEPSIZE = ronl%step
 verbose = .FALSE.
 
 if (ronl%inRAM.eqv..FALSE.) then
@@ -604,8 +599,15 @@ if (ronl%method.eq.'FIT') then
         
     !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID,ii,tmpimageexpt,jj,quat,quat2,binned,ma,mi,eindex) &
     !$OMP& PRIVATE(EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt,kk,ll,mm) &
-    !$OMP& PRIVATE(X,INITMEANVAL,dpPS,eulerPS,eurfz,euinp,pos)
-         
+    !$OMP& PRIVATE(X,XL,XU,STEPSIZE,INITMEANVAL,dpPS,eulerPS,eurfz,euinp,pos)
+          
+          allocate(X(N),XL(N),XU(N),INITMEANVAL(N),STEPSIZE(N))
+          XL = 0.D0
+          XU = 1.D0
+          STEPSIZE = ronl%step         
+
+          allocate(dpPS(ronl%matchdepth, nvar),eulerPS(3, ronl%matchdepth, nvar))
+
           allocate(tmpimageexpt(binx*biny),binned(binx,biny))
           allocate(EBSDpatternintd(binx,biny),EBSDpatterninteger(binx,biny),EBSDpatternad(binx,biny))
           allocate(imagedictflt(binx*biny))
@@ -685,6 +687,7 @@ if (ronl%method.eq.'FIT') then
     !$OMP END DO
 
         deallocate(tmpimageexpt,binned,EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt)
+        deallocate(X,XL,XU,INITMEANVAL,STEPSIZE, EulerPS, dpPS)
 
     !$OMP END PARALLEL
      
