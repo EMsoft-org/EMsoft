@@ -589,11 +589,13 @@ if (ronl%method.eq.'FIT') then
 
     do iii = 1,cratioE
         if (ronl%inRAM.eqv..FALSE.) then
+            allocate(tmpimageexpt(binx*biny))
             do jj = 1,ppendE(iii)
                 eindex = (iii - 1)*Ne + jj
                 read(itmpexpt,rec=eindex) tmpimageexpt
                 exptpatterns(1:binx*biny,jj) = tmpimageexpt(1:binx*biny)
             end do
+            deallocate(tmpimageexpt)
         end if
 
         
