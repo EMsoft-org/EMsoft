@@ -978,6 +978,337 @@ end subroutine getSingleExpPattern
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: GetMetaData
+!
+!> @author Chaoyi Zhu/Marc De Graef, Carnegie Mellon University
+!
+!> @brief read a list of metadat from the input file
+!
+!> @param enl EBSDNameListType
+!> @param angles a list of 
+!> @param numangle number of orientation data entry
+!> @param filename 
+!> @param inputtype
+!> @param funit logical unit for reading
+!> @param HDFstrings string array with group and dataset names for HDF5 input
+!
+!> @date 04/29/20 CZ 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine GetMetaData(enl, angles, numangle, filename, inputtype, funit, HDFstrings, istat)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetMetaData
+
+use local
+use typedefs
+use NameListTypedefs
+use error
+use HDF5
+use HDFsupport
+use io
+use ISO_C_BINDING
+use rotations
+use EBSDmod
+
+IMPLICIT NONE
+type(EBSDAngleType),INTENT(INOUT)       :: angles
+type(EBSDNameListType),INTENT(INOUT)    :: enl
+character(fnlen),INTENT(IN)             :: filename
+character(fnlen),INTENT(IN)             :: inputtype
+integer(kind=irg),INTENT(IN)            :: funit, numangle
+character(fnlen),INTENT(IN)             :: HDFstrings(10)
+
+
+real(kind=sgl), allocatable           	:: eu1(:), eu2(:), eu3(:)
+real(kind=dbl), allocatable 			:: Ftensor(:,:)
+real(kind=sgl), allocatable             :: eu(:,:)
+character(fnlen)                        :: ename
+integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
+                                           ios, up1header(4), version, patx, paty, myoffset, offset, istat, numangles, nlines
+character(fnlen)                        :: groupname, dataset, platform
+integer(HSIZE_T)                        :: dims1(1), dims2(2)
+real(kind=sgl),parameter                :: dtor = 0.0174533  ! convert from degrees to radians
+character(1,KIND=c_char),allocatable,TARGET            :: charac1(:)
+character(3,KIND=c_char),allocatable,TARGET            :: charac3(:)
+character(5,KIND=c_char),allocatable,TARGET            :: charac5(:)
+character(fnlen, KIND=c_char),allocatable,TARGET    :: stringarray(:)
+
+logical                                 :: f_exists
+
+istat = 0
+
+! first determine how many HDFgroups there are; the last entry in HDFstrings should be the data set name
+hdfnumg = get_num_HDFgroups(HDFstrings)
+itype = get_input_type(inputtype)
+
+if (filename(1:1).eq.EMsoft_getEMsoftnativedelimiter()) then
+  ename = trim(filename)
+else
+  ename = trim(EMsoft_getEMdatapathname())//trim(filename)
+  ename = EMsoft_toNativePath(ename)
+end if
+
+f_exists = .FALSE.
+inquire(file=trim(ename), exist=f_exists)
+
+if (.not.f_exists) then
+   call Message(' Input file '//trim(ename)//' does not exist in this location ... ')
+   call Message(' Please check the input parameters in the namelist file.')
+   call Message(' ')
+   call FatalError('GetMetaData','Unrecoverable error; file not found')
+end if
+
+call Message('Pattern input file '//trim(ename))
+call Message('  input file type '//trim(inputtype))
+
+platform = EMsoft_getEMsoftplatform()
+
+! depending on the inputtype, we open the input file in the appropriate way
+select case (itype)
+    case(1)  ! "Binary"
+        ! ! if (trim(platform).eq.'Windows') then
+        ! !     recordsize = L        ! windows record length is in units of 4 bytes
+        ! ! else
+            ! recordsize = L*4      ! all other platforms use record length in units of bytes
+        ! ! end if
+        ! open(unit=funit,file=trim(ename),&
+            ! status='old',form='unformatted',access='direct',recl=recordsize,iostat=ierr)
+        ! if (ierr.ne.0) then
+            ! io_int(1) = ierr
+            ! call WriteValue("File open error; error type ",io_int,1)
+            ! call FatalError("openExpPatternFile","Cannot continue program")
+        ! end if
+
+    case(2,3)  ! "TSLup1", TSLup2"
+        ! ! open the file in STREAM access mode to allow for byte-level access
+        ! open(unit=funit,file=trim(ename), status='old',access='stream',iostat=ios)
+        ! if (ios.ne.0) then
+            ! io_int(1) = ios
+            ! call WriteValue("File open error; error type ",io_int,1)
+            ! call FatalError("openExpPatternFile","Cannot continue program")
+        ! end if
+        ! ! the first four 4-byte entries form a header with a version number (unimportant), then 
+        ! ! the two dimensions of patterns, and finally an offset parameter indicating at which byte
+        ! ! the first pattern starts.  We don't really need the other parameters, but we'll read them anyway.
+        ! read(unit=funit, iostat=ios) version, patx, paty, myoffset
+        ! offset = myoffset + 1_ill
+        ! if (ios.ne.0) then
+            ! io_int(1) = ios
+            ! call WriteValue("Read error in .up1/2 file header",io_int,1)
+            ! call FatalError("openExpPatternFile","Cannot continue program")
+        ! end if
+
+    case(5)  ! "OxfordBinary"
+        ! ! open the file in STREAM access mode to allow for byte-level access
+        ! open(unit=funit,file=trim(ename), status='old',access='stream',iostat=ios)
+        ! if (ios.ne.0) then
+            ! io_int(1) = ios
+            ! call WriteValue("File open error; error type ",io_int,1)
+            ! call FatalError("openExpPatternFile","Cannot continue program")
+        ! end if
+
+    case(6)  ! "OxfordHDF"
+        call FatalError("openExpPatternFile","OxfordHDF input format not yet implemented")
+! at this point in time (Feb. 2018) it does not appear that the Oxford HDF5 format has the 
+! patterns stored in it... Hence this option is currently non-existent.
+
+    !case(4, 7, 10, 11)  ! "TSLHDF", "EMEBSD"
+      case(4)
+        nullify(pmHDF_head%next)
+        ! open the file
+        hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
+        if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+        ! open all the groups to the correct level of the data set
+        do i=1,hdfnumg
+            groupname = trim(HDFstrings(i))
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+            if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
+        end do
+        groupname = 'EBSD'
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+        groupname = 'Data'
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+            allocate(eu1(numangle),eu2(numangle),eu3(numangle), eu(numangle,3))
+            dataset = 'Phi'
+            call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
+            dataset = 'Phi1'
+            call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
+            dataset = 'Phi2'
+            call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
+           eu(:,1)=eu1
+		   eu(:,2)=eu2
+		   eu(:,3)=eu3
+            do i=1,numangles
+              angles%quatang(1:4,i) = eu2qu(eu(i,1:3)*dtor)
+            end do
+			deallocate(eu1, eu2, eu3)
+        call HDF_pop(pmHDF_head)
+        groupname = 'Header'
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+        
+        dataset = 'Camera Elevation Angle'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
+        dataset = 'Camera Azimuthal Angle'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%omega)
+        groupname = 'Pattern Center Calibration'
+            hdferr = HDF_openGroup(groupname, pmHDF_head)
+        dataset = 'x-star'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
+         dataset = 'y-star'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)		
+        dataset = 'z-star'
+         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
+         call HDF_pop(pmHDF_head)
+         nullify(pmHDF_head%next)
+        ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
+        ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
+    case(7, 10, 11)  !  "EMEBSD"
+    
+          nullify(pmHDF_head%next)
+          ! open the file
+          hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
+          if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+          ! open all the groups to the correct level of the data set
+          ! do i=1,hdfnumg
+          !     groupname = trim(HDFstrings(i))
+          !     hdferr = HDF_openGroup(groupname, pmHDF_head)
+          !     if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
+          ! end do
+        groupname = 'EMData'
+          hdferr = HDF_openGroup(groupname, pmHDF_head)
+      groupname = 'EBSD'
+          hdferr = HDF_openGroup(groupname, pmHDF_head)
+          dataset = 'EulerAngles'
+		  allocate(eu(numangle,3))
+      call HDF_readDatasetFloatArray2D(dataset,dims2, pmHDF_head, hdferr, eu)
+      do i=1,numangles
+        angles%quatang(1:4,i) = eu2qu(eu(i,1:3)*dtor)
+      end do
+	  deallocate(eu)
+      call HDF_pop(pmHDF_head)
+      call HDF_pop(pmHDF_head)
+      groupname = 'NMLparameters'
+          hdferr = HDF_openGroup(groupname, pmHDF_head)
+      groupname = 'EBSDNameList'
+          hdferr = HDF_openGroup(groupname, pmHDF_head)
+
+
+          dataset = 'xpc'
+          call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
+          dataset = 'ypc'
+          call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)		
+          dataset = 'L'
+                 call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
+          dataset = 'Ftensor'
+		  allocate(Ftensor(3,3))
+                  call HDF_readDatasetDoubleArray2D(dataset, dims2, pmHDF_head, hdferr, Ftensor)
+				  enl%Ftensor=Ftensor
+          dataset = 'thetac'
+                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
+          dataset = 'delta'
+                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%delta)
+          !dataset = 'omega'
+          !        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%omega)
+          dataset = 'alphaBD'
+                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%alphaBD)
+          dataset = 'energymin'
+                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymin)
+          dataset = 'energymax'
+                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymax)
+          dataset = 'includebackground'
+                  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+				  enl%includebackground=trim(stringarray(1))
+				  deallocate(stringarray)
+          dataset = 'anglefile'
+                  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+				  enl%anglefile=trim(stringarray(1))
+				  deallocate(stringarray)
+				  
+          dataset = 'anglefiletype'
+                  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+				  enl%anglefiletype=trim(stringarray(1))
+				  deallocate(stringarray)
+				  
+          dataset = 'eulerconvention'
+                  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
+				  enl%eulerconvention=trim(stringarray(1))
+				  deallocate(stringarray)
+				  
+          dataset = 'bitdepth'
+                  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, charac5)
+				  enl%bitdepth=trim(charac5(1))
+				  deallocate(charac5)
+          dataset = 'dwelltime'
+                  call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%dwelltime)
+          dataset = 'poisson'
+                  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, charac1)
+				  enl%poisson=trim(charac1(1))
+				  deallocate(charac1)
+				  
+          dataset = 'binning'
+                  call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%binning)
+          dataset = 'applyDeformation'
+                  call HDF_readDatasetStringArray(dataset,nlines, pmHDF_head, hdferr, stringarray)
+				  enl%applyDeformation=trim(stringarray(1))
+				  deallocate(stringarray)
+				  
+          dataset = 'scalingmode'
+                  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, charac3)		
+				   enl%scalingmode=trim(charac3(1))
+				  deallocate(charac3)
+          dataset = 'gammavalue'
+                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%gammavalue)	
+                  call HDF_pop(pmHDF_head)
+                  call HDF_pop(pmHDF_head)
+                  nullify(pmHDF_head%next)
+    case(8)  !  "BrukerHDF"
+        ! nullify(pmHDF_head%next)
+        ! ! open the file
+        ! hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
+        ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
+
+        ! ! open all the groups to the correct level of the data set
+        ! do i=1,hdfnumg
+            ! groupname = trim(HDFstrings(i))
+            ! hdferr = HDF_openGroup(groupname, pmHDF_head)
+            ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
+            ! !  this part is different from the other vendors: the patterns are not necessarily in the correct order 
+            ! !  so we need to read the reordering arrays here...  The reordering arrays are always in the SEM group,
+            ! !  which is one level down from the top (i.e., where we are right now).  Both arrays have the SAVE attribute.
+            ! if (i.eq.1) then 
+               ! groupname = 'SEM'
+               ! hdferr = HDF_openGroup(groupname, pmHDF_head)
+               ! dataset = 'SEM IX'
+               ! call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semix)
+               ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IX array')
+               ! dataset = 'SEM IY'
+               ! call HDF_readDatasetIntegerArray1D(dataset, semixydims, pmHDF_head, hdferr, semiy)
+               ! if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_readDatasetIntegerArray1D: problem reading SEM IY array')
+               ! call invert_ordering_arrays(npat)
+               ! call Message('  found pattern reordering arrays')
+               ! ! and leave this group
+               ! call HDF_pop(pmHDF_head)
+            ! end if
+        ! end do
+        ! ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
+        ! ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module
+
+    case(9)  !  "NORDIF"
+        ! open(unit=funit, file=trim(ename), status='old', access='stream', &
+            ! iostat=ios)
+        ! if (ios.ne.0) then
+            ! io_int(1) = ios
+            ! call WriteValue("File open error; error type ", io_int, 1)
+            ! call FatalError("openExpPatternFile", "Cannot continue program")
+        ! end if
+
+    case default 
+        istat = -1
+
+end select
+
+end subroutine GetMetaData
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: closeExpPatternFile
 !
 !> @author Marc De Graef, Carnegie Mellon University
