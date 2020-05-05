@@ -2659,7 +2659,7 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
 !f2py intent(in,out) ::  enl
 
-integer(kind=irg),parameter                           :: n_int = 8, n_real = 10
+integer(kind=irg),parameter                           :: n_int = 8, n_real = 11
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: t(1)
@@ -2686,7 +2686,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals 
 io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, &
-             enl%alphaBD, enl%hipassw /)
+             enl%alphaBD, enl%hipassw, enl%omega /)
 reallist(1) = 'L'
 reallist(2) = 'thetac'
 reallist(3) = 'delta'
@@ -2697,6 +2697,7 @@ reallist(7) = 'energymax'
 reallist(8) = 'gammavalue'
 reallist(9) = 'alphaBD'
 reallist(10)= 'hipassw'
+reallist(11)= 'omega'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! a 4-vector
