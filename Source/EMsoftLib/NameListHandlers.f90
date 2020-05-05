@@ -4268,6 +4268,7 @@ character(fnlen)        :: anglefile
 character(fnlen)        :: anglefiletype
 character(fnlen)        :: masterfile
 character(fnlen)        :: targetfile
+character(fnlen)        :: datafile
 character(fnlen)        :: energyfile  ! removed from template file 05/16/19 [MDG]
 
 integer(kind=irg)       :: patx
@@ -4276,7 +4277,7 @@ integer(kind=irg)       :: ipf_wd
 integer(kind=irg)       :: ipf_ht
 character(fnlen)        :: inputtype
 character(fnlen)        :: HDFstrings(10)
-
+character(fnlen)        :: HDFMetaDatastrings(10)
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, &
@@ -4285,7 +4286,7 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, omega, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht
+                         ipf_ht, HDFMetaDatastrings, datafile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
@@ -4342,14 +4343,16 @@ anglefile       = 'undefined'   ! filename
 anglefiletype   = 'orientations'! 'orientations' or 'orpcdef'
 masterfile      = 'undefined'   ! filename
 targetfile      = 'undefined'   ! filename
+datafile        = 'undefined'   ! filename
 energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
 spatialaverage  = 'n'
-patx = 1
-paty = 1
+patx = 0
+paty = 0
 ipf_wd = 100
 ipf_ht = 100
 inputtype = 'Binary'
 HDFstrings = ''
+HDFMetaDatastrings=''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4369,10 +4372,14 @@ if (.not.skipread) then
 !  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
 ! end if
 
- if (trim(anglefile).eq.'undefined') then
-  call FatalError('GetEBSDDENameList:',' angle file name is undefined in '//nmlfile)
+ ! if (trim(anglefile).eq.'undefined') then
+  ! call FatalError('GetEBSDDENameList:',' angle file name is undefined in '//nmlfile)
+ ! end if
+ 
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('GetEBSDDENameList:',' datafile name is undefined in '//nmlfile)
  end if
-
+ 
  if (trim(masterfile).eq.'undefined') then
   call FatalError('GetEBSDDENameList:',' master pattern file name is undefined in '//nmlfile)
  end if
@@ -4405,6 +4412,7 @@ de%F_CR=F_CR
 de%XCmin=XCmin
 de%XCmax=XCmax
 de%objective=objective
+de%HDFMetaDatastrings=HDFMetaDatastrings
 enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
@@ -4440,6 +4448,7 @@ enl%anglefile = anglefile
 enl%anglefiletype = anglefiletype
 enl%masterfile = masterfile
 enl%targetfile = targetfile
+enl%datafile = datafile
 ! we require energyfile to be identical to masterfile, so the 
 ! user definition, if any, in the namelist file is overwritten here...
 enl%energyfile = enl%masterfile       ! changed on 05/16/19 [MDG]
