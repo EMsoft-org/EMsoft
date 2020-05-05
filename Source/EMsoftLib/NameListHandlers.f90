@@ -4346,8 +4346,8 @@ targetfile      = 'undefined'   ! filename
 datafile        = 'undefined'   ! filename
 energyfile      = 'undefined'   ! name of file that contains energy histograms for all scintillator pixels (output from MC program)
 spatialaverage  = 'n'
-patx = 1
-paty = 1
+patx = 0
+paty = 0
 ipf_wd = 100
 ipf_ht = 100
 inputtype = 'Binary'
@@ -4372,10 +4372,14 @@ if (.not.skipread) then
 !  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
 ! end if
 
- if (trim(anglefile).eq.'undefined') then
-  call FatalError('GetEBSDDENameList:',' angle file name is undefined in '//nmlfile)
+ ! if (trim(anglefile).eq.'undefined') then
+  ! call FatalError('GetEBSDDENameList:',' angle file name is undefined in '//nmlfile)
+ ! end if
+ 
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('GetEBSDDENameList:',' datafile name is undefined in '//nmlfile)
  end if
-
+ 
  if (trim(masterfile).eq.'undefined') then
   call FatalError('GetEBSDDENameList:',' master pattern file name is undefined in '//nmlfile)
  end if
