@@ -517,8 +517,10 @@ end do
 !$OMP END DO
 
 !$OMP CRITICAL
+if (rnl%kinematical.eqv..TRUE.) then
   kinmasterNH = kinmasterNH + kinNH
   kinmasterSH = kinmasterSH + kinSH
+end if 
 !$OMP END CRITICAL
 
 !$OMP END PARALLEL
