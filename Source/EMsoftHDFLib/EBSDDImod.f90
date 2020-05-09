@@ -305,7 +305,8 @@ allocate(EBSDdetector%rgx(dinl%numsx,dinl%numsy), &
          EBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=istat)
 
 ! 4. copy a few parameters from dinl to enl, which is the regular EBSDNameListType structure
-! and then generate the detector arrays
+! and then generate the detector arrays; these are the generic arrays without pattern center 
+! correction.
 ebsdnl%numsx = dinl%numsx
 ebsdnl%numsy = dinl%numsy
 ebsdnl%xpc = dinl%xpc
@@ -529,6 +530,14 @@ else
   call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
 end if
 
+!===============================================================
+!========Pattern center correction parameters===================
+!===============================================================
+if (trim(dinl%PCcorrection).eq.'on') then 
+
+end if  
+
+
 !=================================
 !========LOOP VARIABLES===========
 !=================================
@@ -666,6 +675,43 @@ if (ronl%method.eq.'FIT') then
                                         EBSDdetector%rgx, EBSDdetector%rgy, EBSDdetector%rgz, STEPSIZE, dinl%gammavalue, verbose)
 
                     dpPS(kk,ll) = 1.D0 - F
+
+! do we need to perform a pattern center correction ?  This would be necessary for large area
+! scans.  First, we apply the equivalent rotation to the refined orientation, then we create a 
+! new set of detector arrays for this pattern center location, and we do another refinement step
+! to get the final corrected orientation.  At the end, we make sure the new orientation falls in 
+! the appropriate RFZ.
+                    if (trim(dinl%PCcorrection).eq.'on') then 
+! get the corrected pattern center coordinates
+
+! first undo the pattern center shift by an equivalent rotation (see J. Appl. Cryst. (2017). 50, 1664–1676)
+
+! generate the new detector arrays 
+
+! refine the orientation using the new detector array and initial orientation 
+                      INITMEANVAL(1:3) = eu2ho(eurfz(1:3)) 
+                      X = 0.5D0
+                      call bobyqa (IPAR2, INITMEANVAL, tmpimageexpt, N, NPT, X, XL,&
+                               XU, RHOBEG, RHOEND, IPRINT, MAXFUN, EMFitOrientationcalfunEBSD, EBSDdetector%accum_e_detector,&
+                               EBSDMPdata%mLPNH, EBSDMPdata%mLPSH, mask, prefactor, newrgx, newrgy, &
+                               newrgz, STEPSIZE, dinl%gammavalue, verbose)
+                  
+                      eulerPS(1:3,kk,ll) = ho2eu((/X(1)*2.0*STEPSIZE(1) - STEPSIZE(1) + INITMEANVAL(1), &
+                                                   X(2)*2.0*STEPSIZE(2) - STEPSIZE(2) + INITMEANVAL(2), &
+                                                   X(3)*2.0*STEPSIZE(3) - STEPSIZE(3) + INITMEANVAL(3)/)) * 180.0/cPi
+
+                      call EMFitOrientationcalfunEBSD(IPAR2, INITMEANVAL, tmpimageexpt, EBSDdetector%accum_e_detector, &
+                                          EBSDMPdata%mLPNH, EBSDMPdata%mLPSH, N, X, F, mask, prefactor, &
+                                          EBSDdetector%rgx, EBSDdetector%rgy, EBSDdetector%rgz, STEPSIZE, dinl%gammavalue, verbose)
+
+                      dpPS(kk,ll) = 1.D0 - F
+
+! and return this orientation to the RFZ
+                      euin(1:3) = eulerPS(1:3,kk,ll)
+                      call ReduceOrientationtoRFZ(euinp, dict, FZtype, FZorder, eurfz)
+                      eulerPS(1:3,kk,ll) = eurfz(1:3)
+                    end if 
+
                 end do
             end do
 
