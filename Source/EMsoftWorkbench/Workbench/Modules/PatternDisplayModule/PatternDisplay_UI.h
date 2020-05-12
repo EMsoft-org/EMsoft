@@ -129,8 +129,12 @@ protected:
    */
   void changeEvent(QEvent* event) override;
 
-protected slots:
+  /**
+   * @brief masterPathInitializationFinished
+   */
+  void masterPathInitializationFinished(const QJsonObject& obj);
 
+protected slots:
   /**
    * @brief generateEBSDPatternImage
    * @param data
@@ -179,7 +183,8 @@ signals:
   void patternNeedsGenerated(SimulatedPatternDisplayWidget::PatternDisplayData patternData, PatternDisplayController::DetectorData detectorData) const;
 
 private:
-    PatternDisplayController* m_Controller;
+  PatternDisplayController* m_Controller;
+  QSharedPointer<QThread> m_Thread = nullptr;
 
   SimulatedPatternDisplayWidget* m_PatternDisplayWidget = nullptr;
 
@@ -223,8 +228,8 @@ private:
   PatternDisplayController::DetectorData getDetectorData() const;
 
 public:
-  PatternDisplay_UI(const PatternDisplay_UI&) = delete; // Copy Constructor Not Implemented
-  PatternDisplay_UI(PatternDisplay_UI&&) = delete;      // Move Constructor Not Implemented
+  PatternDisplay_UI(const PatternDisplay_UI&) = delete;            // Copy Constructor Not Implemented
+  PatternDisplay_UI(PatternDisplay_UI&&) = delete;                 // Move Constructor Not Implemented
   PatternDisplay_UI& operator=(const PatternDisplay_UI&) = delete; // Copy Assignment Not Implemented
   PatternDisplay_UI& operator=(PatternDisplay_UI&&) = delete;      // Move Assignment Not Implemented
 };

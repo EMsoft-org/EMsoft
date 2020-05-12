@@ -1,0 +1,66 @@
+ &LaueSlitData
+! The line above must not be changed
+!
+! The values below are the default values for this program
+!
+!==========================================================
+! select the Laue projection mode 
+ projectionmode   = 'T',    ! 'B'= back-reflection; 'S' = side-reflection; 'T' = transmission
+!==========================================================
+! parameters common to all modes
+ VoltageH         = 60.D0,  ! highest tube voltage     
+ VoltageL         = 40.D0,  ! lowest tube voltage     
+ Sx               = 120.D0, ! distance from source to samplefront (mm)
+ sampletodetector = 120.D0, ! distance sample front to detector face (mm)
+
+!==========================================================
+! in transmission mode, width a divergent beam, set the following parameters
+ Lw               = 2.D0,   ! slit width (mm)
+ Lh               = 2.D0,   ! slit height (mm)
+ Lx               = 100.D0, ! distance front face of slit to divergent x-ray source (mm)
+ Ly               = 0.D0,   ! slit center y position (mm)
+ Lz               = 0.D0,   ! slit center z position (mm)
+ samplethickness  = 2.D0,   ! sample thickness (mm)
+ vs               = 0.10D0, ! size of the voxels that make up the sample (mm)
+ absl             = 0.5D0,  ! absorption length (mm)
+ beamstopatf      = 0.1D0,  ! beam stop attenuation factor
+
+!==========================================================
+! parameters for back-reflection mode 
+
+!==========================================================
+! parameters for side-reflection mode 
+ sampletilt       = 40.D0,  ! angle between sample normal and z-axis
+
+!==========================================================
+! detector parameters
+ ps               = 0.254D0,! pixel size (mm, assumes square pixels)
+ Ny               = 960,    ! number of pixels horizontally
+ Nz               = 780,    ! number of pixels vertically
+ Dx               = 0.D0,   ! pattern center; use (Dx, Dy) for side-reflection mode, (Dy, Dz) for transmission/back-reflection
+ Dy               = 0.D0,   ! 
+ Dz               = 0.D0,   ! 
+
+!==========================================================
+! back projection parameters 
+ backprojection   = 'No',   ! 'Yes' or 'No'; adds backprojections to output file
+ BPx              = 300,    ! semi-edge length for back projection square Lambert maps
+
+!==========================================================
+! parallel processing parameters
+ nthreads         = 1,      ! number of parallel threads for pattern computation
+
+!==========================================================
+! output intensity parameters 
+ binarize         = .FALSE.,! set to .TRUE. to get a binary output pattern (and backprojection)
+ spotw            = 0.1,    ! spot size weight factor (1/(2*sigma^2)); larger value = smaller spots
+ gammavalue       = 1.0,    ! scaling factor for gamma intensity scaling
+ intcutoffratio   = 1.0D-4  ! intensity ratio cutoff (transmitted beam has intensity 1)
+
+!==========================================================
+! input and output files 
+ orientationfile  = 'undefined', ! input file with orientation list 
+ tiffprefix       = 'undefined', ! prefix for tiff output files with individual patterns (no files created when 'undefined')
+ xtalname         = 'undefined', ! structure file name
+ hdfname          = 'undefined', ! HDF output file name
+ /

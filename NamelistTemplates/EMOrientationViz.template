@@ -1,13 +1,14 @@
  &EMOrientationViz
 ! name of crystal structure file
  xtalname = 'undefined',
-! first define the mrcmode parameter; if 'off' then the output mode is PoVray
-! if 'reg' the output is a regular .mrc file; if 'frm' then the output is 
-! an .mrc file containing only the outline of the projection volume
+! first define the mrcmode parameter;  
+!   'off' for PoVray output; 
+!   'reg' for an .mrc file; 
+!   'frm' for an .mrc file containing only the volume outline [NOT YET IMPLEMENTED]
  mrcmode = 'off',
 ! if mrcmode .ne. 'off', then define the mrc output file name WITHOUT .mrc EXTENSION !!!
  mrcfile = 'undefined', 		! if mrcmode .eq. 'reg'
-!framemrcfile = 'undefined',    ! if mrcmode .eq. 'frm' [THIS HAS NOT BEEN IMPLEMENTED YET]
+!framemrcfile = 'undefined',    ! if mrcmode .eq. 'frm' [NOT YET IMPLEMENTED]
 !
 ! name of part of PoVray output file name WITHOUT THE .pov EXTENSION (i.e., no '.' character allowed)
 ! (note that the partial path should be included)

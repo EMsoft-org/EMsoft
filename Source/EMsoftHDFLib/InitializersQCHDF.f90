@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -207,6 +207,9 @@ end subroutine Save2DQCDataHDF
 !> @param existingHDFhead (optional) if present, then use this as HDF_head
 !
 !> @date    06/25/18 SS 1.0 original, adapted from SaveDataHDF
+!> @date    10/28/19 SS 1.1 added Axial Symmetry for icosahedral QCs
+!                           axial symmetry = 0 will be reserved for 
+!                           icosahedral case
 !--------------------------------------------------------------------------
 recursive subroutine Save3DQCDataHDF(cell, existingHDFhead)
 !DEC$ ATTRIBUTES DLLEXPORT :: Save3DQCDataHDF
@@ -230,6 +233,7 @@ integer(kind=irg)                       :: hdferr
 real(kind=dbl)                          :: cellparams(3)
 integer(kind=irg),allocatable           :: atomtypes(:)
 real(kind=sgl),allocatable              :: atompos(:,:)
+integer(kind=irg)                       :: naxial
 logical                                 :: openHDFfile
 
 openHDFfile = .TRUE.
@@ -285,6 +289,15 @@ call HDFerror_check('SaveDataHDF:HDF_writeDatasetDoubleArray1D:'//trim(dataset),
 dataset = SC_SpaceGroupNumber
 hdferr = HDF_writeDatasetInteger(dataset, cell%SYM_SGnum, HDF_head)
 call HDFerror_check('SaveDataHDF:HDF_writeDatasetInteger:'//trim(dataset), hdferr)
+
+! the axial symmetry will be used to differentiate between QCs and regular crystals
+! for the 2D QCs, the axial symmetry will be equal to the axial symmetry along the 
+! periodic direction. for icosahedral QCs, this will be set to 0, which will be 
+! reserved for this case. this is done for minimum code change for dictionary indexing
+! of iQCs.
+dataset = SC_AxialSymmetry 
+naxial = 0
+hdferr = HDF_writeDatasetInteger(dataset, naxial, HDF_head)
 
 dataset = SC_Natomtypes
 hdferr = HDF_writeDatasetInteger(dataset, cell%ATOM_ntype, HDF_head)

@@ -35,21 +35,15 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QProcess>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QString>
+#include "Modules/IProcessController.h"
 
-class MasterPatternSimulationController : public QObject
+class MasterPatternSimulationController : public IProcessController
 {
   Q_OBJECT
 
 public:
   MasterPatternSimulationController(QObject* parent = nullptr);
   ~MasterPatternSimulationController() override;
-
-  const QString k_ExeName = QString("EMEBSDmaster");
-  const QString k_NMLName = QString("EMEBSDmaster.nml");
 
   using EnumType = unsigned int;
 
@@ -72,6 +66,7 @@ public:
     int numOfOpenMPThreads;
     QString inputFilePath;
     QString outputFilePath;
+    QString betheParametersFilePath;
   };
 
   /**
@@ -87,54 +82,25 @@ public:
    */
   bool validateInput() const;
 
-  /**
-   * @brief setUpdateProgress
-   * @param loopCompleted
-   * @param totalLoops
-   * @param bseYield
-   */
-  void setUpdateProgress(int loopCompleted, int totalLoops, int EloopCompleted, int totalEloops) const;
-
-  /**
-   * @brief getNumCPUCores
-   * @return
-   */
-  int getNumCPUCores() const;
-
-public slots:
-  /**
-   * @brief execute
-   */
-  void execute();
-
-  /**
-   * @brief cancelProcess
-   */
-  void cancelProcess();
-
-protected slots:
-  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
-signals:
-  void warningMessageGenerated(const QString& msg) const;
-  void errorMessageGenerated(const QString& msg) const;
-  void stdOutputMessageGenerated(const QString& msg) const;
-
-  void finished();
-
 private:
-  bool m_Cancel = false;
-  size_t m_InstanceKey = 0;
-  bool m_Executing = false;
-
   InputDataType m_InputData;
-  QSharedPointer<QProcess> m_CurrentProcess;
 
   /**
    * @brief MonteCarloSimulationController::generateNMLFile
    * @param path
    */
-  void generateNMLFile(const QString& path);
+  void generateNMLFile(const QString& path) override;
+
+  /**
+   * @brief generateBetheParametersFile
+   * @param path
+   */
+  void generateBetheParametersFile(const QString& path);
+
+  /**
+   * @brief processFinished
+   */
+  void processFinished() override;
 
 public:
   MasterPatternSimulationController(const MasterPatternSimulationController&) = delete;            // Copy Constructor Not Implemented

@@ -1,5 +1,5 @@
 !###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -61,6 +61,7 @@
 !> @date  08/30/19 MDG 4.0 modified HDF_head definition for python f90wrap compatibility
 !> @date  09/30/19 MAJ 4.1 initial mods of allocations that caused Mac OSX/ifort issues in write routines 
 !> @date  10/01/19 MDG 4.2 additional mods to make ifort work on Mac OS X 
+!> @date  11/08/19 MDG 4.3 replaced individual dims parameters by single dims array in multiple routines
 !--------------------------------------------------------------------------
 module HDFsupport
 
@@ -76,7 +77,7 @@ use stringconstants
 !- DREAM.3D and the static HDF5 libraries used by EMSoft.               ---
 !--------------------------------------------------------------------------
 
-! COMMENT ADDED FOR 4.3 EMsoft release
+! COMMENT ADDED FOR 5.0 EMsoft release
 ! ====================================
 ! With the addition of python f90wrap support, the use of the HDF_head variable 
 ! had to be changed slightly. Up to this point, HDF_head was always defined as a 
@@ -181,7 +182,6 @@ call HDFerror_check('h5close_EMsoft:h5close_f', hdferr)
 
 end subroutine h5close_EMsoft
 
-
 !--------------------------------------------------------------------------
 !
 ! function: cstringify
@@ -203,10 +203,10 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-character(fnlen),INTENT(IN)                :: strin
-character(len=len_trim(strin)+1,kind=c_char):: cstrout
+character(fnlen),INTENT(IN)                  :: strin
+character(len=len_trim(strin)+1,kind=c_char) :: cstrout
 
-integer(kind=irg)                          :: slen, i
+integer(kind=irg)                            :: slen, i
 
 slen = len_trim(strin)
 do i=1,slen
@@ -216,6 +216,75 @@ slen = slen+1
 cstrout(slen:slen) = C_NULL_CHAR 
 
 end function cstringify
+
+!--------------------------------------------------------------------------
+!
+! function: carstringify
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief turn a fortran string into a null-terminated c-string character array
+!
+!> @param strin input fortran string character(len=###)
+!> @param cstrput output null-terminated C-string character(kind=c_char)
+!
+!> @date 02/09/20  MDG 1.0 original
+!--------------------------------------------------------------------------
+pure recursive function carstringify(strin) result(cstrout)
+!DEC$ ATTRIBUTES DLLEXPORT :: carstringify
+
+use local
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)                 :: strin
+character(kind=c_char)                      :: cstrout(len_trim(strin)+1)
+
+integer(kind=irg)                           :: slen, i
+
+slen = len_trim(strin)
+do i=1,slen
+  cstrout(i) = strin(i:i)
+end do
+slen = slen+1
+cstrout(slen) = C_NULL_CHAR 
+
+end function carstringify
+
+!--------------------------------------------------------------------------
+!
+! function: fstringify
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief turn a null-terminated c-string into a fortran string
+!
+!> @param strin input null-terminated C-string character array (kind=c_char) :: strin(:)
+!> @param fstrout output fortran string character(fnlen)
+!
+!> @date 02/09/20  MDG 1.0 original
+!--------------------------------------------------------------------------
+pure recursive function fstringify(strin) result(fstrout)
+!DEC$ ATTRIBUTES DLLEXPORT :: fstringify
+
+use local
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+character(kind=c_char),INTENT(IN)         :: strin(:)
+character(fnlen)                          :: fstrout
+
+integer(kind=irg)                         :: slen, i, s(1)
+
+s = shape(strin)
+
+do i=1,s(1)-1    ! don't copy the null character...
+  fstrout(i:i) = strin(i)
+end do
+
+end function fstringify
 
 
 !--------------------------------------------------------------------------!
@@ -328,10 +397,10 @@ call HDFerror_check('HDF_writeEMheader:H5Lexists_f:'//trim(line), hdferr)
 
 if (g_exists) then 
   hdferr = HDF_writeDatasetStringArray(line, line2, 1, HDF_head, overwrite)
-
+  call HDFerror_check('HDF_writeEMheader:HDF_writeDatasetStringArray:'//trim(line)//':overwrite', hdferr)
 else
   hdferr = HDF_writeDatasetStringArray(line, line2, 1, HDF_head)
-
+  call HDFerror_check('HDF_writeEMheader:HDF_writeDatasetStringArray:'//trim(line), hdferr)
 end if
 
 ! stop time /EMheader/StopTime 'character'; this is often updated at the end of a run
@@ -1528,7 +1597,7 @@ end function HDF_writeDatasetStringArray
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray1D(dataname, chararray, dim0, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray1D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray1D
 
 use ISO_C_BINDING
@@ -1536,8 +1605,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-character(len=1),TARGET                                 :: chararray(dim0) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(1)
+character(len=1),TARGET                                 :: chararray(dims(1)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1545,7 +1614,6 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:1)                        :: dims
 
 TYPE(C_PTR), dimension(1:1), TARGET                     :: wdata
 TYPE(C_PTR)                                             :: f_ptr
@@ -1553,7 +1621,6 @@ TYPE(C_PTR)                                             :: f_ptr
 success = 0
 
 wdata(1) = C_LOC(chararray(1))
-dims(1) = dim0
 
 ! then we write this C_ptr to the HDF file in the proper data set
 
@@ -1612,7 +1679,7 @@ end function HDF_writeDatasetCharArray1D
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray2D(dataname, chararray, dim0, dim1, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray2D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray2D
 
 use ISO_C_BINDING
@@ -1620,9 +1687,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-integer(kind=irg),INTENT(IN)                            :: dim1
-character(len=1),TARGET                                 :: chararray(dim0, dim1) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(2)
+character(len=1),TARGET                                 :: chararray(dims(1), dims(2)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1630,15 +1696,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:2)                        :: dims
 
 TYPE(C_PTR), dimension(1:1), TARGET                     :: wdata
 
 success = 0
 
 wdata(1) = C_LOC(chararray(1,1))
-dims(1:2) = (/ dim0, dim1 /)
-
 ! then we write this C_ptr to the HDF file in the proper data set
 
 ! Create dataspace.
@@ -1696,7 +1759,7 @@ end function HDF_writeDatasetCharArray2D
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray3D(dataname, chararray, dim0, dim1, dim2, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray3D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray3D
 
 use ISO_C_BINDING
@@ -1704,10 +1767,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-integer(kind=irg),INTENT(IN)                            :: dim1
-integer(kind=irg),INTENT(IN)                            :: dim2
-character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(3)
+character(len=1),TARGET                                 :: chararray(dims(1), dims(2), dims(3)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1715,15 +1776,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:3)                        :: dims
 
 TYPE(C_PTR), dimension(1:3), TARGET                     :: wdata
 
 success = 0
 
 wdata(1) = C_LOC(chararray(1,1,1))
-dims(1:3) = (/ dim0, dim1, dim2 /)
-
 ! then we write this C_ptr to the HDF file in the proper data set
 
 ! Create dataspace.
@@ -1781,7 +1839,7 @@ end function HDF_writeDatasetCharArray3D
 !
 !> @date 03/31/15  MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive function HDF_writeDatasetCharArray4D(dataname, chararray, dim0, dim1, dim2, dim3, HDF_head, overwrite) result(success)
+recursive function HDF_writeDatasetCharArray4D(dataname, chararray, dims, HDF_head, overwrite) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeDatasetCharArray4D
 
 use ISO_C_BINDING
@@ -1789,11 +1847,8 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                             :: dataname
-integer(kind=irg),INTENT(IN)                            :: dim0
-integer(kind=irg),INTENT(IN)                            :: dim1
-integer(kind=irg),INTENT(IN)                            :: dim2
-integer(kind=irg),INTENT(IN)                            :: dim3
-character(len=1),TARGET                                 :: chararray(dim0, dim1, dim2, dim3) 
+integer(HSIZE_T), INTENT(IN)                            :: dims(4)
+character(len=1),TARGET                                 :: chararray(dims(1), dims(2), dims(3), dims(4)) 
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical,INTENT(IN),OPTIONAL                             :: overwrite
@@ -1801,14 +1856,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: space, dset ! Handles
 integer                                                 :: hdferr, i, rnk, l
-integer(HSIZE_T), DIMENSION(1:4)                        :: dims
 
 TYPE(C_PTR), dimension(1:4), TARGET                     :: wdata
 
 success = 0
 
 wdata(1) = C_LOC(chararray(1,1,1,1))
-dims(1:4) = (/ dim0, dim1, dim2, dim3 /)
 
 ! then we write this C_ptr to the HDF file in the proper data set
 
@@ -4765,9 +4818,10 @@ end subroutine HDF_readDatasetDoubleArray4D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabCharArray2D(dataname, wdata, hdims, offset, &
-                                       dim0, dim1, HDF_head, insert) result(success)
+                                       dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabCharArray2D
 
 use ISO_C_BINDING
@@ -4777,9 +4831,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-character(kind=c_char),INTENT(IN),TARGET                :: wdata(dim0,dim1)
+integer(HSIZE_T),INTENT(IN)                             :: dims(2)
+character(kind=c_char),INTENT(IN),TARGET                :: wdata(dims(1),dims(2))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -4787,17 +4840,14 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(2)
 
 TYPE(C_PTR)                                             :: f_ptr
 
 success = 0
 
-dims = (/ dim0, dim1 /)
 rnk = 2
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabCharArray2D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -4844,9 +4894,10 @@ end function HDF_writeHyperslabCharArray2D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabCharArray3D(dataname, wdata, hdims, offset, &
-                                       dim0, dim1, dim2, HDF_head, insert) result(success)
+                                                 dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabCharArray3D
 
 use ISO_C_BINDING
@@ -4856,10 +4907,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-character(kind=c_char),INTENT(IN)                       :: wdata(dim0,dim1,dim2)
+integer(HSIZE_T),INTENT(IN)                             :: dims(3)
+character(kind=c_char),INTENT(IN)                       :: wdata(dims(1),dims(2),dims(3))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -4867,15 +4916,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(3)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2 /)
 rnk = 3
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabCharArray3D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -4893,7 +4939,6 @@ call HDFerror_check('HDF_writeHyperslabCharArray3D:h5screate_simple_f:'//trim(da
 
 call h5dwrite_f(dset, H5T_STD_U8LE, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabCharArray3D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabCharArray3D:h5dclose_f:'//trim(dataname), hdferr)
@@ -4921,9 +4966,10 @@ end function HDF_writeHyperslabCharArray3D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabCharArray4D(dataname, wdata, hdims, offset, &
-                                       dim0, dim1, dim2, dim3, HDF_head, insert) result(success)
+                                                 dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabCharArray4D
 
 use ISO_C_BINDING
@@ -4933,11 +4979,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-integer(HSIZE_T),INTENT(IN)                             :: dim3
-character(kind=c_char),INTENT(IN)                       :: wdata(dim0,dim1,dim2,dim3)
+integer(HSIZE_T),INTENT(IN)                             :: dims(4)
+character(kind=c_char),INTENT(IN)                       :: wdata(dims(1),dims(2),dims(3),dims(4))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -4945,15 +4988,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(4)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2, dim3 /)
 rnk = 4
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabCharArray4D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -4971,7 +5011,6 @@ call HDFerror_check('HDF_writeHyperslabCharArray4D:h5screate_simple_f:'//trim(da
 
 call h5dwrite_f(dset, H5T_STD_U8LE, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabCharArray4D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabCharArray4D:h5dclose_f:'//trim(dataname), hdferr)
@@ -4998,9 +5037,10 @@ end function HDF_writeHyperslabCharArray4D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabIntegerArray2D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, HDF_head, insert) result(success)
+                                                    dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabIntegerArray2D
 
 IMPLICIT NONE
@@ -5008,9 +5048,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1)
+integer(HSIZE_T),INTENT(IN)                             :: dims(2)
+integer(kind=irg),INTENT(IN)                            :: wdata(dims(1),dims(2))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5018,15 +5057,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(2)
 
 success = 0
 
-dims = (/ dim0, dim1 /)
 rnk = 2
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5044,7 +5080,6 @@ call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5screate_simple_f:'//trim
 
 call h5dwrite_f(dset, H5T_NATIVE_INTEGER, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabIntegerArray2D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5071,9 +5106,10 @@ end function HDF_writeHyperslabIntegerArray2D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabIntegerArray3D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, dim2, HDF_head, insert) result(success)
+                                                    dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabIntegerArray3D
 
 IMPLICIT NONE
@@ -5081,10 +5117,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1,dim2)
+integer(HSIZE_T),INTENT(IN)                             :: dims(3)
+integer(kind=irg),INTENT(IN)                            :: wdata(dims(1),dims(2),dims(3))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5092,15 +5126,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(3)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2 /)
 rnk = 3
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5118,7 +5149,6 @@ call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5screate_simple_f:'//trim
 
 call h5dwrite_f(dset, H5T_NATIVE_INTEGER, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabIntegerArray3D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5145,9 +5175,10 @@ end function HDF_writeHyperslabIntegerArray3D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabIntegerArray4D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, dim2, dim3, HDF_head, insert) result(success)
+                                                    dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabintegerArray4D
 
 IMPLICIT NONE
@@ -5155,11 +5186,8 @@ IMPLICIT NONE
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-integer(HSIZE_T),INTENT(IN)                             :: dim3
-integer(kind=irg),INTENT(IN)                            :: wdata(dim0,dim1,dim2,dim3)
+integer(HSIZE_T),INTENT(IN)                             :: dims(4)
+integer(kind=irg),INTENT(IN)                            :: wdata(dims(1),dims(2),dims(3),dims(4))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5167,15 +5195,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(4)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2, dim3 /)
 rnk = 4
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5193,7 +5218,6 @@ call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5screate_simple_f:'//trim
 
 call h5dwrite_f(dset, H5T_NATIVE_INTEGER, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabintegerArray4D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5220,9 +5244,10 @@ end function HDF_writeHyperslabIntegerArray4D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabFloatArray2D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, HDF_head, insert) result(success)
+                                                  dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabFloatArray2D
 
 IMPLICIT NONE
@@ -5232,9 +5257,8 @@ integer,parameter                                       :: real_kind4 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1)
+integer(HSIZE_T),INTENT(IN)                             :: dims(2)
+real(real_kind4),INTENT(IN)                             :: wdata(dims(1),dims(2))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5242,15 +5266,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(2)
 
 success = 0
 
-dims = (/ dim0, dim1 /)
 rnk = 2
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5268,7 +5289,6 @@ call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5screate_simple_f:'//trim(d
 
 call h5dwrite_f(dset, H5T_NATIVE_REAL, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabFloatArray2D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5295,9 +5315,10 @@ end function HDF_writeHyperslabFloatArray2D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabFloatArray3D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, dim2, HDF_head, insert) result(success)
+                                                  dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabFloatArray3D
 
 IMPLICIT NONE
@@ -5307,10 +5328,8 @@ integer,parameter                                       :: real_kind4 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
+integer(HSIZE_T),INTENT(IN)                             :: dims(3)
+real(real_kind4),INTENT(IN)                             :: wdata(dims(1),dims(2),dims(3))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5318,15 +5337,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(3)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2 /)
 rnk = 3
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5344,7 +5360,6 @@ call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5screate_simple_f:'//trim(d
 
 call h5dwrite_f(dset, H5T_NATIVE_REAL, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabFloatArray3D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5371,9 +5386,10 @@ end function HDF_writeHyperslabFloatArray3D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabFloatArray4D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, dim2, dim3, HDF_head, insert) result(success)
+                                                  dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabFloatArray4D
 
 IMPLICIT NONE
@@ -5383,11 +5399,8 @@ integer,parameter                                       :: real_kind4 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-integer(HSIZE_T),INTENT(IN)                             :: dim3
-real(real_kind4),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
+integer(HSIZE_T),INTENT(IN)                             :: dims(4)
+real(real_kind4),INTENT(IN)                             :: wdata(dims(1),dims(2),dims(3),dims(4))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5395,15 +5408,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(4)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2, dim3 /)
 rnk = 4
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5421,7 +5431,6 @@ call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5screate_simple_f:'//trim(d
 
 call h5dwrite_f(dset, H5T_NATIVE_REAL, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabFloatArray4D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5448,9 +5457,10 @@ end function HDF_writeHyperslabFloatArray4D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabDoubleArray2D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, HDF_head, insert) result(success)
+                                                   dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabDoubleArray2D
 
 IMPLICIT NONE
@@ -5460,9 +5470,8 @@ integer,parameter                                       :: real_kind8 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(2)
 integer(HSIZE_T),INTENT(IN)                             :: offset(2)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1)
+integer(HSIZE_T),INTENT(IN)                             :: dims(2)
+real(real_kind8),INTENT(IN)                             :: wdata(dims(1),dims(2))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5470,15 +5479,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(2)
 
 success = 0
 
-dims = (/ dim0, dim1 /)
 rnk = 2
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5496,7 +5502,6 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5screate_simple_f:'//trim(
 
 call h5dwrite_f(dset, H5T_NATIVE_DOUBLE, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabDoubleArray2D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5523,9 +5528,10 @@ end function HDF_writeHyperslabDoubleArray2D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabDoubleArray3D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, dim2, HDF_head, insert) result(success)
+                                                   dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabDoubleArray3D
 
 IMPLICIT NONE
@@ -5535,10 +5541,8 @@ integer,parameter                                       :: real_kind8 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(3)
 integer(HSIZE_T),INTENT(IN)                             :: offset(3)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2)
+integer(HSIZE_T),INTENT(IN)                             :: dims(3)
+real(real_kind8),INTENT(IN)                             :: wdata(dims(1),dims(2),dims(3))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5546,15 +5550,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(3)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2 /)
 rnk = 3
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5572,7 +5573,6 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5screate_simple_f:'//trim(
 
 call h5dwrite_f(dset, H5T_NATIVE_DOUBLE, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabDoubleArray3D:h5dclose_f:'//trim(dataname), hdferr)
@@ -5599,9 +5599,10 @@ end function HDF_writeHyperslabDoubleArray3D
 !> @param insert (optional) if present, add to existing dataset
 !
 !> @date 04/06/15  MDG 1.0 original
+!> @date 11/08/19  MDG 1.1 modified handling of array dimensions
 !--------------------------------------------------------------------------
 recursive function HDF_writeHyperslabDoubleArray4D(dataname, wdata, hdims, offset, &
-                                          dim0, dim1, dim2, dim3, HDF_head, insert) result(success)
+                                                   dims, HDF_head, insert) result(success)
 !DEC$ ATTRIBUTES DLLEXPORT :: HDF_writeHyperslabDoubleArray4D
 
 IMPLICIT NONE
@@ -5611,11 +5612,8 @@ integer,parameter                                       :: real_kind8 = SELECTED
 character(fnlen),INTENT(IN)                             :: dataname
 integer(HSIZE_T),INTENT(IN)                             :: hdims(4)
 integer(HSIZE_T),INTENT(IN)                             :: offset(4)
-integer(HSIZE_T),INTENT(IN)                             :: dim0
-integer(HSIZE_T),INTENT(IN)                             :: dim1
-integer(HSIZE_T),INTENT(IN)                             :: dim2
-integer(HSIZE_T),INTENT(IN)                             :: dim3
-real(real_kind8),INTENT(IN)                              :: wdata(dim0,dim1,dim2,dim3)
+integer(HSIZE_T),INTENT(IN)                             :: dims(4)
+real(real_kind8),INTENT(IN)                             :: wdata(dims(1),dims(2),dims(3),dims(4))
 type(HDFobjectStackType),INTENT(INOUT)                  :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 logical, OPTIONAL, INTENT(IN)                           :: insert
@@ -5623,15 +5621,12 @@ integer(kind=irg)                                       :: success
 
 integer(HID_T)                                          :: memspace, space, dset ! Handles
 integer                                                 :: hdferr, rnk
-integer(HSIZE_T)                                        :: dims(4)
 
 success = 0
 
-dims = (/ dim0, dim1, dim2, dim3 /)
 rnk = 4
 call h5screate_simple_f(rnk, hdims, space, hdferr)
 call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5screate_simple_f:'//trim(dataname), hdferr)
-
 
 if (present(insert)) then
   call h5dopen_f(HDF_head%next%objectID, cstringify(dataname), dset, hdferr)
@@ -5649,7 +5644,6 @@ call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5screate_simple_f:'//trim(
 
 call h5dwrite_f(dset, H5T_NATIVE_DOUBLE, wdata, dims, hdferr, memspace, space)
 call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5dwrite_f:'//trim(dataname), hdferr)
-
 
 call h5dclose_f(dset, hdferr)
 call HDFerror_check('HDF_writeHyperslabDoubleArray4D:h5dclose_f:'//trim(dataname), hdferr)
@@ -6747,8 +6741,12 @@ if (openHDFfile) then
   call h5open_EMsoft(hdferr)
   call HDFerror_check('ReadDataHDF:h5open_EMsoft', hdferr)
 
-  fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
-  fname = EMsoft_toNativePath(fname)
+  if (cell%fname(1:1).ne.EMsoft_getEMsoftnativedelimiter()) then
+    fname = trim(EMsoft_getXtalpathname())//trim(cell%fname)
+    fname = EMsoft_toNativePath(fname)
+  else 
+    fname = trim(cell%fname)
+  end if
   hdferr =  HDF_openFile(fname, HDF_head)
   call HDFerror_check('ReadDataHDF:HDF_openFile:'//trim(fname), hdferr)
 end if

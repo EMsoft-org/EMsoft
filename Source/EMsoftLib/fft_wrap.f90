@@ -1,6 +1,6 @@
 !* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 !*                                                                     *
-!* Copyright (c) 2019-2019, De Graef Group, Carnegie Mellon University *
+!* Copyright (c) 2019-2020, De Graef Group, Carnegie Mellon University *
 !* All rights reserved.                                                *
 !*                                                                     *
 !* Author: William C. Lenthe                                           *
@@ -262,6 +262,7 @@ write (*,*) 'wisdom file '//trim(wisdomFile), fileExists
   !DEC$ ATTRIBUTES DLLEXPORT :: FFTWisdomType_Save
     use FFTW3MOD
     use error
+    use io
   implicit none
     class    (FFTWisdomType), intent(in)  :: this
     character(c_char       ), allocatable :: name(:)! fftw file name
@@ -270,7 +271,7 @@ write (*,*) 'wisdom file '//trim(wisdomFile), fileExists
     if(this%loaded) then
       name = FFTWisdomType_Name() ! get the wisdom file name
       status = fftw_export_wisdom_to_filename(name) ! write accumulated wisdom to file
-      if (status .eq. 0) call FatalError('FFTWisdomType_Save','error writing wisdom to file') ! handle error
+      if (status .eq. 0) call Message('Warning: FFTWisdomType_Save could not write wisdom to file') ! handle error
       deallocate(name) ! clean up string
       ! call fftw_cleanup() ! free up any extra fftw memory usage (outside of existing plans)
     endif

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -57,9 +57,6 @@ IMPLICIT NONE
 
 type(unitcell)                  :: cell
 character(fnlen)                :: progname, progdesc, fname, source
-integer(kind=irg)               :: numarg, i
-integer(kind=irg)               :: iargc        !< external function for command line
-character(fnlen)                :: arg          !< to be read from the command line
 character(fnlen)                :: flag
 logical                         :: useWyckoff
 

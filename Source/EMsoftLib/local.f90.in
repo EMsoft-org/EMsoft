@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -97,7 +97,7 @@ use,intrinsic :: ISO_C_BINDING
 !DEC$ ATTRIBUTES DLLEXPORT :: ish
 !DEC$ ATTRIBUTES DLLEXPORT :: irg
 !DEC$ ATTRIBUTES DLLEXPORT :: ill
-
+@EMsoft_HDF5_110_DEFINES@
 !> character type used for json routines
   integer,parameter :: jsonCK = selected_char_kind('DEFAULT')
 !DEC$ ATTRIBUTES DLLEXPORT :: jsonCK
@@ -392,9 +392,11 @@ recursive function EMsoft_getEMsoftTestingPath() result(buildpath)
 
 IMPLICIT NONE
 
-character(fnlen) :: buildpath
+character(fnlen) :: buildpath, s
 
-buildpath = "@EMsoft_TESTING_DIR@"
+s = "@EMsoft_TESTING_DIR@"
+
+buildpath = trim(EMsoft_toNativePath(s))
 
 end function EMsoft_getEMsoftTestingPath
 
@@ -489,7 +491,7 @@ IMPLICIT NONE
 character(1)  :: EMsoftnativedelimiter
 
 if (trim(EMsoft_getEMsoftplatform()).eq.SC_Windows) then
-  EMsoftnativedelimiter = '\'
+  EMsoftnativedelimiter = '\'                ! '
 else
   EMsoftnativedelimiter = '/'
 end if
@@ -542,6 +544,7 @@ end function EMsoft_getConfigpath
 !
 !> @date  07/02/16 MDG 1.0 new function
 !> @date  02/27/19 MDG 2.0 add functionality for environment variables
+!> @date  02/19/20 MDG 2.1 changes to path determination logic (environment first, then config file)
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMsoftpathname() result(EMsoftpathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMsoftpathname
@@ -553,17 +556,22 @@ IMPLICIT NONE
 character(fnlen)                        :: EMsoftpathname, ep, envParam, envReturn
 integer                                 :: l, status
 
-ep = SC_EMsoftpathname
-EMsoftpathname = EMsoft_getJSONparameter(ep)
+! the calling program should determine whether or not this is an absolute path 
 
-if (trim(EMsoftpathname).eq.'tryEnvironmentVariable') then 
-  envParam = 'EMSOFTPATHNAME'
-  call getenv(trim(envParam),envReturn)
-  if (trim(envReturn).ne.'') then 
-    EMsoftpathname = trim(envReturn)
-    l = len(trim(EMsoftpathname))
-    if (EMsoftpathname(l:l).ne.'/') EMsoftpathname = trim(EMsoftpathname)//'/'
-  else
+! try the environment variable first 
+envParam = 'EMSOFTPATHNAME'
+call getenv(trim(envParam),envReturn)
+if (trim(envReturn).ne.'') then 
+  EMsoftpathname = trim(envReturn)
+  l = len(trim(EMsoftpathname))
+  if ( (EMsoftpathname(l:l).ne.'/') .and. (EMsoftpathname(l:l).ne.'\') ) then !'
+    EMsoftpathname = trim(EMsoftpathname)//'/'
+  end if
+else 
+! try the config file 
+  ep = SC_EMsoftpathname
+  EMsoftpathname = EMsoft_getJSONparameter(ep)
+  if (trim(EMsoftpathname).eq.'tryEnvironmentVariable') then 
     write (error_unit,"(A)") 'EMsoftpathname was not defined in the json file'
     write (error_unit,"(A)") 'EMSOFTPATHNAME environment variable was NOT defined as a backup.'
     status = 999001
@@ -571,6 +579,8 @@ if (trim(EMsoftpathname).eq.'tryEnvironmentVariable') then
     STOP 999001
   end if
 end if 
+
+EMsoftpathname = trim(EMsoft_toNativePath(EMsoftpathname))
 
 end function EMsoft_getEMsoftpathname
 
@@ -587,6 +597,7 @@ end function EMsoft_getEMsoftpathname
 !
 !> @date  07/02/16 MDG 1.0 new function
 !> @date  02/27/19 MDG 2.0 add functionality for environment variables
+!> @date  02/19/20 MDG 2.1 changes to path determination logic (environment first, then config file)
 !--------------------------------------------------------------------------
 recursive function EMsoft_getEMdatapathname() result(EMdatapathname)
 !DEC$ ATTRIBUTES DLLEXPORT :: EMsoft_getEMdatapathname
@@ -598,26 +609,29 @@ IMPLICIT NONE
 character(fnlen)                        :: EMdatapathname, ep, envParam, envReturn
 integer                                 :: l
 
-ep = SC_EMdatapathname
-EMdatapathname = EMsoft_getJSONparameter(ep)
-
-if (trim(EMdatapathname).eq.'tryEnvironmentVariable') then 
-  envParam = 'EMDATAPATHNAME'
-  call getenv(trim(envParam),envReturn)
-  if (trim(envReturn).ne.'') then 
-    EMdatapathname = trim(envReturn)
-    l = len(trim(EMdatapathname))
-    if (EMdatapathname(l:l).ne.'/') EMdatapathname = trim(EMdatapathname)//'/'
-  else
+envParam = 'EMDATAPATHNAME'
+call getenv(trim(envParam),envReturn)
+if (trim(envReturn).ne.'') then 
+  EMdatapathname = trim(envReturn)
+  l = len(trim(EMdatapathname))
+  if ( (EMdatapathname(l:l).ne.'/') .and. (EMdatapathname(l:l).ne.'\') ) then  !'
+    EMdatapathname = trim(EMdatapathname)//'/'
+  end if 
+else 
+  ep = SC_EMdatapathname
+  EMdatapathname = EMsoft_getJSONparameter(ep)
+  if (trim(EMdatapathname).eq.'tryEnvironmentVariable') then 
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(A)") 'EMdatapathname was not defined in the json file'
-      write (error_unit,"(/A)") '  WARNING: EMDATAPATHNAME environment variable was NOT defined as a backup.'
-      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      write (*,"(A)") 'EMdatapathname was not defined in the json file'
+      write (*,"(/A)") '  WARNING: EMDATAPATHNAME environment variable was NOT defined as a backup.'
+      write (*,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
     EMdatapathname = ''
   end if
 end if 
+
+EMdatapathname = trim(EMsoft_toNativePath(EMdatapathname))
 
 end function EMsoft_getEMdatapathname
 
@@ -644,26 +658,29 @@ IMPLICIT NONE
 character(fnlen)                        :: EMXtalFolderpathname, ep, envParam, envReturn
 integer                                 :: l
 
-ep = SC_EMXtalFolderpathname
-EMXtalFolderpathname = EMsoft_getJSONparameter(ep)
-
-if (trim(EMXtalFolderpathname).eq.'tryEnvironmentVariable') then 
-  envParam = 'EMXTALFOLDERPATHNAME'
-  call getenv(trim(envParam),envReturn)
-  if (trim(envReturn).ne.'') then 
-    EMXtalFolderpathname = trim(envReturn)
-    l = len(trim(EMXtalFolderpathname))
-    if (EMXtalFolderpathname(l:l).ne.'/') EMXtalFolderpathname = trim(EMXtalFolderpathname)//'/'
-  else
+envParam = 'EMXTALFOLDERPATHNAME'
+call getenv(trim(envParam),envReturn)
+if (trim(envReturn).ne.'') then 
+  EMXtalFolderpathname = trim(envReturn)
+  l = len(trim(EMXtalFolderpathname))
+  if ( (EMXtalFolderpathname(l:l).ne.'/') .and. (EMXtalFolderpathname(l:l).ne.'\')) then   !'
+    EMXtalFolderpathname = trim(EMXtalFolderpathname)//'/'
+  end if
+else
+  ep = SC_EMXtalFolderpathname
+  EMXtalFolderpathname = EMsoft_getJSONparameter(ep)
+  if (trim(EMXtalFolderpathname).eq.'tryEnvironmentVariable') then 
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(A/)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
-      write (error_unit,"(A/)") '  WARNING: EMXTALFOLDERPATHNAME environment variable was NOT defined as a backup.'
-      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      write (*,"(A/)") '  WARNING: Unable to find definition for EMXtalFolderpathname'
+      write (*,"(A/)") '  WARNING: EMXTALFOLDERPATHNAME environment variable was NOT defined as a backup.'
+      write (*,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
     EMXtalFolderpathname = ''
   end if
 end if 
+
+EMXtalFolderpathname = trim(EMsoft_toNativePath(EMXtalFolderpathname))
 
 end function EMsoft_getEMXtalFolderpathname
 
@@ -691,26 +708,29 @@ IMPLICIT NONE
 character(fnlen)                        :: EMtmppathname, ep, envParam, envReturn
 integer                                 :: l
 
-ep = SC_EMtmppathname
-EMtmppathname = EMsoft_getJSONparameter(ep)
-
-if (trim(EMtmppathname).eq.'tryEnvironmentVariable') then 
-  envParam = 'EMTMPPATHNAME'
-  call getenv(trim(envParam),envReturn)
-  if (trim(envReturn).ne.'') then 
-    EMtmppathname = trim(envReturn)
-    l = len(trim(EMtmppathname))
-    if (EMtmppathname(l:l).ne.'/') EMtmppathname = trim(EMtmppathname)//'/'
-  else
+envParam = 'EMTMPPATHNAME'
+call getenv(trim(envParam),envReturn)
+if (trim(envReturn).ne.'') then 
+  EMtmppathname = trim(envReturn)
+  l = len(trim(EMtmppathname))
+  if ( (EMtmppathname(l:l).ne.'/') .and. (EMtmppathname(l:l).ne.'\') ) then  !'
+    EMtmppathname = trim(EMtmppathname)//'/'
+  end if
+else
+  ep = SC_EMtmppathname
+  EMtmppathname = EMsoft_getJSONparameter(ep)
+  if (trim(EMtmppathname).eq.'tryEnvironmentVariable') then 
     if (displayEMsoftWarningMessages.eq.0) then 
-      write (error_unit,"(/A)") '  WARNING: Unable to find definition for EMtmppathname'
-      write (error_unit,"(/A)") '  WARNING: EMTMPPATHNAME environment variable was NOT defined as a backup.'
-      write (error_unit,"(A/)") '     ----> using absolute path convention'
+      write (*,"(/A)") '  WARNING: Unable to find definition for EMtmppathname'
+      write (*,"(/A)") '  WARNING: EMTMPPATHNAME environment variable was NOT defined as a backup.'
+      write (*,"(A/)") '     ----> using absolute path convention'
       displayEMsoftWarningMessages = displayEMsoftWarningMessages+1
     end if
     EMtmppathname = ''
   end if
 end if 
+
+EMtmppathname = trim(EMsoft_toNativePath(EMtmppathname))
 
 end function EMsoft_getEMtmppathname
 
@@ -738,10 +758,10 @@ ep = SC_UserName
 username = EMsoft_getJSONparameter(ep, nobackslash=.TRUE.)
 
 if (trim(username).eq.'tryEnvironmentVariable') then 
-  envParam = 'USERNAME'
-  call getenv(trim(envParam),envReturn)
-  if (trim(envReturn).ne.'') then 
-    username = trim(envReturn)
+  envparam = 'username'
+  call getenv(trim(envparam),envreturn)
+  if (trim(envreturn).ne.'') then 
+    username = trim(envreturn)
   else
     call getlog(loginname)
     username = trim(loginname)
@@ -976,9 +996,9 @@ if (jexists) then
   end if
 else
   if (displayConfigFileMissingMessage.eq.0) then 
-    write(error_unit,'(A)') '  WARNING: USER='//trim(EMsoft_getUser())
-    write(error_unit,'(A)') '  WARNING: file '//trim(jsonname)//' not found '
-    write(error_unit,'(A/)') '  -----> Trying environment variables next ... '
+    write(*,'(A)') '  WARNING: USER='//trim(EMsoft_getUser())
+    write(*,'(A)') '  WARNING: file '//trim(jsonname)//' not found '
+    write(*,'(A/)') '  -----> Trying environment variables next ... '
     displayConfigFileMissingMessage = 1
   end if
   param = 'tryEnvironmentVariable'
@@ -1018,6 +1038,8 @@ else
   templatepathname = trim(EMsoft_getEMsoftpathname())//SC_NamelistTemplates//'/'
 end if
 
+templatepathname = trim(EMsoft_toNativePath(templatepathname))
+
 end function EMsoft_getTemplatepathname
 
 !--------------------------------------------------------------------------
@@ -1040,6 +1062,8 @@ character(fnlen)                        :: wikipathname
 
 wikipathname = trim(EMsoft_getEMsoftpathname())//SC_wiki//'/'
 
+wikipathname = trim(EMsoft_toNativePath(wikipathname))
+
 end function EMsoft_getwikipathname
 
 !--------------------------------------------------------------------------
@@ -1060,6 +1084,8 @@ recursive function EMsoft_getResourcepathname() result(resourcepathname)
 character(fnlen)                        :: resourcepathname
 
 resourcepathname = trim(EMsoft_getEMsoftpathname())//SC_resources//'/'
+
+resourcepathname = trim(EMsoft_toNativePath(resourcepathname))
 
 end function EMsoft_getResourcepathname
 
@@ -1097,7 +1123,7 @@ end function EMsoft_getUserHomePath
 
 !--------------------------------------------------------------------------
 !
-! FUNCTION: EMsoft_getUserHomePath
+! FUNCTION: EMsoft_getUser
 !
 !> @author Marc De Graef, Carnegie Mellon University
 !
@@ -1140,6 +1166,8 @@ character(fnlen)                        :: openclpathname
 
 openclpathname = trim(EMsoft_getEMsoftpathname())//SC_opencl//'/'
 
+openclpathname = trim(EMsoft_toNativePath(openclpathname))
+
 end function EMsoft_getOpenCLpathname
 
 
@@ -1163,6 +1191,8 @@ character(fnlen)                        :: xtalpathname, p
 
 xtalpathname = trim(EMsoft_getEMXtalFolderpathname())
 
+xtalpathname = trim(EMsoft_toNativePath(xtalpathname))
+
 end function EMsoft_getXtalpathname
 
 !--------------------------------------------------------------------------
@@ -1183,6 +1213,8 @@ recursive function EMsoft_getfftwWisdomfilename() result(fftwWisdomfilename)
 character(fnlen)                        :: fftwWisdomfilename
 
 fftwWisdomfilename = trim(EMsoft_getResourcepathname())//SC_fftwwisdomtxt
+
+fftwWisdomfilename = trim(EMsoft_toNativePath(fftwWisdomfilename))
 
 end function EMsoft_getfftwWisdomfilename
 
@@ -1206,6 +1238,8 @@ character(fnlen)                        :: templatecodefilename
 
 templatecodefilename = trim(EMsoft_getResourcepathname())//SC_templatecodestxt
 
+templatecodefilename = trim(EMsoft_toNativePath(templatecodefilename))
+
 end function EMsoft_getTemplatecodefilename
 
 !--------------------------------------------------------------------------
@@ -1226,6 +1260,8 @@ recursive function EMsoft_getwikicodefilename() result(wikicodefilename)
 character(fnlen)                        :: wikicodefilename
 
 wikicodefilename = trim(EMsoft_getResourcepathname())//SC_wikicodestxt
+
+wikicodefilename = trim(EMsoft_toNativePath(wikicodefilename))
 
 end function EMsoft_getwikicodefilename
 
@@ -1248,6 +1284,8 @@ character(fnlen)                        :: WPfilename
 
 WPfilename = trim(EMsoft_getResourcepathname())//SC_WyckoffPositionstxt
 
+WPfilename = trim(EMsoft_toNativePath(WPfilename))
+
 end function EMsoft_getWyckoffPositionsfilename
 
 
@@ -1269,6 +1307,8 @@ recursive function EMsoft_getRandomseedfilename() result(randomseedfilename)
 character(fnlen)                        :: randomseedfilename
 
 randomseedfilename = trim(EMsoft_getResourcepathname())//SC_RandomSeedsdata
+
+randomseedfilename = trim(EMsoft_toNativePath(randomseedfilename))
 
 end function EMsoft_getRandomseedfilename
 
@@ -1410,10 +1450,10 @@ slen = len(inpath)
 outpath = ''
 todelim = EMsoft_getEMsoftnativedelimiter()
 
-if (todelim.eq.'\') then
+if (todelim.eq.'\') then   !'
   fromdelim = '/'
 else
-  fromdelim = '\'
+  fromdelim = '\'          !'
 end if
 
 do i=1,slen
@@ -1455,10 +1495,10 @@ outpath = ''
 fromdelim = EMsoft_getEMsoftnativedelimiter()
 
 if (fromdelim.eq.'/') then
-  todelim = '\'
+  todelim = '\'   !'
 else
   todelim = '/'
-end if
+end if            !'
 
 do i=1,slen
   c = inpath(i:i)

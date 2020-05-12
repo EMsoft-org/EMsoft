@@ -89,6 +89,8 @@ MonteCarloSimulation_UI::~MonteCarloSimulation_UI()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::setupGui()
 {
+  m_Controller = new MonteCarloSimulationController;
+
   // Create and set the validators on all the line edits
   createValidators();
 
@@ -179,8 +181,12 @@ void MonteCarloSimulation_UI::createModificationConnections()
 // -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::createWidgetConnections() const
 {
-  connect(createMonteCarloBtn, &QPushButton::clicked, this, &MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked);
+  // Pass errors, warnings, and std output messages up to the user interface
+  connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
+  connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
+  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
 
+  connect(createMonteCarloBtn, &QPushButton::clicked, this, &MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked);
 
   connect(csSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.xtal";
@@ -214,15 +220,6 @@ void MonteCarloSimulation_UI::createWidgetConnections() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void MonteCarloSimulation_UI::updateMCProgress(int loopCompleted, int totalLoops, float bseYield) const
-{
-  QString msg = QString("<b>Loop:</b> %1/%2 | <b>BSE Yield:</b> %3%").arg(loopCompleted).arg(totalLoops).arg(bseYield);
-  mcProgressLabel->setText(msg);
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
 void MonteCarloSimulation_UI::parametersChanged()
 {
   validateData();
@@ -236,9 +233,8 @@ void MonteCarloSimulation_UI::validateData()
 {
   clearModuleIssues();
   MonteCarloSimulationController::InputDataType data = getCreationData();
-  MonteCarloSimulationController controller;
-  controller.setData(data);
-  if(controller.validateInput())
+  m_Controller->setData(data);
+  if(m_Controller->validateInput())
   {
     createMonteCarloBtn->setEnabled(true);
   }
@@ -255,7 +251,7 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
 {
   if(createMonteCarloBtn->text() == "Cancel" && m_Controller != nullptr)
   {
-    m_Controller->cancelProcess();
+    m_Controller->cancel();
     emit processCompleted();
     setRunning(false);
     return;
@@ -277,16 +273,8 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
   gpuGrpBox->setDisabled(true);
   outputGrpBox->setDisabled(true);
 
-  // Clear out the previous (if any) controller instance
-  if(m_Controller != nullptr)
-  {
-    delete m_Controller;
-    m_Controller = nullptr;
-  }
-
   // Create a new QThread to run the Controller class.
   m_WorkerThread = QSharedPointer<QThread>(new QThread);
-  m_Controller = new MonteCarloSimulationController;
   m_Controller->moveToThread(m_WorkerThread.data());
   m_Controller->setData(data); // Set the input data
 
@@ -294,13 +282,6 @@ void MonteCarloSimulation_UI::slot_createMonteCarloBtn_clicked()
   connect(m_WorkerThread.data(), SIGNAL(started()), m_Controller, SLOT(execute()));
   connect(m_Controller, SIGNAL(finished()), m_WorkerThread.data(), SLOT(quit()));
   connect(m_WorkerThread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
-
-  // Pass errors, warnings, and std output messages up to the user interface
-  connect(m_Controller, &MonteCarloSimulationController::errorMessageGenerated, this, &MonteCarloSimulation_UI::notifyErrorMessage);
-  connect(m_Controller, &MonteCarloSimulationController::warningMessageGenerated, this, &MonteCarloSimulation_UI::notifyWarningMessage);
-  connect(m_Controller, SIGNAL(stdOutputMessageGenerated(QString)), this, SLOT(appendToStdOut(QString)));
-
-  connect(m_Controller, SIGNAL(updateMCProgress(int, int, float)), this, SLOT(updateMCProgress(int, int, float)));
 
   m_WorkerThread->start();
   setRunning(true);
@@ -355,18 +336,6 @@ void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject& obj)
 
   if(!monteCarloObj.isEmpty())
   {
-    sampleTiltAngleSigSB->blockSignals(true);
-    sampleRotAngleOmegaSB->blockSignals(true);
-    sampleStartTiltAngleSB->blockSignals(true);
-    sampleEndTiltAngleSB->blockSignals(true);
-    sampleTiltStepSizeSB->blockSignals(true);
-    acceleratingVoltageSB->blockSignals(true);
-    minEnergyConsiderSB->blockSignals(true);
-    energyBinSizeSB->blockSignals(true);
-    maxDepthConsiderSB->blockSignals(true);
-    depthStepSizeSB->blockSignals(true);
-    numOfPixelsNSB->blockSignals(true);
-
     mcModeCB->setCurrentIndex(monteCarloObj[ioConstants::MonteCarloMode].toInt());
     sampleTiltAngleSigSB->setValue(monteCarloObj[ioConstants::SampleTiltAngleSigma].toDouble());
     sampleRotAngleOmegaSB->setValue(monteCarloObj[ioConstants::SampleRotationAngleOmega].toDouble());
@@ -379,18 +348,12 @@ void MonteCarloSimulation_UI::readMonteCarloParameters(QJsonObject& obj)
     maxDepthConsiderSB->setValue(monteCarloObj[ioConstants::MaxDepthToConsider].toDouble());
     depthStepSizeSB->setValue(monteCarloObj[ioConstants::DepthStepSize].toDouble());
     numOfPixelsNSB->setValue(monteCarloObj[ioConstants::NumberOfXPixelsN].toInt());
-
-    sampleTiltAngleSigSB->blockSignals(false);
-    sampleRotAngleOmegaSB->blockSignals(false);
-    sampleStartTiltAngleSB->blockSignals(false);
-    sampleEndTiltAngleSB->blockSignals(false);
-    sampleTiltStepSizeSB->blockSignals(false);
-    acceleratingVoltageSB->blockSignals(false);
-    minEnergyConsiderSB->blockSignals(false);
-    energyBinSizeSB->blockSignals(false);
-    maxDepthConsiderSB->blockSignals(false);
-    depthStepSizeSB->blockSignals(false);
-    numOfPixelsNSB->blockSignals(false);
+    ivolx->setValue(monteCarloObj[ioConstants::InteractionVolumeX].toInt());
+    ivoly->setValue(monteCarloObj[ioConstants::InteractionVolumeY].toInt());
+    ivolz->setValue(monteCarloObj[ioConstants::InteractionVolumeZ].toInt());
+    ivolstepx->setValue(monteCarloObj[ioConstants::InteractionStepX].toDouble());
+    ivolstepy->setValue(monteCarloObj[ioConstants::InteractionStepY].toDouble());
+    ivolstepz->setValue(monteCarloObj[ioConstants::InteractionStepZ].toDouble());
   }
 }
 
@@ -403,26 +366,12 @@ void MonteCarloSimulation_UI::readGPUParameters(QJsonObject& obj)
 
   if(!gpuObj.isEmpty())
   {
-    numOfEPerWorkitemSB->blockSignals(true);
-    totalNumOfEConsideredSB->blockSignals(true);
-    multiplierForTotalNumOfESB->blockSignals(true);
-    gpuPlatformCB->blockSignals(true);
-    gpuDeviceCB->blockSignals(true);
-    globalWorkGroupSizeSB->blockSignals(true);
-
     numOfEPerWorkitemSB->setValue(gpuObj[ioConstants::NumberOfElectronsPerWorkitem].toInt());
     totalNumOfEConsideredSB->setValue(gpuObj[ioConstants::TotalNumOfElectronsToBeConsidered].toInt());
     multiplierForTotalNumOfESB->setValue(gpuObj[ioConstants::MultiplierForTotalNumberOfElectrons].toInt());
     gpuPlatformCB->setCurrentIndex(gpuObj[ioConstants::GPUPlatformID].toInt());
     gpuDeviceCB->setCurrentIndex(gpuObj[ioConstants::GPUDeviceID].toInt());
     globalWorkGroupSizeSB->setValue(gpuObj[ioConstants::GlobalWorkGroupSize].toInt());
-
-    numOfEPerWorkitemSB->blockSignals(false);
-    totalNumOfEConsideredSB->blockSignals(false);
-    multiplierForTotalNumOfESB->blockSignals(false);
-    gpuPlatformCB->blockSignals(false);
-    gpuDeviceCB->blockSignals(false);
-    globalWorkGroupSizeSB->blockSignals(false);
   }
 }
 
@@ -460,6 +409,12 @@ void MonteCarloSimulation_UI::writeMonteCarloParameters(QJsonObject& obj) const
   obj[ioConstants::MaxDepthToConsider] = maxDepthConsiderSB->value();
   obj[ioConstants::DepthStepSize] = depthStepSizeSB->value();
   obj[ioConstants::NumberOfXPixelsN] = numOfPixelsNSB->value();
+  obj[ioConstants::InteractionVolumeX] = ivolx->value();
+  obj[ioConstants::InteractionVolumeY] = ivoly->value();
+  obj[ioConstants::InteractionVolumeZ] = ivolz->value();
+  obj[ioConstants::InteractionStepX] = ivolstepx->value();
+  obj[ioConstants::InteractionStepY] = ivolstepy->value();
+  obj[ioConstants::InteractionStepZ] = ivolstepz->value();
 }
 
 // -----------------------------------------------------------------------------
@@ -537,6 +492,12 @@ MonteCarloSimulationController::InputDataType MonteCarloSimulation_UI::getCreati
   data.globalWorkGroupSize = globalWorkGroupSizeSB->value();
   data.inputFilePath = csFilePathLE->text();
   data.outputFilePath = mcFilePathLE->text();
+  data.ivolx = ivolx->value();
+  data.ivoly = ivoly->value();
+  data.ivolz = ivolz->value();
+  data.ivolstepx = ivolstepx->value();
+  data.ivolstepy = ivolstepy->value();
+  data.ivolstepz = ivolstepz->value();
   return data;
 }
 

@@ -207,11 +207,10 @@ void MPMCDisplayWidget::setProjectionMode(MPMCDisplayWidget::ProjectionMode mode
 // -----------------------------------------------------------------------------
 void MPMCDisplayWidget::readSession(QJsonObject& obj)
 {
-  m_ProjectionMode = static_cast<MPMCDisplayWidget::ProjectionMode>(obj[EMsoftWorkbenchConstants::IOStrings::ProjectionMode].toInt());
-
-  energyBinSpinBox->blockSignals(true);
   energyBinSpinBox->setValue(obj[EMsoftWorkbenchConstants::IOStrings::EnergyBin].toInt());
-  energyBinSpinBox->blockSignals(false);
+
+  int pModeInt = obj[EMsoftWorkbenchConstants::IOStrings::ProjectionMode].toInt();
+  setProjectionMode(static_cast<MPMCDisplayWidget::ProjectionMode>(pModeInt));
 
   overlayCB->setCheckState(static_cast<Qt::CheckState>(obj[EMsoftWorkbenchConstants::StringConstants::OverlayState].toInt(Qt::Checked)));
 

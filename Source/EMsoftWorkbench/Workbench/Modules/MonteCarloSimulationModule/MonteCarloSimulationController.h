@@ -35,23 +35,17 @@
 
 #pragma once
 
-#include <QtCore/QObject>
-#include <QtCore/QProcess>
-#include <QtCore/QSharedPointer>
-#include <QtCore/QString>
+#include "Modules/IProcessController.h"
 
 class XtalFileReader;
 
-class MonteCarloSimulationController : public QObject
+class MonteCarloSimulationController : public IProcessController
 {
   Q_OBJECT
 
 public:
   MonteCarloSimulationController(QObject* parent = nullptr);
   ~MonteCarloSimulationController() override;
-
-  const QString k_ExeName = QString("EMMCOpenCL");
-  const QString k_NMLName = QString("EMMCOpenCL.nml");
 
   using EnumType = unsigned int;
 
@@ -82,6 +76,9 @@ public:
     double energyBinSize;
     double maxDepthConsider;
     double depthStepSize;
+    double ivolstepx;
+    double ivolstepy;
+    double ivolstepz;
     int mcMode;
     int numOfPixelsN;
     int numOfEPerWorkitem;
@@ -90,6 +87,9 @@ public:
     int gpuPlatformID;
     int gpuDeviceID;
     int globalWorkGroupSize;
+    int ivolx;
+    int ivoly;
+    int ivolz;
     QString inputFilePath;
     QString outputFilePath;
   };
@@ -107,53 +107,19 @@ public:
    */
   bool validateInput() const;
 
-  /**
-   * @brief setUpdateProgress
-   * @param loopCompleted
-   * @param totalLoops
-   * @param bseYield
-   */
-  void setUpdateProgress(int loopCompleted, int totalLoops, float bseYield) const;
-
-public slots:
-
-  /**
-   * @brief execute
-   */
-  void execute();
-
-  /**
-   * @brief cancelProcess
-   */
-  void cancelProcess();
-
-protected slots:
-
-  void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-
-signals:
-  void warningMessageGenerated(const QString& msg) const;
-  void errorMessageGenerated(const QString& msg) const;
-  void stdOutputMessageGenerated(const QString& msg) const;
-
-  void finished();
-
-  void updateMCProgress(int loop, int totalLoops, float bseYield) const;
-
 private:
-  bool m_Cancel = false;
-  size_t m_InstanceKey = 0;
-  bool m_Executing = false;
-
   InputDataType m_InputData;
-
-  QSharedPointer<QProcess> m_CurrentProcess;
 
   /**
    * @brief MonteCarloSimulationController::generateNMLFile
    * @param path
    */
-  void generateNMLFile(const QString& path);
+  void generateNMLFile(const QString& path) override;
+
+  /**
+   * @brief processFinished
+   */
+  void processFinished() override;
 
 public:
   MonteCarloSimulationController(const MonteCarloSimulationController&) = delete;            // Copy Constructor Not Implemented

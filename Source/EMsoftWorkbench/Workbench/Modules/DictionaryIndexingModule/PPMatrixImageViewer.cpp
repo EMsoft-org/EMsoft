@@ -69,6 +69,13 @@ void PPMatrixImageViewer::loadImage(const QImage &image, float hipassValue, int 
   m_HipassValue = hipassValue;
   m_HipassNumOfSteps = hipassNumOfSteps;
 
+  if(!m_SelectedImageCoords.isNull())
+  {
+    std::pair<int, float> hipassData = calculateHipassData();
+    emit selectedHipassNumOfRegionsChanged(hipassData.first);
+    emit selectedHipassValueChanged(hipassData.second);
+  }
+
   update();
 }
 
@@ -215,6 +222,48 @@ void PPMatrixImageViewer::paintGL()
 }
 
 // -----------------------------------------------------------------------------
+std::pair<int, float> PPMatrixImageViewer::calculateHipassData()
+{
+  if(m_SelectedImageCoords.isNull())
+  {
+    return {};
+  }
+
+  std::pair<int, float> hipassData;
+
+  QImage image = getCurrentImage();
+  int imageWidth = image.width();
+  int imageHeight = image.height();
+  int xStep = imageWidth / m_HipassNumOfSteps;
+  int yStep = imageHeight / m_HipassNumOfSteps;
+
+  // We are counting down with the Y counter because Qt assumes that (0,0) is in the upper left, whereas
+  // we want (0,0) to be located in the bottom left.
+  int xCounter = 1;
+  int yCounter = m_HipassNumOfSteps;
+  for(int x = 0; x <= imageWidth; x += xStep)
+  {
+    for(int y = 0; y <= imageHeight; y += yStep)
+    {
+      QRect rect(x, y, xStep, yStep);
+      if(rect.contains(m_SelectedImageCoords))
+      {
+        hipassData.first = yCounter;
+        hipassData.second = m_HipassValue / ((xCounter - 1) * 2);
+        return hipassData;
+      }
+
+      yCounter--;
+    }
+
+    xCounter++;
+    yCounter = m_HipassNumOfSteps;
+  }
+
+  return {};
+}
+
+// -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
 void PPMatrixImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
@@ -228,33 +277,9 @@ void PPMatrixImageViewer::mouseDoubleClickEvent(QMouseEvent *event)
 
     m_SelectedImageCoords = mapToImageCoordinates(m_MouseCoords);
 
-    QImage image = getCurrentImage();
-    int imageWidth = image.width();
-    int imageHeight = image.height();
-    int xStep = imageWidth / m_HipassNumOfSteps;
-    int yStep = imageHeight / m_HipassNumOfSteps;
-
-    // We are counting down with the Y counter because Qt assumes that (0,0) is in the upper left, whereas
-    // we want (0,0) to be located in the bottom left.
-    int xCounter = 1;
-    int yCounter = m_HipassNumOfSteps;
-    for (int x = 0; x <= imageWidth; x += xStep)
-    {
-      for (int y = 0; y <= imageHeight; y += yStep)
-      {
-        QRect rect(x, y, xStep, yStep);
-        if (rect.contains(m_SelectedImageCoords))
-        {
-          emit selectedHipassNumOfRegionsChanged(yCounter);
-          emit selectedHipassValueChanged(m_HipassValue / ((xCounter-1) * 2));
-        }
-
-        yCounter--;
-      }
-
-      xCounter++;
-      yCounter = m_HipassNumOfSteps;
-    }
+    std::pair<int, float> hipassData = calculateHipassData();
+    emit selectedHipassNumOfRegionsChanged(hipassData.first);
+    emit selectedHipassValueChanged(hipassData.second);
 
     update();
   }

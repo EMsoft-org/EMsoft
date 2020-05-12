@@ -58,7 +58,8 @@
  masterfile = 'undefined',
 ! experimental patter file name [relative to EMdatapathname]
  patfile = 'undefined',
-! input file type parameter: Binary, EMEBSD, TSLHDF, TSLup2, OxfordHDF, OxfordBinary, BrukerHDF, NORDIF
+! input file type parameter: Binary, EMEBSD, EMEBSD32i, EMEBSD32f, TSLHDF, TSLup2, 
+!                            OxfordHDF, OxfordBinary, BrukerHDF, NORDIF
  inputtype = 'Binary',
 ! here we enter the HDF group names and data set names as individual strings (up to 10)
 ! enter the full path of a data set in individual strings for each group, in the correct order,

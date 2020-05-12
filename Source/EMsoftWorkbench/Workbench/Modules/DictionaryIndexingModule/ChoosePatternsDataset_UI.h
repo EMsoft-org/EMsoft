@@ -35,18 +35,20 @@
 
 #pragma once
 
-#include <QtWidgets/QDialog>
+#include <QtWidgets/QWidget>
 
-#include "ui_ChoosePatternsDatasetDialog.h"
+#include "Common/Constants.h"
 
-class ChoosePatternsDatasetDialog : public QDialog
+#include "ui_ChoosePatternsDataset_UI.h"
+
+class ChoosePatternsDataset_UI : public QWidget
 {
     Q_OBJECT
 
   public:
-    ChoosePatternsDatasetDialog(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::Dialog);
+    ChoosePatternsDataset_UI(QWidget* parent = nullptr, Qt::WindowFlags flags = Qt::Widget);
 
-    ~ChoosePatternsDatasetDialog() override;
+    ~ChoosePatternsDataset_UI() override;
 
     /**
      * @brief getHDF5DatasetSelectionWidget
@@ -54,15 +56,33 @@ class ChoosePatternsDatasetDialog : public QDialog
      */
     HDF5DatasetSelectionWidget* getHDF5DatasetSelectionWidget() const;
 
+    /**
+     * @brief readSession
+     * @param obj
+     */
+    void readSession(QJsonObject& obj);
+
+    /**
+     * @brief writeSession
+     * @param obj
+     */
+    void writeSession(QJsonObject& obj) const;
+
   protected:
     void setupGui();
 
+  signals:
+    void parametersChanged();
+    void inputTypeChanged(EMsoftWorkbenchConstants::InputType inputType);
+    void selectedHDF5PathsChanged(const QStringList& patternDSetPaths);
+    void patternDataFilePathChanged(const QString& filePath);
+
   private:
-    QSharedPointer<Ui::ChoosePatternsDatasetDialog> m_Ui;
+    QSharedPointer<Ui::ChoosePatternsDataset_UI> m_Ui;
 
   public:
-    ChoosePatternsDatasetDialog(const ChoosePatternsDatasetDialog&) = delete;            // Copy Constructor Not Implemented
-    ChoosePatternsDatasetDialog(ChoosePatternsDatasetDialog&&) = delete;                 // Move Constructor Not Implemented
-    ChoosePatternsDatasetDialog& operator=(const ChoosePatternsDatasetDialog&) = delete; // Copy Assignment Not Implemented
-    ChoosePatternsDatasetDialog& operator=(ChoosePatternsDatasetDialog&&) = delete;      // Move Assignment Not Implemented
+    ChoosePatternsDataset_UI(const ChoosePatternsDataset_UI&) = delete;            // Copy Constructor Not Implemented
+    ChoosePatternsDataset_UI(ChoosePatternsDataset_UI&&) = delete;                 // Move Constructor Not Implemented
+    ChoosePatternsDataset_UI& operator=(const ChoosePatternsDataset_UI&) = delete; // Copy Assignment Not Implemented
+    ChoosePatternsDataset_UI& operator=(ChoosePatternsDataset_UI&&) = delete;      // Move Assignment Not Implemented
 };

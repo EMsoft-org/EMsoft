@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ChoosePatternsDataset_UI</class>
+ <widget class="QWidget" name="ChoosePatternsDataset_UI">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>671</width>
+    <height>567</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Choose Patterns Dataset</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QGroupBox
+{
+	font-weight: bold;
+}</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_3">
+   <property name="leftMargin">
+    <number>4</number>
+   </property>
+   <property name="topMargin">
+    <number>4</number>
+   </property>
+   <property name="rightMargin">
+    <number>4</number>
+   </property>
+   <property name="bottomMargin">
+    <number>4</number>
+   </property>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="inputTypeCB">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <property name="sizeAdjustPolicy">
+      <enum>QComboBox::AdjustToContents</enum>
+     </property>
+     <item>
+      <property name="text">
+       <string>Binary</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>TSLup1</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>TSLup2</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>TSLHDF</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>OxfordBinary</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>OxfordHDF</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>EMEBSD</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>BrukerHDF</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="inputTypeLabel">
+     <property name="text">
+      <string>Input Type</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="HDF5DatasetSelectionWidget" name="hdf5DatasetSelectionWidget" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>HDF5DatasetSelectionWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">HDF5DatasetSelectionWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="../../../Resources/icons/images/Icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>

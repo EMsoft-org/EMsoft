@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2016-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2016-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -57,18 +57,18 @@ IMPLICIT NONE
 integer(C_INT32_T),INTENT(OUT)  :: res
 
 type(unitcell)          :: cell
-integer(kind=irg)		:: i, j, k
-real(kind=dbl)			:: diff
-real(kind=sgl)			:: diffs
+integer(kind=irg)		    :: i, j, k
+real(kind=dbl)			    :: diff
+real(kind=sgl)			    :: diffs
 
 ! reference values
 real(kind=dbl),parameter:: eps = 1.0D-10
-real(kind=sgl),parameter:: epss = 1.0E-7
-real(kind=dbl)   		:: dmt_ref(3,3), rmt_ref(3,3), dsm_ref(3,3), rsm_ref(3,3), vol_ref
-real(kind=sgl)			:: trsps_ref(27)
-real(kind=dbl)			:: trspd_ref(27)
-real(kind=sgl)			:: tins(3), touts(3)
-real(kind=dbl)			:: tind(3), toutd(3)
+real(kind=sgl),parameter:: epss = 5.0E-7
+real(kind=dbl)   		    :: dmt_ref(3,3), rmt_ref(3,3), dsm_ref(3,3), rsm_ref(3,3), vol_ref
+real(kind=sgl)			    :: trsps_ref(27)
+real(kind=dbl)			    :: trspd_ref(27)
+real(kind=sgl)			    :: tins(3), touts(3), touts2(3)
+real(kind=dbl)			    :: tind(3), toutd(3), toutd2(3)
 character(1)            :: inspace(3), outspace(3)
 
 !===================================================
@@ -93,7 +93,7 @@ trsps_ref = (/  2.00000000,  3.00000000, -4.00000000, &
                 9.47431469, 12.89660549,-14.32256985, &
                 2.00000000,  3.00000000, -4.00000000, &
                 3.33333325,  3.76407170, -9.46833515, &
-                3.33333325,  3.76407170, -9.46833515, &
+                4.57453749,  7.49341842, -6.05072336, &
                 1.20000005,  2.31120372, -1.02330554, &
                 2.00000000,  3.00000000, -4.00000000 /)
 
@@ -104,7 +104,7 @@ trspd_ref =  (/ 2.000000000000D+00,3.000000000000D+00,-4.000000000000D+00, &
                 0.947431464964D+01,0.128966052150D+02,-.143225696224D+02, &
                 2.000000000000D+00,3.000000000000D+00,-4.000000000000D+00, &
                 0.333333333333D+01,0.376407173429D+01,-.946833545571D+01, &
-                0.333333333333D+01,0.376407173429D+01,-.946833545571D+01, &
+                4.574537496651D+00,7.493418424301D+00,-6.050723356545D+00, &
                 0.120000000000D+01,0.231120373006D+01,-.102330548366D+01, &
                 2.000000000000D+00,3.000000000000D+00,-4.000000000000D+00 /)
 
@@ -226,6 +226,49 @@ do i=1,3
     end if
   end do
 end do
+
+! do a back and forth test  (double)
+! d -> c -> d 
+call TransSpace(cell,tind,toutd,'d','c')
+call TransSpace(cell,toutd,toutd2,'c','d')
+diff = maxval(dabs(tind - toutd2))
+if (diff.gt.eps) then
+   res = 24 
+   write (*,*) 'unequal vectors:',tind,toutd2
+   return
+end if
+
+! r -> c -> r 
+call TransSpace(cell,tind,toutd,'r','c')
+call TransSpace(cell,toutd,toutd2,'c','r')
+diff = maxval(dabs(tind - toutd2))
+if (diff.gt.eps) then
+   res = 25 
+   write (*,*) 'unequal vectors:',tind,toutd2
+   return
+end if
+
+! do a back and forth test  (single)
+! d -> c -> d 
+call TransSpace(cell,tins,touts,'d','c')
+call TransSpace(cell,touts,touts2,'c','d')
+diff = maxval(abs(tins - touts2))
+if (diff.gt.epss) then
+   res = 26 
+   write (*,*) 'unequal vectors:',tins,touts2
+   return
+end if
+
+! r -> c -> r 
+call TransSpace(cell,tins,touts,'r','c')
+call TransSpace(cell,touts,touts2,'c','r')
+diff = maxval(abs(tins - touts2))
+if (diff.gt.epss) then
+   res = 27 
+   write (*,*) 'unequal vectors:',tins,touts2
+   return
+end if
+
 !===================================================
 
 ! TransCoor 

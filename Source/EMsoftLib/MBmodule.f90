@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -585,6 +585,113 @@ end subroutine Initialize_SghLUT
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE: Initialize_SghLUTEEC
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief initialize a look-up table with Sgh structure-factor-like entries (EMEECmaster)
+!
+!> @param cell unit cell pointer
+!> @param dmin smallest d-spacing to consider
+!> @param numset number of equivalent isotope atom positions
+!> @param ctmp array with isotope fractional coordinates
+!> @param verbose produce output (or not)
+!
+!> @date 12/14/19 MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive subroutine Initialize_SghLUTEEC(cell, dmin, numset, ctmp, verbose)
+!DEC$ ATTRIBUTES DLLEXPORT :: Initialize_SghLUTEEC
+
+use local
+use typedefs
+use crystal
+use symmetry
+use files
+use io
+use error
+use gvectors
+use diffraction
+
+IMPLICIT NONE
+
+type(unitcell)                             :: cell
+real(kind=sgl),INTENT(IN)                  :: dmin
+integer(kind=sgl),INTENT(IN)               :: numset
+real(kind=dbl),INTENT(INOUT)               :: ctmp(192,3)          !< output array with orbit coordinates
+logical,INTENT(IN),optional                :: verbose
+
+integer(kind=irg)                          :: istat, io_int(3), skip
+integer(kind=irg)                          :: imh, imk, iml, gg(3), ix, iy, iz
+real(kind=sgl)                             :: dhkl, io_real(3), ddt
+complex(kind=dbl)                          :: Sghvec
+
+
+! compute the range of reflections for the lookup table and allocate the table
+! The master list is easily created by brute force
+ imh = 1
+ do 
+   dhkl = 1.0/CalcLength(cell,  (/float(imh) ,0.0_sgl,0.0_sgl/), 'r')
+   if (dhkl.lt.dmin) EXIT
+   imh = imh + 1
+ end do
+ imk = 1
+ do 
+   dhkl = 1.0/CalcLength(cell, (/0.0_sgl,float(imk),0.0_sgl/), 'r')
+   if (dhkl.lt.dmin) EXIT
+   imk = imk + 1
+ end do
+ iml = 1
+ do 
+   dhkl = 1.0/CalcLength(cell, (/0.0_sgl,0.0_sgl,float(iml)/), 'r')
+   if (dhkl.lt.dmin) EXIT
+   iml = iml + 1
+ end do
+ 
+ if (present(verbose)) then
+  if (verbose) then
+    io_int = (/ imh, imk, iml /)
+    call WriteValue(' Range of reflections along a*, b* and c* = ',io_int,3)
+  end if
+ end if
+  
+! the SghLUT array stores all the structure-factor-like quantities of the Sgh matrix needed for EBSD, ECP, etc simulations
+ allocate(cell%SghLUT(1:numset,-2*imh:2*imh,-2*imk:2*imk,-2*iml:2*iml),stat=istat)
+ if (istat.ne.0) call FatalError('InitializeCell:',' unable to allocate cell%SghLUT array')
+ cell%SghLUT = cmplx(0.D0,0.D0)
+
+ if (present(verbose)) then
+  if (verbose) then
+   call Message(' Generating Sgh coefficient lookup table ... ', frm = "(/A)",advance="no")
+  end if
+ end if
+ 
+! note that the lookup table must be twice as large as the list of participating reflections,
+! since the Sgh matrix uses g-h as its index !!!  
+izl: do iz=-2*iml,2*iml
+iyl:  do iy=-2*imk,2*imk
+ixl:   do ix=-2*imh,2*imh
+        gg = (/ ix, iy, iz /)
+        if (IsGAllowed(cell,gg)) then  ! is this reflection allowed by lattice centering ?
+! add the reflection to the look up table
+           call preCalcSghEEC(cell,gg,numset,ctmp,Sghvec)
+           cell%SghLUT(1, ix, iy, iz) = Sghvec
+        end if ! IsGAllowed
+       end do ixl
+      end do iyl
+    end do izl
+
+  if (present(verbose)) then
+   if (verbose) then
+    call Message(' Done', frm = "(A/)")
+   end if
+  end if
+
+! that's it
+end subroutine Initialize_SghLUTEEC
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE: getSghfromLUT
 !
 !> @author Marc De Graef, Carnegie Mellon University
@@ -638,6 +745,59 @@ integer(kind=irg)                       :: ir, ic, kkk(3)
    end do  
 
 end subroutine getSghfromLUT
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: getSghfromLUTEEC
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute structure factor-like Sgh array entry for EEC simulations
+!
+!> @param cell unit cell pointer
+!> @param reflist pointer to reflection list
+!> @param nns number of strong reflections
+!> @param Sgh output array
+!
+!> @date 12/14/19  MDG 1.0 original 
+!--------------------------------------------------------------------------
+recursive subroutine getSghfromLUTEEC(cell,reflist,nns,Sgh)
+!DEC$ ATTRIBUTES DLLEXPORT :: getSghfromLUTEEC
+
+use local
+use typedefs
+use crystal
+use gvectors
+use constants
+use symmetry
+
+IMPLICIT NONE
+
+type(unitcell)                          :: cell
+type(reflisttype),pointer               :: reflist
+integer(kind=irg),INTENT(IN)            :: nns
+complex(kind=dbl),INTENT(INOUT)         :: Sgh(nns,nns)
+!f2py intent(in,out) ::  Sgh
+
+type(reflisttype),pointer               :: rltmpa, rltmpb
+integer(kind=irg)                       :: ir, ic, kkk(3)
+
+! loop over all contributing reflections
+! ir is the row index
+    rltmpa => reflist%next    ! point to the front of the list
+    do ir=1,nns
+! ic is the column index
+      rltmpb => reflist%next    ! point to the front of the list
+      do ic=1,nns
+        kkk = rltmpb%hkl - rltmpa%hkl
+        Sgh(ir,ic) = cell%SghLUT(1,kkk(1),kkk(2),kkk(3))
+        rltmpb => rltmpb%nexts  ! move to next column-entry
+      end do
+     rltmpa => rltmpa%nexts  ! move to next row-entry
+   end do  
+
+end subroutine getSghfromLUTEEC
+
 
 !--------------------------------------------------------------------------
 !
@@ -713,6 +873,74 @@ type(reflisttype),pointer               :: rltmpa, rltmpb
   end do
   
 end subroutine preCalcSgh
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE: preCalcSghEEC
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief compute structure factor-like Sgh array entry for EEC simulations
+!
+!> @note this may need some more work ... 
+!
+!> @param cell unit cell pointer
+!> @param kkk input g-vector
+!> @param nSites number of atom positions in asymmetric unit
+!> @param iSites equivalent atom postions array
+!> @param Sghvec output array
+!
+!> @date 12/13/19  MDG 1.0 original 
+!--------------------------------------------------------------------------
+recursive subroutine preCalcSghEEC(cell,kkk,nSites,iSites,Sghvec)
+!DEC$ ATTRIBUTES DLLEXPORT :: preCalcSghEEC
+
+use local
+use typedefs
+use crystal
+use gvectors
+use constants
+use symmetry
+
+IMPLICIT NONE
+
+type(unitcell)                          :: cell
+integer(kind=irg),INTENT(IN)            :: kkk(3)
+integer(kind=irg),INTENT(IN)            :: nSites
+real(kind=dbl),INTENT(IN)               :: iSites(192,3)
+complex(kind=dbl),INTENT(INOUT)         :: Sghvec
+!f2py intent(in,out) ::  Sghvec
+
+integer(kind=irg)                       :: ip, ir, ic, ikk, n
+real(kind=sgl)                          :: Znsq, DBWF, kkl
+complex(kind=dbl)                       :: carg
+real(kind=dbl)                          :: arg, tpi
+type(reflisttype),pointer               :: rltmpa, rltmpb
+
+tpi = 2.D0 * cPi
+Sghvec = cmplx(0.D0,0.D0)
+
+! for the isotope positions, we need to compute their contribution to the Sgh array
+! We'll assume isotropic Debye-Waller factors for now ...
+! That means we need the square of the length of s=kk^2/4
+    ! kkl = 0.25 * CalcLength(cell,float(kkk),'r')**2
+! Debye-Waller exponential times Z^2
+    ! DBWF = Znsq * exp(-cell%ATOM_pos(ip,5)*kkl)
+! here is where we insert the proper weight factor, Z^2 exp[-M_{h-g}]
+! and also the detector geometry...   For now, we do nothing with the detector
+! geometry; the Rossouw et al 1994 paper lists a factor A that does not depend
+! on anything in particular, so we assume it is 1. 
+do ikk=1,nSites ! sum over all the atoms in this orbit
+! get the argument of the complex exponential
+  arg = tpi*sum(dble(kkk(1:3))*iSites(ikk,1:3))
+  carg = cmplx(dcos(arg),dsin(arg))
+! multiply with the prefactor and add
+  Sghvec = Sghvec + carg ! * cmplx(DBWF,0.D0)
+end do
+
+  
+end subroutine preCalcSghEEC
 
 
 !--------------------------------------------------------------------------
@@ -1028,7 +1256,6 @@ Lgh = matmul(tmp3,transpose(CGG))
 
 end subroutine CalcLgh
 
-
 !--------------------------------------------------------------------------
 !
 ! SUBROUTINE: GetDynMat
@@ -1050,6 +1277,7 @@ end subroutine CalcLgh
 !> @param nns number of strong reflections
 !> @param nnw number of weak reflections
 !> @param BlochMode [optional] Bloch or Struc
+!> @param noNormAbs [optional and experimental] no normal absorption
 !
 !> @date  04/22/14 MDG 1.0 new library version
 !> @date  06/15/14 MDG 2.0 updated for removal of globals
@@ -1057,8 +1285,9 @@ end subroutine CalcLgh
 !> @date  06/18/14 MDG 2.2 corrected some pointer allocation errors in other routines; this one now works fine.
 !> @date  09/08/15 MDG 3.0 rewrite to allow either dynamical matrix type (Bloch/structure matrix) to be generated
 !> @date  09/14/15 SS  3.1 added exp(-pi/xgp) to the diagonal elements of the bloch dynamical matrix
+!> @date  11/21/19 MDG 3.2 optional parameter to turn off inclusion of normal absorption on diagonal
 !--------------------------------------------------------------------------
-recursive subroutine GetDynMat(cell, listroot, listrootw, rlp, DynMat, nns, nnw, BlochMode)
+recursive subroutine GetDynMat(cell, listroot, listrootw, rlp, DynMat, nns, nnw, BlochMode, noNormAbs)
 !DEC$ ATTRIBUTES DLLEXPORT :: GetDynMat
 
 use local
@@ -1082,6 +1311,7 @@ complex(kind=dbl),INTENT(INOUT)  :: DynMat(nns,nns)
 !f2py intent(in,out) ::  DynMat
 integer(kind=irg),INTENT(IN)     :: nnw
 character(5),INTENT(IN),OPTIONAL :: BlochMode   ! 'Bloch' or 'Struc'
+logical,INTENT(IN),OPTIONAL      :: noNormAbs
 
 complex(kind=dbl)                :: czero, ughp, uhph, weaksum, cv, Agh, Ahgp, Ahmgp, Ahg, weakdiagsum, pq0, Ahh, Agpgp, ccpi 
 real(kind=dbl)                   :: weaksgsum, tpi, Pioxgp
@@ -1114,6 +1344,11 @@ if (AorD.eq.'D') then
         DynMat = czero
         call CalcUcg(cell, rlp, (/0,0,0/) )
         Upz = rlp%Upmod
+        if (present(noNormAbs)) then 
+          if (noNormAbs.eqv..TRUE.) then 
+            Upz = 0.0
+          end if
+        end if
         !Pioxgp = cPi/rlp%xgp
 
         rlr => listroot%next

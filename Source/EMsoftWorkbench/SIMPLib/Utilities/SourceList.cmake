@@ -15,10 +15,12 @@ set_source_files_properties( ${SIMPLib_${SUBDIR_NAME}_Generated_MOC_SRCS} PROPER
 
 set(SIMPLib_Utilities_HDRS
   ${SIMPLib_SOURCE_DIR}/${SUBDIR_NAME}/SIMPLDataPathValidator.h
+  ${SIMPLib_SOURCE_DIR}/${SUBDIR_NAME}/ColorTable.h
 )
 
 set(SIMPLib_Utilities_SRCS
   ${SIMPLib_SOURCE_DIR}/${SUBDIR_NAME}/SIMPLDataPathValidator.cpp
+  ${SIMPLib_SOURCE_DIR}/${SUBDIR_NAME}/ColorTable.cpp
 )
 
 cmp_IDE_SOURCE_PROPERTIES( "${SUBDIR_NAME}" "${SIMPLib_${SUBDIR_NAME}_HDRS};${SIMPLib_${SUBDIR_NAME}_Moc_HDRS}" "${SIMPLib_${SUBDIR_NAME}_SRCS}" "${PROJECT_INSTALL_HEADERS}")

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -153,7 +153,7 @@ logical                                 :: switchwfoff = .FALSE.
 
 type(HDFobjectStackType)                :: HDF_head
 integer(HSIZE_T), dimension(1:3)        :: hdims, offset 
-integer(HSIZE_T)                        :: dim0, dim1, dim2
+integer(HSIZE_T)                        :: dims3(3)
 character(fnlen,kind=c_char)            :: line2(1)
 character(fnlen)                        :: groupname, dataset, attributename, HDF_FileVersion
 character(11)                           :: dstr
@@ -245,8 +245,6 @@ datafile = trim(EMsoft_getEMdatapathname())//trim(ecpnl%datafile)
 datafile = EMsoft_toNativePath(datafile)
 hdferr =  HDF_createFile(datafile, HDF_head)
 
-nullify(HDF_head%next)
-
 ! write the EMheader to the file
 groupname = SC_ECP
 call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
@@ -255,14 +253,10 @@ call HDF_writeEMheader(HDF_head, dstr, tstrb, tstre, progname, groupname)
 groupname = SC_NMLfiles
 hdferr = HDF_createGroup(groupname, HDF_head)
 
-groupname = SC_EMECP
-hdferr = HDF_createGroup(groupname, HDF_head)
-
 ! read the text file and write the array to the file
 dataset = SC_EMECPNML
 hdferr = HDF_writeDatasetTextFile(dataset, nmldeffile, HDF_head)
 
-call HDF_pop(HDF_head)
 call HDF_pop(HDF_head)
 
 ! create a NMLparameters group to write all the namelist entries into
@@ -362,21 +356,15 @@ if (ecpnl%outputformat .eq. 'bin') then
 ! write dictionary pattern to h5 file
     offset = (/ 0, 0, 0 /)
     hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
-    dim0 = ecpnl%npix
-    dim1 = ecpnl%npix
-    dim2 = 1
-    hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head)
+    dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+    hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dims3, HDF_head)
 end if
 
 if (ecpnl%outputformat .eq. 'gui') then
     offset = (/ 0, 0, 0 /)
     hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
-    dim0 = ecpnl%npix
-    dim1 = ecpnl%npix
-    dim2 = 1
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head)
+    dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dims3, HDF_head)
 end if
 
 !D = cmplx(0.000001,-0.0000014)
@@ -389,7 +377,7 @@ call OMP_SET_NUM_THREADS(ecpnl%nthreads)
 ! use OpenMP to run on multiple cores
 !$OMP PARALLEL DEFAULT(SHARED) &
 !$OMP PRIVATE(TID,nthreads,dc,ixy,istat,nix,niy,nixp,niyp,dx,dy,dxm,dym,MCangle,isig,dp,isigp) &
-!$OMP& PRIVATE(ipx,ipy,ECPpattern,bpat,ECPpatternintd,ma,mi,offset,hdims,dim0,dim1,dim2,hdferr,qu,idir,wf)
+!$OMP& PRIVATE(ipx,ipy,ECPpattern,bpat,ECPpatternintd,ma,mi,offset,hdims,dims3,hdferr,qu,idir,wf)
 
 TID = OMP_GET_THREAD_NUM()
 nthreads = OMP_GET_NUM_THREADS()
@@ -490,24 +478,17 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
 ! write dictionary pattern to h5 file
         offset = (/ 0, 0, iang-1 /)
         hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
-        dim0 = ecpnl%npix
-        dim1 = ecpnl%npix
-        dim2 = 1
-        hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head, insert)
+        dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+        hdferr = HDF_writeHyperslabCharArray3D(dataset, bpat, hdims, offset, dims3, HDF_head, insert)
  
     end if
-
 
     if (ecpnl%outputformat .eq. 'gui') then
           if (ecpnl%maskpattern.eq.'y')  ECPpattern = ECPpattern * mask
           offset = (/ 0, 0, iang-1 /)
           hdims = (/ ecpnl%npix, ecpnl%npix, ecpnl%numangle_anglefile /)
-          dim0 = ecpnl%npix
-          dim1 = ecpnl%npix
-          dim2 = 1
-          hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dim0, dim1, dim2, &
-                                          HDF_head, insert)
+          dims3 = (/ ecpnl%npix, ecpnl%npix, 1 /)
+          hdferr = HDF_writeHyperslabFloatArray3D(dataset, ECPpattern, hdims, offset, dims3, HDF_head, insert)
 ! =====================================================
 ! end of HDF_FileVersion = 4.0 write statements
 ! =====================================================

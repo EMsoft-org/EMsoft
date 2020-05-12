@@ -76,6 +76,7 @@
 111EMOM
 112EMgetEulers
 120EMSphInx
+121EMEECmaster
 200EMdefectdata
 210MDElectronProp
 211EMmdSTEM
@@ -85,9 +86,12 @@
 230EMRefineMartensite
 250EMLauemaster
 251EMLaue
+252EMLaueSlit
 260EMgetOSM
 261EMdpmerge
 262EMhh4
 270EMGBOdm
 280EMgetlocalOSM
 281EMEBSDmasterSHT
+282EMEBSDdefect
+283EMEBSDDE

@@ -55,8 +55,8 @@
 
 const float zoomOffset = 0.25f;
 const float bounceBackSpeed = 3.0f;
-const float minZoomFactor = 0.25f;
-const float maxZoomFactor = 4.0f;
+// const float minZoomFactor = 0.25f;
+// const float maxZoomFactor = 4.0f;
 
 namespace ivMod = EMsoftWorkbenchConstants::ImageViewerConstants;
 namespace ioMod = EMsoftWorkbenchConstants::IOStrings;

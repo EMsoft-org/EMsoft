@@ -105,19 +105,13 @@
       <property name="bottomMargin">
        <number>4</number>
       </property>
-      <item row="2" column="2">
-       <widget class="QSpinBox" name="betheParametersYSB">
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="betheParametersXSB">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>110</width>
-          <height>0</height>
-         </size>
         </property>
         <property name="suffix">
          <string/>
@@ -129,7 +123,14 @@
          <number>237</number>
         </property>
         <property name="value">
-         <number>8</number>
+         <number>4</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="bLabel_8">
+        <property name="text">
+         <string>Number of OpenMP Threads</string>
         </property>
        </widget>
       </item>
@@ -143,6 +144,64 @@
         </property>
         <property name="text">
          <string>Number of Master Pattern Pixels</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QSpinBox" name="numOfOpenMPThreadsSB">
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>237</number>
+        </property>
+        <property name="value">
+         <number>2</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QDoubleSpinBox" name="smallestDSpacingSB">
+        <property name="prefix">
+         <string/>
+        </property>
+        <property name="suffix">
+         <string> nm</string>
+        </property>
+        <property name="value">
+         <double>0.050000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="bLabel_5">
+        <property name="text">
+         <string>Smallest D-Spacing To Consider</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="numOfMPPixelsSB">
+        <property name="toolTip">
+         <string>Number of master pattern pixels N along positive X (total 2N+1)</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>2000000001</number>
+        </property>
+        <property name="value">
+         <number>500</number>
         </property>
        </widget>
       </item>
@@ -174,21 +233,20 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QDoubleSpinBox" name="smallestDSpacingSB">
-        <property name="prefix">
-         <string/>
+      <item row="2" column="2">
+       <widget class="QSpinBox" name="betheParametersYSB">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="suffix">
-         <string> nm</string>
+        <property name="minimumSize">
+         <size>
+          <width>110</width>
+          <height>0</height>
+         </size>
         </property>
-        <property name="value">
-         <double>0.050000000000000</double>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QSpinBox" name="numOfOpenMPThreadsSB">
         <property name="suffix">
          <string/>
         </property>
@@ -199,43 +257,7 @@
          <number>237</number>
         </property>
         <property name="value">
-         <number>2</number>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="bLabel_8">
-        <property name="text">
-         <string>Number of OpenMP Threads</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QSpinBox" name="numOfMPPixelsSB">
-        <property name="toolTip">
-         <string>Number of master pattern pixels N along positive X (total 2N+1)</string>
-        </property>
-        <property name="statusTip">
-         <string/>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>2000000001</number>
-        </property>
-        <property name="value">
-         <number>500</number>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="bLabel_5">
-        <property name="text">
-         <string>Smallest D-Spacing To Consider</string>
+         <number>8</number>
         </property>
        </widget>
       </item>
@@ -243,28 +265,6 @@
        <widget class="QLabel" name="bLabel_9">
         <property name="text">
          <string>Bethe Parameters</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QSpinBox" name="betheParametersXSB">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="suffix">
-         <string/>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>237</number>
-        </property>
-        <property name="value">
-         <number>4</number>
         </property>
        </widget>
       </item>

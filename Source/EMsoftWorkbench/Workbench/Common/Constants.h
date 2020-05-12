@@ -175,6 +175,12 @@ namespace EMsoftWorkbenchConstants
     const QString MaxDepthToConsider = "Maximum Depth To Consider";
     const QString DepthStepSize = "Depth Step Size";
     const QString NumberOfXPixelsN = "Number of X Pixels N";
+    const QString InteractionVolumeX = "Interaction Volume X";
+    const QString InteractionVolumeY = "Interaction Volume Y";
+    const QString InteractionVolumeZ = "Interaction Volume Z";
+    const QString InteractionStepX = "Interaction Vol Step X";
+    const QString InteractionStepY = "Interaction Vol Step Y";
+    const QString InteractionStepZ = "Interaction Vol Step Z";
 
     const QString GPU = "GPU";
     const QString NumberOfElectronsPerWorkitem = "Number of Electrons Per Workitem";
@@ -305,6 +311,9 @@ namespace EMsoftWorkbenchConstants
 
     const QString HDF5DatasetSelectionSettings = "HDF5 Dataset Selection Settings";
     const QString HDF5DatasetSelectionInputFile = "HDF5 Dataset Selection Input File";
+    const QString HDF5DatasetSelection = "HDF5 Dataset Selection";
+
+    const QString PatternsInputType = "Patterns Input Type";
   }
 }
 

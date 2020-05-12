@@ -63,10 +63,10 @@ namespace DictionaryIndexingModuleConstants
     const QString PatternHeight = "Pattern Height";
     const QString PatternWidth = "Pattern Width";
     const QString UseROI = "Use ROI";
-    const QString ROI_1 = "ROI_1";
-    const QString ROI_2 = "ROI_2";
-    const QString ROI_3 = "ROI_3";
-    const QString ROI_4 = "ROI_4";
+    const QString ROI_X = "ROI_X";
+    const QString ROI_Y = "ROI_Y";
+    const QString ROI_W = "ROI_W";
+    const QString ROI_H = "ROI_H";
     const QString BinningFactor = "Binning Factor";
     const QString BinningX = "Binning X";
     const QString BinningY = "Binning Y";
@@ -87,6 +87,46 @@ namespace DictionaryIndexingModuleConstants
     const QString NumOfRegionsStepSize("Number of Regions Step Size");
     const QString SelectedPatternImageX = "Selected Pattern Image X";
     const QString SelectedPatternImageY = "Selected Pattern Image Y";
+
+    const QString IndexingMode = "Indexing Mode";
+    const QString EulerAngleFile = "Euler Angle File";
+    const QString DictionaryFile = "Dictionary File";
+    const QString MasterPatternFile = "Master Pattern File";
+    const QString SamplingStepSizeX = "Sampling Step Size X";
+    const QString SamplingStepSizeY = "Sampling Step Size Y";
+    const QString ADPMatches = "ADP Matches";
+    const QString OrientationSimilarityMM = "Orientation Similarity Map Matches";
+    const QString OrientationAveragingMM = "Orientation Averaging Matches";
+    const QString IndexingSuccessMM = "Orientation Averaging Matches";
+    const QString IndexingSuccessThreshAngle = "Indexing Success Thresh Angle";
+    const QString UseCustomMask = "Use Custom Mask";
+    const QString MaskFile = "Mask File";
+    const QString NumDictSingle = "NumDictSingle";
+    const QString NumExptSingle = "NumExptSingle";
+    const QString GPUPlatform = "GPU Platform";
+    const QString GPUDevice = "GPU Device";
+    const QString L = "L";
+    const QString CubochoricPoints = "Cubochoric Points";
+    const QString CameraTiltAngle = "Camera Tilt Angle";
+    const QString Delta = "Delta";
+    const QString NumsX = "NumsX";
+    const QString NumsY = "NumsY";
+    const QString PatternCenterX = "Pattern Center X";
+    const QString PatternCenterY = "Pattern Center Y";
+    const QString Omega = "Omega";
+    const QString EnergyMin = "Energy Min";
+    const QString EnergyMax = "Energy Max";
+    const QString EnergyAveragingMethod = "Energy Averaging Method";
+    const QString SpatialAveragingMethod = "Spatial Averaging Method";
+    const QString BeamCurrent = "Beam Current";
+    const QString DwellTime = "Dwell Time";
+    const QString BinningMode = "Binning Mode";
+    const QString IntensityScalingMode = "Intensity Scaling Mode";
+    const QString GammaCorrectionFactor = "Gamma Correction Factor";
+    const QString OutputDataFile = "Output Data File";
+    const QString OutputCtfFile = "Output Ctf File";
+    const QString OutputAngFile = "Output Ang File";
+    const QString OutputAvgCtfFile = "Output Avg Ctf File";
   }
 }
 

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -447,7 +447,7 @@ character(5),dimension(36):: PGTHD =(/'    1','   -1','    2','    m','  2/m',' 
 integer(kind=irg),dimension(32)       :: PGTHDorder = (/ 1, 2, 2, 2, 4, 4, 4, 8, 4, 8, &
                                                          8, 8, 8, 8,16, 3, 6, 6, 6,12, &
                                                          6,12,12,12,12,12,24,12,24,24, &
-                                                        24,32 /)
+                                                        24,48 /)
 !DEC$ ATTRIBUTES DLLEXPORT :: PGTHDorder
 
 !> 3D point groups : purely rotational point groups corresponding to each point group
@@ -991,6 +991,15 @@ type Laue_g_list
   type(Laue_g_list),pointer :: next   ! connection to next reflector
 end type Laue_g_list
 
+type Laue_grow_list  
+  integer(kind=irg)             :: hkl(3)       ! Miller indices
+  real(kind=dbl)                :: xyz(3)       ! Cartesian components of the unit plane normal
+  real(kind=dbl),allocatable    :: sfs(:)       ! |structure factor|^2
+  real(kind=dbl),allocatable    :: dspacing(:)  ! d-spacing
+  integer(kind=irg)             :: Nentries     ! dimension of the sfs and dspacing arrays
+  type(Laue_grow_list),pointer  :: next         ! connection to next reflector
+end type Laue_grow_list
+
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
@@ -1377,6 +1386,7 @@ type orientationtype
   real(kind=sgl)        :: homochoric(3)        ! homochoric representation according to Frank's paper  
   real(kind=sgl)        :: cubochoric(3)        ! cubic grid representation (derived from homochoric)
   real(kind=sgl)        :: stereographic(3)     ! 3D stereographic  [added 10/05/17]
+  real(kind=sgl)        :: rvmap(3)             ! exponential map [added 10/25/19]
 end type orientationtype
 
 
@@ -1390,6 +1400,7 @@ type orientationtyped
   real(kind=dbl)        :: homochoric(3)        ! homochoric representation according to Frank's paper  
   real(kind=dbl)        :: cubochoric(3)        ! cubic grid representation (derived from homochoric)
   real(kind=dbl)        :: stereographic(3)     ! 3D stereographic  [added 10/05/17]
+  real(kind=dbl)        :: rvmap(3)             ! exponential map [added 10/25/19]
 end type orientationtyped
 
 !--------------------------------------------------------------------------
@@ -1868,6 +1879,7 @@ type EBSDMCdataType
         integer(kind=irg),allocatable   :: accum_e(:,:,:)
         integer(kind=irg),allocatable   :: accum_z(:,:,:,:)
         real(kind=sgl),allocatable      :: accumSP(:,:,:)
+        integer(kind=irg),allocatable   :: accum_xyz(:,:,:)
 end type EBSDMCdataType
 
 type EBSDMPdataType
@@ -1894,6 +1906,51 @@ type EBSDDetectorType
 end type EBSDDetectorType
 
 
+
+!=======================================
+!=======================================
+!=======================================
+! these are used by the various indexing modules
+type EBSDAngleDIType
+        real(kind=sgl),allocatable      :: quatang(:,:)
+end type EBSDAngleDIType
+
+type EBSDLargeAccumDIType
+        integer(kind=irg),allocatable   :: accum_e(:,:,:),accum_z(:,:,:,:)
+        real(kind=sgl),allocatable      :: accum_e_detector(:,:,:)
+end type EBSDLargeAccumDIType
+
+type EBSDMasterDIType
+        real(kind=sgl),allocatable      :: mLPNH(:,:,:) , mLPSH(:,:,:)
+        real(kind=sgl),allocatable      :: rgx(:,:), rgy(:,:), rgz(:,:)          ! auxiliary detector arrays needed for interpolation
+end type EBSDMasterDIType
+        
+type EBSDDIdataType
+  integer(kind=irg)             :: FZcnt
+  integer(kind=irg)             :: Nexp
+  integer(kind=irg)             :: pgnum
+  integer(kind=sgl),allocatable :: ADP(:,:)
+  real(kind=sgl),allocatable    :: AverageOrientations(:,:)
+  real(kind=sgl),allocatable    :: CI(:)
+  real(kind=sgl),allocatable    :: EulerAngles(:,:)
+  real(kind=sgl),allocatable    :: DictionaryEulerAngles(:,:)
+  real(kind=sgl),allocatable    :: Fit(:)
+  real(kind=sgl),allocatable    :: IQ(:)
+  real(kind=sgl),allocatable    :: KAM(:,:)
+  real(kind=sgl),allocatable    :: OSM(:,:)
+  integer(kind=irg),allocatable :: Phase(:)
+  real(kind=sgl),allocatable    :: Phi1(:)
+  real(kind=sgl),allocatable    :: Phi(:)
+  real(kind=sgl),allocatable    :: Phi2(:)
+  integer(kind=irg),allocatable :: SEMsignal(:)
+  real(kind=sgl),allocatable    :: TopDotProductList(:,:)
+  integer(kind=irg),allocatable :: TopMatchIndices(:,:)
+  integer(kind=irg),allocatable :: Valid(:)
+  real(kind=sgl),allocatable    :: XPosition(:)
+  real(kind=sgl),allocatable    :: YPosition(:)
+  real(kind=sgl),allocatable    :: RefinedEulerAngles(:,:)
+  real(kind=sgl),allocatable    :: RefinedDotProducts(:)
+end type EBSDDIdataType
 
 
 end module typedefs

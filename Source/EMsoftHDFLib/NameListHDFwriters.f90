@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -499,8 +499,8 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(LaueMasterNameListType),INTENT(IN)               :: knl
 
-integer(kind=irg),parameter                           :: n_int = 2, n_real = 2, n_double = 2
-integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+integer(kind=irg),parameter                           :: n_int = 3, n_real = 2, n_double = 2
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm, binarize
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: io_double(n_double)
 character(20)                                         :: intlist(n_int), reallist(n_real), dbllist(n_double)
@@ -511,10 +511,14 @@ character(fnlen,kind=c_char)                          :: line2(1)
 groupname = SC_LauemasterNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
+binarize = 0
+if (knl%binarize.eqv..TRUE.) binarize = 1
+
 ! write all the single integers
-io_int = (/ knl%npx, knl%patchw /)
+io_int = (/ knl%npx, knl%patchw, binarize /)
 intlist(1) = 'npx'
 intlist(2) = 'patchw'
+intlist(3) = 'binarize'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals
@@ -638,6 +642,113 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to cr
 call HDF_pop(HDF_head)
 
 end subroutine HDFwriteLaueNameList
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteLaueSlitNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist file into HDF file
+!
+!> @param HDF_head top of push stack
+!> @param lnl name list structure
+!
+!> @date 01/30/20  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteLaueSlitNameList(HDF_head, lnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteLaueSlitNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+type(LaueSlitNameListType),INTENT(IN)                 :: lnl
+
+integer(kind=irg),parameter                           :: n_int = 4, n_real = 3, n_dbl = 17
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), nm
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: io_dbl(n_dbl)   
+character(20)                                         :: intlist(n_int), reallist(n_real), dbllist(n_dbl)
+character(fnlen)                                      :: dataset,groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+! create the group for this namelist
+groupname = SC_LaueNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ lnl%Ny, lnl%Nz, lnl%nthreads, lnl%BPx /)
+intlist(1) = 'Ny'
+intlist(2) = 'Nz'
+intlist(3) = 'nthreads'
+intlist(4) = 'BPx'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals
+io_real = (/ lnl%spotw, lnl%gammavalue, lnl%sampletilt/)
+reallist(1) = 'spotw'
+reallist(2) = 'gammavalue'
+reallist(3) = 'sampletilt'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! write all the single reals
+io_dbl = (/ lnl%Lw, lnl%Lh, lnl%Lx, lnl%Ly, lnl%Lz, lnl%VoltageH, lnl%VoltageL, lnl%Sx, &
+            lnl%sampletodetector, lnl%samplethickness, lnl%ps, lnl%Dy, &
+            lnl%Dz, lnl%vs, lnl%absl, lnl%beamstopatf, lnl%intcutoffratio /)
+dbllist(1) = 'Lw'
+dbllist(2) = 'Lh'
+dbllist(3) = 'Lx'
+dbllist(4) = 'Ly'
+dbllist(5) = 'Lz'
+dbllist(6) = 'VoltageH'
+dbllist(7) = 'VoltageL'
+dbllist(8) = 'Sx'
+dbllist(9) = 'sampletodetector'
+dbllist(10) = 'samplethickness'
+dbllist(11) = 'ps'
+dbllist(12) = 'Dy'
+dbllist(13) = 'Dz'
+dbllist(14) = 'vs'
+dbllist(15) = 'absl'
+dbllist(16) = 'beamstopatf'
+dbllist(17) = 'intcutoffratio'
+call HDF_writeNMLdbles(HDF_head, io_dbl, dbllist, n_dbl)
+
+! write all the strings
+dataset = SC_xtalname
+line2(1) = lnl%xtalname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create xtalname dataset',.TRUE.)
+
+dataset = 'hdfname'
+line2(1) = lnl%hdfname
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create hdfname dataset',.TRUE.)
+
+dataset = 'tiffprefix'
+line2(1) = lnl%tiffprefix
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create tiffprefix dataset',.TRUE.)
+
+dataset = 'orientationfile'
+line2(1) = lnl%orientationfile
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create orientationfile dataset',.TRUE.)
+
+dataset = 'projectionmode'
+line2(1) = lnl%projectionmode
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteLaueNameList: unable to create projectionmode dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteLaueSlitNameList
+
 
 !--------------------------------------------------------------------------
 !
@@ -973,15 +1084,17 @@ use ISO_C_BINDING
 
 IMPLICIT NONE
 
-type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
 !f2py intent(in,out) ::  HDF_head
 type(MCCLNameListType),INTENT(INOUT)                  :: mcnl
 !f2py intent(in,out) ::  mcnl
 
-integer(kind=irg),parameter                           :: n_int = 8, n_real_bse1 = 9, n_real_full = 7
+integer(kind=irg),parameter                           :: n_int = 11, n_real_bse1 = 9, n_real_full = 7, n_real_ivol= 6
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
-real(kind=dbl)                                        :: io_real_bse1(n_real_bse1), io_real_full(n_real_full)
-character(20)                                         :: reallist_bse1(n_real_bse1), reallist_full(n_real_full)
+real(kind=dbl)                                        :: io_real_bse1(n_real_bse1), io_real_full(n_real_full), &
+                                                         io_real_ivol(n_real_ivol)
+character(20)                                         :: reallist_bse1(n_real_bse1), reallist_full(n_real_full), &
+                                                         reallist_ivol(n_real_ivol)
 character(20)                                         :: intlist(n_int)
 character(fnlen)                                      :: dataset, sval(1),groupname
 character(fnlen,kind=c_char)                          :: line2(1)
@@ -991,7 +1104,8 @@ groupname = SC_MCCLNameList
 hdferr = HDF_createGroup(groupname,HDF_head)
 
 ! write all the single integers
-io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%globalworkgrpsz, mcnl%num_el, mcnl%totnum_el, mcnl%multiplier, mcnl%devid, mcnl%platid /)
+io_int = (/ mcnl%stdout, mcnl%numsx, mcnl%globalworkgrpsz, mcnl%num_el, mcnl%totnum_el, mcnl%multiplier, mcnl%devid, &
+            mcnl%platid, mcnl%ivolx, mcnl%ivoly, mcnl%ivolz /)
 intlist(1) = 'stdout'
 intlist(2) = 'numsx'
 intlist(3) = 'globalworkgrpsz'
@@ -1000,6 +1114,9 @@ intlist(5) = 'totnum_el'
 intlist(6) = 'multiplier'
 intlist(7) = 'devid'
 intlist(8) = 'platid'
+intlist(9) = 'ivolx'
+intlist(10) = 'ivoly'
+intlist(11) = 'ivolz'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single doubles
@@ -1027,6 +1144,15 @@ else if (mcnl%mode .eq. 'full') then
    reallist_full(6) = 'depthmax'
    reallist_full(7) = 'depthstep'
    call HDF_writeNMLdbles(HDF_head, io_real_full, reallist_full, n_real_full)
+else if (mcnl%mode .eq. 'Ivol') then
+   io_real_ivol = (/ mcnl%sig, mcnl%omega, mcnl%EkeV, dble(mcnl%ivolstepx), dble(mcnl%ivolstepy), dble(mcnl%ivolstepz) /)
+   reallist_ivol(1) = 'sig'
+   reallist_ivol(2) = 'omega'
+   reallist_ivol(3) = 'EkeV'
+   reallist_ivol(4) = 'ivolstepx'
+   reallist_ivol(5) = 'ivolstepy'
+   reallist_ivol(6) = 'ivolstepz'
+   call HDF_writeNMLdbles(HDF_head, io_real_ivol, reallist_ivol, n_real_ivol)
 end if
 
 ! write all the strings
@@ -1170,8 +1296,9 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDMasterNameListType),INTENT(INOUT)            :: emnl
 !f2py intent(in,out) ::  emnl
 
-integer(kind=irg),parameter                           :: n_int = 7, n_real = 1
-integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites
+integer(kind=irg),parameter                           :: n_int = 8, n_real = 1
+integer(kind=irg)                                     :: hdferr,  io_int(n_int), restart, uniform, combinesites, &
+                                                         useEnergyWeighting
 real(kind=sgl)                                        :: io_real(n_real)
 character(20)                                         :: intlist(n_int), reallist(n_real)
 character(fnlen)                                      :: dataset, groupname
@@ -1188,6 +1315,11 @@ if (emnl%combinesites) then
 else 
   combinesites = 0
 end if
+if (emnl%useEnergyWeighting) then 
+  useEnergyWeighting = 1
+else 
+  useEnergyWeighting = 0
+end if
 if (emnl%restart) then 
   restart = 1
 else 
@@ -1198,7 +1330,7 @@ if (emnl%uniform) then
 else 
   uniform = 0
 end if
-io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, combinesites, restart, uniform /)
+io_int = (/ emnl%stdout, emnl%npx, emnl%Esel, emnl%nthreads, combinesites, restart, uniform, useEnergyWeighting /)
 intlist(1) = 'stdout'
 intlist(2) = 'npx'
 intlist(3) = 'Esel'
@@ -1206,6 +1338,7 @@ intlist(4) = 'nthreads'
 intlist(5) = 'combinesites'
 intlist(6) = 'restart'
 intlist(7) = 'uniform'
+intlist(8) = 'useEnergyWeighting'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real
@@ -1258,6 +1391,97 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDMasterNameList: unable
 call HDF_pop(HDF_head)
 
 end subroutine HDFwriteEBSDMasterNameList
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteEECMasterNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param emnl EEC master name list structure
+!
+!> @date 12/13/19  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEECMasterNameList(HDF_head, emnl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEECMasterNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+type(EECMasterNameListType),INTENT(INOUT)             :: emnl
+!f2py intent(in,out) ::  emnl
+
+integer(kind=irg),parameter                           :: n_int = 2, n_real = 3
+integer(kind=irg)                                     :: hdferr,  io_int(n_int) 
+real(kind=sgl)                                        :: io_real(n_real)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+logical                                               :: g_exists, overwrite=.TRUE.
+
+! create the group for this namelist
+groupname = SC_EECMasterNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+! write all the single integers
+io_int = (/ emnl%npx, emnl%nthreads /)
+intlist(1) = 'npx'
+intlist(2) = 'nthreads'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single floats
+io_real = (/ emnl%dmin, emnl%IsotopeEnergy, emnl%mfp /)
+reallist(1) = 'dmin'
+reallist(2) = 'IsotopeEnergy'
+reallist(3) = 'mfp'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! vectors
+dataset = 'IsotopeSite'
+hdferr = HDF_writeDatasetFloatArray1D(dataset, emnl%IsotopeSite, 3, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create IsotopeSite dataset',.TRUE.)
+
+! strings
+dataset = SC_mpfile
+line2(1) = emnl%mpfile
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create mpfile dataset',.TRUE.)
+
+dataset = 'BetheParametersFile'
+line2(1) = emnl%BetheParametersFile
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create BetheParametersFile dataset',.TRUE.)
+
+dataset = SC_xtalname
+line2(1) = emnl%xtalname
+call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+if (g_exists) then 
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
+else
+  hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+end if
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEECMasterNameList: unable to create xtalname dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEECMasterNameList
 
 !--------------------------------------------------------------------------
 !
@@ -2435,7 +2659,7 @@ type(HDFobjectStackType),INTENT(INOUT)                    :: HDF_head
 type(EBSDNameListType),INTENT(INOUT)                  :: enl
 !f2py intent(in,out) ::  enl
 
-integer(kind=irg),parameter                           :: n_int = 8, n_real = 10
+integer(kind=irg),parameter                           :: n_int = 8, n_real = 11
 integer(kind=irg)                                     :: hdferr,  io_int(n_int)
 real(kind=sgl)                                        :: io_real(n_real)
 real(kind=dbl)                                        :: t(1)
@@ -2462,7 +2686,7 @@ call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write all the single reals 
 io_real = (/ enl%L, enl%thetac, enl%delta, enl%xpc, enl%ypc, enl%energymin, enl%energymax, enl%gammavalue, &
-             enl%alphaBD, enl%hipassw /)
+             enl%alphaBD, enl%hipassw, enl%omega /)
 reallist(1) = 'L'
 reallist(2) = 'thetac'
 reallist(3) = 'delta'
@@ -2473,6 +2697,7 @@ reallist(7) = 'energymax'
 reallist(8) = 'gammavalue'
 reallist(9) = 'alphaBD'
 reallist(10)= 'hipassw'
+reallist(11)= 'omega'
 call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
 
 ! a 4-vector
@@ -2569,6 +2794,110 @@ if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDNameList: unable to cr
 call HDF_pop(HDF_head)
 
 end subroutine HDFwriteEBSDNameList
+
+
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:HDFwriteEBSDdefectNameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief write namelist to HDF file
+!
+!> @param HDF_head top of push stack
+!> @param enl EBSD name list structure
+!
+!> @date 03/22/15 MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine HDFwriteEBSDdefectNameList(HDF_head, enl)
+!DEC$ ATTRIBUTES DLLEXPORT :: HDFwriteEBSDdefectNameList
+
+use ISO_C_BINDING
+
+IMPLICIT NONE
+
+type(HDFobjectStackType),INTENT(INOUT)                :: HDF_head
+!f2py intent(in,out) ::  HDF_head
+type(EBSDdefectNameListType),INTENT(INOUT)            :: enl
+!f2py intent(in,out) ::  enl
+
+integer(kind=irg),parameter                           :: n_int = 5, n_real = 4
+integer(kind=irg)                                     :: hdferr, sampleIV, io_int(n_int)
+real(kind=sgl)                                        :: io_real(n_real)
+real(kind=dbl)                                        :: t(1)
+character(20)                                         :: intlist(n_int), reallist(n_real)
+character(fnlen)                                      :: dataset, groupname
+character(fnlen,kind=c_char)                          :: line2(1)
+
+
+! create the group for this namelist
+groupname = SC_EBSDdefectNameList
+hdferr = HDF_createGroup(groupname,HDF_head)
+
+sampleIV = 0
+if (enl%sampleInteractionVolume.eqv..TRUE.) sampleIV = 1
+
+! write all the single integers
+io_int = (/ enl%stdout, enl%numsx, enl%numsy, enl%nthreads, sampleIV /)
+intlist(1) = 'stdout'
+intlist(2) = 'numsx'
+intlist(3) = 'numsy'
+intlist(4) = 'nthreads'
+intlist(5) = 'sampleInteractionVolume'
+call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
+
+! write all the single reals 
+io_real = (/ enl%thetac, enl%delta, enl%gammavalue, enl%spotsize /)
+reallist(1) = 'thetac'
+reallist(2) = 'delta'
+reallist(3) = 'gammavalue'
+reallist(4) = 'spotsize'
+call HDF_writeNMLreals(HDF_head, io_real, reallist, n_real)
+
+! a few doubles
+dataset = SC_beamcurrent
+hdferr = HDF_writeDatasetDouble(dataset, enl%beamcurrent, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create beamcurrent dataset',.TRUE.)
+
+dataset = SC_dwelltime
+hdferr = HDF_writeDatasetDouble(dataset, enl%dwelltime, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create dwelltime dataset',.TRUE.)
+
+! write all the strings
+dataset = SC_scalingmode
+line2(1) = trim(enl%scalingmode)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create scalingmode dataset',.TRUE.)
+
+dataset = SC_masterfile
+line2(1) = trim(enl%masterfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create masterfile dataset',.TRUE.)
+
+dataset = SC_deformationfile
+line2(1) = trim(enl%deformationfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create deformationfile dataset',.TRUE.)
+
+dataset = SC_datafile
+line2(1) = trim(enl%datafile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create datafile dataset',.TRUE.)
+
+dataset = 'ivolfile'
+line2(1) = trim(enl%ivolfile)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create ivolfile dataset',.TRUE.)
+
+dataset = 'tmpfspath'
+line2(1) = trim(enl%tmpfspath)
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwriteEBSDdefectNameList: unable to create tmpfspath dataset',.TRUE.)
+
+! and pop this group off the stack
+call HDF_pop(HDF_head)
+
+end subroutine HDFwriteEBSDdefectNameList
 
 !--------------------------------------------------------------------------
 !
@@ -3449,6 +3778,11 @@ dataset = SC_datafile
 line2(1) = knl%datafile
 hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
 if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritekinematicalNameList: unable to create datafile dataset',.TRUE.)
+
+dataset = 'mode'
+line2(1) = knl%mode
+hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head)
+if (hdferr.ne.0) call HDF_handleError(hdferr,'HDFwritekinematicalNameList: unable to create mode dataset',.TRUE.)
 
 ! and pop this group off the stack
 call HDF_pop(HDF_head)

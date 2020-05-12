@@ -23,6 +23,7 @@ call EMsoft(progname, progdesc)
 ! value probably needs to be changed here
 call Interpret_Program_Arguments(nmldeffile,1,(/ 213 /), progname)
 
+
 write (*,*) 'read program arguments '
 
 ! deal with the namelist stuff
@@ -469,6 +470,7 @@ select case(mode)
 
         call Message('Mask generated, building image.')
         print *, 'Number of beams:', numbeams
+
 
         ! now we have a mask in reflection space, need to iterate over every reflection/beam
         do ii = 1, nsam

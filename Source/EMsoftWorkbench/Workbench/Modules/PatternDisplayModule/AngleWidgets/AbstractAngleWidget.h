@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include <QtWidgets/QWidget>
 
 #include "EbsdLib/Math/EbsdLibMath.h"

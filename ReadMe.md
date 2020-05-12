@@ -8,7 +8,7 @@ This release also offers, for the first time, a series of python wrappers (*pyEM
 
 Release v5.0.0 has the following DOI (through Zenodo):  
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3489720.svg)](https://doi.org/10.5281/zenodo.3489720)
+![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3489720.svg)
 
 
 - ### **This release of EMsoft requires an updated Software Developer Toolkit (SDK); please go to [this page](https://github.com/EMsoft-org/EMsoftSuperbuild) and follow the instructions to install a new SDK before you attempt to build the present release.**
@@ -89,6 +89,12 @@ make -j
 If you do not need the complete EMsoft package, you can compile sections of the package (e.g., SEM modalities only) by setting CMake switches using the ccmake GUI program, as described in the ccmake-options.md file. 
 
 
+## Changes in 5.0.2
+This update implements simplifications of the HDFsupport module, in particular the argument list for the hyperslab writing and reading routines.  It also provides a modified EMMCOpenCL program with better parameter control for interaction volume runs, as well as a new EMEBSDdefect program (still in further development) for the computation of EBSD patterns when there is a deformation tensor field in the region of interest.
+
+## Changes in 5.0.1
+This update makes internal changes to the CMake code that configures the SHT library; the relevant source file is now loaded with the FetchContent function rather than relying on manual git pulls. The EMEBSDmaster program is split into two separate programs, one for standard master patterns, the other (EMEBSDmasterSHT) for the generation of compressed master pattern representations (.sht files) using the spherical harmonic transform.
+
 ## New features in 5.0
 - There are a few minor bug fixes.
 - EMsoft now has two additional ways to manage file paths; please check the descriptions in the *FilePathConventions.md* file.
@@ -114,7 +120,14 @@ If you do not need the complete EMsoft package, you can compile sections of the 
 - The STEM diffraction contrast image simulations will be able to take input from Molecular Dynamics simulations (LAMMPS).
 - For computational polarized light microscopy (CPLM) we will have a new forward model program to predict image series recorded on an optical microscope; we will also release a dictionary indexing program for CPLM.
 - The IDL apps have thus far had some issues on Windows and Linux, so we will make available updated apps that are more likely to work correctly.
-- We hope to release version 5.1 by the early Spring of 2020.
+- We hope to release version 5.1 by the Summer of 2020.
+
+## What's coming in 6.0? 
+- We are currently rewriting the entire code base of EMsoft using Object Oriented fortran 2018; this is a major rewrite that completely changes the API, meaning that users who have written their own code to link to or extend EMsoft will likely need to update that code (or continue using the most recent 5.x version).
+- All the data types defined in the former typedefs.f90 module are replaced by classes and methods, leading to a significantly cleaner code base.
+- We started to use a different package documentation model (FORD for FORtran Documentation) that will have every function, subroutine, class, etc. fully documented in HTML format.
+- This is a major recoding effort so for now we won't put a release date on it; it will likely be late 2020 if not Spring of 2021.
+
 
 ## New features in 4.2
 - There are a few minor bug fixes

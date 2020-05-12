@@ -121,14 +121,6 @@ if(EbsdLib_FOUND)
                         TYPES ${BUILD_TYPES})
   endif()
 
-  # The next CMake variable is needed for Linux to properly generate a shell script
-  # that will properly install the EbsdLib files.
-  if(NOT APPLE AND NOT WIN32)
-    STRING(TOUPPER "${CMAKE_BUILD_TYPE}" TYPE)
-    get_target_property(EbsdLib_C_LIB_PATH  EbsdLib::hpdf IMPORTED_LOCATION_${TYPE})
-    set(EbsdLib_COMPONENTS ${EbsdLib_C_LIB_PATH})
-  endif()
-
 ELSE(EbsdLib_FOUND)
     # message(FATAL_ERROR "Cannot build without EbsdLib.  Please set EbsdLib_INSTALL environment variable to point to your EbsdLib installation.")
 ENDif(EbsdLib_FOUND)

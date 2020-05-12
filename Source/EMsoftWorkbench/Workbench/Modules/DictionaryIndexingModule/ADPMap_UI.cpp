@@ -38,9 +38,9 @@
 #include <QtConcurrent>
 
 #include "Modules/DictionaryIndexingModule/Constants.h"
-#include "Modules/DictionaryIndexingModule/ChoosePatternsDatasetDialog.h"
 
 namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
+using InputType = EMsoftWorkbenchConstants::InputType;
 
 // -----------------------------------------------------------------------------
 //
@@ -60,7 +60,6 @@ ADPMap_UI::ADPMap_UI(QWidget *parent)
 ADPMap_UI::~ADPMap_UI()
 {
   delete m_ADPController;
-  delete m_ChoosePatternsDatasetDialog;
 }
 
 // -----------------------------------------------------------------------------
@@ -68,8 +67,6 @@ ADPMap_UI::~ADPMap_UI()
 // -----------------------------------------------------------------------------
 void ADPMap_UI::setupGui()
 {
-  m_ChoosePatternsDatasetDialog = new ChoosePatternsDatasetDialog();
-
   // Create and set the validators on all the line edits
   createValidators();
 
@@ -80,9 +77,6 @@ void ADPMap_UI::setupGui()
   createModificationConnections();
 
   validateData();
-
-  // Run this once so that the HDF5 widget can be either disabled or enabled
-  listenInputTypeChanged(m_Ui->inputTypeCB->currentIndex());
 
   m_Ui->numOfThreadsLabel->setToolTip(tr("Number of Threads must be between 1 and %1").arg(QThreadPool::globalInstance()->maxThreadCount()));
   m_Ui->numOfThreadsLE->setToolTip(tr("Number of Threads must be between 1 and %1").arg(QThreadPool::globalInstance()->maxThreadCount()));
@@ -121,9 +115,6 @@ void ADPMap_UI::createValidators()
 // -----------------------------------------------------------------------------
 void ADPMap_UI::createModificationConnections()
 {
-  // Combo Boxes
-  connect(m_Ui->inputTypeCB, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ADPMap_UI::listenInputTypeChanged);
-
   // Line Edits
   connect(m_Ui->patternHeightLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->patternWidthLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
@@ -142,9 +133,6 @@ void ADPMap_UI::createModificationConnections()
   connect(m_Ui->maskRadiusLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
   connect(m_Ui->hipassLE, &QLineEdit::textChanged, [=] { emit parametersChanged(); });
 
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::parametersChanged, this, &ADPMap_UI::parametersChanged);
-
   // Checkboxes
   connect(m_Ui->roiCB, &QCheckBox::stateChanged, this, &ADPMap_UI::listenROICheckboxStateChanged);
 }
@@ -156,27 +144,9 @@ void ADPMap_UI::createWidgetConnections()
 {
   connect(m_Ui->generateADPBtn, &QPushButton::clicked, this, &ADPMap_UI::listenADPGenerationStarted);
 
-  // Pass errors, warnings, and std output messages up to the user interface
-  connect(m_ADPController, &ADPMapController::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
-  connect(m_ADPController, &ADPMapController::warningMessageGenerated, this, &ADPMap_UI::warningMessageGenerated);
-  connect(m_ADPController, &ADPMapController::stdOutputMessageGenerated, this, &ADPMap_UI::stdOutputMessageGenerated);
-  connect(m_ADPController, &ADPMapController::adpMapCreated, [=] (const QImage &adpMap) {
-    m_Ui->adpViewer->loadImage(adpMap);
-    m_Ui->adpMapInstructionsLabel->show();
-  });
-
-  connect(m_Ui->choosePatternsBtn, &QPushButton::clicked, m_ChoosePatternsDatasetDialog, &ChoosePatternsDatasetDialog::exec);
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::selectedHDF5PathsChanged, this, &ADPMap_UI::listenSelectedPatternDatasetChanged);
-  connect(hdf5DsetSelectionWidget, &HDF5DatasetSelectionWidget::patternDataFilePathChanged, this, &ADPMap_UI::listenPatternDataFileChanged);
-
   connect(m_Ui->adpViewer, &ADPMapImageViewer::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
   // connect(m_Ui->adpViewer, &ADPMapImageViewer::zoomFactorChanged, this, &ADPMap_UI::updateZoomFactor);
-  connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedADPCoordinateChanged, [=] (const QPoint &pixel) {
-    m_Ui->adpMapSelectedPixelLabel->setText(tr("Selected Pixel: (%1, %2)").arg(QString::number(pixel.x()), QString::number(pixel.y())));
-    emit selectedADPCoordinateChanged(pixel);
-  });
+  connect(m_Ui->adpViewer, &ADPMapImageViewer::selectedADPCoordinateChanged, this, &ADPMap_UI::listenSelectedADPCoordinateChanged);
 
   connect(m_Ui->adpMapZoomInBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomIn);
   connect(m_Ui->adpMapZoomOutBtn, &QPushButton::clicked, m_Ui->adpViewer, &ADPMapImageViewer::zoomOut);
@@ -211,26 +181,18 @@ void ADPMap_UI::listenROICheckboxStateChanged(int state)
 }
 
 // -----------------------------------------------------------------------------
+void ADPMap_UI::listenSelectedADPCoordinateChanged(const QPoint& pixel)
+{
+  m_Ui->adpMapSelectedPixelLabel->setText(tr("Selected Pixel: (%1, %2)").arg(QString::number(pixel.x()), QString::number(pixel.y())));
+  emit selectedADPCoordinateChanged(pixel);
+}
+
+// -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMap_UI::listenInputTypeChanged(int index)
+void ADPMap_UI::listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType)
 {
-  InputType inputType = static_cast<InputType>(index);
-  switch(inputType)
-  {
-  case InputType::TSLHDF:
-  case InputType::BrukerHDF:
-  case InputType::OxfordHDF:
-    m_Ui->choosePatternsBtn->setEnabled(true);
-    break;
-  default:
-    m_Ui->choosePatternsBtn->setDisabled(true);
-    break;
-  }
-
   setInputType(inputType);
-
-  emit parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
@@ -241,14 +203,12 @@ void ADPMap_UI::listenPatternDataFileChanged(const QString &filePath)
   m_Ui->patternDataFileLabel->setText(filePath);
 
   setPatternDataFile(filePath);
-
-  emit parametersChanged();
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMap_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths)
+void ADPMap_UI::listenSelectedPatternDatasetChanged(const QStringList& patternDSetPaths)
 {
   setSelectedHDF5Path({});
 
@@ -256,8 +216,7 @@ void ADPMap_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths
   {
     m_Ui->patternDsetPathLabel->setText(patternDSetPaths[0]);
 
-    InputType inputType = static_cast<InputType>(m_Ui->inputTypeCB->currentIndex());
-    if(inputType == InputType::TSLHDF || inputType == InputType::BrukerHDF || inputType == InputType::OxfordHDF)
+    if(m_InputType == InputType::TSLHDF || m_InputType == InputType::BrukerHDF || m_InputType == InputType::OxfordHDF)
     {
       QStringList hdfTokens = patternDSetPaths[0].trimmed().split('/', QString::SplitBehavior::SkipEmptyParts);
       setSelectedHDF5Path(hdfTokens);
@@ -267,8 +226,13 @@ void ADPMap_UI::listenSelectedPatternDatasetChanged(QStringList patternDSetPaths
   {
     m_Ui->patternDsetPathLabel->setText("N/A");
   }
+}
 
-  emit parametersChanged();
+// -----------------------------------------------------------------------------
+void ADPMap_UI::listenADPMapCreated(const QImage& adpMap)
+{
+  m_Ui->adpViewer->loadImage(adpMap);
+  emit adpMapCreated(adpMap);
 }
 
 // -----------------------------------------------------------------------------
@@ -278,12 +242,12 @@ void ADPMap_UI::listenADPGenerationStarted()
 {
   if(m_Ui->generateADPBtn->text() == "Cancel" && m_ADPController != nullptr)
   {
-    m_ADPController->setCancel(true);
+    m_ADPController->cancel();
     emit adpMapGenerationFinished();
     return;
   }
 
-  ADPMapController::ADPMapData data = getADPMapData();
+  ADPMapController::InputDataType data = getADPMapData();
 
   m_Ui->generateADPBtn->setText("Cancel");
   m_Ui->adpParametersGroupBox->setDisabled(true);
@@ -293,18 +257,18 @@ void ADPMap_UI::listenADPGenerationStarted()
     delete m_ADPController;
     m_ADPController = nullptr;
   }
-  QThread* m_Thread = new QThread; // This will leak and needs to be fixed.
+  m_Thread = QSharedPointer<QThread>(new QThread());
   m_ADPController = new ADPMapController;
-  m_ADPController->moveToThread(m_Thread);
+  m_ADPController->moveToThread(m_Thread.data());
   m_ADPController->setData(data);
-  connect(m_Thread, SIGNAL(started()), m_ADPController, SLOT(createADPMap()));
-  connect(m_ADPController, SIGNAL(finished()), m_Thread, SLOT(quit()));
-  connect(m_Thread, SIGNAL(finished()), this, SLOT(listenADPGenerationFinished()));
+  connect(m_Thread.data(), SIGNAL(started()), m_ADPController, SLOT(execute()));
+  connect(m_ADPController, SIGNAL(finished()), m_Thread.data(), SLOT(quit()));
+  connect(m_Thread.data(), SIGNAL(finished()), this, SLOT(processFinished()));
 
-  connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), m_Ui->adpViewer, SLOT(loadImage(const QImage&)));
-  connect(m_ADPController, &ADPMapController::errorMessageGenerated, this, &ADPMap_UI::errorMessageGenerated);
-  connect(m_ADPController, &ADPMapController::warningMessageGenerated, this, &ADPMap_UI::warningMessageGenerated);
-  connect(m_ADPController, &ADPMapController::stdOutputMessageGenerated, this, &ADPMap_UI::stdOutputMessageGenerated);
+  connect(m_ADPController, SIGNAL(adpMapCreated(const QImage&)), this, SLOT(listenADPMapCreated(const QImage&)));
+  connect(m_ADPController, SIGNAL(errorMessageGenerated(QString)), this, SIGNAL(errorMessageGenerated(QString)));
+  connect(m_ADPController, SIGNAL(warningMessageGenerated(QString)), this, SIGNAL(warningMessageGenerated(QString)));
+  connect(m_ADPController, SIGNAL(stdOutputMessageGenerated(QString)), this, SIGNAL(stdOutputMessageGenerated(QString)));
 
   m_Thread->start();
 
@@ -327,10 +291,8 @@ void ADPMap_UI::listenADPGenerationStarted()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMap_UI::listenADPGenerationFinished()
+void ADPMap_UI::processFinished()
 {
-  m_ADPController->setCancel(false);
-
   m_Ui->adpMapZoomSB->setEnabled(true);
   m_Ui->adpMapSaveBtn->setEnabled(true);
   m_Ui->adpMapZoomInBtn->setEnabled(true);
@@ -340,6 +302,8 @@ void ADPMap_UI::listenADPGenerationFinished()
   m_Ui->generateADPBtn->setText("Generate");
   m_Ui->adpParametersGroupBox->setEnabled(true);
 
+  m_Ui->adpMapInstructionsLabel->show();
+
   emit adpMapGenerationFinished();
 }
 
@@ -348,14 +312,21 @@ void ADPMap_UI::listenADPGenerationFinished()
 // -----------------------------------------------------------------------------
 bool ADPMap_UI::validateData()
 {
-  ADPMapController::ADPMapData adpData = getADPMapData();
+  ADPMapController::InputDataType adpData = getADPMapData();
 
   if(adpData.inputType == InputType::TSLHDF || adpData.inputType == InputType::BrukerHDF ||
      adpData.inputType == InputType::OxfordHDF)
   {
-    if (adpData.hdfStrings.isEmpty())
+    if(m_PatternDataFile.isEmpty())
     {
-      QString ss = QObject::tr("Pattern dataset path is empty.  Please select a pattern dataset.");
+      QString ss = QObject::tr("Pattern data file is empty.  Please select a pattern data file from the 'Choose Patterns' tab.");
+      emit errorMessageGenerated(ss);
+      m_Ui->generateADPBtn->setDisabled(true);
+      return false;
+    }
+    if(m_SelectedHDF5Path.isEmpty())
+    {
+      QString ss = QObject::tr("Pattern dataset not chosen.  Please select a pattern dataset from the 'Choose Patterns' tab.");
       emit errorMessageGenerated(ss);
       m_Ui->generateADPBtn->setDisabled(true);
       return false;
@@ -369,9 +340,9 @@ bool ADPMap_UI::validateData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-ADPMapController::ADPMapData ADPMap_UI::getADPMapData()
+ADPMapController::InputDataType ADPMap_UI::getADPMapData()
 {
-  ADPMapController::ADPMapData data;
+  ADPMapController::InputDataType data;
   data.roi_1 = m_Ui->roi1LE->text().toInt();
   data.roi_2 = m_Ui->roi2LE->text().toInt();
   data.roi_3 = m_Ui->roi3LE->text().toInt();
@@ -392,6 +363,7 @@ ADPMapController::ADPMapData ADPMap_UI::getADPMapData()
   data.patternHeight = m_Ui->patternHeightLE->text().toInt();
   data.patternDataFile = m_PatternDataFile;
   data.hdfStrings = m_SelectedHDF5Path;
+  data.inputType = m_InputType;
   return data;
 }
 
@@ -404,67 +376,26 @@ void ADPMap_UI::readSession(const QJsonObject &obj)
 
   if(!adpMapParamsObj.isEmpty())
   {
-    m_Ui->patternHeightLE->blockSignals(true);
-    m_Ui->patternWidthLE->blockSignals(true);
-    m_Ui->roiCB->blockSignals(true);
-    m_Ui->roi1LE->blockSignals(true);
-    m_Ui->roi2LE->blockSignals(true);
-    m_Ui->roi3LE->blockSignals(true);
-    m_Ui->roi4LE->blockSignals(true);
-//    m_Ui->binningFactorLE->blockSignals(true);
-//    m_Ui->binningXLE->blockSignals(true);
-//    m_Ui->binningYLE->blockSignals(true);
-    m_Ui->ipfHeightLE->blockSignals(true);
-    m_Ui->ipfWidthLE->blockSignals(true);
-//    m_Ui->maskPatternLE->blockSignals(true);
-    m_Ui->maskRadiusLE->blockSignals(true);
-    m_Ui->hipassLE->blockSignals(true);
-    m_Ui->numOfRegionsLE->blockSignals(true);
-    m_Ui->numOfThreadsLE->blockSignals(true);
-    m_Ui->inputTypeCB->blockSignals(true);
-
-    m_Ui->inputTypeCB->setCurrentIndex(adpMapParamsObj[ioConstants::InputType].toInt());
-    m_Ui->patternHeightLE->setText(adpMapParamsObj[ioConstants::PatternHeight].toString());
-    m_Ui->patternWidthLE->setText(adpMapParamsObj[ioConstants::PatternWidth].toString());
+    m_Ui->patternHeightLE->setText(QString::number(adpMapParamsObj[ioConstants::PatternHeight].toInt()));
+    m_Ui->patternWidthLE->setText(QString::number(adpMapParamsObj[ioConstants::PatternWidth].toInt()));
     m_Ui->roiCB->setChecked(adpMapParamsObj[ioConstants::UseROI].toBool());
-    m_Ui->roi1LE->setText(adpMapParamsObj[ioConstants::ROI_1].toString());
-    m_Ui->roi2LE->setText(adpMapParamsObj[ioConstants::ROI_2].toString());
-    m_Ui->roi3LE->setText(adpMapParamsObj[ioConstants::ROI_3].toString());
-    m_Ui->roi4LE->setText(adpMapParamsObj[ioConstants::ROI_4].toString());
-//    m_Ui->binningFactorLE->setText(adpMapParamsObj[ioConstants::BinningFactor].toString());
-//    m_Ui->binningXLE->setText(adpMapParamsObj[ioConstants::BinningX].toString());
-//    m_Ui->binningYLE->setText(adpMapParamsObj[ioConstants::BinningY].toString());
-    m_Ui->ipfHeightLE->setText(adpMapParamsObj[ioConstants::IPFHeight].toString());
-    m_Ui->ipfWidthLE->setText(adpMapParamsObj[ioConstants::IPFWidth].toString());
-//    m_Ui->maskPatternLE->setText(adpMapParamsObj[ioConstants::MaskPattern].toString());
-    m_Ui->maskRadiusLE->setText(adpMapParamsObj[ioConstants::MaskRadius].toString());
-    m_Ui->hipassLE->setText(adpMapParamsObj[ioConstants::HipassFilter].toString());
-    m_Ui->numOfRegionsLE->setText(adpMapParamsObj[ioConstants::NumberOfRegions].toString());
-    m_Ui->numOfThreadsLE->setText(adpMapParamsObj[ioConstants::NumberOfThreads].toString());
+    m_Ui->roi1LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_X].toInt()));
+    m_Ui->roi2LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_Y].toInt()));
+    m_Ui->roi3LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_W].toInt()));
+    m_Ui->roi4LE->setText(QString::number(adpMapParamsObj[ioConstants::ROI_H].toInt()));
+    m_Ui->ipfHeightLE->setText(QString::number(adpMapParamsObj[ioConstants::IPFHeight].toInt()));
+    m_Ui->ipfWidthLE->setText(QString::number(adpMapParamsObj[ioConstants::IPFWidth].toInt()));
+    m_Ui->maskRadiusLE->setText(QString::number(adpMapParamsObj[ioConstants::MaskRadius].toDouble()));
+    m_Ui->hipassLE->setText(QString::number(adpMapParamsObj[ioConstants::HipassFilter].toDouble()));
+    m_Ui->numOfRegionsLE->setText(QString::number(adpMapParamsObj[ioConstants::NumberOfRegions].toInt()));
+    m_Ui->numOfThreadsLE->setText(QString::number(adpMapParamsObj[ioConstants::NumberOfThreads].toInt()));
 
-    HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-    hdf5DsetSelectionWidget->readParameters(adpMapParamsObj);
+    m_Ui->adpViewer->readSession(adpMapParamsObj);
 
-    m_Ui->inputTypeCB->blockSignals(false);
-    m_Ui->patternHeightLE->blockSignals(false);
-    m_Ui->patternWidthLE->blockSignals(false);
-    m_Ui->roiCB->blockSignals(false);
-    m_Ui->roi1LE->blockSignals(false);
-    m_Ui->roi2LE->blockSignals(false);
-    m_Ui->roi3LE->blockSignals(false);
-    m_Ui->roi4LE->blockSignals(false);
-//    m_Ui->binningFactorLE->blockSignals(false);
-//    m_Ui->binningXLE->blockSignals(false);
-//    m_Ui->binningYLE->blockSignals(false);
-    m_Ui->ipfHeightLE->blockSignals(false);
-    m_Ui->ipfWidthLE->blockSignals(false);
-//    m_Ui->maskPatternLE->blockSignals(false);
-    m_Ui->maskRadiusLE->blockSignals(false);
-    m_Ui->hipassLE->blockSignals(false);
-    m_Ui->numOfRegionsLE->blockSignals(false);
-    m_Ui->numOfThreadsLE->blockSignals(false);
-
-//    m_Ui->adpViewer->readSession(adpMapParamsObj);
+    if(validateData())
+    {
+      listenADPGenerationStarted();
+    }
   }
 }
 
@@ -475,28 +406,20 @@ void ADPMap_UI::writeSession(QJsonObject& obj) const
 {
   QJsonObject adpMapParamsObj;
 
-  adpMapParamsObj[ioConstants::InputType] = m_Ui->inputTypeCB->currentIndex();
   adpMapParamsObj[ioConstants::PatternHeight] = m_Ui->patternHeightLE->text().toInt();
   adpMapParamsObj[ioConstants::PatternWidth] = m_Ui->patternWidthLE->text().toInt();
   adpMapParamsObj[ioConstants::UseROI] = m_Ui->roiCB->isChecked();
-  adpMapParamsObj[ioConstants::ROI_1] = m_Ui->roi1LE->text().toInt();
-  adpMapParamsObj[ioConstants::ROI_2] = m_Ui->roi2LE->text().toInt();
-  adpMapParamsObj[ioConstants::ROI_3] = m_Ui->roi3LE->text().toInt();
-  adpMapParamsObj[ioConstants::ROI_4] = m_Ui->roi4LE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningFactor] = m_Ui->binningFactorLE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningX] = m_Ui->binningXLE->text().toInt();
-//  adpMapParamsObj[ioConstants::BinningY] = m_Ui->binningYLE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_X] = m_Ui->roi1LE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_Y] = m_Ui->roi2LE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_W] = m_Ui->roi3LE->text().toInt();
+  adpMapParamsObj[ioConstants::ROI_H] = m_Ui->roi4LE->text().toInt();
   adpMapParamsObj[ioConstants::IPFHeight] = m_Ui->ipfHeightLE->text().toInt();
   adpMapParamsObj[ioConstants::IPFWidth] = m_Ui->ipfWidthLE->text().toInt();
-//  adpMapParamsObj[ioConstants::MaskPattern] = m_Ui->maskPatternLE->text().toInt();
   adpMapParamsObj[ioConstants::MaskRadius] = m_Ui->maskRadiusLE->text().toDouble();
   adpMapParamsObj[ioConstants::HipassFilter] = m_Ui->hipassLE->text().toDouble();
   adpMapParamsObj[ioConstants::NumberOfRegions] = m_Ui->numOfRegionsLE->text().toInt();
   adpMapParamsObj[ioConstants::NumberOfThreads] = m_Ui->numOfThreadsLE->text().toInt();
-//  m_Ui->adpViewer->writeSession(adpMapParamsObj);
-
-  HDF5DatasetSelectionWidget* hdf5DsetSelectionWidget = m_ChoosePatternsDatasetDialog->getHDF5DatasetSelectionWidget();
-  hdf5DsetSelectionWidget->writeParameters(adpMapParamsObj);
+  m_Ui->adpViewer->writeSession(adpMapParamsObj);
 
   obj[ioConstants::ADPMapParams] = adpMapParamsObj;
 }
@@ -504,7 +427,7 @@ void ADPMap_UI::writeSession(QJsonObject& obj) const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void ADPMap_UI::setInputType(ADPMapController::InputType inputType)
+void ADPMap_UI::setInputType(EMsoftWorkbenchConstants::InputType inputType)
 {
   m_InputType = inputType;
 }

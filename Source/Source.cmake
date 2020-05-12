@@ -26,9 +26,15 @@ if( ${EMsoft_ENABLE_HDF5_SUPPORT} )
   add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMsoftHDFLib ${PROJECT_BINARY_DIR}/EMsoftHDFLib)
 endif()
 
+option(EMsoft_ENABLE_OpenCL_SUPPORT "Enable OpenCL support" ON)
+if( ${EMsoft_ENABLE_OpenCL_SUPPORT} )
+  add_subdirectory(${PROJECT_SOURCE_DIR}/Source/EMOpenCLLib ${PROJECT_BINARY_DIR}/EMOpenCLLib)
+endif()
+
 set(MODALITY_DIRS
     DictionaryIndexing
     GBs
+    EEC
     OLIO
     OM
     pyEMsoft

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -46,6 +46,7 @@
 !> @date 08/23/19 MDG 4.3 removed spaces around "kind" statements to facilitate f90wrap python wrapper generation
 !> @date 10/04/19 MDG 4.4 adds vecnorm to replace non-standard NORM2 calls  (F2003 compliance)
 !> @date 10/04/19 MDG 4.5 adds nan() function, returning a single or double precision IEEE NaN value
+!> @date 11/01/19 MDG 4.6 adds Jaccard_Distance routine (moved from Indexingmod)
 !--------------------------------------------------------------------------
 ! ###################################################################
 !  
@@ -342,7 +343,7 @@ end subroutine getPolarDecomposition
 !
 !> @date    8/25/17 MDG 1.0 original
 !--------------------------------------------------------------------------
-recursive subroutine get_bit_parameters(bd, numbits, bitrange, bitmode)
+recursive subroutine get_bit_parameters(bd, numbits, bitrange, bitmode, verbose)
 !DEC$ ATTRIBUTES DLLEXPORT :: get_bit_parameters
 
 use io
@@ -351,9 +352,18 @@ character(5),INTENT(IN)         :: bd
 integer(kind=irg),INTENT(OUT)   :: numbits
 real(kind=sgl),INTENT(OUT)      :: bitrange
 character(5),INTENT(OUT)        :: bitmode
+logical,INTENT(IN),OPTIONAL     :: verbose
 
 character(2)                    :: bitval
 integer(kind=irg)               :: io_int(1)
+logical                         :: v 
+
+v = .FALSE.
+if (present(verbose)) then 
+  if (verbose.eqv..TRUE.) then 
+    v = .TRUE.
+  end if 
+end if 
 
 !====================================
 ! analyze the bitdepth parameter; if we have integers, then we need to analyze the 
@@ -368,19 +378,19 @@ if ((trim(bd).ne.'8bit').and.(trim(bd).ne.'float')) then
   end if
   read (bitval,*) numbits
   io_int(1) = numbits 
-  call WriteValue(' ---> Integer format requested with bit depth ',io_int,1,"(I3)")
+  if (v.eqv..TRUE.) call WriteValue(' ---> Integer format requested with bit depth ',io_int,1,"(I3)")
   bitrange = 2.0**numbits-1.0
   bitmode = 'int'
 end if
 if (trim(bd).eq.'8bit') then 
   numbits = 8
   io_int(1) = numbits 
-  call WriteValue(' ---> character format requested with bit depth ',io_int,1,"(I3)")
+  if (v.eqv..TRUE.) call WriteValue(' ---> character format requested with bit depth ',io_int,1,"(I3)")
   bitrange = 2.0**numbits-1.0
   bitmode = 'char'
 end if
 if (trim(bd).eq.'float') then
-  call Message(' ---> 32-bit float format requested')
+  if (v.eqv..TRUE.) call Message(' ---> 32-bit float format requested')
   numbits = 32
   bitrange = 0.0
   bitmode = 'float'
@@ -414,6 +424,7 @@ recursive subroutine mInvert_d(a,b,uni)
 !DEC$ ATTRIBUTES DLLEXPORT :: mInvert_d
 
 use error
+use io
 
 IMPLICIT NONE
 
@@ -421,6 +432,7 @@ real(kind=dbl),INTENT(IN)               :: a(3,3)               !< input matrix
 real(kind=dbl),INTENT(OUT)              :: b(3,3)               !< output matrix
 logical,INTENT(IN)                      :: uni                  !< unitary logical
 real(kind=dbl)                          :: d                    !< auxiliary variable
+integer(kind=irg)                       :: i, j 
 
 ! it is a regular (non-unitary) matrix
  if (.not.uni) then 
@@ -439,7 +451,12 @@ real(kind=dbl)                          :: d                    !< auxiliary var
    b(3,3)=a(1,1)*a(2,2)-a(1,2)*a(2,1)
    b = b/d
   else
-   call FatalError('mInvert','matrix has zero determinant')
+    do i=1,3
+      write (*,*) (a(i,j),j=1,3)
+    end do 
+!  call FatalError('mInvert','matrix has zero determinant')
+   call Message('mInvert: matrix has zero determinant')
+   b = a
   end if
  else
 ! it is a unitary matrix, so simply get the transpose
@@ -474,6 +491,7 @@ recursive subroutine mInvert(a,b,uni)
 !DEC$ ATTRIBUTES DLLEXPORT :: mInvert
 
 use error
+use io
 
 IMPLICIT NONE
 
@@ -481,7 +499,7 @@ real(kind=sgl),INTENT(IN)               :: a(3,3)               !< input matrix
 real(kind=sgl),INTENT(OUT)              :: b(3,3)               !< output matrix
 logical,INTENT(IN)                      :: uni                  !< unitary logical
 real(kind=sgl)                          :: d                    !< auxiliary variable
-
+integer(kind=irg)                       :: i, j 
 ! it is a regular (non-unitary) matrix
  if (.not.uni) then 
   d = a(1,1)*a(2,2)*a(3,3)+a(1,2)*a(2,3)*a(3,1)+ &
@@ -499,7 +517,12 @@ real(kind=sgl)                          :: d                    !< auxiliary var
    b(3,3)=a(1,1)*a(2,2)-a(1,2)*a(2,1)
    b = b/d
   else
-   call FatalError('mInvert','matrix has zero determinant')
+    do i=1,3
+      write (*,*) (a(i,j),j=1,3)
+    end do 
+!  call FatalError('mInvert','matrix has zero determinant')
+   call Message('mInvert: matrix has zero determinant')
+   b = a
   end if
  else
 ! it is a unitary matrix, so simply get the transpose
@@ -3475,5 +3498,82 @@ end do
 
 end function CalcDeterminant
 
+!--------------------------------------------------------------------------
+!
+! function: Jaccard_Distance
+!
+!> @author Saransh Singh, Carnegie Mellon University
+!
+!> @brief calculate mutual information or Jaquard distance
+!
+!> @param img1 input image 1
+!> @param img2 input image 1
+!> @param nn size of (square) image 
+!> @param mutualinformation logical switch
+! 
+!> @date 11/17/15 SS 1.0 original
+!--------------------------------------------------------------------------
+recursive function Jaccard_Distance(img1,img2,nn,mutualinformation) result(JD)
+!DEC$ ATTRIBUTES DLLEXPORT :: Jaccard_Distance
+
+use local
+
+IMPLICIT NONE
+
+integer(kind=irg),INTENT(IN)      :: nn
+integer(kind=irg),INTENT(IN)      :: img1(nn)
+integer(kind=irg),INTENT(IN)      :: img2(nn)
+logical,INTENT(IN),OPTIONAL       :: mutualinformation
+
+real(kind=dbl)                    :: JD
+real(kind=sgl)                    :: hist1(256), hist2(256), jhist(256,256), H1, H2, H12
+integer(kind=irg)                 :: ii, jj, kk
+
+hist1 = 0.D0
+hist2 = 0.D0
+jhist = 0.D0
+
+H1 = 0.D0
+H2 = 0.D0
+H12 = 0.D0
+
+do ii = 1,nn
+    jj = img1(ii)+1
+    kk = img2(ii)+1
+    jhist(jj,kk) =  jhist(jj,kk) + 1.D0
+end do
+
+jhist = jhist/nn
+
+hist1(1:256) = sum(jhist,2)
+hist2(1:256) = sum(jhist,1)
+
+do ii = 0,255
+
+    if (hist1(ii+1) .ne. 0.0) then
+        H1 = H1 + hist1(ii+1)*log(hist1(ii+1))
+    end if
+    if (hist2(ii+1) .ne. 0.0) then
+        H2 = H2 + hist2(ii+1)*log(hist2(ii+1))
+    end if
+
+    do jj = 0,255
+        if (jhist(ii+1,jj+1) .ne. 0.0) then
+            H12 = H12 + jhist(ii+1,jj+1)*log(jhist(ii+1,jj+1))
+        end if
+    end do
+end do
+
+if (present(mutualinformation)) then
+  if (mutualinformation.eqv..TRUE.) then 
+    JD = (H1 + H2) - H12
+  else
+    JD = 2.D0 - (H1 + H2)/H12  
+  end if
+else
+    JD = 2.D0 - (H1 + H2)/H12  
+end if
+
+end function Jaccard_Distance
 
 end module math

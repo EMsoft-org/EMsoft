@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2014-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2014-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -387,7 +387,7 @@ end if
  if (inspace.eq.'c') then
 ! Cartesian to direct (post-multiplication)
   if (outspace.eq.'d') then
-   d = matmul(cell%rsm,t)
+   d = matmul(t,cell%rsm)
    return
   end if
 ! Cartesian to reciprocal (post-multiplication)
@@ -470,7 +470,7 @@ end if
  if (inspace.eq.'c') then
 ! Cartesian to direct (post-multiplication)
   if (outspace.eq.'d') then
-   d = matmul(cell%rsm,t)
+   d = matmul(t,cell%rsm)
    return
   end if
 ! Cartesian to reciprocal (post-multiplication)
@@ -837,7 +837,9 @@ real(kind=sgl)                          :: x, y, z, t   !< auxiliary variables
  z = CalcLength(cell,q,space)
 
  if ((y.eq.0.0_sgl).or.(z.eq.0.0_sgl)) then
-  call FatalError('CalcAngleSingle',' vector of zero length specified')
+  ! call FatalError('CalcAngleSingle',' vector of zero length specified')
+  a = 0.0
+  return
  end if
 
  t = x/(y*z)
@@ -897,7 +899,9 @@ real(kind=dbl)                          :: x, y, z, t   !< auxiliary variables
  z = CalcLength(cell,q,space)
 
  if ((y.eq.0.0_dbl).or.(z.eq.0.0_dbl)) then
-  call FatalError('CalcAngleDouble',' vector of zero length specified')
+  ! call FatalError('CalcAngleDouble',' vector of zero length specified')
+  a = 0.D0
+  return
  end if
 
  t = x/(y*z)

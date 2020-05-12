@@ -31,6 +31,22 @@ typedef void (*ProgCallBackTypeDI3)(size_t, int, int, float);
 typedef void (*ProgCallBackTypeError)(size_t, int);
 
 /**
+* @brief This is the typedef for a call back function that is used in the EMsoft library.
+* @param size_t Unique integer that designates which C++ object did the call into EMsoft
+* @param int
+* @param int
+* @param float
+*/
+typedef void (*ProgCallBackTypeDIdriver)(size_t, int, int, float);
+
+/**
+* @brief This is the typedef for an OpenCL error call back function that is used in the EMsoft library.
+* @param size_t Unique integer that designates which C++ object did the call into EMsoft
+* @param int
+*/
+typedef void (*ProgCallBackTypeErrorDIdriver)(size_t, int);
+
+/**
 * EBSD experimental pattern preprocessing:
 * @param ipar array with integer input parameters
 * @param fpar array with float input parameters
@@ -111,6 +127,24 @@ void EMsoftCEBSDRefine
 	 float* variants, float* epatterns, float* startEulers, float* startdps, float* eumain, 
 	 float* dpmain, ProgCallBackTypeDI2 callback, size_t object, bool* cancel);
 
+
+/**
+* EBSD dictionary indexing wrapper:
+* @param nmlfile full path to the EMEBSDDI name list file 
+* @param progname program name 
+* @param dparray array of current highest dot product values
+* @param indexarray array of indices into the Euler array for the current best match
+* @param callback callback routine to update progress bar
+* @param errorcallback callback routine to report OpenCL error code
+* @param object unique identifier for calling class instantiation
+* @param cancel boolean to trigger cancellation of computation
+*/
+void EBSDDIdriver
+    (char* nmlfile, char* progname, 
+     // float* dparray, int32_t* indexarray, 
+     ProgCallBackTypeDIdriver3 callback, 
+     ProgCallBackTypeErrorDIdriver errorcallback,
+     size_t object, bool* cancel);
 
 #ifdef __cplusplus
 }

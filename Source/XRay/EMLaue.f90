@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2019-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2019-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -303,9 +303,9 @@ dataset = 'LauePatterns'
 	  offset3 = (/ 0, 0, 0 /)
 	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 	  if (g_exists) then 
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head, insert)
 	  else
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head)
 	  end if
   else 
 	  dims3 = (/ npx, npy, numangles /)
@@ -313,9 +313,9 @@ dataset = 'LauePatterns'
 	  offset3 = (/ 0, 0, 0 /)
 	  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 	  if (g_exists) then 
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head, insert)
 	  else
-	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+	    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head)
 	  end if
   end if
 
@@ -337,9 +337,9 @@ dataset = 'backprojections'
     offset3 = (/ 0, 0, 0 /)
     call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head, insert)
     else
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head)
     end if
   else 
     dims3 = (/ BPnpx, BPnpy, numangles /)
@@ -347,9 +347,9 @@ dataset = 'backprojections'
     offset3 = (/ 0, 0, 0 /)
     call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
     if (g_exists) then 
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head, insert)
     else
-      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head)
+      hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head)
     end if
   end if
 end if
@@ -410,13 +410,13 @@ end if
 	dims3 = (/ npx, npy, numangles /)
 	cnt3 = (/ npx, npy, numangles /)
 	offset3 = (/ 0, 0, 0 /)
-    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch, dims3, offset3, cnt3, HDF_head, insert)
   else 
 	dims3 = (/ npx, npy, numangles /)
 	cnt3 = (/ npx, npy, batchnumangles(ii) /)
 	offset3 = (/ 0, 0, (ii-1) * batchnumangles(1) /)
     hdferr = HDF_writeHyperslabFloatArray3D(dataset, patternbatch(:,:,1:batchnumangles(ii)), dims3, offset3, &
-    	                                    cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+    	                                    cnt3, HDF_head, insert)
   end if
 
 
@@ -425,13 +425,13 @@ end if
       dims3 = (/ BPnpx, BPnpy, numangles /)
       cnt3 = (/ BPnpx, BPnpy, numangles /)
       offset3 = (/ 0, 0, 0 /)
-        hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+        hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns, dims3, offset3, cnt3, HDF_head, insert)
     else 
       dims3 = (/ BPnpx, BPnpy, numangles /)
       cnt3 = (/ BPnpx, BPnpy, batchnumangles(ii) /)
       offset3 = (/ 0, 0, (ii-1) * batchnumangles(1) /)
         hdferr = HDF_writeHyperslabFloatArray3D(dataset, bppatterns(:,:,1:batchnumangles(ii)), dims3, offset3, &
-                                          cnt3(1), cnt3(2), cnt3(3), HDF_head, insert)
+                                          cnt3, HDF_head, insert)
     end if
   end if
 

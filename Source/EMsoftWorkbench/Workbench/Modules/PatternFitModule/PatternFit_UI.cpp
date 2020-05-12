@@ -895,10 +895,16 @@ void PatternFit_UI::changeEvent(QEvent* event)
 void PatternFit_UI::readModuleSession(QJsonObject& obj)
 {
   QString expPatternFilePath = obj[EMsoftWorkbenchConstants::IOStrings::ExperimentalPatternFilePath].toString();
-  setExperimentalPatternFilePath(expPatternFilePath);
+  if(!expPatternFilePath.isEmpty())
+  {
+    setExperimentalPatternFilePath(expPatternFilePath);
+  }
 
   QString masterFilePath = obj[EMsoftWorkbenchConstants::IOStrings::MasterPatternFilePath].toString();
-  setMasterFilePath(masterFilePath);
+  if(!masterFilePath.isEmpty())
+  {
+    setMasterFilePath(masterFilePath);
+  }
 
   QJsonObject controlsObj = obj[EMsoftWorkbenchConstants::IOStrings::PatternControls].toObject();
   QJsonObject patternFitViewerObj = obj[EMsoftWorkbenchConstants::IOStrings::PatternFitViewer].toObject();

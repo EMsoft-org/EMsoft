@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are
@@ -1795,6 +1795,7 @@ end subroutine ECPIndexingGetWeightFactors
 !
 !> @date 01/26/16 MDG 1.0 original version
 !> @date 01/26/16 SS  1.1 corrected path; changed name
+!> @date 10/28/19 SS  1.2 added checking axial symmetry of 0 for iQCs
 !--------------------------------------------------------------------------
 recursive function GetPointGroup(xtalname,NoHDFInterfaceOpen,sgnumber) result(pgnum) &
 bind(c, name = 'GetPointGroup')
@@ -1866,8 +1867,10 @@ dataset = SC_AxialSymmetry
       pgnum = 35
     else if(naxis .eq. 12) then
       pgnum = 36
+    else if(naxis .eq. 0) then
+      pgnum = 33 ! icosahedral case with special reserved 0 axial symmetry
     else
-      call FatalError('GetPointGroup','unknown 2D quasicrystal symmetry in '//trim(filename))
+      call FatalError('GetPointGroup','unknown quasicrystal symmetry in '//trim(filename))
     end if
 
   else

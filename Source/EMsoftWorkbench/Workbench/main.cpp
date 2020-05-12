@@ -33,13 +33,65 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include <QtCore/QDir>
+#if !defined(_MSC_VER)
+#include <unistd.h>
+#endif
+
+#include <iostream>
+
 #include <QtCore/QDebug>
+#include <QtCore/QDir>
 #include <QtGui/QSurfaceFormat>
 
 #include <QtWidgets/QApplication>
 
 #include "EMsoftApplication.h"
+
+QString findEMsoftPathName()
+{
+  QDir aPathDir = QDir(QCoreApplication::applicationDirPath());
+
+#if defined(Q_OS_WIN)
+  if(aPathDir.cd("opencl"))
+  {
+    aPathDir.cdUp();
+    return aPathDir.absolutePath();
+  }
+#elif defined(Q_OS_MAC)
+  // Look to see if we are inside a .app package
+  if(aPathDir.dirName() == "MacOS")
+  {
+    aPathDir.cdUp();
+    if(aPathDir.cd("bin"))
+    {
+      return aPathDir.absolutePath();
+    }
+    aPathDir.cdUp();
+    aPathDir.cdUp();
+    return aPathDir.absolutePath();
+  }
+#else
+  // We are on Linux - I think
+  // Try the current location of where the application was launched from which is
+  // typically the case when debugging from a build tree
+  if(aPathDir.cd("opencl"))
+  {
+    aPathDir.cdUp();
+    return aPathDir.absolutePath();
+  }
+
+  // Now try moving up a directory which is what should happen when running from a
+  // proper distribution of SIMPLView
+  aPathDir.cdUp();
+  if(aPathDir.cd("opencl"))
+  {
+    aPathDir.cdUp();
+    return aPathDir.absolutePath();
+  }
+#endif
+
+  return {};
+}
 
 int main(int argc, char* argv[])
 {
@@ -53,6 +105,17 @@ int main(int argc, char* argv[])
 #endif
 
   EMsoftApplication app(argc, argv);
+
+  QString envVarName = "EMSOFTPATHNAME";
+  QString envPath = findEMsoftPathName();
+  if(!envPath.isEmpty())
+  {
+    qputenv(envVarName.toStdString().c_str(), envPath.toStdString().c_str());
+  }
+  else
+  {
+    std::cout << "Could not set " << envVarName.toStdString() << " environment variable - Unable to find EMsoft path." << std::endl;
+  }
 
   QDir aPluginDir = QDir(qApp->applicationDirPath());
   qDebug() << aPluginDir;

@@ -77,6 +77,24 @@ public:
    */
   void writeSession(QJsonObject& obj) const;
 
+public slots:
+  /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString& filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(const QStringList& patternDSetPaths);
+
 protected:
   /**
    * @brief setupGui
@@ -90,26 +108,21 @@ protected slots:
   void listenADPGenerationStarted();
 
   /**
-   * @brief listenADPGenerationFinished
+   * @brief processFinished
    */
-  void listenADPGenerationFinished();
+  void processFinished();
 
   /**
-   * @brief listenInputTypeChanged
+   * @brief listenADPMapCreated
+   * @param adpMap
    */
-  void listenInputTypeChanged(int index);
+  void listenADPMapCreated(const QImage& adpMap);
 
   /**
-   * @brief listenPatternDataFileChanged
-   * @param filePath
+   * @brief listenSelectedADPCoordinateChanged
+   * @param pixel
    */
-  void listenPatternDataFileChanged(const QString &filePath);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+  void listenSelectedADPCoordinateChanged(const QPoint& pixel);
 
   /**
    * @brief listenROICheckboxStateChanged
@@ -132,6 +145,7 @@ signals:
 
   void adpMapGenerationStarted();
   void adpMapGenerationFinished();
+  void adpMapCreated(const QImage&);
 
   void parametersChanged();
 
@@ -139,12 +153,11 @@ private:
   QSharedPointer<Ui::ADPMap_UI> m_Ui;
 
   ADPMapController* m_ADPController = nullptr;
+  QSharedPointer<QThread> m_Thread = nullptr;
 
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
-
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
 
   QPoint m_SelectedADPPatternCoords = QPoint(-1, -1);
 
@@ -172,13 +185,13 @@ private:
    * @brief getData
    * @return
    */
-  ADPMapController::ADPMapData getADPMapData();
+  ADPMapController::InputDataType getADPMapData();
 
   /**
    * @brief setInputType
    * @param inputType
    */
-  void setInputType(ADPMapController::InputType inputType);
+  void setInputType(EMsoftWorkbenchConstants::InputType inputType);
 
   /**
    * @brief setPatternDataFile

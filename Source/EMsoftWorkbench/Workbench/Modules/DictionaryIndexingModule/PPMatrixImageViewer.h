@@ -106,6 +106,12 @@ private:
    */
   void clearSelectedPixel();
 
+  /**
+   * @brief calculateHipassData
+   * @return
+   */
+  std::pair<int, float> calculateHipassData();
+
 public:
   PPMatrixImageViewer(const PPMatrixImageViewer&) = delete;            // Copy Constructor Not Implemented
   PPMatrixImageViewer(PPMatrixImageViewer&&) = delete;                 // Move Constructor Not Implemented

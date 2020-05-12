@@ -305,7 +305,7 @@ void HDF5FileTreeModel::setupModelData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString HDF5FileTreeModel::indexToHDF5Path(const QModelIndex& index)
+QString HDF5FileTreeModel::indexToHDF5Path(const QModelIndex& index) const
 {
   HDF5FileTreeModelItem* item = static_cast<HDF5FileTreeModelItem*>(index.internalPointer());
   return item->generateHDFPath();

@@ -47,6 +47,7 @@ class QtSLineEdit;
 class QKeyEvent;
 class QAction;
 class QTableWidget;
+class HDF5FileTreeModel;
 
 /**
  * @brief The HDF5DatasetSelectionWidget class
@@ -252,6 +253,13 @@ private:
    * @return
    */
   void calculatePrimeFactors(int n, QVector<int>& primeFactors);
+
+  /**
+   * @brief getSelectedHDF5Path
+   * @param index
+   * @param model
+   */
+  QString getSelectedHDF5Path(const QModelIndex& index, const HDF5FileTreeModel* model) const;
 
 public:
   HDF5DatasetSelectionWidget(const HDF5DatasetSelectionWidget&) = delete; // Copy Constructor Not Implemented

@@ -161,26 +161,16 @@ endif(BUILD_SHARED_LIBS)
 
 target_link_libraries(${PROJECT_NAME} ${EMSOFT_hdf5LinkLibs} Qt5::Core )
 
-
-set(install_dir "bin")
-set(lib_install_dir "lib")
-
-if(APPLE)
-  get_property(EMsoft_PACKAGE_DEST_PREFIX GLOBAL PROPERTY EMsoft_PACKAGE_DEST_PREFIX)
-  set(install_dir "${EMsoft_PACKAGE_DEST_PREFIX}bin")
-  set(lib_install_dir "${EMsoft_PACKAGE_DEST_PREFIX}lib")
-elseif(WIN32)
-  set(install_dir "bin")
-  set(lib_install_dir "lib")
-endif()
-
+#---------------------------------------------------------------------
+# This sets up the two variables install_dir and lib_install_dir
+EMsoft_SetupInstallDirs()
 
 INSTALL(TARGETS ${PROJECT_NAME}
   EXPORT ${PROJECT_NAME}Targets
   COMPONENT Applications
   RUNTIME DESTINATION ${install_dir}
   LIBRARY DESTINATION ${lib_install_dir}
-  ARCHIVE DESTINATION lib
+  ARCHIVE DESTINATION ${lib_install_dir}
   BUNDLE DESTINATION "."
 )
 

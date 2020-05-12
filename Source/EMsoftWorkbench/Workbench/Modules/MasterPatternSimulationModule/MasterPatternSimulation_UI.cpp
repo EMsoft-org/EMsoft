@@ -184,7 +184,7 @@ void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
 {
   if(simulateBtn->text() == "Cancel" && m_Controller != nullptr)
   {
-    m_Controller->cancelProcess();
+    m_Controller->cancel();
     emit processCompleted();
     setRunning(false);
     return;
@@ -280,9 +280,8 @@ void MasterPatternSimulation_UI::validateData()
   data.inputFilePath = mcFilePathLE->text();
   data.outputFilePath = mpFilePathLE->text();
 
-  MasterPatternSimulationController controller;
-  controller.setData(data);
-  if(controller.validateInput())
+  m_Controller->setData(data);
+  if(m_Controller->validateInput())
   {
     simulateBtn->setEnabled(true);
   }
@@ -325,13 +324,6 @@ void MasterPatternSimulation_UI::readComputationalParameters(QJsonObject& obj)
 
   if(!compParamObj.isEmpty())
   {
-    smallestDSpacingSB->blockSignals(true);
-    numOfMPPixelsSB->blockSignals(true);
-    betheParametersXSB->blockSignals(true);
-    betheParametersYSB->blockSignals(true);
-    betheParametersZSB->blockSignals(true);
-    numOfOpenMPThreadsSB->blockSignals(true);
-
     smallestDSpacingSB->setValue(compParamObj[ioConstants::SmallestDSpacing].toDouble());
     numOfMPPixelsSB->setValue(compParamObj[ioConstants::NumOfMasterPatternPxls].toInt());
 
@@ -341,13 +333,6 @@ void MasterPatternSimulation_UI::readComputationalParameters(QJsonObject& obj)
     betheParametersZSB->setValue(betheParamObj[ioConstants::Bethe_Z].toInt());
 
     numOfOpenMPThreadsSB->setValue(compParamObj[ioConstants::NumOfOpenMPThreads].toInt());
-
-    smallestDSpacingSB->blockSignals(false);
-    numOfMPPixelsSB->blockSignals(false);
-    betheParametersXSB->blockSignals(false);
-    betheParametersYSB->blockSignals(false);
-    betheParametersZSB->blockSignals(false);
-    numOfOpenMPThreadsSB->blockSignals(false);
   }
 }
 

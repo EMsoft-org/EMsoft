@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2017-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2017-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -483,7 +483,7 @@ if (inspace.eq.'d') then
  if (inspace.eq.'c') then
 ! Cartesian to direct (post-multiplication)
   if (outspace.eq.'d') then
-   d = matmul(cell%rsm,t)
+   d = matmul(t,cell%rsm)
    return
   end if
 ! Cartesian to reciprocal (post-multiplication)
@@ -557,7 +557,7 @@ if (inspace.eq.'d') then
  if (inspace.eq.'c') then
 ! Cartesian to direct (post-multiplication)
   if (outspace.eq.'d') then
-   d = matmul(cell%rsm,t)
+   d = matmul(t,cell%rsm)
    return
   end if
 ! Cartesian to reciprocal (post-multiplication)

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -48,6 +48,7 @@ call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any 
 call Interpret_Program_Arguments(nmldeffile,1,(/ 214 /), progname)
+
 
 write (*,*) 'read program arguments '
 
@@ -147,8 +148,8 @@ complex(kind=dbl),allocatable       :: DynMat(:,:), mscatt(:,:), DynMat_diag(:,:
 complex(kind=dbl)                   :: czero, cone
 real(kind=sgl),allocatable,target   :: gx(:), gy(:), gz(:)
 
-real(kind=sgl)                      :: FN(3), kk(3), kkk(3), fnat, kn, Radius, xy(2), tstart, tstop, beamtiltqu(4)
-real(kind=sgl)                      :: k(3), kp(3), ku(3), kin(3), eu(3), qu(4), gin(3), gout(3), incbeam(3), beamtilt(3)
+real(kind=sgl)                      :: FN(3), kk(3), kkk(3), fnat, kn, Radius, xy(2), tstart, tstop
+real(kind=sgl)                      :: k(3), kp(3), ku(3), kin(3), eu(3), qu(4), gin(3), gout(3)
 !integer(kind=irg)                   :: numset, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one, gg(3)
 integer(kind=irg),allocatable       :: kij(:,:), nat(:), gvex(:,:), gvexpres(:)
 real(kind=dbl)                      :: res(2), xyz(3), ind, om(3,3), sg
@@ -271,7 +272,8 @@ integer(kind=irg)                         :: ccount, ccounttot
 
 ! beam tilt parameters:
 real(kind=sgl)                            :: lauec(2), lpg(3), glen, gplen, FNr(3), g3(3), exer, H, LC3, sgdenom, tt(3)
-integer(kind=irg)                         :: ga(3), gb(3), gab(2,3), ir, ZAindex(3), cbeam(2)
+integer(kind=irg)                         :: ga(3), gb(3), gab(2,3), ir, ZAindex(3)
+
 
 
 interface
@@ -313,10 +315,6 @@ thk = thk/subslice
 
 ZAindex = msnml%ZAindex
 lauec   = msnml%lauec
-
-! beamtilt   = (/0.0,0.0,0.0/)
-! beamtiltqu = eu2qu(beamtilt)
-! incbeam = quat_LP(beamtiltqu,(/0.0,0.0,1.0/))
 
 
 ! ccounttot = 10
@@ -832,6 +830,8 @@ call Message('--> Done creating OpenCL executable.')
 ! end saransh's old algorithm.
 
 
+
+! My new algorithm is here:
 ! set up the lauec for beam tilting, we need the shortest 
 ! reciprocal lattice vectors in this zone. 
 j=0
@@ -841,33 +841,23 @@ end do
 
 call BFsymmetry(cell,ZAindex,j,isym,ir)
 call ShortestG(cell,ZAindex,ga,gb,isym) ! outputs ga gb
- io_int(1:3) = ZAindex(1:3)
+io_int(1:3) = ZAindex(1:3)
 
- call WriteValue('', io_int, 3,  "(//,' ','[',3I2,'] has Bright Field symmetry ')",advance="no")
- ! call Message(PGTWD(isym),"(' ',A,', ')",advance="no")
- io_int(1) = ir
- call WriteValue(' order = ', io_int, 1, "(I4/)")
- io_int(1:3) = ga(1:3)
- io_int(4:6) = gb(1:3)
- call WriteValue(' Reciprocal lattice vectors : ', io_int, 6, "('(',3I3,') and (',3I3,')',/)")
+call WriteValue('', io_int, 3,  "(//,' ','[',3I2,'] has Bright Field symmetry ')",advance="no")
+! call Message(PGTWD(isym),"(' ',A,', ')",advance="no")
+io_int(1) = ir
+call WriteValue(' order = ', io_int, 1, "(I4/)")
+io_int(1:3) = ga(1:3)
+io_int(4:6) = gb(1:3)
+call WriteValue(' Reciprocal lattice vectors : ', io_int, 6, "('(',3I3,') and (',3I3,')',/)")
 
- ! holz line position
-! laue shift amount, constant for all beams
+
 tt = lauec(1)*ga + lauec(2)*gb
  io_int(1:3) = tt(1:3)
 call WriteValue(' Laue shift: ', io_int, 3, "(' ',3I2)")
 ! normalization parameter
 LC3 = sqrt(1.0-cell%mLambda**2*(CalcLength(cell,tt,'r')**2))   ! to ensure proper normalization of wave vector
 
-! unit foil normal in reciprocal space  
-! call TransSpace(cell,sngl(FN),FNr,'d','r')
-! call NormVec(cell,FNr,'r')
-
-! H = 1.0/CalcLength(cell,dble(ZAindex),'d')
-! ! g3 basis vector, properly scaled
-! call CalcCross(cell,float(ga),float(gb),g3,'r','r',1)
-! call NormVec(cell,g3,'r')
-! g3 = H * g3
 
 ! Some of these can be pre-computed externally 
 ! we can also tell the kernel where these will be in memory 
@@ -917,14 +907,9 @@ do ll = -INT((beamsize-1)/2), INT((beamsize-1)/2)
         xyzBeams(ll,mm,1:3) = LambertSquareToSphere( xyLamb(1:2), ierr)
         kin = xyzBeams(ll,mm,1:3)
 
-        ! print *, kin
-        ! print *, tt
-
         ! now we have unit vectors that are equal-area projected onto the surface of a sphere
         ! rotate to  crystal frame
         call NormVec(cell,kin,'c')
-
-
         kin             =  quat_LP(conjg(qu),kin)
         !scaling factor
         kin             =  kin/cell%mlambda
@@ -1475,11 +1460,9 @@ dataset = SC_Intensities
   offset4 = (/ 0, 0, 0, 0 /)
   call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
   if (g_exists) then 
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4(1), cnt4(2), cnt4(3),& 
-                cnt4(4), HDF_head, insert)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4, HDF_head, insert)
   else
-    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4(1), cnt4(2), cnt4(3),&
-                cnt4(4), HDF_head)
+    hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4, HDF_head)
   end if
 
 
@@ -1571,6 +1554,7 @@ do ixy = 0, (symboxx)*(symboxy) - 1
             CYCLE
         end if 
 
+
         ! ! REMOVE THIS!!!!
         ! ccount = ccount + 1
         ! if (ccount > ccounttot) then
@@ -1593,7 +1577,6 @@ do ixy = 0, (symboxx)*(symboxy) - 1
 
         ! if this cell is outside the sample, don't propagate the beam 
         ! we also need to consider if this 
-
 
         ierr    =  clSetKernelArg(kernel, 17, sizeof(dx), C_LOC(dx))
         call CLerror_check('DDD_STEMDCI:clSetKernelArg:dx', ierr)
@@ -1869,8 +1852,7 @@ do ixy = 0, (symboxx)*(symboxy) - 1
         dims4 = (/  kji(3), kji(2), nsam, nref /)
         cnt4 = (/ 1, kji(2), nsam, nref /)
         offset4 = (/ currentx - 1, 0, 0, 0 /)
-        hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4(1), cnt4(2), cnt4(3),&
-                    cnt4(4), HDF_head, insert)
+        hdferr = HDF_writeHyperslabFloatArray4D(dataset, resultsrow, dims4, offset4, cnt4, HDF_head, insert)
 
         call HDF_pop(HDF_head,.TRUE.)
 

@@ -1,5 +1,5 @@
 ! ###################################################################
-! Copyright (c) 2013-2019, Marc De Graef Research Group/Carnegie Mellon University
+! Copyright (c) 2013-2020, Marc De Graef Research Group/Carnegie Mellon University
 ! All rights reserved.
 !
 ! Redistribution and use in source and binary forms, with or without modification, are 
@@ -852,6 +852,7 @@ objAddress, cancel) bind(c, name='EMsoftCgetMCOpenCL')    ! this routine is call
 ! 
 
 use local
+use error 
 use configmod
 use constants
 use crystal
@@ -863,6 +864,7 @@ use clfortran
 use CLsupport
 use timing
 use,INTRINSIC :: ISO_C_BINDING
+
 
 IMPLICIT NONE
 
@@ -946,10 +948,6 @@ CALL C_F_PROCPOINTER (cproc, proc)
 ! standard EMsoft config structure for use inside this routine
 call C2F_configuration_strings(C_LOC(spar), CS)
 
-! code used for testing
-!outname = '/Users/mdg/Files/EMPlay/Test/WBMCoutput.txt'
-!call print_EMsoft_configuration_strings(CS, outname)
-
 ! the following is necessitated by the fact that none of this code may 
 ! depend on HDF5 routines, so we need to cut-and-paste from various 
 ! other library routines to set things up so that we can compute the 
@@ -957,8 +955,6 @@ call C2F_configuration_strings(C_LOC(spar), CS)
 
 ! copy all the unit cell parameters into the proper fields and compute the 
 ! density parameters needed by the Monte Carlo routine; then discard the cell structure
-!nullify(cell)        
-!allocate(cell)        
 ! lattice parameters
 cell%a = dble(latparm(1))
 cell%b = dble(latparm(2))
@@ -1008,8 +1004,6 @@ if ((cell%xtal_system.eq.5).AND.(cell%SYM_SGset.ne.2)) cell%hexset = .TRUE.
 call CalcPositions(cell,'v')
 ! and now we have all we need to compute the density, average A and average Z
 call CalcDensity(cell, dens, avZ, avA)
-! deallocate the cell structure
-! deallocate(cell)        
 
 ! and copy these values into the desired variables
 density = dble(dens)
@@ -1060,6 +1054,8 @@ emmcPath=EMsoft_toNativePath(emmcPath)
 
 ! sourcefile = 'EMMC.cl'
 call CLread_source_file_wrapper(emmcPath, csource, slength)
+! io_int(1) = slength
+! call WriteValue('Kernel source length (characters) : ',io_int,1)
 
 ! we disable all screen output; perhaps we can feed error messages back to the calling program...
 
@@ -1067,31 +1063,31 @@ call CLread_source_file_wrapper(emmcPath, csource, slength)
 pcnt = 1
 psource = C_LOC(csource)
 prog = clCreateProgramWithSource(context, pcnt, C_LOC(psource), C_LOC(slength), ierr)
-! if(ierr /= CL_SUCCESS) call FatalError("clCreateProgramWithSource: ",'Error: cannot create program from source.')
+ ! if(ierr /= CL_SUCCESS) call FatalError("clCreateProgramWithSource: ",'Error: cannot create program from source.')
 
 ! build the program
 ierr = clBuildProgram(prog, numd, C_LOC(device), C_NULL_PTR, C_NULL_FUNPTR, C_NULL_PTR)
 if (ierr.le.0) then
   ierr = clGetProgramBuildInfo(prog, device(ipar(6)), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
-  if(len(trim(source)) > 0) call Message(trim(source(1:cnum)),frm='(A)')
+  ! if(len(trim(source)) > 0) call Message(trim(source(1:cnum)),frm='(A)')
 endif
-! if(ierr /= CL_SUCCESS) call FatalError("clBuildProgram: ",'Error: cannot build program.')
+ ! if(ierr /= CL_SUCCESS) call FatalError("clBuildProgram: ",'Error: cannot build program.')
 
 ! get the compilation log
 ierr = clGetProgramBuildInfo(prog, device(ipar(6)), CL_PROGRAM_BUILD_LOG, sizeof(source), C_LOC(source), cnum)
-! if(len(trim(source)) > 0) call Message(trim(source(1:cnum)),frm='(A)')
-! if(ierr /= CL_SUCCESS) call FatalError("clGetProgramBuildInfo: ",'Error building program.')
+ ! if(len(trim(source)) > 0) call Message(trim(source(1:cnum)),frm='(A)')
+ ! if(ierr /= CL_SUCCESS) call FatalError("clGetProgramBuildInfo: ",'Error building program.')
 
 ! if we get here, then the program build was successful and we can proceed with the creation of the kernel
-! call Message('Program Build Successful... Creating kernel')
+ ! call Message('Program Build Successful... Creating kernel')
 
 ! finally get the kernel and release the program
 kernelname = 'MC'//CHAR(0)
 kernel = clCreateKernel(prog, C_LOC(kernelname), ierr)
-! if(ierr /= CL_SUCCESS) call FatalError("clCreateKernel: ",'Error creating kernel MC.')
+ ! if(ierr /= CL_SUCCESS) call FatalError("clCreateKernel: ",'Error creating kernel MC.')
 
 ierr = clReleaseProgram(prog)
-! if(ierr /= CL_SUCCESS) call FatalError("clReleaseProgram: ",'Error releasing program.')
+ ! if(ierr /= CL_SUCCESS) call FatalError("clReleaseProgram: ",'Error releasing program.')
 
 open(unit = iunit, file = trim(EMsoft_toNativePath(CS%Randomseedfilename)), form='unformatted', status='old')
 read(iunit) nseeds
@@ -1100,7 +1096,7 @@ read(iunit) rnseeds
 close(unit=iunit,status='keep')
 
 ! the next error needs to be checked in the calling program
-! if (globalworkgrpsz**2 .gt. nseeds) call FatalError('EMMCOpenCL:','insufficient prime numbers')
+ if (globalworkgrpsz**2 .gt. nseeds) call FatalError('EMMCOpenCL:','insufficient prime numbers')
 
 allocate(init_seeds(4*globalworkgrpsz*globalworkgrpsz),stat=istat)
 init_seeds = 0
@@ -1114,23 +1110,23 @@ end do
 
 ! create device memory buffers
 LamX = clCreateBuffer(context, CL_MEM_WRITE_ONLY, size_in_bytes, C_NULL_PTR, ierr)
-! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for LamX.')
+ ! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for LamX.')
 
 LamY = clCreateBuffer(context, CL_MEM_WRITE_ONLY, size_in_bytes, C_NULL_PTR, ierr)
-! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for LamY.')
+ ! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for LamY.')
 
 depth = clCreateBuffer(context, CL_MEM_WRITE_ONLY, size_in_bytes, C_NULL_PTR, ierr)
-!   if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for depth.')
+   ! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for depth.')
 
 energy = clCreateBuffer(context, CL_MEM_WRITE_ONLY, size_in_bytes, C_NULL_PTR, ierr)
-!   if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for energy.')
+   ! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for energy.')
 
 seeds = clCreateBuffer(context, CL_MEM_READ_WRITE, size_in_bytes, C_NULL_PTR, ierr)
-! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for seeds.')
+ ! if(ierr /= CL_SUCCESS) call FatalError('clCreateBuffer: ','cannot allocate device memory for seeds.')
 
 ierr = clEnqueueWriteBuffer(command_queue, seeds, CL_TRUE, 0_8, size_in_bytes_seeds, C_LOC(init_seeds(1)), &
                             0, C_NULL_PTR, C_NULL_PTR)
-! if(ierr /= CL_SUCCESS) call FatalError('clEnqueueWriteBuffer: ','cannot Enqueue write buffer.')
+ ! if(ierr /= CL_SUCCESS) call FatalError('clEnqueueWriteBuffer: ','cannot Enqueue write buffer.')
 
 ! set the callback parameters
 dn = 1
@@ -1152,80 +1148,85 @@ angleloop: do iang = 1,numangle
 
 ! set the kernel arguments
     ierr = clSetKernelArg(kernel, 0, sizeof(LamX), C_LOC(LamX))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 1, sizeof(LamY), C_LOC(LamY))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 2, sizeof(EkeV), C_LOC(EkeV))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 3, sizeof(globalworkgrpsz), C_LOC(globalworkgrpsz))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 4, sizeof(Ze), C_LOC(Ze))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 5, sizeof(density), C_LOC(density))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 6, sizeof(at_wt), C_LOC(at_wt))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 7, sizeof(num_el), C_LOC(num_el))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 8, sizeof(seeds), C_LOC(seeds))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 9, sizeof(sig), C_LOC(sig))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 10, sizeof(omega), C_LOC(omega))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 11, sizeof(depth), C_LOC(depth))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 12, sizeof(energy), C_LOC(energy))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
     ierr = clSetKernelArg(kernel, 13, sizeof(steps), C_LOC(steps))
-    !   if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
+       ! if(ierr /= CL_SUCCESS) stop 'Error: cannot set kernel argument.'
 
 ! execute the kernel
 !   ierr = clEnqueueNDRangeKernel(command_queue, kernel, 2, C_NULL_PTR, C_LOC(globalsize), C_LOC(localsize), &
 !                                 0, C_NULL_PTR, C_NULL_PTR)
     ierr = clEnqueueNDRangeKernel(command_queue, kernel, 2, C_NULL_PTR, C_LOC(globalsize), C_NULL_PTR, &
                                   0, C_NULL_PTR, C_NULL_PTR)
+    ! if(ierr /= CL_SUCCESS) stop 'Error: clEnqueueNDRangeKernel'
 ! wait for the commands to finish
     ierr = clFinish(command_queue)
+    ! if(ierr /= CL_SUCCESS) stop 'Error: clFinish'
 
 ! read the resulting vector from device memory
     ierr = clEnqueueReadBuffer(command_queue,LamX,CL_TRUE,0_8,size_in_bytes,C_LOC(Lamresx(1)),0,C_NULL_PTR,C_NULL_PTR)
+    ! if(ierr /= CL_SUCCESS) stop 'Error: clEnqueueReadBuffer LamX '
     ierr = clEnqueueReadBuffer(command_queue,LamY,CL_TRUE,0_8,size_in_bytes,C_LOC(Lamresy(1)),0,C_NULL_PTR,C_NULL_PTR)
+    ! if(ierr /= CL_SUCCESS) stop 'Error: clEnqueueReadBuffer LamY '
     ierr = clEnqueueReadBuffer(command_queue,depth,CL_TRUE,0_8,size_in_bytes,C_LOC(depthres(1)),0,C_NULL_PTR,C_NULL_PTR)
+    ! if(ierr /= CL_SUCCESS) stop 'Error: clEnqueueReadBuffer depth '
     ierr = clEnqueueReadBuffer(command_queue,energy,CL_TRUE,0_8,size_in_bytes,C_LOC(energyres(1)),0,C_NULL_PTR,C_NULL_PTR)
-
-
+    ! if(ierr /= CL_SUCCESS) stop 'Error: clEnqueueReadBuffer energy'
 
     if (mode .eq. 'full') then
+      val = 0
       subloopfull: do j = 1, num_max
         if ((Lamresx(j) .ne. -10.0) .and. (Lamresy(j) .ne. -10.0) &
           .and. (depthres(j) .ne. 10.0) .and. (energyres(j) .ne. 0.0) &
           .and. .not.isnan(Lamresx(j)) .and. .not.isnan(Lamresy(j))) then
 ! and get the nearest pixel [ take into account reversal of coordinate frame (x,y) -> (y,-x) ]
-             if ((nint(delta*Lamresy(j)) .eq. 0.0) .and. (nint(-delta*Lamresx(j)) .eq. 0.0)) then
-               val1 = val1 + 1
-             end if
+             ! if ((nint(delta*Lamresy(j)) .eq. 0.0) .and. (nint(-delta*Lamresx(j)) .eq. 0.0)) then
+             !   val1 = val1 + 1
+             ! end if
 
-             val = val + 1
              idxy = (/ nint(delta*Lamresy(j)), nint(-delta*Lamresx(j)) /)
 
              if (maxval(abs(idxy)).le.nx) then
 ! If Ec larger than Emin, then we should count this electron
                if (energyres(j).gt.fpar(4)) then
 
+                 val = val + 1
                  iE = nint((energyres(j)-fpar(4))/fpar(5))+1
 ! first add this electron to the correct exit distance vs. energy bin (coarser than the angular plot)
                  edis = abs(depthres(j))  ! distance from last scattering point to surface along trajectory
@@ -1277,22 +1278,19 @@ angleloop: do iang = 1,numangle
     end if
 
 ! has the cancel flag been set by the calling program ?
-  if(cancel.ne.char(0)) EXIT angleloop
+    if(cancel.ne.char(0)) then 
+      EXIT angleloop
+    end if
 
 ! update the progress counter and report it to the calling program via the proc callback routine
-  if(objAddress.ne.0) then
-    bseyield = 100.0*float(sum(accum_e))/float(i*num_max)
-   ! Format = "(3I6, 2F12.2)"
-   ! write(*,Format)objAddress, cn, totn, bseyield, sum(accum_e)
-   ! write(*,*)"sum(accum_e):",sum(accum_e),"i:",i,"num_max:",num_max
-    call proc(objAddress, cn, totn, bseyield)
-    cn = cn+dn
-  end if
+    if(objAddress.ne.0) then
+      bseyield = 100.0*float(sum(accum_e))/float(i*num_max)
+      call proc(objAddress, cn, totn, bseyield)
+      cn = cn+dn
+    end if
 
   end do mainloop
 end do angleloop 
-
-!write(*,*)'Total GPU time [s] = ',Time_tock(tstart)
 
 !=====================
 ! RELEASE EVERYTHING

@@ -38,7 +38,6 @@
 #include <QtConcurrent>
 
 #include "Modules/DictionaryIndexingModule/Constants.h"
-#include "Modules/DictionaryIndexingModule/ChoosePatternsDatasetDialog.h"
 
 namespace ioConstants = DictionaryIndexingModuleConstants::IOStrings;
 
@@ -111,6 +110,17 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
 {
   connect(m_Ui->tabWidget, &QTabWidget::currentChanged, [=] { validateData(); });
 
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::inputTypeChanged, m_Ui->adpMapUI, &ADPMap_UI::listenInputTypeChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::selectedHDF5PathsChanged, m_Ui->adpMapUI, &ADPMap_UI::listenSelectedPatternDatasetChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::patternDataFilePathChanged, m_Ui->adpMapUI, &ADPMap_UI::listenPatternDataFileChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::inputTypeChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::listenInputTypeChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::selectedHDF5PathsChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::listenSelectedPatternDatasetChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::patternDataFilePathChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::listenPatternDataFileChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::inputTypeChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::listenInputTypeChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::selectedHDF5PathsChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::listenSelectedPatternDatasetChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::patternDataFilePathChanged, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::listenPatternDataFileChanged);
+  connect(m_Ui->choosePatternsUI, &ChoosePatternsDataset_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
+
   connect(m_Ui->adpMapUI, &ADPMap_UI::selectedADPCoordinateChanged, m_Ui->patternPreprocessingUI, &PatternPreprocessing_UI::setSelectedADPPatternPixel);
   connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapGenerationStarted, this, &DictionaryIndexingMain_UI::listenADPMapGenerationStarted);
   connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapGenerationFinished, this, &DictionaryIndexingMain_UI::listenADPMapGenerationFinished);
@@ -134,6 +144,8 @@ void DictionaryIndexingMain_UI::createWidgetConnections()
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::warningMessageGenerated, this, &DictionaryIndexingMain_UI::notifyWarningMessage);
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::stdOutputMessageGenerated, this, &DictionaryIndexingMain_UI::appendToStdOut);
   connect(m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::parametersChanged, this, &DictionaryIndexingMain_UI::listenParametersChanged);
+
+  connect(m_Ui->adpMapUI, &ADPMap_UI::adpMapCreated, m_Ui->dictionaryIndexingUI, &DictionaryIndexing_UI::setADPMap);
 }
 
 // -----------------------------------------------------------------------------
@@ -209,6 +221,8 @@ void DictionaryIndexingMain_UI::validateData()
   ModuleTab tab = static_cast<ModuleTab>(m_Ui->tabWidget->currentIndex());
   switch(tab)
   {
+  case ModuleTab::ChoosePatterns:
+    break;
   case ModuleTab::AvgDotProductMap:
     m_Ui->adpMapUI->validateData();
     break;
@@ -237,9 +251,15 @@ void DictionaryIndexingMain_UI::changeEvent(QEvent* event)
 // -----------------------------------------------------------------------------
 void DictionaryIndexingMain_UI::readModuleSession(QJsonObject& obj)
 {
-  m_Ui->adpMapUI->readSession(obj);
-  m_Ui->patternPreprocessingUI->readSession(obj);
-  m_Ui->dictionaryIndexingUI->readSession(obj);
+  QJsonObject diModuleObj = obj[ioConstants::DIModule].toObject();
+
+  if(!diModuleObj.isEmpty())
+  {
+    m_Ui->choosePatternsUI->readSession(diModuleObj);
+    m_Ui->adpMapUI->readSession(diModuleObj);
+    m_Ui->patternPreprocessingUI->readSession(diModuleObj);
+    m_Ui->dictionaryIndexingUI->readSession(diModuleObj);
+  }
 }
 
 // -----------------------------------------------------------------------------
@@ -249,6 +269,7 @@ void DictionaryIndexingMain_UI::writeModuleSession(QJsonObject& obj) const
 {
   QJsonObject diModuleObj;
 
+  m_Ui->choosePatternsUI->writeSession(diModuleObj);
   m_Ui->adpMapUI->writeSession(diModuleObj);
   m_Ui->patternPreprocessingUI->writeSession(diModuleObj);
   m_Ui->dictionaryIndexingUI->writeSession(diModuleObj);

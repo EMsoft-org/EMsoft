@@ -35,15 +35,11 @@
 
 #pragma once
 
-#include <QtCore/QFutureWatcher>
-
 #include "Common/Constants.h"
 
 #include "Modules/DictionaryIndexingModule/DictionaryIndexingController.h"
 
 #include "ui_DictionaryIndexing_UI.h"
-
-class ChoosePatternsDatasetDialog;
 
 class DictionaryIndexing_UI : public QWidget
 {
@@ -79,6 +75,23 @@ public:
 
 public slots:
   /**
+   * @brief listenInputTypeChanged
+   */
+  void listenInputTypeChanged(EMsoftWorkbenchConstants::InputType inputType);
+
+  /**
+   * @brief listenPatternDataFileChanged
+   * @param filePath
+   */
+  void listenPatternDataFileChanged(const QString& filePath);
+
+  /**
+   * @brief listenSelectedPatternDatasetChanged
+   * @param patternDSetPaths
+   */
+  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+
+  /**
    * @brief setSelectedHipassValue
    * @param value
    */
@@ -89,6 +102,12 @@ public slots:
    * @param value
    */
   void setSelectedNumberOfRegions(int value);
+
+  /**
+   * @brief setADPMap
+   * @param adpMap
+   */
+  void setADPMap(const QImage& adpMap);
 
 protected:
   /**
@@ -101,6 +120,11 @@ protected slots:
    * @brief listenDIGenerationStarted
    */
   void listenDIGenerationStarted();
+
+  /**
+   * @brief listenROIChanged
+   */
+  void listenROIChanged();
 
   /**
    * @brief selectFilePath
@@ -121,24 +145,13 @@ protected slots:
   /**
    * @brief listenADPGenerationFinished
    */
-  void listenDIGenerationFinished();
+  void processFinished();
 
   /**
-   * @brief listenInputTypeChanged
+   * @brief listenMaskCheckboxStateChanged
+   * @param state
    */
-  void listenInputTypeChanged(int index);
-
-  /**
-   * @brief listenPatternDataFileChanged
-   * @param filePath
-   */
-  void listenPatternDataFileChanged(const QString &filePath);
-
-  /**
-   * @brief listenSelectedPatternDatasetChanged
-   * @param patternDSetPaths
-   */
-  void listenSelectedPatternDatasetChanged(QStringList patternDSetPaths);
+  void listenMaskCheckboxStateChanged(int state);
 
   /**
    * @brief listenROICheckboxStateChanged
@@ -174,18 +187,17 @@ private:
   QSharedPointer<Ui::DictionaryIndexing_UI> m_Ui;
 
   DictionaryIndexingController* m_DIController = nullptr;
+  QSharedPointer<QThread> m_WorkerThread;
 
   InputType m_InputType = InputType::Binary;
   QString m_PatternDataFile;
   QStringList m_SelectedHDF5Path;
+  QImage m_ADPMap;
 
   float m_SelectedHipassValue = -1.0f;
   int m_SelectedNumOfRegions = -1;
 
-  ChoosePatternsDatasetDialog* m_ChoosePatternsDatasetDialog = nullptr;
-
   QString m_OpenDialogLastDirectory = "";
-  QSharedPointer<QFutureWatcher<void>> m_DIWatcher;
 
   /**
    * @brief createValidators
@@ -206,7 +218,7 @@ private:
    * @brief getData
    * @return
    */
-  DictionaryIndexingController::DIData getDIData();
+  DictionaryIndexingController::InputDataType getDIData();
 
   /**
    * @brief setInputType
