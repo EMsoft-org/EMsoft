@@ -47,7 +47,7 @@ progdesc = 'Calculation of STEM images for discrete dislocation dynamics data'
 call EMsoft(progname, progdesc)
 
 ! deal with the command line arguments, if any 
-call Interpret_Program_Arguments(nmldeffile,2,(/ 211, 0 /), progname)
+call Interpret_Program_Arguments(nmldeffile,1,(/ 214 /), progname)
 
 write (*,*) 'read program arguments '
 
@@ -147,8 +147,8 @@ complex(kind=dbl),allocatable       :: DynMat(:,:), mscatt(:,:), DynMat_diag(:,:
 complex(kind=dbl)                   :: czero, cone
 real(kind=sgl),allocatable,target   :: gx(:), gy(:), gz(:)
 
-real(kind=sgl)                      :: FN(3), kk(3), kkk(3), fnat, kn, Radius, xy(2), tstart, tstop
-real(kind=sgl)                      :: k(3), kp(3), ku(3), kin(3), eu(3), qu(4), gin(3), gout(3)
+real(kind=sgl)                      :: FN(3), kk(3), kkk(3), fnat, kn, Radius, xy(2), tstart, tstop, beamtiltqu(4)
+real(kind=sgl)                      :: k(3), kp(3), ku(3), kin(3), eu(3), qu(4), gin(3), gout(3), incbeam(3), beamtilt(3)
 !integer(kind=irg)                   :: numset, ipx, ipy, ipz, iequiv(3,48), nequiv, ip, jp, izz, IE, iz, one, gg(3)
 integer(kind=irg),allocatable       :: kij(:,:), nat(:), gvex(:,:), gvexpres(:)
 real(kind=dbl)                      :: res(2), xyz(3), ind, om(3,3), sg
@@ -271,7 +271,7 @@ integer(kind=irg)                         :: ccount, ccounttot
 
 ! beam tilt parameters:
 real(kind=sgl)                            :: lauec(2), lpg(3), glen, gplen, FNr(3), g3(3), exer, H, LC3, sgdenom, tt(3)
-integer(kind=irg)                         :: ga(3), gb(3), gab(2,3), ir, ZAindex(3)
+integer(kind=irg)                         :: ga(3), gb(3), gab(2,3), ir, ZAindex(3), cbeam(2)
 
 
 interface
@@ -313,6 +313,11 @@ thk = thk/subslice
 
 ZAindex = msnml%ZAindex
 lauec   = msnml%lauec
+
+! beamtilt   = (/0.0,0.0,0.0/)
+! beamtiltqu = eu2qu(beamtilt)
+! incbeam = quat_LP(beamtiltqu,(/0.0,0.0,1.0/))
+
 
 ! ccounttot = 10
 
@@ -493,7 +498,7 @@ if (.NOT. preprocessedflag) then
         dispfield(1,NINT(dispfieldraw(1,i))+1,NINT(dispfieldraw(2,i))+1,NINT(dispfieldraw(3,i))+1) = dispfieldraw(4,i)
         dispfield(2,NINT(dispfieldraw(1,i))+1,NINT(dispfieldraw(2,i))+1,NINT(dispfieldraw(3,i))+1) = dispfieldraw(5,i)
         dispfield(3,NINT(dispfieldraw(1,i))+1,NINT(dispfieldraw(2,i))+1,NINT(dispfieldraw(3,i))+1) = dispfieldraw(6,i)
-        ! dispfield(4,NINT(dispfieldraw(1,i))+1,NINT(dispfieldraw(2,i))+1,NINT(dispfieldraw(3,i))+1) = dispfieldraw(7,i)
+        dispfield(4,NINT(dispfieldraw(1,i))+1,NINT(dispfieldraw(2,i))+1,NINT(dispfieldraw(3,i))+1) = 1
     end do
 else if (preprocessedflag) then
     symboxx = atomArraySize4D(2)
@@ -520,7 +525,7 @@ qu = eu2qu(eu)
 k = quat_LP(conjg(qu),(/0.0,0.0,1.0/))
 FN = k/cell%mlambda
 call TransSpace(cell,FN,ku,'c','r')
-call NormVec(cell,ku,'c')
+call NormVec(cell,ku,'r')
 FN = ku
 
 nullify(reflist, reflist_tmp)
@@ -827,8 +832,6 @@ call Message('--> Done creating OpenCL executable.')
 ! end saransh's old algorithm.
 
 
-! My new algorithm is here:
-
 ! set up the lauec for beam tilting, we need the shortest 
 ! reciprocal lattice vectors in this zone. 
 j=0
@@ -838,8 +841,6 @@ end do
 
 call BFsymmetry(cell,ZAindex,j,isym,ir)
 call ShortestG(cell,ZAindex,ga,gb,isym) ! outputs ga gb
-
-
  io_int(1:3) = ZAindex(1:3)
 
  call WriteValue('', io_int, 3,  "(//,' ','[',3I2,'] has Bright Field symmetry ')",advance="no")
@@ -850,24 +851,23 @@ call ShortestG(cell,ZAindex,ga,gb,isym) ! outputs ga gb
  io_int(4:6) = gb(1:3)
  call WriteValue(' Reciprocal lattice vectors : ', io_int, 6, "('(',3I3,') and (',3I3,')',/)")
 
-
-! holz line position
-H = 1.0/CalcLength(cell,float(ZAindex),'d')
+ ! holz line position
 ! laue shift amount, constant for all beams
 tt = lauec(1)*ga + lauec(2)*gb
+ io_int(1:3) = tt(1:3)
+call WriteValue(' Laue shift: ', io_int, 3, "(' ',3I2)")
 ! normalization parameter
 LC3 = sqrt(1.0-cell%mLambda**2*(CalcLength(cell,tt,'r')**2))   ! to ensure proper normalization of wave vector
 
 ! unit foil normal in reciprocal space  
-call TransSpace(cell,sngl(FN),FNr,'d','r')
-call NormVec(cell,FNr,'r')
+! call TransSpace(cell,sngl(FN),FNr,'d','r')
+! call NormVec(cell,FNr,'r')
 
-! g3 basis vector, properly scaled
-call CalcCross(cell,float(ga),float(gb),g3,'r','r',1)
-call NormVec(cell,g3,'r')
-g3 = H * g3
-
-
+! H = 1.0/CalcLength(cell,dble(ZAindex),'d')
+! ! g3 basis vector, properly scaled
+! call CalcCross(cell,float(ga),float(gb),g3,'r','r',1)
+! call NormVec(cell,g3,'r')
+! g3 = H * g3
 
 ! Some of these can be pre-computed externally 
 ! we can also tell the kernel where these will be in memory 
@@ -896,8 +896,6 @@ xyzcirc = (/ cos((Pi/2) - (conv/1000)), 0.0, sin((Pi/2) - (conv/1000)) /)
 
 xyLamb = LambertSphereToSquare(xyzcirc,ierr)
 
-! print *, xyLamb
-
 ! now xyLamb(1) holds the min/max value we want to tile in lambert space
 ! we need to evenly disperse discsize points in this space:
 
@@ -914,52 +912,94 @@ xyLamb(1:2) = 0
 do ll = -INT((beamsize-1)/2), INT((beamsize-1)/2)
     do mm = -INT((beamsize-1)/2), INT((beamsize-1)/2)
         ! get the coordinates on the sphere for each beam in the square
-        xyLamb(1:2) = (/ ll*beamstep, mm*beamstep/)
+        xyLamb(1:2) = (/ ll*beamstep, mm*beamstep/) 
         xyLambs(numk+1,1:2) = xyLamb(1:2)
         xyzBeams(ll,mm,1:3) = LambertSquareToSphere( xyLamb(1:2), ierr)
         kin = xyzBeams(ll,mm,1:3)
 
         ! print *, kin
+        ! print *, tt
 
         ! now we have unit vectors that are equal-area projected onto the surface of a sphere
         ! rotate to  crystal frame
         call NormVec(cell,kin,'c')
+
+
         kin             =  quat_LP(conjg(qu),kin)
         !scaling factor
         kin             =  kin/cell%mlambda
-        ! go to reciprocal space (hkl)
+        ! ! go to reciprocal space (hkl)
         call TransSpace(cell,kin,ku,'c','r')
+
+
         ! ku is the new incident beam vector
         !klist(1:3,qcnt) =  ku
-        numk = numk + 1
 
-        ! we can try changing the FN for each beam: it sees a slightly different tilt than the 
+        ! holz line position
+        H = 1.0/CalcLength(cell,kin,'d')
+        ! g3 basis vector, properly scaled
+        call CalcCross(cell,float(ga),float(gb),g3,'r','r',1)
+        call NormVec(cell,g3,'r')
+        g3 = H * g3
 
         !now we need to compute the sg values for this incident beam vec.
         tmpreflist => reflist%next
         do ii = 1,nref
+            ! print *, tmpreflist%hkl
             ! loop over reflections
             glen = CalcLength(cell,float(tmpreflist%hkl),'r')
             if (glen.eq.0.0) then
-                ! through-beam has 0 excitation error by definition.
-                sg = czero
+             ! through-beam has 0 excitation error by definition.
+             sg = czero
             else
-                ! shifted hkl values 
-                lpg = tt + tmpreflist%hkl
-                gplen = CalcLength(cell,lpg,'r')
-                if (gplen.eq.0.0) then
-                    exer=-cell%mLambda*CalcDot(cell,float(tmpreflist%hkl),tt+lpg,'r')/2.0*&
-                    LC3*cos(CalcAngle(cell,dble(ZAindex),dble(FN),'d'))        
-                else
-                    sgdenom=2.0*LC3*cos(CalcAngle(cell,dble(ZAindex),dble(FN),'d'))&
-                    -2.0*cell%mLambda*gplen*cos(CalcAngle(cell,lpg,FNr,'r'))
-                    exer=-(cell%mLambda*CalcDot(cell,float(tmpreflist%hkl),tt+lpg,'r')-2.0*LC3*CalcDot(cell,g3,lpg,'r'))/sgdenom
-                end if
-                sg = exer
+             ! shifted hkl values 
+             lpg = tt + tmpreflist%hkl
+             gplen = CalcLength(cell,lpg,'r')
+             if (gplen.eq.0.0) then
+              ! print *, 'a'
+              sg =-cell%mLambda*CalcDot(cell,2*ku+float(tmpreflist%hkl),lpg,'r')/2.0*&
+              LC3*cos(CalcAngle(cell,dble(ku),dble(FN),'r'))        
+             else
+              ! print *, 'b'
+              sgdenom=2.0*LC3*cos(CalcAngle(cell,dble(ku),dble(FN),'r'))-2.0*cell%mLambda*gplen*cos(CalcAngle(cell,lpg,FN,'r'))
+              sg =-(cell%mLambda*CalcDot(cell,2*ku+float(tmpreflist%hkl),lpg,'r')&
+                -2.0*LC3*CalcDot(cell,g3,lpg,'r'))/sgdenom
+             end if
             end if
+            ! print *, sg
+
             ! this was old code to compute the sg
 
-            sg              =   calcsg(cell,float(tmpreflist%hkl),ku,FN)
+            ! there should be a way to account for the laue shift here 
+            ! which will give us the modified incident beam direction kin
+
+
+            ! ! beam components from cone
+            ! xyLamb(1:2) = (/ ll*beamstep, mm*beamstep/) 
+            ! xyLambs(numk+1,1:2) = xyLamb(1:2)
+            ! xyzBeams(ll,mm,1:3) = LambertSquareToSphere( xyLamb(1:2), ierr)
+            ! kin = xyzBeams(ll,mm,1:3)
+
+            ! ! kin is a VECTOR in CARTESIAN SPACE
+
+            ! ! there should be something we can add or multiply by here to get to the shifted incident beam:
+            ! ! now we have unit vectors that are equal-area projected onto the surface of a sphere
+            ! ! rotate to  crystal frame
+
+            ! call NormVec(cell,kin,'c')
+            ! kin             =  quat_LP(conjg(qu),kin)
+            ! !scaling factor
+            ! kin             =  kin/cell%mlambda
+            ! ! go to reciprocal space (hkl)
+            ! call TransSpace(cell,kin,ku,'c','r')
+            ! ! ku is the new incident beam vector in RECIPROCAL space
+            ! !klist(1:3,qcnt) =  ku
+
+            ! ! tilt should happen in reciprocal space
+
+
+            ! sg              =   calcsg(cell,float(tmpreflist%hkl),ku,FN)
+            ! print *, sg
             ! print *, cPi * (2.D0 * sg + qg0)
             ! testing no 0.5 for thickness
             ! cmplxvar        =   thk * cPi * (2.D0 * sg + qg0) * 0.5D0! + pq0 the 0.5 factor is because of e^Bt/2 e^At e^Bt/2
@@ -980,6 +1020,7 @@ do ll = -INT((beamsize-1)/2), INT((beamsize-1)/2)
             tmpreflist      =>  tmpreflist%next
             pcnt = pcnt + 1
         end do
+        numk = numk + 1
     end do
 end do
 
@@ -1526,11 +1567,9 @@ do ixy = 0, (symboxx)*(symboxy) - 1
 
 
     do currentz = kji(1), 1, -1
-
         if (dispfield(4,currentx,currenty,currentz) == 0.0) then
             CYCLE
         end if 
-
 
         ! ! REMOVE THIS!!!!
         ! ccount = ccount + 1
@@ -1554,8 +1593,6 @@ do ixy = 0, (symboxx)*(symboxy) - 1
 
         ! if this cell is outside the sample, don't propagate the beam 
         ! we also need to consider if this 
-
-
 
 
         ierr    =  clSetKernelArg(kernel, 17, sizeof(dx), C_LOC(dx))
