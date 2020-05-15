@@ -122,7 +122,7 @@ integer(kind=irg)                   :: currentx, currenty, currentz, cz, hklvec(
 real(kind=dbl)                      :: dimsp(6), dimsn(6)
 integer(kind=irg)                   :: maxnumreflections, discsize
 integer(kind=irg),allocatable       :: hklarray(:,:)
-real(kind=sgl),allocatable          :: sgarray(:,:)
+real(kind=sgl),allocatable          :: sgarray(:,:), tiltshift
 
 
 ! image variables
@@ -628,12 +628,44 @@ A_off_diag        =   cmplx(0.0, 0.0)
 DynMat            =   cmplx(0.D0,0.D0)
 
 call GetDynMatMaster(cell, reflist, DynMat, nref)
+
+
+! account for beam tilt here, if present: 
+j=0
+do i=1,32
+    if (SGPG(i).le.cell%SYM_SGnum) j=i
+end do
+
+call BFsymmetry(cell,ZAindex,j,isym,ir)
+call ShortestG(cell,ZAindex,ga,gb,isym) ! outputs ga gb
+io_int(1:3) = ZAindex(1:3)
+
+call WriteValue('', io_int, 3,  "(//,' ','[',3I2,'] has Bright Field symmetry ')",advance="no")
+! call Message(PGTWD(isym),"(' ',A,', ')",advance="no")
+io_int(1) = ir
+call WriteValue(' order = ', io_int, 1, "(I4/)")
+io_int(1:3) = ga(1:3)
+io_int(4:6) = gb(1:3)
+call WriteValue(' Reciprocal lattice vectors : ', io_int, 6, "('(',3I3,') and (',3I3,')',/)")
+
+
+tt = lauec(1)*ga + lauec(2)*gb
+ io_int(1:3) = tt(1:3)
+call WriteValue(' Laue shift: ', io_int, 3, "(' ',3I2)")
+! normalization parameter
+LC3 = sqrt(1.0-cell%mLambda**2*(CalcLength(cell,tt,'r')**2))   ! to ensure proper normalization of wave vector
+
+tiltshift = CalcDiffAngle(cell,int(tt(1)),int(tt(2)),int(tt(3)))
+tiltshift = cos(tiltshift)
+
+
+
 DynMat = DynMat * cmplx(0.D0,1.D0)
 
 do ii = 1,nref
     do jj = 1,nref
         if(ii .ne. jj) then
-            DynMat_off_diag(ii,jj)   = DynMat(ii,jj) * thk !* 0.5
+            DynMat_off_diag(ii,jj)   = tiltshift * DynMat(ii,jj) * thk !* 0.5
         end if
     end do
 end do
@@ -831,32 +863,7 @@ call Message('--> Done creating OpenCL executable.')
 
 
 
-! My new algorithm is here:
-! set up the lauec for beam tilting, we need the shortest 
-! reciprocal lattice vectors in this zone. 
-j=0
-do i=1,32
-    if (SGPG(i).le.cell%SYM_SGnum) j=i
-end do
 
-call BFsymmetry(cell,ZAindex,j,isym,ir)
-call ShortestG(cell,ZAindex,ga,gb,isym) ! outputs ga gb
-io_int(1:3) = ZAindex(1:3)
-
-call WriteValue('', io_int, 3,  "(//,' ','[',3I2,'] has Bright Field symmetry ')",advance="no")
-! call Message(PGTWD(isym),"(' ',A,', ')",advance="no")
-io_int(1) = ir
-call WriteValue(' order = ', io_int, 1, "(I4/)")
-io_int(1:3) = ga(1:3)
-io_int(4:6) = gb(1:3)
-call WriteValue(' Reciprocal lattice vectors : ', io_int, 6, "('(',3I3,') and (',3I3,')',/)")
-
-
-tt = lauec(1)*ga + lauec(2)*gb
- io_int(1:3) = tt(1:3)
-call WriteValue(' Laue shift: ', io_int, 3, "(' ',3I2)")
-! normalization parameter
-LC3 = sqrt(1.0-cell%mLambda**2*(CalcLength(cell,tt,'r')**2))   ! to ensure proper normalization of wave vector
 
 
 ! Some of these can be pre-computed externally 
