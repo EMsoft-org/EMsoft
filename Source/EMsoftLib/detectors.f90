@@ -225,7 +225,9 @@ deallocate(z)
     end do
   end do 
 
-if (present(verbose)) call Message(' -> completed detector generation', frm = "(A)")
+if (present(verbose)) then
+  if (verbose.eqv..TRUE.) call Message(' -> completed detector generation', frm = "(A)")
+end if 
 
 !====================================
 end subroutine GenerateEBSDDetector

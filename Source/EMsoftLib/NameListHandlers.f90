@@ -8294,10 +8294,14 @@ logical                                           :: inRAM
 integer(kind=irg)                                 :: nmis
 integer(kind=irg)                                 :: niter
 real(kind=sgl)                                    :: step
+integer(kind=irg)                                 :: initialx
+integer(kind=irg)                                 :: initialy
+character(fnlen)                                  :: PCcorrection
+real(kind=sgl)                                    :: truedelta
 
 
 namelist / RefineOrientations / nthreads, dotproductfile, ctffile, modality, nmis, niter, step, inRAM, method, &
-                                matchdepth, PSvariantfile, tmpfile
+                                matchdepth, PSvariantfile, tmpfile, initialx, initialy, PCcorrection, truedelta
 
 nthreads = 1
 matchdepth = 1
@@ -8311,6 +8315,11 @@ nmis = 1
 niter = 1
 step = 1.0
 modality = 'EBSD'
+initialx = 0
+initialy = 0
+PCcorrection = 'off'
+truedelta = 50.0
+
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -8348,6 +8357,10 @@ enl%nmis = nmis
 enl%niter = niter
 enl%step = step
 enl%modality = modality
+enl%initialx = initialx 
+enl%initialy = initialy
+enl%PCcorrection = PCcorrection
+enl%truedelta = truedelta 
 
 end subroutine GetRefineOrientationNameList
 
