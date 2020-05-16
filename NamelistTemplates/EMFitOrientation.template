@@ -43,10 +43,6 @@
 ! Pattern center correction requires knowledge of the pattern coordinates for which the 
 ! pattern center was originally refined. These are determined in units of the sampling step size.
 ! These would typically be the x, y coordinates used in the EMEBSDDIpreview program.
- initialpx = 0,
- initialpy = 0,
-! DI can be performed with an arbitrary detector pixel size, as long as the pattern center coordinates
-! are all properly scaled.  For refinement with pattern correction, however, the true detector pixel
-! size must be known.  Enter it here (in microns):
- truedelta = 50.0,
+ initialx = 0,
+ initialy = 0,
  /

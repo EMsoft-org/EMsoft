@@ -8317,7 +8317,7 @@ step = 1.0
 modality = 'EBSD'
 initialx = 0
 initialy = 0
-PCcorrection 'off'
+PCcorrection = 'off'
 truedelta = 50.0
 
 

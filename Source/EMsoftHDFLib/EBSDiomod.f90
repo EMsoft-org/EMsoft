@@ -580,8 +580,8 @@ write(dataunit2,'(A)') '# NumberFamilies        0'
 write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
 write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
-write(dataunit2,'(A,F9.6)') '# XSTEP: ', ebsdnl%StepX
-write(dataunit2,'(A,F9.6)') '# YSTEP: ', ebsdnl%StepY
+write(dataunit2,'(A,F12.6)') '# XSTEP: ', ebsdnl%StepX
+write(dataunit2,'(A,F12.6)') '# YSTEP: ', ebsdnl%StepY
 write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NROWS: ', ipar(8)
@@ -762,8 +762,8 @@ write(dataunit2,'(A)') '# NumberFamilies        0'
 write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
 write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
-write(dataunit2,'(A,F9.6)') '# XSTEP: ', tkdnl%StepX
-write(dataunit2,'(A,F9.6)') '# YSTEP: ', tkdnl%StepY
+write(dataunit2,'(A,F12.6)') '# XSTEP: ', tkdnl%StepX
+write(dataunit2,'(A,F12.6)') '# YSTEP: ', tkdnl%StepY
 write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ipar(7)
 write(dataunit2,'(A,I5)') '# NROWS: ', ipar(8)
@@ -1139,8 +1139,8 @@ end do
 ! write(dataunit2,'(A)') '# Categories 0 0 0 0 0'
 ! write(dataunit2,'(A)') '#'
 write(dataunit2,'(A)') '# GRID: SqrGrid'
-write(dataunit2,'(A,F9.6)') '# XSTEP: ', ebsdnl%StepX
-write(dataunit2,'(A,F9.6)') '# YSTEP: ', ebsdnl%StepY
+write(dataunit2,'(A,F12.6)') '# XSTEP: ', ebsdnl%StepX
+write(dataunit2,'(A,F12.6)') '# YSTEP: ', ebsdnl%StepY
 write(dataunit2,'(A,I5)') '# NCOLS_ODD: ',ipar(3)
 write(dataunit2,'(A,I5)') '# NCOLS_EVEN: ',ipar(3)
 write(dataunit2,'(A,I5)') '# NROWS: ', ipar(4)
