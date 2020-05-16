@@ -314,8 +314,9 @@ select case(mode)
 
 
         ! fill the image with whatever data you have (between 0 and 255)
-        write (fstring,"(I2,I2,I2)") int(reflection(1)), int(reflection(2)), int(reflection(3))
-        TIFF_filename = trim(fstring)//".tiff"
+        ! write (fstring,"(I2,I2,I2)") int(reflection(1)), int(reflection(2)), int(reflection(3))
+        ! TIFF_filename = trim(fstring)//".tiff"
+        TIFF_filename = "output.tiff"
         ! get the min and max value for the current image and rescale the intensities between 0 and 255
         mi = minval(ImageArray(:,:))
         ma = maxval(ImageArray(:,:))
