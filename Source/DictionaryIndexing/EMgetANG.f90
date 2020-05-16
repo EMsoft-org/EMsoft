@@ -133,6 +133,7 @@ call h5open_EMsoft(hdferr)
     if (trim(enl%angledataset).eq.'refined') then 
         call readEBSDDotProductFile(enl%dotproductfile, dinl, hdferr, EBSDDIdata, &
                                     getCI=.TRUE., &
+                                    getRefinedDotProducts=.TRUE., &
                                     getIQ=.TRUE., & 
                                     getOSM=.TRUE., & 
                                     getRefinedEulerAngles=.TRUE., &
@@ -171,19 +172,22 @@ call h5open_EMsoft(hdferr)
         if (allocated(EBSDDIdata%Phi)) deallocate(EBSDDIdata%Phi)
         if (allocated(EBSDDIdata%Phi2)) deallocate(EBSDDIdata%Phi2)
         call Message(' Using original Euler angles from dot product/SI file')
+        if (allocated(EBSDDIdata%CI)) then 
+            CIlist(1:Nexp) = EBSDDIdata%CI(1:Nexp)
+            deallocate(EBSDDIdata%CI)
+        end if
     else
         euler_best(1,1:Nexp) = EBSDDIdata%RefinedEulerAngles(1,1:Nexp)*180.0/cPi
         euler_best(2,1:Nexp) = EBSDDIdata%RefinedEulerAngles(2,1:Nexp)*180.0/cPi
         euler_best(3,1:Nexp) = EBSDDIdata%RefinedEulerAngles(3,1:Nexp)*180.0/cPi
         if (allocated(EBSDDIdata%RefinedEulerAngles)) deallocate(EBSDDIdata%RefinedEulerAngles)
+        if (allocated(EBSDDIdata%RefinedDotProducts)) then 
+            CIlist(1:Nexp) = EBSDDIdata%RefinedDotProducts(1:Nexp)
+            deallocate(EBSDDIdata%RefinedDotProducts)
+        end if 
         call Message(' Using refined Euler angles from dot product/SI file')
     end if 
-    if (allocated(EBSDDIdata%CI)) then 
-        CIlist(1:Nexp) = EBSDDIdata%CI(1:Nexp)
-        deallocate(EBSDDIdata%CI)
-    else
-        CIlist = 0.0
-    end if
+
 
     call Message('  --> dot product EBSD HDF5 file read; xtalname = ')
 

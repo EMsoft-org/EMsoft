@@ -601,9 +601,9 @@ write(dataunit2,'(A)') '#'
 ! * y pos                     -> pixel position
 ! * image quality             -> iq
 ! * confidence index          -> resultmain
-! * phase                     -> 1 (since there is only one phase in each indexing run)
+! * phase                     -> 0 (since there is only one phase in each indexing run)
 ! the second entry after the arrow is the EMsoft parameter that we write into that location
-! these 8 entries must be present...
+! these 8 entries must be present; they represent Version 3 of the EDAX/TSL .ang format 
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)
@@ -630,7 +630,7 @@ do ii = 1,ipar(3)
 ! Image Quality (using the Krieger Lassen pattern sharpness parameter iq)
     write(str6,'(A,F6.1)') ' ',BSval  !  IQ value in range [0.0 .. 255.0]
     write(str7,'(A,F6.3)') ' ',resultmain(1,ii)   ! this replaces MAD
-    write(str8,'(A,I1)') '  ',1 
+    write(str8,'(A,I1)') '  ',0 
 !
     write(dataunit2,"(A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A)") trim(adjustl(str1)),trim(adjustl(str2)),&
                                             trim(adjustl(str3)),trim(adjustl(str4)),trim(adjustl(str5)),&
@@ -783,9 +783,9 @@ write(dataunit2,'(A)') '#'
 ! * y pos                     -> pixel position
 ! * image quality             -> iq
 ! * confidence index          -> resultmain
-! * phase                     -> 1 (since there is only one phase in each indexing run)
+! * phase                     -> 0 (since there is only one phase in each indexing run)
 ! the second entry after the arrow is the EMsoft parameter that we write into that location
-! these 8 entries must be present...
+! these 8 entries must be present; they represent Version 3 of the EDAX/TSL .ang format
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)
@@ -812,7 +812,7 @@ do ii = 1,ipar(3)
 ! Image Quality (using the Krieger Lassen pattern sharpness parameter iq)
     write(str6,'(A,F6.1)') ' ',BSval  !  IQ value in range [0.0 .. 255.0]
     write(str7,'(A,F6.3)') ' ',resultmain(1,ii)   ! this replaces MAD
-    write(str8,'(A,I1)') '  ',1 
+    write(str8,'(A,I1)') '  ',0 
 !
     write(dataunit2,"(A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A,' ',A)") trim(adjustl(str1)),trim(adjustl(str2)),&
                                             trim(adjustl(str3)),trim(adjustl(str4)),trim(adjustl(str5)),&
@@ -1160,9 +1160,9 @@ write(dataunit2,'(A)') '#'
 ! * y pos                     -> pixel position
 ! * image quality             -> iq
 ! * confidence index          -> resultmain
-! * phase                     -> 1 (since there is only one phase in each indexing run)
+! * phase                     -> 1 (starts at 1 for multi-phase file)
 ! the second entry after the arrow is the EMsoft parameter that we write into that location
-! these 8 entries must be present...
+! these 8 entries must be present; they represent Version 3 of the EDAX/TSL .ang format
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(1)
