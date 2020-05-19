@@ -692,8 +692,10 @@ if (ronl%method.eq.'FIT') then
                      myEBSDdetector%rgz(dinl%numsx,dinl%numsy), &
                      myEBSDdetector%accum_e_detector(EBSDMCdata%numEbins,dinl%numsx,dinl%numsy), stat=mystat)
           end if 
-
+          
           TID = OMP_GET_THREAD_NUM()
+
+    !$OMP BARRIER
 
     !$OMP DO SCHEDULE(DYNAMIC)
           do jj = 1,ppendE(iii)
@@ -828,6 +830,8 @@ if (ronl%method.eq.'FIT') then
         deallocate(tmpimageexpt,binned,EBSDpatternintd,EBSDpatterninteger,EBSDpatternad,imagedictflt)
         deallocate(X,XL,XU,INITMEANVAL,STEPSIZE, eulerPS, dpPS, myEBSDdetector%rgx, myEBSDdetector%rgy)
         deallocate(myEBSDdetector%rgz, myEBSDdetector%accum_e_detector)
+
+    !$OMP BARRIER
 
     !$OMP END PARALLEL
      
