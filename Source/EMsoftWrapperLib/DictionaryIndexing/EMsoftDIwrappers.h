@@ -1,6 +1,8 @@
 #ifndef _emsoft_DIwrappers_H_
 #define _emsoft_DIwrappers_H_
-
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
