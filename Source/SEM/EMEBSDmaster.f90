@@ -440,7 +440,6 @@ deallocate(EBSDMCdata%accum_z)
 !=============================================
 ! ---------- a couple of initializations
    npy = emnl%npx
-   allocate(svals(numset),stat=istat)
    gzero = 1  ! index of incident beam
    debug = 0  ! no longer used
 ! ----------
@@ -802,6 +801,8 @@ energyloop: do iE=Estart,1,-1
 !$OMP& PRIVATE(DynMat,Sgh,Lgh,ik,FN,TID,kn,ipx,ipy,ix,iequiv,nequiv,reflist,firstw) &
 !$OMP& PRIVATE(kkk,nns,nnw,nref,svals,io_int)
 
+  allocate(svals(numset),stat=istat)
+
   NUMTHREADS = OMP_GET_NUM_THREADS()
   TID = OMP_GET_THREAD_NUM()
 
@@ -900,6 +901,8 @@ energyloop: do iE=Estart,1,-1
 
     end do beamloop
 
+  deallocate(svals)
+  
 ! end of OpenMP portion
 !$OMP END PARALLEL
 
