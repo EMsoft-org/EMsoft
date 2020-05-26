@@ -1934,6 +1934,10 @@ type RefineOrientationtype
         real(kind=sgl)          :: step
         integer(kind=irg)       :: nmis
         integer(kind=irg)       :: niter
+        integer(kind=irg)       :: initialx
+        integer(kind=irg)       :: initialy
+        character(fnlen)        :: PCcorrection
+        real(kind=sgl)          :: truedelta
 end type RefineOrientationtype
 
 type FitOrientationPStype
