@@ -626,7 +626,6 @@ real(kind=sgl)           :: XCmin(3)
 real(kind=sgl)           :: XCmax(3)
 integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
-character(fnlen)         :: HDFMetaDatastrings(10)
 end type EBSDDENameListType
 
 ! namelist for the EMEBSDdefect program

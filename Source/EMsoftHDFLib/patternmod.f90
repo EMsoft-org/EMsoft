@@ -1021,9 +1021,8 @@ integer(kind=irg),INTENT(IN)            :: funit, numangles
 character(fnlen),INTENT(IN)             :: HDFstrings(10)
 integer(kind=irg)						:: istat
 
-real(kind=sgl), allocatable           	:: eu1(:), eu2(:), eu3(:)
-real(kind=dbl), allocatable 			:: Ftensor(:,:)
-real(kind=sgl), allocatable             :: eu(:,:)
+real(kind=sgl), allocatable           	:: eu1(:), eu2(:), eu3(:), eu(:,:)
+real(kind=dbl), allocatable 			      :: Ftensor(:,:)
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
                                            ios, up1header(4), version, patx, paty, myoffset, offset, nlines
@@ -1064,7 +1063,7 @@ end if
 if (present(verbose)) then 
   if (verbose.eqv..TRUE.) then 
     call Message('Pattern input file '//trim(ename))
-	call Message('  input file type '//trim(inputtype))
+	  call Message('  input file type '//trim(inputtype))
   end if
 end if
 
@@ -1127,11 +1126,10 @@ select case (itype)
         hdferr =  HDF_openFile(ename, pmHDF_head, readonly=.TRUE.)
         if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openFile ')
         ! open all the groups to the correct level of the data set
-        do i=1,hdfnumg
-            groupname = trim(HDFstrings(i))
+ 
+        groupname = trim(HDFstrings(1))
             hdferr = HDF_openGroup(groupname, pmHDF_head)
-            if (hdferr.ne.0) call HDF_handleError(hdferr,'HDF_openGroup: group name issue, check for typos ...')
-        end do
+
 		! open groups containing orientation information
         groupname = 'EBSD'
             hdferr = HDF_openGroup(groupname, pmHDF_head)
@@ -1139,19 +1137,22 @@ select case (itype)
             hdferr = HDF_openGroup(groupname, pmHDF_head)
 			
         allocate(eu1(numangles),eu2(numangles),eu3(numangles), eu(numangles,3))
-		dataset = 'Phi'
-		call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
-		dataset = 'Phi1'
-		call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
-		dataset = 'Phi2'
-		call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
-	    eu(:,1)=eu1
-	    eu(:,2)=eu2
-	    eu(:,3)=eu3
-		do i=1,numangles
-		  angles%quatang(1:4,i) = eu2qu(eu(i,1:3)*dtor)
-		end do
-		deallocate(eu1, eu2, eu3)
+        dataset = 'Phi'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu2)
+        dataset = 'Phi1'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu1)
+        dataset = 'Phi2'
+        call HDF_readDatasetFloatArray1D(dataset, dims1, pmHDF_head, hdferr, eu3)
+        allocate(angles%quatang(4,numangles),stat=istat)
+        do i=1,numangles 
+          eu(i,1)=eu1(i)
+          eu(i,2)=eu2(i)
+          eu(i,3)=eu3(i)
+          angles%quatang(1:4,i) = eu2qu(eu(i,1:3))
+        end do
+        print *, "Converting Euler angles to quaternions"
+        print *, "Number of orientations imported:", numangles
+        deallocate(eu1, eu2, eu3, eu)
         call HDF_pop(pmHDF_head)
 		! open groups containing pattern center and other scan parameters
         groupname = 'Header'
@@ -1159,17 +1160,35 @@ select case (itype)
         
         dataset = 'Camera Elevation Angle'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
+        print *, "Tilt angle of the camera:", enl%thetac
         dataset = 'Camera Azimuthal Angle'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%omega)
+        print *, "Camera Azimuthal Angle:",enl%omega
+        dataset = 'Pattern Height'
+        call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%numsy)
+        print *, "Pattern Height:",enl%numsy
+        dataset = 'Pattern Width'
+        call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%numsx)
+        print *, "Pattern Width:",enl%numsx
+
         groupname = 'Pattern Center Calibration'
-            hdferr = HDF_openGroup(groupname, pmHDF_head)
+        hdferr = HDF_openGroup(groupname, pmHDF_head)
         dataset = 'x-star'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
-         dataset = 'y-star'
-        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)		
+        enl%xpc=enl%numsx*(enl%xpc-0.5)
+        print *, "Pattern Center Information:"
+		    print *, "xpc:", enl%xpc
+        dataset = 'y-star'
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)	
+        enl%ypc=enl%numsx*enl%ypc-enl%numsy*0.5
+        print *, "ypc:", enl%ypc	
         dataset = 'z-star'
-	    call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
-	    call HDF_pop(pmHDF_head)
+        call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
+        enl%L=enl%numsx*enl%delta*enl%L
+        print *, "L:", enl%L
+
+      call HDF_pop(pmHDF_head)
+      call HDF_pop(pmHDF_head)
 	    nullify(pmHDF_head%next)
         ! and here we leave this file open so that we can read data blocks using the hyperslab mechanism;
         ! we can do this because the pmHDF_head pointer is private and has SAVE status for this entire module

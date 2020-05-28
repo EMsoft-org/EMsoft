@@ -4277,7 +4277,7 @@ integer(kind=irg)       :: ipf_wd
 integer(kind=irg)       :: ipf_ht
 character(fnlen)        :: inputtype
 character(fnlen)        :: HDFstrings(10)
-character(fnlen)        :: HDFMetaDatastrings(10)
+
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, &
@@ -4286,7 +4286,7 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, omega, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht, HDFMetaDatastrings, datafile
+                         ipf_ht, datafile
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
@@ -4352,7 +4352,6 @@ ipf_wd = 100
 ipf_ht = 100
 inputtype = 'Binary'
 HDFstrings = ''
-HDFMetaDatastrings=''
 
 if (present(initonly)) then
   if (initonly) skipread = .TRUE.
@@ -4412,7 +4411,6 @@ de%F_CR=F_CR
 de%XCmin=XCmin
 de%XCmax=XCmax
 de%objective=objective
-de%HDFMetaDatastrings=HDFMetaDatastrings
 enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy
