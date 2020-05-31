@@ -1164,12 +1164,6 @@ select case (itype)
         dataset = 'Camera Azimuthal Angle'
         call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%omega)
         print *, "Camera Azimuthal Angle:",enl%omega
-        dataset = 'Pattern Height'
-        call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%numsy)
-        print *, "Pattern Height:",enl%numsy
-        dataset = 'Pattern Width'
-        call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%numsx)
-        print *, "Pattern Width:",enl%numsx
 
         groupname = 'Pattern Center Calibration'
         hdferr = HDF_openGroup(groupname, pmHDF_head)
