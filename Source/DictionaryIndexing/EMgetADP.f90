@@ -318,6 +318,8 @@ if (adpnl%usetmpfile.eq.'n') then
   dinl%inputtype = adpnl%inputtype
   dinl%HDFstrings = adpnl%HDFstrings
   dinl%nregions = adpnl%nregions
+  dinl%exptnumsx = adpnl%numsx
+  dinl%exptnumsy = adpnl%numsy
 
   call PreProcessPatterns(dinl%nthreads, .FALSE., dinl, binx, biny, masklin, correctsize, totnumexpt)
 
