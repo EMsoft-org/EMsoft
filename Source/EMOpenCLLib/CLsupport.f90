@@ -111,7 +111,7 @@ character, allocatable, target :: device_name(:)
 integer(c_size_t), target      :: device_mwgs, device_mwis(3), device_maxalloc
 integer(c_int32_t), target     :: device_cu
 
-integer(c_int64_t), target     :: device_gms, device_mmas
+integer(c_int64_t), target     :: device_gms, device_lms, device_mmas
 
 
 ! Profile.
@@ -265,6 +265,11 @@ else
     err = clGetDeviceInfo(device_ids(i), CL_DEVICE_GLOBAL_MEM_SIZE, temp_size, C_LOC(device_gms), temp_size)
     call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
     device_gms = device_gms/1024/1024/1024
+
+    ! temp_size = 8
+    ! err = clGetDeviceInfo(device_ids(i), CL_DEVICE_LOCAL_MEM_SIZE, temp_size, C_LOC(device_gms), temp_size)
+    ! call CLerror_check('CLquery_platform_info:clGetDeviceInfo',err)
+    ! device_lms = device_lms/1024/1024
 
 ! temp_size = 8
 ! err = clGetDeviceInfo(device_ids(i), CL_DEVICE_MAX_MEM_ALLOC_SIZE, temp_size, C_LOC(device_gms), temp_size)

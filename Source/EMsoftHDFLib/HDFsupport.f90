@@ -239,7 +239,6 @@ use ISO_C_BINDING
 IMPLICIT NONE
 
 character(fnlen),INTENT(IN)                 :: strin
-!character(kind=c_char)                      :: cstrout(len_trim(strin)+1)
 character(kind=c_char)                      :: cstrout(fnlen)
 
 integer(kind=irg)                           :: slen, i

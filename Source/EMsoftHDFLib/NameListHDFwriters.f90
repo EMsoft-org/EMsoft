@@ -1523,7 +1523,7 @@ hdferr = HDF_createGroup(groupname,HDF_head)
 ! write all the single integers
 io_int = (/ emnl%stdout, emnl%newpgnum /)
 intlist(1) = 'stdout'
-intlist(1) = 'newpgnum'
+intlist(2) = 'newpgnum'
 call HDF_writeNMLintegers(HDF_head, io_int, intlist, n_int)
 
 ! write a single real

@@ -142,7 +142,7 @@ character(fnlen),INTENT(IN)                      :: nmldeffile
 real(kind=dbl)          :: frac
 integer(kind=irg)       :: gzero, istat, tickstart
 
-integer(kind=irg)       :: numEbins, numzbins, nx, ny, npy, totnum_el, numsites ! reading from MC file
+integer(kind=irg)       :: numangle, numzbins, nx, ny, npy, totnum_el, numsites ! reading from MC file
 real(kind=dbl)          :: EkeV, Ehistmin, Ebinsize, depthmax, depthstep, sig, omega  ! reading from MC file
 integer(kind=irg), allocatable :: acc_z(:,:,:,:),accum_z(:,:,:,:) ! reading from MC file
 
@@ -312,7 +312,7 @@ hdferr = HDF_openGroup(datagroupname, HDF_head)
 
 ! read data items
 dataset = SC_numangle
-call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numEbins)
+call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numangle)
 
 dataset = SC_numzbins
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, numzbins)
@@ -321,9 +321,9 @@ dataset = SC_totnumel
 call HDF_readDatasetInteger(dataset, HDF_head, hdferr, num_el)
 
 dataset = SC_accumz
-! dims4 =  (/ numEbins, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
+! dims4 =  (/ numangle, numzbins, 2*(nsx/10)+1,2*(nsy/10)+1 /)
 call HDF_readDatasetIntegerArray4D(dataset, dims4, HDF_head, hdferr, acc_z)
-allocate(accum_z(numEbins,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
+allocate(accum_z(numangle,numzbins,-nsx/10:nsx/10,-nsy/10:nsy/10),stat=istat)
 accum_z = acc_z
 deallocate(acc_z)
 
@@ -333,8 +333,7 @@ call HDF_pop(HDF_head,.TRUE.)
 ! close the fortran interface
 call h5close_EMsoft(hdferr)
 
-ind = float(numEbins)/2.0+1.0
-etotal = sum(accum_z(floor(ind),:,:,:))
+etotal = sum(accum_z(numangle,:,:,:))
 
 call Message(' -> completed reading '//trim(ecpnl%energyfile), frm = "(A//)")
 
@@ -440,7 +439,7 @@ call CalcUcg(cell,rlp,(/0,0,0/))
 nabsl = rlp%xgp
 
 do iz=1,izz
-    lambdaZ(iz) = float(sum(accum_z(floor(ind),iz,:,:)))/float(etotal)
+    lambdaZ(iz) = float(sum(accum_z(numangle,iz,:,:)))/float(etotal)
     lambdaZ(iz) = lambdaZ(iz) * exp(2.0*sngl(cPi)*(iz-1)*depthstep/nabsl)
 end do
 
@@ -832,7 +831,7 @@ hdferr = HDF_writeDatasetStringArray(dataset, line2, 1, HDF_head, overwrite)
 
 !dataset = SC_Duration
 !tstop = tstop - tstart
-!if (iE.eq.numEbins) then 
+!if (iE.eq.numangle) then 
 !  call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
 !  if (g_exists) then     
 !    hdferr = HDF_writeDatasetFloat(dataset, tstop, HDF_head, overwrite)
