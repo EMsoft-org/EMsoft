@@ -6304,6 +6304,8 @@ logical,OPTIONAL,INTENT(IN)                       :: initonly
 
 logical                                           :: skipread = .FALSE.
 
+integer(kind=irg)                                 :: exptnumsx
+integer(kind=irg)                                 :: exptnumsy
 integer(kind=irg)                                 :: numsx
 integer(kind=irg)                                 :: numsy
 integer(kind=irg)                                 :: ROI(4)
@@ -6365,7 +6367,7 @@ character(fnlen)                                  :: indexingmode
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / EBSDIndexingdata / thetac, delta, numsx, numsy, xpc, ypc, masterfile, devid, platid, &
-beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, nlines, &
+beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions, nlines, exptnumsx, exptnumsy, &
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
@@ -6386,8 +6388,10 @@ nnav            = 20
 nosm            = 20
 nism            = 5
 exptfile        = 'undefined'
-numsx           = 0             ! [dimensionless]
-numsy           = 0             ! [dimensionless]
+numsx           = 0             ! [dimensionless] no longer used starting in version 5.0.3
+numsy           = 0             ! [dimensionless] no longer used starting in version 5.0.3
+exptnumsx       = 0             ! [dimensionless] size for *experimental* patterns in input file
+exptnumsy       = 0             ! [dimensionless] 
 ROI             = (/ 0, 0, 0, 0 /)  ! Region of interest (/ x0, y0, w, h /)
 maskradius      = 240
 binning         = 1             ! binning mode  (1, 2, 4, or 8)
@@ -6520,8 +6524,10 @@ enl%HDFstrings    = HDFstrings
 enl%L             = L
 enl%numsx         = numsx
 enl%numsy         = numsy
-enl%ROI           = ROI
+enl%exptnumsx     = exptnumsx
+enl%exptnumsy     = exptnumsy
 enl%binning       = binning
+enl%ROI           = ROI
 ! following parameter is no longer used but may be present in older nml files.
 enl%energyaverage = -1 ! energyaverage
 enl%thetac        = thetac

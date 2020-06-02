@@ -1533,7 +1533,7 @@ ierr = clReleaseKernel(kernel)
 
 ! and deallocate some arrays
 deallocate(ppend, ppendE, res, results1, results2, resulttmp, expt, dicttranspose, tmpimageexpt)
-deallocate(indexlist1, indexlist2, indexarray, indextmp)
+deallocate(indexlist1, indexlist2, indextmp)
 nullify(dict, results, dpsort, indexlist, dpindex)
 
 end subroutine EMsoftCEBSDDI
