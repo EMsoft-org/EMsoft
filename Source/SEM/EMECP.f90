@@ -451,6 +451,9 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
         end if
 
     end do imageloop
+
+! added by MDG, 06/16/20
+    ECPpattern = ECPpattern**ecpnl%gammavalue
     
     !call BarrelDistortion(D,ECPpattern,ecpnl%npix,ecpnl%npix)
     !ma = maxval(ECPpattern)
@@ -467,6 +470,7 @@ angleloop: do iang = 1,ecpnl%numangle_anglefile
         io_int(1) = iang
         call WriteValue(' completed pattern # ',io_int,1)
     end if
+    
 !$OMP CRITICAL
     if (ecpnl%outputformat .eq. 'bin') then
         ma = maxval(ECPpattern)
