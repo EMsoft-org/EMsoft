@@ -1936,6 +1936,10 @@ do iii = 1,cratioE
 !$OMP END PARALLEL
 end do
 
+! and deallocate some arrays
+deallocate(LOCALIPAR, X, XL, XU, INITMEANVAL, tmpimageexpt, imageexpt, mask, masklin, dpPS, eulerPS, ppendE, STEPSIZE)
+nullify(dict)
+
 end subroutine EMsoftCEBSDRefine
 
 end module EMDIwrappermod
