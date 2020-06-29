@@ -1,19 +1,26 @@
 # PyEMEBSDDI
-**PyEMEBSDDI** is a package under [**EMsoft**](https://github.com/EMsoft-org/EMsoft), providing Python wrappers for Dictionary Indexing (DI) functions. The objective is to allow users to apply dictionary indexing and refinement conveniently inside Python.
+**PyEMEBSDDI** is a package under [**EMsoft**](https://github.com/EMsoft-org/EMsoft), providing basic Python wrappers for Dictionary Indexing (DI) functions. The objective is to allow users to apply dictionary indexing and refinement conveniently inside Python.
+
+We also develop a higher-level wrapper for **PyEMEBSDDI**, called [**PyEMEBSDDI_wrapper**](https://github.com/Darkhunter9/PyEMEBSDDI_wrapper). It has a more intuitive method to pass all parameters, high efficient multi-GPU support, and process EBSD patterns. This higher-level wrapper is more user-friendly and can be easily install via [pip](https://pypi.org/project/PyEMEBSDDI-wrapper/).
 
 
-<!-- ## Features -->
+## Features
+1. Written in C/C++ and Fortran, high operational efficiency;
+2. Main the same arguments as original **EMsoft** functions;
 
 
 ## Source
-[This site](http://vbff.materials.cmu.edu/EMsoft) conveniently brings all EMsoft stuff together in one place.
+1. [**EMsoft**](https://github.com/EMsoft-org/EMsoft) github page;
+2. [**PyEMEBSDDI**](https://github.com/EMsoft-org/EMsoft/tree/develop/Source/EMsoftWrapperLib/DictionaryIndexing) github page (under **EMsoft**);
+3. [**PyEMEBSDDI_wrapper**](https://github.com/Darkhunter9/PyEMEBSDDI_wrapper) (higher-level Python wrappers for PyEMEBSDDI) github page;
+4. [**PyEMEBSDDI_wrapper**](https://pypi.org/project/PyEMEBSDDI-wrapper/) PyPI page;
 
-To obtain higher-level Python wrappers for PyEMEBSDDI, please refer to the project repository [**EBSDDI-CNN**](https://github.com/Darkhunter9/EBSDDI_CNN).
+[This site](http://vbff.materials.cmu.edu/EMsoft) conveniently brings all EMsoft stuff together in one place.
 
 
 ## Contributors
-- [**Marc De Graef**](https://github.com/marcdegraef)
 - [**Zihao Ding**](https://github.com/Darkhunter9)
+- [**Marc De Graef**](https://github.com/marcdegraef)
 
 
 ## Installation
@@ -74,6 +81,8 @@ Input:
 - cancel: bool, the function will stop if not `False` (for debugging);
 
 Output:
+
+`[resultmain, indexmain]`
 - resultmain: dot products for top N matches, 2darray, float, (n, TOP_K);
 - indexmain: array with indices of matches into the orientations array (corresponding to the orientations of epatterns), 2darray, int, (n, TOP_K);
 
@@ -97,6 +106,8 @@ Input:
 - cancel: bool, the function will stop if not `False` (for debugging);
 
 Output:
+
+`[eumain, dpmain]`
 - eumain: array with refined Euler angle triplets in radians, 2darray, float(3,totnumexpt)
 - dpmain: array with refined dot product values, 1darray, float, (totnumexpt);
 
