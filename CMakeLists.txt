@@ -105,7 +105,7 @@ include(CMakeParseArguments)
 # Next up, Set the version of EMsoft that is used through out the project.
 set(EMsoft_VER_MAJOR "5")
 set(EMsoft_VER_MINOR "0")
-set(EMsoft_VER_PATCH "2")
+set(EMsoft_VER_PATCH "3")
 
 project (EMsoft LANGUAGES C CXX Fortran VERSION ${EMsoft_VER_MAJOR}.${EMsoft_VER_MINOR}.${EMsoft_VER_PATCH}.0)
 

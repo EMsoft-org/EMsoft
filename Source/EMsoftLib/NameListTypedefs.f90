@@ -1296,6 +1296,8 @@ type EBSDIndexingNameListType
         integer(kind=irg)       :: nism
         integer(kind=irg)       :: maskradius
         character(fnlen)        :: exptfile
+        integer(kind=irg)       :: exptnumsx
+        integer(kind=irg)       :: exptnumsy
         integer(kind=irg)       :: numsx
         integer(kind=irg)       :: numsy
         integer(kind=irg)       :: binning

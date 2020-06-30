@@ -1533,7 +1533,7 @@ ierr = clReleaseKernel(kernel)
 
 ! and deallocate some arrays
 deallocate(ppend, ppendE, res, results1, results2, resulttmp, expt, dicttranspose, tmpimageexpt)
-deallocate(indexlist1, indexlist2, indexarray, indextmp)
+deallocate(indexlist1, indexlist2, indextmp)
 nullify(dict, results, dpsort, indexlist, dpindex)
 
 end subroutine EMsoftCEBSDDI
@@ -1935,6 +1935,10 @@ do iii = 1,cratioE
 !$OMP END DO
 !$OMP END PARALLEL
 end do
+
+! and deallocate some arrays
+deallocate(LOCALIPAR, X, XL, XU, INITMEANVAL, tmpimageexpt, imageexpt, mask, masklin, dpPS, eulerPS, ppendE, STEPSIZE)
+nullify(dict)
 
 end subroutine EMsoftCEBSDRefine
 

@@ -488,7 +488,9 @@ call DI_Init(dict,'nil')
 !=====================================================
 !==========ALLOCATE ALL ARRAYS HERE=================== 
 !=====================================================
-allocate(mask(binx,biny),masklin(binx*biny))
+! account for the fact that the binning parameter may
+! not be equal to 1 (used as of 5.0.3)
+allocate(mask(dinl%exptnumsx,dinl%exptnumsy),masklin(dinl%exptnumsx*dinl%exptnumsy))
 mask = 1.0
 masklin = 0.0
 
@@ -496,18 +498,18 @@ masklin = 0.0
 ! define the circular mask if necessary and convert to 1D vector
 !===============================================================
 if (dinl%maskpattern.eq.'y') then
-  do ii = 1,biny
-      do jj = 1,binx
-          if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. dinl%maskradius**2) then
+  do ii = 1,dinl%exptnumsy
+      do jj = 1,dinl%exptnumsx
+          if((ii-dinl%exptnumsy/2)**2 + (jj-dinl%exptnumsx/2)**2 .ge. dinl%maskradius**2) then
               mask(jj,ii) = 0.0
           end if
       end do
   end do
 end if
   
-do ii = 1,biny
-    do jj = 1,binx
-        masklin((ii-1)*binx+jj) = mask(jj,ii)
+do ii = 1,dinl%exptnumsy
+    do jj = 1,dinl%exptnumsx
+        masklin((ii-1)*dinl%exptnumsx+jj) = mask(jj,ii)
     end do
 end do
 
@@ -529,6 +531,26 @@ else
   dinl%tmpfile = trim(ronl%tmpfile)
   call PreProcessPatterns(ronl%nthreads, ronl%inRAM, dinl, binx, biny, masklin, correctsize, totnumexpt)
 end if
+
+! do we need to redefine the mask arrays ?
+! remake the mask if the binning factor is not 1 
+if ((dinl%binning.ne.1).and.(dinl%maskpattern.eq.'y') ) then 
+  deallocate(mask, masklin) 
+  allocate(mask(binx,biny), masklin(binx*biny))
+  mask = 1.0
+  masklin = 0.0
+
+  do ii = 1,biny
+    do jj = 1,binx
+      if((ii-biny/2)**2 + (jj-binx/2)**2 .ge. (dinl%maskradius/dinl%binning)**2) then
+        mask(jj,ii) = 0.0
+      end if
+    end do
+  end do
+
+! convert the mask to a linear (1D) array
+  masklin = reshape(mask, (/ binx*biny /) )
+end if 
 
 !===============================================================
 !========Pattern center correction parameters===================
@@ -2446,6 +2468,25 @@ dataset = SC_numsx
 
 dataset = SC_numsy
     call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%numsy)
+
+!=====================================================
+! check here for the exptnumsx(y) parameters that were introduced in 5.0.3
+dataset = 'exptnumsx'
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsx)
+    else 
+      ebsdnl%exptnumsx = ebsdnl%numsx 
+    end if 
+
+dataset = 'exptnumsy'
+    call H5Lexists_f(HDF_head%next%objectID,trim(dataset),g_exists, hdferr)
+    if (g_exists.eqv..TRUE.) then
+      call HDF_readDatasetInteger(dataset, HDF_head, hdferr, ebsdnl%exptnumsy)
+    else 
+      ebsdnl%exptnumsy = ebsdnl%numsy 
+    end if 
+!=====================================================
 
 dataset = SC_omega
     call HDF_readDatasetFloat(dataset, HDF_head, hdferr, ebsdnl%omega)
