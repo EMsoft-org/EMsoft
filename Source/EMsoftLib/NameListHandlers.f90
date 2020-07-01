@@ -4364,20 +4364,6 @@ if (.not.skipread) then
  close(UNIT=dataunit,STATUS='keep')
 
 ! check for required entries
-
-! we no longer require the energyfile parameter, but for backwards compatibility
-! we still allow the user to include it (it doesn't do anything though)
-! if (trim(energyfile).eq.'undefined') then
-!  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
-! end if
-
- ! if (trim(anglefile).eq.'undefined') then
-  ! call FatalError('GetEBSDDENameList:',' angle file name is undefined in '//nmlfile)
- ! end if
- 
- if (trim(datafile).eq.'undefined') then
-  call FatalError('GetEBSDDENameList:',' datafile name is undefined in '//nmlfile)
- end if
  
  if (trim(masterfile).eq.'undefined') then
   call FatalError('GetEBSDDENameList:',' master pattern file name is undefined in '//nmlfile)
