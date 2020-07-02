@@ -1530,8 +1530,13 @@ call Message('Preprocessing experimental patterns')
 ! define a bunch of mostly integer parameters
 
 ! for the input patterns we have the following parameters (P for experimental Pattern)
-Px = ebsdnl%exptnumsx
-Py = ebsdnl%exptnumsy
+if (ebsdnl%exptnumsx.lt.10) then ! we'll assume that we should be using the binned sizes here 
+  Px = binx 
+  Py = biny 
+else
+  Px = ebsdnl%exptnumsx
+  Py = ebsdnl%exptnumsy
+end if
 PL = Px * Py
 if (mod(PL,16) .ne. 0) then
     Pcorrectsize = 16*ceiling(float(PL)/16.0)
