@@ -75,8 +75,10 @@ if (res.eq.0) then
 !  call JSONreadTKDIndexingNameList(tkdnl, nmldeffile, error_cnt)
 else
   call GetEBSDDIpreviewNameList(nmldeffile,enl)
+  write (*,*) ' -> Completed reading namelist file'
 end if
 
+write (*,*) ' -> Calling main subroutine '
 call MasterSubroutine(enl, progname, nmldeffile)
 
 end program EMEBSDDIpreview
@@ -139,8 +141,10 @@ type(image_t)                                       :: im, im2
 integer(int8)                                       :: i8 (3,4), int8val
 integer(int8), allocatable                          :: output_image(:,:)
 
+write (*,*) ' -> initializing HDF5 interface'
 call h5open_EMsoft(hdferr)
 
+write (*,*) ' -> setting array dimensions'
 binx = enl%numsx
 biny = enl%numsy
 L = binx * biny
@@ -153,7 +157,9 @@ patsz = L
 ! open the file and leave it open, then use the getSingleExpPattern() routine to read a 
 ! pattern into the expt variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
+write (*,*) ' -> calling openExpPatternFile ', trim(EMsoft_getEMdatapathname())//trim(enl%exptfile)
 istat = openExpPatternFile(enl%exptfile, enl%ipf_wd, L, enl%inputtype, recordsize, iunitexpt, enl%HDFstrings)
+write (*,*) ' -> input file opened'
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
     call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
@@ -187,9 +193,11 @@ end if
 
 ! and read the center pattern (again)
 offset3 = (/ 0, 0, enl%paty * enl%ipf_wd + enl%patx /)
+write (*,*) ' -> reading single pattern at offset ', offset3 
 call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, enl%inputtype, enl%HDFstrings, expt)
 
 ! and close the pattern file
+write (*,*) ' -> closing pattern file '
 call closeExpPatternFile(enl%inputtype, iunitexpt)
 
 write (*,*) 'maximum intensity in pattern ',maxval(expt)
