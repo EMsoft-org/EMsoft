@@ -245,6 +245,8 @@ if (trim(enl%patternfile).ne.'undefined') then
   deallocate(output_image)
 end if
 
+write (*,*) ' -> starting array computation'
+
 ! define the high-pass filter width array and the nregions array
 numr = (enl%nregionsmax - enl%nregionsmin) / enl%nregionsstepsize + 1
 allocate(nrvals(numr))
@@ -264,16 +266,21 @@ allocate(output_image(nx,ny))
 image_filename = trim(EMsoft_getEMdatapathname())//trim(enl%tifffile)
 image_filename = EMsoft_toNativePath(image_filename)
 
+write (*,*) ' -> image file name ',trim(image_filename)
+
 ! next we need to set up the high-pass filter fftw plans
 allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate hpmask, inp, outp arrays'
 allocate(rrdata(binx,biny),ffdata(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate rrdata, ffdata arrays'
+write (*,*) ' -> initializing hi-pass filter arrays'
 call init_HiPassFilter(dble(hpvals(1)), (/enl%numsx, enl%numsy /), hpmask, inp, outp, HPplanf, HPplanb) 
-
+write (*,*) '    -> done'
 ! the outer loop goes over the hipass filter width and is displayed horizontally in the final image
+
 do ii=1,numw
 ! Hi-Pass filter
+write (*,*) ' -> starting row ', ii
     pattern = pcopy
     rrdata = dble(pattern)
     ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), dble(hpvals(ii)), hpmask, inp, outp, HPplanf, HPplanb)
@@ -286,6 +293,7 @@ do ii=1,numw
     xoffset = (ii-1) * binx + 1
     do jj=1,numr
 ! adaptive histogram equalization
+write (*,*) ' -> starting column ', jj
         if (nrvals(jj).eq.0) then
             ppp = pint
         else
@@ -317,7 +325,9 @@ do ii=1,numw
         end if
       end do
     end do
-end do
+end do 
+
+write (*,*) ' -> array complete'
 
 ! set up the image_t structure
 im2 = image_t(output_image)

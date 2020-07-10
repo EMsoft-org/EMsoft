@@ -102,7 +102,7 @@ support for the Fortran-2003 version of the language, which is fully supported b
 2003 version provides extensive support for C language communications, as well as access to variables and such across 
 languages.  The HDF5 package (currently hdf5-1.8.14 as off \today) must be compiled with fortran2003 support enabled,
 otherwise the \textsf{HDFsupport} module will not compile.
-In the remainder of this document, we decribe all available functions and subroutines, and provide a few brief examples 
+In the remainder of this document, we describe all available functions and subroutines, and provide a few brief examples 
 of writing to and reading from \textsf{EMsoft} HDF files.
 
 
@@ -139,8 +139,8 @@ and nullify a variable of this type:
 
   nullify(HDF_head)
 \end{verbatim}
-Failure to \textsf{nullify(\,)} the pointers may result in unpredictable program behavior.  The two 
-pointers are arguments to every \textsf{HDFsupport} call and should never be modified by the user 
+Failure to \textsf{nullify(\,)} the pointer may result in unpredictable program behavior.  The  
+pointer is used as an argument for every \textsf{HDFsupport} call and should never be modified by the user 
 program. 
 
 The HDF stack must be used by the calling program to close HDF objects; when an object is opened 
@@ -203,7 +203,7 @@ hdferr = HDF_openFile(HDFname, HDF_head, readonly)
 \end{verbatim}
 where \textsf{HDFname} is of the type \textsf{character(fnlen)} and is the filename, either the file itself or the full path.
 Note that the \textsf{fnlen} parameter is defined in the \textsf{local.f90.in} file in the \textsf{src} folder and is currently set
-to $132$ characters, reflecting the limit of characters per line of fortran-90 source code.
+to $512$ characters.
 
 The first function above creates the new file and opens it, pushing the file object onto the stack.  The second function
 attempts to open an existing file and also pushes the file object on the stack.  At that point, the HDF file is opened into
@@ -236,16 +236,17 @@ There are $21$ write routines, grouped by the type of the dataset that is being 
 For strings, we have the following general routine (for brevity, note that the ... are shorthand for \textsf{HDF\_head}):
 \begin{verbatim}
 hdferr = HDF_writeDatasetStringArray(dataname, stringarray, nlines, HDF_head)
-hdferr = HDF_writeDatasetCharArray1D(dataname, chararr, dim0, ...)
-hdferr = HDF_writeDatasetCharArray2D(dataname, chararr, dim0, dim1,  ...)
-hdferr = HDF_writeDatasetCharArray3D(dataname, chararr, dim0, dim1, dim2,  ...)
-hdferr = HDF_writeDatasetCharArray4D(dataname, chararr, dim0, dim1, dim2, dim3,  ...)
+hdferr = HDF_writeDatasetCharArray1D(dataname, chararr, dims, ...)
+hdferr = HDF_writeDatasetCharArray2D(dataname, chararr, dims, ...)
+hdferr = HDF_writeDatasetCharArray3D(dataname, chararr, dims, ...)
+hdferr = HDF_writeDatasetCharArray4D(dataname, chararr, dims, ...)
 \end{verbatim}
 where \textsf{dataname} is the dataset name (used to create the dataset), \textsf{stringarray} 
 is an array of type \textsf{character(len=fnlen, KIND=c\_char)} and has \textsf{nlines} elements; note
 that to write a single string, this string must be copied into a one-element stringarray(1). The other
 four routines are used to write an array of individual characters (basically unsigned integers of length
-$1$ byte, representing the interval $[0\ldots 255]$) to the file.
+$1$ byte, representing the interval $[0\ldots 255]$) to the file. The parameter \textsf{dims} is an array 
+of 1, 2, 3, or 4 integers.
 
 The module also provides a routine to write a complete text file to the HDF file:
 \begin{verbatim}
@@ -363,18 +364,18 @@ additional write to the dataset, the keyword must be present.
 
 {\footnotesize
 \begin{verbatim}
-hdferr = HDF_writeHyperslabCharArray2D(dataname, wdata, hdims, offset, dim0, dim1, ..., [insert])
-hdferr = HDF_writeHyperslabCharArray3D(dataname, wdata, hdims, offset, dim0, dim1, dim2, ..., [insert])
-hdferr = HDF_writeHyperslabCharArray4D(dataname, wdata, hdims, offset, dim0, dim1, dim2, dim3, ..., [insert])
-hdferr = HDF_writeHyperslabIntegerArray2D(dataname, wdata, hdims, offset, dim0, dim1, ..., [insert])
-hdferr = HDF_writeHyperslabIntegerArray3D(dataname, wdata, hdims, offset, dim0, dim1, dim2, ..., [insert])
-hdferr = HDF_writeHyperslabIntegerArray4D(dataname, wdata, hdims, offset, dim0, dim1, dim2, dim3, ..., [insert])
-hdferr = HDF_writeHyperslabFloatArray2D(dataname, wdata, hdims, offset, dim0, dim1, ..., [insert])
-hdferr = HDF_writeHyperslabFloatArray3D(dataname, wdata, hdims, offset, dim0, dim1, dim2, ..., [insert])
-hdferr = HDF_writeHyperslabFloatArray4D(dataname, wdata, hdims, offset, dim0, dim1, dim2, dim3, ..., [insert])
-hdferr = HDF_writeHyperslabDoubleArray2D(dataname, wdata, hdims, offset, dim0, dim1, ..., [insert])
-hdferr = HDF_writeHyperslabDoubleArray3D(dataname, wdata, hdims, offset, dim0, dim1, dim2, ..., [insert])
-hdferr = HDF_writeHyperslabDoubleArray4D(dataname, wdata, hdims, offset, dim0, dim1, dim2, dim3, ..., [insert])
+hdferr = HDF_writeHyperslabCharArray2D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabCharArray3D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabCharArray4D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabIntegerArray2D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabIntegerArray3D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabIntegerArray4D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabFloatArray2D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabFloatArray3D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabFloatArray4D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabDoubleArray2D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabDoubleArray3D(dataname, wdata, hdims, offset, dims, ..., [insert])
+hdferr = HDF_writeHyperslabDoubleArray4D(dataname, wdata, hdims, offset, dims, ..., [insert])
 \end{verbatim}
 }
 
