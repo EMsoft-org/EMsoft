@@ -1921,7 +1921,7 @@ use error
 use omp_lib
 use filters
 use timing
-
+use FFTW3mod
 use ISO_C_BINDING
 
 IMPLICIT NONE
@@ -1952,7 +1952,8 @@ integer(kind=irg),allocatable               :: TKDpint(:,:)
 real(kind=sgl),allocatable                  :: tmpimageexpt(:), TKDPattern(:,:), imageexpt(:), exppatarray(:), TKDpat(:,:)
 real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 complex(kind=dbl),allocatable               :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable       :: inp(:,:), outp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer           :: inp(:,:), outp(:,:)
+type(c_ptr), allocatable                    :: ip, op
 type(C_PTR)                                 :: planf, HPplanf, HPplanb
 
 
@@ -2037,10 +2038,26 @@ if (present(exptIQ)) then
 end if
 
 ! initialize the HiPassFilter routine (has its own FFTW plans)
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+allocate(hpmask(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate hpmask array'
+
+! use the fftw_alloc routine to create the inp and outp arrays
+! using a regular allocate can occasionally cause issues, in particular with 
+! the ifort compiler. [MDG, 7/14/20]
+ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(ip, inp, [binx,biny])
+
+op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(op, outp, [binx,biny])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
 call init_HiPassFilter(w, (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
-deallocate(inp, outp)
+
+! remove these pointers again because we will need them for the parallel part
+call fftw_free(ip)
+call fftw_free(op)
 
 call Message('Starting processing of experimental patterns')
 call Time_tick(tickstart)
@@ -2052,7 +2069,7 @@ dims3 = (/ binx, biny, tkdnl%ipf_wd /)
 prepexperimentalloop: do iii = iiistart,iiiend
 
 ! start the OpenMP portion
-!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat) &
+!$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat, ip, op) &
 !$OMP& PRIVATE(imageexpt, tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, vlen, tmp, inp, outp)
 
 ! set the thread ID
@@ -2065,8 +2082,14 @@ prepexperimentalloop: do iii = iiistart,iiiend
     allocate(TKDpint(binx,biny),stat=istat)
     if (istat .ne. 0) stop 'could not allocate TKDpint array'
 
-    allocate(inp(binx,biny),outp(binx,biny),stat=istat)
-    if (istat .ne. 0) stop 'could not allocate inp, outp arrays'
+    ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+    call c_f_pointer(ip, inp, [binx,biny])
+
+    op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+    call c_f_pointer(op, outp, [binx,biny])
+
+    inp = cmplx(0.D0,0D0)
+    outp = cmplx(0.D0,0.D0)
 
     tmpimageexpt = 0.0
     rrdata = 0.D0
@@ -2143,7 +2166,10 @@ prepexperimentalloop: do iii = iiistart,iiiend
       end if
     end if
 
-deallocate(tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint, inp, outp)
+deallocate(tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint)
+call fftw_free(ip)
+call fftw_free(op)
+call fftw_cleanup()
 !$OMP BARRIER
 !$OMP END PARALLEL
 

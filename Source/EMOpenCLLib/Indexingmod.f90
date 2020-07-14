@@ -241,7 +241,6 @@ character(kind=c_char),allocatable                  :: EBSDdictpat(:,:,:)
 real(kind=sgl),allocatable                          :: EBSDdictpatflt(:,:)
 real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 complex(kind=dbl),allocatable                       :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
 real(kind=dbl)                                      :: w, Jres
 integer(kind=irg)                                   :: dims(2)
 character(11)                                       :: dstr
