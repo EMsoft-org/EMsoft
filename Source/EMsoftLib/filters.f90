@@ -978,11 +978,11 @@ end function HiPassFilter
 !> @param dims dimensions of rdata array
 !> @param w width of Gaussian profile
 !> @param init (optional) initialize without computing anything
-!> @param destroy (optional) destroy fft plans
 ! 
 !> @date 02/02/16 MDG 1.0 original
 !> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile; added init optional parameter
 !> @date 01/11/18 MDG 1.2 split routine from original to allow for OpenMP access
+!> @date 07/14/20 MDG 1.3 commented out fftw_cleanup; possibly caused issue with ifort compiler
 !--------------------------------------------------------------------------
 recursive subroutine init_HiPassFilter(w, dims, hpmask, inp, outp, planf, planb) 
 !DEC$ ATTRIBUTES DLLEXPORT :: init_HiPassFilter
@@ -1001,7 +1001,8 @@ type(C_PTR),INTENT(INOUT)               :: planf, planb
 !f2py intent(in,out) ::  planf, planb
 
 integer(kind=irg)                       :: i, j
-real(kind=dbl)                          :: x, y, val, v2
+real(kind=dbl)                          :: x, y, v2
+complex(kind=dbl)                       :: val
 
 hpmask = cmplx(1.D0,0.D0)
 
@@ -1012,11 +1013,11 @@ do i=1,dims(1)/2
     y = dble(j)**2
     v2 = w * ( x+y )
     if (v2.lt.30.D0) then
-      val = 1.D0-dexp(-v2)
-      hpmask(i,j) = cmplx(val, 0.D0)
-      hpmask(dims(1)+1-i,j) = cmplx(val, 0.D0)
-      hpmask(i,dims(2)+1-j) = cmplx(val, 0.D0)
-      hpmask(dims(1)+1-i,dims(2)+1-j) = cmplx(val, 0.D0)
+      val = cmplx(1.D0-dexp(-v2), 0.D0)
+      hpmask(i,j) = val
+      hpmask(dims(1)+1-i,j) = val
+      hpmask(i,dims(2)+1-j) = val
+      hpmask(dims(1)+1-i,dims(2)+1-j) = val
     end if
   end do
 end do
@@ -1025,7 +1026,7 @@ end do
 planf = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_FORWARD, FFTW_ESTIMATE)
 planb = fftw_plan_dft_2d(dims(2),dims(1),inp,outp, FFTW_BACKWARD, FFTW_ESTIMATE)
 
-call fftw_cleanup()
+! call fftw_cleanup()
 
 end subroutine init_HiPassFilter
 
@@ -1044,6 +1045,7 @@ end subroutine init_HiPassFilter
 !> @date 02/02/16 MDG 1.0 original
 !> @date 06/03/16 MDG 1.1 modified mask to inverted Gaussian profile
 !> @date 01/11/18 MDG 1.2 split routine from original to allow for OpenMP access
+!> @date 07/14/20 MDG 1.3 commented out fftw_cleanup
 !--------------------------------------------------------------------------
 recursive function applyHiPassFilter(rdata, dims, w, hpmask, inp, outp, planf, planb) result(fdata)
 !DEC$ ATTRIBUTES DLLEXPORT :: applyHiPassFilter
@@ -1061,9 +1063,7 @@ complex(C_DOUBLE_COMPLEX),INTENT(INOUT) :: inp(dims(1),dims(2)), outp(dims(1),di
 type(C_PTR),INTENT(IN)                  :: planf, planb
 real(kind=dbl)                          :: fdata(dims(1),dims(2))
 
-complex(kind=dbl)                       :: cone = cmplx(1.D0,0.D0), czero = cmplx(0.D0,0.D0)
-integer(kind=irg)                       :: i, j, k, ii, jj
-real(kind=dbl)                          :: x, y, val
+integer(kind=irg)                       :: j, k
 
 ! apply the hi-pass mask to rdata
 do j=1,dims(1)
@@ -1076,7 +1076,7 @@ inp = outp * hpmask
 call fftw_execute_dft(planb, inp, outp) 
 fdata(1:dims(1),1:dims(2)) = real(outp)
 
-call fftw_cleanup()
+! call fftw_cleanup()
 
 end function applyHiPassFilter
 

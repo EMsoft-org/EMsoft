@@ -75,10 +75,8 @@ if (res.eq.0) then
 !  call JSONreadTKDIndexingNameList(tkdnl, nmldeffile, error_cnt)
 else
   call GetEBSDDIpreviewNameList(nmldeffile,enl)
-  write (*,*) ' -> Completed reading namelist file'
 end if
 
-write (*,*) ' -> Calling main subroutine '
 call MasterSubroutine(enl, progname, nmldeffile)
 
 end program EMEBSDDIpreview
@@ -112,6 +110,7 @@ use filters
 use patternmod
 use NameListTypedefs
 use HDF5
+use FFTW3mod
 
 IMPLICIT NONE
 
@@ -130,7 +129,8 @@ real(kind=sgl),allocatable                          :: expt(:), pattern(:,:), pc
 integer(kind=irg),allocatable                       :: nrvals(:), pint(:,:), ppp(:,:)
 type(C_PTR)                                         :: HPplanf, HPplanb
 complex(kind=dbl),allocatable                       :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
+complex(C_DOUBLE_COMPLEX),pointer                   :: inp(:,:), outp(:,:)
+type(c_ptr), allocatable                            :: ip, op
 real(kind=dbl),allocatable                          :: rrdata(:,:), ffdata(:,:), ksqarray(:,:)
 
 ! declare variables for use in object oriented image module
@@ -141,10 +141,8 @@ type(image_t)                                       :: im, im2
 integer(int8)                                       :: i8 (3,4), int8val
 integer(int8), allocatable                          :: output_image(:,:)
 
-write (*,*) ' -> initializing HDF5 interface'
 call h5open_EMsoft(hdferr)
 
-write (*,*) ' -> setting array dimensions'
 binx = enl%numsx
 biny = enl%numsy
 L = binx * biny
@@ -157,9 +155,7 @@ patsz = L
 ! open the file and leave it open, then use the getSingleExpPattern() routine to read a 
 ! pattern into the expt variable ...  at the end, we use closeExpPatternFile() to
 ! properly close the experimental pattern file
-write (*,*) ' -> calling openExpPatternFile ', trim(EMsoft_getEMdatapathname())//trim(enl%exptfile)
 istat = openExpPatternFile(enl%exptfile, enl%ipf_wd, L, enl%inputtype, recordsize, iunitexpt, enl%HDFstrings)
-write (*,*) ' -> input file opened'
 if (istat.ne.0) then
     call patternmod_errormessage(istat)
     call FatalError("MasterSubroutine:", "Fatal error handling experimental pattern file")
@@ -193,14 +189,11 @@ end if
 
 ! and read the center pattern (again)
 offset3 = (/ 0, 0, enl%paty * enl%ipf_wd + enl%patx /)
-write (*,*) ' -> reading single pattern at offset ', offset3 
 call getSingleExpPattern(enl%paty, enl%ipf_wd, patsz, L, dims3, offset3, iunitexpt, enl%inputtype, enl%HDFstrings, expt)
 
 ! and close the pattern file
-write (*,*) ' -> closing pattern file '
 call closeExpPatternFile(enl%inputtype, iunitexpt)
 
-write (*,*) 'maximum intensity in pattern ',maxval(expt)
 
 ! turn it into a 2D pattern
 allocate(pattern(binx, biny), pcopy(binx, biny), pint(binx,biny), ppp(binx,biny), stat=ierr)
@@ -245,7 +238,6 @@ if (trim(enl%patternfile).ne.'undefined') then
   deallocate(output_image)
 end if
 
-write (*,*) ' -> starting array computation'
 
 ! define the high-pass filter width array and the nregions array
 numr = (enl%nregionsmax - enl%nregionsmin) / enl%nregionsstepsize + 1
@@ -266,21 +258,29 @@ allocate(output_image(nx,ny))
 image_filename = trim(EMsoft_getEMdatapathname())//trim(enl%tifffile)
 image_filename = EMsoft_toNativePath(image_filename)
 
-write (*,*) ' -> image file name ',trim(image_filename)
-
 ! next we need to set up the high-pass filter fftw plans
-allocate(hpmask(binx,biny),inp(binx,biny),outp(binx,biny),stat=istat)
+allocate(hpmask(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate hpmask, inp, outp arrays'
 allocate(rrdata(binx,biny),ffdata(binx,biny),stat=istat)
 if (istat .ne. 0) stop 'could not allocate rrdata, ffdata arrays'
-write (*,*) ' -> initializing hi-pass filter arrays'
-call init_HiPassFilter(dble(hpvals(1)), (/enl%numsx, enl%numsy /), hpmask, inp, outp, HPplanf, HPplanb) 
-write (*,*) '    -> done'
+
+! use the fftw_alloc routine to create the inp and outp arrays
+! using a regular allocate can occasionally cause issues, in particular with 
+! the ifort compiler. [MDG, 7/14/20]
+ip = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(ip, inp, [binx,biny])
+
+op = fftw_alloc_complex(int(binx*biny,C_SIZE_T))
+call c_f_pointer(op, outp, [binx,biny])
+
+inp = cmplx(0.D0,0D0)
+outp = cmplx(0.D0,0.D0)
+
+call init_HiPassFilter(dble(hpvals(1)), (/ binx, biny /), hpmask, inp, outp, HPplanf, HPplanb) 
 ! the outer loop goes over the hipass filter width and is displayed horizontally in the final image
 
 do ii=1,numw
 ! Hi-Pass filter
-write (*,*) ' -> starting row ', ii
     pattern = pcopy
     rrdata = dble(pattern)
     ffdata = applyHiPassFilter(rrdata, (/ binx, biny /), dble(hpvals(ii)), hpmask, inp, outp, HPplanf, HPplanb)
@@ -293,7 +293,6 @@ write (*,*) ' -> starting row ', ii
     xoffset = (ii-1) * binx + 1
     do jj=1,numr
 ! adaptive histogram equalization
-write (*,*) ' -> starting column ', jj
         if (nrvals(jj).eq.0) then
             ppp = pint
         else
@@ -327,7 +326,9 @@ write (*,*) ' -> starting column ', jj
     end do
 end do 
 
-write (*,*) ' -> array complete'
+call fftw_free(ip)
+call fftw_free(op)
+call fftw_cleanup()
 
 ! set up the image_t structure
 im2 = image_t(output_image)
