@@ -142,8 +142,6 @@ real(kind=sgl),allocatable                          :: EBSDpattern(:,:), dpmap(:
 real(kind=sgl),allocatable                          :: EBSDpatternintd(:,:), EBSDpat(:,:)
 integer(kind=irg),allocatable                       :: EBSDpatterninteger(:,:), EBSDpatternad(:,:), EBSDpint(:,:)
 real(kind=dbl),allocatable                          :: rdata(:,:), fdata(:,:), rrdata(:,:), ffdata(:,:)
-complex(kind=dbl),allocatable                       :: hpmask(:,:)
-complex(C_DOUBLE_COMPLEX),allocatable               :: inp(:,:), outp(:,:)
 character(11)                                       :: dstr
 character(15)                                       :: tstrb
 character(15)                                       :: tstre
