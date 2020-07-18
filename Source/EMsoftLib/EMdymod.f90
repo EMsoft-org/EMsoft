@@ -2320,4 +2320,47 @@ efitEBSDWrapper = 1._c_float
 
 end function efitEBSDWrapper
 
+!--------------------------------------------------------------------------
+!
+! SUBROUTINE:adhisteqWrapper
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief wrapper routine to test the adhisteq filter and compare to IDL results
+!
+!> @param argc number of argument
+!> @param argv pointers to subroutine parameters
+!
+!> @date 07/18/20  MDG 1.0 original
+!--------------------------------------------------------------------------
+recursive function adhisteqWrapper(argc, argv) bind(c, name='adhisteqWrapper') 
+!DEC$ ATTRIBUTES DLLEXPORT :: adhisteqWrapper
+
+use,INTRINSIC :: ISO_C_BINDING
+use local
+use filters
+
+INTEGER(c_size_t), VALUE, INTENT(IN)            :: argc 
+type(c_ptr), dimension(argc), INTENT(INOUT)     :: argv
+REAL(c_float)                                   :: adhisteqWrapper
+
+! wrapper function dependent declarations; they are all pointers 
+! since we pass everything by reference from IDL 
+integer(c_size_t)                               :: nipar
+integer(c_size_t),dimension(:), pointer         :: ipar
+integer(c_size_t), dimension(:,:), pointer      :: image
+integer(c_size_t), dimension(:,:), pointer      :: imahe
+
+! transform the C pointers above to fortran pointers, and use them in the regular function call
+nipar = 3
+call c_f_pointer(argv(1),ipar,(/nipar/)) 
+call c_f_pointer(argv(2),image,(/ipar(2),ipar(3)/))
+call c_f_pointer(argv(3),imahe,(/ipar(2),ipar(3)/))
+
+imahe = adhisteq( int(ipar(1)), int(ipar(2)), int(ipar(3)), int(image) ) 
+
+end function adhisteqWrapper
+
+
+
 end module EMdymod

@@ -590,6 +590,8 @@ do ir = 1, nty+1
   end do
 end do
 
+deallocate(tintx, tinty, chistarr)
+
 end function adhisteq
 
 !--------------------------------------------------------------------------

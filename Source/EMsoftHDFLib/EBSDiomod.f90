@@ -137,8 +137,8 @@ write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode	Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
 write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(8)
-write(dataunit2,'(2A,F6.2)') 'XStep',TAB, ebsdnl%StepX
-write(dataunit2,'(2A,F6.2)') 'YStep',TAB, ebsdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'XStep',TAB, ebsdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
@@ -344,8 +344,8 @@ write(dataunit2,'(A)') 'Author  '//trim(EMsoft_getUsername())//'EMsoft'
 write(dataunit2,'(A)') 'JobMode Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(7)
 write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(8)
-write(dataunit2,'(2A,F6.2)') 'XStep',TAB, tkdnl%StepX
-write(dataunit2,'(2A,F6.2)') 'YStep',TAB, tkdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'XStep',TAB, tkdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'YStep',TAB, tkdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
@@ -898,8 +898,8 @@ write(dataunit2,'(A)') 'Author  '//trim(EMsoft_getUsername())
 write(dataunit2,'(A)') 'JobMode Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, ipar(3)
 write(dataunit2,'(2A,I5)') 'YCells',TAB, ipar(4)
-write(dataunit2,'(2A,F6.2)') 'XStep',TAB, ebsdnl%StepX
-write(dataunit2,'(2A,F6.2)') 'YStep',TAB, ebsdnl%StepY
+write(dataunit2,'(2A,F8.4)') 'XStep',TAB, ebsdnl%StepX
+write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
