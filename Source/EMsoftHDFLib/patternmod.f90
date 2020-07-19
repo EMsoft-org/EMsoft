@@ -1798,7 +1798,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
 deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint)
 call fftw_free(ip)
 call fftw_free(op)
-call fftw_cleanup()
+
 !$OMP END PARALLEL
 
 ! print an update of progress
@@ -2169,7 +2169,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
 deallocate(tmpimageexpt, TKDPat, rrdata, ffdata, TKDpint)
 call fftw_free(ip)
 call fftw_free(op)
-call fftw_cleanup()
+
 !$OMP BARRIER
 !$OMP END PARALLEL
 

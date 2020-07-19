@@ -634,7 +634,7 @@ prepexperimentalloop: do iii = iiistart,iiiend
 deallocate(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint)
 call fftw_free(ip)
 call fftw_free(op)
-call fftw_cleanup()
+
 !$OMP BARRIER
 !$OMP END PARALLEL
 
@@ -780,7 +780,6 @@ HPplanb = C_NULL_PTR
 
 call fftw_free(ip)
 call fftw_free(op)
-call fftw_cleanup()
 
 ! that's it folks...
 end subroutine EMsoftCpreprocessSingleEBSDPattern
@@ -1083,7 +1082,6 @@ deallocate(pattern, pint, ppp, expt)
 if (allocated(sumexpt)) deallocate(sumexpt)
 call fftw_free(ip)
 call fftw_free(op)
-call fftw_cleanup()
 
 ! this completes the computation of the patternarray output array
 
