@@ -61,7 +61,7 @@
 ! size of the *Dictionary* patterns in pixels; this will be set to be equal to the size
 ! of the experimental patterns divided by the binning factor by the EMEBSDDI program.
 ! You can set the next two parameters to the correct values if you wish, but these 
-! parameters will be overwritten by the program; you can also comment out these two lines. 
+! parameters will be overwritten by the program. 
  numsx = 640,
  numsy = 480,
 ! number of cubochoric points to generate list of orientations for the dictionary

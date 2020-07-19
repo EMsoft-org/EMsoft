@@ -964,7 +964,7 @@ inp = outp * hpmask
 call fftw_execute_dft(planb, inp, outp) 
 fdata(1:dims(1),1:dims(2)) = real(outp)
 
-call fftw_cleanup()
+! call fftw_cleanup()
 
 end function HiPassFilter
 
@@ -1171,7 +1171,7 @@ if ((destroy.eqv..FALSE.).and.(init.eqv..FALSE.)) then
   fdata(1:dims(1),1:dims(2)) = real(outp)
 endif
 
-call fftw_cleanup()
+! call fftw_cleanup()
 
 end subroutine HiPassFilterC
 
