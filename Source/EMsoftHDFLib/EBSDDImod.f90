@@ -1594,7 +1594,7 @@ real(kind=sgl),parameter                        :: dtor = 0.0174533  ! convert f
 real(kind=sgl)                                  :: alp, ca, sa, cw, sw
 real(kind=sgl)                                  :: L2, Ls, Lc     ! distances
 real(kind=sgl),allocatable                      :: z(:,:)           
-integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp      ! various parameters
+integer(kind=irg)                               :: nix, niy, binx, biny , i, j, Emin, Emax, istat, k, ipx, ipy, nixp, niyp, elp  
 real(kind=sgl)                                  :: dc(3), scl, pcvec(3), alpha, theta, gam, dp           ! direction cosine array
 real(kind=sgl)                                  :: sx, dx, dxm, dy, dym, rhos, x, bindx         ! various parameters
 real(kind=sgl)                                  :: ixy(2)
@@ -2135,7 +2135,7 @@ scl = float(ipar(4))
 do ii = 1,ipar(2)
     do jj = 1,ipar(3)
 
-        dc = sngl(quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) ))
+        dc = quat_Lp(qu(1:4),  (/ rgx(ii,jj),rgy(ii,jj),rgz(ii,jj) /) )
 
         dc = dc/sqrt(sum(dc**2))
 

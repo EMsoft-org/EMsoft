@@ -1743,11 +1743,11 @@ real(kind=dbl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 !f2py intent(in,out) ::  ierr
 real(kind=dbl),INTENT(IN)               :: Radius
-real(kind=dbl),INTENT(IN),OPTIONAL 		:: quat(4)
+real(kind=dbl),INTENT(IN),OPTIONAL     :: quat(4)
 real(kind=dbl)                          :: res(3)
 
 real(kind=dbl)                          :: q, qq
-logical 								:: torot
+logical                 :: torot
 
 torot = .FALSE.
 if(present(quat)) torot = .TRUE.
