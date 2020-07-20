@@ -231,7 +231,7 @@ IMPLICIT NONE
 type(MRCstruct),INTENT(INOUT)  :: MRCheader
 !f2py intent(in,out) ::  MRCheader
 
-integer(kind=irg)			   :: i
+integer(kind=irg)              :: i
 
 ! this is a simple direct dump of all the structure entries into the MRC buffer
  call MRC_Write_Word(MRCheader%nx,4)

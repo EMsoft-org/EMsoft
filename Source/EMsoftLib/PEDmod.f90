@@ -401,7 +401,7 @@ write(dataunit2,'(3A)') 'YStep',TAB,'1.0'
 write(dataunit2,'(A)') 'AcqE1	0'
 write(dataunit2,'(A)') 'AcqE2	0'
 write(dataunit2,'(A)') 'AcqE3	0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 ! the following line would need some work to do it properly...
 write(dataunit2,'(A)') 'Mag	30	Coverage	100	Device	0	KV	288.9	TiltAngle	-1	TiltAxis	0'
 write(dataunit2,'(A)') 'Phases	1'

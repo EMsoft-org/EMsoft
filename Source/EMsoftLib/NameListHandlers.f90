@@ -7280,46 +7280,46 @@ logical,OPTIONAL,INTENT(IN)             :: initonly
 logical                                 :: skipread = .FALSE.
 
 
-	character(fnlen)		:: xtalname
-	real(kind=sgl)			:: voltage 
-	integer(kind=irg)		:: kk(3) 
-	real(kind=sgl)			:: lauec(2) 
-	real(kind=sgl)			:: dmin 
+character(fnlen)		:: xtalname
+real(kind=sgl)			:: voltage 
+integer(kind=irg)		:: kk(3) 
+real(kind=sgl)			:: lauec(2) 
+real(kind=sgl)			:: dmin 
 
 ! EM or STEM ?
-	character(fnlen)		:: progmode
-	character(fnlen)		:: STEMnmlfile 
+character(fnlen)		:: progmode
+character(fnlen)		:: STEMnmlfile 
 character(fnlen)			:: foilnmlfile 
- 
-! column approximation parameters and image parameters 
-	real(kind=sgl)			:: DF_L 
-	real(kind=sgl)			:: DF_npix 
-	real(kind=sgl)			:: DF_npiy 
-	real(kind=sgl)			:: DF_slice 
 
-	integer(kind=irg)		:: dinfo
-	character(fnlen)		:: sgname 
+! column approximation parameters and image parameters 
+real(kind=sgl)			:: DF_L 
+real(kind=sgl)			:: DF_npix 
+real(kind=sgl)			:: DF_npiy 
+real(kind=sgl)			:: DF_slice 
+
+integer(kind=irg)		:: dinfo
+character(fnlen)		:: sgname 
 
 ! defect parameters
-	integer(kind=irg)		:: numdisl
-	integer(kind=irg)		:: numsf
-	integer(kind=irg)		:: numinc
-	integer(kind=irg)		:: numvoids
-	character(fnlen)		:: voidname
-	character(fnlen)		:: dislname
-	character(fnlen)		:: sfname
-	character(fnlen)		:: incname
-	character(fnlen)		:: dispfile
-	character(fnlen)		:: dispmode
+integer(kind=irg)		:: numdisl
+integer(kind=irg)		:: numsf
+integer(kind=irg)		:: numinc
+integer(kind=irg)		:: numvoids
+character(fnlen)		:: voidname
+character(fnlen)		:: dislname
+character(fnlen)		:: sfname
+character(fnlen)		:: incname
+character(fnlen)		:: dispfile
+character(fnlen)		:: dispmode
 
 ! output parameters
-	character(fnlen)		:: dataname
-	integer(kind=irg)		:: t_interval
+character(fnlen)		:: dataname
+integer(kind=irg)		:: t_interval
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / rundata / xtalname, voltage, kk, lauec, dmin, progmode, STEMnmlfile, foilnmlfile,&
-			DF_L, DF_npix, DF_npiy, DF_slice, dinfo, sgname, numdisl, numsf, numinc,&
-			numvoids, voidname, dislname, sfname, incname, dispfile, dispmode, dataname, t_interval 
+                      DF_L, DF_npix, DF_npiy, DF_slice, dinfo, sgname, numdisl, numsf, numinc,&
+                      numvoids, voidname, dislname, sfname, incname, dispfile, dispmode, dataname, t_interval 
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 xtalname = 'undefined'

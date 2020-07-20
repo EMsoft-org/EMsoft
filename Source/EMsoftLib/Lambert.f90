@@ -1691,11 +1691,11 @@ real(kind=sgl),INTENT(IN)               :: xy(2)
 integer(kind=irg),INTENT(INOUT)         :: ierr
 !f2py intent(in,out) ::  ierr
 real(kind=sgl),INTENT(IN)               :: Radius
-real(kind=sgl),INTENT(IN),OPTIONAL 		:: quat(4)
+real(kind=sgl),INTENT(IN),OPTIONAL      :: quat(4)
 real(kind=sgl)                          :: res(3)
 
 real(kind=sgl)                          :: q, qq
-logical 								:: torot
+logical                                 :: torot
 
 torot = .FALSE.
 if(present(quat)) torot = .TRUE.

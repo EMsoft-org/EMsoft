@@ -142,7 +142,7 @@ write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag'//TAB//'30'//TAB//'Coverage'//TAB//'100'//TAB//'Device'//TAB//'0'//TAB//'KV'
 write(str2,'(F4.1)') ebsdnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'
@@ -349,7 +349,7 @@ write(dataunit2,'(2A,F8.4)') 'YStep',TAB, tkdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag'//TAB//'30'//TAB//'Coverage'//TAB//'100'//TAB//'Device'//TAB//'0'//TAB//'KV'
 write(str2,'(F4.1)') tkdnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'
@@ -903,7 +903,7 @@ write(dataunit2,'(2A,F8.4)') 'YStep',TAB, ebsdnl%StepY
 write(dataunit2,'(A)') 'AcqE1'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE2'//TAB//'0'
 write(dataunit2,'(A)') 'AcqE3'//TAB//'0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag'//TAB//'30'//TAB//'Coverage'//TAB//'100'//TAB//'Device'//TAB//'0'//TAB//'KV'
 write(str2,'(F4.1)') ebsdnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'

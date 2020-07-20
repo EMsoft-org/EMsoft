@@ -42,7 +42,7 @@
 !> @date 11/13/13 MDG 2.1 fixed error with coordinate transformations (after very long bug search!)
 !> @date 11/17/15 MDG 3.0 start of complete rewrite; this mod will now include a routine to read all defect info from a json file
 !> @date 11/23/15 MDG 3.1 inserted all defect mods into this file instead of separate files
-!> @date 12/08/15 MDG 3.2 added artificial distortion to inclusion field to mimic ellipsoidal shape (needs Eshelby for correct field)
+!> @date 12/08/15 MDG 3.2 added artificial distortion to inclusion field to mimic ellipsoid shape (needs Eshelby for correct field)
 !> @date 12/11/15 MDG 3.3 gave up on previous item and implemented full isotropic Eshelby ellipsoidal inclusion
 !--------------------------------------------------------------------------
 module defectmodule
@@ -229,7 +229,8 @@ defects%foil%npix = npix                        ! image size (this duplicates so
 defects%foil%npiy = npiy
 
 ! shape parameters
-defects%foil%cpx = defects%foil%cpx * float(npix) * 0.5 * L  ! we'll define the foil shape center w.r.t. to the center of the image in [nm] coordinates
+defects%foil%cpx = defects%foil%cpx * float(npix) * 0.5 * L  ! we'll define the foil shape center w.r.t. to the center 
+                                                             ! of the image in [nm] coordinates
 defects%foil%cpy = defects%foil%cpy * float(npiy) * 0.5 * L  ! 
 
 ! initialize a bunch of foil related quantities, using quaternions for all rotations
@@ -294,9 +295,9 @@ integer(kind=irg)                       :: i
 ! loop over all regular dislocations and initialize their displacement field parameters
    do i=1,defects%numdisl  ! +2*defects%numsf   ! we do not deal with partials in stacking faults here ...
     
-! center of dislocation inside the foil is transformed to foil coordinates [nm] with defects%DL(i)%kd=0 (center of foil) [verified 4/23/11]
+! center of dislocation inside the foil is transformed to foil coordinates [nm] with defects%DL(i)%kd=0 (center of foil) [4/23/11]
 ! the point (0,0) is at the center of the image ... hence the factor of 0.5
-    defects%DL(i)%id = defects%DL(i)%id * 0.5 * float(DF_npix) ! * L   scaling (zooming) is done later in the image reference frame...
+    defects%DL(i)%id = defects%DL(i)%id * 0.5 * float(DF_npix) ! * L   scaling is done later in the image reference frame...
     defects%DL(i)%jd = defects%DL(i)%jd * 0.5 * float(DF_npiy) ! * L
     defects%DL(i)%g = DF_gf
      
@@ -423,9 +424,9 @@ real(kind=sgl)                  :: id,jd,u(3),bv(3),poisson
 ! these are just the individual dislocations; the ones that belong to 
 ! stacking faults are handled separately
 do i=1,defects%numYdisl
-! top-of-the-foil intersection of dislocation line is transformed to foil coordinates [nm] with DL(i)%kd=0 (center of foil) [verified 4/23/11]
+! top-of-the-foil intersection of dislocation line transformed to foil coordinates [nm] with DL(i)%kd=0 (center of foil) [4/23/11]
 ! the point (0,0) is at the center of the image ... hence the factor of 0.5
-  defects%YD(i)%id = defects%YD(i)%id * 0.5 * float(DF_npix) ! * L   scaling (zooming) is done later in the image reference frame...
+  defects%YD(i)%id = defects%YD(i)%id * 0.5 * float(DF_npix) ! * L   scaling is done later in the image reference frame...
   defects%YD(i)%jd = defects%YD(i)%jd * 0.5 * float(DF_npiy) ! * L
   defects%YD(i)%g = DF_gf
     
@@ -531,7 +532,7 @@ real(kind=sgl)                  :: tmp(3)
 do i=1,defects%numinc
   defects%inclusions(i)%xpos = defects%inclusions(i)%xpos * 0.5 * float(DF_npix)*DF_L
   defects%inclusions(i)%ypos = defects%inclusions(i)%ypos * 0.5 * float(DF_npiy)*DF_L
-  defects%inclusions(i)%zpos = defects%inclusions(i)%zpos * defects%foil%z0         ! vertical fractional location in interval [-1,1]
+  defects%inclusions(i)%zpos = defects%inclusions(i)%zpos * defects%foil%z0   ! vertical fractional location in interval [-1,1]
   tmp = quat_Lp( conjg(defects%foil%a_fc), dble((/ defects%inclusions(i)%xpos, defects%inclusions(i)%ypos, &
         defects%inclusions(i)%zpos /)) )  
   defects%inclusions(i)%xpos = tmp(1)
@@ -589,7 +590,7 @@ real(kind=sgl)                  :: tmp(3)
 do i=1,defects%numEinc
   defects%Einclusions(i)%xpos = defects%Einclusions(i)%xyz(1) * 0.5 * float(DF_npix)*DF_L
   defects%Einclusions(i)%ypos = defects%Einclusions(i)%xyz(2) * 0.5 * float(DF_npiy)*DF_L
-  defects%Einclusions(i)%zpos = defects%Einclusions(i)%xyz(3) * defects%foil%z0         ! vertical fractional location in interval [-1,1]
+  defects%Einclusions(i)%zpos = defects%Einclusions(i)%xyz(3) * defects%foil%z0    ! vertical fractional location in interval [-1,1]
   tmp = quat_Lp( conjg(defects%foil%a_fc), dble((/ defects%Einclusions(i)%xpos, defects%Einclusions(i)%ypos, &
         defects%Einclusions(i)%zpos /)) )  
   defects%Einclusions(i)%xpos = tmp(1)
@@ -1725,8 +1726,9 @@ if (abs(defects%YD(ii)%bx).gt.eps) then
             2.D0*oms*(cPi + datan2(y,xx) - datan2(-y,xx))
     dv = 2.D0*z/(r-z)-4.D0*y**2*(defects%YD(ii)%sig*rr-r**2)/r/AA**2/(r+z)+2.D0*omts*oms*(-1.D0+(z*(r-z)-y**2)/AA**2-alA)- &
             omts*dlog((r+z)/AA)
-    dw = 0.D0     ! not sure if this limit is correct ... Mathematica gives a directedinfinity value for the limit, which might mean that the 
-    ! original YSH expression in the paper is incorrect for the w component ... this needs to be rederived and verified !!!
+    dw = 0.D0  ! not sure if this limit is correct ... Mathematica gives a directedinfinity value for the limit, which might 
+               ! mean that the original YSH expression in the paper is incorrect for the w component ... this needs to be 
+               ! rederived and verified !!!
   end if
 
   u = u+sgn*du*Dx

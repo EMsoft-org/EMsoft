@@ -120,7 +120,7 @@ write(dataunit2,'(2A,F6.2)') 'YStep',TAB, 1.0
 write(dataunit2,'(A)') 'AcqE1	0'
 write(dataunit2,'(A)') 'AcqE2	0'
 write(dataunit2,'(A)') 'AcqE3	0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 str1 = 'Mag	30	Coverage	100	Device	0	KV'
 write(str2,'(F4.1)') ecpnl%EkeV
 str1 = trim(str1)//TAB//trim(str2)//TAB//'TiltAngle'
