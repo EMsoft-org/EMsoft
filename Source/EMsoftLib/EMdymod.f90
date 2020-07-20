@@ -2359,6 +2359,8 @@ call c_f_pointer(argv(3),imahe,(/ipar(2),ipar(3)/))
 
 imahe = adhisteq( int(ipar(1)), int(ipar(2)), int(ipar(3)), int(image) ) 
 
+adhisteqWrapper = 1._c_float
+
 end function adhisteqWrapper
 
 
