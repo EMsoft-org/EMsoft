@@ -128,11 +128,11 @@ complex recursive FUNCTION FSCATT (G,UL,Z,SYMBOL,ACCVLT,ABSFLG,ACCFLG,DWFLG)
 
 use error
 
-real(kind=sgl),parameter     	:: FOURPI=12.56637062
-real(kind=sgl)               	:: K0,A(4),B(4)
-integer(kind=irg)            	:: ABSFLG,Z
-CHARACTER(2)                 	:: SYMBOL
-logical                      	:: ACCFLG,DWFLG
+real(kind=sgl),parameter       :: FOURPI=12.56637062
+real(kind=sgl)                 :: K0,A(4),B(4)
+integer(kind=irg)              :: ABSFLG,Z
+CHARACTER(2)                   :: SYMBOL
+logical                        :: ACCFLG,DWFLG
 
 ! CHECK INPUT
  IF (Z .LT. 1 .OR. Z .GT. 98) call FatalError('fscatt',' Z is out of range')
@@ -1163,7 +1163,7 @@ INTEGER, INTENT(OUT)   :: ind(n)
 INTEGER   :: iu(21), il(21)
 INTEGER   :: m, i, j, k, l, ij, it, itt, indx
 REAL      :: r
-REAL*8    :: t
+REAL(8)   :: t
 
 ! LOCAL PARAMETERS -
 

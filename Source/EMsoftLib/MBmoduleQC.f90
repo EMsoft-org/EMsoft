@@ -55,18 +55,18 @@ IMPLICIT NONE
 public
 
 interface QC_GetDynMat
-	module procedure QC_GetDynMat2DQC
-	module procedure QC_GetDynMat3DQC
+  module procedure QC_GetDynMat2DQC
+  module procedure QC_GetDynMat3DQC
 end interface QC_GetDynMat
 
 interface QC_GetDynMatMaster
-	module procedure QC_GetDynMatMaster2DQC
-	module procedure QC_GetDynMatMaster3DQC
+  module procedure QC_GetDynMatMaster2DQC
+  module procedure QC_GetDynMatMaster3DQC
 end interface QC_GetDynMatMaster
 
 interface QC_CalcSgh
-	module procedure TDQC_CalcSgh
-	module procedure QC_CalcSgh
+  module procedure TDQC_CalcSgh
+  module procedure QC_CalcSgh
 end interface QC_CalcSgh
 
 contains
@@ -160,13 +160,13 @@ nullify(rlw)
                if (.not.associated(rlw)) EXIT
                ll       = rlr%hkl - rlw%hkl
                QCindex  = QC_getindex(QCcell, ll)
-               Ugh 		= QCcell%LUT(QCindex)
-               Agh 		= QCcell%LUTqg(QCindex)
+               Ugh     = QCcell%LUT(QCindex)
+               Agh     = QCcell%LUTqg(QCindex)
 
                ll       = rlw%hkl - rlc%hkl
                QCindex  = QC_getindex(QCcell, ll)
-               Ugh 		= QCcell%LUT(QCindex)
-               Ahgp 	= QCcell%LUTqg(QCindex)
+               Ugh     = QCcell%LUT(QCindex)
+               Ahgp   = QCcell%LUTqg(QCindex)
 
 ! denominator Ahh - Ag'g'
                Ahh      =   cmplx(2.D0 * rlw%sg,0.D0,dbl) + pq0
@@ -176,12 +176,12 @@ nullify(rlw)
               end do
 ! and correct the dynamical matrix element to become a Bethe potential coefficient
               ll            = rlr%hkl - rlc%hkl
-              QCindex 		= QC_getindex(QCcell, ll)
+              QCindex     = QC_getindex(QCcell, ll)
               DynMat(ir,ic) = QCcell%LUTqg(QCindex)  -  weaksum
 
              else
               ll            = rlr%hkl - rlc%hkl
-              QCindex 		= QC_getindex(QCcell, ll)
+              QCindex     = QC_getindex(QCcell, ll)
               DynMat(ir,ic) = QCcell%LUTqg(QCindex)
 
             end if
@@ -277,9 +277,9 @@ nullify(rlc)
 
 DynMat  = czero
 
-ll 		= (/0,0,0,0,0/)
-gindex 	= QC_getindex(QCcell, ll)
-qg0 	= QCcell%LUTqg(gindex)
+ll     = (/0,0,0,0,0/)
+gindex   = QC_getindex(QCcell, ll)
+qg0   = QCcell%LUTqg(gindex)
 
 rlr => listroot%next
 ir = 1
@@ -291,7 +291,7 @@ ir = 1
             if (.not.associated(rlc)) EXIT
             if (ic.ne.ir) then  ! not a diagonal entry
                 ll              = rlr%hkl - rlc%hkl
-                gindex 			= QC_getindex(QCcell, ll)
+                gindex       = QC_getindex(QCcell, ll)
                 !Ugh             = QC_getUcg(QCcell, ll, qg, Vmod, Vpmod, xig, xgp)
                 DynMat(ir,ic)   = QCcell%LUTqg(gindex)! qg
             else
@@ -691,13 +691,13 @@ do ip = 1,QCcell % ATOM_ntype
       kkk = rltmpb%hkl - rltmpa%hkl
       !call QC_TransSpace(QCcell,dble(kkk),cvec,'r','c')
 ! anisotropic debye waller facvtors
-! Bpar  is in the physical space:      	  ATOM_pos(ip,8)
+! Bpar  is in the physical space:          ATOM_pos(ip,8)
 ! Bperp is in perpendicular space:        ATOM_pos(ip,9)
-	  kkl1 = QC_getvectorLength(QCcell, kkk, 'P', 'r') 
-      kkl1 = 0.25 * kkl1**2 			! (s/2)^2 in physical dimension quasiperiodic
+    kkl1 = QC_getvectorLength(QCcell, kkk, 'P', 'r') 
+      kkl1 = 0.25 * kkl1**2       ! (s/2)^2 in physical dimension quasiperiodic
 
       kkl2 = QC_getvectorLength(QCcell, kkk, 'O', 'r') 
-      kkl2 = 0.25 * kkl2**2				! (s/2)^2 in quasiperiodic dimension
+      kkl2 = 0.25 * kkl2**2        ! (s/2)^2 in quasiperiodic dimension
 
 ! Debye-Waller exponential times Z^2
       DBWF = Znsq * exp(-QCcell%ATOM_pos(ip,8)*kkl1) * exp(-QCcell%ATOM_pos(ip,9)*kkl2)

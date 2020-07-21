@@ -221,8 +221,9 @@ else
 
 ! Print brief device details. Since this routine can be used by the user to determine GPU device IDs,
 ! we subtract 1 from the device ID to make sure that the CPU gets number 0...
-    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A,$)') ' Device (#', i, ', CU/MWGS/MWIS/GMS: ',device_cu,'/',device_mwgs,'/',&
-                                                   device_mwis(1),',',device_mwis(2),',',device_mwis(3),'/',device_gms,') - '
+    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A)', ADVANCE='No') ' Device (#', i, ', CU/MWGS/MWIS/GMS: ',device_cu,'/',&
+                                                                      device_mwgs,'/', device_mwis(1),',',device_mwis(2),',',&
+                                                                      device_mwis(3),'/',device_gms,') - '
     print *, device_name
     deallocate(device_name)
   end do
@@ -302,8 +303,10 @@ else
 
 ! Print brief device details. Since this routine can be used by the user to determine GPU device IDs,
 ! we subtract 1 from the device ID to make sure that the CPU gets number 0...
-    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A,I4,A,$)') ' Device (#', i, ', CU/MWGS/MWIS/GMS/MAS: ',device_cu,'/',&
-          device_mwgs,'/',device_mwis(1),',',device_mwis(2),',',device_mwis(3),'/',device_gms,',',device_maxalloc,') - '
+    write (*, '(A,I2,A,I4,A,I4,A,I4,A,I4,A,I4,A,I3,A,I4,A)', ADVANCE='No') ' Device (#', i, ', CU/MWGS/MWIS/GMS/MAS: ',&
+                                                                           device_cu,'/', device_mwgs,'/',device_mwis(1),&
+                                                                           ',',device_mwis(2),',',device_mwis(3),'/',&
+                                                                           device_gms,',',device_maxalloc,') - '
     print *, device_name
     deallocate(device_name)
   end do
