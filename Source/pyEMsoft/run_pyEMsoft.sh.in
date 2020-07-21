@@ -40,6 +40,7 @@
 #> @date 09/03/19 MDG 1.1 merged HDF routine into this one
 #> @date 09/11/19 MDG 1.2 added automatic CMake substitution of all folder paths 
 #> @date 10/11/19 MDG 1.3 general cleanup and completion of CMake substitutions
+#> @date 07/21/20 CZ 1.4 fixed the clsuppport path and linked the EMOpenCLLib library
 #--------------------------------------------------------------------------
 
 #---------------------------
@@ -59,8 +60,7 @@
 # declare the arrays of source files that need to be included in this python wrapper build;
 # these files are listed in the order that they are make'd in a regular single thread EMsoft build.
 declare -a f90_source_files=("io.f90"
-                             "error.f90" 
-                             "CLsupport.f90" 
+                             "error.f90"                             
                              "constants.f90" 
                              "math.f90"
                              "rng.f90"
@@ -86,6 +86,8 @@ declare -a f90_HDF_source_files=("commonmod.f90"
                                  "utilities.f90"
                                  "EBSDmod.f90")
 
+declare -a f90_OpenCL_source_files=("CLsupport.f90")
+
 declare -a f90_generated_source_files=("stringconstants.f90"
                                        "local.f90")
 
@@ -103,8 +105,9 @@ EMsoft_SDK=@EMsoft_SDK@
 # derived folders
 EMsoftLib=${EMsoft_folder}/Source/EMsoftLib
 EMsoftHDFLib=${EMsoft_folder}/Source/EMsoftHDFLib
-EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoft/EMsoftLib
-EMsoftBuildHDFLib=${EMsoft_BUILDfolder}/EMsoft/EMsoftHDFLib
+EMsoftBuildLib=${EMsoft_BUILDfolder}/EMsoftLib
+EMsoftBuildHDFLib=${EMsoft_BUILDfolder}/EMsoftHDFLib
+EMsoftBuildOpenCLLib=${EMsoft_BUILDfolder}/EMOpenCLLib
 
 #=======================
 # set the working directory to pyEMsoft_BUILDfolder (create it if necessary)
@@ -125,6 +128,10 @@ for file in "${f90_HDF_source_files[@]}"
 do
     cp ${EMsoftHDFLib}/${file} .
 done
+for file in "${f90_OpenCL_source_files[@]}"
+do
+    cp ${EMsoftOpenCLLib}/${file} .
+done
 for file in "${f90_generated_source_files[@]}"
 do
 	cp ${EMsoftBuildLib}/${file} .
@@ -133,13 +140,14 @@ done
 #=======================
 # execute the f90wrap program using all the files just copied, with some exceptions for certain routines
 echo " run_pyEMsoft.sh: executing f90wrap"
-f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} \
---skip hipassfilterc hipassfilter 1>build.log 2>build_error.log
+f90wrap -k ${pyEMsoft_folder}/kind_map -m pyEMsoft ${f90_generated_source_files[*]} ${f90_source_files[*]} ${f90_HDF_source_files[*]} ${f90_OpenCL_source_files[*]} \
+--skip hipassfilterc hipassfilter carstringify 1>build.log 2>build_error.log
 #=======================
 # call f2py-f90wrap to build the wrapper library
 echo " run_pyEMsoft.sh: executing f2py-f90wrap ... this can take a very long time (several hours) ..."
 f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -I${EMsoftBuildHDFLib} \
+-I${EMsoftBuildOpenCLLib} \
 -I@HDF5_INSTALL@/include/static \
 -I@CLFortran_INSTALL@/include \
 -I@JSONFORTRAN_INSTALL@/include \
@@ -151,7 +159,7 @@ f2py-f90wrap -c -m _pyEMsoft f90wrap_*.f90 -I${EMsoftBuildLib}  \
 -L@HDF5_INSTALL@/lib \
 --link-lapack_opt \
 -lgomp -lgfortran \
--lEMsoftLib -lEMsoftHDFLib -ljsonfortran -lhdf5 -lhdf5_fortran \
+-lEMsoftLib -lEMsoftHDFLib -lEMOpenCLLib -ljsonfortran -lhdf5 -lhdf5_fortran \
 -lclfortran -lfftw3 -lhdf5_cpp -lhdf5_f90cstub -lhdf5_hl_cpp \
 -lhdf5_tools -lhdf5_hl -lhdf5_hl_fortran -lhdf5_hl_f90cstub  1>>build.log 2>>build_error.log
 
@@ -166,6 +174,10 @@ done
 for file in "${f90_HDF_source_files[@]}"
 do
     rm ${file}
+done
+for file in "${f90_OpenCL_source_files[@]}"
+do
+    rm ${file} 
 done
 for file in "${f90_source_files[@]}"
 do
