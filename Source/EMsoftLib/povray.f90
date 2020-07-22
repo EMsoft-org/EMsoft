@@ -339,10 +339,10 @@ real(kind=sgl),INTENT(INOUT)          :: volume(-ndims(1):ndims(1),-ndims(2):ndi
 !f2py intent(in,out) ::  volume
 character(3),INTENT(IN)               :: scalingmode
 
-integer(kind=ish)				    :: ivol(-ndims(1):ndims(1),-ndims(2):ndims(2),-ndims(3):ndims(3))
-integer(kind=ish)					  :: idims(3), mval
-real(kind=sgl)						  :: mi, ma, levels(6)
-integer(kind=irg)					  :: recno, i, j, k
+integer(kind=ish)                     :: ivol(-ndims(1):ndims(1),-ndims(2):ndims(2),-ndims(3):ndims(3))
+integer(kind=ish)                     :: idims(3), mval
+real(kind=sgl)                        :: mi, ma, levels(6)
+integer(kind=irg)                     :: recno, i, j, k
 
 ! This format is described on the following web pages:
 ! http://wwwmpa.mpa-garching.mpg.de/~mselig/povray/povray.html
@@ -540,7 +540,7 @@ real(kind=dbl),INTENT(IN)             :: radius
 real(kind=sgl),INTENT(IN)             :: rgb(3)
 
 write (dataunit,"('sphere { <',2(F9.6,','),F9.6,'>,',F9.6,' material { texture { pigment { rgb <', &
-                2(F9.6,','),F9.6,'>}}}}')") ctr(1:3), radius, rgb(1:3)
+                &2(F9.6,','),F9.6,'>}}}}')") ctr(1:3), radius, rgb(1:3)
 
 end subroutine PoVRay_addSphere
 
@@ -572,7 +572,7 @@ real(kind=dbl),INTENT(IN)             :: radius
 real(kind=sgl),INTENT(IN)             :: rgb(3)
 
 write (dunit,"('cylinder { <',2(F9.6,','),F9.6,'>,<',2(F9.6,','),F9.6,'>,', F9.6,' pigment { ', &
-           'rgb <',2(F9.6,','),F9.6,'>}}')") p1(1:3), p2(1:3), radius, rgb(1:3)
+             &'rgb <',2(F9.6,','),F9.6,'>}}')") p1(1:3), p2(1:3), radius, rgb(1:3)
 
 end subroutine PoVRay_addCylinder
 

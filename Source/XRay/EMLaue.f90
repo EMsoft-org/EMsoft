@@ -149,7 +149,7 @@ integer(HSIZE_T)        			             :: dims3(3), cnt3(3), offset3(3)
 character(fnlen,kind=c_char)               :: line2(1)
 
 ! declare variables for use in object oriented image module
-integer                                    :: iostat
+integer                                    :: iostat, Lstart
 character(len=128)                         :: iomsg
 logical                                    :: isInteger
 type(image_t)                              :: im
@@ -365,6 +365,8 @@ end if
   io_int(1) = lnl%nthreads
   call WriteValue(' Attempting to set number of threads to ',io_int, 1, frm = "(I4)")
 
+Lstart = 8
+
 ! outer loop ... 
   do ii = 1, numbatches
 
@@ -393,7 +395,7 @@ end if
 !$OMP DO SCHEDULE(DYNAMIC)
       do jj = 1,batchnumangles(ii)
         pid = (ii-1) * batchnumangles(1) + jj  
-        bp = backprojectLauePattern( (/kouter, kinner/), lnl%pixelsize, lnl%SDdistance, (/npx, npy/), &
+        bp = backprojectLauePattern( (/kouter, kinner/), lnl%pixelsize, lnl%SDdistance, Lstart, (/npx, npy/), &
                                      (/BPnpx, BPnpy/), patternbatch(1:npx,1:npy,jj), lnl%Lauemode)
         bppatterns(1:npx,1:npy,jj) = bp
       end do 

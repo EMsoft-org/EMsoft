@@ -392,25 +392,25 @@ open(unit=dataunit2,file=trim(ctfname),status='unknown',action='write',iostat=ie
 
 write(dataunit2,'(A)') 'Channel Text File'
 write(dataunit2,'(A)') 'Prj Test'
-write(dataunit2,'(A)') 'Author	'//trim(EMsoft_getUsername())
-write(dataunit2,'(A)') 'JobMode	Grid'
+write(dataunit2,'(A)') 'Author  '//trim(EMsoft_getUsername())
+write(dataunit2,'(A)') 'JobMode  Grid'
 write(dataunit2,'(2A,I5)') 'XCells',TAB, pednl%ipf_wd
 write(dataunit2,'(2A,I5)') 'YCells',TAB, pednl%ipf_ht
 write(dataunit2,'(3A)') 'XStep',TAB,'1.0' 
 write(dataunit2,'(3A)') 'YStep',TAB,'1.0'
-write(dataunit2,'(A)') 'AcqE1	0'
-write(dataunit2,'(A)') 'AcqE2	0'
-write(dataunit2,'(A)') 'AcqE3	0'
-write(dataunit2,'(A,A,$)') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
+write(dataunit2,'(A)') 'AcqE1  0'
+write(dataunit2,'(A)') 'AcqE2  0'
+write(dataunit2,'(A)') 'AcqE3  0'
+write(dataunit2,'(A,A)',ADVANCE='No') 'Euler angles refer to Sample Coordinate system (CS0)!',TAB
 ! the following line would need some work to do it properly...
-write(dataunit2,'(A)') 'Mag	30	Coverage	100	Device	0	KV	288.9	TiltAngle	-1	TiltAxis	0'
-write(dataunit2,'(A)') 'Phases	1'
+write(dataunit2,'(A)') 'Mag  30  Coverage  100  Device  0  KV  288.9  TiltAngle  -1  TiltAxis  0'
+write(dataunit2,'(A)') 'Phases  1'
 
 ! here we need to read the .xtal file and extract the lattice parameters, Laue group and space group numbers
-write(dataunit2,'(A)') '3.524;3.524;3.524	90;90;90	Nickel	11	225'
+write(dataunit2,'(A)') '3.524;3.524;3.524  90;90;90  Nickel  11  225'
 
 ! this is the table header
-write(dataunit2,'(A)') 'Phase	X	Y	Bands	Error	Euler1	Euler2	Euler3	MAD	BC	BS'
+write(dataunit2,'(A)') 'Phase  X  Y  Bands  Error  Euler1  Euler2  Euler3  MAD  BC  BS'
 
 ! go through the entire array and write one line per sampling point
 do ii = 1,ipar(3)

@@ -3471,8 +3471,8 @@ use error
 
 IMPLICIT NONE
 
-real(kind=dbl),INTENT(IN)             :: A(m,n)
 integer(kind=irg),INTENT(IN)          :: m, n
+real(kind=dbl),INTENT(IN)             :: A(m,n)
 
 real(kind=dbl),allocatable            :: Ap(:,:)
 integer(kind=irg),allocatable         :: IPIV(:)

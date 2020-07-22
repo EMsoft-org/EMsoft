@@ -111,8 +111,10 @@ implicit none
   !!                                                                    !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   type DiscreteSHTConstants
-    integer(kind=irg)             :: d           ! half length of square Lambert projection - grid is (-d:d,-d:d), e.g. dim is 2*d+1, Nt == d+1
-    integer(kind=irg)             :: maxL        ! maximum bandwidth of square lambert projection (must be < Nt for arbitrary rings (Nt*2 for legendre rings))
+    integer(kind=irg)             :: d           ! half length of square Lambert projection - grid is (-d:d,-d:d), 
+                                                 ! e.g. dim is 2*d+1, Nt == d+1
+    integer(kind=irg)             :: maxL        ! maximum bandwidth of square lambert projection (must be < Nt 
+                                                 ! for arbitrary rings (Nt*2 for legendre rings))
     integer(kind=irg)             :: Nw          ! number of different types of weights [(dim-2) / 8 + 1]
     real   (kind=dbl),allocatable :: r1x2(:)     ! precomputed sqrt(1-x*x) values
     real   (kind=dbl),allocatable :: wy(:,:)     ! weighting factor for each ring [Nt * Nw]
@@ -837,7 +839,7 @@ contains
 
     ! set a few constants
     this%d    = d           ! half length of square Lambert projection
-    this%maxL = l           ! maximum bandwidth of square lambert projection (must be < Nt for arbitrary rings (Nt*2 for legendre rings))
+    this%maxL = l           ! max bandwidth of square lambert projection (must be <Nt for arbitrary rings (Nt*2 for legendre rings))
     this%Nw   = (2*d-1)/4+1 ! number of different types of weights [(dim-2) / 8 + 1]
 
     ! start with a sanity check on bandwidth and dimensions
@@ -1089,7 +1091,8 @@ contains
     do y=1,this%shtLut%d
     ! copy current rings and compute G_{m,y} by fft (Reinecke equation 10) leveraging real symmetry
       Npy = maxval( (/ 1, 8*y /) )
-      fftN = Npy/2+1   ! //number of fft points: half from real -> conjugate symmetric, this includes problematic points (imag == 0 from conjugate symmetry)
+      fftN = Npy/2+1   ! number of fft points: half from real -> conjugate symmetric, this includes problematic points 
+                       ! (imag == 0 from conjugate symmetry)
 
     ! read a ring from Northern and Southern hemispheres, and perform the correct fft on it to result in complex-valued data
       call SH_readRing(this%shtLut%d, mLPNH, y, this%rWrk1) ! extract yth ring from north pole into rWrk1
