@@ -1022,7 +1022,6 @@ character(fnlen),INTENT(IN)             :: HDFstrings(10)
 integer(kind=irg)						:: istat
 
 real(kind=sgl), allocatable           	:: eu1(:), eu2(:), eu3(:), eu(:,:)
-real(kind=dbl), allocatable 			      :: Ftensor(:,:)
 character(fnlen)                        :: ename
 integer(kind=irg)                       :: i, ierr, io_int(1), itype, hdferr, hdfnumg, recordsize, up2header(4), &
                                            ios, up1header(4), version, patx, paty, myoffset, offset, nlines
@@ -1223,7 +1222,8 @@ select case (itype)
 		  ! extract simulation parameters
           dataset = 'xpc'
           call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%xpc)
-		  print *, "Pattern Center Information:"
+      write(*,*)
+		  print *, "Initial Pattern Center Information:"
 		  print *, "xpc:", enl%xpc
           dataset = 'ypc'
           call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%ypc)	
@@ -1231,84 +1231,76 @@ select case (itype)
           dataset = 'L'
           call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%L)
 		  print *, "L:", enl%L
-		  call Message(' ')
-          dataset = 'Ftensor'
-		  allocate(Ftensor(3,3))
-                  call HDF_readDatasetDoubleArray2D(dataset, dims2, pmHDF_head, hdferr, Ftensor)
-				  enl%Ftensor=Ftensor
-		  print *, "Deformation gradient tensor:"
-		  print *, enl%Ftensor
-		  call Message(' ')
           dataset = 'thetac'
                   call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%thetac)
+      write(*,*)
 		  print *, "Tilt angle of the camera:", enl%thetac
-          dataset = 'delta'
-                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%delta)
-	      print *, "CCD pixel size on the scintillator surface",enl%delta
-          !dataset = 'omega'
-          !        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%omega)
-          dataset = 'alphaBD'
-                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%alphaBD)
-          dataset = 'energymin'
-                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymin)
-          dataset = 'energymax'
-                  call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymax)
-		  print *, "Energy range for simulation (kV):",enl%energymin,"-", enl%energymax
-          dataset = 'includebackground'
+
+      dataset = 'delta'
+      call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%delta)
+      print *, "CCD pixel size on the scintillator surface",enl%delta
+      !dataset = 'omega'
+      !        call HDF_readDatasetFloat(dataset, HDF_head, hdferr, enl%omega)
+      dataset = 'alphaBD'
+              call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%alphaBD)
+      dataset = 'energymin'
+              call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymin)
+      dataset = 'energymax'
+              call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%energymax)
+      print *, "Energy range for simulation (kV):",enl%energymin,"-", enl%energymax
+      dataset = 'includebackground'
 		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
 		  enl%includebackground=trim(stringarray(1))
 		  deallocate(stringarray)
 		  call Message('Include MC background: '//enl%includebackground)
          
-          dataset = 'anglefiletype'
+      dataset = 'anglefiletype'
 		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
 		  enl%anglefiletype=trim(stringarray(1))
 		  deallocate(stringarray)
 		
-          dataset = 'eulerconvention'
+      dataset = 'eulerconvention'
 		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
 		  enl%eulerconvention=trim(stringarray(1))
 		  deallocate(stringarray)
-				  
-          dataset = 'bitdepth'
+			call Message('Euelr angle convention: '//enl%eulerconvention)
+	  
+      dataset = 'bitdepth'
 		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
 		  enl%bitdepth=trim(stringarray(1))
-		  deallocate(stringarray)
-		  call Message('Bit depth: '//enl%bitdepth)
+		  deallocate(stringarray)		  
 		  dataset = 'beamcurrent'
-          call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%beamcurrent)
-		  print *, "Beam current:",enl%beamcurrent
-		  
-          dataset = 'dwelltime'
-          call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%dwelltime)
-		  print *, "Beam Dwell Time:",enl%dwelltime
-
-          dataset = 'poisson'
+      call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%beamcurrent)	  
+      dataset = 'dwelltime'
+      call HDF_readDatasetDouble(dataset, pmHDF_head, hdferr, enl%dwelltime)
+      dataset = 'poisson'
 		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)
 		  enl%poisson=trim(stringarray(1))
 		  deallocate(stringarray)
 		  call Message('Possion noise included: '//enl%poisson)
 			  
-          dataset = 'binning'
+      dataset = 'binning'
 		  call HDF_readDatasetInteger(dataset, pmHDF_head, hdferr, enl%binning)
 		  print *, "Pattern Binning:",enl%binning  
 				  
-          dataset = 'applyDeformation'
+      dataset = 'applyDeformation'
 		  call HDF_readDatasetStringArray(dataset,nlines, pmHDF_head, hdferr, stringarray)
 		  enl%applyDeformation=trim(stringarray(1))
 		  deallocate(stringarray)
 		  call Message('Apply Deformation Tensor: '//enl%applyDeformation)
 
-          dataset = 'scalingmode'
+      dataset = 'scalingmode'
 		  call HDF_readDatasetStringArray(dataset, nlines, pmHDF_head, hdferr, stringarray)		
 		  enl%scalingmode=trim(stringarray(1))
 		  deallocate(stringarray)
 		  call Message('Intensity scaling mode: '//enl%scalingmode)	
 		  
-          dataset = 'gammavalue'
-          call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%gammavalue)	
-		  print *, "gammevalue:", enl%gammavalue	  
-		
+      dataset = 'gammavalue'
+      call HDF_readDatasetFloat(dataset, pmHDF_head, hdferr, enl%gammavalue)	
+      if (enl%scalingmode.ne.'not') then
+		  print *, "gamma value:", enl%gammavalue	  
+      end if
+      write(*,*)
 		  call HDF_pop(pmHDF_head)
 		  call HDF_pop(pmHDF_head)
 		  nullify(pmHDF_head%next)

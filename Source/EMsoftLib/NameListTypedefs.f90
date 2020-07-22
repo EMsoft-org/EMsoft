@@ -624,8 +624,14 @@ real(kind=sgl)           :: F_XC
 real(kind=sgl)           :: F_CR
 real(kind=sgl)           :: XCmin(3)
 real(kind=sgl)           :: XCmax(3)
+real(kind=sgl)           :: w
+real(kind=sgl)           :: w_damp
+real(kind=sgl)           :: c1 
+real(kind=sgl)           :: c2 
 integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
+character(1)             :: hybrid
+character(2)             :: globalopt
 end type EBSDDENameListType
 
 ! namelist for the EMEBSDdefect program

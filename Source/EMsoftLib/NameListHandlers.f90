@@ -4229,8 +4229,14 @@ real(kind=sgl)           :: F_XC
 real(kind=sgl)           :: F_CR
 real(kind=sgl)           :: XCmin(3)
 real(kind=sgl)           :: XCmax(3)
+real(kind=sgl)           :: w
+real(kind=sgl)           :: w_damp
+real(kind=sgl)           :: c1 
+real(kind=sgl)           :: c2 
 integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
+character(1)            :: hybrid
+character(2)            :: globalopt
 integer(kind=irg)       :: stdout
 integer(kind=irg)       :: numsx
 integer(kind=irg)       :: numsy
@@ -4280,13 +4286,13 @@ character(fnlen)        :: HDFstrings(10)
 
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, &
+namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, hybrid, globalopt, &
                          objective, outputfile, stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, &
                          eulerconvention, masterfile, targetfile, bitdepth, energyfile, beamcurrent, dwelltime, energymin, &
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, omega, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht, datafile
+                         ipf_ht, datafile, w, w_damp, c1, c2
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
@@ -4302,6 +4308,12 @@ F_XC=0.8
 F_CR=0.8
 XCmin=(/-0.002,-0.08,-0.01/)
 XCmax=(/0.002,0.08,0.01/)
+w=1.0
+w_damp=0.99
+c1=1.5
+c2=1.5
+hybrid='n'
+globalopt='DE'
 objective=1
 outputfile='undefined'
 stdout          = 6
@@ -4396,6 +4408,12 @@ de%F_XC=F_XC
 de%F_CR=F_CR
 de%XCmin=XCmin
 de%XCmax=XCmax
+de%w=w
+de%w_damp=w_damp
+de%c1=c1
+de%c2=c2
+de%hybrid=hybrid
+de%globalopt=globalopt
 de%objective=objective
 enl%stdout = stdout
 enl%numsx = numsx
