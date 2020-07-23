@@ -94,6 +94,7 @@ type GBONameListType
         character(3)            :: CSLtype
         logical                 :: fixedAB
         character(fnlen)        :: outname
+        character(fnlen)        :: octonions
 end type GBONameListType
 
 ! namelist for EMGBOdm program

@@ -15,8 +15,15 @@
 ! CSLtype
  CSLtype = '',
 ! fix A/B boundary ?
-fixedAB = .FALSE.,
+ fixedAB = .FALSE.,
 ! output will be stored in this text file (EMsoft relative pathname)
  outname = 'undefined'
+! octonions: 'random' to use the program's internal random octonion generator
+! octonions: filename (EMsoft relative pathname) to use a file with octonion pairs
+!       the file must have the number of octonion pairs, N, on the first line
+!       followed by 2N lines with properly normalized octonions (space or comma separated)
+!       If CSLtype is set, then all 2N octonions in the file will be treated separately.
+!       In this mode the parameter "numsamples" will be ignored.
+ octonions = 'random',
 ! this last line must be present!
 /

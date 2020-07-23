@@ -455,11 +455,13 @@ integer(kind=irg)       :: pgnum
 character(3)            :: CSLtype
 logical                 :: fixedAB
 character(fnlen)        :: outname
+character(fnlen)        :: octonions
 
-namelist /GBOlist/ pgnum, numsamples, numbins, outname, nthreads, CSLtype, fixedAB
+namelist /GBOlist/ pgnum, numsamples, numbins, outname, nthreads, CSLtype, fixedAB, octonions
 
 nthreads = 1
 outname = 'undefined' 
+octonions = 'random'
 pgnum = 32
 numsamples = 100000
 numbins = 180
@@ -486,7 +488,8 @@ gbonl%nthreads = nthreads
 gbonl%pgnum = pgnum
 gbonl%numsamples = numsamples
 gbonl%numbins = numbins
-gbonl%outname = outname
+gbonl%outname = trim(outname)
+gbonl%octonions = trim(octonions)
 gbonl%CSLtype = trim(CSLtype)
 gbonl%fixedAB = fixedAB
 
