@@ -4066,6 +4066,126 @@ end subroutine GetEBSDNameList
 
 !--------------------------------------------------------------------------
 !
+! SUBROUTINE:GetBSENameList
+!
+!> @author Marc De Graef, Carnegie Mellon University
+!
+!> @brief read namelist file and fill enl structure (used by EMBSE.f90)
+!
+!> @param nmlfile namelist file name
+!> @param enl EMBSE name list structure
+!
+!> @date 07/28/20  MDG 1.0 new routine
+!--------------------------------------------------------------------------
+recursive subroutine GetBSENameList(nmlfile, enl, initonly)
+!DEC$ ATTRIBUTES DLLEXPORT :: GetBSENameList
+
+use error
+
+IMPLICIT NONE
+
+character(fnlen),INTENT(IN)             :: nmlfile
+type(BSENameListType),INTENT(INOUT)     :: enl
+!f2py intent(in,out) ::  enl
+logical,OPTIONAL,INTENT(IN)             :: initonly
+
+logical                                 :: skipread = .FALSE.
+
+real(kind=sgl)          :: energymin
+real(kind=sgl)          :: energymax
+real(kind=sgl)          :: beamcurrent
+real(kind=sgl)          :: dwelltime
+real(kind=sgl)          :: gammavalue
+real(kind=sgl)          :: workingdistance
+real(kind=sgl)          :: BSEdistance
+real(kind=sgl)          :: rin
+real(kind=sgl)          :: rout
+integer(kind=irg)       :: NsqL
+integer(kind=irg)       :: nthreads
+character(fnlen)        :: scalingmode
+character(fnlen)        :: useangles
+character(fnlen)        :: imagefile
+character(fnlen)        :: masterfile
+character(fnlen)        :: datafile
+
+! define the IO namelist to facilitate passing variables to the program.
+namelist  / BSEdata / energymin, energymax, beamcurrent, dwelltime, gammavalue, workingdistance, BSEdistance, &
+                      rin, rout, NsqL, nthreads, scalingmode, useangles, imagefile, masterfile, datafile
+
+
+! set the input parameters to default values (except for xtalname, which must be present)
+energymin = 5.0
+energymax = 20.0
+beamcurrent = 150.0
+dwelltime = 100.0
+gammavalue = 1.0
+workingdistance = 10.0
+BSEdistance = 9.5
+rin = 5.0
+rout = 12.0
+NsqL = 40
+nthreads = 1
+scalingmode = 'not;'
+useangles = 'original'
+imagefile = 'undefined'
+masterfile = 'undefined'
+datafile = 'undefined'
+
+if (present(initonly)) then
+  if (initonly) skipread = .TRUE.
+end if
+
+if (.not.skipread) then
+! read the namelist file
+ open(UNIT=dataunit,FILE=trim(EMsoft_toNativePath(nmlfile)),DELIM='apostrophe',STATUS='old')
+ read(UNIT=dataunit,NML=BSEdata)
+ close(UNIT=dataunit,STATUS='keep')
+
+! check for required entries
+
+! we no longer require the energyfile parameter, but for backwards compatibility
+! we still allow the user to include it (it doesn't do anything though)
+! if (trim(energyfile).eq.'undefined') then
+!  call FatalError('GetEBSDNameList:',' energy file name is undefined in '//nmlfile)
+! end if
+
+ if (trim(imagefile).eq.'undefined') then
+  call FatalError('GetBSENameList:',' image file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(masterfile).eq.'undefined') then
+  call FatalError('GetBSENameList:',' master pattern file name is undefined in '//nmlfile)
+ end if
+
+ if (trim(datafile).eq.'undefined') then
+  call FatalError('GetBSENameList:',' DI input file name is undefined in '//nmlfile)
+ end if
+ 
+end if
+
+! if we get here, then all appears to be ok, and we need to fill in the enl fields
+enl%energymin = energymin
+enl%energymax = energymax
+enl%beamcurrent = beamcurrent
+enl%dwelltime = dwelltime
+enl%gammavalue = gammavalue
+enl%workingdistance = workingdistance
+enl%BSEdistance = BSEdistance
+enl%rin = rin
+enl%rout = rout 
+enl%NsqL = NsqL
+enl%nthreads = nthreads
+enl%scalingmode = scalingmode
+enl%useangles = useangles
+enl%imagefile = trim(imagefile)
+enl%masterfile = trim(masterfile)
+enl%datafile = trim(datafile)
+
+end subroutine GetBSENameList
+
+
+!--------------------------------------------------------------------------
+!
 ! SUBROUTINE:GetEBSDdefectNameList
 !
 !> @author Marc De Graef, Carnegie Mellon University

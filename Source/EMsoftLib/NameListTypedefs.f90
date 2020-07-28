@@ -612,6 +612,26 @@ type EBSDNameListType
         character(fnlen)        :: datafile
 end type EBSDNameListType
 
+! namelist for EMBSE program 
+type BSENameListType 
+        real(kind=sgl)          :: energymin
+        real(kind=sgl)          :: energymax
+        real(kind=sgl)          :: beamcurrent
+        real(kind=sgl)          :: dwelltime
+        real(kind=sgl)          :: gammavalue
+        real(kind=sgl)          :: workingdistance
+        real(kind=sgl)          :: BSEdistance
+        real(kind=sgl)          :: rin
+        real(kind=sgl)          :: rout
+        integer(kind=irg)       :: NsqL
+        integer(kind=irg)       :: nthreads
+        character(fnlen)        :: scalingmode
+        character(fnlen)        :: useangles
+        character(fnlen)        :: imagefile
+        character(fnlen)        :: masterfile
+        character(fnlen)        :: datafile
+end type BSENameListType
+
 type EBSDDENameListType
 integer(kind=irg)        :: NP
 integer(kind=irg)        :: itermax

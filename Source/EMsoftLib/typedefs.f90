@@ -1415,6 +1415,12 @@ type FZpointd
         type(FZpointd),pointer  :: next          ! link to next point
 end type FZpointd
 
+! type definition for linked list of vectors on the 2-sphere (used in so2.module)
+type SO2pointd
+        real(kind=dbl)          :: sql(2)        ! point in square lambert grid 
+        real(kind=dbl)          :: nvec(3)       ! corresponding point on unit 2-sphere
+        type(SO2pointd),pointer :: next          ! link to next point
+end type SO2pointd
 
 !--------------------------------------------------------------------------
 !--------------------------------------------------------------------------
