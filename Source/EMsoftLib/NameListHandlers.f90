@@ -4093,6 +4093,7 @@ logical                                 :: skipread = .FALSE.
 
 real(kind=sgl)          :: energymin
 real(kind=sgl)          :: energymax
+real(kind=sgl)          :: incidence 
 real(kind=sgl)          :: beamcurrent
 real(kind=sgl)          :: dwelltime
 real(kind=sgl)          :: gammavalue
@@ -4110,12 +4111,13 @@ character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
 namelist  / BSEdata / energymin, energymax, beamcurrent, dwelltime, gammavalue, workingdistance, BSEdistance, &
-                      rin, rout, NsqL, nthreads, scalingmode, useangles, imagefile, masterfile, datafile
+                      rin, rout, NsqL, nthreads, scalingmode, useangles, imagefile, masterfile, datafile, incidence
 
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 energymin = 5.0
 energymax = 20.0
+incidence = 0.0
 beamcurrent = 150.0
 dwelltime = 100.0
 gammavalue = 1.0
@@ -4166,6 +4168,7 @@ end if
 ! if we get here, then all appears to be ok, and we need to fill in the enl fields
 enl%energymin = energymin
 enl%energymax = energymax
+enl%incidence = incidence
 enl%beamcurrent = beamcurrent
 enl%dwelltime = dwelltime
 enl%gammavalue = gammavalue

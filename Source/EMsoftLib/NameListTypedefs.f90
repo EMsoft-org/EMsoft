@@ -616,6 +616,7 @@ end type EBSDNameListType
 type BSENameListType 
         real(kind=sgl)          :: energymin
         real(kind=sgl)          :: energymax
+        real(kind=sgl)          :: incidence
         real(kind=sgl)          :: beamcurrent
         real(kind=sgl)          :: dwelltime
         real(kind=sgl)          :: gammavalue
