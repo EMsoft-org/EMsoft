@@ -1,5 +1,5 @@
 
-project(EMsoftWrapperLib)
+project(EMsoftWrapperLib C CXX Fortran)
 
 # --------------------------------------------------------------------
 # The MODALITY_DIRS variable is set one level above this one.
@@ -31,6 +31,51 @@ set(EMsoftWrapperLib_HEADERS
   ${TEM_Wrapper_HEADERS} 
 )
 
+# find python executable
+find_package(PythonInterp 3 REQUIRED)
+find_package(PythonLibs 3 REQUIRED)
+
+# find python include directory
+execute_process(COMMAND ${PYTHON_EXECUTABLE} "-c" "from distutils import sysconfig;print(sysconfig.get_python_inc(),end='')" OUTPUT_VARIABLE Python_Output ERROR_VARIABLE Python_Error)
+STRING(REGEX REPLACE "\\\\" "/" Python_Output ${Python_Output}) # convert windows backslash to forward slash
+if(NOT "${Python_Error}" STREQUAL "")
+    message(FATAL_ERROR "failed to find python include directory: ${Python_Error}")
+endif()
+set(PYTHON_INCLUDE_DIR ${Python_Output} CACHE PATH "python include directories")
+
+# find python library
+if(WIN32)
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} "-c" "from distutils import sysconfig;print(sysconfig.get_config_var(\"BINDIR\"),end='')" OUTPUT_VARIABLE Python_Output ERROR_VARIABLE Python_Error)
+    STRING(REGEX REPLACE "\\\\" "/" Python_Output ${Python_Output})
+    if(NOT "${Python_Error}" STREQUAL "")
+        message(FATAL_ERROR "failed to find python include directory: ${Python_Error}")
+    endif()
+    set(PYTHON_LIBRARY_DIR ${Python_Output}/libs CACHE PATH "python library directories")
+
+    if(MSVC)
+        find_library(PYTHON_LIBRARY    python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} HINT ${PYTHON_LIBRARY_DIR} CACHE FILE)
+    elseif(MINGW)
+        find_library(PYTHON_LIBRARY libpython${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR} HINT ${PYTHON_LIBRARY_DIR} CACHE FILE)
+    endif()
+else()
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} "-c" "from distutils import sysconfig;print(sysconfig.get_config_var(\"LIBDIR\"),end='')" OUTPUT_VARIABLE Python_Output ERROR_VARIABLE Python_Error)
+    if(NOT "${Python_Error}" STREQUAL "")
+        message(FATAL_ERROR "failed to find python include directory: ${Python_Error}")
+    endif()
+    set(PYTHON_LIBRARY_DIR ${Python_Output} CACHE PATH "python library directories")
+    find_library(PYTHON_LIBRARY libpython${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}m.dylib HINTS ${PYTHON_LIBRARY_DIR} CACHE FILE)
+endif()
+
+# find numpy
+execute_process(COMMAND ${PYTHON_EXECUTABLE} "-c" "import numpy;print(numpy.get_include(),end='')" OUTPUT_VARIABLE Python_Output ERROR_VARIABLE Python_Error)
+STRING(REGEX REPLACE "\\\\" "/" Python_Output ${Python_Output})
+if(NOT "${Python_Error}" STREQUAL "")
+    message(FATAL_ERROR "failed to find numpy include directory: ${Python_Error}")
+endif()
+find_path(NUMPY_INCLUDE_DIR numpy/arrayobject.h HINTS ${Python_Output})
+get_filename_component(NUMPY_DIR ${NUMPY_INCLUDE_DIR} DIRECTORY)
+find_library(NUMPY_LIBRARY NAMES npymath HINTS ${NUMPY_DIR}/lib)
+get_filename_component(NUMPY_LIBRARY_DIR ${NUMPY_LIBRARY} DIRECTORY CACHE)
 
 
 add_library(EMsoftWrapperLib ${LIB_TYPE} ${EMsoftWrapperLib_SOURCES} ${EMsoftWrapperLib_HEADERS})
@@ -42,6 +87,8 @@ target_include_directories(EMsoftWrapperLib
       ${CLFortran_INSTALL}/include
       $<BUILD_INTERFACE:${EMsoftHDFLib_BINARY_DIR}>
       $<BUILD_INTERFACE:${EMOpenCLLib_BINARY_DIR}>
+      PUBLIC ${PYTHON_INCLUDE_DIR}
+      PUBLIC ${NUMPY_INCLUDE_DIR}
 )
 
 set_target_properties (EMsoftWrapperLib PROPERTIES
