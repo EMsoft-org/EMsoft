@@ -21,7 +21,6 @@ if(NOT "${Python_Error}" STREQUAL "")
     message(FATAL_ERROR "failed to find python include directory: ${Python_Error}")
 endif()
 set(PYTHON_INCLUDE_DIR ${Python_Output} CACHE PATH "python include directories")
-include_directories(${PYTHON_INCLUDE_DIR})
 
 # find python library
 if(WIN32)
@@ -54,7 +53,6 @@ if(NOT "${Python_Error}" STREQUAL "")
 endif()
 find_path(NUMPY_INCLUDE_DIR numpy/arrayobject.h HINTS ${Python_Output})
 get_filename_component(NUMPY_DIR ${NUMPY_INCLUDE_DIR} DIRECTORY)
-include_directories(${NUMPY_INCLUDE_DIR})
 find_library(NUMPY_LIBRARY NAMES npymath HINTS ${NUMPY_DIR}/lib)
 get_filename_component(NUMPY_LIBRARY_DIR ${NUMPY_LIBRARY} DIRECTORY CACHE)
 
@@ -71,6 +69,8 @@ target_include_directories(PyEMEBSDDI
       ${CLFortran_INSTALL}/include
       $<BUILD_INTERFACE:${EMsoftHDFLib_BINARY_DIR}>
       $<BUILD_INTERFACE:${EMOpenCLLib_BINARY_DIR}>
+      PUBLIC ${PYTHON_INCLUDE_DIR}
+      PUBLIC ${NUMPY_INCLUDE_DIR}
 )
 
 set_property(TARGET PyEMEBSDDI PROPERTY CXX_STANDARD 11)
