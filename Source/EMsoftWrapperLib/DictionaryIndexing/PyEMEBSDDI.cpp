@@ -19,7 +19,6 @@
 //     float* resultmain, int32_t* indexmain, size_t object, bool* cancel);}
 // #endif
 
-using namespace std;
 
 /*
 *************************************
@@ -67,28 +66,28 @@ PyObject* PyEMEBSDDI(PyObject* self, PyObject* args, PyObject* kw){
     if (!PyArg_ParseTupleAndKeywords(args, kw, "OOOOO|OO", kwlist,
         &Py_ipar, &Py_fpar, &Py_spar, &Py_dpatterns, &Py_epatterns, &Py_object, &Py_cancel))
     {
-        cout << "Python arguments parse error" << endl;
+        std::cout << "Python arguments parse error" << std::endl;
         return NULL;
     }
 
     // ipar
-    vector<int> ipar_vector = listTupleToVector_Int(Py_ipar);
+    std::vector<int> ipar_vector = listTupleToVector_Int(Py_ipar);
     int32_t* ipar = ipar_vector.data();
     // long ipar = PyLong_AsLong((PyObject*) Py_ipar);
     Py_XDECREF(Py_ipar);
-    // cout << "ipar done" << endl;
+    // std::cout << "ipar done" << std::endl;
 
     // fpar
-    vector<float> fpar_vector = listTupleToVector_Float(Py_fpar);
+    std::vector<float> fpar_vector = listTupleToVector_Float(Py_fpar);
     float* fpar = fpar_vector.data();
     // double fpar = PyFloat_AsDouble((PyObject*) Py_fpar);
     // Py_XDECREF(Py_fpar);
-    // cout << "fpar done" << endl;
+    // std::cout << "fpar done" << std::endl;
 
     // object
     size_t object = PyLong_AsSize_t((PyObject*) Py_object);
     Py_XDECREF(Py_object);
-    // cout << "object done" << endl;
+    // std::cout << "object done" << std::endl;
 
     // cancel
     bool cancel;
@@ -99,10 +98,10 @@ PyObject* PyEMEBSDDI(PyObject* self, PyObject* args, PyObject* kw){
         cancel = false;
     }
     Py_XDECREF(Py_cancel);
-    // cout << "cancel done" << endl;
+    // std::cout << "cancel done" << std::endl;
 
     // spar
-    vector<string> spar_vector = listTupleToVector_Str((PyObject*) Py_spar);
+    std::vector<std::string> spar_vector = listTupleToVector_Str((PyObject*) Py_spar);
     static char spar[80][512]; // 80 str with at most 512 char each;
     for (int i=0; i<80; ++i){
         memset(&spar[i][0], 0, 512);
@@ -114,7 +113,7 @@ PyObject* PyEMEBSDDI(PyObject* self, PyObject* args, PyObject* kw){
     }
     
     Py_XDECREF(Py_spar);
-    // cout << "spar done" << endl;
+    // std::cout << "spar done" << std::endl;
     
 
     // dpatterns
@@ -140,7 +139,7 @@ PyObject* PyEMEBSDDI(PyObject* self, PyObject* args, PyObject* kw){
             dpatterns[i][j] = static_cast<float>(dpatterns_double[i][j]);
         }
     }
-    // cout << "dpatterns done" << endl;
+    // std::cout << "dpatterns done" << std::endl;
 
 
     // epatterns
@@ -163,7 +162,7 @@ PyObject* PyEMEBSDDI(PyObject* self, PyObject* args, PyObject* kw){
             epatterns[i][j] = static_cast<float>(epatterns_double[i][j]);
         }
     }
-    // cout << "epatterns done" << endl;
+    // std::cout << "epatterns done" << std::endl;
 
 
     /*
@@ -172,44 +171,44 @@ PyObject* PyEMEBSDDI(PyObject* self, PyObject* args, PyObject* kw){
     *************************************
     */
     // debug*******************************
-    // cout << "test" << endl;
+    // std::cout << "test" << std::endl;
     // for(int i=0; i<ipar_vector.size(); ++i)
-    //     cout << ipar[i] << ' ';
+    //     std::cout << ipar[i] << ' ';
     // for(int i=0; i<fpar_vector.size(); ++i)
-    //     cout << fpar[i] << ' ';
-    // cout << object << endl;
-    // cout << cancel << endl;
-    // cout << "test done" << endl;
+    //     std::cout << fpar[i] << ' ';
+    // std::cout << object << std::endl;
+    // std::cout << cancel << std::endl;
+    // std::cout << "test done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "spar test" << endl;
+    // std::cout << "spar test" << std::endl;
     // for(int i=0; i<spar_vector.size(); ++i){
-    //     cout << i+1 << endl;
+    //     std::cout << i+1 << std::endl;
     //     for (int j=0; j<80; ++j){
-    //         cout << spar[i*80+j];
+    //         std::cout << spar[i*80+j];
     //     }
-    //     cout << endl;
-    //     cout << spar_vector[i] << endl;
+    //     std::cout << std::endl;
+    //     std::cout << spar_vector[i] << std::endl;
     // }
-    // cout << "spar test done" << endl;
+    // std::cout << "spar test done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_array" << endl;
-    // cout << (int) PyArray_NDIM((PyArrayObject*) dpatterns_obj) << endl;
-    // cout << (int) PyArray_DIMS((PyArrayObject*) dpatterns_obj)[0] << endl;
-    // cout << dpatterns[0][0] << endl;
-    // cout << dpatterns[1][1] << endl;
-    // cout << "test_array done" << endl;
+    // std::cout << "test_array" << std::endl;
+    // std::cout << (int) PyArray_NDIM((PyArrayObject*) dpatterns_obj) << std::endl;
+    // std::cout << (int) PyArray_DIMS((PyArrayObject*) dpatterns_obj)[0] << std::endl;
+    // std::cout << dpatterns[0][0] << std::endl;
+    // std::cout << dpatterns[1][1] << std::endl;
+    // std::cout << "test_array done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_array output" << endl;
+    // std::cout << "test_array output" << std::endl;
     // for (int i=0; i<(int) PyArray_DIMS((PyArrayObject*) epatterns_obj)[0]; i++){
     //     for (int j=0; j<(int) PyArray_DIMS((PyArrayObject*) epatterns_obj)[0]; j++){
-    //         cout << epatterns[i][j];
+    //         std::cout << epatterns[i][j];
     //     }
-    //     cout << endl;
+    //     std::cout << std::endl;
     // }
-    // cout << "test_array output done" << endl;
+    // std::cout << "test_array output done" << std::endl;
     // debug*******************************
     
 
@@ -245,7 +244,7 @@ PyObject* PyEMEBSDDI(PyObject* self, PyObject* args, PyObject* kw){
     EMsoftCEBSDDI(ipar, fpar, &spar[0][0], &dpatterns[0][0], &epatterns[0][0],
         &resultmain[0][0], &indexmain[0][0], callback, errorcallback, object, &cancel);
 
-    // cout << "Fortran running done" << endl;
+    // std::cout << "Fortran running done" << std::endl;
 
     /*
     *************************************
@@ -380,27 +379,27 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
         &Py_ipar, &Py_fpar, &Py_accum_e, &Py_mLPNH, &Py_mLPSH, &Py_variants, &Py_epatterns,
         &Py_startEulers, &Py_startdps, &Py_object, &Py_cancel))
     {
-        cout << "Python arguments parse error" << endl;
+        std::cout << "Python arguments parse error" << std::endl;
         return NULL;
     }
 
     // ipar
-    vector<int> ipar_vector = listTupleToVector_Int(Py_ipar);
+    std::vector<int> ipar_vector = listTupleToVector_Int(Py_ipar);
     int32_t* ipar = ipar_vector.data();
     // long ipar = PyLong_AsLong((PyObject*) Py_ipar);
     Py_XDECREF(Py_ipar);
-    // cout << "ipar done" << endl;
+    // std::cout << "ipar done" << std::endl;
 
     // fpar
-    vector<float> fpar_vector = listTupleToVector_Float(Py_fpar);
+    std::vector<float> fpar_vector = listTupleToVector_Float(Py_fpar);
     float* fpar = fpar_vector.data();
     // Py_XDECREF(Py_fpar);
-    // cout << "fpar done" << endl;
+    // std::cout << "fpar done" << std::endl;
 
     // object
     size_t object = PyLong_AsSize_t((PyObject*) Py_object);
     Py_XDECREF(Py_object);
-    // cout << "object done" << endl;
+    // std::cout << "object done" << std::endl;
 
     // cancel
     bool cancel;
@@ -411,7 +410,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
         cancel = false;
     }
     Py_XDECREF(Py_cancel);
-    // cout << "cancel done" << endl;
+    // std::cout << "cancel done" << std::endl;
 
     // set data type for Python numpy array conversion
     int typenum = NPY_DOUBLE; // Python float has double precision
@@ -432,7 +431,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
         return NULL;
     }
     Py_XDECREF(Py_accum_e);
-    // cout << "accum_e done" << endl;
+    // std::cout << "accum_e done" << std::endl;
 
     // mLPNH
     // use float32 (float) for mLPNH and mLPSH because they are directly read from h5 file
@@ -447,7 +446,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
         return NULL;
     }
     Py_XDECREF(Py_mLPNH);
-    // cout << "mLPNH done" << endl;
+    // std::cout << "mLPNH done" << std::endl;
 
     // mLPSH
     float*** mLPSH;
@@ -460,7 +459,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
         return NULL;
     }
     Py_XDECREF(Py_mLPSH);
-    // cout << "mLPSH done" << endl;
+    // std::cout << "mLPSH done" << std::endl;
 
     // variants
     double** variants_double;
@@ -480,7 +479,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
             variants[i][j] = static_cast<float>(variants_double[i][j]);
         }
     }
-    // cout << "variants done" << endl;
+    // std::cout << "variants done" << std::endl;
 
     // epatterns
     double** epatterns_double;
@@ -502,7 +501,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
             epatterns[i][j] = static_cast<float>(epatterns_double[i][j]);
         }
     }
-    // cout << "epatterns done" << endl;
+    // std::cout << "epatterns done" << std::endl;
 
     // startEulers
     double** startEulers_double;
@@ -522,7 +521,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
             startEulers[i][j] = static_cast<float>(startEulers_double[i][j]);
         }
     }
-    // cout << "startEulers done" << endl;
+    // std::cout << "startEulers done" << std::endl;
 
     // startdps
     double* startdps_double;
@@ -540,7 +539,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
     for (int i = 0; i < ipar[39]; i++){
         startdps[i] = static_cast<float>(startdps_double[i]);
     }
-    // cout << "startdps done" << endl;
+    // std::cout << "startdps done" << std::endl;
 
 
     /*
@@ -549,99 +548,99 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
     *************************************
     */
     // debug*******************************
-    // cout << "test_ipar_fpar_object_cancel" << endl;
-    // cout << "ipar" << endl;
+    // std::cout << "test_ipar_fpar_object_cancel" << std::endl;
+    // std::cout << "ipar" << std::endl;
     // for(int i=0; i<ipar_vector.size(); ++i)
-    //     cout << ipar[i] << ' ';
-    // cout << endl;
+    //     std::cout << ipar[i] << ' ';
+    // std::cout << std::endl;
 
-    // cout << "fpar" << endl;
+    // std::cout << "fpar" << std::endl;
     // for(int i=0; i<fpar_vector.size(); ++i)
-    //     cout << fpar[i] << ' ';
-    // cout << endl; 
+    //     std::cout << fpar[i] << ' ';
+    // std::cout << std::endl; 
 
-    // cout << "object" << endl;
-    // cout << object << endl;
-    // cout << "cancel" << endl;
-    // cout << cancel << endl;
-    // cout << "test_ipar_fpar_object_cancel done" << endl;
+    // std::cout << "object" << std::endl;
+    // std::cout << object << std::endl;
+    // std::cout << "cancel" << std::endl;
+    // std::cout << cancel << std::endl;
+    // std::cout << "test_ipar_fpar_object_cancel done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_accum_e" << endl;
-    // cout << accum_e_dims[0] << accum_e_dims[1] << accum_e_dims[2] << endl;
+    // std::cout << "test_accum_e" << std::endl;
+    // std::cout << accum_e_dims[0] << accum_e_dims[1] << accum_e_dims[2] << std::endl;
     // for(int i=0; i<accum_e_dims[0]; ++i){
     //     for(int j=0; j<accum_e_dims[1]; ++j){
     //         for(int k=0; k<accum_e_dims[2]; ++k){
-    //             cout << accum_e[i][j][k] << ' ';
+    //             std::cout << accum_e[i][j][k] << ' ';
     //         }
-    //         cout << endl;
+    //         std::cout << std::endl;
     //     }
-    //     cout << endl;
+    //     std::cout << std::endl;
     // }
-    // cout << "test_accum_e contiguous" << endl;
+    // std::cout << "test_accum_e contiguous" << std::endl;
     // for(int i=0; i<accum_e_dims[0]*accum_e_dims[1]*accum_e_dims[2]; ++i)
-    //     cout << *(&accum_e[0][0][0] + i) << ' ';
-    // cout << endl;
-    // cout << "test_accum_e done" << endl;
+    //     std::cout << *(&accum_e[0][0][0] + i) << ' ';
+    // std::cout << std::endl;
+    // std::cout << "test_accum_e done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_mLPNH" << endl;
+    // std::cout << "test_mLPNH" << std::endl;
     // for(int i=0; i<mLPNH_dims[0]; ++i){
     //     for(int j=0; j<mLPNH_dims[1]; ++j){
     //         for(int k=0; k<mLPNH_dims[2]; ++k){
-    //             cout << mLPNH[i][j][k] << ' ';
+    //             std::cout << mLPNH[i][j][k] << ' ';
     //         }
-    //         cout << endl;
+    //         std::cout << std::endl;
     //     }
-    //     cout << endl;
+    //     std::cout << std::endl;
     // }
-    // cout << "test_mLPNH contiguous" << endl;
+    // std::cout << "test_mLPNH contiguous" << std::endl;
     // for(int i=0; i<mLPNH_dims[0]*mLPNH_dims[1]*mLPNH_dims[2]; ++i)
-    //     cout << *(&mLPNH[0][0][0] + i) << ' ';
-    // cout << endl;
-    // cout << "test_mLPNH done" << endl;
+    //     std::cout << *(&mLPNH[0][0][0] + i) << ' ';
+    // std::cout << std::endl;
+    // std::cout << "test_mLPNH done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_variants" << endl;
-    // cout << variants_dims[0] << variants_dims[1] << endl;
+    // std::cout << "test_variants" << std::endl;
+    // std::cout << variants_dims[0] << variants_dims[1] << std::endl;
     // for(int i=0; i<variants_dims[0]; ++i){
     //     for(int j=0; j<variants_dims[1]; ++j){
-    //         cout << variants[i][j] << ' ';
+    //         std::cout << variants[i][j] << ' ';
     //     }
-    //     cout << endl;
+    //     std::cout << std::endl;
     // }
-    // cout << "test_variants done" << endl;
+    // std::cout << "test_variants done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_epatterns" << endl;
-    // cout << epatterns_dims[0] << epatterns_dims[1] << endl;
+    // std::cout << "test_epatterns" << std::endl;
+    // std::cout << epatterns_dims[0] << epatterns_dims[1] << std::endl;
     // for(int i=0; i<epatterns_dims[0]; ++i){
     //     for(int j=0; j<epatterns_dims[1]; ++j){
-    //         cout << epatterns[i][j] << ' ';
+    //         std::cout << epatterns[i][j] << ' ';
     //     }
-    //     cout << endl;
+    //     std::cout << std::endl;
     // }
-    // cout << "test_epatterns done" << endl;
+    // std::cout << "test_epatterns done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_startEulers" << endl;
-    // cout << startEulers_dims[0] << startEulers_dims[1] << endl;
+    // std::cout << "test_startEulers" << std::endl;
+    // std::cout << startEulers_dims[0] << startEulers_dims[1] << std::endl;
     // for(int i=0; i<startEulers_dims[0]; ++i){
     //     for(int j=0; j<startEulers_dims[1]; ++j){
-    //         cout << startEulers[i][j] << ' ';
+    //         std::cout << startEulers[i][j] << ' ';
     //     }
-    //     cout << endl;
+    //     std::cout << std::endl;
     // }
-    // cout << "test_startEulers done" << endl;
+    // std::cout << "test_startEulers done" << std::endl;
     // debug*******************************
     // debug*******************************
-    // cout << "test_startdps" << endl;
-    // cout << startdps_dims[0] << endl;
+    // std::cout << "test_startdps" << std::endl;
+    // std::cout << startdps_dims[0] << std::endl;
     // for(int i=0; i<startdps_dims[0]; ++i){
-    //     cout << startdps[i] << ' ';
+    //     std::cout << startdps[i] << ' ';
     // }
-    // cout << endl;
-    // cout << "test_startdps done" << endl;
+    // std::cout << std::endl;
+    // std::cout << "test_startdps done" << std::endl;
     // debug*******************************
 
 
@@ -674,7 +673,7 @@ PyObject* PyEMEBSDRefine(PyObject* self, PyObject* args, PyObject* kw){
        &variants[0][0], &epatterns[0][0], &startEulers[0][0], &startdps[0],
        &eumain[0][0], &dpmain[0], callback, object, &cancel);
 
-    // cout << "Fortran running done" << endl;
+    // std::cout << "Fortran running done" << std::endl;
 
     /*
     *************************************
