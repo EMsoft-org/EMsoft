@@ -26,7 +26,7 @@ We also develop a higher-level wrapper for **PyEMEBSDDI**, called [**PyEMEBSDDI_
 ## Installation
 The package is built together with the whole **EMsoft** package. Refer to [this site](https://github.com/EMsoft-org/EMsoft) for building directions.
 
-When compiling using `cmake` or `ccmake`, the option `BUILD_SHARED_LIBS` has to be turned on.
+When compiling using `cmake` or `ccmake`, the options `EMsoft_ENABLE_PyEMEBSDDI` and `BUILD_SHARED_LIBS` have to be turned on.
 
 Besides prerequisites in building [**EMsoft**](https://github.com/EMsoft-org/EMsoft) and [**EMsoftSuperbuild**](https://github.com/EMsoft-org/EMsoftSuperbuild), the following packages are also required to be installed:
 
