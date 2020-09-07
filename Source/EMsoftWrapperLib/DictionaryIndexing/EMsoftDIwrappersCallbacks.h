@@ -9,35 +9,53 @@
 extern "C" {
 #endif
 
-/*!
- * C-function for the callback process used by EMsoftCEBSDDI;
- * Default function for the input 'cproc';
- * Correspond to the function DIProcessTiming in
-    EMsoft/Source/EMsoftWorkbench/Workbench/Modules/DictionaryIndexingModule/DictionaryIndexingController.cpp
-
- * 08/05/20 Currently left blank;
+/** 
+ * Function: DIProcessTiming
+ * 
+ * @brief The callback process used by EMsoftCEBSDDI;
+ *        Default function for the input 'cproc';
+ *        Correspond to the function DIProcessTiming in
+ *          EMsoft/Source/EMsoftWorkbench/Workbench/Modules/DictionaryIndexingModule/DictionaryIndexingController.cpp
+ * 
+ * @param instance
+ * @param loopCompleted
+ * @param totalLoops
+ * @param timeRemaining
+ * 
+ * @date 08/05/20 Currently left blank;
  */
 void DIProcessTiming(size_t instance, int loopCompleted, int totalLoops, float timeRemaining);
 
 
-/*!
- * OpenCL error callback process used by EMsoftCEBSDDI;
- * Default function for the input 'cerrorproc';
- * Correspond to the function DIProcessError in
-    EMsoft/Source/EMsoftWorkbench/Workbench/Modules/DictionaryIndexingModule/DictionaryIndexingController.cpp
-
- * 08/05/20 Currently left blank;
+/** 
+ * Function: DIProcessError
+ * 
+ * @brief OpenCL error callback process used by EMsoftCEBSDDI;
+ *        Default function for the input 'cerrorproc';
+ *        Correspond to the function DIProcessError in
+ *          EMsoft/Source/EMsoftWorkbench/Workbench/Modules/DictionaryIndexingModule/DictionaryIndexingController.cpp
+ * 
+ * @param instance
+ * @param nDict
+ * 
+ * @date 08/05/20 Currently left blank;
  */
 void DIProcessError(size_t instance, int nDict);
 
 
-/*!
- * C-function for the callback process used by EMsoftCEBSDRefine;
- * Default function for the input 'cproc';
- * Refer to Line 1932 in EMDIwrappermod.f90:
-    call proc(objAddress, globalcount, totnumexpt)
-
- * 08/05/20 Currently left blank;
+/** 
+ * Function: DIProcessRefine
+ * 
+ * @brief C-function for the callback process used by EMsoftCEBSDRefine;
+ *        Default function for the input 'cproc';
+ *        Refer to Line 1932 in EMDIwrappermod.f90:
+ *          call proc(objAddress, globalcount, totnumexpt)
+ * 
+ * @param instance
+ * @param param_a
+ * @param param_b
+ * 
+ * @date 08/05/20 Currently left blank;
  */
 void DIProcessRefine(size_t instance, int param_a, int param_b);
 
