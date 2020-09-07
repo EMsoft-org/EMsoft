@@ -20,7 +20,7 @@ PyObject* vectorToTuple_Float(const std::vector<float> &data);
 
 /* Convert 2D float (single precision) array (vector of vectors of float) in C/C++ to
 2D float (double precision) tuple (tuple of tuples of float) in Python */
-PyObject* vectorVectorToTuple_Float(const std::vector< std::vector< float > > &data);
+PyObject* vectorVectorToTuple_Float(const std::vector<std::vector<float>> &data);
 
 
 /* Convert float (double precision) list/tuple in Python to float (single precision) vector in C/C++ */
