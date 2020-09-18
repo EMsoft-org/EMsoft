@@ -4353,8 +4353,7 @@ real(kind=sgl)           :: VTR
 real(kind=sgl)           :: CR_XC
 real(kind=sgl)           :: F_XC
 real(kind=sgl)           :: F_CR
-real(kind=sgl)           :: XCmin(3)
-real(kind=sgl)           :: XCmax(3)
+real(kind=sgl)           :: bound(3)
 real(kind=sgl)           :: w
 real(kind=sgl)           :: w_damp
 real(kind=sgl)           :: c1 
@@ -4412,7 +4411,7 @@ character(fnlen)        :: HDFstrings(10)
 
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, XCmin, XCmax, hybrid, globalopt, &
+namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR_XC, F_XC, F_CR, bound, hybrid, globalopt, &
                          objective, outputfile, stdout, L, thetac, delta, numsx, numsy, binning, xpc, ypc, anglefile, &
                          eulerconvention, masterfile, targetfile, bitdepth, energyfile, beamcurrent, dwelltime, energymin, &
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
@@ -4432,8 +4431,7 @@ VTR= -1e-4
 CR_XC=0.5
 F_XC=0.8
 F_CR=0.8
-XCmin=(/-0.002,-0.08,-0.01/)
-XCmax=(/0.002,0.08,0.01/)
+bound=(/0.001,1.0,1.0/)
 w=1.0
 w_damp=0.99
 c1=1.5
@@ -4532,8 +4530,7 @@ de%VTR=VTR
 de%CR_XC=CR_XC
 de%F_XC=F_XC
 de%F_CR=F_CR
-de%XCmin=XCmin
-de%XCmax=XCmax
+de%bound=bound
 de%w=w
 de%w_damp=w_damp
 de%c1=c1
