@@ -4362,6 +4362,7 @@ integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
 character(1)            :: hybrid
 character(2)            :: globalopt
+character(1)             :: single_opt
 integer(kind=irg)       :: stdout
 integer(kind=irg)       :: numsx
 integer(kind=irg)       :: numsy
@@ -4417,7 +4418,7 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
                          energymax, gammavalue, alphaBD, scalingmode, axisangle, nthreads, outputformat, maskpattern, &
                          energyaverage, omega, spatialaverage, applyDeformation, Ftensor, includebackground, anglefiletype, &
                          makedictionary, hipassw, nregions, maskradius, poisson, patx, paty, inputtype, HDFstrings, ipf_wd, &
-                         ipf_ht, datafile, w, w_damp, c1, c2
+                         ipf_ht, datafile, w, w_damp, c1, c2, single_opt
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
@@ -4438,6 +4439,7 @@ c1=1.5
 c2=1.5
 hybrid='n'
 globalopt='DE'
+single_opt='n'
 objective=1
 outputfile='undefined'
 stdout          = 6
@@ -4453,19 +4455,19 @@ delta           = 25.0          ! [microns]
 xpc             = 0.0           ! [pixels]
 ypc             = 0.0           ! [pixels]
 omega           = 0.0
-energymin       = 15.0          ! minimum energy to consider
-energymax       = 30.0          ! maximum energy to consider
+energymin       = 10.0          ! minimum energy to consider
+energymax       = 20.0          ! maximum energy to consider
 gammavalue      = 1.0           ! gamma factor
 alphaBD         = 0.0           ! transfer lens barrel distortion parameter
 maskradius      = 240           ! mask radius
 hipassw         = 0.05          ! hi-pass filter radius
 axisangle       = (/0.0, 0.0, 1.0, 0.0/)        ! no additional axis angle rotation
 Ftensor         = reshape( (/ 1.D0, 0.D0, 0.D0, 0.D0, 1.D0, 0.D0, 0.D0, 0.D0, 1.D0 /), (/ 3,3 /) )
-beamcurrent     = 14.513D0      ! beam current (actually emission current) in nano ampere
+beamcurrent     = 150.0D0      ! beam current (actually emission current) in nano ampere
 dwelltime       = 100.0D0       ! in microseconds
-makedictionary  = 'y'
+makedictionary  = 'n'
 poisson         = 'n'           ! apply poisson noise ? 
-includebackground = 'y'         ! set to 'n' to remove realistic background intensity profile
+includebackground = 'n'         ! set to 'n' to remove realistic background intensity profile
 applyDeformation = 'n'          ! should we apply a deformation tensor to the unit cell?
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
@@ -4538,6 +4540,7 @@ de%c2=c2
 de%hybrid=hybrid
 de%globalopt=globalopt
 de%objective=objective
+de%single_opt=single_opt
 enl%stdout = stdout
 enl%numsx = numsx
 enl%numsy = numsy

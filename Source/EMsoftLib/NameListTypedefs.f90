@@ -653,6 +653,7 @@ integer(kind=irg)        :: objective
 character(fnlen)         :: outputfile
 character(1)             :: hybrid
 character(2)             :: globalopt
+character(1)             :: single_opt
 end type EBSDDENameListType
 
 ! namelist for the EMEBSDdefect program
