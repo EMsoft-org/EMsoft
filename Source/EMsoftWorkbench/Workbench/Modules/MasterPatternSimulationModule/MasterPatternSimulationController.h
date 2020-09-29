@@ -64,8 +64,7 @@ public:
     int betheParametersY;
     int betheParametersZ;
     int numOfOpenMPThreads;
-    QString inputFilePath;
-    QString outputFilePath;
+    QString energyFilePath;
     QString betheParametersFilePath;
   };
 
