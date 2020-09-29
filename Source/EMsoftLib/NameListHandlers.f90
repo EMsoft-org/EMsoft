@@ -4422,21 +4422,21 @@ namelist  / EBSDDEdata / NP, itermax, strategy, refresh, iwrite, method, VTR, CR
 
 ! set the input parameters to default values (except for xtalname, which must be present)
                         
-NP=120
-itermax=200
-strategy=6
-refresh=500
+NP=60
+itermax=100
+strategy=2
+refresh=10
 iwrite=7
-method=(/0,1,0/)
-VTR= -1e-4
-CR_XC=0.5
-F_XC=0.8
-F_CR=0.8
+method=(/0,1,1/)
+VTR= -1
+CR_XC=0.9
+F_XC=0.5
+F_CR=0.5
 bound=(/0.001,1.0,1.0/)
 w=1.0
 w_damp=0.99
-c1=1.5
-c2=1.5
+c1=2
+c2=2
 hybrid='n'
 globalopt='DE'
 single_opt='n'
