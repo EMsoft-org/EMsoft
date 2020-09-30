@@ -90,7 +90,7 @@ void PatternDisplay_UI::setupGui()
   connect(m_Controller, SIGNAL(newProgressBarMaximumValue(int)), m_PatternDisplayWidget, SLOT(setProgressBarMaximum(int)));
   connect(m_Controller, SIGNAL(newProgressBarValue(int)), m_PatternDisplayWidget, SLOT(setProgressBarValue(int)), Qt::QueuedConnection);
   connect(m_Controller, SIGNAL(patternGenerationFinished()), m_PatternDisplayWidget, SLOT(patternGenerationFinished()));
-  //  connect(m_Controller, SIGNAL(mpmcGenerationFinished()), this, SLOT(resetDisplayWidgets()));
+  connect(m_Controller, SIGNAL(mpmcGenerationFinished()), this, SLOT(resetDisplayWidgets()));
   connect(m_PatternDisplayWidget, SIGNAL(cancelRequested()), m_Controller, SLOT(cancelGeneration()));
   connect(m_PatternDisplayWidget, SIGNAL(patternNeedsPriority(size_t)), m_Controller, SLOT(addPriorityIndex(size_t)));
 
