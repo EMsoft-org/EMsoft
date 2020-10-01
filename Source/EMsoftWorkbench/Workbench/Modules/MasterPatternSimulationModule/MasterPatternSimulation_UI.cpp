@@ -122,8 +122,7 @@ void MasterPatternSimulation_UI::createModificationConnections()
   connect(numOfOpenMPThreadsSB, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [=] { parametersChanged(); });
 
   // Line Edits
-  connect(mpFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
-  connect(mcFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
+  connect(energyFilePathLE, &QLineEdit::textChanged, [=] { parametersChanged(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -140,12 +139,12 @@ void MasterPatternSimulation_UI::createWidgetConnections() const
 
   connect(mcSelectBtn, &QPushButton::clicked, [=] {
     QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";
-    if(!mcFilePathLE->text().isEmpty())
+    if(!energyFilePathLE->text().isEmpty())
     {
-      proposedFile = mcFilePathLE->text();
+      proposedFile = energyFilePathLE->text();
     }
 
-    QString filePath = FileIOTools::GetOpenPathFromDialog("Select Monte Carlo File", "Monte Carlo File (*.h5);;All Files (*.*)", proposedFile);
+    QString filePath = FileIOTools::GetOpenPathFromDialog("Select Energy File", "Energy File (*.h5);;All Files (*.*)", proposedFile);
     if(filePath.isEmpty())
     {
       return;
@@ -154,26 +153,7 @@ void MasterPatternSimulation_UI::createWidgetConnections() const
     filePath = QDir::toNativeSeparators(filePath);
     emSoftApp->setOpenDialogLastDirectory(filePath);
 
-    mcFilePathLE->setText(filePath);
-  });
-
-  connect(mpSelectBtn, &QPushButton::clicked, [=] {
-    QString proposedFile = emSoftApp->getOpenDialogLastDirectory() + QDir::separator() + "Untitled.h5";
-    if(!mpFilePathLE->text().isEmpty())
-    {
-      proposedFile = mpFilePathLE->text();
-    }
-
-    QString filePath = FileIOTools::GetSavePathFromDialog("Select Master Pattern File", "Master Pattern File (*.h5);;All Files (*.*)", proposedFile);
-    if(filePath.isEmpty())
-    {
-      return;
-    }
-
-    filePath = QDir::toNativeSeparators(filePath);
-    emSoftApp->setOpenDialogLastDirectory(filePath);
-
-    mpFilePathLE->setText(filePath);
+    energyFilePathLE->setText(filePath);
   });
 }
 
@@ -190,11 +170,9 @@ void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
     return;
   }
 
-  // Sanity Check the input/output Files
-  QString absPath = FileIOTools::GetAbsolutePath(mcFilePathLE->text());
-  mcFilePathLE->setText(absPath);
-  absPath = FileIOTools::GetAbsolutePath(mpFilePathLE->text());
-  mpFilePathLE->setText(absPath);
+  // Sanity Check the I/O File
+  QString absPath = FileIOTools::GetAbsolutePath(energyFilePathLE->text());
+  energyFilePathLE->setText(absPath);
 
   // Get the input data
   MasterPatternSimulationController::InputDataType data;
@@ -204,14 +182,12 @@ void MasterPatternSimulation_UI::slot_simulateBtn_clicked()
   data.betheParametersY = betheParametersYSB->value();
   data.betheParametersZ = betheParametersZSB->value();
   data.numOfOpenMPThreads = numOfOpenMPThreadsSB->value();
-  data.inputFilePath = mcFilePathLE->text();
-  data.outputFilePath = mpFilePathLE->text();
+  data.energyFilePath = energyFilePathLE->text();
 
   // Adjust GUI  elements
   simulateBtn->setText("Cancel");
   inputGrpBox->setDisabled(true);
   compParamGrpBox->setDisabled(true);
-  outputGrpBox->setDisabled(true);
 
   // Clear out the previous (if any) controller instance
   if(m_Controller != nullptr)
@@ -248,7 +224,6 @@ void MasterPatternSimulation_UI::processFinished()
   simulateBtn->setText("Simulate");
   inputGrpBox->setEnabled(true);
   compParamGrpBox->setEnabled(true);
-  outputGrpBox->setEnabled(true);
 
   emit validationOfOtherModulesNeeded(this);
   setRunning(false);
@@ -277,8 +252,7 @@ void MasterPatternSimulation_UI::validateData()
   data.betheParametersY = betheParametersYSB->value();
   data.betheParametersZ = betheParametersZSB->value();
   data.numOfOpenMPThreads = numOfOpenMPThreadsSB->value();
-  data.inputFilePath = mcFilePathLE->text();
-  data.outputFilePath = mpFilePathLE->text();
+  data.energyFilePath = energyFilePathLE->text();
 
   m_Controller->setData(data);
   if(m_Controller->validateInput())
@@ -309,8 +283,7 @@ void MasterPatternSimulation_UI::readModuleSession(QJsonObject& obj)
 {
   readComputationalParameters(obj);
 
-  mcFilePathLE->setText(obj[ioConstants::InputMonteCarloFileName].toString());
-  mpFilePathLE->setText(obj[ioConstants::OutputFileName].toString());
+  energyFilePathLE->setText(obj[ioConstants::EnergyFileName].toString());
 
   validateData();
 }
@@ -346,8 +319,7 @@ void MasterPatternSimulation_UI::writeModuleSession(QJsonObject& obj) const
   writeComputationalParameters(compParamObj);
 
   obj[ioConstants::CompParam] = compParamObj;
-  obj[ioConstants::OutputFileName] = mpFilePathLE->text();
-  obj[ioConstants::InputMonteCarloFileName] = mcFilePathLE->text();
+  obj[ioConstants::EnergyFileName] = energyFilePathLE->text();
 }
 
 // -----------------------------------------------------------------------------
