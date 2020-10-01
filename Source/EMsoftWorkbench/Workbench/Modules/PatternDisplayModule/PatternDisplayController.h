@@ -164,7 +164,7 @@ private slots:
 
   void checkImageGenerationCompletion() const;
 
-  void patternThreadFinished();
+  void patternThreadFinished(int maxThreadCount);
 
   void cancelGeneration();
 
@@ -213,7 +213,7 @@ private:
   QSemaphore m_MCStereoImageGenLock;
 
   int32_t m_NumOfFinishedPatternThreads = 0;
-  std::vector<QSharedPointer<QFutureWatcher<void>>> m_PatternWatchers;
+  std::vector<std::unique_ptr<QFutureWatcher<void>>> m_PatternWatchers;
 
   /**
    * @brief createMasterPatternImageGenerators Helper function that creates all the image generators for the master pattern images
