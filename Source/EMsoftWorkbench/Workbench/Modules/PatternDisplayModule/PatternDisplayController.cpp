@@ -353,6 +353,7 @@ void PatternDisplayController::generatePatternImages(SimulatedPatternDisplayWidg
   m_CurrentOrder.clear();
   m_PriorityOrder.clear();
   m_PatternWatchers.clear();
+  m_Cancel = false;
 
   std::vector<float> eulerAngles = patternData.angles;
   size_t angleCount = eulerAngles.size() / 3;
