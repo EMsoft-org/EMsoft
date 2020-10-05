@@ -78,13 +78,13 @@ void MasterPatternSimulationController::generateNMLFile(const QString& path)
 
   std::vector<std::string> nml;
 
-  m_InputData.inputFilePath = FileIOTools::GetAbsolutePath(m_InputData.inputFilePath);
+  m_InputData.energyFilePath = FileIOTools::GetAbsolutePath(m_InputData.energyFilePath);
 
   nml.emplace_back(std::string(" &EBSDmastervars"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::dmin, static_cast<float>(m_InputData.smallestDSpacing)));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::npx, m_InputData.numOfMPPixels));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::nthreads, m_InputData.numOfOpenMPThreads));
-  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::energyfile, m_InputData.inputFilePath));
+  nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::energyfile, m_InputData.energyFilePath));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::BetheParametersFile, betheParametersFilePath));
   nml.emplace_back(FileIOTools::CreateNMLEntry(QString("Notify"), QString("Off")));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::copyfromenergyfile, QString("undefined")));
@@ -119,7 +119,7 @@ void MasterPatternSimulationController::generateBetheParametersFile(const QStrin
 {
   std::vector<std::string> nml;
 
-  m_InputData.inputFilePath = FileIOTools::GetAbsolutePath(m_InputData.inputFilePath);
+  m_InputData.energyFilePath = FileIOTools::GetAbsolutePath(m_InputData.energyFilePath);
 
   nml.emplace_back(std::string(" &Bethelist"));
   nml.emplace_back(FileIOTools::CreateNMLEntry(EMsoft::Constants::c1, static_cast<float>(m_InputData.betheParametersX)));
@@ -160,33 +160,19 @@ bool MasterPatternSimulationController::validateInput() const
 {
   bool valid = true;
 
-  QString inputPath = m_InputData.inputFilePath;
-  QFileInfo inFi(inputPath);
+  QString energyFilePath = m_InputData.energyFilePath;
+  QFileInfo inFi(energyFilePath);
   if(inFi.completeSuffix() != "h5")
   {
-    QString ss = QObject::tr("The input Monte Carlo file at path '%1' needs a '.h5' suffix.").arg(inputPath);
+    QString ss = QObject::tr("The energy file at path '%1' needs a '.h5' suffix.").arg(energyFilePath);
     emit errorMessageGenerated(ss);
     return false;
   }
   if(!inFi.exists())
   {
-    QString ss = QObject::tr("The input Monte Carlo file with path '%1' does not exist.").arg(inputPath);
+    QString ss = QObject::tr("The energy file with path '%1' does not exist.").arg(energyFilePath);
     emit errorMessageGenerated(ss);
     valid = false;
-  }
-
-  QString outputPath = m_InputData.outputFilePath;
-
-  QFileInfo dir(outputPath);
-  QDir dPath = dir.path();
-  if(dir.suffix().compare("") == 0)
-  {
-    outputPath.append(".h5");
-  }
-  if(!dPath.exists())
-  {
-    QString ss = QObject::tr("The directory path for the HDF5 file does not exist. DREAM.3D will attempt to create this path during execution of the filter");
-    emit warningMessageGenerated(ss);
   }
 
   if(m_InputData.smallestDSpacing < 0)
