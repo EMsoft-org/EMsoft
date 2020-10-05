@@ -41,7 +41,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="elideMode">
       <enum>Qt::ElideMiddle</enum>
@@ -570,27 +570,27 @@
   </customwidget>
  </customwidgets>
  <tabstops>
+  <tabstop>mpSelectBtn</tabstop>
+  <tabstop>patternDisplayTabWidget</tabstop>
   <tabstop>scintillatorDist</tabstop>
+  <tabstop>detectorTiltAngle</tabstop>
   <tabstop>detectorOmegaAngle</tabstop>
+  <tabstop>scintillatorPixSize</tabstop>
   <tabstop>numOfPixelsX</tabstop>
   <tabstop>numOfPixelsY</tabstop>
-  <tabstop>pixelCoordinateX</tabstop>
-  <tabstop>pixelCoordinateY</tabstop>
-  <tabstop>beamCurrent</tabstop>
-  <tabstop>barrelDistortion</tabstop>
-  <tabstop>detectorTiltAngle</tabstop>
-  <tabstop>scintillatorPixSize</tabstop>
   <tabstop>patternCenterX</tabstop>
   <tabstop>patternCenterY</tabstop>
+  <tabstop>pixelCoordinateX</tabstop>
+  <tabstop>pixelCoordinateY</tabstop>
   <tabstop>samplingStepSizeX</tabstop>
   <tabstop>samplingStepSizeY</tabstop>
+  <tabstop>beamCurrent</tabstop>
   <tabstop>dwellTime</tabstop>
+  <tabstop>barrelDistortion</tabstop>
   <tabstop>energyMinCB</tabstop>
   <tabstop>energyMaxCB</tabstop>
   <tabstop>angleTypeCB</tabstop>
   <tabstop>generateBtn</tabstop>
-  <tabstop>patternDisplayTabWidget</tabstop>
-  <tabstop>mpSelectBtn</tabstop>
  </tabstops>
  <resources/>
  <connections/>
