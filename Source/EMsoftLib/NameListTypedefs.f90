@@ -599,6 +599,7 @@ type EBSDNameListType
         character(1)            :: includebackground
         character(1)            :: applyDeformation
         character(1)            :: maskpattern
+        character(4)            :: Fframe
         character(3)            :: scalingmode
         character(3)            :: eulerconvention
         character(3)            :: outputformat
