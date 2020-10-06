@@ -1470,6 +1470,7 @@ end subroutine patternmod_errormessage
 !> @date 04/01/18 MDG 1.0 original
 !> @date 04/04/18 MDG 1.1 added optional exptIQ parameter
 !> @date 06/02/20 MDG 2.0 changed handling of pattern binning (version 5.0.3)
+!> @date 10/06/20 MDG 2.1 add option for normalized cross correlation
 !--------------------------------------------------------------------------
 recursive subroutine PreProcessPatterns(nthreads, inRAM, ebsdnl, binx, biny, masklin, correctsize, totnumexpt, &
                                         epatterns, exptIQ)
@@ -1515,11 +1516,11 @@ integer(kind=irg)                           :: istat, PL, BL, Precordsize, Breco
 integer(HSIZE_T)                            :: dims3(3), offset3(3)
 integer(kind=irg),parameter                 :: iunitexpt = 41, itmpexpt = 42, itmpexpt2 = 43
 integer(kind=irg)                           :: tickstart, tstop 
-real(kind=sgl)                              :: vlen, tmp, ma, mi, io_real(1)
+real(kind=sgl)                              :: vlen, tmp, ma, mi, io_real(1), Nval, Nval2, mean, sdev
 real(kind=dbl)                              :: w, Jres, sclfct
 integer(kind=irg),allocatable               :: EBSDpint(:,:)
 real(kind=sgl),allocatable                  :: tmpimageexpt(:), EBSDPattern(:,:), exppatarray(:), EBSDpat(:,:), pat1D(:), &
-                                               Pepatterns(:,:)
+                                               Pepatterns(:,:), mask(:,:)
 real(kind=dbl),allocatable                  :: rrdata(:,:), ffdata(:,:), ksqarray(:,:), inpat(:,:), outpat(:,:)
 complex(kind=dbl),allocatable               :: hpmask(:,:)
 complex(C_DOUBLE_COMPLEX),pointer           :: inp(:,:), outp(:,:)
@@ -1528,6 +1529,11 @@ type(C_PTR)                                 :: planf, HPplanf, HPplanb
 
 
 call Message('Preprocessing experimental patterns')
+
+if (ebsdnl%similaritymetric.eq.'ncc') then
+  allocate(mask(ebsdnl%exptnumsx,ebsdnl%exptnumsy))
+  mask = reshape(masklin,(/ebsdnl%exptnumsx,ebsdnl%exptnumsy/))
+end if 
 
 !===================================================================================
 ! define a bunch of mostly integer parameters
@@ -1685,13 +1691,16 @@ if (binx.ne.Px) then
   call WriteValue(' binned size  : ',io_int,2,"(I4,' x ',I4)")
 end if 
 
+Nval = 1.0/float(Px*Py)
+Nval2 = 1.0/float(Px*Py-1)
+
 ! ===================================================================================
 ! we do one row at a time
 prepexperimentalloop: do iii = iiistart,iiiend
 
 ! start the OpenMP portion
 !$OMP PARALLEL DEFAULT(SHARED) PRIVATE(TID, jj, kk, mi, ma, istat, ip, op) &
-!$OMP& PRIVATE(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp)
+!$OMP& PRIVATE(tmpimageexpt, EBSDPat, rrdata, ffdata, EBSDpint, vlen, tmp, inp, outp, mean, sdev)
 
 ! set the thread ID
     TID = OMP_GET_THREAD_NUM()
@@ -1736,6 +1745,8 @@ prepexperimentalloop: do iii = iiistart,iiiend
 ! then loop in parallel over all patterns to perform the preprocessing steps
 !$OMP DO SCHEDULE(DYNAMIC)
     do jj=1,jjend
+
+
 ! convert imageexpt to 2D EBSD Pattern array
         do kk=1,Py
           EBSDPat(1:Px,kk) = exppatarray((jj-1)*Ppatsz+(kk-1)*Px+1:(jj-1)*Ppatsz+kk*Px)
@@ -1751,12 +1762,22 @@ prepexperimentalloop: do iii = iiistart,iiiend
         ffdata = applyHiPassFilter(rrdata, (/ Px, Py /), w, hpmask, inp, outp, HPplanf, HPplanb)
         EBSDPat = sngl(ffdata)
 
+! in ncc mode, we multiply by the mask before scaling the intensities
+
+        if (ebsdnl%similaritymetric.eq.'ndp') then 
 ! adaptive histogram equalization
-        ma = maxval(EBSDPat)
-        mi = minval(EBSDPat)
+          ma = maxval(EBSDPat)
+          mi = minval(EBSDPat)
     
-        EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
-        EBSDPat = float(adhisteq(ebsdnl%nregions,Px,Py,EBSDpint))
+          EBSDpint = nint(((EBSDPat - mi) / (ma-mi))*255.0)
+          EBSDPat = float(adhisteq(ebsdnl%nregions,Px,Py,EBSDpint))
+        else  ! use normalized cross correlation so subtract mean and divided by standard deviation
+          EBSDPat = EBSDPat * mask
+          mean = sum(EBSDPat) * Nval
+          EBSDPat = EBSDPat - mean 
+          sdev = sqrt(Nval2 * sum( EBSDPat*EBSDPat ))
+          EBSDPat = EBSDPat / sdev
+        end if
 
 ! convert back to 1D vector
         do kk=1,Py
@@ -1764,12 +1785,14 @@ prepexperimentalloop: do iii = iiistart,iiiend
         end do
 
 ! apply circular mask and normalize for the dot product computation
-        exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) * masklin(1:PL)
-        vlen = vecnorm(exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL))
-        if (vlen.ne.0.0) then
-          exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL)/vlen
-        else
-          exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = 0.0
+        if (ebsdnl%similaritymetric.eq.'ndp') then 
+          exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) * masklin(1:PL)
+          vlen = vecnorm(exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL))
+          if (vlen.ne.0.0) then
+            exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL)/vlen
+          else
+            exppatarray((jj-1)*Ppatsz+1:(jj-1)*Ppatsz+PL) = 0.0
+          end if
         end if
     end do
 !$OMP END DO
@@ -1857,7 +1880,7 @@ if (binx.ne.Px) then
 ! convert outpat to a 1D array for writing to file or epatterns array
     pat1D = sngl(reshape(outpat, (/ BL /) ))
 ! normalize the pattern 
-    pat1D = pat1D/vecnorm(pat1D)
+    if (ebsdnl%similaritymetric.eq.'ndp') pat1D = pat1D/vecnorm(pat1D)
     if (inRAM.eqv..TRUE.) then
       epatterns(1:Bpatsz, jj) = pat1D(1:BL)
     else 

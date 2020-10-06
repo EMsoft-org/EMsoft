@@ -4107,10 +4107,11 @@ character(fnlen)        :: scalingmode
 character(fnlen)        :: useangles
 character(fnlen)        :: imagefile
 character(fnlen)        :: masterfile
+character(fnlen)        :: Kosselmasterfile
 character(fnlen)        :: datafile
 
 ! define the IO namelist to facilitate passing variables to the program.
-namelist  / BSEdata / energymin, energymax, beamcurrent, dwelltime, gammavalue, workingdistance, BSEdistance, &
+namelist  / BSEdata / energymin, energymax, beamcurrent, dwelltime, gammavalue, workingdistance, BSEdistance, Kosselmasterfile, &
                       rin, rout, NsqL, nthreads, scalingmode, useangles, imagefile, masterfile, datafile, incidence
 
 
@@ -4131,6 +4132,7 @@ scalingmode = 'not;'
 useangles = 'original'
 imagefile = 'undefined'
 masterfile = 'undefined'
+Kosselmasterfile = 'undefined'
 datafile = 'undefined'
 
 if (present(initonly)) then
@@ -4159,6 +4161,10 @@ if (.not.skipread) then
   call FatalError('GetBSENameList:',' master pattern file name is undefined in '//nmlfile)
  end if
 
+ if (trim(Kosselmasterfile).eq.'undefined') then
+  call FatalError('GetBSENameList:',' Kossel master pattern file name is undefined in '//nmlfile)
+ end if
+
  if (trim(datafile).eq.'undefined') then
   call FatalError('GetBSENameList:',' DI input file name is undefined in '//nmlfile)
  end if
@@ -4182,6 +4188,7 @@ enl%scalingmode = scalingmode
 enl%useangles = useangles
 enl%imagefile = trim(imagefile)
 enl%masterfile = trim(masterfile)
+enl%Kosselmasterfile = trim(Kosselmasterfile)
 enl%datafile = trim(datafile)
 
 end subroutine GetBSENameList
@@ -6460,6 +6467,7 @@ integer(kind=irg)                                 :: nthreads
 character(1)                                      :: maskpattern
 character(1)                                      :: keeptmpfile
 character(3)                                      :: scalingmode
+character(3)                                      :: similaritymetric
 character(3)                                      :: Notify
 character(fnlen)                                  :: dotproductfile
 character(fnlen)                                  :: masterfile
@@ -6497,7 +6505,7 @@ beamcurrent, dwelltime, binning, gammavalue, energymin, spatialaverage, nregions
 scalingmode, maskpattern, energyaverage, L, omega, nthreads, energymax, datafile, angfile, ctffile, &
 ncubochoric, numexptsingle, numdictsingle, ipf_ht, ipf_wd, nnk, nnav, exptfile, maskradius, inputtype, &
 dictfile, indexingmode, hipassw, stepX, stepY, tmpfile, avctffile, nosm, eulerfile, Notify, maskfile, &
-section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd, nism, isangle, refinementNMLfile
+section, HDFstrings, ROI, keeptmpfile, multidevid, usenumd, nism, isangle, refinementNMLfile, similaritymetric
 
 ! set the input parameters to default values (except for xtalname, which must be present)
 ncubochoric     = 50
@@ -6539,6 +6547,7 @@ keeptmpfile     = 'n'
 maskpattern     = 'n'           ! 'y' or 'n' to include a circular mask
 Notify          = 'Off'
 scalingmode     = 'not'         ! intensity selector ('lin', 'gam', or 'not')
+similaritymetric = 'ndp'
 masterfile      = 'undefined'   ! filename
 dotproductfile  = 'undefined'
 energymin       = 10.0
@@ -6664,6 +6673,7 @@ enl%gammavalue    = gammavalue
 enl%beamcurrent   = beamcurrent
 enl%dwelltime     = dwelltime
 enl%scalingmode   = scalingmode
+enl%similaritymetric = similaritymetric
 enl%ncubochoric   = ncubochoric
 enl%omega         = omega
 enl%energymin     = energymin
