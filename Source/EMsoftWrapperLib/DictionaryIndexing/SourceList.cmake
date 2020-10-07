@@ -5,9 +5,8 @@ set(DictionaryIndexing_Wrapper_HEADERS
   ${EMsoftWrapperLib_SOURCE_DIR}/DictionaryIndexing/EMsoftDIwrappers.h
 )
 
-find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
 
-option(EMsoft_ENABLE_PyEMEBSDDI "Build sources and programs related to PyEMEBSDDI" ON)
+option(EMsoft_ENABLE_PyEMEBSDDI "Build sources and programs related to PyEMEBSDDI" OFF)
 
 # add library
 set(PyEMEBSDDI_SRCS
@@ -21,6 +20,7 @@ set(PyEMEBSDDI_HEADERS
 )
 
 if (EMsoft_ENABLE_PyEMEBSDDI)
+    find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
     set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries" FORCE)
 
     add_library(PyEMEBSDDI MODULE ${PyEMEBSDDI_SRCS} ${PyEMEBSDDI_HEADERS})
@@ -49,8 +49,11 @@ if (EMsoft_ENABLE_PyEMEBSDDI)
     set_property(TARGET PyEMEBSDDI PROPERTY PREFIX "") # name crystallography instead of libcrystallography
     if(WIN32)
         set_property(TARGET PyEMEBSDDI PROPERTY SUFFIX ".pyd") # name crystallography.pyd instead of crystallography.dll
+    elseif(APPLE)
+        set_property(TARGET PyEMEBSDDI PROPERTY SUFFIX ".dylib") # name crystallography.so
     else()
         set_property(TARGET PyEMEBSDDI PROPERTY SUFFIX ".so") # name crystallography.so
+
     endif()
 
     # install PyEMEBSDDI to Python Third-party platform independent installation directory
